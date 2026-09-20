@@ -342,14 +342,51 @@
     }
     return {path:path,result:OBSERVATION_KEY[key]?null:key,question:OBSERVATION_KEY[key]?OBSERVATION_KEY[key].question:null};
   }
+
+  function observationExampleId(row) {
+    var examples=OBSERVATION_EXAMPLES;
+    if(examples.some(function(e){return e.id===row.exampleId;}))return row.exampleId;
+    // A field note may have the same title as a lesson card. Its claim takes precedence over a title.
+    if(row.claim==='Unclassified field observation')return 'field';
+    var match=examples.find(function(e){return e.id!=='field'&&e.name===row.subject;});
+    return match?match.id:'field';
+  }
+  function observationEvidenceReview(exampleId, answers) {
+    var expected={bird:['yes'],insect:['no','yes','yes'],arachnid:['no','yes','no','yes'],fern:['no','no','yes'],fungus:['no','no','no','yes'],moss:['no','no','no','no','yes']};
+    if(!Object.prototype.hasOwnProperty.call(expected,exampleId))return {status:'field',detail:'Field notes are not checked against the teaching key. Record what you can observe and what evidence you still need.'};
+    var route=observationRoute(answers),target=expected[exampleId];
+    for(var i=0;i<route.path.length;i++){
+      if(route.path[i].answer==='unsure')return {status:'uncertain',decision:i,detail:'You marked decision '+(i+1)+' as uncertain. Reread the example and record which feature would resolve this question.'};
+      if(route.path[i].answer!==target[i])return {status:'revisit',decision:i,detail:'Revisit decision '+(i+1)+': '+route.path[i].question+' Compare your answer with the description. This checks what the card describes, not whether an unmentioned feature is absent in nature.'};
+    }
+    if(!route.result)return {status:'incomplete',detail:'The decisions so far match the example. Continue the key or record what is uncertain.'};
+    return {status:'supported',detail:'Your key decisions match the teaching example. Cite the observable feature that supports your group claim; the key does not establish a species identification.'};
+  }
+
   function observationJournal(value) {
     return (Array.isArray(value)?value:[]).filter(function(r){return r&&typeof r==='object'&&typeof r.note==='string';}).slice(-60).map(function(r){
-      return {id:String(r.id||'').slice(0,100),previousId:String(r.previousId||'').slice(0,100),date:String(r.date||'').slice(0,40),subject:String(r.subject||'Observation').slice(0,100),note:r.note.slice(0,2000),reason:String(r.reason||'').slice(0,500),claim:String(r.claim||'Unresolved').slice(0,100),path:(Array.isArray(r.path)?r.path:[]).filter(function(step){return step&&typeof step==='object';}).slice(0,7).map(function(step){return {question:String(step.question||'').slice(0,150),answer:String(step.answer||'').slice(0,10)};})};
+      return {exampleId:observationExampleId(r),nextEvidence:String(r.nextEvidence||'').slice(0,700),context:String(r.context||'').slice(0,300),reviewed:r.reviewed===true,id:String(r.id||'').slice(0,100),previousId:String(r.previousId||'').slice(0,100),date:String(r.date||'').slice(0,40),subject:String(r.subject||'Observation').slice(0,100),note:r.note.slice(0,2000),reason:String(r.reason||'').slice(0,500),claim:String(r.claim||'Unresolved').slice(0,100),path:(Array.isArray(r.path)?r.path:[]).filter(function(step){return step&&typeof step==='object';}).slice(0,7).map(function(step){return {question:String(step.question||'').slice(0,150),answer:String(step.answer||'').slice(0,10)};})};
     });
   }
+  function compareObservations(before, after) {
+    var pair=observationJournal([before,after]);
+    if(pair.length!==2)return [];
+    var a=pair[0],b=pair[1],changes=[];
+    function add(label,oldValue,newValue){if(oldValue!==newValue)changes.push({label:label,before:oldValue||'Not recorded.',after:newValue||'Not recorded.'});}
+    [['subject','Title'],['note','Observation'],['claim','Tentative group'],['context','Context'],['nextEvidence','Next evidence']].forEach(function(field){add(field[1],a[field[0]],b[field[0]]);});
+    var questions=Array.from(new Set(a.path.concat(b.path).map(function(step){return step.question;})));
+    function answer(row,question){var step=row.path.find(function(item){return item.question===question;});return !step?'Not asked':step.answer==='unsure'?'Not sure':step.answer==='yes'?'Yes':step.answer==='no'?'No':step.answer;}
+    questions.forEach(function(question){add('Key decision: '+question,answer(a,question),answer(b,question));});
+    function review(row){return row.reviewed?observationEvidenceReview(row.exampleId,row.path.map(function(step){return step.answer;})).detail:'Not requested.';}
+    add('Evidence review',review(a),review(b));
+    return changes;
+  }
   function observationMarkdown(rows) {
-    return ['# Taxonomy observation journal','Teaching-key groups are not field identifications.',''].concat(observationJournal(rows).map(function(r){
-      return '## '+r.subject+'\n'+r.date+'\n\nObservation: '+r.note+'\n\nTentative teaching group: '+r.claim+'\n\nKey evidence:\n'+r.path.map(function(step){return '- '+step.question+' '+step.answer;}).join('\n')+(r.previousId?'\n\nRevision of '+r.previousId+'. What changed: '+r.reason:'');
+    var journal=observationJournal(rows);
+    return ['# Taxonomy observation journal','Teaching-key groups are not field identifications.',''].concat(journal.map(function(r){
+      var previous=journal.find(function(row){return row.id===r.previousId;}),changes=previous?compareObservations(previous,r):[];
+      var comparison=r.previousId?'\n\nRevision comparison:\n'+(previous?(changes.length?changes.map(function(change){return '- '+change.label+': '+change.before+' → '+change.after;}).join('\n'):'No recorded evidence fields or key decisions changed.'):'The earlier entry is not available in this journal.'):'';
+      return '## '+r.subject+'\n'+r.date+'\n\nEntry ID: '+r.id+'\n\nObservation: '+r.note+'\n\nTentative teaching group: '+r.claim+'\n\nObservation context: '+(r.context||'Not recorded.')+'\n\nNext evidence to seek: '+(r.nextEvidence||'Not recorded.')+'\n\nEvidence review: '+(r.reviewed?observationEvidenceReview(r.exampleId,r.path.map(function(step){return step.answer;})).detail:'Not requested.')+'\n\nKey evidence:\n'+r.path.map(function(step){return '- '+step.question+' '+step.answer;}).join('\n')+(r.previousId?'\n\nRevision of '+r.previousId+'. What changed: '+r.reason:'')+comparison;
     })).join('\n\n');
   }
 
@@ -792,48 +829,87 @@
     function renderObservationView() {
       var example=OBSERVATION_EXAMPLES.find(function(e){return e.id===d.observationExample;})||OBSERVATION_EXAMPLES[1];
       var route=example.id==='field'?{path:[],result:'Unclassified field observation',question:null}:observationRoute(d.observationAnswers),journal=observationJournal(d.observationJournal);
+      var reviewKey=JSON.stringify([example.id,route.path.map(function(step){return step.answer;})]);
+      var reviewVisible=d.observationReviewKey===reviewKey;
+      var evidenceReview=observationEvidenceReview(example.id,route.path.map(function(step){return step.answer;}));
       var box={background:C.panel,color:C.text,border:'1px solid '+C.border,borderRadius:10,padding:14,marginBottom:12};
       var inputStyle={width:'100%',boxSizing:'border-box',display:'block',background:C.raised,color:C.text,border:'1px solid '+C.border,borderRadius:6,padding:10};
       function action(label,fn,disabled){return h('button',{type:'button',onClick:fn,disabled:!!disabled,style:{padding:'10px 14px',minHeight:44,margin:'4px 6px 4px 0',background:C.raised,color:C.text,border:'1px solid '+C.border,borderRadius:7}},label);}
+      function exportObservations(rows,filename){
+        var url=URL.createObjectURL(new Blob([observationMarkdown(rows)],{type:'text/markdown;charset=utf-8'})),a=document.createElement('a');
+        a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1000);
+      }
       function saveObservation(){
+        if(journal.length>=60){patchState({observationNotice:'The journal has 60 entries. Export a copy, then remove an entry before saving. Your draft is still here.'},'Journal full. Your draft has been kept.');return;}
         if(!String(d.observationNote||'').trim()){patchState({observationNotice:'Write an observation before saving.'});return;}
         if(d.observationPreviousId&&!String(d.observationReason||'').trim()){patchState({observationNotice:'Describe what changed before saving a revision.'});return;}
         var now=new Date().toISOString();
-        var row={id:now+'-'+journal.length,date:now,subject:example.id==='field'?String(d.observationSubject||'Field observation').slice(0,100):example.name,note:String(d.observationNote).trim(),claim:route.result||'Key unfinished',path:route.path,previousId:d.observationPreviousId||'',reason:d.observationReason||''};
-        patchState({observationJournal:observationJournal(journal.concat([row])),observationPreviousId:'',observationReason:'',observationNote:'',observationNotice:'Observation saved in this project. Up to 60 recent entries are retained; export a copy for your field notebook.'},'Observation saved.');
+        var row={exampleId:example.id,context:d.observationContext||'',nextEvidence:d.observationNextEvidence||'',reviewed:reviewVisible,id:now+'-'+Math.random().toString(36).slice(2,9),date:now,subject:example.id==='field'?String(d.observationSubject||'Field observation').slice(0,100):example.name,note:String(d.observationNote).trim(),claim:route.result||'Key unfinished',path:route.path,previousId:d.observationPreviousId||'',reason:d.observationReason||''};
+        patchState({observationJournal:observationJournal(journal.concat([row])),observationPreviousId:'',observationReason:'',observationNote:'',observationNextEvidence:'',observationNotice:'Observation saved in this project. Export a copy for your field notebook.'},'Observation saved.');
       }
       return h('div',{'data-taxonomy-observation':true,style:{maxWidth:1000,margin:'auto',padding:16}},
         h('section',{style:box},
           h('h2',null,'Observe before naming'),
           h('p',null,'Practice a branching key on six teaching examples. Each answer must come from the description. The key groups these examples; it cannot identify a wild organism. Choose “Not sure” when evidence is missing.'),
           h('label',{htmlFor:'oid-observation-example'},'Teaching example'),
-          h('select',{id:'oid-observation-example',value:example.id,style:inputStyle,onChange:function(e){patchState({observationExample:e.target.value,observationAnswers:[],observationNote:'',observationPreviousId:'',observationReason:'',observationNotice:''});}},
+          h('select',{id:'oid-observation-example',value:example.id,style:inputStyle,onChange:function(e){patchState({observationExample:e.target.value,observationAnswers:[],observationNote:'',observationPreviousId:'',observationReason:'',observationNotice:'',observationContext:'',observationNextEvidence:'',observationReviewKey:null});}},
             OBSERVATION_EXAMPLES.map(function(e){return h('option',{key:e.id,value:e.id},e.name);})),
           h('p',{'data-example-evidence':true},example.evidence),
           example.id==='field'?h('label',null,'Observation title',h('input',{type:'text',maxLength:100,value:d.observationSubject||'',style:inputStyle,onChange:function(e){patchState({observationSubject:e.target.value});}})):null,
           h('ol',null,route.path.map(function(step,i){return h('li',{key:i},step.question+' '+(step.answer==='unsure'?'Not sure':step.answer));})),
           route.question?h('div',null,h('h3',null,route.question),['yes','no','unsure'].map(function(choice){
-            return h('button',{key:choice,type:'button',style:{padding:12,minHeight:44,margin:4,background:C.raised,color:C.text,border:'1px solid '+C.border,borderRadius:7},onClick:function(){patchState({observationAnswers:(d.observationAnswers||[]).slice(0,route.path.length).concat([choice])});}},choice==='unsure'?'Not sure':choice==='yes'?'Yes':'No');
+            return h('button',{key:choice,type:'button',style:{padding:12,minHeight:44,margin:4,background:C.raised,color:C.text,border:'1px solid '+C.border,borderRadius:7},onClick:function(){patchState({observationAnswers:(d.observationAnswers||[]).slice(0,route.path.length).concat([choice]),observationReviewKey:null});}},choice==='unsure'?'Not sure':choice==='yes'?'Yes':'No');
           })):h('p',{role:'status','data-key-result':true},'Tentative teaching group: '+route.result+'. '+(route.result==='Unresolved'?'Gather another observation; a missing feature is not evidence that it is absent.':'Check every decision against the example before saving your claim.')),
-          action('Back one decision',function(){patchState({observationAnswers:(d.observationAnswers||[]).slice(0,-1)});},!route.path.length),
-          action('Restart key',function(){patchState({observationAnswers:[]});}),
+          action('Back one decision',function(){patchState({observationAnswers:(d.observationAnswers||[]).slice(0,-1),observationReviewKey:null});},!route.path.length),
+
+          action('Restart key',function(){patchState({observationAnswers:[],observationReviewKey:null});}),
+          example.id!=='field' ? action('Review my evidence',function(){patchState({observationReviewKey:reviewKey},evidenceReview.detail);},!route.path.length) : null,
+          reviewVisible && example.id!=='field' ? h('section',{'data-observation-evidence-review':evidenceReview.status,style:box},
+            h('h3',null,'Evidence check'),
+            h('p',{role:'status'},evidenceReview.detail),
+            typeof evidenceReview.decision==='number' ? action('Return to this decision',function(){
+              patchState({observationAnswers:(d.observationAnswers||[]).slice(0,evidenceReview.decision),observationReviewKey:null},'Returned to decision '+(evidenceReview.decision+1)+'.');
+            }) : null
+          ) : null,
+          h('label',{htmlFor:'oid-observation-context'},'Observation context (optional: habitat, conditions, or lesson setting)'),
+          h('input',{id:'oid-observation-context',type:'text',maxLength:300,value:d.observationContext||'',style:inputStyle,onChange:function(e){patchState({observationContext:e.target.value});}}),
+
           h('label',{htmlFor:'oid-observation-note'},'What did you observe, and what is still uncertain?'),
           h('textarea',{id:'oid-observation-note',rows:4,maxLength:2000,value:d.observationNote||'',style:inputStyle,onChange:function(e){patchState({observationNote:e.target.value,observationNotice:''});}}),
-          d.observationPreviousId?h('label',null,'What changed in this revision?',h('textarea',{rows:2,maxLength:500,value:d.observationReason||'',style:inputStyle,onChange:function(e){patchState({observationReason:e.target.value});}})):null,
-          action(d.observationPreviousId?'Save observation revision':'Save observation',saveObservation,journal.length>=60&&!String(d.observationNote||'').trim()),
+
+          h('label',{htmlFor:'oid-next-evidence'},'What evidence would you look for next?'),
+          h('textarea',{id:'oid-next-evidence',rows:2,maxLength:700,value:d.observationNextEvidence||'',style:inputStyle,onChange:function(e){patchState({observationNextEvidence:e.target.value});}}),
+          d.observationPreviousId?h('label',null,'What changed in this revision?' ,h('textarea',{rows:2,maxLength:500,value:d.observationReason||'',style:inputStyle,onChange:function(e){patchState({observationReason:e.target.value});}})):null,
+          action(d.observationPreviousId?'Save observation revision':'Save observation',saveObservation),
           d.observationNotice?h('p',{role:'status'},d.observationNotice):null),
-        h('section',{style:box},h('h2',null,'Observation journal'),
+        h('section',{'data-observation-journal':true,style:box},h('h2',{id:'oid-journal-heading',tabIndex:-1},'Observation journal'),
+          h('p',{role:'status'},journal.length+'/60 entries. '+(journal.length>=60?'Journal full. Export a copy and remove an entry to make room.':'Saving a revision adds an entry and keeps the earlier observation.')),
           h('p',null,'Revisit an entry to refine your evidence. Earlier observations remain beside their revisions. Save the AlloFlow project to retain this journal between sessions.'),
-          action('Export observation journal',function(){
-            var url=URL.createObjectURL(new Blob([observationMarkdown(journal)],{type:'text/markdown;charset=utf-8'})),a=document.createElement('a');
-            a.href=url;a.download='taxonomy-observations.md';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1000);
-          },!journal.length),
+          action('Export observation journal',function(){exportObservations(journal,'taxonomy-observations.md');},!journal.length),
+          d.observationRemoved && action('Export removed observation',function(){exportObservations([d.observationRemoved.row],'taxonomy-removed-observation.md');}),
+          d.observationRemoved && action('Undo observation removal',function(){
+            if(journal.length>=60){patchState({observationNotice:'The journal has 60 entries. Export the removed observation to keep a separate copy; another removal will replace this undo.'},'Journal full. The removed observation is still available to undo.');return;}
+            var restored=journal.slice(),removed=d.observationRemoved;
+            restored.splice(Math.max(0,Math.min(restored.length,removed.index)),0,removed.row);
+            patchState({observationJournal:observationJournal(restored),observationRemoved:null,observationNotice:'Observation restored in its original journal position.'},'Observation restored.');
+            document.getElementById('oid-journal-heading').focus();
+          }),
           journal.length?journal.slice().reverse().map(function(row){
             var previous=journal.find(function(r){return r.id===row.previousId;});
             return h('article',{key:row.id,style:box},h('h3',null,row.subject),h('p',null,row.date),h('p',null,row.note),h('p',null,'Claim: '+row.claim),
-              previous?h('blockquote',null,'Earlier observation: '+previous.note):null,
+              row.context?h('p',null,'Context: '+row.context):null,
+              row.nextEvidence?h('p',null,'Next evidence: '+row.nextEvidence):null,
+              row.reviewed?h('p',null,'Evidence check at save: '+observationEvidenceReview(row.exampleId,row.path.map(function(step){return step.answer;})).detail):null,
+              row.previousId ? h('details',{'data-observation-comparison':true},h('summary',null,'Compare with earlier observation'),
+                previous ? (function(){var changes=compareObservations(previous,row);return changes.length?h('ul',null,changes.map(function(change,i){return h('li',{key:i,style:{marginBottom:12,overflowWrap:'anywhere'}},h('strong',null,change.label),h('p',null,'Before: '+change.before),h('p',null,'After: '+change.after));})):h('p',null,'No recorded evidence fields or key decisions changed.');})() : h('p',null,'The earlier entry is not available in this journal.')) : null,
+
               row.reason?h('p',null,'What changed: '+row.reason):null,
-              action('Revisit '+row.subject,function(){var ex=OBSERVATION_EXAMPLES.find(function(e){return e.name===row.subject;})||OBSERVATION_EXAMPLES[0];patchState({observationExample:ex.id,observationSubject:ex.id==='field'?row.subject:'',observationAnswers:row.path.map(function(st){return st.answer;}),observationNote:row.note,observationPreviousId:row.id,observationReason:'',observationNotice:'Revise the evidence above, then explain what changed.'});document.getElementById('oid-observation-note').focus();}));
+              action('Remove '+row.subject,function(){
+                var index=journal.indexOf(row);
+                patchState({observationJournal:journal.filter(function(item,i){return i!==index;}),observationRemoved:{row:row,index:index},observationNotice:'Observation removed. Undo is available for the most recent removal.'},'Observation removed. Undo is available.');
+                document.getElementById('oid-journal-heading').focus();
+              }),
+              action('Revisit '+row.subject,function(){var ex=OBSERVATION_EXAMPLES.find(function(e){return e.id===row.exampleId;})||OBSERVATION_EXAMPLES[0];patchState({observationContext:row.context,observationNextEvidence:row.nextEvidence,observationReviewKey:null,observationExample:ex.id,observationSubject:ex.id==='field'?row.subject:'',observationAnswers:row.path.map(function(st){return st.answer;}),observationNote:row.note,observationPreviousId:row.id,observationReason:'',observationNotice:'Revise the evidence above, then explain what changed.'});document.getElementById('oid-observation-note').focus();}));
           }):h('p',null,'No observations yet. Save your first evidence note above.'))
       );
     }
@@ -1025,7 +1101,8 @@
       }
     ],
     testHooks: {
-      observationRoute: observationRoute, observationJournal: observationJournal, observationMarkdown: observationMarkdown,
+      observationEvidenceReview:observationEvidenceReview, observationExampleId:observationExampleId,
+      observationRoute: observationRoute, compareObservations: compareObservations, observationJournal: observationJournal, observationMarkdown: observationMarkdown,
       photoIdEnabled: function () { return PHOTO_ID_ENABLED; },
       tierOrder: TIER_ORDER.slice(),
       rankLadder: RANK_LADDER.slice(),

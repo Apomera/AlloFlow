@@ -1,0 +1,690 @@
+{
+  "measuredAt": "2026-09-19T23:33:17.988Z",
+  "policy": "20260910-1",
+  "sourceSha256": "e871a239de9b08e3217e3c9166c8f367f34073787dc81193a4f2fb71c05db3a1",
+  "sourceUnchanged": true,
+  "browserVersion": "148.0.7778.96",
+  "scope": "Strict source gate, actual aiFixChunked with mocked model transport, native Chromium validation and accessibility tree; no downstream export or human screen-reader claim.",
+  "results": [
+    {
+      "id": "form-validation-disabled",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form><label for=\"answer\">Required response</label><input id=\"answer\" required><button type=\"submit\">Submit response</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form novalidate><label for=\"answer\">Required response</label><input id=\"answer\" required><button type=\"submit\">Submit response</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0121145374449338,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "deferredChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "native": {
+        "source": {
+          "behavior": {
+            "valid": false,
+            "submissions": 0,
+            "noValidate": false,
+            "submitterNoValidate": false
+          },
+          "sliders": [],
+          "aria": "- main:\n  - text: Required response\n  - textbox \"Required response\"\n  - button \"Submit response\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+        },
+        "candidate": {
+          "behavior": {
+            "valid": false,
+            "submissions": 1,
+            "noValidate": true,
+            "submitterNoValidate": false
+          },
+          "sliders": [],
+          "aria": "- main:\n  - text: Required response\n  - textbox \"Required response\"\n  - button \"Submit response\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+        }
+      }
+    },
+    {
+      "id": "submit-validation-disabled",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form><label for=\"answer\">Required response</label><input id=\"answer\" required><button type=\"submit\">Submit response</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form><label for=\"answer\">Required response</label><input id=\"answer\" required><button formnovalidate type=\"submit\">Submit response</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0165198237885462,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "deferredChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "native": {
+        "source": {
+          "behavior": {
+            "valid": false,
+            "submissions": 0,
+            "noValidate": false,
+            "submitterNoValidate": false
+          },
+          "sliders": [],
+          "aria": "- main:\n  - text: Required response\n  - textbox \"Required response\"\n  - button \"Submit response\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+        },
+        "candidate": {
+          "behavior": {
+            "valid": false,
+            "submissions": 1,
+            "noValidate": false,
+            "submitterNoValidate": true
+          },
+          "sliders": [],
+          "aria": "- main:\n  - text: Required response\n  - textbox \"Required response\"\n  - button \"Submit response\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+        }
+      }
+    },
+    {
+      "id": "slider-spoken-value-changed",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><label for=\"temperature\">Temperature</label><input id=\"temperature\" type=\"range\" min=\"0\" max=\"100\" value=\"50\" aria-valuetext=\"Warm\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><label for=\"temperature\">Temperature</label><input id=\"temperature\" type=\"range\" min=\"0\" max=\"100\" value=\"50\" aria-valuetext=\"Cold\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "deferredChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "native": {
+        "source": {
+          "behavior": null,
+          "sliders": [
+            {
+              "name": {
+                "type": "computedString",
+                "value": "Temperature",
+                "sources": [
+                  {
+                    "type": "relatedElement",
+                    "attribute": "aria-labelledby"
+                  },
+                  {
+                    "type": "attribute",
+                    "attribute": "aria-label"
+                  },
+                  {
+                    "type": "relatedElement",
+                    "value": {
+                      "type": "computedString",
+                      "value": "Temperature"
+                    },
+                    "nativeSource": "labelfor",
+                    "nativeSourceValue": {
+                      "type": "nodeList",
+                      "relatedNodes": [
+                        {
+                          "backendDOMNodeId": 6,
+                          "text": "Temperature"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "attribute",
+                    "attribute": "title",
+                    "superseded": true
+                  }
+                ]
+              },
+              "value": {
+                "type": "number",
+                "value": 50
+              },
+              "properties": [
+                {
+                  "name": "invalid",
+                  "value": {
+                    "type": "token",
+                    "value": "false"
+                  }
+                },
+                {
+                  "name": "focusable",
+                  "value": {
+                    "type": "booleanOrUndefined",
+                    "value": true
+                  }
+                },
+                {
+                  "name": "settable",
+                  "value": {
+                    "type": "booleanOrUndefined",
+                    "value": true
+                  }
+                },
+                {
+                  "name": "orientation",
+                  "value": {
+                    "type": "token",
+                    "value": "horizontal"
+                  }
+                },
+                {
+                  "name": "valuemin",
+                  "value": {
+                    "type": "number",
+                    "value": 0
+                  }
+                },
+                {
+                  "name": "valuemax",
+                  "value": {
+                    "type": "number",
+                    "value": 100
+                  }
+                },
+                {
+                  "name": "valuetext",
+                  "value": {
+                    "type": "string",
+                    "value": "Warm"
+                  }
+                },
+                {
+                  "name": "labelledby",
+                  "value": {
+                    "type": "nodeList",
+                    "relatedNodes": [
+                      {
+                        "backendDOMNodeId": 6,
+                        "text": "Temperature"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "aria": "- main:\n  - text: Temperature\n  - slider \"Temperature\": \"50\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+        },
+        "candidate": {
+          "behavior": null,
+          "sliders": [
+            {
+              "name": {
+                "type": "computedString",
+                "value": "Temperature",
+                "sources": [
+                  {
+                    "type": "relatedElement",
+                    "attribute": "aria-labelledby"
+                  },
+                  {
+                    "type": "attribute",
+                    "attribute": "aria-label"
+                  },
+                  {
+                    "type": "relatedElement",
+                    "value": {
+                      "type": "computedString",
+                      "value": "Temperature"
+                    },
+                    "nativeSource": "labelfor",
+                    "nativeSourceValue": {
+                      "type": "nodeList",
+                      "relatedNodes": [
+                        {
+                          "backendDOMNodeId": 6,
+                          "text": "Temperature"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "attribute",
+                    "attribute": "title",
+                    "superseded": true
+                  }
+                ]
+              },
+              "value": {
+                "type": "number",
+                "value": 50
+              },
+              "properties": [
+                {
+                  "name": "invalid",
+                  "value": {
+                    "type": "token",
+                    "value": "false"
+                  }
+                },
+                {
+                  "name": "focusable",
+                  "value": {
+                    "type": "booleanOrUndefined",
+                    "value": true
+                  }
+                },
+                {
+                  "name": "settable",
+                  "value": {
+                    "type": "booleanOrUndefined",
+                    "value": true
+                  }
+                },
+                {
+                  "name": "orientation",
+                  "value": {
+                    "type": "token",
+                    "value": "horizontal"
+                  }
+                },
+                {
+                  "name": "valuemin",
+                  "value": {
+                    "type": "number",
+                    "value": 0
+                  }
+                },
+                {
+                  "name": "valuemax",
+                  "value": {
+                    "type": "number",
+                    "value": 100
+                  }
+                },
+                {
+                  "name": "valuetext",
+                  "value": {
+                    "type": "string",
+                    "value": "Cold"
+                  }
+                },
+                {
+                  "name": "labelledby",
+                  "value": {
+                    "type": "nodeList",
+                    "relatedNodes": [
+                      {
+                        "backendDOMNodeId": 6,
+                        "text": "Temperature"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "aria": "- main:\n  - text: Temperature\n  - slider \"Temperature\": \"50\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+        }
+      }
+    },
+    {
+      "id": "form-wrapper-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form><label for=\"answer\">Required response</label><input id=\"answer\" required><button type=\"submit\">Submit response</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><div><form><label for=\"answer\">Required response</label><input id=\"answer\" required><button type=\"submit\">Submit response</button></form></div><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0121145374449338,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "deferredChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "native": {
+        "source": {
+          "behavior": {
+            "valid": false,
+            "submissions": 0,
+            "noValidate": false,
+            "submitterNoValidate": false
+          },
+          "sliders": [],
+          "aria": "- main:\n  - text: Required response\n  - textbox \"Required response\"\n  - button \"Submit response\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+        },
+        "candidate": {
+          "behavior": {
+            "valid": false,
+            "submissions": 0,
+            "noValidate": false,
+            "submitterNoValidate": false
+          },
+          "sliders": [],
+          "aria": "- main:\n  - text: Required response\n  - textbox \"Required response\"\n  - button \"Submit response\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+        }
+      }
+    },
+    {
+      "id": "unchanged-validation-bypass-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form novalidate><label for=\"answer\">Required response</label><input id=\"answer\" required><button type=\"submit\">Submit response</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><div><form novalidate><label for=\"answer\">Required response</label><input id=\"answer\" required><button type=\"submit\">Submit response</button></form></div><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0119695321001088,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "deferredChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "native": {
+        "source": {
+          "behavior": {
+            "valid": false,
+            "submissions": 1,
+            "noValidate": true,
+            "submitterNoValidate": false
+          },
+          "sliders": [],
+          "aria": "- main:\n  - text: Required response\n  - textbox \"Required response\"\n  - button \"Submit response\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+        },
+        "candidate": {
+          "behavior": {
+            "valid": false,
+            "submissions": 1,
+            "noValidate": true,
+            "submitterNoValidate": false
+          },
+          "sliders": [],
+          "aria": "- main:\n  - text: Required response\n  - textbox \"Required response\"\n  - button \"Submit response\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+        }
+      }
+    },
+    {
+      "id": "slider-wrapper-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><label for=\"temperature\">Temperature</label><input id=\"temperature\" type=\"range\" min=\"0\" max=\"100\" value=\"50\" aria-valuetext=\"Warm\"><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><label for=\"temperature\">Temperature</label><span><input id=\"temperature\" type=\"range\" min=\"0\" max=\"100\" value=\"50\" aria-valuetext=\"Warm\"></span><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0143171806167401,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "deferredChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "native": {
+        "source": {
+          "behavior": null,
+          "sliders": [
+            {
+              "name": {
+                "type": "computedString",
+                "value": "Temperature",
+                "sources": [
+                  {
+                    "type": "relatedElement",
+                    "attribute": "aria-labelledby"
+                  },
+                  {
+                    "type": "attribute",
+                    "attribute": "aria-label"
+                  },
+                  {
+                    "type": "relatedElement",
+                    "value": {
+                      "type": "computedString",
+                      "value": "Temperature"
+                    },
+                    "nativeSource": "labelfor",
+                    "nativeSourceValue": {
+                      "type": "nodeList",
+                      "relatedNodes": [
+                        {
+                          "backendDOMNodeId": 6,
+                          "text": "Temperature"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "attribute",
+                    "attribute": "title",
+                    "superseded": true
+                  }
+                ]
+              },
+              "value": {
+                "type": "number",
+                "value": 50
+              },
+              "properties": [
+                {
+                  "name": "invalid",
+                  "value": {
+                    "type": "token",
+                    "value": "false"
+                  }
+                },
+                {
+                  "name": "focusable",
+                  "value": {
+                    "type": "booleanOrUndefined",
+                    "value": true
+                  }
+                },
+                {
+                  "name": "settable",
+                  "value": {
+                    "type": "booleanOrUndefined",
+                    "value": true
+                  }
+                },
+                {
+                  "name": "orientation",
+                  "value": {
+                    "type": "token",
+                    "value": "horizontal"
+                  }
+                },
+                {
+                  "name": "valuemin",
+                  "value": {
+                    "type": "number",
+                    "value": 0
+                  }
+                },
+                {
+                  "name": "valuemax",
+                  "value": {
+                    "type": "number",
+                    "value": 100
+                  }
+                },
+                {
+                  "name": "valuetext",
+                  "value": {
+                    "type": "string",
+                    "value": "Warm"
+                  }
+                },
+                {
+                  "name": "labelledby",
+                  "value": {
+                    "type": "nodeList",
+                    "relatedNodes": [
+                      {
+                        "backendDOMNodeId": 6,
+                        "text": "Temperature"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "aria": "- main:\n  - text: Temperature\n  - slider \"Temperature\": \"50\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+        },
+        "candidate": {
+          "behavior": null,
+          "sliders": [
+            {
+              "name": {
+                "type": "computedString",
+                "value": "Temperature",
+                "sources": [
+                  {
+                    "type": "relatedElement",
+                    "attribute": "aria-labelledby"
+                  },
+                  {
+                    "type": "attribute",
+                    "attribute": "aria-label"
+                  },
+                  {
+                    "type": "relatedElement",
+                    "value": {
+                      "type": "computedString",
+                      "value": "Temperature"
+                    },
+                    "nativeSource": "labelfor",
+                    "nativeSourceValue": {
+                      "type": "nodeList",
+                      "relatedNodes": [
+                        {
+                          "backendDOMNodeId": 6,
+                          "text": "Temperature"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "attribute",
+                    "attribute": "title",
+                    "superseded": true
+                  }
+                ]
+              },
+              "value": {
+                "type": "number",
+                "value": 50
+              },
+              "properties": [
+                {
+                  "name": "invalid",
+                  "value": {
+                    "type": "token",
+                    "value": "false"
+                  }
+                },
+                {
+                  "name": "focusable",
+                  "value": {
+                    "type": "booleanOrUndefined",
+                    "value": true
+                  }
+                },
+                {
+                  "name": "settable",
+                  "value": {
+                    "type": "booleanOrUndefined",
+                    "value": true
+                  }
+                },
+                {
+                  "name": "orientation",
+                  "value": {
+                    "type": "token",
+                    "value": "horizontal"
+                  }
+                },
+                {
+                  "name": "valuemin",
+                  "value": {
+                    "type": "number",
+                    "value": 0
+                  }
+                },
+                {
+                  "name": "valuemax",
+                  "value": {
+                    "type": "number",
+                    "value": 100
+                  }
+                },
+                {
+                  "name": "valuetext",
+                  "value": {
+                    "type": "string",
+                    "value": "Warm"
+                  }
+                },
+                {
+                  "name": "labelledby",
+                  "value": {
+                    "type": "nodeList",
+                    "relatedNodes": [
+                      {
+                        "backendDOMNodeId": 6,
+                        "text": "Temperature"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "aria": "- main:\n  - text: Temperature\n  - slider \"Temperature\": \"50\"\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook.\n  - paragraph: Read the original instructions carefully and record observations in your notebook."
+        }
+      }
+    }
+  ]
+}

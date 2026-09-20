@@ -16,7 +16,8 @@
       }
     ],
     "reviewStatus": "AI content and structural checks; educator review pending",
-    "imageStatus": "planned-not-generated"
+    "imageStatus": "planned-not-generated",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Likely Is Not Certain — Probability Models",
   "history": [
@@ -218,16 +219,16 @@
         "mode": "list",
         "items": [
           {
-            "text": "I notice ____. This matters because ____."
+            "text": "Our model gives red a probability of ____ because ____."
           },
           {
-            "text": "I compared ____ with ____. They differ because ____."
+            "text": "We returned and mixed each counter so ____."
           },
           {
-            "text": "My evidence is ____. It supports ____."
+            "text": "In ____ trials, red appeared ____ times. Its relative frequency was ____."
           },
           {
-            "text": "At first I thought ____. Now I think ____ because ____."
+            "text": "The trial results differ from the model by ____. This does not guarantee that ____."
           }
         ],
         "rubric": "| Look for | Check |\n|---|---|\n| Names the idea | Uses a lesson word correctly |\n| Gives support | Points to an observation or worked example |"
@@ -360,7 +361,7 @@
               "Probability is between zero and one."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "aiExample": "Say this cue: STATE THE MODEL. Then explain: List the outcomes.",
             "mapping": "The cue connects the key idea to a specific example: Probability is between zero and one.",
             "scaffoldStarter": "My cue is ____. It helps me remember ____.",
@@ -387,7 +388,7 @@
               "Equal chances for counters do not imply equal chances for colors."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "aiExample": "Picture this: Say whether each counter is returned. Mix before another draw. Do not look when selecting. Use the picture to explain the idea.",
             "mapping": "The cue connects the key idea to a specific example: Equal chances for counters do not imply equal chances for colors.",
             "scaffoldStarter": "My cue is ____. It helps me remember ____.",
@@ -471,13 +472,13 @@
           ],
           "deliverable": "Report model probability, counts, relative frequencies, and an explanation of variation without claiming a guaranteed pattern.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {
-            "context": "A classmate checks a related claim from this lesson.",
-            "move": "They use the lesson rule: Probability is between zero and one. They record an example, then check whether it supports the claim.",
-            "whyItHelps": "A clear example helps another person check the reasoning instead of trusting a guess."
+            "context": "A different bag has two green and two yellow counters of the same size and shape.",
+            "move": "Assuming each counter is equally likely, green has probability 2/4. Compare that model with repeated draws, replacing and mixing each counter. A set of trials need not be exactly half green.",
+            "whyItHelps": "It separates a model probability from an observed relative frequency. Use the same distinction for your three-blue, one-red bag."
           },
           "frameStarter": "Our evidence is ____. It supports ____. A limit is ____.",
           "frameChoices": [

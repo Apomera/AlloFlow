@@ -1715,10 +1715,10 @@ window.StemLab = window.StemLab || {
 
     // Fixed curved guides show the direction of rotation; the straight effort
     // arrow follows the grip tangent. Neither cue represents a force magnitude.
-    function turnGuide(radius, x, y, z, horizontal) {
-      var group = new THREE.Group(), points = [], end = Math.PI * 1.25;
+    function turnGuide(radius, x, y, z, horizontal, start) {
+      var group = new THREE.Group(), points = [], end = start + Math.PI * 2 - 0.32;
       for (var step = 0; step <= 60; step++) {
-        var angle = end * step / 60;
+        var angle = start + (end - start) * step / 60;
         points.push(horizontal
           ? new THREE.Vector3(radius * Math.cos(angle), 0, -radius * Math.sin(angle))
           : new THREE.Vector3(radius * Math.cos(angle), radius * Math.sin(angle), 0));
@@ -1730,7 +1730,31 @@ window.StemLab = window.StemLab || {
       head.position.copy(points[points.length - 1]).addScaledVector(direction, 0.1);
       head.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
       group.add(head); group.position.set(x, y, z); S.model.add(group);
-      group.userData.mlRadius = radius; group.userData.mlHorizontal = horizontal;
+      group.userData.mlRadius = radius; group.userData.mlHorizontal = horizontal; group.userData.mlStartAngle = start;
+      // Four equal angle marks remain fixed while the solid cursor follows the grip.
+      var marks = [];
+      for (var quarter = 0; quarter < 4; quarter++) {
+        var a = start + quarter * Math.PI / 2;
+        var mark = box(quarter ? 0.16 : 0.22, 0.035, 0.035,
+          radius * Math.cos(a), horizontal ? 0 : radius * Math.sin(a), horizontal ? -radius * Math.sin(a) : 0,
+          C.metal, group, horizontal ? 0 : a);
+        if (horizontal) mark.rotation.y = a;
+        marks.push(mark);
+      }
+      var origin = torus(0.115, 0.018, radius * Math.cos(start), horizontal ? 0 : radius * Math.sin(start),
+        horizontal ? -radius * Math.sin(start) : 0, C.metal, horizontal ? 'y' : 'z', group);
+      var cursor = new THREE.Mesh(new THREE.OctahedronGeometry(0.075, 0), new THREE.MeshBasicMaterial({ color: C.effort }));
+      var cursorEdge = new THREE.Mesh(cursor.geometry, new THREE.MeshBasicMaterial({
+        color: contrast || dark ? 0x07111f : 0xffffff, side: THREE.BackSide
+      }));
+      cursorEdge.scale.setScalar(1.3); cursor.add(cursorEdge);
+      group.add(cursor);
+      group.userData.mlQuarterMarks = marks; group.userData.mlOrigin = origin; group.userData.mlCursor = cursor;
+      group.userData.mlSetProgress = function (progress) {
+        var a = start + Math.PI * 2 * progress;
+        cursor.position.set(radius * Math.cos(a), horizontal ? 0 : radius * Math.sin(a), horizontal ? -radius * Math.sin(a) : 0);
+      };
+      group.userData.mlSetProgress(0);
       return group;
     }
 
@@ -1817,6 +1841,10 @@ window.StemLab = window.StemLab || {
     var effortTrack = box(cueValid ? effortRail : 1, 0.022, 0.025, railStart + effortRail / 2, 0.411, effortZ, C.effort);
     var loadTrack = box(cueValid ? loadRail : 1, 0.022, 0.025, railStart + loadRail / 2, 0.411, loadZ, C.load);
     effortTrack.visible = loadTrack.visible = cueValid;
+    // Fixed end caps mark the full stroke; they never change the shared distance scale.
+    var effortEndCap = box(0.025, 0.022, 0.22, railStart + effortRail, 0.411, effortZ, C.effort);
+    var loadEndCap = box(0.025, 0.022, 0.22, railStart + loadRail, 0.411, loadZ, C.load);
+    effortEndCap.visible = loadEndCap.visible = cueValid;
     // Thin rails show the complete stroke; wider fills show only the distance
     // already traveled. Both fills stay anchored to the shared zero.
     var effortFill = box(cueValid ? effortRail : 1, 0.012, 0.125, railStart, 0.42, effortZ, C.effort);
@@ -1827,6 +1855,12 @@ window.StemLab = window.StemLab || {
     effortDot.position.set(railStart, 0.57, effortZ); effortDot.visible = cueValid; S.model.add(effortDot);
     var loadDot = finishMesh(new THREE.Mesh(new THREE.TorusGeometry(0.085, 0.023, 8, 24), mat(C.load, true)), false);
     loadDot.position.set(railStart, 0.57, loadZ); loadDot.visible = cueValid; S.model.add(loadDot);
+    // Inverted shells add a dark silhouette against the bright track bed while
+    // preserving the open centre of the load ring and each marker's position.
+    var markerEdgeMaterial = new THREE.MeshBasicMaterial({ color: 0x07111f, side: THREE.BackSide });
+    var effortEdge = new THREE.Mesh(new THREE.OctahedronGeometry(0.097, 0), markerEdgeMaterial);
+    var loadEdge = new THREE.Mesh(new THREE.TorusGeometry(0.085, 0.028, 8, 24), markerEdgeMaterial);
+    effortDot.add(effortEdge); loadDot.add(loadEdge);
     // The host positions its camera after tick(). Orient at render time so a
     // parked scene also updates the ring on the first frame of a camera change.
     loadDot.onBeforeRender = function (renderer, scene, camera) {
@@ -1838,6 +1872,7 @@ window.StemLab = window.StemLab || {
       loadStartX: railStart, loadEndX: railStart + loadRail,
       distanceValid: cueValid, effortTrack: effortTrack, loadTrack: loadTrack,
       effortFill: effortFill, loadFill: loadFill,
+      effortEndCap: effortEndCap, loadEndCap: loadEndCap, effortEdge: effortEdge, loadEdge: loadEdge,
       lamps: roomLamps, beacons: roomBeacons, room: workshopRoom
     };
     function makeMotionTrail(color, startX, z) {
@@ -1964,6 +1999,44 @@ window.StemLab = window.StemLab || {
       var pulleyLoad = box(1.15, 0.6, 0.85, 0, 0.63, 0, C.load, pulleyMotion);
       var freeRope = cylinder(0.027, freeSpan, freeX, (pulleyTop + gripY) / 2, 0, C.rope, 'y');
       var pullGrip = cylinder(0.08, 0.36, freeX, gripY, 0, C.effort, 'x');
+      // Painted bands follow fixed material distances from the anchored end.
+      // Supporting strands shorten as the free strand grows; bands feed around
+      // each turn instead of stretching with a cylinder or sliding off its ends.
+      var ropeLength = segs * (ropeSpan + Math.PI * pulleyRadius) + freeSpan;
+      var bandCount = Math.min(32, Math.ceil(ropeLength / 0.5));
+      var bandGeometry = new THREE.CylinderGeometry(0.034, 0.034, 0.13, 10);
+      var bandMaterial = new THREE.MeshBasicMaterial({ color: contrast ? 0x000000 : dark ? 0x263548 : 0xffffff });
+      var ropeBands = [];
+      for (var bandIndex = 0; bandIndex < bandCount; bandIndex++) {
+        var bandMesh = new THREE.Mesh(bandGeometry, bandMaterial);
+        S.model.add(bandMesh);
+        ropeBands.push({ mesh: bandMesh, distance: ropeLength * (bandIndex + 0.5) / bandCount });
+      }
+      demo.ropeBands = ropeBands; demo.ropeMaterialLength = ropeLength;
+      demo.updateRopeBands = function (lift) {
+        var span = ropeSpan - lift, arcLength = Math.PI * pulleyRadius;
+        ropeBands.forEach(function (band) {
+          var remaining = band.distance, mesh = band.mesh;
+          for (var strand = 0; strand < segs; strand++) {
+            var moving = (segs - strand) % 2 === 0;
+            var sx = ropeStartX + strand * strandSpacing;
+            if (remaining <= span) {
+              mesh.position.set(sx, moving ? pulleyTop - remaining : pulleyBottom + lift + remaining, 0);
+              mesh.rotation.z = 0; return;
+            }
+            remaining -= span;
+            if (remaining <= arcLength) {
+              var direction = moving ? 1 : -1;
+              var theta = Math.PI + direction * remaining / pulleyRadius;
+              mesh.position.set(sx + pulleyRadius + pulleyRadius * Math.cos(theta),
+                (moving ? pulleyBottom + lift : pulleyTop) + pulleyRadius * Math.sin(theta), 0);
+              mesh.rotation.z = theta; return;
+            }
+            remaining -= arcLength;
+          }
+          mesh.position.set(freeX, pulleyTop - remaining, 0); mesh.rotation.z = 0;
+        });
+      };
       demo.motion = pulleyMotion; demo.supportingRopes = supportingRopes; demo.supportCues = supportCues;
       demo.ropeArcs = ropeArcs; demo.pulleyWheels = pulleyWheels; demo.ropeAnchor = ropeAnchor; demo.pulleyLoad = pulleyLoad;
       demo.pulleyTop = pulleyTop; demo.pulleyBottom = pulleyBottom; demo.ropeSpan = ropeSpan;
@@ -2026,7 +2099,7 @@ window.StemLab = window.StemLab || {
       demo.motion=wheelMotion;demo.drum=windlassDrum;demo.load=windlassLoad;demo.loadY=loadY;demo.hangingRope=hangingRope;
       demo.axleY=axleY;demo.ropeLength=ropeLength;demo.winding=winding;
       demo.wheelGrip = wheelGrip; demo.wheelRadius = wheelR;
-      demo.turnGuide = turnGuide(wheelR + 0.28, 0, axleY, 1.97, false);
+      demo.turnGuide = turnGuide(wheelR + 0.16, 0, axleY, 1.97, false, 0.58);
       demo.effortArrow = arrow(0, axleY, 0.55, C.effort);
       demo.loadArrow = arrow(ropeRadius + 0.64, loadY - 0.14, 0.42, C.load, 'up');
     } else if (id === 'ramp') {
@@ -2217,7 +2290,7 @@ window.StemLab = window.StemLab || {
       demo.pressShoe=pressShoe;demo.pressBaseY=0.43;
       demo.motion = screwMotion;
       demo.screwGrip = screwGrip; demo.handleHalfWidth = handleW / 2;
-      demo.turnGuide = turnGuide(handleW / 2 + 0.32, 0, 3.94, 0, true);
+      demo.turnGuide = turnGuide(handleW / 2 + 0.32, 0, 3.94, 0, true, Math.PI);
       demo.effortArrow = arrow(0, 3.7, 0.5, C.effort);
       demo.loadArrow = arrow(0.9, 1.38, 0.38, C.load);
     }
@@ -2231,6 +2304,7 @@ window.StemLab = window.StemLab || {
     if (id === 'lever') {
       S.fitPts.push(new THREE.Vector3(-eVis - 0.5, 0.28, 0), new THREE.Vector3(lVis + 0.5, 3.7, 0));
     }
+    demo.roomTarget = S.target.clone(); demo.roomFitPts = S.fitPts;
     // Freeze the original load geometry in model space, including parent
     // rotation (lever), incline (ramp), and both timber halves (wedge).
     S.model.updateMatrixWorld(true);
@@ -2290,7 +2364,33 @@ window.StemLab = window.StemLab || {
       var inspecting = !active && finite(data.motionProgress);
       var k = inspecting ? Math.max(0, Math.min(1, data.motionProgress)) : wave * wave * (3 - 2 * wave);
       var D = S.mlDemo || {};
+      // Publish the rendered travel, not elapsed time: holding a pose must not jump.
+      var phase = active ? (reducedMotion ? 'held' : elapsed > demoSeconds / 2 ? 'return' : 'work') : inspecting ? 'held' : 'idle';
+      if (typeof data.onPose === 'function') data.onPose(k, active, D.kind, phase);
       if (D.room) D.room.visible = !data.focusMechanism;
+      if (D.focusFitPts) {
+        if (data.focusMechanism) {
+          // Centre the projected envelope, accounting for nearer points taking
+          // more screen space. A world-box midpoint leaves empty space above the bed.
+          var yaw = (data.rotY || 0) * Math.PI / 180, pitch = (data.rotX || 0) * Math.PI / 180;
+          var dir = D.focusDir.set(Math.cos(pitch) * Math.sin(yaw), Math.sin(pitch), Math.cos(pitch) * Math.cos(yaw));
+          var right = D.focusRight.set(Math.cos(yaw), 0, -Math.sin(yaw));
+          var up = D.focusUp.crossVectors(dir, right);
+          var canvas = S.renderer && S.renderer.domElement;
+          var aspect = canvas && canvas.clientHeight ? canvas.clientWidth / canvas.clientHeight : S.camera ? S.camera.aspect : 1;
+          var tanV = Math.tan((S.camera ? S.camera.fov : 42) * Math.PI / 360), tanH = tanV * Math.max(0.2, aspect);
+          var rPlus = -Infinity, rMinus = Infinity, uPlus = -Infinity, uMinus = Infinity;
+          for (var fi = 0; fi < D.focusFitPts.length; fi++) {
+            var point = D.focusFitPts[fi], depth = point.dot(dir), r = point.dot(right), u = point.dot(up);
+            rPlus = Math.max(rPlus, r + tanH * depth); rMinus = Math.min(rMinus, r - tanH * depth);
+            uPlus = Math.max(uPlus, u + tanV * depth); uMinus = Math.min(uMinus, u - tanV * depth);
+          }
+          D.focusTarget.copy(dir).multiplyScalar(D.focusCenter.dot(dir))
+            .addScaledVector(right, (rPlus + rMinus) / 2).addScaledVector(up, (uPlus + uMinus) / 2);
+        }
+        S.target.copy(data.focusMechanism ? D.focusTarget : D.roomTarget);
+        S.fitPts = data.focusMechanism ? D.focusFitPts : D.roomFitPts;
+      }
       if (D.startOutlines) D.startOutlines.forEach(function (outline) {
         outline.visible = !!data.startOutline && k > 0;
       });
@@ -2321,6 +2421,7 @@ window.StemLab = window.StemLab || {
         D.freeRope.position.y = (D.pulleyTop + D.gripY - pulled) / 2;
         D.pullGrip.position.y = D.gripY - pulled;
         D.pulleyWheels.forEach(function (wheel) { wheel.mesh.rotation.z = wheel.turnPerLift * pulleyLift; });
+        if (D.updateRopeBands) D.updateRopeBands(pulleyLift);
       }
       if (D.kind === 'windlass') {
         if (D.motion) D.motion.rotation.z = Math.PI * 2 * k;
@@ -2389,6 +2490,7 @@ window.StemLab = window.StemLab || {
         D.rampTravelCursor.position.x = 1.45 * k;
       }
       if (D.kind === 'windlass' || D.kind === 'screw') {
+        D.turnGuide.userData.mlSetProgress(k);
         var turn = Math.PI * 2 * k, tangent, grip;
         if (D.kind === 'windlass') {
           var gripAngle = turn + 0.58;
@@ -2438,6 +2540,56 @@ window.StemLab = window.StemLab || {
         // Camera-facing orientation is applied by onBeforeRender above.
       }
     };
+    // Compute one stable envelope for the complete stroke, once per build.
+    // Room geometry is excluded; the bed, force cues and distance tracks stay in frame.
+    // Sampling a full rotation plus a margin covers intermediate grip positions.
+    var focusBounds = new THREE.Box3(), partBounds = new THREE.Box3();
+    var focusParts = [], focusPartBounds = [];
+    S.model.traverse(function (part) {
+      if (!part.isMesh || !part.geometry) return;
+      for (var parent = part; parent; parent = parent.parent) if (parent === workshopRoom) return;
+      if (!part.geometry.boundingBox) part.geometry.computeBoundingBox();
+      focusParts.push(part); focusPartBounds.push(new THREE.Box3());
+    });
+    var savedData = S.data;
+    S.data = { demoId: 0, motionProgress: 0, focusMechanism: true };
+    for (var sample = 0; sample <= 16; sample++) {
+      S.data.motionProgress = sample / 16; S.tick(0); S.model.updateMatrixWorld(true);
+      for (var fp = 0; fp < focusParts.length; fp++) {
+        var part = focusParts[fp];
+        partBounds.copy(part.geometry.boundingBox).applyMatrix4(part.matrixWorld);
+        focusBounds.union(partBounds); focusPartBounds[fp].union(partBounds);
+      }
+    }
+    S.data = { demoId: 0, motionProgress: 0 }; S.tick(0); S.data = savedData;
+    demo.focusTarget = focusBounds.getCenter(new THREE.Vector3());
+    demo.focusCenter = demo.focusTarget.clone();
+    demo.focusDir = new THREE.Vector3(); demo.focusRight = new THREE.Vector3(); demo.focusUp = new THREE.Vector3();
+    // Keep local occupied regions instead of inventing the empty upper corners
+    // of one large box. At most 27 small boxes give the host a bounded fit cost.
+    var cells = [], span = focusBounds.getSize(new THREE.Vector3()), corner = new THREE.Vector3();
+    function corners(bounds, visit) {
+      [bounds.min.x, bounds.max.x].forEach(function (x) {
+        [bounds.min.y, bounds.max.y].forEach(function (y) {
+          [bounds.min.z, bounds.max.z].forEach(function (z) { visit(x, y, z); });
+        });
+      });
+    }
+    focusPartBounds.forEach(function (bounds) {
+      corners(bounds, function (x, y, z) {
+        var ix = Math.min(2, Math.floor(3 * (x - focusBounds.min.x) / Math.max(span.x, 0.001)));
+        var iy = Math.min(2, Math.floor(3 * (y - focusBounds.min.y) / Math.max(span.y, 0.001)));
+        var iz = Math.min(2, Math.floor(3 * (z - focusBounds.min.z) / Math.max(span.z, 0.001)));
+        var index = ix + iy * 3 + iz * 9;
+        if (!cells[index]) cells[index] = new THREE.Box3();
+        cells[index].expandByPoint(corner.set(x, y, z));
+      });
+    });
+    demo.focusFitPts = [];
+    cells.forEach(function (bounds) {
+      bounds.expandByScalar(0.14);
+      corners(bounds, function (x, y, z) { demo.focusFitPts.push(new THREE.Vector3(x, y, z)); });
+    });
   }
 
   function dressTorsionBundle(THREE, bundle, radius, height, contrast) {
@@ -3390,6 +3542,10 @@ window.StemLab = window.StemLab || {
   // Pointer-orbit state deliberately lives beside the singleton viewer. React
   // may re-render several times during a drag, but the physical gesture should
   // remain continuous across those renders.
+  var SHOP_POSE = { progress: 0, runId: 0, kind: null, phase: 'idle' };
+  function recordShopPose(progress, runId, kind, phase) {
+    SHOP_POSE.progress = progress; SHOP_POSE.runId = runId; SHOP_POSE.kind = kind; SHOP_POSE.phase = phase || 'idle';
+  }
   var SHOP_DRAG = null;
   var RANGE_DRAG = null;
   var MACHINE_DRAG = null;
@@ -7094,7 +7250,7 @@ window.StemLab = window.StemLab || {
       // k2 and g35 answer by choosing; g68 and g912 type a force in newtons.
       var isChoiceBand = (band === 'k2');
 
-      function markProven(xp, message) {
+      function markProven(xp, message, showCalculation) {
         var nextProven = Object.assign({}, d.provenBenches || {});
         var firstTime = !nextProven[bench.id];
         nextProven[bench.id] = true;
@@ -7103,7 +7259,7 @@ window.StemLab = window.StemLab || {
         updMulti({
           provenBenches: nextProven,
           benchStreak: (d.benchStreak || 0) + 1,
-          benchResult: { ok: true, message: message }
+          benchResult: { ok: true, message: message, showCalculation: !!showCalculation }
         });
         if (firstTime) { awardStemXP(xp); }
         if (completedSet) {
@@ -7114,8 +7270,8 @@ window.StemLab = window.StemLab || {
         announceToSR(message);
       }
 
-      function markWrong(message) {
-        updMulti({ benchStreak: 0, benchResult: { ok: false, message: message } });
+      function markWrong(message, showCalculation) {
+        updMulti({ benchStreak: 0, benchResult: { ok: false, message: message, showCalculation: !!showCalculation } });
         announceToSR(message);
       }
 
@@ -7139,9 +7295,9 @@ window.StemLab = window.StemLab || {
           return;
         }
         if (_machineMath.withinTolerance(guess, effort, 0.05)) {
-          markProven(15, __alloT('stem.machinelab.correct_force', 'Correct. The effort force is ') + fmt(effort, 1) + ' N.');
+          markProven(15, __alloT('stem.machinelab.correct_force', 'Correct. The effort force is ') + fmt(effort, 1) + ' N.', true);
         } else {
-          markWrong(__alloT('stem.machinelab.off_by', 'Not yet. The effort force is ') + fmt(effort, 1) + ' N. Try load divided by MA.');
+          markWrong(__alloT('stem.machinelab.off_by', 'Not yet. The effort force is ') + fmt(effort, 1) + ' N. Try load divided by MA.', true);
         }
       }
 
@@ -7295,28 +7451,216 @@ window.StemLab = window.StemLab || {
         ]);
       }
 
+      function stationReferenceSettings() { return bench.controls.concat([{ key: 'loadDistance', label: __alloT('stem.machinelab.lift_distance', 'Load moves'), min: 0.1, max: 3, unit: 'm' }]); }
+      function validStationSetup(setup) {
+        return setup && stationReferenceSettings().every(function (c) {
+          return finite(setup[c.key]) && setup[c.key] >= c.min && setup[c.key] <= c.max;
+        }) && pos(bench.ma(setup));
+      }
+      function savedStationReference() {
+        var saved = d.benchReferences && d.benchReferences[bench.id];
+        return validStationSetup(saved) ? saved : null;
+      }
+
       function slider(c) {
         var val = d[c.key];
         var id = 'ml-' + c.key;
-        return h('div', { key: c.key, style: { marginBottom: 10 } }, [
-          h('label', {
-            key: 'lb', htmlFor: id,
-            style: { display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 600, color: T.text, marginBottom: 4 }
-          }, [
-            h('span', { key: 'n' }, c.label),
-            h('span', { key: 'v', style: { color: T.accent, fontVariantNumeric: 'tabular-nums' } },
-              fmt(val, 3) + (c.unit ? ' ' + c.unit : ''))
-          ]),
-          h('input', {
-            key: 'in', id: id, type: 'range',
+        var station = !!c.station;
+        var reference = station && (band === 'g68' || band === 'g912') ? savedStationReference() : null;
+        var changedFromReference = !!reference && reference[c.key] !== val;
+        var referenceFill = reference ? 100 * (reference[c.key] - c.min) / (c.max - c.min) : 0;
+        var displayValue = fmt(val, 3) + (c.unit ? ' ' + c.unit : '');
+        var fill = finite(val) ? Math.max(0, Math.min(100, 100 * (val - c.min) / (c.max - c.min))) : 0;
+        var ticks = c.key === 'pulleySegments' ? [0, 0.2, 0.4, 0.6, 0.8, 1] : [0, 0.25, 0.5, 0.75, 1];
+        var range = h('input', {
+            key: 'in', id: id, type: 'range', className: station ? 'ml-station-range' : undefined,
             min: c.min, max: c.max, step: c.step, value: val,
-            'aria-label': c.label,
+            'aria-label': c.label, 'aria-valuetext': station ? displayValue : undefined,
+            'aria-describedby': reference ? id + '-reference' : undefined,
             onChange: function (e) {
               var n = _machineMath.parseNum(e.target.value);
               if (n !== null) { updMulti({ benchResult: null }); upd(c.key, n); }
             },
-            style: { width: '100%', accentColor: T.accent }
-          })
+            style: station ? { width: '100%', height: 44, margin: 0, cursor: 'pointer',
+              '--ml-setting-fill': fill + '%', '--ml-setting-ink': T.accent, '--ml-setting-rest': T.card, '--ml-setting-border': T.dim }
+              : { width: '100%', accentColor: T.accent }
+          });
+        return h('div', { key: c.key, className: station ? 'ml-station-control' : undefined,
+          'data-ml-setting-changed': reference ? String(changedFromReference) : undefined,
+          style: station ? { marginBottom: 10, padding: 10, borderRadius: 10, border: '1px solid ' + T.border, background: T.bg } : { marginBottom: 10 }
+        }, [
+          h('label', {
+            key: 'lb', htmlFor: id,
+            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, fontSize: 13, fontWeight: 600, color: T.text, marginBottom: 4 }
+          }, [
+            h('span', { key: 'n', style: { minWidth: 0 } }, c.label),
+            h('span', { key: 'v', 'data-ml-setting-value': station ? c.key : undefined,
+              style: station ? { color: T.accent, background: T.card, border: '1px solid ' + T.border, borderRadius: 6,
+                padding: '4px 7px', fontWeight: 800, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }
+                : { color: T.accent, fontVariantNumeric: 'tabular-nums' } }, displayValue)
+          ]),
+          station ? h('div', { key: 'track', className: 'ml-setting-track', style: { position: 'relative' } }, [
+            range,
+            reference ? h('svg', { key: 'reference', 'data-ml-saved-marker': c.key, 'data-reference-fill': referenceFill,
+              viewBox: '0 0 12 10', width: 12, height: 10, 'aria-hidden': 'true', focusable: 'false',
+              style: { position: 'absolute', top: 0, left: 'calc(' + referenceFill + '% + ' + (12 - 24 * referenceFill / 100) + 'px)',
+                transform: 'translateX(-50%)', pointerEvents: 'none', color: T.text }
+            }, h('path', { d: 'M1 1H11L6 9Z', fill: T.card, stroke: 'currentColor', strokeWidth: 1.5, strokeLinejoin: 'round' })) : null
+          ]) : range,
+          station ? h('div', { key: 'scale', 'aria-hidden': 'true', className: 'ml-setting-scale',
+            style: { position: 'relative', height: 23, margin: '0 12px', color: T.dim, fontSize: 10, fontVariantNumeric: 'tabular-nums' }
+          }, ticks.map(function (tick, i) {
+            var value = c.min + tick * (c.max - c.min);
+            var endpoint = i === 0 || i === ticks.length - 1;
+            return h('span', { key: i, 'data-ml-setting-tick': tick, style: {
+              position: 'absolute', left: tick * 100 + '%', width: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4
+            } }, [
+              h('span', { key: 'mark', style: { width: 1, height: 5, background: T.dim } }),
+              endpoint || c.key === 'pulleySegments' ? h('span', { key: 'text', style: { lineHeight: '14px', whiteSpace: 'nowrap',
+                alignSelf: i === 0 ? 'flex-start' : i === ticks.length - 1 ? 'flex-end' : 'center' } },
+                fmt(value, 3) + (c.unit ? ' ' + c.unit : '')) : null
+            ]);
+          })) : null,
+          reference ? h('div', { key: 'reference-label', id: id + '-reference', 'data-ml-setting-reference': c.key,
+            style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 7, fontSize: 11, lineHeight: 1.4, color: T.text }
+          }, [
+            h('span', { key: 'saved', style: { fontVariantNumeric: 'tabular-nums' } }, '▽ ' + __alloT('stem.machinelab.reference_before', 'Saved') + ': ' + fmt(reference[c.key], 3) + (c.unit ? ' ' + c.unit : '')),
+            h('span', { key: 'state', style: { padding: '2px 5px', borderRadius: 5, border: '1px ' + (changedFromReference ? 'solid ' : 'dashed ') + T.border,
+              background: T.card, fontWeight: changedFromReference ? 800 : 500 } },
+              changedFromReference ? __alloT('stem.machinelab.setting_changed', 'Changed') : __alloT('stem.machinelab.setting_matches', 'Matches saved'))
+          ]) : null
+        ]);
+      }
+
+      function stationSlider(c) { return slider(Object.assign({}, c, { station: true })); }
+
+      function stationComparison() {
+        if (band !== 'g68' && band !== 'g912') return null;
+        var settings = stationReferenceSettings();
+        var saved = savedStationReference();
+        var canSave = validStationSetup(d) && effort !== null && effortDist !== null;
+        var savedMA = saved ? bench.ma(saved) : null;
+        function saveReference(clear, ev) {
+          var panel = ev.currentTarget.closest('.ml-station-comparison');
+          var snapshot = {};
+          if (!clear) settings.forEach(function (c) { snapshot[c.key] = d[c.key]; });
+          setLabToolData(function (prev) {
+            var cur = (prev && prev.machineLab) || {};
+            var references = Object.assign({}, cur.benchReferences || {});
+            if (clear) delete references[bench.id]; else references[bench.id] = snapshot;
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchReferences: references }) });
+          });
+          announceToSR(clear ? __alloT('stem.machinelab.reference_cleared', 'Saved comparison cleared.')
+            : __alloT('stem.machinelab.reference_saved', 'Setup saved for comparison. Change one setting to compare its effect.'));
+          if (clear) setTimeout(function () {
+            var button = panel && panel.isConnected && panel.querySelector('[data-ml-save-reference]');
+            if (button) button.focus({ preventScroll: true });
+          }, 0);
+        }
+        var changed = saved ? settings.filter(function (c) { return saved[c.key] !== d[c.key]; }) : [];
+        function restoreReference(ev) {
+          if (!saved || !changed.length) return;
+          var controls = ev.currentTarget.closest('.ml-station-comparison').parentElement;
+          var focusId = 'ml-' + changed[0].key;
+          var patch = { benchResult: null };
+          settings.forEach(function (c) { patch[c.key] = saved[c.key]; });
+          updMulti(patch);
+          announceToSR(__alloT('stem.machinelab.reference_restored', 'Saved setup restored. Try changing one setting again.'));
+          setTimeout(function () {
+            var input = controls && controls.isConnected && controls.querySelector('#' + focusId);
+            if (input) input.focus();
+          }, 0);
+        }
+        var buttonStyle = { minHeight: 40, padding: '7px 10px', borderRadius: 7, border: '1px solid ' + T.border,
+          background: T.card, color: T.text, cursor: 'pointer', fontSize: 12, fontWeight: 750 };
+        function comparisonRow(id, title, before, now, unit, color) {
+          var scale = Math.max(before, now || 0, 1e-12);
+          var direction = now === null ? 'unavailable' : Math.abs(now - before) <= 1e-9 * Math.max(1, Math.abs(before)) ? 'same' : now < before ? 'less' : 'more';
+          return h('div', { key: id, 'data-ml-reference-metric': id, style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.border } }, [
+            h('div', { key: 'heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, marginBottom: 8 } }, [
+              h('h4', { key: 'title', style: { margin: 0, fontSize: 12, color: T.text } }, title),
+              h('span', { key: 'direction', 'data-ml-reference-direction': direction, style: { padding: '3px 6px', borderRadius: 5,
+                background: T.bg, border: '1px solid ' + T.border, color: T.text, fontSize: 11, fontWeight: 750 } },
+                direction === 'unavailable' ? '—' : direction === 'same' ? '= ' + __alloT('stem.machinelab.reference_same', 'Same')
+                  : direction === 'less' ? '↓ ' + __alloT('stem.machinelab.reference_less', 'Less') : '↑ ' + __alloT('stem.machinelab.reference_more', 'More'))
+            ]),
+            [{ id: 'saved', label: __alloT('stem.machinelab.reference_before', 'Saved'), value: before },
+              { id: 'now', label: __alloT('stem.machinelab.reference_now', 'Now'), value: now }].map(function (row) {
+              return h('div', { key: row.id, style: { marginTop: 7 } }, [
+                h('div', { key: 'values', style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: T.text, fontSize: 12 } }, [
+                  h('span', { key: 'label' }, row.label),
+                  h('strong', { key: 'value', 'data-ml-reference-value': row.id, 'data-value': row.value,
+                    style: { fontVariantNumeric: 'tabular-nums' } }, fmt(row.value, 3) + ' ' + unit)
+                ]),
+                h('div', { key: 'track', 'aria-hidden': 'true', style: { marginTop: 5, height: 9, borderRadius: 3, background: T.bg } },
+                  h('div', { 'data-ml-reference-bar': row.id, style: { width: (row.value === null ? 0 : row.value / scale * 100) + '%',
+                    height: '100%', boxSizing: 'border-box', borderRadius: 3,
+                    border: '1px ' + (row.id === 'saved' ? 'dashed ' : 'solid ') + color,
+                    background: row.id === 'saved' ? 'transparent' : color } }))
+              ]);
+            })
+          ]);
+        }
+        return h('details', { key: 'compare-' + bench.id, className: 'ml-station-comparison',
+          style: { border: '1px solid ' + T.border, borderRadius: 10, background: T.bg, color: T.text } }, [
+          h('summary', { key: 'summary', style: { minHeight: 44, boxSizing: 'border-box', padding: '12px 10px', cursor: 'pointer', fontSize: 13, fontWeight: 800 } },
+            [h('span', { key: 'title' }, __alloT('stem.machinelab.reference_compare', 'Compare a change')),
+              saved ? h('span', { key: 'count', 'data-ml-reference-count': changed.length,
+                style: { display: 'inline-block', verticalAlign: 'middle', marginLeft: 8, padding: '2px 6px', borderRadius: 5,
+                  border: '1px solid ' + T.border, background: T.card, color: T.text, fontSize: 11, fontWeight: 700, lineHeight: 1.4 } },
+                changed.length === 0 ? __alloT('stem.machinelab.reference_before', 'Saved') : changed.length === 1
+                  ? __alloT('stem.machinelab.reference_one_change', '1 change') : changed.length + ' ' + __alloT('stem.machinelab.reference_changes', 'changes')) : null]),
+          h('div', { key: 'body', style: { padding: '0 10px 10px' } }, [
+            h('p', { key: 'help', style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: T.dim } },
+              __alloT('stem.machinelab.reference_help', 'Save a setup, then change one setting. Compare the force you need and the distance your hand travels. Each station keeps its own saved setup.')),
+            h('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } }, [
+              h('button', { key: 'save', type: 'button', 'data-ml-save-reference': '', disabled: !canSave,
+                onClick: function (ev) { if (canSave) saveReference(false, ev); }, style: Object.assign({}, buttonStyle, { cursor: canSave ? 'pointer' : 'default' }) },
+                saved ? __alloT('stem.machinelab.reference_replace', 'Replace saved setup') : __alloT('stem.machinelab.reference_save', 'Save current setup')),
+              saved ? h('button', { key: 'restore', type: 'button', disabled: !changed.length, onClick: restoreReference,
+                style: Object.assign({}, buttonStyle, { borderColor: changed.length ? T.accent : T.border,
+                  color: changed.length ? T.accent : T.dim, cursor: changed.length ? 'pointer' : 'default' }) },
+                __alloT('stem.machinelab.reference_restore', 'Restore saved setup')) : null,
+              saved ? h('button', { key: 'clear', type: 'button', onClick: function (ev) { saveReference(true, ev); }, style: buttonStyle },
+                __alloT('stem.machinelab.reference_clear', 'Clear comparison')) : null
+            ]),
+            saved ? h('div', { key: 'comparison' }, [
+              changed.length ? h('ul', { key: 'changes', 'data-ml-reference-changes': '', style: { margin: '0 0 10px', padding: 0, listStyle: 'none' } },
+                changed.map(function (c) { return h('li', { key: c.key, style: { marginTop: 6 } },
+                  h('button', { type: 'button', 'data-ml-adjust-setting': c.key,
+                    'aria-label': __alloT('stem.machinelab.reference_adjust', 'Adjust ') + c.label,
+                    'aria-controls': 'ml-' + c.key, 'aria-describedby': 'ml-change-values-' + c.key,
+                    onClick: function (ev) {
+                      var panel = ev.currentTarget.closest('.ml-station-comparison');
+                      var input = panel && panel.parentElement.querySelector('#ml-' + c.key);
+                      if (!input) return;
+                      input.focus({ preventScroll: true });
+                      var control = input.closest('.ml-station-control');
+                      if (control) control.scrollIntoView({ block: 'center', behavior: 'auto' });
+                    },
+                    style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', alignItems: 'center', gap: 8,
+                      width: '100%', minHeight: 44, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + T.border,
+                      background: T.card, color: T.text, textAlign: 'left', cursor: 'pointer', fontSize: 12, lineHeight: 1.4 }
+                  }, [
+                    h('span', { key: 'setting', style: { minWidth: 0 } }, [
+                      h('span', { key: 'label', style: { display: 'block', fontWeight: 800 } }, c.label),
+                      h('span', { key: 'values', id: 'ml-change-values-' + c.key,
+                        style: { display: 'block', marginTop: 2, fontSize: 11, color: T.dim, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' } },
+                        fmt(saved[c.key], 3) + (c.unit ? ' ' + c.unit : '') + ' → ' + fmt(d[c.key], 3) + (c.unit ? ' ' + c.unit : ''))
+                    ]),
+                    h('span', { key: 'action', 'aria-hidden': 'true', style: { fontSize: 11, fontWeight: 750 } },
+                      __alloT('stem.machinelab.reference_adjust_short', 'Adjust') + ' ↑')
+                  ])); }))
+                : h('p', { key: 'same', style: { margin: '0 0 10px', fontSize: 12, color: T.dim } }, __alloT('stem.machinelab.reference_unchanged', 'Same settings. Move one slider to see the trade.')),
+              h('div', { key: 'metrics', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,190px),1fr))', gap: 8 } }, [
+                comparisonRow('force', __alloT('stem.machinelab.effort_needed', 'Effort needed'), _machineMath.effortForce(saved[bench.loadKey], savedMA), effort, 'N', T.effort),
+                comparisonRow('distance', __alloT('stem.machinelab.you_move', 'Your hand moves'), _machineMath.effortDistance(saved.loadDistance, savedMA), effortDist, 'm', T.load)
+              ]),
+              h('p', { key: 'scale', style: { margin: '8px 0 0', fontSize: 11, lineHeight: 1.45, color: T.dim } },
+                __alloT('stem.machinelab.reference_scale', 'Dashed = saved; filled = now. Each pair shares a scale. Values use the ideal model and are rounded.'))
+            ]) : null
+          ]),
+          h('style', { key: 'style' }, '.ml-station-comparison button:focus-visible,.ml-station-comparison summary:focus-visible{outline:3px solid currentColor;outline-offset:2px}@media(forced-colors:active){.ml-station-comparison [data-ml-reference-bar]{forced-color-adjust:none;border-color:CanvasText!important}.ml-station-comparison [data-ml-reference-bar=now]{background:CanvasText!important}.ml-station-comparison [data-ml-reference-bar=saved]{background:Canvas!important}}')
         ]);
       }
 
@@ -7415,16 +7759,27 @@ window.StemLab = window.StemLab || {
           var rows = [{id:'effort',label:firstLabel,value:first,color:T.effort},{id:'load',label:__alloT('stem.machinelab.load', 'Load'),value:second,color:loadInk}];
           return h('div', {key:kind, 'data-ml-comparison':kind, role:'group', 'aria-label':title,
             style:{padding:10,borderRadius:9,background:T.bg,border:'1px solid '+T.border,minWidth:0}}, [
-            h('h4', {key:'title',style:{margin:'0 0 9px',fontSize:12,color:T.text}}, title)
+            h('h4', {key:'title',style:{margin:'0 0 12px',fontSize:13,color:T.text}}, title)
           ].concat(rows.map(function (row) {
             var value = fmt(row.value, row.value > 0 && row.value < 0.1 ? 3 : 2) + ' ' + unit;
             return h('div', {key:row.id,'data-ml-side':row.id,style:{marginTop:8}}, [
               h('div', {key:'label',style:{display:'flex',justifyContent:'space-between',gap:8,fontSize:12,color:T.text}}, [
                 h('span', {key:'name'},row.label),
-                h('strong', {key:'value',style:{fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap'}},value)
+                h('strong', {key:'value',style:{fontSize:14,fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap'}},value)
               ]),
-              h('div', {key:'track','aria-hidden':'true',style:{height:10,marginTop:5,borderRadius:3,background:T.card,outline:'1px solid '+T.border,overflow:'hidden'}},
-                h('div', {'data-ml-bar':row.id,style:{width:(row.value/scale*100)+'%',height:'100%',background:row.color,borderRadius:2}}))
+              h('div', {key:'track','aria-hidden':'true',className:'ml-comparison-ruler',style:{height:26,margin:'5px 7px 0',position:'relative'}}, [
+                h('div', {key:'bed','data-ml-comparison-bed':'',style:{position:'absolute',left:0,right:0,top:9,height:8,borderRadius:3,background:T.card,outline:'1px solid '+T.border}},
+                  h('div', {key:'bar','data-ml-bar':row.id,style:{width:(row.value/scale*100)+'%',height:'100%',background:row.color,borderRadius:2}})),
+                [0,25,50,75,100].map(function (tick) { return h('span', {key:'tick-'+tick,'data-ml-comparison-tick':tick,style:{
+                  position:'absolute',left:tick+'%',top:tick%50===0?5:7,width:1,height:tick%50===0?16:12,
+                  background:T.dim,transform:'translateX(-50%)',opacity:0.65
+                }}); }),
+                h('svg', {key:'marker',viewBox:'0 0 16 16',width:16,height:16,focusable:'false','aria-hidden':'true',
+                  'data-ml-comparison-marker':row.id,style:{position:'absolute',left:(row.value/scale*100)+'%',top:13,transform:'translate(-50%,-50%)',overflow:'visible'}},
+                  row.id==='effort'
+                    ? h('path', {d:'M8 1L15 8L8 15L1 8Z',fill:row.color,stroke:T.card,strokeWidth:1.5})
+                    : h('circle', {cx:8,cy:8,r:5.5,fill:T.card,stroke:row.color,strokeWidth:2.5}))
+              ])
             ]);
           })));
         }
@@ -7443,21 +7798,53 @@ window.StemLab = window.StemLab || {
               comparisonBars('distance',__alloT('stem.machinelab.compare_distance', 'Distance comparison'),effortDist,loadDist,__alloT('stem.machinelab.your_hand', 'Your hand'),'m'),
               comparisonBars('force',__alloT('stem.machinelab.compare_force', 'Force comparison'),effort,load,__alloT('stem.machinelab.your_effort', 'Your effort'),'N')
             ]),
-            h('p', {key:'scale',style:{fontSize:11,lineHeight:1.4,color:T.dim,margin:'8px 0 12px'}},__alloT('stem.machinelab.pair_scale', 'Bars share a scale within each pair. Read the values beside very small bars.'))
+            h('p', {key:'scale',style:{fontSize:11,lineHeight:1.4,color:T.dim,margin:'8px 0 12px'}},__alloT('stem.machinelab.pair_scale', 'Bars share a scale within each pair. Read the values beside very small bars.')),
+            h('div', {key:'shapes',className:'ml-comparison-shape-key',style:{display:'flex',flexWrap:'wrap',gap:'6px 14px',fontSize:12,fontWeight:700,color:T.text,margin:'0 0 12px'}}, [
+              h('span', {key:'effort'}, '◆ ' + __alloT('stem.machinelab.compare_effort_marker', 'Effort')),
+              h('span', {key:'load'}, '○ ' + __alloT('stem.machinelab.compare_load_marker', 'Load'))
+            ]),
+            h('style', {key:'comparison-system-colors'}, '@media(forced-colors:active){.ml-comparison-ruler{forced-color-adjust:none}.ml-comparison-ruler [data-ml-comparison-bed]{background:Canvas!important;outline-color:CanvasText!important}.ml-comparison-ruler [data-ml-bar]{background:CanvasText!important}.ml-comparison-ruler [data-ml-comparison-tick]{background:CanvasText!important;opacity:1!important}.ml-comparison-ruler [data-ml-comparison-marker=effort] path{fill:CanvasText;stroke:Canvas}.ml-comparison-ruler [data-ml-comparison-marker=load] circle{fill:Canvas;stroke:CanvasText}}')
           ]) : null,
-          (band === 'g68' || band === 'g912') && work ? h('div', {
-            key: 'w',
-            style: {
-              display: 'grid', gridTemplateColumns:'repeat(2, minmax(0, 1fr))', gap: 8, padding: 10, borderRadius: 8,
-              background: T.bg, border: '1px solid ' + T.border
-            }
+          (band === 'g68' || band === 'g912') && work ? h('section', { key: 'w', className: 'ml-work-balance',
+            'aria-label': __alloT('stem.machinelab.work_balance', 'Work balance'),
+            style: { padding: 10, borderRadius: 10, background: T.bg, border: '1px solid ' + T.border }
           }, [
-            h('span', { key: 'wi', style: { fontSize: 13, color: T.text } },
-              __alloT('stem.machinelab.work_in', 'Work in: ') + fmt(work.workIn, 2) + ' J'),
-            h('span', { key: 'wo', style: { fontSize: 13, color: T.text } },
-              __alloT('stem.machinelab.work_out', 'Work out: ') + fmt(work.workOut, 2) + ' J'),
-            h('span', { key: 'eqs', style: {gridColumn:'1 / -1',fontSize: 12, fontWeight: 700, color: eq ? T.ok : T.bad } },
-              eq ? __alloT('stem.machinelab.identical', 'identical') : __alloT('stem.machinelab.mismatch', 'mismatch'))
+            h('div', { key: 'heading', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginBottom: 10 } }, [
+              h('h4', { key: 'title', style: { margin: 0, fontSize: 13, color: T.text } }, __alloT('stem.machinelab.work_product', 'Work = force × distance')),
+              h('span', { key: 'equal', 'data-ml-work-equal': String(!!eq), style: { padding: '4px 7px', borderRadius: 6, border: '1px solid ' + T.border,
+                background: T.card, fontSize: 11, fontWeight: 800, color: eq ? T.ok : T.bad } },
+                eq ? '= ' + __alloT('stem.machinelab.work_same', 'Same work') : '≠ ' + __alloT('stem.machinelab.work_check', 'Check totals'))
+            ]),
+            h('div', { key: 'areas', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } }, [
+              {id:'in',label:__alloT('stem.machinelab.work_in', 'Work in: '),force:effort,distance:effortDist,total:work.workIn,color:T.effort},
+              {id:'out',label:__alloT('stem.machinelab.work_out', 'Work out: '),force:load,distance:loadDist,total:work.workOut,color:T.load}
+            ].map(function (side) {
+              // Shared horizontal and vertical scales make equal areas mean equal work.
+              // Keep very thin rectangles honest; the values remain readable below.
+              var areaWidth = 136 * side.distance / Math.max(effortDist, loadDist, 1e-12);
+              var areaHeight = 76 * side.force / Math.max(effort, load, 1e-12);
+              return h('div', { key: side.id, 'data-ml-work-side': side.id, style: { minWidth: 0, padding: 8, borderRadius: 8,
+                background: T.card, border: '1px solid ' + T.border } }, [
+                h('div', { key: 'label', style: { fontSize: 12, fontWeight: 800, color: T.text } }, side.label),
+                h('svg', { key: 'area', viewBox: '0 0 160 98', 'aria-hidden': 'true', focusable: 'false',
+                  style: { display: 'block', width: '100%', maxWidth: 240, margin: '7px auto', color: side.color } }, [
+                  h('path', { key: 'grid', d: 'M48 8V84 M82 8V84 M116 8V84 M14 27H150 M14 46H150 M14 65H150',
+                    fill: 'none', stroke: T.border, strokeWidth: 1 }),
+                  h('rect', { key: 'rect', 'data-ml-work-area': side.id, x: 14, y: 84 - areaHeight, width: areaWidth, height: areaHeight,
+                    fill: 'currentColor' }),
+                  h('path', { key: 'axes', 'data-ml-work-axes': '', d: 'M14 6V84H152', fill: 'none', stroke: T.dim, strokeWidth: 1 })
+                ]),
+                h('div', { key: 'product', 'data-ml-work-product': '', style: { fontSize: 11, lineHeight: 1.45, color: T.dim, overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' } },
+                  fmt(side.force, side.force > 0 && side.force < 0.1 ? 3 : 2) + ' N × ' + fmt(side.distance, 2) + ' m'),
+                h('div', { key: 'total', 'data-ml-work-total': side.total, style: { marginTop: 5, fontSize: 18, lineHeight: 1.35, fontWeight: 850,
+                  color: T.text, overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' } }, fmt(side.total, 2) + ' J')
+              ]);
+            })),
+            h('p', { key: 'scale', style: { margin: '9px 0 0', fontSize: 11, lineHeight: 1.45, color: T.dim } },
+              __alloT('stem.machinelab.work_area_scale', 'Width shows distance; height shows force. Both diagrams use the same scales. Read the values when an area is very thin.')),
+            h('p', { key: 'ideal', style: { margin: '5px 0 0', fontSize: 11, lineHeight: 1.45, color: T.text } },
+              __alloT('stem.machinelab.work_ideal', 'In this ideal model, work in equals work out. Displayed values are rounded.')),
+            h('style', { key: 'system-colors' }, '@media(forced-colors:active){.ml-work-balance svg{color:CanvasText!important}.ml-work-balance svg path{stroke:CanvasText}}')
           ]) : null
         ], 'trade');
       }
@@ -7494,7 +7881,7 @@ window.StemLab = window.StemLab || {
                 value: d.benchPrediction || '',
                 'aria-label': __alloT('stem.machinelab.aria_predict', 'Your predicted effort force in newtons'),
                 placeholder: __alloT('stem.machinelab.newtons', 'newtons'),
-                onChange: function (e) { upd('benchPrediction', e.target.value); },
+                onChange: function (e) { updMulti({ benchPrediction: e.target.value, benchResult: null }); },
                 onKeyDown: function (e) { if (e.key === 'Enter') submitTyped(); },
                 style: {
                   flex: '1 1 120px', padding: '9px 11px', borderRadius: 8,
@@ -7521,7 +7908,7 @@ window.StemLab = window.StemLab || {
                 value: d.benchPrediction || '',
                 'aria-label': __alloT('stem.machinelab.aria_predict', 'Your predicted effort force in newtons'),
                 placeholder: __alloT('stem.machinelab.newtons', 'newtons'),
-                onChange: function (e) { upd('benchPrediction', e.target.value); },
+                onChange: function (e) { updMulti({ benchPrediction: e.target.value, benchResult: null }); },
                 onKeyDown: function (e) { if (e.key === 'Enter') submitTyped(); },
                 style: {
                   flex: '1 1 120px', padding: '9px 11px', borderRadius: 8,
@@ -7548,14 +7935,40 @@ window.StemLab = window.StemLab || {
           ]),
           isChoiceBand ? h('p', { key: 'kq', style: { margin: '0 0 8px', fontSize: 14, color: T.text, fontWeight: 600 } }, bench.k2Question) : null,
           body,
-          res ? h('p', {
-            key: 'res',
-            role: 'status',
-            style: {
-              margin: '10px 0 0', fontSize: 13, fontWeight: 700,
-              color: res.ok ? T.ok : T.bad
-            }
-          }, res.message) : null
+          res ? h('div', { key: 'res', className: 'ml-proof-feedback', 'data-ml-proof-result': res.ok ? 'correct' : 'retry',
+            style: { marginTop: 12, padding: 12, borderRadius: 10, background: T.bg,
+              border: '1px solid ' + T.border, borderLeft: '4px solid ' + (res.ok ? T.ok : T.bad) }
+          }, [
+            h('div', { key: 'message', style: { display: 'flex', alignItems: 'flex-start', gap: 10 } }, [
+              h('svg', { key: 'icon', width: 28, height: 28, viewBox: '0 0 28 28', 'aria-hidden': 'true', focusable: 'false',
+                style: { flexShrink: 0, color: res.ok ? T.ok : T.bad } }, [
+                h('circle', { key: 'rim', cx: 14, cy: 14, r: 12, fill: 'none', stroke: 'currentColor', strokeWidth: 2 }),
+                h('path', { key: 'mark', d: res.ok ? 'M7 14L12 19L21 9' : 'M9 10A7 7 0 1 1 8 18 M9 6V12H15',
+                  fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+              ]),
+              h('p', { key: 'text', role: 'status', 'aria-atomic': 'true', style: { margin: 0, paddingTop: 3, fontSize: 14, lineHeight: 1.5, fontWeight: 750, color: T.text } }, res.message)
+            ]),
+            res.showCalculation && !isChoiceBand && effort !== null && ma > 0 ? h('div', { key: 'calculation', className: 'ml-proof-calculation',
+              role: 'group', 'aria-label': __alloT('stem.machinelab.proof_calculation', 'Effort calculation'), style: { marginTop: 12 }
+            }, [
+              h('div', { key: 'steps', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 6 } }, [
+                {label: __alloT('stem.machinelab.load', 'Load'), value: fmt(load, 0), unit: 'N', color: T.load},
+                {label: __alloT('stem.machinelab.proof_divide_ma', '÷ MA'), value: fmt(ma, ma < 1 ? 3 : 2), unit: '', color: T.text},
+                {label: __alloT('stem.machinelab.proof_effort', '≈ Effort'), value: fmt(effort, 1), unit: 'N', color: T.effort}
+              ].map(function (step, index) {
+                return h('div', { key: index, 'data-ml-calculation-step': index, style: { minWidth: 0, padding: '9px 6px', textAlign: 'center',
+                  borderRadius: 8, background: T.card, border: '1px solid ' + T.border } }, [
+                  h('div', { key: 'label', style: { fontSize: 11, lineHeight: 1.4, fontWeight: 750, color: T.dim } }, step.label),
+                  h('div', { key: 'value', style: { marginTop: 5, fontSize: 17, lineHeight: 1.3, fontWeight: 850, color: step.color,
+                    overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' } }, step.value),
+                  h('div', { key: 'unit', style: { minHeight: 16, fontSize: 11, lineHeight: '16px', color: T.dim } }, step.unit)
+                ]);
+              })),
+              h('p', { key: 'rounding', style: { margin: '6px 0 0', fontSize: 11, lineHeight: 1.4, color: T.dim } },
+                __alloT('stem.machinelab.proof_rounded', 'Displayed values are rounded.'))
+            ]) : null,
+            h('style', { key: 'system-colors' }, '@media(forced-colors:active){.ml-proof-feedback svg{color:CanvasText!important}}')
+          ]) : null
         ], 'prove');
       }
 
@@ -8180,9 +8593,10 @@ window.StemLab = window.StemLab || {
       }
 
       function camControls(cam, label, fsWhich) {
-        function btn(key, glyph, aria, fn) {
+        function btn(key, glyph, aria, fn, selected) {
           return h('button', {
-            key: key,
+            key: key, type: 'button',
+            'aria-pressed': typeof selected === 'boolean' ? selected : undefined,
             onClick: function () {
               fn();
               announceToSR(aria + '.');
@@ -8190,33 +8604,21 @@ window.StemLab = window.StemLab || {
             'aria-label': aria, title: aria,
             style: {
               padding: '3px 8px', borderRadius: 7, cursor: 'pointer',
-              border: '1px solid ' + T.border, background: T.card, color: T.text,
-              fontSize: 12, fontWeight: 700, lineHeight: 1.4
+              minWidth: fsWhich === 'shop' ? 40 : undefined, minHeight: fsWhich === 'shop' ? 40 : undefined,
+              border: '1px solid ' + (selected ? T.accent : T.border), background: selected ? T.accent : T.card, color: selected ? T.accentInk : T.text,
+              fontSize: fsWhich === 'shop' ? 13 : 12, fontWeight: 700, lineHeight: 1.4
             }
           }, glyph);
         }
-        return h('div', {
-          key: 'cam', role: 'group',
-          'aria-label': __alloT('stem.machinelab.cam_group', 'Camera for the ') + label,
-          // The background is not decoration. In full screen the host forces
-          // #0f172a onto the wrapper with !important, so without a surface of
-          // its own this row sits on dark navy in every theme and the "View:"
-          // label goes grey-on-navy. Painting the row means it carries its own
-          // contrast wherever it ends up. Outside full screen it is T.card on
-          // T.card, so nothing changes.
-          style: {
-            display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center',
-            marginTop: 8, background: T.card, borderRadius: 8, padding: '4px 6px'
-          }
-        }, [
+        var controls = [
           h('span', { key: 'l', style: { fontSize: 11, color: T.dim, marginRight: 2 } },
             __alloT('stem.machinelab.cam_drag_hint', 'Drag scene or use:')),
           fsWhich === 'shop' ? btn('side', __alloT('stem.machinelab.cam_side_short', 'Side'),
             __alloT('stem.machinelab.cam_side', 'Show the machine from the side'),
-            function () { cam.setView(0, 8, 1.08); }) : null,
+            function () { cam.setView(0, 8, 1.08); }, cam.rotY === 0 && cam.rotX === 8 && cam.zoom === 1.08) : null,
           fsWhich === 'shop' ? btn('close', __alloT('stem.machinelab.cam_close_short', 'Close'),
             __alloT('stem.machinelab.cam_close', 'Show a close three-quarter view'),
-            function () { cam.setView(24, d.bench === 'screw' ? 32 : 12, 1.38); }) : null,
+            function () { cam.setView(24, d.bench === 'screw' ? 32 : 12, 1.38); }, cam.rotY === 24 && cam.rotX === (d.bench === 'screw' ? 32 : 12) && cam.zoom === 1.38) : null,
           fsWhich === 'shop' && d.bench === 'windlass' ? h('button', {
             key: 'drum', type: 'button',
             'aria-label': __alloT('stem.machinelab.cam_drum', 'Show the drum and lifting rope'),
@@ -8235,7 +8637,7 @@ window.StemLab = window.StemLab || {
           fsWhich === 'shop' ? h('button', {
             key: 'focus', type: 'button', 'aria-pressed': !!d.shopFocusMechanism,
             'aria-label': __alloT('stem.machinelab.focus_mechanism', 'Focus mechanism'),
-            title: __alloT('stem.machinelab.focus_mechanism_hint', 'Hide the room to inspect the machine from any angle. Select again to restore the workshop.'),
+            title: __alloT('stem.machinelab.focus_mechanism_hint', 'Hide the room and frame the full machine. Select again to restore the workshop.'),
             onClick: function () {
               upd('shopFocusMechanism', !d.shopFocusMechanism);
               announceToSR(d.shopFocusMechanism
@@ -8266,7 +8668,79 @@ window.StemLab = window.StemLab || {
           // Full screen is a view control, and this row is the one thing that
           // is guaranteed to travel into full screen alongside the bay.
           fsWhich ? fullscreenButton(fsWhich, label) : null
-        ]);
+        ];
+        if (fsWhich === 'shop') {
+          function items(keys) { return controls.filter(function (control) { return control && keys.indexOf(control.key) !== -1; }); }
+          function cameraGroup(key, title, keys) {
+            return h('div', { key: key, role: 'group', 'aria-label': title, style: { minWidth: 0 } }, [
+              h('div', { key: 'label', style: { fontSize: 11, lineHeight: 1.4, fontWeight: 800, color: T.dim, marginBottom: 6 } }, title),
+              h('div', { key: 'buttons', style: { display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' } }, items(keys))
+            ]);
+          }
+          return h('div', { key: 'cam', role: 'group', className: 'ml-shop-camera',
+            'aria-label': __alloT('stem.machinelab.cam_group', 'Camera for the ') + label,
+            style: { marginTop: 10, padding: 10, borderRadius: 12, border: '1px solid ' + T.border, background: T.bg, color: T.text }
+          }, [
+            h('style', { key: 'layout' }, '.ml-shop-camera button{min-height:40px!important}.ml-shop-camera button:focus-visible,.ml-shop-camera summary:focus-visible{outline:3px solid currentColor;outline-offset:3px}.ml-shop-camera-groups{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-start}.ml-shop-camera-groups>div:first-child{flex:1 1 260px}.ml-shop-camera-adjustments{flex:1 1 220px;min-width:0}.ml-shop-camera-adjustments summary{min-height:44px;box-sizing:border-box;padding:12px 8px;cursor:pointer;border-radius:8px;font-size:12px;font-weight:800;line-height:20px}.ml-shop-camera-adjustment-groups{display:flex;flex-wrap:wrap;gap:14px 22px;padding:8px}@media(forced-colors:active){.ml-shop-camera-orientation svg{color:CanvasText!important}}'),
+            h('div', { key: 'header', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 10 } }, items(['l', 'fs'])),
+            h('div', { key: 'groups', className: 'ml-shop-camera-groups' }, [
+              cameraGroup('presets', __alloT('stem.machinelab.cam_views', 'Views'), ['side', 'close', 'drum', 'focus']),
+              h('details', { key: 'adjustments', className: 'ml-shop-camera-adjustments' }, [
+                h('summary', { key: 'summary', style: { background: T.card, color: T.text, border: '1px solid ' + T.border } },
+                  __alloT('stem.machinelab.cam_adjustments', 'Rotate & zoom')),
+                h('div', { key: 'orientation', className: 'ml-shop-camera-orientation', style: {
+                  display: 'flex', alignItems: 'center', gap: 10, padding: '10px 8px 2px', color: T.text
+                } }, [
+                  h('svg', { key: 'orbit', viewBox: '0 0 52 64', width: 52, height: 64, 'aria-hidden': 'true', focusable: 'false',
+                    style: { flex: '0 0 52px', color: T.accent } }, [
+                    h('circle', { key: 'track', cx: 26, cy: 26, r: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1 }),
+                    h('path', { key: 'ticks', d: 'M26 5V10 M42 26H47 M26 42V47 M5 26H10', fill: 'none', stroke: 'currentColor' }),
+                    h('rect', { key: 'machine', x: 22, y: 22, width: 8, height: 8, rx: 1, fill: 'none', stroke: 'currentColor', strokeWidth: 2 }),
+                    h('g', { key: 'camera', 'data-ml-camera-bearing': cam.rotY, transform: 'rotate(' + (-cam.rotY) + ' 26 26)' }, [
+                      h('path', { key: 'sight', d: 'M26 42L20 32M26 42L32 32', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }),
+                      h('circle', { key: 'point', cx: 26, cy: 44, r: 4, fill: 'currentColor' })
+                    ]),
+                    h('text', { key: 'zero', x: 26, y: 62, textAnchor: 'middle', fill: 'currentColor', fontSize: 10 }, '0°')
+                  ]),
+                  h('div', { key: 'readings', style: { flex: '1 1 0', minWidth: 0 } }, [
+                    h('div', { key: 'caption', style: { fontSize: 10, lineHeight: 1.4, color: T.dim, marginBottom: 6 } },
+                      __alloT('stem.machinelab.cam_orbit_overhead', 'Camera orbit · overhead')),
+                    h('dl', { key: 'values', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 6, margin: 0 } }, [
+                      ['rotation', __alloT('stem.machinelab.cam_rotation_readout', 'Rotation'), Math.round(cam.rotY) + '°'],
+                      ['tilt', __alloT('stem.machinelab.cam_tilt_readout', 'Tilt'), Math.round(cam.rotX) + '°'],
+                      ['zoom', __alloT('stem.machinelab.cam_zoom', 'Zoom'), cam.zoom.toFixed(2) + '×']
+                    ].map(function (reading) {
+                      return h('div', { key: reading[0], style: { minWidth: 0 } }, [
+                        h('dt', { key: 'label', style: { fontSize: 10, color: T.dim, overflowWrap: 'anywhere' } }, reading[1]),
+                        h('dd', { key: 'value', 'data-ml-camera-reading': reading[0], style: {
+                          margin: '3px 0 0', fontSize: 13, fontWeight: 800, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere'
+                        } }, reading[2])
+                      ]);
+                    }))
+                  ])
+                ]),
+                h('div', { key: 'controls', className: 'ml-shop-camera-adjustment-groups' }, [
+                  cameraGroup('rotate', __alloT('stem.machinelab.cam_rotate', 'Rotate'), ['yl', 'yr', 'xu', 'xd']),
+                  cameraGroup('zoom', __alloT('stem.machinelab.cam_zoom', 'Zoom'), ['zi', 'zo', 'rs'])
+                ])
+              ])
+            ])
+          ]);
+        }
+        return h('div', {
+          key: 'cam', role: 'group',
+          'aria-label': __alloT('stem.machinelab.cam_group', 'Camera for the ') + label,
+          // The background is not decoration. In full screen the host forces
+          // #0f172a onto the wrapper with !important, so without a surface of
+          // its own this row sits on dark navy in every theme and the "View:"
+          // label goes grey-on-navy. Painting the row means it carries its own
+          // contrast wherever it ends up. Outside full screen it is T.card on
+          // T.card, so nothing changes.
+          style: {
+            display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center',
+            marginTop: 8, background: T.card, borderRadius: 8, padding: '4px 6px'
+          }
+        }, controls);
       }
 
       // ── Read aloud ──
@@ -9299,6 +9773,39 @@ window.StemLab = window.StemLab || {
         var benchIndex = BENCHES.indexOf(bench);
         var nextBench = BENCHES[(benchIndex + 1) % BENCHES.length];
         var hasRunDemo = d.shopDemoBench === bench.id;
+        var shopPhaseElement = null, shopStrokeElement = null, shopStrokeReadout = null;
+        var shopStrokeSuffix = __alloT('stem.machinelab.stroke_percent', '% of the working stroke');
+        var shopPhaseLabels = {
+          work: __alloT('stem.machinelab.demo_phase_work', 'Working stroke'),
+          return: __alloT('stem.machinelab.demo_phase_return', 'Returning to start'),
+          held: __alloT('stem.machinelab.demo_phase_still', 'Motion off: full-stroke view')
+        };
+        var initialShopPhase = SHOP_POSE.runId === d.shopDemoId && SHOP_POSE.kind === bench.id && shopPhaseLabels[SHOP_POSE.phase]
+          ? SHOP_POSE.phase : reducedMotion ? 'held' : 'work';
+        // Ref callbacks also restore state after playback: React may otherwise retain imperatively updated text/styles.
+        function syncShopStroke(progress) {
+          if (!finite(progress)) return;
+          var percent = String(Math.round(Math.max(0, Math.min(1, progress)) * 100));
+          if (shopStrokeElement && shopStrokeElement.isConnected) {
+            if (shopStrokeElement.value !== percent) shopStrokeElement.value = percent;
+            if (shopStrokeElement.style.getPropertyValue('--ml-stroke-fill') !== percent + '%') shopStrokeElement.style.setProperty('--ml-stroke-fill', percent + '%');
+            if (shopStrokeElement.getAttribute('aria-valuetext') !== percent + shopStrokeSuffix) shopStrokeElement.setAttribute('aria-valuetext', percent + shopStrokeSuffix);
+          }
+          if (shopStrokeReadout && shopStrokeReadout.isConnected && shopStrokeReadout.textContent !== percent + '%') shopStrokeReadout.textContent = percent + '%';
+        }
+        function recordShopPhase(progress, runId, kind, phase) {
+          recordShopPose(progress, runId, kind, phase);
+          if (!d.shopAnimating || runId !== d.shopDemoId || kind !== bench.id) return;
+          // Keep the native ruler aligned with the rendered pose without React renders per frame.
+          syncShopStroke(progress);
+          if (!shopPhaseElement || !shopPhaseElement.isConnected || !shopPhaseLabels[phase]) return;
+          // Announce only phase boundaries; the numeric readout is not a live region.
+          if (shopPhaseElement.getAttribute('data-ml-demo-phase') === phase) return;
+          shopPhaseElement.setAttribute('data-ml-demo-phase', phase);
+          var text = shopPhaseElement.querySelector('[data-ml-demo-phase-label]');
+          if (text) text.textContent = shopPhaseLabels[phase];
+        }
+
         var observationCues = {
           lever: ma < 1
             ? __alloT('stem.machinelab.observe_lever_short', 'The shorter effort arm moves less and needs more force to raise the load.')
@@ -9334,12 +9841,26 @@ window.StemLab = window.StemLab || {
           try { ev.currentTarget.releasePointerCapture(ev.pointerId); } catch (e) {}
           ev.currentTarget.style.cursor = 'grab'; SHOP_DRAG = null;
         }
-        var shopProgress = finite(d.shopMotionProgress) ? Math.max(0, Math.min(1, d.shopMotionProgress)) : 0;
+        var shopProgress = d.shopAnimating
+          ? SHOP_POSE.runId === d.shopDemoId && SHOP_POSE.kind === bench.id && finite(SHOP_POSE.progress)
+            ? Math.max(0, Math.min(1, SHOP_POSE.progress)) : reducedMotion ? 1 : 0
+          : finite(d.shopMotionProgress) ? Math.max(0, Math.min(1, d.shopMotionProgress)) : 0;
         function inspectShopMotion(value) {
           if (shopStatus === 'failed') return;
           var progress = Math.max(0, Math.min(1, Number(value)));
           if (!finite(progress)) return;
           updMulti({ shopAnimating: false, shopMotionProgress: progress });
+        }
+        function holdShopPose(ev) {
+          if (!d.shopAnimating || shopStatus === 'failed' || SHOP_POSE.runId !== d.shopDemoId || SHOP_POSE.kind !== bench.id) return;
+          var world = ev.currentTarget.closest('.ml-shop-world');
+          inspectShopMotion(SHOP_POSE.progress);
+          setTimeout(function () {
+            if (!world || !world.isConnected) return;
+            var slider = world.querySelector('#ml-shop-stroke');
+            if (slider && !slider.disabled) slider.focus({ preventScroll: true });
+          }, 0);
+          announceToSR(__alloT('stem.machinelab.pose_held', 'Pose held. Use the position slider or camera controls to inspect it.'));
         }
         function shopStrokePreview(progress) {
           if (!finite(ma) || ma <= 0) return null;
@@ -9381,20 +9902,54 @@ window.StemLab = window.StemLab || {
                   background: T.bg, color: T.text, fontSize: 12, fontWeight: 750, cursor: 'pointer' }
               }, __alloT('stem.machinelab.return_clue', 'Return to clue'))
             ]) : null,
-            h('div', { key: 'heading', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } }, [
+            h('div', { key: 'heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } }, [
               h('label', { key: 'label', id: 'ml-shop-stroke-label', htmlFor: 'ml-shop-stroke', style: { fontSize: 12, fontWeight: 800, color: T.text } },
                 __alloT('stem.machinelab.inspect_motion', 'Inspect the motion')),
-              h('span', { key: 'position', style: { fontSize: 12, fontWeight: 800, color: T.text, fontVariantNumeric: 'tabular-nums' } },
-                d.shopAnimating ? __alloT('stem.machinelab.demo_running', 'Running...') : Math.round(shopProgress * 100) + '%')
+              h('div', { key: 'state', style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } }, [
+                h('span', { key: 'position', ref: function (el) { shopStrokeReadout = el; if (el) syncShopStroke(shopProgress); }, 'data-ml-stroke-readout': '', style: { fontSize: 14, fontWeight: 850, color: T.effort,
+                  minWidth: 46, padding: '5px 8px', textAlign: 'center', borderRadius: 7, border: '1px solid ' + T.border,
+                  background: T.card, fontVariantNumeric: 'tabular-nums' } },
+                  Math.round(shopProgress * 100) + '%'),
+                h('button', { key: 'hold', type: 'button', onClick: holdShopPose,
+                  disabled: !d.shopAnimating || shopStatus === 'failed',
+                  title: __alloT('stem.machinelab.hold_pose_hint', 'Stop at the current position, then rotate the view or move the position slider.'),
+                  style: { display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 36, padding: '5px 10px', borderRadius: 7,
+                    border: '1px solid ' + (d.shopAnimating ? T.accent : T.border),
+                    background: d.shopAnimating ? T.accent : T.card, color: d.shopAnimating ? T.accentInk : T.dim,
+                    fontSize: 11, fontWeight: 800, cursor: d.shopAnimating ? 'pointer' : 'default' }
+                }, [h('svg', { key: 'icon', width: 12, height: 12, viewBox: '0 0 12 12', 'aria-hidden': 'true', focusable: 'false' },
+                  h('path', { d: 'M2 1h3v10H2zM7 1h3v10H7z', fill: 'currentColor' })),
+                  h('span', { key: 'label' }, __alloT('stem.machinelab.hold_pose', 'Hold this pose'))])
+              ])
             ]),
+            h('style', { key: 'stroke-style' },
+              '.ml-stroke-range{-webkit-appearance:none;appearance:none;display:block;box-sizing:border-box;background:transparent;border:0;border-radius:6px;padding:0}' +
+              '.ml-stroke-range::-webkit-slider-runnable-track{height:8px;border:1px solid var(--ml-stroke-border);border-radius:99px;background:linear-gradient(to right,var(--ml-stroke-ink) 0%,var(--ml-stroke-ink) var(--ml-stroke-fill),var(--ml-stroke-rest) var(--ml-stroke-fill),var(--ml-stroke-rest) 100%)}' +
+              '.ml-stroke-range::-moz-range-track{height:6px;border:1px solid var(--ml-stroke-border);border-radius:99px;background:var(--ml-stroke-rest)}' +
+              '.ml-stroke-range::-moz-range-progress{height:6px;border-radius:99px;background:var(--ml-stroke-ink)}' +
+              '.ml-stroke-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;box-sizing:border-box;width:24px;height:24px;margin-top:-9px;border:4px solid var(--ml-stroke-rest);border-radius:50%;background:var(--ml-stroke-ink);box-shadow:0 0 0 2px var(--ml-stroke-ink)}' +
+              '.ml-stroke-range::-moz-range-thumb{box-sizing:border-box;width:24px;height:24px;border:4px solid var(--ml-stroke-rest);border-radius:50%;background:var(--ml-stroke-ink);box-shadow:0 0 0 2px var(--ml-stroke-ink)}' +
+              '.ml-stroke-range:focus-visible{outline:3px solid var(--ml-stroke-ink);outline-offset:2px}' +
+              '.ml-stroke-range:disabled{cursor:default!important}' +
+              '@media(forced-colors:active){.ml-stroke-range{forced-color-adjust:none;--ml-stroke-ink:Highlight!important;--ml-stroke-border:CanvasText!important;--ml-stroke-rest:Canvas!important}.ml-shop-inspector [data-ml-stroke-preview]{forced-color-adjust:none}.ml-shop-inspector [data-ml-stroke-preview] path{stroke:CanvasText}.ml-shop-inspector [data-ml-preview-marker=effort]{fill:CanvasText}.ml-shop-inspector [data-ml-preview-marker=load]{fill:Canvas;stroke:CanvasText}}'),
             h('input', {
-              key: 'stroke', id: 'ml-shop-stroke', type: 'range', min: 0, max: 100, step: 1,
+              key: 'stroke', ref: function (el) { shopStrokeElement = el; if (el) syncShopStroke(shopProgress); }, id: 'ml-shop-stroke', className: 'ml-stroke-range', type: 'range', min: 0, max: 100, step: 1,
               value: Math.round(shopProgress * 100), disabled: !!d.shopAnimating || shopStatus === 'failed',
               'aria-label': __alloT('stem.machinelab.inspect_motion', 'Inspect the motion'), 'aria-describedby': 'ml-shop-stroke-help',
-              'aria-valuetext': Math.round(shopProgress * 100) + __alloT('stem.machinelab.stroke_percent', '% of the working stroke'),
+              'aria-valuetext': Math.round(shopProgress * 100) + shopStrokeSuffix,
               onChange: function (ev) { inspectShopMotion(Number(ev.target.value) / 100); },
-              style: { width: '100%', minWidth: 0, height: 32, margin: '4px 0', accentColor: T.effort, cursor: 'pointer' }
+              style: { width: '100%', minWidth: 0, height: 44, margin: '4px 0 0', accentColor: T.effort, cursor: 'pointer',
+                '--ml-stroke-ink': shopStatus === 'failed' ? T.dim : T.effort,
+                '--ml-stroke-rest': T.card, '--ml-stroke-border': T.dim, '--ml-stroke-fill': Math.round(shopProgress * 100) + '%' }
             }),
+            h('div', { key: 'ruler', 'aria-hidden': 'true', className: 'ml-stroke-ruler',
+              style: { display: 'flex', justifyContent: 'space-between', margin: '6px 12px 12px', color: T.dim, fontSize: 10, fontVariantNumeric: 'tabular-nums', pointerEvents: 'none' }
+            }, [0, 25, 50, 75, 100].map(function (value) {
+              return h('span', { key: value, 'data-ml-stroke-tick': value, style: { width: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 } }, [
+                h('span', { key: 'mark', style: { width: 1, height: value % 50 === 0 ? 7 : 4, marginTop: value % 50 === 0 ? 0 : 3, background: T.dim } }),
+                h('span', { key: 'value', style: { lineHeight: '14px', whiteSpace: 'nowrap' } }, value + '%')
+              ]);
+            })),
             h('div', { key: 'poses', role: 'group', 'aria-label': __alloT('stem.machinelab.stroke_positions', 'Working stroke positions'),
               'aria-describedby': 'ml-shop-preview-help',
               style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 6 } },
@@ -9427,19 +9982,22 @@ window.StemLab = window.StemLab || {
             h('p', { key: 'preview-help', id: 'ml-shop-preview-help', style: { margin: '7px 0 0', fontSize: 11, lineHeight: 1.45, color: T.text } },
               __alloT('stem.machinelab.stroke_preview_help', 'Distance previews: ◆ effort · ○ load. One scale for all three positions.')),
             h('p', { key: 'help', id: 'ml-shop-stroke-help', style: { margin: '7px 0 0', fontSize: 11, lineHeight: 1.45, color: T.dim } },
-              __alloT('stem.machinelab.inspect_help', 'Choose a position, then rotate the view to inspect it. The model stays still. These positions show the working stroke of the demonstration.'))
+              d.shopAnimating ? __alloT('stem.machinelab.live_stroke_help', 'The ruler follows the machine: 0% at the start, 100% at full stroke. Hold this pose to inspect the current position.')
+                : __alloT('stem.machinelab.inspect_help', 'Choose a position, then rotate the view to inspect it. The model stays still. These positions show the working stroke of the demonstration.'))
           ]);
         }
         function shopDiscoveryClue() {
+          var turnPositionHelp = __alloT('stem.machinelab.turn_position_guide', 'The diamond follows the handle. Four marks divide one turn into quarters; the open ring marks the start.');
           var clues = {
             lever: [__alloT('stem.machinelab.detect_lever_q', 'Which end of this lever travels farther?'),
               ma === 1 ? __alloT('stem.machinelab.detect_lever_equal', 'The arms are equal, so both ends travel the same distance. Compare the two distance bars.')
                 : ma < 1 ? __alloT('stem.machinelab.detect_lever_short', 'The load end travels farther because its arm is longer. The effort end moves less and needs more force.')
                   : __alloT('stem.machinelab.detect_lever_long', 'The effort end travels farther because its arm is longer. That extra distance trades for less effort force.'), 0, 8, 1.08],
             pulley: [__alloT('stem.machinelab.detect_pulley_q', 'Which rope strands support the load, and which end do you pull?'),
-              __alloT('stem.machinelab.detect_pulley_a', 'Count the small upward arrows: each marks a supporting strand. The free end with the grip is pulled downward; it is not an extra supporting strand.'), 0, 8, 1.08],
+              __alloT('stem.machinelab.detect_pulley_a', 'Count the small upward arrows: each marks a supporting strand. The free end with the grip is pulled downward; it is not an extra supporting strand.') + ' ' +
+                __alloT('stem.machinelab.pulley_rope_bands', 'Follow a contrasting band to see the rope feed around the wheels.'), 0, 8, 1.08],
             windlass: [__alloT('stem.machinelab.detect_windlass_q', 'Does the drum turn with the wheel, or stay still?'),
-              __alloT('stem.machinelab.detect_windlass_a', 'The marked grip and striped drum turn together on the same axle. The drum takes up rope as the load rises.'), 72, 16, 1.18],
+              __alloT('stem.machinelab.detect_windlass_a', 'The marked grip and striped drum turn together on the same axle. The drum takes up rope as the load rises.') + ' ' + turnPositionHelp, 72, 16, 1.18],
             ramp: [__alloT('stem.machinelab.detect_ramp_q', 'Does the crate travel farther along the ramp than it rises?'),
               Number(d.rampHeight) >= Number(d.rampLength)
                 ? __alloT('stem.machinelab.detect_ramp_vertical', 'This ramp is vertical, so the distance along it equals the rise. There is no distance advantage at this setting.')
@@ -9447,9 +10005,57 @@ window.StemLab = window.StemLab || {
             wedge: [__alloT('stem.machinelab.detect_wedge_q', 'How can pushing down make the two halves move sideways?'),
               __alloT('stem.machinelab.detect_wedge_a', 'The two sloping faces redirect the downward push outward. As the wedge descends, a wider part enters the gap and separates the halves.'), 0, 12, 1.08],
             screw: [__alloT('stem.machinelab.detect_screw_q', 'Does the block spin with the handle as it is pressed?'),
-              __alloT('stem.machinelab.detect_screw_a', 'The shaft turns, but the swivel shoe presses straight down without turning the block. The bands move closer together as the block compresses.'), 24, 32, 1.18]
+              __alloT('stem.machinelab.detect_screw_a', 'The shaft turns, but the swivel shoe presses straight down without turning the block. The bands move closer together as the block compresses.') + ' ' + turnPositionHelp, 24, 32, 1.18]
           };
           return clues[bench.id];
+        }
+        function shopMotionMap() {
+          var movements = {
+            lever: ['down', __alloT('stem.machinelab.map_lever_effort', 'Effort end moves down'), 'up', __alloT('stem.machinelab.map_lever_load', 'Load end rises')],
+            pulley: ['down', __alloT('stem.machinelab.map_pulley_effort', 'Free rope is pulled down'), 'up', __alloT('stem.machinelab.map_pulley_load', 'Load rises')],
+            windlass: ['turn', __alloT('stem.machinelab.map_wheel_effort', 'Wheel turns'), 'up', __alloT('stem.machinelab.map_wheel_load', 'Rope lifts the load')],
+            ramp: ['slope', __alloT('stem.machinelab.map_ramp_effort', 'Crate moves along the ramp'), 'up', __alloT('stem.machinelab.map_ramp_load', 'Crate gains height')],
+            wedge: ['down', __alloT('stem.machinelab.map_wedge_effort', 'Wedge moves down'), 'apart', __alloT('stem.machinelab.map_wedge_load', 'Halves move apart')],
+            screw: ['turn', __alloT('stem.machinelab.map_screw_effort', 'Handle turns'), 'down', __alloT('stem.machinelab.map_screw_load', 'Press shoe moves down')]
+          };
+          var motion = movements[bench.id];
+          function directionIcon(direction, color) {
+            var paths = {
+              down: 'M24 8V38 M14 28L24 38L34 28',
+              up: 'M24 40V10 M14 20L24 10L34 20',
+              turn: 'M11 33A16 16 0 1 1 39 14 M30 14H40V4',
+              apart: 'M21 24H5 M12 17L5 24L12 31 M27 24H43 M36 17L43 24L36 31',
+              slope: 'M8 24H40 M30 14L40 24L30 34'
+            };
+            var riseRatio = Number(d.rampHeight) / Number(d.rampLength);
+            var slopeAngle = Math.asin(Math.min(1, Math.max(0, finite(riseRatio) ? riseRatio : 0))) * 180 / Math.PI;
+            return h('svg', { key: 'arrow', viewBox: '0 0 48 48', width: 48, height: 48,
+              'aria-hidden': 'true', focusable: 'false', 'data-ml-motion-direction': direction,
+              style: { flexShrink: 0, color: color } },
+              h('path', { d: paths[direction], transform: direction === 'slope' ? 'rotate(' + (-slopeAngle) + ' 24 24)' : undefined,
+                fill: 'none', stroke: 'currentColor', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+          }
+          return h('div', { key: 'motion-map', className: 'ml-shop-motion-map', role: 'group',
+            'aria-label': __alloT('stem.machinelab.map_title', 'Follow the motion'), style: { margin: '12px 0' }
+          }, [
+            h('style', { key: 'styles' }, '.ml-motion-map-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}@media(max-width:420px){.ml-motion-map-lanes{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.ml-shop-motion-map svg{color:CanvasText!important}}'),
+            h('div', { key: 'lanes', className: 'ml-motion-map-lanes' }, [0, 1].map(function (index) {
+              var color = index ? T.load : T.effort;
+              return h('div', { key: index, 'data-ml-motion-lane': index ? 'load' : 'effort', style: {
+                display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, padding: '12px',
+                borderRadius: 10, border: '1px solid ' + T.border, borderLeft: '3px solid ' + color, background: T.bg
+              } }, [
+                directionIcon(motion[index * 2], color),
+                h('div', { key: 'text', style: { minWidth: 0 } }, [
+                  h('div', { key: 'name', style: { fontSize: 11, fontWeight: 800, color: color, marginBottom: 4 } },
+                    index ? __alloT('stem.machinelab.map_load', 'Load motion') : __alloT('stem.machinelab.map_effort', 'Effort motion')),
+                  h('div', { key: 'direction', style: { fontSize: 13, fontWeight: 750, lineHeight: 1.45, color: T.text } }, motion[index * 2 + 1])
+                ])
+              ]);
+            })),
+            h('p', { key: 'scale', style: { margin: '7px 0 0', fontSize: 11, lineHeight: 1.45, color: T.dim } },
+              __alloT('stem.machinelab.map_not_scale', 'Arrows show motion directions, not distances. Compare distances using the front tracks.'))
+          ]);
         }
         function shopDiscoveryCard() {
           var clue = shopDiscoveryClue();
@@ -9496,6 +10102,7 @@ window.StemLab = window.StemLab || {
             h('details', { key: 'answer-' + bench.id, style: { marginTop: 10, paddingTop: 8, borderTop: '1px solid ' + T.border } }, [
               h('summary', { key: 'reveal', style: { cursor: 'pointer', minHeight: 32, fontSize: 12, fontWeight: 750, lineHeight: '32px' } },
                 __alloT('stem.machinelab.reveal_explanation', 'Reveal explanation')),
+              shopMotionMap(),
               h('p', { key: 'answer', 'data-ml-discovery-answer': '', style: { margin: '4px 0 0', fontSize: 13, lineHeight: 1.55, color: T.text } }, clue[1])
             ])
           ]);
@@ -9504,6 +10111,7 @@ window.StemLab = window.StemLab || {
           if (d.shopAnimating || shopStatus === 'failed') return;
           var runId = (d.shopDemoId || 0) + 1, runBench = bench.id;
           var demoDuration = d.shopSlowMotion && !reducedMotion ? 6600 : 2200;
+          SHOP_POSE.runId = 0;
           updMulti({ shopDemoId: runId, shopAnimating: true, shopMotionProgress: null, shopDemoBench: runBench,
             shopDemoDuration: demoDuration });
           var world = ev && ev.currentTarget && ev.currentTarget.closest('.ml-shop-world');
@@ -9540,6 +10148,7 @@ window.StemLab = window.StemLab || {
           demoId: d.shopAnimating ? d.shopDemoId : 0,
           demoDuration: d.shopDemoDuration === 6600 ? 6600 : 2200, reduced: reducedMotion,
           motionProgress: finite(d.shopMotionProgress) ? shopProgress : null,
+          onPose: recordShopPhase,
           focusMechanism: !!d.shopFocusMechanism,
           startOutline: !!d.shopStartOutline,
           dark: isDark, contrast: isContrast,
@@ -9554,7 +10163,15 @@ window.StemLab = window.StemLab || {
         var completed = Object.keys(d.provenBenches || {}).length;
         return h('div', { key: 'machview' }, [
           benchTabs(),
-          h('style', {key:'shop-layout'}, '@media(max-width:600px){.ml-shop-world .ml-shop-hud{position:relative!important;top:auto!important;left:auto!important;right:auto!important;order:-1;margin-bottom:8px;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}.ml-shop-hud>div{min-width:0!important;max-width:none!important}.ml-shop-hud>div:nth-child(2){grid-column:1/-1;order:3}.ml-shop-world .ml-shop-bay{height:250px!important;min-height:220px!important;flex:0 0 auto!important}.ml-shop-world .ml-shop-legend{position:relative!important;left:auto!important;bottom:auto!important;align-self:flex-start;margin:8px 0 0}}'),
+          h('style', { key: 'station-controls' },
+            '.ml-station-range{-webkit-appearance:none;appearance:none;display:block;box-sizing:border-box;background:transparent;border:0;border-radius:6px;padding:0}' +
+            '.ml-station-range::-webkit-slider-runnable-track{height:8px;border:1px solid var(--ml-setting-border);border-radius:99px;background:linear-gradient(to right,var(--ml-setting-ink) 0%,var(--ml-setting-ink) var(--ml-setting-fill),var(--ml-setting-rest) var(--ml-setting-fill),var(--ml-setting-rest) 100%)}' +
+            '.ml-station-range::-moz-range-track{height:6px;border:1px solid var(--ml-setting-border);border-radius:99px;background:var(--ml-setting-rest)}.ml-station-range::-moz-range-progress{height:6px;border-radius:99px;background:var(--ml-setting-ink)}' +
+            '.ml-station-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;box-sizing:border-box;width:24px;height:24px;margin-top:-9px;border:4px solid var(--ml-setting-rest);border-radius:50%;background:var(--ml-setting-ink);box-shadow:0 0 0 2px var(--ml-setting-ink)}' +
+            '.ml-station-range::-moz-range-thumb{box-sizing:border-box;width:24px;height:24px;border:4px solid var(--ml-setting-rest);border-radius:50%;background:var(--ml-setting-ink);box-shadow:0 0 0 2px var(--ml-setting-ink)}' +
+            '.ml-station-range:focus-visible{outline:3px solid var(--ml-setting-ink);outline-offset:2px}' +
+            '@media(forced-colors:active){.ml-station-range{forced-color-adjust:none;--ml-setting-ink:Highlight!important;--ml-setting-rest:Canvas!important;--ml-setting-border:CanvasText!important}.ml-setting-scale>span>span:first-child{background:CanvasText!important}.ml-setting-track [data-ml-saved-marker]{color:CanvasText!important}.ml-setting-track [data-ml-saved-marker] path{fill:Canvas}}'),
+          h('style', {key:'shop-layout'}, '@media(max-width:600px){.ml-shop-world .ml-shop-hud{position:relative!important;top:auto!important;left:auto!important;right:auto!important;order:-1;margin-bottom:8px;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}.ml-shop-hud>div{min-width:0!important;max-width:none!important}.ml-shop-hud>div:nth-child(2){grid-column:1/-1;order:3}.ml-shop-hud>div:first-child{flex-direction:column;align-items:flex-start!important;gap:7px!important}.ml-shop-hud .ml-shop-station-icon{width:34px!important;height:34px!important}.ml-shop-station-icon svg{max-width:100%;max-height:100%}.ml-shop-hud .ml-shop-station-name{font-size:18px!important}.ml-shop-world .ml-shop-bay{height:250px!important;min-height:220px!important;flex:0 0 auto!important}.ml-shop-world .ml-shop-legend{position:relative!important;left:auto!important;bottom:auto!important;align-self:flex-start;margin:8px 0 0}}'),
           h('div', {
             key: 'world', ref: shopFsRef, className:'ml-shop-world', id: 'ml-shop-panel', role: 'tabpanel',
             'aria-labelledby': 'ml-bench-tab-' + bench.id,
@@ -9565,15 +10182,29 @@ window.StemLab = window.StemLab || {
                 ? '0 18px 45px rgba(0,0,0,.28)' : '0 18px 45px rgba(15,23,42,.11)'
             }
           }, [
+            d.shopAnimating ? h('div', { key: 'demo-phase', className: 'ml-demo-phase',
+              ref: function (el) { shopPhaseElement = el; }, 'data-ml-demo-phase': initialShopPhase,
+              style: { padding: '8px 10px', marginBottom: 8, borderRadius: 9, background: T.bg, border: '1px solid ' + T.border,
+                color: T.text, '--ml-phase-ink': T.accent, '--ml-phase-rest': T.border }
+            }, [
+              h('div', { key: 'label', role: 'status', 'aria-atomic': 'true', 'data-ml-demo-phase-label': '',
+                style: { fontSize: 12, fontWeight: 800, lineHeight: 1.4 } }, shopPhaseLabels[initialShopPhase]),
+              h('div', { key: 'hint', style: { marginTop: 2, fontSize: 11, lineHeight: 1.4, color: T.dim } },
+                __alloT('stem.machinelab.demo_phase_hint', 'Arrows show the working direction. The return resets the demonstration.')),
+              h('div', { key: 'stages', 'aria-hidden': 'true', className: 'ml-demo-phase-stages', style: { display: 'flex', gap: 4, marginTop: 6 } },
+                ['work', 'return'].map(function (phase) { return h('span', { key: phase, 'data-ml-phase-segment': phase,
+                  style: { display: 'block', flex: 1, height: 4, borderRadius: 2, background: 'var(--ml-phase-rest)' } }); })),
+              h('style', { key: 'style' }, '.ml-demo-phase[data-ml-demo-phase=work] [data-ml-phase-segment=work],.ml-demo-phase[data-ml-demo-phase=return] [data-ml-phase-segment=return]{background:var(--ml-phase-ink)!important}.ml-demo-phase[data-ml-demo-phase=held] .ml-demo-phase-stages{display:none!important}@media(forced-colors:active){.ml-demo-phase{--ml-phase-ink:Highlight!important;--ml-phase-rest:GrayText!important}.ml-demo-phase-stages{forced-color-adjust:none}}')
+            ]) : null,
             h('div', {
               key: 'bay', ref: shopGlRef, role: 'img', tabIndex: -1, className:'ml-shop-bay',
               'data-ml-orbitable': 'true',
               onPointerDown: beginShopOrbit, onPointerMove: moveShopOrbit,
               onPointerUp: endShopOrbit, onPointerCancel: endShopOrbit,
               'aria-label': __alloT('stem.machinelab.aria_shop3d', 'Interactive three-dimensional workshop showing the selected simple machine: ') +
-                bench.label + '. ' + __alloT('stem.machinelab.aria_shop3d_shapes', 'A solid diamond marks the effort distance and an open ring marks the load distance on the front tracks. Both distances share one scale. Drag with a mouse or pen to orbit. The camera buttons and panels below provide complete keyboard and numeric equivalents.') + ' ' + __alloT('stem.machinelab.distance_fill_guide', 'Thin rails show the full stroke; wide bars show distance traveled.'),
+                bench.label + '. ' + __alloT('stem.machinelab.aria_shop3d_shapes', 'A solid diamond marks the effort distance and an open ring marks the load distance on the front tracks. Both distances share one scale. Drag with a mouse or pen to orbit. The camera buttons and panels below provide complete keyboard and numeric equivalents.') + ' ' + __alloT('stem.machinelab.distance_fill_guide', 'Thin rails show the full stroke; wide bars show distance traveled. End caps mark the finish.'),
               style: {
-                width: '100%', height: 'clamp(330px, 52vh, 520px)', minHeight: 280,
+                width: '100%', height: d.shopFocusMechanism ? 'clamp(300px, 44vh, 440px)' : 'clamp(330px, 52vh, 520px)', minHeight: d.shopFocusMechanism ? 260 : 280,
                 flex: '1 1 auto', borderRadius: 13, background: T.bg, border: '1px solid ' + T.border,
                 cursor: 'grab', userSelect: 'none'
               }
@@ -9581,52 +10212,60 @@ window.StemLab = window.StemLab || {
             h('div', {
               key: 'hud', 'aria-hidden': 'true', className:'ml-shop-hud',
               style: {
-                position: 'absolute', top: 22, left: 22, right: 22, display: 'flex',
-                alignItems: 'flex-start', justifyContent: 'space-between', gap: 10,
-                flexWrap: 'wrap', pointerEvents: 'none'
+                position: 'relative', order: -1, marginBottom: 8, display: 'grid',
+                gridTemplateColumns: 'minmax(160px, .85fr) minmax(0, 1.5fr) minmax(130px, .65fr)',
+                alignItems: 'stretch', gap: 8, pointerEvents: 'none'
               }
             }, [
               h('div', {
                 key: 'title', style: {
-                  padding: '9px 12px', borderRadius: 12, color: '#f8fafc',
-                  background: 'rgba(7,17,31,.82)', border: '1px solid rgba(255,255,255,.2)',
-                  boxShadow: '0 8px 22px rgba(0,0,0,.24)', backdropFilter: 'blur(8px)'
+                  display: 'flex', alignItems: 'center', gap: 10, minWidth: 0,
+                  padding: '12px', borderRadius: 12, color: T.text,
+                  background: T.bg, border: '1px solid ' + T.border
                 }
               }, [
-                h('div', { key: 'ey', style: { fontSize: 9, fontWeight: 800, letterSpacing: 1.4, textTransform: 'uppercase', color: '#fbbf24' } },
-                  (d.shopAnimating ? (reducedMotion ? __alloT('stem.machinelab.still_demo', 'Still demonstration') : '● ' + __alloT('stem.machinelab.motion_active', 'Motion active')) :
-                    __alloT('stem.machinelab.live_workshop', 'Live workshop'))),
-                h('div', { key: 'nm', style: { marginTop: 2, fontSize: 20, fontWeight: 850 } }, bench.label)
+                h('div', { key: 'schematic', className: 'ml-shop-station-icon', style: { display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 44, height: 44, flexShrink: 0, borderRadius: 10, background: T.accent } }, benchPreview(bench.id, true)),
+                h('div', { key: 'name', style: { minWidth: 0 } }, [
+                  h('div', { key: 'ey', style: { fontSize: 10, lineHeight: 1.4, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: T.dim } },
+                    (d.shopAnimating ? (reducedMotion ? __alloT('stem.machinelab.still_demo', 'Still demonstration') : '● ' + __alloT('stem.machinelab.motion_active', 'Motion active')) :
+                      __alloT('stem.machinelab.live_workshop', 'Live workshop'))),
+                  h('div', { key: 'nm', className: 'ml-shop-station-name', style: { marginTop: 3, fontSize: 20, lineHeight: 1.2, fontWeight: 850 } }, bench.label)
+                ])
               ]),
               h('div', {
                 key: 'observe', style: {
-                  flex: '0 1 330px', maxWidth: '42%', padding: '8px 12px', borderRadius: 12,
-                  color: '#e2e8f0', background: d.shopAnimating ? 'rgba(146,64,14,.9)' : 'rgba(7,17,31,.78)',
-                  border: '1px solid ' + (d.shopAnimating ? 'rgba(251,191,36,.7)' : 'rgba(255,255,255,.16)'),
-                  boxShadow: '0 8px 22px rgba(0,0,0,.18)', backdropFilter: 'blur(8px)',
-                  fontSize: 10, lineHeight: 1.35, textAlign: 'center'
+                  minWidth: 0, padding: '12px 14px', borderRadius: 12,
+                  color: T.text, background: T.bg,
+                  border: '1px solid ' + (d.shopAnimating ? T.accent : T.border),
+                  borderLeft: '3px solid ' + T.accent,
+                  fontSize: 12, lineHeight: 1.5, textAlign: 'left'
                 }
               }, [
-                h('span', { key: 'eye', style: { display: 'block', marginBottom: 2, color: '#fbbf24', fontSize: 9, fontWeight: 850, letterSpacing: 1, textTransform: 'uppercase' } },
+                h('span', { key: 'eye', style: { display: 'block', marginBottom: 4, color: T.accent, fontSize: 10, fontWeight: 850, letterSpacing: 0.8, textTransform: 'uppercase' } },
                   d.shopAnimating ? (reducedMotion ? __alloT('stem.machinelab.inspect_still_demo', 'Inspect the mechanism') : d.shopDemoDuration === 6600 ? __alloT('stem.machinelab.watch_slow_motion', 'Watch in slow motion') : __alloT('stem.machinelab.watch_motion', 'Watch the motion')) : __alloT('stem.machinelab.what_to_notice', 'What to notice')),
                 h('span', { key: 'cue' }, observationCues[bench.id]),
                 bench.id === 'lever' ? h('span', { key: 'arms', style: { display: 'block', marginTop: 4 } },
                   __alloT('stem.machinelab.lever_arm_guides', 'The colored guides beneath the beam measure each arm from the pivot to its contact point.')) : null,
+                bench.id === 'windlass' || bench.id === 'screw' ? h('span', { key: 'turn-marks', style: { display: 'block', marginTop: 4 } },
+                  __alloT('stem.machinelab.turn_position_guide', 'The diamond follows the handle. Four marks divide one turn into quarters; the open ring marks the start.')) : null,
+                bench.id === 'pulley' ? h('span', { key: 'rope-bands', style: { display: 'block', marginTop: 4 } },
+                  __alloT('stem.machinelab.pulley_rope_bands', 'Follow a contrasting band to see the rope feed around the wheels.')) : null,
                 bench.id === 'pulley' ? h('span', { key: 'supports', 'data-ml-pulley-support-guide': '', style: { display: 'block', marginTop: 4 } },
                   __alloT('stem.machinelab.pulley_support_guides', 'The small up arrows mark the supporting strands. Equal arrows show equal tension in this ideal rope; the free end is pulled down.')) : null
               ]),
               h('div', {
                 key: 'metric', style: {
-                  minWidth: 120, padding: '9px 12px', borderRadius: 12, textAlign: 'right',
-                  color: '#f8fafc', background: 'rgba(7,17,31,.82)',
-                  border: '1px solid rgba(255,255,255,.2)', backdropFilter: 'blur(8px)'
+                  minWidth: 0, padding: '12px', borderRadius: 12, textAlign: 'right',
+                  display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                  color: T.text, background: T.bg, border: '1px solid ' + T.border
                 }
               }, [
-                h('div', { key: 'l', style: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: '#cbd5e1' } },
+                h('div', { key: 'l', style: { fontSize: 10, lineHeight: 1.4, letterSpacing: 0.6, textTransform: 'uppercase', color: T.dim } },
                   __alloT('stem.machinelab.ma', 'Mechanical advantage')),
-                h('div', { key: 'v', style: { marginTop: 1, fontSize: 22, fontWeight: 900, color: '#fbbf24' } },
+                h('div', { key: 'v', style: { marginTop: 3, fontSize: 26, lineHeight: 1.2, fontWeight: 900, fontVariantNumeric: 'tabular-nums', color: T.accent } },
                   ma === null ? '—' : fmt(ma, 2) + '×'),
-                ma !== null ? h('div', { key: 'trade', style: { marginTop: 2, fontSize: 9, fontWeight: 750, color: '#cbd5e1' } },
+                ma !== null ? h('div', { key: 'trade', style: { marginTop: 4, fontSize: 10, lineHeight: 1.4, fontWeight: 750, color: T.dim } },
                   __alloT('stem.machinelab.distance_times', 'Distance ×') + fmt(ma, 2) +
                   '  ·  ' + __alloT('stem.machinelab.force_div', 'Force ÷') + fmt(ma, 2)) : null
               ])
@@ -9635,15 +10274,15 @@ window.StemLab = window.StemLab || {
               key: 'legend', 'aria-hidden': 'true', className:'ml-shop-legend',
               style: {
                 position: 'relative', alignSelf: 'flex-start', marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', maxWidth: '100%',
-                padding: '6px 9px', borderRadius: 10, color: '#f8fafc',
-                background: 'rgba(7,17,31,.76)', fontSize: 10, fontWeight: 750,
-                pointerEvents: 'none', backdropFilter: 'blur(8px)'
+                padding: '8px 10px', borderRadius: 10, color: T.text,
+                background: T.bg, border: '1px solid ' + T.border, fontSize: 12, lineHeight: 1.45, fontWeight: 750,
+                pointerEvents: 'none'
               }
             }, [
-              h('span', { key: 'e', 'data-ml-distance-symbol': 'effort', style: { color: isContrast ? '#ffff00' : '#fbbf24' } }, '◆ ' + __alloT('stem.machinelab.effort_path', 'Effort path')),
-              h('span', { key: 'l', 'data-ml-distance-symbol': 'load', style: { color: isContrast ? '#00ffff' : '#7dd3fc' } }, '○ ' + __alloT('stem.machinelab.load_path', 'Load path')),
+              h('span', { key: 'e', 'data-ml-distance-symbol': 'effort', style: { color: T.effort } }, '◆ ' + __alloT('stem.machinelab.effort_path', 'Effort path')),
+              h('span', { key: 'l', 'data-ml-distance-symbol': 'load', style: { color: T.load } }, '○ ' + __alloT('stem.machinelab.load_path', 'Load path')),
               h('span', { key: 'scale' }, __alloT('stem.machinelab.same_distance_scale', 'Same distance scale')),
-              h('span', { key: 'fill', 'data-ml-distance-fill-guide': '', style: { flexBasis: '100%', fontWeight: 500 } }, __alloT('stem.machinelab.distance_fill_guide', 'Thin rails show the full stroke; wide bars show distance traveled.'))
+              h('span', { key: 'fill', 'data-ml-distance-fill-guide': '', style: { flexBasis: '100%', fontWeight: 500 } }, __alloT('stem.machinelab.distance_fill_guide', 'Thin rails show the full stroke; wide bars show distance traveled. End caps mark the finish.'))
             ]),
             camControls(shopCam, __alloT('stem.machinelab.workshop', 'simple-machine workshop'), 'shop'),
             shopMotionInspector(),
@@ -9751,11 +10390,11 @@ window.StemLab = window.StemLab || {
                     __alloT('stem.machinelab.tune_station', 'Tune this station')),
                   h('span', { key: 'p', style: { fontSize: 11, color: T.dim } }, completed + '/6 ' + __alloT('stem.machinelab.proven_short', 'proven'))
                 ])
-              ].concat(bench.controls.map(slider)).concat(
+              ].concat(bench.controls.map(stationSlider)).concat(
                   (band === 'g68' || band === 'g912')
-                    ? [slider({ key: 'loadDistance', label: __alloT('stem.machinelab.lift_distance', 'Load moves'), min: 0.1, max: 3, step: 0.1, unit: 'm' })]
+                    ? [stationSlider({ key: 'loadDistance', label: __alloT('stem.machinelab.lift_distance', 'Load moves'), min: 0.1, max: 3, step: 0.1, unit: 'm' })]
                     : []
-                ), 'controls')
+                ).concat([stationComparison()]), 'controls')
             ]),
             h('div', { key: 'right' }, [
               readout(),

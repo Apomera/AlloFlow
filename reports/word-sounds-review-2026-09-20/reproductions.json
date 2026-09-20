@@ -1,0 +1,44 @@
+{
+  "malformedMissingLetter": {
+    "hiddenIndex": 99,
+    "correctLetter": "x"
+  },
+  "soundSortPhonemeAttribution": [
+    [
+      [
+        "k",
+        "a",
+        "t"
+      ],
+      true,
+      {
+        "presentations": 1
+      }
+    ]
+  ],
+  "rejectedBoardFallback": {
+    "compiledBoard": null,
+    "renderedBoard": {
+      "rime": "at",
+      "options": [
+        "hat"
+      ],
+      "distractors": [
+        "hat"
+      ]
+    }
+  },
+  "unknownFamilyFallback": {
+    "target": "rhythm",
+    "resolved": {
+      "rime": "at",
+      "members": [
+        "cat",
+        "hat",
+        "bat",
+        "mat"
+      ]
+    }
+  },
+  "teacherTransitionTimer": "                  setTimeout(() => {\n                    if (!isMountedRef.current || isProbeMode) return;\n                    // startActivity is the single capability-gated transition\n                    // path and fully prepares the next activity's first item.\n                    startActivity(nextActivity);\n                    setTimeout(() => {\n                      if (!isMountedRef.current) return;\n                      autoDirectorCooldown.current = false;\n                      debugLog(\"Auto-director cooldown CLEARED\");\n                    }, 15000);\n                  }, 2000);\n"
+}

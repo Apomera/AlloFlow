@@ -14,6 +14,10 @@ const root = path.resolve(__dirname, '..');
 // real catalog. A gate that has never been shown to fail on a defect it was written for is a hope.
 const dir = process.env.ALLOPACK_DIR ? path.resolve(process.env.ALLOPACK_DIR) : path.join(root, 'allopacks');
 const files = fs.readdirSync(dir).filter((f) => f.endsWith('.allopack.json')).sort();
+// Include downloadable illustrated editions; keep explicit fixture directories isolated.
+if (!process.env.ALLOPACK_DIR && fs.existsSync(path.join(dir, 'illustrated'))) {
+  files.push(...fs.readdirSync(path.join(dir, 'illustrated')).filter((f) => f.endsWith('.allopack.json')).sort().map((f) => 'illustrated/' + f));
+}
 const read = (p) => JSON.parse(fs.readFileSync(p, 'utf8').replace(/^﻿/, ''));
 
 function syllables(word) {
@@ -271,7 +275,7 @@ for (const f of files) {
   if (faq && faq.data.length < 4) flags.push(`faq has ${faq.data.length} questions`);
   if (frames && frames.data.items.length < 4) flags.push(`sentence-frames has ${frames.data.items.length} frames`);
   if (!/[A-Z0-9.-]+\s*\(/.test(pack.allopack.standards || '')) flags.push('standards lack a parenthetical gloss');
-  if (!pack.allopack.imageShotList) flags.push('no imageShotList companion');
+  if (!pack.allopack.imageShotList && !JSON.stringify(items).includes('data:image/')) flags.push('no imageShotList companion');
   const types = items.map((r) => r.type);
   rows.push({ pack: f.replace('.allopack.json', ''), grade: pack.allopack.gradeLevel, fk: fk ? fk.grade : null, words: fk ? fk.words : 0, wps: fk ? fk.wordsPerSentence : 0, quizPos: posSpread, types: types.length, uniqueTypes: new Set(types).size, flags });
 }

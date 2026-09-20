@@ -146,11 +146,9 @@ describe('the graded answer and the highlighted answer agree', () => {
 
 describe('no path re-derives the answer', () => {
   it('the host grader calls the shared helper', () => {
-    const grader = anti.slice(
-      anti.indexOf('const handleQuizOptionClick = (e, option) =>'),
-      anti.indexOf('const prevFlashcard =')
-    );
-    expect(grader).toContain('flashcardCorrectAnswer(currentItem, flashcardMode, flashcardLang)');
+    const host = fs.readFileSync('host_handlers_source.jsx', 'utf8');
+    const grader = host.slice(host.indexOf('const handleQuizOptionClick ='), host.indexOf('const handleGenerateConceptItem ='));
+    expect(grader).toContain('__d.flashcardCorrectAnswer(currentItem, __d.flashcardMode, __d.flashcardLang)');
     expect(grader).not.toContain('trans.substring(trans.indexOf(":") + 1)');
   });
 

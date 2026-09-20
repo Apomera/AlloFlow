@@ -1,0 +1,2401 @@
+[
+  {
+    "width": 1280,
+    "state": "initial",
+    "errors": [],
+    "headings": [
+      {
+        "text": "BehaviorLens",
+        "y": 16,
+        "height": 28
+      },
+      {
+        "text": "Start with one observation",
+        "y": 582,
+        "height": 20
+      },
+      {
+        "text": "Welcome to BehaviorLens",
+        "y": 741,
+        "height": 28
+      },
+      {
+        "text": "Observe–Describe–Respond Logging(ABC Data Collection)",
+        "y": 1863,
+        "height": 41
+      },
+      {
+        "text": "Live Observation",
+        "y": 1863,
+        "height": 20
+      },
+      {
+        "text": "Frequency Counter",
+        "y": 1863,
+        "height": 20
+      },
+      {
+        "text": "Interval Recording",
+        "y": 2127,
+        "height": 20
+      },
+      {
+        "text": "Data Sheet",
+        "y": 2127,
+        "height": 20
+      },
+      {
+        "text": "Session Data Tracker",
+        "y": 2127,
+        "height": 20
+      },
+      {
+        "text": "IOA Calculator",
+        "y": 2375,
+        "height": 20
+      },
+      {
+        "text": "Task Analysis",
+        "y": 2375,
+        "height": 20
+      },
+      {
+        "text": "Structured Learning Trials(DTT Data Sheet)",
+        "y": 2375,
+        "height": 41
+      },
+      {
+        "text": "What Motivates Me Survey(Preference Assessment)",
+        "y": 2655,
+        "height": 41
+      },
+      {
+        "text": "Latency Recorder",
+        "y": 2655,
+        "height": 20
+      },
+      {
+        "text": "Natural Language ABC",
+        "y": 2655,
+        "height": 20
+      },
+      {
+        "text": "Batch Import",
+        "y": 2934,
+        "height": 20
+      },
+      {
+        "text": "Voice-to-ABC",
+        "y": 2934,
+        "height": 20
+      },
+      {
+        "text": "Operational Definition Builder",
+        "y": 2934,
+        "height": 40
+      },
+      {
+        "text": "AI Pattern Analysis",
+        "y": 3310,
+        "height": 20
+      },
+      {
+        "text": "Behavior Overview",
+        "y": 3310,
+        "height": 20
+      },
+      {
+        "text": "Hypothesis Diagram",
+        "y": 3310,
+        "height": 20
+      },
+      {
+        "text": "Data Triangulation",
+        "y": 3562,
+        "height": 20
+      },
+      {
+        "text": "Impact Calculator",
+        "y": 3562,
+        "height": 20
+      },
+      {
+        "text": "Data Quality Check",
+        "y": 3562,
+        "height": 20
+      },
+      {
+        "text": "Trend Dashboard",
+        "y": 3805,
+        "height": 20
+      },
+      {
+        "text": "Predictive Insights",
+        "y": 3805,
+        "height": 20
+      },
+      {
+        "text": "Ask AlloBot",
+        "y": 3805,
+        "height": 20
+      },
+      {
+        "text": "Specialist Consultation Dashboard(BCBA Consultation)",
+        "y": 4064,
+        "height": 41
+      },
+      {
+        "text": "ABA Graph Engine",
+        "y": 4064,
+        "height": 20
+      },
+      {
+        "text": "Single-Case Design",
+        "y": 4064,
+        "height": 20
+      },
+      {
+        "text": "Time Pattern Finder(Scatterplot Analysis)",
+        "y": 4324,
+        "height": 42
+      },
+      {
+        "text": "Stakeholder Feedback Survey(Social Validity)",
+        "y": 4324,
+        "height": 41
+      },
+      {
+        "text": "Cumulative Progress View(Cumulative Record)",
+        "y": 4324,
+        "height": 41
+      },
+      {
+        "text": "Pattern Validation Analysis(Conditional Probability)",
+        "y": 4613,
+        "height": 41
+      },
+      {
+        "text": "Caseload Dashboard",
+        "y": 4613,
+        "height": 20
+      },
+      {
+        "text": "Cross-Student Comparison",
+        "y": 4613,
+        "height": 20
+      },
+      {
+        "text": "Effect Size Calculator",
+        "y": 4897,
+        "height": 20
+      },
+      {
+        "text": "Progress Monitor",
+        "y": 4897,
+        "height": 20
+      },
+      {
+        "text": "Competing Pathways",
+        "y": 4897,
+        "height": 20
+      },
+      {
+        "text": "Can't Do / Won't Do",
+        "y": 5160,
+        "height": 20
+      },
+      {
+        "text": "Behavior Timeline Heatmap",
+        "y": 5160,
+        "height": 20
+      },
+      {
+        "text": "SMART Goal Builder",
+        "y": 5529,
+        "height": 20
+      },
+      {
+        "text": "Student–Teacher Agreement(Behavior Contract)",
+        "y": 5529,
+        "height": 41
+      },
+      {
+        "text": "Fidelity Checklist",
+        "y": 5529,
+        "height": 20
+      },
+      {
+        "text": "Feasibility Check",
+        "y": 5789,
+        "height": 20
+      },
+      {
+        "text": "GAS Rubric",
+        "y": 5789,
+        "height": 20
+      },
+      {
+        "text": "Pocket BIP",
+        "y": 5789,
+        "height": 20
+      },
+      {
+        "text": "Intervention Plan",
+        "y": 6033,
+        "height": 20
+      },
+      {
+        "text": "Progress Narrative",
+        "y": 6033,
+        "height": 20
+      },
+      {
+        "text": "IEP Meeting Prep",
+        "y": 6033,
+        "height": 20
+      },
+      {
+        "text": "Safety & Wellbeing Screening(Risk Screening)",
+        "y": 6291,
+        "height": 41
+      },
+      {
+        "text": "BIP Generator",
+        "y": 6291,
+        "height": 20
+      },
+      {
+        "text": "Positive Reinforcement Planner(DR Strategy Selector)",
+        "y": 6291,
+        "height": 41
+      },
+      {
+        "text": "Communication Skills Planner(FCT Template)",
+        "y": 6571,
+        "height": 41
+      },
+      {
+        "text": "Maintenance & Generalization",
+        "y": 6571,
+        "height": 40
+      },
+      {
+        "text": "Support Plan Fidelity(Treatment Integrity)",
+        "y": 6571,
+        "height": 42
+      },
+      {
+        "text": "IEP Goal Generator",
+        "y": 6854,
+        "height": 20
+      },
+      {
+        "text": "MTSS/RTI Tiers",
+        "y": 6854,
+        "height": 20
+      },
+      {
+        "text": "Progress Reports",
+        "y": 6854,
+        "height": 20
+      },
+      {
+        "text": "Positive Behavior Tracker(Token Board)",
+        "y": 7190,
+        "height": 41
+      },
+      {
+        "text": "Emotional Regulation Cycle(Escalation Cycle)",
+        "y": 7190,
+        "height": 41
+      },
+      {
+        "text": "Preference & Motivation Finder(Reinforcer Assessment)",
+        "y": 7190,
+        "height": 41
+      },
+      {
+        "text": "Choice Board",
+        "y": 7470,
+        "height": 20
+      },
+      {
+        "text": "Traffic Light",
+        "y": 7470,
+        "height": 20
+      },
+      {
+        "text": "Student Self-Check",
+        "y": 7470,
+        "height": 20
+      },
+      {
+        "text": "My Progress Quest",
+        "y": 7713,
+        "height": 20
+      },
+      {
+        "text": "Calming & Co-Regulation Toolkit(De-escalation Toolkit)",
+        "y": 7713,
+        "height": 41
+      },
+      {
+        "text": "Self-Regulation Strategy Builder(Replacement Behavior Planner)",
+        "y": 7713,
+        "height": 62
+      },
+      {
+        "text": "Motivation & Preferences Survey(Reinforcement Inventory)",
+        "y": 8014,
+        "height": 41
+      },
+      {
+        "text": "Replacement Behavior Tracker",
+        "y": 8014,
+        "height": 40
+      },
+      {
+        "text": "Environment Audit",
+        "y": 8352,
+        "height": 20
+      },
+      {
+        "text": "Cultural Context Reflection",
+        "y": 8352,
+        "height": 20
+      },
+      {
+        "text": "Strength-Based Reframe",
+        "y": 8352,
+        "height": 20
+      },
+      {
+        "text": "Equity & Self-Awareness Check(Bias Reflection Monitor)",
+        "y": 8615,
+        "height": 41
+      },
+      {
+        "text": "Restorative Conversation Guide",
+        "y": 8615,
+        "height": 40
+      },
+      {
+        "text": "Home Note",
+        "y": 8979,
+        "height": 20
+      },
+      {
+        "text": "Student Snapshot Exchange",
+        "y": 8979,
+        "height": 20
+      },
+      {
+        "text": "FERPA Consent Manager",
+        "y": 8979,
+        "height": 20
+      },
+      {
+        "text": "Home Behavior Log",
+        "y": 9218,
+        "height": 20
+      },
+      {
+        "text": "Family Voice",
+        "y": 9218,
+        "height": 20
+      },
+      {
+        "text": "Communication Log",
+        "y": 9218,
+        "height": 20
+      },
+      {
+        "text": "Routine Hotspot Matrix",
+        "y": 9555,
+        "height": 20
+      },
+      {
+        "text": "Crisis Plan",
+        "y": 9555,
+        "height": 20
+      },
+      {
+        "text": "Relationship Map",
+        "y": 9555,
+        "height": 20
+      },
+      {
+        "text": "Proactive Environment Planner(Antecedent Modification Planner)",
+        "y": 9813,
+        "height": 62
+      },
+      {
+        "text": "Export Reports",
+        "y": 10200,
+        "height": 20
+      },
+      {
+        "text": "Record Review",
+        "y": 10200,
+        "height": 20
+      },
+      {
+        "text": "ABA Quick Guide",
+        "y": 10200,
+        "height": 20
+      },
+      {
+        "text": "Supportive Conversation Practice(Counseling Simulation)",
+        "y": 10443,
+        "height": 41
+      },
+      {
+        "text": "Practice Sandbox",
+        "y": 10443,
+        "height": 20
+      },
+      {
+        "text": "ABA Concept Glossary",
+        "y": 10443,
+        "height": 20
+      },
+      {
+        "text": "Guided Workflows",
+        "y": 10703,
+        "height": 20
+      },
+      {
+        "text": "Team Notes",
+        "y": 10703,
+        "height": 20
+      },
+      {
+        "text": "Session Notes",
+        "y": 10703,
+        "height": 20
+      },
+      {
+        "text": "PD Learning Path",
+        "y": 10951,
+        "height": 20
+      },
+      {
+        "text": "ABA Knowledge Quiz",
+        "y": 10951,
+        "height": 20
+      },
+      {
+        "text": "What's the Function?",
+        "y": 10951,
+        "height": 20
+      },
+      {
+        "text": "Virtual Practicum",
+        "y": 11210,
+        "height": 20
+      },
+      {
+        "text": "ABA Case Study Training",
+        "y": 11210,
+        "height": 20
+      },
+      {
+        "text": "AI Observation Coach",
+        "y": 11210,
+        "height": 20
+      },
+      {
+        "text": "Workspace Sharing",
+        "y": 11473,
+        "height": 20
+      },
+      {
+        "text": "Print-Ready Report",
+        "y": 11473,
+        "height": 20
+      },
+      {
+        "text": "MI Practice Simulator",
+        "y": 11473,
+        "height": 20
+      },
+      {
+        "text": "Skill Tracker & Mentorship",
+        "y": 11751,
+        "height": 20
+      }
+    ],
+    "tools": 101,
+    "buttons": 304,
+    "scrolls": [
+      {
+        "height": 785,
+        "content": 11947
+      }
+    ],
+    "text": "◇\nBehaviorLens\n\nBehavioral Observation & Analysis\n\n◇\n💾 Local only\n🤖 AI: OFF\n👨‍👩‍👧 Family\n👤 SELECT STUDENT\nYOUR ROLE:\n👩‍🏫 Teacher\n👪 Parent\n📊 BCBA / Specialist\n— Adjective —\n— Animal —\nPick a codename...\n🎲\n⚙️\nSANDBOX CONFIG\n📅 Period\n7 days\n14 days\n30 days\n60 days\n90 days\n📝 Entries\n10 entries\n15 entries\n25 entries\n40 entries\n60 entries\n🚀\nLoad Demo (14d / 25 entries)\nStart with one observation\n\nWorking with Eagle. Choose the next step below.\n\n1. Capture an ABC observation\n2. Define the behavior clearly\n3. Review the observations\n✕\n👋\nWelcome to BehaviorLens\n\n80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:\n\n👩‍🏫\nTeacher\nStart with ABC Data\n👪\nParent\nHome Behavior Log\n📊\nBCBA / Specialist\nABA Graph Engine\n🎓\nOr explore the PD Learning Path →\n🚀 QUICK-START PATHWAYS\n⚡\n5-Min Quick Start\n\nLoad sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly\n\n🧭\nGuided FBA Workflow\n\nStep-by-step FBA process with scenario practice and AI coaching\n\n🏅\nSkill Tracker Journey\n\nTrack your growth from Novice to Practitioner with guided challenges\n\nAll\n📋\nData Collection\n🧠\nAnalysis & Insights\n🎯\nPlanning & Goals\n⭐\nStudent Support\n🌍\nEquity & Culture\n👪\nFamily & Team\n🏫\nEnvironment\n🔧\nUtilities\n⚡\nQUICK LAUNCH\nCore clinical tools — one tap access\n🧭\nTool Wizard\n📝\nABC Data\n📊\nJABA Graphs\n🔬\nSCD Manager\n📐\nEffect Size\n🔗\nHypothesis\n💾 Download backup\n📂 Load Workspace\n\nChanges save automatically in this browser. Download a backup to keep a file copy.\n\n👤\nStudent Profile\n— Eagle\n▼\n✕\n📋\n🧭 STEP 2 OF 7\nRecord ABC Data\n\nStart documenting Antecedent-Behavior-Consequence observations\n\n→ Open Tool\n17% through FBA workflow\n📋\n📋 Data Collection\n15\n▾\n☆\n📋\nObserve–Describe–Respond Logging(ABC Data Collection)\n\nRecord \nantecedent\n-\nbehavior\n-\nconsequence\n data for functional analysis\n\nOpen ABC Data Collection\n☆\n🔍\nLive Observation\n\nFullscreen observation mode with \nfrequency\n, \nduration\n, interval, and \nlatency\n recording\n\nOpen Live Observation\n☆\n🔢\nFrequency Counter\n\nQuick-click tap counter for rapid in-class \nbehavior\n tallying\n\nOpen Frequency Counter\n☆\n⏱️\nInterval Recording\n\nVisual grid with partial, whole, and momentary recording modes\n\nOpen Interval Recording\n☆\n📋\nData Sheet\n\nPrintable \nfrequency\n, \nduration\n, \nABC\n, or \nlatency\n data sheets\n\nOpen Data Sheet\n☆\n📋\nSession Data Tracker\n\nSystematic session-based behavioral measurement with rate calculation\n\nOpen Session Data Tracker\n☆\n🤝\nIOA Calculator\n\nInter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count\n\nOpen IOA Calculator\n☆\n📝\nTask Analysis\n\nBreak skills into teachable steps with forward, backward, or total-task chaining and \nprompt\n tracking\n\nOpen Task Analysis\n☆\n🎯\nStructured Learning Trials(DTT Data Sheet)\n\nDiscrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance\n\nOpen DTT Data Sheet\n☆\n⭐\nWhat Motivates Me Survey(Preference Assessment)\n\nSystematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols\n\nOpen Preference Assessment\n☆\n⏱️\nLatency Recorder\n\nStimulus-to-response time measurement with mean, median, and range statistics\n\nOpen Latency Recorder\n☆\n✏️\nNatural Language ABC\n\nType or paste observation notes in everyday English — AI structures them into \nABC\n entries automatically\n\nOpen Natural Language ABC\n☆\n📥\nBatch Import\n\nImport historical \nABC\n data or student profiles from CSV files — validates, previews, and merges with existing data\n\nOpen Batch Import\n☆\n🎙️\nVoice-to-ABC\n\nSpeak your observations naturally — AI extracts structured \nABC\n entries from your real-time voice transcript\n\nOpen Voice-to-ABC\n☆\n🔬\nOperational Definition Builder\n\nTurn vague descriptions into observable, measurable definitions using standard ABA dimensions + the Dead Man's Test (AI-assisted, not a BACB-credentialed output)\n\nOpen Operational Definition Builder\n🧠\n🧠 Analysis & Insights\n23\n▾\n☆\n🧠\nAI Pattern Analysis\n\nAI-powered functional \nbehavior\n analysis based on your collected data\n\nAdd at least 3 ABC observations before running AI analysis.\n☆\n📊\nBehavior Overview\n\nVisual dashboard with trends, heatmap, and data summaries\n\nOpen Behavior Overview\n☆\n🔗\nHypothesis Diagram\n\nVisual \nfunction\n hypothesis flow from \nABC\n data with AI generation\n\nAdd observations to use this tool\n☆\n🔺\nData Triangulation\n\nCross-reference \nABC\n, observations, and AI analysis for convergence\n\nOpen Data Triangulation\n☆\n⏱️\nImpact Calculator\n\nQuantify lost instructional time and estimated annual cost\n\nOpen Impact Calculator\n☆\n✅\nData Quality Check\n\nAI-powered review of your \nABC\n entries with specific improvement suggestions\n\nOpen Data Quality Check\n☆\n📊\nTrend Dashboard\n\nSVG charts showing intensity trends, setting \nfrequency\n, and day/time heatmap\n\nOpen Trend Dashboard\n☆\n🔮\nPredictive Insights\n\nAI-powered pattern analysis predicting when, where, and what triggers behaviors — with prevention strategies\n\nOpen Predictive Insights\n☆\n🤖\nAsk AlloBot\n\nChat with AI about \nbehavior\n strategies, \nFBA\n, \nBIP\n, and intervention planning\n\nOpen Ask AlloBot\n☆\n📊\nSpecialist Consultation Dashboard(BCBA Consultation)\n\nData dashboard for BCBAs + printable handoff packet for consultation\n\nOpen BCBA Consultation\n☆\n📈\nABA Graph Engine\n\nPublication-standard graphs with phase lines, trend lines, and visual analysis\n\nOpen ABA Graph Engine\n☆\n🔬\nSingle-Case Design\n\nAB, ABAB, Multiple \nBaseline\n, Alternating Treatments, Changing Criterion\n\nOpen Single-Case Design\n☆\n📅\nTime Pattern Finder(Scatterplot Analysis)\n\nTime-of-day × \nbehavior\n grid to identify temporal patterns — auto-populates from \nABC\n data\n\nOpen Scatterplot Analysis\n☆\n📋\nStakeholder Feedback Survey(Social Validity)\n\nTARF and IRP-15 scales for measuring treatment acceptability — required for publication\n\nOpen Social Validity\n☆\n📈\nCumulative Progress View(Cumulative Record)\n\nClassic Skinner-style cumulative \nfrequency\n graph — the heritage of ABA data display\n\nOpen Cumulative Record\n☆\n📐\nPattern Validation Analysis(Conditional Probability)\n\nForeground vs background probability analysis to validate \nABC\n hypotheses with data\n\nOpen Conditional Probability\n☆\n👥\nCaseload Dashboard\n\nBird's-eye overview of all students — status indicators, trends, safety alerts, and AI caseload summary\n\nOpen Caseload Dashboard\n☆\n📊\nCross-Student Comparison\n\nLoad multiple student workspaces to compare \nbehavior\n patterns, intensity levels, and trends side-by-side with AI analysis\n\nOpen Cross-Student Comparison\n☆\n📐\nEffect Size Calculator\n\nCalculate Tau-U, NAP, and PND to quantify intervention effectiveness with visual phase comparison\n\nOpen Effect Size Calculator\n☆\n📈\nProgress Monitor\n\nTrack \nbehavior\n \nfrequency\n over time with aim lines, phase change markers, trend analysis, and daily summary stats\n\nOpen Progress Monitor\n☆\n🔀\nCompeting Pathways\n\nVisual model mapping problem, replacement, and competing behaviors for \nFBA\n/\nBIP\n planning\n\nOpen Competing Pathways\n☆\n🔍\nCan't Do / Won't Do\n\nSkill deficit vs performance deficit assessment through structured probes\n\nOpen Can't Do / Won't Do\n☆\n📅\nBehavior Timeline Heatmap\n\nVisualize incident patterns across 4 school weeks in a color-coded calendar grid with drill-down\n\n🆕 NewOpen Behavior Timeline Heatmap\n🎯\n🎯 Planning & Goals\n18\n▾\n☆\n🎯\nSMART Goal Builder\n\nStep-by-step behavioral goal construction with AI suggestions\n\nOpen SMART Goal Builder\n☆\n📜\nStudent–Teacher Agreement(Behavior Contract)\n\nAI-drafted contract with student and teacher sections\n\nOpen Behavior Contract\n☆\n✅\nFidelity Checklist\n\nAI-generated daily \nBIP\n implementation checklist\n\nOpen Fidelity Checklist\n☆\n⚖️\nFeasibility Check\n\n5-question contextual fit assessment with AI recommendations\n\nOpen Feasibility Check\n☆\n📐\nGAS Rubric\n\nGoal Attainment Scaling with AI-generated descriptors\n\nOpen GAS Rubric\n☆\n📇\nPocket BIP\n\nCompact index-card \nBIP\n summary for clipboard carry\n\nOpen Pocket BIP\n☆\n📋\nIntervention Plan\n\nAI-generated multi-week intervention plan with measurable goals and milestones\n\nOpen Intervention Plan\n☆\n📈\nProgress Narrative\n\nIEP-ready progress monitoring paragraphs from accumulated behavioral data\n\nOpen Progress Narrative\n☆\n📄\nIEP Meeting Prep\n\nAI-generated meeting preparation packet with data summary, talking points, and next steps\n\nOpen IEP Meeting Prep\n☆\n🛡️\nSafety & Wellbeing Screening(Risk Screening)\n\nSafety reflection checklist + AI pattern detection (not a formal threat-assessment instrument)\n\nOpen Risk Screening\n☆\n📄\nBIP Generator\n\nSynthesize \nABC\n and preference data into a formal, editable \nBIP\n document\n\nOpen BIP Generator\n☆\n🎯\nPositive Reinforcement Planner(DR Strategy Selector)\n\nChoose the right differential \nreinforcement\n strategy (\nDRA\n, \nDRI\n, \nDRO\n, DRL)\n\nOpen DR Strategy Selector\n☆\n💬\nCommunication Skills Planner(FCT Template)\n\nFunctional Communication Training planning with modality selection\n\nOpen FCT Template\n☆\n🔄\nMaintenance & Generalization\n\nTrack skill retention post-mastery and \ngeneralization\n across settings, people, and materials\n\nOpen Maintenance & Generalization\n☆\n✅\nSupport Plan Fidelity(Treatment Integrity)\n\nDocument whether interventions are implemented as designed — component-level fidelity tracking\n\nOpen Treatment Integrity\n☆\n📄\nIEP Goal Generator\n\nAI-generated present levels, SMART goals, objectives, accommodations, and progress monitoring plans\n\nAdd observations to use this tool\n☆\n🏗️\nMTSS/RTI Tiers\n\nVisual 3-tier pyramid for managing multi-tiered supports with AI-powered tier placement recommendations\n\nOpen MTSS/RTI Tiers\n☆\n📊\nProgress Reports\n\nAI-generated progress reports with data summaries, trend analysis, goal progress, and parent-friendly language option\n\nOpen Progress Reports\n⭐\n⭐ Student Support\n11\n▾\n☆\n⭐\nPositive Behavior Tracker(Token Board)\n\nVisual \nreinforcement\n tracker for positive \nbehavior\n support\n\nOpen Token Board\n☆\n🔄\nEmotional Regulation Cycle(Escalation Cycle)\n\nColvin & Sugai 7-phase emotional regulation model with personalized strategies\n\nOpen Escalation Cycle\n☆\n🏆\nPreference & Motivation Finder(Reinforcer Assessment)\n\nPreference inventory with AI-recommended reinforcers\n\nOpen Reinforcer Assessment\n☆\n🃏\nChoice Board\n\nFullscreen student-facing visual choice overlay\n\nOpen Choice Board\n☆\n🚦\nTraffic Light\n\nStudent-facing red/yellow/green \nbehavior\n zone poster\n\nOpen Traffic Light\n☆\n🪞\nStudent Self-Check\n\nStudent-facing mood check-in and reflection journal — capturing their voice\n\nOpen Student Self-Check\n☆\n🎮\nMy Progress Quest\n\nStudent-facing mood tracker with streaks, badges, quests, and reflection journal\n\nOpen My Progress Quest\n☆\n🧘\nCalming & Co-Regulation Toolkit(De-escalation Toolkit)\n\nBreathing exercises, visual timers, sensory breaks, and grounding — real-time calming support\n\nOpen De-escalation Toolkit\n☆\n🔄\nSelf-Regulation Strategy Builder(Replacement Behavior Planner)\n\nMap behaviors of concern to functionally equivalent replacements with teaching strategies\n\nOpen Replacement Behavior Planner\n☆\n⭐\nMotivation & Preferences Survey(Reinforcement Inventory)\n\nStructured motivation survey — identify what drives each student across 6 categories\n\nOpen Reinforcement Inventory\n☆\n🔄\nReplacement Behavior Tracker\n\nTrack teaching trials and monitor acquisition of replacement behaviors\n\nOpen Replacement Behavior Tracker\n🌍\n🌍 Equity & Culture\n5\n▾\n☆\n🏫\nEnvironment Audit\n\n8-item classroom environment checklist with AI recommendations\n\nOpen Environment Audit\n☆\n🌍\nCultural Context Reflection\n\n8-question pause-and-reflect checklist before interpreting \nbehavior\n through a cultural humility lens\n\nOpen Cultural Context Reflection\n☆\n✨\nStrength-Based Reframe\n\nAI rewrites deficit-based descriptions into asset-focused, strengths-based language\n\nOpen Strength-Based Reframe\n☆\n🪞\nEquity & Self-Awareness Check(Bias Reflection Monitor)\n\nGently surfaces patterns in your data for reflection on potential implicit bias — growth, not guilt\n\nOpen Bias Reflection Monitor\n☆\n💛\nRestorative Conversation Guide\n\nStep-by-step scripts for harm repair, community circles, and reintegration conferences\n\nOpen Restorative Conversation Guide\n👪\n👪 Family & Team\n6\n▾\n☆\n📝\nHome Note\n\nAI-drafted parent communication with tone selector\n\nOpen Home Note\n☆\n📦\nStudent Snapshot Exchange\n\nExport & import JSON snapshots for parent–teacher data exchange\n\nOpen Student Snapshot Exchange\n☆\n📋\nFERPA Consent Manager\n\nCustomizable consent form for parent data exchange — edit, print, share as JSON\n\nOpen FERPA Consent Manager\n☆\n🏠\nHome Behavior Log\n\nSimplified parent-friendly \nbehavior\n logging with everyday language\n\nOpen Home Behavior Log\n☆\n👪\nFamily Voice\n\nStructured form for families to share observations, cultural insights, and celebrations — with AI translation\n\nOpen Family Voice\n☆\n📞\nCommunication Log\n\nTwo-way family contact tracker with follow-ups — ensure no family falls through the cracks\n\nOpen Communication Log\n🏫\n🏫 Environment\n4\n▾\n☆\n🗓️\nRoutine Hotspot Matrix\n\nMap behavioral patterns to daily routine periods with AI analysis\n\nOpen Routine Hotspot Matrix\n☆\n🚨\nCrisis Plan\n\n3-tier emergency protocol with AI-drafted safety plan\n\nOpen Crisis Plan\n☆\n🗺️\nRelationship Map\n\nVisual diagram of student connections — trusted adults, peers, family, mentors — with gap analysis\n\nOpen Relationship Map\n☆\n🛠️\nProactive Environment Planner(Antecedent Modification Planner)\n\nAI-powered environmental change recommendations to prevent behaviors before they start\n\nOpen Antecedent Modification Planner\n🔧\n🔧 Utilities\n19\n▾\n☆\n📥\nExport Reports\n\nDownload data as JSON, CSV, text reports, or printable PDF portfolio\n\nOpen Export Reports\n☆\n📄\nRecord Review\n\nPaste IEP/eval text for AI-powered structured summary\n\nOpen Record Review\n☆\n📚\nABA Quick Guide\n\nSearchable glossary, \nreinforcement\n schedules, decision tree & common mistakes\n\nOpen ABA Quick Guide\n☆\n🎭\nSupportive Conversation Practice(Counseling Simulation)\n\nAI role-play with student personas for counseling practice\n\nOpen Counseling Simulation\n☆\n🎓\nPractice Sandbox\n\nLoad simulated student data for PD, pre-service training, or learning ABA without real students\n\nOpen Practice Sandbox\n☆\n📖\nABA Concept Glossary\n\n25+ searchable ABA terms with plain-language definitions and real-world examples\n\nOpen ABA Concept Glossary\n☆\n🧭\nGuided Workflows\n\nStep-by-step guided workflows for \nFBA\n, \nBIP\n, and RTI \nbehavior\n tiers with AI coaching\n\nOpen Guided Workflows\n☆\n🤝\nTeam Notes\n\nMulti-role timestamped collaboration thread for teachers, paras, counselors, and parents\n\nOpen Team Notes\n☆\n📝\nSession Notes\n\nTimestamped observation notes with voice dictation — capture context as it happens\n\nOpen Session Notes\n☆\n🎓\nPD Learning Path\n\nGuided onboarding modules for building ABA skills step-by-step\n\nOpen PD Learning Path\n☆\n🧪\nABA Knowledge Quiz\n\nTest your ABA knowledge — earn a competency badge at 80%+\n\nOpen ABA Knowledge Quiz\n☆\n🧠\nWhat's the Function?\n\nInteractive clinical scenarios to practice identifying behavioral functions via the AC model\n\nOpen What's the Function?\n☆\n🎬\nVirtual Practicum\n\nPractice MTS, Partial, and Whole \nInterval recording\n against simulated scenarios with accuracy grading\n\nOpen Virtual Practicum\n☆\n🎓\nABA Case Study Training\n\nAI-generated case studies with 4-phase clinical reasoning and scoring\n\nOpen ABA Case Study Training\n☆\n🎓\nAI Observation Coach\n\nReal-time coaching on your data collection quality — identifies gaps, suggests improvements, and rates your data\n\nOpen AI Observation Coach\n☆\n🤝\nWorkspace Sharing\n\nShare workspace data with team members using role-based views — BCBA, teacher, or parent-friendly exports\n\nOpen Workspace Sharing\n☆\n📄\nPrint-Ready Report\n\nGenerate a professional, print-ready progress report with inline charts, AI recommendations, and audience-specific language\n\nOpen Print-Ready Report\n☆\n🗣️\nMI Practice Simulator\n\nPractice motivational interviewing with AI-powered student simulations\n\n🎮 InteractiveOpen MI Practice Simulator\n☆\n🏅\nSkill Tracker & Mentorship\n\nTrack your ABA competency growth across domains — earn badges, complete challenges, and level up from Novice to Practitioner\n\n🆕 NewOpen Skill Tracker & Mentorship\n💾 Download backup\n📂 Load Workspace"
+  },
+  {
+    "width": 1280,
+    "state": "welcome-dismiss",
+    "pointerWorks": true
+  },
+  {
+    "width": 1280,
+    "state": "returning",
+    "errors": [],
+    "headings": [
+      {
+        "text": "BehaviorLens",
+        "y": 16,
+        "height": 28
+      },
+      {
+        "text": "Start with one observation",
+        "y": 582,
+        "height": 20
+      },
+      {
+        "text": "Observe–Describe–Respond Logging(ABC Data Collection)",
+        "y": 1460,
+        "height": 41
+      },
+      {
+        "text": "Live Observation",
+        "y": 1460,
+        "height": 20
+      },
+      {
+        "text": "Frequency Counter",
+        "y": 1460,
+        "height": 20
+      },
+      {
+        "text": "Interval Recording",
+        "y": 1724,
+        "height": 20
+      },
+      {
+        "text": "Data Sheet",
+        "y": 1724,
+        "height": 20
+      },
+      {
+        "text": "Session Data Tracker",
+        "y": 1724,
+        "height": 20
+      },
+      {
+        "text": "IOA Calculator",
+        "y": 1972,
+        "height": 20
+      },
+      {
+        "text": "Task Analysis",
+        "y": 1972,
+        "height": 20
+      },
+      {
+        "text": "Structured Learning Trials(DTT Data Sheet)",
+        "y": 1972,
+        "height": 41
+      },
+      {
+        "text": "What Motivates Me Survey(Preference Assessment)",
+        "y": 2252,
+        "height": 41
+      },
+      {
+        "text": "Latency Recorder",
+        "y": 2252,
+        "height": 20
+      },
+      {
+        "text": "Natural Language ABC",
+        "y": 2252,
+        "height": 20
+      },
+      {
+        "text": "Batch Import",
+        "y": 2531,
+        "height": 20
+      },
+      {
+        "text": "Voice-to-ABC",
+        "y": 2531,
+        "height": 20
+      },
+      {
+        "text": "Operational Definition Builder",
+        "y": 2531,
+        "height": 40
+      },
+      {
+        "text": "AI Pattern Analysis",
+        "y": 2907,
+        "height": 20
+      },
+      {
+        "text": "Behavior Overview",
+        "y": 2907,
+        "height": 20
+      },
+      {
+        "text": "Hypothesis Diagram",
+        "y": 2907,
+        "height": 20
+      },
+      {
+        "text": "Data Triangulation",
+        "y": 3159,
+        "height": 20
+      },
+      {
+        "text": "Impact Calculator",
+        "y": 3159,
+        "height": 20
+      },
+      {
+        "text": "Data Quality Check",
+        "y": 3159,
+        "height": 20
+      },
+      {
+        "text": "Trend Dashboard",
+        "y": 3402,
+        "height": 20
+      },
+      {
+        "text": "Predictive Insights",
+        "y": 3402,
+        "height": 20
+      },
+      {
+        "text": "Ask AlloBot",
+        "y": 3402,
+        "height": 20
+      },
+      {
+        "text": "Specialist Consultation Dashboard(BCBA Consultation)",
+        "y": 3661,
+        "height": 41
+      },
+      {
+        "text": "ABA Graph Engine",
+        "y": 3661,
+        "height": 20
+      },
+      {
+        "text": "Single-Case Design",
+        "y": 3661,
+        "height": 20
+      },
+      {
+        "text": "Time Pattern Finder(Scatterplot Analysis)",
+        "y": 3921,
+        "height": 42
+      },
+      {
+        "text": "Stakeholder Feedback Survey(Social Validity)",
+        "y": 3921,
+        "height": 41
+      },
+      {
+        "text": "Cumulative Progress View(Cumulative Record)",
+        "y": 3921,
+        "height": 41
+      },
+      {
+        "text": "Pattern Validation Analysis(Conditional Probability)",
+        "y": 4210,
+        "height": 41
+      },
+      {
+        "text": "Caseload Dashboard",
+        "y": 4210,
+        "height": 20
+      },
+      {
+        "text": "Cross-Student Comparison",
+        "y": 4210,
+        "height": 20
+      },
+      {
+        "text": "Effect Size Calculator",
+        "y": 4494,
+        "height": 20
+      },
+      {
+        "text": "Progress Monitor",
+        "y": 4494,
+        "height": 20
+      },
+      {
+        "text": "Competing Pathways",
+        "y": 4494,
+        "height": 20
+      },
+      {
+        "text": "Can't Do / Won't Do",
+        "y": 4757,
+        "height": 20
+      },
+      {
+        "text": "Behavior Timeline Heatmap",
+        "y": 4757,
+        "height": 20
+      },
+      {
+        "text": "SMART Goal Builder",
+        "y": 5126,
+        "height": 20
+      },
+      {
+        "text": "Student–Teacher Agreement(Behavior Contract)",
+        "y": 5126,
+        "height": 41
+      },
+      {
+        "text": "Fidelity Checklist",
+        "y": 5126,
+        "height": 20
+      },
+      {
+        "text": "Feasibility Check",
+        "y": 5386,
+        "height": 20
+      },
+      {
+        "text": "GAS Rubric",
+        "y": 5386,
+        "height": 20
+      },
+      {
+        "text": "Pocket BIP",
+        "y": 5386,
+        "height": 20
+      },
+      {
+        "text": "Intervention Plan",
+        "y": 5630,
+        "height": 20
+      },
+      {
+        "text": "Progress Narrative",
+        "y": 5630,
+        "height": 20
+      },
+      {
+        "text": "IEP Meeting Prep",
+        "y": 5630,
+        "height": 20
+      },
+      {
+        "text": "Safety & Wellbeing Screening(Risk Screening)",
+        "y": 5888,
+        "height": 41
+      },
+      {
+        "text": "BIP Generator",
+        "y": 5888,
+        "height": 20
+      },
+      {
+        "text": "Positive Reinforcement Planner(DR Strategy Selector)",
+        "y": 5888,
+        "height": 41
+      },
+      {
+        "text": "Communication Skills Planner(FCT Template)",
+        "y": 6168,
+        "height": 41
+      },
+      {
+        "text": "Maintenance & Generalization",
+        "y": 6168,
+        "height": 40
+      },
+      {
+        "text": "Support Plan Fidelity(Treatment Integrity)",
+        "y": 6168,
+        "height": 42
+      },
+      {
+        "text": "IEP Goal Generator",
+        "y": 6451,
+        "height": 20
+      },
+      {
+        "text": "MTSS/RTI Tiers",
+        "y": 6451,
+        "height": 20
+      },
+      {
+        "text": "Progress Reports",
+        "y": 6451,
+        "height": 20
+      },
+      {
+        "text": "Positive Behavior Tracker(Token Board)",
+        "y": 6787,
+        "height": 41
+      },
+      {
+        "text": "Emotional Regulation Cycle(Escalation Cycle)",
+        "y": 6787,
+        "height": 41
+      },
+      {
+        "text": "Preference & Motivation Finder(Reinforcer Assessment)",
+        "y": 6787,
+        "height": 41
+      },
+      {
+        "text": "Choice Board",
+        "y": 7067,
+        "height": 20
+      },
+      {
+        "text": "Traffic Light",
+        "y": 7067,
+        "height": 20
+      },
+      {
+        "text": "Student Self-Check",
+        "y": 7067,
+        "height": 20
+      },
+      {
+        "text": "My Progress Quest",
+        "y": 7310,
+        "height": 20
+      },
+      {
+        "text": "Calming & Co-Regulation Toolkit(De-escalation Toolkit)",
+        "y": 7310,
+        "height": 41
+      },
+      {
+        "text": "Self-Regulation Strategy Builder(Replacement Behavior Planner)",
+        "y": 7310,
+        "height": 62
+      },
+      {
+        "text": "Motivation & Preferences Survey(Reinforcement Inventory)",
+        "y": 7611,
+        "height": 41
+      },
+      {
+        "text": "Replacement Behavior Tracker",
+        "y": 7611,
+        "height": 40
+      },
+      {
+        "text": "Environment Audit",
+        "y": 7949,
+        "height": 20
+      },
+      {
+        "text": "Cultural Context Reflection",
+        "y": 7949,
+        "height": 20
+      },
+      {
+        "text": "Strength-Based Reframe",
+        "y": 7949,
+        "height": 20
+      },
+      {
+        "text": "Equity & Self-Awareness Check(Bias Reflection Monitor)",
+        "y": 8212,
+        "height": 41
+      },
+      {
+        "text": "Restorative Conversation Guide",
+        "y": 8212,
+        "height": 40
+      },
+      {
+        "text": "Home Note",
+        "y": 8576,
+        "height": 20
+      },
+      {
+        "text": "Student Snapshot Exchange",
+        "y": 8576,
+        "height": 20
+      },
+      {
+        "text": "FERPA Consent Manager",
+        "y": 8576,
+        "height": 20
+      },
+      {
+        "text": "Home Behavior Log",
+        "y": 8815,
+        "height": 20
+      },
+      {
+        "text": "Family Voice",
+        "y": 8815,
+        "height": 20
+      },
+      {
+        "text": "Communication Log",
+        "y": 8815,
+        "height": 20
+      },
+      {
+        "text": "Routine Hotspot Matrix",
+        "y": 9152,
+        "height": 20
+      },
+      {
+        "text": "Crisis Plan",
+        "y": 9152,
+        "height": 20
+      },
+      {
+        "text": "Relationship Map",
+        "y": 9152,
+        "height": 20
+      },
+      {
+        "text": "Proactive Environment Planner(Antecedent Modification Planner)",
+        "y": 9410,
+        "height": 62
+      },
+      {
+        "text": "Export Reports",
+        "y": 9797,
+        "height": 20
+      },
+      {
+        "text": "Record Review",
+        "y": 9797,
+        "height": 20
+      },
+      {
+        "text": "ABA Quick Guide",
+        "y": 9797,
+        "height": 20
+      },
+      {
+        "text": "Supportive Conversation Practice(Counseling Simulation)",
+        "y": 10040,
+        "height": 41
+      },
+      {
+        "text": "Practice Sandbox",
+        "y": 10040,
+        "height": 20
+      },
+      {
+        "text": "ABA Concept Glossary",
+        "y": 10040,
+        "height": 20
+      },
+      {
+        "text": "Guided Workflows",
+        "y": 10300,
+        "height": 20
+      },
+      {
+        "text": "Team Notes",
+        "y": 10300,
+        "height": 20
+      },
+      {
+        "text": "Session Notes",
+        "y": 10300,
+        "height": 20
+      },
+      {
+        "text": "PD Learning Path",
+        "y": 10548,
+        "height": 20
+      },
+      {
+        "text": "ABA Knowledge Quiz",
+        "y": 10548,
+        "height": 20
+      },
+      {
+        "text": "What's the Function?",
+        "y": 10548,
+        "height": 20
+      },
+      {
+        "text": "Virtual Practicum",
+        "y": 10807,
+        "height": 20
+      },
+      {
+        "text": "ABA Case Study Training",
+        "y": 10807,
+        "height": 20
+      },
+      {
+        "text": "AI Observation Coach",
+        "y": 10807,
+        "height": 20
+      },
+      {
+        "text": "Workspace Sharing",
+        "y": 11070,
+        "height": 20
+      },
+      {
+        "text": "Print-Ready Report",
+        "y": 11070,
+        "height": 20
+      },
+      {
+        "text": "MI Practice Simulator",
+        "y": 11070,
+        "height": 20
+      },
+      {
+        "text": "Skill Tracker & Mentorship",
+        "y": 11348,
+        "height": 20
+      }
+    ],
+    "tools": 101,
+    "buttons": 296,
+    "scrolls": [
+      {
+        "height": 785,
+        "content": 11544
+      }
+    ],
+    "text": "◇\nBehaviorLens\n\nBehavioral Observation & Analysis\n\n◇\n💾 Local only\n🤖 AI: OFF\n👨‍👩‍👧 Family\n👤 SELECT STUDENT\nYOUR ROLE:\n👩‍🏫 Teacher\n👪 Parent\n📊 BCBA / Specialist\n— Adjective —\n— Animal —\nPick a codename...\n🎲\n⚙️\nSANDBOX CONFIG\n📅 Period\n7 days\n14 days\n30 days\n60 days\n90 days\n📝 Entries\n10 entries\n15 entries\n25 entries\n40 entries\n60 entries\n🚀\nLoad Demo (14d / 25 entries)\nStart with one observation\n\nWorking with Eagle. Choose the next step below.\n\n1. Capture an ABC observation\n2. Define the behavior clearly\n3. Review the observations\nAll\n📋\nData Collection\n🧠\nAnalysis & Insights\n🎯\nPlanning & Goals\n⭐\nStudent Support\n🌍\nEquity & Culture\n👪\nFamily & Team\n🏫\nEnvironment\n🔧\nUtilities\n⚡\nQUICK LAUNCH\nCore clinical tools — one tap access\n🧭\nTool Wizard\n📝\nABC Data\n📊\nJABA Graphs\n🔬\nSCD Manager\n📐\nEffect Size\n🔗\nHypothesis\n💾 Download backup\n📂 Load Workspace\n\nChanges save automatically in this browser. Download a backup to keep a file copy.\n\n👤\nStudent Profile\n— Eagle\n▼\n✕\n📋\n🧭 STEP 2 OF 7\nRecord ABC Data\n\nStart documenting Antecedent-Behavior-Consequence observations\n\n→ Open Tool\n17% through FBA workflow\n📋\n📋 Data Collection\n15\n▾\n☆\n📋\nObserve–Describe–Respond Logging(ABC Data Collection)\n\nRecord \nantecedent\n-\nbehavior\n-\nconsequence\n data for functional analysis\n\nOpen ABC Data Collection\n☆\n🔍\nLive Observation\n\nFullscreen observation mode with \nfrequency\n, \nduration\n, interval, and \nlatency\n recording\n\nOpen Live Observation\n☆\n🔢\nFrequency Counter\n\nQuick-click tap counter for rapid in-class \nbehavior\n tallying\n\nOpen Frequency Counter\n☆\n⏱️\nInterval Recording\n\nVisual grid with partial, whole, and momentary recording modes\n\nOpen Interval Recording\n☆\n📋\nData Sheet\n\nPrintable \nfrequency\n, \nduration\n, \nABC\n, or \nlatency\n data sheets\n\nOpen Data Sheet\n☆\n📋\nSession Data Tracker\n\nSystematic session-based behavioral measurement with rate calculation\n\nOpen Session Data Tracker\n☆\n🤝\nIOA Calculator\n\nInter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count\n\nOpen IOA Calculator\n☆\n📝\nTask Analysis\n\nBreak skills into teachable steps with forward, backward, or total-task chaining and \nprompt\n tracking\n\nOpen Task Analysis\n☆\n🎯\nStructured Learning Trials(DTT Data Sheet)\n\nDiscrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance\n\nOpen DTT Data Sheet\n☆\n⭐\nWhat Motivates Me Survey(Preference Assessment)\n\nSystematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols\n\nOpen Preference Assessment\n☆\n⏱️\nLatency Recorder\n\nStimulus-to-response time measurement with mean, median, and range statistics\n\nOpen Latency Recorder\n☆\n✏️\nNatural Language ABC\n\nType or paste observation notes in everyday English — AI structures them into \nABC\n entries automatically\n\nOpen Natural Language ABC\n☆\n📥\nBatch Import\n\nImport historical \nABC\n data or student profiles from CSV files — validates, previews, and merges with existing data\n\nOpen Batch Import\n☆\n🎙️\nVoice-to-ABC\n\nSpeak your observations naturally — AI extracts structured \nABC\n entries from your real-time voice transcript\n\nOpen Voice-to-ABC\n☆\n🔬\nOperational Definition Builder\n\nTurn vague descriptions into observable, measurable definitions using standard ABA dimensions + the Dead Man's Test (AI-assisted, not a BACB-credentialed output)\n\nOpen Operational Definition Builder\n🧠\n🧠 Analysis & Insights\n23\n▾\n☆\n🧠\nAI Pattern Analysis\n\nAI-powered functional \nbehavior\n analysis based on your collected data\n\nAdd at least 3 ABC observations before running AI analysis.\n☆\n📊\nBehavior Overview\n\nVisual dashboard with trends, heatmap, and data summaries\n\nOpen Behavior Overview\n☆\n🔗\nHypothesis Diagram\n\nVisual \nfunction\n hypothesis flow from \nABC\n data with AI generation\n\nAdd observations to use this tool\n☆\n🔺\nData Triangulation\n\nCross-reference \nABC\n, observations, and AI analysis for convergence\n\nOpen Data Triangulation\n☆\n⏱️\nImpact Calculator\n\nQuantify lost instructional time and estimated annual cost\n\nOpen Impact Calculator\n☆\n✅\nData Quality Check\n\nAI-powered review of your \nABC\n entries with specific improvement suggestions\n\nOpen Data Quality Check\n☆\n📊\nTrend Dashboard\n\nSVG charts showing intensity trends, setting \nfrequency\n, and day/time heatmap\n\nOpen Trend Dashboard\n☆\n🔮\nPredictive Insights\n\nAI-powered pattern analysis predicting when, where, and what triggers behaviors — with prevention strategies\n\nOpen Predictive Insights\n☆\n🤖\nAsk AlloBot\n\nChat with AI about \nbehavior\n strategies, \nFBA\n, \nBIP\n, and intervention planning\n\nOpen Ask AlloBot\n☆\n📊\nSpecialist Consultation Dashboard(BCBA Consultation)\n\nData dashboard for BCBAs + printable handoff packet for consultation\n\nOpen BCBA Consultation\n☆\n📈\nABA Graph Engine\n\nPublication-standard graphs with phase lines, trend lines, and visual analysis\n\nOpen ABA Graph Engine\n☆\n🔬\nSingle-Case Design\n\nAB, ABAB, Multiple \nBaseline\n, Alternating Treatments, Changing Criterion\n\nOpen Single-Case Design\n☆\n📅\nTime Pattern Finder(Scatterplot Analysis)\n\nTime-of-day × \nbehavior\n grid to identify temporal patterns — auto-populates from \nABC\n data\n\nOpen Scatterplot Analysis\n☆\n📋\nStakeholder Feedback Survey(Social Validity)\n\nTARF and IRP-15 scales for measuring treatment acceptability — required for publication\n\nOpen Social Validity\n☆\n📈\nCumulative Progress View(Cumulative Record)\n\nClassic Skinner-style cumulative \nfrequency\n graph — the heritage of ABA data display\n\nOpen Cumulative Record\n☆\n📐\nPattern Validation Analysis(Conditional Probability)\n\nForeground vs background probability analysis to validate \nABC\n hypotheses with data\n\nOpen Conditional Probability\n☆\n👥\nCaseload Dashboard\n\nBird's-eye overview of all students — status indicators, trends, safety alerts, and AI caseload summary\n\nOpen Caseload Dashboard\n☆\n📊\nCross-Student Comparison\n\nLoad multiple student workspaces to compare \nbehavior\n patterns, intensity levels, and trends side-by-side with AI analysis\n\nOpen Cross-Student Comparison\n☆\n📐\nEffect Size Calculator\n\nCalculate Tau-U, NAP, and PND to quantify intervention effectiveness with visual phase comparison\n\nOpen Effect Size Calculator\n☆\n📈\nProgress Monitor\n\nTrack \nbehavior\n \nfrequency\n over time with aim lines, phase change markers, trend analysis, and daily summary stats\n\nOpen Progress Monitor\n☆\n🔀\nCompeting Pathways\n\nVisual model mapping problem, replacement, and competing behaviors for \nFBA\n/\nBIP\n planning\n\nOpen Competing Pathways\n☆\n🔍\nCan't Do / Won't Do\n\nSkill deficit vs performance deficit assessment through structured probes\n\nOpen Can't Do / Won't Do\n☆\n📅\nBehavior Timeline Heatmap\n\nVisualize incident patterns across 4 school weeks in a color-coded calendar grid with drill-down\n\n🆕 NewOpen Behavior Timeline Heatmap\n🎯\n🎯 Planning & Goals\n18\n▾\n☆\n🎯\nSMART Goal Builder\n\nStep-by-step behavioral goal construction with AI suggestions\n\nOpen SMART Goal Builder\n☆\n📜\nStudent–Teacher Agreement(Behavior Contract)\n\nAI-drafted contract with student and teacher sections\n\nOpen Behavior Contract\n☆\n✅\nFidelity Checklist\n\nAI-generated daily \nBIP\n implementation checklist\n\nOpen Fidelity Checklist\n☆\n⚖️\nFeasibility Check\n\n5-question contextual fit assessment with AI recommendations\n\nOpen Feasibility Check\n☆\n📐\nGAS Rubric\n\nGoal Attainment Scaling with AI-generated descriptors\n\nOpen GAS Rubric\n☆\n📇\nPocket BIP\n\nCompact index-card \nBIP\n summary for clipboard carry\n\nOpen Pocket BIP\n☆\n📋\nIntervention Plan\n\nAI-generated multi-week intervention plan with measurable goals and milestones\n\nOpen Intervention Plan\n☆\n📈\nProgress Narrative\n\nIEP-ready progress monitoring paragraphs from accumulated behavioral data\n\nOpen Progress Narrative\n☆\n📄\nIEP Meeting Prep\n\nAI-generated meeting preparation packet with data summary, talking points, and next steps\n\nOpen IEP Meeting Prep\n☆\n🛡️\nSafety & Wellbeing Screening(Risk Screening)\n\nSafety reflection checklist + AI pattern detection (not a formal threat-assessment instrument)\n\nOpen Risk Screening\n☆\n📄\nBIP Generator\n\nSynthesize \nABC\n and preference data into a formal, editable \nBIP\n document\n\nOpen BIP Generator\n☆\n🎯\nPositive Reinforcement Planner(DR Strategy Selector)\n\nChoose the right differential \nreinforcement\n strategy (\nDRA\n, \nDRI\n, \nDRO\n, DRL)\n\nOpen DR Strategy Selector\n☆\n💬\nCommunication Skills Planner(FCT Template)\n\nFunctional Communication Training planning with modality selection\n\nOpen FCT Template\n☆\n🔄\nMaintenance & Generalization\n\nTrack skill retention post-mastery and \ngeneralization\n across settings, people, and materials\n\nOpen Maintenance & Generalization\n☆\n✅\nSupport Plan Fidelity(Treatment Integrity)\n\nDocument whether interventions are implemented as designed — component-level fidelity tracking\n\nOpen Treatment Integrity\n☆\n📄\nIEP Goal Generator\n\nAI-generated present levels, SMART goals, objectives, accommodations, and progress monitoring plans\n\nAdd observations to use this tool\n☆\n🏗️\nMTSS/RTI Tiers\n\nVisual 3-tier pyramid for managing multi-tiered supports with AI-powered tier placement recommendations\n\nOpen MTSS/RTI Tiers\n☆\n📊\nProgress Reports\n\nAI-generated progress reports with data summaries, trend analysis, goal progress, and parent-friendly language option\n\nOpen Progress Reports\n⭐\n⭐ Student Support\n11\n▾\n☆\n⭐\nPositive Behavior Tracker(Token Board)\n\nVisual \nreinforcement\n tracker for positive \nbehavior\n support\n\nOpen Token Board\n☆\n🔄\nEmotional Regulation Cycle(Escalation Cycle)\n\nColvin & Sugai 7-phase emotional regulation model with personalized strategies\n\nOpen Escalation Cycle\n☆\n🏆\nPreference & Motivation Finder(Reinforcer Assessment)\n\nPreference inventory with AI-recommended reinforcers\n\nOpen Reinforcer Assessment\n☆\n🃏\nChoice Board\n\nFullscreen student-facing visual choice overlay\n\nOpen Choice Board\n☆\n🚦\nTraffic Light\n\nStudent-facing red/yellow/green \nbehavior\n zone poster\n\nOpen Traffic Light\n☆\n🪞\nStudent Self-Check\n\nStudent-facing mood check-in and reflection journal — capturing their voice\n\nOpen Student Self-Check\n☆\n🎮\nMy Progress Quest\n\nStudent-facing mood tracker with streaks, badges, quests, and reflection journal\n\nOpen My Progress Quest\n☆\n🧘\nCalming & Co-Regulation Toolkit(De-escalation Toolkit)\n\nBreathing exercises, visual timers, sensory breaks, and grounding — real-time calming support\n\nOpen De-escalation Toolkit\n☆\n🔄\nSelf-Regulation Strategy Builder(Replacement Behavior Planner)\n\nMap behaviors of concern to functionally equivalent replacements with teaching strategies\n\nOpen Replacement Behavior Planner\n☆\n⭐\nMotivation & Preferences Survey(Reinforcement Inventory)\n\nStructured motivation survey — identify what drives each student across 6 categories\n\nOpen Reinforcement Inventory\n☆\n🔄\nReplacement Behavior Tracker\n\nTrack teaching trials and monitor acquisition of replacement behaviors\n\nOpen Replacement Behavior Tracker\n🌍\n🌍 Equity & Culture\n5\n▾\n☆\n🏫\nEnvironment Audit\n\n8-item classroom environment checklist with AI recommendations\n\nOpen Environment Audit\n☆\n🌍\nCultural Context Reflection\n\n8-question pause-and-reflect checklist before interpreting \nbehavior\n through a cultural humility lens\n\nOpen Cultural Context Reflection\n☆\n✨\nStrength-Based Reframe\n\nAI rewrites deficit-based descriptions into asset-focused, strengths-based language\n\nOpen Strength-Based Reframe\n☆\n🪞\nEquity & Self-Awareness Check(Bias Reflection Monitor)\n\nGently surfaces patterns in your data for reflection on potential implicit bias — growth, not guilt\n\nOpen Bias Reflection Monitor\n☆\n💛\nRestorative Conversation Guide\n\nStep-by-step scripts for harm repair, community circles, and reintegration conferences\n\nOpen Restorative Conversation Guide\n👪\n👪 Family & Team\n6\n▾\n☆\n📝\nHome Note\n\nAI-drafted parent communication with tone selector\n\nOpen Home Note\n☆\n📦\nStudent Snapshot Exchange\n\nExport & import JSON snapshots for parent–teacher data exchange\n\nOpen Student Snapshot Exchange\n☆\n📋\nFERPA Consent Manager\n\nCustomizable consent form for parent data exchange — edit, print, share as JSON\n\nOpen FERPA Consent Manager\n☆\n🏠\nHome Behavior Log\n\nSimplified parent-friendly \nbehavior\n logging with everyday language\n\nOpen Home Behavior Log\n☆\n👪\nFamily Voice\n\nStructured form for families to share observations, cultural insights, and celebrations — with AI translation\n\nOpen Family Voice\n☆\n📞\nCommunication Log\n\nTwo-way family contact tracker with follow-ups — ensure no family falls through the cracks\n\nOpen Communication Log\n🏫\n🏫 Environment\n4\n▾\n☆\n🗓️\nRoutine Hotspot Matrix\n\nMap behavioral patterns to daily routine periods with AI analysis\n\nOpen Routine Hotspot Matrix\n☆\n🚨\nCrisis Plan\n\n3-tier emergency protocol with AI-drafted safety plan\n\nOpen Crisis Plan\n☆\n🗺️\nRelationship Map\n\nVisual diagram of student connections — trusted adults, peers, family, mentors — with gap analysis\n\nOpen Relationship Map\n☆\n🛠️\nProactive Environment Planner(Antecedent Modification Planner)\n\nAI-powered environmental change recommendations to prevent behaviors before they start\n\nOpen Antecedent Modification Planner\n🔧\n🔧 Utilities\n19\n▾\n☆\n📥\nExport Reports\n\nDownload data as JSON, CSV, text reports, or printable PDF portfolio\n\nOpen Export Reports\n☆\n📄\nRecord Review\n\nPaste IEP/eval text for AI-powered structured summary\n\nOpen Record Review\n☆\n📚\nABA Quick Guide\n\nSearchable glossary, \nreinforcement\n schedules, decision tree & common mistakes\n\nOpen ABA Quick Guide\n☆\n🎭\nSupportive Conversation Practice(Counseling Simulation)\n\nAI role-play with student personas for counseling practice\n\nOpen Counseling Simulation\n☆\n🎓\nPractice Sandbox\n\nLoad simulated student data for PD, pre-service training, or learning ABA without real students\n\nOpen Practice Sandbox\n☆\n📖\nABA Concept Glossary\n\n25+ searchable ABA terms with plain-language definitions and real-world examples\n\nOpen ABA Concept Glossary\n☆\n🧭\nGuided Workflows\n\nStep-by-step guided workflows for \nFBA\n, \nBIP\n, and RTI \nbehavior\n tiers with AI coaching\n\nOpen Guided Workflows\n☆\n🤝\nTeam Notes\n\nMulti-role timestamped collaboration thread for teachers, paras, counselors, and parents\n\nOpen Team Notes\n☆\n📝\nSession Notes\n\nTimestamped observation notes with voice dictation — capture context as it happens\n\nOpen Session Notes\n☆\n🎓\nPD Learning Path\n\nGuided onboarding modules for building ABA skills step-by-step\n\nOpen PD Learning Path\n☆\n🧪\nABA Knowledge Quiz\n\nTest your ABA knowledge — earn a competency badge at 80%+\n\nOpen ABA Knowledge Quiz\n☆\n🧠\nWhat's the Function?\n\nInteractive clinical scenarios to practice identifying behavioral functions via the AC model\n\nOpen What's the Function?\n☆\n🎬\nVirtual Practicum\n\nPractice MTS, Partial, and Whole \nInterval recording\n against simulated scenarios with accuracy grading\n\nOpen Virtual Practicum\n☆\n🎓\nABA Case Study Training\n\nAI-generated case studies with 4-phase clinical reasoning and scoring\n\nOpen ABA Case Study Training\n☆\n🎓\nAI Observation Coach\n\nReal-time coaching on your data collection quality — identifies gaps, suggests improvements, and rates your data\n\nOpen AI Observation Coach\n☆\n🤝\nWorkspace Sharing\n\nShare workspace data with team members using role-based views — BCBA, teacher, or parent-friendly exports\n\nOpen Workspace Sharing\n☆\n📄\nPrint-Ready Report\n\nGenerate a professional, print-ready progress report with inline charts, AI recommendations, and audience-specific language\n\nOpen Print-Ready Report\n☆\n🗣️\nMI Practice Simulator\n\nPractice motivational interviewing with AI-powered student simulations\n\n🎮 InteractiveOpen MI Practice Simulator\n☆\n🏅\nSkill Tracker & Mentorship\n\nTrack your ABA competency growth across domains — earn badges, complete challenges, and level up from Novice to Practitioner\n\n🆕 NewOpen Skill Tracker & Mentorship\n💾 Download backup\n📂 Load Workspace"
+  },
+  {
+    "width": 1280,
+    "state": "definition",
+    "errors": [],
+    "headings": [
+      {
+        "text": "BehaviorLens",
+        "y": 24,
+        "height": 28
+      },
+      {
+        "text": "Operational Definition Builder",
+        "y": 209,
+        "height": 28
+      },
+      {
+        "text": "Describe the Behavior",
+        "y": 311,
+        "height": 20
+      }
+    ],
+    "tools": 0,
+    "buttons": 9,
+    "scrolls": [],
+    "text": "Opened opdef panel\n◇\n◇\nBehaviorLens\n\n◇\n💾 Local only\n🤖 AI: OFF\n📤\n🔬\nOperational Definition Builder\n\nTurn vague descriptions into observable, measurable behavioral definitions\n\n1\nDescribe the Behavior\n\nEnter the behavior as you'd normally describe it — don't worry about being \"clinical\" yet. The AI will help refine it.\n\n🧠 Generate Operational Definition\n\nType a behavior description above to get started\n\n📎 RELATED TOOLS\n📋\nABC Data\n🔗\nHypothesis Diagram\n🔄\nReplacement Behavior\n🧭\nFBA Workflow"
+  },
+  {
+    "width": 1280,
+    "state": "definition-fields",
+    "fields": [
+      {
+        "label": "Describe the behavior in everyday language",
+        "placeholder": "Examples:\n• \"Student is disrespectful\"\n• \"Having a meltdown\"\n• \"Not paying attention\"\n• \"Student is aggressive during transitions\""
+      }
+    ]
+  },
+  {
+    "width": 1280,
+    "state": "definition-draft-return",
+    "draftText": ""
+  },
+  {
+    "width": 1280,
+    "state": "family",
+    "errors": [],
+    "headings": [
+      {
+        "text": "BehaviorLens",
+        "y": 16,
+        "height": 28
+      },
+      {
+        "text": "Support your child, one step at a time",
+        "y": 582,
+        "height": 20
+      },
+      {
+        "text": "Behavior Overview",
+        "y": 1176,
+        "height": 20
+      },
+      {
+        "text": "Pocket BIP",
+        "y": 1493,
+        "height": 20
+      },
+      {
+        "text": "Positive Behavior Tracker(Token Board)",
+        "y": 1814,
+        "height": 41
+      },
+      {
+        "text": "Choice Board",
+        "y": 1814,
+        "height": 20
+      },
+      {
+        "text": "Traffic Light",
+        "y": 1814,
+        "height": 20
+      },
+      {
+        "text": "Student Self-Check",
+        "y": 2083,
+        "height": 20
+      },
+      {
+        "text": "Home Note",
+        "y": 2400,
+        "height": 20
+      },
+      {
+        "text": "Student Snapshot Exchange",
+        "y": 2400,
+        "height": 20
+      },
+      {
+        "text": "Home Behavior Log",
+        "y": 2400,
+        "height": 20
+      },
+      {
+        "text": "Family Voice",
+        "y": 2644,
+        "height": 20
+      },
+      {
+        "text": "Communication Log",
+        "y": 2644,
+        "height": 20
+      },
+      {
+        "text": "ABA Quick Guide",
+        "y": 2980,
+        "height": 20
+      }
+    ],
+    "tools": 12,
+    "buttons": 60,
+    "scrolls": [
+      {
+        "height": 785,
+        "content": 3112
+      }
+    ],
+    "text": "Opened opdef panel\n◇\nBehaviorLens\n\nBehavioral Observation & Analysis\n\n◇\n💾 Local only\n🤖 AI: OFF\n👨‍👩‍👧 Family Mode\n👤 SELECT STUDENT\nYOUR ROLE:\n👩‍🏫 Teacher\n👪 Parent\n📊 BCBA / Specialist\n— Adjective —\n— Animal —\nPick a codename...\n🎲\n⚙️\nSANDBOX CONFIG\n📅 Period\n7 days\n14 days\n30 days\n60 days\n90 days\n📝 Entries\n10 entries\n15 entries\n25 entries\n40 entries\n60 entries\n🚀\nLoad Demo (14d / 25 entries)\nSupport your child, one step at a time\n\nWorking with Eagle. Choose the next step below.\n\n1. Add a home observation\n2. Offer a coping choice\n3. Review the observations\nAll\n📋\nData Collection\n🧠\nAnalysis & Insights\n🎯\nPlanning & Goals\n⭐\nStudent Support\n🌍\nEquity & Culture\n👪\nFamily & Team\n🏫\nEnvironment\n🔧\nUtilities\n🔴 Download backup\n📂 Load Workspace\n\nChanges save automatically in this browser. Download a backup to keep a file copy.\n\n👤\nStudent Profile\n— Eagle\n▼\n🧠\n🧠 Analysis & Insights\n1\n▾\n☆\n📊\nBehavior Overview\n\nVisual dashboard with trends, heatmap, and data summaries\n\nOpen Behavior Overview\n🎯\n🎯 Planning & Goals\n1\n▾\n☆\n📇\nPocket BIP\n\nCompact index-card \nBIP\n summary for clipboard carry\n\nOpen Pocket BIP\n⭐\n⭐ Student Support\n4\n▾\n☆\n⭐\nPositive Behavior Tracker(Token Board)\n\nVisual \nreinforcement\n tracker for positive \nbehavior\n support\n\nOpen Token Board\n☆\n🃏\nChoice Board\n\nFullscreen student-facing visual choice overlay\n\nOpen Choice Board\n☆\n🚦\nTraffic Light\n\nStudent-facing red/yellow/green \nbehavior\n zone poster\n\nOpen Traffic Light\n☆\n🪞\nStudent Self-Check\n\nStudent-facing mood check-in and reflection journal — capturing their voice\n\nOpen Student Self-Check\n👪\n👪 Family & Team\n5\n▾\n☆\n📝\nHome Note\n\nAI-drafted parent communication with tone selector\n\nOpen Home Note\n☆\n📦\nStudent Snapshot Exchange\n\nExport & import JSON snapshots for parent–teacher data exchange\n\nOpen Student Snapshot Exchange\n☆\n🏠\nHome Behavior Log\n\nSimplified parent-friendly \nbehavior\n logging with everyday language\n\nOpen Home Behavior Log\n☆\n👪\nFamily Voice\n\nStructured form for families to share observations, cultural insights, and celebrations — with AI translation\n\nOpen Family Voice\n☆\n📞\nCommunication Log\n\nTwo-way family contact tracker with follow-ups — ensure no family falls through the cracks\n\nOpen Communication Log\n🔧\n🔧 Utilities\n1\n▾\n☆\n📚\nABA Quick Guide\n\nSearchable glossary, \nreinforcement\n schedules, decision tree & common mistakes\n\nOpen ABA Quick Guide\n🔴 Download backup\n📂 Load Workspace"
+  },
+  {
+    "width": 390,
+    "state": "initial",
+    "errors": [],
+    "headings": [
+      {
+        "text": "BehaviorLens",
+        "y": 12,
+        "height": 28
+      },
+      {
+        "text": "Start with one observation",
+        "y": 605,
+        "height": 20
+      },
+      {
+        "text": "Welcome to BehaviorLens",
+        "y": 856,
+        "height": 28
+      },
+      {
+        "text": "Observe–Describe–Respond Logging(ABC Data Collection)",
+        "y": 2624,
+        "height": 41
+      },
+      {
+        "text": "Live Observation",
+        "y": 2908,
+        "height": 20
+      },
+      {
+        "text": "Frequency Counter",
+        "y": 3196,
+        "height": 20
+      },
+      {
+        "text": "Interval Recording",
+        "y": 3460,
+        "height": 20
+      },
+      {
+        "text": "Data Sheet",
+        "y": 3699,
+        "height": 20
+      },
+      {
+        "text": "Session Data Tracker",
+        "y": 3962,
+        "height": 20
+      },
+      {
+        "text": "IOA Calculator",
+        "y": 4201,
+        "height": 20
+      },
+      {
+        "text": "Task Analysis",
+        "y": 4440,
+        "height": 20
+      },
+      {
+        "text": "Structured Learning Trials(DTT Data Sheet)",
+        "y": 4704,
+        "height": 42
+      },
+      {
+        "text": "What Motivates Me Survey(Preference Assessment)",
+        "y": 4965,
+        "height": 42
+      },
+      {
+        "text": "Latency Recorder",
+        "y": 5226,
+        "height": 20
+      },
+      {
+        "text": "Natural Language ABC",
+        "y": 5465,
+        "height": 20
+      },
+      {
+        "text": "Batch Import",
+        "y": 5728,
+        "height": 20
+      },
+      {
+        "text": "Voice-to-ABC",
+        "y": 6011,
+        "height": 20
+      },
+      {
+        "text": "Operational Definition Builder",
+        "y": 6294,
+        "height": 20
+      },
+      {
+        "text": "AI Pattern Analysis",
+        "y": 6650,
+        "height": 20
+      },
+      {
+        "text": "Behavior Overview",
+        "y": 6922,
+        "height": 20
+      },
+      {
+        "text": "Hypothesis Diagram",
+        "y": 7161,
+        "height": 20
+      },
+      {
+        "text": "Data Triangulation",
+        "y": 7424,
+        "height": 20
+      },
+      {
+        "text": "Impact Calculator",
+        "y": 7688,
+        "height": 20
+      },
+      {
+        "text": "Data Quality Check",
+        "y": 7927,
+        "height": 20
+      },
+      {
+        "text": "Trend Dashboard",
+        "y": 8190,
+        "height": 20
+      },
+      {
+        "text": "Predictive Insights",
+        "y": 8454,
+        "height": 20
+      },
+      {
+        "text": "Ask AlloBot",
+        "y": 8712,
+        "height": 20
+      },
+      {
+        "text": "Specialist Consultation Dashboard(BCBA Consultation)",
+        "y": 9000,
+        "height": 41
+      },
+      {
+        "text": "ABA Graph Engine",
+        "y": 9260,
+        "height": 20
+      },
+      {
+        "text": "Single-Case Design",
+        "y": 9499,
+        "height": 20
+      },
+      {
+        "text": "Time Pattern Finder(Scatterplot Analysis)",
+        "y": 9763,
+        "height": 21
+      },
+      {
+        "text": "Stakeholder Feedback Survey(Social Validity)",
+        "y": 10052,
+        "height": 42
+      },
+      {
+        "text": "Cumulative Progress View(Cumulative Record)",
+        "y": 10313,
+        "height": 42
+      },
+      {
+        "text": "Pattern Validation Analysis(Conditional Probability)",
+        "y": 10598,
+        "height": 42
+      },
+      {
+        "text": "Caseload Dashboard",
+        "y": 10884,
+        "height": 20
+      },
+      {
+        "text": "Cross-Student Comparison",
+        "y": 11123,
+        "height": 20
+      },
+      {
+        "text": "Effect Size Calculator",
+        "y": 11406,
+        "height": 20
+      },
+      {
+        "text": "Progress Monitor",
+        "y": 11645,
+        "height": 20
+      },
+      {
+        "text": "Competing Pathways",
+        "y": 11928,
+        "height": 20
+      },
+      {
+        "text": "Can't Do / Won't Do",
+        "y": 12191,
+        "height": 20
+      },
+      {
+        "text": "Behavior Timeline Heatmap",
+        "y": 12430,
+        "height": 20
+      },
+      {
+        "text": "SMART Goal Builder",
+        "y": 12780,
+        "height": 20
+      },
+      {
+        "text": "Student–Teacher Agreement(Behavior Contract)",
+        "y": 13019,
+        "height": 42
+      },
+      {
+        "text": "Fidelity Checklist",
+        "y": 13260,
+        "height": 20
+      },
+      {
+        "text": "Feasibility Check",
+        "y": 13504,
+        "height": 20
+      },
+      {
+        "text": "GAS Rubric",
+        "y": 13743,
+        "height": 20
+      },
+      {
+        "text": "Pocket BIP",
+        "y": 13963,
+        "height": 20
+      },
+      {
+        "text": "Intervention Plan",
+        "y": 14226,
+        "height": 20
+      },
+      {
+        "text": "Progress Narrative",
+        "y": 14465,
+        "height": 20
+      },
+      {
+        "text": "IEP Meeting Prep",
+        "y": 14704,
+        "height": 20
+      },
+      {
+        "text": "Safety & Wellbeing Screening(Risk Screening)",
+        "y": 14943,
+        "height": 42
+      },
+      {
+        "text": "BIP Generator",
+        "y": 15204,
+        "height": 20
+      },
+      {
+        "text": "Positive Reinforcement Planner(DR Strategy Selector)",
+        "y": 15492,
+        "height": 42
+      },
+      {
+        "text": "Communication Skills Planner(FCT Template)",
+        "y": 15802,
+        "height": 42
+      },
+      {
+        "text": "Maintenance & Generalization",
+        "y": 16063,
+        "height": 20
+      },
+      {
+        "text": "Support Plan Fidelity(Treatment Integrity)",
+        "y": 16327,
+        "height": 21
+      },
+      {
+        "text": "IEP Goal Generator",
+        "y": 16567,
+        "height": 20
+      },
+      {
+        "text": "MTSS/RTI Tiers",
+        "y": 16806,
+        "height": 20
+      },
+      {
+        "text": "Progress Reports",
+        "y": 17064,
+        "height": 20
+      },
+      {
+        "text": "Positive Behavior Tracker(Token Board)",
+        "y": 17401,
+        "height": 21
+      },
+      {
+        "text": "Emotional Regulation Cycle(Escalation Cycle)",
+        "y": 17665,
+        "height": 42
+      },
+      {
+        "text": "Preference & Motivation Finder(Reinforcer Assessment)",
+        "y": 17926,
+        "height": 41
+      },
+      {
+        "text": "Choice Board",
+        "y": 18167,
+        "height": 20
+      },
+      {
+        "text": "Traffic Light",
+        "y": 18386,
+        "height": 20
+      },
+      {
+        "text": "Student Self-Check",
+        "y": 18630,
+        "height": 20
+      },
+      {
+        "text": "My Progress Quest",
+        "y": 18869,
+        "height": 20
+      },
+      {
+        "text": "Calming & Co-Regulation Toolkit(De-escalation Toolkit)",
+        "y": 19108,
+        "height": 42
+      },
+      {
+        "text": "Self-Regulation Strategy Builder(Replacement Behavior Planner)",
+        "y": 19369,
+        "height": 41
+      },
+      {
+        "text": "Motivation & Preferences Survey(Reinforcement Inventory)",
+        "y": 19629,
+        "height": 41
+      },
+      {
+        "text": "Replacement Behavior Tracker",
+        "y": 19889,
+        "height": 20
+      },
+      {
+        "text": "Environment Audit",
+        "y": 20206,
+        "height": 20
+      },
+      {
+        "text": "Cultural Context Reflection",
+        "y": 20445,
+        "height": 20
+      },
+      {
+        "text": "Strength-Based Reframe",
+        "y": 20709,
+        "height": 20
+      },
+      {
+        "text": "Equity & Self-Awareness Check(Bias Reflection Monitor)",
+        "y": 20948,
+        "height": 42
+      },
+      {
+        "text": "Restorative Conversation Guide",
+        "y": 21209,
+        "height": 20
+      },
+      {
+        "text": "Home Note",
+        "y": 21526,
+        "height": 20
+      },
+      {
+        "text": "Student Snapshot Exchange",
+        "y": 21745,
+        "height": 20
+      },
+      {
+        "text": "FERPA Consent Manager",
+        "y": 21984,
+        "height": 20
+      },
+      {
+        "text": "Home Behavior Log",
+        "y": 22223,
+        "height": 20
+      },
+      {
+        "text": "Family Voice",
+        "y": 22487,
+        "height": 20
+      },
+      {
+        "text": "Communication Log",
+        "y": 22726,
+        "height": 20
+      },
+      {
+        "text": "Routine Hotspot Matrix",
+        "y": 23043,
+        "height": 20
+      },
+      {
+        "text": "Crisis Plan",
+        "y": 23282,
+        "height": 20
+      },
+      {
+        "text": "Relationship Map",
+        "y": 23501,
+        "height": 20
+      },
+      {
+        "text": "Proactive Environment Planner(Antecedent Modification Planner)",
+        "y": 23740,
+        "height": 41
+      },
+      {
+        "text": "Export Reports",
+        "y": 24078,
+        "height": 20
+      },
+      {
+        "text": "Record Review",
+        "y": 24317,
+        "height": 20
+      },
+      {
+        "text": "ABA Quick Guide",
+        "y": 24537,
+        "height": 20
+      },
+      {
+        "text": "Supportive Conversation Practice(Counseling Simulation)",
+        "y": 24800,
+        "height": 41
+      },
+      {
+        "text": "Practice Sandbox",
+        "y": 25060,
+        "height": 20
+      },
+      {
+        "text": "ABA Concept Glossary",
+        "y": 25299,
+        "height": 20
+      },
+      {
+        "text": "Guided Workflows",
+        "y": 25538,
+        "height": 20
+      },
+      {
+        "text": "Team Notes",
+        "y": 25826,
+        "height": 20
+      },
+      {
+        "text": "Session Notes",
+        "y": 26065,
+        "height": 20
+      },
+      {
+        "text": "PD Learning Path",
+        "y": 26304,
+        "height": 20
+      },
+      {
+        "text": "ABA Knowledge Quiz",
+        "y": 26543,
+        "height": 20
+      },
+      {
+        "text": "What's the Function?",
+        "y": 26782,
+        "height": 20
+      },
+      {
+        "text": "Virtual Practicum",
+        "y": 27021,
+        "height": 20
+      },
+      {
+        "text": "ABA Case Study Training",
+        "y": 27285,
+        "height": 20
+      },
+      {
+        "text": "AI Observation Coach",
+        "y": 27524,
+        "height": 20
+      },
+      {
+        "text": "Workspace Sharing",
+        "y": 27782,
+        "height": 20
+      },
+      {
+        "text": "Print-Ready Report",
+        "y": 28041,
+        "height": 20
+      },
+      {
+        "text": "MI Practice Simulator",
+        "y": 28299,
+        "height": 20
+      },
+      {
+        "text": "Skill Tracker & Mentorship",
+        "y": 28571,
+        "height": 20
+      }
+    ],
+    "tools": 101,
+    "buttons": 304,
+    "scrolls": [
+      {
+        "height": 779,
+        "content": 28740
+      }
+    ],
+    "text": "◇\nBehaviorLens\n\nBehavioral Observation & Analysis\n\n◇\n💾 Local only\n🤖 AI: OFF\n👨‍👩‍👧 Family\n👤 SELECT STUDENT\nYOUR ROLE:\n👩‍🏫 Teacher\n👪 Parent\n📊 BCBA / Specialist\n— Adjective —\n— Animal —\nPick a codename...\n🎲\n⚙️\nSANDBOX CONFIG\n📅 Period\n7 days\n14 days\n30 days\n60 days\n90 days\n📝 Entries\n10 entries\n15 entries\n25 entries\n40 entries\n60 entries\n🚀\nLoad Demo (14d / 25 entries)\nStart with one observation\n\nWorking with Eagle. Choose the next step below.\n\n1. Capture an ABC observation\n2. Define the behavior clearly\n3. Review the observations\n✕\n👋\nWelcome to BehaviorLens\n\n80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:\n\n👩‍🏫\nTeacher\nStart with ABC Data\n👪\nParent\nHome Behavior Log\n📊\nBCBA / Specialist\nABA Graph Engine\n🎓\nOr explore the PD Learning Path →\n🚀 QUICK-START PATHWAYS\n⚡\n5-Min Quick Start\n\nLoad sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly\n\n🧭\nGuided FBA Workflow\n\nStep-by-step FBA process with scenario practice and AI coaching\n\n🏅\nSkill Tracker Journey\n\nTrack your growth from Novice to Practitioner with guided challenges\n\nAll\n📋\nData Collection\n🧠\nAnalysis & Insights\n🎯\nPlanning & Goals\n⭐\nStudent Support\n🌍\nEquity & Culture\n👪\nFamily & Team\n🏫\nEnvironment\n🔧\nUtilities\n⚡\nQUICK LAUNCH\nCore clinical tools — one tap access\n🧭\nTool Wizard\n📝\nABC Data\n📊\nJABA Graphs\n🔬\nSCD Manager\n📐\nEffect Size\n🔗\nHypothesis\n💾 Download backup\n📂 Load Workspace\n\nChanges save automatically in this browser. Download a backup to keep a file copy.\n\n👤\nStudent Profile\n— Eagle\n▼\n✕\n📋\n🧭 STEP 2 OF 7\nRecord ABC Data\n\nStart documenting Antecedent-Behavior-Consequence observations\n\n→ Open Tool\n17% through FBA workflow\n📋\n📋 Data Collection\n15\n▾\n☆\n📋\nObserve–Describe–Respond Logging(ABC Data Collection)\n\nRecord \nantecedent\n-\nbehavior\n-\nconsequence\n data for functional analysis\n\nOpen ABC Data Collection\n☆\n🔍\nLive Observation\n\nFullscreen observation mode with \nfrequency\n, \nduration\n, interval, and \nlatency\n recording\n\nOpen Live Observation\n☆\n🔢\nFrequency Counter\n\nQuick-click tap counter for rapid in-class \nbehavior\n tallying\n\nOpen Frequency Counter\n☆\n⏱️\nInterval Recording\n\nVisual grid with partial, whole, and momentary recording modes\n\nOpen Interval Recording\n☆\n📋\nData Sheet\n\nPrintable \nfrequency\n, \nduration\n, \nABC\n, or \nlatency\n data sheets\n\nOpen Data Sheet\n☆\n📋\nSession Data Tracker\n\nSystematic session-based behavioral measurement with rate calculation\n\nOpen Session Data Tracker\n☆\n🤝\nIOA Calculator\n\nInter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count\n\nOpen IOA Calculator\n☆\n📝\nTask Analysis\n\nBreak skills into teachable steps with forward, backward, or total-task chaining and \nprompt\n tracking\n\nOpen Task Analysis\n☆\n🎯\nStructured Learning Trials(DTT Data Sheet)\n\nDiscrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance\n\nOpen DTT Data Sheet\n☆\n⭐\nWhat Motivates Me Survey(Preference Assessment)\n\nSystematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols\n\nOpen Preference Assessment\n☆\n⏱️\nLatency Recorder\n\nStimulus-to-response time measurement with mean, median, and range statistics\n\nOpen Latency Recorder\n☆\n✏️\nNatural Language ABC\n\nType or paste observation notes in everyday English — AI structures them into \nABC\n entries automatically\n\nOpen Natural Language ABC\n☆\n📥\nBatch Import\n\nImport historical \nABC\n data or student profiles from CSV files — validates, previews, and merges with existing data\n\nOpen Batch Import\n☆\n🎙️\nVoice-to-ABC\n\nSpeak your observations naturally — AI extracts structured \nABC\n entries from your real-time voice transcript\n\nOpen Voice-to-ABC\n☆\n🔬\nOperational Definition Builder\n\nTurn vague descriptions into observable, measurable definitions using standard ABA dimensions + the Dead Man's Test (AI-assisted, not a BACB-credentialed output)\n\nOpen Operational Definition Builder\n🧠\n🧠 Analysis & Insights\n23\n▾\n☆\n🧠\nAI Pattern Analysis\n\nAI-powered functional \nbehavior\n analysis based on your collected data\n\nAdd at least 3 ABC observations before running AI analysis.\n☆\n📊\nBehavior Overview\n\nVisual dashboard with trends, heatmap, and data summaries\n\nOpen Behavior Overview\n☆\n🔗\nHypothesis Diagram\n\nVisual \nfunction\n hypothesis flow from \nABC\n data with AI generation\n\nAdd observations to use this tool\n☆\n🔺\nData Triangulation\n\nCross-reference \nABC\n, observations, and AI analysis for convergence\n\nOpen Data Triangulation\n☆\n⏱️\nImpact Calculator\n\nQuantify lost instructional time and estimated annual cost\n\nOpen Impact Calculator\n☆\n✅\nData Quality Check\n\nAI-powered review of your \nABC\n entries with specific improvement suggestions\n\nOpen Data Quality Check\n☆\n📊\nTrend Dashboard\n\nSVG charts showing intensity trends, setting \nfrequency\n, and day/time heatmap\n\nOpen Trend Dashboard\n☆\n🔮\nPredictive Insights\n\nAI-powered pattern analysis predicting when, where, and what triggers behaviors — with prevention strategies\n\nOpen Predictive Insights\n☆\n🤖\nAsk AlloBot\n\nChat with AI about \nbehavior\n strategies, \nFBA\n, \nBIP\n, and intervention planning\n\nOpen Ask AlloBot\n☆\n📊\nSpecialist Consultation Dashboard(BCBA Consultation)\n\nData dashboard for BCBAs + printable handoff packet for consultation\n\nOpen BCBA Consultation\n☆\n📈\nABA Graph Engine\n\nPublication-standard graphs with phase lines, trend lines, and visual analysis\n\nOpen ABA Graph Engine\n☆\n🔬\nSingle-Case Design\n\nAB, ABAB, Multiple \nBaseline\n, Alternating Treatments, Changing Criterion\n\nOpen Single-Case Design\n☆\n📅\nTime Pattern Finder(Scatterplot Analysis)\n\nTime-of-day × \nbehavior\n grid to identify temporal patterns — auto-populates from \nABC\n data\n\nOpen Scatterplot Analysis\n☆\n📋\nStakeholder Feedback Survey(Social Validity)\n\nTARF and IRP-15 scales for measuring treatment acceptability — required for publication\n\nOpen Social Validity\n☆\n📈\nCumulative Progress View(Cumulative Record)\n\nClassic Skinner-style cumulative \nfrequency\n graph — the heritage of ABA data display\n\nOpen Cumulative Record\n☆\n📐\nPattern Validation Analysis(Conditional Probability)\n\nForeground vs background probability analysis to validate \nABC\n hypotheses with data\n\nOpen Conditional Probability\n☆\n👥\nCaseload Dashboard\n\nBird's-eye overview of all students — status indicators, trends, safety alerts, and AI caseload summary\n\nOpen Caseload Dashboard\n☆\n📊\nCross-Student Comparison\n\nLoad multiple student workspaces to compare \nbehavior\n patterns, intensity levels, and trends side-by-side with AI analysis\n\nOpen Cross-Student Comparison\n☆\n📐\nEffect Size Calculator\n\nCalculate Tau-U, NAP, and PND to quantify intervention effectiveness with visual phase comparison\n\nOpen Effect Size Calculator\n☆\n📈\nProgress Monitor\n\nTrack \nbehavior\n \nfrequency\n over time with aim lines, phase change markers, trend analysis, and daily summary stats\n\nOpen Progress Monitor\n☆\n🔀\nCompeting Pathways\n\nVisual model mapping problem, replacement, and competing behaviors for \nFBA\n/\nBIP\n planning\n\nOpen Competing Pathways\n☆\n🔍\nCan't Do / Won't Do\n\nSkill deficit vs performance deficit assessment through structured probes\n\nOpen Can't Do / Won't Do\n☆\n📅\nBehavior Timeline Heatmap\n\nVisualize incident patterns across 4 school weeks in a color-coded calendar grid with drill-down\n\n🆕 NewOpen Behavior Timeline Heatmap\n🎯\n🎯 Planning & Goals\n18\n▾\n☆\n🎯\nSMART Goal Builder\n\nStep-by-step behavioral goal construction with AI suggestions\n\nOpen SMART Goal Builder\n☆\n📜\nStudent–Teacher Agreement(Behavior Contract)\n\nAI-drafted contract with student and teacher sections\n\nOpen Behavior Contract\n☆\n✅\nFidelity Checklist\n\nAI-generated daily \nBIP\n implementation checklist\n\nOpen Fidelity Checklist\n☆\n⚖️\nFeasibility Check\n\n5-question contextual fit assessment with AI recommendations\n\nOpen Feasibility Check\n☆\n📐\nGAS Rubric\n\nGoal Attainment Scaling with AI-generated descriptors\n\nOpen GAS Rubric\n☆\n📇\nPocket BIP\n\nCompact index-card \nBIP\n summary for clipboard carry\n\nOpen Pocket BIP\n☆\n📋\nIntervention Plan\n\nAI-generated multi-week intervention plan with measurable goals and milestones\n\nOpen Intervention Plan\n☆\n📈\nProgress Narrative\n\nIEP-ready progress monitoring paragraphs from accumulated behavioral data\n\nOpen Progress Narrative\n☆\n📄\nIEP Meeting Prep\n\nAI-generated meeting preparation packet with data summary, talking points, and next steps\n\nOpen IEP Meeting Prep\n☆\n🛡️\nSafety & Wellbeing Screening(Risk Screening)\n\nSafety reflection checklist + AI pattern detection (not a formal threat-assessment instrument)\n\nOpen Risk Screening\n☆\n📄\nBIP Generator\n\nSynthesize \nABC\n and preference data into a formal, editable \nBIP\n document\n\nOpen BIP Generator\n☆\n🎯\nPositive Reinforcement Planner(DR Strategy Selector)\n\nChoose the right differential \nreinforcement\n strategy (\nDRA\n, \nDRI\n, \nDRO\n, DRL)\n\nOpen DR Strategy Selector\n☆\n💬\nCommunication Skills Planner(FCT Template)\n\nFunctional Communication Training planning with modality selection\n\nOpen FCT Template\n☆\n🔄\nMaintenance & Generalization\n\nTrack skill retention post-mastery and \ngeneralization\n across settings, people, and materials\n\nOpen Maintenance & Generalization\n☆\n✅\nSupport Plan Fidelity(Treatment Integrity)\n\nDocument whether interventions are implemented as designed — component-level fidelity tracking\n\nOpen Treatment Integrity\n☆\n📄\nIEP Goal Generator\n\nAI-generated present levels, SMART goals, objectives, accommodations, and progress monitoring plans\n\nAdd observations to use this tool\n☆\n🏗️\nMTSS/RTI Tiers\n\nVisual 3-tier pyramid for managing multi-tiered supports with AI-powered tier placement recommendations\n\nOpen MTSS/RTI Tiers\n☆\n📊\nProgress Reports\n\nAI-generated progress reports with data summaries, trend analysis, goal progress, and parent-friendly language option\n\nOpen Progress Reports\n⭐\n⭐ Student Support\n11\n▾\n☆\n⭐\nPositive Behavior Tracker(Token Board)\n\nVisual \nreinforcement\n tracker for positive \nbehavior\n support\n\nOpen Token Board\n☆\n🔄\nEmotional Regulation Cycle(Escalation Cycle)\n\nColvin & Sugai 7-phase emotional regulation model with personalized strategies\n\nOpen Escalation Cycle\n☆\n🏆\nPreference & Motivation Finder(Reinforcer Assessment)\n\nPreference inventory with AI-recommended reinforcers\n\nOpen Reinforcer Assessment\n☆\n🃏\nChoice Board\n\nFullscreen student-facing visual choice overlay\n\nOpen Choice Board\n☆\n🚦\nTraffic Light\n\nStudent-facing red/yellow/green \nbehavior\n zone poster\n\nOpen Traffic Light\n☆\n🪞\nStudent Self-Check\n\nStudent-facing mood check-in and reflection journal — capturing their voice\n\nOpen Student Self-Check\n☆\n🎮\nMy Progress Quest\n\nStudent-facing mood tracker with streaks, badges, quests, and reflection journal\n\nOpen My Progress Quest\n☆\n🧘\nCalming & Co-Regulation Toolkit(De-escalation Toolkit)\n\nBreathing exercises, visual timers, sensory breaks, and grounding — real-time calming support\n\nOpen De-escalation Toolkit\n☆\n🔄\nSelf-Regulation Strategy Builder(Replacement Behavior Planner)\n\nMap behaviors of concern to functionally equivalent replacements with teaching strategies\n\nOpen Replacement Behavior Planner\n☆\n⭐\nMotivation & Preferences Survey(Reinforcement Inventory)\n\nStructured motivation survey — identify what drives each student across 6 categories\n\nOpen Reinforcement Inventory\n☆\n🔄\nReplacement Behavior Tracker\n\nTrack teaching trials and monitor acquisition of replacement behaviors\n\nOpen Replacement Behavior Tracker\n🌍\n🌍 Equity & Culture\n5\n▾\n☆\n🏫\nEnvironment Audit\n\n8-item classroom environment checklist with AI recommendations\n\nOpen Environment Audit\n☆\n🌍\nCultural Context Reflection\n\n8-question pause-and-reflect checklist before interpreting \nbehavior\n through a cultural humility lens\n\nOpen Cultural Context Reflection\n☆\n✨\nStrength-Based Reframe\n\nAI rewrites deficit-based descriptions into asset-focused, strengths-based language\n\nOpen Strength-Based Reframe\n☆\n🪞\nEquity & Self-Awareness Check(Bias Reflection Monitor)\n\nGently surfaces patterns in your data for reflection on potential implicit bias — growth, not guilt\n\nOpen Bias Reflection Monitor\n☆\n💛\nRestorative Conversation Guide\n\nStep-by-step scripts for harm repair, community circles, and reintegration conferences\n\nOpen Restorative Conversation Guide\n👪\n👪 Family & Team\n6\n▾\n☆\n📝\nHome Note\n\nAI-drafted parent communication with tone selector\n\nOpen Home Note\n☆\n📦\nStudent Snapshot Exchange\n\nExport & import JSON snapshots for parent–teacher data exchange\n\nOpen Student Snapshot Exchange\n☆\n📋\nFERPA Consent Manager\n\nCustomizable consent form for parent data exchange — edit, print, share as JSON\n\nOpen FERPA Consent Manager\n☆\n🏠\nHome Behavior Log\n\nSimplified parent-friendly \nbehavior\n logging with everyday language\n\nOpen Home Behavior Log\n☆\n👪\nFamily Voice\n\nStructured form for families to share observations, cultural insights, and celebrations — with AI translation\n\nOpen Family Voice\n☆\n📞\nCommunication Log\n\nTwo-way family contact tracker with follow-ups — ensure no family falls through the cracks\n\nOpen Communication Log\n🏫\n🏫 Environment\n4\n▾\n☆\n🗓️\nRoutine Hotspot Matrix\n\nMap behavioral patterns to daily routine periods with AI analysis\n\nOpen Routine Hotspot Matrix\n☆\n🚨\nCrisis Plan\n\n3-tier emergency protocol with AI-drafted safety plan\n\nOpen Crisis Plan\n☆\n🗺️\nRelationship Map\n\nVisual diagram of student connections — trusted adults, peers, family, mentors — with gap analysis\n\nOpen Relationship Map\n☆\n🛠️\nProactive Environment Planner(Antecedent Modification Planner)\n\nAI-powered environmental change recommendations to prevent behaviors before they start\n\nOpen Antecedent Modification Planner\n🔧\n🔧 Utilities\n19\n▾\n☆\n📥\nExport Reports\n\nDownload data as JSON, CSV, text reports, or printable PDF portfolio\n\nOpen Export Reports\n☆\n📄\nRecord Review\n\nPaste IEP/eval text for AI-powered structured summary\n\nOpen Record Review\n☆\n📚\nABA Quick Guide\n\nSearchable glossary, \nreinforcement\n schedules, decision tree & common mistakes\n\nOpen ABA Quick Guide\n☆\n🎭\nSupportive Conversation Practice(Counseling Simulation)\n\nAI role-play with student personas for counseling practice\n\nOpen Counseling Simulation\n☆\n🎓\nPractice Sandbox\n\nLoad simulated student data for PD, pre-service training, or learning ABA without real students\n\nOpen Practice Sandbox\n☆\n📖\nABA Concept Glossary\n\n25+ searchable ABA terms with plain-language definitions and real-world examples\n\nOpen ABA Concept Glossary\n☆\n🧭\nGuided Workflows\n\nStep-by-step guided workflows for \nFBA\n, \nBIP\n, and RTI \nbehavior\n tiers with AI coaching\n\nOpen Guided Workflows\n☆\n🤝\nTeam Notes\n\nMulti-role timestamped collaboration thread for teachers, paras, counselors, and parents\n\nOpen Team Notes\n☆\n📝\nSession Notes\n\nTimestamped observation notes with voice dictation — capture context as it happens\n\nOpen Session Notes\n☆\n🎓\nPD Learning Path\n\nGuided onboarding modules for building ABA skills step-by-step\n\nOpen PD Learning Path\n☆\n🧪\nABA Knowledge Quiz\n\nTest your ABA knowledge — earn a competency badge at 80%+\n\nOpen ABA Knowledge Quiz\n☆\n🧠\nWhat's the Function?\n\nInteractive clinical scenarios to practice identifying behavioral functions via the AC model\n\nOpen What's the Function?\n☆\n🎬\nVirtual Practicum\n\nPractice MTS, Partial, and Whole \nInterval recording\n against simulated scenarios with accuracy grading\n\nOpen Virtual Practicum\n☆\n🎓\nABA Case Study Training\n\nAI-generated case studies with 4-phase clinical reasoning and scoring\n\nOpen ABA Case Study Training\n☆\n🎓\nAI Observation Coach\n\nReal-time coaching on your data collection quality — identifies gaps, suggests improvements, and rates your data\n\nOpen AI Observation Coach\n☆\n🤝\nWorkspace Sharing\n\nShare workspace data with team members using role-based views — BCBA, teacher, or parent-friendly exports\n\nOpen Workspace Sharing\n☆\n📄\nPrint-Ready Report\n\nGenerate a professional, print-ready progress report with inline charts, AI recommendations, and audience-specific language\n\nOpen Print-Ready Report\n☆\n🗣️\nMI Practice Simulator\n\nPractice motivational interviewing with AI-powered student simulations\n\n🎮 InteractiveOpen MI Practice Simulator\n☆\n🏅\nSkill Tracker & Mentorship\n\nTrack your ABA competency growth across domains — earn badges, complete challenges, and level up from Novice to Practitioner\n\n🆕 NewOpen Skill Tracker & Mentorship\n💾 Download backup\n📂 Load Workspace"
+  },
+  {
+    "width": 390,
+    "state": "welcome-dismiss",
+    "pointerWorks": false,
+    "error": "locator.click: Timeout 1500ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Dismiss Welcome', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <button title=\"Dismiss\" aria-label=\"Dismiss Welcome\" class=\"absolute top-3 right-3 text-white/60 hover:text-white transition-colors text-lg\">✕</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"flex items-center gap-2 mb-2\">…</div> from <div class=\"relative\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"flex items-center gap-2 mb-2\">…</div> from <div class=\"relative\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    3 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"flex items-center gap-2 mb-2\">…</div> from <div class=\"relative\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n"
+  },
+  {
+    "width": 390,
+    "state": "returning",
+    "errors": [],
+    "headings": [
+      {
+        "text": "BehaviorLens",
+        "y": 12,
+        "height": 28
+      },
+      {
+        "text": "Start with one observation",
+        "y": 243,
+        "height": 20
+      },
+      {
+        "text": "Observe–Describe–Respond Logging(ABC Data Collection)",
+        "y": 1489,
+        "height": 41
+      },
+      {
+        "text": "Live Observation",
+        "y": 1774,
+        "height": 20
+      },
+      {
+        "text": "Frequency Counter",
+        "y": 2062,
+        "height": 20
+      },
+      {
+        "text": "Interval Recording",
+        "y": 2325,
+        "height": 20
+      },
+      {
+        "text": "Data Sheet",
+        "y": 2564,
+        "height": 20
+      },
+      {
+        "text": "Session Data Tracker",
+        "y": 2828,
+        "height": 20
+      },
+      {
+        "text": "IOA Calculator",
+        "y": 3067,
+        "height": 20
+      },
+      {
+        "text": "Task Analysis",
+        "y": 3306,
+        "height": 20
+      },
+      {
+        "text": "Structured Learning Trials(DTT Data Sheet)",
+        "y": 3569,
+        "height": 42
+      },
+      {
+        "text": "What Motivates Me Survey(Preference Assessment)",
+        "y": 3830,
+        "height": 42
+      },
+      {
+        "text": "Latency Recorder",
+        "y": 4091,
+        "height": 20
+      },
+      {
+        "text": "Natural Language ABC",
+        "y": 4330,
+        "height": 20
+      },
+      {
+        "text": "Batch Import",
+        "y": 4594,
+        "height": 20
+      },
+      {
+        "text": "Voice-to-ABC",
+        "y": 4877,
+        "height": 20
+      },
+      {
+        "text": "Operational Definition Builder",
+        "y": 5160,
+        "height": 20
+      },
+      {
+        "text": "AI Pattern Analysis",
+        "y": 5516,
+        "height": 20
+      },
+      {
+        "text": "Behavior Overview",
+        "y": 5787,
+        "height": 20
+      },
+      {
+        "text": "Hypothesis Diagram",
+        "y": 6026,
+        "height": 20
+      },
+      {
+        "text": "Data Triangulation",
+        "y": 6290,
+        "height": 20
+      },
+      {
+        "text": "Impact Calculator",
+        "y": 6553,
+        "height": 20
+      },
+      {
+        "text": "Data Quality Check",
+        "y": 6792,
+        "height": 20
+      },
+      {
+        "text": "Trend Dashboard",
+        "y": 7056,
+        "height": 20
+      },
+      {
+        "text": "Predictive Insights",
+        "y": 7319,
+        "height": 20
+      },
+      {
+        "text": "Ask AlloBot",
+        "y": 7578,
+        "height": 20
+      },
+      {
+        "text": "Specialist Consultation Dashboard(BCBA Consultation)",
+        "y": 7866,
+        "height": 41
+      },
+      {
+        "text": "ABA Graph Engine",
+        "y": 8126,
+        "height": 20
+      },
+      {
+        "text": "Single-Case Design",
+        "y": 8365,
+        "height": 20
+      },
+      {
+        "text": "Time Pattern Finder(Scatterplot Analysis)",
+        "y": 8628,
+        "height": 21
+      },
+      {
+        "text": "Stakeholder Feedback Survey(Social Validity)",
+        "y": 8917,
+        "height": 42
+      },
+      {
+        "text": "Cumulative Progress View(Cumulative Record)",
+        "y": 9178,
+        "height": 42
+      },
+      {
+        "text": "Pattern Validation Analysis(Conditional Probability)",
+        "y": 9464,
+        "height": 42
+      },
+      {
+        "text": "Caseload Dashboard",
+        "y": 9749,
+        "height": 20
+      },
+      {
+        "text": "Cross-Student Comparison",
+        "y": 9988,
+        "height": 20
+      },
+      {
+        "text": "Effect Size Calculator",
+        "y": 10271,
+        "height": 20
+      },
+      {
+        "text": "Progress Monitor",
+        "y": 10510,
+        "height": 20
+      },
+      {
+        "text": "Competing Pathways",
+        "y": 10793,
+        "height": 20
+      },
+      {
+        "text": "Can't Do / Won't Do",
+        "y": 11057,
+        "height": 20
+      },
+      {
+        "text": "Behavior Timeline Heatmap",
+        "y": 11296,
+        "height": 20
+      },
+      {
+        "text": "SMART Goal Builder",
+        "y": 11645,
+        "height": 20
+      },
+      {
+        "text": "Student–Teacher Agreement(Behavior Contract)",
+        "y": 11884,
+        "height": 42
+      },
+      {
+        "text": "Fidelity Checklist",
+        "y": 12126,
+        "height": 20
+      },
+      {
+        "text": "Feasibility Check",
+        "y": 12370,
+        "height": 20
+      },
+      {
+        "text": "GAS Rubric",
+        "y": 12609,
+        "height": 20
+      },
+      {
+        "text": "Pocket BIP",
+        "y": 12828,
+        "height": 20
+      },
+      {
+        "text": "Intervention Plan",
+        "y": 13092,
+        "height": 20
+      },
+      {
+        "text": "Progress Narrative",
+        "y": 13331,
+        "height": 20
+      },
+      {
+        "text": "IEP Meeting Prep",
+        "y": 13570,
+        "height": 20
+      },
+      {
+        "text": "Safety & Wellbeing Screening(Risk Screening)",
+        "y": 13809,
+        "height": 42
+      },
+      {
+        "text": "BIP Generator",
+        "y": 14070,
+        "height": 20
+      },
+      {
+        "text": "Positive Reinforcement Planner(DR Strategy Selector)",
+        "y": 14358,
+        "height": 42
+      },
+      {
+        "text": "Communication Skills Planner(FCT Template)",
+        "y": 14668,
+        "height": 42
+      },
+      {
+        "text": "Maintenance & Generalization",
+        "y": 14929,
+        "height": 20
+      },
+      {
+        "text": "Support Plan Fidelity(Treatment Integrity)",
+        "y": 15192,
+        "height": 21
+      },
+      {
+        "text": "IEP Goal Generator",
+        "y": 15432,
+        "height": 20
+      },
+      {
+        "text": "MTSS/RTI Tiers",
+        "y": 15671,
+        "height": 20
+      },
+      {
+        "text": "Progress Reports",
+        "y": 15930,
+        "height": 20
+      },
+      {
+        "text": "Positive Behavior Tracker(Token Board)",
+        "y": 16266,
+        "height": 21
+      },
+      {
+        "text": "Emotional Regulation Cycle(Escalation Cycle)",
+        "y": 16531,
+        "height": 42
+      },
+      {
+        "text": "Preference & Motivation Finder(Reinforcer Assessment)",
+        "y": 16792,
+        "height": 41
+      },
+      {
+        "text": "Choice Board",
+        "y": 17032,
+        "height": 20
+      },
+      {
+        "text": "Traffic Light",
+        "y": 17252,
+        "height": 20
+      },
+      {
+        "text": "Student Self-Check",
+        "y": 17496,
+        "height": 20
+      },
+      {
+        "text": "My Progress Quest",
+        "y": 17735,
+        "height": 20
+      },
+      {
+        "text": "Calming & Co-Regulation Toolkit(De-escalation Toolkit)",
+        "y": 17974,
+        "height": 42
+      },
+      {
+        "text": "Self-Regulation Strategy Builder(Replacement Behavior Planner)",
+        "y": 18235,
+        "height": 41
+      },
+      {
+        "text": "Motivation & Preferences Survey(Reinforcement Inventory)",
+        "y": 18495,
+        "height": 41
+      },
+      {
+        "text": "Replacement Behavior Tracker",
+        "y": 18755,
+        "height": 20
+      },
+      {
+        "text": "Environment Audit",
+        "y": 19072,
+        "height": 20
+      },
+      {
+        "text": "Cultural Context Reflection",
+        "y": 19311,
+        "height": 20
+      },
+      {
+        "text": "Strength-Based Reframe",
+        "y": 19574,
+        "height": 20
+      },
+      {
+        "text": "Equity & Self-Awareness Check(Bias Reflection Monitor)",
+        "y": 19813,
+        "height": 42
+      },
+      {
+        "text": "Restorative Conversation Guide",
+        "y": 20074,
+        "height": 20
+      },
+      {
+        "text": "Home Note",
+        "y": 20391,
+        "height": 20
+      },
+      {
+        "text": "Student Snapshot Exchange",
+        "y": 20611,
+        "height": 20
+      },
+      {
+        "text": "FERPA Consent Manager",
+        "y": 20850,
+        "height": 20
+      },
+      {
+        "text": "Home Behavior Log",
+        "y": 21089,
+        "height": 20
+      },
+      {
+        "text": "Family Voice",
+        "y": 21352,
+        "height": 20
+      },
+      {
+        "text": "Communication Log",
+        "y": 21591,
+        "height": 20
+      },
+      {
+        "text": "Routine Hotspot Matrix",
+        "y": 21908,
+        "height": 20
+      },
+      {
+        "text": "Crisis Plan",
+        "y": 22147,
+        "height": 20
+      },
+      {
+        "text": "Relationship Map",
+        "y": 22367,
+        "height": 20
+      },
+      {
+        "text": "Proactive Environment Planner(Antecedent Modification Planner)",
+        "y": 22606,
+        "height": 41
+      },
+      {
+        "text": "Export Reports",
+        "y": 22944,
+        "height": 20
+      },
+      {
+        "text": "Record Review",
+        "y": 23183,
+        "height": 20
+      },
+      {
+        "text": "ABA Quick Guide",
+        "y": 23402,
+        "height": 20
+      },
+      {
+        "text": "Supportive Conversation Practice(Counseling Simulation)",
+        "y": 23666,
+        "height": 41
+      },
+      {
+        "text": "Practice Sandbox",
+        "y": 23926,
+        "height": 20
+      },
+      {
+        "text": "ABA Concept Glossary",
+        "y": 24165,
+        "height": 20
+      },
+      {
+        "text": "Guided Workflows",
+        "y": 24404,
+        "height": 20
+      },
+      {
+        "text": "Team Notes",
+        "y": 24692,
+        "height": 20
+      },
+      {
+        "text": "Session Notes",
+        "y": 24931,
+        "height": 20
+      },
+      {
+        "text": "PD Learning Path",
+        "y": 25170,
+        "height": 20
+      },
+      {
+        "text": "ABA Knowledge Quiz",
+        "y": 25409,
+        "height": 20
+      },
+      {
+        "text": "What's the Function?",
+        "y": 25648,
+        "height": 20
+      },
+      {
+        "text": "Virtual Practicum",
+        "y": 25887,
+        "height": 20
+      },
+      {
+        "text": "ABA Case Study Training",
+        "y": 26150,
+        "height": 20
+      },
+      {
+        "text": "AI Observation Coach",
+        "y": 26389,
+        "height": 20
+      },
+      {
+        "text": "Workspace Sharing",
+        "y": 26648,
+        "height": 20
+      },
+      {
+        "text": "Print-Ready Report",
+        "y": 26906,
+        "height": 20
+      },
+      {
+        "text": "MI Practice Simulator",
+        "y": 27165,
+        "height": 20
+      },
+      {
+        "text": "Skill Tracker & Mentorship",
+        "y": 27436,
+        "height": 20
+      }
+    ],
+    "tools": 101,
+    "buttons": 296,
+    "scrolls": [
+      {
+        "height": 779,
+        "content": 27967
+      }
+    ],
+    "text": "◇\nBehaviorLens\n\nBehavioral Observation & Analysis\n\n◇\n💾 Local only\n🤖 AI: OFF\n👨‍👩‍👧 Family\n👤 SELECT STUDENT\nYOUR ROLE:\n👩‍🏫 Teacher\n👪 Parent\n📊 BCBA / Specialist\n— Adjective —\n— Animal —\nPick a codename...\n🎲\n⚙️\nSANDBOX CONFIG\n📅 Period\n7 days\n14 days\n30 days\n60 days\n90 days\n📝 Entries\n10 entries\n15 entries\n25 entries\n40 entries\n60 entries\n🚀\nLoad Demo (14d / 25 entries)\nStart with one observation\n\nWorking with Eagle. Choose the next step below.\n\n1. Capture an ABC observation\n2. Define the behavior clearly\n3. Review the observations\nAll\n📋\nData Collection\n🧠\nAnalysis & Insights\n🎯\nPlanning & Goals\n⭐\nStudent Support\n🌍\nEquity & Culture\n👪\nFamily & Team\n🏫\nEnvironment\n🔧\nUtilities\n⚡\nQUICK LAUNCH\nCore clinical tools — one tap access\n🧭\nTool Wizard\n📝\nABC Data\n📊\nJABA Graphs\n🔬\nSCD Manager\n📐\nEffect Size\n🔗\nHypothesis\n💾 Download backup\n📂 Load Workspace\n\nChanges save automatically in this browser. Download a backup to keep a file copy.\n\n👤\nStudent Profile\n— Eagle\n▼\n✕\n📋\n🧭 STEP 2 OF 7\nRecord ABC Data\n\nStart documenting Antecedent-Behavior-Consequence observations\n\n→ Open Tool\n17% through FBA workflow\n📋\n📋 Data Collection\n15\n▾\n☆\n📋\nObserve–Describe–Respond Logging(ABC Data Collection)\n\nRecord \nantecedent\n-\nbehavior\n-\nconsequence\n data for functional analysis\n\nOpen ABC Data Collection\n☆\n🔍\nLive Observation\n\nFullscreen observation mode with \nfrequency\n, \nduration\n, interval, and \nlatency\n recording\n\nOpen Live Observation\n☆\n🔢\nFrequency Counter\n\nQuick-click tap counter for rapid in-class \nbehavior\n tallying\n\nOpen Frequency Counter\n☆\n⏱️\nInterval Recording\n\nVisual grid with partial, whole, and momentary recording modes\n\nOpen Interval Recording\n☆\n📋\nData Sheet\n\nPrintable \nfrequency\n, \nduration\n, \nABC\n, or \nlatency\n data sheets\n\nOpen Data Sheet\n☆\n📋\nSession Data Tracker\n\nSystematic session-based behavioral measurement with rate calculation\n\nOpen Session Data Tracker\n☆\n🤝\nIOA Calculator\n\nInter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count\n\nOpen IOA Calculator\n☆\n📝\nTask Analysis\n\nBreak skills into teachable steps with forward, backward, or total-task chaining and \nprompt\n tracking\n\nOpen Task Analysis\n☆\n🎯\nStructured Learning Trials(DTT Data Sheet)\n\nDiscrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance\n\nOpen DTT Data Sheet\n☆\n⭐\nWhat Motivates Me Survey(Preference Assessment)\n\nSystematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols\n\nOpen Preference Assessment\n☆\n⏱️\nLatency Recorder\n\nStimulus-to-response time measurement with mean, median, and range statistics\n\nOpen Latency Recorder\n☆\n✏️\nNatural Language ABC\n\nType or paste observation notes in everyday English — AI structures them into \nABC\n entries automatically\n\nOpen Natural Language ABC\n☆\n📥\nBatch Import\n\nImport historical \nABC\n data or student profiles from CSV files — validates, previews, and merges with existing data\n\nOpen Batch Import\n☆\n🎙️\nVoice-to-ABC\n\nSpeak your observations naturally — AI extracts structured \nABC\n entries from your real-time voice transcript\n\nOpen Voice-to-ABC\n☆\n🔬\nOperational Definition Builder\n\nTurn vague descriptions into observable, measurable definitions using standard ABA dimensions + the Dead Man's Test (AI-assisted, not a BACB-credentialed output)\n\nOpen Operational Definition Builder\n🧠\n🧠 Analysis & Insights\n23\n▾\n☆\n🧠\nAI Pattern Analysis\n\nAI-powered functional \nbehavior\n analysis based on your collected data\n\nAdd at least 3 ABC observations before running AI analysis.\n☆\n📊\nBehavior Overview\n\nVisual dashboard with trends, heatmap, and data summaries\n\nOpen Behavior Overview\n☆\n🔗\nHypothesis Diagram\n\nVisual \nfunction\n hypothesis flow from \nABC\n data with AI generation\n\nAdd observations to use this tool\n☆\n🔺\nData Triangulation\n\nCross-reference \nABC\n, observations, and AI analysis for convergence\n\nOpen Data Triangulation\n☆\n⏱️\nImpact Calculator\n\nQuantify lost instructional time and estimated annual cost\n\nOpen Impact Calculator\n☆\n✅\nData Quality Check\n\nAI-powered review of your \nABC\n entries with specific improvement suggestions\n\nOpen Data Quality Check\n☆\n📊\nTrend Dashboard\n\nSVG charts showing intensity trends, setting \nfrequency\n, and day/time heatmap\n\nOpen Trend Dashboard\n☆\n🔮\nPredictive Insights\n\nAI-powered pattern analysis predicting when, where, and what triggers behaviors — with prevention strategies\n\nOpen Predictive Insights\n☆\n🤖\nAsk AlloBot\n\nChat with AI about \nbehavior\n strategies, \nFBA\n, \nBIP\n, and intervention planning\n\nOpen Ask AlloBot\n☆\n📊\nSpecialist Consultation Dashboard(BCBA Consultation)\n\nData dashboard for BCBAs + printable handoff packet for consultation\n\nOpen BCBA Consultation\n☆\n📈\nABA Graph Engine\n\nPublication-standard graphs with phase lines, trend lines, and visual analysis\n\nOpen ABA Graph Engine\n☆\n🔬\nSingle-Case Design\n\nAB, ABAB, Multiple \nBaseline\n, Alternating Treatments, Changing Criterion\n\nOpen Single-Case Design\n☆\n📅\nTime Pattern Finder(Scatterplot Analysis)\n\nTime-of-day × \nbehavior\n grid to identify temporal patterns — auto-populates from \nABC\n data\n\nOpen Scatterplot Analysis\n☆\n📋\nStakeholder Feedback Survey(Social Validity)\n\nTARF and IRP-15 scales for measuring treatment acceptability — required for publication\n\nOpen Social Validity\n☆\n📈\nCumulative Progress View(Cumulative Record)\n\nClassic Skinner-style cumulative \nfrequency\n graph — the heritage of ABA data display\n\nOpen Cumulative Record\n☆\n📐\nPattern Validation Analysis(Conditional Probability)\n\nForeground vs background probability analysis to validate \nABC\n hypotheses with data\n\nOpen Conditional Probability\n☆\n👥\nCaseload Dashboard\n\nBird's-eye overview of all students — status indicators, trends, safety alerts, and AI caseload summary\n\nOpen Caseload Dashboard\n☆\n📊\nCross-Student Comparison\n\nLoad multiple student workspaces to compare \nbehavior\n patterns, intensity levels, and trends side-by-side with AI analysis\n\nOpen Cross-Student Comparison\n☆\n📐\nEffect Size Calculator\n\nCalculate Tau-U, NAP, and PND to quantify intervention effectiveness with visual phase comparison\n\nOpen Effect Size Calculator\n☆\n📈\nProgress Monitor\n\nTrack \nbehavior\n \nfrequency\n over time with aim lines, phase change markers, trend analysis, and daily summary stats\n\nOpen Progress Monitor\n☆\n🔀\nCompeting Pathways\n\nVisual model mapping problem, replacement, and competing behaviors for \nFBA\n/\nBIP\n planning\n\nOpen Competing Pathways\n☆\n🔍\nCan't Do / Won't Do\n\nSkill deficit vs performance deficit assessment through structured probes\n\nOpen Can't Do / Won't Do\n☆\n📅\nBehavior Timeline Heatmap\n\nVisualize incident patterns across 4 school weeks in a color-coded calendar grid with drill-down\n\n🆕 NewOpen Behavior Timeline Heatmap\n🎯\n🎯 Planning & Goals\n18\n▾\n☆\n🎯\nSMART Goal Builder\n\nStep-by-step behavioral goal construction with AI suggestions\n\nOpen SMART Goal Builder\n☆\n📜\nStudent–Teacher Agreement(Behavior Contract)\n\nAI-drafted contract with student and teacher sections\n\nOpen Behavior Contract\n☆\n✅\nFidelity Checklist\n\nAI-generated daily \nBIP\n implementation checklist\n\nOpen Fidelity Checklist\n☆\n⚖️\nFeasibility Check\n\n5-question contextual fit assessment with AI recommendations\n\nOpen Feasibility Check\n☆\n📐\nGAS Rubric\n\nGoal Attainment Scaling with AI-generated descriptors\n\nOpen GAS Rubric\n☆\n📇\nPocket BIP\n\nCompact index-card \nBIP\n summary for clipboard carry\n\nOpen Pocket BIP\n☆\n📋\nIntervention Plan\n\nAI-generated multi-week intervention plan with measurable goals and milestones\n\nOpen Intervention Plan\n☆\n📈\nProgress Narrative\n\nIEP-ready progress monitoring paragraphs from accumulated behavioral data\n\nOpen Progress Narrative\n☆\n📄\nIEP Meeting Prep\n\nAI-generated meeting preparation packet with data summary, talking points, and next steps\n\nOpen IEP Meeting Prep\n☆\n🛡️\nSafety & Wellbeing Screening(Risk Screening)\n\nSafety reflection checklist + AI pattern detection (not a formal threat-assessment instrument)\n\nOpen Risk Screening\n☆\n📄\nBIP Generator\n\nSynthesize \nABC\n and preference data into a formal, editable \nBIP\n document\n\nOpen BIP Generator\n☆\n🎯\nPositive Reinforcement Planner(DR Strategy Selector)\n\nChoose the right differential \nreinforcement\n strategy (\nDRA\n, \nDRI\n, \nDRO\n, DRL)\n\nOpen DR Strategy Selector\n☆\n💬\nCommunication Skills Planner(FCT Template)\n\nFunctional Communication Training planning with modality selection\n\nOpen FCT Template\n☆\n🔄\nMaintenance & Generalization\n\nTrack skill retention post-mastery and \ngeneralization\n across settings, people, and materials\n\nOpen Maintenance & Generalization\n☆\n✅\nSupport Plan Fidelity(Treatment Integrity)\n\nDocument whether interventions are implemented as designed — component-level fidelity tracking\n\nOpen Treatment Integrity\n☆\n📄\nIEP Goal Generator\n\nAI-generated present levels, SMART goals, objectives, accommodations, and progress monitoring plans\n\nAdd observations to use this tool\n☆\n🏗️\nMTSS/RTI Tiers\n\nVisual 3-tier pyramid for managing multi-tiered supports with AI-powered tier placement recommendations\n\nOpen MTSS/RTI Tiers\n☆\n📊\nProgress Reports\n\nAI-generated progress reports with data summaries, trend analysis, goal progress, and parent-friendly language option\n\nOpen Progress Reports\n⭐\n⭐ Student Support\n11\n▾\n☆\n⭐\nPositive Behavior Tracker(Token Board)\n\nVisual \nreinforcement\n tracker for positive \nbehavior\n support\n\nOpen Token Board\n☆\n🔄\nEmotional Regulation Cycle(Escalation Cycle)\n\nColvin & Sugai 7-phase emotional regulation model with personalized strategies\n\nOpen Escalation Cycle\n☆\n🏆\nPreference & Motivation Finder(Reinforcer Assessment)\n\nPreference inventory with AI-recommended reinforcers\n\nOpen Reinforcer Assessment\n☆\n🃏\nChoice Board\n\nFullscreen student-facing visual choice overlay\n\nOpen Choice Board\n☆\n🚦\nTraffic Light\n\nStudent-facing red/yellow/green \nbehavior\n zone poster\n\nOpen Traffic Light\n☆\n🪞\nStudent Self-Check\n\nStudent-facing mood check-in and reflection journal — capturing their voice\n\nOpen Student Self-Check\n☆\n🎮\nMy Progress Quest\n\nStudent-facing mood tracker with streaks, badges, quests, and reflection journal\n\nOpen My Progress Quest\n☆\n🧘\nCalming & Co-Regulation Toolkit(De-escalation Toolkit)\n\nBreathing exercises, visual timers, sensory breaks, and grounding — real-time calming support\n\nOpen De-escalation Toolkit\n☆\n🔄\nSelf-Regulation Strategy Builder(Replacement Behavior Planner)\n\nMap behaviors of concern to functionally equivalent replacements with teaching strategies\n\nOpen Replacement Behavior Planner\n☆\n⭐\nMotivation & Preferences Survey(Reinforcement Inventory)\n\nStructured motivation survey — identify what drives each student across 6 categories\n\nOpen Reinforcement Inventory\n☆\n🔄\nReplacement Behavior Tracker\n\nTrack teaching trials and monitor acquisition of replacement behaviors\n\nOpen Replacement Behavior Tracker\n🌍\n🌍 Equity & Culture\n5\n▾\n☆\n🏫\nEnvironment Audit\n\n8-item classroom environment checklist with AI recommendations\n\nOpen Environment Audit\n☆\n🌍\nCultural Context Reflection\n\n8-question pause-and-reflect checklist before interpreting \nbehavior\n through a cultural humility lens\n\nOpen Cultural Context Reflection\n☆\n✨\nStrength-Based Reframe\n\nAI rewrites deficit-based descriptions into asset-focused, strengths-based language\n\nOpen Strength-Based Reframe\n☆\n🪞\nEquity & Self-Awareness Check(Bias Reflection Monitor)\n\nGently surfaces patterns in your data for reflection on potential implicit bias — growth, not guilt\n\nOpen Bias Reflection Monitor\n☆\n💛\nRestorative Conversation Guide\n\nStep-by-step scripts for harm repair, community circles, and reintegration conferences\n\nOpen Restorative Conversation Guide\n👪\n👪 Family & Team\n6\n▾\n☆\n📝\nHome Note\n\nAI-drafted parent communication with tone selector\n\nOpen Home Note\n☆\n📦\nStudent Snapshot Exchange\n\nExport & import JSON snapshots for parent–teacher data exchange\n\nOpen Student Snapshot Exchange\n☆\n📋\nFERPA Consent Manager\n\nCustomizable consent form for parent data exchange — edit, print, share as JSON\n\nOpen FERPA Consent Manager\n☆\n🏠\nHome Behavior Log\n\nSimplified parent-friendly \nbehavior\n logging with everyday language\n\nOpen Home Behavior Log\n☆\n👪\nFamily Voice\n\nStructured form for families to share observations, cultural insights, and celebrations — with AI translation\n\nOpen Family Voice\n☆\n📞\nCommunication Log\n\nTwo-way family contact tracker with follow-ups — ensure no family falls through the cracks\n\nOpen Communication Log\n🏫\n🏫 Environment\n4\n▾\n☆\n🗓️\nRoutine Hotspot Matrix\n\nMap behavioral patterns to daily routine periods with AI analysis\n\nOpen Routine Hotspot Matrix\n☆\n🚨\nCrisis Plan\n\n3-tier emergency protocol with AI-drafted safety plan\n\nOpen Crisis Plan\n☆\n🗺️\nRelationship Map\n\nVisual diagram of student connections — trusted adults, peers, family, mentors — with gap analysis\n\nOpen Relationship Map\n☆\n🛠️\nProactive Environment Planner(Antecedent Modification Planner)\n\nAI-powered environmental change recommendations to prevent behaviors before they start\n\nOpen Antecedent Modification Planner\n🔧\n🔧 Utilities\n19\n▾\n☆\n📥\nExport Reports\n\nDownload data as JSON, CSV, text reports, or printable PDF portfolio\n\nOpen Export Reports\n☆\n📄\nRecord Review\n\nPaste IEP/eval text for AI-powered structured summary\n\nOpen Record Review\n☆\n📚\nABA Quick Guide\n\nSearchable glossary, \nreinforcement\n schedules, decision tree & common mistakes\n\nOpen ABA Quick Guide\n☆\n🎭\nSupportive Conversation Practice(Counseling Simulation)\n\nAI role-play with student personas for counseling practice\n\nOpen Counseling Simulation\n☆\n🎓\nPractice Sandbox\n\nLoad simulated student data for PD, pre-service training, or learning ABA without real students\n\nOpen Practice Sandbox\n☆\n📖\nABA Concept Glossary\n\n25+ searchable ABA terms with plain-language definitions and real-world examples\n\nOpen ABA Concept Glossary\n☆\n🧭\nGuided Workflows\n\nStep-by-step guided workflows for \nFBA\n, \nBIP\n, and RTI \nbehavior\n tiers with AI coaching\n\nOpen Guided Workflows\n☆\n🤝\nTeam Notes\n\nMulti-role timestamped collaboration thread for teachers, paras, counselors, and parents\n\nOpen Team Notes\n☆\n📝\nSession Notes\n\nTimestamped observation notes with voice dictation — capture context as it happens\n\nOpen Session Notes\n☆\n🎓\nPD Learning Path\n\nGuided onboarding modules for building ABA skills step-by-step\n\nOpen PD Learning Path\n☆\n🧪\nABA Knowledge Quiz\n\nTest your ABA knowledge — earn a competency badge at 80%+\n\nOpen ABA Knowledge Quiz\n☆\n🧠\nWhat's the Function?\n\nInteractive clinical scenarios to practice identifying behavioral functions via the AC model\n\nOpen What's the Function?\n☆\n🎬\nVirtual Practicum\n\nPractice MTS, Partial, and Whole \nInterval recording\n against simulated scenarios with accuracy grading\n\nOpen Virtual Practicum\n☆\n🎓\nABA Case Study Training\n\nAI-generated case studies with 4-phase clinical reasoning and scoring\n\nOpen ABA Case Study Training\n☆\n🎓\nAI Observation Coach\n\nReal-time coaching on your data collection quality — identifies gaps, suggests improvements, and rates your data\n\nOpen AI Observation Coach\n☆\n🤝\nWorkspace Sharing\n\nShare workspace data with team members using role-based views — BCBA, teacher, or parent-friendly exports\n\nOpen Workspace Sharing\n☆\n📄\nPrint-Ready Report\n\nGenerate a professional, print-ready progress report with inline charts, AI recommendations, and audience-specific language\n\nOpen Print-Ready Report\n☆\n🗣️\nMI Practice Simulator\n\nPractice motivational interviewing with AI-powered student simulations\n\n🎮 InteractiveOpen MI Practice Simulator\n☆\n🏅\nSkill Tracker & Mentorship\n\nTrack your ABA competency growth across domains — earn badges, complete challenges, and level up from Novice to Practitioner\n\n🆕 NewOpen Skill Tracker & Mentorship\n💾 Download backup\n📂 Load Workspace"
+  },
+  {
+    "width": 390,
+    "state": "definition",
+    "errors": [],
+    "headings": [
+      {
+        "text": "BehaviorLens",
+        "y": 20,
+        "height": 28
+      },
+      {
+        "text": "Operational Definition Builder",
+        "y": 193,
+        "height": 28
+      },
+      {
+        "text": "Describe the Behavior",
+        "y": 311,
+        "height": 20
+      }
+    ],
+    "tools": 0,
+    "buttons": 9,
+    "scrolls": [],
+    "text": "Opened opdef panel\n◇\n◇\nBehaviorLens\n\n◇\n💾 Local only\n🤖 AI: OFF\n📤\n🔬\nOperational Definition Builder\n\nTurn vague descriptions into observable, measurable behavioral definitions\n\n1\nDescribe the Behavior\n\nEnter the behavior as you'd normally describe it — don't worry about being \"clinical\" yet. The AI will help refine it.\n\n🧠 Generate Operational Definition\n\nType a behavior description above to get started\n\n📎 RELATED TOOLS\n📋\nABC Data\n🔗\nHypothesis Diagram\n🔄\nReplacement Behavior\n🧭\nFBA Workflow"
+  },
+  {
+    "width": 390,
+    "state": "definition-fields",
+    "fields": [
+      {
+        "label": "Describe the behavior in everyday language",
+        "placeholder": "Examples:\n• \"Student is disrespectful\"\n• \"Having a meltdown\"\n• \"Not paying attention\"\n• \"Student is aggressive during transitions\""
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "state": "definition-draft-return",
+    "draftText": ""
+  },
+  {
+    "width": 390,
+    "state": "family",
+    "errors": [],
+    "headings": [
+      {
+        "text": "BehaviorLens",
+        "y": 12,
+        "height": 28
+      },
+      {
+        "text": "Support your child, one step at a time",
+        "y": 605,
+        "height": 20
+      },
+      {
+        "text": "Behavior Overview",
+        "y": 1443,
+        "height": 20
+      },
+      {
+        "text": "Pocket BIP",
+        "y": 1760,
+        "height": 20
+      },
+      {
+        "text": "Positive Behavior Tracker(Token Board)",
+        "y": 2102,
+        "height": 21
+      },
+      {
+        "text": "Choice Board",
+        "y": 2366,
+        "height": 20
+      },
+      {
+        "text": "Traffic Light",
+        "y": 2586,
+        "height": 20
+      },
+      {
+        "text": "Student Self-Check",
+        "y": 2830,
+        "height": 20
+      },
+      {
+        "text": "Home Note",
+        "y": 3147,
+        "height": 20
+      },
+      {
+        "text": "Student Snapshot Exchange",
+        "y": 3366,
+        "height": 20
+      },
+      {
+        "text": "Home Behavior Log",
+        "y": 3605,
+        "height": 20
+      },
+      {
+        "text": "Family Voice",
+        "y": 3869,
+        "height": 20
+      },
+      {
+        "text": "Communication Log",
+        "y": 4108,
+        "height": 20
+      },
+      {
+        "text": "ABA Quick Guide",
+        "y": 4425,
+        "height": 20
+      }
+    ],
+    "tools": 12,
+    "buttons": 60,
+    "scrolls": [
+      {
+        "height": 779,
+        "content": 4566
+      }
+    ],
+    "text": "Opened opdef panel\n◇\nBehaviorLens\n\nBehavioral Observation & Analysis\n\n◇\n💾 Local only\n🤖 AI: OFF\n👨‍👩‍👧 Family Mode\n👤 SELECT STUDENT\nYOUR ROLE:\n👩‍🏫 Teacher\n👪 Parent\n📊 BCBA / Specialist\n— Adjective —\n— Animal —\nPick a codename...\n🎲\n⚙️\nSANDBOX CONFIG\n📅 Period\n7 days\n14 days\n30 days\n60 days\n90 days\n📝 Entries\n10 entries\n15 entries\n25 entries\n40 entries\n60 entries\n🚀\nLoad Demo (14d / 25 entries)\nSupport your child, one step at a time\n\nWorking with Eagle. Choose the next step below.\n\n1. Add a home observation\n2. Offer a coping choice\n3. Review the observations\nAll\n📋\nData Collection\n🧠\nAnalysis & Insights\n🎯\nPlanning & Goals\n⭐\nStudent Support\n🌍\nEquity & Culture\n👪\nFamily & Team\n🏫\nEnvironment\n🔧\nUtilities\n🔴 Download backup\n📂 Load Workspace\n\nChanges save automatically in this browser. Download a backup to keep a file copy.\n\n👤\nStudent Profile\n— Eagle\n▼\n🧠\n🧠 Analysis & Insights\n1\n▾\n☆\n📊\nBehavior Overview\n\nVisual dashboard with trends, heatmap, and data summaries\n\nOpen Behavior Overview\n🎯\n🎯 Planning & Goals\n1\n▾\n☆\n📇\nPocket BIP\n\nCompact index-card \nBIP\n summary for clipboard carry\n\nOpen Pocket BIP\n⭐\n⭐ Student Support\n4\n▾\n☆\n⭐\nPositive Behavior Tracker(Token Board)\n\nVisual \nreinforcement\n tracker for positive \nbehavior\n support\n\nOpen Token Board\n☆\n🃏\nChoice Board\n\nFullscreen student-facing visual choice overlay\n\nOpen Choice Board\n☆\n🚦\nTraffic Light\n\nStudent-facing red/yellow/green \nbehavior\n zone poster\n\nOpen Traffic Light\n☆\n🪞\nStudent Self-Check\n\nStudent-facing mood check-in and reflection journal — capturing their voice\n\nOpen Student Self-Check\n👪\n👪 Family & Team\n5\n▾\n☆\n📝\nHome Note\n\nAI-drafted parent communication with tone selector\n\nOpen Home Note\n☆\n📦\nStudent Snapshot Exchange\n\nExport & import JSON snapshots for parent–teacher data exchange\n\nOpen Student Snapshot Exchange\n☆\n🏠\nHome Behavior Log\n\nSimplified parent-friendly \nbehavior\n logging with everyday language\n\nOpen Home Behavior Log\n☆\n👪\nFamily Voice\n\nStructured form for families to share observations, cultural insights, and celebrations — with AI translation\n\nOpen Family Voice\n☆\n📞\nCommunication Log\n\nTwo-way family contact tracker with follow-ups — ensure no family falls through the cracks\n\nOpen Communication Log\n🔧\n🔧 Utilities\n1\n▾\n☆\n📚\nABA Quick Guide\n\nSearchable glossary, \nreinforcement\n schedules, decision tree & common mistakes\n\nOpen ABA Quick Guide\n🔴 Download backup\n📂 Load Workspace"
+  }
+]

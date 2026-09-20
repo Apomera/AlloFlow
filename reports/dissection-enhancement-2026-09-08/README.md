@@ -105,3 +105,15 @@ See [VISUAL_FRAMING.md](VISUAL_FRAMING.md) for geometry-aware 3D eye framing, Fi
 ## Circulatory-pump comparison diagrams
 
 See [PUMP_COMPARISON_DIAGRAMS.md](PUMP_COMPARISON_DIAGRAMS.md) for specimen-specific SVG diagrams, explicit scientific limits, references, and verification.
+
+## Gas-exchange accuracy and focused comparisons
+
+See [GAS_EXCHANGE_COMPARISONS.md](GAS_EXCHANGE_COMPARISONS.md) for the September 19 pass: corrected exchange/ventilation descriptions, four concept diagrams, consistent comparison profiles, and the Compare with selector.
+
+## Honest draft feedback and explanation review
+
+See [EVIDENCE_DRAFT_REVIEW.md](EVIDENCE_DRAFT_REVIEW.md) for the ungraded draft status, numbered observation/location/reasoning guide, reference starter, and verification.
+
+## Enlarged diagram reading view
+
+See [DIAGRAM_READING_VIEW.md](DIAGRAM_READING_VIEW.md) for zoomable circulation and gas-exchange diagrams, fit behavior, readable explanations, keyboard navigation, and verification.

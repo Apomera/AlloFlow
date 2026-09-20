@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "Scale previews change the 3D pasta pile without changing saved portions; confirmation records one normal measure action, and reload discards unrecorded adjustments.",
+    "Keyboard boundaries, restoring the recorded amount, and measurement through the original controls keep the scale synchronized.",
+    "A four-serving recipe completes independently using the scale; measurement locks after adding pasta and historical replay shows the recorded portion without changing evidence.",
+    "Scale works on a narrow screen and without the 3D runtime.",
+    "An unrecorded 640 g preview cannot replace the recorded 160 g portion when pasta enters the pot; the scale returns to the actual cooking portion."
+  ],
+  "accessibility": [
+    {
+      "label": "Interactive recipe scale, desktop",
+      "issues": []
+    },
+    {
+      "label": "320px recipe scale in text view",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

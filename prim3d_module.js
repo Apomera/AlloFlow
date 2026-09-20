@@ -582,6 +582,8 @@
     var r = normalizeRecipe(recipe);
     if (!THREE || !r) return null;
     var unit = isNum(opts.unit) ? opts.unit : 1;
+    // Opt-in preview detail; callers without a setting retain the lightweight mesh.
+    var curves = opts.surfaceQuality === 'fine' ? [64, 48, 64, 32, 96] : opts.surfaceQuality === 'smooth' ? [48, 32, 48, 24, 72] : [18, 18, 20, 12, 28];
     var group = new THREE.Group();
     r.parts.forEach(function (p, partIndex) {
       if (p.hidden) return;
@@ -589,10 +591,10 @@
       var shaped = !!(p.deform.taper || p.deform.twist || p.deform.bulge);
       try {
         if (p.shape === 'box') geo = new THREE.BoxGeometry(p.size[0], p.size[1], p.size[2], shaped ? 5 : 1, shaped ? 8 : 1, shaped ? 5 : 1);
-        else if (p.shape === 'sphere') geo = new THREE.SphereGeometry(p.size[0], 18, 18);
-        else if (p.shape === 'cylinder') geo = new THREE.CylinderGeometry(p.size[0], p.size[0], p.size[1], 20, shaped ? 12 : 1);
-        else if (p.shape === 'cone') geo = new THREE.ConeGeometry(p.size[0], p.size[1], 20, shaped ? 12 : 1);
-        else if (p.shape === 'torus') geo = new THREE.TorusGeometry(p.size[0], p.size[1], 12, 28);
+        else if (p.shape === 'sphere') geo = new THREE.SphereGeometry(p.size[0], curves[0], curves[1]);
+        else if (p.shape === 'cylinder') geo = new THREE.CylinderGeometry(p.size[0], p.size[0], p.size[1], curves[2], shaped ? 12 : 1);
+        else if (p.shape === 'cone') geo = new THREE.ConeGeometry(p.size[0], p.size[1], curves[2], shaped ? 12 : 1);
+        else if (p.shape === 'torus') geo = new THREE.TorusGeometry(p.size[0], p.size[1], curves[3], curves[4]);
         else if (p.shape === 'lathe') {
           var lathePts = p.profile.map(function (pt) { return new THREE.Vector2(pt[0] * p.size[0], pt[1] * p.size[1]); });
           geo = new THREE.LatheGeometry(lathePts, 28);

@@ -1,0 +1,146 @@
+[
+  {
+    "width": 1280,
+    "state": "onboarding",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "first-dashboard",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "first-document",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "measured-dashboard",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "measured-document",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "source-record",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "onboarding",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "first-dashboard",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "first-document",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "measured-dashboard",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "measured-document",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "source-record",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "onboarding",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "first-dashboard",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "first-document",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "measured-dashboard",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "measured-document",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "source-record",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  }
+]

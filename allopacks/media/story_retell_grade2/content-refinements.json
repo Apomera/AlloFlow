@@ -15,49 +15,49 @@
     "resourceId": "st-reading",
     "path": "data",
     "from": "## Three Parts of Every Story\n\nEvery **story** has three parts. Once you know them, you can tell any book back to somebody.\n\nThe **beginning** tells you who and where. You meet the **character**, and you find out the **setting** — the place and the time.\n\nThe **middle** is where the trouble starts. Something goes wrong. That trouble is the **problem**. The character tries to fix it, and the first try often flops.\n\nThe **end** is where the trouble gets fixed at last. That fix is the **solution**. Then things go quiet again.\n\nHere is a short one. Ada gets a new puppy. The puppy chews her shoe, then her hat, then her library book. Ada hides them all, but the puppy keeps finding them. So Ada gives the puppy a rope toy of its own. Now the puppy chews the rope, and the shoes are safe.\n\nCan you hear the three parts? The puppy arrives. The chewing goes on and on. The rope toy fixes it.\n\nNow **retell** it. Say the beginning, then the middle, then the end. Keep that **order**. If you tell the end first, nobody knows why the rope toy matters.\n\nOne more trick. Listen for the word \"but.\" Stories turn at a but. Ada loved her puppy, but it chewed her things. That little word is the door into the middle.",
-    "to": "## Retell a Story in Three Parts\n\nA **story** tells about characters and events. A beginning, middle and end can help us organize a **retell** in our own words. Stories can be built in different ways; not every story ends with a solved problem.\n\nThe **beginning** often introduces a **character** and the **setting**, where and when the story takes place. In the **middle**, events develop. A **problem** may lead a character to try something. The **end** shows how the story finishes. Sometimes there is a **solution**; sometimes a question remains.\n\nHere is an invented example. Ada gets a puppy. It chews her shoe, hat and library book. She hides the things, but the puppy finds them. Ada gives it a rope toy. In this story it chews the toy instead, and the shoes are safe.\n\nAt the beginning the puppy arrives. In the middle the chewing causes trouble and hiding things does not work. At the end the rope toy helps solve the problem. This is a story, not a guide to training a real puppy.\n\nRetell key events in **order** so a listener can follow the changes. You can speak, write, use AAC or point to pictures with support. Go back to the story when you need to check.\n\nBut can signal a change: Ada liked her puppy, but it chewed her things. It is a clue, not a rule. Find the actual events rather than searching only for one word."
+    "to": "## Retell a Story in Three Parts\n\nA **story** tells about people, animals or other **characters** and what they do. To **retell**, tell the key events in your own words.\n\nThe **beginning** often tells who is there. It may show the **setting**: where and when the story takes place. In the **middle**, more things happen. A **problem** may lead someone to try a new plan. The **end** shows how the story finishes. Some stories have a **solution**. Others leave a question open.\n\nHere is a made-up story. Ada gets a puppy. It chews her shoe, hat and library book. She hides her things. The puppy finds them. Then Ada gives it a rope toy. It chews the toy, and her shoes are safe.\n\nFirst, the puppy arrives. Next, it chews things. Ada's first plan does not work. At the end, the toy helps. This is a story, not advice on how to train a real puppy.\n\nKeep the events in **order** so others can follow them. You may speak, write, point to pictures or use your talk device. Check the story if you forget.\n\nThe word but can show a change: Ada liked her puppy, but it chewed her things. Look at what happens. A story need not use but to show a problem."
   },
   {
     "resourceId": "st-glossary",
     "path": "data.0.def",
     "from": "Something that happens to somebody, told from start to finish.",
-    "to": "An account of characters and events, real or invented."
+    "to": "A telling of events that are real or made up."
   },
   {
     "resourceId": "st-glossary",
     "path": "data.1.def",
     "from": "The first part, where you meet who it is about and find out where they are.",
-    "to": "The first part, which often introduces characters and setting."
+    "to": "The first part. It often shows who is there and where they are."
   },
   {
     "resourceId": "st-glossary",
     "path": "data.2.def",
     "from": "The part where trouble shows up and somebody tries to fix it.",
-    "to": "The part where the main events develop."
+    "to": "The part between the start and the end, where events unfold."
   },
   {
     "resourceId": "st-glossary",
     "path": "data.3.def",
     "from": "The last part, where the trouble is settled and things go quiet.",
-    "to": "The last part, showing how the story finishes, with or without a solved problem."
+    "to": "The last part. A problem may be solved or left open."
   },
   {
     "resourceId": "st-glossary",
     "path": "data.4.def",
     "from": "A person or an animal that things happen to in a book.",
-    "to": "A person, animal or other being that takes part in a story."
+    "to": "A person, animal or other being in a story."
   },
   {
     "resourceId": "st-glossary",
     "path": "data.7.def",
     "from": "The way the trouble finally gets fixed.",
-    "to": "A way a story problem is addressed or solved."
+    "to": "A way to deal with or solve a problem."
   },
   {
     "resourceId": "st-glossary",
     "path": "data.8.def",
     "from": "To say what happened in your own words, in the right order.",
-    "to": "To tell key events again in your own words, keeping their meaning and connections."
+    "to": "Tell the key events again in your own words. Keep their meaning."
   },
   {
     "resourceId": "st-anchor",
@@ -109,15 +109,21 @@
   },
   {
     "resourceId": "st-memory",
+    "path": "data.cards.0.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "st-memory",
     "path": "data.cards.0.aiExample",
     "from": "Three fingers. Thumb up: WHO and WHERE. Pointer up: WHAT WENT WRONG. Middle finger up: HOW IT GOT FIXED. Count them on your hand while you retell, and you cannot skip the middle.",
-    "to": "Put three cards in a row: beginning, middle, end. Point to each while you retell the puppy story. Use gestures or AAC if that works better for you."
+    "to": "Put three cards in a row: beginning, middle, end. Point to each as you tell the puppy story. Use words, pictures or your talk device."
   },
   {
     "resourceId": "st-memory",
     "path": "data.cards.0.mapping",
     "from": "Your fingers go up in a fixed order. You cannot shuffle them. So the hand keeps the parts from coming out backwards.",
-    "to": "Three cards or gestures can cue an order you choose. Point to each part while retelling; no particular hand movement is required."
+    "to": "The cards help you keep the events in order. Choose a way to use them that works for you."
   },
   {
     "resourceId": "st-memory",
@@ -169,15 +175,21 @@
   },
   {
     "resourceId": "st-memory",
+    "path": "data.cards.1.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "st-memory",
     "path": "data.cards.1.aiExample",
     "from": "BUT is a door. Say the sentence and stop right at the word but. Then push the door open. Everything after it is the trouble. Ada loved her puppy | BUT | it chewed her things.",
-    "to": "In Ada liked her puppy, but it chewed her things, but signals a contrast. Draw a door to remember that change. Other uses of but may not introduce a story problem."
+    "to": "Ada liked her puppy, but it chewed her things. But shows a change here. Draw a door to help you think of a change."
   },
   {
     "resourceId": "st-memory",
     "path": "data.cards.1.mapping",
     "from": "A door is where one room ends and another begins. That is exactly what the word but does, between the calm beginning and the messy middle.",
-    "to": "A door can remind you to notice a change. This is an analogy, not a rule for locating every story middle."
+    "to": "The door is a memory cue. Not every story uses but. Check what happens in the story."
   },
   {
     "resourceId": "st-memory",
@@ -247,27 +259,39 @@
   },
   {
     "resourceId": "st-faq",
+    "path": "data.0.answer",
+    "from": "Lots of good books do. Pick the biggest one, the trouble the whole book is really about, and retell that. You can mention a smaller one after, if there is time.",
+    "to": "Some stories have more than one. Tell the events that matter most. Show how they connect."
+  },
+  {
+    "resourceId": "st-faq",
     "path": "data.1.answer",
     "from": "No. Reading out loud uses the author's words. Retelling uses yours. That is why it is harder, and also why your teacher can tell whether you understood it.",
-    "to": "Reading aloud uses the written words. Retelling selects key events in your own words or supported communication. Both can help you understand a story."
+    "to": "Reading aloud uses the words on the page. A retell uses your own words. You can also use pictures or a talk device."
   },
   {
     "resourceId": "st-faq",
     "path": "data.2.answer",
     "from": "Long enough that someone who has not read the book could follow it. Three good sentences often beat twenty rushed ones. If your listener looks confused, you skipped the middle.",
-    "to": "Include enough key events for someone to follow. Ask what your listener needs clarified; confusion can have many causes, not just a missing middle."
+    "to": "Tell enough for someone to follow the key events. Ask what part they want you to explain."
   },
   {
     "resourceId": "st-faq",
     "path": "data.3.answer",
     "from": "Go back and look for the word but, or for the moment things went wrong. That is almost always where the middle starts. Then ask yourself what the character tried.",
-    "to": "Reread or review the pictures. Ask what happened after the beginning and before the ending. A word such as but can help, but is not required."
+    "to": "Go back to the story. Look at the pictures. What happened after the start and before the end?"
+  },
+  {
+    "resourceId": "st-faq",
+    "path": "data.4.answer",
+    "from": "Usually, yes. A story about your own day can have a beginning, something that went wrong, and how it worked out. That is why the three parts help you tell about real things too.",
+    "to": "You can use a start, middle and end to tell about your day. A true story need not have a problem."
   },
   {
     "resourceId": "st-faq",
     "path": "data.5.answer",
     "from": "You can, and grown-up writers sometimes do it on purpose. But it is a hard trick. Learn to tell it in order first, and save the flashy way for when the plain way is easy.",
-    "to": "Yes, stories sometimes begin with a later event. For this task, practice chronological order and explain connections clearly."
+    "to": "Some stories do that. In this task, tell the events from first to last so your listener can follow them."
   },
   {
     "resourceId": "st-challenge",
@@ -280,6 +304,12 @@
     "path": "data.brief.lockedLessonFacts.3",
     "from": "Told out of order, the end stops making sense.",
     "to": "Chronological order helps a listener follow the reasons for events in this task."
+  },
+  {
+    "resourceId": "st-challenge",
+    "path": "data.brief.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "st-challenge",

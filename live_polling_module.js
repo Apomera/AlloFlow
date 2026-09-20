@@ -2292,6 +2292,25 @@
       } catch (_) { reject('unavailable'); }
     }
 
+    async _receiveConfirmedResponse(uid, codename, payload) {
+      // Assess confirmations are separate from poll voting and never persist answers.
+      if (this.signalingPath !== 'quiz-signaling' || this._stopped || !this._isUidAllowed(uid)) return;
+      const requestId = normalizeResponseRequestId(payload && payload.requestId);
+      if (!requestId) return;
+      const packet = { pollId: payload.pollId, requestId, status: 'rejected' };
+      const reply = value => this._sendResponseReceipt(uid, value, 'confirmedResponseReceipt');
+      if (!this._acceptsResponse(uid, codename, payload)) { reply(packet); return; }
+      if (!this.confirmedResponses) this.confirmedResponses = new Map();
+      const key = JSON.stringify([uid, requestId]);
+      if (this.confirmedResponses.has(key)) { reply(await this.confirmedResponses.get(key)); return; }
+      if (this.confirmedResponses.size >= 2000) this.confirmedResponses.delete(this.confirmedResponses.keys().next().value);
+      const pending = Promise.resolve().then(() => this._stopped || !this._acceptsResponse(uid, codename, payload) ? false : this.onResponse(uid, codename, payload)).then(result => ({ ...packet, status: result === false ? 'rejected' : 'accepted' }), () => packet);
+      this.confirmedResponses.set(key, pending);
+      const result = await pending;
+      if (result.status !== 'accepted') this.confirmedResponses.delete(key);
+      if (!this._stopped && this._isUidAllowed(uid)) reply(result);
+    }
+
     async start() {
       const fb = getFb();
       if (!fb) throw new Error('LivePolling: Firebase not available');
@@ -2392,7 +2411,9 @@
           try {
             if (this._stopped || !this._isUidAllowed(uid) || this.peers.get(uid) !== peerRecord) return;
             const parsed = JSON.parse(msg.data);
-            if (parsed && parsed.type === 'response' && parsed.payload) {
+            if (parsed && parsed.type === 'confirmedResponse' && parsed.payload) {
+              this._receiveConfirmedResponse(uid, codename, parsed.payload);
+            } else if (parsed && parsed.type === 'response' && parsed.payload) {
               this._receiveResponse(uid, codename, parsed.payload);
             } else if (parsed && parsed.type === 'responseStatus' && parsed.payload) {
               if (this.activePoll && parsed.payload.pollId === this.activePoll.id && this._isUidInActiveAudience(uid)) {
@@ -2868,6 +2889,7 @@
           const parsed = JSON.parse(msg.data);
           if (parsed && parsed.type === 'poll') this.onPoll(parsed.payload);
           else if (parsed && parsed.type === 'closePoll') this.onPollClose(parsed.payload);
+          else if (parsed && parsed.type === 'confirmedResponseReceipt') this._receiveConfirmedResponseReceipt(parsed.payload);
           else if (parsed && (parsed.type === 'responseReceipt' || parsed.type === 'responseState')) {
             const receipt = normalizeResponseReceipt(parsed.payload);
             if (receipt) (parsed.type === 'responseState' ? this.onResponseState : this.onResponseReceipt)(receipt);
@@ -2960,6 +2982,29 @@
           this.onFailed();
         }
       }, CONNECTION_TIMEOUT_MS);
+    }
+
+    _receiveConfirmedResponseReceipt(packet) {
+      const pending = packet && this.confirmedPending && this.confirmedPending.get(packet.requestId);
+      if (!pending || packet.pollId !== pending.pollId || !['accepted', 'rejected'].includes(packet.status)) return;
+      pending.finish({ status: packet.status === 'accepted' ? 'received' : 'rejected' });
+    }
+
+    sendConfirmedResponse(pollId, response, requestId) {
+      if (this.signalingPath !== 'quiz-signaling' || !this.dc || this.dc.readyState !== 'open' || !normalizeResponseRequestId(requestId)) return Promise.resolve({ status: 'unavailable' });
+      if (!this.confirmedPending) this.confirmedPending = new Map();
+      if (this.confirmedPending.has(requestId)) return this.confirmedPending.get(requestId).promise;
+      const payload = { pollId, response, requestId, timestamp: Date.now() };
+      let data;
+      try { data = JSON.stringify({ type: 'confirmedResponse', payload }); } catch (_) { return Promise.resolve({ status: 'invalid' }); }
+      if (JSON.stringify(payload).length > CUSTOM_RESPONSE_PAYLOAD_MAX_CHARS) return Promise.resolve({ status: 'too-large' });
+      let resolve;
+      const promise = new Promise(done => { resolve = done; });
+      const pending = { pollId, promise, finish: result => { clearTimeout(pending.timer); this.confirmedPending.delete(requestId); resolve(result); } };
+      pending.timer = setTimeout(() => pending.finish({ status: 'unconfirmed' }), 8000);
+      this.confirmedPending.set(requestId, pending);
+      try { this.dc.send(data); } catch (_) { pending.finish({ status: 'unavailable' }); }
+      return promise;
     }
 
     sendResponse(pollId, response, meta) {
@@ -3080,6 +3125,7 @@
     }
 
     leave() {
+      if (this.confirmedPending) Array.from(this.confirmedPending.values()).forEach(pending => pending.finish({ status: 'unavailable' }));
       if (this._timeoutHandle) { clearTimeout(this._timeoutHandle); this._timeoutHandle = null; }
       if (this.signalingUnsub) {
         try { this.signalingUnsub(); } catch (err) {}

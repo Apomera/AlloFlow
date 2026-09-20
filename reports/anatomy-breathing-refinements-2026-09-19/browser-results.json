@@ -1,0 +1,83 @@
+{
+  "errors": [],
+  "scans": [
+    {
+      "name": "desktop-in",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "desktop-out",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "desktop-rest-feedback",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "phone-390",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "phone-320",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "phone-320-dark",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "grade-1",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "grade-4",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "french-320",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "spanish_latin_america-320",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "arabic-320",
+      "violations": [],
+      "incomplete": []
+    }
+  ],
+  "screens": [
+    "desktop-in",
+    "desktop-out",
+    "desktop-rest-feedback",
+    "phone-390",
+    "phone-320",
+    "phone-320-dark",
+    "grade-1",
+    "french-320",
+    "spanish_latin_america-320",
+    "arabic-320"
+  ],
+  "checks": [
+    "keyboard phase selection, consistent airflow and unscored answer revisions",
+    "restores phase and feedback from saved state",
+    "320px and 390px layouts with readable dark-mode feedback",
+    "grade 1 uses simple text and a new concept check",
+    "grade 4 uses simple text and a new concept check",
+    "french translated phase, explanation and feedback",
+    "spanish_latin_america translated phase, explanation and feedback",
+    "arabic translated phase, explanation and feedback",
+    "diaphragm alias supports the same breathing lesson"
+  ]
+}

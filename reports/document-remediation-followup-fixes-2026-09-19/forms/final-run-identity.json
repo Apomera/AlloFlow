@@ -1,0 +1,11 @@
+{
+  "capturedAt": "2026-09-20T03:24:11.761Z",
+  "hashes": {
+    "doc_pipeline_source.jsx": "dfab62eb35dc56e82e18b60df006ec642dd139f6ca38a748738160fce69e8421",
+    "doc_pipeline_module.js": "50ec692a4f7a6beae66e8f778b93872a876bc2941e7738187eebe626fea1e529",
+    "desktop/web-app/public/doc_pipeline_module.js": "50ec692a4f7a6beae66e8f778b93872a876bc2941e7738187eebe626fea1e529",
+    "tests/remediation_form_values.test.js": "de9299ecf2bdb325e4f8106b6e5327ab703c94a39d02a38abbd374657157a20e",
+    "tests/e2e/remediation_form_values.spec.ts": "cba39f9c3de0e4a23a70a7658aab230f7787bf46ee582edd2aec8278a5a670df",
+    "tests/fixtures/remediation_submission_state.json": "33ec3adc256c80e82c85af829ff268bb052bf4372360468d82c1b4cdf76d7e9b"
+  }
+}

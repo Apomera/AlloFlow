@@ -18,6 +18,7 @@ async function mount(props = {}) {
 }
 async function unmount() { if (root) await React.act(async () => root.unmount()); if (host) host.remove(); root = null; host = null; }
 async function loadPractice() {
+  await click(button('All tools'));
   const card = host.querySelector('[aria-labelledby="bl-tool-sandbox-title"]');
   await click(card && Array.from(card.querySelectorAll('button')).find(el => !el.hasAttribute('aria-pressed')));
   await click(Array.from(host.querySelectorAll('[role="button"]')).find(el => el.querySelector('h4')));
@@ -75,6 +76,7 @@ describe('Behavior Lens safe workspace selection', () => {
 
   it('imports quoted multiline ABC notes and preserves unknown intensity while rejecting invalid timestamps', async () => {
     await mount();
+    await click(button('All tools'));
     await click(button('Open Batch Import'));
     const fileInput = host.querySelector('input[accept=".csv,.txt"]');
     const csv = 'timestamp,antecedent,behavior,consequence,intensity,notes\n2026-09-12T10:00:00Z,Transition,Calling,Prompt,,"Said ""hello""\nand waited"\nnot-a-date,Transition,Calling,Prompt,5,Invalid date';
@@ -87,6 +89,7 @@ describe('Behavior Lens safe workspace selection', () => {
   });
   it('writes imported CSV profile fields to separate durable student workspaces', async () => {
     await mount();
+    await click(button('All tools'));
     await click(button('Open Batch Import'));
     await click(button('Student Profiles'));
     const fileInput = host.querySelector('input[accept=".csv,.txt"]');

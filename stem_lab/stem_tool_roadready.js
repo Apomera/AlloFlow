@@ -6090,13 +6090,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }
     var park = edge('park', actions.park > 0.5 || keys.p);
     var pause = edge('pause', actions.pause > 0.5);
-    if (pause || keys._pausePractice) {
+    if ((pause && (!car.requireParkingNeutral || car.practicePaused)) || keys._pausePractice) {
       keys._pausePractice = false;
       car.practicePaused = !car.practicePaused;
       car.requireParkingNeutral = true;
     }
     var held = ['w','s','a','d','arrowup','arrowdown','arrowleft','arrowright','shift',' ','f','g','p'].some(function(key) { return !!keys[key]; }) ||
-      Math.abs(actions.steer || 0) > 0.05 || actions.throttle > 0.05 || actions.brake > 0.05 || actions.drive > 0.5 || actions.reverse > 0.5 || actions.park > 0.5;
+      Math.abs(actions.steer || 0) > 0.05 || actions.throttle > 0.05 || actions.brake > 0.05 || actions.drive > 0.5 || actions.reverse > 0.5 || actions.park > 0.5 || actions.pause > 0.5;
     if (car.practicePaused || car.requireParkingNeutral) {
       keys._securePark = false;
       car.speed = 0; car.braking = true; car.directionChange = null;
@@ -6112,15 +6112,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return input;
   }
 
-  function parkingDrillStep(car, keys, dt, scn) {
+  function practiceDrillInput(car, keys) {
     car.settingsPaused = !!(window.StemInput && window.StemInput.isSuspended());
     if (car.settingsPaused) {
       car.speed = 0; car.braking = true; car.directionChange = null;
       car.requireParkingNeutral = true;
       keys._securePark = false; keys._pausePractice = false; keys._parkingGear = null;
-      return { kind: null, isNew: false, recovered: false, inactive: true };
+      return { _practiceInactive: true };
     }
-    var controlKeys=parkingControllerKeys(car,keys,window.StemInput?window.StemInput.read('roadReady'):{});
+    return parkingControllerKeys(car,keys,window.StemInput?window.StemInput.read('roadReady'):{});
+  }
+
+  function parkingDrillStep(car, keys, dt, scn) {
+    var controlKeys = practiceDrillInput(car, keys);
     if (controlKeys._practiceInactive) return { kind: null, isNew: false, recovered: false, inactive: true };
     var before = { x: car.x, y: car.y, heading: car.heading };
     var collision = function(pose) {
@@ -6287,13 +6291,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     );
   }
 
+  function attachParkingInterruption(carRef, keysRef, doneRef) {
+    var pause = function() {
+      keysRef.current = {};
+      if (doneRef.current) return;
+      var car = carRef.current;
+      car.practicePaused = true;
+      car.requireParkingNeutral = true;
+      car.speed = 0;
+      car.braking = true;
+      car.brakeHeld = false;
+      car.directionChange = null;
+    };
+    var onVisibility = function() { if (document.hidden) pause(); };
+    window.addEventListener('blur', pause);
+    document.addEventListener('visibilitychange', onVisibility);
+    return function() {
+      window.removeEventListener('blur', pause);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }
+
   function ParkingPracticeControls(props) {
     var React = props.React, h = props.h, keysRef = props.keysRef, onReset = props.onReset, secure = props.secure;
     var readState = function() {
       var car = props.carRef.current;
-      return [!!car.practicePaused, !!car.settingsPaused, !!props.doneRef.current, !!car.requireParkingNeutral].map(Number).join('');
+      return [!!car.practicePaused, !!car.settingsPaused, !!props.doneRef.current, !!car.requireParkingNeutral].map(Number).join('') + '|' + (car.driveGear || 'D') + '|' + (car.controlNotice || '');
     };
     var state = React.useState(readState), flags = state[0];
+    React.useEffect(function() {
+      return attachParkingInterruption(props.carRef, keysRef, props.doneRef);
+    }, [props.carRef, keysRef, props.doneRef]);
     React.useEffect(function() {
       var timer = setInterval(function() { state[1](readState()); }, 100);
       return function() { clearInterval(timer); };
@@ -6313,10 +6341,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         style: Object.assign(buttonStyle(inactive, false), { touchAction: 'none' })
       }, label);
     };
-    return h('div', { role: 'group', 'aria-label': 'Parking controls', style: { display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '12px 0' } },
+    return h('div', { role: 'group', 'aria-label': props.label || 'Parking controls', style: { display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '12px 0' } },
       hold('w', 'Forward'), hold('s', 'Reverse'), hold('a', 'Steer left'), hold('d', 'Steer right'), hold(' ', 'Brake'),
       h('button', { type: 'button', disabled: settings || finished, onClick: function() { keysRef.current._pausePractice = true; }, style: buttonStyle(settings || finished, false) }, finished ? 'Practice complete' : paused ? 'Resume practice' : 'Pause practice'),
-      h('button', { type: 'button', onClick: onReset, style: buttonStyle(false, false) }, 'Reset practice'),
+      !props.hideReset ? h('button', { type: 'button', onClick: onReset, style: buttonStyle(false, false) }, 'Reset practice') : null,
+      props.showStatus ? h('p', { role: 'status', 'aria-label': 'Driving state', style: { flexBasis: '100%', margin: 0, fontSize: '14px', lineHeight: 1.5 } }, finished ? 'Practice complete' : settings ? 'Controls open · Practice paused' : paused ? 'Practice paused' : waiting ? 'Release the driving controls to continue.' : flags.split('|')[2] || ((flags.split('|')[1] === 'R' ? 'Reverse' : 'Drive') + ' selected · ' + flags.split('|')[1])) : null,
       secure ? h('button', { type: 'button', disabled: inactive || waiting, onClick: function() { keysRef.current._securePark = true; }, style: buttonStyle(inactive || waiting, true) }, finished ? 'Parking secured' : 'Park + parking brake') : null
     );
   }
@@ -6340,11 +6369,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // four drills carried the guard, and their listeners are on `window` too.
     var fromTextField = function(e) {
       var t = e.target, tag = t && t.tagName;
-      return tag === 'INPUT' || tag === 'TEXTAREA' || !!(t && t.isContentEditable);
+      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || !!(t && t.isContentEditable);
     };
     var onDown = function(e) {
-      if (fromTextField(e)) return;
+      if (e.defaultPrevented || fromTextField(e) || e.ctrlKey || e.metaKey || e.altKey) return;
       var k = String(e.key || '').toLowerCase();
+      // Space/Enter belong to the focused control; Space still brakes on the scene.
+      var target = e.target;
+      if ((k === ' ' || k === 'enter') && target && typeof target.closest === 'function' &&
+          target.closest('button, summary, a[href], [role="button"]')) return;
       if (DRILL_KEYS.indexOf(k) !== -1) e.preventDefault();   // arrows and space scroll the page otherwise
       if (e.repeat) return;
       keysRef.current[k] = true;
@@ -6353,14 +6386,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (k === 'r' && typeof onReset === 'function') onReset();
     };
     var onUp = function(e) {
-      if (fromTextField(e)) return;
-      keysRef.current[String(e.key || '').toLowerCase()] = false;
+      // Release belongs to the original press, even if focus or modifiers changed.
+      var key = String(e.key || '').toLowerCase();
+      if (Object.prototype.hasOwnProperty.call(keysRef.current, key)) keysRef.current[key] = false;
     };
     var clearDrillKeys = function() { keysRef.current = {}; };
+    var onFocus = function(e) { if (fromTextField(e)) clearDrillKeys(); };
+    window.addEventListener('focusin', onFocus);
     window.addEventListener('blur', clearDrillKeys);
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup', onUp);
     return function() {
+      window.removeEventListener('focusin', onFocus);
       window.removeEventListener('blur', clearDrillKeys);
       window.removeEventListener('keydown', onDown);
       window.removeEventListener('keyup', onUp);
@@ -6381,7 +6418,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     completeRef.current = props.onComplete;
     var canvasRef = useRef(null);
     var guidesRef = useRef(true);
-    var carRef = useRef(Object.assign({ speed: 0, steering: 0 }, scn.startCar));
+    var carRef = useRef(Object.assign({}, scn.startCar, { speed: 0, steering: 0, requireParkingNeutral: true }));
     var keysRef = useRef({});
     var animRef = useRef(null);
     if (window.__testHooks) window.__testHooks.parking = { carRef: carRef, keysRef: keysRef };
@@ -6400,7 +6437,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var feedbackText = feedback[0]; var setFeedback = feedback[1];
 
     function resetCar() {
-      carRef.current = Object.assign({ speed: 0, steering: 0 }, scn.startCar);
+      carRef.current = Object.assign({}, scn.startCar, { speed: 0, steering: 0, requireParkingNeutral: true });
       keysRef.current = {};
       doneRef.current = false;
       hitCooldownRef.current = 0;
@@ -6607,8 +6644,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var api=window.StemInput;if(!api)return null;var mode=api.preferences().mode;
     var label=function(code){var value=api.keyLabel('roadReady',code);return value===' '?'Space':String(value).toUpperCase();};
     return h('p',{className:'rr-parking-key-help','aria-label':'Current control bindings'},mode==='controller'?
-      'Steer: '+api.bindingLabel('roadReady','steer')+' · Move: '+api.bindingLabel('roadReady','throttle')+' · Brake: '+api.bindingLabel('roadReady','brake')+' · Drive/Reverse: '+api.bindingLabel('roadReady','drive')+' / '+api.bindingLabel('roadReady','reverse')+' · Park: '+api.bindingLabel('roadReady','park')+' · Pause: '+api.bindingLabel('roadReady','pause'):
-      'Move: '+label('KeyW')+' / '+label('KeyS')+' · Steer: '+label('KeyA')+' / '+label('KeyD')+' · Brake: '+label(props.driving?'KeyS':'Space')+' · Reset: '+label('KeyR')+' · Park: '+label('KeyP'));
+      'Steer: '+api.bindingLabel('roadReady','steer')+' · Move: '+api.bindingLabel('roadReady','throttle')+' · Brake: '+api.bindingLabel('roadReady','brake')+' · Drive/Reverse: '+api.bindingLabel('roadReady','drive')+' / '+api.bindingLabel('roadReady','reverse')+(props.maneuver?'':' · Park: '+api.bindingLabel('roadReady','park'))+' · Pause: '+api.bindingLabel('roadReady','pause'):
+      'Move: '+label('KeyW')+' / '+label('KeyS')+' · Steer: '+label('KeyA')+' / '+label('KeyD')+' · Brake: '+label(props.driving?'KeyS':'Space')+' · Reset: '+label('KeyR')+(props.maneuver?'':' · Park: '+label('KeyP')));
   }
 
   function RoadReadyControlSettings(props) {
@@ -6630,7 +6667,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var canvasRef = useRef(null);
     var headingRef = useRef(null);
     var guidesRef = useRef(true);
-    var carRef = useRef({ x: 254.3, y: 95, heading: -Math.PI / 2, speed: 0, steering: 0 });
+    var carRef = useRef({ x: 254.3, y: 95, heading: -Math.PI / 2, speed: 0, steering: 0, requireParkingNeutral: true });
     var keysRef = useRef({});
     var animRef = useRef(null);
     if (window.__testHooks) window.__testHooks.parking = { carRef: carRef, keysRef: keysRef };
@@ -6670,7 +6707,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }, []);
 
     function resetCar() {
-      carRef.current = { x: 254.3, y: 95, heading: -Math.PI / 2, speed: 0, steering: 0 };
+      carRef.current = { x: 254.3, y: 95, heading: -Math.PI / 2, speed: 0, steering: 0, requireParkingNeutral: true };
       keysRef.current = {};
       stepRef.current = 0;
       correctionRef.current = null;
@@ -6861,6 +6898,124 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // SECTION 9d: 3-POINT TURN MODE (2D top-down)
   // ─────────────────────────────────────────────────────────
 
+  // Fixed 60 Hz drills retain their familiar acceleration, with a real brake
+  // override and a stopped frame before changing travel direction.
+  function drivingDrillSpeed(speed, forward, reverse, brake, acceleration) {
+    var direction = Math.max(0, Math.min(1, Number(forward) || 0)) - Math.max(0, Math.min(1, Number(reverse) || 0));
+    var brakeAmount = Math.max(0, Math.min(1, Number(brake) || 0));
+    if (brakeAmount > 0.05 || speed * direction < 0) {
+      var stoppedSpeed = speed * (1 - 0.2 * (speed * direction < 0 ? 1 : brakeAmount));
+      return Math.abs(stoppedSpeed) <= 0.1 ? 0 : stoppedSpeed;
+    }
+    var next = (speed + direction * acceleration * 0.016) * 0.92;
+    return !direction && Math.abs(next) <= 0.1 ? 0 : next;
+  }
+
+  function backingDrillFinishCheck(car, targetY, laneLeft, laneRight) {
+    if (car.y < targetY) return { ready: false, message: '' };
+    if (car.y > targetY + 20) return { ready: false, message: 'Past the target. Ease forward into the green zone, then stop.' };
+    var radiusX = Math.abs(Math.cos(car.heading)) * 22 + Math.abs(Math.sin(car.heading)) * 12;
+    if (car.x - radiusX < laneLeft || car.x + radiusX > laneRight)
+      return { ready: false, message: 'Center the whole car between the cones before finishing.' };
+    if (parkingAngleDeltaDeg(car.heading * 180 / Math.PI, 270) > 5)
+      return { ready: false, message: 'Straighten the car to face up the cone lane before finishing.' };
+    if (Math.abs(car.speed) > 0.1)
+      return { ready: false, message: 'Target reached. Hold the brake to come to a complete stop.' };
+    return { ready: true, message: '' };
+  }
+
+  function ManeuverDrillSummary(props) {
+    var h = props.h;
+    return h('div', { className: 'rr-maneuver-summary', style: { marginBottom: '12px' } },
+      h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 16px', justifyContent: 'space-between' } },
+        h('h2', { style: { margin: 0, fontSize: '20px', lineHeight: 1.3 } }, props.title),
+        h('button', { type: 'button', onClick: props.onReset, style: { minHeight: '44px', padding: '8px 14px', borderRadius: '8px', border: '1px solid #64748b', background: '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '14px' } }, 'Reset practice')),
+      h('div', { role: 'status', 'aria-label': 'Practice progress', style: { display: 'flex', flexWrap: 'wrap', gap: '4px 16px', marginTop: '8px', fontSize: '14px', lineHeight: 1.5 } },
+        h('strong', null, 'Score ' + props.score + '/100'),
+        h('span', null, 'Contacts ' + props.hits),
+        h('span', null, props.done ? 'Practice complete' : props.progress)),
+      window.StemInput ? h(RoadReadyInputHint, { React: props.React, maneuver: true }) : h('p', { style: { margin: '8px 0 0', fontSize: '13px', lineHeight: 1.5 } }, 'WASD or arrows to drive · Space to brake · R to reset')
+    );
+  }
+
+  function threePointClearances(car) {
+    var rx = Math.abs(Math.cos(car.heading)) * 30 + Math.abs(Math.sin(car.heading)) * 14;
+    var ry = Math.abs(Math.sin(car.heading)) * 30 + Math.abs(Math.cos(car.heading)) * 14;
+    return { top: car.y - ry - 148, bottom: 332 - car.y - ry, left: car.x - rx, right: 650 - car.x - rx,
+      upperLane: car.y + ry <= 240, radiusX: rx, radiusY: ry };
+  }
+
+  function threePointMotion(car, forward, reverse, steer, brake) {
+    car.steering += (steer * 0.4 - car.steering) * 0.15;
+    car.speed = drivingDrillSpeed(car.speed, forward, reverse, brake, 30);
+    var beta = Math.atan(0.5 * Math.tan(car.steering));
+    var yaw = car.speed * Math.cos(beta) / 42 * Math.tan(car.steering) * 0.016;
+    var heading = car.heading + yaw / 2 + beta;
+    car.x += Math.cos(heading) * car.speed * 0.016;
+    car.y += Math.sin(heading) * car.speed * 0.016;
+    car.heading += yaw;
+  }
+
+  function threePointContact(car, before) {
+    var gaps = threePointClearances(car);
+    var side = gaps.top < -0.001 ? 'top' : gaps.bottom < -0.001 ? 'bottom' : gaps.left < -0.001 ? 'left' : gaps.right < -0.001 ? 'right' : null;
+    var kind = side === 'top' || side === 'bottom' ? 'curb' : side ? 'edge' : null;
+    // A held pedal must not inch closer between repeated contact checks.
+    if (!kind && car.contactState && car.contactState.side) {
+      var previousGap = threePointClearances(before)[car.contactState.side];
+      if (gaps[car.contactState.side] < previousGap - 0.000001) {
+        car.x = before.x; car.y = before.y; car.heading = before.heading; car.speed = 0;
+        return { kind: car.contactState.kind, isNew: false };
+      }
+    }
+    if (kind) {
+      var old = threePointClearances(before);
+      if (Math.min(old.top, old.bottom, old.left, old.right) >= -0.001) {
+        car.x = before.x; car.y = before.y; car.heading = before.heading;
+      } else {
+        car.x = Math.max(gaps.radiusX, Math.min(650 - gaps.radiusX, car.x));
+        car.y = Math.max(148 + gaps.radiusY, Math.min(332 - gaps.radiusY, car.y));
+      }
+      car.speed = 0;
+      var isNew = !car.contactState;
+      if (isNew) car.contactState = { x: car.x, y: car.y, kind: kind, side: side };
+      return { kind: kind, isNew: isNew };
+    }
+    if (car.contactState && Math.hypot(car.x - car.contactState.x, car.y - car.contactState.y) >= 2) car.contactState = null;
+    return { kind: null, isNew: false };
+  }
+
+  function threePointNextStage(car, stage, travel) {
+    if (Math.abs(car.speed) > 0.1 || car.contactState || travel < 6) return stage;
+    var gaps = threePointClearances(car);
+    if (Math.min(gaps.top, gaps.bottom, gaps.left, gaps.right) < -0.001) return stage;
+    if (stage === 0 && gaps.top <= 24) return 1;
+    if (stage === 1 && gaps.bottom <= 49) return 2;
+    if (stage === 2 && gaps.upperLane && parkingAngleDeltaDeg(car.heading * 180 / Math.PI, 180) <= 6 && Math.abs(car.steering) <= 0.08) return 3;
+    return stage;
+  }
+
+  function threePointCue(car, stage, done) {
+    if (done) return 'Turn complete. Use Reset practice to try again.';
+    if (car.settingsPaused) return 'Close Controls to return to practice.';
+    if (car.practicePaused) return 'Resume practice when you are ready.';
+    if (car.requireParkingNeutral) return 'Release the driving controls to continue.';
+    if (car.contactState) return 'Move away from the edge before continuing. Each separate contact counts once.';
+    var gaps = threePointClearances(car);
+    if (stage === 0) return gaps.top <= 20 ? 'Brake now. Stop clear of the upper curb.' : 'Steer left and move forward slowly toward the upper curb.';
+    if (stage === 1) return gaps.bottom <= 45 ? 'Brake now. You have room for the final forward turn.' : 'Select Reverse and steer right. Back slowly until the brake cue.';
+    return parkingAngleDeltaDeg(car.heading * 180 / Math.PI, 180) <= 5 ? 'Straighten the wheels and brake. Finish fully in the upper lane.' : 'Select Drive and steer left toward the upper lane, facing left.';
+  }
+
+  function ThreePointLiveCoach(props) {
+    var React = props.React, state = React.useState(function() { return threePointCue(props.carRef.current, props.stageRef.current, props.doneRef.current); });
+    React.useEffect(function() {
+      var timer = setInterval(function() { state[1](threePointCue(props.carRef.current, props.stageRef.current, props.doneRef.current)); }, 100);
+      return function() { clearInterval(timer); };
+    }, [props.carRef, props.stageRef, props.doneRef]);
+    return props.h('p', { role: 'status', 'aria-label': 'Next maneuver action', style: { margin: '10px 0', padding: '10px 12px', borderLeft: '3px solid #fbbf24', background: '#1e293b', color: '#fff', fontSize: '14px', lineHeight: 1.5 } }, state[0]);
+  }
+
   function ThreePointMode(props) {
     var React = props.React;
     var h = props.h;
@@ -6868,24 +7023,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var useRef = React.useRef;
     var useState = React.useState;
     var canvasRef = useRef(null);
-    var carRef = useRef({ x: 460, y: 240, heading: 0, speed: 0, steering: 0 });
+    var carRef = useRef({ x: 350, y: 300, heading: 0, speed: 0, steering: 0, requireParkingNeutral: true });
     var keysRef = useRef({});
     var animRef = useRef(null);
     var stageRef = useRef(0);
+    var legDistanceRef = useRef(0);
+    var completeRef = useRef(props.onComplete);
+    completeRef.current = props.onComplete;
     var doneRef = useRef(false);
-    var fb = useState('Step 1: Turn the wheel FULL LEFT. Drive forward slowly until your front bumper nears the far curb.');
+    var fb = useState('Step 1: Steer left and drive forward slowly. Follow the brake cue and stop clear of the upper curb.');
     var fbText = fb[0]; var setFb = fb[1];
     var st = useState({ score: 100, hits: 0, done: false });
     var stVal = st[0]; var setSt = st[1];
+    var stRef = useRef(stVal);
+    if (window.__testHooks) window.__testHooks.maneuverDrill = { carRef: carRef, keysRef: keysRef, doneRef: doneRef, statusRef: stRef, stageRef: stageRef, legDistanceRef: legDistanceRef };
 
     var ROAD_TOP = 140;
     var ROAD_BOT = 340;
     var CURB_W = 8;
 
     var STEPS = [
-      'Step 1: Turn the wheel FULL LEFT. Drive forward slowly until your front nears the far curb. STOP.',
-      'Step 2: Now shift to REVERSE (S/Shift). Turn wheel FULL RIGHT. Back slowly toward the near curb. STOP.',
-      'Step 3: Shift to DRIVE (W). Steer straight or slightly left. Drive forward — you should now be facing the opposite direction.',
+      'Step 1: Steer left and drive forward slowly. Follow the brake cue and stop clear of the upper curb.',
+      'Step 2: Select Reverse and steer right. Back slowly until the brake cue, then stop with room for the final forward turn.',
+      'Step 3: Select Drive and steer left toward the upper lane. Face left, straighten the wheels, and stop.',
       '✅ 3-POINT TURN COMPLETE! Score: '
     ];
 
@@ -6894,10 +7054,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }, []);
 
     function resetCar() {
-      carRef.current = { x: 460, y: 240, heading: 0, speed: 0, steering: 0 };
+      carRef.current = { x: 350, y: 300, heading: 0, speed: 0, steering: 0, requireParkingNeutral: true };
+      keysRef.current = {};
       stageRef.current = 0;
+      legDistanceRef.current = 0;
       doneRef.current = false;
-      setSt({ score: 100, hits: 0, done: false });
+      stRef.current = { score: 100, hits: 0, done: false };
+      setSt(stRef.current);
       setFb(STEPS[0]);
     }
 
@@ -6917,56 +7080,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       var update = function() {
         var car = carRef.current;
-        var k = keysRef.current;
+        var k = practiceDrillInput(car, keysRef.current);
+        if (k._practiceInactive) return;
+        keysRef.current._securePark = false;
         var fwd = (k['w'] || k['arrowup']) ? 1 : 0;
         var rev = (k['s'] || k['arrowdown'] || k['shift']) ? 1 : 0;
         var left = (k['a'] || k['arrowleft']) ? 1 : 0;
         var right = (k['d'] || k['arrowright']) ? 1 : 0;
-        var steerTarget = (right - left) * 0.7;
-        car.steering += (steerTarget - car.steering) * 0.15;
-        var accel = (fwd - rev) * 30;
-        car.speed += accel * 0.016;
-        car.speed *= 0.92;
-        if (car.speed > 50) car.speed = 50;
-        if (car.speed < -35) car.speed = -35;
-        var turnRate = car.steering * (car.speed / 30) * 1.4;
-        car.heading += turnRate * 0.016;
-        car.x += Math.cos(car.heading) * car.speed * 0.016;
-        car.y += Math.sin(car.heading) * car.speed * 0.016;
-        // Curb collisions
-        if (car.y < ROAD_TOP + 14 || car.y > ROAD_BOT - 14) {
-          if (Math.abs(car.speed) > 3) {
-            var ns = Object.assign({}, stVal);
-            ns.score = Math.max(0, ns.score - 15); ns.hits++;
-            setSt(ns);
-            setFb('💥 Curb hit! -15. Slow down near the edge. Press R to reset.');
-          }
-          car.speed *= -0.2;
-          car.y = Math.max(ROAD_TOP + 15, Math.min(ROAD_BOT - 15, car.y));
+        if (!fwd && !rev && k._gpThrottle > 0) {
+          if (car.driveGear === 'R') rev = k._gpThrottle; else fwd = k._gpThrottle;
         }
-        // Left/right bounds
-        if (car.x < 30) { car.x = 30; car.speed *= 0.2; }
-        if (car.x > 620) { car.x = 620; car.speed *= 0.2; }
-        // Stage progression
-        var headDeg = ((car.heading * 180 / Math.PI) % 360 + 360) % 360;
-        if (stageRef.current === 0 && car.y < ROAD_TOP + 40 && Math.abs(car.speed) < 2) {
-          stageRef.current = 1; setFb(STEPS[1]);
-        } else if (stageRef.current === 1 && car.y > ROAD_BOT - 40 && Math.abs(car.speed) < 2) {
-          stageRef.current = 2; setFb(STEPS[2]);
-        } else if (stageRef.current === 2 && headDeg > 150 && headDeg < 210 && Math.abs(car.speed) < 3) {
-          stageRef.current = 3;
-          doneRef.current = true;
-          var ns2 = Object.assign({}, stVal);
-          ns2.done = true;
-          setSt(ns2);
-          setFb(STEPS[3] + ns2.score + '/100 (' + ns2.hits + ' hits)');
-          if (props.onComplete) props.onComplete(ns2.score);
+        if (Math.abs(k._gpSteer || 0) > 0.001) { left = Math.max(0, -k._gpSteer); right = Math.max(0, k._gpSteer); }
+        if (fwd && !rev && car.speed >= 0) car.driveGear = 'D';
+        if (rev && !fwd && car.speed <= 0) car.driveGear = 'R';
+        var before = { x: car.x, y: car.y, heading: car.heading };
+        threePointMotion(car, fwd, rev, right - left, Math.max(k[' '] ? 1 : 0, k._gpBrake || 0));
+        var contact = threePointContact(car, before);
+        if (contact.kind) {
+          if (contact.isNew) {
+            var hit = Object.assign({}, stRef.current);
+            hit.score = Math.max(0, hit.score - 15); hit.hits++;
+            stRef.current = hit; setSt(hit);
+            setFb('Edge contact: -15. Stop, look around, and move clear before continuing.');
+          }
+          return;
+        }
+        var expectedDirection = stageRef.current === 1 ? -1 : 1;
+        if (car.speed * expectedDirection > 0) legDistanceRef.current += Math.hypot(car.x - before.x, car.y - before.y);
+        var nextStage = threePointNextStage(car, stageRef.current, legDistanceRef.current);
+        if (nextStage !== stageRef.current) {
+          stageRef.current = nextStage;
+          legDistanceRef.current = 0;
+          if (nextStage < 3) setFb(STEPS[nextStage]);
+          else {
+            doneRef.current = true; car.speed = 0;
+            var result = Object.assign({}, stRef.current, { done: true });
+            stRef.current = result; setSt(result);
+            setFb(STEPS[3] + result.score + '/100 (' + result.hits + (result.hits === 1 ? ' contact)' : ' contacts)'));
+            if (completeRef.current) completeRef.current(result.score);
+          }
         }
       };
 
       var render = function() {
-        var W = canvas.width = canvas.offsetWidth;
-        var H = canvas.height = 480;
+        // Keep the authored world intact; CSS scales both axes together on small screens.
+        var W = 650, H = 480;
+        if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
         // Background
         gfx.fillStyle = '#166534'; gfx.fillRect(0, 0, W, H);
         // Road
@@ -6992,37 +7151,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         gfx.fillStyle = '#ec4899';
         gfx.fillRect(-30, -14, 60, 28);
         gfx.fillStyle = '#831843';
-        gfx.fillRect(-24, -11, 16, 22);
+        gfx.fillRect(8, -11, 16, 22);
         // Reverse lights
-        if (car.speed < -0.5) { gfx.fillStyle = '#fff'; gfx.fillRect(25, -10, 6, 6); gfx.fillRect(25, 4, 6, 6); }
+        if (car.speed < -0.5) { gfx.fillStyle = '#fff'; gfx.fillRect(-30, -10, 6, 6); gfx.fillRect(-30, 4, 6, 6); }
         // Steering indicator
-        gfx.save(); gfx.translate(-18, 0); gfx.rotate(car.steering);
+        gfx.save(); gfx.translate(18, 0); gfx.rotate(car.steering);
         gfx.fillStyle = '#0f172a'; gfx.fillRect(-3, -9, 6, 18);
         gfx.restore();
         gfx.restore();
-        // HUD
-        gfx.fillStyle = 'rgba(0,0,0,0.7)'; gfx.fillRect(10, 10, 300, 50);
-        gfx.fillStyle = '#fff'; gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'left';
-        gfx.fillText('↩️ 3-Point Turn Trainer', 20, 28);
-        gfx.fillStyle = '#ec4899'; gfx.font = '10px system-ui';
-        gfx.fillText('Score: ' + stVal.score + ' · Hits: ' + stVal.hits + (stVal.done ? ' · ✓ DONE' : ' · Step ' + (stageRef.current + 1)), 20, 44);
-        gfx.fillStyle = '#94a3b8';
-        gfx.fillText('W=fwd  S/Shift=reverse  A/D=steer  R=reset', 20, 56);
+
       };
 
       animRef.current = requestAnimationFrame(step);
       return function() { if (animRef.current) cancelAnimationFrame(animRef.current); };
-    }, [stVal]);
+    }, []);
 
     return h('div', { style: { padding: '14px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
       h('button', { onClick: props.onExit, style: { marginBottom: '10px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+      h(ManeuverDrillSummary, { h: h, React: React, title: '3-point turn', score: stVal.score, hits: stVal.hits, done: stVal.done, progress: 'Step ' + Math.min(3, stageRef.current + 1) + ' of 3', onReset: resetCar }),
       h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '10px', border: '1px solid #ec4899' } },
-        h('canvas', { ref: canvasRef, role: 'img', 'aria-label': __alloRRT('stem.roadready.a11y_top_down_2d_three_point_turn_scene_a_narrow_roa', 'Top-down 2D three-point turn scene: a narrow road with curbs on both sides and your car. The scene updates as you drive forward, reverse, and pull forward again to reverse direction across three moves.'), style: { width: '100%', height: '480px', display: 'block', borderRadius: '8px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))' } })
+        h('canvas', { ref: canvasRef, role: 'img', 'aria-label': __alloRRT('stem.roadready.a11y_top_down_2d_three_point_turn_scene_a_narrow_roa', 'Top-down 2D three-point turn scene: a narrow road with curbs on both sides and your car. The scene updates as you drive forward, reverse, and pull forward again to reverse direction across three moves.'), style: { width: '100%', height: 'auto', aspectRatio: '650 / 480', display: 'block', borderRadius: '8px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))' } })
       ),
-      h('div', { style: { marginTop: '10px', padding: '12px', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
+      h(ThreePointLiveCoach, { h: h, React: React, carRef: carRef, stageRef: stageRef, doneRef: doneRef }),
+      h(ParkingPracticeControls, { h: h, React: React, keysRef: keysRef, carRef: carRef, doneRef: doneRef, onReset: resetCar, label: 'Driving controls', hideReset: true, showStatus: true }),
+      h(RoadReadyControlSettings, { React: React }),
+      h('div', { role: 'region', 'aria-label': 'Driving instructor', style: { marginTop: '10px', padding: '12px', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
         h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ec4899', textTransform: 'uppercase', marginBottom: '6px' } }, '👨‍🏫 Instructor'),
-        h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.5' } }, fbText),
-        h('div', { style: { marginTop: '8px', fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, 'Tip: On the Maine road test, examiner checks that you complete the turn in exactly 3 moves without hitting a curb or crossing traffic. Slow is good.')
+        h('div', { style: { fontSize: '14px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.55' } }, fbText),
+        h('div', { style: { marginTop: '8px', fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, 'Practice on this empty training road. Check for traffic before each move, stop before changing direction, and keep the whole car clear of both curbs.')
       )
     );
   }
@@ -7064,6 +7220,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return new T.CanvasTexture(cv);
   }
 
+  function backingCarHitsCone(car, cone) {
+    var cos = Math.cos(car.heading), sin = Math.sin(car.heading);
+    var triangle = [[cone.x, cone.y - 8], [cone.x - 6, cone.y + 6], [cone.x + 6, cone.y + 6]].map(function(point) {
+      var dx = point[0] - car.x, dy = point[1] - car.y;
+      return { x: dx * cos + dy * sin, y: -dx * sin + dy * cos };
+    });
+    var axes = [{ x: 1, y: 0 }, { x: 0, y: 1 }];
+    for (var i = 0; i < 3; i++) {
+      var a = triangle[i], b = triangle[(i + 1) % 3];
+      axes.push({ x: -(b.y - a.y), y: b.x - a.x });
+    }
+    return axes.every(function(axis) {
+      var projections = triangle.map(function(point) { return point.x * axis.x + point.y * axis.y; });
+      var radius = Math.abs(axis.x) * 22 + Math.abs(axis.y) * 12;
+      return Math.min.apply(null, projections) <= radius && Math.max.apply(null, projections) >= -radius;
+    });
+  }
+
+  function backingDrillMotion(car, forward, reverse, steer, brake) {
+    car.steering += (steer * 0.35 - car.steering) * 0.12;
+    car.speed = drivingDrillSpeed(car.speed, forward, reverse, brake, 25);
+    var beta = Math.atan(0.5 * Math.tan(car.steering));
+    var yaw = car.speed * Math.cos(beta) / 30 * Math.tan(car.steering) * 0.016;
+    var heading = car.heading + yaw / 2 + beta;
+    car.x += Math.cos(heading) * car.speed * 0.016;
+    car.y += Math.sin(heading) * car.speed * 0.016;
+    car.heading += yaw;
+  }
+
+  function backingDrillCoachState(car, done) {
+    var progress = Math.round(Math.max(0, Math.min(100, (car.y - 80) / 350 * 100)));
+    var cue;
+    if (done) cue = 'Backing complete. Use Reset practice to try again.';
+    else if (car.settingsPaused) cue = 'Close Controls to return to practice.';
+    else if (car.practicePaused) cue = 'Resume practice when you are ready.';
+    else if (car.requireParkingNeutral) cue = 'Release the driving controls before continuing.';
+    else {
+      var radiusX = Math.abs(Math.cos(car.heading)) * 22 + Math.abs(Math.sin(car.heading)) * 12;
+      var left = car.x - radiusX - 275, right = 325 - car.x - radiusX;
+      if (Math.min(left, right) < 7) cue = 'Brake. The ' + (left < right ? 'left' : 'right') + ' side is close to the cones. Reposition before continuing.';
+      else if (car.y >= 430) cue = backingDrillFinishCheck(car, 430, 275, 325).message || 'Hold the brake to finish.';
+      else if (parkingAngleDeltaDeg(car.heading * 180 / Math.PI, 270) > 5) cue = 'Use a small steering correction to line up with the cone lane.';
+      else if (car.y >= 410) cue = 'Target approaching. Reverse slowly until the stop cue.';
+      else cue = 'Reverse slowly. Keep the car centered between the cones.';
+    }
+    return { cue: cue, progress: done ? 100 : progress };
+  }
+
+  function BackingLiveCoach(props) {
+    var React = props.React, read = function() { return backingDrillCoachState(props.carRef.current, props.doneRef.current); };
+    var state = React.useState(read);
+    React.useEffect(function() {
+      var timer = setInterval(function() { var next = read(); state[1](function(old) { return old.cue === next.cue && old.progress === next.progress ? old : next; }); }, 100);
+      return function() { clearInterval(timer); };
+    }, [props.carRef, props.doneRef]);
+    return props.h('div', { style: { margin: '10px 0', padding: '10px 12px', borderLeft: '3px solid #fbbf24', background: '#1e293b', color: '#fff' } },
+      props.h('p', { role: 'status', 'aria-label': 'Backing guidance', style: { margin: '0 0 8px', fontSize: '14px', lineHeight: 1.5 } }, state[0].cue),
+      props.h('progress', { 'aria-label': 'Distance to backing target', max: 100, value: state[0].progress, style: { display: 'block', width: '100%', height: '10px', accentColor: '#22d3ee' } })
+    );
+  }
+
   function BackingDrillMode(props) {
     var React = props.React;
     var h = props.h;
@@ -7075,21 +7292,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // lane toward the target, matching the drill's instructions. A previous
     // +π/2 heading made reverse drive AWAY from the target — the drill could
     // only be completed by pressing forward.
-    var carRef = useRef({ x: 300, y: 80, heading: -Math.PI / 2, speed: 0, steering: 0 });
+    var carRef = useRef({ x: 300, y: 80, heading: -Math.PI / 2, speed: 0, steering: 0, requireParkingNeutral: true });
     var keysRef = useRef({});
     var animRef = useRef(null);
     var doneRef = useRef(false);
-    var fb = useState('Reverse in a perfectly straight line for 100 ft. Stay between the cones. Use S/Shift to reverse, A/D to steer.');
+    var fb = useState('Reverse in a perfectly straight line to the marked target. Stay between the cones. Use S/Shift to reverse, A/D to steer, and Space to stop in the green target zone.');
     var fbText = fb[0]; var setFb = fb[1];
     var st = useState({ score: 100, conesHit: 0, done: false });
     var stVal = st[0]; var setSt = st[1];
+    var stRef = useRef(stVal);
+    var targetCueRef = useRef('');
 
     var LANE_LEFT = 275;
     var LANE_RIGHT = 325;
     var TARGET_Y = 430;
-    // Cones live in a ref: the RAF effect re-runs on every score change, and a
-    // per-render rebuild wiped each cone's `hit` flag — one brushed cone was
-    // re-penalized on every subsequent render (and visually un-grayed).
+    // Keep contact history across renders; only reset starts a fresh cone set.
     var conesRef = useRef(null);
     if (!conesRef.current) {
       conesRef.current = [];
@@ -7099,17 +7316,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }
     }
     var CONES = conesRef.current;
+    if (window.__testHooks) window.__testHooks.maneuverDrill = { carRef: carRef, keysRef: keysRef, doneRef: doneRef, statusRef: stRef, conesRef: conesRef };
 
     useEffect(function() {
       return attachDrillKeys(keysRef, resetCar);   // one shared key contract — see DRILL_KEYS
     }, []);
 
     function resetCar() {
-      carRef.current = { x: 300, y: 80, heading: -Math.PI / 2, speed: 0, steering: 0 };
+      carRef.current = { x: 300, y: 80, heading: -Math.PI / 2, speed: 0, steering: 0, requireParkingNeutral: true };
       doneRef.current = false;
+      keysRef.current = {};
+      targetCueRef.current = '';
       conesRef.current.forEach(function(cone) { cone.hit = false; });
-      setSt({ score: 100, conesHit: 0, done: false });
-      setFb('Reverse in a perfectly straight line for 100 ft. Stay between the cones.');
+      stRef.current = { score: 100, conesHit: 0, done: false };
+      setSt(stRef.current);
+      setFb('Reverse in a perfectly straight line to the marked target. Stay between the cones and stop in the green target zone.');
     }
 
     useEffect(function() {
@@ -7126,42 +7347,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       };
       var update = function() {
         var car = carRef.current;
-        var k = keysRef.current;
+        var k = practiceDrillInput(car, keysRef.current);
+        if (k._practiceInactive) return;
+        keysRef.current._securePark = false;
         // Arrows as well as WASD, matching the other three drills. This drill read
         // WASD alone, so a student steering with arrows got no response at all.
         var rev = (k['s'] || k['arrowdown'] || k['shift']) ? 1 : 0;
         var fwd = (k['w'] || k['arrowup']) ? 1 : 0;
         var left = (k['a'] || k['arrowleft']) ? 1 : 0;
         var right = (k['d'] || k['arrowright']) ? 1 : 0;
-        car.steering += ((right - left) * 0.5 - car.steering) * 0.12;
-        car.speed += (fwd - rev) * 25 * 0.016;
-        car.speed *= 0.92;
-        var turnRate = car.steering * (car.speed / 30) * 1.2;
-        car.heading += turnRate * 0.016;
-        car.x += Math.cos(car.heading) * car.speed * 0.016;
-        car.y += Math.sin(car.heading) * car.speed * 0.016;
-        // Cone collision
-        CONES.forEach(function(cone) {
-          if (Math.hypot(car.x - cone.x, car.y - cone.y) < 16 && !cone.hit) {
-            cone.hit = true;
-            var ns = Object.assign({}, stVal);
-            ns.score = Math.max(0, ns.score - 10); ns.conesHit++;
-            setSt(ns);
-            setFb('🔶 Cone hit! -10. Steer more gently.');
-          }
-        });
-        // Success check
-        if (car.y >= TARGET_Y && Math.abs(car.x - 300) < 30) {
+        if (!fwd && !rev && k._gpThrottle > 0) {
+          if (car.driveGear === 'R') rev = k._gpThrottle; else fwd = k._gpThrottle;
+        }
+        if (Math.abs(k._gpSteer || 0) > 0.001) { left = Math.max(0, -k._gpSteer); right = Math.max(0, k._gpSteer); }
+        if (fwd && !rev && car.speed >= 0) car.driveGear = 'D';
+        if (rev && !fwd && car.speed <= 0) car.driveGear = 'R';
+        var before = { x: car.x, y: car.y, heading: car.heading };
+        backingDrillMotion(car, fwd, rev, right - left, Math.max(k[' '] ? 1 : 0, k._gpBrake || 0));
+        var contacts = CONES.filter(function(cone) { return !cone.hit && backingCarHitsCone(car, cone); });
+        if (contacts.length) {
+          contacts.forEach(function(cone) { cone.hit = true; });
+          car.x = before.x; car.y = before.y; car.heading = before.heading; car.speed = 0;
+          car.requireParkingNeutral = true;
+          var ns = Object.assign({}, stRef.current);
+          ns.score = Math.max(0, ns.score - 10 * contacts.length); ns.conesHit += contacts.length;
+          stRef.current = ns; setSt(ns);
+          setFb('Cone contact: -' + 10 * contacts.length + '. Release the controls, check around the car, then reposition.');
+          return;
+        }
+        // Completion requires a stopped, aligned car fully inside the lane.
+        var finish = backingDrillFinishCheck(car, TARGET_Y, LANE_LEFT, LANE_RIGHT);
+        if (finish.message !== targetCueRef.current) {
+          if (finish.message || targetCueRef.current) setFb(finish.message || 'Continue reversing toward the green target zone, then hold the brake to stop.');
+          targetCueRef.current = finish.message;
+        }
+        if (finish.ready) {
           doneRef.current = true;
-          var ns2 = Object.assign({}, stVal);
+          car.speed = 0;
+          var ns2 = Object.assign({}, stRef.current);
           ns2.done = true;
+          stRef.current = ns2;
           setSt(ns2);
           setFb('✅ Backed straight! Score: ' + ns2.score + '/100. ' + (ns2.conesHit === 0 ? 'Perfect — zero cones!' : ns2.conesHit + ' cone(s) hit.'));
         }
       };
       var render = function() {
-        var W = canvas.width = canvas.offsetWidth;
-        var H = canvas.height = 480;
+        // Keep the authored world intact; CSS scales both axes together on small screens.
+        var W = 600, H = 480;
+        if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
         gfx.fillStyle = '#334155'; gfx.fillRect(0, 0, W, H);
         // Lane lines
         gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 2; gfx.setLineDash([14, 14]);
@@ -7176,7 +7409,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // Cones
         CONES.forEach(function(cone) {
           gfx.fillStyle = cone.hit ? '#475569' : '#f97316';
-          gfx.beginPath(); gfx.moveTo(cone.x, cone.y - 8); gfx.lineTo(cone.x - 6, cone.y + 6); gfx.lineTo(cone.x + 6, cone.y + 6); gfx.closePath(); gfx.fill();
+          gfx.beginPath();
+          if (cone.hit) { gfx.moveTo(cone.x - 7, cone.y + 4); gfx.lineTo(cone.x + 7, cone.y - 2); gfx.lineTo(cone.x + 5, cone.y + 6); }
+          else { gfx.moveTo(cone.x, cone.y - 8); gfx.lineTo(cone.x - 6, cone.y + 6); gfx.lineTo(cone.x + 6, cone.y + 6); }
+          gfx.closePath(); gfx.fill();
         });
         // Car — rotate(heading) keeps the body's long axis aligned with travel
         // (nose = local +X). Reverse lights sit at the rear (local −X), the
@@ -7184,31 +7420,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var car = carRef.current;
         gfx.save(); gfx.translate(car.x, car.y); gfx.rotate(car.heading);
         gfx.fillStyle = '#a3a3a3'; gfx.fillRect(-22, -12, 44, 24);
-        gfx.fillStyle = '#404040'; gfx.fillRect(-16, -10, 14, 20);
+        gfx.fillStyle = '#404040'; gfx.fillRect(2, -10, 14, 20);
         if (car.speed < -0.5) { gfx.fillStyle = '#fff'; gfx.fillRect(-22, -8, 5, 5); gfx.fillRect(-22, 3, 5, 5); }
         gfx.restore();
-        // HUD
-        gfx.fillStyle = 'rgba(0,0,0,0.7)'; gfx.fillRect(10, 10, 280, 50);
-        gfx.fillStyle = '#fff'; gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'left';
-        gfx.fillText('🔙 Straight Backing Drill', 20, 28);
-        gfx.fillStyle = '#a3a3a3'; gfx.font = '10px system-ui';
-        gfx.fillText('Score: ' + stVal.score + ' · Cones: ' + stVal.conesHit + (stVal.done ? ' · ✓ DONE' : ''), 20, 44);
+
       };
       animRef.current = requestAnimationFrame(step);
       return function() { if (animRef.current) cancelAnimationFrame(animRef.current); };
-    }, [stVal]);
+    }, []);
 
     return h('div', { style: { padding: '14px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
       h('button', { onClick: props.onExit, style: { marginBottom: '10px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+      h(ManeuverDrillSummary, { h: h, React: React, title: 'Straight backing', score: stVal.score, hits: stVal.conesHit, done: stVal.done, progress: 'Reverse straight, then stop', onReset: resetCar }),
       h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '10px', border: '1px solid #a3a3a3' } },
-        h('canvas', { ref: canvasRef, role: 'img', 'aria-label': __alloRRT('stem.roadready.a11y_top_down_2d_straight_backing_drill_scene_your_c', 'Top-down 2D straight backing drill scene: your car, a lane marked by cones on the left and right, and a target line 100 feet behind. The scene updates as you reverse in a straight line between the cones with WASD or arrow keys.'), style: { width: '100%', height: '480px', display: 'block', borderRadius: '8px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))' } })
+        h('canvas', { ref: canvasRef, role: 'img', 'aria-label': __alloRRT('stem.roadready.a11y_top_down_2d_straight_backing_drill_scene_your_c', 'Top-down 2D straight backing drill scene: your car, a lane marked by cones on the left and right, and a target line behind your starting position. The scene updates as you reverse in a straight line between the cones with WASD or arrow keys.'), style: { width: '100%', height: 'auto', aspectRatio: '600 / 480', display: 'block', borderRadius: '8px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))' } })
       ),
-      h('div', { style: { marginTop: '10px', padding: '12px', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
+      h(BackingLiveCoach, { h: h, React: React, carRef: carRef, doneRef: doneRef }),
+      h(ParkingPracticeControls, { h: h, React: React, keysRef: keysRef, carRef: carRef, doneRef: doneRef, onReset: resetCar, label: 'Driving controls', hideReset: true, showStatus: true }),
+      h(RoadReadyControlSettings, { React: React }),
+      h('div', { role: 'region', 'aria-label': 'Driving instructor', style: { marginTop: '10px', padding: '12px', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
         h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #a3a3a3))', textTransform: 'uppercase', marginBottom: '6px' } }, '👨‍🏫 Instructor'),
-        h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.5' } }, fbText),
+        h('div', { style: { fontSize: '14px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.55' } }, fbText),
         h('div', { style: { marginTop: '6px', fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, // Name the controls, as the parking drills do. This tip mentioned only R, so a
         // student had no way to learn the drill accepts arrows as well as WASD.
-        'WASD or arrows to drive. SHIFT or down arrow = reverse. R = reset. Tip: look over your RIGHT shoulder, not in the mirrors, and use small steering corrections.')
+        'WASD or arrows to drive. SHIFT or down arrow = reverse. Space = brake. Stop in the green target zone to finish. R = reset. Check around and behind before moving. Use mirrors as part of the scan, make small steering corrections, and stop if the path is unclear.')
       )
     );
   }
@@ -38072,7 +38307,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   if (typeof window !== 'undefined' && window.__RR_TEST_EXPORTS__) {
     window.__RR_TEST_EXPORTS__.roadReady = {
       // shared drill keyboard contract (the four drills had drifted apart)
-      DRILL_KEYS: DRILL_KEYS, attachDrillKeys: attachDrillKeys,
+      DRILL_KEYS: DRILL_KEYS, attachDrillKeys: attachDrillKeys, attachParkingInterruption: attachParkingInterruption,
       // constants
       MPH_TO_MS: MPH_TO_MS, MS_TO_MPH: MS_TO_MPH, FT_PER_M: FT_PER_M,
       METERS_PER_MILE: METERS_PER_MILE, AIR_DENSITY: AIR_DENSITY,
@@ -38109,7 +38344,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       startupMovementInputActive: startupMovementInputActive,
       clearDrivingMovementInputs: clearDrivingMovementInputs,
       longitudinalNetForce: longitudinalNetForce,
-      drivingDrillTicks: drivingDrillTicks,
+      threePointClearances: threePointClearances, threePointMotion: threePointMotion, threePointContact: threePointContact, threePointNextStage: threePointNextStage, threePointCue: threePointCue,
+      backingCarHitsCone: backingCarHitsCone, backingDrillMotion: backingDrillMotion, backingDrillCoachState: backingDrillCoachState,
+      drivingDrillTicks: drivingDrillTicks, drivingDrillSpeed: drivingDrillSpeed, backingDrillFinishCheck: backingDrillFinishCheck,
       drivingResponse: drivingResponse, drivingSteeringGeometry: drivingSteeringGeometry,
       drivingPedalResponse: drivingPedalResponse,
       drivingFollowingTarget: drivingFollowingTarget, drivingFollowingDisplay: drivingFollowingDisplay,
@@ -38250,7 +38487,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       parkingCarHitsObstacle: parkingCarHitsObstacle, parkingCurbGapInches: parkingCurbGapInches,
       parkingPointClearanceInches: parkingPointClearanceInches, parkingObbInsideBounds: parkingObbInsideBounds,
       parkingControllerKeys: parkingControllerKeys,
-      parkingDrillStep: parkingDrillStep,
+      parkingDrillStep: parkingDrillStep, practiceDrillInput: practiceDrillInput,
       parallelParkingPhase: parallelParkingPhase,
       parkingPracticeMetrics: parkingPracticeMetrics,
       parkingClearanceGuideGeometry: parkingClearanceGuideGeometry,

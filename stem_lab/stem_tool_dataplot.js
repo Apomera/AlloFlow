@@ -820,10 +820,23 @@ window.StemLab = window.StemLab || {
         else if (e.key === 'ArrowRight' && stepMode) stepNext();
       };
 
+      var dataPlotTabOrder = ['chart', 'stats', 'quiz', 'tools', 'inquiry'];
+      var dataPlotPanelProps = function(id, props) { return Object.assign({ id: 'data-plot-panel-' + id, role: 'tabpanel', 'aria-labelledby': 'data-plot-tab-' + id, tabIndex: 0 }, props); };
       // ── Tab button helper ──
       var tabBtn = function(id, label, icon) {
         var active = activeTab === id;
-        return h('button', { onClick: function() { upd('activeTab', id); }, role: 'tab', 'aria-selected': active, className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow-md' : 'bg-white text-teal-700 hover:bg-teal-50 border border-teal-600') }, icon + ' ' + label);
+        return h('button', { id: 'data-plot-tab-' + id, 'aria-controls': 'data-plot-panel-' + id, tabIndex: active ? 0 : -1, style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }, onKeyDown: function(e) {
+          var index = dataPlotTabOrder.indexOf(id), next = index;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (index + 1) % dataPlotTabOrder.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (index + dataPlotTabOrder.length - 1) % dataPlotTabOrder.length;
+          else if (e.key === 'Home') next = 0;
+          else if (e.key === 'End') next = dataPlotTabOrder.length - 1;
+          else return;
+          e.preventDefault(); e.stopPropagation();
+          var buttons = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          if (buttons[next]) buttons[next].focus();
+          upd('activeTab', dataPlotTabOrder[next]);
+        }, onClick: function() { upd('activeTab', id); }, role: 'tab', 'aria-selected': active, className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow-md' : 'bg-white text-teal-700 hover:bg-teal-50 border border-teal-600') }, icon + ' ' + label);
       };
 
       // Regression line/curve path
@@ -922,12 +935,12 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Tab nav ──
-        h('div', { className: 'flex gap-2 flex-wrap', role: 'tablist', 'aria-label': t('stem.dataplot.data_plot_sections', 'Data Plot sections') },
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))' }, className: 'gap-2', role: 'tablist', 'aria-label': t('stem.dataplot.data_plot_sections', 'Data Plot sections') },
           tabBtn('chart', 'Chart', '\uD83D\uDCCA'),
           tabBtn('stats', 'Statistics', '\uD83D\uDCC8'),
           tabBtn('quiz', 'Quiz', '\uD83C\uDFAF'),
-          tabBtn('tools', 'Tools', '\uD83D\uDEE0\uFE0F'),
-          tabBtn('inquiry', 'Inquiry', '\uD83D\uDD2C')
+          tabBtn('tools', t('stem.dataplot.tab_data_tools', 'Data tools'), '\uD83D\uDEE0\uFE0F'),
+          tabBtn('inquiry', t('stem.dataplot.tab_sampling_effects', 'Sampling effects'), '\uD83D\uDD2C')
         ),
 
         // ── Topic-accent hero band per tab ──
@@ -962,7 +975,7 @@ window.StemLab = window.StemLab || {
         // ══════════════════════════════════════════════════════════
         // ── TAB: Chart ──
         // ══════════════════════════════════════════════════════════
-        activeTab === 'chart' && h('div', { className: 'space-y-2' },
+        activeTab === 'chart' && h('div', dataPlotPanelProps('chart', { className: 'space-y-2' }),
 
           // Chart type selector (7 types now)
           h('div', { className: 'flex gap-1.5 flex-wrap' },
@@ -1244,10 +1257,10 @@ window.StemLab = window.StemLab || {
 
           // ── Regression info (with Spearman + Pearson) ──
           n >= 2 && h('div', { className: 'bg-white rounded-lg border p-2' },
-            h('div', { className: 'flex gap-2 items-center mb-1.5 flex-wrap' },
+            h('div', { role: 'group', 'aria-label': t('stem.dataplot.regression_model_choice', 'Regression model'), className: 'flex gap-2 items-center mb-1.5 flex-wrap' },
               h('span', { className: 'text-[0.6875rem] font-bold text-slate-600' }, 'Regression:'),
               ['linear', 'quadratic', 'exponential', 'logarithmic'].map(function(rt) {
-                return h('button', { key: rt, onClick: function() { upd('regressionType', rt); },
+                return h('button', { key: rt, 'data-regression-model': rt, 'aria-pressed': regressionType === rt, style: { minHeight: 44, whiteSpace: 'normal', overflowWrap: 'anywhere' }, onClick: function() { upd('regressionType', rt); },
                   className: 'px-2 py-0.5 rounded text-[0.6875rem] font-bold transition-all ' + (regressionType === rt ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                 }, rt.charAt(0).toUpperCase() + rt.slice(1));
               })
@@ -1291,7 +1304,7 @@ window.StemLab = window.StemLab || {
         // ══════════════════════════════════════════════════════════
         // ── TAB: Statistics ──
         // ══════════════════════════════════════════════════════════
-        activeTab === 'stats' && h('div', { className: 'space-y-3' },
+        activeTab === 'stats' && h('div', dataPlotPanelProps('stats', { className: 'space-y-3' }),
           n === 0
             ? h('div', { className: 'text-center text-sm text-slate-600 py-8' + onHostInk }, t('stem.dataplot.add_data_points_to_see_statistics', 'Add data points to see statistics'))
             : h('div', { className: 'space-y-3' },
@@ -1440,7 +1453,7 @@ window.StemLab = window.StemLab || {
         // ══════════════════════════════════════════════════════════
         // ── TAB: Quiz (4 types) ──
         // ══════════════════════════════════════════════════════════
-        activeTab === 'quiz' && h('div', { className: 'space-y-3' },
+        activeTab === 'quiz' && h('div', dataPlotPanelProps('quiz', { className: 'space-y-3' }),
           // Quiz type selector
           h('div', { className: 'flex gap-2 flex-wrap items-center' },
             h('span', { className: 'text-[0.6875rem] font-bold text-slate-600' + onHostInk }, 'Type:'),
@@ -1506,7 +1519,7 @@ window.StemLab = window.StemLab || {
         // ══════════════════════════════════════════════════════════
         // ── TAB: Tools ──
         // ══════════════════════════════════════════════════════════
-        activeTab === 'tools' && h('div', { className: 'space-y-3' },
+        activeTab === 'tools' && h('div', dataPlotPanelProps('tools', { className: 'space-y-3' }),
 
           // ── Prediction tool (with interpolation/extrapolation) ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-indigo-200' },
@@ -1694,7 +1707,7 @@ window.StemLab = window.StemLab || {
             masked: { label: t('stem.dataplot.truth_obscured', 'Truth obscured'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: t('stem.dataplot.observed_r_differs_by_0_15_0_30_a_real', 'Observed r differs by 0.15-0.30. A real effect can look weak (or vice versa).') },
             misleading: { label: t('stem.dataplot.misleading_sample', 'Misleading sample'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.dataplot.observed_r_is_wildly_off_0_30_outliers', 'Observed r is wildly off (>0.30). Outliers or tiny n can completely flip apparent direction.') }
           })[state];
-          return h('div', { className: 'p-3 rounded-xl', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+          return h('div', dataPlotPanelProps('inquiry', { className: 'p-3 rounded-xl', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } }),
             h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, t('stem.dataplot.correlation_inquiry_when_samples_misle', '\uD83D\uDD2C Correlation Inquiry - When Samples Mislead')),
             h('p', { className: 'text-[0.625rem] opacity-85 mb-2 leading-snug' }, t('stem.dataplot.set_true_population_r_sample_size_nois', 'Set population r, sample size, noise, and outliers, then observe how far the sampled r drifts. The result updates live; record a hypothesis or pattern you notice.')),
             h('div', { className: 'inline-block px-2 py-1 rounded-full text-[0.625rem] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' \u00B7 true r=' + iq.trueR.toFixed(2) + ', observed r=' + observedR.toFixed(2)),

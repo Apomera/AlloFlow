@@ -1,0 +1,318 @@
+{
+  "width": 320,
+  "scroll": 320,
+  "elements": [
+    {
+      "tag": "DIV",
+      "cls": "rn-energy-experiment-fields",
+      "width": 254,
+      "scroll": 258,
+      "right": 287,
+      "text": ""
+    },
+    {
+      "tag": "LABEL",
+      "cls": "",
+      "width": 254,
+      "scroll": 258,
+      "right": 287,
+      "text": ""
+    },
+    {
+      "tag": "LABEL",
+      "cls": "",
+      "width": 254,
+      "scroll": 258,
+      "right": 287,
+      "text": ""
+    },
+    {
+      "tag": "LABEL",
+      "cls": "",
+      "width": 224,
+      "scroll": 228,
+      "right": 272,
+      "text": ""
+    },
+    {
+      "tag": "LABEL",
+      "cls": "",
+      "width": 224,
+      "scroll": 228,
+      "right": 272,
+      "text": ""
+    },
+    {
+      "tag": "LABEL",
+      "cls": "",
+      "width": 224,
+      "scroll": 228,
+      "right": 272,
+      "text": ""
+    },
+    {
+      "tag": "LABEL",
+      "cls": "",
+      "width": 224,
+      "scroll": 228,
+      "right": 272,
+      "text": ""
+    },
+    {
+      "tag": "DIV",
+      "cls": "rn-energy-chart-scroll",
+      "width": 254,
+      "scroll": 480,
+      "right": 287,
+      "text": ""
+    },
+    {
+      "tag": "svg",
+      "cls": {},
+      "width": 480,
+      "scroll": 480,
+      "right": 513,
+      "text": ""
+    },
+    {
+      "tag": "g",
+      "cls": {},
+      "width": 0,
+      "scroll": 0,
+      "right": 498.6000061035156,
+      "text": ""
+    },
+    {
+      "tag": "line",
+      "cls": {},
+      "width": 0,
+      "scroll": 0,
+      "right": 498.5999984741211,
+      "text": ""
+    },
+    {
+      "tag": "g",
+      "cls": {},
+      "width": 0,
+      "scroll": 0,
+      "right": 498.6000061035156,
+      "text": ""
+    },
+    {
+      "tag": "line",
+      "cls": {},
+      "width": 0,
+      "scroll": 0,
+      "right": 498.5999984741211,
+      "text": ""
+    },
+    {
+      "tag": "g",
+      "cls": {},
+      "width": 0,
+      "scroll": 0,
+      "right": 498.6000061035156,
+      "text": ""
+    },
+    {
+      "tag": "line",
+      "cls": {},
+      "width": 0,
+      "scroll": 0,
+      "right": 498.5999984741211,
+      "text": ""
+    },
+    {
+      "tag": "polyline",
+      "cls": {},
+      "width": 0,
+      "scroll": 0,
+      "right": 498.5999984741211,
+      "text": ""
+    },
+    {
+      "tag": "text",
+      "cls": {},
+      "width": 595,
+      "scroll": 595,
+      "right": 509.29376220703125,
+      "text": "1,100"
+    },
+    {
+      "tag": "circle",
+      "cls": {},
+      "width": 0,
+      "scroll": 0,
+      "right": 386.9636535644531,
+      "text": ""
+    },
+    {
+      "tag": "DIV",
+      "cls": "rn-energy-table",
+      "width": 254,
+      "scroll": 261,
+      "right": 287,
+      "text": ""
+    },
+    {
+      "tag": "DIV",
+      "cls": "rn-energy-table",
+      "width": 254,
+      "scroll": 2995,
+      "right": 287,
+      "text": ""
+    },
+    {
+      "tag": "TABLE",
+      "cls": "",
+      "width": 2995,
+      "scroll": 2995,
+      "right": 3027.671875,
+      "text": ""
+    },
+    {
+      "tag": "CAPTION",
+      "cls": "",
+      "width": 2995,
+      "scroll": 2995,
+      "right": 3027.671875,
+      "text": "Solar PV readings, recalculated with mechanism model 1."
+    },
+    {
+      "tag": "THEAD",
+      "cls": "",
+      "width": 2995,
+      "scroll": 2995,
+      "right": 3027.671875,
+      "text": ""
+    },
+    {
+      "tag": "TR",
+      "cls": "",
+      "width": 2995,
+      "scroll": 2995,
+      "right": 3027.671875,
+      "text": ""
+    },
+    {
+      "tag": "TH",
+      "cls": "",
+      "width": 2688,
+      "scroll": 2688,
+      "right": 2721.125,
+      "text": "Reading"
+    },
+    {
+      "tag": "TH",
+      "cls": "",
+      "width": 80,
+      "scroll": 80,
+      "right": 2801.609375,
+      "text": "Output kW"
+    },
+    {
+      "tag": "TH",
+      "cls": "",
+      "width": 71,
+      "scroll": 71,
+      "right": 2872.125,
+      "text": "Input kW"
+    },
+    {
+      "tag": "TH",
+      "cls": "",
+      "width": 156,
+      "scroll": 156,
+      "right": 3027.671875,
+      "text": "Actions"
+    },
+    {
+      "tag": "TBODY",
+      "cls": "",
+      "width": 2995,
+      "scroll": 2995,
+      "right": 3027.671875,
+      "text": ""
+    },
+    {
+      "tag": "TR",
+      "cls": "",
+      "width": 2995,
+      "scroll": 2995,
+      "right": 3027.671875,
+      "text": ""
+    },
+    {
+      "tag": "TH",
+      "cls": "",
+      "width": 2688,
+      "scroll": 2688,
+      "right": 2721.125,
+      "text": "VeryLongBaselineNameVeryLongBaselineNameVeryLongBaselineNameVeryLongBaselineName"
+    },
+    {
+      "tag": "TD",
+      "cls": "",
+      "width": 80,
+      "scroll": 80,
+      "right": 2801.609375,
+      "text": "2.89"
+    },
+    {
+      "tag": "TD",
+      "cls": "",
+      "width": 71,
+      "scroll": 71,
+      "right": 2872.125,
+      "text": "15.04"
+    },
+    {
+      "tag": "TD",
+      "cls": "",
+      "width": 156,
+      "scroll": 156,
+      "right": 3027.671875,
+      "text": ""
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "",
+      "width": 64,
+      "scroll": 64,
+      "right": 2946.875,
+      "text": "Restore"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "",
+      "width": 67,
+      "scroll": 67,
+      "right": 3018.671875,
+      "text": "Remove"
+    },
+    {
+      "tag": "ARTICLE",
+      "cls": "",
+      "width": 254,
+      "scroll": 3115,
+      "right": 287,
+      "text": ""
+    },
+    {
+      "tag": "DIV",
+      "cls": "rn-energy-toolbar",
+      "width": 254,
+      "scroll": 3115,
+      "right": 287,
+      "text": ""
+    },
+    {
+      "tag": "H3",
+      "cls": "",
+      "width": 3115,
+      "scroll": 3115,
+      "right": 3148.140625,
+      "text": "VeryLongBaselineNameVeryLongBaselineNameVeryLongBaselineNameVeryLongBaselineName"
+    }
+  ]
+}

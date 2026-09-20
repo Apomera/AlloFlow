@@ -1,0 +1,32 @@
+{
+  "pass": 45,
+  "change": "Restore saved setups and comparison direction indicators",
+  "uiTests": 228,
+  "uiInitialPassed": 220,
+  "i18nRetryPassed": 8,
+  "initialRunIssue": "Translation test worker startup timed out; isolated final retry passed all eight tests.",
+  "browserChecks": 357,
+  "themes": {
+    "light": {
+      "checks": 119,
+      "screenshots": 11,
+      "errors": [],
+      "overflow": false
+    },
+    "dark": {
+      "checks": 119,
+      "screenshots": 11,
+      "errors": [],
+      "overflow": false
+    },
+    "contrast": {
+      "checks": 119,
+      "screenshots": 11,
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "sourceMirrorIdentical": true,
+  "syntaxValid": true,
+  "localOnly": true
+}

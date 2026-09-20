@@ -31,8 +31,13 @@
     "contentRefinements": {
       "review": "Scientific wording refined; educator review pending",
       "audit": "allopacks/media/simple_machines_grade5/content-refinements.json",
-      "count": 34
-    }
+      "count": 68,
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/simple_machines_grade5/content-refinements.json",
+      "sourceOnlyResourceIds": []
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Simple Machines",
   "history": [
@@ -79,7 +84,7 @@
       "title": "The Deal",
       "timestamp": "2026-07-21T13:00:01.000Z",
       "data": "## The Deal\n\nA machine does not make you stronger. It changes how your strength gets used — and it always charges you for the favor.\n\nThere are six classic **simple machines**, and many everyday tools combine them.\n\nA **lever** is a stiff bar that turns on a fixed point called a **fulcrum**. In one common arrangement, pushing down on one side of the fulcrum lifts the other side. A crowbar, a seesaw, a bottle opener, and the bones in your arm are all levers.\n\nAn **inclined plane** is a ramp. Walking a heavy box up a ramp takes less force than lifting it straight up — but you have to travel farther to get it to the same height.\n\nA **wedge** is really an inclined plane that moves. An axe, a knife, a nail, and your front teeth all drive a thin edge into something and push it apart.\n\nA **screw** is an inclined plane wrapped around a post. Look closely at the threads — that spiral is a ramp that has been rolled up. Turning the screw many times pulls it forward a small distance with great force.\n\nA **wheel and axle** is a wheel fixed to a rod so they turn together. Doorknobs, steering wheels, and screwdrivers all use it. A tangential push at the wide outer edge can produce a larger force at the narrow axle; both turn through the same angle, while the rim travels farther.\n\nA **pulley** is a wheel with a groove for a rope. A single fixed pulley changes pull direction. A movable pulley attached to a load can reduce the effort force. The ideal advantage depends on the rope segments supporting the moving load, not simply on the number of wheels.\n\nHere is the ideal trade when a machine multiplies force: **less effort force means more effort distance.** Half the force requires twice the distance; a quarter requires four times the distance. Some arrangements instead change direction or increase movement speed. Without friction, input work equals output work.\n\nReal machines also have **friction** and other losses, which convert some mechanical energy into thermal energy and other forms. These losses can be small or large. That is why rubbing your hands warms them and why machines need grease.\n\nSo when someone says a machine makes work easier, they mean something precise. A machine may reduce the required effort force, change its direction, or change speed. It cannot create energy. For the same useful task, losses make real input work greater than useful output work.",
-      "meta": "5th-6th Grade • Leveled reading • ~390 words",
+      "meta": "5th-6th Grade • Leveled reading",
       "imageSlot": "sk-img-six-machines"
     },
     {
@@ -463,7 +468,8 @@
               "Real losses are not always small"
             ]
           }
-        ]
+        ],
+        "structureType": "Key Concept Map"
       }
     },
     {
@@ -520,6 +526,13 @@
             "hookFact": {
               "text": "The bones in your arm are levers, and your front teeth are wedges.",
               "sourceTitle": "The Deal (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/simple_machines_grade5.allopack.json",
+              "sourceResourceId": "sk-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "6d150c33b66f10e2486abff637b372d2490b5954c931dfa9006e74d8db6fd837"
             }
           },
           {
@@ -531,7 +544,7 @@
               "Real losses convert some mechanical energy into thermal energy and other forms, so input work exceeds useful output work."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "analogy-pattern",
             "mode": "scaffolded",
             "aiExample": "For an ideal force-multiplying machine, imagine paying the same price in smaller installments over more payments. Real machines add a friction cost that can vary.",
@@ -580,6 +593,13 @@
             "hookFact": {
               "text": "Look closely at the threads of a screw: that spiral is a ramp that has been rolled up.",
               "sourceTitle": "The Deal (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/simple_machines_grade5.allopack.json",
+              "sourceResourceId": "sk-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "aae2cbbed31bd05dee6c0b848a9970d258732f43b800db83e6812861760a519f"
             }
           }
         ]
@@ -775,14 +795,14 @@
           },
           {
             "type": "mcq",
-            "question": "What does friction do in every real machine?",
+            "question": "What happens when moving machine parts lose energy to friction?",
             "options": [
-              "Adds extra energy that increases the machine's total work",
-              "It only matters in machines that use wheels or axles",
-              "Converts some mechanical energy into thermal energy, increasing required input work",
-              "Builds up until it makes the machine stop working entirely"
+              "They gain extra energy without any added input work",
+              "Only wheels are affected; other moving parts lose none",
+              "Some mechanical energy becomes heat, so more input work is needed",
+              "All input energy always becomes heat before any useful work is done"
             ],
-            "correctAnswer": "Converts some mechanical energy into thermal energy, increasing required input work",
+            "correctAnswer": "Some mechanical energy becomes heat, so more input work is needed",
             "conceptLabel": "friction cost"
           },
           {
@@ -969,7 +989,7 @@
           ],
           "deliverable": "A labeled design drawing, a prediction (force before, force with machine, distance moved), a test table with spring-scale readings, and a short explanation of the trade using at least four glossary words.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

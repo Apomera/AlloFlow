@@ -1,0 +1,25 @@
+{
+  "runId": "c8d319c5-7824-4d21-959c-e3ede906a682",
+  "status": "failed",
+  "startedAt": "2026-09-20T04:03:36.659Z",
+  "phases": {
+    "unit": {
+      "status": "failed",
+      "startedAt": "2026-09-20T04:03:36.664Z",
+      "logFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-next-fixes-2026-09-20\\mcp-calibration\\unit.log",
+      "process": {
+        "exitCode": 1,
+        "signal": null,
+        "error": null
+      },
+      "reportError": "Unit suite was not run: tests/mcp_agent_bridge_terminal_modes_e2e.test.js",
+      "error": "Calibration unit process failed: exit 1",
+      "finishedAt": "2026-09-20T04:09:03.789Z"
+    },
+    "browser": {
+      "status": "not-started"
+    }
+  },
+  "error": "Calibration unit process failed: exit 1",
+  "finishedAt": "2026-09-20T04:09:03.790Z"
+}

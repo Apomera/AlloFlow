@@ -1,0 +1,370 @@
+{
+  "measuredAt": "2026-09-20T03:48:50.650Z",
+  "sourceSha256": "dfab62eb35dc56e82e18b60df006ec642dd139f6ca38a748738160fce69e8421",
+  "sourceUnchanged": true,
+  "policy": "20260920-1",
+  "browserVersion": "148.0.7778.96",
+  "scope": "Read-only strict source gate and actual aiFixChunked with mocked transport; native Chromium FormData and request destination. Every request is aborted before network. No external submissions, export verification, live model or assistive-technology testing.",
+  "results": [
+    {
+      "id": "form-target-removal",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form action=\"https://remediation.invalid/result\" target=\"feedback\"><label>Response<input name=\"answer\" value=\"Original\"></label><button>Submit</button></form><iframe name=\"feedback\" title=\"Submission feedback\" srcdoc=\"<p>Feedback remains here.</p>\"></iframe><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form action=\"https://remediation.invalid/result\"><label>Response<input name=\"answer\" value=\"Original\"></label><button>Submit</button></form><iframe name=\"feedback\" title=\"Submission feedback\" srcdoc=\"<p>Feedback remains here.</p>\"></iframe><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 0.9826086956521739,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "deferredChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "native": {
+        "source": {
+          "submissionDestination": "feedback",
+          "url": "https://remediation.invalid/result?answer=Original",
+          "method": "GET",
+          "requestAbortedBeforeNetwork": true
+        },
+        "candidate": {
+          "submissionDestination": "main document",
+          "url": "https://remediation.invalid/result?answer=Original",
+          "method": "GET",
+          "requestAbortedBeforeNetwork": true
+        }
+      }
+    },
+    {
+      "id": "submitter-formtarget-added",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form action=\"https://remediation.invalid/result\" target=\"feedback\"><label>Response<input name=\"answer\" value=\"Original\"></label><button>Submit</button></form><iframe name=\"feedback\" title=\"Submission feedback\" srcdoc=\"<p>Feedback remains here.</p>\"></iframe><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form action=\"https://remediation.invalid/result\" target=\"feedback\"><label>Response<input name=\"answer\" value=\"Original\"></label><button formtarget=\"_self\">Submit</button></form><iframe name=\"feedback\" title=\"Submission feedback\" srcdoc=\"<p>Feedback remains here.</p>\"></iframe><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0183574879227053,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "deferredChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "native": {
+        "source": {
+          "submissionDestination": "feedback",
+          "url": "https://remediation.invalid/result?answer=Original",
+          "method": "GET",
+          "requestAbortedBeforeNetwork": true
+        },
+        "candidate": {
+          "submissionDestination": "main document",
+          "url": "https://remediation.invalid/result?answer=Original",
+          "method": "GET",
+          "requestAbortedBeforeNetwork": true
+        }
+      }
+    },
+    {
+      "id": "target-explicit-self-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form action=\"https://remediation.invalid/result\"><label>Response<input name=\"answer\" value=\"Original\"></label><button>Submit</button></form><iframe name=\"feedback\" title=\"Submission feedback\" srcdoc=\"<p>Feedback remains here.</p>\"></iframe><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form target=\"_self\" action=\"https://remediation.invalid/result\"><label>Response<input name=\"answer\" value=\"Original\"></label><button>Submit</button></form><iframe name=\"feedback\" title=\"Submission feedback\" srcdoc=\"<p>Feedback remains here.</p>\"></iframe><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0147492625368733,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "deferredChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "native": {
+        "source": {
+          "submissionDestination": "main document",
+          "url": "https://remediation.invalid/result?answer=Original",
+          "method": "GET",
+          "requestAbortedBeforeNetwork": true
+        },
+        "candidate": {
+          "submissionDestination": "main document",
+          "url": "https://remediation.invalid/result?answer=Original",
+          "method": "GET",
+          "requestAbortedBeforeNetwork": true
+        }
+      }
+    },
+    {
+      "id": "submitter-target-equivalent-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form action=\"https://remediation.invalid/result\" target=\"feedback\"><label>Response<input name=\"answer\" value=\"Original\"></label><button>Submit</button></form><iframe name=\"feedback\" title=\"Submission feedback\" srcdoc=\"<p>Feedback remains here.</p>\"></iframe><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form action=\"https://remediation.invalid/result\" target=\"feedback\"><label>Response<input name=\"answer\" value=\"Original\"></label><button formtarget=\"feedback\">Submit</button></form><iframe name=\"feedback\" title=\"Submission feedback\" srcdoc=\"<p>Feedback remains here.</p>\"></iframe><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.021256038647343,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "deferredChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "native": {
+        "source": {
+          "submissionDestination": "feedback",
+          "url": "https://remediation.invalid/result?answer=Original",
+          "method": "GET",
+          "requestAbortedBeforeNetwork": true
+        },
+        "candidate": {
+          "submissionDestination": "feedback",
+          "url": "https://remediation.invalid/result?answer=Original",
+          "method": "GET",
+          "requestAbortedBeforeNetwork": true
+        }
+      }
+    },
+    {
+      "id": "textarea-hard-width",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form><label>Response<textarea name=\"answer\" wrap=\"hard\" cols=\"10\" style=\"width:100px;font:16px monospace\">abcdefghijklmnopqrstuvwxyz</textarea></label></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form><label>Response<textarea name=\"answer\" wrap=\"hard\" cols=\"10\" style=\"width:200px;font:16px monospace\">abcdefghijklmnopqrstuvwxyz</textarea></label></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "deferredChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "native": {
+        "source": {
+          "value": "abcdefghijklmnopqrstuvwxyz",
+          "payload": [
+            [
+              "answer",
+              "abcdefghijk\nlmnopqrstuv\nwxyz"
+            ]
+          ],
+          "wrap": "hard",
+          "cols": 10,
+          "width": "100px",
+          "font": "16px monospace"
+        },
+        "candidate": {
+          "value": "abcdefghijklmnopqrstuvwxyz",
+          "payload": [
+            [
+              "answer",
+              "abcdefghijklmnopqrstuv\nwxyz"
+            ]
+          ],
+          "wrap": "hard",
+          "cols": 10,
+          "width": "200px",
+          "font": "16px monospace"
+        }
+      }
+    },
+    {
+      "id": "textarea-hard-font-size",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form><label>Response<textarea name=\"answer\" wrap=\"hard\" cols=\"10\" style=\"width:100px;font:16px monospace\">abcdefghijklmnopqrstuvwxyz</textarea></label></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form><label>Response<textarea name=\"answer\" wrap=\"hard\" cols=\"10\" style=\"width:100px;font:12px monospace\">abcdefghijklmnopqrstuvwxyz</textarea></label></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "deferredChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "native": {
+        "source": {
+          "value": "abcdefghijklmnopqrstuvwxyz",
+          "payload": [
+            [
+              "answer",
+              "abcdefghijk\nlmnopqrstuv\nwxyz"
+            ]
+          ],
+          "wrap": "hard",
+          "cols": 10,
+          "width": "100px",
+          "font": "16px monospace"
+        },
+        "candidate": {
+          "value": "abcdefghijklmnopqrstuvwxyz",
+          "payload": [
+            [
+              "answer",
+              "abcdefghijklmno\npqrstuvwxyz"
+            ]
+          ],
+          "wrap": "hard",
+          "cols": 10,
+          "width": "100px",
+          "font": "12px monospace"
+        }
+      }
+    },
+    {
+      "id": "textarea-soft-width-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form><label>Response<textarea name=\"answer\" wrap=\"soft\" cols=\"10\" style=\"width:100px;font:16px monospace\">abcdefghijklmnopqrstuvwxyz</textarea></label></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form><label>Response<textarea name=\"answer\" wrap=\"soft\" cols=\"10\" style=\"width:200px;font:16px monospace\">abcdefghijklmnopqrstuvwxyz</textarea></label></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "deferredChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "native": {
+        "source": {
+          "value": "abcdefghijklmnopqrstuvwxyz",
+          "payload": [
+            [
+              "answer",
+              "abcdefghijklmnopqrstuvwxyz"
+            ]
+          ],
+          "wrap": "soft",
+          "cols": 10,
+          "width": "100px",
+          "font": "16px monospace"
+        },
+        "candidate": {
+          "value": "abcdefghijklmnopqrstuvwxyz",
+          "payload": [
+            [
+              "answer",
+              "abcdefghijklmnopqrstuvwxyz"
+            ]
+          ],
+          "wrap": "soft",
+          "cols": 10,
+          "width": "200px",
+          "font": "16px monospace"
+        }
+      }
+    },
+    {
+      "id": "textarea-hard-color-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form><label>Response<textarea name=\"answer\" wrap=\"hard\" cols=\"10\" style=\"width:100px;font:16px monospace\">abcdefghijklmnopqrstuvwxyz</textarea></label></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form><label>Response<textarea name=\"answer\" wrap=\"hard\" cols=\"10\" style=\"color:navy;width:100px;font:16px monospace\">abcdefghijklmnopqrstuvwxyz</textarea></label></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.011764705882353,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "evidence": [
+        {
+          "totalChunks": 1,
+          "shippedOriginalChunks": 0,
+          "deferredChunks": 0,
+          "candidateRejectionCount": 0,
+          "candidateRejections": []
+        }
+      ],
+      "native": {
+        "source": {
+          "value": "abcdefghijklmnopqrstuvwxyz",
+          "payload": [
+            [
+              "answer",
+              "abcdefghijk\nlmnopqrstuv\nwxyz"
+            ]
+          ],
+          "wrap": "hard",
+          "cols": 10,
+          "width": "100px",
+          "font": "16px monospace"
+        },
+        "candidate": {
+          "value": "abcdefghijklmnopqrstuvwxyz",
+          "payload": [
+            [
+              "answer",
+              "abcdefghijk\nlmnopqrstuv\nwxyz"
+            ]
+          ],
+          "wrap": "hard",
+          "cols": 10,
+          "width": "100px",
+          "font": "16px monospace"
+        }
+      }
+    }
+  ]
+}

@@ -11,3 +11,5 @@ Verification: 58 focused tests passed across five files, including new exact-cur
 Evidence: `reports/chemistry-refinement-2026-09-06/titration-trace-tests.json`, `titration-trace-browser.cjs`, `titration-trace-browser-results.json`, and `titration-trace-*.jpg`.
 
 New interface labels use translation lookups and are included in the English catalog; language-pack translations remain a follow-up. Source and desktop public copies match. No deployment was performed. This pass adds a visualization of existing simulation data; it does not change the chemistry engine or provide headset VR.
+
+Follow-up: [Recent-volume close-up](titration-live-curve-window-2026-09-19.md) adds a moving 5 mL window with a fixed vertical scale, explicit equivalence visibility, and system colors for high-contrast graph readability.

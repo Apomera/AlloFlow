@@ -1,0 +1,17 @@
+{
+  "passed": 10,
+  "checks": [
+    "Ready follows mounted reflection",
+    "Generated examples never fill learner inputs",
+    "KWL can submit with Learned blank",
+    "Revision preserves the learner response",
+    "Keyboard moves between labeled reflection fields",
+    "Phone layout has no horizontal overflow",
+    "Changing learners does not expose another draft",
+    "Returning learner recovers their draft",
+    "CER offers evidence and reasoning writing",
+    "No browser runtime errors"
+  ],
+  "errors": [],
+  "scope": "Real Chromium, production renderer bundle and CSS, deterministic submission callback; provider verified separately by the LAN HTTP/SSE check."
+}

@@ -50,6 +50,7 @@ for(const width of [280,320,1200])test('external structure explorer at '+width,a
  }
  // Intrinsic sizing must also follow larger reading text without clipping.
  const readingStyle=await page.addStyleTag({content:'[data-cell-explanation-copy] p{font-size:20px!important}[data-cell-explanation-copy] h3{font-size:30px!important}'});
+ await expect(panel.locator('[data-cell-explanation-text]')).toHaveCSS('font-size','20px');
  const enlargedFooter=await footerTop();
  for(let i=0;i<count;i++){await next.click();expect(Math.abs(await footerTop()-enlargedFooter)).toBeLessThan(1);}
  await readingStyle.evaluate(e=>e.remove());

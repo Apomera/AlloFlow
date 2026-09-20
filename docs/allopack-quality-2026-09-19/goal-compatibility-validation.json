@@ -1,0 +1,34 @@
+{
+  "date": "2026-09-19",
+  "scope": "Native automatic-goal compatibility for generated text drafts and structural validation of current catalog goals.",
+  "catalog": {
+    "packs": 105,
+    "objectives": 385,
+    "errors": [],
+    "status": "passed"
+  },
+  "goalKinds": [
+    "manual",
+    "xp",
+    "game",
+    "visited",
+    "responded",
+    "completed",
+    "time"
+  ],
+  "outlineMappings": 13,
+  "affectedSuites": {
+    "files": 5,
+    "passed": 105,
+    "failed": 0
+  },
+  "broaderRun": {
+    "files": 7,
+    "passed": 157,
+    "failed": 6,
+    "remainingFailures": "Source-code assertions in directions_objectives.test.js (5) and directions_goal_capabilities.test.js (1); host/UI sources and those tests unchanged in this pass."
+  },
+  "desktopMirrorMatches": true,
+  "packArtworkChanged": false,
+  "livePublished": false
+}

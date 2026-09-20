@@ -1,0 +1,49 @@
+{
+  "opened": [
+    "solarPv",
+    "wind",
+    "hydro",
+    "geothermal",
+    "solarThermal",
+    "wave",
+    "tidal",
+    "biomass",
+    "storage"
+  ],
+  "audits": {
+    "desktop-preview": [],
+    "review-details": [],
+    "dark-preview": [],
+    "phone-390": [],
+    "phone-320": [],
+    "invalid.json": [],
+    "unrelated.json": [],
+    "oversized.json": [],
+    "flow-preview": []
+  },
+  "behavior": {
+    "realFileChooser": true,
+    "roundtripExport": true,
+    "notebookSelection": true,
+    "previewDoesNotMutate": true,
+    "cancelPreservesState": true,
+    "focusRestored": true,
+    "recalculatedOutput": true,
+    "preciseSettings": true,
+    "savedWorkPreserved": true,
+    "legacyExports": true,
+    "scenarioMinute": true,
+    "playbackPaused": true,
+    "untrustedTextEscaped": true,
+    "truncationExplained": true,
+    "partialInvalidFile": true,
+    "invalidFilesRejected": true,
+    "fileSizeLimit": true,
+    "staleAsyncReadIgnored": true,
+    "flowTo3d": true,
+    "mobileOverflow": false
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "sourceSha256": "5c27781fbb33c68a53b72fc79c94a4851c5006b22366adad279412dce39632d4"
+}

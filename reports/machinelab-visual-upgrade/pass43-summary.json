@@ -1,0 +1,29 @@
+{
+  "pass": 43,
+  "change": "Station tuning sliders",
+  "uiTests": 228,
+  "browserChecks": 384,
+  "themes": {
+    "light": {
+      "checks": 128,
+      "screenshots": 11,
+      "errors": [],
+      "overflow": false
+    },
+    "dark": {
+      "checks": 128,
+      "screenshots": 11,
+      "errors": [],
+      "overflow": false
+    },
+    "contrast": {
+      "checks": 128,
+      "screenshots": 11,
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "sourceMirrorIdentical": true,
+  "syntaxValid": true,
+  "localOnly": true
+}

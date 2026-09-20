@@ -1,0 +1,18 @@
+      {mbPanelOpen && (
+        <div ref={mailboxPanelRef} className="fixed inset-0 bg-black/70 z-[152] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label={t('mailbox.live_dialog_aria') || 'Class Mailbox live session'} onClick={() => setMbPanelOpen(false)}>
+          <ClassMailboxSetupView
+        __alloDisplayName="Class Mailbox"
+        __alloOverlay={false}
+        __alloOnClose={() => setMbPanelOpen(false)}
+        {...{
+        ClipboardList, Copy, ExternalLink, Eye, EyeOff, FolderDown, Maximize, Printer,
+        Sparkles, X, addDirectionsToPack, alloPersistMailboxConfig, closeAllMailboxSessions, connectMailbox, copyMailboxScriptSource, copyToClipboard,
+        deriveDirectionsDraft, directionsDeriving, exportMailboxConfig, importMailboxConfig, mailboxScriptState, mbAdminInput, mbBusy, mbConfig,
+        mbDirectionsDraft, mbHwEvidence, mbLive, mbMode, mbNow, mbQrSvg, mbResumable, mbRoster,
+        mbShowAdmin, mbStatus, mbUrlInput, openStudentQrPreview, printQrSheet, requestEndLiveSession, resumeMailboxLiveSession, retryMailboxScriptSource,
+        rotateMailboxAdmin, sendPackHome, setMbAdminInput, setMbConfig, setMbDirectionsDraft, setMbMode, setMbPanelOpen, setMbResumable,
+        setMbShowAdmin, setMbStatus, setMbUrlInput, setShowDirectionsComposer, setShowSessionModal, shareFullPackToMailbox, startMailboxLiveSession, t
+        }}
+      />
+        </div>
+      )}

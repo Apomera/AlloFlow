@@ -207,7 +207,7 @@ describe('Persona interview UI resilience', () => {
     expect(viewSource).toContain('h-[calc(100dvh-0.5rem)]');
     expect(viewSource).toContain('min-w-0 md:min-w-[320px]');
     expect(viewSource).toContain('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3');
-    expect(viewSource).toContain('max-h-[40vh] md:max-h-none');
+    expect(viewSource).toContain('max-h-[25vh] md:max-h-none');
     expect(viewSource).toContain('max-h-[calc(100dvh-1rem)]');
     expect(personaUiSource).toContain('aria-valuenow={safeScore}');
     expect(personaUiSource).toContain("t('persona.xp_progress', { name: characterName, xp })");

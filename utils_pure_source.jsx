@@ -221,14 +221,14 @@ const resolveUnitPathContext = (entries, plan) => {
 };
 
 const getAssetManifest = (historyItems, options = {}) => {
-    const assets = historyItems.filter(h =>
-        h && !['lesson-plan', 'udl-advice', 'alignment-report', 'gemini-bridge'].includes(h.type)
+    const assets = (Array.isArray(historyItems) ? historyItems : []).filter(h =>
+        h && typeof h.type === 'string' && h.type.trim() && !['lesson-plan', 'udl-advice', 'alignment-report', 'gemini-bridge'].includes(h.type)
     );
     if (assets.length === 0) return "No specific assets generated yet. Suggest general activities.";
     let manifest = "--- AVAILABLE ASSET INVENTORY (THE KIT) ---\n";
     assets.forEach(item => {
         const traceStart = manifest.length;
-        const title = item.title || "Untitled Resource";
+        const title = typeof item.title === "string" && item.title ? item.title : "Untitled Resource";
         let usage = "";
         switch(item.type) {
             case 'image': usage = "(Visual Anchor / Hook)"; break;
@@ -1288,6 +1288,84 @@ const capturePlanningInputs = (options = {}) => {
   };
 };
 
+
+// Compare each recorded contribution against that same resource, never today's latest
+// resource of a type. Reading selection depends on origin/role settings not in v1.
+const getPlanningInputStatus = (record, history) => {
+  const unavailable = () => ({ status: 'unavailable', summaries: [], inventory: [] });
+  if (!record || record.version !== 1 || !['teacher', 'study', 'family'].includes(record.mode)
+      || !['context-v1', 'local-excerpt-v1'].includes(record.projection)
+      || !Array.isArray(record.summaries) || !Array.isArray(record.inventory)) return unavailable();
+  const modules = window.AlloModules || {};
+  const hash = modules.ResourceContentFingerprint?.fingerprint;
+  const byId = new Map();
+  const idOf = value => typeof value === 'string' && value.trim() ? value
+    : typeof value === 'number' && Number.isFinite(value) ? String(value) : null;
+  if (Array.isArray(history)) history.forEach(item => {
+    const id = idOf(item?.id);
+    if (id !== null) byId.set(id, [...(byId.get(id) || []), item]);
+  });
+  const kinds = {
+    'Analysis summary': 'analysis', 'Target standards': 'alignment-report',
+    'Vocabulary terms': 'glossary', 'Visual support summary': 'image',
+    'Assessment summary': 'quiz', 'Writing scaffold summary': 'sentence-frames',
+    'Sequence summary': 'timeline', 'Concept sort summary': 'concept-sort',
+    'Adventure availability': 'adventure'
+  };
+  const traces = new Map();
+  const check = (entry, inventory) => {
+    const id = idOf(entry?.id);
+    if (!entry || id === null || id === '__input__' || !Array.isArray(history)) return { status: 'unavailable' };
+    const matches = byId.get(id) || [];
+    if (!matches.length) return { status: 'missing' };
+    if (matches.length > 1) return { status: 'ambiguous' };
+    const resource = matches[0];
+    if (typeof entry.type !== 'string' || resource.type !== entry.type) return { status: 'unavailable' };
+    if (typeof hash !== 'function' || typeof entry.fingerprint !== 'string'
+        || !/^af1:[a-f0-9]{16}$/.test(entry.fingerprint)) return { status: 'unavailable' };
+    try {
+      let text;
+      if (inventory) {
+        if (record.inventoryStatus !== 'recorded' || record.projection === 'local-excerpt-v1') return { status: 'unavailable' };
+        const entries = [];
+        getAssetManifest([resource], { trace: item => entries.push(item) });
+        if (entries.length !== 1) return { status: 'unavailable' };
+        text = entries[0].text;
+      } else {
+        if (!Object.prototype.hasOwnProperty.call(kinds, entry.kind) || kinds[entry.kind] !== resource.type
+            || !Number.isInteger(entry.characters) || entry.characters <= 0
+            || typeof entry.partial !== 'boolean') return { status: 'unavailable' };
+        if (!traces.has(id)) {
+          const context = modules.ExportHandlers?.getLessonContext;
+          if (typeof context !== 'function') return { status: 'unavailable' };
+          const entries = [];
+          context([resource], { inputText: '', targetStandards: [], trace: item => entries.push(item) });
+          traces.set(id, entries);
+        }
+        const entries = traces.get(id).filter(item => idOf(item.id) === id && item.kind === entry.kind);
+        if (entries.length !== 1) return { status: 'unavailable' };
+        text = String(entries[0].text || '');
+        // Same normalization and recorded contribution boundary as capturePlanningInputs.
+        if (record.projection === 'local-excerpt-v1') text = text.replace(/\\s+\\n/g, '\\n');
+        text = text.trim();
+        if (entry.partial) text = text.slice(0, entry.characters);
+      }
+      return { status: hash(text) === entry.fingerprint ? 'same' : 'changed' };
+    } catch (_) {
+      // Imported/malformed resources must not break the saved plan view.
+      return { status: 'unavailable' };
+    }
+  };
+  const summaries = record.summaries.map(entry => check(entry, false));
+  const inventory = record.inventory.map(entry => check(entry, true));
+  const all = summaries.concat(inventory);
+  const incomplete = record.traceComplete !== true || record.inventoryStatus === 'untraced'
+    || !['recorded', 'not-supplied', 'untraced'].includes(record.inventoryStatus);
+  const status = all.some(item => ['changed', 'missing', 'ambiguous'].includes(item.status)) ? 'attention'
+    : incomplete || !all.length || all.some(item => item.status === 'unavailable') ? 'unavailable' : 'same';
+  return { status, summaries, inventory };
+};
+
 // Logical source positions let saved diagrams retain their layout across static edits.
 const outlineNodeBlueprints = (data = {}) => {
   const nodes = [], links = [];
@@ -1439,6 +1517,7 @@ window.AlloModules.UtilsPure = {
   normalizeSuccessCriteria,
   resolveUnitPathContext,
   capturePlanningInputs,
+  getPlanningInputStatus,
   outlineNodeBlueprints,
   synchronizeSavedOutline,
   chunkObject,

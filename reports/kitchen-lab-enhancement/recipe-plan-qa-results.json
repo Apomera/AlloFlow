@@ -1,0 +1,23 @@
+{
+  "checks": [
+    "Comparison suggestion requires explicit adoption; editable plan starts without replacing earlier evidence, restores, stays text-safe, and appears in finished observations, replay, comparison, and downloaded evidence. Optional writing does not affect outcome or hint count.",
+    "Direct retry and challenge changes clear stale plans; a challenge can start with no written plan.",
+    "320px text-mode planning and kitchen controls work without overflow; normal recipe resets the rescue plan UI."
+  ],
+  "accessibility": [
+    {
+      "label": "Optional next-attempt plan launcher",
+      "issues": []
+    },
+    {
+      "label": "Finished plan and actual observations",
+      "issues": []
+    },
+    {
+      "label": "320px optional plan in text mode",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

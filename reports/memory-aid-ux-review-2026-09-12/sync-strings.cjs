@@ -6,9 +6,9 @@ const end=ui.indexOf('\n  },',start);
 if(start<0||end<0)throw Error('Memory string namespace not found');
 let block=ui.slice(start,end);
 const entries=new Map();
-for(const file of ['memory_aid_source.jsx','generate_dispatcher_source.jsx']){
+for(const file of ['memory_aid_source.jsx','generate_dispatcher_source.jsx','doc_pipeline_source.jsx']){
   const s=fs.readFileSync(path.join(root,file),'utf8');
-  const re=/\b(?:tr|T)\(\s*(['"])((?:memory_aid\.)?[a-z0-9_]+)\1\s*,\s*((?:'(?:\\.|[^'\\])*')|(?:"(?:\\.|[^"\\])*"))/g;
+  const re=/\b(?:tr|T|_maT)\(\s*(['"])((?:memory_aid\.)?[a-z0-9_]+)\1\s*,\s*((?:'(?:\\.|[^'\\])*')|(?:"(?:\\.|[^"\\])*"))/g;
   for(const m of s.matchAll(re)){const value=Function('return '+m[3])();entries.set(m[2].replace(/^memory_aid\./,''),value);}
 }
 const labels={ai_example_heading:'Your memory cue',facts_heading:'Facts to remember',visual_direction:'Describe your picture',feedback_request:'Check my connection',panel_build:'Build memory aids'};

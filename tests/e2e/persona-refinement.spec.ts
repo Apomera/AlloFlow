@@ -45,9 +45,14 @@ async function load(page: any, screen: string, config: any = {}) {
     for (const key of ['History', 'Sparkles', 'MessageCircleQuestion', 'CheckCircle2', 'Plus', 'RefreshCw', 'Users']) defaults[key] = w.LucideReact[key];
     Object.assign(defaults, config.props || {});
     Object.assign(defaults.personaState, config.state || {});
-    w.__calls = { sent: [], selected: [], started: 0, retries: 0 };
+    w.__calls = { sent: [], selected: [], started: 0, retries: 0, archiveLoads: 0, archiveDownloads: [], archiveDeletes: [] };
+    let archiveRows = config.archiveRows || [];
     function App() {
       const [current, setCurrent] = R.useState(defaults);
+      R.useEffect(() => {
+        const node = current.personaScrollRef?.current;
+        if (node && node.__alloStickToBottom !== false) node.scrollTop = node.scrollHeight;
+      }, [current.personaState.chatHistory]);
       w.__update = (patch: any) => setCurrent((prev: any) => ({ ...prev, ...patch, personaState: patch.personaState ? { ...prev.personaState, ...patch.personaState } : prev.personaState }));
       const p = { ...current,
         setPersonaState: (next: any) => setCurrent((prev: any) => ({ ...prev, personaState: typeof next === 'function' ? next(prev.personaState) : next })),
@@ -59,6 +64,30 @@ async function load(page: any, screen: string, config: any = {}) {
         handlePanelChatSubmit: (text: string) => w.__calls.sent.push(text),
         handleSelectPersona: (person: any) => w.__calls.selected.push(person.name),
         handleStartPanelChat: () => w.__calls.started++,
+        handleListPersonaSessionArchive: async () => {
+          w.__calls.archiveLoads++;
+          if (w.__calls.archiveLoads <= (config.archiveFailures || 0)) throw new Error('Storage temporarily unavailable');
+          return { sessions: archiveRows.slice(), unreadable: [] };
+        },
+        handleDownloadPersonaSessionArchive: async (key: string, format: string) => {
+          w.__calls.archiveDownloads.push({ key, format });
+          if (w.__calls.archiveDownloads.length <= (config.archiveDownloadFailures || 0)) {
+            if (config.archiveActionRejects) throw new Error('Download failed');
+            return null;
+          }
+          if (config.deferArchiveDownload) return await new Promise(resolve => { w.__finishArchiveDownload = resolve; });
+          return true;
+        },
+        handleDeletePersonaSessionArchive: async (key: string) => {
+          w.__calls.archiveDeletes.push(key);
+          if (w.__calls.archiveDeletes.length <= (config.archiveDeleteFailures || 0)) {
+            if (config.archiveActionRejects) throw new Error('Delete failed');
+            return null;
+          }
+          const ok = config.deferArchiveDelete ? await new Promise(resolve => { w.__finishArchiveDelete = resolve; }) : true;
+          if (ok === true) archiveRows = archiveRows.filter((row: any) => row.key !== key);
+          return ok;
+        },
         generatePanelFollowUps: async () => { w.__calls.retries++; }, generatePersonaFollowUps: async () => { w.__calls.retries++; },
         handleTogglePanelSelection: (person: any) => { const selected = current.personaState.selectedCharacters; w.__update({ personaState: { selectedCharacters: selected.some((p: any) => p.name === person.name) ? selected.filter((p: any) => p.name !== person.name) : selected.length < 2 ? [...selected, person] : selected } }); }
       };
@@ -184,3 +213,158 @@ test('long single interview hints wrap within a phone-sized card', async ({ page
   const hint = page.getByRole('button', { name: question.trim(), exact: true });
   expect(await hint.evaluate((el: HTMLElement) => el.getBoundingClientRect().width <= innerWidth)).toBe(true);
 });
+
+
+for (const mode of ['single', 'panel']) {
+  for (const width of [375, 1100]) {
+    test(mode + ' preserves reading position and returns to the latest reply at ' + width, async ({ page }, info) => {
+      await page.setViewportSize({ width, height: 850 });
+      const history = Array.from({ length: 16 }, (_, i) => ({ role: i % 2 ? 'model' : 'user', speakerName: i % 2 ? 'Ada Lovelace' : undefined, text: 'Conversation turn ' + i + '. ' + 'Compare the evidence and explain how it supports this perspective. '.repeat(3) }));
+      const errors = await load(page, 'chat', { state: { mode, chatHistory: history } });
+      const log = page.getByRole('log');
+      await expect.poll(() => log.evaluate((node: HTMLElement) => node.scrollHeight - node.scrollTop - node.clientHeight)).toBeLessThan(3);
+      await log.evaluate((node: HTMLElement) => { node.scrollTop = 30; node.dispatchEvent(new Event('scroll')); });
+      const control = page.locator('[data-persona-latest-control]');
+      await expect(control.getByRole('button', { name: 'Jump to latest', exact: true })).toBeVisible();
+      await expect(control.getByRole('button')).toBeInViewport();
+      await expect(page.locator('[data-persona-composer] textarea')).toBeInViewport();
+      expect(await log.evaluate((node: HTMLElement) => node.clientHeight)).toBeGreaterThanOrEqual(180);
+      if (mode === 'single' && width === 375) {
+        const details = page.locator('[data-persona-character-details]');
+        await expect(details).toHaveAttribute('aria-expanded', 'false');
+        await details.click();
+        await expect(details).toHaveAttribute('aria-expanded', 'true');
+        await expect(page.locator('#persona-character-profile')).toBeInViewport();
+        await expect(control.getByRole('button')).toBeInViewport();
+        await details.click();
+        await expect(page.locator('#persona-character-profile')).toBeHidden();
+      }
+      const before = await log.evaluate((node: HTMLElement) => node.scrollTop);
+      const updated = [...history, { role: 'model', speakerName: 'Ada Lovelace', text: 'A new reply arrived while you were reading earlier messages.' }];
+      await page.evaluate(history => (window as any).__update({ personaState: { chatHistory: history } }), updated);
+      await expect(control).toContainText('New reply');
+      expect(await log.evaluate((node: HTMLElement) => node.scrollTop)).toBe(before);
+      await axe(page);
+      await page.screenshot({ path: info.outputPath(mode + '-new-reply-' + width + '.png'), fullPage: true });
+      await control.getByRole('button').click();
+      await expect(log).toBeFocused();
+      await expect(control).toHaveCount(0);
+      await expect(log.getByText(updated.at(-1)!.text, { exact: false }).first()).toBeInViewport();
+      await page.evaluate(history => (window as any).__update({ personaState: { chatHistory: history } }), [...updated, { role: 'model', speakerName: 'Ada Lovelace', text: 'The next reply follows normally.' }]);
+      await expect.poll(() => log.evaluate((node: HTMLElement) => node.scrollHeight - node.scrollTop - node.clientHeight)).toBeLessThan(3);
+      expect(errors).toEqual([]);
+    });
+  }
+  test(mode + ' saved sessions restore focus and retry a failed load', async ({ page }, info) => {
+    await page.setViewportSize({ width: 375, height: 850 });
+    const errors = await load(page, 'chat', { state: { mode }, archiveFailures: 1 });
+    const trigger = page.getByRole('button', { name: strings.persona.archive_button, exact: true });
+    // Some browsers do not focus buttons on pointer activation.
+    await page.getByRole('textbox').focus();
+    await trigger.evaluate((node: HTMLElement) => node.click());
+    const archive = page.locator('[data-persona-archive-dialog]');
+    await expect(archive.getByRole('button', { name: strings.common.close, exact: true })).toBeFocused();
+    await expect(archive.getByRole('alert')).toContainText(strings.persona.archive_list_failed);
+    await archive.getByRole('button', { name: 'Retry loading saved sessions', exact: true }).click();
+    await expect(archive).toContainText(strings.persona.archive_empty);
+    await expect(archive.getByRole('button', { name: strings.common.close, exact: true })).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__calls.archiveLoads)).toBe(2);
+    await axe(page);
+    await page.screenshot({ path: info.outputPath(mode + '-saved-sessions.png'), fullPage: true });
+    await page.keyboard.press('Escape');
+    await expect(archive).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+    await trigger.click();
+    await archive.getByRole('button', { name: strings.common.close, exact: true }).click();
+    await expect(trigger).toBeFocused();
+    expect(errors).toEqual([]);
+  });
+}
+
+for (const mode of ['single', 'panel']) {
+  test(mode + ' saved session downloads recover and serialize rapid actions', async ({ page }, info) => {
+    await page.setViewportSize({ width: 375, height: 850 });
+    const rows = [
+      { key: 'one', title: 'Ada Lovelace: evidence and imagination', messageCount: 8, audioClips: 2, language: 'English' },
+      { key: 'two', title: 'Grace Hopper: exploring compilers', messageCount: 4, audioClips: 0 }
+    ];
+    const errors = await load(page, 'chat', { state: { mode }, archiveRows: rows, archiveDownloadFailures: 1, archiveActionRejects: mode === 'panel', deferArchiveDownload: true });
+    const trigger = page.getByRole('button', { name: strings.persona.archive_button, exact: true });
+    await trigger.click();
+    const archive = page.locator('[data-persona-archive-dialog]');
+    const row = archive.getByRole('listitem').nth(0), otherRow = archive.getByRole('listitem').nth(1);
+    const download = row.getByRole('button', { name: new RegExp('^' + strings.persona.archive_download_page) });
+    await download.click();
+    await expect(row.getByRole('alert')).toContainText('could not be downloaded');
+    await expect(download).toBeEnabled();
+    expect(await page.evaluate(() => (window as any).__calls.archiveDownloads)).toEqual([{ key: 'one', format: 'html' }]);
+    await download.evaluate((node: HTMLElement) => { node.click(); node.click(); });
+    await expect(row.getByRole('status')).toHaveText('Preparing download…');
+    await expect(row.getByRole('alert')).toHaveCount(0);
+    for (const button of await archive.getByRole('listitem').getByRole('button').all()) await expect(button).toBeDisabled();
+    await otherRow.getByRole('button').first().evaluate((node: HTMLElement) => node.click());
+    expect(await page.evaluate(() => (window as any).__calls.archiveDownloads)).toHaveLength(2);
+    await expect(download).toHaveAttribute('aria-busy', 'true');
+    await axe(page);
+    await page.screenshot({ path: info.outputPath(mode + '-archive-download-pending.png'), fullPage: true });
+    // Closing and reopening must preserve the pending lock and useful progress.
+    await page.keyboard.press('Escape');
+    await expect(trigger).toBeFocused();
+    await trigger.click();
+    await expect(download).toBeDisabled();
+    await expect(row.getByRole('status')).toHaveText('Preparing download…');
+    await page.evaluate(() => (window as any).__finishArchiveDownload(true));
+    await expect(row.getByRole('status')).toHaveText('Download started.');
+    await expect(download).toBeEnabled();
+    await expect(otherRow.getByRole('button').first()).toBeEnabled();
+    await expect(row.getByRole('alert')).toHaveCount(0);
+    // The file action uses the JSON format and participates in the same lock.
+    await row.getByRole('button', { name: new RegExp('^' + strings.persona.archive_download_file) }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__calls.archiveDownloads.at(-1))).toEqual({ key: 'one', format: 'json' });
+    await page.evaluate(() => (window as any).__finishArchiveDownload(true));
+    await expect(download).toBeEnabled();
+    expect(errors).toEqual([]);
+  });
+  test(mode + ' saved session deletion can cancel and recover with focus intact', async ({ page }, info) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    const errors = await load(page, 'chat', { state: { mode }, archiveRows: [{ key: 'one', title: 'Ada Lovelace: evidence and imagination', messageCount: 8, audioClips: 2 }], archiveDeleteFailures: 1, archiveActionRejects: mode === 'panel', deferArchiveDelete: true });
+    await page.getByRole('button', { name: strings.persona.archive_button, exact: true }).click();
+    const archive = page.locator('[data-persona-archive-dialog]'), row = archive.getByRole('listitem');
+    const remove = row.getByRole('button', { name: new RegExp('^' + strings.persona.archive_delete + ':') });
+    const confirm = row.getByRole('button', { name: new RegExp('^' + strings.persona.archive_delete_confirm) });
+    await remove.click();
+    await expect(row).toContainText('This cannot be undone.');
+    await expect(confirm).toBeVisible();
+    expect(await page.evaluate(() => (window as any).__calls.archiveDeletes)).toEqual([]);
+    await axe(page);
+    await page.screenshot({ path: info.outputPath(mode + '-archive-delete-confirm.png'), fullPage: true });
+    await row.getByRole('button', { name: 'Cancel deletion', exact: true }).click();
+    await expect(remove).toBeFocused();
+    await expect(confirm).toHaveCount(0);
+    await remove.click();
+    await row.getByRole('button', { name: new RegExp('^' + strings.persona.archive_download_page) }).click();
+    await expect(confirm).toHaveCount(0);
+    await expect(row.getByRole('status')).toHaveText('Download started.');
+    await remove.click();
+    await confirm.click();
+    await expect(row.getByRole('alert')).toContainText('could not be deleted');
+    await expect(row).toHaveCount(1);
+    await expect(confirm).toHaveCount(0);
+    await expect(remove).toBeEnabled();
+    await axe(page);
+    await page.screenshot({ path: info.outputPath(mode + '-archive-delete-failed.png'), fullPage: true });
+    await remove.click();
+    await confirm.evaluate((node: HTMLElement) => { node.click(); node.click(); });
+    await expect(row.getByRole('status')).toHaveText('Deleting session…');
+    await expect(row.getByRole('alert')).toHaveCount(0);
+    for (const button of await row.getByRole('button').all()) await expect(button).toBeDisabled();
+    expect(await page.evaluate(() => (window as any).__calls.archiveDeletes)).toEqual(['one', 'one']);
+    await page.evaluate(() => (window as any).__finishArchiveDelete(true));
+    await expect(archive).toContainText(strings.persona.archive_empty);
+    await expect(archive.getByRole('button', { name: strings.common.close, exact: true })).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__calls.archiveLoads)).toBe(2);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await axe(page);
+    expect(errors).toEqual([]);
+  });
+}

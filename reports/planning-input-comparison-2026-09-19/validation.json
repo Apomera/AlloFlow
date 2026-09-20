@@ -1,0 +1,18 @@
+{
+  "date": "2026-09-19",
+  "passed": 138,
+  "files": 3,
+  "browserCases": 12,
+  "browserErrors": 0,
+  "axeViolations": 0,
+  "hashes": {
+    "utils_pure_module.js": "4c9f495ca735c06d47078ece18cdc1b95be77353a76a6adbd943d316b7eeb8da",
+    "view_lesson_plan_module.js": "84e5f0662cb7ef9a0651a56cce85642561a05cf02d221f9ba164a2bbc37b9980"
+  },
+  "hosts": [
+    "AlloFlowANTI.txt",
+    "desktop/web-app/src/AlloFlowANTI.txt",
+    "desktop/web-app/src/App.jsx"
+  ],
+  "whitespace": "passed"
+}

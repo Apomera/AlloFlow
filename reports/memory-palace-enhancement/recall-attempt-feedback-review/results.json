@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "eachRetryUpdatesLiveText": true,
+  "typingFocusPreserved": true,
+  "attemptsRestorePerStop": true,
+  "untouchedStopsClear": true,
+  "successClears": true,
+  "newReviewResets": true,
+  "scoringUnchanged": true,
+  "widths": [
+    1280,
+    390,
+    320
+  ],
+  "pageErrors": []
+}

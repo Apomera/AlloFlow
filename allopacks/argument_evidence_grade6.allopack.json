@@ -8,7 +8,8 @@
     "gradeLevel": "6th Grade",
     "standards": "CCSS.ELA-LITERACY.RI.6.8 (trace and evaluate the argument and specific claims in a text, distinguishing claims that are supported by reasons and evidence from claims that are not); CCSS.ELA-LITERACY.W.6.1 (write arguments to support claims with clear reasons and relevant evidence); CCSS.ELA-LITERACY.RI.6.1 (cite textual evidence to support analysis of what the text says explicitly as well as inferences drawn from the text)",
     "createdAt": "2026-09-06T00:30:00.000Z",
-    "imageShotList": "allopacks/argument_evidence_grade6.IMAGES.md"
+    "imageShotList": "allopacks/argument_evidence_grade6.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Evaluating Arguments: Claim, Evidence, Reasoning",
   "history": [
@@ -18,7 +19,7 @@
       "title": "Take It Apart",
       "timestamp": "2026-09-06T00:30:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nMost bad arguments are not lies. They are true facts stapled to a claim they do not actually support. This week you learn to spot the gap, and to stop leaving one in your own writing.\n\n1. Read **Says Who?**\n2. Learn the words in **Argument Words**, then win the **Crossword** and the **Matching** game.\n3. Keep the **Three Parts, Two Gaps** chart open while you read anything.\n4. Trace **How an Argument Holds Together** before the quiz.\n5. Sort the cards in **Claim, Evidence, or Reasoning?**\n6. Use the **Argument Frames** out loud before you write.\n7. Take **Argument Check**.\n8. Lock it in with **Remember the Three Parts**.\n9. Read **Argument Questions Kids Ask**.\n10. Finish with **Decide: Which Argument Should the School Act On?**\n\nYour job this week: find one real argument — an advert, a headline, a group chat — and name its three parts, or say which one is missing. 🧩",
+        "body": "**Due:** (your teacher will tell you)\n\nMost bad arguments are not lies. They are true facts stapled to a claim they do not actually support. This week you learn to spot the gap, and to stop leaving one in your own writing.\n\n1. Read **Says Who?**\n2. Learn the words in **Argument Words**, then win the **Crossword** and the **Matching** game.\n3. Keep the **Three Parts, Two Gaps** chart open while you read anything.\n4. Trace **How an Argument Holds Together** before the quiz.\n5. Sort the cards in **Claim, Evidence, or Reasoning?**\n6. Use the **Argument Frames** out loud before you write.\n7. Take **Argument Check**.\n8. Lock it in with **Remember the Three Parts**.\n9. Read **Argument Questions Kids Ask**.\n10. Finish with **Decide: Which Argument Should the School Act On?**\n\nYour job this week: find one real argument — an advert, a headline, a group chat — and name its three parts, or say which one is missing. 🧩\n\nSort by each sentence’s stated role in the three fictional proposals. All numbers here are invented classroom data. An evidence statement can also be a factual assertion outside its supporting role.",
         "objectives": [
           {
             "id": "ag-goal-crossword",
@@ -54,8 +55,8 @@
       "type": "simplified",
       "title": "Says Who?",
       "timestamp": "2026-09-06T00:30:01.000Z",
-      "data": "## Says Who?\n\n\"Our school should start later. Teenagers are tired.\"\n\nThat sounds fine. It is also missing a piece, and once you can see the missing piece you will see it everywhere.\n\nAn argument has three parts.\n\nA **claim** is what someone wants you to believe. It is arguable: a reasonable person could disagree with it. \"School should start later\" is a claim. \"School starts at 8:15\" is not a claim, it is a **fact**.\n\n**Evidence** is the information offered to back the claim up: data, an example, a quotation, an observation. Good evidence is **relevant**, meaning it actually bears on this claim and not merely on the topic.\n\n**Reasoning** is the explaining that connects the two. It answers: *so what?* Why does this evidence make that claim more likely?\n\nMost weak arguments have a claim and evidence and no reasoning. Look again at the school example. Teenagers being tired is real. But tired *why*? If teenagers are tired because of biology — and sleep research does find that adolescent body clocks shift later — then a later start helps. If they are tired because of screens at midnight, a later start might just move the problem. The evidence does not choose between those. Only reasoning does, and the argument did not offer any.\n\nThat gap is the most common weakness in real arguments, including yours.\n\nThere is a second gap. An argument that never mentions the other side is easy to write and easy to knock down. A **counterclaim** is the strongest objection someone could make, stated fairly, and then answered. Including one makes an argument harder to dismiss, not weaker, because a reader who was already thinking it can see you were not hiding.\n\nSo when you read an argument, take it apart. What is the claim? What is the evidence? Is there reasoning, or just a gap where reasoning should be? Has the other side been mentioned at all?\n\nAnd here is the uncomfortable part. Run those questions on something you already agree with. A conclusion you like can still be badly argued, and noticing that is the whole skill.",
-      "meta": "6th Grade • Leveled reading • ~370 words",
+      "data": "## Says Who?\n\n“We should keep the library open until five.” This is a **claim**: a statement the writer wants us to accept. It calls for an action. A claim can also be about a **fact**, such as the library's closing time. Facts and claims are not opposites.\n\nAn **argument** gives support for a claim. **Evidence** is information used as support. It can be a record, an observation, an example or an exact quote. **Reasoning** explains how the evidence supports the claim. It also shows the limits of that link.\n\nTry this made-up case. A school has 120 students in one year group. In a week, a librarian records 40 different students using the library after three. These are invented numbers for practice, not research results.\n\nA writer wants later opening hours. Forty is one third of 120. The record shows that some students use the library after school. It does not show that all 40 want to stay until five. It also says nothing about staffing costs. The writer needs more evidence for those points.\n\nHere is another made-up case. Six of eleven team members have a fixed plan on Tuesdays. That supports a claim that Tuesday practice is hard for many to attend. It does not show that Thursday is better. Check their plans for Thursday too. Reasoning cannot take the place of missing evidence.\n\nA **counterclaim** is an opposing claim. A person may also question the evidence or the link between it and the claim. Give a fair account of a strong objection. A **rebuttal** responds with reasons and evidence. It may admit a limit or lead the writer to change the claim.\n\nA fact is something that is the case. A statement that claims to be a fact still needs checking. An **opinion** is a belief, judgment or preference. An opinion about school policy can have good reasons behind it. Calling it an opinion does not settle the debate.\n\nEvidence is **relevant** when it bears on the exact claim. The wall color will not settle how late the library should stay open. Check the **source**, how the information was gathered, and what else might explain it. Check arguments you agree with too.\n\nIn the sort, read each statement's role in its made-up case. A statement can serve as evidence even though someone is also claiming it is true. Use the words as well as the picture.",
+      "meta": "6th Grade • Leveled reading",
       "imageSlot": "ag-img-three-parts"
     },
     {
@@ -66,52 +67,52 @@
       "data": [
         {
           "term": "Argument",
-          "def": "A case built to persuade, made of a claim with support.",
+          "def": "A reasoned case offering support for a claim.",
           "tier": "Academic"
         },
         {
           "term": "Claim",
-          "def": "What the writer wants you to believe, which someone could disagree with.",
+          "def": "A statement someone wants others to accept. It can be about a fact, a value or an action.",
           "tier": "Academic"
         },
         {
           "term": "Evidence",
-          "def": "Information offered to back up a claim: data, examples, or quotations.",
+          "def": "Information used to support a claim. Check whether it is sound and fits the question.",
           "tier": "Academic"
         },
         {
           "term": "Reasoning",
-          "def": "The explaining that shows why the support makes the claim likely.",
+          "def": "An explanation of how evidence supports a claim and where that link has limits.",
           "tier": "Academic"
         },
         {
           "term": "Counterclaim",
-          "def": "The strongest objection from the other side, stated fairly.",
+          "def": "A claim that opposes another claim.",
           "tier": "Academic"
         },
         {
           "term": "Fact",
-          "def": "Something checkable that a reasonable person could not dispute.",
+          "def": "Something that is the case. Check the evidence for a statement that claims to be a fact.",
           "tier": "Academic"
         },
         {
           "term": "Opinion",
-          "def": "A preference, which needs no support and settles nothing.",
+          "def": "A belief, judgment or preference. It may have reasons behind it.",
           "tier": "Academic"
         },
         {
           "term": "Relevant",
-          "def": "Actually bearing on this claim, not merely on the same topic.",
+          "def": "Related to the exact claim or question being discussed.",
           "tier": "Academic"
         },
         {
           "term": "Source",
-          "def": "Where a piece of information came from originally.",
+          "def": "Where information comes from, such as a person, text or record.",
           "tier": "Domain-Specific"
         },
         {
           "term": "Rebuttal",
-          "def": "The answer a writer gives to the objection they raised.",
+          "def": "A response to an opposing claim or objection, backed by reasons.",
           "tier": "Domain-Specific"
         }
       ],
@@ -129,47 +130,47 @@
           {
             "label": "1 · THE CLAIM",
             "bullets": [
-              "What do they want me to believe?",
-              "Could a reasonable person disagree? If not, it is a fact",
-              "A preference with no support is only an opinion"
+              "Identify the statement being put forward",
+              "Distinguish a factual assertion, value judgment and proposed action",
+              "Facts can be asserted as claims"
             ],
-            "iconPrompt": "a single flag planted at the top of a small hill"
+            "iconPrompt": "Text-free concept support; use the attached image description and editable section text."
           },
           {
             "label": "2 · THE EVIDENCE",
             "bullets": [
-              "What information is offered as support?",
-              "Is it relevant to THIS claim, or just the topic?",
-              "Where did it come from? Name the source"
+              "Locate the information offered as support",
+              "Check its relevance and reliability",
+              "Identify and inspect the source"
             ],
-            "iconPrompt": "three stones stacked under the flag"
+            "iconPrompt": "Text-free concept support; use the attached image description and editable section text."
           },
           {
             "label": "3 · THE REASONING",
             "bullets": [
-              "So what? Why does this evidence support that claim?",
-              "This is the part most often missing",
-              "Without it, true facts can sit beside a claim they do not prove"
+              "Explain how the information bears on the claim",
+              "State assumptions and limits",
+              "A plausible link may still need more evidence"
             ],
-            "iconPrompt": "a plank bridging a gap between two rocks"
+            "iconPrompt": "Text-free concept support; use the attached image description and editable section text."
           },
           {
             "label": "GAP ONE · NO REASONING",
             "bullets": [
-              "Claim and evidence, nothing joining them",
-              "Ask: could this evidence fit a different conclusion?",
-              "If yes, the argument has not done its work"
+              "Find the missing connection",
+              "Consider alternative explanations",
+              "Do not use reasoning as a substitute for missing data"
             ],
-            "iconPrompt": "two rocks with an empty gap between them"
+            "iconPrompt": "Text-free concept support; use the attached image description and editable section text."
           },
           {
             "label": "GAP TWO · NO OTHER SIDE",
             "bullets": [
-              "The strongest objection is never mentioned",
-              "Naming it and answering it makes you harder to dismiss",
-              "Hiding it only works on readers who were not thinking"
+              "State a strong relevant objection fairly",
+              "Respond with reasons, evidence or a revision",
+              "An unanswered objection may limit a conclusion"
             ],
-            "iconPrompt": "a coin showing one face with the other face shadowed"
+            "iconPrompt": "Text-free concept support; use the attached image description and editable section text."
           }
         ]
       },
@@ -181,58 +182,58 @@
       "title": "How an Argument Holds Together",
       "timestamp": "2026-09-06T00:30:04.000Z",
       "data": {
-        "structureType": "Key Concept Map",
-        "main": "Claim, evidence, reasoning — and the two places arguments break",
+        "main": "Examine a claim, its support and its limits",
         "branches": [
           {
-            "title": "The claim",
+            "title": "Claim",
             "items": [
-              "What the writer wants you to believe",
-              "Arguable: a reasonable person could disagree",
-              "Not a fact (checkable, undisputed) and not a bare opinion (a preference)"
+              "Identify what the writer wants accepted",
+              "Claims can concern facts, values or actions",
+              "An opinion can be argued for"
             ]
           },
           {
-            "title": "The evidence",
+            "title": "Evidence",
             "items": [
-              "Data, an example, a quotation, an observation",
-              "Must be relevant to this claim, not merely on the topic",
-              "Ask where it came from: the source matters"
+              "Locate records, observations, examples or quotations",
+              "Check relevance and reliability",
+              "Name the source"
             ]
           },
           {
-            "title": "The reasoning",
+            "title": "Reasoning",
             "items": [
-              "Answers the question: so what?",
-              "Explains why this evidence makes that claim more likely",
-              "The part most often missing in real arguments"
+              "Explain the connection to this claim",
+              "State assumptions",
+              "Do not stretch the conclusion beyond the evidence"
             ]
           },
           {
-            "title": "Gap one: evidence without reasoning",
+            "title": "A missing connection",
             "items": [
-              "\"Teenagers are tired\" is true and does not settle the start time",
-              "Tired from biology points one way; tired from late screens points another",
-              "Test: could this same evidence support a different conclusion?"
+              "Library use does not by itself establish an ideal closing time",
+              "Team absence on Tuesday does not prove Thursday works",
+              "Ask what additional information is needed"
             ]
           },
           {
-            "title": "Gap two: no counterclaim",
+            "title": "Counterclaims and rebuttals",
             "items": [
-              "The strongest objection is never named",
-              "Stating it fairly and answering it is a rebuttal",
-              "It makes the argument harder to dismiss, not weaker"
+              "Represent a relevant opposing claim fairly",
+              "Answer with support",
+              "Revise when an objection identifies a real problem"
             ]
           },
           {
-            "title": "The hardest move",
+            "title": "Fair evaluation",
             "items": [
-              "Run all of it on an argument you already agree with",
-              "A conclusion you like can still be badly argued",
-              "Noticing that is the whole skill"
+              "Check arguments you agree with too",
+              "Separate a preferred outcome from the strength of its case",
+              "Explain uncertainty instead of hiding it"
             ]
           }
-        ]
+        ],
+        "structureType": "Key Concept Map"
       },
       "meta": "6 branches • concept map • three parts and two failure modes"
     },
@@ -245,7 +246,7 @@
       "data": {
         "schemaVersion": 2,
         "title": "Remember the Three Parts",
-        "instructions": "Two cards hold the moves. Study the example, build one of your own, then say what it catches that you would otherwise miss.",
+        "instructions": "Study each accurate memory aid, adapt it, and check your version against the reading. You may respond in writing, speech, AAC or another accessible format.",
         "selectionMode": "manual",
         "selectedTypes": [
           "analogy-pattern",
@@ -254,7 +255,7 @@
         "authorshipMode": "scaffolded",
         "reflectionLevel": "quick",
         "reasoningRequired": false,
-        "sourceExcerpt": "Most weak arguments have a claim and evidence and no reasoning. Reasoning is the explaining that connects the two. It answers: so what?",
+        "sourceExcerpt": "A claim states what is put forward for acceptance. Ask how the evidence bears on the claim.",
         "lessonRef": {
           "resourceId": "ag-reading",
           "title": "Says Who?"
@@ -262,62 +263,62 @@
         "cards": [
           {
             "id": "ag-ma-bridge",
-            "target": "Why reasoning is a separate part, not an optional extra",
+            "target": "Connect claim, evidence and reasoning",
             "essentialFacts": [
-              "A claim is what the writer wants you to believe.",
-              "Evidence is the information offered to support it.",
-              "Reasoning explains why that evidence supports that claim.",
-              "Most weak arguments have the first two and not the third."
+              "A claim states what is put forward for acceptance.",
+              "Evidence is information offered as support.",
+              "Reasoning explains the connection and its limits.",
+              "Missing information still requires evidence."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "analogy-pattern",
             "mode": "scaffolded",
-            "aiExample": "Two rocks and a plank. The claim is one rock, the evidence is the other, and the reasoning is the plank across the gap. Two rocks and no plank is not a bridge, however solid the rocks are.",
-            "mapping": "The picture makes the missing piece visible. You can see a gap; you cannot see an absent explanation, which is why the gap goes unnoticed in real writing.",
-            "scaffoldStarter": "The claim is ____. The evidence is ____. The plank between them says ____.",
+            "aiExample": "Two supports and a plank: one support is the evidence, one is the claim, and the plank is the explanation.",
+            "mapping": "A visible gap helps remember a missing explanation; a drawn bridge does not make an explanation valid.",
+            "scaffoldStarter": "The evidence is ____. It supports ____ because ____, within these limits: ____.",
             "scaffoldSteps": [
-              "Name the claim and the evidence.",
-              "Say out loud what joins them.",
-              "If you cannot, you have found the gap."
+              "Name the idea and a specific example.",
+              "Explain how the aid represents the idea.",
+              "Check where the comparison or shortcut stops working."
             ],
             "coachPrompts": [
-              "Could that same evidence hold up a different rock entirely?"
+              "What part of the source supports your example?"
             ],
-            "studentPrompt": "Build your own picture for the three parts.",
-            "reasoningPrompt": "How does your picture make a missing part visible?",
+            "studentPrompt": "Make an accurate memory aid for this idea.",
+            "reasoningPrompt": "Explain the connection and one limitation of your aid.",
             "hookFact": {
-              "text": "Teenagers being tired is real. But tired why? The evidence does not choose between those.",
+              "text": "A claim states what is put forward for acceptance.",
               "sourceTitle": "Says Who? (this lesson)"
             }
           },
           {
             "id": "ag-ma-sowhat",
-            "target": "The two questions that test any argument",
+            "target": "Check the connection and objections",
             "essentialFacts": [
-              "Reasoning answers the question: so what?",
-              "A counterclaim is the strongest objection, stated fairly and answered.",
-              "An argument that never mentions the other side is easy to dismiss."
+              "Ask how the evidence bears on the claim.",
+              "A counterclaim opposes the claim; a rebuttal responds.",
+              "A fair response can acknowledge limits or revise a claim."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "keyword-association",
             "mode": "scaffolded",
-            "aiExample": "SO WHAT, AND WHO DISAGREES. Two questions, asked in that order. The first hunts for missing reasoning. The second hunts for a missing counterclaim.",
-            "mapping": "Two short questions map onto the two gaps, so running them in order checks both failure modes without needing to remember any theory.",
-            "scaffoldStarter": "So what? ____. Who disagrees? ____.",
+            "aiExample": "How does it follow? What might challenge it? These questions direct attention to reasoning and objections.",
+            "mapping": "The questions prompt evaluation; answering them still requires checking the actual sources.",
+            "scaffoldStarter": "The connection is ____. A relevant objection is ____. My response is ____.",
             "scaffoldSteps": [
-              "Ask so what of the evidence.",
-              "Ask who would disagree, and how strongly.",
-              "Say which of the two the argument failed."
+              "Name the idea and a specific example.",
+              "Explain how the aid represents the idea.",
+              "Check where the comparison or shortcut stops working."
             ],
             "coachPrompts": [
-              "Which question is harder to ask about an argument you agree with?"
+              "What part of the source supports your example?"
             ],
-            "studentPrompt": "Make your own pair of questions for the two gaps.",
-            "reasoningPrompt": "Why does asking who disagrees make an argument stronger rather than weaker?",
+            "studentPrompt": "Make an accurate memory aid for this idea.",
+            "reasoningPrompt": "Explain the connection and one limitation of your aid.",
             "hookFact": {
-              "text": "A conclusion you like can still be badly argued, and noticing that is the whole skill.",
+              "text": "Ask how the evidence bears on the claim.",
               "sourceTitle": "Says Who? (this lesson)"
             }
           }
@@ -350,47 +351,47 @@
         "items": [
           {
             "id": "ag1",
-            "content": "The library should stay open until five o'clock.",
+            "content": "Library proposal: the library should stay open until five.",
             "categoryId": "ag-claim"
           },
           {
             "id": "ag2",
-            "content": "Every sixth grader should learn to cook a meal.",
+            "content": "Cooking proposal: the school should offer a basic cooking club.",
             "categoryId": "ag-claim"
           },
           {
             "id": "ag3",
-            "content": "Our team should practise on Thursdays instead.",
+            "content": "Team proposal: our team should practise on Thursdays instead.",
             "categoryId": "ag-claim"
           },
           {
             "id": "ag4",
-            "content": "Forty students used the library after three last week.",
+            "content": "Fictional library record offered as support: 40 of the year group’s 120 students used the library after three last week.",
             "categoryId": "ag-ev"
           },
           {
             "id": "ag5",
-            "content": "Our class survey found 19 of 28 families eat out weekly.",
+            "content": "Fictional cooking survey offered as support: 19 of 28 respondents said they would join a cooking club.",
             "categoryId": "ag-ev"
           },
           {
             "id": "ag6",
-            "content": "Six of our eleven players have jobs on Tuesdays.",
+            "content": "Fictional team record offered as support: six of eleven players report a fixed commitment on Tuesdays.",
             "categoryId": "ag-ev"
           },
           {
             "id": "ag7",
-            "content": "That number matters because it is a third of the year group.",
+            "content": "Library explanation: serving one third of the year group suggests after-school access matters, though we still need demand data for later hours.",
             "categoryId": "ag-reas"
           },
           {
             "id": "ag8",
-            "content": "If most players cannot come, the practice is barely worth holding.",
+            "content": "Team explanation: when many players cannot attend, changing the time could improve participation; Thursday availability still needs checking.",
             "categoryId": "ag-reas"
           },
           {
             "id": "ag9",
-            "content": "Eating out often is why the cooking skill has to be taught.",
+            "content": "Cooking explanation: expressed interest suggests a club could attract participants, but interest alone does not establish cost or attendance.",
             "categoryId": "ag-reas"
           }
         ]
@@ -437,27 +438,27 @@
         "questions": [
           {
             "type": "mcq",
-            "question": "\"Our school should start later. Teenagers are tired.\" What is missing?",
+            "question": "Fictional argument: “Keep the library open until five. Forty students used it after three.” What is missing?",
             "options": [
-              "The reasoning, since nothing explains why that follows",
-              "The claim, since no position has been taken here",
-              "The evidence, since nothing factual has been offered",
-              "Nothing is missing; the argument is complete as written"
+              "A link from current use to later hours, with limits",
+              "A description of a policy the writer wants adopted",
+              "A record showing that students use the library",
+              "Nothing; current use settles the best closing time"
             ],
-            "correctAnswer": "The reasoning, since nothing explains why that follows",
+            "correctAnswer": "A link from current use to later hours, with limits",
             "conceptLabel": "reasoning is the missing part"
           },
           {
             "type": "mcq",
-            "question": "Which of these is a claim rather than a fact?",
+            "question": "Which statement proposes an action rather than asserting a current fact?",
             "options": [
-              "The school day currently begins at 8:15 each morning",
-              "The school day should begin an hour later than it does",
-              "Sixty-two students arrived after the bell last Tuesday",
-              "The bus from the north side arrives at 7:52 each day"
+              "The posted opening time is 8:15",
+              "The timetable lists a bus at 7:52",
+              "The record lists 62 student visits",
+              "The library should stay open later"
             ],
-            "correctAnswer": "The school day should begin an hour later than it does",
-            "conceptLabel": "claims are arguable"
+            "correctAnswer": "The library should stay open later",
+            "conceptLabel": "types of claims"
           },
           {
             "type": "mcq",
@@ -473,32 +474,32 @@
           },
           {
             "type": "mcq",
-            "question": "Why does including a counterclaim make an argument stronger?",
+            "question": "What can a well-supported response to a relevant counterclaim do?",
             "options": [
-              "It shows the writer is being fair to both of the sides",
-              "It makes the writing longer and therefore more thorough",
-              "It lets the writer avoid taking a firm position at all",
-              "A reader already thinking the objection sees it answered"
+              "Make all readers agree with the claim",
+              "Remove the need to check the evidence",
+              "Explain how it handles a serious objection",
+              "Prove that every opposing view is false"
             ],
-            "correctAnswer": "A reader already thinking the objection sees it answered",
+            "correctAnswer": "Explain how it handles a serious objection",
             "conceptLabel": "counterclaims strengthen"
           },
           {
             "type": "mcq",
-            "question": "What is the best test of whether evidence really supports a claim?",
+            "question": "Which is the most thorough way to evaluate support?",
             "options": [
-              "Check whether the evidence comes from a trusted source",
-              "Ask whether the same evidence would fit another conclusion",
-              "Count how many pieces of evidence the writer gives you",
-              "See whether the evidence appears early in the writing"
+              "Trust familiar sources and ignore other accounts",
+              "Check sources, relevance, reasoning and other explanations",
+              "Count examples without checking how they were gathered",
+              "Trust the evidence that appears first in the argument"
             ],
-            "correctAnswer": "Ask whether the same evidence would fit another conclusion",
+            "correctAnswer": "Check sources, relevance, reasoning and other explanations",
             "conceptLabel": "reasoning is the missing part"
           },
           {
             "type": "shortAnswer",
-            "question": "Take this argument apart: \"We should ban phones at lunch. Phone use among teenagers has risen sharply.\" Name the claim, the evidence, and what is missing.",
-            "expectedAnswer": "The claim is that phones should be banned at lunch. The evidence is that phone use among teenagers has risen sharply. The reasoning is missing: nothing explains why rising use means a lunchtime ban would help. The same evidence would fit teaching phone habits, or doing nothing at all.",
+            "question": "Fictional argument: “We should ban phones at lunch. Our survey reports increased phone use.” Identify the claim and offered evidence, and explain what still needs checking.",
+            "expectedAnswer": "The claim recommends a lunchtime ban. The offered evidence is a reported increase in use. Check the survey and whether it concerns lunch, explain the claimed problem, and evaluate evidence about the proposed response. An increase alone does not establish that a ban would help.",
             "conceptLabel": "reasoning is the missing part"
           },
           {
@@ -527,27 +528,27 @@
       "data": [
         {
           "question": "Is an opinion just a weak claim? 🤔",
-          "answer": "Not quite. An opinion is a preference, like liking a colour, and it needs no support because nothing could settle it. A claim invites support and can be argued about. \"Blue is nicer\" is an opinion. \"We should paint the hall blue\" is a claim."
+          "answer": "An opinion can be a belief, judgment or preference. It can have good reasons behind it. A claim may be about a fact or an action, so facts and claims are not opposites."
         },
         {
           "question": "Can evidence be true and still be bad evidence?",
-          "answer": "Yes, and this is the useful idea in the whole unit. Evidence can be perfectly true and simply not bear on the claim. True is not the same as relevant."
+          "answer": "Yes. A true detail may not help answer the question. First check that it is true. Then ask how it supports this claim."
         },
         {
           "question": "Does more evidence always make an argument stronger? 📊",
-          "answer": "No. Ten pieces of loosely related evidence are weaker than one that clearly fits, and a long list can hide the fact that none of it is doing the work."
+          "answer": "No. Check the quality and fit of the evidence. A pile of weak examples may still leave a gap."
         },
         {
           "question": "What if I cannot find a counterclaim?",
-          "answer": "Then look harder, or your claim may not be arguable. If literally nobody could disagree, you have written a fact, and there is nothing left to argue."
+          "answer": "Look for a serious objection or another way to explain the evidence. Do not invent an equal case for both sides when the evidence does not support that."
         },
         {
           "question": "Is it fine to argue for something I do not believe? 🎭",
-          "answer": "In practice, yes, and it is good training. Building the best case for a position you dislike is the fastest way to find out whether your own reasons hold up."
+          "answer": "A class task may ask you to study a view you do not hold. Explain it fairly. Make clear that it is an exercise, and do not make up support."
         },
         {
           "question": "Do adults get this wrong too?",
-          "answer": "Constantly. Adverts, headlines and political speeches lean on real facts that do not support the conclusion drawn. Once you can see the gap, you cannot stop seeing it."
+          "answer": "Yes. People of any age can miss a weak link. Check the specific argument and its evidence."
         }
       ],
       "meta": "6 questions • the opinion answer draws a line most worksheets blur"
@@ -569,21 +570,21 @@
         "scope": "standard",
         "brief": {
           "family": "decide",
-          "context": "Your school has one pot of money and four written proposals asking for it: longer library hours, new sports equipment, a cooking club, and later start times. Each is one page, and each is argued with different amounts of care.",
+          "context": "Classroom practice: one grant can fund one of four plans. All records below are made up. Judge the arguments as written. A real decision would need checked costs and more facts.\nA. Library: Try keeping it open until five. A made-up log lists 40 of 120 students after three in one week. That shows some demand. A trial could check later demand and staff costs.\nB. Sports: Buy new equipment. A made-up list has 50 club members. The writer says this proves the purchase is the best use of the grant.\nC. Cooking: Try a club. In a made-up survey, 19 of 28 people said they would join. That suggests interest. The school still needs to check actual attendance, access, adult help and costs.\nD. Rehearsal: Pay for an extra session. The writer says music is best, so everyone will gain.\nChoose the best-supported case. Name what is still missing. This is not a final real-world budget decision.",
           "role": "A review panel",
-          "audience": "The principal, who will act on your recommendation and wants your reasons",
-          "drivingQuestion": "Which of these four proposals is the best argued, and is that the same as the one you would most like to see happen?",
-          "seedDirection": "Score the arguing before you notice which cause you prefer. Write the claim, evidence and reasoning of each proposal down before forming any view.",
+          "audience": "A simulated school panel that needs a reasoned recommendation",
+          "drivingQuestion": "Which plan has the strongest argument? Is it also the plan you prefer?",
+          "seedDirection": "For each plan, list the claim, evidence and reasoning. Mark anything missing. Then rate the support.",
           "lockedLessonFacts": [
-            "A claim is what the writer wants you to believe, and a reasonable person could disagree.",
-            "Evidence is the information offered as support, and it must be relevant to this claim.",
-            "Reasoning explains why the evidence supports the claim, and is the part most often missing.",
-            "A counterclaim is the strongest objection, stated fairly and then answered."
+            "Claims can concern facts, values or proposed actions.",
+            "Evidence must be relevant, reliable and sufficient for the conclusion.",
+            "Reasoning explains the link and its limitations.",
+            "A counterclaim is an opposing claim, and a rebuttal responds."
           ],
           "openQuestions": [
-            "Which proposal has evidence that would fit a different conclusion equally well?",
-            "Does any proposal name the strongest objection to itself?",
-            "Where does your own preference sit, and did it affect your scoring?"
+            "Could the same evidence support a different claim?",
+            "Does a writer deal with a strong objection?",
+            "Did your own preference affect your rating?"
           ],
           "stakeholders": [
             "The principal making the decision",
@@ -591,33 +592,33 @@
             "Students who benefit from whichever wins"
           ],
           "criteria": [
-            "Claim, evidence and reasoning quoted for all four proposals",
-            "Each proposal is rated for reasoning and for whether it handles a counterclaim",
-            "One recommendation, with the reason stated in terms of the arguing",
-            "An honest sentence saying whether your preferred cause was also the best argued",
-            "At least four glossary words used correctly"
+            "Identify the claim, evidence and reasoning in each plan. Mark missing parts.",
+            "Rate each plan and how it deals with an objection.",
+            "Choose one plan and explain why its argument is strongest.",
+            "Say whether it is also the plan you prefer.",
+            "Use at least four glossary words correctly."
           ],
           "constraints": [
             "One recommendation only",
             "Judge the argument as written, not what the group meant",
-            "Every rating needs a quoted line behind it"
+            "Quote a supporting line for each rating, or state that the required support is absent"
           ],
-          "deliverable": "A panel report: a table of the four proposals broken into claim, evidence and reasoning, a rating for each, one recommendation with its reason, and one sentence about your own preference.",
+          "deliverable": "Make a table for the four plans. List each claim, evidence, reasoning and rating. Choose one, explain why, and name a limit. State your own preference.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {
-            "context": "A panel wanted to fund the sports equipment, which they cared about most.",
-            "move": "Taking it apart, they found a claim, a real statistic about participation, and nothing joining the two. The library proposal was duller and had a plank across the gap. They recommended the library and said plainly that it was not their favourite.",
+            "context": "Invented example: a panel initially prefers the sports proposal.",
+            "move": "The panel notices that participation alone does not establish an equipment need. It compares the library and cooking proposals’ explanations and limitations before making a provisional recommendation.",
             "whyItHelps": "They separated the quality of the case from the appeal of the cause, which is what the panel was actually asked to judge."
           },
           "frameStarter": "Proposal ____ claims ____. Its evidence is ____. Its reasoning ____. I rate it ____ because ____.",
           "frameChoices": [
-            "Longer library hours",
-            "New sports equipment",
-            "A cooking club",
-            "Later start times"
+            "Library trial",
+            "Sports equipment",
+            "Cooking trial",
+            "Rehearsal session"
           ],
           "coachPrompts": [
             "Did you write down the parts before you formed a view?",
@@ -626,7 +627,7 @@
           ]
         },
         "coachHint": "Score the arguing first. Notice your preference second.",
-        "sourceExcerpt": "Run those questions on something you already agree with. A conclusion you like can still be badly argued.",
+        "sourceExcerpt": "Claims can concern facts, values or proposed actions. Evidence must be relevant, reliable and sufficient for the conclusion. Reasoning explains the link and its limitations. A counterclaim is an opposing claim, and a rebuttal responds.",
         "lessonRef": {
           "resourceId": "ag-reading",
           "title": "Says Who?"

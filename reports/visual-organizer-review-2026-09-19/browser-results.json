@@ -1,0 +1,20 @@
+{
+  "cerKeyboardCompletion": {
+    "completed": [
+      [
+        "outlineSort",
+        {
+          "score": 80,
+          "itemsSorted": 4,
+          "totalItems": 4,
+          "incorrectAttempts": 0
+        }
+      ]
+    ],
+    "focused": " games.memory.play_again"
+  },
+  "escapeClose": true,
+  "phoneActivityButtonVisible": true,
+  "pageErrors": [],
+  "scope": "Real Chromium running production renderer/game bundles with deterministic fixtures; no live provider or AI request."
+}

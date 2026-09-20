@@ -1,0 +1,52 @@
+{
+  "behavior": [
+    "first save and duplicate no-op",
+    "remove only reading",
+    "remove pinned baseline",
+    "change baseline",
+    "baseline detail action",
+    "fourth save recovers evicted reading",
+    "updated saved name and observation",
+    "preserve later input and draft changes",
+    "preserve restored workbench",
+    "independent solar history",
+    "independent wind history",
+    "scenario reading solarPv",
+    "scenario reading wind",
+    "scenario reading hydro",
+    "scenario reading geothermal",
+    "scenario reading solarThermal",
+    "scenario reading wave",
+    "scenario reading tidal",
+    "scenario reading biomass",
+    "scenario reading storage",
+    "remove and undo pause playback",
+    "preserve opened file workbench",
+    "external notebook replacement invalidates stale history",
+    "energy flow undo",
+    "export reflects undo without local history"
+  ],
+  "technologies": [
+    "solarPv",
+    "wind",
+    "hydro",
+    "geothermal",
+    "solarThermal",
+    "wave",
+    "tidal",
+    "biomass",
+    "storage"
+  ],
+  "audits": {
+    "flow-undo": [],
+    "desktop-pending-undo": [],
+    "desktop-restored": [],
+    "dark-pending-undo": [],
+    "phone-390": [],
+    "phone-320": [],
+    "phone-restored": []
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "sourceSha256": "87ff8acb1fb85ae679201d8e87db52ad73180ae7a5c9eff62ce2a689b2f28f47"
+}

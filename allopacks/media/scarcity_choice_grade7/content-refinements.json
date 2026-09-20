@@ -9,25 +9,25 @@
     "resourceId": "sc-reading",
     "path": "data",
     "from": "## Everything Has a Cost\n\nYou have one free hour. You can see friends, finish a project, or sleep. Whatever you pick, you did not do the other two.\n\nThat sentence is most of economics.\n\nEconomics is often described as being about money. It is really about **scarcity**: there is not enough of something to satisfy every want, so choosing is unavoidable. Time is scarce. Money is scarce. Clean water is scarce in some places and not in others. Even attention is scarce.\n\nScarcity is not the same as being rare, and it is not the same as being expensive. Something is **scarce** when people want more of it than exists. Sand is cheap and enormously common, and construction sand is genuinely scarce in some regions because demand outruns what can be dug.\n\nBecause things are scarce, every choice is a **trade-off**. You gain one thing and give up another.\n\nEconomists give the thing you gave up a name: **opportunity** cost. It is not everything you turned down. It is the single **alternative** you would have picked instead — your next best option. If you chose sleep over friends and a project, and you would have chosen friends next, then the opportunity cost of sleeping is seeing your friends. The project does not count. It was third.\n\nThat definition sounds fussy and it is the useful part. It forces you to name one specific thing rather than waving at everything.\n\nOpportunity cost also explains decisions that look strange from outside. A town that spends on a new road is not against libraries. It made a choice, and the library was what it gave up. Judging the decision means comparing the **benefit** of the road against the library, not against nothing.\n\nThere is a trap worth knowing. Money already spent and not recoverable is a **sunk** cost, and it should not affect what you do next. If you paid for a ticket to a film you now know you will hate, the money is gone whether you go or not. The real choice is only about the next two hours. People find this genuinely hard, and knowing the word does not make it easy.\n\nOne more idea. Doing a bit more of something is a **marginal** decision. The question is rarely all or nothing. It is: is one more hour of practice worth what that hour costs me?\n\nSo when you meet a decision, yours or a government's, ask two things. What is scarce here? And what exactly got given up?",
-    "to": "## Everything Has a Cost\n\nYou have one free hour. Suppose you can spend it on one of three mutually exclusive plans: see friends, work on a project, or rest. Choosing one prevents those same minutes from being used for another plan.\n\n**Scarcity** means available resources cannot satisfy all the competing wants for them. It concerns time, money, materials, space and attention, not just rare or expensive objects. Whether a resource is scarce for a particular activity depends on what is available, where and when it is available, and how much is wanted. A free price does not guarantee unlimited availability.\n\nA **choice** selects among feasible alternatives. A **trade-off** describes giving up one benefit or use to obtain another. Some choices allow combinations; our one-hour example rules them out so the comparison is clear.\n\n**Opportunity cost** is the value of the next-best feasible alternative forgone. If you choose rest and seeing friends is your next-best option, the cost is the benefit you would have received from seeing friends during that hour. Do not add every lower-ranked option. If an alternative is a feasible combination of activities, evaluate that whole alternative rather than insisting it must be a single named activity.\n\nSuppose a fictional town has a fixed budget and only two feasible, mutually exclusive proposals: a road or a library. If it chooses the road, the forgone library benefit is the opportunity cost. A real town may have many alternatives; you cannot assume the runner-up without examining them.\n\nA **benefit** is an expected gain. Compare future benefits and costs using stated assumptions, including effects that are hard to express in money. Different people may rank options differently.\n\nA **sunk cost** is a past cost that cannot be recovered. Suppose a film ticket cannot be refunded, resold or transferred. The purchase money is gone whichever activity you choose now. That past payment alone should not justify attending a film you no longer want to see. The remaining time, travel cost and expected experience still matter. If a refund or resale is possible, that recoverable value is relevant.\n\nPast training time cannot be recovered, but the skills you gained can affect future choices. Likewise, already-owned equipment may have future use or resale value. Do not confuse a sunk purchase cost with an asset's remaining value.\n\nA **marginal** decision compares an additional benefit with an additional cost: is one more hour of practice worth what that hour displaces? An **incentive** changes a choice's expected benefit or cost. It can influence choices without forcing everyone to respond the same way.\n\nIn the community-room task, one room is available from four to five and four groups want the entire slot. Rank the feasible uses, explain your criteria, identify the next-best forgone benefit, and distinguish unrecoverable past spending from consequences that remain ahead.\n\nThe sort's scenarios are fictional and include explicit assumptions. “Available for this use” does not mean the resource is unlimited everywhere. Classify the highlighted resource or past expenditure in its stated context."
+    "to": "## Everything Has a Cost\n\nYou have one free hour. Suppose you can choose just one plan: see friends, work on a project, or rest. You cannot use those same minutes for all three.\n\n**Scarcity** means the resources available cannot meet all the wants for them. Time, money, space and materials can be **scarce**. It depends on what is wanted and what is available at that time and place. A free price does not mean an endless supply.\n\nA **choice** selects among options you can really take. An **alternative** is another such option. A **trade-off** gives up one use or gain to get another. Some choices allow a mix of activities. Our one-hour case rules out a mix to keep the example clear.\n\nAn **opportunity** is a chance to do something. Opportunity cost is the value of the next-best option you give up. If you choose rest and seeing friends ranks second, the cost is the benefit of that visit. Do not add every option you turned down. If a mix of activities is allowed and ranks second, count that whole mix instead.\n\nConsider a made-up town. Its budget can pay for a road or a library, but not both. These are its only two possible plans. If it chooses the road, it gives up the library's benefit. In real life there may be more choices. You must find the next-best one rather than guess.\n\nA **benefit** is an expected gain. Compare future costs and gains, including effects that are hard to price. People may rank the same options differently.\n\nA **sunk** cost is a past cost you cannot get back. Suppose a film ticket cannot be refunded, resold or given away. The money is gone whichever plan you choose now. Spending it is not, by itself, a reason to watch a film you no longer want to see. Think about the time, travel cost and experience still ahead.\n\nIf you can get a refund or sell the ticket, that value still matters. Past training time is gone, but the skills may help you now. An old tool may still be useful or have resale value. Do not confuse past spending with what an item can do in the future.\n\nA **marginal** decision asks about one more unit: is one more hour of practice worth what you give up? An **incentive** changes an expected cost or benefit. It may influence people without making them all choose alike.\n\nIn our task, four groups want one room from four to five. Rank the uses, explain your criteria, and name the next-best benefit you give up. The sort also uses made-up cases. Judge each resource in the stated setting, not everywhere and for all time."
   },
   {
     "resourceId": "sc-glossary",
     "path": "data.0.def",
     "from": "The condition of people wanting more of something than exists.",
-    "to": "The condition in which available resources cannot meet all competing wants for them."
+    "to": "Having fewer resources than needed to meet all the wants for them."
   },
   {
     "resourceId": "sc-glossary",
     "path": "data.1.def",
     "from": "Wanted in greater quantity than is available.",
-    "to": "Limited relative to competing wants at the relevant time and place."
+    "to": "Limited compared with what is wanted at a certain time and place."
   },
   {
     "resourceId": "sc-glossary",
     "path": "data.2.def",
     "from": "Picking one option and therefore not picking the others.",
-    "to": "Selecting among feasible alternatives."
+    "to": "Picking among options you can actually take."
   },
   {
     "resourceId": "sc-glossary",
@@ -39,13 +39,13 @@
     "resourceId": "sc-glossary",
     "path": "data.4.def",
     "from": "A chance to do one thing, which closes while you do another.",
-    "to": "A chance to do something; opportunity cost refers to the value of the next-best feasible alternative forgone."
+    "to": "A chance to do something. The cost of a choice is the value of the next-best option you give up."
   },
   {
     "resourceId": "sc-glossary",
     "path": "data.5.def",
     "from": "The option you would have taken instead of the one you took.",
-    "to": "Another feasible option, not necessarily the next-best one."
+    "to": "Another possible option. It need not be the second-best one."
   },
   {
     "resourceId": "sc-glossary",
@@ -57,19 +57,19 @@
     "resourceId": "sc-glossary",
     "path": "data.7.def",
     "from": "Already spent and impossible to get back.",
-    "to": "Describing a past cost that cannot be recovered; remaining benefits or asset value may still matter."
+    "to": "A past cost that cannot be recovered. Future use or resale value can still matter."
   },
   {
     "resourceId": "sc-glossary",
     "path": "data.8.def",
     "from": "About one more unit rather than about all or nothing.",
-    "to": "Concerning an additional unit, benefit or cost."
+    "to": "About one more unit, or the extra cost or benefit it brings."
   },
   {
     "resourceId": "sc-glossary",
     "path": "data.9.def",
     "from": "Something that makes one option more attractive than another.",
-    "to": "A change in expected benefit or cost that may influence a choice."
+    "to": "A change in expected cost or benefit that can influence a choice."
   },
   {
     "resourceId": "sc-anchor",
@@ -379,15 +379,21 @@
   },
   {
     "resourceId": "sc-memory",
+    "path": "data.cards.0.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "sc-memory",
     "path": "data.cards.0.aiExample",
     "from": "SILVER MEDAL. The winner is what you chose. The cost is whoever came second, and only that one. Fourth place is not part of the price.",
-    "to": "A runner-up reminds you to identify the next-best option, then name the benefit you give up by not choosing it."
+    "to": "Name your first choice. Then name the best option you could take instead. What benefit do you give up by not taking it?"
   },
   {
     "resourceId": "sc-memory",
     "path": "data.cards.0.mapping",
     "from": "A podium has exactly one runner-up, which is the constraint students keep dropping when they list everything they gave up.",
-    "to": "A podium helps with ranking. Unlike a sports result, the ranking depends on preferences and feasible options, including any permitted combinations."
+    "to": "A runner-up helps you remember second place. Rank only options you can really take, including a mix if allowed."
   },
   {
     "resourceId": "sc-memory",
@@ -463,15 +469,21 @@
   },
   {
     "resourceId": "sc-memory",
+    "path": "data.cards.1.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "sc-memory",
     "path": "data.cards.1.aiExample",
     "from": "You are halfway through a book you have stopped enjoying. The hours you already spent are gone whether you finish or not. The only live question is what the next hour is worth.",
-    "to": "Draw a line between yesterday’s unrecoverable payment and tomorrow’s choices. Put resale value and future travel costs on the future side."
+    "to": "Draw a line. Put money you cannot get back on the past side. Put future costs, future gains and resale value on the other side."
   },
   {
     "resourceId": "sc-memory",
     "path": "data.cards.1.mapping",
     "from": "Reading time cannot be refunded, which makes the spent-and-gone part obvious, and the remaining hours are visibly the only thing still under your control.",
-    "to": "The divider separates unrecoverable spending from changeable consequences; it does not erase skills or useful information from past experience."
+    "to": "The line helps you focus on what can still change. Skills and useful things gained in the past can still help now."
   },
   {
     "resourceId": "sc-memory",
@@ -603,7 +615,7 @@
     "resourceId": "sc-quiz",
     "path": "data.questions.0.options.0",
     "from": "Seeing your friends, and only that",
-    "to": "The value of the forgone time with friends"
+    "to": "The value of resting itself"
   },
   {
     "resourceId": "sc-quiz",
@@ -621,7 +633,7 @@
     "resourceId": "sc-quiz",
     "path": "data.questions.0.options.3",
     "from": "The hour of time that you used up",
-    "to": "The value of resting itself"
+    "to": "The value of the forgone time with friends"
   },
   {
     "resourceId": "sc-quiz",
@@ -675,31 +687,31 @@
     "resourceId": "sc-quiz",
     "path": "data.questions.2.options.0",
     "from": "Because most sand has already been used up",
-    "to": "All sand on Earth is nearly gone"
+    "to": "All sand on Earth must be almost gone"
   },
   {
     "resourceId": "sc-quiz",
     "path": "data.questions.2.options.1",
     "from": "Because sand is far rarer than people realise",
-    "to": "Sand must be expensive to count as scarce"
+    "to": "Only expensive materials can be scarce"
   },
   {
     "resourceId": "sc-quiz",
     "path": "data.questions.2.options.2",
     "from": "Because demand there outruns what can be supplied",
-    "to": "The suitable amount available now falls short of the stated demand"
+    "to": "The supply now falls short of its need"
   },
   {
     "resourceId": "sc-quiz",
     "path": "data.questions.2.options.3",
     "from": "Because governments have banned digging for it",
-    "to": "Its grains are small"
+    "to": "Small grains make every sand supply scarce"
   },
   {
     "resourceId": "sc-quiz",
     "path": "data.questions.2.correctAnswer",
     "from": "Because demand there outruns what can be supplied",
-    "to": "The suitable amount available now falls short of the stated demand"
+    "to": "The supply now falls short of its need"
   },
   {
     "resourceId": "sc-quiz",
@@ -711,31 +723,31 @@
     "resourceId": "sc-quiz",
     "path": "data.questions.3.options.0",
     "from": "It should push you to attend, to avoid waste",
-    "to": "Attend only because the money was spent"
+    "to": "Go only because you have already paid for it"
   },
   {
     "resourceId": "sc-quiz",
     "path": "data.questions.3.options.1",
     "from": "It should be split evenly across the decision",
-    "to": "Compare future benefits and costs; the unrecoverable payment is sunk"
+    "to": "Compare future costs and gains; the payment is gone"
   },
   {
     "resourceId": "sc-quiz",
     "path": "data.questions.3.options.2",
     "from": "It should be weighed against the film's length",
-    "to": "Ignore future travel costs as well"
+    "to": "Ignore the money you would still spend on travel"
   },
   {
     "resourceId": "sc-quiz",
     "path": "data.questions.3.options.3",
     "from": "Nothing, because the money is gone either way",
-    "to": "Assume all tickets are always sunk costs"
+    "to": "Treat all future ticket purchases as already lost"
   },
   {
     "resourceId": "sc-quiz",
     "path": "data.questions.3.correctAnswer",
     "from": "Nothing, because the money is gone either way",
-    "to": "Compare future benefits and costs; the unrecoverable payment is sunk"
+    "to": "Compare future costs and gains; the payment is gone"
   },
   {
     "resourceId": "sc-quiz",
@@ -801,37 +813,37 @@
     "resourceId": "sc-faq",
     "path": "data.0.answer",
     "from": "Some things are free of charge. Almost nothing is free of cost, because taking it uses time or attention or space that had another use. A free concert still costs you the evening.",
-    "to": "A zero price does not mean zero opportunity cost. Attending a free event uses time that might have another valued use; specify the relevant alternative rather than assuming every free object is scarce in the same way."
+    "to": "A free event may still use time. What would you do with that time instead? Name the next-best option. A zero price does not settle that question."
   },
   {
     "resourceId": "sc-faq",
     "path": "data.1.answer",
     "from": "No, it is high. Opportunity cost is not about regret; it is what you gave up. If the two were nearly equal, you gave up something nearly as good, which is exactly why the choice felt hard. What is small is how much better off you ended up.",
-    "to": "No. If the alternatives are equally valued, the forgone value can still be substantial even though you are indifferent between them. Opportunity cost is not the difference between their values or a measure of regret."
+    "to": "No. You still give up the value of the other option, even if you like both equally. The cost is not the difference between their values, and it is not the same as regret."
   },
   {
     "resourceId": "sc-faq",
     "path": "data.2.answer",
     "from": "The opposite. Time is scarce for everyone, including people with plenty of money, which is why a busy person paying for a faster option is behaving perfectly rationally.",
-    "to": "No. Time and space choices also involve trade-offs. Paying for a faster option may be reasonable under a person’s circumstances, but the price alone does not prove a choice is best."
+    "to": "No. Time and space choices have trade-offs too. A price alone cannot tell us which choice is best for a person."
   },
   {
     "resourceId": "sc-faq",
     "path": "data.3.answer",
     "from": "Because walking away feels like admitting waste, and people dislike that more than they dislike losing a further hour. Economists have studied it for decades and knowing the word does not immunise you.",
-    "to": "Past investments can make people reluctant to stop. Separate unrecoverable past expenditure from remaining costs, benefits, information and recoverable value."
+    "to": "It can be hard to stop after spending time or money. Ask what you can still change. Count future costs, gains and any value you can recover."
   },
   {
     "resourceId": "sc-faq",
     "path": "data.4.answer",
     "from": "No. Poverty is not having enough for a decent life, which is a serious problem to solve. Scarcity is the general condition that wants exceed what exists, and it applies to everyone, rich or poor.",
-    "to": "No. Scarcity is the general constraint of limited resources relative to wants. Poverty concerns inadequate resources for meeting important needs; its consequences are not the same as every ordinary trade-off."
+    "to": "No. Scarcity means resources are limited compared with wants. Poverty means lacking resources to meet important needs. Its effects are not the same as every everyday trade-off."
   },
   {
     "resourceId": "sc-faq",
     "path": "data.5.answer",
     "from": "Sometimes, and always at a cost. Building more housing uses workers and materials that were going to build something else. That is opportunity cost operating at national scale.",
-    "to": "Additional production can expand available options, but it uses resources. Examine which resources have alternative uses and their forgone value rather than assuming every worker or material is already assigned to another project."
+    "to": "Making more can expand choices, but it uses resources. Ask what else those resources could do. Do not assume each worker or material is already being used on another project."
   },
   {
     "resourceId": "sc-challenge",
@@ -868,6 +880,12 @@
     "path": "data.brief.criteria.1",
     "from": "The opportunity cost is stated as one specific alternative, with a reason it ranked second",
     "to": "Name the next-best feasible use and the value of its forgone benefit, explaining the ranking"
+  },
+  {
+    "resourceId": "sc-challenge",
+    "path": "data.brief.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "sc-challenge",

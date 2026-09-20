@@ -1,0 +1,25 @@
+{
+  "checks": [
+    "A prediction is required before replacing the current cook.",
+    "dry rescue: actual prediction/action/explanation workflow, independent outcome despite changed prediction, canonical reload, three scoped criteria, and immutable replay.",
+    "watery rescue: actual prediction/action/explanation workflow, independent outcome despite changed prediction, canonical reload, three scoped criteria, and immutable replay.",
+    "Report/archive retain rescue scope; an unchanged dry dish receives Review and retry; starting a full recipe restores normal recipe controls and questions.",
+    "Mobile text-mode rescue, missing-3D operation, and accessibility checks passed."
+  ],
+  "accessibility": [
+    {
+      "label": "Active rescue challenge",
+      "issues": []
+    },
+    {
+      "label": "Submitted rescue evidence",
+      "issues": []
+    },
+    {
+      "label": "320px text-mode rescue",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

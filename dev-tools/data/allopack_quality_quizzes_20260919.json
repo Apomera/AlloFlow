@@ -1,0 +1,275 @@
+{
+  "argument_evidence_grade6": [
+    {
+      "match": "Fictional argument:",
+      "options": [
+        "A link from current use to later hours, with limits",
+        "A description of a policy the writer wants adopted",
+        "A record showing that students use the library",
+        "Nothing; current use settles the best closing time"
+      ],
+      "correct": 0
+    },
+    {
+      "match": "Which statement proposes an action",
+      "options": [
+        "The posted opening time is 8:15",
+        "The library should stay open later",
+        "The record lists 62 student visits",
+        "The timetable lists a bus at 7:52"
+      ],
+      "correct": 1
+    },
+    {
+      "match": "What can a well-supported response",
+      "options": [
+        "Make all readers agree with the claim",
+        "Remove the need to check the evidence",
+        "Explain how it handles a serious objection",
+        "Prove that every opposing view is false"
+      ],
+      "correct": 2
+    },
+    {
+      "match": "Which is the most thorough way",
+      "options": [
+        "Trust familiar sources and ignore other accounts",
+        "Check sources, relevance, reasoning and other explanations",
+        "Count examples without checking how they were gathered",
+        "Trust the evidence that appears first in the argument"
+      ],
+      "correct": 1
+    }
+  ],
+  "central_idea_grade7": [
+    {
+      "match": "What does tracing central-idea",
+      "options": [
+        "Explain how details build or qualify key ideas",
+        "Assume a long text must have exactly two ideas",
+        "Choose one striking detail and ignore the rest",
+        "Copy each opening sentence without explaining it"
+      ],
+      "correct": 0
+    },
+    {
+      "match": "How do a main claim",
+      "options": [
+        "A claim must be false before evidence can support it",
+        "A claim states a position; evidence offers support",
+        "A claim becomes proven when any evidence is added",
+        "A claim needs numbers; other details cannot support it"
+      ],
+      "correct": 1
+    },
+    {
+      "match": "In The River Project, which detail",
+      "options": [
+        "The project took place beside a stream in the town",
+        "The organizer says a clear schedule helped share the work",
+        "The group had not measured changes in living things",
+        "The stream had banks where the project took place"
+      ],
+      "correct": 1
+    },
+    {
+      "match": "Which response uses an accurate quotation",
+      "options": [
+        "“A clear schedule helped us share the work” proves every goal was met",
+        "“A clear schedule helped us share the work” links planning to teamwork (paragraph 2)",
+        "“A clear schedule helped us share the work” proves the water is safe",
+        "“A clear schedule helped us share the work” shows that no further checks are needed"
+      ],
+      "correct": 1
+    }
+  ],
+  "chemical_reactions_grade8": [
+    {
+      "match": "Which observation would best settle",
+      "options": [
+        "The mixture became warmer while it was being stirred",
+        "Tests identify a new substance and rule out physical causes",
+        "The color shifted from dark blue to a paler shade of blue",
+        "Bubbles rose from the bottom as the liquid was heated"
+      ],
+      "correct": 1
+    }
+  ],
+  "figurative_language_grade5": [
+    {
+      "match": "Why might an unfamiliar idiom",
+      "options": [
+        "Its words must all have meanings too old to understand",
+        "Its meaning may differ from what each word suggests",
+        "Its meaning stays hidden even when context gives clues",
+        "Its words always name things that no longer exist"
+      ],
+      "correct": 1
+    },
+    {
+      "match": "Which sentence uses words literally",
+      "options": [
+        "The air measured 41 degrees Fahrenheit last night",
+        "The night wrapped our small town in a dark blanket",
+        "The cold wanted to turn me into a frozen popsicle",
+        "The cold scolded my fingers as I walked outside"
+      ],
+      "correct": 0
+    }
+  ],
+  "magnetism_grade6": [
+    {
+      "match": "Why does a magnet stick strongly",
+      "options": [
+        "Carbon steel is strongly attracted; aluminum is not in this test",
+        "The can is too smooth for the magnetic force to act on it",
+        "The aluminum can stops every magnetic field from passing through",
+        "The difference in temperature alone makes the door attract it"
+      ],
+      "correct": 0
+    },
+    {
+      "match": "In the simple bar-magnet comparison",
+      "options": [
+        "North-like polarity, because the region is named north",
+        "South-like polarity; the compass follows the local field",
+        "No polarity; the compass points only toward the North Star",
+        "No polarity; Earth’s gravity alone controls the needle"
+      ],
+      "correct": 1
+    }
+  ],
+  "natural_selection_grade8": [
+    {
+      "match": "Which statement about variation",
+      "options": [
+        "New needs direct the production of a matching inherited trait",
+        "Variants can exist already or arise later, without direction by need",
+        "Useful variants appear only after every older variant has vanished",
+        "The environment gives parents the exact DNA changes they need"
+      ],
+      "correct": 1
+    },
+    {
+      "match": "A weightlifter builds",
+      "options": [
+        "The exact muscle gains, because the parent trained hard",
+        "Part of the gained muscle, but only in the first generation",
+        "Not an automatic DNA copy of the muscle gained by training",
+        "The gained muscle itself, but no ability to maintain it"
+      ],
+      "correct": 2
+    },
+    {
+      "match": "Which statement about mutation",
+      "options": [
+        "It helps the organism because every change is an improvement",
+        "It always harms the organism because every change breaks a gene",
+        "It can help, harm or have little effect, depending on the setting",
+        "It is made on purpose when an organism needs a particular trait"
+      ],
+      "correct": 2
+    }
+  ],
+  "photosynthesis_grade7": [
+    {
+      "match": "Why do leaves look green",
+      "options": [
+        "Chlorophyll absorbs green light more strongly than all other colors",
+        "Some green light is reflected or transmitted; some is absorbed",
+        "Green is the color of the glucose stored inside the leaf cells",
+        "Minerals from the soil dye every part of the leaf bright green"
+      ],
+      "correct": 1
+    }
+  ],
+  "plate_tectonics_grade6": [
+    {
+      "match": "Identical Mesosaurus fossils",
+      "options": [
+        "A fossil species can never occur on more than one continent",
+        "Mesosaurus fossils prove it could easily cross a wide ocean",
+        "The fossils and the present Atlantic Ocean must be the same age",
+        "A past land connection explains the pattern better than an ocean crossing"
+      ],
+      "correct": 3
+    }
+  ],
+  "scarcity_choice_grade7": [
+    {
+      "match": "A fictional project needs ten",
+      "options": [
+        "All sand on Earth must be almost gone",
+        "Only expensive materials can be scarce",
+        "The supply now falls short of its need",
+        "Small grains make every sand supply scarce"
+      ],
+      "correct": 2
+    },
+    {
+      "match": "A film ticket cannot be refunded",
+      "options": [
+        "Go only because you have already paid for it",
+        "Compare future costs and gains; the payment is gone",
+        "Ignore the money you would still spend on travel",
+        "Treat all future ticket purchases as already lost"
+      ],
+      "correct": 1
+    }
+  ],
+  "simple_machines_grade5": [
+    {
+      "match": "What does friction do",
+      "question": "What happens when moving machine parts lose energy to friction?",
+      "options": [
+        "They gain extra energy without any added input work",
+        "Only wheels are affected; other moving parts lose none",
+        "Some mechanical energy becomes heat, so more input work is needed",
+        "All input energy always becomes heat before any useful work is done"
+      ],
+      "correct": 2
+    }
+  ],
+  "theme_development_grade8": [
+    {
+      "match": "Which is a possible theme statement",
+      "options": [
+        "The cost of family loyalty in a time of change",
+        "Loyalty to family can conflict with doing what is right",
+        "The topic of family loyalty and personal choices",
+        "Always obey your family, whatever the situation"
+      ],
+      "correct": 1
+    },
+    {
+      "match": "Which evidence best supports",
+      "options": [
+        "The story is divided into four numbered paragraphs",
+        "Leila keeps the key but sets limits on her role",
+        "The suitcase is an object that Leila can carry",
+        "The open door is part of the setting of the visit"
+      ],
+      "correct": 1
+    },
+    {
+      "match": "Which approach weakens",
+      "options": [
+        "Study a detail that challenges your reading",
+        "Use evidence from several parts of the text",
+        "Ignore key events that conflict with your claim",
+        "Revise your claim after checking the text again"
+      ],
+      "correct": 2
+    },
+    {
+      "match": "What belongs in an objective summary",
+      "options": [
+        "A brief account centered on your favorite moment and rating",
+        "A theme claim without the events that develop it",
+        "A full list of every small action and descriptive detail",
+        "A brief account of Leila’s visit, changed response and ongoing bond"
+      ],
+      "correct": 3
+    }
+  ]
+}

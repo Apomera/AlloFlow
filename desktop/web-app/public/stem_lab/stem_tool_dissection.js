@@ -105,10 +105,42 @@
 .diss-pump-diagram svg { display: block; width: 100%; height: auto; max-height: 180px; overflow: visible; }
 .diss-pump-diagram text { font: 700 16px system-ui, sans-serif; fill: #20394d; }
 .diss-pump-diagram figcaption { margin-top: .45rem; font-size: .77rem; line-height: 1.5; color: #40566b; }
+.diss-diagram-open { width: 100%; margin: 0 0 .5rem; padding: .55rem .7rem; border: 1px solid #5b8796; border-radius: .5rem; color: #174f60; background: #fff; font-size: .8rem; font-weight: 750; }
+.diss-diagram-open:hover { background: #eaf5f5; }
+.diss-diagram-reader { width: min(52rem, calc(100vw - 1rem)); max-width: none; max-height: calc(100dvh - 1rem); margin: auto; padding: 0; overflow: auto; border: 2px solid #48717e; border-radius: .9rem; background: #f8fbfc; color: #18394d; box-shadow: 0 1rem 4rem #10233f55; }
+.diss-diagram-reader::backdrop { background: #0f233bc9; }
+.diss-diagram-reader__header { position: sticky; top: 0; z-index: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .65rem; padding: .9rem; border-bottom: 1px solid #b8cbd3; background: #fff; }
+.diss-diagram-reader__header > div { flex: 1 1 15rem; min-width: 0; }
+.diss-diagram-reader__header span { font-size: .8rem; font-weight: 750; color: #476272; }
+.diss-diagram-reader__header h4 { margin: .25rem 0 0; font-size: 1.1rem; line-height: 1.4; }
+.diss-diagram-reader button { min-height: 2.75rem; padding: .55rem .75rem; border: 1px solid #527c8b; border-radius: .5rem; background: #fff; color: #174f60; font-size: .85rem; font-weight: 750; }
+.diss-diagram-reader button:disabled { color: #586c78; border-color: #b6c6ce; cursor: default; }
+.diss-diagram-reader__header button { background: #175b68; color: #fff; }
+.diss-diagram-reader__body { padding: .9rem; }
+.diss-diagram-reader__tools { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.diss-diagram-reader__tools span { padding: .3rem; font-variant-numeric: tabular-nums; font-weight: 800; }
+.diss-diagram-reader .diss-diagram-reader__hint { margin: .65rem 0; color: #405b6b; font-size: .85rem; line-height: 1.5; }
+.diss-diagram-reader__viewport { max-height: 48vh; overflow: auto; border: 1px solid #9fb8c2; border-radius: .5rem; background: #fff; overscroll-behavior: contain; }
+.diss-diagram-reader__image { padding: .5rem; }
+.diss-diagram-reader__image svg { display: block; width: 100%; height: auto; }
+.diss-diagram-reader__image text { font: 700 16px system-ui, sans-serif; fill: #20394d; }
+.diss-diagram-reader__description { margin-top: 1rem; }
+.diss-diagram-reader__description strong { font-size: .9rem; }
+.diss-diagram-reader .diss-diagram-reader__description p { margin: .3rem 0 .9rem; font-size: 1rem; line-height: 1.6; }
+.diss-diagram-reader .diss-diagram-reader__scope { border-top: 1px solid #b8cbd3; padding-top: .7rem; font-size: .85rem; color: #405b6b; }
+.diss-diagram-fallback { color: #405b6b; }
+@media (forced-colors: active) { .diss-diagram-reader, .diss-diagram-reader button, .diss-diagram-reader__viewport { border-color: CanvasText; } }
 .diss-comparison-visual-key { padding: .65rem .75rem; border-left: 3px solid #087f78; background: #edf7f5; color: #234c51; font-size: .8rem; line-height: 1.55; margin-bottom: .8rem; }
 .diss-comparison-sources { margin-top: .7rem; font-size: .8rem; color: #304d68; }
 .diss-comparison-sources summary { cursor: pointer; display: list-item; padding: .65rem 0; }
 .diss-comparison-sources a { display: block; padding: .5rem 0; color: #164e87; text-decoration: underline; }
+.diss-comparison-focus { margin: .75rem 0; padding: .75rem; background: #fff; border: 1px solid #bccddd; border-radius: .6rem; }
+.diss-comparison-focus label { display: block; font-size: .85rem; font-weight: 800; margin-bottom: .4rem; }
+.diss-comparison-focus select { width: 100%; min-height: 2.75rem; border: 1px solid #6e879d; border-radius: .4rem; padding: .55rem; background: #fff; color: #183b56; font: inherit; }
+.diss-comparison-focus p { font-size: .8rem; line-height: 1.5; margin: .5rem 0 0; }
+.diss-gas-profile { display: grid; grid-template-columns: 5.3rem minmax(0,1fr); gap: .4rem .5rem; margin: .7rem 0; font-size: .8rem; line-height: 1.5; }
+.diss-gas-profile dt { font-weight: 800; color: #264d60; }
+.diss-gas-profile dd { margin: 0; color: #344c60; }
 .diss-comparison-prompt { margin-top: .85rem; padding: .8rem; border-radius: .65rem; background: #e8eef8; color: #243e60; font-size: .85rem; line-height: 1.55; }
 .diss-study-links { display: grid; gap: .4rem; margin-top: .6rem; }
 .diss-study-links button { width: 100%; text-align: left; padding: .65rem .75rem; border: 1px solid #bacbda; border-radius: .6rem; background: #fff; color: #183b56; font-size: .82rem; line-height: 1.5; }
@@ -913,14 +945,10 @@
 [data-dissection-root]:not([data-high-contrast="true"]) .diss-clinical-reference :is(span,p) { color: #46586b; }
 [data-dissection-root]:not([data-high-contrast="true"]) [data-dissection-evidence] { border-color: #85ada9; background: #f2faf8; }
 [data-dissection-root]:not([data-high-contrast="true"]) .diss-evidence-coach { border: 0; border-top: 1px solid #c3d6d2; border-radius: 0; padding: .8rem 0 0; background: transparent; }
-[data-dissection-root]:not([data-high-contrast="true"]) .diss-evidence-coach[data-ready="true"] { background: transparent; }
 [data-dissection-root]:not([data-high-contrast="true"]) .diss-note-handoff { border: 0; border-top: 1px solid #d6e0e8; border-radius: 0; background: transparent; padding: .8rem 0 0; }
 .diss-evidence-note { width: 100%; min-height: 5rem; margin-top: .4rem; padding: .65rem; border: 1px solid #aebed2; border-radius: .65rem; background: #fff; color: #24364d; resize: vertical; }
 .diss-evidence-coach { margin-top: .65rem; padding: .65rem; border: 1px solid #93c5fd; border-radius: .7rem; background: rgba(255,255,255,.72); }
 .diss-evidence-coach__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; color: #173f6d; font-size: .75rem; }
-.diss-evidence-coach__score { flex: 0 0 auto; padding: .16rem .38rem; border-radius: 999px; background: #dbeafe; color: #1e40af; font-size: .7rem; font-weight: 900; }
-.diss-evidence-coach[data-ready="true"] { border-color: #6ee7b7; background: rgba(236,253,245,.82); }
-.diss-evidence-coach[data-ready="true"] .diss-evidence-coach__score { background: #d1fae5; color: #047857; }
 .diss-evidence-starters { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .5rem; }
 .diss-evidence-starters button { min-height: 2.75rem !important; padding: .45rem .6rem; border: 1px solid #93c5fd; border-radius: .5rem; background: #fff; color: #174d86; font-size: .72rem; font-weight: 850; cursor: pointer; }
 .diss-evidence-starters button:hover { border-color: #2563eb; background: #eff6ff; }
@@ -933,14 +961,17 @@
 .diss-confidence-scale__option:hover { border-color: #2563eb; background: #eff6ff; }
 .diss-confidence-scale__option[data-selected="true"] { border-color: #1d4ed8; background: #1d4ed8; color: #fff; }
 .diss-confidence-scale__option input { width: 1rem; height: 1rem; margin: 0; accent-color: #1d4ed8; }
-.diss-evidence-meter { overflow: hidden; height: .38rem; margin-top: .55rem; border-radius: 999px; background: #dbeafe; }
-.diss-evidence-meter span { display: block; height: 100%; border-radius: inherit; background: #2563eb; transition: width .2s ease; }
-.diss-evidence-coach[data-ready="true"] .diss-evidence-meter span { background: #059669; }
-.diss-evidence-checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .3rem .55rem; margin: .55rem 0 0; padding: 0; list-style: none; }
-.diss-evidence-checks li { color: #52677f; font-size: .72rem; line-height: 1.4; }
-.diss-evidence-checks li[data-complete="true"] { color: #047857; font-weight: 800; }
-.diss-evidence-coach__cue { margin: .5rem 0 0; color: #244b75; font-size: .75rem; font-weight: 750; line-height: 1.45; }
-.diss-evidence-coach__note { margin: .3rem 0 0; color: #64748b; font-size: .7rem; line-height: 1.4; }
+.diss-evidence-coach__note { margin: .45rem 0; color: #40586c; font-size: .78rem; line-height: 1.5; }
+.diss-draft-status { display: flex; flex-wrap: wrap; gap: .4rem; padding: 0; margin: .55rem 0; list-style: none; }
+.diss-draft-status li { padding: .35rem .55rem; border: 1px solid #a8bfc9; border-radius: .45rem; background: #fff; color: #27465b; font-size: .76rem; line-height: 1.4; }
+.diss-draft-review { margin-top: .6rem; border-top: 1px solid #bfd0d9; color: #243e55; }
+.diss-draft-review summary { display: list-item; min-height: 2.75rem; padding: .7rem 0; cursor: pointer; font-size: .82rem; font-weight: 800; }
+.diss-draft-review__steps { display: grid; gap: .65rem; list-style: none; margin: .25rem 0 .5rem; padding: 0; }
+.diss-draft-review__steps li { display: flex; align-items: flex-start; gap: .6rem; font-size: .8rem; line-height: 1.5; }
+.diss-draft-review__number { flex: 0 0 1.65rem; height: 1.65rem; display: grid; place-items: center; border: 1px solid #557f88; border-radius: 50%; color: #244f59; background: #fff; font-weight: 800; }
+.diss-draft-review__steps strong { display: block; color: #183d4f; }
+.diss-draft-review__steps p { margin: .15rem 0 0; color: #344e61; }
+@media (forced-colors: active) { .diss-draft-status li, .diss-draft-review__number { border-color: CanvasText; } }
 .diss-countercheck { margin-top: .65rem; padding: 0; border: 1px dashed #7c3aed; border-radius: .7rem; background: #f5f3ff; color: #4c1d95; }
 .diss-countercheck.diss-disclosure > summary { min-height: 2.75rem; color: #4c1d95; }
 .diss-countercheck p { margin: .25rem 0 .55rem; color: #5b4a78; font-size: .72rem; line-height: 1.45; }
@@ -949,7 +980,6 @@
 .diss-countercheck button:disabled { cursor: default; opacity: .68; }
 .diss-countercheck__status { margin: .45rem 0 0 !important; color: #5b21b6 !important; font-weight: 750; }
 @media (forced-colors: active) { .diss-confidence-scale__option[data-selected="true"] { border: 3px solid Highlight; background: Canvas; color: CanvasText; } }
-@media (max-width: 460px) { .diss-evidence-checks { grid-template-columns: 1fr; } }
 .diss-science-scope { margin: .55rem 0 0; padding: .55rem .65rem; border: 1px solid #bfdbfe; border-radius: .65rem; background: #eff6ff; color: #294f79; font-size: .75rem; line-height: 1.45; }
 .diss-structure-list button { min-height: 2.7rem !important; }
 .diss-recall { padding: 1rem; border: 1px solid #c4b5fd; border-radius: 1rem; background: linear-gradient(135deg, #f5f3ff, #eef2ff); color: #312e81; }
@@ -2037,6 +2067,69 @@
     } catch (e) { dispose(); throw e; }
   }
 
+  // Local reading state never enters specimen progress or assessment data.
+  function DissectionDiagramReader(props) {
+    var React = props.React, h = React.createElement, t = props.t;
+    var dialogRef = React.useRef(null), triggerRef = React.useRef(null), viewportRef = React.useRef(null);
+    var openPair = React.useState(false), open = openPair[0], setOpen = openPair[1];
+    var zoomPair = React.useState(1), zoom = zoomPair[0], setZoom = zoomPair[1];
+    var errorPair = React.useState(false), failed = errorPair[0], setFailed = errorPair[1];
+    function finish() {
+      setOpen(false);
+      if (triggerRef.current && triggerRef.current.isConnected) triggerRef.current.focus({ preventScroll: true });
+    }
+    React.useEffect(function () {
+      if (!open) return;
+      var node = dialogRef.current;
+      try { node.showModal(); } catch (error) { setFailed(true); finish(); }
+    }, [open]);
+    function resize(next) {
+      setZoom(next);
+      if (viewportRef.current) { viewportRef.current.scrollLeft = 0; viewportRef.current.scrollTop = 0; }
+    }
+    return h(React.Fragment, null,
+      h('button', { type: 'button', ref: triggerRef, className: 'diss-diagram-open', 'data-diagram-open': true, 'aria-haspopup': 'dialog',
+        'aria-label': t('stem.dissection.diagram_enlarge', 'Enlarge diagram') + ': ' + props.title,
+        onClick: function () { setZoom(1); setFailed(false); setOpen(true); }
+      }, t('stem.dissection.diagram_enlarge', 'Enlarge diagram')),
+      failed && h('p', { role: 'status', className: 'diss-diagram-fallback' }, t('stem.dissection.diagram_unavailable', 'The enlarged view could not open. Diagram description:') + ' ' + props.description),
+      open && h('dialog', { ref: dialogRef, className: 'diss-diagram-reader', 'aria-label': props.title + ' — ' + t('stem.dissection.diagram_reading_view', 'Diagram reading view'),
+        onClose: finish, onKeyDown: function (event) {
+          event.stopPropagation();
+          if (event.key !== 'Tab') return;
+          var targets = event.currentTarget.querySelectorAll('button:not([disabled]), [tabindex="0"]');
+          var first = targets[0], last = targets[targets.length - 1];
+          if (event.shiftKey && event.target === first) { event.preventDefault(); last.focus(); }
+          else if (!event.shiftKey && event.target === last) { event.preventDefault(); first.focus(); }
+        }
+      },
+        h('div', { className: 'diss-diagram-reader__header' },
+          h('div', null, h('span', null, t('stem.dissection.diagram_reading_view', 'Diagram reading view')), h('h4', null, props.title)),
+          h('button', { type: 'button', autoFocus: true, onClick: function () { dialogRef.current.close(); } }, t('stem.dissection.diagram_close', 'Close diagram'))
+        ),
+        h('div', { className: 'diss-diagram-reader__body' },
+          h('div', { className: 'diss-diagram-reader__tools', role: 'group', 'aria-label': t('stem.dissection.diagram_size', 'Diagram size') },
+            h('button', { type: 'button', disabled: zoom <= 1, onClick: function () { resize(Math.max(1, zoom - 0.5)); } }, t('stem.dissection.diagram_smaller', 'Zoom out')),
+            h('button', { type: 'button', disabled: zoom >= 3, onClick: function () { resize(Math.min(3, zoom + 0.5)); } }, t('stem.dissection.diagram_larger', 'Zoom in')),
+            h('button', { type: 'button', onClick: function () { resize(1); } }, t('stem.dissection.diagram_fit', 'Fit diagram')),
+            h('span', { role: 'status', 'aria-live': 'polite', 'data-diagram-zoom': true }, Math.round(zoom * 100) + '%')
+          ),
+          h('p', { className: 'diss-diagram-reader__hint' }, t('stem.dissection.diagram_pan_hint', 'At larger sizes, scroll inside the diagram. Keyboard: focus the diagram area and use the arrow keys. Escape closes this view.')),
+          h('div', { ref: viewportRef, className: 'diss-diagram-reader__viewport', tabIndex: 0, role: 'region', 'aria-label': t('stem.dissection.diagram_scroll_area', 'Scrollable diagram') },
+            h('div', { className: 'diss-diagram-reader__image', style: { width: (zoom * 100) + '%' } }, React.cloneElement(props.svg, { style: { maxHeight: 'calc(' + (48 * zoom) + 'vh - ' + (1.25 * zoom) + 'rem)' } }))
+          ),
+          h('div', { className: 'diss-diagram-reader__description' },
+            h('strong', null, t('stem.dissection.diagram_text', 'Diagram in words')),
+            h('p', null, props.description),
+            h('strong', null, t('stem.dissection.diagram_limits', 'Model limits')),
+            h('p', null, props.caption),
+            h('p', { className: 'diss-diagram-reader__scope' }, t('stem.dissection.diagram_scope', 'Reference study only. Zoom changes the drawing size, not specimen measurements or observation credit.'))
+          )
+        )
+      )
+    );
+  }
+
   function DissectionEyeStudy(props) {
     var React = props.React, h = React.createElement;
     var canvasRef = React.useRef(null), sceneRef = React.useRef(null);
@@ -2436,7 +2529,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'heart', name: 'Heart (3-chamber)', x: 0.50, y: 0.35, fn: "Two atria and one ventricle support pulmonary/skin and systemic circulation. Some blood mixing occurs; internal structures help direct flow.", clinical: 'Frog hearts beat without neural input (myogenic) and can beat in saline for hours \u2014 used in cardiac physiology research.' },
 
-                  { id: 'lungs', name: 'Lungs', x: 0.43, y: 0.35, fn: 'Simple thin-walled sacs (no alveoli). Supplemented by cutaneous respiration. Inflated by buccal pumping \u2014 not diaphragm.', clinical: "Compare frog buccal pumping with mammalian diaphragm-driven ventilation. The model does not show microscopic gas-exchange surfaces." },
+                  { id: 'lungs', name: 'Lungs', x: 0.43, y: 0.35, fn: 'Thin-walled lungs with internal folds and small compartments (faveoli) that increase exchange area. Adult frogs also exchange gases through moist skin. Air is moved into the lungs by buccal pumping, rather than a mammalian diaphragm.', clinical: "Compare frog buccal pumping with mammalian diaphragm-driven ventilation. The model does not show microscopic gas-exchange surfaces." },
 
                   { id: 'liver', name: 'Liver (3 lobes)', x: 0.50, y: 0.44, fn: 'Large three-lobed organ. Produces bile, detoxifies blood, stores glycogen. Largest internal organ.', clinical: 'Liver color/size indicates environmental contamination in ecotoxicology studies.' },
 
@@ -2651,7 +2744,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'heart_p', name: 'Heart (4-chamber)', x: 0.44, y: 0.44, fn: "Four chambers form the mammalian heart. In this fetal pig, placental gas exchange and fetal shunts must be distinguished from the postnatal pulmonary and systemic circuits. Compared with humans, atrial, venous, ventricular, and great-vessel anatomy differs.", clinical: 'Processed porcine valve tissue is used in bioprosthetic valves, and genetically modified pig hearts are studied for xenotransplantation; species differences remain clinically important.' },
 
-                  { id: 'lungs_p', name: 'Lungs', x: 0.41, y: 0.42, fn: 'Alveolated, lobed lungs. The right lung has cranial, middle, caudal, and accessory lobes, and a tracheal bronchus supplies the cranial lobe; human lobation and branching differ.', clinical: 'Pig lungs are used in research and training, but their lobation and bronchial tree must not be treated as human-identical.' },
+                  { id: 'lungs_p', name: 'Lungs', x: 0.41, y: 0.42, fn: 'Developing, lobed lungs. Before birth, gas exchange occurs through the placenta, not by breathing air into the lungs. After birth, alveolar surfaces support pulmonary gas exchange. The right lung has cranial, middle, caudal, and accessory lobes, and a tracheal bronchus supplies the cranial lobe; human lobation and branching differ.', clinical: 'Pig lungs are used in research and training, but their lobation and bronchial tree must not be treated as human-identical.' },
 
                   { id: 'liver_p', name: 'Liver', x: 0.55, y: 0.44, fn: 'Five gross lobes, with a more visibly lobated form than the human liver. Core roles include bile production, metabolism, protein synthesis, and glycogen storage.', clinical: 'Pig liver is studied as a comparative and transplantation model; shared roles do not imply identical anatomy or physiology.' },
 
@@ -2760,7 +2853,7 @@ var d = labToolData.dissection || {};
 
                 organs: [
 
-                  { id: 'gills', name: 'Gills', x: 0.31, y: 0.44, fn: '4 gill arches with filaments/lamellae. Countercurrent flow extracts 80% of dissolved O\u2082.', clinical: 'Fish gills extract proportionally more oxygen from water than lungs from air.' },
+                  { id: 'gills', name: 'Gills', x: 0.31, y: 0.44, fn: 'Gill arches bear filaments with thin lamellae that provide gas-exchange area. Water and blood flow in opposite directions across the exchange region, helping maintain an oxygen gradient. Extraction varies with conditions; no fixed percentage applies.', clinical: 'Compare the thin exchange surface and water flow with air movement in lungs. The water and blood remain separated by the exchange barrier.' },
 
                   { id: 'heart_f', name: 'Heart (2-chamber)', x: 0.32, y: 0.51, fn: "One atrium and one ventricle are the main pumping chambers. Single circulation: heart → gills → body → heart. Associated inflow and outflow regions are not counted as additional pumping chambers.", clinical: "Compare single circulation in perch with the two circulation routes in amphibians and mammals. This comparison is not a linear evolutionary ladder." },
 
@@ -2849,7 +2942,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'heart_c', name: 'Heart', x: 0.54, y: 0.40, fn: "A dorsal heart pumps hemolymph through arteries into tissue spaces (sinuses). Hemolymph returns through openings called ostia: an open circulatory system.", clinical: "Open circulation includes vessels. The distinction is whether circulating fluid remains separate from the fluid surrounding tissues." },
 
-                  { id: 'gills_c', name: 'Gills', x: 0.47, y: 0.35, fn: 'Feather-like gills in branchial chamber. Gill bailer creates water current. Attached to leg bases.', clinical: 'Walking legs ventilate gills \u2014 movement and breathing are linked.' },
+                  { id: 'gills_c', name: 'Gills', x: 0.47, y: 0.35, fn: 'Feathery gills lie in branchial chambers beneath the carapace. Scaphognathites (gill bailers, associated with the mouthparts) drive water over the exchange surfaces, where gases pass between water and hemolymph.', clinical: 'Gill attachment near the legs does not mean walking is the main ventilation pump. Distinguish the gill surface from the gill bailer that moves water.' },
 
                   { id: 'gastric_mill', name: 'Gastric Mill', x: 0.38, y: 0.45, fn: '3 calcified teeth (ossicles) inside stomach. Grind food after swallowing. Gastroliths store calcium for molting.', clinical: '"Teeth in the stomach" \u2014 crustaceans chew food after eating it.' },
 
@@ -3053,7 +3146,7 @@ var d = labToolData.dissection || {};
                 "perch": "gills",
                 "crayfish": "gills_c"
               },
-              "prompt": "What surface exchanges gases, and how does air or water reach it?"
+              "prompt": "Name one shared surface feature and one difference in how air or water reaches it. For the fetal pig, distinguish prenatal exchange from breathing after birth. State which claim came from your observation and which came from a reference."
             },
             {
               "id": "liver",
@@ -3270,9 +3363,57 @@ var d = labToolData.dissection || {};
               caption = 'Pair count only. Body positions and vessel connections are not shown.';
               description = 'Earthworm: five pairs of contractile aortic arches, represented as five paired vessel symbols. Body positions and connections are not shown.';
             }
-            return h('figure', { className: 'diss-pump-diagram', 'data-pump-diagram': entry.specimenId },
-              h('svg', { viewBox: '0 0 300 156', role: 'img', 'aria-label': description, focusable: 'false' }, shapes),
-              h('figcaption', null, caption));
+            var svg = h('svg', { viewBox: '0 0 300 156', role: 'img', 'aria-label': description, focusable: 'false' }, shapes);
+            return h(React.Fragment, null,
+              h('figure', { className: 'diss-pump-diagram', 'data-pump-diagram': entry.specimenId }, svg, h('figcaption', null, caption)),
+              h(DissectionDiagramReader, { React: React, t: __alloT, title: entry.specimen.name + ' · ' + entry.organ.name, svg: svg, caption: caption, description: description })
+            );
+          }
+
+          function renderGasExchangeDiagram(entry) {
+            var h = React.createElement, shapes = [], caption, description, facts;
+            var identity = { frog: 'lungs', pig: 'lungs_p', perch: 'gills', crayfish: 'gills_c' };
+            if (identity[entry.specimenId] !== entry.organ.id) return null;
+            function text(key, x, y, label) { shapes.push(h('text', { key: key, x: x, y: y, textAnchor: 'middle' }, label)); }
+            function path(key, d, color, width) { shapes.push(h('path', { key: key, d: d, fill: 'none', stroke: color || '#286574', strokeWidth: width || 3, strokeLinecap: 'round', strokeLinejoin: 'round' })); }
+            if (entry.specimenId === 'frog') {
+              text('air',150,19,'Air via mouth pump'); path('air-arrow','M150 27 V47 M144 41 L150 47 L156 41');
+              shapes.push(h('ellipse', { key: 'lung', cx: 150, cy: 96, rx: 95, ry: 45, fill: '#e2f1f2', stroke: '#416277', strokeWidth: 2 }));
+              path('folds','M65 113 L90 93 L96 128 L119 108 L137 138 M164 139 L181 108 L204 128 L210 93 L235 113');
+              text('fold-label',150,163,'Folded inner wall');
+              caption='Adult frog lung concept. Skin exchange and microscopic barriers are not drawn.';
+              description='Adult frog: air is moved in by the mouth pump; the lung has a folded inner wall. Moist skin also exchanges gases and is not drawn.';
+              facts=['Air at lungs; air or water at skin','Folded lung wall and moist skin','Buccal pumping moves air'];
+            } else if (entry.specimenId === 'pig') {
+              shapes.push(h('rect',{key:'fetal',x:12,y:8,width:276,height:65,rx:9,fill:'#eef0f6',stroke:'#64758b',strokeWidth:2}));
+              text('before',150,31,'Before birth');text('placenta',150,57,'Placental gas exchange');
+              shapes.push(h('rect',{key:'postnatal',x:12,y:93,width:276,height:65,rx:9,fill:'#e2f1f2',stroke:'#416277',strokeWidth:2}));
+              text('after',150,116,'After birth');text('lungs',150,142,'Air → lungs');
+              caption='Life-stage comparison. No fetal airflow is shown; fetal lungs are fluid-filled.';
+              description='Pig life stages: before birth the placenta supplies gas exchange for fetal blood; after birth air reaches the lungs. This is not a fetal breathing diagram.';
+              facts=['Maternal blood before birth; air after birth','Placenta before birth; lung alveoli after birth','Air ventilation begins after birth'];
+            } else if (entry.specimenId === 'perch') {
+              text('water',150,22,'Water flow →');path('water-arrow','M34 40 H267 M258 34 L267 40 L258 46');
+              for(var i=0;i<8;i++) shapes.push(h('rect',{key:'lamella'+i,x:94+i*19,y:62,width:9,height:42,rx:3,fill:'#e2f1f2',stroke:'#416277',strokeWidth:1.5}));
+              text('surface',150,123,'Thin lamellae');
+              path('blood-arrow','M267 142 H34 M43 136 L34 142 L43 148','#735226');text('blood',150,165,'← Blood flow');
+              caption='Countercurrent flow concept. The two fluids do not mix; scale and full gill anatomy are omitted.';
+              description='Perch gill concept: water flows one way and blood the opposite way at thin lamellae. They remain separated by the exchange barrier.';
+              facts=['Water','Thin lamellae on gill filaments','Mouth and opercular movements move water'];
+            } else {
+              text('water',150,20,'Water over gills →');path('water-arrow','M32 36 H269 M260 30 L269 36 L260 42');
+              path('stem','M150 58 V139');
+              for(var j=0;j<5;j++){var y=66+j*14;path('left'+j,'M150 '+y+' L'+(101-j*6)+' '+(y+12));path('right'+j,'M150 '+y+' L'+(199+j*6)+' '+(y+12));}
+              text('surface',150,163,'Feathery gill surface');
+              caption='Gill concept. The mouthpart gill bailer drives water; hemolymph flow is not drawn.';
+              description='Crayfish gill concept: water passes over a feathery exchange surface, driven by mouthpart gill bailers. Hemolymph flow is not shown.';
+              facts=['Water','Feathery gills in branchial chambers','Mouthpart gill bailers move water'];
+            }
+            var svg = h('svg',{viewBox:'0 0 300 178',role:'img','aria-label':description,focusable:'false'},shapes);
+            return h('div',{ 'data-gas-comparison':entry.specimenId },
+              h('figure',{className:'diss-pump-diagram','data-gas-diagram':entry.specimenId},svg,h('figcaption',null,caption)),
+              h(DissectionDiagramReader, { React: React, t: __alloT, title: entry.specimen.name + ' · ' + entry.organ.name, svg: svg, caption: caption, description: description }),
+              h('dl',{className:'diss-gas-profile'},['Medium','Surface','Ventilation'].map(function(label,i){return h(React.Fragment,{key:label},h('dt',null,label),h('dd',null,facts[i]));})));
           }
 
           function dissectionComparisonGroup(specimenId, organId) {
@@ -16769,7 +16910,7 @@ var d = labToolData.dissection || {};
             updMany({ guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, evidenceRemovePendingId: null, evidenceClearPending: false });
             var viewed = Object.assign({}, d.specimensViewed || {});
             viewed[sk] = true;
-            updMany({ specimen: sk, _observationReviewFilter: null, _observationReviewSearch: '', _eyeStudyReturnPart: null, eyeStudyMode: false, flashcardMode: false, _flashcardPractice: null, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, organSearch: '', directoryFilter: 'all', exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
+            updMany({ specimen: sk, _comparisonFocus: null, _observationReviewFilter: null, _observationReviewSearch: '', _eyeStudyReturnPart: null, eyeStudyMode: false, flashcardMode: false, _flashcardPractice: null, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, organSearch: '', directoryFilter: 'all', exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
             if (typeof announceToSR === 'function') announceToSR('Selected ' + sp.name + '. Loading saved progress for the ' + ((sp.layers[0] || {}).name || 'first') + ' layer.');
             if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
           }
@@ -16834,7 +16975,7 @@ var d = labToolData.dissection || {};
             }
             allowDissectionSave(resetSaveKey, null, spec.name, dissectionSaveOwner);
             closeTimedPractical();
-            updMany({ _observationReviewFilter: null, _observationReviewSearch: '', _eyeStudyReturnPart: null, eyeStudyMode: false, _flashcardPractice: null, flashcardMode: false, activeLayer: (spec.layers[0] || {}).id || 'skin', organSearch: '', directoryFilter: 'all', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', resetConfirmPending: false, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
+            updMany({ _comparisonFocus: null, _observationReviewFilter: null, _observationReviewSearch: '', _eyeStudyReturnPart: null, eyeStudyMode: false, _flashcardPractice: null, flashcardMode: false, activeLayer: (spec.layers[0] || {}).id || 'skin', organSearch: '', directoryFilter: 'all', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', resetConfirmPending: false, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
             updMany({ practicalMode: false, quizMode: false, practicalTimer: 0, practicalEndsAt: 0, practicalTargetIds: [], quizExplanation: null, guidedMode: false, guidedTargetIds: [], evidenceRemovePendingId: null, evidenceClearPending: false, labelMode: d.practicalMode ? (d._prePracticalLabelMode || 'show') : (d.labelMode || 'show') });
             if (addToast) addToast('\u21BA Progress reset for ' + spec.name, 'info');
             if (typeof announceToSR === 'function') announceToSR('Progress reset for ' + spec.name + '. Accessibility preferences were preserved.');
@@ -18914,17 +19055,31 @@ var d = labToolData.dissection || {};
               d.compareMode && !d.quizMode && !d.practicalMode && sel && (function () {
                 var group = dissectionComparisonGroup(specimen, sel.id);
                 var entries = dissectionComparisonEntries(group);
+                var comparisonScope = specimen + '|' + (group ? group.id : sel.id);
+                var savedFocus = d._comparisonFocus || {};
+                var comparisonPartner = savedFocus.scope === comparisonScope && entries.some(function(entry){return entry.specimenId !== specimen && entry.specimenId === savedFocus.partner;}) ? savedFocus.partner : 'all';
+                var shownEntries = entries.filter(function(entry){return comparisonPartner === 'all' || entry.specimenId === specimen || entry.specimenId === comparisonPartner;});
                 return React.createElement("section", { id: "diss-comparison-panel", tabIndex: -1, className: "diss-comparison", "data-comparison-group": group ? group.id : "unmapped", "aria-labelledby": "diss-comparison-title" },
                   React.createElement("span", { className: "diss-reference-label" }, __alloT('stem.dissection.comparison_reference', 'Comparative anatomy · reference study')),
                   React.createElement("h3", { id: "diss-comparison-title" }, group ? group.label : sel.name),
                   React.createElement("p", null, group ? group.basis : __alloT('stem.dissection.comparison_unmapped', 'No cross-specimen comparison is mapped for this structure. Similar names alone do not establish a valid anatomical comparison.')),
                   group && group.id === 'pumps' && React.createElement('div', { className: 'diss-comparison-visual-key', 'data-comparison-visual-key': true }, 'Visual guide: chamber layouts, vessel pairs, or the labeled outward-flow route. Shapes are schematic, not body positions or scale. Colors distinguish structures, not oxygen levels.'),
-                  React.createElement("div", { className: "diss-comparison-grid" }, entries.map(function (entry) {
+                  entries.length > 2 && React.createElement('div',{className:'diss-comparison-focus'},
+                    React.createElement('label',{htmlFor:'diss-comparison-partner'},'Compare with'),
+                    React.createElement('select',{id:'diss-comparison-partner',value:comparisonPartner,'aria-controls':'diss-comparison-cards','aria-describedby':'diss-comparison-focus-status',onChange:function(event){upd('_comparisonFocus',{scope:comparisonScope,partner:event.target.value});}},
+                      React.createElement('option',{value:'all'},'All reference specimens'),
+                      entries.filter(function(entry){return entry.specimenId !== specimen;}).map(function(entry){return React.createElement('option',{key:entry.specimenId,value:entry.specimenId},entry.specimen.name);})
+                    ),
+                    React.createElement('p',{id:'diss-comparison-focus-status',role:'status','aria-live':'polite'},comparisonPartner === 'all' ? 'Showing all ' + shownEntries.length + ' specimens. Choose one reference for a focused comparison.' : 'Showing your specimen and one reference. Your specimen and evidence stay unchanged.')
+                  ),
+                  group && group.id === 'gas-exchange' && React.createElement('div',{className:'diss-comparison-visual-key','data-gas-visual-key':true},'Compare in three steps: medium → exchange surface → ventilation. Diagrams are concepts, not specimen images or histology. Arrows show only the labeled movement; before-birth and after-birth conditions are kept separate.'),
+                  React.createElement("div", { id:'diss-comparison-cards',className: "diss-comparison-grid" }, shownEntries.map(function (entry) {
                     return React.createElement("article", { key: entry.specimenId, className: "diss-comparison-card", "data-comparison-specimen": entry.specimenId, "data-current": entry.specimenId === specimen },
                       React.createElement("span", { className: "diss-reference-label" }, entry.specimen.name + (entry.specimenId === specimen ? ' · Current specimen' : ' · Reference')),
                       React.createElement("h4", null, entry.organ.name),
                       React.createElement("span", { className: "diss-directory-progress" }, entry.layer.name),
                       group && group.id === 'pumps' && renderPumpComparisonDiagram(entry),
+                      group && group.id === 'gas-exchange' && renderGasExchangeDiagram(entry),
                       React.createElement("p", null, entry.organ.fn)
                     );
                   })),
@@ -18934,6 +19089,13 @@ var d = labToolData.dissection || {};
                     React.createElement('a', { href: 'https://www.merckvetmanual.com/circulatory-system/congenital-and-inherited-anomalies-of-the-cardiovascular-system/cardiac-shunts-in-animals', target: '_blank', rel: 'noopener noreferrer' }, 'Merck Veterinary Manual: fetal shunts'),
                     React.createElement('a', { href: 'https://lanwebs.lander.edu/faculty/rsfox/invertebrates/lumbricus.html', target: '_blank', rel: 'noopener noreferrer' }, 'Lander University: Lumbricus aortic arches'),
                     React.createElement('a', { href: 'https://programs.clarendoncollege.edu/programs/NatSci/Biology/Zoology/zoo%20online%20outlines/Crayfish_Lab.pdf', target: '_blank', rel: 'noopener noreferrer' }, 'Clarendon College: crayfish circulation (PDF)')
+                  ),
+                  group && group.id === 'gas-exchange' && React.createElement('details',{className:'diss-comparison-sources'},
+                    React.createElement('summary',null,'Gas-exchange sources and scope'),
+                    React.createElement('a',{href:'https://openstax.org/books/biology/pages/39-1-systems-of-gas-exchange',target:'_blank',rel:'noopener noreferrer'},'OpenStax: exchange surfaces'),
+                    React.createElement('a',{href:'https://pubmed.ncbi.nlm.nih.gov/32651399/',target:'_blank',rel:'noopener noreferrer'},'Anuran lung and skin morphology'),
+                    React.createElement('a',{href:'https://pmc.ncbi.nlm.nih.gov/articles/PMC6162397/',target:'_blank',rel:'noopener noreferrer'},'Prenatal and neonatal pig lung study'),
+                    React.createElement('a',{href:'https://pubmed.ncbi.nlm.nih.gov/17899/',target:'_blank',rel:'noopener noreferrer'},'Crayfish ventilation study')
                   ),
                   React.createElement("div", { className: "diss-comparison-prompt" },
                     React.createElement("strong", null, __alloT('stem.dissection.comparison_reasoning', 'Explain with evidence') + ': '),
@@ -19141,19 +19303,16 @@ var d = labToolData.dissection || {};
                       text: __alloT('stem.dissection.countercheck_starter_text', 'I would revise this identification if I observed ')
                     };
                     var hasCountercheck = noteLower.indexOf(String(countercheckStarter.text).trim().toLowerCase()) >= 0;
-                    var evidenceChecks = [
-                      { id: 'observation', label: __alloT('stem.dissection.evidence_observation', 'Observable feature'), complete: noteText.length >= 12, cue: __alloT('stem.dissection.evidence_observation_cue', 'Describe a visible color, shape, texture, size, or movement.') },
-                      { id: 'location', label: __alloT('stem.dissection.evidence_location', 'Location or relationship'), complete: /\b(located|location|dorsal|ventral|anterior|posterior|left|right|above|below|beneath|near|between|inside|outside|adjacent|connect(?:s|ed)?|cavity|toward)\b/.test(noteLower) || /\b(?:on|at|within)\s+(?:the\s+)?surface\b/.test(noteLower), cue: __alloT('stem.dissection.evidence_location_cue', 'Add where it is or what structure it touches or connects to.') },
-                      { id: 'reasoning', label: __alloT('stem.dissection.evidence_reasoning', 'Reasoning link'), complete: /\b(because|therefore|supports?|indicates?|shows?|consistent with|so that|which means)\b/.test(noteLower), cue: __alloT('stem.dissection.evidence_reasoning_cue', 'Explain why those observations support this identification.') },
-                      { id: 'confidence', label: __alloT('stem.dissection.evidence_confidence_check', 'Confidence rating'), complete: confidenceValue >= 1 && confidenceValue <= 3, cue: __alloT('stem.dissection.evidence_confidence_cue', 'Choose a confidence level from 1 to 3.') }
+                    var evidenceReviewSteps = [
+                      { id: 'observe', label: __alloT('stem.dissection.draft_review_observe', 'Observe'), cue: __alloT('stem.dissection.draft_review_observe_cue', 'Describe a feature you can see in this model. Schematic color, size, or motion is not a measurement of a real specimen.') },
+                      { id: 'locate', label: __alloT('stem.dissection.draft_review_locate', 'Locate'), cue: __alloT('stem.dissection.draft_review_locate_cue', 'State where the feature is and how it relates to another visible structure. Use the specimen orientation to check directions.') },
+                      { id: 'explain', label: __alloT('stem.dissection.draft_review_explain', 'Explain'), cue: __alloT('stem.dissection.draft_review_explain_cue', 'Explain how your observations support the identification. Name any reference you used and separate its claims from what you saw.') }
                     ];
-                    var evidenceCompleteCount = evidenceChecks.filter(function (check) { return check.complete; }).length;
-                    var evidenceReady = evidenceCompleteCount === evidenceChecks.length;
-                    var nextEvidenceCheck = evidenceChecks.find(function (check) { return !check.complete; });
                     var evidenceStarters = [
                       { id: 'observation', label: __alloT('stem.dissection.evidence_starter_observation', '+ Observation'), text: __alloT('stem.dissection.evidence_starter_observation_text', 'I observed ') },
                       { id: 'location', label: __alloT('stem.dissection.evidence_starter_location', '+ Location'), text: __alloT('stem.dissection.evidence_starter_location_text', 'It is located ') },
-                      { id: 'reasoning', label: __alloT('stem.dissection.evidence_starter_reasoning', '+ Reasoning'), text: __alloT('stem.dissection.evidence_starter_reasoning_text', 'This supports the identification because ') }
+                      { id: 'reasoning', label: __alloT('stem.dissection.evidence_starter_reasoning', '+ Reasoning'), text: __alloT('stem.dissection.evidence_starter_reasoning_text', 'This supports the identification because ') },
+                      { id: 'reference', label: __alloT('stem.dissection.evidence_starter_reference', '+ Reference'), text: __alloT('stem.dissection.evidence_starter_reference_text', 'The reference states ') }
                     ];
                     function appendEvidenceStarter(starter) {
                       if (noteLower.indexOf(String(starter.text).trim().toLowerCase()) >= 0) return;
@@ -19198,19 +19357,24 @@ var d = labToolData.dissection || {};
                         React.createElement("strong", null, __alloT('stem.dissection.confidence_calibration_cue', 'Calibration cue') + ': '),
                         selectedConfidence ? selectedConfidence.cue : __alloT('stem.dissection.confidence_default_cue', 'Choose based on the evidence in your note, not on how familiar the answer feels.')
                       ),
-                      React.createElement("div", { className: "diss-evidence-coach", "data-evidence-readiness": evidenceCompleteCount, "data-ready": evidenceReady, role: "group", "aria-label": __alloT('stem.dissection.evidence_quality_coach', 'Evidence quality coach') },
-                        React.createElement("div", { className: "diss-evidence-coach__head" },
-                          React.createElement("strong", null, __alloT('stem.dissection.evidence_self_check', 'Evidence self-check')),
-                          React.createElement("span", { className: "diss-evidence-coach__score" }, evidenceCompleteCount + ' of ' + evidenceChecks.length + ' elements included')
+                      React.createElement("div", { className: "diss-evidence-coach", "data-evidence-draft": noteText ? 'present' : 'empty', role: "group", "aria-label": __alloT('stem.dissection.draft_check', 'Draft check') },
+                        React.createElement("strong", { className: "diss-evidence-coach__head" }, __alloT('stem.dissection.draft_check', 'Draft check')),
+                        React.createElement("ul", { className: "diss-draft-status", "aria-label": __alloT('stem.dissection.draft_record_status', 'Writing and confidence status') },
+                          React.createElement("li", null, noteText ? __alloT('stem.dissection.draft_present', 'Draft present · review needed') : __alloT('stem.dissection.draft_empty', 'Note not started')),
+                          React.createElement("li", null, selectedConfidence ? __alloT('stem.dissection.draft_confidence', 'Confidence:') + ' ' + selectedConfidence.label : __alloT('stem.dissection.draft_confidence_missing', 'Confidence not rated'))
                         ),
-                        React.createElement("div", { className: "diss-evidence-meter", role: "progressbar", "aria-label": __alloT('stem.dissection.evidence_elements_included', 'Evidence elements included'), "aria-valuemin": 0, "aria-valuemax": evidenceChecks.length, "aria-valuenow": evidenceCompleteCount }, React.createElement("span", { style: { width: Math.round((evidenceCompleteCount / evidenceChecks.length) * 100) + '%' } })),
-                        React.createElement("ul", { className: "diss-evidence-checks" }, evidenceChecks.map(function (check) {
-                          return React.createElement("li", { key: check.id, "data-complete": check.complete }, (check.complete ? '\u2713 ' : '\u25CB ') + check.label);
-                        })),
-                        React.createElement("p", { className: "diss-evidence-coach__cue" }, evidenceReady ? __alloT('stem.dissection.evidence_complete_message', 'Your observation, location or relationship, reasoning, and confidence are included. Compare your note with the reference, revise anything it changes, or try the optional countercheck below.') : __alloT('stem.dissection.evidence_next_prefix', 'Next:') + ' ' + nextEvidenceCheck.cue),
-                        React.createElement("p", { className: "diss-evidence-coach__note" }, __alloT('stem.dissection.evidence_coaching_limit', 'This checklist detects writing elements, not scientific accuracy or a grade. Revise it when new evidence changes your thinking.'))
+                        React.createElement("p", { className: "diss-evidence-coach__note" }, __alloT('stem.dissection.draft_check_limit', 'Text and confidence are recorded separately. Their presence does not verify the explanation or earn an assessment score.')),
+                        React.createElement("details", { className: "diss-draft-review", "data-evidence-review": true },
+                          React.createElement("summary", null, __alloT('stem.dissection.draft_review_title', 'Review your explanation')),
+                          React.createElement("ol", { className: "diss-draft-review__steps" }, evidenceReviewSteps.map(function (step, index) {
+                            return React.createElement("li", { key: step.id },
+                              React.createElement("span", { className: "diss-draft-review__number", "aria-hidden": "true" }, index + 1),
+                              React.createElement("div", null, React.createElement("strong", null, step.label), React.createElement("p", null, step.cue))
+                            );
+                          }))
+                        )
                       ),
-                      evidenceReady && React.createElement("details", { className: "diss-countercheck diss-disclosure", "data-evidence-countercheck": true },
+                      React.createElement("details", { className: "diss-countercheck diss-disclosure", "data-evidence-countercheck": true },
                         React.createElement("summary", null, __alloT('stem.dissection.countercheck_title', 'Optional challenge: test your identification')),
                         React.createElement("div", { className: "diss-disclosure__body" },
                           React.createElement("p", null, __alloT('stem.dissection.countercheck_prompt', 'What different feature, location, or connection would make this identification less likely\u2014or suggest a different structure?')),
@@ -19222,7 +19386,7 @@ var d = labToolData.dissection || {};
                           React.createElement("p", { id: countercheckStatusId, className: "diss-countercheck__status" },
                             hasCountercheck
                               ? __alloT('stem.dissection.countercheck_finish', 'Finish the countercheck sentence in your evidence note.')
-                              : __alloT('stem.dissection.countercheck_unscored', 'This reflection does not change your 4-of-4 evidence status.')
+                              : __alloT('stem.dissection.countercheck_ungraded', 'Optional reflection; no effect on observation credit or assessment scores.')
                           )
                         )
                       )

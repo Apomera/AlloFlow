@@ -1,0 +1,15 @@
+{
+  "refinementTestsPassed": 19,
+  "taxonomyRegressionTestsPassed": 24,
+  "openBimRegressionTestsPassed": 8,
+  "totalTestsPassed": 51,
+  "browserWorkflowsPassed": 6,
+  "accessibilityViolationsInCheckedPanels": 0,
+  "overflowWidthsChecked": [
+    375,
+    320
+  ],
+  "sourceMirrorParity": true,
+  "javascriptSyntaxChecks": "passed",
+  "openBimValidation": "Standalone vitest run with --testTimeout=60000: 8 passed, including generated Python syntax validation."
+}

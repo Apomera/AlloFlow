@@ -2,6 +2,9 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import fs from 'node:fs';
+
+// Extracted handlers receive host values through __d; preserve the same code contracts.
+const hostHandlersSource = fs.readFileSync('host_handlers_source.jsx', 'utf8').replace(/\b__d\./g, '');
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
@@ -148,27 +151,28 @@ describe('Persona auto-read TTS warming', () => {
     expect(appSource).toContain("typeof phaseKPersonaTts.prewarmPersonaMessageAudio !== 'function'");
     expect(appSource).toContain('const personaTtsQueueRef = useRef([])');
     expect(appSource).toContain('const personaTtsQueueGenerationRef = useRef(0)');
-    expect(appSource).toContain('const processPersonaTtsQueue = async () =>');
+    expect(appSource).toContain('_alloHostHandlers().processPersonaTtsQueue(...__a)');
+    expect(hostHandlersSource).toContain('const processPersonaTtsQueue = async () =>');
     expect(appSource).toContain('entry.generation === personaTtsQueueGenerationRef.current');
-    expect(appSource).toContain('entry.generation !== personaTtsQueueGenerationRef.current');
+    expect(hostHandlersSource).toContain('entry.generation !== personaTtsQueueGenerationRef.current');
     expect(appSource).toContain('personaTtsQueueGenerationRef.current += 1');
     expect(appSource).toContain('personaTtsQueueRef.current = []');
-    expect(appSource).toContain('const setPersonaAutoReadSafely = (nextValue) =>');
-    expect(appSource).toContain('personaAutoReadRef.current = enabled');
+    expect(hostHandlersSource).toContain('const setPersonaAutoReadSafely = (nextValue) =>');
+    expect(hostHandlersSource).toContain('personaAutoReadRef.current = enabled');
     expect(appSource).toContain('setPersonaAutoRead: setPersonaAutoReadSafely');
-    expect(appSource).toContain('const wasEnabled = personaAutoReadRef.current');
+    expect(hostHandlersSource).toContain('const wasEnabled = personaAutoReadRef.current');
     expect(appSource).toContain('setPersonaAutoReadEpoch(value => value + 1)');
     expect(appSource).toContain('const personaTtsVoiceSignature = JSON.stringify({');
     expect(appSource).toContain('personaAutoReadEpoch, personaTtsVoiceSignature');
     expect(appSource).toContain('voiceSpeed: Number.isFinite(Number(voiceSpeed))');
     expect(appSource).toContain("language: String(currentUiLanguage || leveledTextLanguage || 'English')");
-    expect(appSource).toContain('event?.detail?.playbackSessionId === expectedPlaybackSessionId');
+    expect(hostHandlersSource).toContain('event?.detail?.playbackSessionId === expectedPlaybackSessionId');
     expect(appSource).toContain('const createPersonaTtsMessageKey =');
     expect(appSource).toContain('const personaTtsHistoryKeysRef = useRef([])');
     expect(appSource).toContain("window.addEventListener('alloflow-mute-changed', handlePersonaMuteChange)");
     expect(appSource).toContain("window.removeEventListener('alloflow-mute-changed', handlePersonaMuteChange)");
     expect(appSource).toContain("(typeof isGlobalMuted === 'function' && isGlobalMuted())");
-    expect(appSource).toContain('selectedCharacter: prev.selectedCharacter?.name === currentPersona.name');
+    expect(hostHandlersSource).toContain('selectedCharacter: prev.selectedCharacter?.name === currentPersona.name');
 
     const enqueueStart = appSource.indexOf('const enqueuePersonaTtsMessages =');
     const enqueueEnd = appSource.indexOf('useEffect(() => {', enqueueStart);

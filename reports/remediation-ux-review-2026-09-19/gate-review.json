@@ -1,0 +1,42 @@
+{
+  "beforeReset": {
+    "cooldownRemainingMs": 0,
+    "authStreak": 3,
+    "transientStreak": 0,
+    "holdStreak": 3,
+    "holdGateArmed": true,
+    "lastRetryAfterMs": 0,
+    "capped": true,
+    "storming": true,
+    "recentlyThrottled": false
+  },
+  "afterReset": {
+    "cooldownRemainingMs": 0,
+    "authStreak": 0,
+    "transientStreak": 0,
+    "holdStreak": 3,
+    "holdGateArmed": true,
+    "lastRetryAfterMs": 0,
+    "capped": false,
+    "storming": false,
+    "recentlyThrottled": false
+  },
+  "queuedAtFive": {
+    "inFlight": 0,
+    "queued": 1,
+    "starts": 5,
+    "cooldownTotal": 0
+  },
+  "queuedTwoMinutesLater": {
+    "inFlight": 0,
+    "queued": 1,
+    "starts": 5,
+    "cooldownTotal": 0
+  },
+  "budgetAfterQueue": {
+    "budgetMs": 1080000,
+    "spentMs": 0,
+    "remainingMs": 1080000,
+    "exhausted": false
+  }
+}

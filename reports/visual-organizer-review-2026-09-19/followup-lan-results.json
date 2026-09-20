@@ -1,0 +1,24 @@
+{
+  "checks": [
+    "Teacher creates isolated organizer session",
+    "Two separately authorized students join",
+    "Student receives matching diagram and activity",
+    "Student projection hides peer roster",
+    "Student loading receipt accepted",
+    "Student ready receipt accepted",
+    "Student complete receipt accepted",
+    "Teacher sees submitted receipt without raw writing",
+    "Reject invalid or unauthorized participant write 1",
+    "Reject invalid or unauthorized participant write 2",
+    "Reject invalid or unauthorized participant write 3",
+    "Reject invalid or unauthorized participant write 4",
+    "Reject invalid or unauthorized participant write 5",
+    "Teacher targets retry without changing activity identity",
+    "Reconnected student receives targeted retry",
+    "Reconnected student can acknowledge activity",
+    "Teacher stop reaches student",
+    "Live SSE carries retry, ready, and stop updates"
+  ],
+  "passed": 18,
+  "scope": "Real isolated Desktop LAN HTTP and SSE listeners; teacher private API and two participant tokens; no external classroom changed."
+}

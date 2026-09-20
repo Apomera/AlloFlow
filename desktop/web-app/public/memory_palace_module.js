@@ -645,8 +645,15 @@
     if (!target) return [];
     // A distractor that reads the same as the answer would make the item
     // unanswerable rather than harder.
-    var answerText = _foldLoose(target.label);
-    pool = pool.filter(function (c) { return _foldLoose(c.label) !== answerText; });
+    var seenLabels = Object.create(null);
+    seenLabels[_foldLoose(target.label)] = true;
+    // Repeated facts in different rooms must not crowd out distinct choices.
+    pool = pool.filter(function (c) {
+      var text = _foldLoose(c.label);
+      if (!text || seenLabels[text]) return false;
+      seenLabels[text] = true;
+      return true;
+    });
     var want = isNum(opts.size) ? opts.size : RECALL_CHOICE_COUNT;
     want = Math.max(2, Math.min(want, pool.length + 1));
     var rnd = _lcg((((isNum(opts.seed) ? opts.seed : 1) >>> 0) ^ _hashId(locusId)) >>> 0);
@@ -2243,6 +2250,8 @@
       g2.rotation.y = (l.faceYaw != null) ? l.faceYaw : (l.faceDir > 0 ? 0 : Math.PI);   // face into the (radial) room
       // Frame border + canvas. The border carries an (initially dark) emissive in
       // the room accent so the CURRENT locus can glow — tick pulses emissiveIntensity.
+      var savedRecall = recall && opts.recallState && opts.recallState[l.id];
+      var initialCaption = recall && !(savedRecall && savedRecall.revealed) ? '?' : l.label;
       var borderMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.8), roughness: 0.38, metalness: 0.28, emissive: new THREE.Color(color), emissiveIntensity: 0 });
       if (displayBackGeo) {
         var displayBack = new THREE.Mesh(displayBackGeo, frameCaseMat);
@@ -2345,8 +2354,11 @@
           _emptyBeacons.push(emptyBeacon);
         } catch (eEmptyBeacon) {}
       }
+      // Restore completed recall colors quietly, without replaying reward effects.
+      if (savedRecall && savedRecall.status === 'correct') borderMat.color.set('#22c55e');
+      else if (savedRecall && savedRecall.status === 'incorrect') borderMat.color.set('#ef4444');
       // Item label under the frame ('?' while its answer is unearned in recall).
-      var lab = makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, false, _textureAnisotropy, theme.walls || theme.ground ? 'plaque' : 'plate');
+      var lab = makeLabelSprite(THREE, initialCaption, color, 24, false, _textureAnisotropy, theme.walls || theme.ground ? 'plaque' : 'plate');
       lab.userData.visualRole = 'locus-caption'; lab.userData.locusId = l.id;
       lab.position.set(0, -(FRAME_H / 2 + 34), 10);
       g2.add(lab);
@@ -2401,7 +2413,7 @@
       }
       group.add(g2);
       frameMeshes.push(canvasMesh);
-      frameRefs[l.id] = { group: g2, label: lab, captionText: recall ? '?' : l.label, borderMat: borderMat, baseColor: color, locus: l, mat: mat, canvasMesh: canvasMesh, masteryRing: masteryRing, stopRing: stopRing, emptyBeacon: emptyBeacon, idx: routeNo, hasImage: !!img, busy: false, empty: isEmptyLocus };
+      frameRefs[l.id] = { group: g2, label: lab, captionText: initialCaption, borderMat: borderMat, baseColor: color, locus: l, mat: mat, canvasMesh: canvasMesh, masteryRing: masteryRing, stopRing: stopRing, emptyBeacon: emptyBeacon, idx: routeNo, hasImage: !!img, busy: false, empty: isEmptyLocus };
       if (frameRefs[l.id].empty) borderMat.emissiveIntensity = 0.12;
       // Existing relief pair (reload path): upgrade the flat frame in place.
       if (img && depths[l.id]) applyRelief(frameRefs[l.id], routeNo, color, img, depths[l.id]);
@@ -4929,7 +4941,7 @@
     }
     // ── In-VR recall bank: floating, ray-selectable answer chips (Tier-4 item) ──
     // In recall mode the 2D bank UI is invisible from inside the headset, so the
-    // trigger on a locus spawns the REMAINING answers as label sprites in front of
+    // trigger on a locus spawns that stop's answer choices as label sprites in front of
     // the player. Picking one routes through the SAME view-side answer flow as a
     // 2D chip click (opts.vrRecall.onPick → submitRecallAnswer): correct → the
     // view reveals the locus (which closes the bank synchronously), wrong → the
@@ -4952,7 +4964,7 @@
       _xrHideBank();
       if (!recall || !opts.vrRecall || typeof opts.vrRecall.getBank !== 'function') return;
       var chips = [];
-      try { chips = opts.vrRecall.getBank() || []; } catch (e) { chips = []; }
+      try { chips = opts.vrRecall.getBank(id) || []; } catch (e) { chips = []; }
       if (!chips.length) return;
       try {
         _vrBankGroup = new THREE.Group(); _vrBankFor = id;

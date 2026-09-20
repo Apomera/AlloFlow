@@ -30,7 +30,7 @@ const _loadedModules = new Set();
  */
 export function loadAlloModule(filename) {
   if (_loadedModules.has(filename)) return;
-  const modulePath = resolve(process.cwd(), filename);
+  const modulePath = resolve(process.cwd(), filename === 'view_quiz_module.js' && process.env.ALLO_ASSESS_CANDIDATE ? process.env.ALLO_ASSESS_CANDIDATE : filename);
   const moduleSource = readFileSync(modulePath, 'utf-8');
   // Append a //# sourceURL so V8 attributes this eval'd script to the real file
   // path — this makes stack traces in module errors point at the file instead of

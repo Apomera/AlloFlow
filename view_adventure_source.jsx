@@ -228,7 +228,7 @@ function AdventureLearningProfiles(props) {
     props.setEnableFactionResources(profile.mode === 'system');
     // Keep manually authored resources when reapplying a profile.
     if (profile.mode === 'system' && props.factionResourceMode !== 'manual') props.setFactionResourceMode('ai');
-    setAdventureState(previous => ({ ...previous, episodeTurnLimit: profile.turns, enableAutoClimax: true, choiceCount: profile.choices, learningProfile: profile.id }));
+    setAdventureState(previous => ({ ...previous, episodeTurnLimit: profile.turns, lastEpisodeTurnLimit: profile.turns, episodeLengthMode: 'preset', enableAutoClimax: true, choiceCount: profile.choices, learningProfile: profile.id }));
   };
   return <section aria-label={adventureSettingsText(t, 'profiles', 'Learning profiles')} style={adventureVisualTokens(props.theme)} className="mb-5 rounded-3xl border border-[var(--av-line)] bg-[var(--av-surface)] p-4 sm:p-5 text-[var(--av-ink)] shadow-[var(--av-shadow)]">
     <p className="font-bold text-sm tracking-wide">{adventureSettingsText(t, 'profiles', 'Learning profiles')}</p>

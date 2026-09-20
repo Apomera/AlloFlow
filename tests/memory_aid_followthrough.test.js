@@ -20,13 +20,13 @@ async function click(name){const b=[...host.querySelectorAll('button')].find(b=>
 async function input(el,value){expect(el).toBeTruthy();const proto=el.tagName==='SELECT'?window.HTMLSelectElement.prototype:el.tagName==='INPUT'?window.HTMLInputElement.prototype:window.HTMLTextAreaElement.prototype;await act(async()=>{Object.getOwnPropertyDescriptor(proto,'value').set.call(el,value);el.dispatchEvent(new Event(el.tagName==='SELECT'?'change':'input',{bubbles:true}));});}
 async function completeRecall(){await click('Try recall');await click('Start recall practice');await input(host.querySelector('textarea[aria-label^="Recall response"]'),'A solid keeps its shape and volume.');await click('Reveal the facts');for(const radio of [...host.querySelectorAll('input[type=radio][value=recalled]')].filter(visible))await act(async()=>radio.click());}
 describe('Memory Aid application and later review',()=>{
-  it('normalizes review dates, preserves private application evidence, and ignores obsolete cue attempts',()=>{
+  it('normalizes review dates, preserves private application evidence, and preserves review plans after cue edits',()=>{
     const card=makeCard(),attempt=H.createMemoryAidPracticeAttempt(card,{response:'Shape and volume.',supportMode:'none'});
     const completed=H.normalizeMemoryAidPracticeAttempt({...attempt,factChecks:['recalled','practice'],nextReviewDate:'2026-09-20',applicationQuestion:'New situation',applicationResponse:'Private explanation',applicationRevealed:true,applicationCheck:'revisit'},card,0);
     expect(rules.reviewPlan(card,[completed],'2026-09-21')).toMatchObject({due:true,needsPractice:true,date:'2026-09-20'});
     expect(completed.applicationResponse).toBe('Private explanation');
     expect(H.normalizeMemoryAidPracticeAttempt({...completed,nextReviewDate:'2026-02-30'},card,0).nextReviewDate).toBe('');
-    expect(rules.reviewPlan({...card,studentDraft:'Changed cue'},[completed]).latest).toBeNull();
+    expect(rules.reviewPlan({...card,studentDraft:'Changed cue'},[completed])).toMatchObject({earlierCue:true,needsPractice:true,date:'2026-09-20',latest:{id:completed.id}});
     expect(rules.reviewPlan(card,[{...completed,nextReviewDate:'',reviewSchedule:'off'}]).date).toBe('');
   });
   it('saves an application response and chosen date privately, then clears the next attempt',async()=>{

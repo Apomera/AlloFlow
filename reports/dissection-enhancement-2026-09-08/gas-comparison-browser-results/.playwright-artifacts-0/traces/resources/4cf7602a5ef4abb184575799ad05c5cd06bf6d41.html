@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>dissection harness</title>
+<link rel="stylesheet" href="/app/static/css/main.1fb7b97e.css">
+<style>html,body{margin:0;height:100%;background:#0f172a}
+#wrap{width:1180px;height:900px;position:relative;display:flex}</style></head>
+<body><div id="wrap"></div>
+<script src="/desktop/web-app/node_modules/react/umd/react.production.min.js"></script>
+<script src="/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js"></script>
+<script src="/vendor/three-r128/three.min.js"></script>
+<script>
+  window.__events = { toasts: [], errors: [] };
+  window.addEventListener('error', function (e) { window.__events.errors.push(String(e.message)); });
+</script>
+<script src="/stem_lab/stem_lab_module.js"></script>
+<script>
+  // Fill in only what is missing. When preScripts loaded the real host this
+  // keeps its registry and its extras (makeBayViewer); with no preScripts it
+  // behaves exactly as the original minimal stub did.
+  window.StemLab = window.StemLab || { _registry: {}, _order: [] };
+  if (!window.StemLab._registry) window.StemLab._registry = {};
+  if (!window.StemLab.registerTool) {
+    window.StemLab.registerTool = function (id, cfg) { cfg.id = id; this._registry[id] = cfg; };
+  }
+  if (!window.StemLab.isRegistered) {
+    window.StemLab.isRegistered = function (id) { return !!this._registry[id]; };
+  }
+  if (!window.StemLab.getRegisteredTools) {
+    window.StemLab.getRegisteredTools = function () { var s = this; return Object.keys(s._registry).map(function (k) { return s._registry[k]; }); };
+  }
+  // Always overridden, host or not: the harness guarantees no network, and
+  // three.js is already on the page.
+  window.StemLab.loadScriptResilient = function () { return new Promise(function () {}); };
+  window.StemLab.ensureThree = function () { return Promise.resolve(window.THREE); };
+</script>
+
+<script src="/stem_lab/stem_tool_dissection.js"></script>
+<script>
+  var e = React.createElement;
+  window.__mount = function (toolData) {
+    var cfg = window.StemLab._registry["dissection"];
+    if (!cfg) return false;
+    var data = Object.assign({ _threeLoaded: true }, toolData || {});
+    window.__toolData = data;
+    var bump = null;
+    // Two state channels exist across these tools and a harness has to serve both:
+    // most read ctx.toolData + ctx.update/updateMulti, but some (galaxy) read
+    // ctx.labToolData + ctx.setLabToolData. Backing them with the SAME object means
+    // a spec can seed or read state without caring which the tool happens to use.
+    var applyFn = function (fnOrVal) {
+      var next = typeof fnOrVal === 'function' ? fnOrVal(data) : fnOrVal;
+      if (next && next !== data) { Object.keys(next).forEach(function (k) { data[k] = next[k]; }); }
+      if (bump) bump();
+    };
+    var ctx = {
+      React: React,
+      toolData: data,
+      labToolData: data,
+      update: function (b, k, v) { data[b] = Object.assign({}, data[b]); data[b][k] = v; if (bump) bump(); },
+      updateMulti: function (b, patch) { data[b] = Object.assign({}, data[b], patch); if (bump) bump(); },
+      setToolData: applyFn,
+      setLabToolData: applyFn,
+      setStemLabTool: function () {}, setStemLabTab: function () {},
+      addToast: function (m, k) { window.__events.toasts.push({ message: String(m), kind: k }); },
+      awardXP: function () {}, getXP: function () { return 0; },
+      announceToSR: function () {}, celebrate: function () {}, beep: function () {},
+      canvasNarrate: function () {}, saveSnapshot: function () {},
+      callGemini: null, callTTS: null, callImagen: null, callGeminiVision: null,
+      gradeLevel: '5th Grade', gradeBand: 'g68', toolSnapshots: [], props: {},
+      stemLabTab: 'explore', stemLabTool: null,
+      t: function (k, fb) { return fb || k; },
+      icons: new Proxy({}, { get: function () { return function () { return e('span'); }; } }),
+      a11yClick: function (fn) { return { onClick: fn, role: 'button', tabIndex: 0 }; },
+      canvasA11yDesc: function (d) { return { role: 'img', 'aria-label': d }; },
+      srOnly: {}, pal: new Proxy({}, { get: function () { return '#888888'; } }),
+      isDark: false, isContrast: false, theme: 'default',
+      activeSessionCode: null, studentNickname: 'Tester', isTeacherMode: false,
+      gridRange: { min: -10, max: 10 }
+    };
+    window.__ctx = ctx;
+    function Comp() {
+      var st = React.useState(0);
+      bump = function () { st[1](function (n) { return n + 1; }); };
+      return cfg.render(ctx);
+    }
+    window.__rerender = function () { if (bump) bump(); };
+    window.__root = ReactDOM.createRoot(document.getElementById('wrap'));
+    window.__root.render(e(Comp));
+    return true;
+  };
+
+  window.__destroy = function () {
+    try { if (window.__root) window.__root.unmount(); } catch (err) {}
+    // Unmounting disposes the renderer, but three.js does not reliably hand the GL
+    // context back straight away. Chromium caps live contexts per PROCESS and
+    // silently kills the oldest past the limit, so across several GL specs in one
+    // run the earliest suite starts failing for reasons that have nothing to do with
+    // it. Releasing explicitly makes multi-suite runs deterministic.
+    try {
+      var cs = document.querySelectorAll('canvas');
+      for (var i = 0; i < cs.length; i++) {
+        var g = null;
+        try { g = cs[i].getContext('webgl2') || cs[i].getContext('webgl'); } catch (e) {}
+        if (!g || g.isContextLost()) continue;
+        var ext = g.getExtension('WEBGL_lose_context');
+        if (ext) ext.loseContext();
+      }
+    } catch (err) {}
+  };
+
+  // The WebGL canvas, chosen by actually having a GL context rather than by
+  // position — several of these tools also mount 2D canvases (charts, minimaps),
+  // and picking the last one found a 2D canvas and reported nonsense.
+  window.__glCanvas = function (sel) {
+    var cs = document.querySelectorAll((sel || '#wrap') + ' canvas');
+    for (var i = 0; i < cs.length; i++) {
+      try {
+        var g = cs[i].getContext('webgl2') || cs[i].getContext('webgl');
+        if (g) return { el: cs[i], gl: g };
+      } catch (e) { /* a 2D canvas throws or returns null */ }
+    }
+    return null;
+  };
+
+  window.__glLive = function (sel) {
+    var cs = document.querySelectorAll((sel || '#wrap') + ' canvas');
+    var hit = window.__glCanvas(sel);
+    if (!hit) return null;
+    var c = hit.el, p = c.parentElement;
+    var cr = c.getBoundingClientRect();
+    var pr = p ? p.getBoundingClientRect() : cr;
+    return {
+      canvasCount: cs.length,
+      lost: hit.gl.isContextLost(),
+      w: c.clientWidth, h: c.clientHeight,
+      // Measured against its OWN parent: the harness box is arbitrary, so a canvas
+      // legitimately larger than it is not evidence of anything.
+      box: { w: Math.round(cr.width), h: Math.round(cr.height) },
+      parentBox: { w: Math.round(pr.width), h: Math.round(pr.height) },
+      attr: { w: c.width, h: c.height }
+    };
+  };
+
+  
+</script></body></html>

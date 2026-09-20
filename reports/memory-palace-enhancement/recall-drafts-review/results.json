@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "perStopDrafts": true,
+  "sameStopDraft": true,
+  "entranceRecovery": true,
+  "decorationRemount": true,
+  "exitClears": true,
+  "changedContentClears": true,
+  "retryClears": true,
+  "noDraftAttempts": true,
+  "widths": [
+    1280,
+    390,
+    320
+  ],
+  "pageErrors": []
+}

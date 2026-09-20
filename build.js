@@ -1451,6 +1451,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_fieldjourneys.js',
     'stem_lab/stem_tool_moonmission.js',
     'stem_lab/stem_tool_beehive.js',
+    'stem_lab/stem_tool_butterfly.js',
     'stem_lab/stem_tool_spacecolony.js',
     'stem_lab/stem_tool_spacestation.js',
     'stem_lab/stem_tool_coasterlab.js',

@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "artifacts": [
+    {
+      "id": "svg-absolute-link-change",
+      "documentKind": "reading",
+      "kind": "html",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-next-opportunities-2026-09-19\\rendered\\svg-absolute-link-change.candidate.html",
+      "expected": {
+        "title": "Reading",
+        "language": "en",
+        "headings": [
+          {
+            "level": 1,
+            "name": "Reading"
+          }
+        ],
+        "tables": []
+      },
+      "sourceFidelity": {
+        "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-next-opportunities-2026-09-19\\rendered\\svg-absolute-link-change.source.html",
+        "checkpoints": [
+          {
+            "id": "p",
+            "sourceSelector": "#p",
+            "properties": [
+              "href",
+              "text",
+              "name",
+              "role"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

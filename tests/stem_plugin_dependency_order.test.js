@@ -232,3 +232,26 @@ describe('STEM demand-loader waits for stem_lab_module.js before injecting a plu
     expect(harness.history.map(modulePath)).toEqual(['stem_lab/stem_tool_solarsystem.js']);
   });
 });
+
+
+describe('shared meadow dependency loading', () => {
+  const meadowManifest=['stem_lab/stem_sim_meadow.js','stem_lab/stem_tool_beehive.js','stem_lab/stem_tool_butterfly.js'];
+  it.each(['butterfly','beehive'])('loads the shared kit before %s without loading the other activity',async(tool)=>{
+    const harness=createHarness(meadowManifest);
+    expect(harness.window.__alloEnsureStemPluginLoaded(tool)).toBe(true);await flushJobs();
+    expect(harness.history.map(modulePath)).toEqual(['stem_lab/stem_sim_meadow.js']);
+    harness.history[0].onload();await flushJobs();
+    expect(harness.history.map(modulePath)).toEqual(['stem_lab/stem_sim_meadow.js','stem_lab/stem_tool_'+tool+'.js']);
+    harness.history[1].onload();await flushJobs();
+    expect(harness.window.__alloGetStemPluginState(tool)).toMatchObject({status:'loaded'});
+  });
+  it('shares one pending kit request between both consumers',async()=>{
+    const harness=createHarness(meadowManifest);
+    harness.window.__alloEnsureStemPluginLoaded('beehive');harness.window.__alloEnsureStemPluginLoaded('butterfly');await flushJobs();
+    expect(harness.history.map(modulePath)).toEqual(['stem_lab/stem_sim_meadow.js']);
+    harness.history[0].onload();await flushJobs();
+    expect(harness.history.map(modulePath).sort()).toEqual(meadowManifest.slice().sort());
+    harness.history.slice(1).forEach(script=>script.onload());await flushJobs();
+    for(const id of ['beehive','butterfly'])expect(harness.window.__alloGetStemPluginState(id)).toMatchObject({status:'loaded'});
+  });
+});

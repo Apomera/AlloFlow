@@ -709,7 +709,7 @@ function validOrganizerProgressValue(value) {
   var keys = Object.keys(value);
   if (keys.length !== 9) return false;
   for (var i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
-  var types = ['venn', 'tchart', 'cesort', 'pipeline', 'conceptmap', 'outline', 'fishbone', 'problemsolution', 'frayer', 'seethinkwonder', 'storymap', 'strandchallenge3d', 'conceptrecall3d', 'palacerecall'];
+  var types = ['venn', 'tchart', 'cesort', 'pipeline', 'conceptmap', 'outline', 'fishbone', 'problemsolution', 'frayer', 'seethinkwonder', 'storymap', 'strandchallenge3d', 'conceptrecall3d', 'palacerecall', 'reflection'];
   var gameTypes = ['vennDiagram', 'tchartSort', 'causeEffectSort', 'pipelineBuilder', 'conceptMapSort', 'outlineSort', 'fishboneSort', 'problemSolutionSort', 'frayerSort', 'seeThinkWonderSort', 'storyMapSort', 'strandChallenge3d', 'strandChallenge3dAttempt', 'conceptRecall', 'conceptRecallAttempt', 'palaceRecall', 'palaceRecallAttempt'];
   if (!(typeof value.activityId === 'string' && /^[A-Za-z0-9:_-]{8,160}$/.test(value.activityId))) return false;
   if (types.indexOf(value.type) === -1) return false;

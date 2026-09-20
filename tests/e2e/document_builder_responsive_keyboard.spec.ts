@@ -381,3 +381,203 @@ test('Escape inside the document dismisses tools and in-app Focus mode without c
   expect(await page.evaluate(() => (window as any).__builderCloseRequests)).toBe(0);
   expect(errors).toEqual([]);
 });
+
+const enhancementEvidence = path.join(root, 'reports/document-builder-enhancements-2026-09-19');
+fs.mkdirSync(enhancementEvidence, { recursive: true });
+for (const width of [1440, 390]) {
+  test('Enhancements: find tools without shrinking the preview at ' + width, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const errors = await mount(page);
+    const frame = page.frameLocator('#document-builder-preview');
+    await frame.locator('#editable').click();
+    const before = await geometry(page);
+    await page.keyboard.press('Alt+q');
+    await expect(page.getByRole('searchbox', { name: 'Find a document tool' })).toBeFocused();
+    await page.getByRole('searchbox').fill('Table body rows');
+    await expect(page.locator('[data-builder-tool-result]')).toHaveCount(1);
+    const during = await geometry(page);
+    expect(during.frame.height).toBe(before.frame.height);
+    expect(during.frame.width).toBe(before.frame.width);
+    await page.screenshot({ path: path.join(enhancementEvidence, 'tool-search-' + width + '.png') });
+    await page.keyboard.press('ArrowDown');
+    await expect(page.locator('[data-builder-tool-result]')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('spinbutton', { name: 'Table body rows' })).toBeFocused();
+    await expect(page.getByRole('tabpanel', { name: 'Insert', exact: true })).toBeVisible();
+    await expect(frame.locator('#editable')).toHaveText('Original lesson text.');
+    expect((await geometry(page)).frame.height).toBe(before.frame.height);
+    await page.getByRole('button', { name: 'Find a tool', exact: true }).click();
+    await page.getByRole('searchbox').fill('no-such-command');
+    await expect(page.getByText('No matching tools.', { exact: false })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('button', { name: 'Find a tool', exact: true })).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__builderCloseRequests)).toBe(0);
+    expect((await geometry(page)).documentWidth).toBeLessThanOrEqual(width);
+    expect(errors).toEqual([]);
+  });
+
+  test('Enhancements: table and image controls follow selection at ' + width, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const errors = await mount(page);
+    const frame = page.frameLocator('#document-builder-preview');
+    await page.evaluate(() => {
+      const doc = (window as any).builderProps.exportPreviewRef.current.contentDocument;
+      const canvas = document.createElement('canvas'); canvas.width = 160; canvas.height = 100;
+      const context = canvas.getContext('2d')!; context.fillStyle = '#4338ca'; context.fillRect(0, 0, 160, 100);
+      doc.querySelector('main').insertAdjacentHTML('beforeend', '<table id="context-table"><tbody><tr><td>First cell</td><td>Second cell</td></tr></tbody></table><img id="context-image" width="160" height="100" alt="Lesson diagram" src="' + canvas.toDataURL() + '">');
+    });
+    await frame.locator('#context-table td').first().click();
+    await expect(page.getByRole('group', { name: 'Selected table tools' })).toBeVisible();
+    await page.getByRole('button', { name: 'Add table row', exact: true }).click();
+    await expect(frame.locator('#context-table tr')).toHaveCount(2);
+    await page.getByRole('button', { name: 'Add table column', exact: true }).click();
+    await expect(frame.locator('#context-table tr').first().locator('td')).toHaveCount(3);
+    await page.getByRole('button', { name: 'More table tools' }).click();
+    await expect(page.locator('#builder-table-context-tools')).toBeVisible();
+    await page.getByRole('button', { name: 'Close ribbon tools' }).click();
+    await frame.locator('#context-image').click();
+    await expect(page.getByRole('group', { name: 'Selected image tools' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Alt text', exact: true })).toBeVisible();
+    await page.screenshot({ path: path.join(enhancementEvidence, 'image-tools-' + width + '.png') });
+    await page.getByRole('button', { name: 'Crop selected image' }).click();
+    await expect(frame.getByRole('dialog', { name: 'Crop image', exact: true })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(frame.getByRole('dialog', { name: 'Crop image', exact: true })).not.toBeVisible();
+    await frame.locator('#editable').click();
+    await expect(page.getByRole('group', { name: 'Quick formatting' })).toBeVisible();
+    expect((await geometry(page)).documentWidth).toBeLessThanOrEqual(width);
+    expect(errors).toEqual([]);
+  });
+}
+
+test('Enhancements: storage failure exposes a current HTML backup', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => { Storage.prototype.setItem = () => { throw new DOMException('Full', 'QuotaExceededError'); }; });
+  const errors = await mount(page);
+  const frame = page.frameLocator('#document-builder-preview');
+  await frame.locator('#editable').click();
+  await page.keyboard.press('End');
+  await page.keyboard.type(' Backup-current-text.');
+  await expect(page.locator('[data-builder-save-status]')).toContainText('Session only');
+  await expect(page.getByRole('button', { name: 'Download backup', exact: true })).toBeVisible();
+  const downloaded = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download backup', exact: true }).click();
+  const download = await downloaded;
+  expect(download.suggestedFilename()).toMatch(/-backup\.html$/);
+  const backupPath = path.join(enhancementEvidence, 'verified-backup.html');
+  await download.saveAs(backupPath);
+  const backup = fs.readFileSync(backupPath, 'utf8');
+  expect(backup).toContain('Backup-current-text.');
+  expect(backup).not.toContain('allo-builder-edit-css');
+  expect(backup).not.toContain('allo-block-controls');
+  await expect(page.locator('[data-builder-save-status]')).toContainText('Session only');
+  await page.screenshot({ path: path.join(enhancementEvidence, 'save-warning.png') });
+  expect(errors).toEqual([]);
+});
+
+const backupSearchEvidence = path.join(root, 'reports/document-builder-backup-search-2026-09-19');
+fs.mkdirSync(backupSearchEvidence, { recursive: true });
+const importedLesson = '<!doctype html><html lang="en"><head><title>Recovered lesson</title><style>h1{color:#4338ca}p{font-size:18px}</style></head><body><main><h1>Recovered lesson</h1><p id="restored-editable">Backup lesson text.</p><a href="https://example.org/reference">Lesson reference</a><img alt="Recovered diagram" width="40" height="40" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jf1sAAAAASUVORK5CYII="><script>parent.__backupScriptRan=true</script><p onclick="parent.__backupScriptRan=true">Safe text</p></main></body></html>';
+async function openBackupFile(page: Page, content = importedLesson, name = 'lesson-backup.html') {
+  await page.addScriptTag({ path: path.join(root, 'dompurify/3.1.7/purify.min.js') });
+  await page.locator('#builder-backup-file').setInputFiles({ name, mimeType: 'text/html', buffer: Buffer.from(content) });
+}
+for (const width of [1440, 390]) {
+  test('Backup search: everyday terms and disabled explanations at ' + width, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const errors = await mount(page);
+    const before = await geometry(page);
+    await page.getByRole('button', { name: 'Find a tool', exact: true }).click();
+    const query = page.getByRole('searchbox');
+    await query.fill('picture');
+    await expect(page.locator('[data-builder-tool-result]').filter({ hasText: 'Add an image' })).toBeVisible();
+    await query.fill('bibliography');
+    const unavailable = page.locator('[data-builder-tool-result]').filter({ hasText: 'Bibliography' }).first();
+    await expect(unavailable).toHaveAttribute('aria-disabled', 'true');
+    await expect(unavailable).toContainText('Add and select a source');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(query).toBeVisible();
+    expect((await geometry(page)).frame).toEqual(before.frame);
+    await page.screenshot({ path: path.join(backupSearchEvidence, 'unavailable-tool-' + width + '.png') });
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('button', { name: 'Find a tool', exact: true })).toBeFocused();
+    expect(errors).toEqual([]);
+  });
+
+  test('Backup search: preview, cancel, restore and undo at ' + width, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const errors = await mount(page);
+    const frame = page.frameLocator('#document-builder-preview');
+    await frame.locator('#editable').click(); await page.keyboard.press('End'); await page.keyboard.type(' Latest live edit.');
+    await page.getByRole('button', { name: 'Find a tool', exact: true }).click();
+    await page.getByRole('searchbox').fill('Open HTML backup');
+    await page.locator('[data-builder-tool-result]').click();
+    await expect(page.getByRole('button', { name: 'Open HTML backup', exact: true })).toBeFocused();
+    await openBackupFile(page);
+    const modal = page.getByRole('dialog', { name: 'Restore an HTML backup', exact: true });
+    await expect(modal.getByRole('button', { name: 'Restore backup', exact: true })).toBeVisible();
+    await expect(frame.locator('#editable')).toContainText('Latest live edit.');
+    await expect(modal.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(modal.getByRole('button', { name: 'Restore backup', exact: true })).toBeFocused();
+    await page.screenshot({ path: path.join(backupSearchEvidence, 'restore-preview-' + width + '.png') });
+    await modal.frameLocator('iframe').getByRole('link', { name: 'Lesson reference' }).click();
+    await expect(modal.frameLocator('iframe').locator('h1')).toHaveText('Recovered lesson');
+    await modal.frameLocator('iframe').locator('h1').click();
+    await page.keyboard.press('Escape');
+    await expect(modal).not.toBeVisible();
+    await expect(page.getByRole('button', { name: 'Open HTML backup', exact: true })).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__builderCloseRequests)).toBe(0);
+    await openBackupFile(page);
+    await modal.getByRole('button', { name: 'Restore backup', exact: true }).click();
+    await expect(modal).not.toBeVisible();
+    await expect(frame.locator('#restored-editable')).toHaveText('Backup lesson text.');
+    await expect(page.getByRole('button', { name: 'Undo backup restore', exact: true })).toBeVisible();
+    expect(await page.evaluate(() => (window as any).__backupScriptRan)).toBeUndefined();
+    expect(await frame.locator('[onclick]').count()).toBe(0);
+    await page.getByRole('button', { name: 'Close ribbon tools', exact: true }).click();
+    await frame.locator('#restored-editable').click(); await page.keyboard.press('End'); await page.keyboard.type(' Still editable.');
+    await expect(frame.locator('#restored-editable')).toContainText('Still editable.');
+    await page.keyboard.press('Alt+q'); await expect(page.getByRole('searchbox')).toBeFocused(); await page.keyboard.press('Escape');
+    await page.getByRole('tab', { name: 'Review', exact: true }).click();
+    const history = page.locator('#builder-version-history');
+    if ((await history.getAttribute('open')) === null) await history.locator('summary').click();
+    await page.getByRole('button', { name: 'Undo backup restore', exact: true }).click();
+    await expect(frame.locator('#editable')).toContainText('Latest live edit.');
+    expect((await geometry(page)).documentWidth).toBeLessThanOrEqual(width);
+    expect(errors).toEqual([]);
+  });
+}
+
+test('Backup search: storage failure retains downloadable previous document', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => { Storage.prototype.setItem = () => { throw new DOMException('Full', 'QuotaExceededError'); }; });
+  const errors = await mount(page);
+  await openBackupFile(page);
+  await page.getByRole('button', { name: 'Restore backup', exact: true }).click();
+  await expect(page.getByText('Your previous document is kept for this session only.', { exact: false })).toBeVisible();
+  await expect(page.locator('[data-builder-save-status]')).toContainText('Session only');
+  const downloaded = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download previous document', exact: true }).click();
+  const download = await downloaded;
+  const output = path.join(backupSearchEvidence, 'previous-document.html'); await download.saveAs(output);
+  expect(fs.readFileSync(output, 'utf8')).toContain('Original lesson text.');
+  expect(fs.readFileSync(output, 'utf8')).not.toContain('Backup lesson text.');
+  await page.screenshot({ path: path.join(backupSearchEvidence, 'session-recovery.png') });
+  await page.getByRole('button', { name: 'Undo backup restore', exact: true }).click();
+  await expect(page.frameLocator('#document-builder-preview').locator('#editable')).toContainText('Original lesson text.');
+  await expect(page.locator('[data-builder-save-status]')).toContainText('Session only');
+  expect(errors).toEqual([]);
+});
+
+test('Backup search: invalid file leaves current document untouched', async ({ page }) => {
+  const errors = await mount(page);
+  await openBackupFile(page, 'not an HTML document', 'bad-backup.html');
+  await expect(page.getByRole('alert')).toContainText('HTML document backup');
+  await expect(page.getByRole('button', { name: 'Restore backup', exact: true })).not.toBeVisible();
+  await expect(page.frameLocator('#document-builder-preview').locator('#editable')).toHaveText('Original lesson text.');
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: 'Restore an HTML backup', exact: true })).not.toBeVisible();
+  expect(errors).toEqual([]);
+});

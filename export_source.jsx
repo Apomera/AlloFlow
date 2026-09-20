@@ -62,6 +62,11 @@ const createExport = (deps) => {
         }
     };
 
+    const _readingSourcePairsForExport = (items) => {
+        const source = Array.isArray(items) ? items : [];
+        const contract = window.AlloModules?.InstructionalContext;
+        return contract?.ensureReadingSourcePairs ? contract.ensureReadingSourcePairs(source) : source;
+    };
     const cleanTextForPptx = (text) => text ? String(text).replace(/\*\*/g, '').replace(/\*/g, '') : '';
     const _instructionalTextForExport = (item) => {
         const artifact = item && typeof item === 'object' ? item : {};
@@ -71,7 +76,8 @@ const createExport = (deps) => {
         let normalized = raw;
         try {
             const api = window.AlloModules && window.AlloModules.InstructionalContext;
-            if (raw && api && typeof api.normalizeInstructionalText === 'function') normalized = api.normalizeInstructionalText(raw, { defaultForm: inferredForm });
+            if (api && typeof api.getInstructionalText === 'function') normalized = api.getInstructionalText(artifact);
+            else if (raw && api && typeof api.normalizeInstructionalText === 'function') normalized = api.normalizeInstructionalText(raw, { defaultForm: inferredForm });
         } catch (_) { normalized = raw; }
         normalized = normalized && typeof normalized === 'object' ? normalized : {};
         const role = ['primary', 'supplemental', 'unspecified'].includes(normalized.role) ? normalized.role : 'unspecified';
@@ -507,6 +513,10 @@ const createExport = (deps) => {
             // so research exports never confuse the internal adaptation type or
             // calibration target with how the educator used the text.
             instructionalText,
+            sourceInstructionalText: item?.sourceInstructionalText && window.AlloModules?.InstructionalContext?.normalizeSourceInstructionalText
+                ? window.AlloModules.InstructionalContext.normalizeSourceInstructionalText(item.sourceInstructionalText) : null,
+            sourceFamilyId: typeof item?.sourceFamilyId === 'string' ? item.sourceFamilyId : null,
+            unitId: typeof item?.unitId === 'string' ? item.unitId : null,
             textRole: instructionalText.role,
             textForm: instructionalText.form,
             sourceArtifactId: instructionalText.sourceArtifactId,
@@ -1393,7 +1403,7 @@ const createExport = (deps) => {
             addToast(t('export_status.lib_loading'), "error");
             return;
         }
-        const sourceHistory = Array.isArray(history) ? history : [];
+        const sourceHistory = _readingSourcePairsForExport(history);
         const liveHtml = typeof options.liveHtml === 'string' ? options.liveHtml.trim() : '';
         const liveTitle = String(options.liveTitle || sourceTopic || t('export.ims_resource_pack') || 'AlloFlow Document').trim();
         if (sourceHistory.length === 0 && !liveHtml) {
@@ -1597,7 +1607,7 @@ const createExport = (deps) => {
     // ─── handleExportSlides ───────────────────────────────────────────
     const handleExportSlides = async (options = {}) => {
         const { sourceTopic, gradeLevel, addToast, t } = liveRef.current;
-        const history = Object.prototype.hasOwnProperty.call(options, 'history') ? (Array.isArray(options.history) ? options.history : []) : liveRef.current.history;
+        const history = _readingSourcePairsForExport(Object.prototype.hasOwnProperty.call(options, 'history') ? options.history : liveRef.current.history);
         if (Object.prototype.hasOwnProperty.call(options, 'liveHtml')) {
             try {
                 if (typeof options.liveHtml !== 'string' || !options.liveHtml.trim()) throw new Error('The editable preview is not ready.');
@@ -1717,8 +1727,32 @@ const createExport = (deps) => {
             const bullet = (text) => ({ text, options: { fontSize: 13, color: darkText, breakLine: true, bullet: { code: '2022', color: "94A3B8" }, indentLevel: 1 } });
             history.forEach(item => {
                 const type = item.type;
-                const itemTitle = item.title || getDefaultTitle(type);
-                if (type === 'simplified') {
+                const readingContract = window.AlloModules?.InstructionalContext;
+                const originalReading = !!readingContract?.isSupportedOriginal?.(item);
+                const readingRoleLabel = type === 'simplified' ? readingContract?.getReadingRoleLabel?.(item) || '' : '';
+                const itemTitle = (item.title || (originalReading ? 'Original with supports' : getDefaultTitle(type)))
+                    + (readingRoleLabel ? ' · ' + readingRoleLabel : '');
+                if (originalReading) {
+                    // Keep every character, including speaker labels and line
+                    // breaks. Slide boundaries are the only added structure.
+                    let remaining = item.data;
+                    let page = 0;
+                    while (remaining.length) {
+                        let end = Math.min(680, remaining.length);
+                        if (end < remaining.length) {
+                            const boundary = Math.max(remaining.lastIndexOf('\n', end), remaining.lastIndexOf(' ', end));
+                            if (boundary > end * 0.5) end = boundary + 1;
+                        }
+                        const chunk = remaining.slice(0, end);
+                        remaining = remaining.slice(end);
+                        const slide = pptx.addSlide({ masterName: 'MASTER_SLIDE' });
+                        addSlideTitle(slide, 'Original with supports: ' + itemTitle + (page++ ? ' (Cont.)' : ''));
+                        addA11yNotes(slide, itemTitle, chunk);
+                        slide.addText(chunk, { x: 0.6, y: 1.0, w: 8.8, h: 3.9, fontSize: 17, color: darkText, valign: 'top', margin: 0.08, fit: 'shrink' });
+                    }
+                    const supports = readingContract.validateReadingSupports(item, item.readingSupports);
+                    if (supports.annotations.length) addTextSlides('Word help: ' + itemTitle, supports.annotations.map(annotation => annotation.quote + ': ' + annotation.text).join('\n\n'));
+                } else if (type === 'simplified') {
                     const textData = typeof item.data === 'string' ? item.data : '';
                     if (!textData) return;
                     const paragraphs = textData.split(/\n{2,}/).flatMap((paragraph) => chunkText(paragraph, 700));
@@ -2550,6 +2584,21 @@ const createExport = (deps) => {
         const cleanText = (text) => _escapeExportText(text ? String(text).replace(/\*\*/g, '').replace(/\*/g, '') : '');
         const cards = Array.isArray(generatedContent.data) ? generatedContent.data.filter(item => item && item.term) : [];
         if (!cards.length) { if (addToast) addToast('Add glossary terms before exporting flashcards.', 'info'); return; }
+function flashcardExportImageAlt(item) {
+  if (!item || item.imageDecorative === true || typeof item.imageAlt !== 'string') return '';
+  if (item.imageAltHash) {
+    const image = typeof item.image === 'string' ? item.image : '';
+    let h = 0x811c9dc5;
+    const mix = c => { h ^= c; h = Math.imul(h, 0x01000193) >>> 0; };
+    String(image.length).split('').forEach(ch => mix(ch.charCodeAt(0)));
+    const step = Math.max(1, Math.floor(image.length / 4096));
+    for (let i = 0; i < image.length; i += step) mix(image.charCodeAt(i));
+    const hash = 'img-' + image.length.toString(36) + '-' + h.toString(16).padStart(8, '0');
+    if (hash !== item.imageAltHash) return '';
+  }
+  return item.imageAlt.trim();
+}
+
         const isLanguageMode = mode === 'language';
         const cardStyle = `
             .card-container {
@@ -2575,6 +2624,9 @@ const createExport = (deps) => {
                 position: static;
                 overflow: visible;
             }
+            .card-picture { margin: 0 0 12px; max-width: 100%; }
+            .card-picture img { display: block; max-width: 100%; width: auto; max-height: 160px; margin: auto; object-fit: contain; }
+            .card-picture figcaption { margin-top: 4px; font-size: 9px; color: #475569; overflow-wrap: anywhere; }
             .front { border-inline-end: 2px dashed #cbd5e1; }
             .cut-guide {
                 position: absolute;
@@ -2673,6 +2725,13 @@ const createExport = (deps) => {
                         ${item.etymology ? `<div class="etym-text">📜 <strong>${_escapeExportText(t('glossary.etymology_label') || 'Roots')}:</strong> ${cleanText(item.etymology)}</div>` : ''}
                         ${Array.isArray(item.roots) && item.roots.length > 0 ? `<div class="etym-roots">${item.roots.map(r => `<span class="root-chip"><b>${cleanText(r.root || '')}</b>${r.lang ? ` <i>(${cleanText(r.lang)})</i>` : ''}${r.meaning ? ` = ${cleanText(r.meaning)}` : ''}</span>`).join(' ')}</div>${(() => { const seen = new Set(); const allRel = []; item.roots.forEach(r => { if (Array.isArray(r.related)) r.related.forEach(w => { const k = String(w || '').trim(); if (k && !seen.has(k.toLowerCase())) { seen.add(k.toLowerCase()); allRel.push(k); } }); }); return allRel.length > 0 ? `<div class="etym-related"><strong>${_escapeExportText(t('export.related_words_label') || 'Related words:')}</strong> ${allRel.slice(0, 6).map(w => cleanText(w)).join(', ')}</div>` : ''; })()}` : ''}
                     `;
+                }
+                const image = typeof item.image === 'string' && /^(?:https?:\/\/|data:image\/(?:png|jpe?g|gif|webp|avif|svg\+xml)(?:;|,))/i.test(item.image) ? item.image : '';
+                if (image) {
+                    const alt = flashcardExportImageAlt(item);
+                    const credit = item.imageAttribution;
+                    const creditText = credit && typeof credit === 'object' ? [credit.set, credit.author, credit.license].filter(value => typeof value === 'string' && value.trim()).join(' · ') : '';
+                    frontContent = '<figure class="card-picture"><img src="' + _escapeExportText(image) + '" alt="' + _escapeExportText(alt) + '"' + (alt ? '' : ' role="presentation"') + '>' + (creditText ? '<figcaption>' + _escapeExportText(creditText) + '</figcaption>' : '') + '</figure>' + frontContent;
                 }
                 htmlBody += `
                     <div class="card-container">

@@ -1,0 +1,560 @@
+[
+  {
+    "resourceId": "mt-directions",
+    "path": "data.body",
+    "from": "**Due:** (your teacher will tell you)\n\nNobody makes a window out of wool. Nobody makes a sweater out of glass. This week you find out why, and it turns out there is a rule behind it.\n\n1. Read **Why Windows Are Not Wool** with a partner.\n2. Learn the words in **Material Words**, then win the **Matching** game and the **Memory** game.\n3. Look at the **Pick the Right Stuff** chart.\n4. Play **Which Job Is It For?** and sort the cards.\n5. Take **Material Check** — say each answer out loud first.\n6. Lock it in with **Remember the Rule**.\n7. Read **Material Questions Kids Ask**.\n8. Finish with **Investigation: The Spill Test** — find out for yourself which cloth soaks up most.\n\nYour job this week: pick one thing in your home and say why it is made of what it is made of. 🧱",
+    "to": "**Due:** (your teacher will tell you)\n\nClear glass is useful for windows. Wool is useful for sweaters. This week you find out why, and it turns out there is a rule behind it.\n\n1. Read **Why Windows Are Not Wool** with a partner.\n2. Learn the words in **Material Words**, then win the **Matching** game and the **Memory** game.\n3. Look at the **Pick the Right Stuff** chart.\n4. Play **Which Job Is It For?** and sort the cards.\n5. Take **Material Check** — say each answer out loud first.\n6. Lock it in with **Remember the Rule**.\n7. Read **Material Questions Kids Ask**.\n8. Finish with **Investigation: The Spill Test** — compare how three samples behave when they meet water.\n\nYour job this week: pick one thing in your home and say why it is made of what it is made of. 🧱\n\nPicture panels: Materials fit a job; Look closely at properties; Make a fair comparison; Materials around us. Use these alongside the activities."
+  },
+  {
+    "resourceId": "mt-reading",
+    "path": "data",
+    "from": "## Why Windows Are Not Wool\n\nLook at a window. Now look at a sweater. Nobody ever mixed those up. Why not?\n\nEvery thing is made of some **material**. Glass. Wool. Wood. Metal. Plastic. Each one has its own **properties** — the things you can notice about it.\n\nGlass is **hard**. It is **smooth**. You can see straight through it. Those are exactly what a window needs.\n\nWool is **soft**. It is **rough** to touch. It traps warm air near your skin. Those are exactly what a sweater needs.\n\nSo here is the rule. Somebody picked the material to fit the job.\n\nA raincoat is **waterproof**, so the rain runs off. A towel is the opposite. A towel needs to **absorb** water, which means soak it up. Same water. Two jobs. Two very different materials.\n\nA rubber band is **bendy**, so it stretches and springs back. A brick is not bendy at all, and that is good. You would not want a bendy wall.\n\nHow do people know which material to pick? They **test** it. They try each one at the same job and watch what happens. A fair test changes one thing only.\n\nHere is something to notice. One material can be right for one job and wrong for another. Paper is great for drawing. Paper is terrible for a raincoat. The material is not good or bad on its own. It only fits, or does not fit, the job.\n\nNext time you pick something up, ask what it is made of. Then ask why.",
+    "to": "## Why Windows Are Not Wool\n\nLook through a clear window. Then feel a soft sweater. Why do people choose different **materials** for these jobs?\n\nA material is what something is made of. Wood, glass, metal, and cloth are materials. \n\nA **property** is something we can observe or test. Is a sample **hard** or **soft**? Is its surface **rough** or **smooth**? Can we see through it?\n\nClear glass lets us see outside. It resists dents, but it can still break. Smooth does not always mean see-through: a metal spoon can be smooth too.\n\nA knitted sweater bends with your body. Air held among its fibers helps slow heat escaping from you. Some wool feels soft; some feels scratchy.\n\nA **bendy** strip curves without breaking. A stretchy rubber band gets longer when pulled. Bending and stretching are different.\n\nA raincoat made with **waterproof** material helps keep rain out. A towel needs to **absorb** water, which means take it in. The job helps us choose useful properties.\n\nHow do we choose? We **test** real samples. Compare equal-size dry pieces with the same water amount, waiting time, and method. Repeat with fresh dry pieces. Describe what you see.\n\nA damp patch shows where water has spread. A bigger patch does not prove that more water was absorbed. If two samples take in all the water you added, this test cannot tell which could hold more.\n\nUntreated paper towel is useful for spills but poor for a rain cover. A coating can change how paper behaves. Name the exact sample instead of assuming every kind is alike.\n\nPick an object. What is its job? Which properties help it do that job?"
+  },
+  {
+    "resourceId": "mt-reading",
+    "path": "meta",
+    "from": "2nd Grade • Leveled reading • read-aloud friendly",
+    "to": "2nd Grade • Leveled reading • observable properties and fair comparisons"
+  },
+  {
+    "resourceId": "mt-glossary",
+    "path": "data.0.def",
+    "from": "What a thing is made of.",
+    "to": "What an object is made of. It may use more than one kind."
+  },
+  {
+    "resourceId": "mt-glossary",
+    "path": "data.1.def",
+    "from": "Something you can notice about a thing, like hard or soft.",
+    "to": "A feature we can see, feel, or test."
+  },
+  {
+    "resourceId": "mt-glossary",
+    "path": "data.2.def",
+    "from": "Not easy to squash, bend, or scratch.",
+    "to": "Hard to dent or scratch. A thin piece may still bend."
+  },
+  {
+    "resourceId": "mt-glossary",
+    "path": "data.3.def",
+    "from": "Easy to press in with your finger.",
+    "to": "Easy to press into or squash gently."
+  },
+  {
+    "resourceId": "mt-glossary",
+    "path": "data.4.def",
+    "from": "Able to bend without snapping.",
+    "to": "Able to curve without breaking. This is not the same as stretching."
+  },
+  {
+    "resourceId": "mt-glossary",
+    "path": "data.5.def",
+    "from": "Bumpy to touch, not even.",
+    "to": "Having a bumpy or uneven surface."
+  },
+  {
+    "resourceId": "mt-glossary",
+    "path": "data.6.def",
+    "from": "Even to touch, with no bumps.",
+    "to": "Having an even surface with few bumps we can feel."
+  },
+  {
+    "resourceId": "mt-glossary",
+    "path": "data.7.def",
+    "from": "Keeps water out instead of letting it soak in.",
+    "to": "Made to keep water from passing through in its intended use."
+  },
+  {
+    "resourceId": "mt-glossary",
+    "path": "data.8.def",
+    "from": "To soak up a liquid.",
+    "to": "Take a liquid into the material."
+  },
+  {
+    "resourceId": "mt-glossary",
+    "path": "data.9.def",
+    "from": "A fair try that helps you find out which one works best.",
+    "to": "A planned try to find out something."
+  },
+  {
+    "resourceId": "mt-anchor",
+    "path": "data.sections.0.bullets.0",
+    "from": "Hard, so it does not squash",
+    "to": "Clear, so we can see through"
+  },
+  {
+    "resourceId": "mt-anchor",
+    "path": "data.sections.0.bullets.1",
+    "from": "Smooth, so it stays clear",
+    "to": "Resists dents, but can still break"
+  },
+  {
+    "resourceId": "mt-anchor",
+    "path": "data.sections.0.bullets.2",
+    "from": "See-through, so light gets in",
+    "to": "Smooth is different from see-through"
+  },
+  {
+    "resourceId": "mt-anchor",
+    "path": "data.sections.1.bullets.0",
+    "from": "Soft, so it feels nice",
+    "to": "Comfortable against skin"
+  },
+  {
+    "resourceId": "mt-anchor",
+    "path": "data.sections.1.bullets.1",
+    "from": "Traps warm air near your skin",
+    "to": "Holds air that slows heat escaping"
+  },
+  {
+    "resourceId": "mt-anchor",
+    "path": "data.sections.1.bullets.2",
+    "from": "Bendy, so you can move",
+    "to": "Bends with the wearer"
+  },
+  {
+    "resourceId": "mt-anchor",
+    "path": "data.sections.2.bullets.0",
+    "from": "A raincoat is waterproof: water runs off",
+    "to": "Waterproof material helps keep rain out"
+  },
+  {
+    "resourceId": "mt-anchor",
+    "path": "data.sections.2.bullets.1",
+    "from": "A towel absorbs: water soaks in",
+    "to": "A towel takes water into its fibers"
+  },
+  {
+    "resourceId": "mt-anchor",
+    "path": "data.sections.2.bullets.2",
+    "from": "Same water, opposite jobs",
+    "to": "Test the sample; coatings can change behavior"
+  },
+  {
+    "resourceId": "mt-anchor",
+    "path": "data.sections.3.bullets.0",
+    "from": "Test each material at the same job",
+    "to": "Compare equal-size dry samples"
+  },
+  {
+    "resourceId": "mt-anchor",
+    "path": "data.sections.3.bullets.1",
+    "from": "Change one thing only, so it is fair",
+    "to": "Keep water amount, time, and method alike"
+  },
+  {
+    "resourceId": "mt-anchor",
+    "path": "data.sections.3.bullets.2",
+    "from": "No material is good or bad on its own",
+    "to": "Repeat and describe actual results"
+  },
+  {
+    "resourceId": "mt-memory",
+    "path": "data.sourceExcerpt",
+    "from": "Somebody picked the material to fit the job. One material can be right for one job and wrong for another. The material is not good or bad on its own.",
+    "to": "Choose properties that fit a job. Test specific samples fairly, because coatings, shape, and thickness can change how an object behaves."
+  },
+  {
+    "resourceId": "mt-memory",
+    "path": "data.cards.0.essentialFacts.0",
+    "from": "Every thing is made of some material.",
+    "to": "An object may contain more than one material."
+  },
+  {
+    "resourceId": "mt-memory",
+    "path": "data.cards.0.essentialFacts.1",
+    "from": "Each material has its own properties.",
+    "to": "Properties help us decide which sample fits a job."
+  },
+  {
+    "resourceId": "mt-memory",
+    "path": "data.cards.0.essentialFacts.2",
+    "from": "Somebody picked the material to fit the job.",
+    "to": "Shape, thickness, and coatings can change behavior."
+  },
+  {
+    "resourceId": "mt-memory",
+    "path": "data.cards.0.essentialFacts.3",
+    "from": "A material is not good or bad on its own.",
+    "to": "No single material is best for every job."
+  },
+  {
+    "resourceId": "mt-memory",
+    "path": "data.cards.0.aiExample",
+    "from": "FIT THE JOB. Say it while you tap the thing. Tap a window: hard and clear, fit the job. Tap a sweater: soft and warm, fit the job.",
+    "to": "FIT THE JOB. Point to a clear window: see outside. Point to a sweater: bend with me and help keep me warm."
+  },
+  {
+    "resourceId": "mt-memory",
+    "path": "data.cards.0.mapping",
+    "from": "Three short words, and you say them while touching a real object. The touching is what ties the rule to the thing in your hand.",
+    "to": "Connect each object to a property that helps it do its job."
+  },
+  {
+    "resourceId": "mt-memory",
+    "path": "data.cards.0.scaffoldSteps.0",
+    "from": "Pick up something near you.",
+    "to": "Choose a safe object to observe."
+  },
+  {
+    "resourceId": "mt-memory",
+    "path": "data.cards.0.scaffoldSteps.1",
+    "from": "Say what it is made of.",
+    "to": "Name a material it uses."
+  },
+  {
+    "resourceId": "mt-memory",
+    "path": "data.cards.0.scaffoldSteps.2",
+    "from": "Say what the job needs.",
+    "to": "Describe a property that helps its job."
+  },
+  {
+    "resourceId": "mt-memory",
+    "path": "data.cards.0.hookFact.text",
+    "from": "Paper is great for drawing. Paper is terrible for a raincoat.",
+    "to": "Untreated paper towel can help clean a spill but makes a poor rain cover."
+  },
+  {
+    "resourceId": "mt-memory",
+    "path": "data.cards.1.essentialFacts.0",
+    "from": "A raincoat is waterproof, so rain runs off.",
+    "to": "Waterproof material helps keep water from passing through."
+  },
+  {
+    "resourceId": "mt-memory",
+    "path": "data.cards.1.essentialFacts.1",
+    "from": "A towel absorbs, which means it soaks water up.",
+    "to": "An absorbent towel takes water into its fibers."
+  },
+  {
+    "resourceId": "mt-memory",
+    "path": "data.cards.1.essentialFacts.2",
+    "from": "Same water, two opposite jobs.",
+    "to": "One surface bead does not prove lasting waterproof performance."
+  },
+  {
+    "resourceId": "mt-memory",
+    "path": "data.cards.1.mapping",
+    "from": "One drop and two endings. Because the drop is the same both times, the only thing that changed is the material, which is the whole idea.",
+    "to": "Compare water remaining on the surface with water entering fibers. These are illustrations of behavior, not measured results."
+  },
+  {
+    "resourceId": "mt-sort",
+    "path": "data.categories.2.label",
+    "from": "The job is to BE STRONG AND HARD",
+    "to": "The job is to SUPPORT OR STRIKE"
+  },
+  {
+    "resourceId": "mt-sort",
+    "path": "data.items.7.content",
+    "from": "A metal hammer",
+    "to": "The metal head of a hammer"
+  },
+  {
+    "resourceId": "mt-sort",
+    "path": "meta",
+    "from": "3 buckets • 9 cards • the first two buckets are opposites on purpose",
+    "to": "3 groups • 9 cards • sort by the main job; objects may have several useful properties"
+  },
+  {
+    "resourceId": "mt-quiz",
+    "path": "data.questions.0.question",
+    "from": "Why are windows made of glass and not wool?",
+    "to": "Why is clear glass useful for a window?"
+  },
+  {
+    "resourceId": "mt-quiz",
+    "path": "data.questions.0.options.0",
+    "from": "Glass is hard and clear, which is what a window needs",
+    "to": "It lets us see outside and resists dents"
+  },
+  {
+    "resourceId": "mt-quiz",
+    "path": "data.questions.0.correctAnswer",
+    "from": "Glass is hard and clear, which is what a window needs",
+    "to": "It lets us see outside and resists dents"
+  },
+  {
+    "resourceId": "mt-quiz",
+    "path": "data.questions.4.question",
+    "from": "You test three cloths to see which soaks up most. What makes it fair?",
+    "to": "Which plan makes a water comparison fairer?"
+  },
+  {
+    "resourceId": "mt-quiz",
+    "path": "data.questions.4.options.0",
+    "from": "Use more water on the cloth you like best",
+    "to": "Give more water to your favorite sample"
+  },
+  {
+    "resourceId": "mt-quiz",
+    "path": "data.questions.4.options.1",
+    "from": "Use a different sized cloth for every test",
+    "to": "Use different sizes and compare after different times"
+  },
+  {
+    "resourceId": "mt-quiz",
+    "path": "data.questions.4.options.2",
+    "from": "Use the same amount of water on each cloth",
+    "to": "Use equal-size dry samples, equal water amounts, and the same waiting time"
+  },
+  {
+    "resourceId": "mt-quiz",
+    "path": "data.questions.4.options.3",
+    "from": "Do the test once and trust what you saw",
+    "to": "Use a wet sample for one material and a dry one for another"
+  },
+  {
+    "resourceId": "mt-quiz",
+    "path": "data.questions.4.correctAnswer",
+    "from": "Use the same amount of water on each cloth",
+    "to": "Use equal-size dry samples, equal water amounts, and the same waiting time"
+  },
+  {
+    "resourceId": "mt-quiz",
+    "path": "data.questions.6.question",
+    "from": "Your friend wants to make an umbrella out of paper towels. What would you tell them?",
+    "to": "Your friend wants a rain cover made of untreated paper towels. What would you explain?"
+  },
+  {
+    "resourceId": "mt-quiz",
+    "path": "data.questions.6.expectedAnswer",
+    "from": "Paper towels absorb water instead of keeping it out. An umbrella needs to be waterproof so the rain runs off. The paper would soak through and fall apart, so it is the wrong material for that job.",
+    "to": "Paper towels take water in and may soak through or tear. A rain cover needs to keep water from passing through. We should test a suitable coated or waterproof sample for that job."
+  },
+  {
+    "resourceId": "mt-faq",
+    "path": "data.0.answer",
+    "from": "Yes. A metal spoon is hard, but a long thin metal wire bends easily. Shape matters too, not just what it is made of. Thin things bend more than thick ones.",
+    "to": "Yes. A thin metal strip can bend and still be hard to dent. Hardness and flexibility are different properties. Shape and thickness matter too."
+  },
+  {
+    "resourceId": "mt-faq",
+    "path": "data.1.answer",
+    "from": "Mostly from oil, which comes out of the ground. People made the first plastics about a hundred years ago. That is why old toys are wood or metal.",
+    "to": "Many plastics start with chemicals from oil or gas. Some use plants. Early plastics were made in the 1800s. More kinds came later."
+  },
+  {
+    "resourceId": "mt-faq",
+    "path": "data.2.answer",
+    "from": "It is strong, it is light, it is easy to cut, and trees grow back. For a lot of jobs nothing beats it, which is why houses still use it.",
+    "to": "Wood can hold things up and be cut to shape. Its kind and thickness matter. Trees take time to grow. We can use wood again and care for forests."
+  },
+  {
+    "resourceId": "mt-faq",
+    "path": "data.3.answer",
+    "from": "Most of it is. Some glass is made cloudy on purpose, for a bathroom window. Same material, changed a little, for a different job.",
+    "to": "Clear glass lets us see details. Frosted glass lets light through but blurs the view. Smooth does not always mean clear."
+  },
+  {
+    "resourceId": "mt-faq",
+    "path": "data.4.answer",
+    "from": "There is no single winner. Some materials resist squashing best, some resist pulling best, and some bounce back best. Strong at what, is the better question.",
+    "to": "Ask what the job needs. Pulling, pressing, scratching, and breaking are different tests. Shape and thickness matter too."
+  },
+  {
+    "resourceId": "mt-faq",
+    "path": "data.5.answer",
+    "from": "Often, yes. Glass, metal and paper can be melted or mashed and made into new things. That is what recycling means, and it saves digging up more.",
+    "to": "Reuse means use an object again. A jar can hold pencils. Recycling turns suitable old material into new products. Glass and metal may be melted. Paper is made into pulp. Check what your local program takes."
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "meta",
+    "from": "2nd Grade • Investigation brief • three cloths, one spoon of water",
+    "to": "2nd Grade • Investigation • compare water behavior without unsupported capacity rankings"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.instructions",
+    "from": "Test three cloths to see which one soaks up the most water. Guess first. Keep it fair. Then say which one you would want by the sink.",
+    "to": "Compare how three material samples behave with water. Predict first, keep the comparison fair, repeat, and describe your evidence. Do not decide a winner from wet-patch size."
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.context",
+    "from": "Your class has three cloths: a paper towel, a cotton rag, and a piece of plastic tablecloth. You also have a spoon, a cup of water, and a tray to work on.",
+    "to": "We have paper towel, cotton cloth, and a plastic sheet. A teacher cuts equal-size dry squares. We have trays, a spoon, water, and a timer."
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.drivingQuestion",
+    "from": "If you spill the same spoonful of water on each cloth, which one soaks up the most, and how will you know?",
+    "to": "What happens when we put the same amount of water on each sample and wait the same time?"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.seedDirection",
+    "from": "Use the same spoonful every time. If you use more water on one cloth, you will not know if the cloth or the water made the difference.",
+    "to": "Use equal-size dry samples and the same water amount. Wait the same time. Look on top and in the tray below. Repeat with fresh dry samples. A large wet patch does not prove more water went in."
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.lockedLessonFacts.0",
+    "from": "A material that absorbs soaks a liquid up.",
+    "to": "Absorb means take liquid into a material."
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.lockedLessonFacts.1",
+    "from": "A waterproof material keeps water out instead.",
+    "to": "A surface bead alone does not prove a material stays waterproof."
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.lockedLessonFacts.2",
+    "from": "A fair test changes one thing only.",
+    "to": "Keep sample size, water amount, waiting time, and method alike."
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.lockedLessonFacts.3",
+    "from": "A material is not good or bad on its own; it fits a job or it does not.",
+    "to": "If two samples take in all the added water, this test does not show which could hold more."
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.openQuestions.0",
+    "from": "How will you tell which cloth soaked up the most?",
+    "to": "Where did the water go?"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.openQuestions.1",
+    "from": "What will you keep exactly the same for all three?",
+    "to": "What will we keep the same?"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.openQuestions.2",
+    "from": "Do you need to test each cloth more than once?",
+    "to": "Do fresh samples act the same way?"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.criteria.0",
+    "from": "The same spoonful of water on every cloth",
+    "to": "Use equal-size dry samples"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.criteria.1",
+    "from": "A guess written or said before the first test",
+    "to": "Use the same water amount and wait time"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.criteria.2",
+    "from": "What happened to each cloth is drawn or written down",
+    "to": "Predict first, then record what happened"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.criteria.3",
+    "from": "You use the word absorb or the word waterproof when you explain",
+    "to": "Repeat with fresh dry samples"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.constraints.0",
+    "from": "Three cloths",
+    "to": "Three sample materials in separate trays"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.constraints.1",
+    "from": "One spoon of water each",
+    "to": "Teacher-selected small equal water amounts and waiting time"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.constraints.2",
+    "from": "Work over the tray",
+    "to": "No squeezing or rubbing; repeat with fresh dry samples"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.brief.deliverable",
+    "from": "A picture chart with the three cloths and what each one did, your guess at the top, and one sentence: which cloth belongs by the sink, and why.",
+    "to": "Draw what happened to each sample. Show water on top, in the cloth, or in the tray. Tell which job it might suit and what you still do not know."
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.supports.parallelExample.context",
+    "from": "A student tested three cloths but poured a different amount on each.",
+    "to": "A class compared dry paper, cloth, and plastic samples."
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.supports.parallelExample.move",
+    "from": "He noticed his own mistake and started again, using one level spoonful every time. This time the paper towel and the rag came out close, and the plastic soaked up nothing at all.",
+    "to": "They kept sample size, water amount, and waiting time alike. They recorded surface water and damp areas, then repeated with fresh dry samples."
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.supports.parallelExample.whyItHelps",
+    "from": "Once the water was the same, the only thing left to explain the difference was the cloth itself.",
+    "to": "Keeping conditions alike makes the comparison more useful. Their drawings record observations, not a guaranteed ranking of all papers, cloths, or plastics."
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.supports.frameStarter",
+    "from": "I think ____ will soak up the most, because ____. What really happened was ____.",
+    "to": "I predicted ____. I observed ____. This evidence suggests ____, but it does not tell us ____."
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.supports.frameChoices.0",
+    "from": "The paper towel",
+    "to": "Water stayed on top"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.supports.frameChoices.1",
+    "from": "The cotton rag",
+    "to": "Fibers became damp"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.supports.frameChoices.2",
+    "from": "The plastic tablecloth",
+    "to": "Water reached the tray below"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.supports.frameChoices.3",
+    "from": "Two of them about the same",
+    "to": "Two samples behaved similarly"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.supports.coachPrompts.0",
+    "from": "Did every cloth get the same amount of water?",
+    "to": "Did samples start dry and receive equal water amounts?"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.supports.coachPrompts.1",
+    "from": "How can you tell which soaked up more?",
+    "to": "Did you wait the same time and check the tray below?"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.supports.coachPrompts.2",
+    "from": "Did anything surprise you?",
+    "to": "What cannot be concluded from a wet patch alone?"
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.coachHint",
+    "from": "Same spoonful. Three cloths. Guess first.",
+    "to": "Same size, dry start, same water and time. Repeat. Describe the evidence."
+  },
+  {
+    "resourceId": "mt-challenge",
+    "path": "data.sourceExcerpt",
+    "from": "How do people know which material to pick? They test it. A fair test changes one thing only.",
+    "to": "Compare real samples under similar conditions. A wet patch shows spreading; its size alone does not measure the water absorbed."
+  }
+]

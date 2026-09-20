@@ -224,11 +224,11 @@ var d = (labToolData && labToolData._dataStudio) || {};
           },
             [
               { id: 'charts', label: t('stem.datastudio.mode_charts', '📊 Chart Builder') },
-              { id: 'regression', label: t('stem.datastudio.mode_regression', '📈 Regression') }
+              { id: 'regression', label: t('stem.datastudio.mode_regression_fitting', 'Regression & curve fitting') }
             ].map(function (m) {
               var on = studioMode === m.id;
               return React.createElement("button", {
-                key: m.id,
+                style: { minHeight: 44, whiteSpace: "normal", overflowWrap: "anywhere" }, key: m.id,
                 onClick: function () { if (!on) switchMode(m.id); },
                 "aria-pressed": on,
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors " +
@@ -329,6 +329,14 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
 
 
+          var chartPurposes = {
+            bar: t('stem.datastudio.purpose_bar', "Compare amounts across categories."),
+            pie: t('stem.datastudio.purpose_pie', "Compare parts of a whole using nonnegative values."),
+            line: t('stem.datastudio.purpose_line', "Show how values change across an ordered sequence."),
+            scatter: t('stem.datastudio.purpose_scatter', "Explore the relationship between X and Y values."),
+            histogram: t('stem.datastudio.purpose_histogram', "See how numerical values are distributed across intervals."),
+            box: t('stem.datastudio.purpose_box', "Summarize the median, spread, and possible outliers.")
+          };
           var CHART_TYPES = [
 
             { id: 'bar', icon: '📊', label: t('stem.datastudio.bar_chart', 'Bar Chart') },
@@ -737,9 +745,9 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   onClick: function () { if (ct.id !== chartType) { var used = Object.assign({}, d.chartTypesUsed || {}); used[ct.id] = true; updDSMany({ chartType: ct.id, chartTypesUsed: used }); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, ct.label + ' explored'); } },
 
                   className: "p-2 rounded-xl text-center transition-all",
-                  "aria-pressed": chartType === ct.id,
+                  "aria-pressed": chartType === ct.id, "data-chart-type": ct.id, "aria-describedby": chartType === ct.id ? "data-studio-chart-purpose" : undefined,
 
-                  style: { background: chartType === ct.id ? _btnBg : _card, color: chartType === ct.id ? '#fff' : _text, border: '1px solid ' + (chartType === ct.id ? _accent : _border) }
+                  style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere", background: chartType === ct.id ? _btnBg : _card, color: chartType === ct.id ? '#fff' : _text, border: '1px solid ' + (chartType === ct.id ? _accent : _border) }
 
                 },
 
@@ -754,6 +762,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
             ),
 
 
+
+            React.createElement("p", { id: "data-studio-chart-purpose", className: "text-sm", style: { color: _text } }, chartPurposes[chartType]),
 
             // Chart title
 
@@ -1491,13 +1501,12 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Add row
 
-              React.createElement("div", { className: "flex flex-wrap gap-2 mb-2" },
+              React.createElement("div", { "data-chart-row-entry": true, className: "flex flex-wrap items-end gap-2 mb-2" },
 
-                React.createElement("input", {
+                React.createElement("label", { style: { display: "flex", flexDirection: "column", gap: 4, flex: "1 1 96px", minWidth: 0, color: _text }, className: "text-xs font-bold" },
+                  React.createElement("span", null, t('stem.datastudio.label', 'Label')),
+                  React.createElement("input", {
 
-                  // Placeholder-only naming: gone the moment the field has a
-                  // value. Reusing the same t() call gives a persistent name
-                  // without inventing a translation key.
                   "aria-label": t('stem.datastudio.label', "Label"),
                   type: "text", placeholder: t('stem.datastudio.label', "Label"),
 
@@ -1507,22 +1516,26 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   className: "min-w-0 flex-1 px-2 py-1.5 rounded-lg text-xs",
 
-                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none', minWidth: '6rem' },
+                  style: { width: '100%', minHeight: 44, minWidth: 0, background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
-                }),
+                })),
 
-                chartType === 'scatter' && React.createElement("input", {
+                chartType === 'scatter' && React.createElement("label", { style: { display: "flex", flexDirection: "column", gap: 4, flex: "1 1 96px", minWidth: 0, color: _text }, className: "text-xs font-bold" },
+                  React.createElement("span", null, t('stem.datastudio.new_x_value', 'X value')),
+                  React.createElement("input", {
                   type: "number", placeholder: "X", value: editRow.x,
                   onChange: function(e) { updDS('editRow', { label: editRow.label, x: e.target.value, value: editRow.value }); },
                   className: "w-20 px-2 py-1.5 rounded-lg text-xs font-mono",
-                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                  style: { width: '100%', minHeight: 44, minWidth: 0, background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' },
                   "aria-label": "New point X value"
-                }),
+                })),
 
-                React.createElement("input", {
+                React.createElement("label", { style: { display: "flex", flexDirection: "column", gap: 4, flex: "1 1 96px", minWidth: 0, color: _text }, className: "text-xs font-bold" },
+                  React.createElement("span", null, chartType === 'scatter' ? t('stem.datastudio.new_y_value', 'Y value') : t('stem.datastudio.value', 'Value')),
+                  React.createElement("input", {
 
-                  "aria-label": t('stem.datastudio.value', "Value"),
+                  "aria-label": chartType === 'scatter' ? t('stem.datastudio.new_y_value', 'Y value') : t('stem.datastudio.value', "Value"),
                   type: "number", placeholder: t('stem.datastudio.value', "Value"),
 
                   value: editRow.value,
@@ -1543,10 +1556,10 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   className: "w-20 px-2 py-1.5 rounded-lg text-xs font-mono",
 
-                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                  style: { width: '100%', minHeight: 44, minWidth: 0, background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
-                }),
+                })),
 
                 React.createElement("button", { "aria-label": t('stem.datastudio.add', "+ Add"),
 
@@ -1564,7 +1577,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold",
 
-                  style: { background: _btnBg, color: '#fff' }
+                  style: { minHeight: 44, background: _btnBg, color: '#fff' }
 
                 }, t('stem.datastudio.add_2', "+ Add"))
 

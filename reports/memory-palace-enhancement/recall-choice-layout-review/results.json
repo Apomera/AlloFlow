@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "uniqueDistractors": true,
+  "targetIdentityPreserved": true,
+  "longTermsWrap": true,
+  "keyboardSelection": true,
+  "touchTargets44": true,
+  "widths": [
+    1280,
+    390,
+    320
+  ],
+  "pageErrors": []
+}

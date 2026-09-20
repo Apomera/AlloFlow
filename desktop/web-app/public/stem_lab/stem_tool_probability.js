@@ -1835,15 +1835,17 @@ var d = (labToolData.probability) || {};
 
             // Mode selector
 
-            React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", role: "group", "aria-label": __alloT('stem.probability.a11y_probability_experiment_mode', 'Probability experiment mode') },
+            React.createElement("div", { id: "probability-experiment-list", style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))" }, className: "gap-2 mb-2", role: "group", "aria-label": __alloT('stem.probability.a11y_probability_experiment_mode', 'Probability experiment mode') },
 
-              [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['dice2', '\uD83C\uDFB2\u00D72 Two-Dice Sum'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday'], ['monty', '\uD83D\uDEAA Monty Hall'], ['galton', '\u2699\uFE0F Galton Board'], ['volume3d', '\uD83E\uDDCA 3D Volume']].map(([m, label]) =>
+              [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['dice2', '\uD83C\uDFB2\u00D72 Two-Dice Sum'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', t('stem.probability.mode_custom_model', 'Custom outcomes')], ['tree', t('stem.probability.mode_probability_tree', 'Probability tree')], ['pi', t('stem.probability.mode_estimate_pi', 'Estimate pi')], ['birthday', t('stem.probability.mode_shared_birthdays', 'Shared birthdays')], ['monty', '\uD83D\uDEAA Monty Hall'], ['galton', '\u2699\uFE0F Galton Board'], ['volume3d', '\uD83E\uDDCA 3D Volume']].filter(function(pair) { return d.showAllExperiments || ['coin', 'dice', 'dice2', 'spinner', 'marbleBag'].indexOf(pair[0]) >= 0 || pair[0] === d.mode; }).map(([m, label]) =>
 
-                React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_select_mode', 'Select mode: {value1}'), { value1: label }), "aria-pressed": d.mode === m, key: m, onClick: function() { selectMode(m); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
+                React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_select_mode', 'Select mode: {value1}'), { value1: label }), "aria-pressed": d.mode === m, "data-probability-mode": m, key: m, onClick: function() { selectMode(m); }, className: "px-3 py-2 rounded-lg text-sm font-bold transition-all", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere", background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
 
               )
 
             ),
+
+            React.createElement("button", { type: "button", "data-probability-more": true, "aria-expanded": !!d.showAllExperiments, "aria-controls": "probability-experiment-list", onClick: function() { upd('showAllExperiments', !d.showAllExperiments); }, className: "mb-3 px-3 py-2 rounded-lg text-sm font-bold", style: { minHeight: 44, whiteSpace: "normal", color: _btnText, background: _btnBg } }, d.showAllExperiments ? t('stem.probability.show_common_experiments', 'Show common experiments') : t('stem.probability.show_all_experiments', 'Show all experiments (13)')),
 
             // ── Topic-accent hero band per mode ──
             (function() {

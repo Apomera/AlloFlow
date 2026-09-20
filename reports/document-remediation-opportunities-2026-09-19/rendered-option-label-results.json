@@ -1,0 +1,366 @@
+{
+  "browserVersion": "148.0.7778.96",
+  "codeSha256": "63196d71b7984ddaf548187f7e36827f83c92e8d19cb9687b17902783bd24bc9",
+  "results": [
+    {
+      "id": "empty-label-valid-addition",
+      "expected": "passed",
+      "source": "<select id=\"choice\" aria-label=\"Temperature\" size=\"2\"><option value=\"temperature\" selected>Warm</option></select>",
+      "candidate": "<select id=\"choice\" aria-label=\"Temperature\" size=\"2\"><option value=\"temperature\" label=\"\" selected>Warm</option></select>",
+      "status": "review-required",
+      "coverage": {
+        "requested": 1,
+        "inspected": 1,
+        "complete": true,
+        "wholeDocument": false,
+        "reasons": []
+      },
+      "checks": [
+        {
+          "id": "choice",
+          "sourceSelector": "#choice",
+          "candidateSelector": "#choice",
+          "status": "failed",
+          "properties": [
+            {
+              "property": "selected",
+              "status": "failed",
+              "source": [
+                {
+                  "index": 0,
+                  "value": "temperature",
+                  "label": "Warm"
+                }
+              ],
+              "candidate": [
+                {
+                  "index": 0,
+                  "value": "temperature",
+                  "label": ""
+                }
+              ]
+            },
+            {
+              "property": "value",
+              "status": "passed",
+              "source": "temperature",
+              "candidate": "temperature"
+            },
+            {
+              "property": "name",
+              "status": "passed",
+              "source": "Temperature",
+              "candidate": "Temperature"
+            },
+            {
+              "property": "role",
+              "status": "passed",
+              "source": "listbox",
+              "candidate": "listbox"
+            },
+            {
+              "property": "exposed",
+              "status": "passed",
+              "source": true,
+              "candidate": true
+            }
+          ]
+        }
+      ],
+      "sourceNative": {
+        "optionNames": [
+          "Warm"
+        ],
+        "selection": [
+          {
+            "value": "temperature",
+            "label": "Warm",
+            "text": "Warm"
+          }
+        ]
+      },
+      "candidateNative": {
+        "optionNames": [
+          "Warm"
+        ],
+        "selection": [
+          {
+            "value": "temperature",
+            "label": "",
+            "text": "Warm"
+          }
+        ]
+      }
+    },
+    {
+      "id": "empty-label-masks-selected-choice-change",
+      "expected": "review-required",
+      "source": "<select id=\"choice\" aria-label=\"Temperature\" size=\"2\"><option value=\"temperature\" label=\"\" selected>Warm</option></select>",
+      "candidate": "<select id=\"choice\" aria-label=\"Temperature\" size=\"2\"><option value=\"temperature\" label=\"\" selected>Cold</option></select>",
+      "status": "passed",
+      "coverage": {
+        "requested": 1,
+        "inspected": 1,
+        "complete": true,
+        "wholeDocument": false,
+        "reasons": []
+      },
+      "checks": [
+        {
+          "id": "choice",
+          "sourceSelector": "#choice",
+          "candidateSelector": "#choice",
+          "status": "passed",
+          "properties": [
+            {
+              "property": "selected",
+              "status": "passed",
+              "source": [
+                {
+                  "index": 0,
+                  "value": "temperature",
+                  "label": ""
+                }
+              ],
+              "candidate": [
+                {
+                  "index": 0,
+                  "value": "temperature",
+                  "label": ""
+                }
+              ]
+            },
+            {
+              "property": "value",
+              "status": "passed",
+              "source": "temperature",
+              "candidate": "temperature"
+            },
+            {
+              "property": "name",
+              "status": "passed",
+              "source": "Temperature",
+              "candidate": "Temperature"
+            },
+            {
+              "property": "role",
+              "status": "passed",
+              "source": "listbox",
+              "candidate": "listbox"
+            },
+            {
+              "property": "exposed",
+              "status": "passed",
+              "source": true,
+              "candidate": true
+            }
+          ]
+        }
+      ],
+      "sourceNative": {
+        "optionNames": [
+          "Warm"
+        ],
+        "selection": [
+          {
+            "value": "temperature",
+            "label": "",
+            "text": "Warm"
+          }
+        ]
+      },
+      "candidateNative": {
+        "optionNames": [
+          "Cold"
+        ],
+        "selection": [
+          {
+            "value": "temperature",
+            "label": "",
+            "text": "Cold"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ordinary-label-change-control",
+      "expected": "review-required",
+      "source": "<select id=\"choice\" aria-label=\"Temperature\" size=\"2\"><option value=\"temperature\" selected>Warm</option></select>",
+      "candidate": "<select id=\"choice\" aria-label=\"Temperature\" size=\"2\"><option value=\"temperature\" selected>Cold</option></select>",
+      "status": "review-required",
+      "coverage": {
+        "requested": 1,
+        "inspected": 1,
+        "complete": true,
+        "wholeDocument": false,
+        "reasons": []
+      },
+      "checks": [
+        {
+          "id": "choice",
+          "sourceSelector": "#choice",
+          "candidateSelector": "#choice",
+          "status": "failed",
+          "properties": [
+            {
+              "property": "selected",
+              "status": "failed",
+              "source": [
+                {
+                  "index": 0,
+                  "value": "temperature",
+                  "label": "Warm"
+                }
+              ],
+              "candidate": [
+                {
+                  "index": 0,
+                  "value": "temperature",
+                  "label": "Cold"
+                }
+              ]
+            },
+            {
+              "property": "value",
+              "status": "passed",
+              "source": "temperature",
+              "candidate": "temperature"
+            },
+            {
+              "property": "name",
+              "status": "passed",
+              "source": "Temperature",
+              "candidate": "Temperature"
+            },
+            {
+              "property": "role",
+              "status": "passed",
+              "source": "listbox",
+              "candidate": "listbox"
+            },
+            {
+              "property": "exposed",
+              "status": "passed",
+              "source": true,
+              "candidate": true
+            }
+          ]
+        }
+      ],
+      "sourceNative": {
+        "optionNames": [
+          "Warm"
+        ],
+        "selection": [
+          {
+            "value": "temperature",
+            "label": "Warm",
+            "text": "Warm"
+          }
+        ]
+      },
+      "candidateNative": {
+        "optionNames": [
+          "Cold"
+        ],
+        "selection": [
+          {
+            "value": "temperature",
+            "label": "Cold",
+            "text": "Cold"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unchanged-empty-label-control",
+      "expected": "passed",
+      "source": "<select id=\"choice\" aria-label=\"Temperature\" size=\"2\"><option value=\"temperature\" label=\"\" selected>Warm</option></select>",
+      "candidate": "<select id=\"choice\" aria-label=\"Temperature\" size=\"2\"><option value=\"temperature\" label=\"\" selected>Warm</option></select>",
+      "status": "passed",
+      "coverage": {
+        "requested": 1,
+        "inspected": 1,
+        "complete": true,
+        "wholeDocument": false,
+        "reasons": []
+      },
+      "checks": [
+        {
+          "id": "choice",
+          "sourceSelector": "#choice",
+          "candidateSelector": "#choice",
+          "status": "passed",
+          "properties": [
+            {
+              "property": "selected",
+              "status": "passed",
+              "source": [
+                {
+                  "index": 0,
+                  "value": "temperature",
+                  "label": ""
+                }
+              ],
+              "candidate": [
+                {
+                  "index": 0,
+                  "value": "temperature",
+                  "label": ""
+                }
+              ]
+            },
+            {
+              "property": "value",
+              "status": "passed",
+              "source": "temperature",
+              "candidate": "temperature"
+            },
+            {
+              "property": "name",
+              "status": "passed",
+              "source": "Temperature",
+              "candidate": "Temperature"
+            },
+            {
+              "property": "role",
+              "status": "passed",
+              "source": "listbox",
+              "candidate": "listbox"
+            },
+            {
+              "property": "exposed",
+              "status": "passed",
+              "source": true,
+              "candidate": true
+            }
+          ]
+        }
+      ],
+      "sourceNative": {
+        "optionNames": [
+          "Warm"
+        ],
+        "selection": [
+          {
+            "value": "temperature",
+            "label": "",
+            "text": "Warm"
+          }
+        ]
+      },
+      "candidateNative": {
+        "optionNames": [
+          "Warm"
+        ],
+        "selection": [
+          {
+            "value": "temperature",
+            "label": "",
+            "text": "Warm"
+          }
+        ]
+      }
+    }
+  ]
+}

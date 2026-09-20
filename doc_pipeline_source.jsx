@@ -688,7 +688,8 @@ function _alloInstructionalTextForManifest(item) {
   var normalized = raw;
   try {
     var api = window.AlloModules && window.AlloModules.InstructionalContext;
-    if (raw && api && typeof api.normalizeInstructionalText === 'function') normalized = api.normalizeInstructionalText(raw, { defaultForm: inferredForm });
+    if (api && typeof api.getInstructionalText === 'function') normalized = api.getInstructionalText(artifact);
+    else if (raw && api && typeof api.normalizeInstructionalText === 'function') normalized = api.normalizeInstructionalText(raw, { defaultForm: inferredForm });
   } catch (e) { normalized = raw; }
   normalized = normalized && typeof normalized === 'object' ? normalized : {};
   var role = ['primary', 'supplemental', 'unspecified'].indexOf(normalized.role) >= 0 ? normalized.role : 'unspecified';
@@ -721,11 +722,18 @@ function _alloInstructionalTextForManifest(item) {
 }
 function _alloInteractiveObjectManifestItem(item, extra) {
   var profile = _alloInteractiveObjectProfileFor(item);
+  var readingContract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
+  if (item && item.type === 'simplified' && readingContract?.getReadingArtifactLabel) profile.label = readingContract.getReadingArtifactLabel(item);
   return Object.assign({
     id: item && item.id ? String(item.id) : '',
     type: profile.type,
     title: item && item.title ? String(item.title) : profile.label,
     label: profile.label,
+    roleLabel: item && ['analysis', 'simplified'].includes(item.type) ? readingContract?.getReadingRoleLabel?.(item) || '' : '',
+    sourceInstructionalText: item && item.sourceInstructionalText && readingContract?.normalizeSourceInstructionalText
+      ? readingContract.normalizeSourceInstructionalText(item.sourceInstructionalText) : null,
+    sourceFamilyId: typeof item?.sourceFamilyId === 'string' ? item.sourceFamilyId : null,
+    unitId: typeof item?.unitId === 'string' ? item.unitId : null,
     status: profile.status,
     html: profile.html,
     canExportHtml: profile.canExportHtml,
@@ -7132,6 +7140,8 @@ var createDocPipeline = function(deps) {
         runId: runId,
         elapsedMs: progressStats.startTime ? Math.round(performance.now() - progressStats.startTime) : 0,
         stats: stats,
+        wait: patch && Object.prototype.hasOwnProperty.call(patch, 'wait') ? patch.wait
+          : (typeof _geminiSyncWait === 'function' ? Object.assign(_geminiSyncWait(), { budget: _geminiStormBudget() }) : null),
         timestamp: Date.now(),
       });
       _activeRemediationProgress = next;
@@ -7375,6 +7385,7 @@ var createDocPipeline = function(deps) {
       probeRecover: _GEMINI_PROBE_RECOVER,
       authRetries: _GEMINI_AUTH_RETRIES,
       repeatOffenderLimit: _GEMINI_REPEAT_OFFENDER_LIMIT,
+      extraRequestPacing: _geminiExtraPacing,
       staggerMs: _geminiStaggerMs,
       textInitialMs: 180000,
       textRetryMs: 180000,
@@ -7400,6 +7411,7 @@ var createDocPipeline = function(deps) {
       throttle: {
         summary: _diagnosticSafeClone(forcedSummary, '', 0),
         trace: trace,
+        elapsedWait: _geminiSyncWait(),
         cooldownMsTotal: _throttleCooldownMsTotal,
         retryAfterApplied: (typeof _throttleRetryAfterApplied === 'number') ? _throttleRetryAfterApplied : 0,
         lastRetryAfterMs: (typeof _geminiLastRetryAfterMs === 'number') ? _geminiLastRetryAfterMs : 0,
@@ -7574,6 +7586,16 @@ var createDocPipeline = function(deps) {
   var _GEMINI_RECOVER_HITS = 3;     // F5 (2026-08-14): three clean successes restore full concurrency; four was one beyond the observed recovery streak
   var _GEMINI_PROBE_RECOVER = 2;    // (2026-07-24) consecutive REPRESENTATIVE probe successes wait-not-stop needs before it resumes a real round — one cheap probe success is not evidence a document-sized call will clear a volume throttle
   var _GEMINI_AUTH_RETRIES = 1;     // ONE quick jittered retry for an isolated 401. Once the second logical failure trips the breaker, checkpoint for explicit resume instead of grinding inline.
+  // Frozen at a safe run boundary; this preference never bypasses error recovery.
+  var _geminiExtraPacing = null;
+  var _readGeminiExtraPacing = function (state) {
+    try {
+      var st = state || (typeof _s === 'function' ? _s() : null);
+      if (st && typeof st.pdfExtraRequestPacing === 'boolean') return st.pdfExtraRequestPacing;
+    } catch (_) {}
+    // Known direct API hosts default off; unknown/legacy hosts retain their existing policy.
+    return !(typeof window !== 'undefined' && window._isCanvasEnv === false);
+  };
   var _geminiCap = _GEMINI_MAX_CONCURRENT;
   // PROACTIVE PACING (2026-06-24, maintainer ask): for heavy/scanned docs — the ones that fire a big burst of
   // calls (5 OCR passes + parallel audit passes + parallel fix chunks) and trip the Canvas rate-limit — lower
@@ -7611,7 +7633,44 @@ var createDocPipeline = function(deps) {
   // so a teacher can paste the log back without disclosing anything.
   var _throttleTrace = [];          // structured records for the end-of-run rollup
   var _throttleRunStartedAt = 0;
-  var _throttleCooldownMsTotal = 0; // wall-clock deliberately spent backing off
+  var _throttleCooldownMsTotal = 0; // legacy scheduled-cooldown telemetry, not elapsed waiting
+  var _geminiWaitTotals = { recoveryMs: 0, pacingMs: 0, queueMs: 0 };
+  var _geminiWaitClock = null;
+  var _geminiRecoverySleeps = [];
+  var _geminiRecoveryWaitEpoch = 0;
+  var _geminiRecoveryBudgetStart = 0;
+  var _geminiQueueWait = function (now) {
+    var queued = _geminiWaiters.length > 0;
+    // Each sleep has its own intended deadline. Delayed callbacks cannot turn a one-second
+    // recovery check into minutes of charged waiting; overlapping sleeps still count once.
+    var recoveryUntil = queued ? _geminiCooldownUntil : 0;
+    for (var i = 0; i < _geminiRecoverySleeps.length; i++) {
+      recoveryUntil = Math.max(recoveryUntil, _geminiRecoverySleeps[i].until);
+    }
+    if (recoveryUntil > now) return { reason: 'recovery', until: recoveryUntil };
+    if (!queued) return null;
+    var starts = _geminiRecentStarts.filter(function (at) { return at > now - _geminiRateWindowMs; });
+    if (_geminiRateWindowMs > 0 && _geminiRateMaxStarts > 0 && starts.length >= _geminiRateMaxStarts)
+      return { reason: 'pacing', until: starts[0] + _geminiRateWindowMs };
+    if (_geminiStaggerMs > 0 && _geminiLastStartAt > 0 && now < _geminiLastStartAt + _geminiStaggerMs)
+      return { reason: 'pacing', until: _geminiLastStartAt + _geminiStaggerMs };
+    return { reason: 'queue', until: Infinity };
+  };
+  // One clock measures the union of concurrent waits, never one duration per queued request.
+  // Bounded waits stop accruing at their deadline even if a hidden tab wakes late.
+  var _geminiSyncWait = function () {
+    var now = Date.now();
+    if (_geminiWaitClock) {
+      _geminiWaitTotals[_geminiWaitClock.reason + 'Ms'] += Math.max(0, Math.min(now, _geminiWaitClock.until) - _geminiWaitClock.since);
+    }
+    var next = _geminiQueueWait(now);
+    _geminiWaitClock = next ? { reason: next.reason, until: next.until, since: now } : null;
+    return Object.assign({}, _geminiWaitTotals, {
+      reason: next ? next.reason : null,
+      remainingMs: next && Number.isFinite(next.until) ? Math.max(0, next.until - now) : null,
+      extraRequestPacing: _geminiExtraPacing == null ? _readGeminiExtraPacing() : _geminiExtraPacing,
+    });
+  };
   // Retry-After (2026-09-02). The inner fetch ladder has parsed the header since 2026-08-15 and the
   // ledger printed it, but nothing fed it into the gate: a server that said "wait 45s" still got
   // the streak-derived 12s. When present it is the single most authoritative number the limiter
@@ -7620,7 +7679,7 @@ var createDocPipeline = function(deps) {
   var _GEMINI_RETRY_AFTER_CAP_MS = 300000;
   var _throttleRetryAfterApplied = 0;
   var _geminiLastRetryAfterMs = 0;
-  var _geminiRetryAfterUntil = 0;   // the cooldown deadline a Retry-After set (so wait-not-stop can tell it from a streak-derived one)
+  var _geminiRetryAfterUntil = 0;   // independent provider deadline; successes may shorten only adaptive cooldowns
   // Storm budget (2026-09-02, maintainer decision). Wait-not-stop had no run-level ceiling: the 08-14
   // field run spent 2h36m to deliver a handful of deterministic fixes. Once a run's DELIBERATE
   // rate-limit waiting (the cooldowns the gate itself imposed) adds up to this budget, the AI passes
@@ -7642,7 +7701,7 @@ var createDocPipeline = function(deps) {
   };
   var _geminiStormBudget = function () {
     var budgetMs = _geminiStormBudgetMs();
-    var spentMs = Math.max(0, Number(_throttleCooldownMsTotal) || 0);
+    var spentMs = Math.max(0, _geminiSyncWait().recoveryMs - _geminiRecoveryBudgetStart);
     return {
       budgetMs: budgetMs,
       spentMs: spentMs,
@@ -7651,6 +7710,7 @@ var createDocPipeline = function(deps) {
     };
   };
   var _resetGeminiStormBudget = function () {
+    _geminiRecoveryBudgetStart = _geminiSyncWait().recoveryMs;
     _throttleCooldownMsTotal = 0;
     _stormBudgetAnnounced = false;
     try { _pipeThrottleEvent('storm_budget_reset', { budgetMs: _geminiStormBudgetMs() }, null); } catch (_) {}
@@ -7976,7 +8036,7 @@ var createDocPipeline = function(deps) {
     if (!waiter.owner || !waiter.owner.runId) return;
     if (pulseNow) {
       try {
-        if (typeof _pulsePipelineWatchdog === 'function') _pulsePipelineWatchdog(waiter.owner || null);
+        if (typeof _pulsePipelineWatchdog === 'function') _pulsePipelineWatchdog(waiter.owner || null, _geminiSyncWait());
       } catch (_) {}
     }
     waiter.pulseTimer = _gateTimeout(function () {
@@ -7986,6 +8046,7 @@ var createDocPipeline = function(deps) {
   };
   var _geminiPump = function() {
     _pruneAbortedWaiters();
+    _geminiSyncWait();
     var now = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
     if (_geminiCooldownUntil > now) {
       if (!_geminiCooldownTimer) {
@@ -8025,7 +8086,9 @@ var createDocPipeline = function(deps) {
       _geminiInFlight++;
       _geminiLastStartAt = now;
       if (_geminiRateWindowMs > 0 && _geminiRateMaxStarts > 0) _geminiRecentStarts.push(now);
-      (_geminiWaiters.shift()).resolve();
+      var admitted = _geminiWaiters.shift();
+      _geminiSyncWait();
+      admitted.resolve();
       if (_geminiRateWindowMs > 0 && _geminiRecentStarts.length >= _geminiRateMaxStarts && _geminiWaiters.length) {
         var _nextRateSlotMs = Math.max(1, (_geminiRecentStarts[0] + _geminiRateWindowMs) - now);
         if (!_geminiRateTimer) _geminiRateTimer = _gateTimeout(function () { _geminiRateTimer = null; _geminiPump(); }, _nextRateSlotMs + 15);
@@ -8110,10 +8173,12 @@ var createDocPipeline = function(deps) {
     if (!(ms > 0)) return 0;
     var now = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
     var until = now + ms;
+    // A longer adaptive brake may already cover this header, but a concurrent success can
+    // shorten that brake. Retain every provider deadline independently before returning.
+    _geminiRetryAfterUntil = Math.max(_geminiRetryAfterUntil, until);
     if (until <= _geminiCooldownUntil) return 0; // an active, longer brake already covers it
     var extraMs = until - Math.max(now, _geminiCooldownUntil);
     _geminiCooldownUntil = until;
-    _geminiRetryAfterUntil = until;
     _geminiLastRetryAfterMs = ms;
     _throttleRetryAfterApplied++;
     _throttleCooldownMsTotal += extraMs;
@@ -8186,7 +8251,7 @@ var createDocPipeline = function(deps) {
       _pipeThrottleEvent('transient_trip', { cooldownMs: _cd, capBefore: _capBefore, capTo: _GEMINI_STORM_MIN, trip: _GEMINI_TRANSIENT_TRIP }, owner);
       if (!_geminiStormAnnounced && _geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP + 2) {
         _geminiStormAnnounced = true;
-        _pipeLog('Throttle', 'The AI service is rate-limiting this session — it is returning empty responses under load (a temporary throttle, not an AlloFlow error). Backing off to let it recover; this run will be slow. Large or scanned documents hit this sooner — a smaller doc or waiting a few minutes helps.', null, owner);
+        _pipeLog('Throttle', 'The AI service is returning empty responses or timing out. Retrying more slowly to allow recovery; the cause may be service load or a connection problem.', null, owner);
       }
     }
   };
@@ -8233,6 +8298,8 @@ var createDocPipeline = function(deps) {
     return failedVolume <= 0 || successVolume >= Math.ceil(failedVolume * 0.8);
   };
   var _geminiNoteSuccess = function(requestProfile) {
+    _geminiSyncWait();
+    var _cooldownBeforeSuccess = _geminiCooldownUntil;
     var _failureWaveActive = (_geminiAuthStreak > 0 || _geminiTransientStreak > 0) && !!_geminiLastFailureProfile;
     if (_failureWaveActive && !_geminiSuccessRepresentsFailure(requestProfile)) {
       // M16: a run that has MOVED ON to a different route has no way to produce the old route's
@@ -8263,7 +8330,7 @@ var createDocPipeline = function(deps) {
       // short brake stays on. This is what keeps the longer ceiling above safe to raise.
       if (_geminiCooldownUntil) {
         var _nowOnSuccess = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
-        _geminiCooldownUntil = Math.min(_geminiCooldownUntil, _nowOnSuccess + _GEMINI_COOLDOWN_MS);
+        _geminiCooldownUntil = Math.max(_geminiRetryAfterUntil, Math.min(_geminiCooldownUntil, _nowOnSuccess + _GEMINI_COOLDOWN_MS));
       }
       _geminiOkStreak++;
       if (_geminiOkStreak >= _GEMINI_RECOVER_HITS) {
@@ -8273,12 +8340,20 @@ var createDocPipeline = function(deps) {
         // CB-2 (2026-06-21): also clear the cooldown. The last storm may have pushed _geminiCooldownUntil
         // up to 90s out; without this, _geminiPump still refuses to start queued waiters until that stale
         // timestamp elapses, so "restoring concurrency to 3" was a lie for up to ~90s.
-        _geminiCooldownUntil = 0;
+        _geminiCooldownUntil = _geminiRetryAfterUntil > Date.now() ? _geminiRetryAfterUntil : 0;
         _pipeThrottleEvent('recovered', { capTo: _geminiEffectiveMax, hitsNeeded: _GEMINI_RECOVER_HITS });
         warnLog('[GeminiGate] Throttle cleared — restoring concurrency to ' + _geminiEffectiveMax);
         _geminiPump();
       }
     }
+    // The old timer may still point at a longer adaptive brake. Re-arm at the effective
+    // deadline so a success removes unnecessary delay while retaining the provider's wait.
+    if (_geminiCooldownUntil < _cooldownBeforeSuccess && _geminiCooldownTimer) {
+      _gateClearTimer(_geminiCooldownTimer);
+      _geminiCooldownTimer = null;
+      _geminiPump();
+    }
+    _geminiSyncWait();
     _pipeThrottleScoreProbe("ok", null);
   };
   // CB-1 (2026-06-21): clear the breaker at the START of a run. createDocPipeline is a session singleton,
@@ -8287,7 +8362,21 @@ var createDocPipeline = function(deps) {
   // concurrent + a stale cooldown, plus a stale "Canvas is rate-limiting" message — even though B is not
   // being throttled. A storm signal must be EARNED by the current run, not inherited. (In-flight waiters
   // are not cleared — only the trip state; _geminiPump picks the restored cap up immediately.)
-  var _resetGeminiBreaker = function() {
+  var _resetGeminiBreaker = function(extraRequestPacing) {
+    var _previousRecoverySleeps = _geminiRecoverySleeps;
+    _geminiRecoverySleeps = [];
+    _geminiRecoveryWaitEpoch++;
+    _geminiExtraPacing = typeof extraRequestPacing === 'boolean' ? extraRequestPacing : _readGeminiExtraPacing();
+    _geminiHoldStreak = 0;
+    _geminiHoldGateArmed = false;
+    _geminiLastAuthAttemptMs = null;
+    _throttlePendingProbe = null;
+    _geminiWaitTotals = { recoveryMs: 0, pacingMs: 0, queueMs: 0 };
+    _geminiWaitClock = null;
+    _geminiRecoveryBudgetStart = 0;
+    // Resolve old waits after detaching their tokens. A late callback cannot remove a new
+    // run's sleep or debit its allowance, and the epoch makes the old calm loop exit.
+    _previousRecoverySleeps.forEach(function (sleep) { if (sleep.finish) sleep.finish(); });
     // (2026-08-16) Per-run telemetry epoch. _throttleRunStartedAt was declared and READ by the
     // rollup but never ASSIGNED anywhere, so hiddenPctOfRun divided against 0-as-unset and the
     // field summary printed "HIDDEN for 0%" beside 43 minutes of hiddenMs. The hidden/cooldown
@@ -8347,6 +8436,8 @@ var createDocPipeline = function(deps) {
   // call repeatedly (e.g. once on page-count, again when OCR confirms scanned). (2026-06-24, maintainer ask.)
   var _applyGeminiPacing = function (heavy, opts) {
     opts = opts || {};
+    if (_geminiExtraPacing == null) _geminiExtraPacing = _readGeminiExtraPacing();
+    heavy = heavy && _geminiExtraPacing && !_usesLocalTextBackend();
     // A host transport with no provider quota (agent bridge: the client's own model answers,
     // nothing goes to Gemini) has nothing for pacing to protect — heavy-doc pacing only
     // added queue waits (77.5s observed for one auditor slot) in front of a transport whose
@@ -8494,6 +8585,7 @@ var createDocPipeline = function(deps) {
     // status line kept blaming a throttle.
     var _staleWave = _geminiWaveIsStale();
     var _r = {
+      wait: _geminiSyncWait(),
       cooldownRemainingMs: cooldownRemainingMs,
       authStreak: _geminiAuthStreak,
       transientStreak: _geminiTransientStreak,
@@ -8680,9 +8772,15 @@ var createDocPipeline = function(deps) {
   };
   var waitForGeminiCalm = async function (opts) {
     var o = opts || {};
+    var _recoveryWaitEpoch = _geminiRecoveryWaitEpoch;
     var maxWaitMs = (typeof o.maxWaitMs === 'number') ? Math.max(0, o.maxWaitMs) : 240000;
     var _now = function () { return ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0); };
     var _sleep = function (ms) {
+      var durationMs = Math.max(0, Number(ms) || 0);
+      var sleep = { until: _now() + durationMs, finish: null };
+      _geminiSyncWait();
+      _geminiRecoverySleeps.push(sleep);
+      _geminiSyncWait();
       return new Promise(function(resolveSleep) {
         var done = false;
         var timer = null;
@@ -8691,12 +8789,19 @@ var createDocPipeline = function(deps) {
           done = true;
           if (timer) { if (typeof _alloHiddenSafeClear === 'function') _alloHiddenSafeClear(timer); else clearTimeout(timer); }
           try { if (o.signal && typeof o.signal.removeEventListener === 'function') o.signal.removeEventListener('abort', finish); } catch (_) {}
+          var index = _geminiRecoverySleeps.indexOf(sleep);
+          if (index >= 0) {
+            _geminiSyncWait();
+            _geminiRecoverySleeps.splice(index, 1);
+            _geminiSyncWait();
+          }
           resolveSleep();
         };
+        sleep.finish = finish;
         if (o.signal && o.signal.aborted) { finish(); return; }
         timer = (typeof _alloHiddenSafeTimeout === 'function')
-          ? _alloHiddenSafeTimeout(finish, Math.max(0, Number(ms) || 0))
-          : setTimeout(finish, Math.max(0, Number(ms) || 0));
+          ? _alloHiddenSafeTimeout(finish, durationMs)
+          : setTimeout(finish, durationMs);
         try { if (o.signal && typeof o.signal.addEventListener === 'function') o.signal.addEventListener('abort', finish, { once: true }); } catch (_) {}
       });
     };
@@ -8706,7 +8811,7 @@ var createDocPipeline = function(deps) {
     // explicitly described, so the bound stretches to cover an active Retry-After brake, once.
     var _retryAfterExtensionMs = function () {
       var base = t0 + maxWaitMs;
-      if (!(_geminiRetryAfterUntil > base) || _geminiCooldownUntil !== _geminiRetryAfterUntil) return 0;
+      if (!(_geminiRetryAfterUntil > base)) return 0;
       return Math.min(_GEMINI_RETRY_AFTER_CAP_MS, (_geminiRetryAfterUntil - base) + 1000);
     };
     var _waitDeadline = function () { return t0 + maxWaitMs + _retryAfterExtensionMs(); };
@@ -8726,6 +8831,7 @@ var createDocPipeline = function(deps) {
     var _probeOkStreak = 0;
     var _probeFailStreak = 0;
     var _aborted = function () {
+      if (_recoveryWaitEpoch !== _geminiRecoveryWaitEpoch) return true;
       if (o.signal && o.signal.aborted) return true;
       if (typeof o.shouldAbort !== 'function') return false;
       try { return !!o.shouldAbort(); } catch (_) { return false; }
@@ -8832,9 +8938,16 @@ var createDocPipeline = function(deps) {
   // throttle — where every call is stuck retrying for >8 min with no _pipeLog event — the watchdog read
   // "8 min of silence" and CLEARED a slow-but-progressing run (looked like a premature bail). Emit a
   // heartbeat on each retry so the watchdog fires only on TRUE inactivity. (2026-06-21, fix A)
-  var _pulsePipelineWatchdog = function (owner) {
+  var _pulsePipelineWatchdog = function (owner, waitState) {
     try {
       var ts = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
+      var wait = waitState || _geminiSyncWait();
+      var reason = wait.reason || 'recovery-check';
+      var recovering = reason === 'recovery' || reason === 'recovery-check';
+      var message = reason === 'pacing' ? 'Spacing out AI requests to reduce interruptions.'
+        : reason === 'queue' ? 'Waiting for another AI request to finish.'
+          : reason === 'recovery' ? 'Waiting before retrying the AI service.' : 'Checking whether the AI service has recovered.';
+      if (wait.remainingMs > 0) message += ' Next request in about ' + Math.ceil(wait.remainingMs / 1000) + 's.';
       var stats = (owner && owner.stats) || _pipelineStats;
       var runId = (owner && owner.runId) || stats.runId || null;
       var documentEpoch = (_activeRemediationProgress && _activeRemediationProgress.runId === runId)
@@ -8843,11 +8956,11 @@ var createDocPipeline = function(deps) {
           : (Object.prototype.hasOwnProperty.call(stats, 'documentEpoch') ? stats.documentEpoch : null));
       if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
         window.dispatchEvent(new CustomEvent('alloflow:pipeline-warn', {
-          detail: { ts: ts, tag: 'Throttle', msg: 'retry/cooldown — pipeline alive', runId: runId, documentEpoch: documentEpoch },
+          detail: { ts: ts, tag: recovering ? 'Throttle' : 'Queue', msg: message, runId: runId, documentEpoch: documentEpoch },
         }));
       }
       if (_activeRemediationProgress && _activeRemediationProgress.runId === runId) {
-        _emitRemediationProgress(runId, { status: 'throttled', activity: { tag: 'Throttle', message: 'Rate-limit cooldown in progress — the pipeline is still active.', timestamp: ts } }, owner);
+        _emitRemediationProgress(runId, { status: recovering ? 'throttled' : 'running', wait: Object.assign({}, wait, { reason: reason, budget: _geminiStormBudget() }), activity: { tag: recovering ? 'Throttle' : 'Queue', message: message, timestamp: ts } }, owner);
       }
     } catch (_) {}
   };
@@ -9844,6 +9957,7 @@ var createDocPipeline = function(deps) {
       && Object.prototype.hasOwnProperty.call(overrides, 'documentEpoch'));
     var s = _s();
     var ctx = {
+      extraRequestPacing: _readGeminiExtraPacing(s),
       auditorCount: s.pdfAuditorCount,
       autoFixPasses: s.pdfAutoFixPasses,
       polishPasses: s.pdfPolishPasses,
@@ -10720,7 +10834,16 @@ var createDocPipeline = function(deps) {
           // ARIA role tokens use the first recognized concrete role. Invalid
           // fallback tokens do not override a native table header.
           const concreteRoles = new Set(('alert alertdialog application article banner blockquote button caption cell checkbox code columnheader combobox complementary contentinfo definition deletion dialog directory document emphasis feed figure form generic grid gridcell group heading img insertion link list listbox listitem log main marquee math menu menubar menuitem menuitemcheckbox menuitemradio meter navigation none note option paragraph presentation progressbar radio radiogroup region row rowgroup rowheader scrollbar search searchbox separator slider spinbutton status strong subscript superscript switch tab table tablist tabpanel term textbox time timer toolbar tooltip tree treegrid treeitem').split(' '));
-          const explicitRole = el => role(el).split(/\s+/).find(value => concreteRoles.has(value));
+          const explicitRole = el => {
+            const value = role(el).split(/\s+/).find(value => concreteRoles.has(value));
+            // Presentation is ignored on focusable elements or elements carrying
+            // global ARIA state. Those inert spellings must not block a repair.
+            const globalAria = /^(atomic|braillelabel|brailleroledescription|busy|controls|current|describedby|description|details|disabled|dropeffect|errormessage|flowto|grabbed|haspopup|hidden|invalid|keyshortcuts|label|labelledby|live|owns|relevant|roledescription)$/;
+            const focusable = /^[\t\n\f\r ]*[+-]?\d/.test(el.getAttribute('tabindex') || '')
+              || /^(true|plaintext-only|)$/i.test(el.getAttribute('contenteditable') ?? 'false');
+            if (/^(none|presentation)$/.test(value || '') && (focusable || Array.from(el.attributes).some(attr => attr.name.startsWith('aria-') && globalAria.test(attr.name.slice(5))))) return undefined;
+            return value;
+          };
           const sourceTableRole = explicitRole(a) || 'table', outputTableRole = explicitRole(b) || 'table';
           // Preserve an existing table/grid role, including ARIA fallback tokens.
           // A table that already lacks these semantics may still be repaired.
@@ -10728,12 +10851,40 @@ var createDocPipeline = function(deps) {
             return rejectAt('table-semantics-changed', 'table:' + (ti + 1));
           const headerRole = el => explicitRole(el)
             || (/^(row|rowgroup)$/i.test(el.getAttribute('scope') || '') ? 'rowheader' : 'columnheader');
+          const rows = table => nodes(table, 'tr').filter(el => el.closest('table') === table);
+          const rowRole = (row, table, tableRole) => {
+            const explicit = explicitRole(row);
+            if (explicit) return explicit;
+            // Presentation on a native table/row group also removes the implicit
+            // roles of its required descendants unless they supply an own role.
+            for (let parent = row.parentElement; parent && parent !== table; parent = parent.parentElement) {
+              if (/^(none|presentation)$/.test(explicitRole(parent) || '')) return 'none';
+            }
+            return /^(none|presentation)$/.test(tableRole) ? 'none' : 'row';
+          };
+          const ar = rows(a), br = rows(b);
+          for (let ri = 0; ri < ar.length; ri++) {
+            if (br[ri] && rowRole(ar[ri], a, sourceTableRole) === 'row' && rowRole(br[ri], b, outputTableRole) !== 'row')
+              return rejectAt('table-semantics-changed', 'table:' + (ti + 1) + '/row:' + (ri + 1));
+          }
+          const cellRole = (cell, table, tableRole) => {
+            const explicit = explicitRole(cell);
+            if (explicit) return explicit;
+            const row = cell.closest('tr');
+            if (row && /^(none|presentation)$/.test(rowRole(row, table, tableRole))) return 'none';
+            return cell.tagName === 'TH' ? headerRole(cell) : /^(grid|treegrid)$/.test(tableRole) ? 'gridcell' : 'cell';
+          };
           const cells = table => nodes(table, 'td,th').filter(el => el.closest('table') === table);
           const ac = cells(a), bc = cells(b);
           for (let ci = 0; ci < ac.length; ci++) {
             if (!bc[ci]) continue;
             const loc = 'table:' + (ti + 1) + '/cell:' + (ci + 1);
             const sourceHeaderRole = headerRole(ac[ci]), outputHeaderRole = headerRole(bc[ci]);
+            const sourceCellRole = cellRole(ac[ci], a, sourceTableRole), outputCellRole = cellRole(bc[ci], b, outputTableRole);
+            if (/^(cell|gridcell)$/.test(sourceCellRole) && sourceCellRole !== outputCellRole
+              && !/^(rowheader|columnheader)$/.test(outputCellRole)) return rejectAt('table-semantics-changed', loc);
+            if (ac[ci].tagName === 'TD' && /^(rowheader|columnheader)$/.test(sourceCellRole) && sourceCellRole !== outputCellRole)
+              return rejectAt('table-semantics-changed', loc);
             if (ac[ci].tagName === 'TH' && (bc[ci].tagName !== 'TH'
               || (/^(rowheader|columnheader)$/.test(sourceHeaderRole) && !/^(rowheader|columnheader)$/.test(outputHeaderRole)))) return rejectAt('table-semantics-changed', loc);
             const scope = ac[ci].getAttribute('scope');
@@ -10820,6 +10971,21 @@ var createDocPipeline = function(deps) {
             return [fieldset, name];
           }));
           const formIndexes = new Map(nodes(doc, 'form').map((form, index) => [form, index]));
+          const baseTarget = nodes(doc, 'base[target]').find(base => base.namespaceURI === 'http://www.w3.org/1999/xhtml')?.getAttribute('target') || '';
+          const submissionTarget = (el, form) => {
+            const submitter = (el.tagName === 'BUTTON' && el.type === 'submit') || (el.tagName === 'INPUT' && /^(submit|image)$/.test(el.type));
+            if (el.tagName !== 'FORM' && (!submitter || !form)) return null;
+            const owner = el.tagName === 'FORM' ? el : form;
+            const method = submitter && el.hasAttribute('formmethod') ? el.formMethod : owner.method;
+            if (method === 'dialog') return null;
+            // An empty submitter/form target falls back to the document base;
+            // a missing submitter override inherits the owner's target first.
+            let target = (submitter && el.hasAttribute('formtarget') ? el.getAttribute('formtarget') : owner.getAttribute('target')) || baseTarget || '_self';
+            if (/[\t\n\r<]/.test(target)) target = '_blank';
+            // Reserved browsing contexts are ASCII case-insensitive; named
+            // frames are case-sensitive and whitespace is part of their name.
+            return /^_(self|blank|parent|top|unfencedtop)$/i.test(target) ? target.toLowerCase() : target;
+          };
           return nodes(doc, 'form,input,select,textarea,button').map(el => {
           const attrs = ['name','type','value','checked','selected','multiple','disabled','readonly','required','min','max','step','pattern','action','method','enctype','formaction','formmethod','formenctype','placeholder','aria-checked','aria-valuenow'];
           const labels = labelsByControl.get(el) || [];
@@ -10831,7 +10997,9 @@ var createDocPipeline = function(deps) {
             const group = o.closest('optgroup');
             // option.disabled reflects only the option's own attribute. A disabled
             // optgroup also makes every option unavailable, even when unselected.
-            return [o.value, o.selected, o.disabled || !!(group && group.disabled), norm(o.textContent),
+            // Native choice text uses a nonempty label override, otherwise option text.
+            // Preserve each choice even when several options submit the same value.
+            return [o.value, o.selected, o.disabled || !!(group && group.disabled), norm(o.textContent), norm(o.label || o.text),
               group ? groupIndexes.get(group) : -1];
           }) : [];
           const references = attr => (el.getAttribute(attr) || '').trim().split(/\s+/).map(id => doc.getElementById(id)).filter(Boolean);
@@ -10851,16 +11019,48 @@ var createDocPipeline = function(deps) {
           // may acquire wording during a legitimate accessibility repair.
           const relationships = ['aria-describedby', 'aria-details', 'aria-errormessage'].map(attr => references(attr).map(referenceText));
           const attributeState = attrs.map(name => name === 'type' && el.tagName === 'INPUT' ? el.type : el.getAttribute(name));
+          // Boolean DOM properties preserve validation behavior without treating
+          // alternate boolean-attribute spelling as a change.
+          const validationBypass = el.tagName === 'FORM' ? el.noValidate
+            : ((el.tagName === 'BUTTON' && el.type === 'submit') || (el.tagName === 'INPUT' && /^(submit|image)$/.test(el.type))) ? el.formNoValidate : null;
+          // Native range/number controls expose value text separately from their
+          // numeric value and accessible name. Empty value text may be repaired.
+          const accessibleValueText = el.tagName === 'INPUT' && /^(range|number)$/.test(el.type) ? norm(el.getAttribute('aria-valuetext')) : '';
           // Length attributes affect text-entry controls only. Native properties
           // preserve effective limits while accepting equivalent numeric spelling.
           const lengthLimits = el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && /^(text|search|url|tel|email|password)$/.test(el.type))
             ? [el.minLength, el.maxLength] : [];
+          // Hard wrapping changes the submitted textarea value even when its DOM
+          // value is unchanged. Preserve effective columns only in that mode;
+          // soft-wrap widths and equivalent numeric spelling remain repairable.
+          // Chromium also implements the legacy physical spelling as hard wrap.
+          const hardWrap = el.tagName === 'TEXTAREA' && /^(hard|physical)$/i.test(el.wrap);
+          const submissionWrapping = el.tagName === 'TEXTAREA' ? [hardWrap, hardWrap ? el.cols : null] : [];
+          // dirname creates another submitted field on supported named controls.
+          // Disabled controls and reset/button inputs cannot contribute one. Keep
+          // exact names, including empty ones: Chromium submits dirname="" too.
+          const directionName = !el.matches(':disabled') && el.getAttribute('name') && (el.tagName === 'TEXTAREA'
+            || (el.tagName === 'INPUT' && /^(hidden|text|search|tel|url|email|password|submit)$/.test(el.type)))
+            ? el.getAttribute('dirname') : null;
+          let submittedDirection = [];
+          if (directionName !== null) {
+            let direction = el.matches(':dir(rtl)') ? 'rtl' : 'ltr';
+            // Chromium retains the original case of explicit inherited ltr/rtl
+            // values in FormData. Auto direction and telephone defaults stop
+            // inheritance; CSS direction does not set the submitted direction.
+            for (let ancestor = el; ancestor; ancestor = ancestor.parentElement) {
+              const dir = ancestor.getAttribute('dir') || '';
+              if (/^(ltr|rtl)$/i.test(dir)) { direction = dir; break; }
+              if (/^auto$/i.test(dir) || ancestor.tagName === 'BDI' || (ancestor.tagName === 'INPUT' && ancestor.type === 'tel')) break;
+            }
+            submittedDirection = [directionName, direction];
+          }
           const fieldsetContext = [];
           for (let ancestor = el.parentElement; ancestor; ancestor = ancestor.parentElement) {
             const name = fieldsetNames.get(ancestor);
             if (name) fieldsetContext.unshift(name);
           }
-          return { accessibleName, accessibleDescription, relationships, fieldsetContext, state: [el.tagName, attributeState, owner, el.tagName === 'TEXTAREA' ? el.value : '', options, el.matches(':disabled'), lengthLimits], labels, groupLabels: groups.map(group => norm(group.label)) };
+          return { accessibleName, accessibleDescription, accessibleValueText, relationships, fieldsetContext, state: [el.tagName, attributeState, owner, el.tagName === 'TEXTAREA' ? el.value : '', options, el.matches(':disabled'), lengthLimits, validationBypass, submissionWrapping, submittedDirection, submissionTarget(el, form)], labels, groupLabels: groups.map(group => norm(group.label)) };
           });
         };
         // New group context may repair an ungrouped field, but every existing
@@ -10876,6 +11076,7 @@ var createDocPipeline = function(deps) {
             || !retainsFieldsetContext(af[i].fieldsetContext, bf[i].fieldsetContext)
             || (af[i].accessibleName && af[i].accessibleName !== bf[i].accessibleName)
             || (af[i].accessibleDescription && af[i].accessibleDescription !== bf[i].accessibleDescription)
+            || (af[i].accessibleValueText && af[i].accessibleValueText !== bf[i].accessibleValueText)
             || af[i].relationships.some((refs, ri) => refs.some((value, vi) => value && value !== bf[i].relationships[ri][vi]))
             || af[i].labels.some(label => !bf[i].labels.includes(label))
             || af[i].groupLabels.length !== bf[i].groupLabels.length || af[i].groupLabels.some((label, gi) => label && label !== bf[i].groupLabels[gi])) return rejectAt('form-state-changed', 'control:' + (i + 1));
@@ -17619,7 +17820,7 @@ var createDocPipeline = function(deps) {
   // identity extension — the version had sat at 20260524-1 through six weeks of scoring/honesty
   // changes, so cache hits could replay results produced by superseded logic).
   // 2026-09-09: strict source values, link/figure associations, and bounded metadata additions.
-  const _PIPELINE_PROMPT_VERSION = '20260910-1';
+  const _PIPELINE_PROMPT_VERSION = '20260920-2';
   // Cache identity must include the AI backend/model — a result produced by a local Ollama model is
   // not interchangeable with a Gemini one for the SAME bytes and settings. Best-effort, stable id.
   const _cacheBackendId = () => {
@@ -18692,7 +18893,7 @@ var createDocPipeline = function(deps) {
     if (!Number.isFinite(first) || !Number.isFinite(last) || first < 1 || last < first || first > total) return [0, total];
     return [first - 1, Math.min(total, last)];
   };
-  const _auditPdfInSlices = async (base64Data, auditPromptBase, shouldCancel, pageRange) => {
+  const _auditPdfInSlices = async (base64Data, auditPromptBase, shouldCancel, pageRange, signal) => {
     const _sliceCancelled = () => typeof shouldCancel === 'function' && !!shouldCancel();
     if (_sliceCancelled()) return null;
     try { await ensurePdfLibLoaded(); } catch (_) {} // live-bug fix 2026-07-02: load, don't hope
@@ -18748,7 +18949,7 @@ var createDocPipeline = function(deps) {
       if (_sliceCancelled() || !sb) return null;
       const slicePrompt = auditPromptBase
         + `\n\nIMPORTANT — SLICE CONTEXT: This file contains ONLY pages ${s + 1}–${e} of a larger ${totalPages}-page document. Audit just these pages. Begin every issue's text with "Pages ${s + 1}–${e}: " so page-specific findings stay distinct — EXCEPT document-wide issues (missing document language, missing document title, missing document metadata) which you must word generically with NO page prefix. Report pageCount as ${totalPages}.`;
-      const resp = await callGeminiVision(slicePrompt, sb, 'application/pdf').catch(() => null);
+      const resp = await callGeminiVision(slicePrompt, sb, 'application/pdf', { signal }).catch(() => null);
       if (_sliceCancelled()) return null;
       const parsed = _parseSlice(resp);
       if (!parsed) return null;
@@ -18937,6 +19138,20 @@ var createDocPipeline = function(deps) {
     return parsed;
   };
 
+  // Opening audits own cancellation and wait feedback independently of remediation.
+  let _activePdfAuditRun = null;
+  const getPdfAuditWait = (documentEpoch) => {
+    const run = _activePdfAuditRun;
+    if (!run || !run.current() || !run.waitEnabled || run.controller.signal.aborted
+      || (Number.isInteger(documentEpoch) && run.documentEpoch !== documentEpoch)) return null;
+    return Object.assign(_geminiSyncWait(), { budget: _geminiStormBudget() });
+  };
+  const stopPdfAccessibilityAudit = (documentEpoch) => {
+    const run = _activePdfAuditRun;
+    if (!run || !run.current() || (Number.isInteger(documentEpoch) && run.documentEpoch !== documentEpoch)) return false;
+    run.controller.abort();
+    return true;
+  };
   const runPdfAccessibilityAudit = async (base64Data, options) => {
     // options: { skipUiUpdates?: boolean, skipCache?: boolean, fileName?: string }
     //   skipUiUpdates — when true, skips setPdfAuditResult/setPdfAuditLoading/addToast
@@ -18950,7 +19165,6 @@ var createDocPipeline = function(deps) {
     // pageRange — optional [first, last] (1-indexed); a sliced audit stays inside it. The app never
     // sets it; the MCP driver forwards its page_range argument.
     const _auditPageRange = (options && Array.isArray(options.pageRange) && options.pageRange.length === 2) ? options.pageRange : null;
-    const _auditSignal = options && options.signal;
     // Payload ledger, part 2 (2026-07-27). The opening audit runs from the UI BEFORE
     // fixAndVerifyPdf exists, and fixAndVerifyPdf then replaces _pipelineStats with a FRESH object
     // — so the audit's whole-document uploads, potentially the largest single bucket in the run,
@@ -18960,12 +19174,23 @@ var createDocPipeline = function(deps) {
     // bytes that were already spent and already reported.
     try { _alloCarriedAuditPayload = {}; _pipelineStats.payload = _alloCarriedAuditPayload; } catch (_) {}
     const _auditHost = _s();
+    // The latest UI audit replaces the previous one even on hosts without run-token helpers.
+    // Abort before creating its owner so stale callbacks cannot clear or publish into this run.
+    if (!_skipUi && _activePdfAuditRun) _activePdfAuditRun.controller.abort();
     const _auditRunToken = (!_skipUi && typeof _auditHost.beginPdfAuditRun === 'function')
       ? _auditHost.beginPdfAuditRun()
       : null;
-    const _auditUiCurrent = () => !_skipUi && (!_auditRunToken
+    const _auditController = new AbortController();
+    const _auditSignal = _auditController.signal;
+    const _auditParentSignals = [...new Set([options && options.signal, _auditRunToken && _auditRunToken.signal].filter(Boolean))];
+    const _abortAudit = () => _auditController.abort();
+    const _auditHostCurrent = () => !_skipUi && (!_auditRunToken
       || typeof _auditHost.isPdfAuditRunCurrent !== 'function'
       || _auditHost.isPdfAuditRunCurrent(_auditRunToken));
+    const _auditUiCurrent = () => _auditHostCurrent() && !_auditSignal.aborted;
+    const _auditOwner = { controller: _auditController, current: _auditHostCurrent,
+      documentEpoch: _auditHost.pdfDocumentEpoch, waitEnabled: false };
+    if (!_skipUi) _activePdfAuditRun = _auditOwner;
     const _publishAuditUi = (fn) => {
       if (!_auditUiCurrent()) return false;
       try { fn(); return true; } catch (_) { return false; }
@@ -18986,12 +19211,20 @@ var createDocPipeline = function(deps) {
     });
     const _finishAuditUi = () => {
       if (_auditUiFinished) return true;
-      if (!_publishAuditUi(() => setPdfAuditLoading(false))) return false;
       _auditUiFinished = true;
-      try { if (typeof window !== 'undefined') window.__alloAuditStage = null; } catch (_) {}
+      for (const signal of _auditParentSignals) signal.removeEventListener('abort', _abortAudit);
+      _auditSignal.removeEventListener('abort', _finishAuditUi);
+      if (_activePdfAuditRun === _auditOwner) {
+        _activePdfAuditRun = null;
+        try { if (typeof window !== 'undefined') window.__alloAuditStage = null; } catch (_) {}
+      }
+      if (_auditHostCurrent()) setPdfAuditLoading(false);
       if (_auditRunToken && typeof _auditHost.finishPdfAuditRun === 'function') _auditHost.finishPdfAuditRun(_auditRunToken);
       return true;
     };
+    _auditSignal.addEventListener('abort', _finishAuditUi, { once: true });
+    for (const signal of _auditParentSignals) signal.addEventListener('abort', _abortAudit, { once: true });
+    if (_auditParentSignals.some(signal => signal.aborted)) _abortAudit();
     const _auditCancelled = () => !!(_auditSignal && _auditSignal.aborted) || (!_skipUi && !_auditUiCurrent());
     const _cancelAuditNow = () => {
       if (!_auditCancelled()) return false;
@@ -19003,6 +19236,7 @@ var createDocPipeline = function(deps) {
     // captured HERE governs every later read — a concurrent call's rebind can't swap the
     // auditor count / output language / document mid-audit.
     const _run = _makeRunCtx();
+    const _extraRequestPacing = typeof options?.extraRequestPacing === 'boolean' ? options.extraRequestPacing : _run.extraRequestPacing;
     const _auditorCount = (options && options.auditorCount) || _run.auditorCount;
     const _outputLanguage = (options && options.outputLanguage) || _run.outputLanguage;
     const _runFile = _run.file;
@@ -19098,7 +19332,7 @@ var createDocPipeline = function(deps) {
         const _tHtml = '<!DOCTYPE html><html lang="en"><head><title>' + _transcriptTitle + '</title></head><body><main>'
           + (_paras.length ? _paras : [_transcriptText]).map(_paraHtml).join('\n')
           + '</main></body></html>';
-        const _tAxe = await runAxeAudit(_tHtml);
+        const _tAxe = await runAxeAudit(_tHtml, { signal: _auditSignal });
         const _words = _transcriptText.split(/\s+/).filter(Boolean).length;
         const result = {
           documentDigest: _runDocumentDigest,
@@ -19222,7 +19456,7 @@ var createDocPipeline = function(deps) {
         const _wrapTitle = String((_optFileName || 'Document')).replace(/[<>&]/g, ' ');
         const minimalHtml = `<!DOCTYPE html><html lang="en"><head><title>${_wrapTitle}</title></head><body><main>${bodyHtml}</main></body></html>`;
         let baselineAxe = null;
-        try { baselineAxe = await runAxeAudit(minimalHtml); } catch (_) { baselineAxe = null; }
+        try { baselineAxe = await runAxeAudit(minimalHtml, { signal: _auditSignal }); } catch (_) { baselineAxe = null; }
         const result = {
           documentDigest: _runDocumentDigest,
           score: baselineAxe && typeof baselineAxe.score === 'number' ? baselineAxe.score : -1,
@@ -19421,7 +19655,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       const _sliceCapable = !_imageInputMime && !!(typeof window !== 'undefined' && window.PDFLib && window.PDFLib.PDFDocument);
       // The opening auditor panel is itself a three-call whole-PDF burst and previously ran
       // before remediation learned that a document was heavy/scanned. Pace it proactively;
-      // this adds only a few seconds but avoids spending the run's quota in its first instant.
+      // the optional rolling budget can also delay later calls; it changes timing, not coverage.
       try {
         // M3 parity: a busy gate keeps its earned storm state. The opening audit races an
         // overlapping run in exactly the batch case (file B opened while file A drains); zeroing
@@ -19430,9 +19664,10 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         if (_geminiInFlight > 0 || _geminiWaiters.length > 0) {
           warnLog('[GeminiGate] Opening-audit breaker reset SKIPPED — ' + _geminiInFlight + ' call(s) in flight + ' + _geminiWaiters.length + ' queued from an overlapping run; keeping the live gate state.');
         } else {
-          _resetGeminiBreaker();
+          _resetGeminiBreaker(_extraRequestPacing);
         }
         _applyGeminiPacing(true, { maxConcurrent: 2, staggerMs: 1500, label: _imageInputMime ? 'the opening image audit' : 'the opening PDF audit' });
+        _auditOwner.waitEnabled = true;
       } catch (_) {}
       let _chunkFirst = false;
       let _chunkFirstReason = null;
@@ -19451,7 +19686,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         if (!_skipUi) addToast && addToast('📄 Large PDF — auditing in page slices…', 'info');
         }
         _publishAuditStage('slices', 'Large document — auditing in page slices…');
-        const _slicedFirst = await _auditPdfInSlices(base64Data, auditPrompt, _auditCancelled, _auditPageRange).catch((e) => { warnLog('[PDF Audit] Sliced audit failed: ' + (e && e.message)); return null; });
+        const _slicedFirst = await _auditPdfInSlices(base64Data, auditPrompt, _auditCancelled, _auditPageRange, _auditSignal).catch((e) => { warnLog('[PDF Audit] Sliced audit failed: ' + (e && e.message)); return null; });
         if (_slicedFirst) { parsedAudits = [_slicedFirst]; _auditedViaSlices = true; }
       }
       if (!_auditedViaSlices) {
@@ -19459,7 +19694,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       let _auditorsBack = 0;
       const _auditorStage = () => _publishAuditStage('auditors', 'AI review passes: ' + _auditorsBack + ' of ' + numAuditors + ' back', { done: _auditorsBack, total: numAuditors });
       _auditorStage();
-      const auditResults = await Promise.all(auditVariants.map((p, i) => callGeminiVision(p, base64Data, _auditMimeType).catch(e => { console.warn(`[PDF Audit] Auditor ${i + 1} failed:`, e?.message); return null; }).then((r) => { _auditorsBack++; _auditorStage(); return r; })));
+      const auditResults = await Promise.all(auditVariants.map((p, i) => callGeminiVision(p, base64Data, _auditMimeType, { signal: _auditSignal }).catch(e => { console.warn(`[PDF Audit] Auditor ${i + 1} failed:`, e?.message); return null; }).then((r) => { _auditorsBack++; _auditorStage(); return r; })));
       parsedAudits = auditResults.filter(Boolean).map((r, i) => { try { return parseAudit(r); } catch(pe) { console.warn(`[PDF Audit] Parse auditor ${i + 1} failed:`, pe?.message, 'Raw:', r?.substring?.(0, 200)); return null; } }).filter(Boolean);
       if (_cancelAuditNow()) return null;
 
@@ -19484,8 +19719,8 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         const retryVariants = retryPool.slice(0, shortfall);
         // Run retries sequentially if rate limited, parallel otherwise
         const retryResults = retryRound > 1
-          ? await (async () => { const res = []; for (const p of retryVariants) { if (_auditCancelled()) break; try { res.push(await callGeminiVision(p, base64Data, _auditMimeType)); } catch { res.push(null); } if (_auditCancelled()) break; await new Promise(r => setTimeout(r, 500)); } return res; })()
-          : await Promise.all(retryVariants.map(p => callGeminiVision(p, base64Data, _auditMimeType).catch(() => null)));
+          ? await (async () => { const res = []; for (const p of retryVariants) { if (_auditCancelled()) break; try { res.push(await callGeminiVision(p, base64Data, _auditMimeType, { signal: _auditSignal })); } catch { res.push(null); } if (_auditCancelled()) break; await new Promise(r => setTimeout(r, 500)); } return res; })()
+          : await Promise.all(retryVariants.map(p => callGeminiVision(p, base64Data, _auditMimeType, { signal: _auditSignal }).catch(() => null)));
         if (_cancelAuditNow()) return null;
         const retryParsed = retryResults.filter(Boolean).map(r => { try { return parseAudit(r); } catch { return null; } }).filter(Boolean);
         if (retryParsed.length > 0) {
@@ -19509,7 +19744,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         if (_auditUiCurrent()) {
         if (!_skipUi) addToast && addToast('📄 Switching to a page-slice audit…', 'info');
         }
-        const _slicedFallback = await _auditPdfInSlices(base64Data, auditPrompt, _auditCancelled, _auditPageRange).catch(() => null);
+        const _slicedFallback = await _auditPdfInSlices(base64Data, auditPrompt, _auditCancelled, _auditPageRange, _auditSignal).catch(() => null);
         if (_slicedFallback) { parsedAudits = [_slicedFallback]; _auditedViaSlices = true; }
       }
 
@@ -19565,7 +19800,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         addToast && addToast(`Adding ${additionalCount} extra audit(s) — ${reason}`, 'info');
         }
         const extraVariants = allVariants.slice(parsedAudits.length, parsedAudits.length + additionalCount);
-        const extraResults = await Promise.all(extraVariants.map(p => callGeminiVision(p, base64Data, _auditMimeType).catch(() => null)));
+        const extraResults = await Promise.all(extraVariants.map(p => callGeminiVision(p, base64Data, _auditMimeType, { signal: _auditSignal }).catch(() => null)));
         if (_cancelAuditNow()) return null;
         const extraParsed = extraResults.filter(Boolean).map(r => { try { return parseAudit(r); } catch { return null; } }).filter(Boolean);
         extraParsed.forEach(a => {
@@ -19891,7 +20126,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         const _base64ForBaseline = _skipUi ? base64Data : _runBase64;
         _publishAuditStage('baseline-text', 'Extracting text for the automated rule scan…');
         const detBaseline = _imageInputMime ? null : await extractPdfTextDeterministic(_base64ForBaseline);
-        if (_baselineAbandoned) return;
+        if (_baselineAbandoned || _auditCancelled()) return;
         const rawText = (detBaseline && detBaseline.fullText) || '';
         // Tier 8 deep wire: use struct-tree-aware HTML when tags exist; falls
         // back to flat-paragraph rendering when untagged (same as before).
@@ -19916,10 +20151,10 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         // exactly the prior axe-only behavior.
         _publishAuditStage('baseline', 'Running the automated rule scans (axe-core, Equal Access)…');
         const [baselineAxe, baselineEa] = await Promise.all([
-          runAxeAudit(minimalHtml),
-          runEqualAccessAudit(minimalHtml).catch(() => null),
+          runAxeAudit(minimalHtml, { signal: _auditSignal }),
+          runEqualAccessAudit(minimalHtml, { signal: _auditSignal }).catch(() => null),
         ]);
-        if (_baselineAbandoned) return;
+        if (_baselineAbandoned || _auditCancelled()) return;
         if (baselineAxe) {
           const _eaOk = baselineEa && typeof baselineEa.score === 'number';
           const deterministicBaseline = _eaOk ? Math.min(baselineAxe.score, baselineEa.score) : baselineAxe.score;
@@ -20239,6 +20474,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       pdfAutoFixPasses: _saved.pdfAutoFixPasses ?? _run.autoFixPasses,
       pdfPolishPasses: _saved.pdfPolishPasses ?? _run.polishPasses,
       pdfOcrLanguage: _saved.pdfOcrLanguage ?? '',
+      pdfExtraRequestPacing: typeof _saved.pdfExtraRequestPacing === 'boolean' ? _saved.pdfExtraRequestPacing : true,
     } : {
       pdfAuditorCount: _run.auditorCount,
       leveledTextLanguage: _run.outputLanguage,
@@ -20248,6 +20484,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       // '' = auto-detect. pdfOcrLanguage is a deliberate read-fresh S1 exemption (not on _run) —
       // snapshot it here once so the whole batch keys consistently (finding 9).
       pdfOcrLanguage: _s().pdfOcrLanguage || '',
+      pdfExtraRequestPacing: _run.extraRequestPacing,
     };
     if (_saved) { try { warnLog('[Batch] Resuming with the batch\'s ORIGINAL settings (auditors ' + _batchSettings.pdfAuditorCount + ', target ' + _batchSettings.pdfTargetScore + ', passes ' + _batchSettings.pdfAutoFixPasses + ') — current slider values apply to NEW batches.'); } catch (_) {}
     }
@@ -20360,7 +20597,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         // Step 1: per-file audit (suppresses single-file UI updates)
         progress('Auditing...');
         const auditResult = await _withTimeout(
-          runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true, fileName: item.fileName, mimeType: item.mimeType || null, auditorCount: _batchSettings.pdfAuditorCount, outputLanguage: _batchSettings.leveledTextLanguage, signal: _fileCtrl.signal }),
+          runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true, fileName: item.fileName, mimeType: item.mimeType || null, extraRequestPacing: _batchSettings.pdfExtraRequestPacing, auditorCount: _batchSettings.pdfAuditorCount, outputLanguage: _batchSettings.leveledTextLanguage, signal: _fileCtrl.signal }),
           _remainingMs(), 'batch audit: ' + _alloDiagnosticDocumentLabel(item.fileName));
         _assertBatchFileCurrent();
         if (!auditResult || auditResult.score === -1) {
@@ -20374,6 +20611,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
           fileSize: item.fileSize || null,
           mimeType: item.mimeType || null,
           auditResult: auditResult,
+          extraRequestPacing: _batchSettings.pdfExtraRequestPacing,
           targetScore: _batchSettings.pdfTargetScore,
           autoFixPasses: _batchSettings.pdfAutoFixPasses,
           polishPasses: _batchSettings.pdfPolishPasses,
@@ -27987,7 +28225,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     if (_geminiInFlight > 0 || _geminiWaiters.length > 0) {
       warnLog('[GeminiGate] Run-entry breaker reset SKIPPED — ' + _geminiInFlight + ' call(s) in flight + ' + _geminiWaiters.length + ' queued from an overlapping run; keeping the live gate state.');
     } else {
-      _resetGeminiBreaker();
+      _resetGeminiBreaker(typeof batchOverrides?.extraRequestPacing === 'boolean' ? batchOverrides.extraRequestPacing : _run.extraRequestPacing);
     }
     // Heavy-doc PROACTIVE pacing (2026-06-24): a large or scanned PDF fires many Vision/audit calls in a tight
     // burst, which is exactly what trips the Canvas rate-limit — and once it trips, the breaker reacts by
@@ -32576,6 +32814,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // upserts collapsed distinct runs of the same document into one row.
         runId: _runId,
         pipelineStats: {
+          extraRequestPacing: _geminiExtraPacing,
+          elapsedWait: _geminiSyncWait(),
           runId: _runId,
           runSequence: _runSequence,
           // Payload ledger on the RESULT, so bytes and quality live in one artifact a before/after
@@ -39878,6 +40118,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   };
   const generateResourceHTML = (item, isTeacher, responses = {}, config = null) => {
       const cfg = config || exportConfig;
+      const readingContract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
+      const originalReading = !!readingContract?.isSupportedOriginal?.(item);
+      const readingRoleLabel = ['analysis', 'simplified'].includes(item.type) ? readingContract?.getReadingRoleLabel?.(item) || '' : '';
       // Escape raw AI/teacher text before it goes into the document body, so a stray < & >
       // displays as text instead of garbling or injecting markup (WCAG 4.1.1). Use ONLY for
       // plain-text fields interpolated directly — never for fields rendered via parseMarkdownToHTML.
@@ -39919,7 +40162,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       //   2. The boundary must be \p{L}/\p{N} based. A plain \b is ASCII-only in
       //      JS, so it matched NOTHING for Russian, Arabic, Greek or CJK and the
       //      cloze silently produced a passage with no blanks in it at all.
-      const _clozeIsOn = isWorksheet && cfg.clozeWorksheet === true;
+      const _clozeIsOn = isWorksheet && cfg.clozeWorksheet === true && !originalReading;
       // Fixed width, so the length of the line never gives the answer away. The
       // number is visible rather than an aria-label, because it has to survive
       // being printed on paper and it is what the answer key counts against.
@@ -40036,7 +40279,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
         'sentence-frames': 'includeSentenceFrames', 'image': 'includeImage', 'math': 'includeMath', 'dbq': 'includeDbq'
       };
-      const toggleKey = typeToggleMap[item.type];
+      const toggleKey = originalReading ? 'includeOriginalReading' : typeToggleMap[item.type];
       if (toggleKey && cfg[toggleKey] === false) return '';
       // Teacher-copy-by-default resources: always show in teacher copy, opt-in for student copy
       if (item.type === 'analysis' || item.type === 'udl-advice' || item.type === 'brainstorm') {
@@ -40075,7 +40318,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           if (item.type === 'faq') return '';
           if (item.type === 'sentence-frames') return '';
       }
-      const title = item.title || getDefaultTitle(item.type);
+      const title = item.title || (originalReading ? 'Original with supports' : getDefaultTitle(item.type));
       const isRtl = isRtlLang(leveledTextLanguage);
       const align = isRtl ? 'right' : 'left';
       // ── Visual enhancement: resource type icon + accent color ──
@@ -40098,6 +40341,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         'concept-sort': { icon: '🧩', color: '#6d28d9', bg: '#f5f3ff', label: 'Concept Sort' },
       };
       const tv = typeVisuals[item.type] || { icon: '📄', color: '#475569', bg: '#f8fafc', label: '' };
+      if (originalReading) tv.label = 'Original with supports';
       // flex-wrap + min-width:0 so the title and its "(meta)" tag drop to a second
       // line instead of running past the card edge when the reader turns text up.
       const enhancedHeader = `<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${tv.color};background:${tv.bg};display:flex;align-items:center;flex-wrap:wrap;min-width:0;gap:8px;"><span aria-hidden="true" style="font-size:1.3em;">${tv.icon}</span> ${title}${item.meta ? ` <span style="font-weight:normal;font-size:0.8em;color:#64748b;overflow-wrap:anywhere;">(${item.meta})</span>` : ''}</h2>`;
@@ -40113,9 +40357,22 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           return '<section class="section" id="' + _escTxt(item.id) + '" data-ka-readable style="border-left:4px solid #d97706;border-radius:12px;padding:16px;overflow-wrap:anywhere;"><h2 class="resource-header">' + _escTxt(title) + '</h2>' + _alloParsePreviewMarkdown(body) + goalHtml + choiceHtml + '</section>';
       }
       if (item.type === 'simplified') {
+          if (originalReading) {
+              const snapshot = readingContract.getSourceSnapshot(item);
+              const supports = readingContract.validateReadingSupports(item, item.readingSupports);
+              const notes = supports.annotations.length ? '<aside class="reading-support-notes" aria-label="Word help"><h3>Word help</h3><p>Explanations for the original text.</p><dl>' + supports.annotations.map(annotation => '<dt>' + _escTxt(annotation.quote) + '</dt><dd>' + _escTxt(annotation.text) + '</dd>').join('') + '</dl></aside>' : '';
+              const unavailableNotes = supports.status !== 'complete' ? '<p role="note">Some word help could not be matched to this original and is unavailable.</p>' : '';
+              // Entity-encode CR so HTML parsing retains even CRLF source strings.
+              const sourceText = _escTxt(item.data).replace(/\r/g, '&#13;');
+              return '<section class="section" id="' + _escTxt(item.id) + '" data-reading-form="same-text-supported" style="border-left:4px solid #2563eb;border-radius:12px;padding:16px;">'
+                  + '<h2 class="resource-header">' + _escTxt(title) + '</h2><p><strong>Original with supports</strong>' + (readingRoleLabel ? ' <span class="reading-role">· ' + _escTxt(readingRoleLabel) + '</span>' : '') + '</p>'
+                  + '<div data-ka-readable data-original-text="true" dir="auto" style="white-space:pre-wrap;overflow-wrap:anywhere;font-family:Georgia,serif;line-height:1.9;">' + sourceText + '</div>'
+                  + notes + unavailableNotes + '</section>';
+          }
           // Reading passage. Tagged data-ka-readable so the HTML export's
           // download-time read-aloud step can convert it into inline sentence-karaoke.
           const _passageHtml = parseMarkdownToHTML(item.data);
+          const _readingRoleHtml = readingRoleLabel ? '<p class="reading-role">' + _escTxt(readingRoleLabel) + '</p>' : '';
           if (_clozeIsOn) {
               const _built = _clozeBuild(_passageHtml, Array.isArray(cfg.__clozeGlossary) ? cfg.__clozeGlossary : []);
               // No term matched: fall back to the plain passage rather than
@@ -40125,6 +40382,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   return `
               <div class="section" id="${item.id}" style="border-left:4px solid #2563eb;border-radius:12px;">
                   ${enhancedHeader}
+                  ${_readingRoleHtml}
                   <p style="margin:0 4px 12px;padding:8px 12px;background:#f8fafc;border-left:3px solid #94a3b8;font-size:0.92em;color:#334155;">${_escTxt(t('export.cloze_instructions') || 'Fill in each blank with the correct word from the word bank.')}</p>
                   <div style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:2.4;color:#1e293b;padding:8px 4px;">${_built.html}</div>
                   ${_clozeWordBankHTML(_built.answers)}
@@ -40135,6 +40393,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           return `
               <div class="section" id="${item.id}" data-ka-readable style="border-left:4px solid #2563eb;border-radius:12px;">
                   ${enhancedHeader}
+                  ${_readingRoleHtml}
                   <div style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:1.9;color:#1e293b;padding:8px 4px;">${_passageHtml}</div>
               </div>
           `;
@@ -40159,6 +40418,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           if (isTeacher && !isIndependentMode) {
               return wordSearchHtml ? `<div class="section" id="${item.id}-key">${wordSearchHtml}</div>` : '';
           }
+          // Keep author descriptions and stale-image protection consistent with the live glossary.
+          function glossaryExportImageAlt(item) {
+  if (!item || item.imageDecorative === true || typeof item.imageAlt !== 'string') return '';
+  if (item.imageAltHash) {
+    const image = typeof item.image === 'string' ? item.image : '';
+    let h = 0x811c9dc5;
+    const mix = c => { h ^= c; h = Math.imul(h, 0x01000193) >>> 0; };
+    String(image.length).split('').forEach(ch => mix(ch.charCodeAt(0)));
+    const step = Math.max(1, Math.floor(image.length / 4096));
+    for (let i = 0; i < image.length; i += step) mix(image.charCodeAt(i));
+    const hash = 'img-' + image.length.toString(36) + '-' + h.toString(16).padStart(8, '0');
+    if (hash !== item.imageAltHash) return '';
+  }
+  return item.imageAlt.trim();
+}
           const hasAnyImages = item.data.some(gItem => gItem.image);
           const hasAnyTranslations = item.data.some(gItem => gItem.translations && Object.keys(gItem.translations).length > 0);
           // Glossary display modes (May 11 2026):
@@ -40176,7 +40450,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ? Object.entries(gItem.translations).map(([k, v]) => `<div style="margin-top:4px;font-size:0.85em;"><strong>${k}:</strong> ${v}</div>`).join('')
                               : '';
                           const imageHtml = gItem.image
-                              ? `<img loading="lazy" src="${gItem.image}" alt="" role="presentation" style="max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; margin-bottom: 8px;"/>`
+                              ? `<img loading="lazy" src="${gItem.image}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} style="max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; margin-bottom: 8px;"/>`
                               : '';
                           // For language-cards mode, the "back" emphasizes translations; the def is collapsed beneath.
                           const backContent = showTranslations
@@ -40349,7 +40623,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <tbody>
                       ${item.data.map(gItem => `
                       <tr>
-                          ${hasAnyImages ? `<td data-gloss-label="${_lblImage}" class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${gItem.image}" alt="" role="presentation" />` : ''}</td>` : ''}
+                          ${hasAnyImages ? `<td data-gloss-label="${_lblImage}" class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${gItem.image}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} />` : ''}</td>` : ''}
                           <td data-gloss-label="${_lblTerm}" style="text-align: ${align}">
                             <strong class="gloss-term">${gItem.emoji ? `<span aria-hidden="true">${_escTxt(gItem.emoji)}</span> ` : ''}${_escTxt(gItem.term)}</strong>
                           </td>
@@ -41702,6 +41976,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               if (typeof ca === 'number' && ca >= 0 && ca < q.options.length) return ca;
               if (typeof ca === 'string') {
                   const trimmed = ca.trim();
+                  const exactIdx = q.options.indexOf(ca);
+                  if (exactIdx !== -1) return exactIdx;
                   // Letter form (A, B, C, D, …)
                   if (/^[A-Za-z]$/.test(trimmed)) {
                       const letterIdx = trimmed.toUpperCase().charCodeAt(0) - 65;
@@ -41727,7 +42003,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <div class="quiz-box" data-quiz-id="${item.id}">
                       <h3>${t('output.quiz_mcq')}</h3>
                       ${quizQuestions.map((q, i) => {
-                          const itemType = q.type || 'mcq';
+                          const itemType = q.type === 'shortAnswer' ? 'short-answer' : (q.type || 'mcq');
                           const responseKey = quizId + ':q' + i;
                           const responseKeyAttr = _escTxt(responseKey);
                           const controlIdBase = ('allo_' + quizId + '_' + i).replace(/[^A-Za-z0-9_-]/g, '_');
@@ -43364,6 +43640,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         ? '<p style="margin:5px 0 0;font-size:0.85em;color:#475569;">' + _maT('hook_from_web_note', 'From the web. Check the source:') + ' <a href="' + escapeHtml(hookFact.sourceUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(hookFact.sourceTitle || hookFact.sourceUrl) + '</a>' + (hookFact.sourceHost && hookFact.sourceTitle ? ' \u00b7 ' + escapeHtml(_maT('hook_source_host', 'goes to {host}').replace('{host}', hookFact.sourceHost)) : '') + '</p>'
                         : '<p style="margin:5px 0 0;font-size:0.85em;color:#475569;">' + _maT('hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.') + '</p>') + '</section>'
                   : '';
+              const currentLinks = _maRules && typeof _maRules.activeConnections === 'function' ? _maRules.activeConnections(c) : [];
+              const savedLinks = (Array.isArray(c.studentConnections) ? c.studentConnections : []).slice(-20).filter(row => row && (row.cue || row.explanation));
+              const earlierLinks = savedLinks.filter(row => !currentLinks.some(link => link.learnerIdentified && link.factKey === row.factKey && link.cueKey === row.cueKey));
+              const connectionsHtml = (currentLinks.length ? '<section style="margin-top:12px"><h4>' + _maT('mapping_heading', 'How the cue connects') + '</h4><ul>' + currentLinks.map(link => '<li><strong>' + escapeHtml(String(link.cue || '').slice(0,200)) + '</strong> — ' + escapeHtml(String((c.essentialFacts || [])[link.factIndex] || '').slice(0,600)) + (link.explanation ? '<p>' + escapeHtml(String(link.explanation).slice(0,600)) + '</p>' : '') + '</li>').join('') + '</ul></section>' : '')
+                  + (earlierLinks.length ? '<section style="margin-top:12px"><h4>' + _maT('connections_earlier', 'Notes for earlier facts') + '</h4><p>' + _maT('export_connections_recheck', 'Saved learner connections — recheck against the current cue and facts.') + '</p>' + earlierLinks.map(row => '<p>' + escapeHtml(String(row.cue || '').slice(0,200)) + ': ' + escapeHtml(String(row.explanation || '').slice(0,600)) + '</p>').join('') + '</section>' : '');
               const draft = String(c.studentDraft || '').trim();
               const reasoning = String(c.studentReasoning || '').trim();
               // Downloaded interactive HTML (not the paper worksheet, not the
@@ -43385,7 +43666,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   + (facts ? '<ul style="margin:0;padding-left:22px;">' + facts + '</ul>' : '<div>' + _maT('export_no_facts', 'No facts were supplied.') + '</div>') + factsReviewNote + '</section>'
                   + hookHtml
                   + modeBlock
-                  + (c.mapping ? '<section style="margin-top:12px;"><h4 style="margin:0 0 5px;color:#0f172a;">' + _maT('mapping_heading', 'How the cue connects') + '</h4><div style="white-space:pre-wrap;">' + escapeHtml(c.mapping) + '</div></section>' : '')
+                  + connectionsHtml
+                  + (!currentLinks.length && (!_maRules?.customCue ? !c.studentDraft : !_maRules.customCue(c)) && c.mapping ? '<section style="margin-top:12px;"><h4 style="margin:0 0 5px;color:#0f172a;">' + _maT('mapping_heading', 'How the cue connects') + '</h4><div style="white-space:pre-wrap;">' + escapeHtml(c.mapping) + '</div></section>' : '')
                   + visualHtml
                   + '<section style="margin-top:12px;padding:12px;border:2px solid #99f6e4;border-radius:8px;"><h4 style="margin:0 0 5px;color:#115e59;">' + _maT('export_create_remix_heading', 'Create, remix, or personalize your memory aid') + '</h4>'
                   + (c.studentPrompt ? '<p style="margin:0 0 8px;color:#475569;">' + escapeHtml(c.studentPrompt) + '</p>' : '')
@@ -43475,6 +43757,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   phases: allPhases.filter((p) => raw.scope !== 'compact' || p[2]).map((p, index) => ({
                       id: p[0], label: (index + 1) + '. ' + p[1].replace(/^\d+\.\s*/, ''), prompt: str(phasePrompts[p[0]], 1200), text: str(workspace[p[0]], 12000), long: p[0] === 'response' || p[0] === 'revision',
                   })),
+                  sourceRecords: (Array.isArray(raw.sourceRecords) ? raw.sourceRecords : []).filter(source => source && safeLink(source.url)).slice(0,24).map(source => ({url:safeLink(source.url),title:str(source.title,350),author:str(source.author,250),publicationDate:str(source.publicationDate,100),foundAt:/^\d{4}-\d{2}-\d{2}$/.test(source.foundAt)?source.foundAt:'',reviewNote:str(source.reviewNote,2000),connectionLabel:source.rowId?'Connected evidence row: '+str(source.rowId,80):'For my overall reasoning'})),
+                  reasoningReferences: (Array.isArray(raw.reasoningReferences) ? raw.reasoningReferences : []).filter(ref => ref && ['evidence','check','decision','transfer'].includes(ref.part) && ['response','artifact','ledger','sourceNote'].includes(ref.source)).slice(0,4).map(ref => ({ label: { evidence: 'Lesson connection', check: 'What I checked', decision: 'Keep or revise, and why', transfer: 'Where else this could help' }[ref.part], summary: 'Learner-identified location (' + ref.source + '): ' + str(ref.location,1200) + ' — Recheck against the current work.' })),
                   evidenceLedger: (Array.isArray(raw.evidenceLedger) ? raw.evidenceLedger : []).filter((r) => r && typeof r === 'object').map((r, i) => ({
                       id: str(r.id, 80) || ('ledger-' + (i + 1)), claim: str(r.claim, 1800), evidence: str(r.evidence, 2200), tradeoff: str(r.tradeoff, 1800),
                       status: r.status === 'assumption' ? 'assumption' : 'needs-check',
@@ -43625,6 +43909,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               (m.supports.coachPrompts || []).length ? '<div class="ace-card"><h4 class="ace-h4">' + esc(L.coach) + '</h4><ul class="ace-list">' + listHtml(m.supports.coachPrompts) + '</ul></div>' : '',
           ].filter(Boolean).join('');
           const supportHtml = supportCards ? '<section class="ace-panel ace-supports"><h3 class="ace-h3">' + esc(L.supports) + '</h3>' + (m.agencyDescription ? '<p class="ace-muted">' + esc(m.agencyDescription) + '</p>' : '') + '<div class="ace-grid">' + supportCards + '</div></section>' : '';
+          const sourcesHtml = (m.sourceRecords || []).length ? '<section class="ace-panel"><h3 class="ace-h3">' + esc(tx('applied_challenge.sources.heading','Saved outside sources')) + '</h3><p>' + esc(tx('applied_challenge.sources.boundary','Citation details are separate from your writing. A source-check note records your review; it does not verify a claim. Links are not opened by AI.')) + '</p>' + m.sourceRecords.map(source => '<article><h4 class="ace-h4"><a href="' + esc(source.url) + '" rel="noopener noreferrer">' + esc(source.title || source.url) + '</a></h4><p>' + esc(source.connectionLabel) + '</p><p>' + esc([source.author,source.publicationDate].filter(Boolean).join(' · ')) + '</p>' + (source.foundAt ? '<p>' + esc(tx('applied_challenge.sources.found','Found on') + ' ' + source.foundAt) + '</p>' : '') + '<p class="ace-p ace-prewrap">' + esc(source.reviewNote || tx('applied_challenge.sources.not_recorded','Source check not recorded')) + '</p></article>').join('') + '</section>' : '';
+          const reasoningReferencesHtml = (m.reasoningReferences || []).length ? '<section class="ace-panel"><h3 class="ace-h3">' + esc(tx('applied_challenge.references.heading', 'Where I explained my reasoning')) + '</h3>' + m.reasoningReferences.map(ref => '<article><h4 class="ace-h4">' + esc(ref.label) + '</h4><p class="ace-p ace-prewrap">' + esc(ref.summary) + '</p></article>').join('') + '</section>' : '';
           const workspaceHtml = (m.phases || []).map((phase) => '<section class="ace-phase"><h4 class="ace-h4">' + esc(phase.label) + '</h4>'
               + (phase.prompt ? '<p class="ace-muted">' + esc(phase.prompt) + '</p>' : '')
               + responseField(phase.id, phase.label, phase.text, phase.long) + '</section>').join('');
@@ -43708,7 +43994,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               + (m.fitReason ? '<p class="ace-p ace-boundary"><strong>' + esc(L.whyFit) + '</strong> ' + esc(m.fitReason) + '</p>' : '')
               + briefHtml + supportHtml
               + '<h3 class="ace-h3" style="margin-top:16px;">' + esc(L.workspace) + '</h3><p class="ace-muted">' + esc(L.workspaceNote) + '</p>'
-              + workspaceHtml
+              + workspaceHtml + reasoningReferencesHtml + sourcesHtml
               + (m.artifactUrl || m.artifactDescription ? '<section class="ace-panel"><h3 class="ace-h3">' + esc(tx('applied_challenge.artifact.heading', 'Linked work and explanation')) + '</h3>' + (m.artifactUrl ? '<p><a href="' + esc(m.artifactUrl) + '" rel="noopener noreferrer">' + esc(m.artifactUrl) + '</a></p>' : '') + para('', m.artifactDescription) + '</section>' : '')
               + selfCheckHtml + ledgerHtml + stressHtml + cyclesHtml + feedbackHtml + teacherCommentHtml
               + '</div>\n          ';
@@ -43890,6 +44176,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
       if (historyItems.every(item => item.type === 'memory-aid' && item.data && item.data.memoryAidExportPreset === 'no-hints')) { const label = typeof t === 'function' && t('memory_aid.practice_kicker'); topic = label && label !== 'memory_aid.practice_kicker' ? label : 'Recall practice'; }
       const cfg = { ...(config || exportConfig), isWorksheet };
+      const readingContract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
+      if (readingContract?.ensureReadingSourcePairs) historyItems = readingContract.ensureReadingSourcePairs(historyItems);
       // Assessment mode (2026-07-01): a graded export must be student-safe end to end — suppress the
       // visible teacher answer key even when that toggle is on (one file must never carry both the
       // assessment promise and a key appendix) and blank the machine-readable answers (post-process
@@ -43927,7 +44215,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
           'sentence-frames': 'includeSentenceFrames', 'image': 'includeImage', 'math': 'includeMath', 'dbq': 'includeDbq'
         };
-        const key = toggleMap[item.type];
+        const originalReading = !!readingContract?.isSupportedOriginal?.(item);
+        const key = originalReading ? 'includeOriginalReading' : toggleMap[item.type];
         if (key && cfg[key] === false) return false;
         if (item.type === 'analysis' || item.type === 'udl-advice' || item.type === 'brainstorm') {
           const studentKey = item.type === 'analysis' ? 'includeAnalysis'
@@ -43938,7 +44227,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // Must stay in step with the matching gate in generateResourceHTML: on
           // a cloze worksheet the passage DOES render in the teacher copy,
           // because that is where the answer key comes from.
-          const clozeKey = item.type === 'simplified' && isWorksheet && cfg.clozeWorksheet === true;
+          const clozeKey = item.type === 'simplified' && !originalReading && isWorksheet && cfg.clozeWorksheet === true;
           if (!clozeKey && (item.type === 'simplified' || item.type === 'outline' || item.type === 'image'
               || item.type === 'faq' || item.type === 'sentence-frames')) return false;
         }
@@ -43964,7 +44253,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const _teacherEntries = cfg.includeTeacherKey ? _materializeRenderable(historyItems, true) : [];
       const _wrapSection = (item, idx, total, html, isTeacher = false) => {
         if (!html) return '';
-        const tv = _typeVisualsTOC[item.type] || { icon: '📄', color: '#475569', bg: '#f8fafc', label: 'Resource' };
+        const tv = { ...(_typeVisualsTOC[item.type] || { icon: '📄', color: '#475569', bg: '#f8fafc', label: 'Resource' }) };
+        if (readingContract?.isSupportedOriginal?.(item)) tv.label = 'Original with supports';
         // Marker pill above each section — number + type label. aria-hidden
         // because the same info is in the section header (heading) below.
         const marker = `<div class="alloflow-section-marker" aria-hidden="true" style="display:flex;align-items:center;gap:10px;margin:36px 0 -4px 4px;page-break-after:avoid;break-after:avoid;">
@@ -44513,30 +44803,48 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         renderedInStudentHtml: _hasRenderedEntry(_studentEntries, item),
         renderedInTeacherHtml: _hasRenderedEntry(_teacherEntries, item),
         instructionalText: _alloInstructionalTextForManifest(item),
+        sourceFingerprint: readingContract?.getSourceSnapshot?.(item)?.fingerprint || null,
+        originalPreserved: !!readingContract?.isSupportedOriginal?.(item),
+        roleLabel: readingContract?.getReadingRoleLabel?.(item) || '',
+        sourceInstructionalText: item?.sourceInstructionalText && readingContract?.normalizeSourceInstructionalText
+          ? readingContract.normalizeSourceInstructionalText(item.sourceInstructionalText) : null,
+        sourceFamilyId: typeof item?.sourceFamilyId === 'string' ? item.sourceFamilyId : null,
+        unitId: typeof item?.unitId === 'string' ? item.unitId : null,
       }));
-      const _studentPrimaryTextIds = _textAccessResources.filter((entry) => {
+      const _studentReadingSummary = readingContract?.summarizeReadingAccess?.(_studentEntries.map(entry => entry.item), { includeSourcePairs: false });
+      const _readingIds = items => items.map(item => String(item.id || '')).filter(Boolean);
+      const _studentPrimaryTextIds = _studentReadingSummary ? _readingIds(_studentReadingSummary.primary) : _textAccessResources.filter((entry) => {
         const profile = entry.instructionalText;
         return entry.renderedInStudentHtml && profile.role === 'primary'
+          && (profile.form !== 'same-text-supported' || entry.originalPreserved)
           && (profile.form !== 'adapted' || profile.replacementAuthorization.authorized === true);
       }).map((entry) => entry.id).filter(Boolean);
-      const _studentSupplementalTextIds = _textAccessResources.filter((entry) => {
+      const _studentSupplementalTextIds = _studentReadingSummary ? _readingIds(_studentReadingSummary.supplemental) : _textAccessResources.filter((entry) => {
         const profile = entry.instructionalText;
         return entry.renderedInStudentHtml && profile.role === 'supplemental';
       }).map((entry) => entry.id).filter(Boolean);
-      const _studentUnspecifiedAdaptedTextIds = _textAccessResources.filter((entry) => {
+      const _studentUnspecifiedAdaptedTextIds = _studentReadingSummary ? _readingIds(_studentReadingSummary.unspecifiedAdapted) : _textAccessResources.filter((entry) => {
         const profile = entry.instructionalText;
         return entry.renderedInStudentHtml && profile.role === 'unspecified' && profile.form === 'adapted';
       }).map((entry) => entry.id).filter(Boolean);
-      const _studentUnauthorizedPrimaryAdaptedTextIds = _textAccessResources.filter((entry) => {
+      const _studentUnauthorizedPrimaryAdaptedTextIds = _studentReadingSummary ? _readingIds(_studentReadingSummary.unauthorizedPrimaryAdaptations) : _textAccessResources.filter((entry) => {
         const profile = entry.instructionalText;
         return entry.renderedInStudentHtml && profile.role === 'primary' && profile.form === 'adapted'
           && profile.replacementAuthorization.authorized !== true;
       }).map((entry) => entry.id).filter(Boolean);
-      const _adaptedWithoutPrimary = (_studentSupplementalTextIds.length > 0 || _studentUnspecifiedAdaptedTextIds.length > 0)
-        && _studentPrimaryTextIds.length === 0;
+      const _missingSourceCompanionIds = _studentReadingSummary ? _readingIds(_studentReadingSummary.missingSourceCompanions) : [];
+      const _missingPrimaryCompanions = _studentReadingSummary?.missingPrimaryCompanions || [];
+      const _supplementalWithoutPrimary = _studentReadingSummary
+        ? _missingPrimaryCompanions.some(item => readingContract.getInstructionalText(item).role === 'supplemental')
+        : _studentSupplementalTextIds.length > 0 && _studentPrimaryTextIds.length === 0;
+      const _unspecifiedWithoutPrimary = _studentReadingSummary
+        ? _missingPrimaryCompanions.some(item => readingContract.getInstructionalText(item).role === 'unspecified')
+        : _studentUnspecifiedAdaptedTextIds.length > 0 && _studentPrimaryTextIds.length === 0;
+      const _adaptedWithoutPrimary = _supplementalWithoutPrimary || _unspecifiedWithoutPrimary;
       const _textAccessWarningCodes = [];
-      if (_studentSupplementalTextIds.length > 0 && _studentPrimaryTextIds.length === 0) _textAccessWarningCodes.push('supplemental-text-without-primary');
-      if (_studentUnspecifiedAdaptedTextIds.length > 0 && _studentPrimaryTextIds.length === 0) _textAccessWarningCodes.push('adapted-text-role-unspecified');
+      if (_supplementalWithoutPrimary) _textAccessWarningCodes.push('supplemental-text-without-primary');
+      if (_unspecifiedWithoutPrimary) _textAccessWarningCodes.push('adapted-text-role-unspecified');
+      if (_missingSourceCompanionIds.length > 0) _textAccessWarningCodes.push('adapted-source-unavailable');
       if (_studentUnauthorizedPrimaryAdaptedTextIds.length > 0) _textAccessWarningCodes.push('adapted-primary-not-educator-authorized');
       const _textAccessManifest = {
         schemaVersion: 1,
@@ -44544,14 +44852,16 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         supplementalTextIds: _studentSupplementalTextIds,
         unspecifiedAdaptedTextIds: _studentUnspecifiedAdaptedTextIds,
         unauthorizedPrimaryAdaptedTextIds: _studentUnauthorizedPrimaryAdaptedTextIds,
-        supplementalWithoutPrimary: _studentSupplementalTextIds.length > 0 && _studentPrimaryTextIds.length === 0,
+        supplementalWithoutPrimary: _supplementalWithoutPrimary,
+        missingSourceCompanionIds: _missingSourceCompanionIds,
+        missingPrimaryCompanionIds: _readingIds(_missingPrimaryCompanions),
         adaptedWithoutPrimary: _adaptedWithoutPrimary,
         warningCodes: _textAccessWarningCodes,
         resources: _textAccessResources,
         notes: 'Legacy artifacts remain role=unspecified. Replacement authorization is recorded only when its source is educator.',
       };
       const _teacherTextAccessNotice = _textAccessManifest.warningCodes.length > 0
-        ? `<div role="note" style="margin:12px 0 20px;padding:12px 14px;background:#fffbeb;border:1px solid #f59e0b;border-radius:10px;color:#78350f;"><strong>Text-access review:</strong> This student export includes adapted text whose primary-text relationship or educator replacement authorization needs review. Confirm that students will also receive the intended primary text, or explicitly revise the artifact designation before distribution.</div>`
+        ? `<div role="note" style="margin:12px 0 20px;padding:12px 14px;background:#fffbeb;border:1px solid #f59e0b;border-radius:10px;color:#78350f;"><strong>Text-access review:</strong> Some adapted readings are missing their matching source or main lesson text, or need educator confirmation. Review each reading pair and its assigned roles before sharing.</div>`
         : '';
       const _objectProfileManifest = {
         kind: 'alloflow.interactive-object-profile',
@@ -49055,6 +49365,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     // gate each round on these instead of firing into an active Canvas rate-limit storm — the run
     // waits (bounded) and then proceeds at full strength; nothing is ever skipped or stopped.
     geminiThrottleInfo: _geminiThrottleInfo,
+    getPdfAuditWait,
+    stopPdfAccessibilityAudit,
     resetGeminiBreaker: _resetGeminiBreaker, // deep dive 2026-07-27: so a test can prove a storm signal is not inherited across runs
     waitForGeminiCalm: waitForGeminiCalm,
     geminiStormBudget: _geminiStormBudget,

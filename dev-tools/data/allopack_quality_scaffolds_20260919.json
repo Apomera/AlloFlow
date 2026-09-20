@@ -1,0 +1,67 @@
+{
+  "sound_vibration_grade1": {
+    "frames": [
+      "I saw or felt ____ when the drum was tapped.",
+      "When we stopped the drum top, ____.",
+      "We tried again. I noticed ____.",
+      "My picture shows ____. I still want to check ____."
+    ],
+    "parallelExample": {
+      "context": "A teacher gently plucks the end of a ruler held on a table.",
+      "move": "Compare it while it moves and after it stops. Tell or show what you notice. Try again gently.",
+      "whyItHelps": "You compare before and after on one object. Use that idea for the drum."
+    }
+  },
+  "habitats_diversity_grade2": {
+    "frames": [
+      "In this place, I found these kinds: ____.",
+      "Both places had ____. Only one showed ____.",
+      "We looked for the same time. We noticed ____.",
+      "Our search may have missed ____ because ____."
+    ],
+    "parallelExample": {
+      "context": "Two photos show small parts of a pond edge and a lawn.",
+      "move": "List the kinds you can see in each. Count kinds, not just how many living things there are. Name something the photos might miss.",
+      "whyItHelps": "The photos help you practice the same kind of comparison. A photo or short search cannot show everything."
+    }
+  },
+  "weathering_erosion_grade4": {
+    "frames": [
+      "The rock changed in place when ____. That is ____.",
+      "The material moved from ____ to ____. That shows ____.",
+      "We changed ____, but kept ____ the same.",
+      "Our repeated results suggest ____. Our tray cannot show ____."
+    ],
+    "parallelExample": {
+      "context": "Another class compares how packed and loose soil affect runoff in small trays.",
+      "move": "They change how tightly the soil is packed. They keep tray slope, soil amount and water input alike. They repeat the comparison and measure sediment the same way.",
+      "whyItHelps": "The factor differs from your slope test, but the need to control other conditions and repeat measurements is the same."
+    }
+  },
+  "decimal_place_value_grade5": {
+    "frames": [
+      "I wrote ____ as ____ so the places line up.",
+      "In the ____ place, ____ is greater than ____.",
+      "Both models use the same whole: ____.",
+      "More decimal digits do not always mean more because ____."
+    ],
+    "parallelExample": {
+      "context": "Two jugs hold 0.4 L and 0.35 L.",
+      "move": "Write 0.4 as 0.40. Compare 40 hundredths with 35 hundredths of the same liter. Explain why the extra zero did not add any liquid.",
+      "whyItHelps": "Matching units and places lets you compare values instead of counting digits. Use that method for the ribbons."
+    }
+  },
+  "probability_models_grade7": {
+    "frames": [
+      "Our model gives red a probability of ____ because ____.",
+      "We returned and mixed each counter so ____.",
+      "In ____ trials, red appeared ____ times. Its relative frequency was ____.",
+      "The trial results differ from the model by ____. This does not guarantee that ____."
+    ],
+    "parallelExample": {
+      "context": "A different bag has two green and two yellow counters of the same size and shape.",
+      "move": "Assuming each counter is equally likely, green has probability 2/4. Compare that model with repeated draws, replacing and mixing each counter. A set of trials need not be exactly half green.",
+      "whyItHelps": "It separates a model probability from an observed relative frequency. Use the same distinction for your three-blue, one-red bag."
+    }
+  }
+}

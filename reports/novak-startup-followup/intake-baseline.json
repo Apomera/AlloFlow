@@ -1,0 +1,14 @@
+{
+  "head": "db76fd140165f99a42d566e4638af58eac470538",
+  "explanation": "Existing startup_intake_reliability harness searches for an inline handler that is no longer at those shell markers.",
+  "headResult": {
+    "start": -1,
+    "end": 1786771,
+    "error": "ReferenceError: handleFileUpload is not defined"
+  },
+  "currentResult": {
+    "start": -1,
+    "end": 1794983,
+    "error": "ReferenceError: handleFileUpload is not defined"
+  }
+}

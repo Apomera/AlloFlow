@@ -317,3 +317,177 @@ Artifacts: recall-feedback-logic.json and recall-feedback-review/results.json, w
 Verification: all 164 targeted logic checks passed, including seven new cases covering difficult-stop selection, first-try/self-rating exclusions, answer concealment during practice, safe retry reset, invalid selection handling, and preserved retry scope. The real React/WebGL browser flow passed expansion, correct selection, keyboard follow-up, fresh answer concealment, successful completion, and unchanged unselected mastery. It also reran readable feedback, manual reveals, self-check keyboard progression, and focus preservation. Completion cards passed overflow checks at 1280/390/320 pixels with enlarged mobile text; the expanded 320-pixel card was visually reviewed. Compilation, desktop mirror equality, and whitespace checks passed. Corrected the parameterized test argument nesting after the initial test run; application behavior passed the browser flow. No live or paid AI generation was used.
 
 Artifacts: follow-up-practice-logic.json; recall-feedback-review/results.json and follow-up-practice-1280.png, follow-up-practice-390.png, follow-up-practice-320.png. Reproduce the browser flow with node dev-tools/memory_palace_generation_qa.cjs --feedback.
+
+
+## Self-check result clarity and practice entry/exit — 2026-09-19
+
+- Guided self-check now reports how many facts the learner marked as remembered. It no longer displays a misleading first-try count for self-ratings. The completion toast and result panel share the same summary formatter; measured recall scoring and point reporting remain unchanged.
+- Updated the supporting explanation to identify self-ratings and point learners to Recall walk for checking answers against the facts.
+- Keyboard entry moves focus into practice. Keyboard exit returns to the launch button for the same mode. Focus restoration accounts for React reusing toolbar elements and continues to respect focus deliberately moved elsewhere.
+- Updated the isolated runtime/browser harnesses to load the actual shared AI-availability helper introduced elsewhere in the app. Added blocked/hidden AI regression cases so tests exercise those restrictions instead of bypassing them.
+
+Verification: all 171 targeted logic checks passed using the threads worker pool. Seven added cases cover zero/partial/full remembered summaries, measured-summary compatibility, completion feedback, and blocked/hidden generation. The first test run exposed the missing shared helper in the old harness; a later fork-worker shutdown timeout required the successful threads-pool rerun. Actual React/WebGL browser checks passed keyboard entry/exit, all-missed/all-remembered self-checks, focus preservation, targeted follow-up, and layout at 1280/390/320 pixels with enlarged mobile text. The 320-pixel result card was visually reviewed. Saved-cue recovery, version selection, Undo, and focused-review isolation also passed. Renderer compilation, desktop mirror equality and whitespace checks passed. Providers were simulated; no paid generation was used.
+
+Artifacts: self-check-clarity-final-logic.json; recall-feedback-review/results.json and self-check-result-1280.png, self-check-result-390.png, self-check-result-320.png; preview-practice-review/results.json. Browser flows: node dev-tools/memory_palace_generation_qa.cjs --feedback and --previews.
+
+
+## Learner-controlled recall pacing — 2026-09-19
+
+- Added an accessible Move on automatically checkbox during recall. Automatic progression remains the default; turning it off holds correct answers and self-ratings until Continue review, including the final stop.
+- The preference remains selected across practice exits/retries in the mounted activity and does not rebuild the palace. Revealed answers continue to wait for the learner in either mode.
+- Changing pace invalidates queued automatic moves. Switching off and back on cannot revive an old move; automatic progression resumes for subsequent responses. Updated self-check instructions to work with both pacing choices.
+
+Verification: 176 targeted tests passed in separate runtime/core runs, including five new pacing cases. The initial combined threads run returned no test results; separate fork runs completed successfully. Actual React/WebGL browser checks passed manual quiz progression, manual self-check, final-stop completion, keyboard checkbox operation, preference retention, no scene remount, and automatic resumption. Layout/overflow checks passed at 1280/390/320 pixels with enlarged mobile text; the 320-pixel pacing control was visually reviewed. Renderer compilation, desktop mirror equality and whitespace checks passed. No live or paid AI generation was used.
+
+Artifacts: recall-pacing-runtime.json, recall-pacing-core.json, and recall-pacing-review/results.json, with pacing-control and manual-response screenshots at all three widths. Reproduce the browser flow with node dev-tools/memory_palace_generation_qa.cjs --pacing.
+
+
+## Changed-content review safeguards — 2026-09-19
+
+- Active reviews now track the learning content and geography they started with. Changed facts, source mnemonics, route order, custom rooms or custom stops invalidate the old review. Artwork, theme, generated timestamps and mastery saves do not invalidate it.
+- Answer, reveal, self-rating, progression, retry and finishing handlers check the current content identity synchronously, so a callback cannot score old answers before React's cleanup effect runs. Invalidation clears pending recall timers, ends the review and shows an explicit restart explanation without scoring unfinished work.
+- An existing live-session arm cannot immediately restart the invalidated review. A fresh arm cycle or explicit manual start uses current content. Same-count edits to custom stops also update the scene dependency key.
+
+Verification: 187 targeted tests passed, including eleven new cases for stale actions, queued advancement, one-time close handling, fact/route/custom-stop changes and harmless saves. Actual React/WebGL browser checks passed changed-fact invalidation, removal of a stop below the practice minimum, manual restart with updated answers, preservation of unrelated mastery, continued practice after artwork/mastery saves, and live-arm recovery. The restart explanation passed layout/overflow checks at 1280/390/320 pixels with enlarged mobile text; the 320-pixel notice was visually reviewed. Compilation, desktop mirror equality and whitespace checks passed. No live or paid AI generation was used.
+
+Artifacts: recall-content-runtime.json, recall-content-core.json and recall-content-review/results.json, with changed-review screenshots at all three widths. Reproduce with node dev-tools/memory_palace_generation_qa.cjs --content.
+
+
+## Immediate answer help without forced guesses — 2026-09-19
+
+- Quiz learners can now reveal an answer from the first attempt instead of having to submit three incorrect answers. A separated help row explains the action; Reveal answer (no points) keeps the scoring consequence explicit.
+- Reveals still pause for reading and Continue review. They do not fabricate incorrect attempts or award recall points. The automatic mnemonic after two genuine misses remains available.
+- Removed obsolete reveal-eligibility state and clarified the quiz instructions. Quiz submission/reveal handlers now reject self-check mode, preventing a quiz action from replacing or double-counting a self-rating.
+
+Verification: 191 targeted tests passed, including four new cases for immediate bank/type reveals, zero fabricated attempts/points, and self-check mode integrity. The actual React/WebGL browser flow passed help before any attempt, keyboard reveal and focus, learner-controlled continuation, zero-point/zero-attempt completion and separate self-check controls. Layout and overflow passed at 1280/390/320 pixels with enlarged mobile text; the 320-pixel first-attempt help panel was visually reviewed. Compilation, desktop mirror equality and whitespace checks passed. No live or paid AI generation was used.
+
+Artifacts: recall-help-runtime.json, recall-help-core.json and recall-help-review/results.json, with help-before-attempt screenshots at all three widths. Reproduce with node dev-tools/memory_palace_generation_qa.cjs --help.
+
+
+## Entrance recovery and frame orientation — 2026-09-19
+
+- Replaced the entrance's forward-only instruction with Continue review. It uses the active review order, preserves recorded responses, skips completed stops and respects focused subsets. If all stops are complete, the entrance explains that continuing will show results.
+- Split the question card's review-step number from its Palace frame badge and gave the question its own heading. Backwards and shuffled practice now clearly distinguish sequence position from the frame's physical route number.
+
+Verification: 195 targeted tests passed, including four new entrance cases for backwards/focused order, preserving attempted/completed answers, and finishing once without reopening stops. The actual React/WebGL browser flow passed repeated keyboard returns from the entrance during backwards practice, distinct frame numbering, skipping recorded stops, and completion from the entrance with unchanged attempts. The final completed-review guidance was verified in a second browser pass after its wording refinement. Layout/overflow passed at 1280/390/320 pixels with enlarged mobile text; both 320-pixel question and entrance cards were visually reviewed. Final compilation, desktop mirror equality and whitespace checks passed. No live or paid AI generation was used.
+
+Artifacts: recall-navigation-runtime.json, recall-navigation-core.json, and recall-navigation-review/results.json, with review-frame-number and entrance-return screenshots at all three widths. Reproduce with node dev-tools/memory_palace_generation_qa.cjs --navigation.
+
+
+## Typed recall input refinement — 2026-09-19
+
+- Prevented Enter from submitting a typed answer while confirming a character through an input method, including the legacy keyCode 229 signal. The new browser case reproduced the missing protection before the change and passed afterward.
+- Added visible typing guidance, a larger answer field, minimum 44px input and Check targets, and an explicit keyboard focus treatment for Check.
+- Real React/WebGL browser QA: keyboard entry focuses the input; whitespace produces no attempt; composition Enter is canceled; normal Enter and Check both submit; an incorrect answer retains input focus; the next stop starts empty; completion records exactly three real attempts. Composition events are simulated in Chromium; native operating-system IME behavior was not manually exercised.
+- Browser captures at 1280, 390, and 320px, with 20px root text on mobile. No horizontal overflow; the 320px screenshot was visually reviewed. See recall-typing-review/results.json and typed-answer-*.png.
+- Runtime regressions: 71 passed, 0 failed (recall-typing-runtime.json). Renderer rebuilt; desktop mirror matches.
+- Repository whitespace check reports an unrelated existing blank line at view_renderers_source.jsx:2424, outside MemoryPalaceView. The edited component and QA harness have no trailing whitespace.
+
+
+## Per-stop recall drafts — 2026-09-19
+
+- Fixed unfinished typed answers disappearing when learners visit another frame. Drafts now stay with their own stops in memory for the active review, including entrance detours, selecting the same stop, and decoration-triggered scene rebuilds.
+- Correct answers and reveals remove that stop's draft. Exit, retry, and learning-content invalidation reset all drafts. Drafts are not persisted to lesson data and do not count as attempts.
+- Added brief form guidance explaining that the draft stays at the stop during this review.
+- The real React/WebGL browser regression reproduced the lost draft before the fix and passed afterward. It verifies independent drafts, repeated selection, entrance continuation, decoration remount, exit/restart, changed content, backward retry, and exactly two submitted attempts at completion.
+- Captures at 1280, 390, and 320px with enlarged mobile text have no horizontal overflow; the 320px screenshot was visually reviewed. See recall-drafts-review/results.json and retained-draft-*.png.
+- Runtime regressions: 73 passed, 0 failed, including two new completed-draft cleanup cases (recall-drafts-runtime.json). Renderer rebuilt and desktop mirror verified identical.
+
+
+## Stop-specific practice feedback — 2026-09-19
+
+- Fixed wrong-answer feedback disappearing after leaving and revisiting a stop. Visible feedback now derives from the current stop's attempts and completion state; removed the redundant last-message state and navigation-clearing effect. Untouched stops stay clear, and success, reveal, or a new review clears the retry message.
+- Replaced generic completed-card labels with correct-on-first-try, correct-after-retry, answer-revealed, and explicit remembered/missed self-check labels. Self-ratings remain clearly distinguished from checked answers. Result headings use readable sentence case and relaxed line spacing.
+- The browser regression reproduced the lost-feedback issue before the fix and passed afterward. It checks revisiting, untouched stops, fresh reviews, each outcome label, and unchanged completion attempts.
+- Responsive captures at 1280, 390, and 320px with enlarged mobile text: recall-stop-feedback-review/results.json, revisited-feedback-*.png, and missed-self-rating-*.png. No horizontal overflow; the 320px self-rating card was visually reviewed.
+- Runtime regressions: 78 passed, 0 failed, including five outcome-label cases (recall-stop-feedback-runtime.json). Renderer rebuilt and desktop mirror identical; changed-file and component whitespace checks passed.
+
+
+## Choice identity and retrieval guidance — 2026-09-19
+
+- Fixed selected-answer false positives caused by applying typed spelling tolerance to choice labels. Selecting Photon at a Proton stop previously marked the answer correct; selected choices now use their stop identity. Typed answers retain existing spelling tolerance. The shared handler also covers VR answer chips.
+- Added a brief cue-to-answer prompt above the choice bank to make the retrieval step explicit.
+- Before-change runtime report: 79 passed and the new similar-choice case failed, confirming the defect. After-change runtime report: 80 passed, 0 failed, including selected-choice identity and typed tolerance cases (recall-choice-runtime.json).
+- Real React/WebGL browser QA rejected the similar distractor, accepted the correct choice on retry, and completed with three attempts and one retry instead of a false perfect result. See recall-choice-identity-review/results.json.
+- Captures at 1280, 390, and 320px with enlarged mobile text had no horizontal overflow. The 320px screenshot was visually reviewed. Renderer rebuilt and desktop mirror verified identical; component and changed-file whitespace checks passed.
+
+
+## Distinct choices and long-answer layout — 2026-09-19
+
+- Recall banks now keep one distractor per distinct label, folding case, whitespace and Unicode compatibility variants. Blank distractors are omitted. The correct stop keeps its identity; genuinely different terms remain separate. Choice generation remains deterministic and does not change palace data.
+- Answer buttons now use larger text, relaxed line spacing, left alignment, and wrapping for long unbroken terms. Removed hover scaling so buttons remain within the available width.
+- Three engine cases reproduced repeated/blank distractors before the fix. Updated a legacy announcement assertion to the current first-try/retry labels and polite live region. Final engine and collaboration suite: 127 passed, 0 failed (recall-unique-core.json).
+- Real React/WebGL browser checks passed for three distinct choices from repeated facts, preserving the repeated target identity, keyboard selection, long text wrapping, and 44px minimum button targets. See recall-choice-layout-review/results.json and long-choices-*.png.
+- Captures at 1280, 390, and 320px with enlarged mobile text showed no horizontal overflow; the 320px screenshot was visually reviewed. Renderer rebuilt, engine and renderer desktop mirrors match, and changed-file whitespace checks passed.
+
+
+## Single-answer practice safeguard — 2026-09-19
+
+- Recall walk automatically uses guided self-check when all palace stops share one distinct answer. This avoids revealing the sole choice and awarding a false verified first-try score. Explicit typed and self-check modes remain available as before; ordinary palaces retain choice questions.
+- Added a visible explanation before the question. The selected self-check mode and explanation persist through backward retries; keyboard exit returns to the original Recall walk button. Live-session arming uses the same safeguard.
+- The browser regression failed before the change because the one-choice walk exposed its answer. Afterward it passed hidden-answer, reveal/rate, self-rated completion/mastery, retry, keyboard entry/exit, live-arm, and normal-choice recovery checks. See recall-single-answer-review/results.json.
+- Responsive screenshots at 1280, 390, and 320px with enlarged mobile text have no horizontal overflow; the 320px explanation and controls were visually reviewed.
+- Runtime regressions: 86 passed, 0 failed, including six mode-selection and retry cases (recall-single-answer-runtime.json). Renderer rebuilt and desktop mirror identical; component and changed-file whitespace checks passed.
+
+
+## Pending self-check continuity — 2026-09-19
+
+- Fixed revealed but unrated stops losing their rating controls after navigation. A review-scoped set retains pending self-ratings independently for each stop, including entrance detours and decoration scene rebuilds. Rebuilt scenes restore already-revealed pending answers; untouched stops remain hidden.
+- Rating removes only that stop from the pending set. Retry, exit, and changed learning content clear pending ratings. Completed stops cannot be reopened as pending; revealing alone records no attempts.
+- Added a prompt asking learners to rate what they remembered before revealing the answer, to clarify the intended self-assessment.
+- The new browser regression reproduced the lost controls before the change and passed afterward: independent pending ratings, unseen stops hidden, entrance/remount recovery, keyboard rating, reset boundaries, and exactly two ratings counted at completion. See recall-self-resume-review/results.json.
+- Captures at 1280, 390, and 320px with enlarged mobile text had no horizontal overflow. The 320px rating card was visually reviewed.
+- Runtime regressions: 89 passed, 0 failed, including three pending-rating cases (recall-self-resume-runtime.json). Renderer rebuilt and desktop mirror identical; component and changed-file whitespace checks passed.
+
+
+## Recall scene restoration — 2026-09-19
+
+- Fixed rebuilt 3D scenes covering completed answers while the practice panel still showed recorded results. The component now supplies a scoped snapshot of completed answers and pending self-reveals; frame creation applies captions and grade colors when WebGL initializes.
+- Replaced the previous immediate pending-reveal replay, which could run before the asynchronous WebGL mount and be silently ignored. Restored correct/incorrect colors do not replay celebration effects. Pending self-reveals have no grade; unanswered attempts stay hidden. Inactive or changed-content reviews supply no restoration state.
+- Real WebGL browser checks inspect actual caption texture text and frame colors across correct answers, answer reveals, pending self-reveals, missed self-ratings, and scene rebuilds. New reviews and untouched stops retain question marks; restoration never completes an unfinished review. See recall-scene-review/results.json.
+- Desktop and mobile scene screenshots were captured, and the mobile image was visually reviewed. Renderer rebuilt; engine and renderer desktop mirrors match. Runtime regressions: 93 passed, 0 failed (recall-scene-runtime.json).
+- Final engine and collaboration regressions: 127 passed, 0 failed (recall-scene-core.json). Updated the existing caption typography assertion to the restored initial caption; changed-file whitespace checks passed.
+
+
+## Stable position across scene refreshes — 2026-09-19
+
+- Fixed appearance-triggered scene rebuilds returning an active review to its first stop. Rebuilds of the same content, review instance and reset version retain the current valid route ID, including the entrance. Study-mode rebuilds also retain a valid stop.
+- New reviews, backward retries, changed learning content, explicit resets and removed stops use their intended start positions instead. Typed drafts remain associated with the preserved stop.
+- The browser regression reproduced the position loss before the change and passed afterward: generated-art refreshes, gallery/pasture/space transitions, entrance preservation, typed drafts, backward retry, fresh review, changed content, and unchanged completion attempts. See recall-position-review/results.json.
+- Runtime regressions: 100 passed, 0 failed, including seven same-review/new-review/reset/removed-stop cases (recall-position-runtime.json). Renderer rebuilt and desktop mirror identical; component and changed-file whitespace checks passed.
+
+
+## Automatic progression respects navigation — 2026-09-19
+
+- Fixed queued automatic moves overriding manual navigation, including entrance visits and leaving then returning to the same stop. Each automatic move now captures its original stop and navigation revision; navigation and review resets invalidate older moves without changing the automatic pacing preference.
+- An earlier answer cannot shorten the reading time for a newer answer. Scene rebuilds cancel a pending move and retain Continue review; newly recorded answers still advance normally.
+- Four regression cases failed before the fix and pass afterward. Final runtime suite: 104 passed, 0 failed (recall-auto-navigation-runtime.json). One intermediate runner exited without tests; a subsequent complete run passed.
+- Real React/WebGL browser checks passed for entrance preservation, away-and-back navigation, keyboard Continue, subsequent automatic completion, and exactly two attempts per completed walk. See recall-auto-navigation-review/results.json.
+- Renderer rebuilt and desktop mirror verified identical. Component and changed-file whitespace checks passed.
+
+
+## VR answer targeting — 2026-09-19
+
+- Fixed a same-event timing bug where selecting a new VR frame read the previous React-rendered choice bank, potentially omitting the target answer. The engine now passes the selected locus ID and the component builds its choices synchronously from live palace and review state.
+- VR selections must match the current stop and an actual offered choice. Stale or invented selections do not record attempts; canonical choice labels are used. Completed/revealed stops, the entrance, self-check, finished reviews, changed content, and stops outside focused scope offer no bank. Removed the redundant rendered-bank ref.
+- Real React/WebGL callback regression reproduced the missing target answer before the fix and passed afterward, including stale/unknown picks and immediate bank hiding after completion. It calls the VR callbacks directly; no physical headset was tested. See recall-vr-choices-review/results.json.
+- Runtime regressions: 112 passed, 0 failed, including eight VR targeting/state cases (recall-vr-choices-runtime.json). Renderer rebuilt; engine and renderer desktop mirrors match. Changed-file whitespace checks passed.
+- Final engine and collaboration suite: 127 passed, 0 failed (recall-vr-choices-core.json).
+
+
+## Repeated retry feedback — 2026-09-19
+
+- Added a per-stop Attempt indicator inside the polite, atomic retry status. Every submitted answer updates the attempt state, including rapid wrong responses while the existing flash is still active, so the live region has new text instead of repeating an unchanged message.
+- The retry sentence stays stable; focus remains in the typed field. Navigation restores each stop's count, untouched stops stay clear, success removes wrong feedback, and new reviews reset the count. Scoring still uses the existing attempt records.
+- Runtime regressions: 114 passed, 0 failed, including repeated submissions during an active flash and ignored completed/out-of-scope submissions (recall-attempt-feedback-runtime.json).
+- Real React/WebGL browser checks passed for three repeated Enter submissions, changing live-region text, focus, revisits, reset, and five submitted attempts at completion. See recall-attempt-feedback-review/results.json. Screen-reader speech was not manually tested.
+- Captures at 1280, 390, and 320px with enlarged mobile text had no horizontal overflow; the 320px screenshot was visually reviewed. Renderer rebuilt and desktop mirror identical.
+
+
+## Image/sculpture format draft continuity — 2026-09-19
+
+- Switching Direct the AI between image and sculpture now preserves the written prompt and existing refinement instructions. The format change still invalidates the old evaluation; prompt/context changes continue to require fresh evaluation. Moving to a different stop or changing the scene data still resets drafts as before.
+- Added a short note beside the format controls explaining that format changes preserve the prompt.
+- Real React/WebGL browser checks passed for keyboard switching, switching back, preserving a prompt after an enhanced evaluation, clearing the old actionable evaluation, checking the new format with a different provider prompt, no unintended image generation, and clearing at a different stop. AI responses were mocked; no paid generation was used. See prompt-format-review/results.json.
+- Captures at 1280, 390, and 320px with enlarged mobile text had no horizontal overflow. The mobile creative-controls screenshot was visually reviewed.
+- Runtime regressions: 114 passed, 0 failed (prompt-format-runtime.json). Initial validation encountered an outdated harness selector and a runner that executed no tests; both checks were rerun successfully. Renderer rebuilt and desktop mirror checked.

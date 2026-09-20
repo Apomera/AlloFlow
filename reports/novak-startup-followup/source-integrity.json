@@ -1,0 +1,68 @@
+{
+  "scope": "Three changed regions only; unrelated shell and loader settings preserved.",
+  "files": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "syntax": "passed",
+      "regions": [
+        {
+          "start": "// MODULE_GATE_WATCH_START",
+          "matches": true,
+          "sha256": "7d468392a2e7eeffd1ece57f419770766e453587e3844f935d5f0f2f6e29c289"
+        },
+        {
+          "start": "const QuickStartWizard = React.memo",
+          "matches": true,
+          "sha256": "af83c1f242307f2ac232f4dc71d89c9be595abbb754038d5116a3f8122abb84d"
+        },
+        {
+          "start": "  const resolveAssignmentResources = useCallback(",
+          "matches": true,
+          "sha256": "c115913c53c443efb75784e58e99dc09eea03ae1744926406c1374d1e703be34"
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "syntax": "passed",
+      "regions": [
+        {
+          "start": "// MODULE_GATE_WATCH_START",
+          "matches": true,
+          "sha256": "7d468392a2e7eeffd1ece57f419770766e453587e3844f935d5f0f2f6e29c289"
+        },
+        {
+          "start": "const QuickStartWizard = React.memo",
+          "matches": true,
+          "sha256": "af83c1f242307f2ac232f4dc71d89c9be595abbb754038d5116a3f8122abb84d"
+        },
+        {
+          "start": "  const resolveAssignmentResources = useCallback(",
+          "matches": true,
+          "sha256": "c115913c53c443efb75784e58e99dc09eea03ae1744926406c1374d1e703be34"
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "syntax": "passed",
+      "regions": [
+        {
+          "start": "// MODULE_GATE_WATCH_START",
+          "matches": true,
+          "sha256": "7d468392a2e7eeffd1ece57f419770766e453587e3844f935d5f0f2f6e29c289"
+        },
+        {
+          "start": "const QuickStartWizard = React.memo",
+          "matches": true,
+          "sha256": "af83c1f242307f2ac232f4dc71d89c9be595abbb754038d5116a3f8122abb84d"
+        },
+        {
+          "start": "  const resolveAssignmentResources = useCallback(",
+          "matches": true,
+          "sha256": "c115913c53c443efb75784e58e99dc09eea03ae1744926406c1374d1e703be34"
+        }
+      ]
+    }
+  ]
+}

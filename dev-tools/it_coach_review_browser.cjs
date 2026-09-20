@@ -77,6 +77,48 @@ async function main() {
     assert.ok(sent.hiddenPixel.slice(0,3).every(value => value <= 2)); assert.equal(sent.hiddenPixel[3],255);
     assert.equal(sent.width,640); assert.equal(sent.height,720);
     assert.match(sent.status, /captions control/);
+
+    await page.locator('#coachObservationPanel > summary').click();
+    await page.locator('#coachObservation').fill('The captions control is unavailable.');
+    // Typing saves the observation locally without a separate save click.
+    await page.locator('#coachStuckBtn').click();
+    await page.locator('#coachSummaryBtn').click();
+    assert.match(await page.locator('#supportSummary').inputValue(), /Observed: The captions control is unavailable/);
+    await page.locator('#coachReviewChk').uncheck();
+    await page.evaluate(() => { window.AIProvider.prototype.analyzeImage=async()=>JSON.stringify({guidance:'Which application version is shown?',kind:'navigation',done:false,nextAction:'clarify',target:{x:.1,y:.1,w:.2,h:.1}}); });
+    await page.locator('#coachSuggestBtn').click();
+    await page.waitForFunction(()=>document.getElementById('currentStepHeading').textContent==='One detail needed');
+    assert.equal(await page.locator('#coachAnswerBtn').isVisible(),true);
+    assert.equal(await page.locator('#coachOverlay').isVisible(),false);
+    await page.locator('#coachAnswerBtn').click();
+    assert.equal(await page.evaluate(()=>document.activeElement.id),'coachChatInput');
+    await page.locator('#currentStepCard').screenshot({path:path.join(out,'mobile-follow-up.png')});
+    await page.locator('#coachResolvedBtn').click();
+    assert.match(await page.locator('#currentStepHeading').innerText(),/confirmed by you/);
+    await page.locator('#coachSummaryBtn').click();
+    assert.match(await page.locator('#supportSummary').inputValue(),/User confirms problem resolved/);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+    fs.writeFileSync(path.join(out,'follow-up-results.json'),JSON.stringify({observationInSummary:true,clarificationHasNoHighlight:true,answerFocus:'coachChatInput',userResolution:true,noMobileOverflow:true},null,2));
+
+    const editedDraft='Reviewed support request\nThe captions control is unavailable.\nNo private details included.';
+    await page.locator('#supportSummary').fill(editedDraft);
+    await page.locator('#coachStuckBtn').click();
+    assert.equal(await page.locator('#supportSummary').inputValue(),editedDraft);
+    assert.match(await page.locator('#supportDraftStatus').innerText(),/New session notes/);
+    await page.locator('#supportRefreshBtn').click();
+    assert.match(await page.locator('#supportSummary').inputValue(),/User is still stuck/);
+    await page.locator('#supportRestoreBtn').click();
+    assert.equal(await page.locator('#supportSummary').inputValue(),editedDraft);
+    const downloadPromise=page.waitForEvent('download');
+    await page.locator('#supportDownloadBtn').click();
+    const download=await downloadPromise;await download.saveAs(path.join(out,'edited-summary.txt'));
+    assert.equal(fs.readFileSync(path.join(out,'edited-summary.txt'),'utf8'),editedDraft);
+    await page.locator('#supportSummaryPanel').screenshot({path:path.join(out,'mobile-edited-summary.png')});
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+    await page.locator('#coachDiscardBtn').click();
+    assert.equal(await page.locator('#supportSummary').inputValue(),'');
+    assert.equal(await page.locator('#supportRestoreBtn').isVisible(),false);
+    fs.writeFileSync(path.join(out,'draft-results.json'),JSON.stringify({observationAutosave:true,editedDraftPreserved:true,rebuildUndo:true,downloadMatchesEditedText:true,discardClearsDraft:true,noMobileOverflow:true},null,2));
     assert.deepEqual(errors, []);
     fs.writeFileSync(path.join(out, 'results.json'), JSON.stringify({ preview, sent, noHorizontalOverflowAt390:true, errors }, null, 2));
     console.log('Browser QA passed: local review, crop dimensions, opaque outgoing JPEG pixels, mobile overflow, suggestion.');

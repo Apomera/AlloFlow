@@ -171,7 +171,7 @@ describe('lesson import keeps old worlds working and carries the new fields', ()
     }
     throw new Error('unbalanced ' + head);
   }
-  const validateLesson = new Function('__alloT', 'MAX_BLOCKS', 'SAMPLE_LESSONS', 'addToast', extractFunction(src, 'function validateLesson(lesson) {') + '\nreturn validateLesson;')((k, fb) => fb, 1500, {}, () => {});
+  const validateLesson = new Function('__alloT', 'MAX_BLOCKS', 'SAMPLE_LESSONS', 'addToast', extractFunction(src, 'function normalizeGeometryQuestion(question, ancestors) {') + '\n' + extractFunction(src, 'function validateLesson(lesson) {') + '\nreturn validateLesson;')((k, fb) => fb, 1500, {}, () => {});
 
   it('a lesson without speech fields imports unchanged, with voicePreference and language null', () => {
     const lesson = validateLesson({ title: 'T', npcs: [{ name: 'Mira', position: [1, 1, 1], dialogue: 'Hi' }] });

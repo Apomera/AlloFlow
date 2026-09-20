@@ -256,6 +256,60 @@ async function runSpeciesContactSheet(page,result){
    return {pairedFinsMoved:!same(before,moving),mirroredStroke:Math.abs(moving[0]+moving[1])<1e-8,pausedPoseHeld:same(paused,read()),stableGeometry:paddles[0].children.find(n=>n.isMesh).geometry===geometry};
   });assert(Object.values(result.mudskipperMotion).every(Boolean),'Mudskipper motion contract failed: '+JSON.stringify(result.mudskipperMotion));result.checks.push('real WebGL paired pectoral strokes, paused pose and stable geometry');
  }
+ if(process.argv.includes('--clown-motion')){
+  result.clownMotion=await page.evaluate(async()=>{
+   const engine=window.__qaSpecimenEngine,options=window.__qaSpecimenOptions,item=window.__qaGL.find(r=>!r.disposed&&r.scene&&r.canvas.isConnected),group=item.scene.getObjectByName('aquarium-residents').children[0],fins=group.userData.fins.filter(f=>f.userData.clownPectoral);
+   if(group.userData.profileId!=='clown'||fins.length!==2)throw Error('Motion review requires a clownfish');
+   const read=()=>fins.map(f=>f.rotation.y),before=read(),geometry=fins.map(f=>f.geometry),firstFrame=item.frames;engine.update({...options,paused:false});
+   await new Promise(resolve=>{const started=performance.now();function sample(){if(item.frames-firstFrame>=4||performance.now()-started>10000)resolve();else requestAnimationFrame(sample);}requestAnimationFrame(sample);});const moving=read(),frames=item.frames-firstFrame,tailRestrained=Math.abs(group.userData.tail.rotation.y)<=.140001;
+   engine.update({...options,paused:true});await new Promise(r=>setTimeout(r,100));const paused=read();await new Promise(r=>setTimeout(r,300));
+   return {renderedSeveralFrames:frames>=4,pairedFinsMoved:moving.every((v,i)=>Math.abs(v-before[i])>1e-5),mirroredStrokes:Math.abs(moving[0]+moving[1])<1e-8,tailRestrained,pausedPoseHeld:JSON.stringify(paused)===JSON.stringify(read()),stableGeometry:fins.every((f,i)=>f.geometry===geometry[i])};
+  });assert(Object.values(result.clownMotion).every(Boolean),'Clownfish motion contract failed: '+JSON.stringify(result.clownMotion));result.checks.push('real WebGL paired clownfish pectorals, mirrored strokes, restrained tail, paused pose and stable geometry');
+ }
+ if(process.argv.includes('--tang-motion')){
+  result.tangMotion=await page.evaluate(async()=>{
+   const engine=window.__qaSpecimenEngine,options=window.__qaSpecimenOptions,item=window.__qaGL.find(r=>!r.disposed&&r.scene&&r.canvas.isConnected),group=item.scene.getObjectByName('aquarium-residents').children[0],fins=group.userData.fins.filter(f=>f.userData.tangPectoral);
+   if(group.userData.profileId!=='tang'||fins.length!==2)throw Error('Motion review requires a palette tang');
+   const read=()=>fins.map(f=>f.rotation.y),before=read(),geometry=fins.map(f=>f.geometry),firstFrame=item.frames;engine.update({...options,paused:false});
+   await new Promise(resolve=>{const started=performance.now();function sample(){if(item.frames-firstFrame>=4||performance.now()-started>10000)resolve();else requestAnimationFrame(sample);}requestAnimationFrame(sample);});const moving=read(),frames=item.frames-firstFrame,tailRestrained=Math.abs(group.userData.tail.rotation.y)<=.150001;
+   engine.update({...options,paused:true});await new Promise(r=>setTimeout(r,100));const paused=read();await new Promise(r=>setTimeout(r,300));
+   return {renderedSeveralFrames:frames>=4,pairedFinsMoved:moving.every((v,i)=>Math.abs(v-before[i])>1e-5),mirroredStrokes:Math.abs(moving[0]+moving[1])<1e-8,tailRestrained,pausedPoseHeld:JSON.stringify(paused)===JSON.stringify(read()),stableGeometry:fins.every((f,i)=>f.geometry===geometry[i])};
+  });assert(Object.values(result.tangMotion).every(Boolean),'Tang motion contract failed: '+JSON.stringify(result.tangMotion));result.checks.push('real WebGL paired palette tang pectorals, mirrored strokes, restrained tail, paused pose and stable geometry');
+ }
+ if(process.argv.includes('--angelfish-motion')){
+  result.angelfishMotion=await page.evaluate(async()=>{
+   const engine=window.__qaSpecimenEngine,options=window.__qaSpecimenOptions,item=window.__qaGL.find(r=>!r.disposed&&r.scene&&r.canvas.isConnected),group=item.scene.getObjectByName('aquarium-residents').children[0],fins=group.userData.fins.filter(f=>f.userData.angelPectoral);
+   if(group.userData.profileId!=='angel'||fins.length!==2)throw Error('Motion review requires an angelfish');
+   const read=()=>fins.map(f=>f.rotation.y),before=read(),geometry=fins.map(f=>f.geometry),firstFrame=item.frames;engine.update({...options,paused:false});
+   await new Promise(resolve=>{const started=performance.now();function sample(){if(item.frames-firstFrame>=4||performance.now()-started>10000)resolve();else requestAnimationFrame(sample);}requestAnimationFrame(sample);});const moving=read(),frames=item.frames-firstFrame,tailRestrained=Math.abs(group.userData.tail.rotation.y)<=.130001;
+   engine.update({...options,paused:true});await new Promise(r=>setTimeout(r,100));const paused=read();await new Promise(r=>setTimeout(r,300));
+   return {renderedSeveralFrames:frames>=4,pairedFinsMoved:moving.every((v,i)=>Math.abs(v-before[i])>1e-5),mirroredStrokes:Math.abs(moving[0]+moving[1])<1e-8,tailRestrained,pausedPoseHeld:JSON.stringify(paused)===JSON.stringify(read()),stableGeometry:fins.every((f,i)=>f.geometry===geometry[i])};
+  });assert(Object.values(result.angelfishMotion).every(Boolean),'Angelfish motion contract failed: '+JSON.stringify(result.angelfishMotion));result.checks.push('real WebGL paired angelfish pectorals, mirrored strokes, restrained tail, paused pose and stable geometry');
+ }
+ if(process.argv.includes('--betta-motion')){
+  result.bettaMotion=await page.evaluate(async()=>{
+   const engine=window.__qaSpecimenEngine,options=window.__qaSpecimenOptions,item=window.__qaGL.find(r=>!r.disposed&&r.scene&&r.canvas.isConnected),group=item.scene.getObjectByName('aquarium-residents').children[0],tissues=group.bettaMembranes;
+   if(group.userData.profileId!=='betta'||tissues?.length!==3)throw Error('Motion review requires a betta');
+   const read=()=>tissues.map(t=>Array.from(t.mesh.geometry.attributes.position.array)),before=read(),geometry=tissues.map(t=>t.mesh.geometry);
+   const firstFrame=item.frames;engine.update({...options,paused:false});
+   await new Promise(resolve=>{const started=performance.now();function sample(){if(item.frames-firstFrame>=4||performance.now()-started>10000)resolve();else requestAnimationFrame(sample);}requestAnimationFrame(sample);});const moving=read(),sampledFrames=item.frames-firstFrame;
+   const rootsAnchored=tissues.every(t=>{const p=t.mesh.geometry.attributes.position;return t.weights.some(w=>w===0)&&Array.from(t.weights).every((w,i)=>w!==0||p.getZ(i)===t.rest[i*3+2]);});
+   const boundedDisplacement=tissues.every(t=>{const p=t.mesh.geometry.attributes.position;return Array.from(t.weights).every((w,i)=>p.getX(i)===t.rest[i*3]&&p.getY(i)===t.rest[i*3+1]&&Math.abs(p.getZ(i)-t.rest[i*3+2])<=.026001);});
+   engine.update({...options,paused:true});await new Promise(r=>setTimeout(r,100));const paused=read();await new Promise(r=>setTimeout(r,300));
+   return {renderedSeveralFrames:sampledFrames>=4,allMembranesRipple:moving.every((p,i)=>p.some((v,j)=>v!==before[i][j])),rootsAnchored,boundedDisplacement,pausedPoseHeld:JSON.stringify(paused)===JSON.stringify(read()),stableGeometry:tissues.every((t,i)=>t.mesh.geometry===geometry[i])};
+  });assert(Object.values(result.bettaMotion).every(Boolean),'Betta motion contract failed: '+JSON.stringify(result.bettaMotion));result.checks.push('real WebGL three rippling betta membranes, fixed roots, bounded deformation, paused pose and stable geometry');
+ }
+ if(process.argv.includes('--goldfish-motion')){
+  result.goldfishMotion=await page.evaluate(async()=>{
+   const engine=window.__qaSpecimenEngine,options=window.__qaSpecimenOptions,item=window.__qaGL.find(r=>!r.disposed&&r.scene&&r.canvas.isConnected),group=item.scene.getObjectByName('aquarium-residents').children[0],fins=group.userData.fins.filter(f=>f.userData.goldfishPaddle);
+   if(group.userData.profileId!=='goldfish'||fins.length!==4)throw Error('Motion review requires a goldfish');
+   const read=()=>fins.map(f=>f.rotation.y),before=read(),geometry=fins.map(f=>f.geometry),same=(a,b)=>a.every((x,i)=>x===b[i]);
+   engine.update({...options,paused:false});await new Promise(r=>setTimeout(r,500));const moving=read();
+   const mirroredPairs=['pectoral-fin','pelvic-fin'].every(part=>{const pair=fins.filter(f=>f.userData.anatomyPart===part);return pair.length===2&&Math.abs(pair[0].rotation.y+pair[1].rotation.y)<1e-8;});
+   engine.update({...options,paused:true});await new Promise(r=>setTimeout(r,100));const paused=read();await new Promise(r=>setTimeout(r,300));
+   return {allPairedFinsMoved:moving.every((x,i)=>Math.abs(x-before[i])>1e-5),mirroredPairs,pausedPoseHeld:same(paused,read()),stableGeometry:fins.every((f,i)=>f.geometry===geometry[i])};
+  });assert(Object.values(result.goldfishMotion).every(Boolean),'Goldfish motion contract failed: '+JSON.stringify(result.goldfishMotion));result.checks.push('real WebGL paired goldfish fins, mirrored strokes, paused pose and stable geometry');
+ }
  if(process.argv.includes('--puffer-motion')){
   result.pufferMotion=await page.evaluate(async()=>{
    const engine=window.__qaSpecimenEngine,options=window.__qaSpecimenOptions,item=window.__qaGL.find(r=>!r.disposed&&r.scene&&r.canvas.isConnected),group=item.scene.getObjectByName('aquarium-residents').children[0],fins=group.userData.fins.filter(f=>f.userData.pufferScull);

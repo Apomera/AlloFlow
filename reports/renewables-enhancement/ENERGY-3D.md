@@ -744,3 +744,374 @@ node node_modules/vitest/vitest.mjs run tests/renewables_map_explanation.test.js
 node reports/renewables-enhancement/map-explanation-browser-qa.cjs
 node reports/renewables-enhancement/design-map-browser-qa.cjs
 ~~~
+
+
+## Mechanism studio visual refinement
+
+The individual mechanism studio now uses a consistent set of nine inline SVG technology icons, clearer selected cards, a more distinct title and workbench hierarchy, compact view controls, and refined input, timeline, component, and measurement panels. Light and dark themes continue to use the host's existing theme tokens. The primary output card has a stronger visual emphasis; a small meter repeats the model's conversion fraction for generators or state of charge for batteries. Numeric readings remain available as text, and the redundant meter is hidden from assistive technology.
+
+Every shared 3D scene now includes a technology identity and a live electrical-output reading. Battery scenes label this as discharge output. The reading comes directly from the current run, including native scenario and microgrid dispatch results. A transparent WebGL canvas sits over a restrained dark gradient. A warm key light, cool fill light, soft shadows, and a layered, technology-tinted platform improve depth. Numbered component labels use rounded frames and matching accents. Camera coordinates, geometry interactions, model settings, and the underlying physical equations are unchanged.
+
+Rendering still uses one renderer and the existing paused/visible-frame scheduling. Shadow maps are 1,024 pixels per side, with a bounded directional-light camera. Shadow render targets join geometry, material, and texture cleanup when a scene is replaced or retried. Decorative platform layers stay in the existing context group, so isolating a component removes them. Scene titles and output readings stay outside the canvas and do not obstruct picking or camera controls.
+
+The gallery becomes two columns on small screens; camera and assembly controls wrap; live scene readings remain inside the header at 320px even for the largest tested outputs. Existing accessible button names, focus styles, keyboard controls, flow fallback, and reduced-motion behavior remain available.
+
+
+### Visual refinement validation
+
+**447 tests pass across 19 Renewables files.** The existing mechanism workflow, assembly-inspection regression, and new visual workflow pass **67 automated accessibility audits** (24 + 28 + 15), with no page or console errors. Both 390px and 320px layouts have no document overflow. Nine technology cards use consistent inline icons, and all nine scene headers remain contained at large tested output values. Live scene output, the zero-output state, battery fill, and native-scenario readings are checked against the model.
+
+The mechanism regression covers all nine scenes and eighteen operating programs, input-driven geometry, direct picking, playback, saved readings, exports, persistence, and context recovery. The inspection regression covers exploded transforms, label placement, isolation, focus and camera framing, transformed picking, technology-switch resets, renderer disposal, context retry, flow fallback, and the microgrid's battery and second-source scenes. Camera and assembly operations leave calculation inputs and results unchanged.
+
+Visual review covers the technology gallery, desktop workbench, dark workbench, output cards, and 320px scene. Source and desktop bundles match exactly; JavaScript syntax, scoped whitespace, and port 8790 delivery pass. The previous preview process was no longer available, so the existing preview was restarted on the same port. Validation uses an isolated local React/Three.js host, not a deployed full-application check.
+
+Review [technology gallery](visual-studio-gallery.png), [workbench](visual-studio-workbench.png), [dark workbench](visual-studio-workbench-dark.png), [live measurements](visual-studio-measurements.png), and [phone scene](visual-studio-scene-320.png). Evidence: [visual browser checks](visual-studio-browser-results.json), [mechanism regression](energy3d-browser-results.json), [inspection regression](inspection-browser-results.json), [unit results](visual-studio-vitest-results.json), [bundle integrity](visual-studio-integrity.json), and [verification summary](visual-studio-verification.json).
+
+~~~powershell
+node reports/renewables-enhancement/visual-studio-browser-qa.cjs
+node reports/renewables-enhancement/energy3d-browser-qa.cjs
+node reports/renewables-enhancement/inspection-browser-qa.cjs
+~~~
+
+
+## Interactive energy pathways and balance graphics
+
+Each shared 3D scene now includes a selectable **Trace the conversion** pathway. Its three cards correspond to the resource, converter, and generator assemblies. Selecting a card uses the existing component-selection action, keeping the 3D highlight, component explanation, isolation, and camera focus synchronized. Selection changes the view only. Keyboard activation works through native buttons with pressed states. The cards remain available if WebGL fails, and also appear in the microgrid's source, companion, and battery scenes.
+
+Readings are derived from the current native run. Models with three measured stages show resource, intermediate, and delivered power. Hydropower, geothermal, and wave models use a combined conversion efficiency in the middle card because they do not resolve a separate intermediate power; that limitation is stated beside the percentage. Batteries show charging power in kW, stored energy in kWh, and discharging power in kW, with a unit explanation. Native scenario labels retain their following-minute meaning. Small positive values use scientific notation rather than rounding to zero in the pathway.
+
+The individual workbench's **Follow the energy accounting** panel now contains a proportional energy-balance graphic. Generator bars partition the original resource power into electricity and model-derived remainder terms; they do not count intermediate power a second time. PV separates unconverted resource energy and inverter loss; wind and tidal separate unextracted stream power from the drivetrain/generator and rating remainder; concentrating solar and biomass separate their two modeled conversion stages. Combined models retain a single remainder. These terms do not claim that all remaining resource power is equipment heat loss.
+
+Battery bars account for accumulated energy up to the selected minute: initial energy plus accepted charging equals delivered electricity plus stored energy plus conversion losses. They do not add charging and discharging power to stored energy. At an endpoint the power readings can be zero while the energy chart remains populated. A zero-input balance has an empty bar and unavailable shares. Exact values and shares come from the existing model; bars use their proportional widths without minimum-sized nonzero segments. Text labels, numbers, units, and percentages accompany the redundant visual bar.
+
+The new pathway projection has version 1 and is exposed as renewablesEnergyModel.pathway(run). Existing physics/model versions and saved-state formats are unchanged. The interface reads the active run directly, so no second simulation, new renderer, or saved derived-result cache is introduced. Pathway cards stack on phones, while the balance legend also becomes a single column.
+
+
+### Pathway validation
+
+**470 tests pass across 20 Renewables files**, including 23 new pathway tests. The full threads run completed 365 tests in 16 files, then reported four worker-startup timeouts for files that had not run. Those four files were retried using the forks pool: all 105 remaining tests passed. The verification summary checks the exact union of the 20 expected files and all 470 assertions; it does not treat the partial initial report as a complete run. No application change was needed for the test-runner retry.
+
+New tests reconcile the chart at every minute in both native scenarios for all nine mechanisms, as well as steady workbenches and microgrid battery dispatch. They cover analytical PV partitioning, combined efficiencies, protective shutdown, generator clipping, zero and tiny resources, tidal reversal, stored-energy versus power units, battery initial energy and losses, absent battery banks, non-mutation, and accessible rendering. The physics remain the existing mechanism models.
+
+The new browser workflow passes **28 automated accessibility audits**, with no page or console errors. It verifies linked component selection for all nine mechanisms, keyboard activation, live readings, exact underlying proportions, isolated and exploded framing, unchanged calculation state, one renderer, native-scenario endpoints, empty balances, shutdown, battery cycle accounting, dark mode, 390px and 320px layouts, context loss and recovery, the flow fallback, and microgrid source and battery scenes. The proportional-width browser assertion allows normal CSSOM decimal serialization rounding; model conservation retains a relative tolerance of 1e-8.
+
+Visual review covers the PV pathway and partition, dark battery accounting, and the 320px pathway and legend. Source and desktop copies match; syntax, scoped whitespace, and exact preview delivery on port 8790 pass. Validation uses an isolated local React/Three.js host, not a deployed full-application check.
+
+Review [PV pathway](pathway-pv.png), [PV power balance](pathway-pv-budget.png), [combined hydro conversion](pathway-hydro.png), [wind shutdown balance](pathway-wind-shutdown.png), [battery readings](pathway-battery.png), [battery energy balance](pathway-battery-budget.png), [dark budget](pathway-budget-dark.png), and [phone pathway](pathway-phone-320.png). Evidence: [browser checks](pathway-browser-results.json), [initial test report](pathway-vitest-results.json), [targeted retry](pathway-vitest-retry-results.json), [bundle integrity](pathway-integrity.json), and [verification summary](pathway-verification.json).
+
+~~~powershell
+node node_modules/vitest/vitest.mjs run tests/renewables_energy_pathway.test.js --maxWorkers=1 --pool=forks --testTimeout=30000
+node reports/renewables-enhancement/pathway-browser-qa.cjs
+~~~
+
+
+## Guided component inspector
+
+The individual workbenches now have a **Component guide** shortcut and an expanded inspector below the 3D controls. It presents the selected component's existing explanation, its current pathway reading with units, and bounded **Previous component** / **Next component** navigation through the three assemblies. The inspector stays synchronized with component buttons, pathway cards, and direct 3D selection. Component selection in the individual workbench pauses playback at the current position, making the reading stable while the user inspects it.
+
+Each of the 27 components has a focused exploration question. Relevant control links show the user's base input values, explain the role of each input, and focus the corresponding real slider. The inputs panel highlights the same controls; it retains all controls, including those unrelated to the current guide. Links only move focus and pause playback. They do not change settings, scenario, or timeline position. Under an operating scenario the inspector explicitly distinguishes base settings in the links from effective readings at the current minute.
+
+Guides follow the existing models. The PV inverter explains its fixed 96% efficiency and offers no nonexistent inverter control. Hydropower, geothermal, and wave retain the pathway's combined-efficiency reading instead of inventing an intermediate power. The battery inspector keeps kW and kWh distinct and retains the native scheduled-supply and demand explanations in operating scenarios. Its questions distinguish capacity, initial energy, power limits, and conversion loss.
+
+**Record an observation** focuses the existing investigation notebook without replacing its contents. Guide navigation preserves keyboard focus, announces the current step, disables navigation at the ends, and works in the energy-flow view or while WebGL is unavailable. It reuses the current run, selection, and renderer; model versions and saved-state formats are unchanged. The inspector, control links, and navigation adapt to phone widths and host light/dark themes.
+### Guided inspector validation
+
+**470 tests pass across 20 Renewables files** in one full run using the forks pool. The browser workflow checks all **27 component guides and 45 input links**, with **19 automated accessibility audits** reporting no violations and no page or console errors.
+
+Behavior checks cover bounded previous/next navigation, keyboard focus, related-control highlighting, unchanged settings and timeline position after input jumps, observation text preservation, live readings, pause on component selection, base versus effective scenario values, fixed inverter efficiency, combined-efficiency and battery readings, isolated and exploded selection, the energy-flow fallback, WebGL recovery, and a single renderer. At 390px and 320px, the document has no horizontal overflow and linked controls remain visible when focused.
+
+Visual review covers the desktop PV inspector, highlighted input controls, dark battery guide, and 320px layout. Source and desktop bundles are byte-identical; syntax, scoped whitespace, and exact preview delivery on port 8790 pass. Validation uses an isolated local React/Three.js host, not a deployed full-application check.
+
+Review [PV guide](component-guide-pv.png), [highlighted controls](component-guide-inputs.png), [dark battery guide](component-guide-dark.png), and [320px inspector](component-guide-320.png). Evidence: [browser workflow](component-guide-browser-qa.cjs), [browser results](component-guide-browser-results.json), [full test report](component-guide-vitest-results.json), [bundle integrity](component-guide-integrity.json), and [verification summary](component-guide-verification.json).
+
+~~~powershell
+node reports/renewables-enhancement/component-guide-browser-qa.cjs
+~~~
+
+## Component baseline comparisons
+
+The component inspector now compares the selected assembly against the first saved reading for that technology. **Save a baseline** captures the current inputs, scenario, meaningful time, name, and observation using the existing notebook. It pauses playback and returns keyboard focus to the inspector after the save. Once a baseline exists, **Open saved readings** focuses the notebook without changing inputs, time, or notes. Promoting a different saved reading updates the component comparison immediately.
+
+The baseline and current bars use one shared scale within the selected component. Exact readings accompany each bar, and the signed difference is current minus baseline. Both zero readings produce empty bars; tiny nonzero readings retain scientific notation. The bars do not compare unlike units across components or imply that a greater value is always preferable. Combined efficiencies use **percentage points** for their difference, while battery-cell readings remain in **kWh** and inlet/outlet readings remain in **kW**.
+
+The comparison names both operating contexts and distinguishes matching inputs, one changed input, several changed inputs, and changes of scenario or meaningful time. A disclosure lists the captured base-input differences. The existing comparison rules continue to ignore illustrative animation position for steady generators while treating battery-cycle and scenario minutes as meaningful. Models, public APIs, and saved-state formats are unchanged.
+
+The view works across all 27 components, light/dark themes, the energy-flow fallback, and WebGL recovery. The browser workflow also caught and fixed wrapping of long saved-reading names in the notebook; the names now remain readable without expanding the page at phone widths.
+
+### Component comparison validation
+
+**487 tests pass across 21 Renewables files**, including 17 new comparison tests. The full run passed 486 assertions and hit one 10-second setup-hook timeout in the microgrid file. The complete file passed all 23 tests on a targeted rerun with a 60-second hook allowance. Verification checks the union of all 21 expected files and 487 assertions without counting retry assertions twice. No application change was needed for the retry.
+
+The browser workflow validates baseline capture and preservation, all 27 component comparisons, proportional bars, positive/negative/zero differences, percentage-point and battery units, changed scenarios and minutes, multiple changed inputs, baseline promotion, keyboard focus, playback pausing, retained notes, long names, the flow fallback, and WebGL recovery with one active renderer. **20 automated accessibility audits** report no violations; page and console errors are empty. The 390px and 320px layouts have no document overflow.
+
+Visual review covers the desktop PV comparison, the 320px battery inspector, and the dark battery view. Source, desktop mirror, and preview bytes match; syntax and scoped whitespace checks pass. Validation uses the isolated local React/Three.js host, not a deployed full-application check.
+
+Review [PV comparison](component-comparison-pv.png), [operating-context comparison](component-comparison-context.png), [percentage points](component-comparison-efficiency.png), [dark battery comparison](component-comparison-dark.png), and [320px inspector](component-comparison-320.png). Evidence: [browser workflow](component-comparison-browser-qa.cjs), [browser results](component-comparison-browser-results.json), [full test report](component-comparison-vitest-results.json), [setup-timeout retry](component-comparison-vitest-retry-results.json), [bundle integrity](component-comparison-integrity.json), and [verification summary](component-comparison-verification.json).
+
+~~~powershell
+node node_modules/vitest/vitest.mjs run tests/renewables_component_comparison.test.js --pool=forks --maxWorkers=1 --testTimeout=30000
+node reports/renewables-enhancement/component-comparison-browser-qa.cjs
+~~~
+
+## Scenario milestone explorer
+
+All 18 individual-mechanism operating scenarios now show an **Explore the turning points** panel beneath the timeline. Previous/next buttons and a labeled milestone selector move the existing timeline to a precise minute and pause playback. The selected 3D component, camera mode, base inputs, observations, and saved baseline are retained. Steady generators and the original battery cycle keep their existing timeline without this scenario-specific panel.
+
+Milestones combine the scenario start/end, prescribed resource points or battery request boundaries, every modeled status change, entries/exits from resource control bounds, battery demand-shortfall boundaries, and the first highest/lowest sampled output minutes when output varies. Reasons that coincide share one chronologically ordered milestone. The new renewablesEnergyModel.milestones(study) projection has version 1 and derives its results from an existing complete native scenario study.
+
+Each interval is half-open: its start minute is included and the next milestone minute is excluded. Its energy values come from differences in the scenario's cumulative ledgers. The panel shows delivered energy, duration, and either input resource energy or unmet battery demand. Battery intervals also show starting and ending stored energy. When the timeline is between milestones, the text explicitly identifies the current minute and states that the totals describe the entire interval. At the final endpoint, the panel shows full-scenario delivery and duration and explains that no additional operating minute or energy is added.
+
+The timeline strip uses proportional interval widths and a marker for the current minute; it is redundant with the textual controls and readings. Native keyboard controls, wrapped layouts at phone widths, and host light/dark colors remain available. The explorer operates independently of WebGL and uses the current scenario calculation rather than creating another simulation or renderer.
+
+Peak/low metadata now treats relative differences of at most 1e-12 as numerical ties and retains their first minute. This prevents floating-point interpolation at a flat resource boundary from moving the lowest-output shortcut one minute later. The same metadata feeds existing peak/low shortcuts and milestone selection. Power samples, integrated energy, physical equations, model version, and saved-state formats are unchanged; tiny nonzero resources retain real extrema because the tie tolerance is relative to the compared values.
+
+### Milestone explorer validation
+
+**510 tests pass across 22 Renewables files** in one complete run, including 23 new milestone tests. New checks reconcile every interval against minute-level power and the existing energy ledgers in all 18 scenarios, with default, minimum, and maximum control settings. They cover analytical PV intervals, wind shutdown and recovery, input-driven milestone changes, resource clipping, battery requests and stored-energy changes, shortfalls at zero battery power, constant zero output, numerical ties and tiny resources, tidal reversals, duplicate reasons, non-mutation, unsupported inputs, and endpoint rendering.
+
+The browser workflow verifies **116 milestone jumps across all 18 scenarios**, plus **28 automated accessibility audits**, with no page or console errors. It checks previous/next bounds, native keyboard selection, playback pausing, unchanged inputs/notes/baselines, accurate interval scope, proportional timeline widths, live input-driven recomputation, 3D measurement synchronization, isolated/exploded selection, zero-resource scenarios, final endpoints, the flow fallback, and context recovery with one active renderer. The 390px and 320px layouts have no document overflow.
+
+Visual review covers wind shutdown, the 320px battery interval, dark battery shortfall, and the final endpoint. Source, desktop mirror, and preview bytes match. Syntax and scoped whitespace checks pass. Validation uses the isolated local React/Three.js host, not a deployed full-application check.
+
+Review [wind shutdown](milestones-wind-shutdown.png), [battery shortfall](milestones-battery.png), [dark milestone view](milestones-dark.png), [320px interval](milestones-320.png), and [final endpoint](milestones-endpoint.png). Evidence: [browser workflow](milestones-browser-qa.cjs), [browser results](milestones-browser-results.json), [test report](milestones-vitest-results.json), [bundle integrity](milestones-integrity.json), and [verification summary](milestones-verification.json).
+
+~~~powershell
+node node_modules/vitest/vitest.mjs run tests/renewables_milestones.test.js --pool=forks --maxWorkers=1 --testTimeout=60000 --hookTimeout=60000
+node reports/renewables-enhancement/milestones-browser-qa.cjs
+~~~
+
+## Custom scenario intervals
+
+The milestone explorer now includes a collapsed **Measure a custom interval** panel for all 18 native scenarios. Start/end sliders choose any ordered pair of whole minutes. **Use current minute as start/end** captures the active timeline position and moves the other boundary if necessary to keep the interval ordered. **Inspect interval start/end** pauses playback and moves the existing 3D timeline without changing inputs or the selected component. Shortcuts select the current milestone interval or the full scenario.
+
+The panel reports delivered energy, average electrical output, input resource energy or unmet battery demand, and the complete energy balance. Its component table compares readings at both boundaries, including signed differences and percentage-point changes for efficiencies. Battery cell readings remain kWh; resource and electrical power readings remain kW. An optional operating-state table groups the selected minutes by modeled state and reports their electricity, with separate counts for resource clipping and battery shortfall minutes.
+
+Component differences within a relative tolerance of 1e-12 are displayed as zero to suppress numerical ties at flat scenario boundaries. Tiny genuine changes remain measurable because the tolerance scales with the boundary readings.
+
+The interval includes its start minute and excludes its end minute. A final endpoint is a boundary reading rather than an extra operating interval. For equal boundaries, every energy total is zero and average power is undefined. Battery accounting starts from energy stored at the selected start minute, rather than reusing the scenario's original initial charge. The selected range graphic is proportional to the full scenario duration, with the current timeline position shown independently.
+
+The new renewablesEnergyModel.interval(study, selection) projection, version 1, reads an existing complete native scenario. Endpoints are bounded, floored, and sorted; invalid saved values fall back to the full scenario bounds. Energy is summed directly from the selected minute samples, using existing accepted power and conversion efficiency, rather than subtracting two large cumulative totals. This retains precision for very small intervals late in a long scenario. No second physical simulation is introduced, and the underlying mechanism samples and equations remain unchanged.
+
+Selections and the panel's open state are stored separately for each technology and scenario in energyLab.intervals. They follow current scenario inputs; they are not frozen experimental results. Existing sessions without this optional field continue to work. **Export this interval** downloads the existing mechanism investigation with a recalculated operatingScenario.selectedInterval, including the selected bounds, base inputs, component differences, ledgers, and state totals. Old saved derived values are not trusted. Existing notebook notes, baseline readings, and other technology settings are preserved.
+
+### Custom interval validation
+
+**532 tests pass across 23 Renewables files**, including 22 new interval tests. The full forks run completed 456 tests in 20 files, but three workers timed out before loading their files. A targeted forks retry passed 53 tests in the grid-limit and resilience files; the microgrid worker again failed to start. Its final targeted threads run passed all 23 tests. The verification script checks the exact union of the 23 expected files and all 532 assertions without counting retry assertions twice. No application changes were made for these runner retries.
+
+New tests reconcile arbitrary, full, reversed, and zero-duration windows in all 18 scenarios, including control extremes, analytical cloud-crossing energy, signed component differences, percentage-point units, battery start-of-interval storage, final endpoints, repeated operating states, invalid saved bounds, tiny resources, numerical ties, non-mutation, and serialized selections.
+
+The browser workflow passes **27 automated accessibility audits**, with no page or console errors. It checks editing and inspection in every scenario, keyboard sliders, playback pausing, endpoint pinning, independent timeline position, per-scenario and serialized selections, preserved inputs/notes/baselines, live recalculation, proportional range display, component values, operating-state totals, zero-duration intervals, isolated/exploded selection, the flow fallback, and WebGL recovery with one active renderer. Solar, battery, and empty-interval downloads match the displayed analysis. The 390px and 320px layouts have no document overflow; wide comparison tables remain keyboard-scrollable within their own regions.
+
+Visual review covers desktop PV, phone battery, and dark battery analyses. Source and desktop bundles match the local preview exactly; syntax and scoped whitespace checks pass. Validation uses an isolated local React/Three.js host, not a deployed full-application check.
+
+Review [PV interval](intervals-pv.png), [battery interval](intervals-battery.png), [dark analysis](intervals-dark.png), [320px analysis](intervals-320.png), and [empty interval](intervals-empty.png). Evidence: [browser workflow](intervals-browser-qa.cjs), [browser results](intervals-browser-results.json), [initial tests](intervals-vitest-results.json), [first targeted retry](intervals-vitest-retry-results.json), [microgrid retry](intervals-vitest-microgrid-results.json), [bundle integrity](intervals-integrity.json), [verification summary](intervals-verification.json), and [verification script](intervals-verify.cjs).
+
+~~~powershell
+node node_modules/vitest/vitest.mjs run tests/renewables_intervals.test.js --pool=forks --maxWorkers=1 --testTimeout=60000 --hookTimeout=60000
+node reports/renewables-enhancement/intervals-browser-qa.cjs
+node reports/renewables-enhancement/intervals-verify.cjs
+~~~
+
+
+## Fitted 3D camera views
+
+All nine individual mechanisms and the shared microgrid source, companion, and battery scenes now offer **Isometric view**, **Front view**, **Side view**, and **Top view**. These use consistent model axes, refit the current mechanism or focused component, and retain assembled, exploded, isolated, and label preferences. The new default is a true isometric direction. The overhead camera uses an explicit up vector to remain stable at exactly 90 degrees.
+
+**Tilt up** and **Tilt down** complement horizontal rotation and pointer orbit. A compact orientation graphic displays the model axes, active standard view or free orbit, and angles around/above the model. Standard-view buttons expose their active state to assistive technology. **Fit mechanism** removes a component focus while retaining the camera direction; within an isolated view it fits that assembly. **Reset camera** returns to the fitted isometric direction. Resizing also refits the current visible scope.
+
+Fitting includes the camera-facing corners of label sprites, so side and overhead views account for their actual screen dimensions. Labels are bounded within the viewport and separated when their projected rectangles overlap; displaced annotations get connector lines back to their original anchors. These use the existing renderer and normal disposal lifecycle. The standard fitted views remain readable with all three annotations; deliberate extreme zoom can still exceed the viewport and can be recovered with **Fit mechanism**.
+
+Camera state is transient and never changes mechanism inputs, scenario time, or simulation calculations. Model axes and illustrative angles are explicitly identified in the interface. Parameter edits retain the chosen camera direction; use a preset or **Fit mechanism** to reframe a changed mechanism. Component buttons and the energy-flow fallback remain available when WebGL is unavailable. A WebGL retry restores the inspection layout with a fresh fitted isometric camera.
+
+### Camera validation
+
+**99 existing regression tests pass across four relevant files**, covering individual energy models and integration, pathway accounting, microgrid dispatch, and form-control accessibility. The camera work does not change physics equations or persisted investigation schemas.
+
+The real Chromium/Three.js workflows pass **20 accessibility audits** with no page or console errors. Geometric assertions cover all four camera directions across nine assembled and exploded mechanisms, all 27 isolated components, label bounds and overlap, focus retention, fit/reset, manual tilt/orbit, pointer drag, zoom, extreme mechanism dimensions, and resize behavior. Displaced annotations were observed in 45 checked frames. Separate projected clicks select the inverter correctly from every standard camera view. Empty sunlight and recovery, focused phone inspection, flow fallback, actual WebGL context loss/retry, and all three microgrid scene choices also pass.
+
+The 390px and 320px layouts have no document overflow. Visual review covers the desktop isometric workbench and the phone overhead view. Only one live renderer is retained, with disposal on mechanism changes and retries. Both JavaScript bundles and the code served at the local preview match exactly. Syntax and scoped whitespace checks pass. Browser validation uses an isolated local React/Three.js host; it is not a deployed full-application test.
+
+Review [isometric PV](camera-pv-isometric.png), [side-view PV](camera-pv-side.png), [front-view hydro](camera-hydro-front.png), [dark camera controls](camera-dark.png), [320px overhead view](camera-phone-320.png), and [focused phone view](camera-phone-focused.png). Evidence: [browser workflow](camera-browser-qa.cjs), [camera results](camera-browser-results.json), [picking workflow](camera-picking-qa.cjs), [picking results](camera-picking-results.json), [regression results](camera-vitest-results.json), [bundle integrity](camera-integrity.json), and [verification summary](camera-verification.json).
+
+~~~powershell
+node node_modules/vitest/vitest.mjs run tests/renewables_energy3d.test.js tests/renewables_energy_pathway.test.js tests/renewables_microgrid.test.js tests/renewables_form_controls_a11y.test.js --pool=threads --maxWorkers=1
+node reports/renewables-enhancement/camera-browser-qa.cjs
+node reports/renewables-enhancement/camera-picking-qa.cjs
+~~~
+
+
+## Live readings on 3D components
+
+All nine mechanisms now display each component's current reading directly on its 3D label. Labels use the existing energy pathway values and explicitly name their meaning: resource or electrical power in kW, combined conversion efficiency in percent for models without a separate intermediate-power stage, and stored battery energy in kWh. They update with input edits, scenario minutes, battery operation, and shared microgrid dispatch. No new physics calculation or persisted investigation field is introduced.
+
+The selected component's label uses the same light highlight as its pathway button. Clicking a visible label selects its component, including a zero-resource component whose geometry is hidden. Selection in the individual workbench pauses playback, just like the existing component buttons. Label picking takes precedence over geometry behind the label. Hidden labels cannot intercept clicks. Mouse hover indicates selectable content, and touch taps also select labels; the existing component buttons remain the keyboard and screen-reader equivalent.
+
+**Live readings** switches between names with values and compact names-only labels. Changing this option reveals labels if they were hidden. **Component labels** hides or shows the annotations independently. **Restore full mechanism** restores live readings, labels, and the assembled view. These preferences are transient, reset on technology changes, and survive WebGL retries within the same scene.
+
+Labels retain their camera-facing orientation and connector lines. Placement first keeps labels near their anchors, then rearranges the visible set if local spacing cannot separate them. Their maximum screen width is 220px with live readings or 180px for names only, also bounded to 62% of the viewport width. This keeps close side views from covering the mechanism with enlarged labels. Tightly packed or deliberately zoomed views can further reduce label size; the larger pathway readings remain available immediately below the scene.
+
+Each label retains a single canvas and texture. Only changed displayed text or selection styling triggers a texture update. Camera movement and value changes hidden by names-only mode do not upload new label pixels. Textures are disposed with the existing scene lifecycle when switching mechanisms or leaving 3D.
+
+### Live label validation
+
+**114 regression tests pass across four relevant files**, covering mechanism models and integration, pathway accounting, component comparisons, and microgrid dispatch. The real Chromium/Three.js workflows pass **19 accessibility audits** with no page or console errors.
+
+Browser checks read the actual strings painted into each label canvas and reconcile them against current pathway readings for all 27 components and all 18 scenarios, including start, intermediate, and final minutes. They cover direct label selection, selected colors, every standard camera view, exploded and isolated inspection, compact and hidden annotations, scenario playback pausing, zero sunlight, protective wind shutdown, battery energy, shared microgrid scenes, dark mode, and actual WebGL context loss/retry.
+
+Texture identities remain stable across edits and inspection changes. Camera movement does not trigger redundant uploads, unaffected stages retain their texture versions, and names-only labels avoid repaints when hidden numeric values change. Separate edge checks verify touch selection, ignored hidden-label hits, and disposal of all three annotation textures on technology and flow-view changes. The 390px and 320px layouts have no document overflow. Visual review covers the desktop and phone workbench and the crowded wave side view; the latter prompted the final screen-size cap.
+
+The canonical JavaScript, desktop bundle, and local preview match exactly. Syntax and scoped whitespace checks pass. Browser validation uses an isolated local React/Three.js host rather than a deployed full-application session.
+
+Review [live PV readings](live-labels-pv.png), [shutdown readings](live-labels-shutdown.png), [stored energy](live-labels-battery.png), [dark scene](live-labels-dark.png), [320px inspection](live-labels-phone-320.png), and [wave side view](live-labels-wave-side.jpg). Evidence: [browser workflow](live-labels-browser-qa.cjs), [browser results](live-labels-browser-results.json), [edge workflow](live-labels-edges-qa.cjs), [edge results](live-labels-edges-results.json), [regression results](live-labels-vitest-results.json), [verification summary](live-labels-verification.json), and [verification script](live-labels-verify.cjs).
+
+~~~powershell
+node node_modules/vitest/vitest.mjs run tests/renewables_energy3d.test.js tests/renewables_energy_pathway.test.js tests/renewables_microgrid.test.js tests/renewables_component_comparison.test.js --pool=threads --maxWorkers=1
+node reports/renewables-enhancement/live-labels-browser-qa.cjs
+node reports/renewables-enhancement/live-labels-edges-qa.cjs
+node reports/renewables-enhancement/live-labels-verify.cjs
+~~~
+
+
+## Precise input editing and undo
+
+All **35 input controls across the nine individual mechanisms** now pair a slider with a numeric entry field. Numeric drafts do not change the simulation until Enter or blur commits the value. Escape restores the current input without applying the draft. Decimal and scientific-notation values are accepted within each existing model range; empty or non-finite entries retain the current value. Out-of-range entries clamp to the nearest supported boundary with an explanatory message. Each control shows its range and units, and numeric fields have distinct accessible names and descriptions.
+
+Sliders remain synchronized with fractional values instead of silently snapping them to their former coarse steps. Arrow keys retain each control's original increment; Shift+Arrow uses one tenth of that increment. Home and End choose the supported limits, and Page Up/Down move by ten normal increments. Small floating-point artifacts from keyboard arithmetic are rounded to 14 significant digits. Physics equations, parameter bounds, and scenario definitions remain unchanged.
+
+**Undo last input change** restores the previous value of the last adjusted control. A continuous pointer drag or held-arrow gesture is grouped into one adjustment. Each technology keeps its own most recent undo within the current workbench session. The accompanying text states which input and value will be restored. No-op edits do not replace a useful undo. Undo is disabled if a different action has replaced the relevant settings, and resetting inputs clears that technology's undo. This transient UI history is not included in saved investigations.
+
+Applying or undoing a changed input pauses playback while retaining the selected scenario and minute. In a scenario, the number field edits the baseline setting; the scene and results continue to show the prescribed conditions at the selected minute. Battery changes recalculate the same schedule or cycle from its original starting state. Existing component-guide links still focus the real slider. Numeric entry and undo also work in the energy-flow view and while WebGL is unavailable. The shared microgrid input panel is unchanged.
+
+### Precise input validation
+
+**93 regression tests pass across four relevant files**, covering individual energy models and integration, energy-pathway accounting, component comparisons, and form accessibility. The Chromium/Three.js browser workflow passes **15 accessibility audits**, with no page or console errors.
+
+Every one of the 35 controls was edited to a fractional value, checked against the model and slider, and restored with undo. Additional checks cover draft isolation, Enter/blur application, cancellation, blank input, scientific notation, both range boundaries, normal/fine slider keys, Home/End/Page Down, grouped held-key and pointer gestures, no-op entries, independent technology histories, stale-history invalidation, scenario/minute preservation, playback pausing, guide-link focus, and battery recalculation. Existing renderer instances survive these edits.
+
+The 390px and 320px layouts have no document overflow. Dark mode, the flow fallback, and actual WebGL context loss/retry also pass. Visual review covers the wind input panel and 320px battery controls. Source and desktop bundles match the local preview byte-for-byte; syntax and scoped whitespace checks pass. Browser validation uses an isolated local React/Three.js host rather than a deployed full-application session.
+
+Review [wind inputs](precise-inputs-wind.jpg), [dark inputs](precise-inputs-dark.jpg), [390px controls](precise-inputs-phone-390.jpg), and [320px controls](precise-inputs-phone-320.jpg). Evidence: [browser workflow](precise-inputs-browser-qa.cjs), [browser results](precise-inputs-browser-results.json), [regression results](precise-inputs-vitest-results.json), [verification summary](precise-inputs-verification.json), and [verification script](precise-inputs-verify.cjs).
+
+~~~powershell
+node node_modules/vitest/vitest.mjs run tests/renewables_energy3d.test.js tests/renewables_energy_pathway.test.js tests/renewables_component_comparison.test.js tests/renewables_form_controls_a11y.test.js --pool=threads --maxWorkers=1
+node reports/renewables-enhancement/precise-inputs-browser-qa.cjs
+node reports/renewables-enhancement/precise-inputs-verify.cjs
+~~~
+
+
+## Reopen exported mechanism readings
+
+**Open reading from file** in the individual mechanism workbench opens a local mechanism investigation JSON export. A preview lists the exported current setup and each supported notebook reading. It shows the selected technology, operating scenario, saved timeline position, and three component readings recalculated by the current model. Expand **Review saved inputs and observation** to see the exact saved input values and observation. Choose **Open selected reading** to apply that entry, or cancel to return focus to the file-opening button without changing the workbench.
+
+Opening applies the chosen technology's inputs, scenario or cycle position, reading name, and draft observation, selects that technology in 3D, pauses playback, and clears its transient input undo. Existing notebook readings, other technologies, experiments, maps, intervals, and microgrid work remain intact. This opens one reading; it does not restore every experiment or replace the complete investigation. The preview explains which current draft values will be replaced and suggests saving the current reading first.
+
+New mechanism exports include a stable format identifier and the current reading name. Existing version-1 mechanism exports remain supported through their title. Saved result fields and scenario totals are ignored: calculations use validated inputs only. Every required input must be a finite number within its existing supported range, and native scenarios and timeline positions must be recognized. Unsupported entries are skipped with reasons when another valid entry can be opened. Unrelated files, unsupported versions, empty valid collections, invalid JSON, and files over 8 MiB produce an inline error without changing saved work. Names longer than 60 characters and observations longer than 3,000 characters are shortened with a visible explanation. Async reads that were cancelled or superseded cannot reopen a stale preview.
+
+### File-opening validation
+
+**97 regression tests pass across three files**, including 29 new import and preservation tests. Real Chromium workflows reopen fractional inputs for all nine technologies and reconcile the resulting output against the model. Checks cover the native file chooser, export/open round trips, saved notebook selection, three legacy exports, scenario minutes, playback pausing, preservation of existing entries and other inputs, cancellation, focus, invalid and oversized files, literal rendering of imported text, skipped entries, and cancelled or superseded file reads. Opening from the flow view returns to the 3D workbench.
+
+**Nine accessibility audits pass**, covering the desktop preview, expanded review, dark theme, 390px and 320px layouts, three error states, and the flow-view preview. No browser page or console errors were recorded. Both phone widths avoid document overflow. Visual review covers the desktop preview and a narrow dark preview with a long filename and observation. Source, desktop bundle, and local preview match byte-for-byte; syntax and scoped whitespace checks pass. Browser validation uses an isolated local React/Three.js host rather than a deployed full-application session.
+
+Review [desktop preview](file-readings-desktop.jpg), [dark preview](file-readings-dark.jpg), and [320px stress case](file-readings-phone-320.jpg). Evidence: [browser workflow](file-readings-browser-qa.cjs), [browser results](file-readings-browser-results.json), [regression results](file-readings-vitest-results.json), [verification summary](file-readings-verification.json), and [verification script](file-readings-verify.cjs).
+
+~~~powershell
+node node_modules/vitest/vitest.mjs run tests/renewables_file_readings.test.js tests/renewables_energy3d.test.js tests/renewables_component_comparison.test.js --pool=threads --maxWorkers=1
+node reports/renewables-enhancement/file-readings-browser-qa.cjs
+node reports/renewables-enhancement/file-readings-verify.cjs
+~~~
+
+
+## Compare the complete energy pathway
+
+The investigation notebook now shows a **Comparison baseline** chooser whenever a technology has multiple saved readings. Selecting a reading moves it to the pinned baseline position and immediately updates both the notebook and component comparisons. Selection pauses playback and preserves workbench inputs, the selected time, draft name and observation, and every saved reading. The existing **Use as baseline** action in saved-input details uses the same behavior. The chooser keeps its name-based order while the baseline changes, so arrow keys can traverse every reading. The saved-readings table marks the baseline, and the chosen order persists through technology changes and exports. New saves retain the pinned baseline and the two most recent comparison slots; removing the baseline makes the next remaining entry the baseline.
+
+**Follow the difference through each stage** compares all three mechanism components at once. Each stage includes baseline/current values, a signed difference, and two bars sharing a scale within that stage. Stage scales are independent, with an explicit explanation. Combined conversion differences use percentage points; the battery stage compares stored kWh while charging and delivery stages compare kW. Zero values have empty bars, and small nonzero differences use scientific notation. Baseline/current operating context and the existing controlled-comparison verdict keep scenario or time changes visible.
+
+**Inspect this stage** selects that component and focuses its explanation, keeping the current workbench inputs. These links work in both the 3D and energy-flow views. All nine technologies and 18 prescribed operating scenarios use the same comparison presentation.
+
+Percentage comparisons now support any positive baseline instead of treating small positive values as zero. Non-finite ratios remain unavailable, true zero baselines retain their explicit explanation, and signed changes of at least one million use scientific notation. Long baseline names wrap. An additional layout check caught an extremely small baseline producing hundreds of percentage digits; the final formatting keeps that case within desktop and phone layouts.
+
+### Pathway comparison validation
+
+**115 regression tests pass across four files**, including 18 focused pathway tests alongside existing mechanism, component-comparison, and file-opening checks. Browser checks reconcile all three stages against recalculated model values for nine technologies and all 18 native scenarios, and exercise all 27 component links. Actual notebook actions verify baseline switching without restoring inputs, pin retention during new saves, note preservation, technology switching, restore/removal, the existing detail action, scenario playback pausing, and exported comparison consistency.
+
+**18 accessibility audits pass** across the main and edge workflows. The main browser workflow records no page or console errors. Desktop, dark theme, 390px and 320px layouts were checked, including zero/tiny output, an extreme positive percentage, a 60-character unbroken name, and phone baseline selection. All tested widths avoid document overflow. Visual review covers the desktop comparison and dark 320px comparison. Source and desktop copies match the local preview byte-for-byte; syntax and scoped whitespace checks pass. These checks use an isolated local React/Three.js host rather than a deployed full-application session.
+
+Review [desktop comparison](pathway-comparison-desktop.jpg), [scenario comparison](pathway-comparison-scenario.jpg), [dark comparison](pathway-comparison-dark.jpg), [320px comparison](pathway-comparison-phone-320.jpg), and [phone baseline chooser](pathway-comparison-phone-chooser.jpg). Evidence: [browser workflow](pathway-comparison-browser-qa.cjs), [browser results](pathway-comparison-browser-results.json), [edge workflow](pathway-comparison-edges.cjs), [edge results](pathway-comparison-edge-results.json), [regression results](pathway-comparison-vitest-results.json), [verification summary](pathway-comparison-verification.json), and [verification script](pathway-comparison-verify.cjs).
+
+~~~powershell
+node node_modules/vitest/vitest.mjs run tests/renewables_pathway_comparison.test.js tests/renewables_energy3d.test.js tests/renewables_component_comparison.test.js tests/renewables_file_readings.test.js --pool=threads --maxWorkers=1
+node reports/renewables-enhancement/pathway-comparison-browser-qa.cjs
+node reports/renewables-enhancement/pathway-comparison-edges.cjs
+node reports/renewables-enhancement/pathway-comparison-verify.cjs
+~~~
+
+
+## 3D handover safety and recoverable failures
+
+Switching technologies can publish new React props before the previous scene's effect has been cleaned up. A browser reproduction caught the outgoing hydropower scene applying another technology's inputs to its penstock geometry, producing invalid coordinates inside Three.js curve calculations. The render loop now checks the scene's technology identity before updating geometry. Camera actions, picking, and resize callbacks also ignore obsolete or failed scene instances. Picking skips a zero-size viewport. A scene identity marker is cleared when setup begins and set only after a successful render, allowing browser checks to wait for the actual replacement scene.
+
+Rendering and component-picking failures now stop the scene's animation loop and show the existing **Retry mechanism 3D** recovery controls. Calculations and input editing remain available. Retry rebuilds the scene from the current workbench state and disposes the previous renderer and geometry. Actual WebGL context loss uses the same failure state. Returning through the energy-flow view also builds a fresh scene. Workbench settings and saved notebook readings survive these recovery paths.
+
+The previously interrupted comparison verification is complete, including keyboard baseline selection through the native Windows chooser. The test explicitly commits the native menu selection before waiting for browser animation frames. Accessibility checks resolve offscreen inherited styles before inspecting colors; no accessibility rules are excluded.
+
+### Handover and recovery validation
+
+**115 regression tests pass**, and the comparison, edge, and recovery workflows pass **19 accessibility audits** on the final source. The complete comparison workflow verifies all nine technologies, 18 operating scenarios, 27 component links, baseline selection, exports, and keyboard navigation. Recovery checks inject rendering and picking failures, trigger real WebGL context loss, edit an input while 3D is unavailable, retry each failure, and retain a saved reading and observation.
+
+Eighteen technology switches produce no invalid pipe geometry. All four camera presets work after recovery. Exactly one renderer remains active in the open workbench after 21 creations and 20 disposals. Recovery and comparison workflows record no page or console errors. Source and desktop copies match the running local preview byte-for-byte; syntax and scoped whitespace checks pass. These are isolated local React/Three.js browser checks rather than a deployed full-application session.
+
+Review [recovery controls](scene-recovery-fallback.jpg). Evidence: [recovery browser workflow](scene-recovery-browser-qa.cjs), [recovery results](scene-recovery-browser-results.json), [combined verification](scene-recovery-verification.json), and [verification script](scene-recovery-verify.cjs).
+
+~~~powershell
+node reports/renewables-enhancement/scene-recovery-browser-qa.cjs
+node reports/renewables-enhancement/pathway-comparison-verify.cjs
+node reports/renewables-enhancement/scene-recovery-verify.cjs
+~~~
+
+
+## Recover the last notebook change
+
+Each technology now has an **Undo notebook change** action beside **Save mechanism reading**. It restores the notebook before the last save, removal, or baseline change. Saving a fourth reading can be undone to recover the comparison displaced by the three-reading limit; updating an existing reading can be undone to recover its saved name and observation. An identical save preserves the existing undo action.
+
+Undo changes only that technology's saved readings. Current inputs, timeline position, operating scenario, draft name and observation, other technologies, experiments, and design maps remain intact. Restoring a workbench reading or opening a file does not consume notebook history. Input undo remains independent. Saving, removing, baseline selection, and undo pause playback. Histories are local to the open mechanism workbench, contain one reversible change per technology, and are neither exported nor persisted across a reload. External notebook replacements invalidate stale history, including changes to inactive technologies.
+
+Removing a reading focuses the undo button so it is immediately reachable by keyboard. Undo focuses the notebook heading after the button becomes disabled. An action-specific hint and live status explain what is recoverable and what was restored.
+
+### Notebook undo validation
+
+**115 regression tests pass across four files.** A browser workflow passes **25 behavior checks**, including the first save, duplicate saves, removing the sole reading and the pinned baseline, both baseline controls, eviction at the reading limit, updating saved text, preserving later input edits and draft observations, restoring and file-opening workbench settings, independent technology histories, stale external replacements, playback pausing, flow-view undo, and export consistency. Saved native scenario readings are removed and recovered for all nine technologies with their inputs and selected minutes intact.
+
+**Seven accessibility audits pass** across pending and restored states, the flow view, dark theme, and 390px/320px layouts. No browser page or console errors were recorded. Phone layouts avoid document overflow; the saved-readings table retains its existing horizontal scroll region. Desktop and dark 320px screenshots were visually reviewed. Canonical source, desktop copy, and running preview match byte-for-byte; syntax and scoped whitespace checks pass. Validation uses an isolated local React/Three.js host rather than a deployed full-application session.
+
+Review [desktop notebook](notebook-undo-desktop.jpg), [dark notebook](notebook-undo-dark.jpg), and [320px notebook](notebook-undo-phone-320.jpg). Evidence: [browser workflow](notebook-undo-browser-qa.cjs), [browser results](notebook-undo-browser-results.json), [regression results](notebook-undo-vitest-results.json), [verification summary](notebook-undo-verification.json), and [verification script](notebook-undo-verify.cjs).
+
+~~~powershell
+node node_modules/vitest/vitest.mjs run tests/renewables_pathway_comparison.test.js tests/renewables_energy3d.test.js tests/renewables_component_comparison.test.js tests/renewables_file_readings.test.js --pool=threads --maxWorkers=1
+node reports/renewables-enhancement/notebook-undo-browser-qa.cjs
+node reports/renewables-enhancement/notebook-undo-verify.cjs
+~~~
+
+
+## Compare the entire operating scenario
+
+Saving a baseline in the active operating scenario now reveals **Compare the whole scenario** beneath the scenario results. The overlay recalculates the saved inputs and current inputs from minute zero through the same prescribed sequence, regardless of the baseline's saved minute. It compares electrical output in kW, delivered electricity in kWh, and, for batteries, stored energy in kWh. A dashed baseline and solid current line share one vertical scale. Electrical power is drawn as minute-long steps; cumulative and stored-energy curves connect minute boundaries. Full-scenario electricity totals and a signed difference are shown above the plot. Batteries also compare unserved demand against the same request schedule.
+
+The **Scenario comparison minute** slider stays synchronized with the main workbench timeline. **Inspect largest difference in 3D** pauses playback, selects the earliest largest absolute difference for the chosen metric, switches from the flow view when necessary, and focuses the workbench. Power inspection excludes the terminal endpoint because it is not another energy-producing interval. Exact values at the selected minute appear under the slider, and an expandable table provides every sample for the active metric. Identical setups disable largest-difference inspection. The **Scenario comparison** workbench shortcut and **Review comparison baseline** button provide keyboard navigation between the plot and notebook.
+
+A baseline saved under a different scenario produces an explanation and a link to the notebook; its inputs are not silently reinterpreted under the current scenario. Changing or undoing the notebook baseline updates the overlay. One-input and multiple-input comparisons are distinguished across the full scenario. Inspecting the plot preserves saved readings, observations, and current input settings. Exported investigations include a recalculated scenarioComparison object with input settings, changes, metric metadata, samples, electricity totals, and battery unserved demand. Existing file imports continue to derive results from validated saved inputs.
+
+### Whole-scenario comparison validation
+
+**133 regression tests pass across five files**, including 18 new focused tests. The tests reconcile every native scenario, check analytical PV area scaling and independent power integration, preserve signed and tiny differences, verify earliest-tie behavior, exclude terminal power endpoints, distinguish battery stored and delivered energy, reject mismatched contexts, and check rendered controls, escaping, zero states, and saved-time independence.
+
+A real Chromium workflow exercises all **18 scenarios across nine technologies** and their supported metrics. It checks exact displayed values, synchronized minute selection, largest-difference 3D inspection, unchanged saved work, real notebook save/baseline/undo actions, keyboard navigation, battery flow-to-3D transitions, playback pausing, complete exported comparison data, incompatible baselines, zero/tiny output, and the phone data table. **Nine accessibility audits pass**, covering battery flow mode, incompatible scenarios, desktop power and energy, dark theme, 390px/320px layouts, the expanded phone table, and tiny output. No page or console errors were recorded; phone layouts avoid document overflow. Validation uses an isolated local React/Three.js host rather than a deployed full-application session.
+
+Review [desktop power comparison](scenario-comparison-desktop.jpg), [battery comparison](scenario-comparison-battery.jpg), [dark energy comparison](scenario-comparison-dark.jpg), and [320px comparison](scenario-comparison-phone-320.jpg). Evidence: [browser workflow](scenario-comparison-browser-qa.cjs), [browser results](scenario-comparison-browser-results.json), [regression results](scenario-comparison-vitest-results.json), [verification script](scenario-comparison-verify.cjs), and [verification summary](scenario-comparison-verification.json).
+
+~~~powershell
+node node_modules/vitest/vitest.mjs run tests/renewables_scenario_comparison.test.js tests/renewables_pathway_comparison.test.js tests/renewables_energy3d.test.js tests/renewables_component_comparison.test.js tests/renewables_file_readings.test.js --pool=threads --maxWorkers=1
+node reports/renewables-enhancement/scenario-comparison-browser-qa.cjs
+node reports/renewables-enhancement/scenario-comparison-verify.cjs
+~~~

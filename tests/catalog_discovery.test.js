@@ -1,0 +1,20 @@
+import {describe,it,expect} from 'vitest';import fs from 'node:fs';import path from 'node:path';import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),React=require(path.resolve('desktop/web-app/node_modules/react'));
+const win={React,AlloModules:{}};new Function('window',fs.readFileSync('catalog_module.js','utf8'))(win);
+const matches=win.AlloModules.CommunityCatalog._catalogEntryMatches,grades=win.AlloModules.CommunityCatalog._catalogGradeSet;
+const entry={title:'Sound and Vibration',grade_level:'6-8',subject:'Science',tags:['memory-aid','applied-challenge','illustrated']};
+describe('catalog discovery',()=>{
+ it('matches natural phrases to hyphenated tags',()=>{expect(matches(entry,{search:' Memory aid '})).toBe(true);expect(matches(entry,{search:'applied challenge'})).toBe(true);});
+ it('matches words across title and tags in either order',()=>{expect(matches(entry,{search:'illustrated vibration'})).toBe(true);expect(matches(entry,{search:'vibration unseen'})).toBe(false);});
+ it('normalizes accents and punctuation without removing non-Latin text',()=>{expect(matches({title:'Café: ciclo del agua'},{search:'cafe agua'})).toBe(true);expect(matches({title:'水の循環'},{search:'水'})).toBe(true);});
+ it('matches individual grades within a range',()=>{expect(matches(entry,{grade:'7'})).toBe(true);expect(matches(entry,{grade:'9'})).toBe(false);});
+ it('uses overlap for requested ranges',()=>{expect(matches(entry,{grade:'3–6'})).toBe(true);expect(matches(entry,{grade:'9-12'})).toBe(false);});
+ it('does not confuse grade 1 with grade 10',()=>{expect(matches({grade_level:'10'},{grade:'1'})).toBe(false);expect(matches({grade_level:'1'},{grade:'10'})).toBe(false);});
+ it('supports kindergarten and pre-K ranges',()=>{expect(matches({grade_level:'Pre-K–2'},{grade:'K'})).toBe(true);expect(matches({grade_level:'K-2'},{grade:'Pre-K'})).toBe(false);expect(grades('Kindergarten to 2')).toEqual([0,1,2]);});
+ it('supports numeric values, ordinal labels, and grade lists',()=>{expect(matches({grade_level:7},{grade:'7th Grade'})).toBe(true);expect(grades('3, 5 and 7')).toEqual([3,5,7]);expect(matches(entry,{grade:'3/7'})).toBe(true);});
+ it('does not treat a missing grade as a match',()=>{expect(matches({title:'Unknown grade'},{grade:'7'})).toBe(false);expect(matches({grade_level:'All grades'},{grade:'7'})).toBe(true);});
+ it('retains subject filtering and handles malformed tags',()=>{expect(matches(entry,{subject:'Math'})).toBe(false);expect(matches({...entry,tags:{}},{search:'sound'})).toBe(true);expect(matches(null,{})).toBe(false);});
+ it('treats blank filters as no filters',()=>{expect(matches(entry,{search:'   ',grade:'   '})).toBe(true);});
+ it('finds actual Water Cycle metadata with a natural-language activity query',()=>{const entries=JSON.parse(fs.readFileSync('catalog/index.json','utf8')).entries;expect(entries.filter(e=>matches(e,{search:'water memory aid',grade:'6'})).some(e=>e.slug==='water_cycle_grade6_illustrated')).toBe(true);});
+ it('keeps the browser mirror byte-identical',()=>{expect(fs.readFileSync('desktop/web-app/public/catalog_module.js','utf8')).toBe(fs.readFileSync('catalog_module.js','utf8'));});
+});

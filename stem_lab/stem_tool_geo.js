@@ -3669,6 +3669,7 @@ var d = labToolData || {};
       var isContrast = !!ctx.isContrast;
       var onHostInk = isContrast ? ' text-white' : '';
       const React = ctx.React;
+      const gpT = ctx.t || function(key, fallback) { return fallback; };
       const labToolData = ctx.toolData;
       const setLabToolData = ctx.setToolData;
       const setStemLabTool = ctx.setStemLabTool;
@@ -4379,7 +4380,7 @@ var d = labToolData || {};
         };
 
         // ── MAIN RENDER ──
-        const gpTabs=[{id:'build',label:'🔨 Build'},{id:'discover',label:'🧭 Discover'},{id:'challenge',label:'🎯 Challenge'}];
+        const gpTabs=[{id:'build',label:gpT('stem.geo.prover_build','Build & prove')},{id:'discover',label:gpT('stem.geo.prover_discover','Guided discoveries')},{id:'challenge',label:gpT('stem.geo.prover_challenge','Practice challenges')}];
         const moveGpTab=(event,index)=>{
           let next=index;
           if(event.key==='ArrowRight'||event.key==='ArrowDown') next=(index+1)%gpTabs.length;
@@ -4393,6 +4394,7 @@ var d = labToolData || {};
           requestAnimationFrame(()=>{const nextTab=document.getElementById('geometry-prover-tab-'+nextId);if(nextTab)nextTab.focus();});
         };
         return React.createElement('div',{className:'space-y-3 max-w-3xl mx-auto animate-in fade-in duration-200'},
+          React.createElement('style',null,'.gp-controls button{min-height:44px;max-width:100%;white-space:normal;overflow-wrap:anywhere}.gp-controls legend{float:none;padding:0}'),
           // Header
           React.createElement('div',{className:'flex items-center gap-3'},
             React.createElement('button',{onClick:()=>setStemLabTool(null),className:'p-1.5 hover:bg-slate-100 rounded-lg transition-colors','aria-label':'Back'},React.createElement(ArrowLeft,{size:18,className:'text-slate-600'})),
@@ -4403,9 +4405,9 @@ var d = labToolData || {};
             )
           ),
           // Tab bar
-          React.createElement('div',{className:'flex gap-1 bg-slate-100 p-1 rounded-xl',role:'tablist','aria-label':'Geometry Prover sections'},
+          React.createElement('div',{style:{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))'},className:'gap-1 bg-slate-100 p-1 rounded-xl',role:'tablist','aria-label':'Geometry Prover sections'},
             gpTabs.map((tab,index)=>
-              React.createElement('button',{key:tab.id,id:'geometry-prover-tab-'+tab.id,role:'tab','aria-selected':gpTab===tab.id,'aria-controls':'geometry-prover-panel',tabIndex:gpTab===tab.id?0:-1,onClick:()=>gpUpd('tab',tab.id),onKeyDown:event=>moveGpTab(event,index),className:`flex-1 py-1.5 px-2 text-xs font-bold rounded-lg transition-all ${gpTab===tab.id?'bg-white text-violet-700 shadow-sm':'text-slate-600 hover:text-violet-600'}`},tab.label)
+              React.createElement('button',{style:{minHeight:44,minWidth:0,whiteSpace:'normal',overflowWrap:'anywhere'},key:tab.id,id:'geometry-prover-tab-'+tab.id,role:'tab','aria-selected':gpTab===tab.id,'aria-controls':'geometry-prover-panel',tabIndex:gpTab===tab.id?0:-1,onClick:()=>gpUpd('tab',tab.id),onKeyDown:event=>moveGpTab(event,index),className:`flex-1 py-1.5 px-2 text-xs font-bold rounded-lg transition-all ${gpTab===tab.id?'bg-white text-violet-700 shadow-sm':'text-slate-600 hover:text-violet-600'}`},tab.label)
             )
           ),
           // Canvas — always visible
@@ -4418,25 +4420,28 @@ var d = labToolData || {};
           ),
           // BUILD TAB
           gpTab==='build'&&React.createElement('div',{id:'geometry-prover-panel',role:'tabpanel','aria-labelledby':'geometry-prover-tab-build',tabIndex:0,className:'space-y-3'},
-            React.createElement('div',{className:'flex items-center gap-2'},
-              React.createElement('button',{'aria-pressed':gpInvestigate?'true':'false',onClick:()=>{gpUpd('investigate',!gpInvestigate);gpUpd('revealed',false);gpUpd('prediction','');},className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all focus:ring-2 focus:ring-amber-400 focus:outline-none ${gpInvestigate?'bg-amber-700 text-white shadow':'bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100'}`},gpInvestigate?'🔮 Investigate ON':'🔮 Investigate Mode'),
-              React.createElement('span',{className:'text-[0.6875rem] text-slate-600 italic' + onHostInk},gpInvestigate?'Theorems hidden — predict first!':'Auto-show theorems')
-            ),
-            React.createElement('div',{className:'flex gap-1.5 flex-wrap'},
-              [{id:'freeform',label:'✏️ Freeform',color:'violet',action:()=>{gpUpd('mode','freeform');gpUpd('points',[]);gpUpd('segments',[]);gpUpd('connecting',null);gpUpd('feedback',null);gpUpd('challenge',null);gpUpd('guided',null);}},
+            React.createElement('fieldset',{'data-prover-controls':'start',className:'gp-controls flex gap-2 flex-wrap',style:{minWidth:0,border:0,padding:0,margin:'0 0 12px'}},
+              React.createElement('legend',{className:'text-sm font-bold mb-2'},gpT('stem.geo.prover_group_start','Start a construction')),
+              [{id:'freeform',label:gpT('stem.geo.prover_blank_drawing','Blank drawing'),color:'violet',action:()=>{gpUpd('mode','freeform');gpUpd('points',[]);gpUpd('segments',[]);gpUpd('connecting',null);gpUpd('feedback',null);gpUpd('challenge',null);gpUpd('guided',null);}},
                {id:'triangle',label:'△ Triangle',color:'blue',action:loadTriangle},
-               {id:'right',label:'⊾ Right △',color:'rose',action:loadRightTriangle},
+               {id:'right',label:gpT('stem.geo.prover_right_triangle','Right triangle'),color:'rose',action:loadRightTriangle},
                {id:'parallel',label:'∥ Parallel',color:'teal',action:loadParallel},
                {id:'bisector',label:'∠ Bisector',color:'amber',action:loadBisector},
                {id:'guided',label:'📝 Guided Proof',color:'emerald',action:()=>loadGuidedProof('tri_angle_sum')}
-              ].map(m=>React.createElement('button',{key:m.id,onClick:m.action,className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpMode===m.id?'bg-'+m.color+'-600 text-white shadow-md':'bg-'+m.color+'-50 text-'+m.color+'-700 hover:bg-'+m.color+'-100 border border-'+m.color+'-600'}`},m.label))
+              ].map(m=>React.createElement('button',{'aria-pressed':gpMode===m.id,'data-prover-preset':m.id,key:m.id,onClick:m.action,className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpMode===m.id?'bg-'+m.color+'-600 text-white shadow-md':'bg-'+m.color+'-50 text-'+m.color+'-700 hover:bg-'+m.color+'-100 border border-'+m.color+'-600'}`},m.label))
             ),
-            React.createElement('div',{className:'flex gap-2 flex-wrap'},
+            React.createElement('fieldset',{'data-prover-controls':'edit',className:'gp-controls flex gap-2 flex-wrap',style:{minWidth:0,border:0,padding:0,margin:'0 0 12px'}},
+              React.createElement('legend',{className:'text-sm font-bold mb-2'},gpT('stem.geo.prover_group_edit','Edit drawing')),
               React.createElement('button',{onClick:()=>{if(gpPoints.length>=2){const last=gpPoints.length-1;if(!gpSegments.some(s=>(s.from===last-1&&s.to===last)||(s.from===last&&s.to===last-1)))gpUpd('segments',[...gpSegments,{from:last-1,to:last}]);}},disabled:gpPoints.length<2,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-violet-100 text-violet-700 hover:bg-violet-200 border border-violet-600 transition-all disabled:opacity-40'},'🔗 Connect Last Two'),
               React.createElement('button',{onClick:()=>{if(gpConnecting!=null)gpUpd('connecting',null);else if(gpPoints.length>0)gpUpd('connecting',gpPoints.length-1);},disabled:gpPoints.length<1,className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all focus:ring-2 focus:ring-indigo-300 focus:outline-none ${gpConnecting!=null?'bg-indigo-600 text-white':'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-600'} disabled:opacity-40`},gpConnecting!=null?'✔ Connecting from '+labelFor(gpConnecting):'↗️ Draw Segment'),
               React.createElement('button',{'aria-pressed':gpShowLabels?'true':'false',onClick:()=>gpUpd('showLabels',!gpShowLabels),className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all focus:ring-2 focus:ring-slate-300 focus:outline-none ${gpShowLabels?'bg-emerald-700 text-white':'bg-slate-100 text-slate-600 border border-slate-400'}`},gpShowLabels?'📏 Labels ON':'📏 Labels'),
-              React.createElement('button',{onClick:()=>{if(gpPoints.length>0){const rm=gpPoints.length-1;gpUpd('points',gpPoints.slice(0,-1));gpUpd('segments',gpSegments.filter(s=>s.from!==rm&&s.to!==rm));gpUpd('connecting',null);}},disabled:gpPoints.length<1,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-700 hover:bg-red-100 border border-red-600 transition-all disabled:opacity-40'},'⌫ Undo'),
-              React.createElement('button',{onClick:()=>{gpUpd('points',[]);gpUpd('segments',[]);gpUpd('connecting',null);gpUpd('feedback',null);gpUpd('challenge',null);gpUpd('challengeAnswer','');},className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 transition-all'},'↺ Clear')
+              React.createElement('button',{onClick:()=>{if(gpPoints.length>0){const rm=gpPoints.length-1;gpUpd('points',gpPoints.slice(0,-1));gpUpd('segments',gpSegments.filter(s=>s.from!==rm&&s.to!==rm));gpUpd('connecting',null);}},disabled:gpPoints.length<1,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-700 hover:bg-red-100 border border-red-600 transition-all disabled:opacity-40'},gpT('stem.geo.prover_undo_point','Undo last point')),
+              React.createElement('button',{onClick:()=>{gpUpd('points',[]);gpUpd('segments',[]);gpUpd('connecting',null);gpUpd('feedback',null);gpUpd('challenge',null);gpUpd('challengeAnswer','');},className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 transition-all'},gpT('stem.geo.prover_clear_drawing','Clear drawing'))
+            ),
+            React.createElement('fieldset',{'data-prover-controls':'guidance',className:'gp-controls flex gap-2 flex-wrap',style:{minWidth:0,border:0,padding:0,margin:'0 0 12px'}},
+              React.createElement('legend',{className:'text-sm font-bold mb-2'},gpT('stem.geo.prover_group_guidance','Proof guidance')),
+              React.createElement('button',{'aria-pressed':gpInvestigate?'true':'false',onClick:()=>{gpUpd('investigate',!gpInvestigate);gpUpd('revealed',false);gpUpd('prediction','');},className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all focus:ring-2 focus:ring-amber-400 focus:outline-none ${gpInvestigate?'bg-amber-700 text-white shadow':'bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100'}`},gpT('stem.geo.prover_predict_first','Predict before revealing theorems')),
+              React.createElement('span',{className:'text-[0.6875rem] text-slate-600 italic' + onHostInk},gpInvestigate?'Theorems hidden — predict first!':'Auto-show theorems')
             ),
             renderTheoremPanel(),
             gpPoints.length>=2&&React.createElement('div',{className:'grid grid-cols-3 gap-2'},

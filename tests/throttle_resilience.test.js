@@ -71,7 +71,7 @@ describe('anti-drift: the breaker + floor ship the fixes', () => {
     // breaker is fed BEFORE the throw, so a rethrown failure still counts.
     expect(pipeSrc).toMatch(/_noteGeminiOutcome\(null, err\);\s*\n\s*if \(n >= 1\) throw err;/);
     expect(pipeSrc).toMatch(/var _noteGeminiOutcome = function \(res, err\) \{/);
-    expect(pipeSrc).toMatch(/if \(_canvasAuth\) _geminiNoteAuthFail\(_callStats, owner\);\s*\n\s*else _geminiNoteTransientFail\(_callStats, owner\);/);
+    expect(pipeSrc).toMatch(/if \(_canvasAuth\) \{[^{}]*_geminiNoteAuthFail\(_callStats, owner\); \}\s*\n\s*else _geminiNoteTransientFail\(_callStats, owner\);/);
     expect(pipeSrc).toMatch(/var _transientBackoff = Math\.round\(2500 \* \(0\.7 \+ Math\.random\(\) \* 0\.6\)\)/);
 // F1 (2026-08-14): a repeat-offender check now precedes the transient mark so a
 // deterministic signature stops ratcheting the shared breaker.

@@ -107,7 +107,7 @@ function OutlineView(props) {
                                     title={isInteractiveMap || isInteractiveVenn || isVennPlaying ? t('outline.tooltip_static') : t('outline.tooltip_interactive')}
                                 >
                                     {(isInteractiveMap || isInteractiveVenn || isVennPlaying) ? <Layout size={14}/> : <Share2 size={14}/>}
-                                    {(isInteractiveMap || isInteractiveVenn || isVennPlaying) ? t('outline.view_static') : t('outline.view_interactive')}
+                                    {(isInteractiveMap || isInteractiveVenn || isVennPlaying) ? 'View diagram' : 'Edit diagram layout'}
                                 </button>
                             )}
                             {!isInteractiveMap && !isInteractiveVenn && !isVennPlaying

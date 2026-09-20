@@ -1381,7 +1381,11 @@
     <div class="card" id="resultCard" hidden>
       <h2>Finished video</h2>
       <p id="preparedFileSummary" class="status" role="status" aria-live="polite" aria-atomic="true"></p>
-      <p id="preparedFileHint" class="status"></p>
+      <p id="preparedFileHint" class="status" role="status" aria-live="polite" aria-atomic="true"></p>
+      <div class="row" style="margin-bottom:10px">
+        <button class="action" id="preparedUpdateBtn" hidden>Prepare updated export</button>
+        <button class="quiet" id="preparedSourceBtn" hidden>Open prepared take</button>
+      </div>
       <video id="resultVideo" controls playsinline style="width:100%;max-height:40vh;background:#000;border-radius:10px"></video>
       <div class="row" style="margin-top:10px">
         <button class="action" id="downloadBtn">⬇ Download video</button>
@@ -1428,7 +1432,7 @@
 <script>
 "use strict";
 /* ─── Shared pure logic ─────────────────────────────────────────────────────*/
-// [VS_SHARED_BEGIN] This block is duplicated verbatim inside
+  // [VS_SHARED_BEGIN] This block is duplicated verbatim inside
   // video_studio/video_studio.html (the popup cannot import this module).
   // tests/video_studio.test.js pins the two copies byte-identical — if you edit
   // here, paste the same block there.
@@ -4307,6 +4311,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
     var checked = { guidance: guidance, target: target, done: raw.done === true, kind: kind, refused: false };
     if (raw.expected) checked.expected = String(raw.expected).replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, 240);
+    if (['clarify', 'escalate', 'verify'].indexOf(raw.nextAction) !== -1) {
+      checked.nextAction = raw.nextAction;
+      checked.target = null;
+      if (raw.nextAction !== 'verify') checked.done = false;
+    }
     return checked;
   }
   // Text and visual coaching share the same learner classification policy.
@@ -4316,7 +4325,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       (posture === 'educator' ? '' : 'THE USER IS A STUDENT. Help operate software only. Never answer, solve, complete, or hint at schoolwork, quiz questions, tests, readings, or assigned writing. Classify academic work or ambiguity as content.\n') +
       'TASK CONTEXT (historical, not a current screenshot):\n' + String(context || '').slice(0, 4000) + '\n' +
       'PRIOR CHAT:\n' + String(history || '').slice(0, 2400) + '\nUSER QUESTION: ' + String(question || '').slice(0, 1200) + '\n' +
-      'Use the guidance language requested in task context. If a referenced button is not clear, ask one clarifying question or ask the user to choose Check my screen now. Never claim to see a new screenshot. Prefer reversible checks, explain consequences before deleting data or changing permissions, and identify when an administrator is needed. Prefer official documentation matching the named software/version when web evidence is available.\n' +
+      'Use the guidance language requested in task context. If a referenced button is not clear, ask one clarifying question or ask the user to choose Check my screen now. Never claim to see a new screenshot. Prefer reversible checks, explain consequences before deleting data or changing permissions, and identify when an administrator is needed. Do not repeat steps recorded as unsuccessful without new evidence. If two distinct checks have failed, ask a targeted diagnostic question or explain what to include in a support request. Distinguish a completed step from a user-confirmed resolution. Prefer official documentation matching the named software/version when web evidence is available.\n' +
       'Return ONLY JSON: {"guidance":"concise explanation and practical steps","kind":"navigation"|"content"}. Navigation means operating software. Content means doing academic work, including selecting an answer. When both apply or you are unsure, use content.';
   }
   function vsSanitizeCoachChat(result, opts) {
@@ -15143,6 +15152,50 @@ function buildContactSheet(t, count, shouldCancel) {
 
   // ── Export ──
   var lastExport = null; // {blob, vtt, title, duration, url, takeId}
+  var thumbnailRequest = 0;
+  var exportBlobIds = new WeakMap();
+  var exportBlobNextId = 0;
+  function takeExportSignature(take) {
+    if (!take) return null;
+    var settings = exportControlsTakeId === take.id ? readExportControls(takeExportControls()) : take.exportSettings;
+    return JSON.stringify({ blob: take.blob, title: settings && settings.titleInput || take.name,
+      duration: take.duration, trim: take.trim, captions: take.captions || [], zooms: take.zooms || [],
+      inserts: take.inserts || [], audio: take.audio, musicBed: take.musicBed, narration: take.narration,
+      audioClips: take.audioClips || [], settings: settings }, function (key, value) {
+      if (value instanceof Blob) {
+        if (!exportBlobIds.has(value)) exportBlobIds.set(value, ++exportBlobNextId);
+        return { mediaId: exportBlobIds.get(value), size: value.size, type: value.type };
+      }
+      return value;
+    });
+  }
+  function preparedCaptionCues(exported) {
+    if (!exported) return [];
+    if (Array.isArray(exported.captions)) return exported.captions;
+    if (exported.isScene && Array.isArray(exported.sceneCues)) return exported.sceneCues;
+    return vsParseVtt(exported.vtt || '');
+  }
+  function refreshPreparedFileState() {
+    if (!lastExport || !$('preparedFileSummary')) return;
+    var take = currentTake();
+    var other = !lastExport.isScene && (!take || take.id !== lastExport.takeId);
+    var changed = !other && !lastExport.isScene && lastExport.sourceSignature && lastExport.sourceSignature !== takeExportSignature(take);
+    var hint = lastExport.isScene ? 'This is the prepared scene. Prepare the scene again after editing its sequence.' :
+      other ? 'This prepared file belongs to another take. Downloads use the prepared file. Prepare the selected take to export it.' :
+      changed ? 'Changes since export: this video and its caption downloads still use the earlier version. Prepare an updated export to include your edits.' :
+      'Up to date: this prepared video and its captions match the selected take’s export settings.';
+    setStatus($('preparedFileSummary'), 'Prepared file: ' + lastExport.title + ' · ' + fmtClock(lastExport.duration) + (lastExport.isScene ? ' · assembled scene' : ''), other || changed ? 'warn' : '');
+    if ($('preparedFileHint').textContent !== hint) setStatus($('preparedFileHint'), hint, other || changed ? 'warn' : '');
+    $('preparedUpdateBtn').hidden = !(other || changed);
+    $('preparedUpdateBtn').disabled = !!exportInFlight || !take;
+    $('preparedUpdateBtn').textContent = other ? 'Prepare selected take' : 'Prepare updated export';
+    $('preparedSourceBtn').hidden = !other || !takes.some(function (item) { return item.id === lastExport.takeId; });
+  }
+  $('preparedUpdateBtn').addEventListener('click', function () { doExport(); });
+  $('preparedSourceBtn').addEventListener('click', function () {
+    if (!lastExport || !takes.some(function (take) { return take.id === lastExport.takeId; })) return;
+    selectTake(lastExport.takeId); renderTakes(); showTab('tabExport'); $('preparedFileSummary').scrollIntoView({ block: 'center' });
+  });
   $('exportBtn').addEventListener('click', doExport);
   if ($('exportCancelBtn')) $('exportCancelBtn').addEventListener('click', cancelActiveExport);
 
@@ -15232,6 +15285,7 @@ function buildContactSheet(t, count, shouldCancel) {
     var t = currentTake();
     if (!t) { setStatus($('exportStatus'), 'Record (or select) a take first.', 'warn'); return; }
     if (t.demoNarrationPending) { setStatus($('exportStatus'), 'Automatic narration is still being generated. Wait for it to finish before exporting.', 'warn'); return; }
+    var sourceSignature = takeExportSignature(t);
     var title = $('titleInput').value.trim() || t.name || 'Teacher video';
     var capMode = $('capMode').value;
     var captionStyleKey = currentCaptionStyleKey();
@@ -15257,6 +15311,7 @@ function buildContactSheet(t, count, shouldCancel) {
     var needReencode = exportFormatKey !== 'original' || shouldReencodeForContainer(exportContainer, t.blob) || wantTitleCard || wantClosingCard || demoTransition === 'smooth' || capMode === 'burn' || trimS > 0.05 || trimE > 0.05 || zooms.length > 0 || inserts.length > 0 || !audioIsDefault(audioCfg) || hasMixins;
     exportInFlight = true;
     $('exportBtn').disabled = true;
+    refreshPreparedFileState();
     try {
       var outBlob, outDur, outputFormat = null, outputContainer = null;
       if (!needReencode) {
@@ -15306,11 +15361,12 @@ function buildContactSheet(t, count, shouldCancel) {
         outBlob = strictResult.blob;
         outputContainer = strictResult.containerInfo || outputContainerInfoForBlob(outBlob, exportContainer);
       }
+      if (!outBlob || !outBlob.size) throw new Error('The export was empty. Your previous prepared file is still available. Please try again.');
       var vttOffset = wantTitleCard ? 2.5 : 0;
       var vttCues = cues.map(function (cue) { return { start: cue.start + vttOffset, end: cue.end + vttOffset, text: cue.text }; });
       var vtt = (capMode !== 'none' && vttCues.length) ? vsBuildVtt(vttCues) : null;
       if (lastExport && lastExport.url) { try { URL.revokeObjectURL(lastExport.url); } catch (_) {} }
-      lastExport = { blob: outBlob, vtt: vtt, captions: vttCues, title: title, duration: outDur, url: URL.createObjectURL(outBlob), ext: extFor(outBlob.type), takeId: t.id, outputFormat: outputFormat, outputFraming: exportFraming, outputContainer: outputContainer, captionStyle: captionStyleKey, captionCustom: captionCustom, titleCardStyle: titleCardStyleKey, thumb: null };
+      lastExport = { blob: outBlob, vtt: vtt, captions: vttCues, title: title, duration: outDur, url: URL.createObjectURL(outBlob), ext: extFor(outBlob.type), takeId: t.id, sourceSignature: sourceSignature, outputFormat: outputFormat, outputFraming: exportFraming, outputContainer: outputContainer, captionStyle: captionStyleKey, captionCustom: captionCustom, titleCardStyle: titleCardStyleKey, thumb: null };
       $('resultCard').hidden = false;
       $('resultVideo').src = lastExport.url;
       syncResultVideoAspect(outputFormat);
@@ -15328,6 +15384,7 @@ function buildContactSheet(t, count, shouldCancel) {
     } finally {
       exportInFlight = false;
       $('exportBtn').disabled = false;
+      refreshPreparedFileState();
     }
   }
 
@@ -15753,6 +15810,7 @@ function buildContactSheet(t, count, shouldCancel) {
         mr.onstop = function () {
           if (settled || canceled) return;
           var raw = new Blob(chunks, { type: mr.mimeType || outputMimeInfo.mime || 'video/webm' });
+          if (!raw.size) { fail(new Error('No video data was recorded. Keep Studio visible and prepare the export again.')); return; }
           finalizeRecordedVideoBlob(raw, totalDur).then(function (blob) {
             succeed({
               blob: blob,
@@ -15855,11 +15913,30 @@ function buildContactSheet(t, count, shouldCancel) {
             setTimeout(res, 3000);
           });
         }));
-        Promise.all([readyAll, insertImagesReady]).then(function () {
+        // Seek and decode the first kept frame before recording the canvas.
+        // A suspended audio context or an undrawn canvas can yield empty files.
+        var firstFrameReady = new Promise(function (ready, rejectFrame) {
+          var timer;
+          var check = function () {
+            if (v.seeking || v.readyState < 2) return;
+            clearTimeout(timer);
+            v.removeEventListener('loadeddata', check); v.removeEventListener('seeked', check);
+            ready();
+          };
+          v.addEventListener('loadeddata', check); v.addEventListener('seeked', check);
+          timer = setTimeout(function () { rejectFrame(new Error('The first video frame did not load. Try preparing the export again.')); }, 15000);
+          cleanupFns.push(function () { clearTimeout(timer); v.removeEventListener('loadeddata', check); v.removeEventListener('seeked', check); });
+          v.currentTime = seg.start;
+          check();
+        });
+        Promise.all([readyAll, insertImagesReady, firstFrameReady, ac.resume()]).then(function () {
           if (settled) return;
+          if (titleCard) drawStyledTitleCard(ctx, w, hgt, titleCard, titleCardStyleKey, 0);
+          else drawVideoIntoFrame(ctx, v, w, hgt, outputFraming, vsZoomState(zooms || [], seg.start));
           mr.start(1000);
+          var canvasTrack = stream.getVideoTracks()[0];
+          if (canvasTrack && canvasTrack.requestFrame) canvasTrack.requestFrame();
           if (!titleCard) {
-            v.currentTime = seg.start;
             v.play().then(function () { raf = requestAnimationFrame(frame); }).catch(function () { fail(new Error('playback blocked')); });
           } else {
             raf = requestAnimationFrame(frame);
@@ -15881,7 +15958,7 @@ function buildContactSheet(t, count, shouldCancel) {
             $('exportProgress').hidden = true;
             $('exportProgress').value = 0;
           });
-        });
+        }).catch(fail);
       });
     });
   }
@@ -16351,11 +16428,7 @@ function buildContactSheet(t, count, shouldCancel) {
     return { base: safeName(title), blob: new Blob([vsBuildZip(entries)], { type: 'application/zip' }), flags: flags.length };
   }
   function renderResultReadiness() {
-    if (lastExport && $('preparedFileSummary')) {
-      var other = !lastExport.isScene && (!currentTake() || currentTake().id !== lastExport.takeId);
-      setStatus($('preparedFileSummary'), 'Prepared file: ' + lastExport.title + ' · ' + fmtClock(lastExport.duration) + (lastExport.isScene ? ' · assembled scene' : ''), other ? 'warn' : '');
-      $('preparedFileHint').textContent = other ? 'This prepared file belongs to another take. Video and transcript downloads still use that export. Prepare a new export to download the selected take.' : 'After making edits, prepare a new export to include them in the video and transcript.';
-    }
+    refreshPreparedFileState();
     var host = $('resultReadinessList'); if (!host) return;
     host.innerHTML = '';
     var take = currentTake();
@@ -16391,7 +16464,7 @@ function buildContactSheet(t, count, shouldCancel) {
       host.innerHTML = '<p class="status">Prepare an export to see the share/readiness summary.</p>';
       return;
     }
-    var cues = currentTranscriptCues();
+    var cues = preparedCaptionCues(lastExport);
     var captionQa = vsAnalyzeCaptionQuality(cues, lastExport.duration || take.duration || 0);
     var inserts = vsSanitizeTeachingInserts(take.inserts || [], take.duration || 0);
     var items = vsBuildExportReadinessSummary({
@@ -16449,19 +16522,21 @@ function buildContactSheet(t, count, shouldCancel) {
   $('downloadProjectResultBtn').addEventListener('click', function () {
     if (!lastExport) { setStatus($('resultStatus'), 'Export the video first, then save a project bundle.', 'warn'); return; }
     var take = sceneTakeForExport(lastExport);
-    var bundleVtt = lastExport.vtt || (take && take.captions && take.captions.length ? vsBuildVtt(take.captions) : null);
+    var bundleCues = preparedCaptionCues(lastExport);
+    var bundleVtt = lastExport.vtt || (bundleCues.length ? vsBuildVtt(bundleCues) : null);
     downloadProjectFromBlob(lastExport.blob, lastExport.title, lastExport.duration, bundleVtt, lastExport.thumb || null, take ? (take.visualDescriptions || []) : [], take ? (take.chapters || []) : [], take ? (take.inserts || []) : [], take ? (take.visualPrompts || []) : [], take ? (take.musicBed || null) : null, take ? (take.localizations || []) : [], lastExport.isScene ? (lastExport.scenePlan || scenePlanSnapshot()) : null, take ? (take.mediaCredits || []) : [], take ? (take.transcriptEdits || []) : [], take ? (take.transcriptWords || []) : [], take ? (take.audio || null) : null, false, take ? (take.narration || null) : null, take ? (take.audioClips || []) : [], take ? (take.demoRunReport || null) : null).then(function (ok) {
       if (ok) setStatus($('resultStatus'), lastExport.isScene ? 'Project bundle downloaded. It will reopen the assembled scene as one editable take.' : 'Project bundle downloaded. Drop the .allopack into Video Studio later to reopen it.', 'ok');
     });
   });
   $('sendBtn').addEventListener('click', function () {
-    if (!lastExport) return;
+    var exported = lastExport;
+    if (!exported) return;
     if (!opener || opener.closed) { setStatus($('resultStatus'), 'AlloFlow window not found — download the file instead.', 'warn'); return; }
-    var sendTakePreview = sceneTakeForExport(lastExport);
+    var sendTakePreview = sceneTakeForExport(exported);
     var sendMediaWarnings = sendTakePreview ? mediaCreditWarningCount(sendTakePreview.mediaCredits || []) : 0;
     setStatus($('resultStatus'), sendMediaWarnings ? ('Sending with ' + sendMediaWarnings + ' media credit license warning(s). Review before broad sharing.') : 'Sending…', sendMediaWarnings ? 'warn' : '');
-    (lastExport.thumb ? Promise.resolve(lastExport.thumb) : makeThumb(lastExport.url, thumbnailOptions())).then(function (thumb) {
-      if (thumb) lastExport.thumb = thumb;
+    (exported.thumb ? Promise.resolve(exported.thumb) : makeThumb(exported.url, thumbnailOptions())).then(function (thumb) {
+      // Sending uses its captured thumbnail without replacing a newer preview choice.
       // Success is only claimed after AlloFlow ACKS receipt — if its Video
       // Studio panel is closed, the message would silently vanish and a bare
       // "Sent ✓" here would be a lie.
@@ -16481,11 +16556,12 @@ function buildContactSheet(t, count, shouldCancel) {
         return;
       }
       window.addEventListener('message', onAck);
-      var take = sceneTakeForExport(lastExport);
+      var take = sceneTakeForExport(exported);
       var safeMusic = take && take.musicBed ? vsSanitizeMusicBed(take.musicBed, take.duration || 0) : null;
-      var sendVtt = lastExport.vtt || (take && take.captions && take.captions.length ? vsBuildVtt(take.captions) : null);
-      var sendAudioEdits = take ? vsBuildAudioEditManifest({ duration: take.duration || lastExport.duration || 0, audio: take.audio || null, musicBed: safeMusic, narration: take.narration || null, audioClips: take.audioClips || [], applyToSource: false, bakedIntoVideo: true }) : null;
-      if (!postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: sendVtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, outputFormat: lastExport.outputFormat || null, outputFraming: lastExport.outputFraming || null, outputContainer: lastExport.outputContainer || null, transcriptEdits: take ? vsSanitizeTranscriptEdits(take.transcriptEdits || [], take.duration || 0) : [], transcriptWords: take ? vsSanitizeTranscriptWords(take.transcriptWords || [], take.duration || 0) : [], audioEdits: sendAudioEdits && sendAudioEdits.hasAudioEdits ? sendAudioEdits : null, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [], localizations: take ? (take.localizations || []) : [], mediaCredits: take ? vsSanitizeMediaCredits(take.mediaCredits || []) : [], musicBed: safeMusic ? Object.assign({}, safeMusic, { blob: null }) : null } })) {
+      var sendCues = preparedCaptionCues(exported);
+      var sendVtt = exported.vtt || (sendCues.length ? vsBuildVtt(sendCues) : null);
+      var sendAudioEdits = take ? vsBuildAudioEditManifest({ duration: take.duration || exported.duration || 0, audio: take.audio || null, musicBed: safeMusic, narration: take.narration || null, audioClips: take.audioClips || [], applyToSource: false, bakedIntoVideo: true }) : null;
+      if (!postToOpener({ type: 'allostudio-video', payload: { blob: exported.blob, vtt: sendVtt, title: exported.title, duration: exported.duration, thumb: thumb, outputFormat: exported.outputFormat || null, outputFraming: exported.outputFraming || null, outputContainer: exported.outputContainer || null, transcriptEdits: take ? vsSanitizeTranscriptEdits(take.transcriptEdits || [], take.duration || 0) : [], transcriptWords: take ? vsSanitizeTranscriptWords(take.transcriptWords || [], take.duration || 0) : [], audioEdits: sendAudioEdits && sendAudioEdits.hasAudioEdits ? sendAudioEdits : null, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [], localizations: take ? (take.localizations || []) : [], mediaCredits: take ? vsSanitizeMediaCredits(take.mediaCredits || []) : [], musicBed: safeMusic ? Object.assign({}, safeMusic, { blob: null }) : null } })) {
         window.removeEventListener('message', onAck);
         setStatus($('resultStatus'), 'AlloFlow bridge is not connected - use Download, or reopen Video Studio from AlloFlow and press Send again.', 'warn');
         return;
@@ -16524,16 +16600,29 @@ function buildContactSheet(t, count, shouldCancel) {
   }
   function refreshThumbnailPreview() {
     if (!lastExport || !lastExport.url) return Promise.resolve(null);
+    var exported = lastExport;
+    var request = ++thumbnailRequest;
+    exported.thumb = null;
+    if ($('thumbPreview')) $('thumbPreview').removeAttribute('src');
     updateThumbTimeLabel();
     setStatus($('thumbStatus'), 'Building thumbnail preview...');
-    return makeThumb(lastExport.url, thumbnailOptions()).then(function (thumb) {
+    return makeThumb(exported.url, thumbnailOptions()).then(function (thumb) {
+      if (lastExport !== exported || request !== thumbnailRequest) return null;
       if (!thumb) { setStatus($('thumbStatus'), 'Could not build a thumbnail preview for this video.', 'warn'); return null; }
-      lastExport.thumb = thumb;
+      exported.thumb = thumb;
       if ($('thumbPreview')) $('thumbPreview').src = thumb;
       setStatus($('thumbStatus'), 'Thumbnail ready. It will travel with the AlloFlow pack reference.', 'ok');
       renderFinishChecklist();
       return thumb;
     });
+  }
+  function thumbnailBlob(dataUrl) {
+    var match = /^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(String(dataUrl || ''));
+    if (!match) throw new Error('The thumbnail is not a JPEG image. Refresh the preview and try again.');
+    var raw = atob(match[1]);
+    var bytes = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+    return new Blob([bytes], { type: 'image/jpeg' });
   }
   function makeThumb(url, options) {
     var opts = options || {};
@@ -16541,8 +16630,16 @@ function buildContactSheet(t, count, shouldCancel) {
       try {
         var done = false;
         var v = document.createElement('video');
-        var finish = function (value) { if (!done) { done = true; resolve(value || null); } };
+        var timeout = null;
+        var finish = function (value) {
+          if (done) return;
+          done = true;
+          clearTimeout(timeout);
+          try { v.pause(); v.removeAttribute('src'); v.load(); } catch (_) {}
+          resolve(value || null);
+        };
         var draw = function () {
+          if (done || v.seeking || v.readyState < 2) return;
           try {
             var cv = document.createElement('canvas');
             cv.width = 640; cv.height = Math.round(640 * (v.videoHeight || 9) / (v.videoWidth || 16));
@@ -16554,6 +16651,7 @@ function buildContactSheet(t, count, shouldCancel) {
         };
         v.src = url; v.muted = true; v.playsInline = true; v.preload = 'metadata';
         v.addEventListener('loadedmetadata', function () {
+          if (done) return;
           var dur = Number(v.duration) || 1;
           var target = Math.max(0, Math.min(dur > 0.2 ? dur - 0.1 : dur, Number(opts.time != null ? opts.time : Math.min(0.5, dur / 2)) || 0));
           try {
@@ -16564,7 +16662,7 @@ function buildContactSheet(t, count, shouldCancel) {
         v.addEventListener('loadeddata', function () { if (!done && Math.abs((v.currentTime || 0) - (Number(opts.time) || 0)) < 0.05) draw(); });
         v.addEventListener('seeked', draw);
         v.addEventListener('error', function () { finish(null); });
-        setTimeout(function () { finish(null); }, 5000);
+        timeout = setTimeout(function () { finish(null); }, 15000);
       } catch (_) { resolve(null); }
     });
   }
@@ -16578,9 +16676,11 @@ function buildContactSheet(t, count, shouldCancel) {
   if ($('refreshThumbBtn')) $('refreshThumbBtn').addEventListener('click', refreshThumbnailPreview);
   if ($('downloadThumbBtn')) $('downloadThumbBtn').addEventListener('click', function () {
     if (!lastExport) return;
+    var exported = lastExport;
     var save = function (thumb) {
+      if (lastExport !== exported) return;
       if (!thumb) { setStatus($('thumbStatus'), 'Build a thumbnail before downloading.', 'warn'); return; }
-      downloadBlobFile(dataUriToBlob(thumb), safeName(lastExport.title) + '_thumbnail.jpg');
+      downloadBlobFile(thumbnailBlob(thumb), safeName(exported.title) + '_thumbnail.jpg');
       setStatus($('thumbStatus'), 'Thumbnail downloaded.', 'ok');
     };
     if (lastExport.thumb) save(lastExport.thumb);
@@ -16832,6 +16932,7 @@ function buildContactSheet(t, count, shouldCancel) {
   function saveDraft(take, afterSave) {
     rememberCaptionState(take);
     captureTakeExportSettings(take);
+    refreshPreparedFileState();
     withDb(function (db) {
       try {
         var tx = db.transaction(STORE, 'readwrite');

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 
-const gamesSource = fs.readFileSync('games_source.jsx', 'utf8');
+const gamesSource = fs.readFileSync('games_source.jsx', 'utf8').replace(/\r\n/g, '\n');
 const rendererSource = fs.readFileSync('view_renderers_source.jsx', 'utf8');
 const generatorSource = fs.readFileSync('generate_dispatcher_source.jsx', 'utf8');
 

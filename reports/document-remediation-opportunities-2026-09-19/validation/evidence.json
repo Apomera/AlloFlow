@@ -1,0 +1,44 @@
+{
+  "scope": "Read-only source and retained-result review; no test run or application code edit",
+  "reviewedAt": "2026-09-20T03:10:15.511Z",
+  "sourceSha256": {
+    "dev-tools/remediation_validation.cjs": "e18dddd6e4145790e5045c11636a7d64c302d67df581ded0eb38b072bbe315bf",
+    "dev-tools/remediation_validation_identity.cjs": "2a2c5bf2a66ffad3c1d8946bc39d24091689e29a2f27bdf88274d78fec4b57aa",
+    "tests/static_crop_cleanup.test.js": "218b6e037e0fed436ab9be37c641f0f27755aefbe2502a6c5f2f078a4774b558"
+  },
+  "fullRun": {
+    "status": "failed",
+    "error": "Validation command failed: node_modules/vitest/vitest.mjs (exit 1); Validation inputs, tools or revision changed during the run",
+    "summaryHasUnitField": false,
+    "unitArtifactSuccess": true,
+    "collectedAssertions": 570,
+    "passedAssertions": 570,
+    "collectedFiles": 28,
+    "expectedFiles": 35,
+    "missingFiles": [
+      "tests/document_export_inspection_failures.test.js",
+      "tests/remediation_residual_live.test.js",
+      "tests/source_remediation_contract.test.js",
+      "tests/remediation_autoloop_dependencies.test.js",
+      "tests/remediation_view_lifecycle_regressions.test.js",
+      "tests/utils_pure_storage.test.js",
+      "tests/static_crop_cleanup.test.js"
+    ],
+    "changedInputs": [
+      "utils_pure_module.js",
+      "utils_pure_source.jsx"
+    ]
+  },
+  "oneWorkerDiagnostic": {
+    "success": false,
+    "passedAssertions": 123,
+    "failedSuites": [
+      {
+        "file": "tests/static_crop_cleanup.test.js",
+        "assertions": 29,
+        "passed": 29,
+        "message": "Hook timed out in 30000ms.\nIf this is a long-running hook, pass a timeout value as the last argument or configure it globally with \"hookTimeout\"."
+      }
+    ]
+  }
+}

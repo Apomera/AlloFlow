@@ -1,0 +1,84 @@
+function normalizeAppliedChallengeSources(value) {
+  const ids = new Set(), links = new Set(), result = [];
+  for (const item of Array.isArray(value) ? value : []) {
+    if (!item || typeof item !== 'object' || result.length >= 24) continue;
+    const url = appliedChallengeSafeUrl(item.url), rowId = _apsString(item.rowId, 80);
+    if (!url || links.has(url + '\n' + rowId)) continue;
+    links.add(url + '\n' + rowId);
+    let id = _apsString(item.id, 80).replace(/[^A-Za-z0-9_-]/g, '-') || 'source-' + appliedChallengeHashText(url + '\n' + rowId);
+    while (ids.has(id)) id = id.slice(0, 70) + '-' + result.length;
+    ids.add(id);
+    result.push({ id, url, rowId, title: _apsString(item.title, 350) || new URL(url).hostname,
+      foundAt: /^\d{4}-\d{2}-\d{2}$/.test(item.foundAt) ? item.foundAt : '',
+      author: _apsString(item.author, 250), publicationDate: _apsString(item.publicationDate, 100), reviewNote: _apsString(item.reviewNote, 2000) });
+  }
+  return result;
+}
+
+function appliedChallengeSourceCaptureCheck(sources, rows, evidence, result, destination) {
+  const url = appliedChallengeSafeUrl(result?.url);
+  if (!url) return { ok: false, reason: 'invalid' };
+  if (destination && destination !== 'new' && !rows.some(row => row.id === destination)) return { ok: false, reason: 'missing' };
+  if (sources.some(source => source.url === url && (destination === 'new' || source.rowId === destination))) return { ok: false, reason: 'duplicate' };
+  const legacy = destination === 'new' ? rows.map(row => row.evidence) : destination ? [rows.find(row => row.id === destination)?.evidence] : [evidence];
+  if (legacy.some(text => appliedChallengeEvidenceLinks(text).some(link => link.url === url))) return { ok: false, reason: 'duplicate' };
+  if (sources.length >= 24) return { ok: false, reason: 'sources-full' };
+  if (destination === 'new' && rows.length >= 12) return { ok: false, reason: 'capacity' };
+  return { ok: true };
+}
+
+function appliedChallengeSourceConnection(source, rows, t) {
+  const tx = (key, fallback) => _apsT(t, 'applied_challenge.sources.' + key, fallback);
+  if (!source.rowId) return tx('notes_connection', 'For my overall reasoning');
+  const index = rows.findIndex(row => row.id === source.rowId);
+  return index < 0 ? tx('missing_connection', 'The original evidence row was removed. Choose a new connection.') : _apsFill(tx('row_connection', 'Evidence row {n}: {claim}'), { n: index + 1, claim: _apsString(rows[index].claim, 180).trim() || tx('no_claim', 'No claim written yet') });
+}
+
+function AppliedChallengeSourceNotebook({ sources, rows, editable, onAdd, onUpdate, onRemove, onEdit, session, t }) {
+  const tx = (key, fallback) => _apsT(t, 'applied_challenge.sources.' + key, fallback);
+  const [url, setUrl] = React.useState(session?.current?.url || '');
+  const [title, setTitle] = React.useState(session?.current?.title || '');
+  const [error, setError] = React.useState('');
+  React.useEffect(() => { if (session) Object.assign(session.current, { url, title }); }, [session, url, title]);
+  const add = () => {
+    if (!appliedChallengeSafeUrl(url)) { setError(tx('invalid', 'Use a complete http:// or https:// link without sign-in details.')); return; }
+    if (onAdd({ url, title }, '', true)) { setUrl(''); setTitle(''); setError(''); }
+    else setError(tx('cannot_add', 'This source is already saved here, or the source list is full. Your notes have not changed.'));
+  };
+  const contents = <>
+    <p className='mt-2 text-sm text-slate-600'>{tx('boundary', 'Citation details are separate from your writing. A source-check note records your review; it does not verify a claim. Links are not opened by AI.')}</p>
+    {sources.length > 0 && <ol className='mt-3 space-y-3'>{sources.map((source, index) => <li key={source.id} className='min-w-0 rounded-xl border border-slate-200 bg-white p-3'>
+      <h4 className='text-sm font-bold'><a href={source.url} target='_blank' rel='noopener noreferrer' className='inline-block min-h-11 break-words py-2 text-blue-800 underline'>{source.title}<span className='sr-only'> {_apsT(t, 'applied_challenge.source_review.new_tab', '(opens in a new tab)')}</span></a></h4>
+      <p className='break-all text-xs text-slate-600'>{new URL(source.url).hostname}{source.foundAt && ' · ' + tx('found', 'Found on') + ' ' + source.foundAt}</p>
+      <p className='mt-2 text-sm text-slate-700'>{appliedChallengeSourceConnection(source, rows, t)}</p>
+      <p className='mt-2 text-xs font-semibold text-slate-600'>{source.reviewNote.trim() ? tx('recorded', 'My source-check note is recorded') : tx('not_recorded', 'Source check not recorded')}</p>
+      {editable ? <>
+        <label className='mt-3 block text-sm font-semibold' htmlFor={'aps-source-note-' + source.id}>{_apsFill(tx('note_label', 'Source {n}: what I checked and what remains uncertain'), { n: index + 1 })}</label>
+        <p id={'aps-source-help-' + source.id} className='mt-1 text-sm text-slate-600'>{tx('note_help', 'Who produced it? What does it show about your question? Name any limits, or explain why you will not use it.')}</p>
+        <AcTextarea id={'aps-source-note-' + source.id} aria-describedby={'aps-source-help-' + source.id} value={source.reviewNote} onChange={event => onUpdate(source.id, { reviewNote: event.target.value })} maxLength={2000} rows={3} className='mt-2 w-full rounded-xl border border-slate-300 p-3 text-base' />
+        <details className='mt-2 rounded-xl bg-slate-50 px-3'><summary className='min-h-11 cursor-pointer text-sm font-semibold'>{tx('details', 'Citation details and connection')}</summary><div className='space-y-3 pb-3'>
+          <label className='block text-sm font-semibold'>{tx('title', 'Source title')}<input aria-label={_apsFill(tx('title_aria', 'Source {n} title'), { n: index + 1 })} value={source.title} onChange={event => onUpdate(source.id, { title: event.target.value })} maxLength={350} className='mt-1 min-h-11 w-full rounded-xl border p-2' /></label>
+          <label className='block text-sm font-semibold'>{tx('author', 'Author or organization, if known')}<input aria-label={_apsFill(tx('author_aria', 'Source {n} author or organization'), { n: index + 1 })} value={source.author} onChange={event => onUpdate(source.id, { author: event.target.value })} maxLength={250} className='mt-1 min-h-11 w-full rounded-xl border p-2' /></label>
+          <label className='block text-sm font-semibold'>{tx('published', 'Publication or update date, if known')}<input aria-label={_apsFill(tx('published_aria', 'Source {n} publication or update date'), { n: index + 1 })} value={source.publicationDate} onChange={event => onUpdate(source.id, { publicationDate: event.target.value })} maxLength={100} className='mt-1 min-h-11 w-full rounded-xl border p-2' /></label>
+          <p className='text-xs text-slate-600'>{tx('date_help', 'Found on is the search date, not the publication date. Leave unknown citation details blank.')}</p>
+          <label className='block text-sm font-semibold'>{tx('connection', 'Connect this source to')}<select aria-label={_apsFill(tx('connection_aria', 'Source {n} connection'), { n: index + 1 })} value={source.rowId} onChange={event => onUpdate(source.id, { rowId: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border p-2'><option value=''>{tx('notes_connection', 'For my overall reasoning')}</option>{source.rowId && !rows.some(row => row.id === source.rowId) && <option value={source.rowId} disabled>{tx('removed_row', 'Removed evidence row')}</option>}{rows.map((row, i) => <option key={row.id} value={row.id}>{_apsFill(tx('row_connection', 'Evidence row {n}: {claim}'), { n: i + 1, claim: row.claim || tx('no_claim', 'No claim written yet') })}</option>)}</select></label>
+        </div></details>
+        <button type='button' className='aps-button mt-3' aria-label={_apsFill(tx('remove_aria', 'Remove source {n}'), { n: index + 1 })} onClick={() => onRemove(source.id)}>{tx('remove', 'Remove source')}</button>
+      </> : <>
+        {(source.author || source.publicationDate) && <p className='mt-2 text-sm'>{[source.author, source.publicationDate].filter(Boolean).join(' · ')}</p>}
+        <p className='mt-2 whitespace-pre-wrap text-sm'>{source.reviewNote || tx('not_recorded', 'Source check not recorded')}</p>
+        {onEdit && <button type='button' className='aps-button mt-3' onClick={() => onEdit(source.id)}>{_apsFill(tx('edit', 'Edit source {n}'), { n: index + 1 })}</button>}
+      </>}
+    </li>)}</ol>}
+    {editable && <details className='mt-3 rounded-xl bg-slate-50 px-3'><summary className='min-h-11 cursor-pointer text-sm font-semibold'>{tx('manual', 'Add a source link yourself')}</summary><div className='space-y-3 pb-3'>
+      <p className='text-sm text-slate-600'>{tx('manual_note', 'Save a link you already have. This does not run a search or open the page.')}</p>
+      <label className='block text-sm font-semibold' htmlFor='aps-manual-source-url'>{tx('url', 'Source link')}</label><input id='aps-manual-source-url' type='url' value={url} onChange={event => { setUrl(event.target.value); setError(''); }} maxLength={2000} className='min-h-11 w-full rounded-xl border p-2' />
+      <label className='block text-sm font-semibold' htmlFor='aps-manual-source-title'>{tx('optional_title', 'Source title (optional)')}</label><input id='aps-manual-source-title' value={title} onChange={event => setTitle(event.target.value)} maxLength={350} className='min-h-11 w-full rounded-xl border p-2' />
+      <button type='button' className='aps-button' onClick={add} disabled={!url.trim() || sources.length >= 24}>{tx('save', 'Save source link')}</button>
+      {sources.length >= 24 && <p className='text-sm text-slate-600'>{tx('full', 'You have 24 saved sources. Remove an unused source before adding another.')}</p>}
+      {error && <p role='alert' className='text-sm text-rose-800'>{error}</p>}
+    </div></details>}
+  </>;
+  return editable ? <details className='rounded-xl border border-slate-200 bg-white p-3'><summary id='aps-sources-heading' className='min-h-11 cursor-pointer font-semibold'>{_apsFill(tx('heading_count', 'Saved outside sources ({n})'), { n: sources.length })}</summary>{contents}</details> : sources.length ? <section className='mt-5 border-t border-slate-200 pt-4' aria-label={tx('heading', 'Saved outside sources')}><h3 className='font-bold'>{tx('heading', 'Saved outside sources')}</h3>{contents}</section> : null;
+}
+

@@ -84,10 +84,10 @@ describe('Symbol Studio image-generation resilience', () => {
   it('uses the category selected after the label was entered', async () => {
     await mount({ onCallImagen: async () => image });
     change('Symbol label', 'apple');
-    change('Symbol category', 'food');
+    change('Symbol topic', 'food');
     await act(async () => submit());
     expect(bank()).toHaveLength(1);
-    expect(bank()[0]).toMatchObject({ label: 'apple', category: 'food' });
+    expect(bank()[0]).toMatchObject({ label: 'apple', category: 'other', topicTags: ['food'] });
   });
 
   it('does not resurrect an existing asset deleted while another symbol is generating', async () => {

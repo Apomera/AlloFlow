@@ -1,0 +1,30 @@
+import { test, expect } from '@playwright/test';
+import { GlHarness } from './helpers/stem_gl_harness';
+const harness=new GlHarness({toolFile:'stem_lab/stem_tool_roadready.js',toolId:'roadReady',width:1100,height:780,appStyles:true,preScripts:['stem_lab/stem_lab_module.js'],probes:'window.__testHooks={};'});
+test.beforeAll(async()=>{await harness.start();});test.afterAll(async()=>{await harness.stop();});test.afterEach(async({page})=>{await harness.destroy(page);});
+for(const view of ['parking','tightParallel'])test(view+' reset waits for the controller trigger to release',async({page})=>{
+  await page.addInitScript(()=>{
+    const pad={id:'Reset test controller',index:0,mapping:'standard',connected:true,axes:[0,0,0,0],buttons:Array.from({length:17},()=>({pressed:false,value:0}))};
+    (window as any).__pad=pad;Object.defineProperty(navigator,'getGamepads',{value:()=>[pad],configurable:true});
+  });
+  await harness.mount(page,{roadReady:{view,reducedMotion:true,badges:{park_master:true}}},undefined,{expectCanvas:false});
+  await page.getByRole('button',{name:'Controls',exact:true}).click();
+  const settings=page.getByRole('region',{name:'Controls settings'});
+  await settings.getByLabel('Input method',{exact:true}).selectOption('controller');
+  await settings.getByRole('button',{name:'Close controls settings'}).click();
+  await expect.poll(()=>page.evaluate(()=>!!(window as any).__testHooks.parking.carRef.current.requireParkingNeutral)).toBe(false);
+  await page.evaluate(()=>{(window as any).__pad.buttons[7]={pressed:true,value:0.5};});
+  await expect.poll(()=>page.evaluate(()=>(window as any).__testHooks.parking.carRef.current.speed)).toBeGreaterThan(1);
+  await page.getByRole('button',{name:'Reset practice',exact:true}).click();
+  await expect(page.getByLabel('Car response')).toContainText('Waiting for controls to release');
+  const pose=await page.evaluate(()=>{const c=(window as any).__testHooks.parking.carRef.current;return {x:c.x,y:c.y};});
+  await page.waitForTimeout(350);
+  expect(await page.evaluate(()=>{const c=(window as any).__testHooks.parking.carRef.current;return {x:c.x,y:c.y,speed:c.speed};})).toEqual({...pose,speed:0});
+  await expect(page.getByRole('button',{name:'Park + parking brake',exact:true})).toBeDisabled();
+  await page.evaluate(()=>{(window as any).__pad.buttons[7]={pressed:false,value:0};});
+  await expect(page.getByLabel('Car response')).toContainText('Stopped · D');
+  await expect(page.getByRole('button',{name:'Park + parking brake',exact:true})).toBeEnabled();
+  await page.evaluate(()=>{(window as any).__pad.buttons[7]={pressed:true,value:0.5};});
+  await expect.poll(()=>page.evaluate(()=>(window as any).__testHooks.parking.carRef.current.speed)).toBeGreaterThan(1);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

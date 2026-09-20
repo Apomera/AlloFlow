@@ -499,3 +499,70 @@ describe('circulatory pump comparison diagrams', () => {
     expect(panel(extra)).toBeNull();
   });
 });
+
+describe('gas-exchange teaching comparisons', () => {
+  function panel(extra = {}) { return render('frog','lungs',{ compareMode:true,...extra }).querySelector('#diss-comparison-panel'); }
+  it('provides four diagram descriptions and consistent comparison dimensions', () => {
+    const host=panel();
+    expect(host.querySelectorAll('[data-gas-diagram]')).toHaveLength(4);
+    for(const card of host.querySelectorAll('[data-gas-comparison]')) {
+      expect([...card.querySelectorAll('dt')].map(el=>el.textContent)).toEqual(['Medium','Surface','Ventilation']);
+      expect(card.querySelector('svg').getAttribute('aria-label').length).toBeGreaterThan(70);
+      expect(card.querySelector('figcaption').textContent.length).toBeGreaterThan(40);
+    }
+    expect(host.querySelector('[data-gas-visual-key]').textContent).toContain('not specimen images or histology');
+    expect(host.querySelector('.diss-comparison-prompt').textContent).toContain('which came from a reference');
+  });
+  it('keeps prenatal pig exchange separate from air breathing', () => {
+    const card=panel().querySelector('[data-comparison-specimen="pig"]');
+    expect(card.textContent).toContain('Before birth');
+    expect(card.textContent).toContain('After birth');
+    expect(card.textContent).toContain('No fetal airflow is shown');
+    expect(card.querySelector('p').textContent).toContain('gas exchange occurs through the placenta');
+  });
+  it('corrects oversimplified and unsupported surface and ventilation claims', () => {
+    expect(specimens.frog.organs.organs.find(o=>o.id==='lungs').fn).toContain('faveoli');
+    expect(source).not.toContain('Countercurrent flow extracts 80%');
+    expect(source).not.toContain('Walking legs ventilate gills');
+    const fish=panel().querySelector('[data-comparison-specimen="perch"]');
+    expect(fish.textContent).toContain('no fixed percentage applies');
+    expect(fish.textContent).toContain('two fluids do not mix');
+    expect(panel().querySelector('[data-comparison-specimen="crayfish"]').textContent).toContain('mouthparts');
+  });
+  it('shows the current specimen and chosen reference without altering the source descriptions', () => {
+    const host=panel({_comparisonFocus:{scope:'frog|gas-exchange',partner:'pig'}});
+    expect([...host.querySelectorAll('[data-comparison-specimen]')].map(el=>el.dataset.comparisonSpecimen)).toEqual(['frog','pig']);
+    expect(host.querySelector('#diss-comparison-partner').value).toBe('pig');
+    expect(host.querySelectorAll('[data-current="true"]')).toHaveLength(1);
+  });
+  it.each([{scope:'frog|pumps',partner:'pig'},{scope:'pig|gas-exchange',partner:'perch'},{scope:'frog|gas-exchange',partner:'frog'},{scope:'frog|gas-exchange',partner:'missing'}])('ignores stale or invalid comparison focus: %o', focus => {
+    expect(panel({_comparisonFocus:focus}).querySelectorAll('article')).toHaveLength(4);
+  });
+  it('supports focused pump comparisons and does not show gas diagrams there', () => {
+    const host=render('frog','heart',{compareMode:true,_comparisonFocus:{scope:'frog|pumps',partner:'perch'}}).querySelector('#diss-comparison-panel');
+    expect(host.querySelectorAll('article')).toHaveLength(2);
+    expect(host.querySelectorAll('[data-pump-diagram]')).toHaveLength(2);
+    expect(host.querySelector('[data-gas-diagram]')).toBeNull();
+  });
+  it.each([{quizMode:true},{practicalMode:true}])('does not reveal gas-exchange references in assessment: %o', extra=> {
+    expect(panel(extra)).toBeNull();
+  });
+});
+
+describe('enlarged comparison diagram entry points', () => {
+  it.each([['heart',5],['lungs',4]])('offers named diagram readers for %s without duplicating the default graphics', (organ,count) => {
+    const host=render('frog',organ,{compareMode:true}).querySelector('#diss-comparison-panel');
+    expect(host.querySelectorAll('[data-diagram-open]')).toHaveLength(count);
+    expect(host.querySelectorAll('svg')).toHaveLength(count);
+    expect(host.querySelector('dialog')).toBeNull();
+    for(const card of host.querySelectorAll('article')) {
+      const opener=card.querySelector('[data-diagram-open]');
+      expect(opener.getAttribute('aria-haspopup')).toBe('dialog');
+      expect(opener.getAttribute('aria-label')).toContain(card.querySelector('h4').textContent);
+      expect(opener.textContent).toBe('Enlarge diagram');
+    }
+  });
+  it('does not offer a reader for an unmapped comparison', () => {
+    expect(render('perch','swim_bladder',{compareMode:true}).querySelector('[data-diagram-open]')).toBeNull();
+  });
+});

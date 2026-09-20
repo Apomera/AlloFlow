@@ -1,0 +1,112 @@
+{
+  "checkedAt": "2026-09-20T04:41:14.780Z",
+  "files": 16,
+  "tests": 200,
+  "passed": 200,
+  "suites": [
+    {
+      "name": "assignment_center_extraction_contract.test.js",
+      "report": "final-core-results.json",
+      "tests": 7,
+      "passed": 7
+    },
+    {
+      "name": "first_wave_cdn_extraction.test.js",
+      "report": "final-core-results.json",
+      "tests": 3,
+      "passed": 3
+    },
+    {
+      "name": "homework_link_conversion.test.js",
+      "report": "final-core-results.json",
+      "tests": 26,
+      "passed": 26
+    },
+    {
+      "name": "hosted_homework_mailbox_target.test.js",
+      "report": "final-core-results.json",
+      "tests": 13,
+      "passed": 13
+    },
+    {
+      "name": "hosted_share_mailbox_target.test.js",
+      "report": "final-core-results.json",
+      "tests": 33,
+      "passed": 33
+    },
+    {
+      "name": "mailbox_activity_only_intake.test.js",
+      "report": "final-core-results.json",
+      "tests": 13,
+      "passed": 13
+    },
+    {
+      "name": "mailbox_connect_result.test.js",
+      "report": "final-core-results.json",
+      "tests": 12,
+      "passed": 12
+    },
+    {
+      "name": "mailbox_return_leg.test.js",
+      "report": "final-core-results.json",
+      "tests": 7,
+      "passed": 7
+    },
+    {
+      "name": "pending_mailbox_share_controls.test.js",
+      "report": "final-core-results.json",
+      "tests": 7,
+      "passed": 7
+    },
+    {
+      "name": "qr_student_byok.test.js",
+      "report": "final-core-results.json",
+      "tests": 7,
+      "passed": 7
+    },
+    {
+      "name": "qr_student_shell.test.js",
+      "report": "final-core-results.json",
+      "tests": 20,
+      "passed": 20
+    },
+    {
+      "name": "shared_activity_extraction_contract.test.js",
+      "report": "final-core-results.json",
+      "tests": 10,
+      "passed": 10
+    },
+    {
+      "name": "shared_activity_lazy_readiness.test.js",
+      "report": "final-core-results.json",
+      "tests": 7,
+      "passed": 7
+    },
+    {
+      "name": "share_session_surfaces_a11y.test.js",
+      "report": "final-core-results.json",
+      "tests": 4,
+      "passed": 4
+    },
+    {
+      "name": "assignment_control_center.test.js",
+      "report": "final-compat-results.json",
+      "tests": 7,
+      "passed": 7
+    },
+    {
+      "name": "research_suite_mailbox_bridge.test.js",
+      "report": "final-compat-results.json",
+      "tests": 24,
+      "passed": 24
+    }
+  ],
+  "browser": {
+    "passed": 2,
+    "total": 2,
+    "report": "target-browser-results.json"
+  },
+  "sourceIntegrity": "source-integrity.json",
+  "broaderAudit": "extraction-baseline.json",
+  "scope": "Focused current-work results; known broader HostHandlers extraction drift documented separately. Release authorized afterward; deployment outcome recorded separately."
+}

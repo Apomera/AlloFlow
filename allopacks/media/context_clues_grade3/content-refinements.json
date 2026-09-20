@@ -15,7 +15,7 @@
     "resourceId": "cc-glossary",
     "path": "data.2.def",
     "from": "A sentence that tells you straight out what a word means.",
-    "to": "Words that state a meaning directly; a definition need not be a full sentence."
+    "to": "Words that directly tell what something means. They need not be a full sentence."
   },
   {
     "resourceId": "cc-glossary",
@@ -39,7 +39,7 @@
     "resourceId": "cc-glossary",
     "path": "data.9.def",
     "from": "A small word like or, but, or such as that tells you a hint is coming.",
-    "to": "A word or phrase that may signal a relationship, such as but, or or such as."
+    "to": "A word or phrase that can show a link, such as but, or or such as."
   },
   {
     "resourceId": "cc-anchor",
@@ -85,9 +85,76 @@
   },
   {
     "resourceId": "cc-memory",
-    "path": "data.cards.0.hookFact.text",
-    "from": "If people have to walk one behind the other, the path must be thin. You did not look anything up.",
-    "to": "If people have to walk one behind the other, the path is probably not wide. You did not look anything up."
+    "path": "data.cards.0",
+    "from": {
+      "id": "cc-ma-four",
+      "target": "The four kinds of context clue a sentence can give you",
+      "essentialFacts": [
+        "A definition clue tells you the meaning straight out.",
+        "An example clue shows you cases instead.",
+        "A synonym clue puts a word nearby that means nearly the same.",
+        "An antonym clue puts a word nearby that means the opposite."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "acronym-acrostic",
+      "mode": "scaffolded",
+      "aiExample": "D-E-S-A: Dogs Eat Some Apples. Definition, Example, Synonym, Antonym. Silly on purpose, because silly sticks.",
+      "mapping": "Each first letter is one kind of clue. Saying the four-word sentence walks you through all four, so you never leave one out.",
+      "scaffoldStarter": "D is for ____. E is for ____. S is for ____. A is for ____.",
+      "scaffoldSteps": [
+        "Name the four clue types.",
+        "Take the first letter of each.",
+        "Build a short silly sentence."
+      ],
+      "coachPrompts": [
+        "Which of the four do you spot most easily?"
+      ],
+      "studentPrompt": "Make your own sentence from D, E, S and A.",
+      "reasoningPrompt": "How does your sentence stop you forgetting one of the four?",
+      "hookFact": {
+        "text": "If people have to walk one behind the other, the path must be thin. You did not look anything up.",
+        "sourceTitle": "The Words Around the Word (this lesson)"
+      }
+    },
+    "to": {
+      "id": "cc-ma-four",
+      "target": "The four kinds of context clue a sentence can give you",
+      "essentialFacts": [
+        "A definition clue tells you the meaning straight out.",
+        "An example clue shows you cases instead.",
+        "A synonym clue puts a word nearby that means nearly the same.",
+        "An antonym clue puts a word nearby that means the opposite."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "acronym-acrostic",
+      "mode": "scaffolded",
+      "aiExample": "D-E-S-A: Dogs Eat Some Apples. The letters stand for Definition, Example, Synonym and Antonym.",
+      "mapping": "Use the first letters to recall four kinds of clue. Then find a real clue in the text.",
+      "scaffoldStarter": "D is for ____. E is for ____. S is for ____. A is for ____.",
+      "scaffoldSteps": [
+        "Name the four clue types.",
+        "Take the first letter of each.",
+        "Build a short silly sentence."
+      ],
+      "coachPrompts": [
+        "Which of the four do you spot most easily?"
+      ],
+      "studentPrompt": "Make your own sentence from D, E, S and A.",
+      "reasoningPrompt": "How does your sentence stop you forgetting one of the four?",
+      "hookFact": {
+        "text": "If people have to walk one behind the other, the path is probably not wide. You did not look anything up.",
+        "sourceTitle": "The Words Around the Word (this lesson)"
+      },
+      "factReview": {
+        "status": "inherited-review-attribution",
+        "sourcePack": "allopacks/context_clues_grade3.allopack.json",
+        "sourceResourceId": "cc-memory",
+        "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+        "factsHash": "78118af5d658bc70198a408955d0cc06fcbd6b8184f1fb31e1456d628df0a946"
+      }
+    }
   },
   {
     "resourceId": "cc-memory",
@@ -97,15 +164,21 @@
   },
   {
     "resourceId": "cc-memory",
+    "path": "data.cards.1.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "cc-memory",
     "path": "data.cards.1.aiExample",
     "from": "Cover the ends with two fingers. Whatever is left is the root. Now take one finger off at a time. Ask what that piece did. Un-happy: cover un-, find happy, then put not back on.",
-    "to": "In unbreakable, identify the familiar base break and the known parts un- and -able. Cover or highlight those meaningful parts, then check the meaning: not able to be broken. Do not remove random letters from every word."
+    "to": "Look at unbreakable. Find break, un- and -able. Together they mean not able to be broken. Cover or mark each known part."
   },
   {
     "resourceId": "cc-memory",
     "path": "data.cards.1.mapping",
     "from": "Covering the ends turns a long scary word into a short familiar one. Uncovering them one at a time shows what each part changed.",
-    "to": "Separating known meaningful parts can clarify a word. The method works when the proposed parts are real parts of that word."
+    "to": "Use parts that really belong to the word. Do not cut off random letters. Check whether the meaning fits the sentence."
   },
   {
     "resourceId": "cc-memory",
@@ -163,9 +236,90 @@
   },
   {
     "resourceId": "cc-challenge",
-    "path": "data.brief.drivingQuestion",
-    "from": "How do you write a sentence that lets a reader work out a hard word, without simply telling them the answer?",
-    "to": "How can four sentences help a reader work out unfamiliar words, using definition, example, synonym and antonym clues?"
+    "path": "data.brief",
+    "from": {
+      "family": "design",
+      "context": "Your class is making a clue-hunt page for the grade below. You get four hard words from your teacher, one card per word, and one partner to test on.",
+      "role": "Clue writers",
+      "audience": "A younger reader who does not know the four words",
+      "drivingQuestion": "How do you write a sentence that lets a reader work out a hard word, without simply telling them the answer?",
+      "seedDirection": "Use a different kind of clue for each of your four sentences. If two of yours are the same kind, swap one.",
+      "lockedLessonFacts": [
+        "A definition clue tells you the meaning straight out.",
+        "An example clue shows cases instead.",
+        "A synonym clue puts a word nearby that means nearly the same.",
+        "An antonym clue puts a word nearby that means the opposite."
+      ],
+      "openQuestions": [
+        "Which clue type is hardest to write, and why?",
+        "How much help is too much help?",
+        "How will you know your partner really worked it out?"
+      ],
+      "stakeholders": [
+        "The younger reader who will use the page",
+        "Your partner, who tests every sentence",
+        "The teacher who collects the cards"
+      ],
+      "criteria": [
+        "Four sentences, each using a different kind of clue",
+        "The hard word is never defined in plain words except in the definition one",
+        "A partner works out at least three of the four without help",
+        "Each card says which clue type it uses on the back"
+      ],
+      "constraints": [
+        "Four words, four cards",
+        "One class period",
+        "One sentence per card"
+      ],
+      "deliverable": "Four finished cards, plus one sentence: which clue your partner found easiest, and which one you had to rewrite.",
+      "factLocked": true,
+      "factVerified": true
+    },
+    "to": {
+      "family": "design",
+      "context": "Your class is making a clue-hunt page for the grade below. You get four hard words from your teacher, one card per word, and one partner to test on.",
+      "role": "Clue writers",
+      "audience": "A younger reader who does not know the four words",
+      "drivingQuestion": "How can four sentences help a reader work out unfamiliar words, using definition, example, synonym and antonym clues?",
+      "seedDirection": "Use a different kind of clue for each of your four sentences. If two of yours are the same kind, swap one.",
+      "lockedLessonFacts": [
+        "A definition clue tells you the meaning straight out.",
+        "An example clue shows cases instead.",
+        "A synonym clue puts a word nearby that means nearly the same.",
+        "An antonym clue puts a word nearby that means the opposite."
+      ],
+      "openQuestions": [
+        "Which clue type is hardest to write, and why?",
+        "How much help is too much help?",
+        "How will you know your partner really worked it out?"
+      ],
+      "stakeholders": [
+        "The younger reader who will use the page",
+        "Your partner, who tests every sentence",
+        "The teacher who collects the cards"
+      ],
+      "criteria": [
+        "Four sentences, each using a different kind of clue",
+        "The hard word is never defined in plain words except in the definition one",
+        "A partner works out at least three of the four without help",
+        "Each card says which clue type it uses on the back"
+      ],
+      "constraints": [
+        "Four words, four cards",
+        "One class period",
+        "One sentence per card"
+      ],
+      "deliverable": "Four finished cards, plus one sentence: which clue your partner found easiest, and which one you had to rewrite.",
+      "factLocked": true,
+      "factVerified": true,
+      "factReview": {
+        "status": "inherited-review-attribution",
+        "sourcePack": "allopacks/context_clues_grade3.allopack.json",
+        "sourceResourceId": "cc-challenge",
+        "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+        "factsHash": "073e53d72ecab739784bddde25596efd0fc17973d537075521f6b4540ca7aed2"
+      }
+    }
   },
   {
     "resourceId": "cc-challenge",

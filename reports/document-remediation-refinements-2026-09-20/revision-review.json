@@ -1,0 +1,105 @@
+{
+  "reviewedAt": "2026-09-20T04:32:38.525Z",
+  "review": "Both test phases passed in both runs, with identical declared inputs and tools. Concurrent Dino Lab commits changed Git HEAD; original failed guard results are retained.",
+  "runs": [
+    {
+      "summary": "validation/summary.json",
+      "status": "failed",
+      "error": "Validation inputs, tools or revision changed during the run",
+      "unit": {
+        "files": 37,
+        "passed": 801
+      },
+      "browser": {
+        "files": 22,
+        "passed": 425
+      },
+      "declaredInputCount": 131,
+      "changedInputs": [],
+      "toolsChanged": false,
+      "before": "81ac723dc1ca1370148a92f8080ba90ad93ec5bc",
+      "after": "19a897c23e60a20a4ec50ee2ef020a94d97b14bc",
+      "changedFiles": [
+        "desktop/web-app/public/stem_lab/stem_tool_dinolab.js",
+        "reports/dinolab-3d-neck-junction/README.md",
+        "reports/dinolab-3d-neck-junction/anchiornis-head.png",
+        "reports/dinolab-3d-neck-junction/anchiornis-metrics.json",
+        "reports/dinolab-3d-neck-junction/brachiosaurus-head.png",
+        "reports/dinolab-3d-neck-junction/brachiosaurus-metrics.json",
+        "reports/dinolab-3d-neck-junction/brachiosaurus-phone.png",
+        "reports/dinolab-3d-neck-junction/brachiosaurus-side.png",
+        "reports/dinolab-3d-neck-junction/breathing-resources.json",
+        "reports/dinolab-3d-neck-junction/browser-results.txt",
+        "reports/dinolab-3d-neck-junction/opacity-resources.json",
+        "reports/dinolab-3d-neck-junction/parasaurolophus-head.png",
+        "reports/dinolab-3d-neck-junction/parasaurolophus-metrics.json",
+        "reports/dinolab-3d-neck-junction/preview-browser-results.txt",
+        "reports/dinolab-3d-neck-junction/refined-browser-results.txt",
+        "reports/dinolab-3d-neck-junction/sinosauropteryx-head.png",
+        "reports/dinolab-3d-neck-junction/sinosauropteryx-metrics.json",
+        "reports/dinolab-3d-neck-junction/spinosaurus-head.png",
+        "reports/dinolab-3d-neck-junction/spinosaurus-metrics.json",
+        "reports/dinolab-3d-neck-junction/triceratops-head.png",
+        "reports/dinolab-3d-neck-junction/triceratops-metrics.json",
+        "reports/dinolab-3d-neck-junction/tyrannosaurus-head.png",
+        "reports/dinolab-3d-neck-junction/tyrannosaurus-metrics.json",
+        "reports/dinolab-3d-neck-junction/tyrannosaurus-side.png",
+        "reports/dinolab-3d-neck-junction/unit-results.txt",
+        "reports/dinolab-3d-neck-junction/validation.json",
+        "stem_lab/stem_tool_dinolab.js",
+        "tests/dinolab_3d_neck_junction.test.js",
+        "tests/e2e/dinolab-3d-neck-junction.spec.ts",
+        "tests/helpers/dino_lab_harness.js"
+      ]
+    },
+    {
+      "summary": "validation-final/summary.json",
+      "status": "failed",
+      "error": "Validation inputs, tools or revision changed during the run",
+      "unit": {
+        "files": 37,
+        "passed": 801
+      },
+      "browser": {
+        "files": 22,
+        "passed": 425
+      },
+      "declaredInputCount": 131,
+      "changedInputs": [],
+      "toolsChanged": false,
+      "before": "19a897c23e60a20a4ec50ee2ef020a94d97b14bc",
+      "after": "4f1427c91e0105625ac28b012d85ef34661ef77c",
+      "changedFiles": [
+        "desktop/web-app/public/stem_lab/stem_tool_dinolab.js",
+        "reports/dinolab-3d-jaw-contours/README.md",
+        "reports/dinolab-3d-jaw-contours/anchiornis-head.png",
+        "reports/dinolab-3d-jaw-contours/anchiornis-metrics.json",
+        "reports/dinolab-3d-jaw-contours/brachiosaurus-head.png",
+        "reports/dinolab-3d-jaw-contours/brachiosaurus-metrics.json",
+        "reports/dinolab-3d-jaw-contours/brachiosaurus-phone.png",
+        "reports/dinolab-3d-jaw-contours/brachiosaurus-side.png",
+        "reports/dinolab-3d-jaw-contours/browser-results.txt",
+        "reports/dinolab-3d-jaw-contours/microraptor-head.png",
+        "reports/dinolab-3d-jaw-contours/microraptor-metrics.json",
+        "reports/dinolab-3d-jaw-contours/opacity-resources.json",
+        "reports/dinolab-3d-jaw-contours/parasaurolophus-head.png",
+        "reports/dinolab-3d-jaw-contours/parasaurolophus-metrics.json",
+        "reports/dinolab-3d-jaw-contours/preview-browser-results.txt",
+        "reports/dinolab-3d-jaw-contours/reconstruction-modes.json",
+        "reports/dinolab-3d-jaw-contours/spinosaurus-head.png",
+        "reports/dinolab-3d-jaw-contours/spinosaurus-metrics.json",
+        "reports/dinolab-3d-jaw-contours/triceratops-head.png",
+        "reports/dinolab-3d-jaw-contours/triceratops-metrics.json",
+        "reports/dinolab-3d-jaw-contours/tyrannosaurus-head.png",
+        "reports/dinolab-3d-jaw-contours/tyrannosaurus-metrics.json",
+        "reports/dinolab-3d-jaw-contours/tyrannosaurus-side.png",
+        "reports/dinolab-3d-jaw-contours/unit-results.txt",
+        "reports/dinolab-3d-jaw-contours/validation.json",
+        "stem_lab/stem_tool_dinolab.js",
+        "tests/dinolab_3d_jaw_contours.test.js",
+        "tests/e2e/dinolab-3d-jaw-contours.spec.ts",
+        "tests/helpers/dino_lab_harness.js"
+      ]
+    }
+  ]
+}

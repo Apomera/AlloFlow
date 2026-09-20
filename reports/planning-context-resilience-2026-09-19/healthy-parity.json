@@ -1,0 +1,57 @@
+[
+  {
+    "name": "analysis",
+    "contextEqual": true,
+    "inventoryEqual": true
+  },
+  {
+    "name": "alignment-report",
+    "contextEqual": true,
+    "inventoryEqual": true
+  },
+  {
+    "name": "glossary",
+    "contextEqual": true,
+    "inventoryEqual": true
+  },
+  {
+    "name": "image",
+    "contextEqual": true,
+    "inventoryEqual": true
+  },
+  {
+    "name": "quiz",
+    "contextEqual": true,
+    "inventoryEqual": true
+  },
+  {
+    "name": "sentence-frames",
+    "contextEqual": true,
+    "inventoryEqual": true
+  },
+  {
+    "name": "timeline",
+    "contextEqual": true,
+    "inventoryEqual": true
+  },
+  {
+    "name": "concept-sort",
+    "contextEqual": true,
+    "inventoryEqual": true
+  },
+  {
+    "name": "adventure",
+    "contextEqual": true,
+    "inventoryEqual": true
+  },
+  {
+    "name": "complete-kit",
+    "contextEqual": true,
+    "inventoryEqual": true
+  },
+  {
+    "name": "direct-input",
+    "contextEqual": true,
+    "inventoryEqual": true
+  }
+]

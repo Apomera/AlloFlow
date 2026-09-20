@@ -74,6 +74,26 @@ var Headphones = _lazyIcon('Headphones');
   };
   window.AlloFlowChatPrivacy = Object.freeze({
     destination,
+    // Saving is local: copy the displayed answer and supplied source records.
+    // Never summarize again or silently persist the preceding question.
+    savedAdvice: (text, question = "", evidence) => {
+      if (typeof text !== "string" || !text.trim()) throw new Error("No advice to save.");
+      const sources = [], seen = /* @__PURE__ */ new Set();
+      for (const row of (Array.isArray(evidence?.sources) ? evidence.sources : []).slice(0, 8)) {
+        const url = window.AlloModules?.UdlChat?.evidence?.safeUrl(row?.url);
+        if (!url || seen.has(url)) continue;
+        seen.add(url);
+        sources.push({
+          id: Number.isInteger(row.id) && row.id > 0 ? row.id : sources.length + 1,
+          url,
+          title: String(row.title || new URL(url).hostname).replace(/[\r\n\u0000-\u001f]/g, " ").slice(0, 240)
+        });
+      }
+      const checkedAt = typeof evidence?.checkedAt === "string" && Number.isFinite(Date.parse(evidence.checkedAt)) ? new Date(evidence.checkedAt).toISOString() : "";
+      const bibliography = sources.map((row) => row.id + ". [" + row.title.replace(/[\[\]\\]/g, (character) => "\\" + character).replace(/</g, "&lt;").replace(/>/g, "&gt;") + "](" + row.url.replace(/\(/g, "%28").replace(/\)/g, "%29") + ")").join("\n");
+      const data = (question ? "**Context:** " + String(question) + "\n\n" : "") + text + (bibliography ? "\n\n**Sources supplied with this reply**" + (checkedAt ? " (retrieved " + checkedAt + ")" : "") + ":\n" + bibliography + "\n\nSaved evidence is a snapshot; sources have not been checked again." : "");
+      return { data, ...sources.length ? { evidence: { sources, checkedAt, basis: evidence.basis === "google-grounding" ? "google-grounding" : "search-excerpts" } } : {} };
+    },
     get: () => ({ ...choice }),
     set: (patch) => {
       choice = { recent: patch.recent === true, excerpt: String(patch.excerpt || "").slice(0, 1500) };
@@ -133,11 +153,45 @@ function AllobotContextControls({ messages, busy, setInput, clearChat, t }) {
   return /* @__PURE__ */ React.createElement("section", { "aria-label": tx("chat_guide.send_privacy", "AI destination and context"), className: "border-t border-slate-300 bg-white text-slate-900 p-2 text-xs shrink-0" }, /* @__PURE__ */ React.createElement("p", { className: "break-words", role: "status" }, destination.active ? tx("chat_guide.active_ai", "Active AI") : tx("chat_guide.configured_ai", "Configured AI"), ": ", /* @__PURE__ */ React.createElement("strong", null, destination.label), destination.origin ? " \xB7 " + destination.origin : " \xB7 " + tx("chat_guide.endpoint_unavailable", "Endpoint unavailable")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.next_reply_context", "Next ordinary reply"), ": ", choice.recent || choice.excerpt ? tx("chat_guide.reviewed_context", "your question + selected context below") : tx("chat_guide.question_only", "your question only"), "."), destination.managed && /* @__PURE__ */ React.createElement("p", null, tx("chat_guide.managed_checks", "Managed connection checks are enabled. This label does not verify district approval.")), /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer min-h-6" }, tx("chat_guide.context_controls", "Privacy and public research")), /* @__PURE__ */ React.createElement("div", { className: "max-h-64 overflow-y-auto", role: "region", "aria-label": tx("chat_guide.privacy_choices", "Privacy choices"), tabIndex: 0 }, /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.context_default", "Ordinary replies send your current question only. The options below add context to the next reply, then reset. Lesson-generation and command workflows use the inputs needed for those actions.")), /* @__PURE__ */ React.createElement("label", { className: "flex gap-2 items-start my-2" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: choice.recent, disabled: busy, onChange: (e) => privacy.set({ ...choice, recent: e.target.checked }) }), tx("chat_guide.context_recent", "Include up to 4 recent messages (500 characters each)")), choice.recent && /* @__PURE__ */ React.createElement("pre", { className: "whitespace-pre-wrap break-words max-h-32 overflow-auto border p-2", "aria-label": tx("chat_guide.context_preview", "Recent-message preview") }, privacy.recentMessages(messages).map((m) => `${m.role === "user" ? "You" : "Allobot"}: ${m.text}`).join("\n")), /* @__PURE__ */ React.createElement("label", { className: "block my-2" }, tx("chat_guide.context_excerpt", "Excerpt to include with the next reply (optional)"), /* @__PURE__ */ React.createElement("textarea", { rows: 3, maxLength: 1500, value: choice.excerpt, disabled: busy, onChange: (e) => privacy.set({ ...choice, excerpt: e.target.value }), className: "block w-full min-w-0 border border-slate-400 rounded p-2 bg-white text-slate-900" })), /* @__PURE__ */ React.createElement("p", null, tx("chat_guide.context_destination", "Included context goes to your selected AI, never to the public-topic picker. Use a district-approved connection for student information.")), /* @__PURE__ */ React.createElement("label", { className: "block my-2" }, tx("chat_guide.public_topic", "Public research topic"), /* @__PURE__ */ React.createElement("select", { "aria-label": tx("chat_guide.public_topic", "Public research topic"), value: topic, onChange: (e) => setTopic(e.target.value), className: "block w-full min-w-0 border border-slate-400 rounded p-2 bg-white text-slate-900" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tx("chat_guide.choose_public_topic", "Choose a public topic")), topics.map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value)))), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy || !topic, onClick: () => {
     setInput(`Search for ${topic}`);
     setNotice(tx("chat_guide.public_topic_ready", "Public query placed in the message box. Review it, then send."));
-  }, className: "min-h-11 border border-slate-400 rounded px-3 my-2" }, tx("chat_guide.use_public_topic", "Replace message with public query")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.chat_storage", "Live chat stays in this session until you clear it or reload. Saving chat or advice adds a separate item to History and its configured storage or sync. Delete saved items in History; clearing here does not delete them or provider records.")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => {
+  }, className: "min-h-11 border border-slate-400 rounded px-3 my-2" }, tx("chat_guide.use_public_topic", "Replace message with public query")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.chat_storage", "Live chat stays in this session until you clear it or reload. Saving chat or advice adds a separate item to History and its configured storage or sync. Delete saved items in History. Recovery snapshots and exported files can retain separate copies; manage those separately. Clearing here does not delete saved copies or provider records.")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => {
     privacy.clear();
     clearChat();
     setNotice(tx("chat_guide.chat_cleared", "Live conversation and pending context cleared. Saved History items are unchanged."));
   }, className: "min-h-11 border border-slate-400 rounded px-3" }, tx("chat_guide.clear_live_chat", "Clear live conversation")), /* @__PURE__ */ React.createElement("p", { role: "status", className: "my-2" }, notice))));
+}
+function AllobotAdviceSave({ text, question, evidence, save, busy, t, className = "" }) {
+  const tx = (key, fallback) => {
+    const value = typeof t === "function" ? t(key) : "";
+    return value && value !== key ? value : fallback;
+  };
+  const [includeQuestion, setIncludeQuestion] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [notice, setNotice] = React.useState("");
+  const pending = React.useRef(false);
+  React.useEffect(() => {
+    setIncludeQuestion(false);
+    setNotice("");
+  }, [text, question]);
+  const saveAdvice = async () => {
+    if (pending.current || busy) return;
+    pending.current = true;
+    setSaving(true);
+    setNotice("");
+    try {
+      const result = await save(text, includeQuestion ? question : "", evidence);
+      setNotice(result?.ok === false ? tx("chat_guide.save_failed", "Advice could not be saved. Try again.") : tx("chat_guide.saved_without_ai", "Advice copied to History without another AI request."));
+      if (result?.ok !== false) setIncludeQuestion(false);
+    } catch (_) {
+      setNotice(tx("chat_guide.save_failed", "Advice could not be saved. Try again."));
+    } finally {
+      pending.current = false;
+      setSaving(false);
+    }
+  };
+  return /* @__PURE__ */ React.createElement("section", { className: "mt-2 text-xs", "aria-label": tx("chat_guide.save_advice_options", "Save advice options") }, /* @__PURE__ */ React.createElement("p", null, tx("chat_guide.save_as_shown", "Copies this answer and its source links to History as shown. No additional AI request.")), question && /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 my-2" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: includeQuestion, disabled: busy || saving, onChange: (event) => {
+    setIncludeQuestion(event.target.checked);
+    setNotice("");
+  } }), tx("chat_guide.save_include_question", "Also save my preceding question")), includeQuestion && /* @__PURE__ */ React.createElement("pre", { className: "whitespace-pre-wrap break-words max-h-32 overflow-auto border p-2", "aria-label": tx("chat_guide.save_question_preview", "Question to be saved") }, question), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveAdvice, "data-help-key": "chat_save_advice_btn", disabled: busy || saving, className: "min-h-11 px-3 rounded border " + className }, saving ? tx("chat_guide.saving_advice", "Saving\u2026") : tx("chat_guide.save_advice_history", "Save advice to History")), /* @__PURE__ */ React.createElement("p", { role: "status" }, notice));
 }
 function AllobotSearchSettings({ t }) {
   const tx = (key2, fallback) => {
@@ -712,16 +766,16 @@ function UDLGuideModal(props) {
         },
         choice.label
       ))), idx === udlMessages.length - 1 && /* @__PURE__ */ React.createElement("p", { className: `mt-2 text-[11px] italic ${chatStyles.subText}` }, t("chat_guide.chips.or_type") || "\u2026or just type your answer below.")), !msg.type && msg.role === "model" && msg.isActionable && idx > 0 && /* @__PURE__ */ React.createElement(
-        "button",
+        AllobotAdviceSave,
         {
-          type: "button",
-          "data-help-key": "chat_save_advice_btn",
-          onClick: () => saveUDLAdvice(msg.text, udlMessages[idx - 1]?.role === "user" ? udlMessages[idx - 1].text : "Teacher Inquiry"),
-          disabled: isSavingAdvice,
-          className: `mt-1 text-[11px] flex items-center gap-1 font-medium px-2 py-1 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${chatStyles.secondaryButton}`
-        },
-        isSavingAdvice ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "motion-safe:animate-spin", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Save, { size: 10, "aria-hidden": "true" }),
-        isSavingAdvice ? t("chat_guide.save_actionable_loading") : t("chat_guide.save_actionable_btn")
+          text: msg.text,
+          question: udlMessages[idx - 1]?.role === "user" ? udlMessages[idx - 1].text : "",
+          evidence: msg.evidence,
+          save: saveUDLAdvice,
+          busy: isSavingAdvice,
+          t,
+          className: chatStyles.secondaryButton
+        }
       ))),
       !activeBlueprint && Array.isArray(lessonTemplates) && lessonTemplates.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "w-full", "data-testid": "bp-template-picker" }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] mb-1 ${chatStyles.subText}` }, t("blueprint.template_picker_title") || "Start from one of your templates:"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, lessonTemplates.slice(0, 8).map((tpl) => /* @__PURE__ */ React.createElement("li", { key: tpl.id, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
         "button",
@@ -2399,6 +2453,7 @@ window.AlloModules = window.AlloModules || {};
 // UDLGuideModal + AIBackendModal. Registering the other two from here resolves them to null
 // (they aren't defined in this scope) and is harmless only because view_misc_panels loads later.
 window.AlloModules.AllobotContextControls = AllobotContextControls;
+window.AlloModules.AllobotAdviceSave = AllobotAdviceSave;
 window.AlloModules.AllobotSearchSettings = AllobotSearchSettings;
 window.AlloModules.AllobotEvidenceCard = AllobotEvidenceCard;
 window.AlloModules.UDLGuideModal = (typeof UDLGuideModal !== 'undefined') ? UDLGuideModal : null;

@@ -93,9 +93,11 @@ describe('HistoryPanel Resource Pack theme contract', () => {
     expect(panel?.getAttribute('data-history-theme')).toBe('light');
     expect(panel?.querySelector('[aria-current="page"]')).toBeTruthy();
 
-    const more = panel.querySelector('[aria-controls="history-more-actions-menu"]');
+    const more = panel.querySelector('button[aria-haspopup="menu"]');
+    expect(more.getAttribute('aria-controls')).toBeNull();
     await act(async () => more.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true })));
     expect(panel.querySelector('#history-more-actions-menu')).toBeTruthy();
+    expect(more.getAttribute('aria-controls')).toBe('history-more-actions-menu');
 
     await act(async () => root.render(React.createElement(App, { theme: 'dark' })));
     expect(panel.getAttribute('data-history-theme')).toBe('dark');

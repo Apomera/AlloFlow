@@ -493,7 +493,7 @@ it('makes local captioning and filler scans cancelable and stale-safe', () => {
     expect(html).toContain("outputFormat: sceneOutputFormat");
     expect(html).toContain("outputContainer: outputContainer");
     expect(html).toContain("outputContainer: sceneContainerInfo");
-    expect(html).toContain("outputContainer: lastExport.outputContainer");
+    expect(html).toContain("outputContainer: exported.outputContainer");
     expect(html).toContain('exportFormatFileSuffix');
   });
   it('keeps the strict MP4 converter files available in root and deploy mirrors', () => {
@@ -2896,9 +2896,7 @@ expect(html).toContain("var recordingMicWarning = '';");
 
     // The panel is gone at this point; the popup presses Stop.
     onMsg({ origin: ORIGIN, source: studioWin, data: Object.assign({}, env, { type: 'allostudio-demostop' }) });
-    await new Promise((r) => setTimeout(r, 10));
-
-    expect(stopSeenByRunner).toBe(true);
+    await expect.poll(() => stopSeenByRunner).toBe(true);
     expect(api.run.current.running).toBe(false);
     expect(posted.some((p) => p.type === 'allostudio-demorun-response' && p.stopped === true)).toBe(true);
   });

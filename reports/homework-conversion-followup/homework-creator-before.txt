@@ -1,0 +1,75 @@
+  const createHomeworkAssignmentLink = useCallback(async (resourceIds = null) => {
+      const selectedResourceIds = Array.isArray(resourceIds) ? resourceIds : null;
+      const resourcesToAssign = resolveAssignmentResources(selectedResourceIds);
+      if (!resourcesToAssign.length) {
+          addToast('Create or restore a teacher resource before making a homework QR.', 'info');
+          return null;
+      }
+      // Shared assignments need durable state while the teacher is offline.
+      // Never downgrade this opt-in to a Firestore or self-contained link,
+      // because either route would produce a QR whose class cloud cannot work.
+      if (sharedAssignmentActivity.enabled) {
+          return hostPackOnMailbox(selectedResourceIds);
+      }
+      // Canvas-managed Firestore accepts the TEACHER's write but refuses the
+      // anonymous STUDENT read (proven on a real phone 2026-07-09), so a
+      // cloud homework QR made from Canvas looks fine here and dead-ends on
+      // the student's device — and the catch below never fires for that
+      // failure, because the teacher-side write succeeded. Route around it up
+      // front: prefer the teacher's Class Mailbox (images included, small
+      // printable QR), else a self-contained link. Deployed builds with their
+      // own Firebase keep the cloud path.
+      if (_isCanvasEnv || _alloFirebaseIsPlaceholder) {
+          if (mbConfig?.url && mbConfig?.admin) {
+              const hosted = await hostPackOnMailbox(selectedResourceIds);
+              if (hosted) return hosted;
+          }
+          return createSelfContainedHomeworkLink(selectedResourceIds);
+      }
+      try {
+          const assignmentId = 'HW-' + generateUUID();
+          const title = String((selectedResourceIds ? resourcesToAssign[0]?.title : (sourceTopic || generatedContent?.title)) || resourcesToAssign[0]?.title || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
+          const shareUrl = buildAlloShareUrl({ allo_assignment: assignmentId, allo_host: appId, allo_ai: studentAiPolicyForShare === 'student-byok' ? 'byok' : 'off' });
+          if (!shareUrl) {
+              addToast('Homework QR is unavailable from this host. Configure a student app URL or use export sharing.', 'error');
+              return null;
+          }
+          const uploadedResources = await uploadSessionAssets(appId, resourcesToAssign, assignmentId);
+          const prepared = prepareSessionResourcesForWrite(uploadedResources || resourcesToAssign);
+          const assignmentRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', assignmentId);
+          const resources = prepared.resources || [];
+          await setDoc(assignmentRef, stripUndefined({
+              kind: 'assignment',
+              assignmentId,
+              title,
+              hostAppId: appId,
+              hostId: user?.uid || null,
+              createdAt: new Date().toISOString(),
+              expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000),
+              status: 'assignment',
+              mode: 'assignment',
+              isActive: false,
+              currentResourceId: resources[0]?.id || resourcesToAssign[0]?.id || null,
+              resources,
+              aiPolicy: {
+                  studentAi: studentAiPolicyForShare,
+                  workStory: studentProjectSettings.workStoryEnabled === true,
+                  defaultStudentAi: 'off',
+                  teacherPrepared: true,
+              },
+              roster: {},
+              version: 1,
+          }));
+          copyToClipboard(shareUrl);
+          openQrShareModal({ type: 'assignment', title, url: shareUrl, resourceCount: resources.length, resourceTitles: resources.map(item => item.title || item.type || 'Untitled resource'), deliverySummary: _alloSharedActivityModule()?.describeAssignmentDelivery?.(resources, resources[0]?.id, selectedResourceIds), createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString(), assignmentId, hostAppId: appId, aiPolicy: studentAiPolicyForShare });
+          addToast(studentAiPolicyForShare === 'student-byok' ? 'Homework QR ready. Students may connect their own tested AI provider.' : 'Homework QR ready. Student AI stays off.', 'success');
+          if (prepared.droppedCount > 0 || prepared.overLimit) {
+              addToast('Some older resources were trimmed to keep the QR assignment reliable.', 'info');
+          }
+          return shareUrl;
+      } catch (e) {
+          warnLog('Homework QR creation failed:', e);
+          addToast('Cloud homework link failed — making a self-contained link instead.', 'info');
+          return createSelfContainedHomeworkLink(selectedResourceIds);
+      }
+  }, [appId, buildAlloShareUrl, copyToClipboard, createSelfContainedHomeworkLink, homeworkExpiryDays, hostPackOnMailbox, mbConfig, generatedContent, openQrShareModal, resolveAssignmentResources, sharedAssignmentActivity.enabled, sourceTopic, user?.uid, studentAiPolicyForShare]);

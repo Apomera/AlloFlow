@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "passedTests": 184,
+  "suiteCount": 8,
+  "suites": {
+    "lesson_board_delivery.test.js": 13,
+    "lesson_board_engine.test.js": 63,
+    "lesson_board_live_writes.test.js": 7,
+    "lesson_board_mailbox.test.js": 29,
+    "lesson_board_play_ui.test.js": 9,
+    "lesson_board_runtime.test.js": 43,
+    "lesson_board_teacher_recovery.test.js": 13,
+    "lesson_board_retry_runtime.test.js": 7
+  },
+  "reports": [
+    "tests.json",
+    "teacher-tests.json",
+    "retry-tests.json"
+  ],
+  "workerRecovery": "Batch worker startup failures were recovered by running the two unstarted suites separately. Both passed. Teacher tests were rerun after the final wording adjustment.",
+  "bundleSha256": "3b15025b8d953ca768478298239ed3db47f87fcc2561530c280e4235e79564e9",
+  "finalTeacherUI": 3
+}

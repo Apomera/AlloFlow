@@ -1,0 +1,95 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "kind": "water",
+      "targeted": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15",
+      "changed": true,
+      "fresh": true,
+      "reducedStable": true,
+      "identity": true,
+      "alpha": 1
+    },
+    {
+      "width": 1280,
+      "kind": "weed",
+      "targeted": "0,4,9",
+      "changed": true,
+      "fresh": true,
+      "reducedStable": true,
+      "identity": true,
+      "alpha": 1
+    },
+    {
+      "width": 1280,
+      "kind": "compost",
+      "targeted": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15",
+      "changed": true,
+      "fresh": true,
+      "reducedStable": true,
+      "identity": true,
+      "alpha": 1
+    },
+    {
+      "width": 320,
+      "kind": "water",
+      "targeted": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15",
+      "changed": true,
+      "fresh": true,
+      "reducedStable": true,
+      "identity": true,
+      "alpha": 1
+    },
+    {
+      "width": 320,
+      "kind": "weed",
+      "targeted": "0,4,9",
+      "changed": true,
+      "fresh": true,
+      "reducedStable": true,
+      "identity": true,
+      "alpha": 1
+    },
+    {
+      "width": 320,
+      "kind": "compost",
+      "targeted": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15",
+      "changed": true,
+      "fresh": true,
+      "reducedStable": true,
+      "identity": true,
+      "alpha": 1
+    }
+  ],
+  "assertions": [
+    "Care keeps real moisture, nutrient, and pest changes with unchanged health, time, and funds",
+    "Whole-soil treatments reach all beds; weeds animate only changed plots",
+    "Distinct water, weed, and compost artwork at desktop and 320px",
+    "Deferred care starts when the offscreen garden becomes visible and expires after 2.2 seconds",
+    "Changed receipt, day, preview, reduced motion, removed crops, and unmount cancel safely",
+    "Cached and fresh scenes match and restore canvas transforms and opacity",
+    "Scoped accessibility and mobile containment pass"
+  ],
+  "errors": [],
+  "lifecycle": {
+    "beforeFirstDraw": true,
+    "starts": true,
+    "advances": true,
+    "expires": true,
+    "pruned": [
+      4
+    ],
+    "valid": [
+      4
+    ],
+    "reduced": true,
+    "nextDay": true,
+    "receiptChanged": true,
+    "receiptCleared": true,
+    "preview": true,
+    "allRemoved": true,
+    "harvestUntouched": true
+  },
+  "offscreenStart": true,
+  "accessibility": []
+}

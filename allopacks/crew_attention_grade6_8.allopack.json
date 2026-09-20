@@ -8,7 +8,8 @@
     "gradeLevel": "6th-8th Grade",
     "createdAt": "2026-09-13T18:00:00.000Z",
     "imageShotList": "allopacks/crew_attention_grade6_8.IMAGES.md",
-    "standards": "King Middle School HOWL Responsibility (participate fully and mindfully); CASEL Self-Management (managing one's emotions; using planning and organizational skills; exhibiting self-discipline); CASEL Responsible Decision-Making (identifying solutions for personal problems); EL Education Crew (Crew Launch: academic coaching and habits); Maine DOE PBIS Tier 1 (teaching device boundaries as expected behavior)"
+    "standards": "King Middle School HOWL Responsibility (participate fully and mindfully); CASEL Self-Management (managing one's emotions; using planning and organizational skills; exhibiting self-discipline); CASEL Responsible Decision-Making (identifying solutions for personal problems); EL Education Crew (Crew Launch: academic coaching and habits); Maine DOE PBIS Tier 1 (teaching device boundaries as expected behavior)",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Attention, digital pulls, and boundaries chosen ahead of time",
   "history": [
@@ -48,7 +49,7 @@
       "title": "Where Your Attention Goes",
       "timestamp": "2026-09-13T18:00:00.000Z",
       "data": "## Where Your Attention Goes\n\n**HOWL: \"I take responsibility for my success as a learner.\"**\n\nThe Responsibility **HOWL** asks you to participate fully and **mindfully**. Fully means you are in the room. In 2026 that is harder than it sounds, because there is a device in your pocket that was built, on purpose, by very smart people, to get you to pick it up. The red badge, the buzz, the **streak** that will break if you skip a day, the video that starts the next one before you decide: none of that is an accident. Each one is a design **choice**, tested on millions of people, and kept because it worked.\n\nThis is not a lecture about phones being bad. Your phone is a tool, and a good one. The point is simpler: your **attention** is being **pulled** on purpose, and you should know it, so that where your attention goes is your choice and not someone else's.\n\nHere is a moment from a fictional **Crew**. Nadia is in math, a class she is actually good at. Her phone is in her hoodie pocket. It buzzes. She does not take it out. But for the next three minutes, part of her is on the buzz: who was it, what did they say, is it about her. The teacher has moved on to the next example. Nadia catches up, but she caught up. She was in the room for the second example and not the first. Nobody saw her look at a phone. She still lost the minutes.\n\nThat is the part most people miss. The cost of a phone in class is not only the time you spend looking at it. It is the attention you spend not looking at it. Researchers have found that a phone on the desk, face down and silent, still costs something, because part of you is keeping track of it. Out of sight does more than out of hand.\n\nSo this week is about **boundaries**, not **bans**. A boundary is a line you choose ahead of time, so that you do not have to decide in the moment when the buzz comes. Phone in the bag, not the pocket, for one class. **Notifications** off between 8 and 3. One set time to check, so the checking is a choice. The boundary does the work so willpower does not have to, which you may remember from the week on systems.\n\nBeing mindful, the other half of the HOWL, means noticing where your attention actually went, without judging it. This week you will investigate that. Not \"was I good,\" but \"where did it go, and what pulled it.\" The answer is information. What you do with it is responsibility.",
-      "meta": "6th-8th Grade • Leveled reading • ~450 words"
+      "meta": "6th-8th Grade • Leveled reading"
     },
     {
       "id": "cd-glossary",
@@ -430,7 +431,7 @@
               "Out of sight does more than out of hand."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "rhyme-rhythm",
             "mode": "scaffolded",
             "aiExample": "In the bag, not the hand; in the bag, off the desk. If I can see it, part of me is on it.",
@@ -459,7 +460,7 @@
               "Ahead of time means you do not have to decide in the moment when the buzz comes."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "keyword-association",
             "mode": "scaffolded",
             "aiExample": "BOUNDARY = BEFORE. Both start with B. A boundary is decided before the buzz, or it is not a boundary, it is a wish.",
@@ -534,7 +535,7 @@
           ],
           "deliverable": "A half-page report: the tally by pull, the boundary chosen and why, and what two days with it were like.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

@@ -469,6 +469,25 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
       && items.every(item => Array.isArray(item.generationVariants) && item.generationVariants.length > 0);
   const matrixRetryPending = !!(run && run.retryable === true
       && run.reasonCode === 'generation-matrix-unavailable');
+  const runRows = Object.values(run?.rows || {}).filter(Boolean);
+  const runHasFinished = !isRunning && !!run && (run.done === true
+      || ['completed', 'partial', 'failed', 'interrupted', 'stopped'].includes(run.status));
+  // Count steps, not audience versions. A previously successful step with a
+  // missing output still needs attention, including partially missing fan-out.
+  const completedRunSteps = runRows.filter(row => row.status === 'landed'
+      && !row.resourceMissing
+      && !(Array.isArray(row.missingResourceIds) && row.missingResourceIds.length)
+      && !(Array.isArray(row.variantResults) && row.variantResults.some(variant =>
+          variant && variant.status !== 'landed'))).length;
+  const showRunOutcome = runHasFinished && !matrixRetryPending && runRows.length > 0;
+  const allRunStepsComplete = completedRunSteps === runRows.length;
+  const generateActionLabel = isRunning
+      ? (t('blueprint.status_running') || 'Building...')
+      : matrixRetryPending
+          ? (t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning')
+          : runHasFinished
+              ? (t('blueprint.run_plan_again') || 'Run plan again')
+              : (t('blueprint.generate_resources') || 'Generate resources');
   const blueprintExpectedCalls = blueprintVariants.filter(variant => variant && variant.action !== 'reuse').length;
   const blueprintReuseCount = blueprintVariants.filter(variant => variant && variant.action === 'reuse').length;
   const blueprintGrades = Array.from(new Set(blueprintVariants.map(variant => variant && variant.grade).filter(Boolean)));
@@ -502,7 +521,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                     {t('blueprint.header')} {isEditing ? `(${t('common.edit')})` : ""}
                 </h4>
                 <p className="text-xs text-slate-600">
-                    {isEditing ? (t('blueprint.drag_instruction') + ' ' + (t('blueprint.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.')) : isRunning ? (t('fullpack.running_help') || 'Follow progress below. Keep this page open while resources are created.') : (t('blueprint.overview_help') || 'Review the resources below, then generate. Use Edit plan to make changes.')}
+                    {isEditing ? (t('blueprint.drag_instruction') + ' ' + (t('blueprint.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.')) : isRunning ? (t('fullpack.running_help') || 'Follow progress below. Keep this page open while resources are created.') : (runHasFinished ? (t('blueprint.results_overview_help') || 'Review your resources below. Use Edit plan to make changes.') : (t('blueprint.overview_help') || 'Review the resources below, then generate. Use Edit plan to make changes.'))}
                 </p>
             </div>
         </div>
@@ -656,6 +675,17 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
               </div>
           );
       })()}
+      {showRunOutcome && (
+          <div data-testid="bp-run-outcome" role="status" aria-live="polite" aria-atomic="true"
+              className={`mb-3 rounded-lg border p-3 text-xs leading-relaxed ${allRunStepsComplete ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : 'border-amber-300 bg-amber-50 text-amber-950'}`}>
+              <p className="font-bold">{t('blueprint.run_summary') || 'Run summary'}{' · '}
+                  {t('blueprint.completed_steps', { done: completedRunSteps, total: runRows.length }) || `${completedRunSteps} of ${runRows.length} steps complete.`}
+              </p>
+              <p className="mt-1">{allRunStepsComplete
+                  ? (t('blueprint.completed_help') || 'Use Preview below to review a resource.')
+                  : (t('blueprint.unfinished_help') || 'Use Rebuild on an unfinished step, or run the plan again. Finished resources are kept.')}</p>
+          </div>
+      )}
       <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{reorderStatus}</div>
       {isEditing ? (
           <>
@@ -1073,7 +1103,10 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                   );
               })}
               {items.length === 0 && (
-                  <p className="text-center text-slate-600 text-sm italic py-4">{t('blueprint.empty_plan')}</p>
+                  <div data-testid="bp-empty-plan" className="text-center text-slate-600 text-sm py-4">
+                      <p>{t('blueprint.empty_plan')}</p>
+                      <p className="mt-1 text-xs">{t('blueprint.empty_plan_help') || 'Choose Edit plan, then Add step to add a resource.'}</p>
+                  </div>
               )}
           </div>
       )}
@@ -1095,12 +1128,12 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
           <button
               type="button"
               data-help-key="blueprint_generate_pack_btn"
-              aria-label={isRunning ? (t('blueprint.status_running') || 'Building...') : (matrixRetryPending ? (t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning') : (t('blueprint.generate_resources') || 'Generate resources'))}
+              aria-label={generateActionLabel}
             disabled={!!isRunning || items.length === 0}
             onClick={onConfirm}
             className="flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
           >
-            <Sparkles size={14} className="text-yellow-700 fill-current"/> {isRunning ? (t('blueprint.status_running') || 'Building...') : (matrixRetryPending ? (t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning') : (t('blueprint.generate_resources') || 'Generate resources'))}
+            <Sparkles size={14} className="text-yellow-700 fill-current"/> {generateActionLabel}
           </button>
       </div>
       {/* Save as template + the directive review.

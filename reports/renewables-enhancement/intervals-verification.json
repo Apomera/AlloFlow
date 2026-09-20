@@ -1,0 +1,69 @@
+{
+  "verifiedAt": "2026-09-19T22:50:22.097Z",
+  "feature": "Custom scenario intervals",
+  "testsPassed": 532,
+  "testFiles": 23,
+  "newTests": 22,
+  "retry": {
+    "reason": "Fork workers timed out before running tests; missing files completed in targeted runs.",
+    "files": [
+      "renewables_grid_limits.test.js",
+      "renewables_microgrid.test.js",
+      "renewables_resilience.test.js"
+    ],
+    "firstRetryTests": 53,
+    "finalRetryTests": 23,
+    "finalRetryPool": "threads"
+  },
+  "testPool": "forks",
+  "testTimeoutMs": 60000,
+  "hookTimeoutMs": 60000,
+  "accessibilityAudits": 27,
+  "scenariosVerified": 18,
+  "exportsVerified": [
+    "pv",
+    "battery",
+    "empty"
+  ],
+  "pageErrors": 0,
+  "consoleErrors": 0,
+  "mobileWidths": [
+    390,
+    320
+  ],
+  "mobileOverflow": false,
+  "visualReview": [
+    "intervals-pv.png",
+    "intervals-320.png",
+    "intervals-dark.png"
+  ],
+  "sha256": "42ca2f5bf0d3f0be18c33aa1890e740207dde8b96a8488d16255a38d93158736",
+  "sourceMirrorIdentical": true,
+  "previewMatchesSource": true,
+  "behavior": {
+    "scenariosVerified": 18,
+    "boundaryReadings": true,
+    "intervalEnergy": true,
+    "averagePower": true,
+    "storedEnergyLedger": true,
+    "stateBreakdown": true,
+    "rangeDoesNotMoveTimeline": true,
+    "inspectMovesTimeline": true,
+    "pinningOrdersBounds": true,
+    "zeroDuration": true,
+    "keyboardSliders": true,
+    "pauseOnEdit": true,
+    "inputsNotesBaselinePreserved": true,
+    "perScenarioPersistence": true,
+    "serializedPersistence": true,
+    "liveInputRecomputation": true,
+    "exportMatchesAnalysis": true,
+    "percentagePoints": true,
+    "isolatedAndExplodedSelection": true,
+    "mobileOverflow": false,
+    "flowFallback": true,
+    "contextRecovery": true,
+    "singleRenderer": true
+  },
+  "validationScope": "Isolated local React and Three.js host; no deployed full-application check."
+}

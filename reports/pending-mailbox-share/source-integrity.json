@@ -1,0 +1,70 @@
+{
+  "scope": "Pending hosting lifecycle, mailbox render props/dismissals, focus-trap callback, and two changed loader pins only. Desktop local loaders preserved.",
+  "files": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "syntax": "passed",
+      "focusCloseMatches": true,
+      "regions": [
+        {
+          "name": "hosting",
+          "matches": true,
+          "sha256": "e9d01713357b842d1574f6ac7c20a200e76ae8fe791b87bc31d762f7b9a98a04"
+        },
+        {
+          "name": "mailbox_render",
+          "matches": true,
+          "sha256": "7d5831478d6e60715adb92a6a79003fbd9a55deeb9233f1955862ff4b6636274"
+        }
+      ]
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "syntax": "passed",
+      "focusCloseMatches": true,
+      "regions": [
+        {
+          "name": "hosting",
+          "matches": true,
+          "sha256": "e9d01713357b842d1574f6ac7c20a200e76ae8fe791b87bc31d762f7b9a98a04"
+        },
+        {
+          "name": "mailbox_render",
+          "matches": true,
+          "sha256": "7d5831478d6e60715adb92a6a79003fbd9a55deeb9233f1955862ff4b6636274"
+        }
+      ]
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "syntax": "passed",
+      "focusCloseMatches": true,
+      "regions": [
+        {
+          "name": "hosting",
+          "matches": true,
+          "sha256": "e9d01713357b842d1574f6ac7c20a200e76ae8fe791b87bc31d762f7b9a98a04"
+        },
+        {
+          "name": "mailbox_render",
+          "matches": true,
+          "sha256": "7d5831478d6e60715adb92a6a79003fbd9a55deeb9233f1955862ff4b6636274"
+        }
+      ]
+    }
+  ],
+  "mirrors": [
+    {
+      "module": "host_handlers_module.js",
+      "version": "baa3515f",
+      "sha256": "baa3515f1d17d6e6dd139d75818df373e7de4617b3d082f7d28d3de3a5815795",
+      "publicMatches": true
+    },
+    {
+      "module": "view_share_session_surfaces_module.js",
+      "version": "abf998c3",
+      "sha256": "abf998c3df5d67dc5c0c2959473be8c2487f67f6653e3a4264b62574e70473ce",
+      "publicMatches": true
+    }
+  ]
+}

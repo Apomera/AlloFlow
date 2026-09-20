@@ -1,0 +1,16 @@
+{
+  "views": [
+    "isometric",
+    "front",
+    "side",
+    "top"
+  ],
+  "audits": {
+    "emptyResourceRecovery": [],
+    "phoneFocused": []
+  },
+  "annotationFrames": 0,
+  "pageErrors": [],
+  "consoleErrors": [],
+  "sourceSha256": "a6d2653ad45f0f062f1eae6c87ab2ac01ee9ae314bd64c638fb1e9b8bf7d7d79"
+}

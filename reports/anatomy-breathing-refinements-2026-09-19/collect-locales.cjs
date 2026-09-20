@@ -1,0 +1,1 @@
+const fs=require('fs');const translations={};for(const language of ['french','spanish_latin_america','arabic'])translations[language]=JSON.parse(fs.readFileSync(__dirname+'/'+language+'.json','utf8'));fs.writeFileSync(__dirname+'/translations.json',JSON.stringify(translations,null,2)+'\n');console.log('Collected breathing translations.');

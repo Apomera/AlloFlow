@@ -1,0 +1,12 @@
+.anatomy-study-sheet { overflow-wrap:anywhere; }
+.anatomy-study-sheet-name { text-align:start; }
+.anatomy-study-sheet-stale { white-space:normal; }
+.anatomy-study-evidence-guide { margin:12px 0; border:1px solid #94a3b8; border-radius:10px; padding:0 12px; background:#f8fafc; color:#334155; }
+.anatomy-study-evidence-guide summary { min-height:44px; padding:12px 0; cursor:pointer; font-size:13px; font-weight:800; }
+.anatomy-study-evidence-guide p { font-size:12px; line-height:1.6; margin:0 0 10px; }
+.anatomy-study-sheet .anatomy-study-filters label { min-width:0; }
+.anatomy-study-sheet .anatomy-study-filters select { width:100%; min-width:0; }
+.theme-dark .anatomy-study-evidence-guide { background:#0f172a; color:#e2e8f0; }
+.theme-contrast .anatomy-study-evidence-guide { background:#000; color:#fff; border-color:#fff; }
+@media(max-width:560px) { .anatomy-study-sheet .anatomy-study-filters select { font-size:16px; } }
+@media print { .anatomy-study-evidence-guide { display:block; border:0; padding:0; background:white!important; color:black!important; } .anatomy-study-evidence-guide>p { display:block!important; } }

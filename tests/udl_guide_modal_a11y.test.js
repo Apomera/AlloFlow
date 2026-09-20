@@ -91,10 +91,10 @@ describe('UDL guide modal — WCAG 2.2 AA', () => {
     const autofill = sliceBetween(guide, '<input\n                type="checkbox"', '</label>', { label: 'autofill checkbox' });
     expect(autofill).not.toContain('aria-label');
     expect(autofill).toContain('id="udl-autofill-check"');
-    const saveStart = guide.lastIndexOf('<button', guide.indexOf('data-help-key="chat_save_advice_btn"'));
-    expect(saveStart).toBeGreaterThan(-1);
-    const save = guide.slice(saveStart, guide.indexOf('</button>', saveStart));
-    expect(save).toContain('chat_guide.save_actionable_btn');
+    expect(guide).toContain('<AllobotAdviceSave');
+    const controls = fs.readFileSync('allobot_context_controls.jsx', 'utf8');
+    const save = sliceBetween(controls, '<button type="button" onClick={saveAdvice}', '</button>', { label: 'save advice button' });
+    expect(save).toContain('chat_guide.save_advice_history');
     expect(save).not.toContain('aria-label');
   });
 

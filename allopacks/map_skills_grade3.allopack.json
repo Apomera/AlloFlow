@@ -8,7 +8,8 @@
     "gradeLevel": "3rd Grade",
     "standards": "C3 Framework D2.Geo.1.3-5 (construct maps and other graphic representations of both familiar and unfamiliar places); C3 Framework D2.Geo.2.3-5 (use maps and other geographic representations to explain relationships between the locations of places and regions); CCSS.ELA-LITERACY.RI.3.7 (use information gained from illustrations and the words in a text to demonstrate understanding)",
     "createdAt": "2026-09-05T22:30:00.000Z",
-    "imageShotList": "allopacks/map_skills_grade3.IMAGES.md"
+    "imageShotList": "allopacks/map_skills_grade3.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Map Skills and What Maps Leave Out",
   "history": [
@@ -55,7 +56,7 @@
       "title": "Every Map Leaves Something Out",
       "timestamp": "2026-09-05T22:30:01.000Z",
       "data": "## Every Map Leaves Something Out\n\nDraw a map of your classroom. Did you draw every pencil? Every crumb on the floor? Of course not. You drew the desks and the door.\n\nThat is the first thing to know about maps. A **map** is a drawing of a place from above, and it always leaves things out on purpose. A map that showed everything would be as big and as confusing as the real place.\n\nSo a mapmaker chooses. And once you know that, you can ask a much better question than \"where is it?\" You can ask: what did this person decide to show me?\n\nMaps give you tools for reading them.\n\nA **symbol** is a small picture that stands for something real. A tiny tent means a campground. A blue line means a river. The **key** is the box that tells you what each symbol means. Without a key, a symbol is just a shape.\n\nThe **compass** rose shows you which way is north. Most maps put north at the top, but that is a habit, not a rule. Old maps often put east at the top instead.\n\nThe **scale** tells you how much real distance a small distance on the paper stands for. One inch might mean one mile. Scale is why a whole country can sit on one page.\n\nA **border** is a line showing where one place ends and the next begins. Some borders follow a river. Many were drawn by people, and people argued about them.\n\nA **globe** is different from a flat map. Earth is round, so flattening it always stretches something. On many flat maps Greenland looks about the size of Africa. It is not close. Africa is about fourteen times larger.\n\nSo read a map twice. Once to find your way. Once to ask what got left out.",
-      "meta": "3rd Grade • Leveled reading • ~330 words",
+      "meta": "3rd Grade • Leveled reading",
       "imageSlot": "mk-img-classroom-map"
     },
     {

@@ -27,6 +27,14 @@
       "pendingSortImages": 0,
       "review": "Visually reviewed; educator review pending",
       "textPolicy": "Text-free artwork; original activity text stays editable"
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending",
+    "contentRefinements": {
+      "count": 4,
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/ecosystems_food_webs_grade5/content-refinements.json",
+      "sourceOnlyResourceIds": []
     }
   },
   "sourceTopic": "Food Webs and Ecosystems",
@@ -74,7 +82,7 @@
       "title": "Pull One Thread",
       "timestamp": "2026-07-21T08:00:01.000Z",
       "data": "## Pull One Thread\n\nEvery living thing has to get energy from somewhere. Follow that energy far enough back and it nearly always ends in the same place: sunlight.\n\n**Producers** make their own food. Plants, algae, and some bacteria capture sunlight and build sugar. Everything else on Earth is a customer.\n\n**Consumers** eat other living things. Herbivores like deer and grasshoppers eat producers. Carnivores like hawks and wolves eat other consumers. Omnivores like bears and humans do both. Each step is a **trophic level** — a rung on the energy ladder.\n\n**Decomposers** get the least attention and do the most essential work. Fungi, bacteria, and worms break down dead plants, dead animals, and waste. That releases nutrients back into the soil, where producers can use them again.\n\nWithout decomposers, an ecosystem would bury itself in its own dead material. The nutrients would never get back into circulation, and everything would starve.\n\nA **food chain** is one straight path: grass → grasshopper → mouse → hawk. Real nature almost never works that neatly. A hawk eats mice, snakes, and rabbits. A mouse eats seeds, insects, and berries. When you draw all those connections at once, you get a **food web**, and a web behaves very differently from a chain.\n\nHere is the part worth remembering: energy leaks. Only about **ten percent** of the energy at one level makes it to the next. The rest gets spent on moving, breathing, and staying warm. Much of it escapes as heat.\n\nThat one fact explains a lot. A meadow can support thousands of grasshoppers, hundreds of mice, and only a couple of hawks. Big predators are rare because the energy math will not support more of them.\n\nNow the thread-pulling. Wolves were hunted out of Yellowstone by the 1920s. Without them, elk populations grew and grazed heavily along rivers, stripping young willows and aspens. Beavers lost their building material. Songbirds lost nesting cover. Riverbanks eroded without roots holding the soil.\n\nWolves were reintroduced in 1995, and much of that reversed. Willows recovered in places. Beavers returned. Some riverbanks stabilized.\n\nScientists still argue about how much of this the wolves caused directly. Weather and bear populations mattered too. Ecosystems are complicated, and honest scientists debate the details.\n\nBut the core lesson is not in dispute: **you cannot remove one species and change only one thing.**",
-      "meta": "5th Grade • Leveled reading • ~380 words",
+      "meta": "5th Grade • Leveled reading",
       "imageSlot": "ec-img-food-web"
     },
     {
@@ -464,7 +472,8 @@
               "Not in dispute: you cannot remove one species and change only one thing"
             ]
           }
-        ]
+        ],
+        "structureType": "Key Concept Map"
       }
     },
     {
@@ -520,6 +529,13 @@
             "hookFact": {
               "text": "Without decomposers, an ecosystem would bury itself in its own dead material and everything would starve.",
               "sourceTitle": "Pull One Thread (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/ecosystems_food_webs_grade5.allopack.json",
+              "sourceResourceId": "ec-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "9a4cc231226b31599e608956d7a9a627ebfae667f97a0480f5909909983b81e0"
             }
           },
           {
@@ -550,6 +566,13 @@
             "hookFact": {
               "text": "Big predators are rare because the energy math will not support more of them.",
               "sourceTitle": "Pull One Thread (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/ecosystems_food_webs_grade5.allopack.json",
+              "sourceResourceId": "ec-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "c78b5909e94fc0136e69ed8aa4c78c4681b0866e0a6d1ccf6d6902e35376967d"
             }
           },
           {
@@ -580,6 +603,13 @@
             "hookFact": {
               "text": "Scientists still argue about how much of the Yellowstone change the wolves caused directly; weather and bear populations mattered too.",
               "sourceTitle": "Pull One Thread (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/ecosystems_food_webs_grade5.allopack.json",
+              "sourceResourceId": "ec-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "902b4147b008217d7585209ec752e0384c01d1aa0755cbe480baffc9796109b3"
             }
           }
         ]
@@ -964,7 +994,14 @@
           ],
           "deliverable": "A labeled food-web diagram of the park with your species highlighted. Plus three predicted changes, each rated for confidence and each explained through the web.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": true,
+          "factReview": {
+            "status": "inherited-review-attribution",
+            "sourcePack": "allopacks/ecosystems_food_webs_grade5.allopack.json",
+            "sourceResourceId": "ec-challenge",
+            "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+            "factsHash": "12e996cf1a01fe3eae8e9d8b65c50309b180dda9c03bb1848570f19ffe656b77"
+          }
         },
         "supports": {
           "parallelExample": {

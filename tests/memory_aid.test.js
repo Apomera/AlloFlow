@@ -2169,7 +2169,7 @@ describe('Memory Aid Studio interaction integrity', () => {
     });
 
     expect(host.textContent).toContain('Compare your recall with the accurate facts');
-    expect(host.textContent).toContain('was removed in another tab and was not restored');
+    expect(host.textContent).toContain('saving will not recreate a removed attempt');
     expect(host.querySelector('.memory-aid-practice-content').hidden).toBe(true);
     expect(addToast).not.toHaveBeenCalledWith(
       'Private revision goal saved. Update the cue, then practice it again.',

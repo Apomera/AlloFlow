@@ -40,7 +40,7 @@ describe('first-class image remediation core', () => {
   it('uses the classified image MIME for every whole-input audit Vision pass', () => {
     const audit = sliceBetween('const runPdfAccessibilityAudit = async', 'let _activeBatchRun = null;');
     expect(audit).toContain(`const _auditMimeType = _imageInputMime || 'application/pdf';`);
-    expect(audit).toContain('callGeminiVision(p, base64Data, _auditMimeType)');
+    expect(audit).toContain('callGeminiVision(p, base64Data, _auditMimeType, { signal: _auditSignal })');
     expect(audit).toContain(`sourceKind: _imageInputMime ? 'image' : 'pdf'`);
     expect(audit).toContain('sourceMimeType: _auditMimeType');
     expect(audit).toContain('_imageInput: !!_imageInputMime');

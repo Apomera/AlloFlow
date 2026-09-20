@@ -1,0 +1,20 @@
+{
+  "checks": [
+    "Precision controls stay synchronized; separate pot/pan deadlines stop oversized manual steps exactly, and elapsed reminders do not block later progress.",
+    "Timer countdown uses simulated time only and reload restores a paused kitchen, pending deadline, and chosen step.",
+    "Both timers can stop running playback together; inspecting the requested vessel adds no hidden cooking actions or hints.",
+    "New cooks clear check timers; mobile text view and timer focus remain usable."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop elapsed check timers",
+      "issues": []
+    },
+    {
+      "label": "320px timers in text view",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

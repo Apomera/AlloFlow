@@ -2056,7 +2056,7 @@
     var edge=Math.max(1,Math.min(2048,Math.floor(Number(limit) || 2048)));
     return width>=height ? {width:edge,height:Math.max(1,Math.round(edge*height/width))} : {width:Math.max(1,Math.round(edge*width/height)),height:edge};
   }
-  function captureShowcaseImage(engine) {
+  function captureShowcaseImage(engine, options) {
     return new Promise(function(resolve,reject){
       var THREE=window.THREE,renderer=engine && engine.renderer,composer=engine && engine.composer;
       var snapshot=null,size=null,failure=null,settled=false;
@@ -2075,7 +2075,7 @@
       try {
         if(!THREE || !renderer || !renderer.domElement || !renderer.domElement.toBlob)throw new Error('The scene is not ready for an image.');
         var liveSize=renderer.getSize(new THREE.Vector2()),ratio=renderer.getPixelRatio();
-        var limit=2048,cap=renderer.capabilities && renderer.capabilities.maxTextureSize;
+        var limit=options && options.limit ? Math.max(1,Math.min(2048,options.limit)) : 2048,cap=renderer.capabilities && renderer.capabilities.maxTextureSize;
         if(isFinite(cap) && cap>0)limit=Math.min(limit,cap);
         try {
           var gl=renderer.getContext(),renderLimit=gl.getParameter(gl.MAX_RENDERBUFFER_SIZE),viewportLimit=gl.getParameter(gl.MAX_VIEWPORT_DIMS);
@@ -2096,7 +2096,7 @@
         if(renderer.xr)renderer.xr.enabled=false;
         if(useComposer){if(composer.setPixelRatio)composer.setPixelRatio(1);composer.setSize(size.width,size.height);composer.render();}
         else renderer.render(engine.scene,engine.camera);
-        renderer.domElement.toBlob(function(blob){finish(blob);},'image/png');
+        renderer.domElement.toBlob(function(blob){finish(blob);},options && options.type==='image/jpeg'?'image/jpeg':'image/png',.84);
       } catch(error) {failure=error;finish(null,error);}
       finally {
         if(snapshot){
@@ -2460,6 +2460,7 @@
     activityBuildFacts:activityBuildFacts,evaluateActivityBuildGoal:evaluateActivityBuildGoal,activityGoalDescription:activityGoalDescription,
     captureActivityBuild:captureActivityBuild,updateActivityEvidence:updateActivityEvidence,activitySnapshotSvg:activitySnapshotSvg,
     activityJournalExport:activityJournalExport,activityPortfolioHtml:activityPortfolioHtml,
+    conceptLessonModel:conceptLessonModel,lessonConceptSnapshots:lessonConceptSnapshots,updateConceptSnapshots:updateConceptSnapshots,captureConceptSnapshot:captureConceptSnapshot,conceptSnapshotsHtml:conceptSnapshotsHtml,
     captureProject:captureProject, restoreProject:restoreProject, selectionMeasurement:selectionMeasurement, polledSelectionMeasurement:polledSelectionMeasurement,
     openSelectedBuildInPrintLab:openSelectedBuildInPrintLab, worldToStl:worldToStl, printUnit:printUnit
   };
@@ -2475,6 +2476,7 @@
     var style = document.createElement('style');
     style.id = 'allo-geometryworld-builder-css';
     style.textContent = [
+      '.gwe-concept-backdrop{position:absolute;inset:0;z-index:80;display:flex;justify-content:center;align-items:center;padding:16px;background:#102b27bb;box-sizing:border-box}.gwe-concept-panel{box-sizing:border-box;width:min(760px,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;background:#fafbf3;color:#234536;border:1px solid #809a85;border-radius:18px;padding:22px;font:14px/1.55 system-ui,sans-serif}.gwe-concept-panel header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.gwe-concept-panel h2{font-size:24px;line-height:1.25;margin:4px 0 14px}.gwe-concept-panel h3{font-size:18px;margin:0}.gwe-concept-eyebrow{font-size:10px;letter-spacing:.09em;margin:0}.gwe-concept-meta{font-size:12px;color:#4b6354}.gwe-concept-card{padding:18px;margin:18px 0;border:1px solid #aebea8;border-radius:14px;background:white}.gwe-concept-card img{display:block;width:100%;max-height:330px;object-fit:contain;background:#e7ece1;border-radius:9px;margin:12px 0}.gwe-concept-card label{display:block;font-weight:650;margin:14px 0 5px}.gwe-concept-card input,.gwe-concept-card textarea{box-sizing:border-box;display:block;width:100%;min-height:44px;padding:10px;border:1px solid #809581;border-radius:9px;background:#fff;color:#234536;font:inherit}.gwe-concept-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.gwe-concept-panel button{min-height:44px;padding:9px 13px;border:1px solid #78907b;border-radius:10px;background:#e8eddf;color:#234536;font:600 12px system-ui;cursor:pointer}.gwe-concept-panel button:disabled{opacity:.55;cursor:default}.gwe-concept-panel .gwe-concept-primary{background:#234e3b;color:#fff}.gwe-concept-panel :focus-visible{outline:3px solid #ab6b08;outline-offset:3px}.gwe-concept-status{padding:10px 13px;border:1px solid #9bab91;border-radius:9px;background:#edf0e3}.theme-contrast .gwe-concept-panel,.theme-contrast .gwe-concept-card,.theme-contrast .gwe-concept-panel :is(input,textarea,button),[data-stem-theme=contrast] .gwe-concept-panel,[data-stem-theme=contrast] .gwe-concept-card,[data-stem-theme=contrast] .gwe-concept-panel :is(input,textarea,button){background:#000;color:#fff;border-color:#0ff}.theme-contrast .gwe-concept-meta,[data-stem-theme=contrast] .gwe-concept-meta{color:#fff}@media(max-width:520px){.gwe-concept-backdrop{padding:7px}.gwe-concept-panel{padding:14px;border-radius:12px}.gwe-concept-card{padding:11px}.gwe-concept-panel h2{font-size:21px}}',
       ".gwe-stamp-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}:is(.gwe-stamp-library,.gwe-starter-library) .gwe-stamp-card{display:flex;flex-direction:column;min-width:0;padding:0;overflow:hidden;text-align:left;border:1px solid #789786;border-radius:13px;background:#f6f5e9;color:#284d3c;font:inherit;cursor:pointer;box-shadow:0 3px 8px #061f1a12}:is(.gwe-stamp-library,.gwe-starter-library) .gwe-stamp-card[aria-pressed=true]{border:2px solid #e0c68e;box-shadow:0 0 0 2px #e0c68e26}.gwe-stamp-art{display:block;position:relative;width:100%;height:114px;background:linear-gradient(145deg,#e3ebd9,#f4f3e5)}.gwe-stamp-art img{display:block;object-fit:contain;width:100%;height:100%}.gwe-stamp-selection{position:absolute;top:6px;left:6px;max-width:calc(100% - 12px);box-sizing:border-box;border:1px solid #476d5733;border-radius:999px;background:#fdfbf0ed;padding:3px 7px;color:#355c44;font-size:10px;line-height:1.3}.gwe-stamp-card[aria-pressed=true] .gwe-stamp-selection{background:#294f3c;color:#fff4d8}.gwe-stamp-card-name{display:block;padding:9px 10px 0;font-size:12px;line-height:1.4;font-weight:750;overflow-wrap:anywhere}.gwe-stamp-card-facts{display:flex;flex-direction:column;gap:4px;padding:5px 10px 11px;font-size:10px;line-height:1.4;overflow-wrap:anywhere}.gwe-stamp-card-facts>span{color:#506d58}.gwe-stamp-card:focus-visible{outline:3px solid #f2d394;outline-offset:3px}.gwe-copy-directions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:10px 0}.gwe-copy-directions button{min-width:0;min-height:44px;padding:7px 3px;font-size:11px}.theme-contrast .gwe-stamp-card,[data-stem-theme=contrast] .gwe-stamp-card{background:#000;color:#fff;border-color:#0ff}.theme-contrast .gwe-stamp-card-facts>span,[data-stem-theme=contrast] .gwe-stamp-card-facts>span{color:#fff}.theme-contrast .gwe-stamp-card[aria-pressed=true],[data-stem-theme=contrast] .gwe-stamp-card[aria-pressed=true]{border-color:#ff0;outline:2px solid #ff0}.theme-contrast .gwe-stamp-selection,[data-stem-theme=contrast] .gwe-stamp-selection{background:#000;color:#fff;border-color:#ff0}.gwe-stamp-card:hover{filter:brightness(1.025)}@media(prefers-reduced-motion:no-preference){.gwe-stamp-card{transition:border-color 140ms ease,box-shadow 140ms ease}}",
       ".gwe-creation-editor,.gwe-stamp-library{display:block}.gwe-precision-numbers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.gwe-precision-numbers label{min-width:0}.gwe-pattern-options select,.gwe-alignment-options select,.gwe-pattern-options input,.gwe-alignment-options input{display:block;margin-top:5px}.gwe-edit-label{display:block;margin:12px 0 5px;color:#d4e8ca;font-size:12px;font-weight:650}.gwe-creation-editor select,.gwe-creation-editor input,.gwe-stamp-library select,.gwe-stamp-library input,.gwe-edit-coordinates input{box-sizing:border-box;width:100%;min-width:0;min-height:44px;border:1px solid #adc4ad66;border-radius:10px;padding:8px 10px;background:#173b35;color:#f5f0e5;font:inherit;font-size:12px}.gwe-creation-editor select,.gwe-stamp-library select{margin-bottom:10px}.gwe-edit-coordinates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0;padding:0;border:0;min-width:0}.gwe-edit-coordinates legend{padding:0 0 7px;color:#bfd2c4;font-size:11px;line-height:1.5}.gwe-edit-coordinates label{display:block;color:#d4e8ca;font-size:11px;font-weight:650}.gwe-edit-coordinates input{display:block;margin-top:4px;font-variant-numeric:tabular-nums}.gwe-stamp-save .gwe-builder-actions{margin:8px 0 12px}.gwe-edit-notice{margin:0;color:#e6eddd;font-size:12px;line-height:1.6;overflow-wrap:anywhere}.gwe-edit-preview{padding:12px;border:1px solid #e7bc8666;border-radius:12px;background:#493d252e}.gwe-edit-preview[data-ready=true]{border-color:#c5dfae80;background:#d4e8ca0c}.gwe-edit-preview .gwe-builder-actions{margin-top:10px}.gwe-stamp-manage{margin-top:10px}.gwe-stamp-manage>summary{min-height:44px;align-content:center;color:#bfd2c4;font-size:11px;cursor:pointer}.gwe-stamp-manage .gwe-builder-actions{margin-top:8px}.gwe-camera-presets{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.gwe-camera-presets button{padding:8px 4px;font-size:11px}.gwe-camera-orbit-tools{min-width:0;max-width:260px}.gwe-camera-orbit-tools>summary{min-height:44px;align-content:center;font-size:12px;font-weight:650;cursor:pointer}.gwe-camera-orbit-tools .gwe-builder-actions{grid-template-columns:repeat(2,minmax(0,1fr));margin:6px 0}.gwe-focus-return:has(.gwe-camera-orbit-tools[open]){flex-wrap:wrap}.gwe-focus-return .gwe-camera-orbit-tools[open]{flex:1 0 100%}.gwe-focus-return .gwe-camera-orbit-tools button{min-width:44px;min-height:44px}.gwe-creation-editor :is(input,select):focus-visible,.gwe-stamp-library :is(input,select):focus-visible,.gwe-camera-orbit-tools summary:focus-visible{outline:3px solid #f1d094;outline-offset:3px}.theme-contrast .gwe-edit-preview,[data-stem-theme=contrast] .gwe-edit-preview,.theme-contrast .gwe-edit-coordinates input,[data-stem-theme=contrast] .gwe-edit-coordinates input{background:#000;border-color:#0ff;color:#fff}@media(max-width:420px){.gwe-focus-return .gwe-camera-orbit-tools{max-width:100%}.gwe-focus-return .gwe-camera-orbit-tools button{font-size:10px;padding:8px 3px}.gwe-edit-coordinates{gap:5px}}",
       ".gwe-free-build-launch{position:absolute;top:118px;right:12px;z-index:44;display:inline-flex;min-height:48px;align-items:center;gap:9px;padding:10px 15px;border:1px solid #d4e8ca66;border-radius:15px;background:#173b35;color:#f5f0e5;box-shadow:0 8px 24px #112d2b33,inset 0 1px #ffffff12;font-size:13px;font-weight:750;cursor:pointer}.gwe-free-build-launch small{color:#d4e8ca;font-size:11px;font-weight:500}.gwe-free-build-launch:hover{background:#244c42}",
@@ -2684,6 +2686,64 @@
   function activityPortfolioHtml(guide,journal) {
     var exportData=activityJournalExport(guide,journal);
     return '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+activityEscape(guide.title)+' — Learning portfolio</title><style>body{margin:0;background:#edf0e6;color:#213c33;font:16px/1.6 system-ui,sans-serif}main{max-width:920px;margin:auto;padding:32px 20px}article{background:#fffef6;padding:24px;border:1px solid #b9c9af;border-radius:18px;margin:24px 0}h1,h2,h3{line-height:1.2}p{white-space:pre-wrap;overflow-wrap:anywhere}.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}figure{margin:0}svg{width:100%;max-height:360px;border-radius:12px}figcaption,.muted{font-size:14px;color:#526b51}.check{padding:12px;border-left:3px solid #6a875a;background:#edf0df}@media(max-width:560px){.pair{grid-template-columns:1fr}}@media print{body{background:white}article{break-inside:avoid}}</style><main><p class="muted">GEOMETRY WORLD · LEARNING PORTFOLIO</p><h1>'+activityEscape(guide.title)+'</h1><p>'+activityEscape(exportData.scope)+'</p>'+exportData.activities.map(function(a){var images=['before','after'].map(function(stage){var snapshot=a[stage];return '<figure><h3>'+ (stage==='before'?'Before':'After')+'</h3>'+(snapshot?activitySnapshotSvg(snapshot)+'<figcaption>'+activityEscape(snapshot.capturedAt)+' · '+snapshot.facts.blockCount+' blocks · '+snapshot.facts.occupiedVolume+' cubic units</figcaption>':'<p class="muted">No snapshot saved.</p>')+'</figure>';}).join('');return '<article><h2>'+activityEscape(a.title)+'</h2><p>'+activityEscape(a.challenge)+'</p>'+(a.buildGoal?'<p><strong>Numeric target:</strong> '+activityEscape(activityGoalDescription(a.buildGoal))+'</p>':'')+'<div class="pair">'+images+'</div>'+(a.check?'<p class="check">Saved check · '+activityEscape(a.check.checkedAt)+'<br>'+activityEscape(a.check.message)+'</p>':'')+'<h3>My reflection</h3><p>'+activityEscape(a.reflection || 'No reflection recorded yet.')+'</p><p class="muted">'+(a.reviewed?'Learner marked this activity reviewed.':'Not marked reviewed.')+'</p></article>';}).join('')+'<p class="muted">This file works offline. The separate JSON journal preserves full block geometry for each saved snapshot.</p></main></html>';
+  }
+
+
+  // Concept moments preserve real camera pixels, independently of selected-build
+  // before/after geometry. They are lesson-scoped and never change a score.
+  var CONCEPT_SNAPSHOT_LIMIT=6, CONCEPT_IMAGE_LIMIT=240000, CONCEPT_JOURNAL_IMAGE_LIMIT=1800000;
+  function conceptLessonModel(lesson) {
+    if(!lesson || typeof lesson!=='object')return null;
+    var guide=activityGuideModel(lesson);
+    var signature=JSON.stringify([lesson.id,lesson.title,lesson.structures,lesson.npcs,lesson.activities,lesson.sandbox]),hash=2166136261;
+    for(var i=0;i<signature.length;i++)hash=Math.imul(hash^signature.charCodeAt(i),16777619);
+    return {key:'concept-'+(hash>>>0).toString(36),title:String(lesson.title || 'Geometry exploration').slice(0,2000),activities:guide?guide.activities:[]};
+  }
+  function cleanConceptSnapshot(value,model) {
+    if(!value || !model || value.lessonKey!==model.key || typeof value.image!=='string' || value.image.length>CONCEPT_IMAGE_LIMIT || !/^data:image\/(png|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/.test(value.image))return null;
+    var selection=null;
+    if(value.selection && ['blockCount','occupiedVolume','footprintArea','width','depth','height'].every(function(k){return typeof value.selection[k]==='number' && isFinite(value.selection[k]) && value.selection[k]>=0 && value.selection[k]<=1500000;})){
+      selection={};['blockCount','occupiedVolume','footprintArea','width','depth','height'].forEach(function(k){selection[k]=value.selection[k];});selection.unitCubesOnly=value.selection.unitCubesOnly===true;
+    }
+    return {id:String(value.id || '').slice(0,100),lessonKey:model.key,lessonTitle:model.title,
+      activityId:String(value.activityId || '').slice(0,100),activityTitle:String(value.activityTitle || '').slice(0,2000),
+      capturedAt:String(value.capturedAt || '').slice(0,80),caption:String(value.caption || '').slice(0,240),reasoning:String(value.reasoning || '').slice(0,3000),image:value.image,selection:selection,
+      imageScope:'Actual 3D camera view, including visible scene measurement lines and layers. Toolbar text, question panels, and other screen controls are not included.'};
+  }
+  function lessonConceptSnapshots(lesson,progress) {
+    var model=conceptLessonModel(lesson),journal=model && (progress || {})[model.key];
+    return model && journal && Array.isArray(journal.moments)?journal.moments.slice(0,CONCEPT_SNAPSHOT_LIMIT).map(function(value){return cleanConceptSnapshot(value,model);}).filter(Boolean):[];
+  }
+  function updateConceptSnapshots(progress,lesson,moments) {
+    var model=conceptLessonModel(lesson);if(!model || !Array.isArray(moments))return {ok:false,error:'Open a lesson before saving a concept snapshot.'};
+    if(moments.length>CONCEPT_SNAPSHOT_LIMIT)return {ok:false,error:'Keep up to 6 concept snapshots per lesson. Download your learning record, then remove a snapshot to make room.'};
+    var cleaned=moments.map(function(value){return cleanConceptSnapshot(value,model);});
+    if(cleaned.some(function(value){return !value;}))return {ok:false,error:'This image is incomplete, too large, or belongs to a different lesson. Capture the view again.'};
+    var next=Object.assign({},progress || {});next[model.key]=Object.assign({},next[model.key] || {},{moments:cleaned});
+    var otherKeys=Object.keys(next).filter(function(key){return key!==model.key;});while(Object.keys(next).length>30)delete next[otherKeys.shift()];
+    var total=0;Object.keys(next).forEach(function(key){var items=next[key] && next[key].moments;if(Array.isArray(items))items.forEach(function(item){if(item && typeof item.image==='string')total+=item.image.length;});});
+    if(total>CONCEPT_JOURNAL_IMAGE_LIMIT)return {ok:false,error:'The local snapshot image space is full. Download learning records and remove older concept snapshots before capturing another.'};
+    return {ok:true,value:next};
+  }
+  function conceptImageData(blob) {
+    return new Promise(function(resolve,reject){
+      if(!blob || blob.size>180000){reject(new Error('The scene image is too detailed to store. Use a closer view and try again.'));return;}
+      var reader=new FileReader(),timer=setTimeout(function(){reader.abort();reject(new Error('The image took too long to save.'));},10000);
+      reader.onload=function(){clearTimeout(timer);var value=reader.result;if(typeof value==='string' && value.length<=CONCEPT_IMAGE_LIMIT)resolve(value);else reject(new Error('The image is too large to store.'));};
+      reader.onerror=reader.onabort=function(){clearTimeout(timer);reject(new Error('The image could not be saved.'));};reader.readAsDataURL(blob);
+    });
+  }
+  function captureConceptSnapshot(engine,activity) {
+    var model=conceptLessonModel(engine && engine._currentLesson);
+    if(!model || !engine.renderer || engine._destroyed)return Promise.reject(new Error('Open the 3D world before taking a snapshot.'));
+    var selected=captureActivityBuild(engine),selection=selected.ok?selected.snapshot.facts:null;
+    var moment={id:'moment-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),lessonKey:model.key,lessonTitle:model.title,activityId:activity && activity.id || '',activityTitle:activity && activity.title || '',capturedAt:new Date().toISOString(),caption:'',reasoning:'',selection:selection};
+    return captureShowcaseImage(engine,{limit:960,type:'image/jpeg'}).then(function(result){return conceptImageData(result.blob);}).then(function(image){moment.image=image;return cleanConceptSnapshot(moment,model);});
+  }
+  function conceptSnapshotsHtml(lesson,progress) {
+    var model=conceptLessonModel(lesson),moments=lessonConceptSnapshots(lesson,progress);
+    function lines(label,text){return '<h3>'+label+'</h3><p class="response">'+activityEscape(text || '')+'</p>';}
+    return '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+activityEscape(model && model.title)+' — Concept snapshots</title><style>@page{size:auto;margin:16mm}body{font:12pt/1.45 system-ui,sans-serif;color:#172e26;max-width:180mm;margin:20px auto;padding:12px}h1{font-size:22pt}h2{font-size:17pt}h3{font-size:11pt;margin:12px 0 4px}article{break-before:page}.scene{display:block;max-width:100%;max-height:84mm;object-fit:contain;margin:12px auto}.meta{font-size:9pt;color:#455b52}.response{white-space:pre-wrap;overflow-wrap:anywhere;min-height:28mm;border-bottom:1px solid #718179;background:repeating-linear-gradient(transparent,transparent 7mm,#c5cdc7 7mm,#c5cdc7 7.2mm);line-height:7.2mm}.caption{min-height:14mm}header{border-bottom:2px solid #385b49}.name{margin:14px 0 22px}@media print{body{margin:0;padding:0}.screen{display:none}}</style><header><p class="meta">GEOMETRY WORLD · LEARNING RECORD</p><h1>'+activityEscape(model && model.title || 'Geometry exploration')+'</h1><p>Concept snapshots · '+moments.length+' saved moment'+(moments.length===1?'':'s')+'</p></header><p class="name">Name: ____________________________ Date: ______________</p><p>Connect what you see with a mathematical model. Label dimensions and units, show a calculation, and explain why your strategy works.</p><p class="screen">Use your browser’s Print command to print or save as PDF. Each moment begins on a new page.</p>'+moments.map(function(m,i){var f=m.selection;return '<article><h2>Moment '+(i+1)+': '+activityEscape(m.caption || 'A concept I noticed')+'</h2><p class="meta">'+activityEscape(m.activityTitle || 'Whole-lesson exploration')+' · '+activityEscape(m.capturedAt)+'</p><img class="scene" src="'+m.image+'" alt="'+activityEscape(m.caption || 'Saved view of this Geometry World lesson')+'"><p class="meta">'+activityEscape(m.imageScope)+'</p>'+(f?'<p class="meta">Outlined student selection at capture: '+f.blockCount+' pieces · '+f.occupiedVolume+' cubic units occupied · bounds '+f.width+' × '+f.depth+' × '+f.height+' units. Bounds are not necessarily a filled rectangular prism.</p>':'')+lines('What does this moment demonstrate?',m.caption)+lines('My mathematical reasoning and calculations',m.reasoning)+lines('Check or extend: show another method, label units, or explain a revision.','')+'</article>';}).join('')+'</html>';
   }
 
   function activityGuideModel(lesson) {
@@ -3425,6 +3485,70 @@
             h('p',{className:'gwe-match-note'},'Aim at a block to reuse its material, shape, and rotation.')
           );
       }
+
+      var conceptModel=conceptLessonModel(engine && engine._currentLesson),conceptKey=conceptModel && conceptModel.key;
+      var _conceptOpen=React.useState(false),conceptOpen=_conceptOpen[0],setConceptOpen=_conceptOpen[1];
+      var _conceptBusy=React.useState(false),conceptBusy=_conceptBusy[0],setConceptBusy=_conceptBusy[1];
+      var _conceptNotice=React.useState(''),conceptNotice=_conceptNotice[0],setConceptNotice=_conceptNotice[1];
+      var conceptRef=React.useRef(null),conceptTrigger=React.useRef(null),conceptToken=React.useRef(0),conceptInFlight=React.useRef(false);
+      var conceptMoments=lessonConceptSnapshots(engine && engine._currentLesson,data.lessonActivityProgress);
+      function closeConceptPanel(){setConceptOpen(false);window.requestAnimationFrame(function(){if(conceptTrigger.current && conceptTrigger.current.isConnected)conceptTrigger.current.focus();else focusWorldSurface(0);});}
+      function openConceptPanel(){conceptTrigger.current=document.activeElement;if(engine && engine.releaseInput)engine.releaseInput();patchGeometryState(liveBuilderCtx.current,{objectivesOpen:false,showGameSettings:false,showPredictionPanel:false,showHelp:false,hudPanel:''});setConceptOpen(true);}
+      React.useEffect(function(){
+        if(!engine)return undefined;engine.openConceptSnapshots=openConceptPanel;
+        return function(){if(engine.openConceptSnapshots===openConceptPanel)delete engine.openConceptSnapshots;};
+      },[engine,conceptKey]);
+      React.useEffect(function(){conceptToken.current++;conceptInFlight.current=false;setConceptBusy(false);setConceptNotice('');setConceptOpen(false);},[engine,conceptKey]);
+      React.useEffect(function(){if(conceptOpen && conceptRef.current)conceptRef.current.focus();},[conceptOpen]);
+      function saveConceptMoments(moments){
+        var live=window[ENGINE_KEY],model=conceptLessonModel(live && live._currentLesson),current=(liveBuilderCtx.current.toolData || {}).geometryWorld || {};
+        if(live!==engine || !model || model.key!==conceptKey || !current.worldActive)return false;
+        var result=updateConceptSnapshots(current.lessonActivityProgress,live._currentLesson,moments);
+        if(!result.ok){setConceptNotice(result.error);return false;}
+        patchGeometryState(liveBuilderCtx.current,{lessonActivityProgress:result.value});return true;
+      }
+      function captureConceptMoment(){
+        if(conceptInFlight.current || !engine || window[ENGINE_KEY]!==engine)return;
+        var current=(liveBuilderCtx.current.toolData || {}).geometryWorld || {},existing=lessonConceptSnapshots(engine._currentLesson,current.lessonActivityProgress);
+        if(existing.length>=CONCEPT_SNAPSHOT_LIMIT){setConceptNotice('Keep up to 6 moments per lesson. Download your record, then remove a moment to make room.');return;}
+        var token=conceptToken.current,lesson=engine._currentLesson;
+        conceptInFlight.current=true;setConceptBusy(true);setConceptNotice('Capturing this camera view…');
+        captureConceptSnapshot(engine,activeActivity).then(function(moment){
+          if(token!==conceptToken.current || engine._destroyed || window[ENGINE_KEY]!==engine || engine._currentLesson!==lesson)return;
+          var liveData=(liveBuilderCtx.current.toolData || {}).geometryWorld || {},moments=lessonConceptSnapshots(lesson,liveData.lessonActivityProgress);
+          if(saveConceptMoments(moments.concat([moment])))setConceptNotice('Moment saved. Add a caption and show your reasoning below, or print the record and write by hand.');
+        }).catch(function(error){if(token===conceptToken.current)setConceptNotice(error.message || 'The view could not be captured. Try again.');}).finally(function(){if(token===conceptToken.current){conceptInFlight.current=false;setConceptBusy(false);}});
+      }
+      function updateConceptMoment(id,field,value){
+        var current=(liveBuilderCtx.current.toolData || {}).geometryWorld || {};
+        saveConceptMoments(lessonConceptSnapshots(engine._currentLesson,current.lessonActivityProgress).map(function(moment){return moment.id===id?Object.assign({},moment,(function(){var p={};p[field]=value;return p;})()):moment;}));
+      }
+      function removeConceptMoment(id){
+        var current=(liveBuilderCtx.current.toolData || {}).geometryWorld || {};
+        if(saveConceptMoments(lessonConceptSnapshots(engine._currentLesson,current.lessonActivityProgress).filter(function(moment){return moment.id!==id;})))setConceptNotice('Snapshot removed. Your world and other notes are unchanged.');
+      }
+      function downloadConceptImage(moment){
+        var parts=moment.image.split(','),bytes=atob(parts[1]),buffer=new Uint8Array(bytes.length);for(var i=0;i<bytes.length;i++)buffer[i]=bytes.charCodeAt(i);
+        downloadBlob(new Blob([buffer],{type:parts[0].indexOf('image/png')>=0?'image/png':'image/jpeg'}),'geometry-world-'+moment.id+(parts[0].indexOf('image/png')>=0?'.png':'.jpg'));
+      }
+      function renderConceptPanel(){
+        return h('div',{key:'gwe-concepts',className:'gwe-concept-backdrop'},h('section',{className:'gwe-concept-panel',role:'dialog','aria-modal':'true','aria-labelledby':'gwe-concept-title',ref:conceptRef,tabIndex:-1,onKeyDown:function(event){trapDialogKeys(event,closeConceptPanel);event.stopPropagation();}},
+          h('header',null,h('div',null,h('p',{className:'gwe-concept-eyebrow'},'GEOMETRY WORLD · LEARNING EVIDENCE'),h('h2',{id:'gwe-concept-title'},'Concept snapshots')),h('button',{type:'button','aria-label':'Close concept snapshots',onClick:closeConceptPanel},'Close')),
+          h('p',null,'Keep a moment that shows a layer, an array, a change in dimensions, or a strategy for finding volume. Your picture uses the current 3D camera view.'),
+          h('p',{className:'gwe-concept-meta'},'Visible 3D measurement lines and layers appear in the image. Screen controls, question panels, and toolbar labels do not. Write the dimensions and units in your explanation.'),
+          h('div',{className:'gwe-concept-actions'},h('button',{type:'button',className:'gwe-concept-primary',disabled:conceptBusy || conceptMoments.length>=6,'aria-busy':conceptBusy,onClick:captureConceptMoment},conceptBusy?'Capturing…':'Capture current view'),h('button',{type:'button',onClick:closeConceptPanel},'Return to exploring')),
+          h('p',{className:'gwe-concept-meta'},conceptMoments.length+' of 6 moments saved for '+(conceptModel && conceptModel.title)+'. Stored on this device. Download a record to keep a separate copy.'),
+          conceptNotice && h('p',{role:'status','aria-live':'polite',className:'gwe-concept-status'},conceptNotice),
+          conceptMoments.map(function(moment,i){var f=moment.selection;return h('article',{key:moment.id,className:'gwe-concept-card'},h('h3',null,'Moment '+(i+1)),h('p',{className:'gwe-concept-meta'},(moment.activityTitle || 'Whole-lesson exploration')+' · '+new Date(moment.capturedAt).toLocaleString()),h('img',{src:moment.image,alt:moment.caption || 'Saved camera view for '+moment.lessonTitle}),
+            f && h('p',{className:'gwe-concept-meta'},'Selected student geometry: '+f.occupiedVolume+' cubic units occupied; bounds '+f.width+' × '+f.depth+' × '+f.height+' units. Bounds may include empty space.'),
+            h('label',{htmlFor:'gwe-caption-'+moment.id},'What does this moment demonstrate?'),h('input',{id:'gwe-caption-'+moment.id,type:'text',maxLength:240,value:moment.caption,placeholder:'For example: three layers of eight unit cubes',onChange:function(event){updateConceptMoment(moment.id,'caption',event.target.value);}}),
+            h('label',{htmlFor:'gwe-reasoning-'+moment.id},'My mathematical reasoning and calculations'),h('textarea',{id:'gwe-reasoning-'+moment.id,rows:4,maxLength:3000,value:moment.reasoning,placeholder:'Label dimensions and units. Show your calculation. Explain why it works and how you checked it.',onChange:function(event){updateConceptMoment(moment.id,'reasoning',event.target.value);}}),
+            h('div',{className:'gwe-concept-actions'},h('button',{type:'button',onClick:function(){downloadConceptImage(moment);}},'Download image'),h('button',{type:'button','aria-label':'Remove moment '+(i+1),onClick:function(){removeConceptMoment(moment.id);}},'Remove moment')));
+          }),
+          h('footer',{className:'gwe-concept-actions'},h('button',{type:'button',onClick:function(){if(engine && engine.openGeometryWorksheet)engine.openGeometryWorksheet('student');}},'Worksheet'),h('button',{type:'button',disabled:!conceptMoments.length,onClick:function(){downloadBlob(new Blob([conceptSnapshotsHtml(engine._currentLesson,data.lessonActivityProgress)],{type:'text/html;charset=utf-8'}),'geometry-world-concept-snapshots.html');}},'Download printable snapshots'),h('button',{type:'button',disabled:!conceptMoments.length,onClick:function(){if(engine && engine.openGeometryWorksheet)engine.openGeometryWorksheet('record');}},'Open learning record'))
+        ));
+      }
+
       var guide=activityGuideModel(engine && engine._currentLesson);
       var guideOpen=!!(guide && data.objectivesOpen && !homeOpen && !data.showGameSettings && !data.showcaseActive);
       var guideRef=React.useRef(null);
@@ -3555,7 +3679,7 @@
             h('button',{type:'button','aria-label':'Previous activity',disabled:activityIndex===0,onClick:function(){browseActivity(-1);}},'← Previous'),
             h('span',{role:'status','aria-live':'polite'},(activityIndex+1)+' / '+guide.activities.length),
             h('button',{type:'button','aria-label':'Next activity',disabled:activityIndex===guide.activities.length-1,onClick:function(){browseActivity(1);}},'Next →')),
-          h('footer',null,h('button',{type:'button',onClick:function(){downloadBlob(new Blob([JSON.stringify(activityJournalExport(guide,journal),null,2)],{type:'application/json'}),'geometry-world-learning-journal.json');}},'Download journal'),h('button',{type:'button',onClick:function(){downloadBlob(new Blob([activityPortfolioHtml(guide,journal)],{type:'text/html;charset=utf-8'}),'geometry-world-learning-portfolio.html');}},'Download portfolio'),h('button',{type:'button',onClick:closeGuide},'Back to exploring'))
+          h('footer',null,h('button',{type:'button',onClick:function(){if(engine && engine.openGeometryWorksheet)engine.openGeometryWorksheet('student');}},'Worksheet'),h('button',{type:'button',onClick:function(){if(engine && engine.openGeometryWorksheet)engine.openGeometryWorksheet('record');}},'Learning record'),h('button',{type:'button',onClick:openConceptPanel},'Concept snapshots'),h('button',{type:'button',onClick:function(){downloadBlob(new Blob([JSON.stringify(activityJournalExport(guide,journal),null,2)],{type:'application/json'}),'geometry-world-learning-journal.json');}},'Download journal'),h('button',{type:'button',onClick:function(){downloadBlob(new Blob([activityPortfolioHtml(guide,journal)],{type:'text/html;charset=utf-8'}),'geometry-world-learning-portfolio.html');}},'Download portfolio'),h('button',{type:'button',onClick:closeGuide},'Back to exploring'))
         ));
       }
 
@@ -3602,6 +3726,7 @@
             h('button',{type:'button',onClick:function(){if(drawStarted)engine.cancelDrawing();else engine.setDrawMode('single');focusWorldSurface(0);}},drawStarted?'Cancel':'Block tool'))));
       }
       if(guideOpen)additions.push(renderActivityGuide());
+      if(conceptOpen && conceptModel && data.worldActive && !homeOpen)additions.push(renderConceptPanel());
       if(engine)engine.closeGeometryHome=closeHome;
       if(homeOpen)additions.push(renderHome());
       if(data.toolbarCollapsed && base.props['data-fullscreen']!=='true' && !homeOpen)additions.push(h('button',{key:'gwe-home-shortcut',type:'button',className:'gwe-home-shortcut','aria-label':'Geometry World home','aria-haspopup':'dialog',onClick:function(){if(engine && engine.openGeometryHome)engine.openGeometryHome();}},'World home'));
@@ -3849,8 +3974,8 @@
         )
       ));
       var children = React.Children.toArray(base.props.children).concat(additions).map(function(child){
-        if(!React.isValidElement(child) || child.type==='style' || child.type==='input' || child.props.className==='gwe-home-backdrop' || child.props.className==='gwe-activity-backdrop')return child;
-        return React.cloneElement(child,{inert:(homeOpen||guideOpen)?'':undefined,'aria-hidden':(homeOpen||guideOpen)?'true':child.props['aria-hidden']});
+        if(!React.isValidElement(child) || child.type==='style' || child.type==='input' || child.props.className==='gwe-home-backdrop' || child.props.className==='gwe-activity-backdrop' || child.props.className==='gwe-concept-backdrop')return child;
+        return React.cloneElement(child,{inert:(homeOpen||guideOpen||conceptOpen)?'':undefined,'aria-hidden':(homeOpen||guideOpen||conceptOpen)?'true':child.props['aria-hidden']});
       });
       return React.cloneElement(base, {
         className: (base.props.className || '') + ' gwe-enhanced',

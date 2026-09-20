@@ -1,0 +1,50 @@
+[
+  {
+    "resourceId": "wx-directions",
+    "path": "data.body",
+    "from": "**Due:** (your teacher will tell you)\n\nAdults on TV mix these two words up constantly. By the end of today, you will catch the mistake faster than they make it.\n\n1. Read **Mood and Personality** — it gives you the one comparison that makes this stick.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Try **Weather or Climate?** — sort each headline into the right bucket. Some are sneaky.\n4. Take the quiz. Question 4 fools most people; slow down there.\n5. Fill in the **Cornell Notes** page in your own words — that becomes your study sheet.\n6. Answer the two reflection questions.\n7. Lock the ideas in with **Remember Mood and Personality** — study the example aid, then make one your own.\n8. Finish with **Decision: Weather or Climate? Judge the Headline** — use what you learned on a real problem, and mark every guess as a guess.\n9. Put the **Mood or Personality?** chart where you can see it — the sorting question on it settles most arguments.\n\nBonus challenge: catch a real adult using the wrong word this week and (politely!) explain the difference. 🌦️📊",
+    "to": "**Due:** (your teacher will tell you)\n\nAdults on TV mix these two words up constantly. By the end of today, you will catch the mistake faster than they make it.\n\n1. Read **Mood and Personality** — it gives you the one comparison that makes this stick.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Try **Weather or Climate?** — sort each headline into the right bucket. Some are sneaky.\n4. Take the quiz. Question 4 fools most people; slow down there.\n5. Fill in the **Cornell Notes** page in your own words — that becomes your study sheet.\n6. Answer the two reflection questions.\n7. Lock the ideas in with **Remember Mood and Personality** — study the example aid, then make one your own.\n8. Finish with **Decision: Weather or Climate? Judge the Headline** — use what you learned on a real problem, and mark every guess as a guess.\n9. Put the **Mood or Personality?** chart where you can see it — the sorting question on it settles most arguments.\n\nBonus challenge: catch a real adult using the wrong word this week and (politely!) explain the difference. 🌦️📊\n\nPicture panels: Daily weather and longer patterns; Comparing conditions and places; Clues and measurements; Observing, forecasting, and investigating. Use these alongside the activities."
+  },
+  {
+    "resourceId": "wx-glossary",
+    "path": "data.1.def",
+    "from": "The usual pattern of weather in a place, measured over thirty years or more.",
+    "to": "The long-term pattern and range of weather in a place, often described using thirty-year records."
+  },
+  {
+    "resourceId": "wx-glossary",
+    "path": "data.4.def",
+    "from": "A typical value found by combining many measurements — the tool that turns weather into climate.",
+    "to": "A value found by adding measurements and dividing by how many measurements there are."
+  },
+  {
+    "resourceId": "wx-glossary",
+    "path": "data.5.def",
+    "from": "Something that repeats in a predictable way over time.",
+    "to": "A recognizable arrangement or repeated sequence; daily weather does not repeat exactly."
+  },
+  {
+    "resourceId": "wx-glossary",
+    "path": "data.8.def",
+    "from": "A gradual change in one direction over a long stretch of time.",
+    "to": "An overall direction of change across many observations, even when individual values fluctuate."
+  },
+  {
+    "resourceId": "wx-glossary",
+    "path": "data.9.def",
+    "from": "The layer of air surrounding Earth where all weather happens.",
+    "to": "The layer of gases surrounding Earth. Most weather occurs in its lowest layer, the troposphere."
+  },
+  {
+    "resourceId": "wx-faq",
+    "path": "data.0.question",
+    "from": "If forecasts are only good for a week, how can anyone predict climate for 50 years? 🤔",
+    "to": "How can scientists study future climate when daily weather is hard to predict far ahead?"
+  },
+  {
+    "resourceId": "wx-faq",
+    "path": "data.0.answer",
+    "from": "Great question — it feels backwards! Predicting one specific day is like guessing one coin flip. Predicting climate is like saying 1,000 flips will land near half heads. Long averages are easier to predict than single moments.",
+    "to": "They ask different questions. A weather forecast estimates specific conditions ahead. Climate projections examine long-term patterns under stated conditions, such as different amounts of greenhouse gases. Both use physical science, and both include uncertainty."
+  }
+]

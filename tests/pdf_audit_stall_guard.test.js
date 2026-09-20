@@ -36,7 +36,7 @@ describe('PDF audit pipeline: a stalled engine cannot strand the loading modal',
       expect(window).toContain("_AUDIT_BASELINE_BUDGET_MS, 'deterministic baseline audit')");
       // A baseline that finishes after the budget must not touch the object the caller
       // already holds — it may be mid-remediation by then.
-      expect(window.match(/if \(_baselineAbandoned\) return;/g)).toHaveLength(2);
+      expect(window.match(/if \(_baselineAbandoned \|\| _auditCancelled\(\)\) return;/g)).toHaveLength(2);
       expect(window).toContain('_baselineAbandoned = true;');
       // The budget is generous (large documents extract slowly) but finite.
       const budget = Number((window.match(/_AUDIT_BASELINE_BUDGET_MS = (\d+);/) || [])[1]);
@@ -87,7 +87,7 @@ describe('PDF audit modal releases its own loading flag when its run returns', (
       const calls = [];
       const state = { loading: false, result: initialResult };
       const factory = new Function(
-        'useRef', 'setPdfAuditLoading', 'setPdfAuditResult', '_auditGateLog', '_viewAuditFallbackResult', 'pendingPdfFile',
+        'useRef', 'setPdfAuditLoading', 'setPdfAuditResult', '_auditGateLog', '_viewAuditFallbackResult', 'pendingPdfFile', 'useEffect', 'pdfAuditResult', 'pdfAuditLoading', 'oneClickRemediationBusy',
         helper + '\nreturn { begin: _beginVisibleAuditRun, settle: _settleVisibleAuditRun };',
       );
       const api = factory(
@@ -96,7 +96,7 @@ describe('PDF audit modal releases its own loading flag when its run returns', (
         (v) => { const next = typeof v === 'function' ? v(state.result) : v; calls.push(['result', next]); state.result = next; },
         () => {},
         (snapshot, file) => snapshot || { _choosing: true, fileName: file && file.name },
-        { name: 'x.pdf' },
+        { name: 'x.pdf' }, () => {}, initialResult, false, false,
       );
       return { api, state, calls };
     };

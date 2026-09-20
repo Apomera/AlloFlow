@@ -73,6 +73,12 @@
   },
   {
     "resourceId": "dg-memory",
+    "path": "data.cards.0.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "dg-memory",
     "path": "data.cards.0.aiExample",
     "from": "Picture a seesaw with the values as weights along the plank. The mean is where you would put the pivot to balance it, so a heavy weight far out at one end forces the pivot to slide toward it. The median is just the person standing in the middle of the queue, and they do not move no matter how far away the last person walks.",
     "to": "Place equal-mass markers at the data values along a number line. The mean is their balance point: moving one marker farther right shifts that point. In 4,5,6,7,100, replacing only 100 with 1000 keeps the third value at 6, so this median stays unchanged."
@@ -94,6 +100,77 @@
     "path": "data.cards.0.scaffoldSteps.0",
     "from": "Draw the values as weights on a plank.",
     "to": "Draw equal-mass markers at the numerical values, not heavier markers for bigger values."
+  },
+  {
+    "resourceId": "dg-memory",
+    "path": "data.cards.1",
+    "from": {
+      "id": "dg-ma-three-questions",
+      "target": "The three questions to ask about any statistic",
+      "essentialFacts": [
+        "Ask what exactly was measured.",
+        "Ask which middle is being reported.",
+        "Ask what the spread was."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "sequence-cue",
+      "mode": "scaffolded",
+      "aiExample": "Three beats, in this order. WHAT. WHICH. HOW WIDE. What was measured, which middle is this, how wide was the spread. The order matters, because the first question sometimes ends the conversation on its own.",
+      "mapping": "Three short prompts that fit in your head while someone is still talking, so you can check a claim in real time rather than afterwards.",
+      "scaffoldStarter": "What: ____. Which: ____. How wide: ____.",
+      "scaffoldSteps": [
+        "Say the three beats out loud.",
+        "Try them on a statistic from an advert.",
+        "Note which question the statistic failed to answer."
+      ],
+      "coachPrompts": [
+        "Which of the three did that claim not tell you?"
+      ],
+      "studentPrompt": "Make your own three-step check for a statistic.",
+      "reasoningPrompt": "Why is what was measured the first question rather than the last?",
+      "hookFact": {
+        "text": "This is why a single number can mislead without anybody lying.",
+        "sourceTitle": "What Counts as Typical (this lesson)"
+      }
+    },
+    "to": {
+      "id": "dg-ma-three-questions",
+      "target": "The three questions to ask about any statistic",
+      "essentialFacts": [
+        "Ask what exactly was measured.",
+        "Ask which middle is being reported.",
+        "Ask what the spread was."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "sequence-cue",
+      "mode": "scaffolded",
+      "aiExample": "Three beats, in this order. WHAT. WHICH. HOW WIDE. What was measured, which middle is this, how wide was the spread. The order matters, because the first question sometimes ends the conversation on its own.",
+      "mapping": "Three short prompts that fit in your head while someone is still talking, so you can check a claim in real time rather than afterwards.",
+      "scaffoldStarter": "What: ____. Which: ____. How wide: ____.",
+      "scaffoldSteps": [
+        "Say the three beats out loud.",
+        "Try them on a statistic from an advert.",
+        "Note which question the statistic failed to answer."
+      ],
+      "coachPrompts": [
+        "Which of the three did that claim not tell you?"
+      ],
+      "studentPrompt": "Make your own three-step check for a statistic.",
+      "reasoningPrompt": "Why is what was measured the first question rather than the last?",
+      "hookFact": {
+        "text": "This is why a single number can mislead without anybody lying.",
+        "sourceTitle": "What Counts as Typical (this lesson)"
+      },
+      "factReview": {
+        "status": "inherited-review-attribution",
+        "sourcePack": "allopacks/data_and_typical_grade6.allopack.json",
+        "sourceResourceId": "dg-memory",
+        "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+        "factsHash": "f49ddfb86f971af36b96ecdb175df75f20e352e92a313f1f3b28ca059d0a13a7"
+      }
+    }
   },
   {
     "resourceId": "dg-sort",
@@ -226,6 +303,12 @@
     "path": "data.brief.constraints.2",
     "from": "Report every value you collected, including any outlier",
     "to": "Report the data and any corrections or exclusions transparently, without identifying participants"
+  },
+  {
+    "resourceId": "dg-challenge",
+    "path": "data.brief.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "dg-challenge",

@@ -115,7 +115,7 @@ window.StemLab = window.StemLab || {
 
           var mode = d.mode || 'truth';
 
-          var expr = d.expression || 'P → Q';
+          var expr = typeof d.expression === 'string' ? d.expression : 'P → Q';
 
           var proofSteps = d.proofSteps || [];
 
@@ -1065,11 +1065,11 @@ window.StemLab = window.StemLab || {
             mode === 'truth' && React.createElement("div", { className: "space-y-4" },
 
               // Expression builder — drag-and-drop
-              React.createElement("div", { className: "p-5 rounded-2xl border-2 border-violet-200", style: { background: _gCard } },
+              React.createElement("div", { 'data-logic-expression-builder': true, className: "p-5 rounded-2xl border-2 border-violet-200", style: { background: _gCard } },
 
-                React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+                React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-3" },
                   React.createElement("span", { style: { fontSize: '18px' } }, "\uD83E\uDDE9"),
-                  React.createElement("h3", { className: "font-black text-violet-900 text-sm" }, t('stem.logiclab.drag_and_drop_expression_builder', "Drag-and-Drop Expression Builder")),
+                  React.createElement("h3", { className: "font-black text-violet-900 text-sm" }, t('stem.logiclab.expression_builder', 'Expression builder')),
                   React.createElement("span", { className: "text-xs text-violet-400 font-bold ml-auto" }, t('stem.logiclab.drag_tiles_or_click_to_add', "Drag tiles or click to add"))
                 ),
 
@@ -1078,42 +1078,37 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "text-xs font-black text-violet-400 uppercase tracking-wider" }, t('stem.logiclab.variables', "Variables")),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
                     ['P','Q','R','S'].map(function(v) {
-                      return React.createElement("div", { 
+                      return React.createElement("button", { type: "button",
                         key: v, draggable: true,
                         onDragStart: function(e) { _drag.sym = v; e.dataTransfer.effectAllowed='copy'; },
-                        role: 'button', tabIndex: 0,
                         'aria-label': 'Insert variable ' + v,
-                        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd({ expression: expr + v }); } },
                         onClick: function() { upd({ expression: expr + v }); },
-                        className: "w-10 h-10 flex items-center justify-center font-black text-white text-base rounded-xl cursor-grab hover:scale-110 shadow-md select-none transition-transform",
-                        style: { background: _symColor[v] }
+                        className: "w-11 h-11 flex items-center justify-center font-black text-white text-base rounded-xl cursor-grab hover:scale-110 shadow-md select-none transition-transform",
+                        style: { background: _symColor[v], minWidth: 44, minHeight: 44 }
                       }, v);
                     })
                   ),
                   React.createElement("div", { className: "text-xs font-black text-violet-400 uppercase tracking-wider" }, t('stem.logiclab.connectives', "Connectives")),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
                     ['\u2227','\u2228','\u00AC','\u2192','\u2194','\u2295'].map(function(sym) {
-                      return React.createElement("div", { 
+                      return React.createElement("button", { type: "button",
                         key: sym, draggable: true,
                         onDragStart: function(e) { _drag.sym = ' '+sym+' '; e.dataTransfer.effectAllowed='copy'; },
-                        role: 'button', tabIndex: 0,
                         'aria-label': 'Insert ' + (CONN[sym] ? CONN[sym].eng : sym),
-                        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd({ expression: expr+' '+sym+' ' }); } },
                         onClick: function() { upd({ expression: expr+' '+sym+' ' }); },
-                        className: "px-3 h-10 flex items-center justify-center font-black text-white text-sm rounded-xl cursor-grab hover:scale-110 shadow-md select-none transition-transform",
+                        className: "px-3 py-2 flex items-center justify-center font-black text-white text-sm rounded-xl cursor-grab hover:scale-110 shadow-md select-none transition-transform",
                         title: CONN[sym] ? CONN[sym].eng : sym,
-                        style: { background: _symColor[sym], minWidth: '44px' }
+                        style: { background: _symColor[sym], minWidth: 44, minHeight: 44, maxWidth: '100%', whiteSpace: 'normal', overflowWrap: 'anywhere' }
                       }, sym + ' ' + (CONN[sym] ? CONN[sym].eng : ''));
                     }),
                     ['(',')'].map(function(v) {
-                      return React.createElement("div", { 
+                      return React.createElement("button", { type: "button",
                         key: v, draggable: true,
                         onDragStart: function(e) { _drag.sym = v; e.dataTransfer.effectAllowed='copy'; },
-                        role: 'button', tabIndex: 0,
-                        'aria-label': 'Insert ' + v,
-                        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd({ expression: expr+v }); } },
+                        'aria-label': v === '(' ? 'Insert opening parenthesis' : 'Insert closing parenthesis',
+                        style: { minWidth: 44, minHeight: 44 },
                         onClick: function() { upd({ expression: expr+v }); },
-                        className: "w-10 h-10 flex items-center justify-center font-black text-slate-600 text-base rounded-xl cursor-grab hover:scale-110 shadow-md select-none transition-transform bg-slate-100 hover:bg-slate-200"
+                        className: "w-11 h-11 flex items-center justify-center font-black text-slate-600 text-base rounded-xl cursor-grab hover:scale-110 shadow-md select-none transition-transform bg-slate-100 hover:bg-slate-200"
                       }, v);
                     })
                   )
@@ -1144,18 +1139,18 @@ window.StemLab = window.StemLab || {
                 ),
 
                 // Inline controls row
-                React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+                React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-3" },
                   React.createElement("input", {
-                    type: "text", value: expr,
+                    type: "text", value: expr, style: { minHeight: 44, flexBasis: '100%' },
                     onChange: function(e) { upd({ expression: e.target.value }); },
                     placeholder: t('stem.logiclab.or_type_p_q', "Or type: P \u2192 Q"),
                     'aria-label': t('stem.logiclab.logic_expression_input', 'Logic expression input'),
                     className: "min-w-0 flex-1 px-3 py-2 rounded-lg border border-violet-500 text-sm font-mono text-violet-800 bg-white focus:ring-2 focus:ring-violet-400 outline-none"
                   }),
-                  React.createElement("button", { "aria-label": t('stem.logiclab.backspace_last_symbol', "Backspace last symbol"),
+                  React.createElement("button", { style: { minHeight: 44, minWidth: 44 }, "aria-label": t('stem.logiclab.remove_last_character', 'Delete last character'),
                     onClick: function() { upd({ expression: expr.slice(0,-1).trimEnd() }); },
                     className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-lg text-sm"
-                  }, "\u232B"),
+                  }, t('stem.logiclab.remove_last_character', 'Delete last character')),
                   React.createElement("button", { "aria-label": t('stem.logiclab.clear', "Clear"),
                     onClick: function() { upd({ expression: '' }); },
                     className: "px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-lg text-sm"
@@ -1199,64 +1194,6 @@ window.StemLab = window.StemLab || {
                   return null;
 
                 })(),
-
-                // Connective buttons
-
-                React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
-
-                  Object.keys(CONN).map(function(sym) {
-
-                    return React.createElement("button", { "aria-label": "Insert connective: " + CONN[sym].eng,
-
-                      key: sym,
-
-                      onClick: function() { upd({ expression: expr + ' ' + sym + ' ' }); },
-
-                      className: "px-3 py-2 bg-violet-100 hover:bg-violet-200 text-violet-700 font-bold rounded-lg transition-all text-sm",
-
-                      title: CONN[sym].eng
-
-                    }, sym + " " + CONN[sym].eng);
-
-                  })
-
-                ),
-
-                // Variable buttons
-
-                React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
-
-                  ['P','Q','R','S','(',')'].map(function(v) {
-
-                    return React.createElement("button", { "aria-label": "Insert symbol: " + v,
-
-                      key: v,
-
-                      onClick: function() { upd({ expression: expr + v }); },
-
-                      className: "px-3 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold rounded-lg transition-all text-sm"
-
-                    }, v);
-
-                  }),
-
-                  React.createElement("button", { "aria-label": t('stem.logiclab.backspace_last_symbol_2', "Backspace last symbol"),
-
-                    onClick: function() { upd({ expression: expr.length > 0 ? expr.slice(0, -1) : '' }); },
-
-                    className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-lg transition-all text-sm"
-
-                  }, "\u232B"),
-
-                  React.createElement("button", { "aria-label": t('stem.logiclab.clear_3', "Clear"),
-
-                    onClick: function() { upd({ expression: '' }); },
-
-                    className: "px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-lg transition-all text-sm"
-
-                  }, t('stem.logiclab.clear_4', "Clear"))
-
-                ),
 
                 // Presets
 

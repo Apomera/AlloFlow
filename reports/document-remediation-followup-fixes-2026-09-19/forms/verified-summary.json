@@ -1,0 +1,14 @@
+{
+  "verifiedAt": "2026-09-20T03:25:36.661Z",
+  "unitPassed": 147,
+  "browserPassed": 68,
+  "newFixtures": 48,
+  "newChecks": 96,
+  "harmfulCases": 26,
+  "validCases": 22,
+  "originalExamples": 6,
+  "sourceAndTestHashesUnchangedSinceSnapshot": true,
+  "modulesIdentical": true,
+  "policyVersion": "20260920-1",
+  "scope": "Local source-gate, mocked aiFixChunked, native Chromium FormData, and generated module parity. No live-model requests, network form submission, deployment, or full-suite claims."
+}

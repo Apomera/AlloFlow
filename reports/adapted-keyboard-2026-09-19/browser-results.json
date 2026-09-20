@@ -1,0 +1,16 @@
+[
+  {
+    "width": 320,
+    "tabCycle": true,
+    "summaryKeyboardActivation": true,
+    "escapeClosesOnlyHelp": true,
+    "focusViewPreserved": true
+  },
+  {
+    "width": 1280,
+    "tabCycle": true,
+    "summaryKeyboardActivation": true,
+    "escapeClosesOnlyHelp": true,
+    "focusViewPreserved": true
+  }
+]

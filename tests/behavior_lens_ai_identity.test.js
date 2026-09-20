@@ -28,6 +28,7 @@ async function mount() {
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host);
   await React.act(async () => root.render(React.createElement(window.AlloModules.BehaviorLens, baseProps({ isTeacherMode: true, studentNickname: 'Eagle', dashboardData: [{ studentNickname: 'Eagle' }, { studentNickname: 'Falcon' }], callGemini, addToast }))));
   await tick(350);
+  await click(button('All tools'));
   return { callGemini, addToast, respond: async value => { await React.act(async () => { resolveResponse(value); await Promise.resolve(); }); await tick(350); } };
 }
 describe('Behavior Lens AI requests remain bound to their original student', () => {

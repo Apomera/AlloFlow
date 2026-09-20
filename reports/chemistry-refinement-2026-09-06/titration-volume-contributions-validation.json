@@ -1,0 +1,26 @@
+{
+  "passedTests": 115,
+  "passedSuites": 5,
+  "browserScans": 44,
+  "normalModeContrastScans": 42,
+  "forcedColorStructuralScans": 2,
+  "forcedColorContrast": "Visually reviewed; axe contrast rule excluded only in forced-color mode (dequelabs/axe-core#3978).",
+  "pageErrors": 0,
+  "horizontalOverflowCases": 0,
+  "missingNewAriaReferences": 0,
+  "browserReports": [
+    "titration-volume-contributions-browser-results.json",
+    "titration-volume-tracker-browser-results.json"
+  ],
+  "unitReport": "titration-volume-contributions-tests.json",
+  "sourceReport": "titration-volume-contributions-source-checks.json",
+  "visualReview": [
+    "refill phone 320",
+    "partial fill desktop 1200",
+    "forced-colors phone 320"
+  ],
+  "fixtureCorrections": [
+    "Respect existing experiment volume caps",
+    "Allow expected saved renderer preference change"
+  ]
+}

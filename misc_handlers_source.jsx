@@ -1244,7 +1244,7 @@ function handleRestoreView(item, options = {}, deps = {}) {
         const localAacPayload = _alloBuildLocalAacPayload(item.data, item.id, Date.now());
         if (!localAacPayload) {
             addToast('This AAC Board could not be opened because its portable data is invalid.', 'error');
-            return;
+            return false;
         }
         visualSupportsDismissedIdsRef.current.delete(localAacPayload.payloadId);
         visualSupportsLastTimestampRef.current = Math.max(visualSupportsLastTimestampRef.current, localAacPayload.timestamp);

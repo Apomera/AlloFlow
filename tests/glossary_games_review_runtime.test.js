@@ -250,7 +250,13 @@ describe('Word-search print orientation', () => {
   it.each(['AlloFlowANTI.txt','desktop/web-app/src/AlloFlowANTI.txt','desktop/web-app/src/App.jsx'])('%s keeps the answer key in the same direction as the playable puzzle', path => {
     const source=readFileSync(path,'utf8');
     const start=source.indexOf('const handlePrintGame =');
-    const handler=source.slice(start,source.indexOf('const chunkText =',start));
+    let handler=source.slice(start,source.indexOf('const chunkText =',start));
+    if(handler.includes('_alloHostHandlers().handlePrintGame')){
+      const extracted=readFileSync('host_handlers_source.jsx','utf8'),begin=extracted.indexOf('const handlePrintGame =');
+      expect(begin).toBeGreaterThan(-1);
+      const end=extracted.indexOf('\n  const ',begin+1);
+      handler=extracted.slice(begin,end<0?undefined:end);
+    }
     expect(handler).toContain("gameData.isRtl ? 'rtl' : 'ltr'");
     expect(handler).toContain('grid(false)');
     expect(handler).toContain('grid(true)');

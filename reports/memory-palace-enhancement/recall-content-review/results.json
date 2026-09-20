@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "changedFactsExit": true,
+  "removedStopsExit": true,
+  "unrelatedSavesContinue": true,
+  "noStaleScore": true,
+  "masteryPreserved": true,
+  "manualRestart": true,
+  "liveArmWaits": true,
+  "newArmRestarts": true,
+  "widths": [
+    1280,
+    390,
+    320
+  ],
+  "pageErrors": []
+}

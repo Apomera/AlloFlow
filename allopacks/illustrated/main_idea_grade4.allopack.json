@@ -29,10 +29,15 @@
       "textPolicy": "Text-free artwork; original activity text stays editable"
     },
     "contentRefinements": {
-      "count": 23,
+      "count": 30,
       "audit": "allopacks/media/main_idea_grade4/content-refinements.json",
-      "review": "Literacy content refined; educator review pending"
-    }
+      "review": "Literacy content refined; educator review pending",
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/main_idea_grade4/content-refinements.json",
+      "sourceOnlyResourceIds": []
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Main Idea and Supporting Details",
   "history": [
@@ -79,7 +84,7 @@
       "title": "The Suitcase Test",
       "timestamp": "2026-07-21T10:00:01.000Z",
       "data": "## The Suitcase Test\n\nImagine you are packing a suitcase for a trip. The suitcase is the **main idea** — the one big container. The clothes you pack inside are the **supporting details**. Everything that goes in has to belong to that trip.\n\nWhen you read a paragraph, you are doing the same job in reverse. You look at what is packed and figure out what suitcase it all came from.\n\nHere is a paragraph:\n\n> Honeybees do far more than make honey. As they move from flower to flower, pollen sticks to their bodies and travels with them, which lets plants make seeds. Many fruit and nut crops benefit from insect pollination. Farmers of almonds, apples, and blueberries even rent beehives during flowering season.\n\nWhat is it about? A first instinct is \"bees\" — but that is only the **topic**, the one-word subject. The main idea is a full thought: *honeybees are important to our food supply because they pollinate crops.*\n\nThat is the difference students miss most. The topic can be a word or short phrase. The main idea is a sentence that says something ABOUT the topic.\n\nNotice how the details worked. Pollen sticking to bees, food crops benefiting from pollination, farmers renting hives — each one supports the same claim. That is your test: if a detail does not support the main idea, it may be background or less relevant to this particular point.\n\nSometimes the main idea is stated right in the text, often in the first or last sentence. That is the easy version. Other times it is **implied** — never written down anywhere, and you have to build it yourself from the details. Both count. Both are findable.\n\nA quick method that works: read the whole paragraph, then cover it and ask yourself, \"If I could only say one sentence about this, what would it be?\" Treat that sentence as a first draft, then check it against the important details.\n\nOne warning. A detail can be true, interesting, and still not be the main idea. \"Bees have five eyes\" is a fact, and it is fascinating, but a paragraph about pollination is not really about bee eyes. Interesting and important are different things — and telling them apart is most of what good reading is.\n\nThe suitcase is an analogy. Real paragraphs can include examples, qualifications and background. Focus on the important information, and allow more than one accurate wording of a main idea. You may keep the text visible, annotate, write or use AAC instead of covering it and speaking.",
-      "meta": "4th-5th Grade • Leveled reading • ~380 words",
+      "meta": "4th-5th Grade • Leveled reading",
       "imageSlot": "mi-img-suitcase"
     },
     {
@@ -176,7 +181,7 @@
         },
         {
           "term": "Detail",
-          "def": "A smaller piece of information; a supporting detail helps explain the main idea.",
+          "def": "A smaller piece of information. It may help explain a larger point.",
           "tier": "Domain-Specific",
           "image": "data:image/webp;base64,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",
           "imageAlt": "Three smaller gold blocks point toward one larger teal block.",
@@ -468,6 +473,13 @@
             "hookFact": {
               "text": "'Dogs' is a topic. 'Dogs can be trained to detect illness' is a main idea.",
               "sourceTitle": "The Suitcase Test (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/main_idea_grade4.allopack.json",
+              "sourceResourceId": "mi-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "518e2b62518c0cd957917c2465586f3dc5300ac7d4ece0a20e1abb0a359e6c76"
             }
           },
           {
@@ -479,7 +491,7 @@
               "Check your sentence against the important details. A mismatch may mean revising your idea or recognizing background information."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "sequence-cue",
             "mode": "scaffolded",
             "aiExample": "Read. Cover. Say. Check. Four beats, four hand motions: eyes on the page, hand over the page, hand to your mouth, finger down the details.",
@@ -528,6 +540,13 @@
             "hookFact": {
               "text": "Telling interesting from important is most of what good reading is.",
               "sourceTitle": "The Suitcase Test (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/main_idea_grade4.allopack.json",
+              "sourceResourceId": "mi-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "85e0b02d58aee76c50478dc7fbfd1fa09e707770a1b562a5a67a1e0ade81ab5b"
             }
           }
         ]
@@ -766,27 +785,27 @@
       "data": [
         {
           "question": "Can a paragraph have more than one main idea? 🤔",
-          "answer": "A paragraph often develops one main point, but structure varies. Longer texts may develop several related ideas. Choose a statement that fits the section you are summarizing."
+          "answer": "A paragraph often builds one main point. Some texts develop more than one. Choose a statement that fits the part you are reading."
         },
         {
           "question": "Is the first sentence always the main idea?",
-          "answer": "Often, but not always. Writers sometimes build up to it and put it last. Sometimes they never state it at all. Check the details before you trust the first line."
+          "answer": "No. A writer may state it later or leave you to work it out. Check the details before choosing the first line."
         },
         {
           "question": "What is the difference between a main idea and a summary? 📝",
-          "answer": "The main idea is the single biggest point. A summary is short too, but it includes the main idea PLUS the most important supporting details."
+          "answer": "The main idea names a key point. A summary also gives the most important details in a short account."
         },
         {
           "question": "Why do tests love this skill so much?",
-          "answer": "Finding the main idea helps connect details and understand a text. Other reading tasks may also require vocabulary, inference, comparison or evaluating evidence."
+          "answer": "It helps you connect details and understand a text. You will also use other skills, such as working out new words or comparing ideas."
         },
         {
           "question": "What if I disagree with the author's main idea?",
-          "answer": "Totally allowed. In fact, naming it correctly is what makes disagreeing possible. You cannot argue with a point you have not understood yet."
+          "answer": "You can disagree. First explain the point fairly. Then use reasons and evidence to show why you disagree."
         },
         {
           "question": "Does this work on videos and podcasts too? 🎧",
-          "answer": "Yes, the same questions can help with videos and podcasts. Pause, replay or use a transcript when helpful, and consider sound and visual information too."
+          "answer": "Yes. Pause, replay or use a transcript if it helps. Think about what the sounds and pictures add too."
         }
       ],
       "meta": "6 questions • transfer beyond print"
@@ -887,7 +906,7 @@
           ],
           "deliverable": "A finished one-page poster plus a five-sentence note to the second-grade teacher explaining how to use it and which detail is the trap.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

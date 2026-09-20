@@ -160,3 +160,97 @@ Transfer captures now snapshot the prediction and timestamp of the matching comp
 The saved comparison carries the frozen prediction into the evidence journal. The mission's follow-up outcome panel shows that prediction beside the saved gap, original +30° gap, explanation, and next question. Until a matching comparison is saved, it explicitly reports that no result is linked. A relaunch requires a new capture even if the physical result is numerically identical; earlier journal records remain intact.
 
 Review follow-up outcome reopens a hidden mission, reveals the planning disclosure, and moves keyboard focus to the outcome heading. Existing transfer explanation revision and journal behavior remain available. The panel adds no canvas or animation loop. Unit and browser coverage exercise identity mismatch rejection, draft edits, hidden mission recovery, repeat launches, restoration, shared chart scales, and desktop/320-pixel layout.
+
+## Reviewing earlier follow-up investigations
+
+The Mars follow-up outcome panel now includes a native history selector when earlier saved launches exist. Each entry preserves its launch prediction, latest saved comparison, explanation, and next question. Captures are grouped by launch timestamp and ordered by launch time, so repeated saves do not look like new investigations. Only validated captures linked to the current completed mission are included.
+
+The current investigation remains the default, including its pending-evidence state. Selecting history updates only marsFollowUpReviewId; it does not alter the plan, launch, or journal. The selection survives restoration. Return to current investigation clears it and focuses the heading; launching a new experiment or reviewing its freshly saved outcome also returns to current. Missing or removed selected records fall back to the current investigation.
+
+No canvas or animation loop was added. Unit and browser checks cover launch grouping, ordering, invalid links, repeated angles, historical review, restored selection, keyboard focus, new-launch isolation, deletion fallback, and desktop/320-pixel layouts.
+
+## Dashboard follow-up shortcuts
+
+The completed Mars journey now has a compact Keep investigating card on the mission dashboard. Its state is derived from the saved expedition report, current prediction, exact launch, and linked result: finish or continue a prediction, reopen an experiment awaiting evidence, or review a saved outcome. A separate shortcut opens the latest saved investigation when valid launch metadata is present. Counts include validated saved launches without changing the six original journey checkpoints.
+
+Reopening a test restores its original offset at departure without creating another launch or replacing its prediction. Planning and review shortcuts reveal the relevant disclosure and move keyboard focus to the target. Choosing history or resuming work does not rewrite journal records, completed reports, or drafts. Missing expedition reports do not display the shortcut.
+
+Verification covers status derivation, older-result isolation, edited drafts, hidden mission restoration, exact launch preservation, history and outcome focus, unchanged journal data, and desktop/320-pixel layouts alongside the original dashboard restoration tests.
+
+### In-flight follow-up guidance
+
+Completed Mars expeditions now show a compact investigation guide beside the transfer canvas. It tracks inspect, capture, explain, and review, displays the frozen launch prediction in a disclosure, and restores the launched angle when live controls differ. Capturing arrival uses the existing evidence workflow and focuses the changed-variable field. Captured evidence remains available when the live comparison is hidden; saved results link back to the corresponding follow-up outcome. Original mission trial instructions are hidden after completion.
+
+Guidance uses the existing flight state and animation loop; it does not add timers, award progress, relaunch an investigation, or automatically save explanations. Desktop and phone coverage checks the full evidence loop, keyboard focus, draft preservation, and compact layout.
+
+### Saved arrival geometry
+
+Follow-up outcomes include paired SVG arrival diagrams for the original +30-degree trial and the selected saved investigation. Both normalize the Mars orbit to the same radius and rotate the arrival point to the right. A diamond marks the spacecraft, a labeled circle marks Mars, and the colored chord shows the straight-line gap; accessible image labels include the recorded distance. Opposite angles mirror the destination, while a doubled angle illustrates why a chord does not exactly double. Recorded-gap comparisons use the same three-decimal precision as the labels.
+
+Diagrams require valid saved Earth-to-Mars measurements and matching flight durations (within 0.1 day for rounded records). Missing or incompatible evidence retains the existing written outcome without adding a schematic. The diagrams are static, responsive, theme-aware, and independent of live flight controls; viewing them never changes journal records or plans.
+
+### Interactive angle explorer
+
+Saved follow-up outcomes offer a collapsible angle explorer with a keyboard-operable -60 to +60 degree slider, five presets, a mirror action, and reset to the reviewed capture. An orbit schematic and normalized gap-versus-angle curve update together; dotted rings mark the saved destination and its curve position. Preview distances use orbit radii and ratios to the +30-degree model gap. They follow the chord equation and are checked against the existing transfer rendezvous solver across all integer slider angles.
+
+Exploration is stored only as display state scoped to the capture timestamp. It never changes predictions, launched experiments, journal entries, or captured evidence. The original recorded diagrams remain fixed; selecting another investigation initializes its preview from that saved angle. Static SVGs require no animation loop and work with reduced motion.
+
+### Journey gap chart
+
+The live alignment comparison now plots spacecraft-to-destination separation across the full transfer for both the aligned and test launches. Both traces share elapsed flight time and a single AU scale. Dashed green and solid amber lines, plus hollow and filled cursor markers, distinguish the experiments without relying on color alone. The chart includes a keyboard-operable progress scrubber synchronized with the existing flight controls.
+
+The 97-point curves are cached per route and angle. Cursor positions and numerical readings use the instantaneous transfer solver and update through the existing throttled canvas loop; there is no additional animation loop. Scrubbing pauses playback, reduced-motion users retain manual controls, and identical-planet routes have no chart. The view does not save evidence or alter mission progress. Tests cover both transfer directions, signed offsets, shared clocks, playback synchronization, canvas retention, and desktop/phone layouts.
+
+### Plotted approach landmarks
+
+The journey chart marks the smallest sampled test gap with a triangle and offers inspection cards for that moment and arrival. Cards show the gap, elapsed day, and flight progress; selecting one pauses playback and moves the existing flight cursor. If the sampled minimum is already at arrival, the cards combine into one control. Prompts distinguish a small midflight separation from a successful arrival alignment.
+
+The minimum is selected from the same 97 plotted samples and explicitly labeled as sampled; it is not an exact continuous closest-approach estimate. The shortcuts do not capture or save evidence, and the existing arrival-only capture guard remains in force. Coverage checks signed offsets and different routes, minimum-at-arrival behavior, keyboard focus, playback pausing, and preservation of journal and mission data.
+
+### Linked orbit and chart inspection
+
+The comparison chart provides an inspect-in-orbit action, and a compact panel below the canvas returns to the journey chart. Both actions pause playback, retain the current progress and launch angle, and move keyboard focus to the selected view. The canvas and chart retain their existing identities.
+
+During comparison flights, dashed green and solid amber separation rulers now connect the craft to the aligned and test destinations throughout the journey. Canvas telemetry and an accessible text reading show both gaps at the same time, and inspecting a sampled minimum identifies it in the canvas stage caption. The ruler explanation distinguishes measured separation from spacecraft travel paths. Readings share the existing throttled animation update; view navigation never captures evidence or changes drafts, journal entries, or mission progress.
+
+### Readable transfer markers
+
+The transfer canvas labels the departure planet (A), destination (B), spacecraft (C), and aligned comparison destination (R) using compact outlined tags and connector lines. A deterministic placement pass scores nearby positions to avoid other labels and marker centers, while keeping text below telemetry and above the footer. The Sun is a placement obstacle. Only annotation positions move; simulated bodies and spacecraft remain at their model coordinates.
+
+Labels remain distinct when the spacecraft, destination, and reference coincide at arrival. The text legend and canvas accessibility description explicitly identify C as the spacecraft, and comparison mode associates the canvas with its live gap reading. Tests cover clustered and coincident markers, viewport bounds, long labels, deterministic placement, canvas lifecycle, phone/desktop views, and preservation of saved evidence.
+
+### Arrival inspection and matching motion
+
+At the transfer endpoint, an arrival panel distinguishes a position match from a remaining destination gap. It reports the modeled separation and elapsed time. Matched arrivals additionally compare the spacecraft and destination speeds relative to the Sun on a shared zero-based scale, then identify the ideal speed-up or slowdown from the existing signed Hohmann arrival impulse. The Hohmann helper now exposes the two speeds it already computes.
+
+Missed arrivals do not present an aligned arrival burn as a remedy at the wrong position. The panel explicitly distinguishes matching circular Sun-centered motion from capture into a planet-centered orbit, which this model does not simulate. It disappears when returning to departure or coasting, does not appear for identical-planet routes, and does not record evidence or complete missions. Tests cover both directions, all directed planet pairs, signed offsets, visibility, and desktop/phone layouts.
+
+### Reversible arrival impulse preview
+
+Matched arrivals include before/after controls for the ideal Sun-centered arrival impulse. The spacecraft speed bar changes to the destination speed, and a status reading shows the resulting speed difference. Both states use the original shared scale; a dotted marker retains the original craft speed, including when an inward transfer slows down. Stable bar elements animate over 260 ms when motion is allowed and switch immediately under reduced motion.
+
+The preview is local illustration state. It does not alter the flight, evidence, mission progress, or explanation drafts. Leaving arrival, changing the alignment, replaying, or switching route resets it to the before state. Missed arrivals do not offer this preview. Browser coverage checks keyboard focus, pressed states, fixed scales, both burn directions, reset behavior, motion preferences, and data preservation.
+
+### Synchronized orbital speed profile
+
+The existing Orbit rhythm panel now pairs its equal-time diagram with a speed-versus-time curve. A hollow marker and dashed vertical cursor follow the shared orbit clock, timeline, landmark shortcuts, and twelfth-orbit steps. The curve uses 193 samples from the existing Keplerian velocity solver, includes the next perihelion at 100%, and keeps its speed axis at zero so nearly circular orbits remain visually nearly flat. Each selected world uses its own explicitly labeled upper limit; the horizontal axis measures elapsed time rather than angle or path distance.
+
+The existing throttled canvas update moves the cursor and marker without rebuilding the curve or adding an animation loop. Reduced-motion users retain the paused manual controls. Accessible chart descriptions identify units, sampling, and the linked numerical reading. The chart adds no journal entries, snapshots, or mission progress. Physics checks cover circular and highly eccentric orbits, vis-viva agreement, symmetry, endpoints, zero-based scaling, and wrapped time; browser checks cover shared controls, retained DOM/canvas identity, data preservation, themes, and narrow layouts.
+
+### Inspecting matching distances on an orbit
+
+The speed profile now includes a native orbit-time slider and an Inspect matching distance action. Dotted rings on the orbit diagram and speed curve identify the paired point on the other leg. Reflecting elapsed orbital phase about half a period preserves distance and speed in the Keplerian model while reversing radial motion. The direction readout distinguishes moving away, moving toward, and distance turning points. The paired markers and action are suppressed when the two positions coincide; circular orbits do not claim a unique matching-distance point.
+
+Both controls pause and update the existing shared clock without saving evidence. The 100% slider endpoint stays at the right edge of the speed chart while representing the same physical position as 0%. Playback updates the slider, paired markers, direction text, and action availability through the existing throttled loop. The native range supports keyboard, pointer, and touch input, and manual comparison remains available under reduced motion. Tests cover mirrored positions and velocities, negative and multiple-cycle time, endpoints, focus, playback synchronization, source evidence preservation, and desktop/phone layouts.
+
+### Compact linked views and direction arrows
+
+The Orbit rhythm panel places a short heading above linked orbit and speed diagrams, caps their display heights, and keeps inspection and step controls visible. Longer teaching notes, speed extrema, model limits, and the NASA link move into a native How to read these views disclosure. A brief always-visible legend explains the paired markers and arrow convention. Opening the disclosure changes no simulation or evidence state.
+
+Both paired orbit positions have tangent arrows derived from the existing Keplerian velocity solver, including the screen-space vertical inversion. The shafts have fixed length and start outside the enlarged markers; they represent direction only, while the speed curve represents magnitude. The paired arrow disappears when its corresponding marker is suppressed at a turning point. The existing throttled update keeps arrows synchronized without a new timer or animation loop. Unit checks verify forward tangency, mirrored directions, fixed lengths, and endpoint behavior. Browser coverage checks keyboard disclosure operation, retained comparison controls, playback, narrow-layout bounds, and reduced motion.
+
+### Previewing the next equal-time step
+
+An optional Preview next step control shades the upcoming one-twelfth of the selected orbit and marks its endpoint with a hollow diamond. Forward 1/12 lands at that endpoint, including when the interval crosses perihelion. The ordinary pair of reference sectors is hidden while the moving wedge is visible, and returns when preview is switched off. The visible legend reports the interval in Earth days; fuller guidance remains in the existing disclosure.
+
+The wedge solves the starting and ending eccentric anomalies and samples their connecting elliptical boundary at 129 points, keeping the Sun as the sector origin. Equal elapsed time therefore produces equal swept area, with shape and arc length changing around the orbit. Preview geometry updates in the existing throttled canvas loop and through manual controls. Toggling changes only the display preference, preserves the current time and evidence, and works with reduced motion. Tests check equal area across 120 phases for circular, planetary, and highly eccentric comet orbits, predicted endpoint agreement, wraparound, keyboard use, playback, planet changes, and narrow layouts.

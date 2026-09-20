@@ -1,0 +1,13 @@
+const fs=require('fs'),assert=require('assert/strict');let s=fs.readFileSync('stem_lab/stem_tool_anatomy.js','utf8');
+s=s.replace("'data-anatomy-compare-check':comparisonCheckPair,","'data-anatomy-compare-check':comparisonCheckPair,'data-anatomy-compare-question':comparisonQuestionKey,");
+fs.writeFileSync('stem_lab/stem_tool_anatomy.js',s);fs.writeFileSync('desktop/web-app/public/stem_lab/stem_tool_anatomy.js',s);
+let localize=fs.readFileSync('reports/anatomy-tutor-refinements-2026-09-19/localize.cjs','utf8').replaceAll('tutor_ref_','compare_ref_').replace('handtl_anatomy_tutor_20260919','handtl_anatomy_comparison_20260919');fs.writeFileSync(__dirname+'/localize.cjs',localize);
+const file='tests/anatomy_modality_compare_check.test.js';let test=fs.readFileSync(file,'utf8');
+test=test.replace("fnRow.querySelectorAll('td')","fnRow.querySelectorAll('th,td')");
+test=test.replace("    const wrongFirst =", "    const questionKey = render(filePath, PAIR, OLDER).querySelector('[data-anatomy-compare-check]').getAttribute('data-anatomy-compare-question');\n    const wrongFirst =");
+test=test.replaceAll("pair: 'femur|tibia', chosen:","pair: 'femur|tibia', questionKey, chosen:");
+test=test.replace("/^That was the (Femur|Tibia)\\. The (Femur|Tibia): \\S/","/^That was the (Femur|Tibia)\\./");
+test=test.replace("const systemRow = rows.find((r) => r.querySelector('td')?.textContent === 'System');","const systemRow = rows.find((r) => r.getAttribute('data-anatomy-compare-row') === 'system');");
+test=test.replace("systemRow.querySelectorAll('td')","systemRow.querySelectorAll('th,td')");test=test.replace("expect(cells[2]).toMatch(/Organ Systems/);","expect(cells[2]).toMatch(/Respiratory/);\n    expect(cells[2]).not.toMatch(/Organ Systems/);");
+fs.writeFileSync(file,test);
+console.log('Prepared localization and updated obsolete comparison assertions.');

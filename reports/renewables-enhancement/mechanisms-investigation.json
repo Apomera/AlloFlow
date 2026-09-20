@@ -164,6 +164,7 @@
     "energyDelta": null
   },
   "experiments": [],
+  "designMaps": [],
   "notebooks": [
     {
       "id": "solarPv",

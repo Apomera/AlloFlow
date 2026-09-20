@@ -8,7 +8,8 @@
     "gradeLevel": "6th Grade",
     "standards": "NGSS MS-ESS2-3 (analyze and interpret data on the distribution of fossils and rocks to provide evidence of past plate motions); NGSS MS-ESS2-2 (construct an explanation for how geoscience processes have changed Earth's surface at varying time and spatial scales); CCSS.ELA-LITERACY.RST.6-8.1 (cite specific textual evidence to support analysis of science and technical texts)",
     "createdAt": "2026-07-21T05:00:00.000Z",
-    "imageShotList": "allopacks/plate_tectonics_grade6.IMAGES.md"
+    "imageShotList": "allopacks/plate_tectonics_grade6.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Plate Tectonics",
   "history": [
@@ -55,7 +56,7 @@
       "title": "The Man Who Was Laughed At",
       "timestamp": "2026-07-21T05:00:01.000Z",
       "data": "## The Man Who Was Laughed At\n\nIn 1912, a German scientist named Alfred Wegener pointed at a world map and said something that got him mocked for the rest of his life: the continents used to be joined together, and they have been drifting apart ever since.\n\nHis evidence was actually good. South America's east coast fits into Africa's west coast like puzzle pieces. Identical fossils of *Mesosaurus* show up on both continents. That reptile lived in fresh water and could never have swum an ocean. Matching rock layers and mountain ranges line up across the Atlantic. Coal sits under the ice of Antarctica, and coal forms in warm swamps. So Antarctica was not always where it is now.\n\nGeologists still rejected it, and their reason was fair: Wegener could not explain **how**. What force could shove a continent through solid ocean floor? Without a mechanism, a good pattern is only a curiosity.\n\nThe answer arrived decades later, from the sea floor. After World War II, ships mapped the ocean bottom. They found a mountain range running down the middle of the Atlantic. Along that ridge, new rock was erupting and pushing outward. Even better, magnetic stripes frozen into that rock matched in mirror image on both sides. The sea floor was spreading.\n\nContinents were not plowing through the ocean floor. They were riding on it.\n\nEarth's outer shell is broken into about fifteen major **plates**. They float on the **mantle**, the hot layer of slowly flowing rock underneath.\n\nWhere plates pull apart at a **divergent** boundary, magma rises and makes new crust. That is Iceland, sitting on the Mid-Atlantic Ridge and widening every year.\n\nWhere plates push together at a **convergent** boundary, one dives under the other or both crumple upward. That is the Himalayas, still growing as India presses into Asia.\n\nWhere plates grind past each other at a **transform** boundary, they stick, build stress, and snap. That is the San Andreas Fault. That snap is an earthquake.\n\nPlates move about as fast as your fingernails grow, a few centimeters a year. Over millions of years, that is enough to build the Andes and tear open an ocean.\n\nWegener died on an expedition in Greenland in 1930, still dismissed. About thirty years later his idea became the foundation of modern geology.\n\nBeing right early is not the same as being believed. In science, you also have to show the mechanism.",
-      "meta": "6th Grade • Leveled reading • ~400 words",
+      "meta": "6th Grade • Leveled reading",
       "imageSlot": "pt-img-boundaries"
     },
     {

@@ -1,0 +1,232 @@
+{
+  "timestamp": "2026-09-20T02:56:18.185Z",
+  "scope": "Actual generated delivery contract and dialog, local React and built CSS; controlled callbacks/icons; no full-app transport, focus-trap, QR generation, or deployment validation.",
+  "browser": "148.0.7778.96",
+  "hashes": {
+    "instructional_context_module.js": "694efa8b00a865ec6264bf51a40ebd2682a07baea359d3b06b842079aa2708f7",
+    "shared_activity_module.js": "80069230009b878f556d19429cb68deccefb12139cec6fe0ac1e848fbb5c84af",
+    "view_share_session_surfaces_module.js": "f9c505f4e270f58b2849ca6c41a3170f372f35e2eb8e32183cf02f74476c046d",
+    "main.1fb7b97e.css": "4b9a6e181169d48efc6e208af5f3987ffc9cd63ab255bc60eae40e4fa7a98761"
+  },
+  "scenarios": [
+    {
+      "name": "long-assignment-1280",
+      "pass": true,
+      "layout": {
+        "viewport": 1280,
+        "documentWidth": 1280,
+        "panelWidth": 448,
+        "left": 416,
+        "right": 864,
+        "panelScrollWidth": 446,
+        "panelClientWidth": 446
+      },
+      "readingCount": 50,
+      "selectedCount": 25,
+      "scroll": {
+        "top": 5100,
+        "height": 192,
+        "fullHeight": 5292,
+        "tabIndex": -1
+      },
+      "tabStops": [
+        {
+          "tag": "SUMMARY",
+          "text": "Readings and saved word supports",
+          "isReadingList": false
+        },
+        {
+          "tag": "UL",
+          "text": "Lesson 1: How writers use imagery, character, and language to develop the central theme — companionA",
+          "isReadingList": true
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Test as student",
+          "isReadingList": false
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Copy homework link",
+          "isReadingList": false
+        },
+        {
+          "tag": "INPUT",
+          "text": "Selectable homework link",
+          "isReadingList": false
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Revoke homework link",
+          "isReadingList": false
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Make self-contained version (no accounts needed)",
+          "isReadingList": false
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Host on Class Mailbox (small QR, images OK)",
+          "isReadingList": false
+        },
+        {
+          "tag": "BODY",
+          "text": "Take-home assignmentHomework assignment readyMacbeth — Act 1, Scene 150 teacher-prepared resources ·",
+          "isReadingList": false
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Close",
+          "isReadingList": false
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Readings and saved word supports",
+          "isReadingList": false
+        }
+      ]
+    },
+    {
+      "name": "long-assignment-320",
+      "pass": true,
+      "layout": {
+        "viewport": 320,
+        "documentWidth": 320,
+        "panelWidth": 296,
+        "left": 12,
+        "right": 308,
+        "panelScrollWidth": 294,
+        "panelClientWidth": 294
+      },
+      "readingCount": 50,
+      "selectedCount": 25,
+      "scroll": {
+        "top": 6412,
+        "height": 192,
+        "fullHeight": 6604,
+        "tabIndex": -1
+      },
+      "tabStops": [
+        {
+          "tag": "SUMMARY",
+          "text": "Readings and saved word supports",
+          "isReadingList": false
+        },
+        {
+          "tag": "UL",
+          "text": "Lesson 1: How writers use imagery, character, and language to develop the central theme — companionA",
+          "isReadingList": true
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Test as student",
+          "isReadingList": false
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Copy homework link",
+          "isReadingList": false
+        },
+        {
+          "tag": "INPUT",
+          "text": "Selectable homework link",
+          "isReadingList": false
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Revoke homework link",
+          "isReadingList": false
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Make self-contained version (no accounts needed)",
+          "isReadingList": false
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Host on Class Mailbox (small QR, images OK)",
+          "isReadingList": false
+        },
+        {
+          "tag": "BODY",
+          "text": "Take-home assignmentHomework assignment readyMacbeth — Act 1, Scene 150 teacher-prepared resources ·",
+          "isReadingList": false
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Close",
+          "isReadingList": false
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Readings and saved word supports",
+          "isReadingList": false
+        }
+      ]
+    },
+    {
+      "name": "empty-packet",
+      "pass": true,
+      "emptyOrLegacyConversionDisabled": true,
+      "calls": {
+        "selfContained": [],
+        "mailbox": [],
+        "preview": 1,
+        "copied": [
+          "https://school.example.invalid/homework/fixture"
+        ],
+        "closed": 0
+      }
+    },
+    {
+      "name": "empty-metadata",
+      "pass": true,
+      "emptyOrLegacyConversionDisabled": true,
+      "calls": {
+        "selfContained": [],
+        "mailbox": [],
+        "preview": 1,
+        "copied": [
+          "https://school.example.invalid/homework/fixture"
+        ],
+        "closed": 0
+      }
+    },
+    {
+      "name": "legacy-metadata",
+      "pass": true,
+      "emptyOrLegacyConversionDisabled": true,
+      "calls": {
+        "selfContained": [],
+        "mailbox": [],
+        "preview": 1,
+        "copied": [
+          "https://school.example.invalid/homework/fixture"
+        ],
+        "closed": 0
+      }
+    },
+    {
+      "name": "old-schema",
+      "pass": true,
+      "emptyOrLegacyConversionDisabled": true,
+      "calls": {
+        "selfContained": [],
+        "mailbox": [],
+        "preview": 1,
+        "copied": [
+          "https://school.example.invalid/homework/fixture"
+        ],
+        "closed": 0
+      }
+    },
+    {
+      "name": "summary-key-echo-fallback",
+      "pass": true,
+      "note": "Extra robustness case; production host returns undefined for missing keys, used by all other scenarios."
+    }
+  ],
+  "externalRequests": [],
+  "pageErrors": []
+}

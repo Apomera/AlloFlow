@@ -1,0 +1,65 @@
+{
+  "checkedAt": "2026-09-20T04:41:15.545Z",
+  "baselineRevision": "76ce6ab37dd67ef0a85243ce684dd363f849277f",
+  "baseline": {
+    "reads": 1031,
+    "getters": 1033,
+    "extraGetters": [
+      "useOwnSources",
+      "setUseOwnSources"
+    ],
+    "missingGetters": [],
+    "manifestOnly": [],
+    "gettersNotManifest": [
+      "useOwnSources",
+      "setUseOwnSources"
+    ],
+    "resetBlock": "  const resetCanvasWorkspaceSettings = (...__a) => {\n    const handlers = _alloHostHandlersOptional();\n    return handlers ? handlers.resetCanvasWorkspaceSettings(...__a) : undefined;\n  };\n",
+    "oldAssertions": {
+      "inlineRevoked": false,
+      "inlineExtend": false,
+      "inlineClone": false,
+      "researchMetaOld": true,
+      "setterOld": false
+    }
+  },
+  "current": {
+    "reads": 1034,
+    "getters": 1036,
+    "extraGetters": [
+      "useOwnSources",
+      "setUseOwnSources"
+    ],
+    "missingGetters": [],
+    "manifestOnly": [],
+    "gettersNotManifest": [
+      "useOwnSources",
+      "setUseOwnSources",
+      "persistOrganizerProgress"
+    ],
+    "resetBlock": "  const resetCanvasWorkspaceSettings = (...__a) => {\n    const handlers = _alloHostHandlersOptional();\n    return handlers ? handlers.resetCanvasWorkspaceSettings(...__a) : undefined;\n  };\n",
+    "oldAssertions": {
+      "inlineRevoked": false,
+      "inlineExtend": false,
+      "inlineClone": false,
+      "researchMetaOld": false,
+      "setterOld": false
+    }
+  },
+  "findings": [
+    "The optional resetCanvasWorkspaceSettings host wrapper is identical in HEAD and current source. The strict one-line shim assertion predates this work and rejects both.",
+    "Unused useOwnSources/setUseOwnSources dependency getters already exist in HEAD and explain the baseline exact-getter-set failure.",
+    "persistOrganizerProgress is a current getter absent from the manifest relative to HEAD; parent identified it as concurrent work outside this scoped repair. It was left unchanged.",
+    "The newly introduced saved-share mailbox guard required setMbUrlInput. Its missing getter was found during this review and corrected by the parent in all maintained shells and manifest; final current missingGetters should be empty.",
+    "Assignment control center lifecycle bodies and the command-context setter had already moved out of the canonical shell at HEAD. Tests now verify actual module exports/body plus shell forwarding, and execute the generated command context setter/closer.",
+    "Research metadata capture changed legitimately during the current mailbox work. The old packet text slice was vacuous after extraction. Replacement cases execute the actual host callback and generated SharedActivity builder, checking private metadata is retained only in the teacher record and absent from upload payloads, with shared activity enabled and disabled.",
+    "The language-pack test passed on rerun with maxWorkers=2 and testTimeout=30000; no language assertion was weakened."
+  ],
+  "verification": {
+    "command": "npx vitest run tests/assignment_control_center.test.js tests/research_suite_mailbox_bridge.test.js --pool=threads --maxWorkers=2 --testTimeout=30000 --reporter=default --reporter=json --outputFile=reports/homework-mailbox-reliability/final-compat-results.json",
+    "filesPassed": 2,
+    "testsPassed": 31,
+    "testsFailed": 0,
+    "result": "final-compat-results.json"
+  }
+}

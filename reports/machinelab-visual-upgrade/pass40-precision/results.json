@@ -1,0 +1,25 @@
+{
+  "errors": [
+    "Work areas windlass/390: {\"issues\":[\"Inconsistent scales {\\\"areaRatios\\\":[4.5,0.22222222222222224],\\\"barRatios\\\":[4.5000045000045,0.222222]}\"],\"overflow\":false}",
+    "Work areas screw/390: {\"issues\":[\"Inconsistent scales {\\\"areaRatios\\\":[188.49555921538757,0.005305164769729845],\\\"barRatios\\\":[188.49572868678797,0.00530516]}\"],\"overflow\":false}",
+    "Very thin equal areas: {\"issues\":[\"Inconsistent scales {\\\"areaRatios\\\":[3141.592653589793,0.0003183098861837907],\\\"barRatios\\\":[3141.6013998975836,0.000318309]}\"],\"overflow\":false}"
+  ],
+  "overflow": false,
+  "checks": [
+    "Work areas windlass/390",
+    "Work areas screw/390",
+    "Reversed/equal/high leverage 0.2/4",
+    "Reversed/equal/high leverage 1/1",
+    "Reversed/equal/high leverage 4/0.2",
+    "Very thin equal areas",
+    "Reading level k2",
+    "Reading level g35",
+    "Reading level g912",
+    "Forced-color work areas"
+  ],
+  "shots": [
+    "work-windlass-390",
+    "work-screw-thin",
+    "work-forced-colors"
+  ]
+}

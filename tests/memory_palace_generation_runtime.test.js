@@ -7,8 +7,11 @@ import { parse } from '@babel/parser';
 const source = fs.readFileSync('view_renderers_source.jsx', 'utf8');
 const ast = parse(source, { sourceType: 'script', plugins: ['jsx'] });
 const component = ast.program.body.flatMap(n => n.declarations || []).find(n => n.id.name === 'MemoryPalaceView').init;
-const names = ['retryRecall', '_recallStopsToStrengthen', '_inRecallScope', 'advanceRecall', 'finishRecall', 'submitRecallAnswer', 'revealCurrent', 'revealSelfCheck', 'markSelfCheck', 'totalItems', 'recallEligible', '_quickPreviewValid', 'handleQuickVariant', 'persistPalace', '_beginArtJob', '_endArtJob', '_artTarget', '_artTargetValid', '_artDiscarded', '_saveGeneratedImage', '_persistObject', '_quickSnapshot', 'handleDirectSubmit', 'handleDirectGenerate', 'handleQuickCreate', 'handleQuickUndo', 'handleAiRefine', 'handleFurnish', 'handleSculpt'];
-const declarations = component.body.body.flatMap(n => n.declarations || []).filter(n => names.includes(n.id.name));
+const names = ['_getVrRecallChoices', '_pickVrRecall', '_sceneStartAt', '_recallSceneState', '_recallModeForPalace', '_recallResultLabel', 'recallContentKey', '_recallContentCurrent', '_invalidateChangedRecall', 'exitRecall', '_setRecallPace', '_scheduleRecallAdvance', '_recallSummary', 'retryRecall', '_recallStopsToStrengthen', '_inRecallScope', 'advanceRecall', 'finishRecall', 'submitRecallAnswer', 'revealCurrent', 'revealSelfCheck', 'markSelfCheck', 'totalItems', 'recallEligible', '_quickPreviewValid', 'handleQuickVariant', 'persistPalace', '_beginArtJob', '_endArtJob', '_artTarget', '_artTargetValid', '_artDiscarded', '_saveGeneratedImage', '_persistObject', '_quickSnapshot', 'handleDirectSubmit', 'handleDirectGenerate', 'handleQuickCreate', 'handleQuickUndo', 'handleAiRefine', 'handleFurnish', 'handleSculpt'];
+const declarations = [
+  ...ast.program.body.flatMap(n => n.declarations || []).filter(n => n.id.name === '_alloRuntimeAiAvailable'),
+  ...component.body.body.flatMap(n => n.declarations || []).filter(n => names.includes(n.id.name)),
+];
 const factory = new Function('env', 'with (env) {\n' + declarations.map(n => 'const ' + source.slice(n.start,n.end) + ';').join('\n') + '\nreturn {' + names.join(',') + '}; }');
 const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => { resolve=a; reject=b; }); return {promise,resolve,reject}; };
 const flush = async () => { for(let i=0;i<30;i++) await Promise.resolve(); };
@@ -20,6 +23,9 @@ beforeEach(() => {
   const palace=window.AlloModules.MemoryPalace.buildPalace(data);
   a=palace.loci.find(l=>l.id==='b0_i0'); b=palace.loci.find(l=>l.id==='b0_i1');
   env={ React:{useMemo:fn=>fn()}, ready:true, window, data, title:'Water', t:()=>null, noWalk:false, recall:false, canImagen:true,
+    recallNavigationRef:{current:0}, sceneContextRef:{current:null}, nonce:0, recallContentRef:{current:'initial'}, recallRunContentRef:{current:'initial'}, recallContentChanged:false,
+    pendingSelfRatingsRef:{current:new Set()}, recallDraftsRef:{current:new Map()}, recallTimersRef:{current:[]}, startedByArmRef:{current:false}, onRecallClose:vi.fn(),
+    recallPaceRef:{current:{auto:true}}, recallAutoAdvance:true,
     recallOrderRef:{current:[a.id,b.id]}, recallResultsRef:{current:{}}, attemptsTotalRef:{current:0}, finishedRef:{current:false}, elapsedRef:{current:0},
     finished:null, selfRevealId:null, answered:0, playSound:vi.fn(), onScoreUpdate:vi.fn(), onGameComplete:vi.fn(),
     _resetRecallRun:vi.fn(()=>{env.recallResultsRef.current={};env.finished=null;env.finishedRef.current=false;}),
@@ -34,10 +40,11 @@ beforeEach(() => {
     addToast:vi.fn(), callImagen:vi.fn().mockResolvedValue('data:image/png;base64,new'),
     persist:vi.fn(), setNearbyEmpty:vi.fn(), setStopRequested:vi.fn(),
   };
-  for(const key of ['Recall','Finished','RecallSaid','RecallHint','CanReveal','TypedAnswer','Answered','WrongFlash','SelfRevealId','ArtJob','DirectBusy','DirectEval','DirectPrompt','QuickCreate','RefineBusy','RefinePrompt','Furnishing','Sculpting']) {
+  for(const key of ['RecallAttempt','RecallContentChanged','RecallAutoAdvance','Recall','Finished','RecallSaid','RecallHint','CanReveal','TypedAnswer','Answered','WrongFlash','SelfRevealId','ArtJob','DirectBusy','DirectEval','DirectPrompt','QuickCreate','RefineBusy','RefinePrompt','Furnishing','Sculpting']) {
     const field=key[0].toLowerCase()+key.slice(1);
     env['set'+key]=vi.fn(v=>{env[field]=typeof v==='function'?v(env[field]):v;if(key==='QuickCreate')env.quickCreateRef.current=v;});
   }
+  delete window.__alloStudentAiDisabled;
   window.callGemini=vi.fn().mockResolvedValue('{"verdict":"ok","enhancedPrompt":"A giant kettle"}');
   h=factory(env);
 });
@@ -245,4 +252,235 @@ describe('Memory Palace follow-up practice',()=>{
    h.retryRecall('backward');expect(env.recallOrderRef.current).toEqual([b.id]);expect(env.recall.focused).toBe(true);
    h.retryRecall('shuffle');expect(env.recallOrderRef.current).toEqual([b.id]);expect(env.recall.direction).toBe('shuffle');
  });
+});
+
+
+describe('Memory Palace self-check result clarity',()=>{
+ it.each([0,1,2])('reports %i remembered self-ratings without a first-try claim',remembered=>{
+   const summary=h._recallSummary({total:2,selfRated:2,firstTry:0,eventual:remembered,perfect:false});
+   expect(summary).toBe('Self-check complete: you marked '+remembered+' of 2 as remembered.');
+   expect(summary).not.toContain('first try');
+ });
+ it('keeps measured recall summaries and point reporting unchanged',()=>{
+   expect(h._recallSummary({total:2,selfRated:0,firstTry:1,eventual:0,perfect:false})).toBe('Recalled 1 of 2 (1 on the first try).');
+   expect(h._recallSummary({total:2,selfRated:0,firstTry:2,eventual:0,perfect:true})).toContain('Perfect walk!');
+ });
+ it('uses the same self-check result in completion feedback without awarding a perfect walk',()=>{
+   env.recall={mode:'self'};
+   env.recallResultsRef.current={[a.id]:{attempts:1,correct:true,selfChecked:true,selfRated:true},[b.id]:{attempts:1,correct:true,selfChecked:true,selfRated:true}};
+   h.finishRecall();expect(env.addToast).toHaveBeenCalledWith(h._recallSummary(env.finished),'info');
+   expect(env.finished).toMatchObject({total:2,eventual:2,firstTry:0,perfect:false});expect(env.onScoreUpdate).not.toHaveBeenCalled();
+ });
+});
+
+
+describe('Memory Palace disabled AI generation',()=>{
+ it.each(['blocked','hidden'])('honors the runtime %s state across prompt and sculpture actions',async state=>{
+   if(state==='blocked')window.callGemini._alloQrBlocked=true;else window.__alloStudentAiDisabled=true;
+   await h.handleDirectSubmit();h.handleSculpt();h.handleAiRefine();h.handleQuickCreate('sculpture',a);await flush();
+   expect(window.callGemini).not.toHaveBeenCalled();expect(env.callImagen).not.toHaveBeenCalled();
+   expect(env.artJobRef.current).toBeNull();expect(env.persist).not.toHaveBeenCalled();
+ });
+});
+
+
+describe('Memory Palace learner-controlled pacing',()=>{
+ it('records a correct answer without moving until Continue in manual mode',()=>{
+   env.recall={mode:'bank'};h._setRecallPace(false);h.submitRecallAnswer(a.label,a.id);
+   expect(env.answered).toBe(1);expect(env.pendingRecall).toHaveLength(0);expect(env.handleRef.current.goTo).not.toHaveBeenCalled();
+   h.advanceRecall();expect(env.handleRef.current.goTo).toHaveBeenCalledWith(env.palaceRef.current.route.indexOf(b.id));
+ });
+ it.each([true,false])('records a %s self-rating and waits for manual completion at the last stop',remembered=>{
+   env.recall={mode:'self'};env.recallOrderRef.current=[a.id];h._setRecallPace(false);h.revealSelfCheck();h.markSelfCheck(remembered);
+   expect(env.pendingRecall).toHaveLength(0);expect(env.finished).toBeNull();expect(env.answered).toBe(1);
+   h.advanceRecall();expect(env.finished).toMatchObject({total:1,selfRated:1});expect(env.onGameComplete).toHaveBeenCalledTimes(1);
+ });
+ it('cancels an already queued move when automatic progression is turned off',()=>{
+   env.recall={mode:'bank'};h.submitRecallAnswer(a.label,a.id);expect(env.pendingRecall).toHaveLength(1);
+   h._setRecallPace(false);env.pendingRecall.shift()();expect(env.handleRef.current.goTo).not.toHaveBeenCalled();
+ });
+ it('does not revive an old move when toggled back on, but advances new responses',()=>{
+   env.recall={mode:'bank'};h.submitRecallAnswer(a.label,a.id);h._setRecallPace(false);h._setRecallPace(true);
+   env.pendingRecall.shift()();expect(env.handleRef.current.goTo).not.toHaveBeenCalled();
+   env.currentRef.current=b;h.submitRecallAnswer(b.label,b.id);env.pendingRecall.shift()();expect(env.finished).toMatchObject({total:2,perfect:true});
+ });
+});
+
+
+describe('Memory Palace changed content during recall',()=>{
+ it.each(['submit','reveal','selfReveal','rate','advance','finish','retry'])('blocks stale %s before the content-change effect runs',action=>{
+   env.recall={mode:'self'};env.selfRevealId=a.id;env.recallContentRef.current='changed';
+   if(action==='submit')h.submitRecallAnswer(a.label,a.id);
+   if(action==='reveal')h.revealCurrent();
+   if(action==='selfReveal')h.revealSelfCheck();
+   if(action==='rate')h.markSelfCheck(true);
+   if(action==='advance')h.advanceRecall();
+   if(action==='finish')h.finishRecall();
+   if(action==='retry')h.retryRecall('forward');
+   expect(env.recallResultsRef.current).toEqual({});expect(env.onGameComplete).not.toHaveBeenCalled();
+   expect(env.persist).not.toHaveBeenCalled();expect(env.handleRef.current.goTo).not.toHaveBeenCalled();expect(env.handleRef.current.revealLocus).not.toHaveBeenCalled();
+ });
+ it('ends invalid practice once and exposes the restart notice without scoring',()=>{
+   env.recall={mode:'bank'};env.recallContentRef.current='changed';
+   h._invalidateChangedRecall();h._invalidateChangedRecall();
+   expect(env.recall).toBeNull();expect(env.recallContentChanged).toBe(true);expect(env.onRecallClose).toHaveBeenCalledTimes(1);
+   expect(env.onGameComplete).not.toHaveBeenCalled();expect(env.persist).not.toHaveBeenCalled();
+ });
+ it('does not let a queued automatic advance finish a changed review',()=>{
+   env.recall={mode:'bank'};env.recallOrderRef.current=[a.id];h.submitRecallAnswer(a.label,a.id);
+   env.recallContentRef.current='changed';env.pendingRecall.shift()();
+   expect(env.onGameComplete).not.toHaveBeenCalled();expect(env.persist).not.toHaveBeenCalled();
+ });
+ it('detects edited facts, routes and same-count custom-stop changes',()=>{
+   const original=structuredClone(env.data);const baseline=h.recallContentKey;
+   for(const change of [d=>d.branches[0].items[0]='New fact',d=>d.memoryPalace={routeOrder:[b.id,a.id]},d=>d.memoryPalace={extraLoci:[{id:'mine',label:'A new stop',x:2,z:4}]}]){
+     env.data=structuredClone(original);change(env.data);expect(factory(env).recallContentKey).not.toBe(baseline);
+   }
+   const before=factory(env).recallContentKey;env.data.memoryPalace.extraLoci[0].label='Changed fact';expect(factory(env).recallContentKey).not.toBe(before);
+ });
+ it('keeps content identity stable for artwork, theme and mastery saves',()=>{
+   env.data.memoryPalace={images:{[a.id]:'new image'},objects:{},theme:'space',generatedAt:123,mastery:{[a.id]:{strength:0.8}}};
+   expect(factory(env).recallContentKey).toBe(h.recallContentKey);
+ });
+});
+
+
+describe('Memory Palace help without forced guesses',()=>{
+ it.each(['bank','type'])('allows an immediate %s reveal without inventing attempts or awarding points',mode=>{
+   env.recall={mode};env.recallOrderRef.current=[a.id];
+   h.revealCurrent();h.revealCurrent();
+   expect(env.recallResultsRef.current[a.id]).toEqual({attempts:0,correct:false,revealed:true});
+   expect(env.attemptsTotalRef.current).toBe(0);expect(env.answered).toBe(1);expect(env.pendingRecall).toHaveLength(0);
+   expect(env.onGameComplete).not.toHaveBeenCalled();h.advanceRecall();
+   expect(env.finished).toMatchObject({total:1,points:0,firstTry:0,revealed:1});
+   expect(env.mpRef.current.mastery[a.id].lastResult).toBe('revealed');
+ });
+ it('does not let a quiz reveal replace a self-check rating',()=>{
+   env.recall={mode:'self'};h.revealSelfCheck();h.markSelfCheck(false);
+   h.revealCurrent();expect(env.answered).toBe(1);expect(env.recallResultsRef.current[a.id]).toMatchObject({selfRated:true,selfChecked:true,correct:false,revealed:false});
+ });
+ it('ignores quiz answers in self-check mode, leaving the learner free to self-rate',()=>{
+   env.recall={mode:'self'};h.submitRecallAnswer(a.label,a.id);
+   expect(env.recallResultsRef.current).toEqual({});expect(env.attemptsTotalRef.current).toBe(0);
+   h.revealSelfCheck();h.markSelfCheck(true);expect(env.recallResultsRef.current[a.id].selfRated).toBe(true);
+ });
+});
+
+
+describe('Memory Palace entrance continuation',()=>{
+ it('returns to the first unanswered stop in a backwards review',()=>{
+   env.currentRef.current={id:'__entry'};env.recallOrderRef.current=[b.id,a.id];h.advanceRecall();
+   expect(env.handleRef.current.goTo).toHaveBeenCalledWith(env.palaceRef.current.route.indexOf(b.id));expect(env.recallResultsRef.current).toEqual({});
+ });
+ it('keeps a focused review inside its selected stops from the entrance',()=>{
+   env.currentRef.current={id:'__entry'};env.recallOrderRef.current=[b.id];env.recallResultsRef.current[a.id]={correct:true,attempts:1};
+   h.advanceRecall();expect(env.handleRef.current.goTo).toHaveBeenCalledWith(env.palaceRef.current.route.indexOf(b.id));expect(env.onGameComplete).not.toHaveBeenCalled();
+ });
+ it('preserves attempted and completed responses when returning from the entrance',()=>{
+   env.currentRef.current={id:'__entry'};env.recallOrderRef.current=[b.id,a.id];
+   env.recallResultsRef.current={[b.id]:{correct:true,attempts:1},[a.id]:{correct:false,attempts:2}};const before=structuredClone(env.recallResultsRef.current);
+   h.advanceRecall();expect(env.handleRef.current.goTo).toHaveBeenCalledWith(env.palaceRef.current.route.indexOf(a.id));expect(env.recallResultsRef.current).toEqual(before);
+ });
+ it('finishes an already reviewed route from the entrance without reopening a completed stop',()=>{
+   env.currentRef.current={id:'__entry'};env.recallResultsRef.current={[a.id]:{correct:true,attempts:1},[b.id]:{correct:false,revealed:true,attempts:0}};
+   h.advanceRecall();h.advanceRecall();expect(env.finished).toMatchObject({total:2,firstTry:1,revealed:1});expect(env.onGameComplete).toHaveBeenCalledTimes(1);expect(env.handleRef.current.goTo).not.toHaveBeenCalled();
+ });
+});
+
+
+describe('Memory Palace completed typed drafts',()=>{
+ it.each(['correct','reveal'])('discards the completed draft after %s without touching other stops',action=>{
+  env.recall={mode:'type'};env.recallDraftsRef.current.set(a.id,'Evap');env.recallDraftsRef.current.set(b.id,'Cond');
+  if(action==='correct')h.submitRecallAnswer(a.label,null);else h.revealCurrent();
+  expect(env.recallDraftsRef.current.has(a.id)).toBe(false);expect(env.recallDraftsRef.current.get(b.id)).toBe('Cond');
+ });
+});
+
+
+describe('Memory Palace recorded response labels',()=>{
+ it.each([
+  [{correct:true,attempts:1},'Correct on the first try'],
+  [{correct:true,attempts:3},'Correct after another try'],
+  [{revealed:true,attempts:0},'Answer revealed'],
+  [{selfChecked:true,selfRated:true,correct:true,attempts:1},'Self-check: you marked this as remembered'],
+  [{selfChecked:true,selfRated:true,correct:false,attempts:1},'Self-check: you marked this as missed'],
+ ])('distinguishes the recorded outcome %#',(result,label)=>{expect(h._recallResultLabel(result)).toBe(label);});
+});
+
+
+describe('Memory Palace selected-answer identity',()=>{
+ it('rejects a different choice even when its spelling is within typed tolerance',()=>{
+  env.recall={mode:'bank'};env.currentRef.current={...a,label:'Proton'};
+  expect(window.AlloModules.MemoryPalace.matchAnswer('Proton','Photon')).toBe(true);
+  h.submitRecallAnswer('Photon',b.id);
+  expect(env.recallResultsRef.current[a.id]).toMatchObject({attempts:1,correct:false});
+  expect(env.answered).toBe(0);expect(env.handleRef.current.revealLocus).not.toHaveBeenCalled();
+  h.submitRecallAnswer('Proton',a.id);expect(env.recallResultsRef.current[a.id]).toMatchObject({attempts:2,correct:true});
+ });
+ it('still accepts a minor spelling mistake in a typed answer',()=>{
+  env.recall={mode:'type'};env.currentRef.current={...a,label:'Condensation'};
+  h.submitRecallAnswer('condensasion',null);expect(env.recallResultsRef.current[a.id]).toMatchObject({attempts:1,correct:true});
+ });
+});
+
+
+describe('Memory Palace single-answer practice mode',()=>{
+ const repeated=(labels=['Evaporation','Evaporation'])=>window.AlloModules.MemoryPalace.buildPalace({branches:[{title:'Room',items:labels}]});
+ it('uses self-check when all stops have one answer',()=>{expect(h._recallModeForPalace('bank',repeated())).toBe('self');});
+ it('recognizes equivalent case and spacing variants',()=>{expect(h._recallModeForPalace('bank',repeated(['Evaporation',' EVAPORATION ']))).toBe('self');});
+ it('keeps choices when distinct distractors exist',()=>{expect(h._recallModeForPalace('bank',env.palaceRef.current)).toBe('bank');});
+ it.each(['type','self'])('preserves an explicit %s mode',mode=>{expect(h._recallModeForPalace(mode,repeated())).toBe(mode);});
+ it('keeps the explanation and self-rated mode through a backward retry',()=>{env.recall={mode:'self',choiceFallback:true};h.retryRecall('backward');expect(env.recall).toMatchObject({mode:'self',choiceFallback:true,direction:'backward'});});
+});
+
+
+describe('Memory Palace pending self-ratings',()=>{
+ it('keeps separate revealed stops pending without recording attempts',()=>{
+  env.recall={mode:'self'};h.revealSelfCheck();env.currentRef.current=b;h.revealSelfCheck();
+  expect([...env.pendingSelfRatingsRef.current]).toEqual([a.id,b.id]);expect(env.attemptsTotalRef.current).toBe(0);expect(env.recallResultsRef.current).toEqual({});
+ });
+ it.each([true,false])('clears only the rated stop for a %s rating',remembered=>{
+  env.recall={mode:'self'};env.pendingSelfRatingsRef.current.add(b.id);h.revealSelfCheck();h.markSelfCheck(remembered);
+  expect([...env.pendingSelfRatingsRef.current]).toEqual([b.id]);expect(env.attemptsTotalRef.current).toBe(1);
+  h.revealSelfCheck();expect(env.pendingSelfRatingsRef.current.has(a.id)).toBe(false);
+ });
+});
+
+
+describe('Memory Palace scene recall restoration',()=>{
+ it('restores completed quiz answers but keeps unanswered attempts hidden',()=>{env.recall={mode:'bank'};env.recallResultsRef.current={[a.id]:{correct:true,attempts:1},[b.id]:{attempts:1}};expect(h._recallSceneState()).toEqual({[a.id]:{revealed:true,status:'correct'}});});
+ it('restores revealed answers and missed self-ratings as incorrect',()=>{env.recall={mode:'self'};env.recallResultsRef.current={[a.id]:{revealed:true},[b.id]:{selfChecked:true,correct:false}};expect(h._recallSceneState()).toEqual({[a.id]:{revealed:true,status:'incorrect'},[b.id]:{revealed:true,status:'incorrect'}});});
+ it('restores pending reveals without a grade only within the review scope',()=>{env.recall={mode:'self'};env.recallOrderRef.current=[a.id];env.pendingSelfRatingsRef.current=new Set([a.id,b.id]);expect(h._recallSceneState()).toEqual({[a.id]:{revealed:true}});});
+ it('never restores obsolete or inactive review answers',()=>{env.recallResultsRef.current={[a.id]:{correct:true}};expect(h._recallSceneState()).toEqual({});env.recall={mode:'bank'};env.recallContentRef.current='changed';expect(h._recallSceneState()).toEqual({});});
+});
+
+
+describe('Memory Palace scene start position',()=>{
+ const remember=()=>{env.sceneContextRef.current={content:h.recallContentKey,recall:env.recall,nonce:env.nonce};};
+ it.each([a=>a.id,()=> '__entry'])('retains a valid selected stop in the same review %#',id=>{env.recall={mode:'bank',startAt:b.id};env.currentRef.current={id:id(a)};remember();expect(h._sceneStartAt(env.palaceRef.current)).toBe(id(a));});
+ it('keeps a study-mode stop through a decoration rebuild',()=>{remember();expect(h._sceneStartAt(env.palaceRef.current)).toBe(a.id);});
+ it('starts a new or retried review at its designated stop',()=>{env.recall={mode:'bank',startAt:a.id};remember();env.recall={mode:'bank',startAt:b.id};expect(h._sceneStartAt(env.palaceRef.current)).toBe(b.id);});
+ it.each(['content','nonce','removed'])('does not retain an obsolete position after %s changes',change=>{env.recall={mode:'bank',startAt:b.id};remember();if(change==='content')env.sceneContextRef.current.content='old';if(change==='nonce')env.nonce++;if(change==='removed')env.currentRef.current={id:'gone'};expect(h._sceneStartAt(env.palaceRef.current)).toBe(b.id);});
+});
+
+
+describe('Memory Palace automatic progression navigation boundaries',()=>{
+ it('does not pull the learner away from the entrance after an answer',()=>{env.recall={mode:'bank'};h.submitRecallAnswer(a.label,a.id);env.currentRef.current={id:'__entry'};env.pendingRecall.shift()();expect(env.handleRef.current.goTo).not.toHaveBeenCalled();expect(env.onGameComplete).not.toHaveBeenCalled();});
+ it('does not revive a queued move after leaving and returning to the same stop',()=>{env.recall={mode:'bank'};h.submitRecallAnswer(a.label,a.id);env.recallNavigationRef.current+=2;env.pendingRecall.shift()();expect(env.handleRef.current.goTo).not.toHaveBeenCalled();});
+ it('does not let an earlier answer shorten reading time for a later answer',()=>{env.recall={mode:'bank'};h.submitRecallAnswer(a.label,a.id);env.currentRef.current=b;env.recallNavigationRef.current++;h.submitRecallAnswer(b.label,b.id);env.pendingRecall.shift()();expect(env.onGameComplete).not.toHaveBeenCalled();env.pendingRecall.shift()();expect(env.onGameComplete).toHaveBeenCalledTimes(1);});
+ it('leaves a refreshed completed stop in place until Continue',()=>{env.recall={mode:'self'};h.revealSelfCheck();h.markSelfCheck(true);env.recallNavigationRef.current++;env.pendingRecall.shift()();expect(env.handleRef.current.goTo).not.toHaveBeenCalled();h.advanceRecall();expect(env.handleRef.current.goTo).toHaveBeenCalledTimes(1);});
+});
+
+
+describe('Memory Palace VR choice targeting',()=>{
+ it('builds choices for the current target synchronously',()=>{env.recall={mode:'bank',seed:7};env.currentRef.current=b;expect(h._getVrRecallChoices(b.id).some(c=>c.id===b.id)).toBe(true);expect(h._getVrRecallChoices(a.id)).toEqual([]);});
+ it('ignores stale and unknown choices without recording attempts',()=>{env.recall={mode:'bank'};env.currentRef.current=b;h._pickVrRecall(a.id,{id:a.id,label:a.label});h._pickVrRecall(b.id,{id:'missing',label:b.label});expect(env.attemptsTotalRef.current).toBe(0);expect(env.recallResultsRef.current).toEqual({});});
+ it('uses the canonical label and hides choices immediately after a correct pick',()=>{env.recall={mode:'bank'};h._pickVrRecall(a.id,{id:a.id,label:'stale label'});expect(env.recallResultsRef.current[a.id]).toMatchObject({correct:true,attempts:1});expect(h._getVrRecallChoices(a.id)).toEqual([]);});
+ it.each(['revealed','finished','outside','changed','self'])('hides VR answers for %s practice states',kind=>{env.recall={mode:'bank'};if(kind==='revealed')env.recallResultsRef.current[a.id]={revealed:true};if(kind==='finished')env.finishedRef.current=true;if(kind==='outside')env.recallOrderRef.current=[b.id];if(kind==='changed')env.recallContentRef.current='new';if(kind==='self')env.recall={mode:'self'};expect(h._getVrRecallChoices(a.id)).toEqual([]);});
+});
+
+
+describe('Memory Palace repeated-answer feedback',()=>{
+ it('updates the rendered attempt count even while the wrong-answer flash is already active',()=>{env.recall={mode:'type'};h.submitRecallAnswer('rain',null);h.submitRecallAnswer('rain',null);h.submitRecallAnswer('rain',null);expect(env.setRecallAttempt.mock.calls.map(c=>c[0])).toEqual([1,2,3]);expect(env.attemptsTotalRef.current).toBe(3);});
+ it('does not update attempts for a completed or out-of-scope stop',()=>{env.recall={mode:'bank'};h.submitRecallAnswer(a.label,a.id);env.setRecallAttempt.mockClear();h.submitRecallAnswer('wrong',b.id);env.currentRef.current=b;env.recallOrderRef.current=[a.id];h.submitRecallAnswer(b.label,b.id);expect(env.setRecallAttempt).not.toHaveBeenCalled();});
 });

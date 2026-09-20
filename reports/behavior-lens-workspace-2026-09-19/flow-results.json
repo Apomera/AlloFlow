@@ -1,0 +1,110 @@
+[
+  {
+    "width": 1280,
+    "state": "today",
+    "errors": [],
+    "buttons": 12,
+    "tools": 0,
+    "overflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "definition",
+    "errors": [],
+    "buttons": 10,
+    "tools": 0,
+    "overflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "library",
+    "errors": [],
+    "buttons": 285,
+    "tools": 101,
+    "overflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "family",
+    "errors": [],
+    "buttons": 10,
+    "tools": 0,
+    "overflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "today",
+    "errors": [],
+    "buttons": 12,
+    "tools": 0,
+    "overflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "definition",
+    "errors": [],
+    "buttons": 10,
+    "tools": 0,
+    "overflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "library",
+    "errors": [],
+    "buttons": 285,
+    "tools": 101,
+    "overflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "family",
+    "errors": [],
+    "buttons": 10,
+    "tools": 0,
+    "overflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "today",
+    "errors": [],
+    "buttons": 12,
+    "tools": 0,
+    "overflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "definition",
+    "errors": [],
+    "buttons": 10,
+    "tools": 0,
+    "overflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "library",
+    "errors": [],
+    "buttons": 285,
+    "tools": 101,
+    "overflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "family",
+    "errors": [],
+    "buttons": 10,
+    "tools": 0,
+    "overflow": false,
+    "axe": []
+  }
+]

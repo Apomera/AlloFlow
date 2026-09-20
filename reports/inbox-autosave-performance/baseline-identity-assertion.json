@@ -1,0 +1,8 @@
+{
+  "test": "submission_identity_foundation.test.js:144",
+  "assertion": "main application source includes return alloStableAssignmentId(history",
+  "baselineRef": "107e91b21c999fd318e48a85d3287ff87ab4c25e",
+  "baselineContainsExpectedText": false,
+  "workingContainsExpectedText": false,
+  "note": "Autosave changes only the inbox module loader hash in the application shell; the same source-text assertion fails against the immutable pre-change shell."
+}

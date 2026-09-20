@@ -8,7 +8,8 @@
     "gradeLevel": "6th-8th Grade",
     "createdAt": "2026-09-13T18:00:00.000Z",
     "imageShotList": "allopacks/crew_ask_grade6_8.IMAGES.md",
-    "standards": "King Middle School HOWL Perseverance (advocate for learning through questions); CASEL Relationship Skills (communicating effectively; seeking or offering support and help when needed); CASEL Self-Management (showing the courage to take initiative); EL Education Crew (Crew Launch: academic coaching); Maine DOE PBIS Tier 1 (teaching help-seeking as an expected behavior)"
+    "standards": "King Middle School HOWL Perseverance (advocate for learning through questions); CASEL Relationship Skills (communicating effectively; seeking or offering support and help when needed); CASEL Self-Management (showing the courage to take initiative); EL Education Crew (Crew Launch: academic coaching); Maine DOE PBIS Tier 1 (teaching help-seeking as an expected behavior)",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Self-advocacy through specific questions",
   "history": [
@@ -48,7 +49,7 @@
       "title": "Asking for What You Need",
       "timestamp": "2026-09-13T18:00:00.000Z",
       "data": "## Asking for What You Need\n\n**HOWL: \"I persevere to produce high quality work.\"**\n\nThe first **Perseverance** behavior in the King **HOWLs** is **advocating** for your learning by **asking** questions. That sentence surprises some people. Perseverance sounds like gritting your teeth and pushing through alone. But the students who actually produce high quality work are usually the ones who ask early, ask clearly, and ask again if the first answer did not help. Asking is not the opposite of persevering. It is how persevering works.\n\nHere is the problem. Asking is hard. You might not know exactly what you do not understand. You might worry about looking slow. You might have asked before and gotten a rushed answer. So the question stays inside, the confusion grows, and the assignment gets harder every day it is not asked about.\n\nThere is a **script** that makes a hard ask easier. It comes from a skill-building approach called DEAR MAN. You do not need the whole thing. You need four moves. **Describe**: say the facts of the situation, without blame. **Express**: say how it is affecting you, in one sentence. Ask: say exactly what you want, small and **specific**. **Reinforce**: say why it helps, for you and for them.\n\nHere is a fictional example. Tomas has been stuck on the same kind of math problem for three days. He has been erasing and guessing. In **Crew**, he practices the four moves. Describe: \"The last three homework sets had problems where I have to set up the equation from a word problem, and I got most of those wrong.\" Express: \"I am getting frustrated because I understand the math once it is set up, but I cannot get it set up.\" Ask: \"Could you show me two examples of setting one up, and then watch me try one?\" Reinforce: \"If I can do that part, I think the rest of the homework will go a lot faster and I will stop turning it in half done.\" That is a four-sentence ask. It took Tomas ninety seconds. His teacher knew exactly what to do with it.\n\nCompare that to \"I don't get it.\" That sentence is honest, but it gives the teacher nothing to work with. The teacher has to guess, and often guesses wrong, and now both people feel like the asking did not help. A specific ask is a gift to the person you are asking.\n\nAdvocating also means knowing your **options** when the first ask does not work. Ask a different way. Ask a different person. Ask in writing if speaking is hard. Ask for a time to come back. None of these is giving up. Giving up is the only move that is not on the list.\n\nYou can practice asks in Crew because Crew is low stakes. Nobody is grading the ask. The point is to have the words ready before the moment you need them, so that when the math problem or the essay or the group project gets stuck, the question comes out instead of staying in.",
-      "meta": "6th-8th Grade • Leveled reading • ~510 words"
+      "meta": "6th-8th Grade • Leveled reading"
     },
     {
       "id": "ca-glossary",
@@ -430,7 +431,7 @@
               "Reinforce: say why it helps, for you and for them."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "acronym-acrostic",
             "mode": "scaffolded",
             "aiExample": "D-E-A-R. Dear teacher: here is what happened (D), here is how it is landing on me (E), here is the one thing I need (A), here is why it helps us both (R). The word \"dear\" is how you would start the email anyway.",
@@ -459,7 +460,7 @@
               "That sentence is honest, but it gives the teacher nothing to work with."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "analogy-pattern",
             "mode": "scaffolded",
             "aiExample": "A vague ask is handing someone a locked box. A specific ask is handing them the key. Same box, but only one of them lets the person actually help.",
@@ -533,7 +534,7 @@
           ],
           "deliverable": "The four-line ask, the delivery decision, and a three-sentence record: what you did, what they said, what you will do next.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

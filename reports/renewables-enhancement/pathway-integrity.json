@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-09-19T20:01:06.943Z",
+  "source": "stem_lab/stem_tool_renewables.js",
+  "mirror": "desktop/web-app/public/stem_lab/stem_tool_renewables.js",
+  "sha256": "7d86b6bf5eee2769d081abd1d3c5530a02a74d00b3246a5b928ccd90051530a1",
+  "byteIdentical": true,
+  "syntaxFiles": [
+    "stem_lab/stem_tool_renewables.js",
+    "desktop/web-app/public/stem_lab/stem_tool_renewables.js",
+    "reports/renewables-enhancement/pathway-browser-qa.cjs"
+  ],
+  "syntaxPassed": true,
+  "scopedWhitespacePassed": true,
+  "preview": "http://127.0.0.1:8790/",
+  "previewMatchesSource": true
+}

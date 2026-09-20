@@ -1,0 +1,11 @@
+const fs=require('fs'),path=require('path'),root=path.resolve(__dirname,'../..');
+const target=path.join(root,'applied_challenge_source.jsx');let src=fs.readFileSync(target,'utf8');
+const before="  const [location, setLocation] = React.useState(saved?.location || '');";
+if(!src.includes(before))throw Error('Missing editor state');
+src=src.replace(before,before+"\n  React.useEffect(() => { setSelected(saved ? key(saved) : choices[0] ? key(choices[0]) : ''); setLocation(saved?.location || ''); }, [saved?.source, saved?.rowId, saved?.location]);");
+src=src.replace('key={item.id + JSON.stringify(item.reference || null)}','key={item.id}');
+fs.writeFileSync(target,src);
+const fixturePath=path.join(__dirname,'build-fixture.cjs');let fixture=fs.readFileSync(fixturePath,'utf8');
+fixture=fixture.replace("if(params.has('compact'))window.fixture.data.scope='compact';", "if(params.has('compact'))window.fixture.data.scope='compact';\n  if(params.has('plain'))window.fixture.data.plan.visualMode='none';");
+fs.writeFileSync(fixturePath,fixture);
+console.log('Preserved editor focus on save and added organizer-free preview mode.');

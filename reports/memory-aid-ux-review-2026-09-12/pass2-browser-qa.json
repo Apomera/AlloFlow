@@ -1,0 +1,88 @@
+{
+  "states": [
+    {
+      "name": "study-1280",
+      "width": 1280,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "connections-1280",
+      "width": 1280,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "connections-390",
+      "width": 390,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "recall-390",
+      "width": 390,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "recall-320",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "cue-rescue-320",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "application-320",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "resumed-320",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "due-setup-320",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "due-finished-320",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "name": "teacher-question-1280",
+      "width": 1280,
+      "overflow": false,
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "checks": [
+    "Learner connection becomes stale after cue edit and can be reconfirmed.",
+    "Unsupported recall exposes the neutral question, hides cue, facts, type and connection text.",
+    "Response-mode switches and requesting a cue retain writing; cue receives keyboard focus.",
+    "A recall that requested help is privately recorded as with a cue.",
+    "Resume automatically opens the application and puts its explanation next in keyboard order.",
+    "Draft, self-check and review date autosave without Save; same attempt resumes after reload.",
+    "Due sequence counts a new completed recall and finishes.",
+    "Print keeps neutral questions and excludes private application drafts.",
+    "Teacher recall-question field accepts edits and keyboard navigation."
+  ],
+  "mobileRecall": {
+    "width": 390,
+    "before": 750,
+    "after": 599,
+    "pixelsEarlier": 151
+  }
+}

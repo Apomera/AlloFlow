@@ -1,0 +1,2 @@
+from pathlib import Path
+p=Path('stem_lab/stem_tool_funcgrapher.js');s=p.read_text(encoding='utf-8');start=s.index("'data-secant-investigation'");end=s.index('// A separate endpoint investigation',start);block=s[start:end].replace("style:{padding:8,borderBottom:'1px solid '+border,color:ink}","style:{padding:8,borderBottom:'1px solid '+border,color:ink,whiteSpace:'nowrap'}");s=s[:start]+block+s[end:];p.write_text(s,encoding='utf-8');Path('desktop/web-app/public/stem_lab/'+p.name).write_bytes(p.read_bytes())

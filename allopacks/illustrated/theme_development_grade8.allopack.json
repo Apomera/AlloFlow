@@ -29,10 +29,15 @@
       "textPolicy": "Text-free artwork; original activity text stays editable"
     },
     "contentRefinements": {
-      "count": 166,
+      "count": 168,
       "audit": "allopacks/media/theme_development_grade8/content-refinements.json",
-      "review": "Lesson content refined; educator review pending"
-    }
+      "review": "Lesson content refined; educator review pending",
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/theme_development_grade8/content-refinements.json",
+      "sourceOnlyResourceIds": []
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Theme and How It Develops Across a Text",
   "history": [
@@ -79,7 +84,7 @@
       "title": "What the Story Is Really Saying",
       "timestamp": "2026-09-06T03:40:01.000Z",
       "data": "## What the Story Is Really Saying\n\nA **topic** names a subject, such as belonging. A **theme** is an idea about life or experience that a text develops. For this activity, express a theme as a clear sentence about what this particular work suggests. Being able to disagree can prompt discussion, but disagreement is not the definition of theme.\n\nA **moral** is a lesson about conduct. It can overlap with a theme. A story may suggest an uncomfortable idea without recommending it, so do not force every story into advice.\n\nA theme may be stated directly or implied. A character's statement is evidence to examine alongside events, dialogue, setting and other details; it is neither automatically correct nor automatically suspicious. **Development** concerns how these elements build, extend or complicate an idea over the course of a work.\n\n### Practice story: The Key on the Table\n*This story is invented for the lesson. Paragraph numbers support discussion.*\n\n**Paragraph 1.** Leila returned to her old family home to help her aunt pack. She set an old brass key beside a moving box. “I kept it so I could always come back,” she said.\n\n**Paragraph 2.** At dinner, relatives asked Leila to settle an argument just as she had when she was younger. Her hand closed around the key in her pocket. She wanted to help, but also wanted them to notice how she had changed.\n\n**Paragraph 3.** The next morning, Leila helped her aunt carry a box to the door. When the argument began again, she said she would listen after everyone had calmed down. She placed the key on the table instead of carrying it into the next room.\n\n**Paragraph 4.** As Leila lifted her suitcase at the open doorway, her aunt offered the key back. Leila accepted it and promised to visit. She did not promise to settle every disagreement. They had not solved everything, but both stayed at the doorway to wave.\n\nA possible theme is that belonging can continue while relationships change. Paragraph 1 links the key to returning; paragraph 2 complicates belonging with an old expectation; paragraphs 3 and 4 show Leila keeping a connection while changing how she responds. This is one supported reading, not a universal message carried by every key or doorway.\n\nThe key is a **motif**, a recurring element. Ask what changes around each appearance. There is no rule that it must occur exactly three times or have a single fixed meaning. Repetition may support interpretation, but does not prove the author's intention.\n\nLook for changes, decisions, repeated details and the ending. High-stakes choices can be useful evidence, but small decisions and quiet dialogue can matter too. A **turning point** changes the story's direction. The **resolution** shows how a conflict ends or remains unsettled.\n\nTest your interpretation against **counterevidence**. Leila accepts the key again, which complicates a claim that she simply rejects her family. Revise a statement that overlooks important details. Longer works may support multiple themes; shorter works also need an interpretation suited to the evidence they actually contain.\n\nAn **objective summary** reports the important events and relationships accurately and concisely, without personal evaluation. For this task, summarize the story separately from your theme argument. Do not include every event or assume that an objective summary must always retell events in the order the author presented them.",
-      "meta": "8th Grade • Leveled reading • ~540 words",
+      "meta": "8th Grade • Leveled reading",
       "imageSlot": "th-img-theme-build"
     },
     {
@@ -369,7 +374,8 @@
               "Keep personal evaluation separate in this task"
             ]
           }
-        ]
+        ],
+        "structureType": "Key Concept Map"
       },
       "meta": "7 branches • the shape of the whole unit"
     },
@@ -538,7 +544,7 @@
               "Use a full sentence and textual support in this task."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "sequence-cue",
             "mode": "scaffolded",
             "aiExample": "Topic: belonging. Possible theme for The Key on the Table: belonging can continue while relationships change.",
@@ -569,7 +575,7 @@
               "Consider what is resolved or unsettled."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "visual-association",
             "mode": "scaffolded",
             "aiExample": "Use four margins for change, choice, repetition and ending. Place an actual cited detail in each useful space.",
@@ -881,12 +887,12 @@
             "type": "mcq",
             "question": "Which is a possible theme statement rather than a topic phrase or direct instruction?",
             "options": [
-              "The cost of loyalty in a family",
-              "Loyalty to a person can conflict with doing what is right",
-              "Loyalty and family",
-              "Always obey your family"
+              "Loyalty to family can conflict with doing what is right",
+              "The cost of family loyalty in a time of change",
+              "The topic of family loyalty and personal choices",
+              "Always obey your family, whatever the situation"
             ],
-            "correctAnswer": "Loyalty to a person can conflict with doing what is right",
+            "correctAnswer": "Loyalty to family can conflict with doing what is right",
             "conceptLabel": "topic vs theme"
           },
           {
@@ -917,36 +923,36 @@
             "type": "mcq",
             "question": "Which evidence best supports the reading that Leila keeps a connection while changing her role?",
             "options": [
-              "The story has four numbered paragraphs",
-              "Leila accepts the key but does not promise to settle every disagreement",
-              "A suitcase can be carried",
-              "The door is open"
+              "The story is divided into four numbered paragraphs",
+              "Leila keeps the key but sets limits on her role",
+              "The suitcase is an object that Leila can carry",
+              "The open door is part of the setting of the visit"
             ],
-            "correctAnswer": "Leila accepts the key but does not promise to settle every disagreement",
+            "correctAnswer": "Leila keeps the key but sets limits on her role",
             "conceptLabel": "where theme accumulates"
           },
           {
             "type": "mcq",
             "question": "Which approach weakens a theme argument?",
             "options": [
-              "Considering a detail that complicates it",
-              "Using evidence from multiple parts",
-              "Ignoring important events that conflict with the statement",
-              "Revising after rereading"
+              "Study a detail that challenges your reading",
+              "Use evidence from several parts of the text",
+              "Ignore key events that conflict with your claim",
+              "Revise your claim after checking the text again"
             ],
-            "correctAnswer": "Ignoring important events that conflict with the statement",
+            "correctAnswer": "Ignore key events that conflict with your claim",
             "conceptLabel": "testing your statement"
           },
           {
             "type": "mcq",
             "question": "What belongs in an objective summary of The Key on the Table?",
             "options": [
-              "Your favorite moment and rating",
-              "Only a theme statement",
-              "Every small action in the story",
-              "A concise, accurate account of Leila’s visit, changed response and continuing connection"
+              "A brief account centered on your favorite moment and rating",
+              "A theme claim without the events that develop it",
+              "A full list of every small action and descriptive detail",
+              "A brief account of Leila’s visit, changed response and ongoing bond"
             ],
-            "correctAnswer": "A concise, accurate account of Leila’s visit, changed response and continuing connection",
+            "correctAnswer": "A brief account of Leila’s visit, changed response and ongoing bond",
             "conceptLabel": "summary is a different job"
           },
           {
@@ -1135,7 +1141,7 @@
           ],
           "deliverable": "A one-page case containing your theme statement, your objective summary, your three cited moments, your account of the worst-fitting moment, and your concession to your partner — plus the three-minute spoken argument you make from it.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

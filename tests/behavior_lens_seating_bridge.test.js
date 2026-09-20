@@ -19,7 +19,9 @@ describe('BehaviorLens seating bridge contract', () => {
   });
 
   it('ABCModal receives studentName + addToast and gates the button on studentName', () => {
-    expect(SRC).toContain('const ABCModal = ({ entry, onSave, onClose, t, callGemini, studentName, addToast, targetBehaviors })');
+    const modalProps = SRC.match(/const ABCModal = \(\{ ([^}]+) \}\)/)?.[1];
+    expect(modalProps).toBeTruthy();
+    for (const prop of ['studentName', 'addToast', 'targetBehaviors']) expect(modalProps.split(', ')).toContain(prop);
     expect(SRC).toMatch(/studentName && h\('div', \{ className: 'flex flex-wrap items-center gap-2 mt-1\.5' \}/);
   });
 

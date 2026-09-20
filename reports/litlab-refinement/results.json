@@ -11,6 +11,10 @@
       "violations": []
     },
     {
+      "name": "line narration controls",
+      "violations": []
+    },
+    {
       "name": "performance",
       "violations": []
     },

@@ -1,0 +1,25 @@
+{
+  "capturedAt": "2026-09-20T03:17:46.858Z",
+  "before": {
+    "startTime": "2026-09-20T03:16:21.073Z",
+    "duration": 2166.339,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "after": {
+    "startTime": "2026-09-20T03:16:54.162Z",
+    "duration": 20435.418999999998,
+    "expected": 29,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "newRegressionCases": 7,
+  "inputs": {
+    "dev-tools/rendered_document_fidelity.cjs": "37dfb41bd1915fe1b1a024ca298bbfca7450962265badc5dab35474059fbfec8",
+    "tests/e2e/rendered_fidelity_content_regressions.spec.ts": "de46df202cbd4e15e1df3682a385d1a8ad862655c0f6e33ddb393c0b38598e24"
+  },
+  "scope": "Local native Chromium checkpoints and export-acceptance integration; no live-model, deployed-service, or human screen-reader run."
+}

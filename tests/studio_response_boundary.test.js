@@ -12,6 +12,7 @@ beforeAll(() => {
   global.React = window.React = React;
   global.IS_REACT_ACT_ENVIRONMENT = true;
   loadAlloModule('studio_response_module.js');
+  loadAlloModule('host_handlers_module.js');
   loadAlloModule('memory_aid_module.js');
   loadAlloModule('applied_challenge_module.js');
   loadAlloModule('live_aac_module.js');
@@ -79,7 +80,7 @@ describe('studio response ownership', () => {
     expect(body).toContain('const handleNoteUpdate');
     let active={id:'a',type:'memory-aid',data:{cards:[]}};
     let history=[{...active,title:'Original',timestamp:'yesterday',metadata:{owner:'teacher'},data:{cards:[],extra:'keep'}}];
-    const handler=new Function('useCallback','setGeneratedContent','setHistory','generatedContent','_resourceMutationStateRef',body+';return handleNoteUpdate;')(fn=>fn,fn=>{active=fn(active);},fn=>{history=fn(history);},active,{current:{history,generatedContent:active}});
+    const handler=new Function('useCallback','setGeneratedContent','setHistory','generatedContent','_resourceMutationStateRef','_alloHostHandlers',body+';return handleNoteUpdate;')(fn=>fn,fn=>{active=fn(active);},fn=>{history=fn(history);},active,{current:{history,generatedContent:active}},()=>window.AlloModules.HostHandlers({_resourceMutationStateRef:{current:{history,generatedContent:active}},setGeneratedContent:fn=>{active=fn(active);},setHistory:fn=>{history=fn(history);}}));
     handler('instructions','New');
     expect(history[0]).toMatchObject({title:'Original',timestamp:'yesterday',metadata:{owner:'teacher'},data:{extra:'keep',instructions:'New'}});
   });

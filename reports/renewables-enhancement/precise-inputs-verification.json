@@ -1,0 +1,12 @@
+{
+  "sourceSha256": "de924a7d85e621f63095f24d98e0d5f96c04e7966b0b72e80589ac3f4b8e708a",
+  "mirrorMatches": true,
+  "previewMatches": true,
+  "technologies": 9,
+  "numericControls": 35,
+  "testsPassed": 93,
+  "testFiles": 4,
+  "accessibilityAudits": 15,
+  "pageErrors": [],
+  "consoleErrors": []
+}

@@ -28,15 +28,18 @@ beforeAll(() => {
 });
 
 describe('export side: capability selection (monolith)', () => {
-  it('picks the newest non-expired, non-revoked hosted share and passes only id+k', () => {
+  it('picks the newest valid non-expired, non-revoked hosted share and preserves its saved endpoint', () => {
     expect(appSource).toContain("const _hostedSubmitShare = (recentQrShares || []).filter(share => share?.type === 'assignment-pack-hosted'");
     expect(appSource).toContain('&& share.packId && share.packSecret && !share.revokedAt');
     expect(appSource).toContain("&& (!share.expiresAt || Date.parse(share.expiresAt) > Date.now()))");
-    expect(appSource).toContain('? { url: mbConfig.url, id: _hostedSubmitShare.packId, k: _hostedSubmitShare.packSecret,');
+    expect(appSource).toContain('const _savedSubmitTarget = _alloResolveHostedShareMailbox(_hostedSubmitShare);');
+    expect(appSource).toContain('&& _alloResolveHostedShareMailbox(share)');
     // The teacher admin token must NEVER ride an export.
     const targetBlock = appSource.slice(appSource.indexOf('const _mailboxSubmitTarget'),
       appSource.indexOf('const cfgBase', appSource.indexOf('const _mailboxSubmitTarget')));
     expect(targetBlock).not.toContain('admin');
+    expect(targetBlock).not.toContain('mbConfig');
+    expect(targetBlock).toContain('? { ..._savedSubmitTarget,');
   });
 
   it('attaches the target only to the encrypted (classPublicJwk) export branch', () => {

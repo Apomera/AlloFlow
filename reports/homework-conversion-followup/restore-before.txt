@@ -1,0 +1,84 @@
+  const pendingQrAssignmentOpenGenerationRef = useRef(0);
+  const handleRestoreView = (item, options = {}) => {
+      const moduleApi = window.AlloModules && window.AlloModules.MiscHandlers;
+      if (moduleApi && typeof moduleApi.handleRestoreView === 'function') {
+          const { preservePendingAssignment, ...restoreOptions } = options || {};
+          const result = moduleApi.handleRestoreView(item, restoreOptions, _alloMiscHandlersDeps());
+          if (preservePendingAssignment !== true) {
+              // A successful explicit open supersedes homework still waiting
+              // for its opener, including before the effect cleanup commits.
+              pendingQrAssignmentOpenGenerationRef.current += 1;
+              setPendingQrAssignmentResource(null);
+          }
+          return result;
+      }
+      try { window.__alloRetryFailedModules?.(); } catch (_) {}
+      throw new Error('[handleRestoreView] MiscHandlers module not loaded - reload the page');
+  };
+  // BEGIN LEARNING_WEB_RESOURCE_OPEN_BRIDGE
+  learningWebRestoreViewRef.current = handleRestoreView;
+  learningWebOpenContextRef.current = {
+      current: generatedContent || null,
+      history: (Array.isArray(history) ? history : []).slice(-160),
+  };
+  const _alloOpenableLearningWebResourceIds = () => Array.from(new Set(
+      [generatedContent].concat((Array.isArray(history) ? history : []).slice(-160))
+          .map(item => String(item?.id || ''))
+          .filter(id => id && id.length <= 200)
+  )).slice(0, 160);
+  const handleOpenLearningWebResource = (...__a) => _alloHostHandlers().handleOpenLearningWebResource(...__a);
+  useEffect(() => () => {
+      if (learningWebOpenTimerRef.current) {
+          clearTimeout(learningWebOpenTimerRef.current);
+          learningWebOpenTimerRef.current = null;
+      }
+  }, []);
+  // END LEARNING_WEB_RESOURCE_OPEN_BRIDGE
+  useEffect(() => {
+      if (!pendingQrAssignmentResource || isTeacherMode) return;
+      const resource = pendingQrAssignmentResource;
+      let cancelled = false;
+      const openGeneration = pendingQrAssignmentOpenGenerationRef.current;
+      const isCurrent = () => !cancelled && openGeneration === pendingQrAssignmentOpenGenerationRef.current;
+      let opened = false;
+      let restoreFailed = false;
+      const openWhenReady = () => {
+          if (!isCurrent() || opened || restoreFailed) return false;
+          const api = window.AlloModules?.MiscHandlers;
+          if (typeof api?.handleRestoreView !== 'function') return false;
+          try {
+              handleRestoreView(resource, { suppressLiveFollow: true, preservePendingAssignment: true });
+              opened = true;
+              setPendingQrAssignmentResource(current => current === resource ? null : current);
+              return true;
+          } catch (error) {
+              restoreFailed = true;
+              warnLog('Homework resource could not be opened:', error);
+              addToast('Homework is still available in History, but could not be opened. Select it there to retry, or reload this homework link.', 'warning');
+              return false;
+          }
+      };
+      if (openWhenReady() || restoreFailed) return;
+      // Fragment packs can decode before the deferred resource opener loads.
+      // Promote that one dependency and keep the packet intact through retries.
+      addToast('Opening homework tools…', 'info');
+      const onModuleChange = () => { openWhenReady(); };
+      window.addEventListener('alloflow:module-registry-changed', onModuleChange);
+      Promise.resolve().then(() => {
+          if (!isCurrent() || opened) return;
+          if (typeof window.__alloEnsureLazyModule !== 'function') throw new Error('Homework loader is not ready');
+          return window.__alloEnsureLazyModule('MiscHandlersModule', '__alloLazyFileIntake', 'MiscHandlers');
+      }).then(() => {
+          if (isCurrent() && !opened && !restoreFailed && !openWhenReady()) throw new Error('Homework opener is not ready');
+      }).catch(error => {
+          if (!isCurrent() || opened || restoreFailed) return;
+          warnLog('Homework tools are not ready:', error);
+          addToast('Homework is still available in History. Use Retry in the loading notice when available, or reload this homework link.', 'warning');
+      });
+      // The bounded loader stops waiting on failure/timeout. Keep this listener
+      // so the existing Retry control can finish the same pending open later.
+      return () => {
+          cancelled = true;
+          window.removeEventListener('alloflow:module-registry-changed', onModuleChange);
+      };
+  }, [pendingQrAssignmentResource, isTeacherMode]);

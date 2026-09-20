@@ -439,12 +439,12 @@ const TOOLS = [
   ),
   toolEntry(
     'resource_pack_generate',
-    'Finalize agent-authored resources into a validated AlloPack draft. The calling agent supplies the generated history; this connector performs no model call, network request, or hidden data transfer. Returns a completed local job; call job_get_result for the pack.',
+    'Finalize agent-authored resources into a validated text-only AlloPack draft. This authoring subset supports 12 resource types, at most 500,000 serialized characters, and no embedded images; it is not a round-trip editor for existing illustrated catalog packs. The calling agent supplies the generated history; this connector performs no model call, network request, or hidden data transfer. Returns a completed local job; call job_get_result for the pack.',
     { type: 'object', properties: { request: RESOURCE_PACK_REQUEST_INPUT_SCHEMA }, required: ['request'], additionalProperties: false }
   ),
   toolEntry(
     'resource_pack_validate',
-    'Validate an AlloPack against renderer shapes, privacy safeguards, size limits, and teacher-review warnings. Read-only.',
+    'Validate a text-only authoring draft against supported renderer shapes, privacy safeguards, size limits, and teacher-review warnings. This subset validator is not the general app-import validator and rejects illustrated catalog packs. Read-only.',
     { type: 'object', properties: { pack: RESOURCE_PACK_INPUT_SCHEMA }, required: ['pack'], additionalProperties: false }
   ),
   toolEntry(

@@ -1,0 +1,43 @@
+{
+  "scope": "Local current Geometry World source rendered through the existing app harness. Fictional authored demo lesson; blocks added through actual engine APIs. Not a student record, production verification, or district approval.",
+  "errors": [],
+  "blockedRequests": [
+    "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js",
+    "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js",
+    "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js",
+    "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js",
+    "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js",
+    "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"
+  ],
+  "measurements": [
+    {
+      "count": 12,
+      "occupiedVolume": 12,
+      "L": 4,
+      "W": 3,
+      "H": 1
+    },
+    {
+      "count": 24,
+      "occupiedVolume": 24,
+      "L": 4,
+      "W": 3,
+      "H": 2
+    }
+  ],
+  "images": [
+    {
+      "file": "01-one-layer.png",
+      "caption": "One layer: a 4 × 3 array contains 12 unit cubes."
+    },
+    {
+      "file": "02-two-layers.png",
+      "caption": "Stack an equal layer: 12 + 12 = 24 cubic units, or 4 × 3 × 2 = 24."
+    },
+    {
+      "file": "03-concept-reasoning.png",
+      "caption": "Save a concept snapshot and explain the calculation; students can also print a learning record and write by hand."
+    }
+  ],
+  "success": true
+}

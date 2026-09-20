@@ -1,0 +1,386 @@
+{
+  "modulePath": "view_quiz_module.js",
+  "checks": [
+    {
+      "name": "1280-light: feedback setting persists",
+      "passed": true
+    },
+    {
+      "name": "1280-light: preview has all nine questions in authored order",
+      "passed": true
+    },
+    {
+      "name": "1280-light: preview hides teacher tools and answer guides",
+      "passed": true
+    },
+    {
+      "name": "1280-light: preview fits viewport",
+      "passed": true
+    },
+    {
+      "name": "1280-light: preview submission disabled",
+      "passed": true
+    },
+    {
+      "name": "1280-light: preview leaves storage and live callbacks untouched",
+      "passed": true
+    },
+    {
+      "name": "1280-light: preview responses clear on reopening",
+      "passed": true
+    },
+    {
+      "name": "1280-light: unconfirmed delivery offers retry",
+      "passed": true
+    },
+    {
+      "name": "1280-light: local completion does not claim teacher receipt",
+      "passed": true
+    },
+    {
+      "name": "1280-light: after-submit feedback includes saved responses",
+      "passed": true
+    },
+    {
+      "name": "1280-light: all answer guides available after submission",
+      "passed": true
+    },
+    {
+      "name": "1280-light: completion fits viewport",
+      "passed": true
+    },
+    {
+      "name": "1280-light: response export excludes answer keys",
+      "passed": true
+    },
+    {
+      "name": "1280-light: confirmed retry completes the attempt once",
+      "passed": true
+    },
+    {
+      "name": "1280-light: retry reuses the original request identifier",
+      "passed": true
+    },
+    {
+      "name": "1280-light: teacher-release feedback stays hidden after completion",
+      "passed": true
+    },
+    {
+      "name": "1280-light: release remains available during an active quiz",
+      "passed": true
+    },
+    {
+      "name": "1280-light: teacher release unlocks saved feedback",
+      "passed": true
+    },
+    {
+      "name": "390-light: feedback setting persists",
+      "passed": true
+    },
+    {
+      "name": "390-light: preview has all nine questions in authored order",
+      "passed": true
+    },
+    {
+      "name": "390-light: preview hides teacher tools and answer guides",
+      "passed": true
+    },
+    {
+      "name": "390-light: preview fits viewport",
+      "passed": true
+    },
+    {
+      "name": "390-light: preview submission disabled",
+      "passed": true
+    },
+    {
+      "name": "390-light: preview leaves storage and live callbacks untouched",
+      "passed": true
+    },
+    {
+      "name": "390-light: preview responses clear on reopening",
+      "passed": true
+    },
+    {
+      "name": "390-light: unconfirmed delivery offers retry",
+      "passed": true
+    },
+    {
+      "name": "390-light: local completion does not claim teacher receipt",
+      "passed": true
+    },
+    {
+      "name": "390-light: after-submit feedback includes saved responses",
+      "passed": true
+    },
+    {
+      "name": "390-light: all answer guides available after submission",
+      "passed": true
+    },
+    {
+      "name": "390-light: completion fits viewport",
+      "passed": true
+    },
+    {
+      "name": "390-light: response export excludes answer keys",
+      "passed": true
+    },
+    {
+      "name": "390-light: confirmed retry completes the attempt once",
+      "passed": true
+    },
+    {
+      "name": "390-light: retry reuses the original request identifier",
+      "passed": true
+    },
+    {
+      "name": "390-light: teacher-release feedback stays hidden after completion",
+      "passed": true
+    },
+    {
+      "name": "390-light: release remains available during an active quiz",
+      "passed": true
+    },
+    {
+      "name": "390-light: teacher release unlocks saved feedback",
+      "passed": true
+    },
+    {
+      "name": "320-light: feedback setting persists",
+      "passed": true
+    },
+    {
+      "name": "320-light: preview has all nine questions in authored order",
+      "passed": true
+    },
+    {
+      "name": "320-light: preview hides teacher tools and answer guides",
+      "passed": true
+    },
+    {
+      "name": "320-light: preview fits viewport",
+      "passed": true
+    },
+    {
+      "name": "320-light: preview submission disabled",
+      "passed": true
+    },
+    {
+      "name": "320-light: preview leaves storage and live callbacks untouched",
+      "passed": true
+    },
+    {
+      "name": "320-light: preview responses clear on reopening",
+      "passed": true
+    },
+    {
+      "name": "320-light: unconfirmed delivery offers retry",
+      "passed": true
+    },
+    {
+      "name": "320-light: local completion does not claim teacher receipt",
+      "passed": true
+    },
+    {
+      "name": "320-light: after-submit feedback includes saved responses",
+      "passed": true
+    },
+    {
+      "name": "320-light: all answer guides available after submission",
+      "passed": true
+    },
+    {
+      "name": "320-light: completion fits viewport",
+      "passed": true
+    },
+    {
+      "name": "320-light: response export excludes answer keys",
+      "passed": true
+    },
+    {
+      "name": "320-light: confirmed retry completes the attempt once",
+      "passed": true
+    },
+    {
+      "name": "320-light: retry reuses the original request identifier",
+      "passed": true
+    },
+    {
+      "name": "320-light: teacher-release feedback stays hidden after completion",
+      "passed": true
+    },
+    {
+      "name": "320-light: release remains available during an active quiz",
+      "passed": true
+    },
+    {
+      "name": "320-light: teacher release unlocks saved feedback",
+      "passed": true
+    },
+    {
+      "name": "390-dark: feedback setting persists",
+      "passed": true
+    },
+    {
+      "name": "390-dark: preview has all nine questions in authored order",
+      "passed": true
+    },
+    {
+      "name": "390-dark: preview hides teacher tools and answer guides",
+      "passed": true
+    },
+    {
+      "name": "390-dark: preview fits viewport",
+      "passed": true
+    },
+    {
+      "name": "390-dark: preview submission disabled",
+      "passed": true
+    },
+    {
+      "name": "390-dark: preview leaves storage and live callbacks untouched",
+      "passed": true
+    },
+    {
+      "name": "390-dark: preview responses clear on reopening",
+      "passed": true
+    },
+    {
+      "name": "390-dark: unconfirmed delivery offers retry",
+      "passed": true
+    },
+    {
+      "name": "390-dark: local completion does not claim teacher receipt",
+      "passed": true
+    },
+    {
+      "name": "390-dark: after-submit feedback includes saved responses",
+      "passed": true
+    },
+    {
+      "name": "390-dark: all answer guides available after submission",
+      "passed": true
+    },
+    {
+      "name": "390-dark: completion fits viewport",
+      "passed": true
+    },
+    {
+      "name": "390-dark: response export excludes answer keys",
+      "passed": true
+    },
+    {
+      "name": "390-dark: confirmed retry completes the attempt once",
+      "passed": true
+    },
+    {
+      "name": "390-dark: retry reuses the original request identifier",
+      "passed": true
+    },
+    {
+      "name": "390-dark: teacher-release feedback stays hidden after completion",
+      "passed": true
+    },
+    {
+      "name": "390-dark: release remains available during an active quiz",
+      "passed": true
+    },
+    {
+      "name": "390-dark: teacher release unlocks saved feedback",
+      "passed": true
+    },
+    {
+      "name": "No runtime errors",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "No automated accessibility violations",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "audits": [
+    {
+      "label": "1280-light",
+      "surface": "student-preview-delayed",
+      "violations": []
+    },
+    {
+      "label": "1280-light",
+      "surface": "completed-awaiting-delivery",
+      "violations": []
+    },
+    {
+      "label": "1280-light",
+      "surface": "live-teacher-feedback-release",
+      "violations": []
+    },
+    {
+      "label": "1280-light",
+      "surface": "teacher-released-feedback",
+      "violations": []
+    },
+    {
+      "label": "390-light",
+      "surface": "student-preview-delayed",
+      "violations": []
+    },
+    {
+      "label": "390-light",
+      "surface": "completed-awaiting-delivery",
+      "violations": []
+    },
+    {
+      "label": "390-light",
+      "surface": "live-teacher-feedback-release",
+      "violations": []
+    },
+    {
+      "label": "390-light",
+      "surface": "teacher-released-feedback",
+      "violations": []
+    },
+    {
+      "label": "320-light",
+      "surface": "student-preview-delayed",
+      "violations": []
+    },
+    {
+      "label": "320-light",
+      "surface": "completed-awaiting-delivery",
+      "violations": []
+    },
+    {
+      "label": "320-light",
+      "surface": "live-teacher-feedback-release",
+      "violations": []
+    },
+    {
+      "label": "320-light",
+      "surface": "teacher-released-feedback",
+      "violations": []
+    },
+    {
+      "label": "390-dark",
+      "surface": "student-preview-delayed",
+      "violations": []
+    },
+    {
+      "label": "390-dark",
+      "surface": "completed-awaiting-delivery",
+      "violations": []
+    },
+    {
+      "label": "390-dark",
+      "surface": "live-teacher-feedback-release",
+      "violations": []
+    },
+    {
+      "label": "390-dark",
+      "surface": "teacher-released-feedback",
+      "violations": []
+    }
+  ],
+  "errors": []
+}

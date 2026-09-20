@@ -61,15 +61,21 @@
   },
   {
     "resourceId": "tn-memory",
+    "path": "data.cards.0.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "tn-memory",
     "path": "data.cards.0.aiExample",
     "from": "Three fingers, right to left. Pinky is ones. Ring finger is tens. Middle finger is hundreds. Read a number onto your fingers and each one gets ten times bigger as you move left.",
-    "to": "Draw three columns: hundreds on the left, tens in the middle, ones on the right. Put a hundred flat, ten rod and single square in the matching columns. Read 245 as two hundreds, four tens and five ones."
+    "to": "Draw three columns: hundreds, tens, ones. Put the ones on the right. Show 245 with two hundred flats, four ten rods and five ones."
   },
   {
     "resourceId": "tn-memory",
     "path": "data.cards.0.mapping",
     "from": "Your hand already goes right to left in a fixed order. That order is the same order the places go, so the fingers hold the sequence for you.",
-    "to": "Columns keep places aligned without depending on which hand you use or how it faces. Blocks connect each place to its unit value."
+    "to": "Each block stands for a place value. The columns keep the places lined up."
   },
   {
     "resourceId": "tn-memory",
@@ -97,15 +103,74 @@
   },
   {
     "resourceId": "tn-memory",
-    "path": "data.cards.1.aiExample",
-    "from": "BIG SIDE FIRST. The left side holds the biggest places, so you look there first. If the left digits tie, take one step right and look again.",
-    "to": "ALIGN, THEN COMPARE. Line up ones with ones, tens with tens and hundreds with hundreds. Compare the greatest place first, moving right only when digits tie."
-  },
-  {
-    "resourceId": "tn-memory",
-    "path": "data.cards.1.mapping",
-    "from": "The phrase points at the side of the page, and the side of the page is exactly where the answer usually is, so the words tell you where to put your eyes.",
-    "to": "Alignment matters when numbers have different numbers of digits: 99 has zero hundreds, so it is smaller than 100."
+    "path": "data.cards.1",
+    "from": {
+      "id": "tn-ma-left",
+      "target": "Start at the left when you compare two numbers",
+      "essentialFacts": [
+        "To compare 245 and 254, start at the left.",
+        "The hundreds match, so move right to the tens.",
+        "Five tens beats four tens, so 254 is bigger."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "keyword-association",
+      "mode": "scaffolded",
+      "aiExample": "BIG SIDE FIRST. The left side holds the biggest places, so you look there first. If the left digits tie, take one step right and look again.",
+      "mapping": "The phrase points at the side of the page, and the side of the page is exactly where the answer usually is, so the words tell you where to put your eyes.",
+      "scaffoldStarter": "I look at the ____ first because ____.",
+      "scaffoldSteps": [
+        "Say which side holds the biggest place.",
+        "Say what to do when those digits tie.",
+        "Try it on 519 and 591."
+      ],
+      "coachPrompts": [
+        "What happens if you start at the right instead?"
+      ],
+      "studentPrompt": "Make your own short phrase for which side to check first.",
+      "reasoningPrompt": "Why does the left side decide it most of the time?",
+      "hookFact": {
+        "text": "The hundreds match. Then look at the tens: 4 or 5. Five tens beats four tens.",
+        "sourceTitle": "Ten Is a Bundle (this lesson)"
+      }
+    },
+    "to": {
+      "id": "tn-ma-left",
+      "target": "Start at the left when you compare two numbers",
+      "essentialFacts": [
+        "To compare 245 and 254, start at the left.",
+        "The hundreds match, so move right to the tens.",
+        "Five tens beats four tens, so 254 is bigger."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "keyword-association",
+      "mode": "scaffolded",
+      "aiExample": "Line up the places. Check hundreds first, then tens, then ones. Move to the next place only if the digits match.",
+      "mapping": "99 has no hundreds. 100 has one hundred. So 99 is less than 100, even though its tens digit is larger.",
+      "scaffoldStarter": "I look at the ____ first because ____.",
+      "scaffoldSteps": [
+        "Say which side holds the biggest place.",
+        "Say what to do when those digits tie.",
+        "Try it on 519 and 591."
+      ],
+      "coachPrompts": [
+        "What happens if you start at the right instead?"
+      ],
+      "studentPrompt": "Make your own short phrase for which side to check first.",
+      "reasoningPrompt": "Why does the left side decide it most of the time?",
+      "hookFact": {
+        "text": "The hundreds match. Then look at the tens: 4 or 5. Five tens beats four tens.",
+        "sourceTitle": "Ten Is a Bundle (this lesson)"
+      },
+      "factReview": {
+        "status": "inherited-review-attribution",
+        "sourcePack": "allopacks/place_value_grade2.allopack.json",
+        "sourceResourceId": "tn-memory",
+        "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+        "factsHash": "02a00ac9a19366400fd09a119eeb53db07815070b7cb0878ca7769dc1042e243"
+      }
+    }
   },
   {
     "resourceId": "tn-faq",
@@ -127,9 +192,90 @@
   },
   {
     "resourceId": "tn-challenge",
-    "path": "data.brief.seedDirection",
-    "from": "Pick a number with a zero in it if you dare. The zero is the part first graders find hardest.",
-    "to": "Try a number with a zero. Show the empty place clearly and check that its column matches the digit."
+    "path": "data.brief",
+    "from": {
+      "family": "design",
+      "context": "Your class visits the first graders on Friday. You get one sheet of paper and markers. You also get straws and rubber bands you can tape down.",
+      "role": "Number designers",
+      "audience": "One first grader who is still learning what a two-digit number means",
+      "drivingQuestion": "How do you show a three-digit number so a first grader can see what each digit is worth? They will not have you there to explain it.",
+      "seedDirection": "Pick a number with a zero in it if you dare. The zero is the part first graders find hardest.",
+      "lockedLessonFacts": [
+        "The ones place counts single things.",
+        "Each ten is a bundle of ten.",
+        "Each hundred is ten bundles of ten.",
+        "A zero holds a place open, so 305 is not 35."
+      ],
+      "openQuestions": [
+        "Do you show the bundles as straws, as boxes, or as drawings?",
+        "Where does the expanded form go on the poster?",
+        "How do you show a zero, when there is nothing to draw?"
+      ],
+      "stakeholders": [
+        "Your first-grade buddy",
+        "The first-grade teacher who keeps the posters",
+        "Your partner, who tests it with you"
+      ],
+      "criteria": [
+        "The poster shows one number three ways: in digits, in bundles, and in expanded form",
+        "Each digit is matched to the bundles it stands for",
+        "A first grader can follow it. Very few words to read.",
+        "You use at least three words from Number Words"
+      ],
+      "constraints": [
+        "One sheet of paper",
+        "Numbers under 1000",
+        "It has to survive being carried down a hallway"
+      ],
+      "deliverable": "The finished poster. Plus one sentence you say to the class. Which part did your buddy understand first? Which part did you have to explain out loud?",
+      "factLocked": true,
+      "factVerified": true
+    },
+    "to": {
+      "family": "design",
+      "context": "Your class visits the first graders on Friday. You get one sheet of paper and markers. You also get straws and rubber bands you can tape down.",
+      "role": "Number designers",
+      "audience": "One first grader who is still learning what a two-digit number means",
+      "drivingQuestion": "How do you show a three-digit number so a first grader can see what each digit is worth? They will not have you there to explain it.",
+      "seedDirection": "Try a number with a zero. Show the empty place clearly and check that its column matches the digit.",
+      "lockedLessonFacts": [
+        "The ones place counts single things.",
+        "Each ten is a bundle of ten.",
+        "Each hundred is ten bundles of ten.",
+        "A zero holds a place open, so 305 is not 35."
+      ],
+      "openQuestions": [
+        "Do you show the bundles as straws, as boxes, or as drawings?",
+        "Where does the expanded form go on the poster?",
+        "How do you show a zero, when there is nothing to draw?"
+      ],
+      "stakeholders": [
+        "Your first-grade buddy",
+        "The first-grade teacher who keeps the posters",
+        "Your partner, who tests it with you"
+      ],
+      "criteria": [
+        "The poster shows one number three ways: in digits, in bundles, and in expanded form",
+        "Each digit is matched to the bundles it stands for",
+        "A first grader can follow it. Very few words to read.",
+        "You use at least three words from Number Words"
+      ],
+      "constraints": [
+        "One sheet of paper",
+        "Numbers under 1000",
+        "It has to survive being carried down a hallway"
+      ],
+      "deliverable": "The finished poster. Plus one sentence you say to the class. Which part did your buddy understand first? Which part did you have to explain out loud?",
+      "factLocked": true,
+      "factVerified": true,
+      "factReview": {
+        "status": "inherited-review-attribution",
+        "sourcePack": "allopacks/place_value_grade2.allopack.json",
+        "sourceResourceId": "tn-challenge",
+        "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+        "factsHash": "50b359547034c5f1f35dc6de58fc1706e78c7f5e8c9e254eb70d510ced1ccebf"
+      }
+    }
   },
   {
     "resourceId": "tn-challenge",

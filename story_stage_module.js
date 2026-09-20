@@ -438,6 +438,7 @@
     var narrationResourceIdRef = useRef(null);
     var narrationLiveRef = useRef(null);
     var preparationRef = useRef(null);
+    var latestSaveScriptRef = useRef(null);
     var _narrationRevision = useState(0); var refreshNarration = _narrationRevision[1];
     var _narrationDirty = useState(false); var narrationDirty = _narrationDirty[0]; var setNarrationDirty = _narrationDirty[1];
     var _narrationNotice = useState(''); var narrationNotice = _narrationNotice[0]; var setNarrationNotice = _narrationNotice[1];
@@ -783,7 +784,7 @@
           var provider = narrationLiveRef.current.callTTS;
           if (!provider || isNarrationMuted()) throw new Error('Narration is unavailable or muted.');
           var provenance = {};
-          var url = await provider(request.text, request.profile.voice, 1, { language: request.profile.language, signal: request.signal, maxRetries: 1,
+          var url = await provider(request.text, request.profile.voice, 1, { language: request.profile.language, signal: request.signal, maxRetries: 1, force: request.force === true,
             onResolvedProfile: function (value) { provenance = value || {}; }
           });
           if (url && !(request.signal && request.signal.aborted)) profiles.set(request.segment.segmentId, provenance);
@@ -1086,6 +1087,36 @@
       } catch (_) { reportSave(tr('This saved script could not be opened. Try another script or create it again from your source text.'), true); }
     }, [stopPlayback, addToast]);
 
+    // Preparation may finish after a reflection or playback preference changes.
+    // Persist the latest render's progress, not the state at request start.
+    latestSaveScriptRef.current = saveScript;
+
+    async function editLineNarration(lineId, remove) {
+      if (preparationRef.current || !script) return;
+      stopPlayback();
+      var service;
+      try { service = getNarration(); } catch (_) {}
+      if (!service) { setNarrationNotice(tr('Narration tools are still loading. Try again in a moment.')); return; }
+      if (!remove && isNarrationMuted()) { setNarrationNotice(tr('Unmute audio before preparing narration.')); return; }
+      var controller = new AbortController();
+      preparationRef.current = controller; setPreparing(true);
+      setNarrationNotice(remove ? tr('Removing this line’s audio…') : tr('Generating a fresh take for this line…'));
+      try {
+        if (remove) await service.remove(lineId, { signal: controller.signal });
+        else await service.regenerate(lineId, { signal: controller.signal });
+        if (controller.signal.aborted || preparationRef.current !== controller) return;
+        setNarrationDirty(true); refreshNarration(function (n) { return n + 1; });
+        var saved = latestSaveScriptRef.current();
+        setNarrationNotice(saved
+          ? (remove ? tr('This line’s audio was removed from the saved script.') : tr('The new take was saved with this script.'))
+          : tr('The audio change is ready but could not be saved. Keep this window open and try Save progress again.'));
+      } catch (_) {
+        if (preparationRef.current === controller && !controller.signal.aborted) setNarrationNotice(tr('This line’s audio could not be updated. Existing saved audio has not been replaced; try again.'));
+      } finally {
+        if (preparationRef.current === controller) { preparationRef.current = null; setPreparing(false); refreshNarration(function (n) { return n + 1; }); }
+      }
+    }
+
     async function prepareNarration() {
       if (preparationRef.current || !script) return;
       stopPlayback();
@@ -1103,7 +1134,7 @@
           refreshNarration(function (n) { return n + 1; });
         } });
         if (controller.signal.aborted || preparationRef.current !== controller) return;
-        var saved = saveScript();
+        var saved = latestSaveScriptRef.current();
         setNarrationNotice(result.failed
           ? tr('{count} lines could not be prepared. Try again to retry only missing or outdated lines.', { count: result.failed })
           : saved ? tr('Narration saved with this script on this device.') : tr('Narration is ready but could not be saved. Keep this window open and try Save progress again.'));
@@ -1884,7 +1915,7 @@
               e('button', { type: 'button', disabled: preparing || isPlaying, onClick: prepareNarration, style: S.btn(PURPLE, '#fff', preparing || isPlaying) }, tr('Prepare narration')),
               preparing && e('button', { type: 'button', onClick: function () { cancelPreparation(); setNarrationNotice(tr('Preparation cancelled. Save progress to keep completed clips.')); }, style: S.btn('#fff', '#5b21b6', false) }, tr('Cancel preparation'))
             ),
-            e('p', { style: { fontSize: '12px', color: '#475569', margin: '8px 0 0', lineHeight: 1.5 } }, narrationDirty ? tr('New audio is ready. Save progress to keep it after closing.') : tr('Prepare narration saves missing or outdated lines with this script. Microphone recordings are downloaded separately.')),
+            e('p', { style: { fontSize: '12px', color: '#475569', margin: '8px 0 0', lineHeight: 1.5 } }, narrationDirty ? tr('Narration has unsaved changes. Save progress to keep them after closing.') : tr('Prepare narration saves missing or outdated lines with this script. Microphone recordings are downloaded separately.')),
             narrationSummary.stale > 0 && e('p', { style: { fontSize: '12px', color: '#9a3412' } }, tr('{count} lines need updated narration for the current voice or language.', { count: narrationSummary.stale })),
             narrationNotice && e('p', { role: 'status', style: { fontSize: '12px', lineHeight: 1.5, marginBottom: 0 } }, narrationNotice)
           ),
@@ -2277,6 +2308,8 @@
                 var isCurrent = idx === currentLine;
                 var character = script.characters.find(function (c) { return c.id === line.speaker; });
                 var isMyLine = myRole && line.speaker === myRole;
+                var lineAudio = null;
+                try { var lineService = getNarration(); if (lineService) lineAudio = lineService.inspect(line.id); } catch (_) {}
                 var bgColor = isCurrent ? (isMyLine ? '#fef3c7' : character ? character.color + '15' : '#f0fdf4') : 'transparent';
                 var borderColor = isCurrent ? (isMyLine ? '#f59e0b' : character ? character.color : '#22c55e') : 'transparent';
                 return e('div', { key: line.id, id: 'ss-line-' + idx,
@@ -2284,6 +2317,19 @@
                   style: { padding: line.type === 'stage-direction' ? '4px 16px' : '10px 16px', borderLeft: '4px solid ' + borderColor, background: bgColor, borderRadius: '0 8px 8px 0', marginBottom: '4px', transition: 'background 0.2s' }
                 },
                   e('button', { type: 'button', disabled: isPlaying || preparing, 'aria-label': tr('Read line {number} aloud', { number: idx + 1 }), onClick: function () { setCurrentLine(idx); speakLine(line.text, character ? character.voice : 'Aoede', playbackSpeed, line.id); }, style: { float: 'right', margin: '0 0 4px 8px', border: '1px solid #c4b5fd', borderRadius: '8px', background: '#f5f3ff', color: '#5b21b6', padding: '4px 8px', cursor: 'pointer' } }, '▶'),
+                  lineAudio && e('details', { style: { margin: '0 48px 6px 0', fontSize: '12px', color: '#475569' } },
+                    e('summary', { style: { cursor: 'pointer', minHeight: '32px', padding: '6px 0' }, 'aria-label': tr('Audio options for line {number}', { number: idx + 1 }) },
+                      tr('Line audio') + ' · ' + (lineAudio.status === 'ready' ? tr('Ready') : lineAudio.status === 'stale' ? tr('Needs update') : lineAudio.status === 'corrupt' ? tr('Needs repair') : tr('Not prepared'))),
+                    e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '4px 0' } },
+                      e('button', { type: 'button', disabled: preparing || isPlaying,
+                        'aria-label': tr('Regenerate audio for line {number}', { number: idx + 1 }),
+                        onClick: function () { editLineNarration(line.id, false); }, style: S.btn('#f5f3ff', '#5b21b6', preparing || isPlaying) },
+                        lineAudio.status === 'missing' ? tr('Generate line audio') : tr('Regenerate line audio')),
+                      lineAudio.status !== 'missing' && e('button', { type: 'button', disabled: preparing || isPlaying,
+                        'aria-label': tr('Remove audio for line {number}', { number: idx + 1 }),
+                        onClick: function () { editLineNarration(line.id, true); }, style: S.btn('#fff', '#475569', preparing || isPlaying) }, tr('Remove line audio'))
+                    )
+                  ),
                   line.type === 'stage-direction'
                     ? e('p', { style: { fontSize: largeText ? '13px' : '11px', color: '#475569', fontStyle: 'italic', margin: 0, lineHeight: largeText ? 1.85 : 1.4 } }, '[' + line.text + ']')
                     : e('div', null,

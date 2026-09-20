@@ -1,0 +1,8 @@
+const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivityPanel(props) {
+  return (
+    <CDNModuleGate moduleKey="SharedActivity.SharedAssignmentActivityPanel" loaderName="__alloLazySharedActivity" displayName="Shared activity tools" size="inline" icon="💬" t={props.t}>
+      {(Real) => React.createElement(Real, props)}
+    </CDNModuleGate>
+  );
+});
+

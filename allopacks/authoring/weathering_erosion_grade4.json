@@ -205,5 +205,16 @@
       "Move, then leave. Think of sand carried by a stream, then left on a bank.",
       "The two parts show two processes. Moving sand is erosion. Sand left behind is deposition."
     ]
-  ]
+  ],
+  "frames": [
+    "The rock changed in place when ____. That is ____.",
+    "The material moved from ____ to ____. That shows ____.",
+    "We changed ____, but kept ____ the same.",
+    "Our repeated results suggest ____. Our tray cannot show ____."
+  ],
+  "parallelExample": {
+    "context": "Another class compares how packed and loose soil affect runoff in small trays.",
+    "move": "They change how tightly the soil is packed. They keep tray slope, soil amount and water input alike. They repeat the comparison and measure sediment the same way.",
+    "whyItHelps": "The factor differs from your slope test, but the need to control other conditions and repeat measurements is the same."
+  }
 }

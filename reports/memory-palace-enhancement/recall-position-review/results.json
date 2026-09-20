@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "currentStopPreserved": true,
+  "draftPreserved": true,
+  "pastureAndSpaceRebuilds": true,
+  "entrancePreserved": true,
+  "backwardRetryStartsCorrectly": true,
+  "newReviewAndContentReset": true,
+  "noExtraAttempts": true,
+  "pageErrors": []
+}

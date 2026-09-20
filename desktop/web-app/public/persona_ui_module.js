@@ -1,7 +1,7 @@
 (function() {
 'use strict';
   // WCAG 2.2 AA: Accessibility CSS
-  if (!document.getElementById("persona-ui-module-a11y")) { var _s = document.createElement("style"); _s.id = "persona-ui-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }
+  if (!document.getElementById("persona-ui-module-a11y")) { var _s = document.createElement("style"); _s.id = "persona-ui-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }"; document.head.appendChild(_s); }
 if (window.AlloModules && window.AlloModules.PersonaUIModule) { console.log('[CDN] PersonaUIModule already loaded, skipping'); return; }
 // persona_ui_source.jsx — InteractiveBlueprintCard, HarmonyMeter, CharacterColumn
 // Extracted from AlloFlowANTI.txt for CDN modularization
@@ -160,7 +160,7 @@ const GoldenThreadPanel = ({
         concept: c
       }) || 'Remove concept ' + c,
       className: "ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -194,7 +194,7 @@ const GoldenThreadPanel = ({
         term: term
       }) || 'Remove term ' + term,
       className: "ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -563,6 +563,14 @@ const InteractiveBlueprintCard = React.memo(({
   const blueprintMatrixUnavailable = run && typeof run.generationMatrixUnavailable === 'boolean' ? runtimeMatrixUnavailable : plannedMatrixUnavailable || !blueprintMatrixModuleReady;
   const blueprintMatrixReady = !blueprintMatrixUnavailable && items.length > 0 && items.every(item => Array.isArray(item.generationVariants) && item.generationVariants.length > 0);
   const matrixRetryPending = !!(run && run.retryable === true && run.reasonCode === 'generation-matrix-unavailable');
+  const runRows = Object.values(run?.rows || {}).filter(Boolean);
+  const runHasFinished = !isRunning && !!run && (run.done === true || ['completed', 'partial', 'failed', 'interrupted', 'stopped'].includes(run.status));
+  // Count steps, not audience versions. A previously successful step with a
+  // missing output still needs attention, including partially missing fan-out.
+  const completedRunSteps = runRows.filter(row => row.status === 'landed' && !row.resourceMissing && !(Array.isArray(row.missingResourceIds) && row.missingResourceIds.length) && !(Array.isArray(row.variantResults) && row.variantResults.some(variant => variant && variant.status !== 'landed'))).length;
+  const showRunOutcome = runHasFinished && !matrixRetryPending && runRows.length > 0;
+  const allRunStepsComplete = completedRunSteps === runRows.length;
+  const generateActionLabel = isRunning ? t('blueprint.status_running') || 'Building...' : matrixRetryPending ? t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning' : runHasFinished ? t('blueprint.run_plan_again') || 'Run plan again' : t('blueprint.generate_resources') || 'Generate resources';
   const blueprintExpectedCalls = blueprintVariants.filter(variant => variant && variant.action !== 'reuse').length;
   const blueprintReuseCount = blueprintVariants.filter(variant => variant && variant.action === 'reuse').length;
   const blueprintGrades = Array.from(new Set(blueprintVariants.map(variant => variant && variant.grade).filter(Boolean)));
@@ -604,7 +612,7 @@ const InteractiveBlueprintCard = React.memo(({
     className: "font-bold text-indigo-900 text-sm"
   }, t('blueprint.header'), " ", isEditing ? `(${t('common.edit')})` : ""), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600"
-  }, isEditing ? t('blueprint.drag_instruction') + ' ' + (t('blueprint.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.') : isRunning ? t('fullpack.running_help') || 'Follow progress below. Keep this page open while resources are created.' : t('blueprint.overview_help') || 'Review the resources below, then generate. Use Edit plan to make changes.'))), /*#__PURE__*/React.createElement("div", {
+  }, isEditing ? t('blueprint.drag_instruction') + ' ' + (t('blueprint.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.') : isRunning ? t('fullpack.running_help') || 'Follow progress below. Keep this page open while resources are created.' : runHasFinished ? t('blueprint.results_overview_help') || 'Review your resources below. Use Edit plan to make changes.' : t('blueprint.overview_help') || 'Review the resources below, then generate. Use Edit plan to make changes.'))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center gap-1.5"
   }, hasFailureDiagnostics && typeof onOpenErrorLog === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -730,7 +738,20 @@ const InteractiveBlueprintCard = React.memo(({
       className: "shrink-0 text-[10px] font-bold px-2 py-1 rounded border border-red-300 text-red-700 bg-white hover:bg-red-50",
       title: t('blueprint.stop_run_hint') || 'Finishes the step in progress, then stops. Finished resources are kept.'
     }, t('blueprint.stop_run') || 'Stop after this step'));
-  })(), /*#__PURE__*/React.createElement("div", {
+  })(), showRunOutcome && /*#__PURE__*/React.createElement("div", {
+    "data-testid": "bp-run-outcome",
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: `mb-3 rounded-lg border p-3 text-xs leading-relaxed ${allRunStepsComplete ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : 'border-amber-300 bg-amber-50 text-amber-950'}`
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-bold"
+  }, t('blueprint.run_summary') || 'Run summary', ' · ', t('blueprint.completed_steps', {
+    done: completedRunSteps,
+    total: runRows.length
+  }) || `${completedRunSteps} of ${runRows.length} steps complete.`), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1"
+  }, allRunStepsComplete ? t('blueprint.completed_help') || 'Use Preview below to review a resource.' : t('blueprint.unfinished_help') || 'Use Rebuild on an unfinished step, or run the plan again. Finished resources are kept.')), /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
@@ -1101,9 +1122,12 @@ const InteractiveBlueprintCard = React.memo(({
         className: "mt-0.5 opacity-85"
       }, isMissingArtifact ? t('blueprint.variant_missing') || 'This successful version is no longer in the workspace. Rebuild the step to create it again.' : safeVariantReason && safeVariantReason.summary || t('blueprint.variant_failure_safe') || 'This variant did not finish; technical details remain in the on-device error log.'));
     })))));
-  }), items.length === 0 && /*#__PURE__*/React.createElement("p", {
-    className: "text-center text-slate-600 text-sm italic py-4"
-  }, t('blueprint.empty_plan'))), /*#__PURE__*/React.createElement("div", {
+  }), items.length === 0 && /*#__PURE__*/React.createElement("div", {
+    "data-testid": "bp-empty-plan",
+    className: "text-center text-slate-600 text-sm py-4"
+  }, /*#__PURE__*/React.createElement("p", null, t('blueprint.empty_plan')), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-xs"
+  }, t('blueprint.empty_plan_help') || 'Choose Edit plan, then Add step to add a resource.'))), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-3 pt-3 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -1115,14 +1139,14 @@ const InteractiveBlueprintCard = React.memo(({
   }, t('blueprint.cancel')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "blueprint_generate_pack_btn",
-    "aria-label": isRunning ? t('blueprint.status_running') || 'Building...' : matrixRetryPending ? t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning' : t('blueprint.generate_resources') || 'Generate resources',
+    "aria-label": generateActionLabel,
     disabled: !!isRunning || items.length === 0,
     onClick: onConfirm,
     className: "flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 14,
     className: "text-yellow-700 fill-current"
-  }), " ", isRunning ? t('blueprint.status_running') || 'Building...' : matrixRetryPending ? t('blueprint.matrix_unavailable_retry_short') || 'Retry generation planning' : t('blueprint.generate_resources') || 'Generate resources')), typeof onSaveTemplate === 'function' && items.length > 0 && !isEditing && /*#__PURE__*/React.createElement("div", {
+  }), " ", generateActionLabel)), typeof onSaveTemplate === 'function' && items.length > 0 && !isEditing && /*#__PURE__*/React.createElement("div", {
     className: "pt-3 border-t border-slate-100",
     "data-testid": "bp-template-save"
   }, !showTemplateSave ? /*#__PURE__*/React.createElement("button", {
@@ -1174,7 +1198,7 @@ const InteractiveBlueprintCard = React.memo(({
       className: "font-bold"
     }, getToolLabel(it.type)), /*#__PURE__*/React.createElement("span", {
       className: keep ? 'text-slate-700' : 'text-slate-500 line-through'
-    }, " \u2014 \"", it.directive, "\"")));
+    }, " — \"", it.directive, "\"")));
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {

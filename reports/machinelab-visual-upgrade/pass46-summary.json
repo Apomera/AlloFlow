@@ -1,0 +1,29 @@
+{
+  "pass": 46,
+  "change": "Saved-position markers and slider change labels",
+  "uiTests": 228,
+  "browserChecks": 372,
+  "themes": {
+    "light": {
+      "checks": 124,
+      "screenshots": 11,
+      "errors": [],
+      "overflow": false
+    },
+    "dark": {
+      "checks": 124,
+      "screenshots": 11,
+      "errors": [],
+      "overflow": false
+    },
+    "contrast": {
+      "checks": 124,
+      "screenshots": 11,
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "sourceMirrorIdentical": true,
+  "syntaxValid": true,
+  "localOnly": true
+}

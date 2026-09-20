@@ -51,13 +51,15 @@ test.describe('raptor flight continuity', () => {
       canvas._rhCommand('hold', { key: 'shift', pressed: true }); step(1000 / 60);
       const dive = canvas._rhSnapshot();
       const label = document.querySelector('.rh-flight-metric-label')!;
-      const metric = document.querySelector('.rh-flight-metric')!;
+      const telemetry = document.querySelector('.rh-flight-telemetry-strip')!;
       return { frames, before, paused, resumed, dive, labelDisplay: getComputedStyle(label).display,
-        metricPadding: getComputedStyle(metric).paddingTop, errors: (window as any).__events.errors };
+        telemetryFits: telemetry.scrollWidth <= telemetry.clientWidth + 1,
+        telemetryClearance: document.querySelector('.rh-flight-state')!.getBoundingClientRect().top - telemetry.getBoundingClientRect().bottom, errors: (window as any).__events.errors };
     });
     expect(result.errors).toEqual([]);
     expect(result.labelDisplay).toBe('block');
-    expect(parseFloat(result.metricPadding)).toBeGreaterThanOrEqual(6);
+    expect(result.telemetryFits).toBe(true);
+    expect(result.telemetryClearance).toBeGreaterThanOrEqual(0);
     const screenY = result.frames.map(f => f.raptorNdcY);
     expect(Math.max(...screenY) - Math.min(...screenY)).toBeLessThan(0.001);
     expect(result.paused.motionTimeMs).toBe(result.before.motionTimeMs);

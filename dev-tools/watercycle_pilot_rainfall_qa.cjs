@@ -70,8 +70,14 @@ const read = p => fs.readFileSync(path.join(ROOT,p),'utf8');
       if(field.alpha[i/3+3]===0)continue;
       assert(field.points[i+1]>=field.points[i+10],'Tail stays above head');
       assert(field.points[i]<=field.points[i+9],'Wind slants falling rain downwind');
-      assert(field.points[i+10]+field.position[1]>=-.0001,'Rain clips at sea surface');
     }
+
+    const contactCheck=await page.evaluate(()=>{
+      const scene=pilotReview.scene,r=scene.getObjectByName('pilot-rain-field'),ocean=scene.getObjectByName('pilot-ocean-surface');scene.updateMatrixWorld(true);
+      const a=r.geometry.attributes.position,alpha=r.geometry.attributes.rainAlpha,ray=new THREE.Raycaster(),p=new THREE.Vector3(),down=new THREE.Vector3(0,-1,0);let min=Infinity,contacts=0,visible=0;
+      for(let i=0;i<a.count;i++){if(alpha.getX(i)===0)continue;p.fromBufferAttribute(a,i).applyMatrix4(r.matrixWorld);ray.set(new THREE.Vector3(p.x,500,p.z),down);const hit=ray.intersectObject(ocean)[0];if(!hit)throw Error('Missing ocean beneath rain');const gap=p.y-hit.point.y;min=Math.min(min,gap);visible++;if(i%4===3&&Math.abs(gap-.03)<.002)contacts++;}
+      return {min,contacts,visible};
+    });assert(contactCheck.min>=.029&&contactCheck.contacts>0&&contactCheck.visible>20,JSON.stringify(contactCheck));
     await page.waitForTimeout(900);assert.deepEqual(await rain(),field,'Pause freezes rainfall');
     await canvas.screenshot({path:path.join(out,'rain-follow.jpg'),type:'jpeg',quality:85});
     await page.getByRole('button',{name:'Water view',exact:true}).click();await page.waitForTimeout(700);

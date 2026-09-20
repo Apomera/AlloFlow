@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "similarDistractorRejected": true,
+  "correctChoiceAccepted": true,
+  "retryRecorded": true,
+  "noFalsePerfectScore": true,
+  "widths": [
+    1280,
+    390,
+    320
+  ],
+  "pageErrors": []
+}

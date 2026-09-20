@@ -163,7 +163,7 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('if (rendered && canvasEl._cellSimPaused) schedulePausedOverlayFrame();');
       expect(source).toContain('if (canvasEl._cellSimPaused) renderStaticFrame(); else scheduleLoop();');
       expect(source).toContain('var hoverChanged = hoveredOrg !== foundHover;');
-      expect(source).toContain('if ((hoverChanged || labelChanged) && canvasEl._cellSimPaused) renderStaticFrame();');
+      expect(source).toContain('if ((hoverChanged || labelChanged || keyboardPreviewCleared) && canvasEl._cellSimPaused) renderStaticFrame();');
       expect(source).toContain('canvasEl._cellSimSetPaused = function (p)');
       expect(source).not.toContain('if (canvasEl._cellSimPaused) { animId = requestAnimationFrame(loop); return; }');
 
@@ -201,7 +201,7 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('className: typeof srOnly === \'string\' ? srOnly : "sr-only"');
       expect(source).toContain('style: srOnly && typeof srOnly === \'object\' ? srOnly : undefined');
       expect(source).not.toContain('className: srOnly || "sr-only"');
-      expect(source).toContain('"aria-describedby": "cell-sim-status"');
+      expect(source).toContain('"cell-sim-status cell-anatomy-keyboard-help" : "cell-sim-status"');
     });
   });
 

@@ -1,0 +1,7 @@
+{
+  "passed": 23,
+  "failed": 0,
+  "retries": 0,
+  "duration": "8.5 minutes",
+  "command": "playwright test tests/e2e/remediation_continuity.spec.ts --workers=1 --retries=0"
+}

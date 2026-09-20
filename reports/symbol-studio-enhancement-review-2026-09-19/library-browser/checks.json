@@ -1,0 +1,38 @@
+[
+  {
+    "width": 1440,
+    "keyboardFavorite": true,
+    "keyboardSelection": true,
+    "hiddenSelectionCount": true,
+    "bulkPersistence": true,
+    "undoPreservesUnrelatedEdits": true,
+    "previewAfterOrganizing": true,
+    "workflowOverflow": [],
+    "minimumButtonHeight": 44,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "keyboardFavorite": true,
+    "keyboardSelection": true,
+    "hiddenSelectionCount": true,
+    "bulkPersistence": true,
+    "undoPreservesUnrelatedEdits": true,
+    "previewAfterOrganizing": true,
+    "workflowOverflow": [],
+    "minimumButtonHeight": 44,
+    "errors": []
+  },
+  {
+    "width": 320,
+    "keyboardFavorite": true,
+    "keyboardSelection": true,
+    "hiddenSelectionCount": true,
+    "bulkPersistence": true,
+    "undoPreservesUnrelatedEdits": true,
+    "previewAfterOrganizing": true,
+    "workflowOverflow": [],
+    "minimumButtonHeight": 44,
+    "errors": []
+  }
+]

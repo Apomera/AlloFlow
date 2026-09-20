@@ -3,6 +3,9 @@
 // Extracted from AlloFlowANTI.txt (live-session-dock).
 function LiveSessionDockView(props) {
   const { ALLOHAVEN_CLASSROOM_REWARD_REASONS, ALLOHAVEN_RECOGNITION_CAPS, CLASS_GOAL_TEMPLATES, LIVE_SIGNAL_FRESH_MS, TEACHER_ONLY_TYPES, _alloMbBridgeActive, _alloStudentSafeResources, activeSessionAppId, activeSessionCode, activeSignals, activeUnitId, activeView, addToast, adventureState, broadcastInteractiveOrganizer, checklistMarks, classGoalDraft, classifyLiveRosterPresence, clearSignal, dockCardStyle, dockGroupLabel, dockNow, evaluateClassGoalProgress, formatTime, generatedContent, getAlloHavenSessionRecognitionTokens, getDefaultTitle, getFilteredHistory, getIconForType, getWordSoundsPortableAudioCoverage, handleAwardClassGoal, handleAwardIndependentGoal, handleRecognizeStudent, handleRecognizeStudents, handleReleaseStudentResources, handleRestoreView, handleSetGroupResource, handleSetIsZenModeToTrue, handleSetShowGroupModalToTrue, handleSetShowStudyTimerModalToTrue, handleSetStudentResource, handleSetStudentsResource, handleUpdateHavenRecognitionConfig, havenConfigBusy, havenRecognitionConfig, havenRewardAmount, havenRewardBusy, havenRewardDraftsRef, havenRewardReasonId, havenRewardReceipt, history, interactiveOrganizerRetrying, interactiveOrganizerSync, isStudyTimerRunning, launchPreparedLiveInteraction, liveActivitySnapshots, liveAudioStatusNow, liveDockPanelRef, liveOrganizer, liveOrganizerSummary, livePresenterCuesByResourceId, liveSessionQaEnabled, normalizeClassGoal, normalizeClassGoals, normalizeLiveOrganizerProgress, openChecklistGoalId, openLiveActivityDashboard, recentHavenRecognition, resolveClassGoalTeamUids, resolveLiveStudentResourceTarget, resolveWordSoundsAudioDeliveryState, retryInteractiveOrganizerStudents, retryableLiveOrganizerUids, retryMailboxImagesForStudent, mailboxImageVersion, rosterEntries, rosterKey, sessionData, setActiveView, setChecklistMarks, setClassGoalDraft, setHavenRewardAmount, setHavenRewardReasonId, setIsWordSoundsMode, setLivePollPreset, setLiveSessionQaEnabled, setOpenChecklistGoalId, setPictionaryInitialMode, setPictionaryPreparedInteraction, setRosterKey, setShowHavenRewardAudit, setShowLiveDock, setShowLivePollingPanel, setShowPictionaryHost, setShowSessionModal, setWordSoundsAutoReview, showHavenRewardAudit, signalMeta, studyTimeLeft, t, toggleSessionMode, units, updateLivePresenterCue } = props;
+  const [showOrganizerReview, setShowOrganizerReview] = React.useState(false);
+  const reviewApi = window.AlloModules?.ViewRenderers;
+  const reviewLabel = reviewApi?.organizerReviewText?.(props.t, 'review_title', 'Review organizer reflections') || 'Review organizer reflections';
   const imageApi = window.AlloModules?.LiveAac;
   const MailboxImageStatus = imageApi?.MailboxImageStatus;
   const resourcesWithImages = React.useMemo(() => new Set((history || []).filter(resource => {
@@ -25,7 +28,7 @@ function LiveSessionDockView(props) {
                   // session-sync trace, one tap from the full Session log.
                   try {
                     const rosterCount = Object.keys((sessionData && sessionData.roster) || {}).length;
-                    const transportLabel = _alloMbBridgeActive() ? (t('live_dock.transport_mailbox') || 'Class Mailbox') : 'Firebase';
+                    const transportLabel = props.organizerReflectionRequest ? 'LAN' : _alloMbBridgeActive() ? (t('live_dock.transport_mailbox') || 'Class Mailbox') : 'Firebase';
                     const trace = ((typeof window !== 'undefined' && window.__alloSessionSyncTrace) || []).filter(ev => ev.detail?.sessionPath === 'artifacts/' + activeSessionAppId + '/public/data/sessions/' + activeSessionCode);
                     let lastSync = null; let lastProblem = null;
                     for (let i = trace.length - 1; i >= 0; i--) {
@@ -50,13 +53,17 @@ function LiveSessionDockView(props) {
                     );
                   } catch (e) { return null; }
                 })()}
+                {props.organizerReflectionRequest && <section className="my-3">
+                  <button type="button" aria-expanded={showOrganizerReview} onClick={() => setShowOrganizerReview(value => !value)} className="min-h-11 rounded-lg border border-indigo-600 bg-white px-4 font-bold text-indigo-800">{reviewLabel}</button>
+                  {showOrganizerReview && (reviewApi?.OrganizerReviewPanel ? React.createElement(reviewApi.OrganizerReviewPanel, { key: activeSessionCode, request: props.organizerReflectionRequest, sessionCode: activeSessionCode, t }) : <p role="status">{reviewApi?.organizerReviewText?.(t, 'loading', 'Loading reflections…') || 'Loading reflections…'}</p>)}
+                </section>}
                 {liveOrganizer && (() => {
                   const organizerResource = [generatedContent]
                     .concat(Array.isArray(history) ? history : [])
                     .concat(Array.isArray(sessionData?.resources) ? sessionData.resources : [])
                     .find(item => item && String(item.id || '') === String(liveOrganizer.resourceId || '')) || null;
                   const countBadges = [
-                    { key: 'complete', label: 'complete', color: '#166534', background: '#dcfce7', border: '#86efac' },
+                    { key: 'complete', label: liveOrganizer.type === 'reflection' ? 'submitted' : 'complete', color: '#166534', background: '#dcfce7', border: '#86efac' },
                     { key: 'attempted', label: 'attempted', color: '#9a3412', background: '#ffedd5', border: '#fdba74' },
                     { key: 'ready', label: 'ready', color: '#3730a3', background: '#e0e7ff', border: '#a5b4fc' },
                     { key: 'working', label: 'working', color: '#6d28d9', background: '#f5f3ff', border: '#c4b5fd' },
@@ -720,12 +727,13 @@ function LiveSessionDockView(props) {
                                         : (t('word_sounds.audio_status_missing', { ready: entry.wsProgress?.audioReady || 0, total: entry.wsProgress?.audioTotal || 0 }) || ('Audio missing ' + (entry.wsProgress?.audioReady || 0) + '/' + (entry.wsProgress?.audioTotal || 0)));
                           const wsAudioPrimaryLabel = wsAudioStatus === 'damaged' ? (t('word_sounds.audio_resend') || 'Resend audio') : wsAudioLabel;
                           const activeOrganizer = sessionData?.interactiveOrganizer;
-                          const organizerProgress = normalizeLiveOrganizerProgress(entry.organizerProgress);
+                          const rawOrganizerProgress = normalizeLiveOrganizerProgress(entry.organizerProgress);
+                          const organizerProgress = rawOrganizerProgress?.status === 'loading' && Date.now() - rawOrganizerProgress.at > 30000 ? { ...rawOrganizerProgress, status: 'failed' } : rawOrganizerProgress;
                           const organizerProgressIsCurrent = !!(activeOrganizer?.activityId
                             && organizerProgress?.activityId === activeOrganizer.activityId);
                           const organizerProgressLabel = !organizerProgressIsCurrent ? null
                             : organizerProgress.status === 'complete'
-                              ? `Organizer complete${organizerProgress.total ? ` ${organizerProgress.correct}/${organizerProgress.total}` : ''}`
+                              ? (organizerProgress.type === 'reflection' ? `Reflection submitted${organizerProgress.attempts > 1 ? ` · revision ${organizerProgress.attempts}` : ''}` : `Organizer complete${organizerProgress.total ? ` ${organizerProgress.correct}/${organizerProgress.total}` : ''}`)
                               : organizerProgress.status === 'attempted'
                                 ? `Organizer attempt${organizerProgress.total ? ` ${organizerProgress.correct}/${organizerProgress.total}` : ''}`
                                 : organizerProgress.status === 'failed'

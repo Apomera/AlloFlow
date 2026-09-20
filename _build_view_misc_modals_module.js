@@ -84,6 +84,7 @@ window.AlloModules = window.AlloModules || {};
 // UDLGuideModal + AIBackendModal. Registering the other two from here resolves them to null
 // (they aren't defined in this scope) and is harmless only because view_misc_panels loads later.
 window.AlloModules.AllobotContextControls = AllobotContextControls;
+window.AlloModules.AllobotAdviceSave = AllobotAdviceSave;
 window.AlloModules.AllobotSearchSettings = AllobotSearchSettings;
 window.AlloModules.AllobotEvidenceCard = AllobotEvidenceCard;
 window.AlloModules.UDLGuideModal = (typeof UDLGuideModal !== 'undefined') ? UDLGuideModal : null;

@@ -8,7 +8,8 @@
     "gradeLevel": "2nd Grade",
     "standards": "NGSS 2-PS1-1 (plan and conduct an investigation to describe and classify different kinds of materials by their observable properties); NGSS 2-PS1-2 (analyze data obtained from testing different materials to determine which materials have the properties that are best suited for an intended purpose); CCSS.ELA-LITERACY.RI.2.1 (ask and answer such questions as who, what, where, when, why, and how to demonstrate understanding of key details in a text)",
     "createdAt": "2026-09-05T23:50:00.000Z",
-    "imageShotList": "allopacks/materials_grade2.IMAGES.md"
+    "imageShotList": "allopacks/materials_grade2.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Properties of Materials and Their Uses",
   "history": [
@@ -55,7 +56,7 @@
       "title": "Why Windows Are Not Wool",
       "timestamp": "2026-09-05T23:50:01.000Z",
       "data": "## Why Windows Are Not Wool\n\nLook at a window. Now look at a sweater. Nobody ever mixed those up. Why not?\n\nEvery thing is made of some **material**. Glass. Wool. Wood. Metal. Plastic. Each one has its own **properties** — the things you can notice about it.\n\nGlass is **hard**. It is **smooth**. You can see straight through it. Those are exactly what a window needs.\n\nWool is **soft**. It is **rough** to touch. It traps warm air near your skin. Those are exactly what a sweater needs.\n\nSo here is the rule. Somebody picked the material to fit the job.\n\nA raincoat is **waterproof**, so the rain runs off. A towel is the opposite. A towel needs to **absorb** water, which means soak it up. Same water. Two jobs. Two very different materials.\n\nA rubber band is **bendy**, so it stretches and springs back. A brick is not bendy at all, and that is good. You would not want a bendy wall.\n\nHow do people know which material to pick? They **test** it. They try each one at the same job and watch what happens. A fair test changes one thing only.\n\nHere is something to notice. One material can be right for one job and wrong for another. Paper is great for drawing. Paper is terrible for a raincoat. The material is not good or bad on its own. It only fits, or does not fit, the job.\n\nNext time you pick something up, ask what it is made of. Then ask why.",
-      "meta": "2nd Grade • Leveled reading • ~255 words • read-aloud friendly",
+      "meta": "2nd Grade • Leveled reading • read-aloud friendly",
       "imageSlot": "mt-img-window-sweater"
     },
     {

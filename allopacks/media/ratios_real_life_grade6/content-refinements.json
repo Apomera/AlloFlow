@@ -61,9 +61,74 @@
   },
   {
     "resourceId": "rt-memory",
-    "path": "data.cards.0.hookFact.sourceTitle",
-    "from": "The Four-Second Trick (this lesson)",
-    "to": "Compare by the Unit (this lesson)"
+    "path": "data.cards.0",
+    "from": {
+      "id": "rt-ma-perwhat",
+      "target": "The habit: ask 'per what?'",
+      "essentialFacts": [
+        "A ratio compares two amounts, written as 3 to 4, 3:4, or 3/4.",
+        "When someone gives you a number, ask what it is being compared to.",
+        "Order matters: 2:3 flour to milk is a different recipe from 3:2."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "keyword-association",
+      "mode": "scaffolded",
+      "aiExample": "PER = 'for each one.' Every time you see a rate, say the word per out loud and finish it: dollars per ounce, miles per hour, points per game. If you cannot finish 'per ____,' you do not have a rate yet.",
+      "mapping": "The keyword per is the test itself: finishing the phrase forces you to name the second amount, which is the whole habit the reading is teaching.",
+      "scaffoldStarter": "____ per ____. ____ per ____. ____ per ____.",
+      "scaffoldSteps": [
+        "Collect three rates from your day.",
+        "Say each with the word per.",
+        "Swap the order in one and say why it changes the meaning."
+      ],
+      "coachPrompts": [
+        "What happens to 'miles per hour' if you flip it? Is it wrong or just different?"
+      ],
+      "studentPrompt": "Write your own per list from real life.",
+      "reasoningPrompt": "How does saying per help you check a number someone gives you?",
+      "hookFact": {
+        "text": "Ratio reasoning is not really a math topic. It is the habit of asking, per what?",
+        "sourceTitle": "The Four-Second Trick (this lesson)"
+      }
+    },
+    "to": {
+      "id": "rt-ma-perwhat",
+      "target": "The habit: ask 'per what?'",
+      "essentialFacts": [
+        "A ratio compares two amounts, written as 3 to 4, 3:4, or 3/4.",
+        "When someone gives you a number, ask what it is being compared to.",
+        "Order matters: 2:3 flour to milk is a different recipe from 3:2."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "keyword-association",
+      "mode": "scaffolded",
+      "aiExample": "PER = 'for each one.' Every time you see a rate, say the word per out loud and finish it: dollars per ounce, miles per hour, points per game. If you cannot finish 'per ____,' you do not have a rate yet.",
+      "mapping": "The keyword per is the test itself: finishing the phrase forces you to name the second amount, which is the whole habit the reading is teaching.",
+      "scaffoldStarter": "____ per ____. ____ per ____. ____ per ____.",
+      "scaffoldSteps": [
+        "Collect three rates from your day.",
+        "Say each with the word per.",
+        "Swap the order in one and say why it changes the meaning."
+      ],
+      "coachPrompts": [
+        "What happens to 'miles per hour' if you flip it? Is it wrong or just different?"
+      ],
+      "studentPrompt": "Write your own per list from real life.",
+      "reasoningPrompt": "How does saying per help you check a number someone gives you?",
+      "hookFact": {
+        "text": "Ratio reasoning is not really a math topic. It is the habit of asking, per what?",
+        "sourceTitle": "Compare by the Unit (this lesson)"
+      },
+      "factReview": {
+        "status": "inherited-review-attribution",
+        "sourcePack": "allopacks/ratios_real_life_grade6.allopack.json",
+        "sourceResourceId": "rt-memory",
+        "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+        "factsHash": "6e175336aa369ad0e197f63f7c5e47dc5329f3666d46a9bcdfddd6061b5a026c"
+      }
+    }
   },
   {
     "resourceId": "rt-memory",
@@ -76,6 +141,12 @@
     "path": "data.cards.1.essentialFacts.2",
     "from": "The smaller box was the better deal; bigger is usually cheaper per unit, but not always.",
     "to": "The smaller box has the lower price per ounce in this example; package size alone does not decide."
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.cards.1.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "rt-memory",
@@ -100,6 +171,12 @@
     "path": "data.cards.2.essentialFacts.1",
     "from": "Adding the same number to both parts breaks the ratio: 4:5 is not equivalent to 2:3.",
     "to": "Adding two to both parts of 2:3 gives 4:5, which is not equivalent. Addition does not generally preserve a ratio."
+  },
+  {
+    "resourceId": "rt-memory",
+    "path": "data.cards.2.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "rt-memory",
@@ -232,6 +309,12 @@
     "path": "data.brief.criteria.2",
     "from": "At least one decision picks a smaller size on purpose, with the reason",
     "to": "Explain a smaller-package choice using expected use, even when its unit price is higher"
+  },
+  {
+    "resourceId": "rt-challenge",
+    "path": "data.brief.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "rt-challenge",

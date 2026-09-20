@@ -1,0 +1,42 @@
+{
+  "runId": "a0e214f8-51a0-4a9c-a9e5-cbd53aebb855",
+  "status": "failed",
+  "startedAt": "2026-09-20T03:49:19.984Z",
+  "identityScope": "Declared manifest inputs, selected suites, tool versions and Git HEAD",
+  "identity": {
+    "before": {
+      "inputSha256": {
+        "desktop/web-app/node_modules/react-dom/umd/react-dom.development.js": null,
+        "desktop/web-app/node_modules/react/umd/react.development.js": null
+      },
+      "tools": {
+        "probe": "missing-path reproduction only"
+      },
+      "gitHead": null
+    },
+    "after": {
+      "inputSha256": {
+        "desktop/web-app/node_modules/react-dom/umd/react-dom.development.js": null,
+        "desktop/web-app/node_modules/react/umd/react.development.js": null
+      },
+      "tools": {
+        "probe": "missing-path reproduction only"
+      },
+      "gitHead": null
+    },
+    "changedInputs": [],
+    "toolsChanged": false,
+    "gitHeadChanged": false,
+    "gitHeadVerified": false
+  },
+  "phases": {
+    "unit": {
+      "status": "not-started"
+    },
+    "browser": {
+      "status": "not-started"
+    }
+  },
+  "error": "A required validation input is missing",
+  "verifiedAt": "2026-09-20T03:49:19.997Z"
+}

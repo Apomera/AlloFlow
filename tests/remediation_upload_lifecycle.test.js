@@ -5,6 +5,9 @@ import { loadAlloModule } from './setup.js';
 
 const read = (name) => readFileSync(resolve(process.cwd(), name), 'utf8');
 const host = read('AlloFlowANTI.txt');
+// Extracted handlers read the same host bindings through the __d getter facade.
+const hostHandlers = read('host_handlers_source.jsx').replace(/\b__d\./g, '');
+const coldPathViews = read('view_cold_path_surfaces_source.jsx');
 const view = read('view_pdf_audit_source.jsx');
 const miscSource = read('misc_handlers_source.jsx');
 const docSource = read('doc_pipeline_source.jsx');
@@ -223,7 +226,8 @@ describe('host document-selection lifecycle', () => {
     expect(invalidation).toContain('window.__alloflowCompareGetTagged = null');
     expect(invalidation).toContain('window.__alloflowExtractedImages = []');
     expect(invalidation).toContain('window.__alloflowCropDescribe = null');
-    const reset = section(host, '  const startNewPdfAudit = () => {', '  const ensurePdfBase64');
+    expect(host).toContain('const startNewPdfAudit = (...__a) => _alloHostHandlers().startNewPdfAudit(...__a);');
+    const reset = section(hostHandlers, 'const startNewPdfAudit = () => {', 'const restoreCachedPdfRemediation =');
     const epochIndex = reset.indexOf('invalidatePdfDocumentOperations()');
     expect(epochIndex).toBeGreaterThan(-1);
     for (const clear of [
@@ -258,7 +262,8 @@ describe('host document-selection lifecycle', () => {
   });
 
   it('captures the selected file, starts a fresh epoch, waits for MiscHandlers, and resets the input on every exit', () => {
-    const upload = section(host, '  const handleFileUpload = async (e) => {', '  const repairGeneratedText');
+    expect(host).toContain('const handleFileUpload = async (...__a) => _alloHostHandlers().handleFileUpload(...__a);');
+    const upload = section(hostHandlers, 'const handleFileUpload = async (e) => {', 'const cleanSourceMetaCommentary =');
     const fileCapture = upload.search(/const\s+file\s*=.*files/);
     const epochClaim = upload.indexOf('startNewPdfAudit()');
     const firstAwait = upload.indexOf('await ');
@@ -388,20 +393,21 @@ describe('host document-selection lifecycle', () => {
     expect(lmsSetup).toContain("params.getAll('audit_url')");
     expect(lmsSetup).toContain("part.slice(part.indexOf('=') + 1).split(',')");
     expect(lmsSetup).not.toContain("params.get('audit_urls').split(',').map(u => decodeURIComponent(u))");
-    expect(host).toContain("fetch(url, fetchController ? { signal: fetchController.signal } : undefined)");
-    expect(host).toContain("resp.headers.get('content-length')");
-    expect(host).toContain("resp.body.getReader");
-    expect(host).toContain('received > maxBytes');
-    expect(host).toContain("fetchController?.signal.addEventListener('abort', onFetchAbort");
-    expect(host).toContain("readTimeout = setTimeout(() => failRead('The downloaded document could not be read within 30 seconds.')");
-    expect(host).toContain('await new Promise((resolveRead) => {');
-    const blobComplete = host.indexOf("if (blob.size > 30 * 1024 * 1024) throw new Error('The document is larger than the 30 MB safety limit.');");
-    const fetchTimerHandoff = host.indexOf('clearTimeout(fetchTimeout);', blobComplete);
-    const fileReaderStart = host.indexOf('await new Promise((resolveRead) => {', blobComplete);
+    const lmsBanner = section(coldPathViews, 'function LmsAuditBannerView(props) {', 'function ReadThisPagePanelView(props) {');
+    expect(lmsBanner).toContain("fetch(url, fetchController ? { signal: fetchController.signal } : undefined)");
+    expect(lmsBanner).toContain("resp.headers.get('content-length')");
+    expect(lmsBanner).toContain("resp.body.getReader");
+    expect(lmsBanner).toContain('received > maxBytes');
+    expect(lmsBanner).toContain("fetchController?.signal.addEventListener('abort', onFetchAbort");
+    expect(lmsBanner).toContain("readTimeout = setTimeout(() => failRead('The downloaded document could not be read within 30 seconds.')");
+    expect(lmsBanner).toContain('await new Promise((resolveRead) => {');
+    const blobComplete = lmsBanner.indexOf("if (blob.size > 30 * 1024 * 1024) throw new Error('The document is larger than the 30 MB safety limit.');");
+    const fetchTimerHandoff = lmsBanner.indexOf('clearTimeout(fetchTimeout);', blobComplete);
+    const fileReaderStart = lmsBanner.indexOf('await new Promise((resolveRead) => {', blobComplete);
     expect(blobComplete).toBeGreaterThan(-1);
     expect(fetchTimerHandoff).toBeGreaterThan(blobComplete);
     expect(fetchTimerHandoff).toBeLessThan(fileReaderStart);
-    expect(host).toContain("if (isPdfDocumentIntakeCurrent(documentIntakeEpoch)) failRead('The downloaded document read was cancelled.'); else settleRead();");
+    expect(lmsBanner).toContain("if (isPdfDocumentIntakeCurrent(documentIntakeEpoch)) failRead('The downloaded document read was cancelled.'); else settleRead();");
   });
 });
 
@@ -426,7 +432,7 @@ describe('audit-only readiness and manual audit behavior', () => {
   });
 
   it('gates Run Audit only on audit readiness and performs no remediation or delayed autosave', () => {
-    const marker = view.indexOf('data-help-key="pdf_audit_view_start_btn"');
+    const marker = view.indexOf('<button data-help-key="pdf_audit_view_start_btn"');
     expect(marker).toBeGreaterThan(-1);
     const buttonStart = view.lastIndexOf('<button', marker);
     const buttonEnd = view.indexOf('</button>', marker);

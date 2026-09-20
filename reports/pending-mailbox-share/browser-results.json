@@ -1,0 +1,133 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-09-20T03:40:12.654Z",
+  "browser": "148.0.7778.96",
+  "hashes": {
+    "view_share_session_surfaces_module.js": "abf998c3df5d67dc5c0c2959473be8c2487f67f6653e3a4264b62574e70473ce",
+    "desktop/web-app/node_modules/react/umd/react.production.min.js": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd",
+    "desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d",
+    "desktop/web-app/build/static/css/main.1fb7b97e.css": "4b9a6e181169d48efc6e208af5f3987ffc9cd63ab255bc60eae40e4fa7a98761"
+  },
+  "scenarios": [
+    {
+      "name": "pending-1280",
+      "passed": true,
+      "layout": {
+        "width": 1280,
+        "documentWidth": 1280,
+        "panelScrollWidth": 448,
+        "panelClientWidth": 448,
+        "left": 416,
+        "right": 864,
+        "top": 45,
+        "bottom": 855,
+        "height": 900
+      },
+      "keyboardConnectAndCancel": true,
+      "focusReturnsToConnect": true,
+      "calls": {
+        "connect": [
+          {
+            "title": "Macbeth Act 1: original reading, carefully selected word supports, and a prepared companion for tomorrow",
+            "resourceCount": 2,
+            "aiPolicy": "off",
+            "sharedActivityTitle": "",
+            "requiredMailboxVersion": 0
+          }
+        ],
+        "cancel": 1,
+        "close": 0,
+        "legacyClose": 0
+      }
+    },
+    {
+      "name": "pending-320",
+      "passed": true,
+      "layout": {
+        "width": 320,
+        "documentWidth": 320,
+        "panelScrollWidth": 288,
+        "panelClientWidth": 288,
+        "left": 16,
+        "right": 304,
+        "top": 45,
+        "bottom": 855,
+        "height": 900
+      },
+      "keyboardConnectAndCancel": true,
+      "focusReturnsToConnect": true,
+      "calls": {
+        "connect": [
+          {
+            "title": "Macbeth Act 1: original reading, carefully selected word supports, and a prepared companion for tomorrow",
+            "resourceCount": 2,
+            "aiPolicy": "off",
+            "sharedActivityTitle": "",
+            "requiredMailboxVersion": 0
+          }
+        ],
+        "cancel": 1,
+        "close": 0,
+        "legacyClose": 0
+      }
+    },
+    {
+      "name": "pending-keyboard-close",
+      "passed": true,
+      "calls": {
+        "connect": [],
+        "cancel": 0,
+        "close": 1,
+        "legacyClose": 0
+      }
+    },
+    {
+      "name": "connecting-cancel",
+      "passed": true,
+      "focusReturnsToClose": true,
+      "calls": {
+        "connect": [],
+        "cancel": 1,
+        "close": 0,
+        "legacyClose": 0
+      }
+    },
+    {
+      "name": "configured-pending-version-update",
+      "passed": true,
+      "layout": {
+        "width": 320,
+        "documentWidth": 320,
+        "panelScrollWidth": 288,
+        "panelClientWidth": 288,
+        "left": 16,
+        "right": 304,
+        "top": 45,
+        "bottom": 855,
+        "height": 900
+      },
+      "calls": {
+        "connect": [
+          {
+            "title": "Macbeth Act 1: original reading, carefully selected word supports, and a prepared companion for tomorrow",
+            "resourceCount": 2,
+            "aiPolicy": "student-byok",
+            "sharedActivityTitle": "Class reflection on language and imagery",
+            "requiredMailboxVersion": 24
+          }
+        ],
+        "cancel": 0,
+        "close": 0,
+        "legacyClose": 0
+      }
+    },
+    {
+      "name": "no-pending",
+      "passed": true,
+      "ordinaryConnectPreserved": true
+    }
+  ],
+  "pageErrors": [],
+  "externalRequests": [],
+  "scope": "Actual generated ClassMailboxSetupView with local React/CSS; stateful callback adapters. No full shell, focus trap/Escape integration, live connection, authentication, upload, cancellation race, deployment, or native screen-reader validation."
+}

@@ -1,0 +1,47 @@
+{
+  "date": "2026-09-19T22:54:52.420Z",
+  "scope": "Completed titration investigation report, keyboard navigation, and guided workflow regression",
+  "success": true,
+  "source": {
+    "syntax": true,
+    "mirrored": true,
+    "reportEnglishKeys": 14,
+    "scopedDiffWhitespace": true,
+    "sha256": "97b83c0e3e8a76db8b0bb612075f8835f040041ac177625d14fc8f62837c4aa7"
+  },
+  "unit": {
+    "passed": 23,
+    "files": [
+      "titration_focus_relationships.test.js",
+      "titration_investigation.test.js",
+      "titration_investigation_report.test.js"
+    ],
+    "report": "titration-investigation-report-verified-tests.json",
+    "command": "node node_modules/vitest/vitest.mjs run tests/titration_investigation_report.test.js tests/titration_investigation.test.js tests/titration_focus_relationships.test.js --pool=forks --no-isolate --maxWorkers=1 --testTimeout=30000",
+    "runnerNote": "An earlier isolated-fork run had a worker startup timeout. The final single reusable fork run completed all 23 tests successfully."
+  },
+  "browser": {
+    "scans": 44,
+    "pageErrors": [],
+    "report": "titration-investigation-report-browser-results.json",
+    "command": "node reports/chemistry-refinement-2026-09-06/titration-investigation-report-browser.cjs",
+    "checks": [
+      "Report preview and real download preserve saved evidence and notes; keyboard open/close/Escape, other live setups, free exploration, long and hostile text, Unicode truncation, print control/media, invalidation and remount pass.",
+      "Actual additions and shared notebook saves drive all five steps; older notebook data is excluded, notes and practice records persist, and serialized remount restores the completed study.",
+      "Keyboard focus, optional hints, invalid predictions, setup pause/restore, free exploration, cleared/full notebooks, revisiting volume, 3D viewer identity, context-loss fallback, and forced colors pass."
+    ]
+  },
+  "visualReview": [
+    "Desktop report",
+    "320px report with focus",
+    "Print-media report",
+    "320px forced-color report"
+  ],
+  "limits": [
+    "Scoped verification, not the full repository suite.",
+    "Forced-color axe scans omit color-contrast; other rules and layout checks remain enabled.",
+    "Print button invocation and print CSS checked; physical printer output and PDF pagination not manually tested.",
+    "English strings registered; other-language translations pending.",
+    "Changes are local and have not been deployed."
+  ]
+}

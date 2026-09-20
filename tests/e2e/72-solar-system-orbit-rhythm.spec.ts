@@ -15,8 +15,8 @@ for(const compact of [false,true])test('orbit rhythm stays synchronized on '+(co
   const panel=page.locator('[data-orrery-rhythm]');
   const marker=page.locator('#orrery-rhythm-marker');
   await expect(panel).toHaveAttribute('data-orrery-rhythm','mercury');
-  await expect(panel.getByRole('img')).toHaveAccessibleName('Mercury: equal time, changing speed');
-  await expect(panel.getByRole('img')).toHaveAccessibleDescription(/Twelve dots mark equal time intervals/);
+  await expect(panel.getByRole('img',{name: /equal time, changing speed/})).toHaveAccessibleName('Mercury: equal time, changing speed');
+  await expect(panel.getByRole('img',{name: /equal time, changing speed/})).toHaveAccessibleDescription(/Twelve dots mark equal time intervals/);
   await expect(panel.locator('[data-rhythm-moment]')).toHaveCount(12);
   await expect(panel.locator('[data-rhythm-sector]')).toHaveCount(2);
   await expect(marker).toHaveAttribute('cx','252');

@@ -1,0 +1,59 @@
+{
+  "results": [
+    {
+      "width": 1280,
+      "mode": "editing",
+      "metrics": {
+        "width": 1280,
+        "scrollWidth": 1280
+      },
+      "violations": []
+    },
+    {
+      "width": 1280,
+      "mode": "reading",
+      "metrics": {
+        "width": 1280,
+        "scrollWidth": 1280
+      },
+      "violations": []
+    },
+    {
+      "width": 390,
+      "mode": "editing",
+      "metrics": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "violations": []
+    },
+    {
+      "width": 390,
+      "mode": "reading",
+      "metrics": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "violations": []
+    },
+    {
+      "width": 320,
+      "mode": "editing",
+      "metrics": {
+        "width": 320,
+        "scrollWidth": 320
+      },
+      "violations": []
+    },
+    {
+      "width": 320,
+      "mode": "reading",
+      "metrics": {
+        "width": 320,
+        "scrollWidth": 320
+      },
+      "violations": []
+    }
+  ],
+  "errors": []
+}

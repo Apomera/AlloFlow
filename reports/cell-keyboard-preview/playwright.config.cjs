@@ -1,0 +1,1 @@
+module.exports={...require('../cell-explanation-refinement/playwright.config.cjs'),testMatch:['cell-keyboard-preview.spec.ts','cell-label-focus.spec.ts','cell-focused-label-view.spec.ts','cell-explanation-refinement.spec.ts'],outputDir:'./browser-results'};

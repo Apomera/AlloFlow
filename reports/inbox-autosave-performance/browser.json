@@ -1,0 +1,40 @@
+{
+  "baselineRef": "107e91b21c999fd318e48a85d3287ff87ab4c25e",
+  "scope": "Actual generated inbox with local React development build; synthetic 12-anchor session and 40 DOM input events. Operation counts, not whole-app latency or Core Web Vitals.",
+  "scenarios": [
+    {
+      "mode": "before",
+      "edits": 40,
+      "writes": 40,
+      "serializedBytes": 18331790,
+      "latestRubricAndAnchorsPreserved": true
+    },
+    {
+      "mode": "after",
+      "edits": 40,
+      "writes": 1,
+      "serializedBytes": 458295,
+      "latestRubricAndAnchorsPreserved": true
+    }
+  ],
+  "lifecycle": [
+    {
+      "strict": false,
+      "restore": true,
+      "closeAndReopen": true,
+      "pagehide": true,
+      "hidden": true,
+      "clearPendingThenUnmount": true
+    },
+    {
+      "strict": true,
+      "restore": true,
+      "closeAndReopen": true,
+      "pagehide": true,
+      "hidden": true,
+      "clearPendingThenUnmount": true
+    }
+  ],
+  "directUnmount": true,
+  "errors": []
+}

@@ -204,5 +204,16 @@
       "Watch and feel. Touch your throat as you hum. Stop and feel what changes.",
       "This cue helps us use more than our ears. We can feel a small shake too."
     ]
-  ]
+  ],
+  "frames": [
+    "I saw or felt ____ when the drum was tapped.",
+    "When we stopped the drum top, ____.",
+    "We tried again. I noticed ____.",
+    "My picture shows ____. I still want to check ____."
+  ],
+  "parallelExample": {
+    "context": "A teacher gently plucks the end of a ruler held on a table.",
+    "move": "Compare it while it moves and after it stops. Tell or show what you notice. Try again gently.",
+    "whyItHelps": "You compare before and after on one object. Use that idea for the drum."
+  }
 }

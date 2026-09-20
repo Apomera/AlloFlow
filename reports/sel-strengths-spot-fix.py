@@ -1,0 +1,3 @@
+from pathlib import Path
+p=Path('sel_hub/sel_tool_strengths.js');s=p.read_text(encoding='utf-8').replace('The person asked before helping.','The person asked whether help was wanted.');p.write_bytes(s.encode('utf-8'));Path('desktop/web-app/public/sel_hub/sel_tool_strengths.js').write_bytes(s.encode('utf-8'))
+p=Path('tests/sel_strengths_spot_browser.test.js');s=p.read_text(encoding='utf-8').replace("map().getByRole('group').count()","map().locator('div[role=\"group\"]').count()");s=s.replace("const draft = id => page.evaluate(id => window.depthSnapshot.friendship.careDrafts?.[id], id);\n",'').replace('Ways to care practice','Spot Strengths practice');p.write_bytes(s.encode('utf-8'))

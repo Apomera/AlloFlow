@@ -1,0 +1,59 @@
+{
+  "scope": "Assignment metadata, student restore wrapper/effect, and changed module pins synchronized; unrelated source retained. Separate loader-version-alignment.json records the repaired pre-existing live-dock pin.",
+  "shells": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "syntax": "passed",
+      "wrapperMatches": true,
+      "wrapperSha256": "20779e130b1d2b9ab52c9fbefe0dc5498aeb3d8591be0d75b9fab820301c28aa",
+      "restoreMatches": true,
+      "restoreSha256": "e6fe7760911cf0638111f75860b2dbbfecc3156e9dbae1c0516cb753e21cfcf6",
+      "packSummaryCount": 2,
+      "cloudSummary": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "syntax": "passed",
+      "wrapperMatches": true,
+      "wrapperSha256": "20779e130b1d2b9ab52c9fbefe0dc5498aeb3d8591be0d75b9fab820301c28aa",
+      "restoreMatches": true,
+      "restoreSha256": "e6fe7760911cf0638111f75860b2dbbfecc3156e9dbae1c0516cb753e21cfcf6",
+      "packSummaryCount": 2,
+      "cloudSummary": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "syntax": "passed",
+      "wrapperMatches": true,
+      "wrapperSha256": "20779e130b1d2b9ab52c9fbefe0dc5498aeb3d8591be0d75b9fab820301c28aa",
+      "restoreMatches": true,
+      "restoreSha256": "e6fe7760911cf0638111f75860b2dbbfecc3156e9dbae1c0516cb753e21cfcf6",
+      "packSummaryCount": 2,
+      "cloudSummary": true
+    }
+  ],
+  "mirrors": [
+    {
+      "path": "desktop/web-app/public/shared_activity_module.js",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": "desktop/web-app/app-build/shared_activity_module.js",
+      "exists": false,
+      "matches": null,
+      "status": "optional path absent; no build produced"
+    },
+    {
+      "path": "desktop/web-app/public/view_share_session_surfaces_module.js",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": "desktop/web-app/app-build/view_share_session_surfaces_module.js",
+      "exists": false,
+      "matches": null,
+      "status": "optional path absent; no build produced"
+    }
+  ]
+}

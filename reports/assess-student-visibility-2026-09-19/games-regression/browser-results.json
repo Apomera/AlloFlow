@@ -1,0 +1,25 @@
+{
+  "results": [
+    {
+      "width": 1280,
+      "games": true,
+      "presentationImages": true,
+      "presentationNavigation": true,
+      "numericReveal": true,
+      "mixedReviewReveal": true,
+      "soloLazyLaunch": true,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 390,
+      "games": true,
+      "presentationImages": true,
+      "presentationNavigation": true,
+      "numericReveal": true,
+      "mixedReviewReveal": true,
+      "soloLazyLaunch": true,
+      "horizontalOverflow": false
+    }
+  ],
+  "errors": []
+}

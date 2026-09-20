@@ -1,0 +1,225 @@
+{
+  "checks": [
+    "Actual additions update fixed-scale fill intervals; totals agree through empty starts, refill crossings, restored decimals, later fills, full capacity and redox.",
+    "Disclosure, keyboard focus/Escape, ARIA references, mark/reset lifecycle, 2D/3D presentation, notebook preservation, phone layouts and forced colors pass."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "state": "unmarked",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "unmarked",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "zero",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "zero",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "same-fill",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "same-fill",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "refill",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "refill",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "partial-second-fill",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "partial-second-fill",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "empty-start",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "empty-start",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "restored-decimal",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "restored-decimal",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "later-fill",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "later-fill",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "maximum",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "maximum",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "redox",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "redox",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "forced-colors",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": true,
+      "automatedColorContrast": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "forced-colors",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": true,
+      "automatedColorContrast": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "setup-cleared",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "setup-cleared",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    }
+  ]
+}

@@ -53,12 +53,12 @@ describe('scoped teaching-script recovery', () => {
   });
   it('clears a fresh draft when discard returns every setting to the initial values', () => {
     const p = startDraft(); expect(record().draft.steps[0].teacherSays).toBe(edited);
-    click('Discard edits'); expect(record().draft).toBeNull();
+    click('Discard edits'); click('Discard changes'); expect(record().draft).toBeNull();
     unmount(); mount(p); expand(); expect(button('Save edits')).toBeUndefined(); expect(host.textContent).not.toContain(edited);
   });
   it('discarding recovered edits retains the generation settings without recovering the draft again', () => {
     const p = props(); mount(p); openSettings(); change('Teaching time', 25); click('Edit script'); change('Teacher says', edited);
-    unmount(); mount(p); click('Discard edits'); expect(record().draft).toBeNull();
+    unmount(); mount(p); click('Discard edits'); click('Discard changes'); expect(record().draft).toBeNull();
     unmount(); mount(p); openSettings(); expect(field('Teaching time').value).toBe('25'); expect(button('Save edits')).toBeUndefined();
   });
   it('preserves a recovered stale draft while blocking overwrite of the changed saved version', () => {
@@ -70,7 +70,7 @@ describe('scoped teaching-script recovery', () => {
   it('keeps a recovered draft visible and discardable if its saved version was removed', () => {
     const p = startDraft(); unmount(); const revised = plan(); revised.data.teachingScripts = []; mount({ ...p, generatedContent: revised });
     expect(field('Teacher says').value).toBe(edited); expect(button('Save edits').disabled).toBe(true); expect(host.textContent).toContain('Recovered draft version');
-    click('Discard edits'); expect(record().draft).toBeNull(); expect(button('Save edits')).toBeUndefined();
+    click('Discard edits'); click('Discard changes'); expect(record().draft).toBeNull(); expect(button('Save edits')).toBeUndefined();
   });
   it.each(['teacher-b|profile-one|workspace-one', 'teacher-a|profile-two|workspace-one', 'teacher-a|profile-one|workspace-two'])('does not expose edits when the scope changes: %s', scope => {
     const p = startDraft(); render({ ...p, draftScope: scope }); expand();

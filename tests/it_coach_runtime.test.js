@@ -1106,3 +1106,109 @@ describe('app-reported coach AI configuration',()=>{
     expect(c.document.getElementById('coachProviderInfo').textContent).not.toContain('imposter');
   });
 });
+
+
+describe('support follow-up and resolution',()=>{
+  const el=(c,id)=>c.document.getElementById(id);
+  async function ready(options={}){const c=bootCoach(options);await startShare(c);c.privacy.checked=true;await ask(c);return c;}
+  it('distinguishes completing a step from resolving the whole problem',async()=>{
+    const c=await ready();el(c,'coachDoneBtn').click();expect(el(c,'currentStepHeading').textContent).toBe('Current step');
+    el(c,'coachResolvedBtn').click();expect(el(c,'currentStepHeading').textContent).toContain('confirmed by you');
+    expect(el(c,'coachAutoChk').checked).toBe(false);expect(c.analyzeImage).toHaveBeenCalledTimes(1);
+    c.currentTrack().onended();expect(el(c,'supportSummary').value).toContain('User confirms problem resolved');
+  });
+  it('saves an observation locally and includes it with expected and reported results',async()=>{
+    const c=await ready({analyzeImage:vi.fn().mockResolvedValue(JSON.stringify({...advice('Test the speakers.'),expected:'A tone plays.'}))});
+    el(c,'coachObservation').value='The headset remains silent.';el(c,'coachObservationSaveBtn').click();
+    expect(c.analyzeImage).toHaveBeenCalledTimes(1);await chat(c,'What should I check next?');
+    expect(c.generateText.mock.calls[0][0]).toContain('The headset remains silent.');
+    el(c,'coachSummaryBtn').click();expect(el(c,'supportSummary').value).toContain('Expected: A tone plays.');expect(el(c,'supportSummary').value).toContain('Observed: The headset remains silent.');
+    c.currentTrack().onended();expect(el(c,'supportSummary').value).toContain('The headset remains silent.');
+  });
+  it('rejects an empty observation without changing the current step',async()=>{
+    const c=await ready();el(c,'coachObservationSaveBtn').click();expect(c.document.activeElement.id).toBe('coachObservation');expect(el(c,'currentStepOutcome').textContent).toContain('Enter what happened');
+  });
+  it('retains feedback for multiple steps and offers a handoff after two failed checks',async()=>{
+    const analyze=vi.fn().mockResolvedValueOnce(JSON.stringify(advice('Test the speakers.'))).mockResolvedValueOnce(JSON.stringify(advice('Check the cable.'))).mockResolvedValue(JSON.stringify(advice('Inspect the output meter.')));
+    const c=await ready({analyzeImage:analyze});el(c,'coachStuckBtn').click();await ask(c);el(c,'coachStuckBtn').click();
+    expect(el(c,'coachHandoffBtn').hidden).toBe(false);await ask(c);
+    const prompt=analyze.mock.calls[2][0];expect(prompt).toContain('Test the speakers. — User is still stuck');expect(prompt).toContain('Check the cable. — User is still stuck');
+  });
+  it('suppresses an exact failed step even when manually requested',async()=>{
+    const c=await ready();el(c,'coachStuckBtn').click();await ask(c);
+    expect(c.steps.children.length).toBe(1);expect(c.status.textContent).toContain('repeated a step');expect(el(c,'coachHandoffBtn').hidden).toBe(false);
+  });
+  it.each(['clarify','escalate','verify'])('pauses automatic guidance and removes a target for %s',async(nextAction)=>{
+    const c=await ready({analyzeImage:vi.fn().mockResolvedValue(JSON.stringify({...advice('Describe the visible result.',{x:.1,y:.1,w:.2,h:.1}),nextAction,done:nextAction==='verify'}))});
+    expect(c.overlay.hidden).toBe(true);expect(el(c,'coachDoneBtn').hidden).toBe(true);expect(el(c,'coachWrongBtn').hidden).toBe(true);
+    el(c,'coachAutoChk').checked=true;el(c,'coachAutoChk').dispatchEvent(new c.window.Event('change'));await flushMicrotasks(20);expect(el(c,'coachAutoChk').checked).toBe(false);
+    if(nextAction==='clarify'){expect(el(c,'coachAnswerBtn').hidden).toBe(false);el(c,'coachAnswerBtn').click();expect(c.document.activeElement.id).toBe('coachChatInput');expect(c.generateText).not.toHaveBeenCalled();}
+    if(nextAction==='escalate')expect(el(c,'coachHandoffBtn').hidden).toBe(false);
+  });
+  it('cancels an old vision response when the user confirms resolution',async()=>{
+    const pending=deferred();const analyze=vi.fn().mockResolvedValueOnce(JSON.stringify(advice('Open settings.'))).mockReturnValueOnce(pending.promise);
+    const c=await ready({analyzeImage:analyze});c.suggest.click();await flushMicrotasks();el(c,'coachResolvedBtn').click();pending.resolve(JSON.stringify(advice('Late outdated step.')));await flushMicrotasks(20);
+    expect(el(c,'currentStepHeading').textContent).toContain('confirmed by you');expect(c.steps.textContent).not.toContain('Late outdated');expect(analyze.mock.calls[1][2].signal.aborted).toBe(true);
+  });
+  it('cancels an old chat response when feedback changes',async()=>{
+    const pending=deferred();const c=await ready({generateText:vi.fn().mockReturnValue(pending.promise)});await chat(c,'Help with this step');el(c,'coachStuckBtn').click();pending.resolve(JSON.stringify({guidance:'Outdated chat.',kind:'navigation'}));await flushMicrotasks(20);
+    expect(el(c,'coachChatLog').textContent).not.toContain('Outdated chat.');
+  });
+  it('clears observation entry and current feedback when the goal changes',async()=>{
+    const c=await ready();el(c,'coachObservation').value='Old context';el(c,'coachObservationSaveBtn').click();c.goal.value='New goal';c.goal.dispatchEvent(new c.window.Event('input'));
+    expect(el(c,'coachObservation').value).toBe('');await ask(c);expect(c.analyzeImage.mock.calls.at(-1)[0]).not.toContain('Old context');
+  });
+});
+
+
+describe('observation autosave and editable support drafts',()=>{
+  const el=(c,id)=>c.document.getElementById(id);
+  function type(c,id,value){el(c,id).value=value;el(c,id).dispatchEvent(new c.window.Event('input'));}
+  async function ready(options={}){const c=bootCoach(options);await startShare(c);c.privacy.checked=true;await ask(c);return c;}
+  it('saves typed observations without a save click or AI request, even when sharing ends',async()=>{
+    const c=await ready();type(c,'coachObservation','The error remains after restarting.');
+    expect(c.analyzeImage).toHaveBeenCalledTimes(1);expect(c.generateText).not.toHaveBeenCalled();
+    c.currentTrack().onended();expect(el(c,'supportSummary').value).toContain('The error remains after restarting.');
+  });
+  it('includes the latest typed observation in the next request',async()=>{
+    const c=await ready();type(c,'coachObservation','The button is greyed out.');await ask(c);
+    expect(c.analyzeImage.mock.calls.at(-1)[0]).toContain('The button is greyed out.');
+  });
+  it('removes cleared observations from session notes',async()=>{
+    const c=await ready();type(c,'coachObservation','Mistaken observation');type(c,'coachObservation','');el(c,'coachSummaryBtn').click();
+    expect(el(c,'supportSummary').value).not.toContain('Mistaken observation');expect(el(c,'coachObservationStatus').textContent).toContain('removed');
+  });
+  it('cancels an outdated response when the user starts correcting an observation',async()=>{
+    const pending=deferred();const analyze=vi.fn().mockResolvedValueOnce(JSON.stringify(advice('Open settings.'))).mockReturnValueOnce(pending.promise);
+    const c=await ready({analyzeImage:analyze});c.suggest.click();await flushMicrotasks();type(c,'coachObservation','New evidence');pending.resolve(JSON.stringify(advice('Late answer')));await flushMicrotasks(20);
+    expect(c.steps.textContent).not.toContain('Late answer');expect(analyze.mock.calls[1][2].signal.aborted).toBe(true);
+  });
+  it('preserves an edited summary through new outcomes, observations and stopping the share',async()=>{
+    const c=await ready();el(c,'coachSummaryBtn').click();expect(el(c,'supportSummary').readOnly).toBe(false);
+    type(c,'supportSummary','Reviewed summary with private details removed.');type(c,'coachObservation','Additional result');el(c,'coachStuckBtn').click();c.currentTrack().onended();
+    expect(el(c,'supportSummary').value).toBe('Reviewed summary with private details removed.');expect(el(c,'supportDraftStatus').textContent).toContain('New session notes');
+  });
+  it('makes replacing an edited draft reversible',async()=>{
+    const c=await ready();el(c,'coachSummaryBtn').click();type(c,'supportSummary','My edited draft');el(c,'coachResolvedBtn').click();el(c,'supportRefreshBtn').click();
+    expect(el(c,'supportSummary').value).toContain('User confirms problem resolved');expect(el(c,'supportRestoreBtn').hidden).toBe(false);
+    el(c,'supportRestoreBtn').click();expect(el(c,'supportSummary').value).toBe('My edited draft');
+    el(c,'supportRestoreBtn').click();expect(el(c,'supportSummary').value).toContain('User confirms problem resolved');
+  });
+  it('copies exactly the edited draft and never sends it as AI context',async()=>{
+    const c=await ready();const writeText=vi.fn().mockResolvedValue(undefined);Object.defineProperty(c.window.navigator,'clipboard',{configurable:true,value:{writeText}});
+    el(c,'coachSummaryBtn').click();type(c,'supportSummary','PRIVATE_DRAFT_ONLY');el(c,'supportCopyBtn').click();await flushMicrotasks();expect(writeText).toHaveBeenCalledWith('PRIVATE_DRAFT_ONLY');
+    await chat(c,'What next?');expect(c.generateText.mock.calls.at(-1)[0]).not.toContain('PRIVATE_DRAFT_ONLY');
+  });
+  it('downloads the summary as a text file and avoids replacing the clipboard with an empty draft',async()=>{
+    const c=await ready();const writeText=vi.fn();Object.defineProperty(c.window.navigator,'clipboard',{configurable:true,value:{writeText}});el(c,'coachSummaryBtn').click();type(c,'supportSummary','Edited notes');el(c,'supportDownloadBtn').click();expect(c.downloads.at(-1).download).toBe('it-support-summary.txt');
+    type(c,'supportSummary','');el(c,'supportCopyBtn').click();el(c,'supportDownloadBtn').click();await flushMicrotasks();expect(writeText).not.toHaveBeenCalled();expect(c.downloads).toHaveLength(1);expect(el(c,'supportCopyStatus').textContent).toContain('empty');
+  });
+  it('clears draft undo history when session notes are discarded',async()=>{
+    const c=await ready();el(c,'coachSummaryBtn').click();type(c,'supportSummary','Old edited notes');el(c,'supportRefreshBtn').click();el(c,'coachDiscardBtn').click();el(c,'supportRestoreBtn').click();
+    expect(el(c,'supportSummary').value).toBe('');expect(el(c,'supportRestoreBtn').hidden).toBe(true);expect(el(c,'coachObservationStatus').textContent).toBe('');
+  });
+  it('clears educator draft and undo history on a role downgrade',async()=>{
+    const c=bootCoach({bridge:true,bridgeOrigin:'https://alloflow-cdn.pages.dev'});await pingCoach(c,'educator');el(c,'coachSummaryBtn').click();type(c,'supportSummary','Educator-only draft');el(c,'supportRefreshBtn').click();await pingCoach(c,'learner');el(c,'supportRestoreBtn').click();
+    expect(el(c,'supportSummary').value).toBe('');expect(el(c,'supportRestoreBtn').hidden).toBe(true);
+  });
+});

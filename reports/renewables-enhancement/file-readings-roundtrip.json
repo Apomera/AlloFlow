@@ -1,0 +1,6049 @@
+{
+  "format": "renewables-mechanism-investigation",
+  "readingName": "Wind gust reading",
+  "title": "Renewables Lab: individual energy mechanisms",
+  "modelVersion": 1,
+  "selected": "wind",
+  "settings": {
+    "speed": 8,
+    "radius": 40,
+    "cp": 40,
+    "rating": 3000
+  },
+  "phase": 50,
+  "result": {
+    "version": 1,
+    "id": "wind",
+    "settings": {
+      "speed": 28,
+      "radius": 40,
+      "cp": 40,
+      "rating": 3000
+    },
+    "power": 0,
+    "available": 67584.95709297109,
+    "loss": 67584.95709297109,
+    "status": "Protective shutdown",
+    "stages": [
+      {
+        "label": "Kinetic stream power",
+        "value": 67584.95709297109,
+        "unit": "kW"
+      },
+      {
+        "label": "Rotor extraction",
+        "value": 0,
+        "unit": "kW"
+      },
+      {
+        "label": "Electricity delivered",
+        "value": 0,
+        "unit": "kW"
+      }
+    ],
+    "extra": {
+      "efficiency": 0
+    }
+  },
+  "note": "",
+  "assumptions": "Uniform wind and a constant selected power coefficient. Cut-in 3 m/s, cut-out 25 m/s, and 94% drivetrain efficiency are teaching assumptions, not a manufacturer power curve. No wakes, gusts, fatigue, or pitch-control dynamics.",
+  "scenarioAssumptions": "Synthetic resource sequences and battery requests are prescribed teaching inputs. Power is held over each one-minute interval; the final endpoint adds no energy. Battery requests remain fixed when capacity or power is changed.",
+  "formula": "P = min(½ × 1.225 × πr² × v³ × Cₚ × 0.94 / 1,000, rating), for 3 ≤ v < 25 m/s",
+  "source": "https://www.energy.gov/sites/prod/files/2015/05/f22/Enabling%20Wind%20Power%20Nationwide_18MAY2015_FINAL.pdf",
+  "operatingScenario": {
+    "version": 1,
+    "profileId": "gust",
+    "label": "Strong wind and shutdown",
+    "baseSettings": {
+      "speed": 8,
+      "radius": 40,
+      "cp": 40,
+      "rating": 3000
+    },
+    "duration": 120,
+    "selectedMinute": 50,
+    "totals": {
+      "input": 42739.96497492216,
+      "delivered": 2044.1940118156947,
+      "remainder": 40695.77096310646,
+      "requested": 0,
+      "unserved": 0
+    },
+    "samples": [
+      {
+        "minute": 0,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 4,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 74.0872999036651,
+          "available": 197.04069123315185,
+          "loss": 122.95339132948675,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 197.04069123315185,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 78.81627649326074,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 74.0872999036651,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 0,
+          "delivered": 0,
+          "remainder": 0,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 1,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 4.16,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 83.33813651883634,
+          "available": 221.64398010328813,
+          "loss": 138.3058435844518,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 221.64398010328813,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 88.65759204131525,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 83.33813651883634,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 3.284011520552531,
+          "delivered": 1.2347883317277517,
+          "remainder": 2.049223188824779,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 2,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 4.32,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 93.32866073624577,
+          "available": 248.2145232346962,
+          "loss": 154.88586249845042,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 248.2145232346962,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 99.28580929387849,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 93.32866073624577,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 6.978077855607333,
+          "delivered": 2.623757273708357,
+          "remainder": 4.354320581898976,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 3,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 4.48,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 104.0873220790564,
+          "available": 276.82798425280964,
+          "loss": 172.74066217375324,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 276.82798425280964,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 110.73119370112384,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 104.0873220790564,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 11.114986576185604,
+          "delivered": 4.179234952645786,
+          "remainder": 6.935751623539816,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 4,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 4.64,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 115.64257007043122,
+          "available": 307.56002678306174,
+          "loss": 191.91745671263052,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 307.56002678306174,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 123.02401071322471,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 115.64257007043122,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 15.728786313732432,
+          "delivered": 5.914023653963393,
+          "remainder": 9.814762659769038,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 5,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 4.8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 128.02285423353325,
+          "available": 340.4863144508863,
+          "loss": 212.46346021735306,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 340.4863144508863,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 136.19452578035452,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 128.02285423353325,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 20.854786760116795,
+          "delivered": 7.841399821803913,
+          "remainder": 13.01338693831288,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 6,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 4.96,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 141.25662409152557,
+          "available": 375.6825108817169,
+          "loss": 234.42588679019133,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 375.6825108817169,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 150.27300435268677,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 141.25662409152557,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37600000000000006
+          }
+        },
+        "energy": {
+          "input": 26.529558667631566,
+          "delivered": 9.975114059029467,
+          "remainder": 16.554444608602097,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 7,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 5.12,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 155.37232916757105,
+          "available": 413.2242797009869,
+          "loss": 257.8519505334159,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 413.2242797009869,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 165.28971188039475,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 155.37232916757105,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 32.79093384899351,
+          "delivered": 12.329391127221559,
+          "remainder": 20.461542721771952,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 8,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 5.28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 170.39841898483283,
+          "available": 453.18728453412984,
+          "loss": 282.78886554929704,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 453.18728453412984,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 181.27491381365195,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 170.39841898483283,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 39.678005177343294,
+          "delivered": 14.918929946681077,
+          "remainder": 24.75907523066222,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 9,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 5.4399999999999995,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 186.36334306647373,
+          "available": 495.6471890065791,
+          "loss": 309.2838459401054,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 495.6471890065791,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 198.25887560263163,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 186.36334306647373,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 47.23112658624546,
+          "delivered": 17.75890359642829,
+          "remainder": 29.47222298981717,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 10,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 5.6,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 203.295550935657,
+          "available": 540.6796567437686,
+          "loss": 337.38410580811166,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 540.6796567437686,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 216.27186269750746,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 203.295550935657,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 55.491913069688444,
+          "delivered": 20.864959314202853,
+          "remainder": 34.626953755485594,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 11,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 5.76,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 221.22349211554547,
+          "available": 588.3603513711316,
+          "loss": 367.13685925558616,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 588.3603513711316,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 235.34414054845263,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 221.22349211554547,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 64.5032406820846,
+          "delivered": 24.253218496463802,
+          "remainder": 40.250022185620786,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 12,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 5.92,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 240.17561612930228,
+          "available": 638.7649365141018,
+          "loss": 398.5893203847995,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 638.7649365141018,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 255.50597460564074,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 240.17561612930228,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 74.30924653827012,
+          "delivered": 27.94027669838956,
+          "remainder": 46.368969839880556,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 13,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 6.08,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 260.1803725000903,
+          "available": 691.9690757981125,
+          "loss": 431.7887032980222,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 691.9690757981125,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 276.787630319245,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 260.1803725000903,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 84.95532881350515,
+          "delivered": 31.943203633877932,
+          "remainder": 53.01212517962721,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 14,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 6.24,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 281.2662107510726,
+          "available": 748.0484328485975,
+          "loss": 466.7822220975249,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 748.0484328485975,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 299.21937313943897,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 281.2662107510726,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 96.48814674347369,
+          "delivered": 36.2795431755461,
+          "remainder": 60.20860356792758,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 15,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 6.4,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 303.46158040541235,
+          "available": 807.0786712909902,
+          "loss": 503.61709088557785,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 807.0786712909902,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 322.8314685163961,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 303.46158040541235,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37600000000000006
+          }
+        },
+        "energy": {
+          "input": 108.95562062428365,
+          "delivered": 40.96731335473065,
+          "remainder": 67.98830726955299,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 16,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 6.5600000000000005,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 326.79493098627216,
+          "available": 869.1354547507239,
+          "loss": 542.3405237644517,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 869.1354547507239,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 347.65418190028953,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 326.79493098627216,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 122.40693181246682,
+          "delivered": 46.02500636148752,
+          "remainder": 76.38192545097928,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 17,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 6.720000000000001,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 351.29471201681537,
+          "available": 934.2944468532324,
+          "loss": 582.999734836417,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 934.2944468532324,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 373.717778741293,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 351.29471201681537,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 136.89252272497887,
+          "delivered": 51.47158854459206,
+          "remainder": 85.42093418038681,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 18,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 6.88,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 376.9893730202048,
+          "available": 1002.6313112239491,
+          "loss": 625.6419382037443,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1002.6313112239491,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 401.05252448957964,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 376.9893730202048,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 152.4640968391994,
+          "delivered": 57.32650041153898,
+          "remainder": 95.13759642766043,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 19,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 7.04,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 403.9073635196037,
+          "available": 1074.2217114883076,
+          "loss": 670.3143479687039,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1074.2217114883076,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 429.6886845953231,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 403.9073635196037,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 169.1746186929319,
+          "delivered": 63.609656628542396,
+          "remainder": 105.5649620643895,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 20,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 7.2,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 432.07713303817485,
+          "available": 1149.1413112717416,
+          "loss": 717.0641782335667,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1149.1413112717416,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 459.6565245086967,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 432.07713303817485,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 187.07831388440368,
+          "delivered": 70.34144602053578,
+          "remainder": 116.7368678638679,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 21,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 7.359999999999999,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 461.5271310990812,
+          "available": 1227.4657741996841,
+          "loss": 765.9386431006029,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1227.4657741996841,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 490.98630967987367,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 461.5271310990812,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 206.23066907226604,
+          "delivered": 77.54273157117203,
+          "remainder": 128.687937501094,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 22,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 7.52,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 492.28580722548617,
+          "available": 1309.2707638975694,
+          "loss": 816.9849566720832,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1309.2707638975694,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 523.7083055590278,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 492.28580722548617,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37600000000000006
+          }
+        },
+        "energy": {
+          "input": 226.6884319755941,
+          "delivered": 85.23485042282338,
+          "remainder": 141.45358155277071,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 23,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 7.68,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 524.3816109405524,
+          "available": 1394.6319439908307,
+          "loss": 870.2503330502783,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1394.6319439908307,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 557.8527775963323,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 524.3816109405524,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37600000000000006
+          }
+        },
+        "energy": {
+          "input": 248.50961137388694,
+          "delivered": 93.43961387658149,
+          "remainder": 155.06999749730542,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 24,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 7.84,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 557.8429917674426,
+          "available": 1483.624978104901,
+          "loss": 925.7819863374583,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1483.624978104901,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 593.4499912419603,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 557.8429917674426,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 271.75347710706745,
+          "delivered": 102.17930739225736,
+          "remainder": 169.57416971481007,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 25,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 592.6983992293208,
+          "available": 1576.3255298652148,
+          "loss": 983.627130635894,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1576.3255298652148,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 630.530211946086,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 592.6983992293208,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 296.48056007548246,
+          "delivered": 111.4766905883814,
+          "remainder": 185.00386948710104,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 26,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 8.8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 788.8815693742262,
+          "available": 2098.0892802506014,
+          "loss": 1309.2077108763751,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 2098.0892802506014,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 839.2357121002407,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 788.8815693742262,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 322.7526522399027,
+          "delivered": 121.35499724220341,
+          "remainder": 201.39765499769928,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 27,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 9.6,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 1024.182833868266,
+          "available": 2723.8905156070905,
+          "loss": 1699.7076817388245,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 2723.8905156070905,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 1089.5562062428362,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 1024.182833868266,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 357.7208069107461,
+          "delivered": 134.50302339844052,
+          "remainder": 223.21778351230552,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 28,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 10.4,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 1302.1583831068176,
+          "available": 3463.187189113877,
+          "loss": 2161.0288060070598,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 3463.187189113877,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 1385.2748756455508,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 1302.1583831068176,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 403.1189821708643,
+          "delivered": 151.57273729624495,
+          "remainder": 251.54624487461925,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 29,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 11.2,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 1626.364407485256,
+          "available": 4325.437253950149,
+          "loss": 2699.0728464648932,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 4325.437253950149,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 1730.1749015800597,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 1626.364407485256,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 460.83876865609557,
+          "delivered": 173.2753770146919,
+          "remainder": 287.5633916414036,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 30,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 12,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 2000.357097398958,
+          "available": 5320.098663295101,
+          "loss": 3319.7415658961427,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 5320.098663295101,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 2128.0394653180406,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 2000.357097398958,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37600000000000006
+          }
+        },
+        "energy": {
+          "input": 532.9293895552647,
+          "delivered": 200.3814504727795,
+          "remainder": 332.54793908248513,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 31,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 12.8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 2427.692643243299,
+          "available": 6456.629370327922,
+          "loss": 4028.936727084623,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 6456.629370327922,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 2582.651748131169,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 2427.692643243299,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37600000000000006
+          }
+        },
+        "energy": {
+          "input": 621.5977006101831,
+          "delivered": 233.7207354294288,
+          "remainder": 387.87696518075415,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 32,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 13.6,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 2911.927235413653,
+          "available": 7744.4873282277995,
+          "loss": 4832.560092814147,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 7744.4873282277995,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 3097.79493129112,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 2911.927235413653,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37600000000000006
+          }
+        },
+        "energy": {
+          "input": 729.2081901156484,
+          "delivered": 274.1822794834838,
+          "remainder": 455.02591063216454,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 33,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 14.4,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 9193.130490173933,
+          "loss": 6193.130490173933,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 9193.130490173933,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 3677.2521960695735,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.3263306229805556
+          }
+        },
+        "energy": {
+          "input": 858.2829789194451,
+          "delivered": 322.7144000737113,
+          "remainder": 535.5685788457337,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 34,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 15.2,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 10812.016809345509,
+          "loss": 7812.016809345509,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 10812.016809345509,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 4324.806723738203,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.2774690469780726
+          }
+        },
+        "energy": {
+          "input": 1011.501820422344,
+          "delivered": 372.7144000737113,
+          "remainder": 638.7874203486325,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 35,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 16,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 12610.604238921718,
+          "loss": 9610.604238921718,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 12610.604238921718,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 5044.241695568688,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.23789502415282504
+          }
+        },
+        "energy": {
+          "input": 1191.7021005781025,
+          "delivered": 422.7144000737113,
+          "remainder": 768.987700504391,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 36,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 16.8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 14598.350732081755,
+          "loss": 11598.350732081755,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 14598.350732081755,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 5839.340292832702,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.20550266636676387
+          }
+        },
+        "energy": {
+          "input": 1401.8788378934646,
+          "delivered": 472.7144000737113,
+          "remainder": 929.164437819753,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 37,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 17.6,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 16784.71424200481,
+          "loss": 13784.714242004811,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 16784.71424200481,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 6713.885696801925,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.17873405270685574
+          }
+        },
+        "energy": {
+          "input": 1645.1846834281605,
+          "delivered": 522.7144000737113,
+          "remainder": 1122.4702833544488,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 38,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 18.4,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 19179.152721870065,
+          "loss": 16179.152721870065,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 19179.152721870065,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 7671.661088748026,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.15641983999528236
+          }
+        },
+        "energy": {
+          "input": 1924.9299207949073,
+          "delivered": 572.7144000737113,
+          "remainder": 1352.2155207211956,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 39,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 19.2,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 21791.124124856724,
+          "loss": 18791.124124856724,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 21791.124124856724,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 8716.44964994269,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.13767073156992193
+          }
+        },
+        "energy": {
+          "input": 2244.5824661594083,
+          "delivered": 622.7144000737113,
+          "remainder": 1621.8680660856967,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 40,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 20,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 24630.08640414398,
+          "loss": 21630.08640414398,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 24630.08640414398,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 9852.034561657592,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.12180225236624642
+          }
+        },
+        "energy": {
+          "input": 2607.767868240354,
+          "delivered": 672.7144000737113,
+          "remainder": 1935.053468166642,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 41,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 20.8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 27705.497512911017,
+          "loss": 24705.497512911017,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 27705.497512911017,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 11082.199005164406,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.10828175883150888
+          }
+        },
+        "energy": {
+          "input": 3018.26930830942,
+          "delivered": 722.7144000737113,
+          "remainder": 2295.5549082357084,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 42,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 21.6,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 31026.81540433703,
+          "loss": 28026.81540433703,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 31026.81540433703,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 12410.72616173481,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.09669055495720164
+          }
+        },
+        "energy": {
+          "input": 3480.0276001912703,
+          "delivered": 772.7144000737113,
+          "remainder": 2707.3132001175586,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 43,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 22.4,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 34603.49803160119,
+          "loss": 31603.498031601193,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 34603.49803160119,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 13841.399212640477,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.08669643737347851
+          }
+        },
+        "energy": {
+          "input": 3997.141190263554,
+          "delivered": 822.7144000737113,
+          "remainder": 3174.4267901898424,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 44,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 23.2,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 38445.003347882724,
+          "loss": 35445.003347882724,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 38445.003347882724,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 15378.001339153088,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.0780335476330559
+          }
+        },
+        "energy": {
+          "input": 4573.866157456907,
+          "delivered": 872.7144000737113,
+          "remainder": 3701.1517573831957,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 45,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 24,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 42560.789306360806,
+          "loss": 39560.789306360806,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 42560.789306360806,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 17024.315722544325,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.0704874145638
+          }
+        },
+        "energy": {
+          "input": 5214.6162132549525,
+          "delivered": 922.7144000737113,
+          "remainder": 4291.901813181241,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 46,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 24.8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 46960.31386021462,
+          "loss": 43960.31386021462,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 46960.31386021462,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 18784.125544085848,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.06388372975806787
+          }
+        },
+        "energy": {
+          "input": 5923.9627016942995,
+          "delivered": 972.7144000737113,
+          "remainder": 4951.248301620588,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 47,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 25.6,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 51653.03496262337,
+          "loss": 51653.03496262337,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 51653.03496262337,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 6706.634599364543,
+          "delivered": 1022.7144000737113,
+          "remainder": 5683.920199290831,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 48,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 26.4,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 56648.41056676622,
+          "loss": 56648.41056676622,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 56648.41056676622,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 7567.518515408266,
+          "delivered": 1022.7144000737113,
+          "remainder": 6544.804115334554,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 49,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 27.2,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 61955.898625822396,
+          "loss": 61955.898625822396,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 61955.898625822396,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 8511.658691521036,
+          "delivered": 1022.7144000737113,
+          "remainder": 7488.944291447324,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 50,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 9544.25700195141,
+          "delivered": 1022.7144000737113,
+          "remainder": 8521.542601877696,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 51,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 10670.672953500927,
+          "delivered": 1022.7144000737113,
+          "remainder": 9647.958553427214,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 52,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 11797.088905050445,
+          "delivered": 1022.7144000737113,
+          "remainder": 10774.374504976731,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 53,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 12923.504856599962,
+          "delivered": 1022.7144000737113,
+          "remainder": 11900.790456526249,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 54,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 14049.92080814948,
+          "delivered": 1022.7144000737113,
+          "remainder": 13027.206408075766,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 55,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 15176.336759698997,
+          "delivered": 1022.7144000737113,
+          "remainder": 14153.622359625284,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 56,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 16302.752711248515,
+          "delivered": 1022.7144000737113,
+          "remainder": 15280.038311174801,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 57,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 17429.168662798034,
+          "delivered": 1022.7144000737113,
+          "remainder": 16406.45426272432,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 58,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 18555.584614347554,
+          "delivered": 1022.7144000737113,
+          "remainder": 17532.87021427384,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 59,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 19682.000565897073,
+          "delivered": 1022.7144000737113,
+          "remainder": 18659.28616582336,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 60,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 20808.416517446592,
+          "delivered": 1022.7144000737113,
+          "remainder": 19785.70211737288,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 61,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 21934.832468996112,
+          "delivered": 1022.7144000737113,
+          "remainder": 20912.1180689224,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 62,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 23061.24842054563,
+          "delivered": 1022.7144000737113,
+          "remainder": 22038.534020471918,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 63,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 24187.66437209515,
+          "delivered": 1022.7144000737113,
+          "remainder": 23164.949972021437,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 64,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 25314.08032364467,
+          "delivered": 1022.7144000737113,
+          "remainder": 24291.365923570957,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 65,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 26440.49627519419,
+          "delivered": 1022.7144000737113,
+          "remainder": 25417.781875120476,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 66,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 27566.91222674371,
+          "delivered": 1022.7144000737113,
+          "remainder": 26544.197826669995,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 67,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 28693.328178293228,
+          "delivered": 1022.7144000737113,
+          "remainder": 27670.613778219515,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 68,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 29819.744129842747,
+          "delivered": 1022.7144000737113,
+          "remainder": 28797.029729769034,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 69,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 30946.160081392267,
+          "delivered": 1022.7144000737113,
+          "remainder": 29923.445681318553,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 70,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 28,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 67584.95709297109,
+          "loss": 67584.95709297109,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 67584.95709297109,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 32072.576032941786,
+          "delivered": 1022.7144000737113,
+          "remainder": 31049.861632868073,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 71,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 27.2,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 61955.898625822396,
+          "loss": 61955.898625822396,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 61955.898625822396,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 33198.9919844913,
+          "delivered": 1022.7144000737113,
+          "remainder": 32176.277584417592,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 72,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 26.4,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 56648.41056676622,
+          "loss": 56648.41056676622,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 56648.41056676622,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 34231.590294921676,
+          "delivered": 1022.7144000737113,
+          "remainder": 33208.875894847966,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 73,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 25.6,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 0,
+          "available": 51653.03496262337,
+          "loss": 51653.03496262337,
+          "status": "Protective shutdown",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 51653.03496262337,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 0,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 0,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0
+          }
+        },
+        "energy": {
+          "input": 35175.73047103445,
+          "delivered": 1022.7144000737113,
+          "remainder": 34153.01607096074,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 74,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 24.8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 46960.31386021462,
+          "loss": 43960.31386021462,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 46960.31386021462,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 18784.125544085848,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.06388372975806787
+          }
+        },
+        "energy": {
+          "input": 36036.61438707817,
+          "delivered": 1022.7144000737113,
+          "remainder": 35013.89998700446,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 75,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 24,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 42560.789306360806,
+          "loss": 39560.789306360806,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 42560.789306360806,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 17024.315722544325,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.0704874145638
+          }
+        },
+        "energy": {
+          "input": 36819.286284748414,
+          "delivered": 1072.7144000737112,
+          "remainder": 35746.571884674704,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 76,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 23.2,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 38445.003347882724,
+          "loss": 35445.003347882724,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 38445.003347882724,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 15378.001339153088,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.0780335476330559
+          }
+        },
+        "energy": {
+          "input": 37528.63277318776,
+          "delivered": 1122.7144000737112,
+          "remainder": 36405.91837311405,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 77,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 22.4,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 34603.49803160119,
+          "loss": 31603.498031601193,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 34603.49803160119,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 13841.399212640477,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.08669643737347851
+          }
+        },
+        "energy": {
+          "input": 38169.38282898581,
+          "delivered": 1172.7144000737112,
+          "remainder": 36996.6684289121,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 78,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 21.6,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 31026.81540433703,
+          "loss": 28026.81540433703,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 31026.81540433703,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 12410.72616173481,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.09669055495720164
+          }
+        },
+        "energy": {
+          "input": 38746.10779617916,
+          "delivered": 1222.7144000737112,
+          "remainder": 37523.39339610545,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 79,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 20.8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 27705.497512911017,
+          "loss": 24705.497512911017,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 27705.497512911017,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 11082.199005164406,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.10828175883150888
+          }
+        },
+        "energy": {
+          "input": 39263.22138625145,
+          "delivered": 1272.7144000737112,
+          "remainder": 37990.50698617773,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 80,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 20,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 24630.08640414398,
+          "loss": 21630.08640414398,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 24630.08640414398,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 9852.034561657592,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.12180225236624642
+          }
+        },
+        "energy": {
+          "input": 39724.9796781333,
+          "delivered": 1322.7144000737112,
+          "remainder": 38402.26527805958,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 81,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 19.2,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 21791.124124856724,
+          "loss": 18791.124124856724,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 21791.124124856724,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 8716.44964994269,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.13767073156992193
+          }
+        },
+        "energy": {
+          "input": 40135.48111820236,
+          "delivered": 1372.7144000737112,
+          "remainder": 38762.766718128645,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 82,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 18.4,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 19179.152721870065,
+          "loss": 16179.152721870065,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 19179.152721870065,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 7671.661088748026,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.15641983999528236
+          }
+        },
+        "energy": {
+          "input": 40498.66652028331,
+          "delivered": 1422.7144000737112,
+          "remainder": 39075.95212020959,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 83,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 17.6,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 16784.71424200481,
+          "loss": 13784.714242004811,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 16784.71424200481,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 6713.885696801925,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.17873405270685574
+          }
+        },
+        "energy": {
+          "input": 40818.31906564781,
+          "delivered": 1472.7144000737112,
+          "remainder": 39345.604665574094,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 84,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 16.8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 14598.350732081755,
+          "loss": 11598.350732081755,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 14598.350732081755,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 5839.340292832702,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.20550266636676387
+          }
+        },
+        "energy": {
+          "input": 41098.06430301456,
+          "delivered": 1522.7144000737112,
+          "remainder": 39575.34990294084,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 85,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 16,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 12610.604238921718,
+          "loss": 9610.604238921718,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 12610.604238921718,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 5044.241695568688,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.23789502415282504
+          }
+        },
+        "energy": {
+          "input": 41341.37014854926,
+          "delivered": 1572.7144000737112,
+          "remainder": 39768.65574847554,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 86,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 15.2,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 10812.016809345509,
+          "loss": 7812.016809345509,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 10812.016809345509,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 4324.806723738203,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.2774690469780726
+          }
+        },
+        "energy": {
+          "input": 41551.54688586462,
+          "delivered": 1622.7144000737112,
+          "remainder": 39928.8324857909,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 87,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 14.4,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 3000,
+          "available": 9193.130490173933,
+          "loss": 6193.130490173933,
+          "status": "At generator rating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 9193.130490173933,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 3677.2521960695735,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 3000,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.3263306229805556
+          }
+        },
+        "energy": {
+          "input": 41731.74716602038,
+          "delivered": 1672.7144000737112,
+          "remainder": 40059.032765946664,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 88,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 13.6,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 2911.927235413653,
+          "available": 7744.4873282277995,
+          "loss": 4832.560092814147,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 7744.4873282277995,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 3097.79493129112,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 2911.927235413653,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37600000000000006
+          }
+        },
+        "energy": {
+          "input": 41884.96600752328,
+          "delivered": 1722.7144000737112,
+          "remainder": 40162.251607449565,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 89,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 12.8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 2427.692643243299,
+          "available": 6456.629370327922,
+          "loss": 4028.936727084623,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 6456.629370327922,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 2582.651748131169,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 2427.692643243299,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37600000000000006
+          }
+        },
+        "energy": {
+          "input": 42014.04079632708,
+          "delivered": 1771.2465206639388,
+          "remainder": 40242.79427566313,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 90,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 12,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 2000.357097398958,
+          "available": 5320.098663295101,
+          "loss": 3319.7415658961427,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 5320.098663295101,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 2128.0394653180406,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 2000.357097398958,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37600000000000006
+          }
+        },
+        "energy": {
+          "input": 42121.651285832544,
+          "delivered": 1811.7080647179937,
+          "remainder": 40309.94322111454,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 91,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 11.2,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 1626.364407485256,
+          "available": 4325.437253950149,
+          "loss": 2699.0728464648932,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 4325.437253950149,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 1730.1749015800597,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 1626.364407485256,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 42210.319596887464,
+          "delivered": 1845.047349674643,
+          "remainder": 40365.27224721281,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 92,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 10.399999999999999,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 1302.1583831068172,
+          "available": 3463.187189113876,
+          "loss": 2161.028806007059,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 3463.187189113876,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 1385.2748756455503,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 1302.1583831068172,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 42282.41021778663,
+          "delivered": 1872.1534231327307,
+          "remainder": 40410.25679465389,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 93,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 9.600000000000001,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 1024.1828338682667,
+          "available": 2723.8905156070923,
+          "loss": 1699.7076817388256,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 2723.8905156070923,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 1089.5562062428369,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 1024.1828338682667,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 42340.13000427186,
+          "delivered": 1893.8560628511777,
+          "remainder": 40446.27394142067,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 94,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 8.8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 788.8815693742262,
+          "available": 2098.0892802506014,
+          "loss": 1309.2077108763751,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 2098.0892802506014,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 839.2357121002407,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 788.8815693742262,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 42385.528179531975,
+          "delivered": 1910.9257767489821,
+          "remainder": 40474.602402782984,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 95,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 592.6983992293208,
+          "available": 1576.3255298652148,
+          "loss": 983.627130635894,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1576.3255298652148,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 630.530211946086,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 592.6983992293208,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 42420.49633420282,
+          "delivered": 1924.0738029052193,
+          "remainder": 40496.42253129759,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 96,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 7.84,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 557.8429917674426,
+          "available": 1483.624978104901,
+          "loss": 925.7819863374583,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1483.624978104901,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 593.4499912419603,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 557.8429917674426,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 42446.76842636724,
+          "delivered": 1933.9521095590412,
+          "remainder": 40512.81631680819,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 97,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 7.68,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 524.3816109405524,
+          "available": 1394.6319439908307,
+          "loss": 870.2503330502783,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1394.6319439908307,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 557.8527775963323,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 524.3816109405524,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37600000000000006
+          }
+        },
+        "energy": {
+          "input": 42471.495509335655,
+          "delivered": 1943.2494927551652,
+          "remainder": 40528.24601658048,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 98,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 7.52,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 492.28580722548617,
+          "available": 1309.2707638975694,
+          "loss": 816.9849566720832,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1309.2707638975694,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 523.7083055590278,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 492.28580722548617,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37600000000000006
+          }
+        },
+        "energy": {
+          "input": 42494.739375068835,
+          "delivered": 1951.9891862708412,
+          "remainder": 40542.75018879798,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 99,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 7.36,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 461.52713109908126,
+          "available": 1227.4657741996843,
+          "loss": 765.938643100603,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1227.4657741996843,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 490.9863096798737,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 461.52713109908126,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 42516.56055446713,
+          "delivered": 1960.1939497245992,
+          "remainder": 40556.366604742514,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 100,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 7.2,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 432.07713303817485,
+          "available": 1149.1413112717416,
+          "loss": 717.0641782335667,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1149.1413112717416,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 459.6565245086967,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 432.07713303817485,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 42537.01831737046,
+          "delivered": 1967.8860685762506,
+          "remainder": 40569.132248794194,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 101,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 7.04,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 403.9073635196037,
+          "available": 1074.2217114883076,
+          "loss": 670.3143479687039,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1074.2217114883076,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 429.6886845953231,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 403.9073635196037,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 42556.17067255832,
+          "delivered": 1975.0873541268868,
+          "remainder": 40581.08331843142,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 102,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 6.88,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 376.9893730202048,
+          "available": 1002.6313112239491,
+          "loss": 625.6419382037443,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 1002.6313112239491,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 401.05252448957964,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 376.9893730202048,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 42574.074367749796,
+          "delivered": 1981.81914351888,
+          "remainder": 40592.255224230896,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 103,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 6.72,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 351.2947120168153,
+          "available": 934.2944468532321,
+          "loss": 582.9997348364168,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 934.2944468532321,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 373.7177787412929,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 351.2947120168153,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37600000000000006
+          }
+        },
+        "energy": {
+          "input": 42590.78488960353,
+          "delivered": 1988.1022997358834,
+          "remainder": 40602.682589867625,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 104,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 6.5600000000000005,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 326.79493098627216,
+          "available": 869.1354547507239,
+          "loss": 542.3405237644517,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 869.1354547507239,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 347.65418190028953,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 326.79493098627216,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 42606.35646371775,
+          "delivered": 1993.9572116028303,
+          "remainder": 40612.3992521149,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 105,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 6.4,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 303.46158040541235,
+          "available": 807.0786712909902,
+          "loss": 503.61709088557785,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 807.0786712909902,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 322.8314685163961,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 303.46158040541235,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37600000000000006
+          }
+        },
+        "energy": {
+          "input": 42620.84205463026,
+          "delivered": 1999.4037937859348,
+          "remainder": 40621.438260844305,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 106,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 6.24,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 281.2662107510726,
+          "available": 748.0484328485975,
+          "loss": 466.7822220975249,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 748.0484328485975,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 299.21937313943897,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 281.2662107510726,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 42634.29336581844,
+          "delivered": 2004.4614867926916,
+          "remainder": 40629.83187902573,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 107,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 6.08,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 260.1803725000903,
+          "available": 691.9690757981125,
+          "loss": 431.7887032980222,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 691.9690757981125,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 276.787630319245,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 260.1803725000903,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 42646.76083969925,
+          "delivered": 2009.1492569718762,
+          "remainder": 40637.61158272736,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 108,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 5.92,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 240.17561612930228,
+          "available": 638.7649365141018,
+          "loss": 398.5893203847995,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 638.7649365141018,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 255.50597460564074,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 240.17561612930228,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 42658.29365762922,
+          "delivered": 2013.4855965135444,
+          "remainder": 40644.80806111566,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 109,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 5.76,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 221.22349211554547,
+          "available": 588.3603513711316,
+          "loss": 367.13685925558616,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 588.3603513711316,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 235.34414054845263,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 221.22349211554547,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 42668.939739904454,
+          "delivered": 2017.4885234490328,
+          "remainder": 40651.45121645541,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 110,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 5.6,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 203.295550935657,
+          "available": 540.6796567437686,
+          "loss": 337.38410580811166,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 540.6796567437686,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 216.27186269750746,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 203.295550935657,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 42678.745745760636,
+          "delivered": 2021.1755816509585,
+          "remainder": 40657.57016410967,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 111,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 5.4399999999999995,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 186.36334306647373,
+          "available": 495.6471890065791,
+          "loss": 309.2838459401054,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 495.6471890065791,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 198.25887560263163,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 186.36334306647373,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 42687.75707337303,
+          "delivered": 2024.5638408332195,
+          "remainder": 40663.1932325398,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 112,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 5.279999999999999,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 170.39841898483274,
+          "available": 453.1872845341297,
+          "loss": 282.78886554929693,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 453.1872845341297,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 181.27491381365186,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 170.39841898483274,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 42696.017859856474,
+          "delivered": 2027.669896550994,
+          "remainder": 40668.34796330547,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 113,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 5.12,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 155.37232916757105,
+          "available": 413.2242797009869,
+          "loss": 257.8519505334159,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 413.2242797009869,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 165.28971188039475,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 155.37232916757105,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 42703.57098126537,
+          "delivered": 2030.5098702007413,
+          "remainder": 40673.06111106462,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 114,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 4.96,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 141.25662409152557,
+          "available": 375.6825108817169,
+          "loss": 234.42588679019133,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 375.6825108817169,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 150.27300435268677,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 141.25662409152557,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37600000000000006
+          }
+        },
+        "energy": {
+          "input": 42710.45805259372,
+          "delivered": 2033.0994090202007,
+          "remainder": 40677.35864357351,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 115,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 4.8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 128.02285423353325,
+          "available": 340.4863144508863,
+          "loss": 212.46346021735306,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 340.4863144508863,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 136.19452578035452,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 128.02285423353325,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 42716.71942777508,
+          "delivered": 2035.4536860883927,
+          "remainder": 40681.26574168668,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 116,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 4.640000000000001,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 115.64257007043126,
+          "available": 307.5600267830619,
+          "loss": 191.91745671263067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 307.5600267830619,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 123.02401071322475,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 115.64257007043126,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 42722.394199682596,
+          "delivered": 2037.5874003256183,
+          "remainder": 40684.80679935697,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 117,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 4.48,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 104.0873220790564,
+          "available": 276.82798425280964,
+          "loss": 172.74066217375324,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 276.82798425280964,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 110.73119370112384,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 104.0873220790564,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.37599999999999995
+          }
+        },
+        "energy": {
+          "input": 42727.52020012898,
+          "delivered": 2039.5147764934588,
+          "remainder": 40688.00542363551,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 118,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 4.32,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 93.32866073624577,
+          "available": 248.2145232346962,
+          "loss": 154.88586249845042,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 248.2145232346962,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 99.28580929387849,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 93.32866073624577,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 42732.13399986653,
+          "delivered": 2041.2495651947766,
+          "remainder": 40690.884434671745,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 119,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 4.16,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 83.33813651883634,
+          "available": 221.64398010328813,
+          "loss": 138.3058435844518,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 221.64398010328813,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 88.65759204131525,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 83.33813651883634,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 42736.2709085871,
+          "delivered": 2042.805042873714,
+          "remainder": 40693.465865713384,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 120,
+        "run": {
+          "version": 1,
+          "id": "wind",
+          "settings": {
+            "speed": 4,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "power": 74.0872999036651,
+          "available": 197.04069123315185,
+          "loss": 122.95339132948675,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Kinetic stream power",
+              "value": 197.04069123315185,
+              "unit": "kW"
+            },
+            {
+              "label": "Rotor extraction",
+              "value": 78.81627649326074,
+              "unit": "kW"
+            },
+            {
+              "label": "Electricity delivered",
+              "value": 74.0872999036651,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.376
+          }
+        },
+        "energy": {
+          "input": 42739.96497492216,
+          "delivered": 2044.1940118156947,
+          "remainder": 40695.77096310646,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      }
+    ],
+    "selectedInterval": null
+  },
+  "comparison": {
+    "first": {
+      "profileId": "gust",
+      "profileName": "Strong wind and shutdown",
+      "phase": 50,
+      "baseSettings": {
+        "speed": 8,
+        "radius": 40,
+        "cp": 40,
+        "rating": 3000
+      },
+      "run": {
+        "version": 1,
+        "id": "wind",
+        "settings": {
+          "speed": 28,
+          "radius": 40,
+          "cp": 40,
+          "rating": 3000
+        },
+        "power": 0,
+        "available": 67584.95709297109,
+        "loss": 67584.95709297109,
+        "status": "Protective shutdown",
+        "stages": [
+          {
+            "label": "Kinetic stream power",
+            "value": 67584.95709297109,
+            "unit": "kW"
+          },
+          {
+            "label": "Rotor extraction",
+            "value": 0,
+            "unit": "kW"
+          },
+          {
+            "label": "Electricity delivered",
+            "value": 0,
+            "unit": "kW"
+          }
+        ],
+        "extra": {
+          "efficiency": 0
+        }
+      },
+      "energy": {
+        "input": 9544.25700195141,
+        "delivered": 1022.7144000737113,
+        "remainder": 8521.542601877696,
+        "requested": 0,
+        "unserved": 0
+      },
+      "totals": {
+        "input": 42739.96497492216,
+        "delivered": 2044.1940118156947,
+        "remainder": 40695.77096310646,
+        "requested": 0,
+        "unserved": 0
+      }
+    },
+    "second": {
+      "profileId": "gust",
+      "profileName": "Strong wind and shutdown",
+      "phase": 50,
+      "baseSettings": {
+        "speed": 8,
+        "radius": 40,
+        "cp": 40,
+        "rating": 3000
+      },
+      "run": {
+        "version": 1,
+        "id": "wind",
+        "settings": {
+          "speed": 28,
+          "radius": 40,
+          "cp": 40,
+          "rating": 3000
+        },
+        "power": 0,
+        "available": 67584.95709297109,
+        "loss": 67584.95709297109,
+        "status": "Protective shutdown",
+        "stages": [
+          {
+            "label": "Kinetic stream power",
+            "value": 67584.95709297109,
+            "unit": "kW"
+          },
+          {
+            "label": "Rotor extraction",
+            "value": 0,
+            "unit": "kW"
+          },
+          {
+            "label": "Electricity delivered",
+            "value": 0,
+            "unit": "kW"
+          }
+        ],
+        "extra": {
+          "efficiency": 0
+        }
+      },
+      "energy": {
+        "input": 9544.25700195141,
+        "delivered": 1022.7144000737113,
+        "remainder": 8521.542601877696,
+        "requested": 0,
+        "unserved": 0
+      },
+      "totals": {
+        "input": 42739.96497492216,
+        "delivered": 2044.1940118156947,
+        "remainder": 40695.77096310646,
+        "requested": 0,
+        "unserved": 0
+      }
+    },
+    "changes": [],
+    "context": [],
+    "comparable": true,
+    "controlled": false,
+    "powerDelta": 0,
+    "powerPercent": null,
+    "energyDelta": 0
+  },
+  "experiments": [],
+  "designMaps": [],
+  "notebooks": [
+    {
+      "id": "solarPv",
+      "name": "Solar PV",
+      "readings": [
+        {
+          "name": "Existing solar baseline",
+          "note": "Keep this observation",
+          "profileId": "steady",
+          "phase": 0,
+          "baseSettings": {
+            "irradiance": 800,
+            "area": 20,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "result": {
+            "version": 1,
+            "id": "solarPv",
+            "settings": {
+              "irradiance": 800,
+              "area": 20,
+              "efficiency": 20,
+              "incidence": 20
+            },
+            "power": 2.886735731054311,
+            "available": 15.035081932574535,
+            "loss": 12.148346201520223,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Light intercepted",
+                "value": 15.035081932574535,
+                "unit": "kW"
+              },
+              {
+                "label": "DC electricity",
+                "value": 3.0070163865149073,
+                "unit": "kW"
+              },
+              {
+                "label": "AC electricity",
+                "value": 2.886735731054311,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.19200000000000003
+            }
+          },
+          "accumulatedEnergy": null,
+          "scenarioTotals": null
+        }
+      ]
+    },
+    {
+      "id": "wind",
+      "name": "Wind",
+      "readings": [
+        {
+          "name": "Wind gust reading",
+          "note": "",
+          "profileId": "gust",
+          "phase": 50,
+          "baseSettings": {
+            "speed": 8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "result": {
+            "version": 1,
+            "id": "wind",
+            "settings": {
+              "speed": 28,
+              "radius": 40,
+              "cp": 40,
+              "rating": 3000
+            },
+            "power": 0,
+            "available": 67584.95709297109,
+            "loss": 67584.95709297109,
+            "status": "Protective shutdown",
+            "stages": [
+              {
+                "label": "Kinetic stream power",
+                "value": 67584.95709297109,
+                "unit": "kW"
+              },
+              {
+                "label": "Rotor extraction",
+                "value": 0,
+                "unit": "kW"
+              },
+              {
+                "label": "Electricity delivered",
+                "value": 0,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0
+            }
+          },
+          "accumulatedEnergy": {
+            "input": 9544.25700195141,
+            "delivered": 1022.7144000737113,
+            "remainder": 8521.542601877696,
+            "requested": 0,
+            "unserved": 0
+          },
+          "scenarioTotals": {
+            "input": 42739.96497492216,
+            "delivered": 2044.1940118156947,
+            "remainder": 40695.77096310646,
+            "requested": 0,
+            "unserved": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hydro",
+      "name": "Hydropower",
+      "readings": []
+    },
+    {
+      "id": "geothermal",
+      "name": "Geothermal",
+      "readings": []
+    },
+    {
+      "id": "solarThermal",
+      "name": "Concentrating solar",
+      "readings": []
+    },
+    {
+      "id": "wave",
+      "name": "Wave energy",
+      "readings": []
+    },
+    {
+      "id": "tidal",
+      "name": "Tidal stream",
+      "readings": []
+    },
+    {
+      "id": "biomass",
+      "name": "Biomass",
+      "readings": []
+    },
+    {
+      "id": "storage",
+      "name": "Battery storage",
+      "readings": []
+    }
+  ]
+}

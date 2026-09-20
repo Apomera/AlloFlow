@@ -277,12 +277,12 @@ describe('teaching-script structure and source attribution', () => {
 });
 
 describe('teaching-script save, edit, and export', () => {
-  it('appends only to the captured plan and retains the most recent three separate versions', () => {
+  it('appends only to the captured plan and retains all separate versions until explicitly deleted', () => {
     const p=plan(),before=JSON.stringify(p),v=version();
     expect(api.appendVersion({...p,id:'plan-b'},v).id).toBe('plan-b');
     expect(api.appendVersion({...p,id:'plan-b'},v).data.teachingScripts).toBeUndefined();
     let saved=p;for(let i=0;i<4;i++) saved=api.appendVersion(saved,{...v,id:'version-'+i});
-    expect(saved.data.teachingScripts.map(item=>item.id)).toEqual(['version-1','version-2','version-3']);
+    expect(saved.data.teachingScripts.map(item=>item.id)).toEqual(['version-0','version-1','version-2','version-3']);
     expect(saved.data.directInstruction).toBe(p.data.directInstruction);
     expect(saved.data.extensions).toEqual(p.data.extensions);
     expect(JSON.stringify(p)).toBe(before);
@@ -467,4 +467,12 @@ describe('native saved timeline material', () => {
     items[0].event = 'Divide the whole into eight equal lengths.';
     expect(api.captureInputs(plan(), settings(), [material]).fingerprint).not.toBe(captured.fingerprint);
   });
+});
+
+
+it('records material fingerprints on saved script versions without retaining learner data', () => {
+  const s=snapshot(),v=version();expect(v.inputSnapshot.materialFingerprints).toEqual(s.materialFingerprints);
+  expect(v.inputSnapshot.materialFingerprints).toHaveLength(2);
+  expect(api.getMaterialStatus(v,materials())).toEqual({changed:[],missing:[],ambiguous:[],untracked:false});
+  expect(JSON.stringify(v.inputSnapshot)).not.toContain('LEARNER_SECRET');
 });

@@ -1,53 +1,87 @@
 // Older saved plans may contain scalar lists or structured language/text fields.
+// Select by presence, not truthiness: an intentionally cleared field or zero is meaningful.
+function _lessonPlanTextKey(value) {
+  return ['en', 'text', 'description', 'title', 'label', 'name', 'item'].find(key =>
+    typeof value[key] === 'string' || typeof value[key] === 'number'
+    || (value[key] && typeof value[key] === 'object'));
+}
 function _lessonPlanText(value) {
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number') return String(value);
+  if (typeof value === 'string' || typeof value === 'number') return String(value);
   if (Array.isArray(value)) return value.map(_lessonPlanText).filter(Boolean).join('\n');
-  if (value && typeof value === 'object') return _lessonPlanText(value.en || value.text || value.description || value.title || value.label);
+  if (value && typeof value === 'object') {
+    const key = _lessonPlanTextKey(value);
+    return key ? _lessonPlanText(value[key]) : '';
+  }
   return '';
 }
 function _lessonPlanEditedText(previous, value) {
   if (previous && typeof previous === 'object' && !Array.isArray(previous)) {
-    const key = ['en', 'text', 'description', 'title', 'label'].find(key => typeof previous[key] === 'string');
-    if (key) return { ...previous, [key]: value };
+    const key = _lessonPlanTextKey(previous);
+    return key ? { ...previous, [key]: _lessonPlanEditedText(previous[key], value) } : { ...previous, text: value };
   }
   return value;
 }
 
+function _lessonPlanCriterionText(value) {
+  return _lessonPlanText(value && typeof value === 'object' && !Array.isArray(value) && 'statement' in value ? value.statement : value);
+}
+function _lessonPlanEditedCriterion(previous, value) {
+  if (previous && typeof previous === 'object' && !Array.isArray(previous) && 'statement' in previous) return { ...previous, statement: _lessonPlanEditedText(previous.statement, value) };
+  return _lessonPlanEditedText(previous, value);
+}
 
 function PlanningInputsSummary(props) {
   const record = props.resource?.config?.generationInputs;
+  const [expanded, setExpanded] = React.useState(null);
+  const resourceKey = String(props.resource?.id);
+  const isExpanded = expanded === resourceKey;
   const label = (key, fallback) => { const value = typeof props.t === 'function' ? props.t('lesson_plan.inputs.' + key) : ''; return typeof value === 'string' && value && value !== 'lesson_plan.inputs.' + key ? value : fallback; };
   const valid = record?.version === 1 && ['teacher','study','family'].includes(record.mode)
     && Array.isArray(record.summaries) && Array.isArray(record.inventory);
   if (!valid) return <p className="mb-4 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">{label('not_recorded', 'Input versions were not recorded for this saved guide.')}</p>;
   const history = Array.isArray(props.history) ? props.history : [];
-  const renderInput = (item, index) => {
+  const comparison = isExpanded ? window.AlloModules?.UtilsPure?.getPlanningInputStatus?.(record, props.history) : null;
+  const statusLabel = status => label('comparison_' + status + '_item', ({
+    same: 'Recorded contribution matches', changed: 'Recorded contribution differs',
+    missing: 'Resource missing', ambiguous: 'Resource ID is ambiguous', unavailable: 'Comparison unavailable'
+  })[status] || 'Comparison unavailable');
+  const renderInput = (item, index, inventory = false) => {
     if (!item || typeof item !== 'object' || typeof item.title !== 'string') return null;
-    const matches = item.id == null ? [] : history.filter(resource => resource && String(resource.id) === String(item.id));
-    const canOpen = item.id != null && matches.length === 1 && typeof props.onOpen === 'function';
+    const directInput = item.id === '__input__' || (item.id == null && item.type === 'source-input' && item.kind === 'Source text excerpt');
+    const matches = item.id == null || directInput ? [] : history.filter(resource => resource && String(resource.id) === String(item.id));
+    const canOpen = !directInput && item.id != null && matches.length === 1 && matches[0].type === item.type && typeof props.onOpen === 'function';
+    const status = comparison?.[inventory ? 'inventory' : 'summaries']?.[index]?.status;
     return <li key={String(item.id || 'source') + ':' + index} className="flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white p-3">
       <div className="min-w-0 flex-1 basis-48 break-words">
         <span className="font-semibold text-slate-900">{item.title}</span>
         {typeof item.kind === 'string' && <span className="block text-sm text-slate-700">{item.kind}{item.partial ? ' · ' + label('partial', 'partial excerpt') : ''}</span>}
-        {item.id != null && matches.length !== 1 && <span className="block text-sm text-amber-900">{matches.length ? label('ambiguous', 'More than one resource has this ID; opening is unavailable.') : label('missing', 'This resource is not in the current library.')}</span>}
+        {status && <span className={'mt-1 block text-sm font-semibold ' + (status === 'same' ? 'text-slate-700' : 'text-amber-900')}>{statusLabel(status)}</span>}
+        {directInput && <span className="block text-sm text-slate-700">{label('direct_input', 'Source text was supplied directly; it is not a saved library resource.')}</span>}
+        {!directInput && item.id != null && matches.length !== 1 && <span className="block text-sm text-amber-900">{matches.length ? label('ambiguous', 'More than one resource has this ID; opening is unavailable.') : label('missing', 'This resource is not in the current library.')}</span>}
       </div>
       {canOpen && <button type="button" onClick={() => props.onOpen(item.id)} aria-label={label('open', 'Open current resource') + ': ' + item.title} className="min-h-11 rounded-lg border border-indigo-600 px-3 py-2 text-sm font-semibold text-indigo-800 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{label('open', 'Open current resource')}</button>}
     </li>;
   };
-  return <details key={String(props.resource?.id)} className="mb-4 rounded-xl border border-indigo-200 bg-white/80 text-slate-900">
+  return <details key={String(props.resource?.id)} onToggle={event => setExpanded(event.currentTarget.open ? resourceKey : null)} className="mb-4 rounded-xl border border-indigo-200 bg-white/80 text-slate-900">
     <summary className="min-h-11 cursor-pointer rounded-xl px-4 py-3 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{label('title', 'Inputs supplied at generation time')}</summary>
     <div className="space-y-4 px-4 pb-4">
       <p className="text-sm text-slate-700">{label(record.mode, record.mode === 'teacher' ? 'Teacher lesson plan' : record.mode === 'study' ? 'Student study guide' : 'Family guide')}. {label('scope', 'This records the summaries and inventory supplied to generation. It does not prove every resource was used or verify the plan’s accuracy.')}</p>
+      {isExpanded && <section className="rounded-lg border border-slate-200 bg-white p-3" aria-label={label('comparison_title', 'Compare recorded inputs')} data-planning-comparison>
+        <h3 className="text-sm font-bold">{label('comparison_title', 'Compare recorded inputs')}</h3>
+        <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-sm font-semibold">{comparison ? label('comparison_' + comparison.status, comparison.status === 'attention' ? 'Some recorded inputs need review.' : comparison.status === 'same' ? 'The comparable recorded inputs match.' : 'Some inputs cannot be compared reliably.') : label('comparison_tools', 'Comparison tools are not available yet. Close and reopen this section to try again.')}</p>
+        <p className="mt-2 text-sm text-slate-700">{label('comparison_note', 'Checks the recorded summaries and inventory entries against the same resources in your current library. It does not check every teaching detail or change this guide.')}</p>
+        {comparison?.status === 'unavailable' || comparison?.summaries.some(item => item.status === 'unavailable') || comparison?.inventory.some(item => item.status === 'unavailable') ? <p className="mt-2 text-sm text-slate-700">{label('comparison_limits', 'Reading selections and source-input settings are not reconstructed from older records. Missing versions, changed resource types, or incomplete tracking are shown as unavailable.')}</p> : null}
+        {record.summaries.some(item => item?.partial) && <p className="mt-2 text-sm text-slate-700">{label('comparison_partial', 'Only the recorded excerpt length is compared.')}</p>}
+      </section>}
       {!record.traceComplete && <p className="text-sm text-amber-900">{label('untraced', 'Detailed input tracking was unavailable for this generation.')}</p>}
       {record.summaries.length > 0 && <section aria-label={label('summaries', 'Supplied summaries')}>
         <h3 className="mb-2 text-sm font-bold">{label('summaries', 'Supplied summaries')}</h3>
-        <ul className="space-y-2">{record.summaries.map(renderInput)}</ul>
+        <ul className="space-y-2">{record.summaries.map((item, index) => renderInput(item, index))}</ul>
       </section>}
       {record.inventoryStatus === 'recorded' && record.inventory.length > 0 && <section aria-label={label('inventory', 'Available assets')}>
         <h3 className="mb-2 text-sm font-bold">{label('inventory', 'Available assets')}</h3>
         <p className="mb-2 text-sm text-slate-700">{label('inventory_note', 'Titles and resource IDs were supplied as an inventory; this is separate from the summaries above.')}</p>
-        <ul className="space-y-2">{record.inventory.map(renderInput)}</ul>
+        <ul className="space-y-2">{record.inventory.map((item, index) => renderInput(item, index, true))}</ul>
       </section>}
       {record.inventoryStatus === 'untraced' && <p className="text-sm text-amber-900">{label('custom_inventory', 'A custom inventory was supplied, but its resource identities were not recorded.')}</p>}
       {record.projection === 'local-excerpt-v1' && <p className="text-sm text-slate-700">{label('local', 'Only the context excerpt supplied to the local model is listed. No asset inventory was supplied.')}</p>}
@@ -56,10 +90,81 @@ function PlanningInputsSummary(props) {
 }
 
 
+
+function LessonPlanListEditor({ field, value, onChange, t }) {
+  const list = Array.isArray(value) ? value : value == null ? [] : [value];
+  const tr = (key, fallback) => t('lesson_plan.' + key) || fallback;
+  const noun = field === 'objectives' ? tr('objective_item', 'Objective') : tr('material_item', 'Material');
+  const inputs = React.useRef([]), add = React.useRef(null), focus = React.useRef(null);
+  const [removed, setRemoved] = React.useState(null);
+  const signature = JSON.stringify(list);
+  React.useEffect(() => { if (removed && removed.after !== signature) setRemoved(null); }, [signature, removed]);
+  const undo = () => {
+    if (!removed || removed.after !== signature) return;
+    focus.current = removed.index;
+    onChange(field, previous => {
+      const next = Array.isArray(previous) ? previous.slice() : previous == null ? [] : [previous];
+      if (JSON.stringify(next) !== removed.after) return previous;
+      next.splice(removed.index, 0, removed.item);
+      return next;
+    });
+    setRemoved(null);
+  };
+  React.useLayoutEffect(() => { if (focus.current !== null) { (inputs.current[focus.current] || add.current)?.focus(); focus.current = null; } }, [value]);
+  const action = (index, kind) => {
+    const expected = JSON.stringify(list[index]);
+    focus.current = kind === 'add' ? list.length : kind === 'up' ? index - 1 : kind === 'down' ? index + 1 : Math.min(index, list.length - 2);
+    if (kind === 'remove') setRemoved({ item: list[index], index, after: JSON.stringify(list.filter((_, itemIndex) => itemIndex !== index)) });
+    else setRemoved(null);
+    onChange(field, previous => {
+      const next = Array.isArray(previous) ? previous.slice() : previous == null ? [] : [previous];
+      if (kind === 'add') return next.concat('');
+      if (JSON.stringify(next[index]) !== expected) return previous;
+      if (kind === 'remove') next.splice(index, 1);
+      else { const target = index + (kind === 'up' ? -1 : 1); if (target < 0 || target >= next.length) return previous; [next[index], next[target]] = [next[target], next[index]]; }
+      return next;
+    });
+  };
+  const button = 'min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-sm font-semibold text-indigo-900 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50';
+  return <div className="space-y-3" data-lesson-list={field}>
+    {list.map((item, index) => <div key={index} className="space-y-2 rounded-lg border border-slate-200 p-2">
+      <label className="block text-sm font-bold text-slate-900">{noun} {index + 1}<textarea aria-label={noun + ' ' + (index + 1)} ref={node => { inputs.current[index] = node; }} className="mt-1 w-full rounded-lg border border-slate-400 bg-white p-2 text-sm font-normal text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600" rows={2} value={_lessonPlanText(item)} onChange={event => { const value = event.target.value; onChange(field, previous => _lessonPlanEditedText(previous, value), index); }} /></label>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className={button} disabled={index === 0} aria-label={tr('move_up', 'Move up') + ': ' + noun + ' ' + (index + 1)} onClick={() => action(index, 'up')}>{tr('move_up', 'Move up')}</button>
+        <button type="button" className={button} disabled={index === list.length - 1} aria-label={tr('move_down', 'Move down') + ': ' + noun + ' ' + (index + 1)} onClick={() => action(index, 'down')}>{tr('move_down', 'Move down')}</button>
+        <button type="button" className={button} aria-label={tr('remove_item', 'Remove') + ': ' + noun + ' ' + (index + 1)} onClick={() => action(index, 'remove')}>{tr('remove_item', 'Remove')}</button>
+      </div>
+    </div>)}
+    {removed && removed.after === signature && <div className="flex flex-wrap items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 p-2"><span role="status" className="text-sm text-slate-900">{noun} {tr('item_removed', 'removed.')}</span><button type="button" className={button} onClick={undo}>{tr('undo_remove', 'Undo removal')}</button></div>}
+    <button ref={add} type="button" className={button} onClick={() => action(-1, 'add')}>{field === 'objectives' ? tr('add_objective', 'Add objective') : tr('add_material', 'Add material')}</button>
+  </div>;
+}
+function LessonPlanOverview({ plan, t }) {
+  const tr = (key, fallback) => t('lesson_plan.' + key) || fallback;
+  const list = value => (Array.isArray(value) ? value : value == null ? [] : [value]).map(_lessonPlanText).filter(text => text.trim());
+  const data = plan.data || {};
+  const versions = Array.isArray(data.teachingScripts) ? data.teachingScripts : [];
+  const latestWhole = [...versions].reverse().find(version => version?.schemaVersion !== 1 && version?.scope === 'lesson');
+  const timed = latestWhole && Number.isInteger(latestWhole.durationMinutes) && latestWhole.durationMinutes > 0 && latestWhole.durationMinutes <= 240
+    && Array.isArray(latestWhole.steps) && latestWhole.steps.length && latestWhole.steps.every(step => Number.isInteger(step?.minutes) && step.minutes > 0 && step.minutes <= 60)
+    && latestWhole.steps.reduce((sum, step) => sum + step.minutes, 0) === latestWhole.durationMinutes ? latestWhole : null;
+  const criteria = Array.isArray(data.successCriteria) ? data.successCriteria : data.successCriteria == null ? [] : [data.successCriteria];
+  const assessment = list(data.assessmentIdeas).concat(criteria.map(_lessonPlanCriterionText).filter(text => text.trim()));
+  const sections = [[tr('overview_objectives', 'Objectives'), list(data.objectives)], [tr('overview_materials', 'Materials'), list(data.materialsNeeded)], [tr('overview_assessment', 'Assessment and success criteria'), assessment]];
+  return <details className="mb-4 rounded-xl border border-indigo-200 bg-white text-slate-900" data-lesson-overview>
+    <summary className="min-h-11 cursor-pointer rounded-xl px-4 py-3 font-bold focus-visible:ring-2 focus-visible:ring-indigo-600">{tr('overview', 'Lesson at a glance')}</summary>
+    <div className="grid gap-4 p-4 pt-0 sm:grid-cols-2">
+      {sections.map(([title, items]) => <section key={title} className="min-w-0 break-words"><h3 className="mb-2 font-bold">{title}</h3>{items.length ? <ul className="list-disc space-y-1 pl-5 text-sm">{items.map((item,index) => <li key={index}>{item}</li>)}</ul> : <p className="text-sm text-slate-700">{tr('overview_not_recorded', 'Not recorded in this plan.')}</p>}</section>)}
+      <section className="min-w-0 break-words"><h3 className="mb-2 font-bold">{tr('overview_timing', 'Phase timing')}</h3>{timed ? <><p className="mb-2 text-sm text-slate-700">{tr('overview_timing_source', 'From the latest whole-lesson script; review against the current plan.')} {_lessonPlanText(timed.title)}</p><ol className="space-y-1 text-sm">{timed.steps.map((step,index) => <li key={index}>{_lessonPlanText(step.title)} · {step.minutes} {tr('overview_minutes', 'minutes')}</li>)}</ol><p className="mt-2 text-sm font-bold">{tr('overview_total', 'Total:')} {timed.steps.reduce((sum,step) => sum + step.minutes,0)} {tr('overview_minutes', 'minutes')}</p></> : <p className={'text-sm ' + (latestWhole ? 'text-amber-900' : 'text-slate-700')}>{latestWhole ? tr('overview_invalid_timing', 'The latest whole-lesson script has incomplete or inconsistent timing. Review its step times before teaching.') : tr('overview_no_timing', 'No whole-lesson script timing is recorded. Segment scripts cover only part of the lesson.')}</p>}</section>
+    </div>
+  </details>;
+}
+
 function LessonPlanView(props) {
   var t = key => { const value = typeof props.t === 'function' ? props.t(key) : ''; return typeof value === 'string' && value !== key ? value : ''; };
   var generatedContent = { ...props.generatedContent, data: props.generatedContent?.data && typeof props.generatedContent.data === 'object' ? props.generatedContent.data : {} };
   var lessonList = value => Array.isArray(value) ? value : (value == null ? [] : [value]);
+  var successCriteria = lessonList(generatedContent.data.successCriteria);
   var materialsNeeded = lessonList(generatedContent.data.materialsNeeded);
   var objectives = lessonList(generatedContent.data.objectives);
   var recommendedStemTools = Array.isArray(generatedContent.data.recommendedStemTools) ? generatedContent.data.recommendedStemTools.filter(tool => tool && typeof tool === 'object' && typeof tool.id === 'string') : [];
@@ -81,8 +186,8 @@ function LessonPlanView(props) {
   var handleCopyToClipboard = props.handleCopyToClipboard;
   var handleExportPDF = props.handleExportPDF;
   var handleLessonPlanChange = (field, value, index = null) => {
-    const previous = index !== null && Array.isArray(generatedContent.data[field]) ? generatedContent.data[field][index] : generatedContent.data[field];
-    props.handleLessonPlanChange(field, typeof value === 'string' ? _lessonPlanEditedText(previous, value) : value, index);
+    // Merge text into the latest saved value so arriving metadata survives.
+    props.handleLessonPlanChange(field, typeof value === 'string' ? previous => _lessonPlanEditedText(previous, value) : value, index);
   };
   var handleGenerateExtensionGuide = props.handleGenerateExtensionGuide;
   var handleExport = props.handleExport;
@@ -154,7 +259,8 @@ function LessonPlanView(props) {
                                     </button>
                                  </div>
                              </div>
-                             <PlanningInputsSummary resource={generatedContent} history={history} t={t} onOpen={props.onOpenPlanningResource} />
+                             <LessonPlanOverview plan={generatedContent} t={t} />
+                               <PlanningInputsSummary resource={generatedContent} history={history} t={t} onOpen={props.onOpenPlanningResource} />
                              {isTeacherMode && !isParentMode && !isIndependentMode && typeof props.onGenerateTeachingScript === 'function' && (
                                  <div className="mb-6">
                                      {window.AlloModules?.LessonTeachingScriptView && (!props.teachingScriptLoadState || props.teachingScriptLoadState === 'ready') ? React.createElement(window.AlloModules.LessonTeachingScriptView, {
@@ -163,6 +269,7 @@ function LessonPlanView(props) {
                                          capabilities: props.capabilities, defaultSettings: props.defaultSettings,
                                          scriptRun: props.scriptRun, draftScope: props.teachingScriptDraftScope,
                                            createTeachingScriptAudio: props.createTeachingScriptAudio, audioProfile: props.teachingScriptAudioProfile,
+                                           audioVoice: props.teachingScriptVoice, audioSpeed: props.teachingScriptSpeed, onOpenVoiceSettings: props.onOpenTeachingScriptVoiceSettings, onDeleteTeachingScript: props.onDeleteTeachingScript,
                                          onGenerateTeachingScript: props.onGenerateTeachingScript,
                                          onCancelTeachingScript: props.onCancelTeachingScript,
                                          onUpdateTeachingScript: props.onUpdateTeachingScript,
@@ -176,12 +283,12 @@ function LessonPlanView(props) {
                                  </div>
                              )}
                              <div className="space-y-6">
-                                 {(materialsNeeded.length > 0) && (
+                                 {(materialsNeeded.length > 0 || isEditingLessonPlan) && (
                                      <div className="bg-white p-4 rounded-lg border border-indigo-100">
                                          <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                                              <Backpack size={14} /> {t('lesson_plan.materials_header')}
                                          </h4>
-                                         <ul className="list-disc list-inside text-sm text-slate-700 space-y-1">
+                                         {isEditingLessonPlan ? <LessonPlanListEditor key={String(generatedContent.id) + ":materials"} field="materialsNeeded" value={generatedContent.data.materialsNeeded} onChange={handleLessonPlanChange} t={t} /> : (<ul className="list-disc list-inside text-sm text-slate-700 space-y-1">
                                              {materialsNeeded.map((mat, i) => mat == null ? null : (
                                                  <li key={i} className="flex items-start gap-2">
                                                      {isEditingLessonPlan ? (
@@ -199,7 +306,7 @@ function LessonPlanView(props) {
                                                      )}
                                                  </li>
                                              ))}
-                                         </ul>
+                                         </ul>)}
                                      </div>
                                  )}
                                  <div className="bg-white p-4 rounded-lg border border-indigo-100">
@@ -222,7 +329,7 @@ function LessonPlanView(props) {
                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                      <div className="bg-white p-4 rounded-lg border border-indigo-100">
                                          <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"><Flag size={14}/> {t(`lesson_headers.${isIndependentMode ? 'student' : (isParentMode ? 'parent' : 'teacher')}.objectives`)}</h4>
-                                         <ul className="list-disc list-inside text-sm text-slate-700 space-y-2">
+                                         {isEditingLessonPlan ? <LessonPlanListEditor key={String(generatedContent.id) + ":objectives"} field="objectives" value={generatedContent.data.objectives} onChange={handleLessonPlanChange} t={t} /> : (<ul className="list-disc list-inside text-sm text-slate-700 space-y-2">
                                              {objectives.map((obj, i) => obj == null ? null : (
                                                  <li key={i} className="flex items-start gap-2">
                                                      {isEditingLessonPlan ? (
@@ -240,7 +347,7 @@ function LessonPlanView(props) {
                                                      )}
                                                  </li>
                                              ))}
-                                         </ul>
+                                         </ul>)}
                                      </div>
                                      <div className="bg-white p-4 rounded-lg border border-indigo-100">
                                          <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"><Sparkles size={14}/> {t(`lesson_headers.${isIndependentMode ? 'student' : (isParentMode ? 'parent' : 'teacher')}.hook`)}</h4>
@@ -257,36 +364,37 @@ function LessonPlanView(props) {
                                          )}
                                      </div>
                                  </div>
-                                 {Array.isArray(generatedContent?.data.successCriteria) && generatedContent.data.successCriteria.length > 0 && (() => {
+                                 {successCriteria.some(item => item != null && (isEditingLessonPlan || _lessonPlanCriterionText(item).trim())) && (() => {
                                      // Success criteria: derived from the exit ticket generated before this
                                      // plan (each id IS that quiz's concept label) or from the objectives.
                                      // The live quiz controls roll class results up by the same ids and
                                      // publish them; Reteach hands a criterion to the existing next-lesson
                                      // machinery as a Remediation follow-up, nothing new is generated here.
-                                     const criteria = generatedContent.data.successCriteria;
+                                     const criteria = successCriteria;
                                      const rollup = (typeof window !== 'undefined' && window.__alloCriterionRollup && typeof window.__alloCriterionRollup === 'object') ? window.__alloCriterionRollup : null;
                                      const stat = (id) => (rollup && rollup.byConcept && rollup.byConcept[id]) ? rollup.byConcept[id] : null;
                                      return <div className="bg-white p-4 rounded-lg border border-indigo-100" data-success-criteria="plan">
                                          <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"><Flag size={14}/> {t('lesson_headers.success_criteria') || 'Success criteria'}</h4>
                                          <ul className="text-sm text-slate-700 space-y-2">
                                              {criteria.map((c, i) => {
-                                                 if (!c || typeof c !== 'object') return null;
-                                                 const s = stat(c.id);
+                                                 if (c == null || !isEditingLessonPlan && !_lessonPlanCriterionText(c).trim()) return null;
+                                                 const criterionId = typeof c?.id === 'string' || typeof c?.id === 'number' ? String(c.id) : '';
+                                                 const s = criterionId ? stat(criterionId) : null;
                                                  const pct = s && s.total > 0 ? Math.round((s.met / s.total) * 100) : null;
-                                                 const statement = _lessonPlanText(c.statement);
+                                                 const statement = _lessonPlanCriterionText(c);
                                                  return <li key={c.id || i} className="flex flex-wrap items-start gap-2">
                                                      {isEditingLessonPlan ? (
                                                          <textarea
-                                                            aria-label={t('lesson_plan.edit_success_criterion') || `Edit success criterion ${i + 1}`}
+                                                            aria-label={(t('lesson_plan.edit_success_criterion') || 'Edit success criterion') + ' ' + (i + 1)}
                                                             value={statement}
-                                                            onChange={(e) => handleLessonPlanChange('successCriteria', { ...c, statement: e.target.value }, i)}
-                                                            className="w-full text-sm bg-transparent border-b border-indigo-200 focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-300 outline-none"
-                                                            rows={Math.max(1, Math.ceil(statement.length / 40))}
+                                                            onChange={(e) => { const text = e.target.value; handleLessonPlanChange('successCriteria', previous => _lessonPlanEditedCriterion(previous, text), i); }}
+                                                            className="w-full min-h-20 resize-y rounded-lg border border-indigo-300 bg-white p-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 outline-none"
+                                                            rows={Math.max(3, Math.ceil(statement.length / 40))}
                                                          />
                                                      ) : (
-                                                         <span className="flex-1 min-w-[12rem]"><BilingualFieldRenderer text={c.statement} /></span>
+                                                         <span className="min-w-0 flex-1 basis-48 break-words"><BilingualFieldRenderer text={statement} /></span>
                                                      )}
-                                                     <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100" title={c.source === 'quiz' ? 'Rolls up from the exit ticket questions carrying this concept label' : 'Derived from an objective'}>{c.id}</span>
+                                                     {criterionId && <span className="max-w-full break-all text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100" title={c.source === 'quiz' ? 'Rolls up from the exit ticket questions carrying this concept label' : 'Derived from an objective'}>{criterionId}</span>}
                                                      {pct !== null && (
                                                          <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${pct >= 80 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : pct >= 60 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-rose-50 text-rose-800 border-rose-200'}`} data-criterion-mastery={c.id}>{`${pct}% met (${s.met}/${s.total})`}</span>
                                                      )}
@@ -301,7 +409,7 @@ function LessonPlanView(props) {
                                                  </li>;
                                              })}
                                          </ul>
-                                         <p className="mt-2 text-[11px] text-slate-500">{rollup && rollup.sessionLabel ? `Class results from ${rollup.sessionLabel}.` : (t('lesson_plan.criteria_hint') || 'Run the exit ticket in a live session and the share of students meeting each criterion appears here.')}</p>
+                                         <p className="mt-2 text-[11px] text-slate-500">{!criteria.some(item => typeof item?.id === 'string' && item.id || typeof item?.id === 'number') ? (t('lesson_plan.criteria_no_links') || 'These saved criteria have no quiz links. Review them alongside student work.') : rollup && rollup.sessionLabel ? `Class results from ${rollup.sessionLabel}.` : (t('lesson_plan.criteria_hint') || 'Run the exit ticket in a live session and the share of students meeting each criterion appears here.')}</p>
                                      </div>;
                                  })()}
                                  <div className="bg-white p-4 rounded-lg border border-indigo-100">

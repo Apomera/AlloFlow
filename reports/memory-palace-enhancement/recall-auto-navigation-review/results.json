@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "entranceRemainsSelected": true,
+  "awayAndBackCancelsOldMove": true,
+  "manualContinueWorks": true,
+  "newAnswersStillAdvance": true,
+  "keyboardContinue": true,
+  "noExtraAttempts": true,
+  "pageErrors": []
+}

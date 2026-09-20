@@ -1,0 +1,48 @@
+{
+  "scope": "Local current source with real WebGL and fictional lesson evidence. No production services or physical printing.",
+  "errors": [],
+  "blockedRequests": [
+    "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js",
+    "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js",
+    "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js",
+    "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js",
+    "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js",
+    "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"
+  ],
+  "checks": [
+    "Actual lesson started",
+    "Opening concept snapshots closes the competing settings dialog",
+    "Snapshot dialog receives keyboard focus",
+    "Capture button can be clicked from actual Menu entry",
+    "Actual Menu Worksheet opens correct lesson preview",
+    "Mobile menu also opens unobstructed concept snapshot dialog",
+    "No browser page errors"
+  ],
+  "finalButtons": [
+    "Close",
+    "Capture current view",
+    "Return to exploring",
+    "Download image",
+    "Remove moment",
+    "Worksheet",
+    "Download printable snapshots",
+    "Open learning record"
+  ],
+  "api": {
+    "worksheets": [
+      "model",
+      "html",
+      "questions",
+      "normalizeQuestion",
+      "presets"
+    ],
+    "snapshots": [
+      "selectionEditSnapshot",
+      "activitySnapshotSvg",
+      "lessonConceptSnapshots",
+      "updateConceptSnapshots",
+      "captureConceptSnapshot",
+      "conceptSnapshotsHtml"
+    ]
+  }
+}

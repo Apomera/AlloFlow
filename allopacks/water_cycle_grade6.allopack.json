@@ -8,7 +8,26 @@
     "gradeLevel": "6th Grade",
     "createdAt": "2026-07-20T00:00:00.000Z",
     "imageShotList": "allopacks/water_cycle_grade6.IMAGES.md",
-    "standards": "NGSS MS-ESS2-4 (water cycling through Earth systems driven by sunlight and gravity); CCSS.ELA-LITERACY.RST.6-8.4 (determine the meaning of symbols, key terms, and domain-specific words as used in a scientific context)"
+    "standards": "NGSS MS-ESS2-4 (water cycling through Earth systems driven by sunlight and gravity); CCSS.ELA-LITERACY.RST.6-8.4 (determine the meaning of symbols, key terms, and domain-specific words as used in a scientific context)",
+    "revisionReviewStatus": "2026-09-19: Water Cycle source check and AI-assisted revision; educator review pending",
+    "contentSources": [
+      {
+        "title": "Water Cycle revision source",
+        "url": "https://www.usgs.gov/water-science-school/science/infiltration-and-water-cycle"
+      },
+      {
+        "title": "Water Cycle revision source",
+        "url": "https://www.usgs.gov/water-science-school/science/aquifers-and-groundwater"
+      },
+      {
+        "title": "Water Cycle revision source",
+        "url": "https://water.usgs.gov/edu/activity-watercyclebegin.html"
+      },
+      {
+        "title": "Water Cycle revision source",
+        "url": "https://www.nesdis.noaa.gov/our-environment/clouds"
+      }
+    ]
   },
   "sourceTopic": "The Water Cycle",
   "history": [
@@ -18,7 +37,7 @@
       "title": "Your Water Cycle Mission",
       "timestamp": "2026-07-20T00:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nWater has been recycling itself on Earth for about four billion years — the water in your bottle once floated in a cloud, and maybe once sat in a glacier. Tonight you become a water-cycle expert.\n\n1. Read **Journey of a Raindrop** first. Read it out loud if you can — or use the Read Aloud button.\n2. Open the **Glossary** and play the **Crossword** and the **Word Scramble** until you win each one.\n3. Keep **The Four Moves of Water** chart open while you work — it is your cheat sheet, and using it is allowed.\n4. Try the **Sort It: Where Is the Water Going?** activity — drag each card to the right stage.\n5. Take the **Check Your Understanding** quiz. It is not a grade — wrong answers just show us what to practice.\n6. Use the **Sentence Frames** to write two sentences about the water cycle in your own words.\n7. Lock the ideas in with **Remember the Water Cycle** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: Where Should Our Rain Go?** — use what you learned on a real problem, and mark every guess as a guess.\n\nWhen every goal below has a checkmark, you are done — and you have earned it. 🌧️➡️☀️",
+        "body": "**Due:** (your teacher will tell you)\n\nTrace water through a landscape. Explain its changes and show why two drops may take different routes.\n\n1. Read **Journey of a Raindrop**. Use Read Aloud or another reading support if helpful.\n2. Open the **Glossary** and practice with the **Crossword** and **Word Scramble**.\n3. Use **The Four Moves of Water** chart as a model. Its headings group ideas; they do not give every drop a fixed order.\n4. Try **Sort It: Where Is the Water Going?**. Choose the process or storage shown by each card and explain your choice.\n5. Complete **Check Your Understanding**. Use mistakes to decide what to review.\n6. Use the **Sentence Frames** to explain two water pathways.\n7. Open **Remember the Water Cycle**. Create a cue and explain one limit of your model.\n8. Finish **Design Challenge: Where Should Our Rain Go?**. Make a proposal for the fictional schoolyard. Separate evidence from assumptions.\n\nYou may write, speak, draw, or use your communication device to explain your thinking.",
         "objectives": [
           {
             "id": "wc-goal-crossword",
@@ -44,6 +63,18 @@
             "id": "wc-goal-teach",
             "label": "I taught someone at home one new word",
             "kind": "manual"
+          },
+          {
+            "id": "wc-goal-memory",
+            "label": "I made a memory cue and explained its limits",
+            "kind": "manual",
+            "resourceRef": "wc-memory"
+          },
+          {
+            "id": "wc-goal-challenge",
+            "label": "I supported my schoolyard proposal with evidence",
+            "kind": "manual",
+            "resourceRef": "wc-challenge"
           }
         ]
       },
@@ -54,8 +85,8 @@
       "type": "simplified",
       "title": "Journey of a Raindrop",
       "timestamp": "2026-07-20T00:00:01.000Z",
-      "data": "## Journey of a Raindrop\n\nRight now, the Sun is lifting water into the sky — and it does not even touch it. Sunlight warms oceans, lakes, and puddles until some of the water changes from a liquid into an invisible gas called **water vapor**. This change is called **evaporation**. You have seen its results every time a puddle \"disappears\" on a sunny sidewalk. The puddle did not vanish. It moved.\n\nPlants join in, too. Water travels up from the roots and escapes through tiny holes in the leaves — a process called **transpiration**. A single large tree can send hundreds of liters of water into the air on a hot day, like a slow, silent fountain.\n\nHigh in the sky, the air is much colder. As water vapor cools, its molecules slow down and gather on tiny specks of dust and salt, changing back into liquid — billions of droplets so small they float. This is **condensation**, and a cloud is exactly that: a crowd of floating droplets, plus tiny ice crystals when the cloud is cold enough. A cloud is not made of smoke or cotton. It is water you can fly through.\n\nInside a cloud, droplets bump into each other and merge, growing heavier and heavier. When they grow too heavy for the rising air to keep them up, gravity wins. Water falls as rain, snow, sleet, or hail — all of these are **precipitation**. Whether you get rain or snow depends mostly on how cold the air is on the way down.\n\nWhere does the fallen water go? Some of it flows downhill across the surface as **runoff**, joining streams and rivers that carry it back toward the ocean. Some soaks into the ground and becomes **groundwater**, filling the spaces between soil and rock like water filling a sponge. Lakes, rivers, oceans, and underground layers store the water in **collection** — until the Sun lifts it again.\n\nHere is the amazing part: Earth almost never gets new water. The same water has been evaporating, condensing, falling, and collecting for about **four billion years**. The water in your water bottle may once have been in a dinosaur's pond, a Roman fountain, or a cloud over the ocean. The water cycle is Earth's original recycling system — powered by the Sun, pulled by gravity, and it never stops.",
-      "meta": "6th Grade • Leveled reading • ~360 words",
+      "data": "## Journey of a Raindrop\n\nA puddle gets smaller on a sunny day. Where did the water go? Some liquid water changes into an invisible gas called **water vapor**. This change is **evaporation**. Energy is needed for it. Sunlight supplies much of that energy in Earth's water cycle, but water can evaporate at night too.\n\nPlants take up water through their roots. Water vapor leaves through tiny pores in their leaves. This is **transpiration**. The amount depends on the plant and its surroundings.\n\nAs moist air cools enough, some vapor can change into liquid droplets. This is **condensation**. Tiny particles in the air help droplets form. Condensation also happens on cold surfaces near the ground, such as the outside of a cold glass.\n\nClouds contain tiny water droplets, ice crystals, or both. Water vapor itself is invisible. Drops and ice particles can grow inside clouds. When particles fall through the air and reach the ground, we call this **precipitation**. Rain, snow, sleet, and hail are examples. Their form depends on conditions in the cloud and the air below it.\n\nAfter rain, some water flows over the land as **runoff**. It may enter streams, lakes, or drains. Some water enters soil through infiltration. Part can stay as soil moisture and be used by plants or evaporate. Another part can move deeper and recharge **groundwater**.\n\nGroundwater is water in the saturated zone below the water table. There, water fills the pores and cracks in soil or rock. Soil above that zone can hold both air and water. Water soaking into soil does not all become groundwater at once. Groundwater can move and flow into streams; it is not a still underground lake everywhere.\n\nIn this lesson, **collection** means water gathering or being stored. Oceans, lakes, rivers, soil, groundwater, and ice hold water for different lengths of time. **Gravity** helps water fall and flow downhill. Solar energy helps drive evaporation. Wind also moves water through the atmosphere.\n\nThe water **cycle** connects many routes. It has no single starting point or fixed order for every drop. Rain can return to the air from a puddle without going through a river. Water in ice may stay there much longer. We can trace possible journeys, but this lesson cannot tell the exact age or past route of the water in a bottle.",
+      "meta": "6th Grade • Leveled reading • connected pathways",
       "imageSlot": "wc-img-cycle-diagram"
     },
     {
@@ -66,12 +97,12 @@
       "data": [
         {
           "term": "Evaporation",
-          "def": "The change of liquid water into water vapor (a gas), usually caused by heat from the Sun.",
+          "def": "The change of liquid water into water vapor. It needs energy and can happen without direct sunlight.",
           "tier": "Domain-Specific"
         },
         {
           "term": "Condensation",
-          "def": "The change of water vapor back into liquid droplets — this is how clouds form.",
+          "def": "The change of water vapor into liquid droplets, in air or on a surface.",
           "tier": "Domain-Specific"
         },
         {
@@ -81,7 +112,7 @@
         },
         {
           "term": "Collection",
-          "def": "Water gathering in oceans, lakes, rivers, and underground after it falls.",
+          "def": "Here, water gathering or being stored in places such as lakes, ice, soil, and the ground.",
           "tier": "Academic"
         },
         {
@@ -96,7 +127,7 @@
         },
         {
           "term": "Groundwater",
-          "def": "Water stored underground in the spaces between soil and rock.",
+          "def": "Water below the water table, where the pores and cracks in soil or rock are filled with water.",
           "tier": "Domain-Specific"
         },
         {
@@ -111,7 +142,7 @@
         },
         {
           "term": "Cycle",
-          "def": "A set of events that repeats in the same order, over and over, with no end.",
+          "def": "A repeating system of changes. Water can follow different routes within its cycle.",
           "tier": "Academic"
         }
       ],
@@ -129,7 +160,7 @@
           {
             "label": "UP",
             "bullets": [
-              "Evaporation — the Sun lifts water as invisible vapor",
+              "Evaporation — energy changes liquid water into invisible vapor",
               "Transpiration — plants release water from their leaves"
             ],
             "iconPrompt": "an upward arrow rising from a puddle toward the sun"
@@ -137,8 +168,8 @@
           {
             "label": "TOGETHER",
             "bullets": [
-              "Condensation — cooling turns vapor back into droplets",
-              "A cloud IS billions of floating droplets (and ice crystals when cold)"
+              "Condensation — vapor changes into liquid droplets",
+              "Clouds contain liquid droplets, ice crystals, or both"
             ],
             "iconPrompt": "tiny droplets gathering into a cloud"
           },
@@ -146,25 +177,26 @@
             "label": "DOWN",
             "bullets": [
               "Precipitation — rain, snow, sleet, or hail",
-              "Gravity wins when droplets grow too heavy"
+              "Gravity pulls falling drops and ice particles downward"
             ],
             "iconPrompt": "raindrops falling from a cloud"
           },
           {
             "label": "STORED",
             "bullets": [
-              "Runoff — flows over land into rivers",
-              "Groundwater — soaks between soil and rock",
-              "Collection — oceans, lakes, and ice hold it"
+              "Runoff — flows over land toward lower places",
+              "Infiltration — water enters soil; some stays as soil moisture",
+              "Groundwater — water fills pores and cracks below the water table",
+              "Collection — water gathers or is stored in many places"
             ],
             "iconPrompt": "a lake with an underground layer beneath it"
           },
           {
             "label": "REMEMBER",
             "bullets": [
-              "Earth almost never gets new water",
-              "Powered by the Sun, pulled by gravity",
-              "The cycle has no start and no end"
+              "Solar energy and gravity help drive water movement",
+              "Water can follow many routes and remain stored for different times",
+              "The cycle has no single start or fixed order for every drop"
             ],
             "iconPrompt": "a circular arrow loop"
           }
@@ -190,8 +222,8 @@
         ],
         "authorshipMode": "scaffolded",
         "reflectionLevel": "quick",
-        "reasoningRequired": false,
-        "sourceExcerpt": "Sunlight warms oceans, lakes, and puddles until some of the water changes from a liquid into an invisible gas called water vapor. This change is called evaporation. High in the sky, the air is much colder. As water vapor cools, its molecules slow down and gather on tiny specks of dust and salt, changing back into liquid. This is condensation. When droplets grow too heavy for the rising air to keep them up, gravity wins: precipitation. Lakes, rivers, oceans, and underground layers store the water in collection — until the Sun lifts it again.",
+        "reasoningRequired": true,
+        "sourceExcerpt": "After rain, some water flows over the land as runoff. It may enter streams, lakes, or drains. Some water enters soil through infiltration. Part can stay as soil moisture and be used by plants or evaporate. Another part can move deeper and recharge groundwater.\n\nGroundwater is water in the saturated zone below the water table. There, water fills the pores and cracks in soil or rock. Soil above that zone can hold both air and water. Water soaking into soil does not all become groundwater at once. Groundwater can move and flow into streams; it is not a still underground lake everywhere.",
         "lessonRef": {
           "resourceId": "wc-reading",
           "title": "Journey of a Raindrop"
@@ -199,24 +231,24 @@
         "cards": [
           {
             "id": "wc-ma-moves",
-            "target": "The four moves of water, in order: evaporation, condensation, precipitation, collection",
+            "target": "Four useful water-cycle terms, with more than one possible route",
             "essentialFacts": [
-              "Evaporation: the Sun's energy turns liquid water into invisible water vapor.",
-              "Condensation: cooling vapor gathers on tiny specks and becomes liquid droplets — that is a cloud.",
-              "Precipitation: droplets or ice crystals grow heavy and fall as rain, snow, sleet, or hail.",
-              "Collection: water gathers in oceans, lakes, rivers, ice, and underground until it evaporates again."
+              "Evaporation changes liquid water into vapor and needs energy.",
+              "Condensation changes water vapor into liquid droplets.",
+              "Precipitation is water falling from clouds and reaching the ground.",
+              "Collection groups examples of gathering and storage; not every drop follows a fixed sequence."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "acronym-acrostic",
             "mode": "scaffolded",
             "aiExample": "Every Cloud Pours Carefully. E-C-P-C: Evaporation, Condensation, Precipitation, Collection.",
-            "mapping": "Each capital letter is the first letter of one move, and the sentence keeps them in the order water actually takes: it rises (E), gathers (C), falls (P), and rests (C) before the loop starts over.",
+            "mapping": "E-C-P-C recalls four terms in a simple model. It is not a rule for the route of every drop. A puddle can evaporate without first joining a river.",
             "scaffoldStarter": "Every ____ Pours ____.",
             "scaffoldSteps": [
-              "Write the four moves in order and circle their first letters: E, C, P, C.",
-              "Choose a word for each letter that also hints at the move (a word about clouds for C, about falling for P).",
-              "Read your sentence out loud and check that the order still matches rising, gathering, falling, resting."
+              "Write E, C, P, C and name each term.",
+              "Choose a cue word for each letter.",
+              "Describe a different possible pathway and explain the limit of your cue."
             ],
             "coachPrompts": [
               "Which letter is repeated, and how will your sentence keep the two C words from swapping places?",
@@ -225,29 +257,39 @@
             "studentPrompt": "Write your own four-word sentence for E-C-P-C, or change the example so it sounds like you.",
             "reasoningPrompt": "Explain how each word in your sentence leads back to one move of the water cycle.",
             "hookFact": {
-              "text": "Earth almost never gets new water: the same water has cycled through these four moves for about four billion years.",
-              "sourceTitle": "Journey of a Raindrop (this lesson)"
+              "text": "The water cycle connects many pathways and has no single starting point.",
+              "sourceTitle": "Journey of a Raindrop (revised lesson)"
+            },
+            "factReview": {
+              "status": "pending-educator-review",
+              "sources": [
+                "https://www.usgs.gov/water-science-school/science/infiltration-and-water-cycle",
+                "https://www.usgs.gov/water-science-school/science/aquifers-and-groundwater",
+                "https://water.usgs.gov/edu/activity-watercyclebegin.html",
+                "https://www.nesdis.noaa.gov/our-environment/clouds"
+              ],
+              "factsHash": "d93caf6cf929eaca77aa41c34e6bb575473408fbc203e71ae0060afaa7fd39e6"
             }
           },
           {
             "id": "wc-ma-vapor",
             "target": "Water vapor is invisible; the white mist you can see is already liquid droplets",
             "essentialFacts": [
-              "Water vapor is a gas and cannot be seen.",
-              "Steam, fog, breath clouds, and cloud puffs are visible because they are tiny liquid droplets, not vapor.",
-              "Right above a kettle spout there is a short clear gap: that is where the real vapor is."
+              "Water vapor is invisible gas.",
+              "The visible mist in the kettle illustration is made of tiny liquid droplets. Clouds may contain liquid droplets, ice crystals, or both.",
+              "Cooling can change some vapor into droplets. The picture illustrates a process; it cannot show every invisible molecule."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "visual-association",
             "mode": "scaffolded",
             "aiExample": "Picture a kettle. The empty-looking gap just above the spout is the invisible vapor. The white plume only begins where the air is cool enough for droplets to form. Clear gap = gas. White cloud = liquid.",
             "mapping": "The picture puts the two ideas side by side in one place you have seen: the gap stands for vapor you cannot see, and the plume stands for droplets you can.",
             "scaffoldStarter": "When I picture ____, the invisible part is ____ and the white part is ____.",
             "scaffoldSteps": [
-              "Choose a scene where mist appears: a kettle, your breath on a cold day, a hot shower.",
-              "Mark where the vapor is (invisible) and where the droplets are (white).",
-              "Say the rule the picture proves: if you can see it, it is already liquid."
+              "Choose an illustration of a kettle, cold breath, or shower mist.",
+              "Distinguish the invisible gas from visible droplets.",
+              "Explain why visible ice crystals are also water, so visible water is not always liquid."
             ],
             "coachPrompts": [
               "Where exactly in your picture is the vapor, and how do you know it is there if you cannot see it?",
@@ -256,39 +298,59 @@
             "studentPrompt": "Describe or sketch your own scene that separates invisible vapor from visible droplets.",
             "reasoningPrompt": "How does your picture help you remember that vapor is invisible?",
             "hookFact": {
-              "text": "The cloudy stuff above a boiling pot is not steam in the scientific sense; real water vapor is completely invisible.",
-              "sourceTitle": "Journey of a Raindrop (this lesson)"
+              "text": "Water vapor is invisible; clouds can contain liquid droplets, ice crystals, or both.",
+              "sourceTitle": "Journey of a Raindrop (revised lesson)"
+            },
+            "factReview": {
+              "status": "pending-educator-review",
+              "sources": [
+                "https://www.usgs.gov/water-science-school/science/infiltration-and-water-cycle",
+                "https://www.usgs.gov/water-science-school/science/aquifers-and-groundwater",
+                "https://water.usgs.gov/edu/activity-watercyclebegin.html",
+                "https://www.nesdis.noaa.gov/our-environment/clouds"
+              ],
+              "factsHash": "e736fdc8412b66503293d4d53e0ddae818ffd35ce9678bcb38a23a63fab26ab3"
             }
           },
           {
             "id": "wc-ma-paths",
-            "target": "After rain, water takes two routes: runoff over the surface, or soaking in to become groundwater",
+            "target": "Distinguish runoff, infiltration, soil moisture, and groundwater",
             "essentialFacts": [
-              "Runoff flows over the land surface into streams and rivers.",
-              "Groundwater soaks into the ground and fills the spaces between soil and rock.",
-              "Both routes end in collection: rivers carry water toward the ocean, and groundwater stores it underground."
+              "Runoff moves over the land surface. Infiltration is water entering soil.",
+              "Some infiltrated water stays as soil moisture; some is used by plants or evaporates.",
+              "Some water moves deeper and recharges groundwater below the water table."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "story-chain",
             "mode": "scaffolded",
-            "aiExample": "A raindrop lands on a hill and meets a fork in the road. Its twin slides downhill over the grass, joins a stream, and rides all the way to the sea (runoff). It sinks between the soil grains instead, squeezes down past the roots, and settles into the gaps between rocks, where a well finds it years later (groundwater).",
-            "mapping": "The two twins keep the two routes apart in your memory: one stays on top and moves fast toward the ocean, one goes underneath and moves slowly into storage. Both are collection in the end.",
-            "scaffoldStarter": "A raindrop lands on ____. One twin ____ (runoff). The other twin ____ (groundwater).",
+            "aiExample": "Three drops land on a hill. One runs along the surface into a stream. One enters soil and is later taken up by a plant. One moves deeper into the saturated zone. These are possible routes, not predictions for every hill.",
+            "mapping": "The first drop shows runoff. Both other drops infiltrate. Only the drop reaching the saturated zone joins groundwater; entering soil alone does not tell us that.",
+            "scaffoldStarter": "One drop runs over ____. A second enters soil and ____. A third reaches ____ below the water table.",
             "scaffoldSteps": [
-              "Pick a place the rain lands: a roof, a field, a hillside.",
-              "Send one twin over the surface and name where it ends up.",
-              "Send the other twin into the ground and name what it fills."
+              "Choose a fictional landscape.",
+              "Trace a surface route and two possible routes through soil.",
+              "Mark which route reaches groundwater and what remains uncertain."
             ],
             "coachPrompts": [
-              "What decides whether more water runs off or soaks in at your chosen spot?",
-              "Where does each twin finally rest, and why does that count as collection?"
+              "What evidence would show water stayed in soil rather than reaching the water table?",
+              "How could soil conditions change the balance of runoff and infiltration?"
             ],
-            "studentPrompt": "Write your own two-twin story for a place you know.",
-            "reasoningPrompt": "How does each twin's path match the definition of runoff or groundwater?",
+            "studentPrompt": "Draw, describe, or act out three possible drop journeys.",
+            "reasoningPrompt": "Explain why infiltration and groundwater are different ideas.",
             "hookFact": {
-              "text": "Groundwater fills the spaces between soil and rock like water filling a sponge.",
-              "sourceTitle": "Journey of a Raindrop (this lesson)"
+              "text": "Soil above the water table can contain both air and water; the saturated zone has water-filled pores and cracks.",
+              "sourceTitle": "Journey of a Raindrop (revised lesson)"
+            },
+            "factReview": {
+              "status": "pending-educator-review",
+              "sources": [
+                "https://www.usgs.gov/water-science-school/science/infiltration-and-water-cycle",
+                "https://www.usgs.gov/water-science-school/science/aquifers-and-groundwater",
+                "https://water.usgs.gov/edu/activity-watercyclebegin.html",
+                "https://www.nesdis.noaa.gov/our-environment/clouds"
+              ],
+              "factsHash": "106d43fb27b8affb6d6d25a83ecf8b0e663a26dfc75dce5b9bd759c5b7dc4836"
             }
           }
         ]
@@ -308,7 +370,7 @@
           },
           {
             "id": "c-cond",
-            "label": "Forming CLOUDS (Condensation)",
+            "label": "Becoming DROPLETS (Condensation)",
             "color": "bg-indigo-500"
           },
           {
@@ -318,7 +380,7 @@
           },
           {
             "id": "c-collect",
-            "label": "Being STORED (Collection)",
+            "label": "Gathering or STORED (Collection)",
             "color": "bg-emerald-500"
           }
         ],
@@ -355,7 +417,7 @@
           },
           {
             "id": "i7",
-            "content": "Rainwater soaks deep between soil and rock",
+            "content": "Water fills pores and cracks below the water table",
             "categoryId": "c-collect"
           },
           {
@@ -386,7 +448,7 @@
         "questions": [
           {
             "type": "mcq",
-            "question": "A puddle disappears on a sunny day. What actually happened to the water?",
+            "question": "A shallow dish holds water on a sunny day. No water leaks or spills, but its level falls. What happened?",
             "options": [
               "It soaked down into the concrete and stayed there as liquid",
               "The Sun's heat destroyed the water completely",
@@ -410,14 +472,14 @@
           },
           {
             "type": "mcq",
-            "question": "Why does condensation happen high in the sky?",
+            "question": "Why can droplets form on the outside of a cold glass?",
             "options": [
-              "The sky pushes water droplets together until they stick",
-              "Water vapor cools there and turns back into liquid",
-              "There is no gravity high in the sky",
-              "Clouds attract water from the ocean"
+              "The glass pushes dry air into tiny drops",
+              "Water vapor cools at the surface and becomes liquid",
+              "Gravity disappears near cold objects",
+              "Water is made from the solid glass"
             ],
-            "correctAnswer": "Water vapor cools there and turns back into liquid",
+            "correctAnswer": "Water vapor cools at the surface and becomes liquid",
             "conceptLabel": "condensation and clouds"
           },
           {
@@ -434,26 +496,26 @@
           },
           {
             "type": "mcq",
-            "question": "About how old is the water you drank today?",
+            "question": "Rain lands in a puddle and later evaporates. What does this show?",
             "options": [
-              "About four billion years — Earth keeps recycling the same water",
-              "Brand new, because rain creates fresh water each storm",
-              "Only a few hundred years old, recycled since colonial times",
-              "As old as the treatment plant that cleaned it"
+              "Water can return to the air without first reaching a river",
+              "Every drop must visit the ocean before it can evaporate",
+              "Water in a puddle cannot be part of the water cycle",
+              "Every drop follows the same route in the same amount of time"
             ],
-            "correctAnswer": "About four billion years — Earth keeps recycling the same water",
-            "conceptLabel": "water conservation cycle"
+            "correctAnswer": "Water can return to the air without first reaching a river",
+            "conceptLabel": "multiple water pathways"
           },
           {
             "type": "shortAnswer",
-            "question": "Explain the difference between runoff and groundwater. Where does each kind of water go?",
-            "expectedAnswer": "Runoff flows over the surface of the land into streams and rivers (and toward the ocean). Groundwater soaks into the ground and is stored in spaces between soil and rock.",
+            "question": "Rain enters soil. Does all of it immediately become groundwater? Explain how runoff, soil moisture, and groundwater differ.",
+            "expectedAnswer": "No. Runoff flows over the land. Infiltrated water may stay as soil moisture, be used by plants, or evaporate. Some moves deeper to recharge groundwater below the water table, where pores and cracks are filled with water.",
             "conceptLabel": "collection and storage"
           },
           {
             "type": "shortAnswer",
-            "question": "The water cycle is powered by two things: one lifts water up, one pulls it down. Name both and say what each one does.",
-            "expectedAnswer": "The Sun powers evaporation by warming water so it rises as vapor; gravity pulls precipitation down to Earth and pulls rivers toward the ocean.",
+            "question": "How do solar energy and gravity help drive the water cycle?",
+            "expectedAnswer": "Solar energy helps drive evaporation. Gravity pulls precipitation down and helps water flow downhill. Water vapor mixes with air; the Sun does not directly pull water upward.",
             "conceptLabel": "cycle energy sources"
           }
         ],
@@ -486,7 +548,7 @@
             "text": "Precipitation can fall as ____, ____, or ____, depending on ____."
           },
           {
-            "text": "After rain falls, some water becomes runoff, which means it ____, and some becomes groundwater, which means it ____."
+            "text": "After rain, runoff ____. Water entering soil may ____. Groundwater differs from soil moisture because ____."
           },
           {
             "text": "The water cycle never makes new water; instead, it ____ the same water because ____."
@@ -506,20 +568,20 @@
       "timestamp": "2026-07-20T00:00:06.000Z",
       "data": [
         {
-          "question": "Is it true I might be drinking dinosaur water? 🦕",
-          "answer": "Pretty much! Earth has been recycling the same water for about four billion years, so the molecules in your bottle have been through countless clouds, rivers, and yes — probably a dinosaur or two."
+          "question": "Can we know exactly where the water in my bottle has been?",
+          "answer": "Not from this lesson. Earth has cycled water for a very long time, but a bottle contains a mixture. We can suggest possible pathways without claiming a known age or a visit to a particular dinosaur."
         },
         {
           "question": "Why doesn't the ocean overflow if rivers keep pouring into it?",
-          "answer": "Because the Sun is constantly lifting water OUT of the ocean by evaporation — far more than rivers pour in. Most of that vapor falls right back on the ocean as rain, and the rest falls on land and returns through rivers and groundwater. Over a year, what leaves and what comes back balance out."
+          "answer": "Evaporation removes water from the ocean; rain and flow from land add water. These flows are large and vary over time. They need not balance exactly in each year, and ocean level can change."
         },
         {
           "question": "Why is rain fresh water when it evaporates from the salty ocean? 🧂",
-          "answer": "Great catch — when water evaporates, the salt gets left behind. Only the water molecules rise as vapor, so clouds and rain are fresh water. (Rain can pick up tiny traces of salt from sea-spray specks in the air, but far too little to taste.)"
+          "answer": "Dissolved salt stays behind when water evaporates. Rain can pick up particles and dissolved substances from the air. Low salt does not mean rainwater is safe to drink."
         },
         {
-          "question": "Can the water cycle ever just stop?",
-          "answer": "Not while the Sun shines and gravity pulls. It would take losing one of those to stop it — and neither is going anywhere for billions of years."
+          "question": "Does every drop follow the four chart headings in order?",
+          "answer": "No. The chart is a simple model. A puddle can evaporate before its water reaches a stream. Water may remain in ice, soil, or groundwater for very different lengths of time."
         },
         {
           "question": "Where does my breath fog go on a cold day?",
@@ -541,25 +603,25 @@
       "data": {
         "schemaVersion": 6,
         "title": "Where Should Our Rain Go?",
-        "instructions": "Use what you learned about evaporation, runoff, groundwater, and collection to design a plan for the rain that lands on your school grounds. Frame the challenge, weigh options, build a proposal, test it against the facts, and revise.",
+        "instructions": "Use the fictional schoolyard brief to propose a rainwater plan. Compare options, label your sketch, and distinguish observations from assumptions. This is a classroom proposal, not a construction task.",
         "selectionMode": "manual",
         "family": "design",
-        "fitReason": "The lesson explains the two routes rain can take after it lands. A design brief asks students to steer that choice on purpose for a real place, which is where the runoff-versus-groundwater idea earns its keep.",
+        "fitReason": "A design proposal uses evidence about runoff, infiltration, and storage while keeping groundwater recharge distinct from water entering soil.",
         "agencyMode": "co-framed",
         "scope": "standard",
         "brief": {
           "family": "design",
-          "context": "After a heavy rain, water pools on the paved play area, then streams across the parking lot into the street drain. The garden beds near the fence stay dry for days. The principal has asked a student team for ideas before the district repaves the lot next summer.",
+          "context": "Fictional case: after heavy rain, water pools on a paved school play area and flows toward a street drain. Nearby garden beds later become dry. The principal asks a student team to compare possible changes before any real design work.",
           "role": "Schoolyard water team",
           "audience": "The principal and the facilities manager",
           "drivingQuestion": "How should our school handle the rain that lands on the paved area so that more of it soaks in or gets stored instead of running straight into the street?",
           "seedDirection": "Start from the two routes in the lesson: where on the grounds could runoff be slowed down, and where could water be given a chance to infiltrate?",
           "lockedLessonFacts": [
-            "After rain, some water flows over the surface as runoff and some soaks into the ground as groundwater.",
-            "Runoff moves downhill and gathers in streams, rivers, and drains; pavement gives it nowhere to soak in.",
-            "Groundwater fills the spaces between soil and rock and can be reached by plant roots and wells.",
-            "Water stored in soil, ponds, or tanks is part of collection, and the Sun eventually evaporates some of it again.",
-            "Gravity pulls water downhill, so the slope of a surface decides where runoff ends up."
+            "Runoff moves over land; infiltration is water entering soil.",
+            "Some infiltrated water remains as soil moisture and may be used by plants or evaporate.",
+            "Some water can move deeper to recharge groundwater in the saturated zone below the water table.",
+            "Slope, soil, land cover, and how wet the ground already is affect water pathways.",
+            "A sketch of water entering soil does not prove that the water reaches an aquifer."
           ],
           "openQuestions": [
             "How much of the paved area drains toward the street, and how much toward the beds?",
@@ -581,20 +643,30 @@
             "Every claim about where water will go is tied to a lesson fact or marked as an assumption"
           ],
           "constraints": [
-            "No digging near buried utility lines",
-            "Must not send water toward the building foundation",
-            "Budget for a first version is small; the paving job is the main opportunity",
-            "Nothing that creates standing water for more than two days"
+            "Make a paper or digital proposal; do not dig, alter drains, or build anything.",
+            "Use supplied observations or a teacher-approved classroom model.",
+            "Keep water away from building foundations in the proposal.",
+            "Mark assumptions and identify what qualified facilities staff would need to check."
           ],
           "deliverable": "A one-page proposal with a labeled sketch of the grounds showing where rain lands, where you want it to go, and one change that slows runoff or lets water soak in, plus a short explanation of the water-cycle reasoning behind it.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false,
+          "factReview": {
+            "status": "pending-educator-review",
+            "sources": [
+              "https://www.usgs.gov/water-science-school/science/infiltration-and-water-cycle",
+              "https://www.usgs.gov/water-science-school/science/aquifers-and-groundwater",
+              "https://water.usgs.gov/edu/activity-watercyclebegin.html",
+              "https://www.nesdis.noaa.gov/our-environment/clouds"
+            ],
+            "factsHash": "6b3f880e79a028bc987628e1f16954c4307afead033a3cc51109ca7aa4a2db40"
+          }
         },
         "supports": {
           "parallelExample": {
-            "context": "A town noticed its new shopping center flooded the road below it every storm.",
-            "move": "Instead of a bigger drain, engineers cut the parking lot into sections that tilt toward planted strips, so runoff has to cross soil before it reaches the road. They measured how fast the soil soaked up water before deciding how wide the strips needed to be.",
-            "whyItHelps": "It shows the same move you are making: change where gravity takes the water, and give it soil to infiltrate. It also shows that measuring the soil came before designing the fix."
+            "context": "Fictional example: a class compares a smooth tray with a soil-filled tray using the same amount of water.",
+            "move": "They record water leaving each tray and water retained in the soil. They discuss spill and measurement error. Water held in a shallow tray is evidence about storage, not proof of groundwater recharge.",
+            "whyItHelps": "Comparing the same input helps test runoff and storage claims. Naming what the model cannot show keeps the conclusion bounded."
           },
           "frameStarter": "Right now rain that lands on ____ runs toward ____ because ____. We want more of it to ____.",
           "frameChoices": [
@@ -609,8 +681,8 @@
             "Which glossary word describes each arrow on your sketch?"
           ]
         },
-        "coachHint": "Trace the slope first. Everything else in the design follows from where gravity already sends the water.",
-        "sourceExcerpt": "Some of it flows downhill across the surface as runoff, joining streams and rivers that carry it back toward the ocean. Some soaks into the ground and becomes groundwater, filling the spaces between soil and rock like water filling a sponge.",
+        "coachHint": "Trace surface flow, then distinguish water retained in soil from water that might recharge groundwater.",
+        "sourceExcerpt": "After rain, some water flows over the land as runoff. It may enter streams, lakes, or drains. Some water enters soil through infiltration. Part can stay as soil moisture and be used by plants or evaporate. Another part can move deeper and recharge groundwater.\n\nGroundwater is water in the saturated zone below the water table. There, water fills the pores and cracks in soil or rock. Soil above that zone can hold both air and water. Water soaking into soil does not all become groundwater at once. Groundwater can move and flow into streams; it is not a still underground lake everywhere.",
         "lessonRef": {
           "resourceId": "wc-reading",
           "title": "Journey of a Raindrop"

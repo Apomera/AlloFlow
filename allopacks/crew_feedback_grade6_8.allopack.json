@@ -8,7 +8,8 @@
     "gradeLevel": "6th-8th Grade",
     "createdAt": "2026-09-13T18:00:00.000Z",
     "imageShotList": "allopacks/crew_feedback_grade6_8.IMAGES.md",
-    "standards": "King Middle School HOWL Perseverance (self-assess work using targets and rubrics; learn from feedback and revise); CASEL Self-Awareness (having a growth mindset; examining prejudices and biases about one's own ability); CASEL Self-Management (setting personal and collective goals; exhibiting self-discipline); EL Education Crew (Crew Launch: learning targets and HOWL reflection); Maine DOE PBIS Tier 1 (teaching academic perseverance as an expected behavior)"
+    "standards": "King Middle School HOWL Perseverance (self-assess work using targets and rubrics; learn from feedback and revise); CASEL Self-Awareness (having a growth mindset; examining prejudices and biases about one's own ability); CASEL Self-Management (setting personal and collective goals; exhibiting self-discipline); EL Education Crew (Crew Launch: learning targets and HOWL reflection); Maine DOE PBIS Tier 1 (teaching academic perseverance as an expected behavior)",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Self-assessment, feedback, and revision",
   "history": [
@@ -48,7 +49,7 @@
       "title": "Feedback Is Information, Not a Verdict",
       "timestamp": "2026-09-13T18:00:00.000Z",
       "data": "## Feedback Is Information, Not a Verdict\n\n**HOWL: \"I persevere to produce high quality work.\"**\n\nTwo Perseverance behaviors in the King **HOWLs** go together: **assess** your work using **targets** and **rubrics**, and learn from **feedback** and **revise**. Both are about the same skill. Looking at your own work honestly, before and after someone else does, and then changing it.\n\nFeedback is hard to hear. When a teacher hands back a draft with comments, a lot of people feel one of two things. Either \"this means I am bad at this,\" or \"this teacher just does not like my work.\" Both feelings are normal. Both are also wrong about what feedback is. Feedback is information about the **gap** between where the work is and where the target is. It is not a **verdict** about you.\n\nThat is why targets and rubrics matter. A learning target says what the work is supposed to do. A rubric says what each level of doing it looks like. When you have those in front of you, you can check your own work before anyone else sees it. That is self-assessment. It turns feedback from a surprise into a confirmation. You already knew the **evidence** was thin in paragraph two. The teacher just agreed.\n\nHere is a fictional example. Leila turns in a science explanation. It comes back with three comments: \"claim is clear,\" \"evidence is missing for the second part,\" \"reasoning needs to connect the evidence to the claim.\" Leila's first reaction is a sinking feeling. Then she opens the rubric. The rubric has three rows: claim, evidence, reasoning. She rates her own draft on each row. Claim, level 3. Evidence, level 2. Reasoning, level 2. The teacher's comments and her own ratings match. Now the comments are not a judgment. They are a map. She adds one piece of evidence for the second part and one sentence connecting it to the claim. That is the whole revision. Twenty minutes.\n\nRevising is not **redoing**. Redoing means starting over because the first try felt bad. Revising means keeping what works and changing what the target says to change. Most revisions are small. The people who revise well are not the people with the most talent. They are the people who can look at a rubric row, look at their work, and say \"that one, not that one\" without it feeling like an attack.\n\nThere is a thought that gets in the way: \"I cannot do this.\" The growth-minded version is one word longer: \"I cannot do this **yet**.\" That word is not a slogan. It is a claim about how brains work. Skills are built by doing the hard thing slightly wrong and then adjusting. Feedback is the adjusting part. Skipping it does not protect you. It just stops the building.\n\nThis week you practice rating your own work against a rubric before you get feedback, and then treating the feedback as a map. You will use the HOWL Tracker in the SEL Hub to rate your own perseverance the same way: with evidence, not with a feeling.",
-      "meta": "6th-8th Grade • Leveled reading • ~510 words"
+      "meta": "6th-8th Grade • Leveled reading"
     },
     {
       "id": "cf-glossary",
@@ -423,7 +424,7 @@
               "Now the comments are not a judgment. They are a map."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "rhyme-rhythm",
             "mode": "scaffolded",
             "aiExample": "Find the gap, read the map, skip the verdict, close the gap. Say it twice and the rhyme carries the order: gap first, map second, verdict never.",
@@ -452,7 +453,7 @@
               "Skills are built by doing the hard thing slightly wrong and then adjusting."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "keyword-association",
             "mode": "scaffolded",
             "aiExample": "YET = not YET built. A house that is not built yet is still a house that is going to exist. \"I cannot do this yet\" means the skill is under construction, not cancelled.",
@@ -526,7 +527,7 @@
           ],
           "deliverable": "A rubric with your ratings and evidence, your written prediction, a short comparison to the real feedback, and the revised piece (or the revision plan if the feedback is not back yet).",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

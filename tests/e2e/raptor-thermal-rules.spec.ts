@@ -86,12 +86,12 @@ test.describe('Raptor thermal mission rules',()=>{
     await page.getByRole('button',{name:'Scenic view',exact:true}).click();await expect(cue).toBeHidden();
     await page.getByRole('button',{name:'Scenic view',exact:true}).click();await expect(cue).toBeVisible();
     await page.emulateMedia({reducedMotion:'reduce'});
-    await page.setViewportSize({width:440,height:900});await page.addStyleTag({content:'#wrap{width:420px}'});await page.waitForFunction(()=>document.querySelector<HTMLCanvasElement>('[data-raptor-canvas]')!.width<420);
+    await page.setViewportSize({width:440,height:900});await page.addStyleTag({content:'#wrap{width:420px}'});await page.waitForFunction(()=>document.querySelector<HTMLCanvasElement>('[data-raptor-canvas]')!.width<420,null,{polling:50});
     await canvas.evaluate((c:any)=>{c._rhCommand('view');(window as any).stepHunt(25);});
     const bounds=await cue.evaluate(el=>{const r=el.getBoundingClientRect(),host=el.parentElement!.getBoundingClientRect();return {left:r.left-host.left,right:r.right-host.left,width:host.width,height:r.height};});
     expect(bounds.left).toBeGreaterThanOrEqual(0);expect(bounds.right).toBeLessThanOrEqual(bounds.width);expect(bounds.height).toBeGreaterThan(0);
     await page.locator('[data-raptor-flight-stage]').screenshot({path:'scratch/raptor-flight-review/thermal-guidance-paused-420.png',timeout:90000});
-    await page.getByRole('button',{name:'Restart this flight',exact:true}).click();await page.waitForFunction(()=>!!(document.querySelector('[data-raptor-canvas]') as any)?._rhSnapshot);
+    await page.getByRole('button',{name:'Restart this flight',exact:true}).click();await page.waitForFunction(()=>!!(document.querySelector('[data-raptor-canvas]') as any)?._rhSnapshot,null,{polling:50});
     await page.evaluate(()=>{(window as any).advanceHunt(150);});await expect(cue).toContainText('FIND LIFT');await expect(page.locator('.rh-target-tracker')).toBeHidden();
     expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
   });

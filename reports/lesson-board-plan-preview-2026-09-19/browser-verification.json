@@ -1,0 +1,544 @@
+{
+  "passed": true,
+  "planPreview": true,
+  "results": [
+    {
+      "theme": "light",
+      "width": 1280,
+      "scans": [
+        {
+          "label": "unbuilt construction landmarks",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "two routes with construction order tradeoffs",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "explained plan tradeoffs and remaining mission goals",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "projected map navigation without real moves",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "projected location list",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "outdated plan while a real activity is open",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "built shortcut and active resource project",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "fresh projection from actual construction progress",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "location list with equivalent construction effects",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "pictures hidden with construction information retained",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "sandbox in focused play",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "reload restores actual world and clears temporary plans",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "sandboxDoesNotWrite": true,
+      "projectionsMatchActualEngine": true,
+      "firstMoveInspectionOnly": true,
+      "stalePlanLocked": true,
+      "shortcutGeometry": {
+        "actual": [
+          93.5703125,
+          1054.8515625,
+          490.53125,
+          387.6484375
+        ],
+        "expected": [
+          93.5703125,
+          1054.8515625,
+          490.53125,
+          387.6484375
+        ]
+      },
+      "listAndImageFreeEquivalent": true,
+      "temporaryPlans": true
+    },
+    {
+      "theme": "light",
+      "width": 390,
+      "scans": [
+        {
+          "label": "unbuilt construction landmarks",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "two routes with construction order tradeoffs",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "explained plan tradeoffs and remaining mission goals",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "projected map navigation without real moves",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "projected location list",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "outdated plan while a real activity is open",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "built shortcut and active resource project",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "fresh projection from actual construction progress",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "location list with equivalent construction effects",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "pictures hidden with construction information retained",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "sandbox in focused play",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "reload restores actual world and clears temporary plans",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "sandboxDoesNotWrite": true,
+      "projectionsMatchActualEngine": true,
+      "firstMoveInspectionOnly": true,
+      "stalePlanLocked": true,
+      "shortcutGeometry": {
+        "actual": [
+          165,
+          1258.21875,
+          250.5,
+          631.6953125
+        ],
+        "expected": [
+          165,
+          1258.21875,
+          250.5,
+          631.6953125
+        ]
+      },
+      "listAndImageFreeEquivalent": true,
+      "temporaryPlans": true
+    },
+    {
+      "theme": "light",
+      "width": 320,
+      "scans": [
+        {
+          "label": "unbuilt construction landmarks",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "two routes with construction order tradeoffs",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "explained plan tradeoffs and remaining mission goals",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "projected map navigation without real moves",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "projected location list",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "outdated plan while a real activity is open",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "built shortcut and active resource project",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "fresh projection from actual construction progress",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "location list with equivalent construction effects",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "pictures hidden with construction information retained",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "sandbox in focused play",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "reload restores actual world and clears temporary plans",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "forced colors and reduced motion",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "200 percent text",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "sandboxDoesNotWrite": true,
+      "projectionsMatchActualEngine": true,
+      "firstMoveInspectionOnly": true,
+      "stalePlanLocked": true,
+      "shortcutGeometry": {
+        "actual": [
+          130,
+          1633.40625,
+          198,
+          834.8203125
+        ],
+        "expected": [
+          130,
+          1633.40625,
+          198,
+          834.8203125
+        ]
+      },
+      "listAndImageFreeEquivalent": true,
+      "temporaryPlans": true
+    },
+    {
+      "theme": "dark",
+      "width": 1280,
+      "scans": [
+        {
+          "label": "unbuilt construction landmarks",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "two routes with construction order tradeoffs",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "explained plan tradeoffs and remaining mission goals",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "projected map navigation without real moves",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "projected location list",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "outdated plan while a real activity is open",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "built shortcut and active resource project",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "fresh projection from actual construction progress",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "location list with equivalent construction effects",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "pictures hidden with construction information retained",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "sandbox in focused play",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "reload restores actual world and clears temporary plans",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "sandboxDoesNotWrite": true,
+      "projectionsMatchActualEngine": true,
+      "firstMoveInspectionOnly": true,
+      "stalePlanLocked": true,
+      "shortcutGeometry": {
+        "actual": [
+          93.5703125,
+          1054.8515625,
+          490.53125,
+          387.6484375
+        ],
+        "expected": [
+          93.5703125,
+          1054.8515625,
+          490.53125,
+          387.6484375
+        ]
+      },
+      "listAndImageFreeEquivalent": true,
+      "temporaryPlans": true
+    },
+    {
+      "theme": "dark",
+      "width": 390,
+      "scans": [
+        {
+          "label": "unbuilt construction landmarks",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "two routes with construction order tradeoffs",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "explained plan tradeoffs and remaining mission goals",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "projected map navigation without real moves",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "projected location list",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "outdated plan while a real activity is open",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "built shortcut and active resource project",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "fresh projection from actual construction progress",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "location list with equivalent construction effects",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "pictures hidden with construction information retained",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "sandbox in focused play",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "reload restores actual world and clears temporary plans",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "sandboxDoesNotWrite": true,
+      "projectionsMatchActualEngine": true,
+      "firstMoveInspectionOnly": true,
+      "stalePlanLocked": true,
+      "shortcutGeometry": {
+        "actual": [
+          165,
+          1258.21875,
+          250.5,
+          631.6953125
+        ],
+        "expected": [
+          165,
+          1258.21875,
+          250.5,
+          631.6953125
+        ]
+      },
+      "listAndImageFreeEquivalent": true,
+      "temporaryPlans": true
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "scans": [
+        {
+          "label": "unbuilt construction landmarks",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "two routes with construction order tradeoffs",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "explained plan tradeoffs and remaining mission goals",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "projected map navigation without real moves",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "projected location list",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "outdated plan while a real activity is open",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "built shortcut and active resource project",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "fresh projection from actual construction progress",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "location list with equivalent construction effects",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "pictures hidden with construction information retained",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "sandbox in focused play",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "reload restores actual world and clears temporary plans",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "forced colors and reduced motion",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "200 percent text",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "sandboxDoesNotWrite": true,
+      "projectionsMatchActualEngine": true,
+      "firstMoveInspectionOnly": true,
+      "stalePlanLocked": true,
+      "shortcutGeometry": {
+        "actual": [
+          130,
+          1633.40625,
+          198,
+          834.8203125
+        ],
+        "expected": [
+          130,
+          1633.40625,
+          198,
+          834.8203125
+        ]
+      },
+      "listAndImageFreeEquivalent": true,
+      "temporaryPlans": true
+    }
+  ],
+  "errors": [],
+  "scope": "Production solo components and authored board. Existing generated visual fixture reused; no AI requests."
+}

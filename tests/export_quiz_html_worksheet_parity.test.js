@@ -612,7 +612,7 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
     expect(section.textContent).toContain('Label the land assumption');
     expect(section.textContent).toContain('The same evidence-versus-assumption check');
     expect(section.textContent).toContain('clearly separates evidence from assumptions');
-    expect(section.textContent).toContain('Fact check needed');
+    expect(section.textContent).toContain('Feedback for an earlier draft or brief. Review before relying on it.');
     expect(html).toContain('Gravity moves water &lt;script&gt;alert(1)&lt;/script&gt; downhill.');
     expect(html).not.toContain('<script>alert(1)</script>');
     expect(html).not.toContain('PRIVATE APPLIED CHALLENGE SOURCE SHOULD NOT APPEAR');
@@ -778,7 +778,7 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
     expect(section.textContent).toContain('Label the land assumption');
     expect(section.textContent).toContain('The same evidence-versus-assumption check');
     expect(section.textContent).toContain('clearly separates evidence from assumptions');
-    expect(section.textContent).toContain('Fact check needed');
+    expect(section.textContent).toContain('Feedback for an earlier draft or brief. Review before relying on it.');
     expect(html).toContain('Gravity moves water &lt;script&gt;alert(1)&lt;/script&gt; downhill.');
     expect(html).not.toContain('<script>alert(1)</script>');
     expect(html).not.toContain('PRIVATE APPLIED CHALLENGE SOURCE SHOULD NOT APPEAR');

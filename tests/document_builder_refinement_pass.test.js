@@ -79,7 +79,10 @@ describe('Document Builder refinement pass', () => {
 
 
   it('uses the canonical close wrapper and closes only after export handoff', () => {
-    expect(host).toContain('setShowExportPreview: setShowExportPreviewWrapped, handleExportSlides');
+    const hostHandlers = readFileSync('host_handlers_source.jsx', 'utf8');
+    const handoff = hostHandlers.slice(hostHandlers.indexOf('const executeExportFromPreview = async'), hostHandlers.indexOf('const sanitizeSubmissionData ='));
+    expect(handoff.includes('setShowExportPreview: __d.setShowExportPreviewWrapped')).toBe(true);
+    expect(host.includes('setShowExportPreview: setShowExportPreviewWrapped, showExportPreview')).toBe(true);
     const execute = handlers.slice(
       handlers.indexOf('const executeExportFromPreview = async'),
       handlers.indexOf('// ── handleExport', handlers.indexOf('const executeExportFromPreview = async')),

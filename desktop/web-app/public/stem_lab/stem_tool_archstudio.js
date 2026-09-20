@@ -7290,7 +7290,7 @@ function __alloAST(k, fb) {
           ),
 
           // Bottom stats bar
-          el('div', { className: 'arch-studio-stats', 'data-arch-stats': 'true', style: { display: 'grid', gridAutoFlow: 'column', gridAutoColumns: 'minmax(82px,1fr)', gap: 5, justifyContent: 'stretch', padding: '7px 8px', background: 'linear-gradient(0deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.96))', borderTop: '1px solid var(--allo-stem-border, #334155)', overflowX: 'auto', overflowY: 'hidden', flexShrink: 0 } },
+          el('div', { className: 'arch-studio-stats', 'data-arch-stats': 'true', tabIndex: 0, role: 'region', 'aria-label': t('stem.archstudio.build_statistics', 'Build statistics') || 'Build statistics', style: { display: 'grid', gridAutoFlow: 'column', gridAutoColumns: 'minmax(82px,1fr)', gap: 5, justifyContent: 'stretch', padding: '7px 8px', background: 'linear-gradient(0deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.96))', borderTop: '1px solid var(--allo-stem-border, #334155)', overflowX: 'auto', overflowY: 'hidden', flexShrink: 0 } },
             [
               { label: t('stem.archstudio.blocks', 'Blocks'), value: totalBlocks, icon: '\uD83E\uDDF1' },
               { label: t('stem.archstudio.stability', 'Stability'), value: analysis.stabilityEmoji + analysis.stability + '%', icon: '\uD83C\uDFD7\uFE0F' },

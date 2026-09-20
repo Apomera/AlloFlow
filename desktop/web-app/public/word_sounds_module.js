@@ -568,6 +568,20 @@ function createWordSoundsCore() {
     const board={version:VERSION,mode,targetChar:soundKey(target),difficulty:word.length<=3?'easy':word.length<=4?'medium':'hard',options:shuffled(short(yes),seed).slice(0,limit),distractors:shuffled(short(no),seed+1).slice(0,limit-1)};
     return validSoundBoard(board,word,pool)?board:null;
   };
+  // Prepared family boards must be answerable and unambiguous. This checks
+  // their spelling-family structure; it is not a pronunciation/decodability test.
+  const validWordFamilyBoard = (board, word) => {
+    if (!board || typeof board.rime !== 'string' || !/^[\p{L}\p{M}]+$/u.test(board.rime)) return false;
+    if (!Array.isArray(board.options) || !board.options.length || !Array.isArray(board.distractors) || !board.distractors.length) return false;
+    const values = [...board.options, ...board.distractors];
+    if (values.some(v => typeof v !== 'string' || !v.trim() || normalize(v) !== v || v === normalize(word))) return false;
+    if (new Set(values).size !== values.length) return false;
+    if (board.teacherEdited === true) return true;
+    return normalize(word).endsWith(board.rime) && normalize(word).length > board.rime.length &&
+      board.options.every(v => v.endsWith(board.rime) && v.length > board.rime.length) &&
+      board.distractors.every(v => !v.endsWith(board.rime));
+  };
+  const wordFamilyInstruction = rime => `Find all words in the ${rime} family`;
   const difficultyDecision = (history, activity, support={}) => {
     const rows=(history||[]).filter(h=>h && h.activity===activity && !h.practiceOnly && h.activity!=='letter_tracing' && h.taskKind!=='word_matching' && !h.answerExposed && !!h.aacAssisted===!!support.aacAssisted && (h.mode||'sound_only')===(support.mode||'sound_only'));
     let band=0, block=[], reason='starting', changes=0;
@@ -613,7 +627,7 @@ function createWordSoundsCore() {
     const unknown=unique(String(text||'').normalize('NFC').match(/[\p{L}\p{M}]+/gu)||[]).filter(w=>!canRead(w));
     return {status:unknown.length?'review':'within_taught_spellings',untaughtWords:unknown};
   };
-  return {VERSION,soundKey,edgeSound,validSoundBoard,buildSoundSort,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  return {VERSION,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE
@@ -3995,21 +4009,29 @@ const WS_CORE = createWordSoundsCore();
       // and the on-screen game (AI rime first, then RIME_FAMILIES, then -at), and
       // prime it once per word so the two never disagree.
       const wordFamilyRimeRef = React.useRef(null);
-      const resolveWordFamilyRime = (targetWordRaw, aiRimeData) => {
+      const resolveWordFamilyRime = (targetWordRaw, aiRimeData, preparedBoard) => {
         const targetWord = (targetWordRaw || '').toLowerCase();
+        const prepared = WS_CORE.validWordFamilyBoard(preparedBoard, targetWord) ? preparedBoard : null;
+        const usePrepared = () => ({ rime: prepared.rime, members: prepared.options.slice(), distractors: prepared.distractors.slice(), prepared: true });
         let targetRime = null;
         let familyMembers = [];
         // Teacher-edited data is authoritative — no endsWith validation (the
         // teacher may include irregular family members) and empty strings are
         // kept as live edit rows (the play view filters them).
         if (aiRimeData && aiRimeData.teacherEdited && aiRimeData.rime) {
+          const editedRime = String(aiRimeData.rime).toLowerCase().trim().replace(/^-/, '');
+          const editedWords = values => (Array.isArray(values) ? values : []).filter(v => typeof v === "string").map(v => v.toLowerCase().trim()).filter(v => v && v !== targetWord).slice(0, 8);
+          if (prepared && prepared.rime === editedRime &&
+              JSON.stringify(prepared.options) === JSON.stringify([...new Set(editedWords(aiRimeData.words))]) &&
+              JSON.stringify(prepared.distractors) === JSON.stringify([...new Set(editedWords(aiRimeData.distractors))])) return usePrepared();
           return {
-            rime: String(aiRimeData.rime).toLowerCase().trim(),
+            rime: editedRime,
             members: (aiRimeData.words || []).filter(
               (w) => w != null && String(w).toLowerCase() !== targetWord,
             ),
           };
         }
+        if (prepared) return usePrepared();
         if (aiRimeData && aiRimeData.rime && aiRimeData.words && aiRimeData.words.length >= 3) {
           // Normalize like the sibling paths (uppercase AI rimes broke the
           // endsWith distractor filter), validate members actually belong to
@@ -6453,122 +6475,114 @@ const WS_CORE = createWordSoundsCore();
             const [wordBank, setWordBank] = React.useState([]);
             const [activeIndex, setActiveIndex] = React.useState(null);
             const lastOptionsKey = React.useRef("");
-            // Refs track the active timer/listener so they survive re-renders and
-            // can be cancelled precisely: on content change or on unmount.
+            // Synchronous selection state prevents batched taps from losing a
+            // match or scheduling the final answer more than once.
+            const foundWordsRef = React.useRef(new Set());
+            const completedRef = React.useRef(false);
+            const completionTimerRef = React.useRef(null);
+            const wrongFeedbackTimerRef = React.useRef(null);
+            const playbackEpochRef = React.useRef(0);
             const safetyTimerRef = React.useRef(null);
             const instrDoneListenerRef = React.useRef(null);
-            React.useEffect(() => {
-              if (data.options && data.distractors) {
-                const newKey =
-                  JSON.stringify([...data.options].sort()) +
-                  "|" +
-                  JSON.stringify([...data.distractors].sort());
-                if (newKey !== lastOptionsKey.current) {
-                  // Options content changed — cancel any in-flight listener/timer
-                  // before registering new ones.
-                  if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
-                  if (instrDoneListenerRef.current) window.removeEventListener('wordSoundsInstructionDone', instrDoneListenerRef.current);
-                  lastOptionsKey.current = newKey;
-                  // Skip blank entries: teacher-edited boards keep empty
-                  // strings as live edit rows — they must never render as
-                  // tappable blank chips.
-                  const mixed = [
-                    ...(data.options || [])
-                      .filter((w) => w && String(w).trim())
-                      .map((w) => ({
-                      text: w,
-                      isFamily: true,
-                    })),
-                    ...(data.distractors || [])
-                      .filter((w) => w && String(w).trim())
-                      .map((w) => ({
-                      text: w,
-                      isFamily: false,
-                    })),
-                  ];
-                  const mixed_shuffled = fisherYatesShuffle(mixed);
-                  setWordBank(mixed_shuffled);
-                  setFoundWords([]);
-                  setIsComplete(false);
-                  const playAllOptions = async () => {
-                    const myRun = audioRunIdRef.current;
-                    await new Promise((r) => setTimeout(r, 250));
-                    if (audioRunIdRef.current !== myRun) return;
-                    // Do not read options over still-playing instruction/target-word
-                    // audio (the target word is spoken as part of the item instructions).
-                    let _idleGuard = 0;
-                    while ((isPlayingAudioRef.current || currentActiveAudio.current) && _idleGuard < 6000) {
-                      if (audioRunIdRef.current !== myRun) return;
-                      await new Promise((r) => setTimeout(r, 100));
-                      _idleGuard += 100;
-                    }
-                    if (audioRunIdRef.current !== myRun) return;
-                    for (let i = 0; i < mixed_shuffled.length; i++) {
-                      if (!isMountedRef.current || audioRunIdRef.current !== myRun) break;
-                      setActiveIndex(i);
-                      try {
-                        await onPlayAudio(mixed_shuffled[i].text);
-                      } catch (e) { console.warn("[WordSounds] silent catch:", e); }
-                      setActiveIndex(null);
-                      await new Promise((r) => setTimeout(r, 200));
-                    }
-                  };
-                  // Wait for instruction audio to finish before auto-playing options.
-                  // clearTimeout on the ref prevents double-play if both event and
-                  // timer would otherwise fire.
-                  const onInstrDone = () => {
-                    clearTimeout(safetyTimerRef.current);
-                    safetyTimerRef.current = null;
-                    instrDoneListenerRef.current = null;
-                    playAllOptions();
-                  };
-                  instrDoneListenerRef.current = onInstrDone;
-                  window.addEventListener('wordSoundsInstructionDone', onInstrDone, { once: true });
-                  // Safety fallback: if no instruction event fires within 12s, play anyway.
-                  // 12s accommodates the ~800ms initial delay + up to ~3s sound_match_start
-                  // audio + TTS generation time for "as in" and the target word.
-                  safetyTimerRef.current = setTimeout(() => {
-                    window.removeEventListener('wordSoundsInstructionDone', instrDoneListenerRef.current);
-                    instrDoneListenerRef.current = null;
-                    safetyTimerRef.current = null;
-                    playAllOptions();
-                  }, 12000);
+            const stopOptionPlayback = (resetHighlight = true) => {
+              playbackEpochRef.current++;
+              if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
+              safetyTimerRef.current = null;
+              if (instrDoneListenerRef.current) window.removeEventListener('wordSoundsInstructionDone', instrDoneListenerRef.current);
+              instrDoneListenerRef.current = null;
+              if (resetHighlight) setActiveIndex(null);
+            };
+            const clearBoardFeedback = () => {
+              if (completionTimerRef.current) clearTimeout(completionTimerRef.current);
+              if (wrongFeedbackTimerRef.current) clearTimeout(wrongFeedbackTimerRef.current);
+              completionTimerRef.current = null;
+              wrongFeedbackTimerRef.current = null;
+            };
+            const playAllOptions = async (options, waitForInstruction = false) => {
+              stopOptionPlayback();
+              const epoch = playbackEpochRef.current;
+              const audioRun = audioRunIdRef.current;
+              const isCurrent = () => epoch === playbackEpochRef.current &&
+                audioRun === audioRunIdRef.current && isMountedRef.current && !completedRef.current;
+              if (waitForInstruction) {
+                await new Promise(resolve => setTimeout(resolve, 250));
+                let waited = 0;
+                while (isCurrent() && (isPlayingAudioRef.current || currentActiveAudio.current) && waited < 6000) {
+                  await new Promise(resolve => setTimeout(resolve, 100));
+                  waited += 100;
                 }
               }
-              // No cleanup return here — removing the listener on every re-render
-              // (caused by new array references from the parent) would silently
-              // delete it before wordSoundsInstructionDone fires.
-            }, [data.options, data.distractors]);
-            // Separate unmount-only effect to cancel any pending timer/listener
-            // when the component is removed (e.g. word advances, activity changes).
+              for (let i = 0; i < options.length; i++) {
+                if (!isCurrent()) return;
+                if (foundWordsRef.current.has(options[i].text)) continue;
+                setActiveIndex(i);
+                try { await onPlayAudio(options[i].text); }
+                catch (e) { console.warn("[WordSounds] option playback:", e); }
+                if (!isCurrent()) return;
+                setActiveIndex(null);
+                await new Promise(resolve => setTimeout(resolve, waitForInstruction ? 200 : 350));
+              }
+            };
+            const hearWord = (word) => {
+              stopOptionPlayback();
+              onPlayAudio(word);
+            };
             React.useEffect(() => {
-              return () => {
-                if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
-                if (instrDoneListenerRef.current) window.removeEventListener('wordSoundsInstructionDone', instrDoneListenerRef.current);
-              };
+              const options = Array.isArray(data.options) ? data.options : [];
+              const distractors = Array.isArray(data.distractors) ? data.distractors : [];
+              const newKey = JSON.stringify([data.targetWord, data.family, data.mode, data.targetChar, options, distractors, !!isEditing]);
+              if (newKey === lastOptionsKey.current) return;
+              stopOptionPlayback();
+              clearBoardFeedback();
+              lastOptionsKey.current = newKey;
+              foundWordsRef.current = new Set();
+              completedRef.current = false;
+              setFoundWords([]);
+              setIsComplete(false);
+              setShakenWord(null);
+              setWrongFeedback(null);
+              const mixed = [
+                ...options.filter(w => w && String(w).trim()).map(text => ({text, isFamily: true})),
+                ...distractors.filter(w => w && String(w).trim()).map(text => ({text, isFamily: false})),
+              ];
+              const mixed_shuffled = fisherYatesShuffle(mixed);
+              setWordBank(mixed_shuffled);
+              if (isEditing || !mixed_shuffled.length) return;
+              // Both entry points share one cancellable sequence. A manual
+              // replay or individual selection also cancels this pending start.
+              const onInstrDone = () => playAllOptions(mixed_shuffled, true);
+              instrDoneListenerRef.current = onInstrDone;
+              window.addEventListener('wordSoundsInstructionDone', onInstrDone, { once: true });
+              safetyTimerRef.current = setTimeout(onInstrDone, 12000);
+            }, [data.targetWord, data.family, data.mode, data.targetChar, data.options, data.distractors, isEditing]);
+            React.useEffect(() => () => {
+              stopOptionPlayback(false);
+              clearBoardFeedback();
+              // Also permits effect setup to run again under React StrictMode.
+              lastOptionsKey.current = "";
             }, []);
             const handleWordClick = (item) => {
-              if (foundWords.includes(item.text) || isComplete) return;
-              onPlayAudio(item.text);
+              if (foundWordsRef.current.has(item.text) || completedRef.current || isEditing) return;
+              hearWord(item.text);
               if (item.isFamily) {
-                const newFound = [...foundWords, item.text];
-                setFoundWords(newFound);
-                // Blank edit rows don't count toward completion.
-                const allMembers = (data.options || []).filter(
-                  (m) => m && String(m).trim(),
-                );
-                const uniqueFound = new Set(newFound);
-                if (allMembers.length > 0 && allMembers.every((m) => uniqueFound.has(m))) {
+                foundWordsRef.current.add(item.text);
+                setFoundWords([...foundWordsRef.current]);
+                const allMembers = (data.options || []).filter(m => m && String(m).trim());
+                if (allMembers.length > 0 && allMembers.every(m => foundWordsRef.current.has(m))) {
+                  completedRef.current = true;
                   setIsComplete(true);
                   onPlayAudio("correct");
-                  setTimeout(() => {
+                  completionTimerRef.current = setTimeout(() => {
+                    completionTimerRef.current = null;
                     if (isMountedRef.current) onCheckAnswer("correct");
                   }, 1200);
                 }
               } else {
+                if (wrongFeedbackTimerRef.current) clearTimeout(wrongFeedbackTimerRef.current);
                 setShakenWord(item.text);
                 setWrongFeedback(item.text);
-                setTimeout(() => {
+                wrongFeedbackTimerRef.current = setTimeout(() => {
+                  wrongFeedbackTimerRef.current = null;
                   if (isMountedRef.current) {
                     setShakenWord(null);
                     setWrongFeedback(null);
@@ -6805,6 +6819,7 @@ const WS_CORE = createWordSoundsCore();
                         ? (t("common.replay_instructions") || "Replay instructions")
                         : t("common.hear_target_sound"),
                       onClick: () => {
+                        stopOptionPlayback();
                         if (typeof onPlayInstruction === 'function') {
                           onPlayInstruction();
                         } else {
@@ -6954,18 +6969,7 @@ const WS_CORE = createWordSoundsCore();
                   /*#__PURE__*/ React.createElement(
                   "button",
                   {
-                    onClick: async () => {
-                      for (let i = 0; i < wordBank.length; i++) {
-                        const item = wordBank[i];
-                        if (foundWords.includes(item.text)) continue;
-                        setActiveIndex(i);
-                        try {
-                          await onPlayAudio(item.text);
-                        } catch (e) { console.warn("[WordSounds] silent catch:", e); }
-                        setActiveIndex(null);
-                        await new Promise((r) => setTimeout(r, 350));
-                      }
-                    },
+                    onClick: () => playAllOptions(wordBank),
                     className:
                       "flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors font-bold text-sm",
                     "aria-label": t("common.hear_all_words"),
@@ -6993,11 +6997,11 @@ const WS_CORE = createWordSoundsCore();
                       {
                         onClick: (e) => {
                           e.stopPropagation();
-                          onPlayAudio(item.text);
+                          hearWord(item.text);
                         },
                         className:
                           "p-2 rounded-full text-violet-700 hover:text-violet-600 hover:bg-violet-50 transition-colors",
-                        "aria-label": (ts("word_sounds.sr_hear") || "Hear ") + (soundOnlyMode ? (ts("word_sounds.sr_option") || "option") : item.text),
+                        "aria-label": (ts("word_sounds.sr_hear") || "Hear ") + (soundOnlyMode ? (ts("word_sounds.sr_option") || "option") + " " + (idx + 1) : item.text),
                         title: t("common.hear_this_word"),
                       },
                       /*#__PURE__*/ React.createElement(Volume2, { size: 18 }),
@@ -7006,6 +7010,7 @@ const WS_CORE = createWordSoundsCore();
                       "button",
                       {
                         onClick: () => handleWordClick(item),
+                        "aria-label": soundOnlyMode ? (ts("word_sounds.sr_option") || "Option") + " " + (idx + 1) : item.text,
                         className: `px-5 py-3 rounded-xl text-lg font-bold shadow-sm border-b-4 transition-all hover:scale-105 active:scale-95 ${isShaking ? "bg-red-100 border-red-300 text-red-700 animate-shake" : activeIndex === idx ? "bg-violet-200 border-violet-500 text-violet-800 scale-[1.05] ring-4 ring-violet-300 z-10" : "bg-white border-slate-200 text-slate-700 hover:border-violet-300 hover:text-violet-600"}`,
                       },
                       soundOnlyMode ? "🔊" : item.text,
@@ -12411,8 +12416,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 debugLog("📋 [Eager] Set sound sort options from preloaded:", targetWord);
               }
               if (activityId === "word_families") {
-                const _wfr = resolveWordFamilyRime(targetWord, preloadedWord.rimeFamilyMembers);
-                wordFamilyRimeRef.current = { word: (targetWord || '').toLowerCase(), rime: _wfr.rime, members: _wfr.members };
+                const _wfr = resolveWordFamilyRime(targetWord, preloadedWord.rimeFamilyMembers, preloadedWord.activityItems?.word_families);
+                wordFamilyRimeRef.current = { word: (targetWord || '').toLowerCase(), ..._wfr };
               }
             } else {
               debugLog(
@@ -12887,10 +12892,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             } else if (wordSoundsActivity === "word_families") {
               const targetWord = currentWordSoundsWord?.toLowerCase() || "";
               const _wfPre = wordFamilyRimeRef.current;
-              const targetRime = (_wfPre && _wfPre.word === targetWord)
-                ? _wfPre.rime
-                : resolveWordFamilyRime(targetWord, wordSoundsPhonemes?.rimeFamilyMembers).rime;
-              if (
+              const family = (_wfPre && _wfPre.word === targetWord) ? _wfPre
+                : resolveWordFamilyRime(targetWord, wordSoundsPhonemes?.rimeFamilyMembers, wordSoundsPhonemes?.activityItems?.word_families);
+              const targetRime = family.rime;
+              if (family.prepared) {
+                await handleAudio(WS_CORE.wordFamilyInstruction(targetRime));
+              } else if (
                 typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
                 window.__ALLO_INSTRUCTION_AUDIO["inst_word_families"]
               ) {
@@ -17254,7 +17261,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const targetWord = currentWordSoundsWord?.toLowerCase() || "";
             const aiRimeData = wordSoundsPhonemes?.rimeFamilyMembers;
             const _wfPre = wordFamilyRimeRef.current;
-            const _wf = (_wfPre && _wfPre.word === targetWord) ? _wfPre : resolveWordFamilyRime(targetWord, aiRimeData);
+            const _wf = (_wfPre && _wfPre.word === targetWord) ? _wfPre : resolveWordFamilyRime(targetWord, aiRimeData, wordSoundsPhonemes?.activityItems?.word_families);
             let targetRime = _wf.rime;
             let familyMembers = (_wf.members || []).slice();
             const rimeWordLen = targetWord.length;
@@ -17287,7 +17294,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             // Teacher-edited board: use the lists verbatim — no reshuffle, no
             // slicing, no adjacent-family distractor pool.
             const _wfTeacher = !!(aiRimeData && aiRimeData.teacherEdited);
-            const selectedMembers = _wfTeacher
+            const selectedMembers = _wf.prepared ? familyMembers : _wfTeacher
               ? familyMembers.slice(0, 8)
               : wfShuffle(familyMembers).slice(0, rimeMemberLimit);
             const rimeKeys = Object.keys(RIME_FAMILIES);
@@ -17306,7 +17313,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             distractorPool = distractorPool.filter(
               (w) => !w.endsWith(targetRime),
             );
-            const selectedDistractors = _wfTeacher
+            const selectedDistractors = _wf.prepared ? _wf.distractors.slice() : _wfTeacher
               ? (aiRimeData.distractors || []).filter((w) => w != null).slice(0, 8)
               : wfShuffle(distractorPool).slice(0, rimeDistractorLimit);
             return /*#__PURE__*/ React.createElement(
@@ -17348,6 +17355,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       (typeof window !== "undefined" &&
                         window.__ALLO_INSTRUCTION_AUDIO) ||
                       {};
+                    if (_wf.prepared) {
+                      await handleAudio(WS_CORE.wordFamilyInstruction(targetRime));
+                      return;
+                    }
                     if (bank["inst_word_families"]) {
                       await handleAudio(bank["inst_word_families"]);
                       await new Promise((r) => setTimeout(r, 200));

@@ -8,7 +8,8 @@
     "gradeLevel": "2nd Grade",
     "standards": "CCSS.MATH.CONTENT.2.NBT.A.1 (understand that the three digits of a three-digit number represent amounts of hundreds, tens, and ones); CCSS.MATH.CONTENT.2.NBT.A.3 (read and write numbers to 1000 using base-ten numerals, number names, and expanded form); CCSS.MATH.CONTENT.2.NBT.A.4 (compare two three-digit numbers based on the meanings of the digits); CCSS.MATH.CONTENT.2.NBT.B.5 (fluently add and subtract within 100 using strategies based on place value)",
     "createdAt": "2026-09-05T22:10:00.000Z",
-    "imageShotList": "allopacks/place_value_grade2.IMAGES.md"
+    "imageShotList": "allopacks/place_value_grade2.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Place Value to 1000",
   "history": [
@@ -55,7 +56,7 @@
       "title": "Ten Is a Bundle",
       "timestamp": "2026-09-05T22:10:01.000Z",
       "data": "## Ten Is a Bundle\n\nCount out 24 straws one at a time. Now count them again by tens. Ten. Twenty. Then four more.\n\nThe second way is faster. It is also the whole secret of how we write numbers.\n\nA **digit** is one of the ten symbols: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9. There are only ten of them. So how do we write big numbers? We give each digit a place. The place tells you its **value**.\n\nLook at 245. The 5 sits in the **ones** place. It means five single things. The 4 sits in the **tens** place. It does not mean four. It means four **bundles** of ten, which is forty. The 2 sits in the **hundreds** place. It means two bundles of one hundred.\n\nSo 245 is 200 + 40 + 5. Written that way, it is in **expanded** form.\n\nHere is the surprising part. The digit 2 can mean two. It can mean twenty. It can mean two hundred. Same symbol, different place. In math, where you stand changes what you are worth.\n\nWhat about **zero**? In 305 there are no tens at all. The zero holds that place open. Without it you would write 35, and that is a different number.\n\nSometimes you end up with ten of something in one place. Then you **regroup**. Trade ten ones for one ten. Trade ten tens for one hundred. That trade is how adding works once numbers get big.\n\nTo **compare** 245 and 254, start at the left. The hundreds match. Then look at the tens: 4 or 5. Five tens beats four tens. So 254 is the bigger number.",
-      "meta": "2nd Grade • Leveled reading • ~265 words • read-aloud friendly",
+      "meta": "2nd Grade • Leveled reading • read-aloud friendly",
       "imageSlot": "tn-img-bundles"
     },
     {

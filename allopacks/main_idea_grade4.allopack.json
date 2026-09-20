@@ -8,7 +8,8 @@
     "gradeLevel": "4th-5th Grade",
     "standards": "CCSS.ELA-LITERACY.RI.4.2 (determine the main idea of a text and explain how it is supported by key details); CCSS.ELA-LITERACY.RI.5.2 (determine two or more main ideas and explain how they are supported by key details); CCSS.ELA-LITERACY.RI.4.1 (refer to details and examples when explaining what a text says)",
     "createdAt": "2026-07-21T10:00:00.000Z",
-    "imageShotList": "allopacks/main_idea_grade4.IMAGES.md"
+    "imageShotList": "allopacks/main_idea_grade4.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Main Idea and Supporting Details",
   "history": [
@@ -55,7 +56,7 @@
       "title": "The Suitcase Test",
       "timestamp": "2026-07-21T10:00:01.000Z",
       "data": "## The Suitcase Test\n\nImagine you are packing a suitcase for a trip. The suitcase is the **main idea** — the one big container. The clothes you pack inside are the **supporting details**. Everything that goes in has to belong to that trip.\n\nWhen you read a paragraph, you are doing the same job in reverse. You look at what is packed and figure out what suitcase it all came from.\n\nHere is a paragraph:\n\n> Honeybees do far more than make honey. As they move from flower to flower, pollen sticks to their bodies and travels with them, which lets plants make seeds. About one out of every three bites of food people eat depends on a pollinator like a bee. Farmers of almonds, apples, and blueberries even rent beehives during flowering season.\n\nWhat is it about? A first instinct is \"bees\" — but that is only the **topic**, the one-word subject. The main idea is a full thought: *honeybees are important to our food supply because they pollinate crops.*\n\nThat is the difference students miss most. The topic is a word. The main idea is a sentence that says something ABOUT the topic.\n\nNotice how the details worked. Pollen sticking to bees, one in three bites, farmers renting hives — each one supports the same claim. That is your test: if a sentence does not help prove the main idea, it does not belong in that suitcase.\n\nSometimes the main idea is stated right in the text, often in the first or last sentence. That is the easy version. Other times it is **implied** — never written down anywhere, and you have to build it yourself from the details. Both count. Both are findable.\n\nA quick method that works: read the whole paragraph, then cover it and ask yourself, \"If I could only say one sentence about this, what would it be?\" Whatever you say out loud is usually very close to the main idea.\n\nOne warning. A detail can be true, interesting, and still not be the main idea. \"Bees have five eyes\" is a fact, and it is fascinating, but a paragraph about pollination is not really about bee eyes. Interesting and important are different things — and telling them apart is most of what good reading is.",
-      "meta": "4th-5th Grade • Leveled reading • ~380 words",
+      "meta": "4th-5th Grade • Leveled reading",
       "imageSlot": "mi-img-suitcase"
     },
     {

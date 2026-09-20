@@ -27,6 +27,7 @@ function makeClick(initial, loop) {
     pendingPdfBase64: 'data', pendingPdfFile: { name: 'document.docx' }, _inputIsPdf: false, _inputMimeType: '',
     pdfAutoVeraPdf: false, setPdfFixMode: vi.fn(), _beginVisibleAuditRun: () => 1, pdfDiagnosticFreshRun: false,
     runPdfAccessibilityAudit: vi.fn(async () => ({ score: 70 })), _settleVisibleAuditRun: vi.fn(),
+    _awaitVisibleAuditRun: (_seq, promise) => promise, _visibleAuditRunIsCurrent: () => true,
     _restoreVisibleAuditAfterFailure: vi.fn(), _viewAuditCanStartRemediation: () => true,
     fixAndVerifyPdf: vi.fn(async () => initial), pdfFixResultRef: ref,
     setPdfFixResult: v => { ref.current = v; }, _docPipeline: { logHostDiagnostic: vi.fn() }, warnLog: vi.fn(),

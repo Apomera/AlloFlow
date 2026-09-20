@@ -1,0 +1,66 @@
+const APPLIED_REASONING_PARTS = Object.freeze({ evidence: 'evidence', check: 'testReflection', decision: 'revision', transfer: 'transferReflection' });
+
+function normalizeAppliedReasoningReferences(value) {
+  const seen = new Set();
+  return (Array.isArray(value) ? value : []).filter(item => {
+    if (!item || !Object.prototype.hasOwnProperty.call(APPLIED_REASONING_PARTS, item.part) || seen.has(item.part) || !['response', 'artifact', 'ledger'].includes(item.source)) return false;
+    seen.add(item.part); return true;
+  }).slice(0, 4).map(item => ({ part: item.part, source: item.source, rowId: _apsString(item.rowId, 80), location: _apsString(item.location, 1200).trim(), referenceFingerprint: _apsString(item.referenceFingerprint, 80) }));
+}
+
+function appliedReasoningSource(data, reference) {
+  if (reference.source === 'artifact') return data.workspace.artifactUrl && data.workspace.artifactDescription.trim() ? data.workspace.artifactUrl + '\n' + data.workspace.artifactDescription : '';
+  if (reference.source === 'ledger') { const row = data.evidenceLedger.find(item => item.id === reference.rowId); return row && row.claim.trim() && appliedChallengeEvidenceHasNotes(row.evidence) ? [row.claim, row.evidence, row.tradeoff].join('\n') : ''; }
+  return data.workspace.response.trim();
+}
+
+function appliedReasoningReferenceState(data, part) {
+  const reference = data.reasoningReferences.find(item => item.part === part);
+  const text = reference ? appliedReasoningSource(data, reference) : '';
+  return { reference, current: !!(reference?.location && text && reference.referenceFingerprint === appliedChallengeHashText(text)) };
+}
+
+function appliedReasoningReferenceLabel(reference, t) {
+  return _apsT(t, 'applied_challenge.references.' + reference.source, { response: 'Pointed to in my response', artifact: 'Learner identified this in linked work', ledger: 'Pointed to in my evidence notes' }[reference.source]);
+}
+
+function appliedReasoningReferenceSummary(data, reference, t) {
+  return appliedReasoningReferenceLabel(reference, t) + ': ' + reference.location + (!appliedReasoningReferenceState(data, reference.part).current ? ' — ' + _apsT(t, 'applied_challenge.references.changed', 'The work changed. Recheck this reference.') : '');
+}
+
+function appliedChallengeAttachNoteReference(value, result, t) {
+  const clean = normalizeAppliedChallengeSearchResults({ results: [result] }, result?.foundAt)[0];
+  if (!clean) return { ok: false, reason: 'invalid' };
+  const before = _apsString(value, 8000);
+  if (appliedChallengeEvidenceLinks(before).some(link => link.url === clean.url)) return { ok: false, reason: 'duplicate' };
+  const evidence = [before, appliedChallengeOutsideReference(clean, t)].filter(Boolean).join('\n\n');
+  return evidence.length > 8000 ? { ok: false, reason: 'length' } : { ok: true, evidence };
+}
+
+function AppliedReasoningReferenceEditor({ data, item, onChange, t }) {
+  const tx = (key, fallback) => _apsT(t, 'applied_challenge.references.' + key, fallback);
+  const state = appliedReasoningReferenceState(data, item.id), saved = state.reference;
+  const choices = [
+    { source: 'response', rowId: '', label: tx('response_source', 'My written response') },
+    { source: 'artifact', rowId: '', label: tx('artifact_source', 'My linked work and explanation') },
+    ...data.evidenceLedger.map((row, index) => ({ source: 'ledger', rowId: row.id, label: _apsFill(tx('ledger_source', 'Evidence row {n}'), { n: index + 1 }) })),
+  ].filter(choice => appliedReasoningSource(data, choice));
+  const key = choice => choice.source + ':' + choice.rowId;
+  const [selected, setSelected] = React.useState(saved ? key(saved) : choices[0] ? key(choices[0]) : '');
+  const [location, setLocation] = React.useState(saved?.location || '');
+  const choice = choices.find(entry => key(entry) === selected);
+  const label = _apsT(t, 'applied_challenge.review.part.' + item.id, item.label);
+  return <details className='mt-2 rounded-xl border border-slate-200 px-3 text-sm'>
+    <summary className='min-h-11 cursor-pointer font-semibold' aria-label={_apsFill(tx('edit_aria', 'Point to existing reasoning: {part}'), { part: label })}>{saved ? tx('edit', 'Review my reference') : tx('add', "I've explained this elsewhere")}</summary>
+    <div className='space-y-3 pb-3'>
+      <p className='text-slate-600'>{tx('note', 'Point to a passage, paragraph, diagram label, or recording timestamp. This is your own reference, not a check of its quality. Linked work is not inspected by AI.')}</p>
+      {saved && !state.current && <p role='status' className='text-amber-900'>{tx('changed', 'The work changed. Recheck this reference.')}</p>}
+      {choices.length ? <>
+        <label className='block font-semibold'>{tx('where', 'Where I explained it')}<select aria-label={label + ': ' + tx('where', 'Where I explained it')} value={choice ? selected : ''} onChange={event => setSelected(event.target.value)} className='mt-1 min-h-11 rounded-xl border p-2'><option value='' disabled>{tx('choose', 'Choose existing work')}</option>{choices.map(entry => <option key={key(entry)} value={key(entry)}>{entry.label}</option>)}</select></label>
+        <label className='block font-semibold'>{tx('location', 'Passage or location')}<AcTextarea aria-label={label + ': ' + tx('location', 'Passage or location')} value={location} onChange={event => setLocation(event.target.value)} maxLength={1200} rows={2} className='mt-1 w-full rounded-xl border p-3' /></label>
+        <button type='button' className='aps-button' disabled={!choice || !location.trim()} onClick={() => onChange({ part: item.id, source: choice.source, rowId: choice.rowId, location: location.trim(), referenceFingerprint: appliedChallengeHashText(appliedReasoningSource(data, choice)) })}>{tx('save', 'Save my reference')}</button>
+      </> : <p>{tx('empty', 'Add your response, a linked-work explanation, or evidence notes first.')}</p>}
+      {saved && <button type='button' className='aps-button' onClick={() => onChange(null)}>{tx('remove', 'Remove this reference')}</button>}
+    </div>
+  </details>;
+}

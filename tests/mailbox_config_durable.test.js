@@ -10,8 +10,10 @@
 // is not guaranteed either (on Canvas it can need a user gesture, or fall back
 // to memory), which is why export exists and why it must work even when nothing
 // durable does.
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
+import { Blob } from 'node:buffer';
 
 let S;
 beforeAll(() => {
@@ -33,6 +35,24 @@ beforeAll(() => {
 });
 
 const GOOD_URL = 'https://script.google.com/macros/s/AKfycb-example/exec';
+const hostArtifact = new vm.Script(readFileSync('host_handlers_module.js', 'utf8'), { filename: 'host_handlers_module.js' });
+function shippedHandlers(deps, globals = {}) {
+  const window = { React: {}, AlloModules: {} };
+  hostArtifact.runInContext(vm.createContext({ window, Date, console: { log() {}, warn() {}, error() {} }, ...globals }));
+  return window.AlloModules.HostHandlers(deps);
+}
+function canonicalDependencies(file, bindings) {
+  const shell = readFileSync(file, 'utf8');
+  const names = Object.keys(bindings);
+  const getters = names.map(name => {
+    const match = shell.match(new RegExp('get\\s+' + name + '\\(\\)\\s*\\{\\s*return\\s+' + name + ';?\\s*\\}'));
+    expect(match, file + ': missing host dependency getter for ' + name).not.toBeNull();
+    return match[0];
+  });
+  // Execute the actual shell getter definitions, then pass them to the shipped
+  // module factory so extraction cannot silently disconnect its host services.
+  return new Function(...names, 'return ({' + getters.join(',') + '});')(...Object.values(bindings));
+}
 
 describe('exporting a config', () => {
   it('carries what is needed to restore the deployment', () => {
@@ -100,10 +120,24 @@ describe('the monolith wires it up', () => {
     }
   });
 
-  it('writes durably when a mailbox is connected', () => {
+  it('writes durably when a mailbox is connected through the extracted handler', async () => {
     for (const f of COPIES) {
-      const src = readFileSync(f, 'utf8');
-      expect(src, f).toContain('alloPersistMailboxConfig({ url: execUrl, admin,');
+      const persist = vi.fn();
+      const deps = canonicalDependencies(f, { alloPersistMailboxConfig: persist });
+      Object.assign(deps, {
+        mbUrlInput: GOOD_URL, mbAdminInput: 'tok-123', mbLive: { code: 'already-live' },
+        ALLO_MB_URL_KEY: 'mailbox-url', ALLO_MB_ADMIN_KEY: 'mailbox-admin', ALLO_MB_VERSION_KEY: 'mailbox-version',
+        _alloCleanMailboxUrl: S._alloCleanMailboxUrl,
+        _alloMailboxCall: vi.fn(async (_url, request) => request.a === 'hello' ? { v: 12 } : { admin: true }),
+        setMbBusy: vi.fn(), setMbStatus: vi.fn(), setMbAdminInput: vi.fn(), setMbConfig: vi.fn(), warnLog: vi.fn(),
+      });
+      const localStorage = { getItem: vi.fn(() => null), setItem: vi.fn() };
+      await shippedHandlers(deps, { localStorage }).connectMailbox();
+      expect(persist, f).toHaveBeenCalledOnce();
+      expect(persist, f).toHaveBeenCalledWith({ url: GOOD_URL, admin: 'tok-123', v: 12 });
+      expect(deps.setMbConfig, f).toHaveBeenCalledWith(expect.objectContaining({ url: GOOD_URL, admin: 'tok-123', v: 12 }));
+      expect(localStorage.setItem, f).toHaveBeenCalledWith('mailbox-admin', 'tok-123');
+      expect(deps.warnLog, f).not.toHaveBeenCalled();
     }
   });
 
@@ -135,15 +169,38 @@ describe('the monolith wires it up', () => {
     }
   });
 
-  it('offers a file export, and does not default to a QR', () => {
+  it('exports an actual JSON file with the credential warning instead of a QR', async () => {
     for (const f of COPIES) {
       const src = readFileSync(f, 'utf8');
       expect(src, f).toContain('const exportMailboxConfig = useCallback(');
+      expect(src, f).toContain('_alloHostHandlers().exportMailboxConfig(...__a)');
       expect(src, f).toContain('const importMailboxConfig = useCallback(');
-      // The payload carries a never-expiring credential, and a QR is something
-      // anyone in the room can photograph off a projector.
-      expect(src, f).toContain('alloflow-mailbox-');
-      expect(src, f).toMatch(/access key for your mailbox/);
+      const addToast = vi.fn();
+      const deps = canonicalDependencies(f, {
+        alloMailboxConfigExportPayload: S.alloMailboxConfigExportPayload,
+        mbConfig: { url: GOOD_URL, admin: 'tok-123', v: 12 }, addToast,
+      });
+      const anchor = { click: vi.fn() };
+      const document = { createElement: vi.fn(() => anchor), body: { appendChild: vi.fn(), removeChild: vi.fn() } };
+      const URL = { createObjectURL: vi.fn(() => 'blob:local-mailbox-config'), revokeObjectURL: vi.fn() };
+      const setTimeout = vi.fn();
+      shippedHandlers(deps, { document, URL, Blob, setTimeout }).exportMailboxConfig();
+      expect(document.createElement.mock.calls, f).toEqual([['a']]);
+      expect(URL.createObjectURL, f).toHaveBeenCalledOnce();
+      const blob = URL.createObjectURL.mock.calls[0][0];
+      expect(blob.type).toBe('application/json');
+      expect(JSON.parse(await blob.text())).toMatchObject({ v: 1, kind: 'alloflow-session-mailbox', url: GOOD_URL, admin: 'tok-123', scriptVersion: 12 });
+      expect(anchor.download, f).toMatch(/^alloflow-mailbox-\d{4}-\d{2}-\d{2}\.json$/);
+      expect(anchor.href).toBe('blob:local-mailbox-config');
+      expect(anchor.click).toHaveBeenCalledOnce();
+      expect(document.body.appendChild).toHaveBeenCalledWith(anchor);
+      expect(document.body.removeChild).toHaveBeenCalledWith(anchor);
+      // The credential stays in an explicit downloaded file, with a warning.
+      expect(addToast, f).toHaveBeenCalledWith(expect.stringContaining('access key for your mailbox'), 'success');
+      expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+      expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 1000);
+      setTimeout.mock.calls[0][0]();
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:local-mailbox-config');
     }
   });
 

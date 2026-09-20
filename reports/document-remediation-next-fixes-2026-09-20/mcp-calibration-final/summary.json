@@ -1,0 +1,35 @@
+{
+  "runId": "88c45b1f-c0b6-4174-85d1-37fa3149a9ec",
+  "status": "passed",
+  "startedAt": "2026-09-20T04:11:17.385Z",
+  "phases": {
+    "unit": {
+      "status": "passed",
+      "startedAt": "2026-09-20T04:11:17.389Z",
+      "logFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-next-fixes-2026-09-20\\mcp-calibration-final\\unit.log",
+      "process": {
+        "exitCode": 0,
+        "signal": null,
+        "error": null
+      },
+      "files": 21,
+      "passed": 224,
+      "finishedAt": "2026-09-20T04:15:38.677Z"
+    },
+    "browser": {
+      "status": "passed",
+      "startedAt": "2026-09-20T04:15:38.681Z",
+      "logFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-next-fixes-2026-09-20\\mcp-calibration-final\\browser.log",
+      "process": {
+        "exitCode": 0,
+        "signal": null,
+        "error": null
+      },
+      "files": 2,
+      "passed": 12,
+      "finishedAt": "2026-09-20T04:15:47.791Z"
+    }
+  },
+  "testsPassed": 236,
+  "finishedAt": "2026-09-20T04:15:47.792Z"
+}

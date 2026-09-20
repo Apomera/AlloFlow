@@ -1,0 +1,34 @@
+const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('node:assert/strict');const {chromium}=require('playwright');
+const prior=fs.readFileSync(path.join(__dirname,'enhancement-browser.cjs'),'utf8'),context={require,__dirname,process,Buffer,console,URL};vm.createContext(context);
+vm.runInContext(prior.slice(0,prior.lastIndexOf('(async()=>{')).replace("'enhancement-browser'","'selection-pack-browser'")+'\nthis.server=server;this.measure=context.measure;this.seed=seed;',context);
+context.seed['alloActivitySets__ui-review']=[{id:'existing',title:'Daily supports',profileId:'ui-review',assetIds:['water'],boardIds:['demo-board'],scheduleIds:['demo-schedule']}];
+const output=path.join(__dirname,'selection-pack-browser');
+(async()=>{
+  await new Promise(done=>context.server.listen(0,'127.0.0.1',done));const origin='http://127.0.0.1:'+context.server.address().port,browser=await chromium.launch({headless:true}),results=[];
+  try{for(const width of [1440,390,320]){
+    const page=await browser.newPage({viewport:{width,height:900}});page.setDefaultTimeout(120000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
+    await page.route('**/*',r=>r.request().url().startsWith(origin)||r.request().url().startsWith('data:')?r.continue():r.abort());await page.goto(origin);await page.locator('.ss-main-modal').waitFor();
+    await page.getByRole('button',{name:'Organize symbols',exact:true}).click();
+    await page.getByRole('combobox',{name:'Filter Symbol Bank by topic'}).selectOption('daily living');await page.getByRole('checkbox',{name:'Include 水 in batch',exact:true}).check();
+    await page.getByRole('combobox',{name:'Filter Symbol Bank by topic'}).selectOption('food');await page.getByRole('checkbox',{name:'Include Apple in batch',exact:true}).check();
+    await page.getByRole('button',{name:'Add selected symbols to a Visual Pack',exact:true}).click();await page.getByRole('combobox',{name:'Destination Visual Pack',exact:true}).selectOption('pack:existing');
+    await page.getByText('1 to add · 1 already included · existing boards and sequences are kept',{exact:true}).waitFor();
+    await page.locator('#ss-selection-pack').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(output,width+'-preview.png'),animations:'disabled'});
+    const preview=await page.evaluate('('+context.measure.toString()+')()');assert.equal(preview.workspaceOverflow.length,0);
+    const save=page.getByRole('button',{name:'Save selected symbols to Visual Pack',exact:true});await save.click();
+    let packs=await page.evaluate(()=>JSON.parse(localStorage.getItem('alloActivitySets__ui-review')));assert.deepEqual(packs[0].assetIds,['water','apple']);assert.deepEqual(packs[0].boardIds,['demo-board']);assert.deepEqual(packs[0].scheduleIds,['demo-schedule']);
+    await page.getByRole('button',{name:'Open updated Visual Pack',exact:true}).click();assert.equal(await page.locator('#ss-pack-heading').innerText(),'Daily supports');
+    await page.getByRole('tab',{name:/Symbol Bank/}).click();await page.getByRole('combobox',{name:'Destination Visual Pack',exact:true}).selectOption('new');
+    const title='Classroom communication supports for home and school';await page.getByRole('textbox',{name:'Name for selected-symbol Visual Pack',exact:true}).fill(title);
+    await page.evaluate(()=>{window.__packSetItem=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='alloActivitySets__ui-review')throw new DOMException('Full','QuotaExceededError');return window.__packSetItem.call(this,key,value);};});
+    await save.click();await page.getByText('Could not save this Visual Pack. Your selection and pack contents are unchanged. Free device space and try again.',{exact:true}).waitFor();
+    assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('alloActivitySets__ui-review')))).length,1);
+    await page.evaluate(()=>{Storage.prototype.setItem=window.__packSetItem;});await save.click();
+    packs=await page.evaluate(()=>JSON.parse(localStorage.getItem('alloActivitySets__ui-review')));assert.equal(packs.length,2);assert.equal(packs[0].title,title);assert.deepEqual(packs[0].assetIds,['water','apple']);
+    await page.getByRole('button',{name:'Open updated Visual Pack',exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:path.join(output,width+'-saved.png'),animations:'disabled'});
+    const saved=await page.evaluate('('+context.measure.toString()+')()');assert.equal(saved.workspaceOverflow.length,0);
+    const controls=await page.locator('#ss-selection-pack button,#ss-selection-pack select').evaluateAll(items=>items.map(el=>({name:el.getAttribute('aria-label'),height:el.getBoundingClientRect().height})));assert.ok(controls.every(c=>c.height>=44));assert.deepEqual(errors,[]);
+    results.push({width,hiddenSelection:true,duplicatePreview:true,existingContentPreserved:true,openDestination:true,failedSaveRetainsChoices:true,retryCreatesOnePack:true,selectionOrder:true,previewOverflow:preview.workspaceOverflow,savedOverflow:saved.workspaceOverflow,minimumControlHeight:44,errors});
+    fs.writeFileSync(path.join(output,'checks.json'),JSON.stringify(results,null,2)+'\n');await page.close();
+  }}finally{await browser.close();context.server.close();}console.log(JSON.stringify(results,null,2));
+})().catch(error=>{console.error(error);context.server.close();process.exitCode=1;});

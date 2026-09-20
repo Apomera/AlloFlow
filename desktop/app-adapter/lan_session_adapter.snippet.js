@@ -89,6 +89,26 @@ async function _alloLanFetch(pathname, init) {
   if (init && init.body) headers['Content-Type'] = 'application/json';
   return fetch(cfg.base + pathname, Object.assign({}, init, { headers }));
 }
+async function _alloLanOrganizerRequest(code, method = 'GET', body = null, signal) {
+  const cfg = _alloLanConfig();
+  if (!cfg || !code) throw new Error('Join a LAN class before using reflections.');
+  const controller = new AbortController();
+  const cancel = () => controller.abort();
+  if (signal?.aborted) controller.abort(); else signal?.addEventListener('abort', cancel, { once: true });
+  const timeout = setTimeout(cancel, 20000);
+  try {
+    const response = await fetch(cfg.base + '/api/lan-sessions/' + encodeURIComponent(code) + '/reflections', {
+      method, signal: controller.signal, headers: { ...(cfg.token ? { Authorization: 'Bearer ' + cfg.token } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}),
+    });
+    let value; try { value = await response.json(); } catch (_) { throw new Error('This desktop version does not support reflection review. Update the teacher desktop and retry.'); }
+    if (!response.ok) { const error = new Error(value.error || 'The reflection request failed. Try again.'); error.status = response.status; throw error; }
+    return value;
+  } catch (error) {
+    if (error.name === 'AbortError' && !signal?.aborted) throw new Error('The reflection request timed out. Your draft is still saved; try again.');
+    throw error;
+  } finally { clearTimeout(timeout); signal?.removeEventListener('abort', cancel); }
+}
+
 function _alloLanSnap(ref, payload) {
   // Mimics the Firestore v9 DocumentSnapshot surface the app actually uses:
   // exists() / data() / id / ref. payload is the bridge's {id, data, …} or null.

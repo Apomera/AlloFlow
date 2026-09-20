@@ -1,0 +1,160 @@
+{
+  "exportedAt": "2026-09-19T23:15:25.570Z",
+  "version": 1,
+  "title": "Rescue a dry sauce · attempt comparison",
+  "challenge": "dry",
+  "startingMoisture": 8,
+  "brief": "Golden mushroom pasta is already combined, but the sauce looks dry. Both burners are off; the pan is still warm. You have 200 mL of saved pasta water.",
+  "scope": "Both attempts start from the same supplied dish. Predictions are ungraded. Plans and reflections need human review. Timing and support describe the attempt; outcomes determine the result.",
+  "a": {
+    "mode": "demonstrate",
+    "status": "Review and retry",
+    "prediction": "Mix without changing the liquid",
+    "plan": "",
+    "reflection": "I mixed without adding the missing water.",
+    "explanation": "A measured splash adds moisture; folding distributes it through the dish.",
+    "explanationSupported": true,
+    "criteria": [
+      {
+        "label": "Sauce adjusted to coat the pasta and mixed through",
+        "met": false
+      },
+      {
+        "label": "Pasta retains a slight bite",
+        "met": true
+      },
+      {
+        "label": "Dish checked after adjustment; both burners off",
+        "met": true
+      }
+    ],
+    "moisture": 8,
+    "waterUsed": 0,
+    "waterRemaining": 200,
+    "seconds": 0,
+    "pasta": "Tender with a slight bite",
+    "sauce": "Dry; needs a splash",
+    "hints": 0,
+    "corrections": 0,
+    "mixes": 0,
+    "actions": [
+      {
+        "action": "panHeat",
+        "value": 0,
+        "time": 0,
+        "accepted": true,
+        "observation": "Pan burner off. The pan retains heat after you turn it down."
+      },
+      {
+        "action": "taste",
+        "value": null,
+        "time": 0,
+        "accepted": true,
+        "observation": "Sauce check: Dry; needs a splash. Pasta: Tender with a slight bite."
+      },
+      {
+        "action": "plate",
+        "value": null,
+        "time": 0,
+        "accepted": true,
+        "observation": "Dish plated. Review the texture, sauce, and choices you made."
+      }
+    ]
+  },
+  "b": {
+    "mode": "demonstrate",
+    "status": "Rescue demonstrated independently",
+    "prediction": "Mix without changing the liquid",
+    "plan": "",
+    "reflection": "I changed the moisture, then checked the dish.",
+    "explanation": "A measured splash adds moisture; folding distributes it through the dish.",
+    "explanationSupported": true,
+    "criteria": [
+      {
+        "label": "Sauce adjusted to coat the pasta and mixed through",
+        "met": true
+      },
+      {
+        "label": "Pasta retains a slight bite",
+        "met": true
+      },
+      {
+        "label": "Dish checked after adjustment; both burners off",
+        "met": true
+      }
+    ],
+    "moisture": 58,
+    "waterUsed": 50,
+    "waterRemaining": 150,
+    "seconds": 0,
+    "pasta": "Tender with a slight bite",
+    "sauce": "Golden, glossy mushrooms",
+    "hints": 0,
+    "corrections": 0,
+    "mixes": 1,
+    "actions": [
+      {
+        "action": "pour",
+        "value": 50,
+        "time": 0,
+        "accepted": true,
+        "observation": "50 mL cooking water poured; 150 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
+      },
+      {
+        "action": "stirSweep",
+        "value": "button",
+        "time": 0,
+        "accepted": true,
+        "observation": "Pasta folded through the sauce. Observe the coating before deciding on another splash. Check the dish again before plating."
+      },
+      {
+        "action": "panHeat",
+        "value": 0,
+        "time": 0,
+        "accepted": true,
+        "observation": "Pan burner off. The pan retains heat after you turn it down."
+      },
+      {
+        "action": "taste",
+        "value": null,
+        "time": 0,
+        "accepted": true,
+        "observation": "Sauce check: Golden, glossy mushrooms. Pasta: Tender with a slight bite."
+      },
+      {
+        "action": "plate",
+        "value": null,
+        "time": 0,
+        "accepted": true,
+        "observation": "Dish plated. Review the texture, sauce, and choices you made."
+      }
+    ]
+  },
+  "changes": [
+    {
+      "label": "Sauce adjusted to coat the pasta and mixed through",
+      "a": false,
+      "b": true,
+      "change": "improved"
+    },
+    {
+      "label": "Pasta retains a slight bite",
+      "a": true,
+      "b": true,
+      "change": "unchanged"
+    },
+    {
+      "label": "Dish checked after adjustment; both burners off",
+      "a": true,
+      "b": true,
+      "change": "unchanged"
+    },
+    {
+      "label": "Explanation addresses the starting problem",
+      "a": true,
+      "b": true,
+      "change": "unchanged"
+    }
+  ],
+  "nextPractice": "Keep the successful adjustment and explain what you observed after it."
+}

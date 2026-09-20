@@ -2,7 +2,7 @@ import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from 'vite
 import { readFileSync } from 'node:fs';
 import { loadAlloModule } from './setup.js';
 let api;
-beforeAll(() => { loadAlloModule('export_handlers_module.js'); api = window.AlloModules.ExportHandlers; });
+beforeAll(() => { window.React = window.React || {}; loadAlloModule('host_handlers_module.js'); loadAlloModule('export_handlers_module.js'); api = window.AlloModules.ExportHandlers; });
 let clipboard;
 beforeEach(() => { clipboard = vi.fn().mockResolvedValue(); vi.stubGlobal('navigator', { clipboard: { writeText: clipboard } }); });
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
@@ -44,7 +44,8 @@ const appSource = readFileSync('AlloFlowANTI.txt','utf8');
 function hostCallback(name, endMarker, scope) {
   const start = appSource.indexOf('  const ' + name + ' ='); const end = appSource.indexOf(endMarker,start);
   if(start<0||end<0) throw new Error('Missing host callback '+name);
-  return new Function(...Object.keys(scope),appSource.slice(start,end)+'\nreturn '+name+';')(...Object.values(scope));
+  const handlers = window.AlloModules.HostHandlers(scope);
+  return new Function('_alloHostHandlers',...Object.keys(scope),appSource.slice(start,end)+'\nreturn '+name+';')(()=>handlers,...Object.values(scope));
 }
 function printHost(resources) {
   const moduleExport = vi.spyOn(api,'handleExport').mockResolvedValue(true);

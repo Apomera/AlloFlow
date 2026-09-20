@@ -8,7 +8,8 @@
     "gradeLevel": "1st Grade",
     "standards": "CCSS.ELA-LITERACY.RF.1.2.A (distinguish long from short vowel sounds in spoken single-syllable words); CCSS.ELA-LITERACY.RF.1.2.C (isolate and pronounce initial, medial vowel, and final sounds in spoken single-syllable words); CCSS.ELA-LITERACY.RF.1.3.B (decode regularly spelled one-syllable words); CCSS.ELA-LITERACY.RF.1.3.G (recognize and read grade-appropriate irregularly spelled words)",
     "createdAt": "2026-09-06T01:10:00.000Z",
-    "imageShotList": "allopacks/word_families_grade1.IMAGES.md"
+    "imageShotList": "allopacks/word_families_grade1.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Word Families and Rhyming Patterns",
   "history": [
@@ -55,7 +56,7 @@
       "title": "Learn One, Read Many",
       "timestamp": "2026-09-06T01:10:01.000Z",
       "data": "## Learn One, Read Many\n\nSay this **word**: cat.\n\nNow keep the ending and swap the front. Hat. Bat. Mat. Sat. Rat. Pat.\n\nYou just read six new words. You did not learn six new words. You learned one **chunk**, and then you swapped the **start**.\n\nThat is a word **family**. All the words end with the same **letters** and the same **sound**.\n\nHere is another one. Hop. Mop. Top. Pop. Same ending, new front each time.\n\nSome fronts have two letters that you say fast together. That is a **blend**. Stop. Chop. Shop. Those are in the same family too.\n\nWhen words end the same way, they **rhyme**. So a family is a group of words that rhyme.\n\nEvery family has a **vowel** in it. The vowels are a, e, i, o and u. The vowel sits in the middle and gives the chunk its sound.\n\nWord families are a **pattern**. Once you spot the pattern, reading gets faster, because you stop sounding out every letter.\n\nBut here is something true and a bit annoying. Not every word that rhymes looks the same. Say some and hum. They rhyme. They do not match at all. English does that sometimes.\n\nSo use your eyes and your ears. Look for the chunk. Then listen to check.",
-      "meta": "1st Grade • Leveled reading • ~215 words • read aloud together",
+      "meta": "1st Grade • Leveled reading • read aloud together",
       "imageSlot": "wf-img-swap-front"
     },
     {

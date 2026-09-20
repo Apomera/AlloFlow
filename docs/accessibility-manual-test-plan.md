@@ -75,3 +75,18 @@ These results do not complete the manual matrix above. NVDA, VoiceOver, native b
 ### September 12, 2026 remediation follow-up
 
 The [five-finding remediation report](../reports/wcag-audit-2026-09-12/remediation/README.md) records 38 passing targeted regressions and local browser verification. Remaining manual tasks include populated Video Studio preflight announcements, speech-input/AT naming across header layouts and languages, true browser zoom, media accessibility and complete authenticated/live/export workflows. These remain open; automated results do not complete this manual plan.
+
+
+### September 19, 2026 follow-up
+
+See the [v1.6 follow-up](../reports/wcag-audit-2026-09-19/README.md) for keyboard-scroll, search-state and themed-fixture evidence. Manual follow-up should verify the new named chart/statistics regions with a screen reader and the search relationship during real typing, clearing and navigation. Screen readers, native zoom, complete workflows and export/media checks remain open. The original full regression run has not been repeated for v1.6.
+
+
+## September 19 sidebar follow-up
+
+See the [local sidebar report](../reports/wcag-audit-2026-09-19/sidebar-followup/README.md). Browser checks now cover delayed loading, switching, manual activation, mobile panel labels, History-menu Escape focus return and catalog control bounds at 320px with enlarged text spacing after a grid-sizing repair. Continue with NVDA/VoiceOver to confirm tab/panel announcements, atomic History count changes and loading/retry announcements. Review the four unresolved History gradient/background contrast nodes. Repeat full app theme, zoom, RTL and student-mode checks before treating this sample as release-level evidence.
+
+
+## September 19 History contrast and reflow follow-up
+
+See the [History report](../reports/wcag-audit-2026-09-19/history-contrast/README.md). Placeholders, Cancel/type badges and dark Save colors now meet the measured text-contrast threshold in sampled states. The new-unit form and resource titles fit at 320px with verified effective spacing in three themes. Continue native select-image contrast review, Move-to-unit popup/AT checks, long and localized titles, actual icons, zoom, and complete create/rename/save workflows. Three earlier gradient-backed text samples have supporting computed color measurements; retain broader manual review.

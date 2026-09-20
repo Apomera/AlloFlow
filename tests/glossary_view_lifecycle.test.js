@@ -109,13 +109,13 @@ describe('glossary reading and editing controls', () => {
   it('keeps media editing out of reading mode and exposes it through one Edit toggle', async () => {
     const toggle = vi.fn(), view = mount({ handleToggleIsEditingGlossary: toggle });
     expect(view.container.querySelector('[data-help-key="glossary_add_term"]')).toBeNull();
-    expect(view.container.querySelector('[data-help-key="glossary_regen_image"]').closest('[hidden]').style.display).toBe('none');
+    expect(view.container.querySelector('[aria-label="Change image for Leaf"]')).toBeNull();
     expect(view.container.querySelector('[aria-label="Read definition for Leaf"]')).toBeTruthy();
     await click(view.container.querySelector('[data-help-key="glossary_edit"]'));
     expect(toggle).toHaveBeenCalledOnce();
     view.rerender({ ...view.props(), isEditingGlossary: true });
     expect(view.container.querySelector('[data-help-key="glossary_add_term"]')).toBeTruthy();
-    expect(view.container.querySelector('[data-help-key="glossary_regen_image"]').closest('[hidden]')).toBeNull();
+    expect(view.container.querySelector('[aria-label="Change image for Leaf"]')).toBeTruthy();
   });
   it('provides a named keyboard-scrollable table and a mobile scroll hint', () => {
     const view = mount();

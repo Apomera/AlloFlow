@@ -136,6 +136,24 @@ if (typeof module !== 'undefined' && module.exports) module.exports = { createSc
   };
   window.AlloFlowChatPrivacy = Object.freeze({
     destination,
+    // Saving is local: copy the displayed answer and supplied source records.
+    // Never summarize again or silently persist the preceding question.
+    savedAdvice: (text, question = '', evidence) => {
+      if (typeof text !== 'string' || !text.trim()) throw new Error('No advice to save.');
+      const sources = [], seen = new Set();
+      for (const row of (Array.isArray(evidence?.sources) ? evidence.sources : []).slice(0, 8)) {
+        const url = window.AlloModules?.UdlChat?.evidence?.safeUrl(row?.url);
+        if (!url || seen.has(url)) continue;
+        seen.add(url);
+        sources.push({ id: Number.isInteger(row.id) && row.id > 0 ? row.id : sources.length + 1, url,
+          title: String(row.title || new URL(url).hostname).replace(/[\r\n\u0000-\u001f]/g, ' ').slice(0, 240) });
+      }
+      const checkedAt = typeof evidence?.checkedAt === 'string' && Number.isFinite(Date.parse(evidence.checkedAt)) ? new Date(evidence.checkedAt).toISOString() : '';
+      const bibliography = sources.map(row => row.id + '. [' + row.title.replace(/[\[\]\\]/g, character => '\\' + character).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '](' + row.url.replace(/\(/g, '%28').replace(/\)/g, '%29') + ')').join('\n');
+      const data = (question ? '**Context:** ' + String(question) + '\n\n' : '') + text
+        + (bibliography ? '\n\n**Sources supplied with this reply**' + (checkedAt ? ' (retrieved ' + checkedAt + ')' : '') + ':\n' + bibliography + '\n\nSaved evidence is a snapshot; sources have not been checked again.' : '');
+      return { data, ...(sources.length ? { evidence: { sources, checkedAt, basis: evidence.basis === 'google-grounding' ? 'google-grounding' : 'search-excerpts' } } : {}) };
+    },
     get: () => ({ ...choice }),
     set: patch => { choice = { recent: patch.recent === true, excerpt: String(patch.excerpt || '').slice(0, 1500) }; notify(); },
     clear: () => { choice = { recent: false, excerpt: '' }; notify(); },

@@ -1,0 +1,30 @@
+{
+  "unitTestsPassed": 10,
+  "browserScenariosPassed": 6,
+  "browserRuns": {
+    "initialPassed": 5,
+    "layoutRerunPassed": 1
+  },
+  "reviewedScreenshots": [
+    "evidence-280.png",
+    "evidence-1200.png"
+  ],
+  "files": [
+    {
+      "path": "stem_lab/stem_tool_cell.js",
+      "sha256": "104f2c12ae0a299dc898df42685084a815141ca5472d9e170d95ec0f0314ed60"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_cell.js",
+      "sha256": "104f2c12ae0a299dc898df42685084a815141ca5472d9e170d95ec0f0314ed60"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_cell.js",
+      "sha256": "104f2c12ae0a299dc898df42685084a815141ca5472d9e170d95ec0f0314ed60"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_cell.js",
+      "sha256": "104f2c12ae0a299dc898df42685084a815141ca5472d9e170d95ec0f0314ed60"
+    }
+  ]
+}

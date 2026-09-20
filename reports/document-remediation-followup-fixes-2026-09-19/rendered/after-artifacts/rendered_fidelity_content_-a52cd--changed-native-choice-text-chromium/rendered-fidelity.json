@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "3e4b55a135c74cc2e65e7be6c42733d77e4db9cf7af4ac593996eebc2c0e1f9e",
+    "bytes": 126
+  },
+  "candidate": {
+    "sha256": "e3edd1869020f6a4c4c9817e0d5f58b7088cf55aadd691bf5a0ec53627ecdf10",
+    "bytes": 126
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 1085.4655000000002,
+  "status": "review-required",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "p",
+      "sourceSelector": "#p",
+      "candidateSelector": "#p",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "selected",
+          "status": "failed",
+          "source": [
+            {
+              "index": 0,
+              "value": "temperature",
+              "label": "Warm"
+            }
+          ],
+          "candidate": [
+            {
+              "index": 0,
+              "value": "temperature",
+              "label": "Cold"
+            }
+          ]
+        },
+        {
+          "property": "value",
+          "status": "passed",
+          "source": "temperature",
+          "candidate": "temperature"
+        },
+        {
+          "property": "name",
+          "status": "passed",
+          "source": "Temperature",
+          "candidate": "Temperature"
+        },
+        {
+          "property": "role",
+          "status": "passed",
+          "source": "listbox",
+          "candidate": "listbox"
+        },
+        {
+          "property": "exposed",
+          "status": "passed",
+          "source": true,
+          "candidate": true
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

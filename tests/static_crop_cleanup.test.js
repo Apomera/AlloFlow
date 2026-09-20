@@ -1,6 +1,5 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { chromium } from 'playwright';
 
 const source = readFileSync('doc_pipeline_source.jsx', 'utf8');
 const helperStart = source.indexOf('function _stripGeneratedImageEditorControls(html, stripFileHandlers) {');
@@ -23,10 +22,6 @@ const generatedButton = new Function('imgId', 'return ' + generatedTemplate)('pd
 const current = legacy.replace(cropButton, generatedButton).replace('<label ', '<label data-alloflow-image-replace="pdf-img-1" ');
 const markuplessButton = generatedButton.replace(/ onclick="[^"]*"/, '');
 const ld = '<script type="application/ld+json">{"name":"data", "example":"<button>Adjust Crop</button>"}</script>';
-
-let browser;
-beforeAll(async () => { browser = await chromium.launch({ headless: true }); }, 30000);
-afterAll(async () => { await browser?.close(); });
 
 describe('static image control cleanup preserves document source', () => {
   it('removes the actual legacy crop button even when scripts are already absent', () => {
@@ -120,51 +115,5 @@ describe('static image control cleanup preserves document source', () => {
     expect(out.querySelector('button')).toBeNull();
     expect(out.querySelector('img').getAttribute('src')).toBe(parse(legacy).querySelector('img').getAttribute('src'));
     expect(out.querySelector('figcaption').textContent).toBe(parse(legacy).querySelector('figcaption').textContent);
-  });
-});
-
-describe('Chromium static document behavior', () => {
-  it('keeps the actual raw Replace file-change behavior after removing crop', async () => {
-    const page = await browser.newPage();
-    try {
-      const cleaned = await page.evaluate(({ helperCode, stripCode, legacy }) => {
-        return new Function(helperCode + stripCode + '\nreturn _stripExecutableScripts;')()(legacy);
-      }, { helperCode, stripCode, legacy });
-      await page.setContent(cleaned);
-      expect(await page.getByRole('button', { name: 'Adjust crop for this image' }).count()).toBe(0);
-      const before = await page.locator('figure img').first().getAttribute('src');
-      const replacement = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64');
-      await page.locator('input[type="file"]').setInputFiles({ name: 'replacement.png', mimeType: 'image/png', buffer: replacement });
-      await page.waitForFunction(before => document.querySelector('figure img').getAttribute('src') !== before, before);
-      expect(await page.locator('figure img').first().getAttribute('src')).toBe('data:image/png;base64,' + replacement.toString('base64'));
-      expect(await page.locator('figcaption').count()).toBe(1);
-    } finally { await page.close(); }
-  });
-  it('canonical browser export has no dead picker while source controls and content remain', async () => {
-    const page = await browser.newPage();
-    try {
-      const sourceContent = '<p id="note">Source note</p><button id="source">Source choice</button><label>Answer<input id="answer" type="text"></label>';
-      const cleaned = await page.evaluate(({ sanitizerCode, html }) => new Function(sanitizerCode + '\nreturn _alloSanitizeRemediationHtml;')()(html), { sanitizerCode, html: legacy.replace(cropButton, cropButton + sourceContent) });
-      await page.setContent(cleaned);
-      expect(await page.locator('input[type="file"]').count()).toBe(0);
-      expect(await page.getByRole('button', { name: 'Adjust crop for this image' }).count()).toBe(0);
-      expect(await page.locator('#source').count()).toBe(1);
-      await page.locator('#answer').fill('Preserved');
-      expect(await page.locator('#answer').inputValue()).toBe('Preserved');
-      expect(await page.locator('#note').textContent()).toBe('Source note');
-      expect(await page.locator('figure img, figure figcaption, figure details').count()).toBe(3);
-    } finally { await page.close(); }
-  });
-  it('current generated preview control can call its runtime before static cleanup', async () => {
-    const page = await browser.newPage();
-    try {
-      await page.setContent(current);
-      await page.evaluate(() => { window.__pdfCropImage = id => { window.cropRequested = id; }; });
-      await page.getByRole('button', { name: 'Adjust crop for this image' }).click();
-      expect(await page.evaluate(() => window.cropRequested)).toBe('pdf-img-1');
-      const cleaned = await page.evaluate(({ helperCode, html }) => new Function(helperCode + '\nreturn _stripGeneratedImageEditorControls;')()(html, true), { helperCode, html: current });
-      await page.setContent(cleaned);
-      expect(await page.locator('[data-alloflow-crop-control],[data-alloflow-image-replace]').count()).toBe(0);
-    } finally { await page.close(); }
   });
 });

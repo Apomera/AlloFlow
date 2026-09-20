@@ -1,0 +1,52 @@
+function memoryAidRecallQuestion(card) {
+  const question = _maString(card?.recallQuestion, 1600).trim();
+  const fold = value => _maString(value, 6000).normalize('NFKC').toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  const text = fold(question);
+  // Catch direct answer copies. This cannot certify the meaning of a question;
+  // teachers can review and edit it beside the facts.
+  const answers = [card?.target, memoryAidPracticeCue(card), ...(card?.essentialFacts || [])].map(fold).filter(value => value.length >= 18);
+  return text && !answers.some(answer => text === answer || (' ' + text + ' ').includes(' ' + answer + ' ')) ? question : '';
+}
+
+function memoryAidCustomCue(card) {
+  return !!_maString(card?.studentDraft, 6000).trim() && memoryAidPracticeCue(card).trim() !== memoryAidPracticeCue({ ...card, studentDraft: '' }).trim();
+}
+
+function memoryAidConnectionKey(card) { return _maStableHash(memoryAidPracticeCue(card).trim()); }
+
+function normalizeMemoryAidStudentConnections(value) {
+  const seen = new Set();
+  return (Array.isArray(value) ? value : []).filter(row => {
+    const key = _maString(row?.factKey, 800); if (!key || seen.has(key)) return false; seen.add(key); return true;
+  }).slice(0, 20).map(row => ({ factKey: _maString(row.factKey, 800), cue: _maString(row.cue, 200), explanation: _maString(row.explanation, 600), cueKey: _maString(row.cueKey, 80) }));
+}
+
+function memoryAidActiveConnections(card) {
+  const facts = _maList(card?.essentialFacts, 10, 600), keys = _maPracticeFactKeys(facts);
+  const learner = normalizeMemoryAidStudentConnections(card?.studentConnections).filter(row => row.cue.trim() && row.cueKey === memoryAidConnectionKey(card) && keys.includes(row.factKey));
+  if (learner.length) return learner.map(row => ({ ...row, factIndex: keys.indexOf(row.factKey), learnerIdentified: true }));
+  return memoryAidCustomCue(card) ? [] : normalizeMemoryAidConnections(card?.connections, facts);
+}
+
+function MemoryAidConnectionEditor({ card, onChange, tr, readOnly }) {
+  const keys = _maPracticeFactKeys(card.essentialFacts), rows = card.studentConnections;
+  const current = memoryAidActiveConnections(card).filter(row => row.learnerIdentified).length;
+  const edit = (key, patch) => {
+    const old = rows.find(row => row.factKey === key) || { factKey: key, cue: '', explanation: '' };
+    onChange([...rows.filter(row => row.factKey !== key), { ...old, ...patch, cueKey: memoryAidConnectionKey(card) }]);
+  };
+  return <details className="rounded-xl border border-teal-200 bg-white p-3">
+    <summary className="min-h-11 cursor-pointer py-2 text-sm font-bold text-teal-900">{tr('connections_editor', 'Connect my cue to the facts')}</summary>
+    <p className="text-sm text-slate-600">{tr('connections_note', 'Name the part of your cue that reminds you of each fact. These are your connections, not an accuracy check.')}</p>
+    <p className="mt-2 text-sm font-semibold">{tr('connections_count', '{count} of {total} facts have a current connection from you.', { count: current, total: keys.length })}</p>
+    {keys.map((key, i) => {
+      const row = rows.find(item => item.factKey === key) || { cue: '', explanation: '' }, stale = (row.cue || row.explanation) && row.cueKey !== memoryAidConnectionKey(card);
+      return <fieldset key={key} className="mt-4 min-w-0 rounded-xl border border-slate-200 p-3"><legend className="text-sm font-bold">{card.essentialFacts[i]}</legend>
+        <label className="mt-2 block text-sm">{tr('connections_cue', 'This part of my cue')}<input aria-label={tr('connections_cue_aria', 'Cue part for fact {n}', { n: i + 1 })} readOnly={readOnly} value={row.cue} maxLength={200} onChange={e => edit(key, { cue: e.target.value })} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 p-2" /></label>
+        <label className="mt-3 block text-sm">{tr('connections_why', 'How it reminds me (optional)')}<textarea aria-label={tr('connections_why_aria', 'Connection explanation for fact {n}', { n: i + 1 })} readOnly={readOnly} value={row.explanation} maxLength={600} rows={2} onChange={e => edit(key, { explanation: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 p-2" /></label>
+        {stale && <div className="mt-2 text-sm text-amber-950"><p>{tr('connections_changed', 'Your cue changed. Recheck this connection.')}</p>{!readOnly && <button type="button" onClick={() => edit(key, {})} className="mt-2 min-h-11 rounded-xl border border-amber-400 px-3 py-2">{tr('connections_confirm', 'This connection still fits')}</button>}</div>}
+      </fieldset>;
+    })}
+    {rows.some(row => !keys.includes(row.factKey) && (row.cue || row.explanation)) && <details className="mt-3"><summary className="min-h-11 cursor-pointer py-2 text-sm font-bold">{tr('connections_earlier', 'Notes for earlier facts')}</summary><p className="text-sm">{tr('connections_earlier_note', 'The facts changed. These earlier notes are kept for reference and are not used in the current connections.')}</p>{rows.filter(row => !keys.includes(row.factKey)).map(row => <p key={row.factKey} className="mt-2 whitespace-pre-wrap text-sm">{row.cue}{row.explanation && ': ' + row.explanation}</p>)}</details>}
+  </details>;
+}

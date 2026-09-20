@@ -1,0 +1,9 @@
+[
+  "tests/document_export_inspection_failures.test.js",
+  "tests/remediation_residual_live.test.js",
+  "tests/source_remediation_contract.test.js",
+  "tests/remediation_autoloop_dependencies.test.js",
+  "tests/remediation_view_lifecycle_regressions.test.js",
+  "tests/utils_pure_storage.test.js",
+  "tests/static_crop_cleanup.test.js"
+]

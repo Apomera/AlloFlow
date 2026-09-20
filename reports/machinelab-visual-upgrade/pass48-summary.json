@@ -1,0 +1,30 @@
+{
+  "pass": 48,
+  "change": "Working and return phase indicator synchronized to the rendered demonstration",
+  "unitAndUiTests": 544,
+  "browserChecks": 232,
+  "screenshots": 34,
+  "themes": {
+    "light": {
+      "checks": 77,
+      "screenshots": 11,
+      "errors": [],
+      "overflow": false
+    },
+    "dark": {
+      "checks": 77,
+      "screenshots": 11,
+      "errors": [],
+      "overflow": false
+    },
+    "contrast": {
+      "checks": 78,
+      "screenshots": 12,
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "sourceMirrorIdentical": true,
+  "syntaxValid": true,
+  "localOnly": true
+}

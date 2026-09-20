@@ -8,7 +8,8 @@
     "gradeLevel": "3rd Grade",
     "createdAt": "2026-09-05T13:20:00.000Z",
     "imageShotList": "allopacks/forces_motion_grade3.IMAGES.md",
-    "standards": "NGSS 3-PS2-1 (plan and conduct an investigation to provide evidence of the effects of balanced and unbalanced forces on the motion of an object); NGSS 3-PS2-2 (make observations and measurements of an object's motion to provide evidence that a pattern can be used to predict future motion); CCSS.ELA-LITERACY.RI.3.3 (describe the relationship between a series of scientific ideas using language that pertains to cause and effect)"
+    "standards": "NGSS 3-PS2-1 (plan and conduct an investigation to provide evidence of the effects of balanced and unbalanced forces on the motion of an object); NGSS 3-PS2-2 (make observations and measurements of an object's motion to provide evidence that a pattern can be used to predict future motion); CCSS.ELA-LITERACY.RI.3.3 (describe the relationship between a series of scientific ideas using language that pertains to cause and effect)",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Forces and Motion",
   "history": [
@@ -47,7 +48,7 @@
       "type": "simplified",
       "title": "The Invisible Push",
       "timestamp": "2026-09-05T13:21:00.000Z",
-      "meta": "3rd Grade • Leveled reading • ~450 words",
+      "meta": "3rd Grade • Leveled reading",
       "data": "## The Invisible Push\n\nRoll a ball across the floor. It goes, and goes, and then it slows down and stops. Why did it stop? Nothing touched it. Or did something?\n\nA **force** is a push or a pull. Every time something starts to move, speeds up, slows down, or changes direction, a force did it. You cannot see a force, but you can always see what it does.\n\nWhen you kick a ball, your foot pushes it. That push makes it move. A **push** moves things away from you. A **pull** brings things toward you, like when you tug a wagon. Both are forces.\n\nNow the mystery of the rolling ball. It stopped because of a force you did not notice: **friction**. Friction is the rubbing between the ball and the floor. It pushes against the ball's motion, a tiny bit with every roll, until the ball runs out of **motion**. On a smooth gym floor there is less friction, so the ball rolls farther. On thick carpet there is more friction, so it stops sooner.\n\nHere is another invisible force. Drop a pencil. It falls down, not up, not sideways. **Gravity** is the pull that brings things toward the ground. It is always pulling on you, even right now while you sit still.\n\nWait. If gravity is pulling on you right now, why are you not falling?\n\nBecause the chair is pushing up on you exactly as hard as gravity is pulling down. Two forces, the same size, in opposite directions. They cancel out. We call that **balanced**. When forces are balanced, nothing about the motion changes: a still thing stays still, and a moving thing keeps moving the same way.\n\nWhen one force is bigger than the other, the forces are **unbalanced**, and that is when motion changes. Two kids pull a rope with the same strength: balanced, nobody moves. One kid pulls harder: unbalanced, the rope moves toward the stronger pull. A parked bike is balanced. A bike you are pedaling is unbalanced, because your push is beating friction.\n\nSo here is your detective rule. See something start, stop, speed up, or turn? Look for the unbalanced force. See something sitting still or gliding steadily? The forces are balanced.\n\nOne more thing, and it is the part scientists love. Forces follow **patterns**. Roll the same ball down the same ramp the same way and it goes about the same distance every time. Roll it from higher up and it goes farther, every time. Because forces follow patterns, you can **predict** what will happen before it happens. That is not magic. That is science, and you can do it with a ball and a ramp this week."
     },
     {
@@ -191,7 +192,7 @@
               "Gravity is the pull toward the ground and is always pulling, even when you sit still."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "keyword-association",
             "mode": "scaffolded",
             "aiExample": "FRICTION = FRRR, the sound of rubbing. GRAVITY = GROUND, the G pulls you to the ground.",
@@ -221,7 +222,7 @@
               "Start, stop, speed up, or turn always means an unbalanced force."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "visual-association",
             "mode": "scaffolded",
             "aiExample": "Picture a tug of war. Both teams pulling the same: the flag on the rope does not move (balanced). One team pulls harder: the flag slides toward them (unbalanced). The flag only moves when the pulls are not equal.",
@@ -526,7 +527,7 @@
           ],
           "deliverable": "A data table (setup, roll 1, roll 2, roll 3). Your guesses. Your prediction for the setup you did not try, and how close it was. And two sentences about what friction did.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

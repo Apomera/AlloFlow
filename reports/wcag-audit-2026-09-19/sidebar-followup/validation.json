@@ -1,0 +1,85 @@
+{
+  "checkedAt": "2026-09-19T21:11:51.235Z",
+  "errors": [],
+  "hashes": {
+    "AlloFlowANTI.txt": "cad2ba15914137164d81628e0f785f1c0ae612df483aa9f0d1abed5440eafc1d",
+    "desktop/web-app/src/App.jsx": "bd290aa81bee2418cf959dd6d445e5956738d57a57c9e3e6e7b0cb7c938ab80f",
+    "desktop/web-app/src/AlloFlowANTI.txt": "bd290aa81bee2418cf959dd6d445e5956738d57a57c9e3e6e7b0cb7c938ab80f",
+    "view_sidebar_tabs_nav_source.jsx": "69a08765b7d410866e178a1b5a22ea1dc5412307d0d35992e8d88ab63bcd0c0c",
+    "view_sidebar_tabs_nav_module.js": "0aadba484325033a9dba762086031b14953ef9ee6e8db019585b8e2375b85841",
+    "view_history_panel_source.jsx": "3a83ed5fb4d4813a385820525df864544ca50c6f3840e7d134bc6d030d6f433c",
+    "view_history_panel_module.js": "5bba69dafc7819557327a1798d9b7e5eef910640f53be35963f0f88a3c92d875",
+    "tests/sidebar_tabs_navigation_a11y.test.js": "beb88a6e6679860d4c05f75acd7446b681ba5e61a379ad37e2700a6d41af14a2",
+    "tests/history_panel_theme.test.js": "668f11a26f1af299c9bbbb6c28bf094f565de010cda110845af6fa8f761eabae",
+    "tests/sidebar_shell_extraction.test.js": "ebb8587fec4dc9e67f235a87cc78115472bbda4279282c167a7a8c38e05015dd",
+    "view_sidebar_panels_source.jsx": "f881ac142d5c532750b166c1809da357485399091433b45682a7723b61c1aa7b",
+    "view_sidebar_panels_module.js": "9c7327338f6e39f32fd72f7b144b9142f884c219ec2d7c0bdb256824db61ff5e"
+  },
+  "mirrors": {
+    "view_sidebar_tabs_nav_module.js": true,
+    "view_history_panel_module.js": true,
+    "view_sidebar_panels_module.js": true
+  },
+  "sourcePanelParity": {
+    "desktop/web-app/src/App.jsx": true,
+    "desktop/web-app/src/AlloFlowANTI.txt": true
+  },
+  "vpat": {
+    "criteria": 55,
+    "unique": 55,
+    "ratings": {
+      "Partially Supports": 53,
+      "Not Applicable": 2
+    }
+  },
+  "browser": {
+    "checks": 8,
+    "allChecksPass": true,
+    "states": [
+      {
+        "name": "loading-create",
+        "violations": 0,
+        "incomplete": [],
+        "width": 1280,
+        "viewport": 1280
+      },
+      {
+        "name": "ready-create",
+        "violations": 0,
+        "incomplete": [],
+        "width": 1280,
+        "viewport": 1280
+      },
+      {
+        "name": "ready-history",
+        "violations": 0,
+        "incomplete": [
+          "color-contrast"
+        ],
+        "width": 1280,
+        "viewport": 1280
+      },
+      {
+        "name": "mobile-create",
+        "violations": 0,
+        "incomplete": [],
+        "width": 320,
+        "viewport": 320
+      },
+      {
+        "name": "mobile-create-spacing",
+        "violations": 0,
+        "incomplete": [],
+        "width": 320,
+        "viewport": 320
+      }
+    ],
+    "historyBadge": {
+      "name": "0 resources",
+      "role": "status",
+      "color": "rgb(30, 41, 59)",
+      "background": "rgb(241, 245, 249)",
+      "ratio": 13.35325281838611
+    }
+  }
+}

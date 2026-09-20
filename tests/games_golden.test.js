@@ -67,7 +67,7 @@ const GAMES = [
   { name: 'ConceptMapSortGame', ssr: true, assert: ['Concept Map Sort'],
     props: { data: { branches: [{ title: 'Animals', items: ['Dog', 'Cat'] }, { title: 'Plants', items: ['Rose', 'Fern'] }] }, topicTitle: 'Taxonomy', onClose: () => {}, playSound: () => {}, onScoreUpdate: () => {}, onGameComplete: () => {} } },
 
-  { name: 'ProblemSolutionSortGame', ssr: true, assert: ['Prioritize the Solutions', 'Try First', 'Last Resort'],
+  { name: 'ProblemSolutionSortGame', ssr: true, assert: ['Match Details to Solutions'],
     props: { data: { branches: [{ title: 'Solutions', items: ['Ask a friend', 'Read the manual', 'Call support'] }] }, topicTitle: 'Troubleshooting', onClose: () => {}, playSound: () => {}, onScoreUpdate: () => {}, onGameComplete: () => {} } },
 
   { name: 'FishboneSortGame', ssr: true, assert: ['Fishbone Sort', 'People', 'Process'],

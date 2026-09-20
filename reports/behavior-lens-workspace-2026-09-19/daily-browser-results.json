@@ -1,0 +1,122 @@
+[
+  {
+    "width": 1280,
+    "state": "today",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "supports",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "session",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "correction",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "history",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "today",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "supports",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "session",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "correction",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "history",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "today",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "supports",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "session",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "correction",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "history",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  }
+]

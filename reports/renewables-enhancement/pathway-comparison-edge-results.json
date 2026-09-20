@@ -1,0 +1,26 @@
+{
+  "layouts": [
+    {
+      "width": 1280,
+      "scrollWidth": 1280,
+      "comparison": "Current vs WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\nComparison baseline\n1. Second reading · Steady conditions\n2. WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW · Steady conditions\n\nOne input changed\n\nElectrical output: 3.61e-303 → 3.61 kW (+3.61 kW; +1.00e+305%).\n\nDirect irradiance: 1.00e-300 → 1,000 W/m²\nThe technology, scenario, and meaningful time are held fixed. This isolates one changed input within this model.\nFollow the difference through each stage\n\nBase"
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "comparison": "Current vs WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\nComparison baseline\n1. Second reading · Steady conditions\n2. WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW · Steady conditions\n\nOne input changed\n\nElectrical output: 3.61e-303 → 3.61 kW (+3.61 kW; +1.00e+305%).\n\nDirect irradiance: 1.00e-300 → 1,000 W/m²\nThe technology, scenario, and meaningful time are held fixed. This isolates one changed input within this model.\nFollow the difference through each stage\n\nBase"
+    },
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "comparison": "Current vs WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\nComparison baseline\n1. Second reading · Steady conditions\n2. WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW · Steady conditions\n\nOne input changed\n\nElectrical output: 3.61e-303 → 3.61 kW (+3.61 kW; +1.00e+305%).\n\nDirect irradiance: 1.00e-300 → 1,000 W/m²\nThe technology, scenario, and meaningful time are held fixed. This isolates one changed input within this model.\nFollow the difference through each stage\n\nBase"
+    }
+  ],
+  "audits": {
+    "320": [],
+    "390": [],
+    "1280": []
+  },
+  "sourceSha256": "aff5dd7e1078d00d5a71fc3316f71c09289dd0ab04e148d36964b737ac97361c",
+  "mobileSelectionPreservesInputs": true
+}

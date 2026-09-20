@@ -195,7 +195,7 @@ describe('C · memory-aid is registered in every host table', () => {
     expect(a).toContain("'anchor-chart': 'anchor-chart', 'memory-aid': 'memory-aid', 'applied-challenge': 'applied-challenge'");
     expect(a).toContain("'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge', 'image', 'faq'");
     expect(a).toContain("'concept-sort', 'dbq', 'note-taking', 'anchor-chart', 'memory-aid',\n  'applied-challenge', 'gemini-bridge',");
-    expect(a).toContain("'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge',\n          'dbq', 'faq', 'outline', 'image',");
+    expect(src('host_handlers_source.jsx')).toContain("'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge',\n          'dbq', 'faq', 'outline', 'image',");
     expect(a).toContain("case 'memory-aid':\n        case 'applied-challenge':\n            return 'thinking-cap';");
     // The expand-all label threshold has to keep pace with the list length.
     expect(src('view_sidebar_panels_source.jsx')).toContain('allEditorsExpanded: expandedTools.length >= 18,');

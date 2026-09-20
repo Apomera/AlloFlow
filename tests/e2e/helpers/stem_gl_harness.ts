@@ -103,7 +103,8 @@ export function findAppStylesheet(): string | null {
 }
 
 function harnessHtml(o: HarnessOptions, appCss: string | null): string {
-  const extra = (o.extraScripts || []).map((s) => '<script src="/' + s + '"></script>').join('\n');
+  const dependencies = ['beehive', 'butterfly'].includes(o.toolId) ? ['stem_lab/stem_sim_meadow.js'] : [];
+  const extra = dependencies.concat(o.extraScripts || []).map((s) => '<script src="/' + s + '"></script>').join('\n');
   const pre = (o.preScripts || []).map((s) => '<script src="/' + s + '"></script>').join('\n');
   // Before the inline block below, so the harness's own sizing still wins.
   const styles = appCss ? `<link rel="stylesheet" href="/${appCss}">` : '';

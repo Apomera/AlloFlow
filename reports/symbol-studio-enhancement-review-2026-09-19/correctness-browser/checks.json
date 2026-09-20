@@ -1,0 +1,44 @@
+[
+  {
+    "width": 1440,
+    "approvedReuse": true,
+    "flaggedFallbackNotice": true,
+    "unicodeGardenMerged": true,
+    "legacyMessagesCounted": true,
+    "persistedComposition": true,
+    "summaryMean": 2,
+    "aggregateTaps": 5,
+    "aggregateSpeechRequests": 3,
+    "gardenOverflow": [],
+    "summaryFits": true,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "approvedReuse": true,
+    "flaggedFallbackNotice": true,
+    "unicodeGardenMerged": true,
+    "legacyMessagesCounted": true,
+    "persistedComposition": true,
+    "summaryMean": 2,
+    "aggregateTaps": 5,
+    "aggregateSpeechRequests": 3,
+    "gardenOverflow": [],
+    "summaryFits": true,
+    "errors": []
+  },
+  {
+    "width": 320,
+    "approvedReuse": true,
+    "flaggedFallbackNotice": true,
+    "unicodeGardenMerged": true,
+    "legacyMessagesCounted": true,
+    "persistedComposition": true,
+    "summaryMean": 2,
+    "aggregateTaps": 5,
+    "aggregateSpeechRequests": 3,
+    "gardenOverflow": [],
+    "summaryFits": true,
+    "errors": []
+  }
+]

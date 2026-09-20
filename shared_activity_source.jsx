@@ -297,6 +297,44 @@ function _alloBuildAssignmentCenterCsv(rows) {
     return [header.join(','), ...body].join('\n');
 }
 
+// Describe only the resources that survived student serialization. This is
+// display metadata for the teacher, never a second copy of source text or glosses.
+function _alloDescribeAssignmentDelivery(resources, currentResourceId, selectedResourceIds = null) {
+    const items = (Array.isArray(resources) ? resources : []).filter(item => item && item.id && item.type);
+    const text = value => typeof value === 'string' ? value.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 240) : '';
+    const title = item => text(item && item.title) || text(item && item.type) || 'Untitled resource';
+    const opening = items.find(item => String(item.id) === String(currentResourceId)) || items[0];
+    const ids = Array.from(new Set(items.map(item => String(item.id))));
+    const selected = Array.isArray(selectedResourceIds) ? new Set(selectedResourceIds.map(String)) : null;
+    const conversionIds = selected ? ids.filter(id => selected.has(id)) : ids;
+    const api = window.AlloModules && window.AlloModules.InstructionalContext;
+    const readableItems = items.map(item => {
+        if (item.dataEncoding !== 'json-text/v1' || typeof item.data !== 'string') return item;
+        try { const data = JSON.parse(item.data); return typeof data === 'string' ? { ...item, data, dataEncoding: 'text/v1' } : item; }
+        catch (_) { return item; }
+    });
+    const intact = item => !!api && typeof api.isSupportedOriginal === 'function'
+        && item.syncTruncated !== true && item.readingSourceAvailability?.status !== 'unavailable'
+        && api.isSupportedOriginal(item);
+    const readings = readableItems.filter(item => item.type === 'simplified').map(item => {
+        const result = { id: String(item.id), title: title(item), form: 'unverified', originalStatus: 'unverified', supportsCount: null, supportsStatus: 'unverified', incomplete: item.syncTruncated === true };
+        if (!api?.getSourceSnapshot || !api?.getInstructionalText || !api?.sameReadingSourceFamily || !api?.validateReadingSupports) return result;
+        const snapshot = api.getSourceSnapshot(item);
+        const original = intact(item);
+        result.form = original ? 'original' : api.getInstructionalText(item).form === 'adapted' ? 'adapted' : 'unverified';
+        const paired = original ? item : snapshot && readableItems.find(candidate => intact(candidate)
+            && api.sameReadingSourceFamily(candidate, item) && candidate.data === snapshot.text);
+        result.originalStatus = paired ? 'included' : snapshot && item.readingSourceAvailability?.status !== 'unavailable' ? 'captured' : 'unavailable';
+        const supports = paired && paired.readingSupports ? api.validateReadingSupports(paired, paired.readingSupports) : null;
+        result.supportsCount = supports ? supports.annotations.length : 0;
+        result.supportsStatus = supports ? supports.status : 'none';
+        return result;
+    });
+    return { schemaVersion: 1, resourceCount: items.length, openingResourceId: opening ? String(opening.id) : null,
+        openingTitle: opening ? title(opening) : '', resourceIds: ids,
+        conversionResourceIds: conversionIds.length && conversionIds.length <= 25 ? conversionIds : null, readings };
+}
+
 // Assignment packet shaping belongs beside the shared-activity contracts it
 // emits. Host-owned state, privacy filtering and compression stay injected so
 // this module cannot bypass the current student-pack safety boundary.
@@ -330,7 +368,20 @@ async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) 
         throw new Error(`[SharedActivity.buildAssignmentPackEncoded] Missing dependency: ${missingDependency}`);
     }
 
+    const studentAiPolicy = (request.aiPolicy === undefined ? studentAiPolicyForShare : request.aiPolicy) === 'student-byok' ? 'student-byok' : 'off';
+    const requestedIds = Array.isArray(resourceIds) ? Array.from(new Set(resourceIds.map(id => String(id || '').trim().slice(0, 160)).filter(Boolean))) : null;
+    if (requestedIds && requestedIds.length > 25) {
+        addToast('Select at most 25 resources for one homework link. Create another link for the remaining resources.', 'info');
+        return null;
+    }
     const resourcesToAssign = resolveAssignmentResources(resourceIds);
+    // A saved selection can disappear from History before a link is converted.
+    // Do not replace missing members with the teacher's current shared activity.
+    if (Array.isArray(resourceIds) && resourceIds.length > 0
+        && (!requestedIds.length || requestedIds.some(id => !resourcesToAssign.some(item => String(item.id) === id)))) {
+        addToast('These selected resources are no longer available. Select the resources again in History before creating another link.', 'info');
+        return null;
+    }
     // An activity can stand alone. A scheduling poll or sign-up sheet has no
     // lesson attached, so requiring a resource pack makes that use unreachable.
     const activityOnly = includeSharedActivity
@@ -346,6 +397,12 @@ async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) 
         || resourcesToAssign[0]?.title
         || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
     const resources = resourcesToAssign.map(item => serializeResourceForStudentPack(item)).filter(Boolean);
+    // Paired originals are part of an explicit reading assignment too. The
+    // privacy boundary may reject an item, but a link must not hide its loss.
+    if (explicitSelection && resourcesToAssign.some(item => !resources.some(resource => String(resource.id) === String(item.id)))) {
+        addToast('Some selected resources cannot be shared with students. Choose different resources in History before creating a link.', 'info');
+        return null;
+    }
     if (!resources.length && !activityOnly) {
         addToast('None of the selected resources can be shared with students. Choose a different History resource.', 'info');
         return null;
@@ -476,7 +533,7 @@ async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) 
         expiresAt,
         currentResourceId: resources[0]?.id || null,
         resources,
-        aiPolicy: { studentAi: studentAiPolicyForShare, defaultStudentAi: 'off', teacherPrepared: true },
+        aiPolicy: { studentAi: studentAiPolicy, defaultStudentAi: 'off', teacherPrepared: true },
         workStory: workStoryEnabled === true,
         sharedActivities: sharedActivities.length ? sharedActivities : undefined,
     });
@@ -486,9 +543,10 @@ async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) 
         title,
         count: resources.length,
         resourceTitles: resources.map(item => item.title || item.type || 'Untitled resource'),
+        deliverySummary: _alloDescribeAssignmentDelivery(resources, packet.currentResourceId, resourceIds),
         createdAt: packet.createdAt,
         expiresAt: packet.expiresAt,
-        aiPolicy: studentAiPolicyForShare,
+        aiPolicy: studentAiPolicy,
         sharedActivities,
     };
 }
@@ -1591,6 +1649,7 @@ window.AlloModules.SharedActivity = {
   filterAssignmentCenterRows: _alloFilterAssignmentCenterRows,
   buildAssignmentCenterCsv: _alloBuildAssignmentCenterCsv,
   buildAssignmentPackEncoded: _alloBuildAssignmentPackEncoded,
+  describeAssignmentDelivery: _alloDescribeAssignmentDelivery,
   nextSummaryOrder: _alloNextSharedActivitySummaryOrder,
   normalizeCredentialStore: alloNormalizeCredentialStore,
   credentialSlotKey: alloCredentialSlotKey,

@@ -199,7 +199,7 @@ describe('capture failure and restore status', () => {
     expect(restore(html('<p>Restored lesson with preserved attribution.</p>'))).toBe(true);
     expect(f.document.body.textContent).toBe('Restored lesson with preserved attribution.');
     expect(window.__alloBuilderEditedPack).toMatchObject({source:'history',historySignature:'current-history-signature'});
-    expect(state).toHaveBeenLastCalledWith('restored');expect(at).toHaveBeenCalledWith(expect.any(Number));
+    expect(state).not.toHaveBeenCalled();expect(f.bindings.setDraftCaptureState).toHaveBeenLastCalledWith('saved');expect(at).toHaveBeenCalledWith(expect.any(Number));
     f.bindings.exportPreviewRef.current=null;vi.advanceTimersByTime(1000);
     expect(window.__alloBuilderEditedPack.source).toBe('history');
   });

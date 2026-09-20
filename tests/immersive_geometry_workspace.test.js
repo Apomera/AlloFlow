@@ -9,7 +9,7 @@ const markup = source.replace(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/g, '').rep
 
 // Run the actual DOM handlers and component math. Only the WebGL scene and timers
 // are substituted, so mode changes, save/restore, and snapping execute normally.
-function boot({ saved, query = '' } = {}) {
+function boot({ saved, query = '', opener = null } = {}) {
   const dom = new JSDOM(markup, { url: 'https://example.test/immersive_geometry/immersive_geometry.html' + query });
   const document = dom.window.document;
   const callbacks = {}, definitions = {}, errors = [];
@@ -21,7 +21,7 @@ function boot({ saved, query = '' } = {}) {
     location: dom.window.location, history: { replaceState: noop },
     addEventListener: (name, callback) => { (callbacks[name] ||= []).push(callback); },
     setTimeout: () => 1, clearTimeout: noop, setInterval: () => 1, clearInterval: noop,
-    confirm: () => true,
+    confirm: () => true, opener,
   };
   const object3D = () => ({ scale: { set: noop, setScalar: noop }, position: { set: noop }, rotation: { set: noop } });
   const evaluator = new Function('window', 'document', 'AFRAME', 'localStorage', 'setTimeout', 'clearTimeout', 'requestAnimationFrame', mainScript + '\nreturn { saved: SAVED_STATE };');
@@ -49,7 +49,7 @@ function boot({ saved, query = '' } = {}) {
     if (typeof value === 'boolean') element.checked = value; else element.value = value;
     element.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
   };
-  return { dom, document, component, errors, click, change, saved: () => JSON.parse(storage.get(STORAGE_KEY)), close: () => dom.window.close() };
+  return { dom, document, component, errors, click, change, callbacks, saved: () => JSON.parse(storage.get(STORAGE_KEY)), close: () => dom.window.close() };
 }
 
 describe('Immersive geometry workspace modes', () => {
@@ -477,6 +477,29 @@ describe('Immersive deliberate exact edits and quick control navigation',()=>{
       trigger.focus();trigger.click();input.value='no matching destination';input.dispatchEvent(new lab.dom.window.Event('input',{bubbles:true}));expect(lab.document.getElementById('quickFindEmpty').hidden).toBe(false);
       dialog.dispatchEvent(new lab.dom.window.Event('cancel',{cancelable:true}));expect(dialog.open).toBe(false);expect(lab.document.activeElement).toBe(trigger);
       expect(lab.component.capture()).toEqual(before);expect(lab.component.history).toEqual(history);expect(lab.errors).toEqual([]);
+    }finally{lab.close();}
+  });
+});
+
+
+describe('Stretch Lab apply-back preview',()=>{
+  it('previews the live model, sends only on Apply, and waits for a trusted acknowledgment',()=>{
+    const sent=[],opener={closed:false,postMessage:(data,origin)=>sent.push({data,origin})};
+    const lab=boot({query:'?bridge=test-token&parentOrigin=https%3A%2F%2Fsandbox.test&bridgeUnit=cm',opener});
+    try{
+      lab.click('uiStarterCube');lab.component.L=2.75;lab.component.emitState();
+      const button=lab.document.getElementById('uiApplySandbox');
+      expect(lab.document.getElementById('sandboxTransferPreview').textContent).toContain('2.75');expect(button.disabled).toBe(false);expect(sent).toHaveLength(0);
+      lab.click('uiApplySandbox');expect(sent).toHaveLength(1);expect(sent[0].origin).toBe('https://sandbox.test');expect(sent[0].data).toMatchObject({type:'alloflow:geometry:apply',token:'test-token',state:{d:3,L:2.75}});expect(button.disabled).toBe(true);
+      const reply={source:opener,origin:'https://wrong.test',data:{type:'alloflow:geometry:applied',token:'test-token',ok:true,message:'Applied'}};
+      lab.callbacks.message.forEach(fn=>fn(reply));expect(lab.document.getElementById('sandboxTransferStatus').textContent).toContain('Applying');
+      reply.origin='https://sandbox.test';lab.callbacks.message.forEach(fn=>fn(reply));expect(lab.document.getElementById('sandboxTransferStatus').textContent).toBe('Applied');expect(button.disabled).toBe(true);expect(lab.errors).toEqual([]);
+    }finally{lab.close();}
+  });
+  it('offers a model download without an opener and disables transfer during replay',()=>{
+    const lab=boot();try{
+      lab.click('uiStarterCube');expect(lab.document.getElementById('uiApplySandbox').disabled).toBe(true);expect(lab.document.getElementById('uiDownloadSandbox').disabled).toBe(false);
+      lab.component.replayActive=true;lab.component.emitState();expect(lab.document.getElementById('uiDownloadSandbox').disabled).toBe(true);expect(lab.document.getElementById('sandboxTransferPreview').textContent).toContain('Stop playback');expect(lab.errors).toEqual([]);
     }finally{lab.close();}
   });
 });

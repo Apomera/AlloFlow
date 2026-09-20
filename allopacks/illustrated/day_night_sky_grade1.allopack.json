@@ -27,6 +27,14 @@
       "pendingSortImages": 0,
       "review": "Visually reviewed; educator review pending",
       "textPolicy": "Text-free artwork; original activity text stays editable"
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending",
+    "contentRefinements": {
+      "count": 3,
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/day_night_sky_grade1/content-refinements.json",
+      "sourceOnlyResourceIds": []
     }
   },
   "sourceTopic": "Day and Night, and Patterns in the Sky",
@@ -74,7 +82,7 @@
       "title": "Day Sky, Night Sky",
       "timestamp": "2026-09-05T21:10:01.000Z",
       "data": "## Day Sky, Night Sky\n\nLook up in the morning. The sky is blue and bright. Look up at bedtime. The sky is dark. Why does the sky change?\n\nHere is the secret. **Earth** is turning. Our whole planet goes around and around, like a very slow top. It makes one full **spin** every day.\n\nWhen your side of Earth faces the **Sun**, you have **day**. The sky is bright. When your side turns away, you have **night**. The sky goes dark.\n\nSo the Sun does not really walk across the sky. You are the one who is moving! Earth turns you toward the Sun at **sunrise**. Later it turns you away at **sunset**.\n\nThe Sun is a **star**. It looks big and bright because it is much closer to us than the other stars are. Those far stars do not leave in the morning. They are still up there. The bright blue sky just hides them.\n\nAt night you may see the **Moon**. The Moon does not make its own light. Light from the Sun lands on it and bounces to your eyes. That is why it glows.\n\nHere is a surprise. You can see the Moon in the daytime too! Look for a pale white curve up in the blue.\n\nDay, night, day, night. It goes in the same order every time. That is a **pattern**. A pattern lets you guess what comes next.",
-      "meta": "1st Grade • Leveled reading • ~245 words • read-aloud friendly",
+      "meta": "1st Grade • Leveled reading • read-aloud friendly",
       "imageSlot": "dn-img-earth-turning"
     },
     {
@@ -424,6 +432,13 @@
             "hookFact": {
               "text": "The Sun does not really walk across the sky. You are the one who is moving.",
               "sourceTitle": "Day Sky, Night Sky (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/day_night_sky_grade1.allopack.json",
+              "sourceResourceId": "dn-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "02d81d1170a9f8a3d397a1e8aaabee8dbdf3e0a7b2c5ab1f811086ea29051645"
             }
           },
           {
@@ -454,6 +469,13 @@
             "hookFact": {
               "text": "You can see the Moon in the daytime too. Look for a pale white curve up in the blue.",
               "sourceTitle": "Day Sky, Night Sky (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/day_night_sky_grade1.allopack.json",
+              "sourceResourceId": "dn-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "b631c28c8d661c878c7f99685afc6c54c101710653ceb500e052b8f1209ccbca"
             }
           }
         ]
@@ -777,7 +799,14 @@
           ],
           "deliverable": "A chalk drawing on the ground. Three traced shadows, each with its time. And one sentence you tell the visiting class: what changed, and why.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": true,
+          "factReview": {
+            "status": "inherited-review-attribution",
+            "sourcePack": "allopacks/day_night_sky_grade1.allopack.json",
+            "sourceResourceId": "dn-challenge",
+            "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+            "factsHash": "a6fc37637d3477ae157e4901c3bf219533d700bb97e55408372b669ca3b95826"
+          }
         },
         "supports": {
           "parallelExample": {

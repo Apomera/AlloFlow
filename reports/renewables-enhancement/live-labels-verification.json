@@ -1,0 +1,15 @@
+{
+  "sourceSha256": "e1f37e6c73aac081096f308d065ce7ef6e25a93194026035fb24830aaf8dc0e6",
+  "mirrorMatches": true,
+  "previewMatches": true,
+  "technologies": 9,
+  "scenarios": 18,
+  "testsPassed": 114,
+  "testFiles": 4,
+  "accessibilityAudits": 19,
+  "touchSelection": true,
+  "hiddenLabelsIgnored": true,
+  "texturesReusedAndDisposed": true,
+  "pageErrors": [],
+  "consoleErrors": []
+}

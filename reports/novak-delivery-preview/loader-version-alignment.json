@@ -1,0 +1,30 @@
+[
+  {
+    "module": "view_live_session_dock_module.js",
+    "oldPin": "view_live_session_dock_module.js?v=ed7f26f4",
+    "pin": "view_live_session_dock_module.js?v=817d5b74",
+    "updated": true,
+    "publicMatches": true
+  },
+  {
+    "module": "view_full_pack_run_module.js",
+    "oldPin": "view_full_pack_run_module.js?v=dabce57a",
+    "pin": "view_full_pack_run_module.js?v=dabce57a",
+    "updated": false,
+    "publicMatches": true
+  },
+  {
+    "module": "view_share_session_surfaces_module.js",
+    "oldPin": "view_share_session_surfaces_module.js?v=f9c505f4",
+    "pin": "view_share_session_surfaces_module.js?v=f9c505f4",
+    "updated": false,
+    "publicMatches": true
+  },
+  {
+    "module": "video_studio_host_bridge_module.js",
+    "oldPin": "video_studio_host_bridge_module.js?v=081de825",
+    "pin": "video_studio_host_bridge_module.js?v=081de825",
+    "updated": false,
+    "publicMatches": true
+  }
+]

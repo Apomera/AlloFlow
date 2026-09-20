@@ -1,0 +1,9 @@
+
+Running 4 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\remediation_continuity.spec.ts:141:5 › workspace results preserve the mounted owner and navigate into collapsed downloads (48.8s)
+  ok 2 [chromium] › tests\e2e\remediation_continuity.spec.ts:730:5 › results lead with accurate static-scope verification and optional repair tools use native disclosure (5.5s)
+  ok 3 [chromium] › tests\e2e\remediation_continuity.spec.ts:751:5 › results next action follows incomplete checks, manual review, repair findings and preservation concerns (6.6s)
+  ok 4 [chromium] › tests\e2e\remediation_continuity.spec.ts:774:5 › export formats use native tab order and preserve focus after forwarding a download (8.1s)
+
+  4 passed (1.7m)

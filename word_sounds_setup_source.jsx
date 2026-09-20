@@ -434,6 +434,20 @@ function createWordSoundsCore() {
     const board={version:VERSION,mode,targetChar:soundKey(target),difficulty:word.length<=3?'easy':word.length<=4?'medium':'hard',options:shuffled(short(yes),seed).slice(0,limit),distractors:shuffled(short(no),seed+1).slice(0,limit-1)};
     return validSoundBoard(board,word,pool)?board:null;
   };
+  // Prepared family boards must be answerable and unambiguous. This checks
+  // their spelling-family structure; it is not a pronunciation/decodability test.
+  const validWordFamilyBoard = (board, word) => {
+    if (!board || typeof board.rime !== 'string' || !/^[\p{L}\p{M}]+$/u.test(board.rime)) return false;
+    if (!Array.isArray(board.options) || !board.options.length || !Array.isArray(board.distractors) || !board.distractors.length) return false;
+    const values = [...board.options, ...board.distractors];
+    if (values.some(v => typeof v !== 'string' || !v.trim() || normalize(v) !== v || v === normalize(word))) return false;
+    if (new Set(values).size !== values.length) return false;
+    if (board.teacherEdited === true) return true;
+    return normalize(word).endsWith(board.rime) && normalize(word).length > board.rime.length &&
+      board.options.every(v => v.endsWith(board.rime) && v.length > board.rime.length) &&
+      board.distractors.every(v => !v.endsWith(board.rime));
+  };
+  const wordFamilyInstruction = rime => `Find all words in the ${rime} family`;
   const difficultyDecision = (history, activity, support={}) => {
     const rows=(history||[]).filter(h=>h && h.activity===activity && !h.practiceOnly && h.activity!=='letter_tracing' && h.taskKind!=='word_matching' && !h.answerExposed && !!h.aacAssisted===!!support.aacAssisted && (h.mode||'sound_only')===(support.mode||'sound_only'));
     let band=0, block=[], reason='starting', changes=0;
@@ -479,7 +493,7 @@ function createWordSoundsCore() {
     const unknown=unique(String(text||'').normalize('NFC').match(/[\p{L}\p{M}]+/gu)||[]).filter(w=>!canRead(w));
     return {status:unknown.length?'review':'within_taught_spellings',untaughtWords:unknown};
   };
-  return {VERSION,soundKey,edgeSound,validSoundBoard,buildSoundSort,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  return {VERSION,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE
@@ -2109,11 +2123,19 @@ const WS_CORE = createWordSoundsCore();
                     pool: [...items, ...WS_CORE.knownWords], matches: item.soundSortMatches?.words || [],
                     teacherEdited: !!item.soundSortMatches?.teacherEdited, targetSound: item.soundSortMatches?.phoneme,
                     distractors: item.soundSortMatches?.distractors || [] }) : null;
-                const rime = String(item.familyEnding || '').replace(/^-/, '')
-                    || (packIsEnglish ? (word.match(/[aeiou][a-z]*$/) || ['at'])[0] : packRimeOf(word));
-                const familySource = [...new Set((item.familyMembers || []).map(normalizePackKey).filter((value) => value && value !== word))];
-                const familyOptions = shuffleForPack(familySource.length ? familySource : wordPool.filter((value) => value !== word && value.endsWith(rime))).slice(0, word.length <= 3 ? 3 : 5);
-                const familyDistractors = shuffleForPack(wordPool.filter((value) => value !== word && !value.endsWith(rime))).slice(0, word.length <= 3 ? 2 : 4);
+                const familySpec = item.rimeFamilyMembers;
+                const teacherFamily = familySpec?.teacherEdited === true;
+                const suppliedRime = normalizePackKey(familySpec?.rime || item.familyEnding || '').replace(/^-/, '');
+                const rime = suppliedRime && (teacherFamily || word.endsWith(suppliedRime)) ? suppliedRime
+                    : (packIsEnglish ? (word.match(/[aeiou][a-z]*$/) || [''])[0] : packRimeOf(word));
+                const familyWords = values => [...new Set((Array.isArray(values) ? values : []).filter(v => typeof v === 'string').map(normalizePackKey).filter(v => v && v !== word))];
+                const familySource = familyWords(familySpec?.words || item.familyMembers).filter(value => teacherFamily || (rime && value.endsWith(rime) && value.length > rime.length));
+                const familyOptions = teacherFamily ? familySource.slice(0, 8)
+                    : shuffleForPack(familySource.length ? familySource : wordPool.filter(value => value !== word && rime && value.endsWith(rime) && value.length > rime.length)).slice(0, word.length <= 3 ? 3 : 5);
+                const familyDistractors = teacherFamily ? familyWords(familySpec.distractors).slice(0, 8)
+                    : shuffleForPack(wordPool.filter(value => value !== word && !value.endsWith(rime))).slice(0, word.length <= 3 ? 2 : 4);
+                const familyCandidate = { rime, options: familyOptions, distractors: familyDistractors, ...(teacherFamily ? { teacherEdited: true } : {}) };
+                const familyBoard = WS_CORE.validWordFamilyBoard(familyCandidate, word) ? familyCandidate : null;
                 const decodingChoices = boardWithAnswer(word, [...itemWords, ...commonWords].filter((value) => value !== word), 3);
                 // Finish the Sentence: connected decodable text. The AI
                 // sentence is taken only when it survives the decodability
@@ -2233,7 +2255,7 @@ const WS_CORE = createWordSoundsCore();
                     missing_letter: { hiddenIndex, correctLetter, options: letterOptions },
                     ...(soundBoard ? { sound_sort: soundBoard } : {}),
                     letter_tracing: { letter: word[0] || '' },
-                    word_families: { rime, options: familyOptions, distractors: familyDistractors },
+                    ...(familyBoard ? { word_families: familyBoard } : {}),
                     decoding: { choices: decodingChoices },
                     ...(readSentence ? { read_sentence: readSentence } : {}),
                     ...(readPassage ? { read_passage: readPassage } : {}),
@@ -2755,7 +2777,7 @@ const WS_CORE = createWordSoundsCore();
                  tasks.add('as in');
                  if (boards.syllable_blending) tasks.add('Listen to the syllables and blend them together');
                  if (boards.syllable_counting) tasks.add('How many syllables do you hear? Clap for each one');
-                 if (boards.word_families?.rime) tasks.add(`Find all words in the ${boards.word_families.rime} family`);
+                 if (boards.word_families?.rime) tasks.add(WS_CORE.wordFamilyInstruction(boards.word_families.rime));
                  const ordinalNames = ['first','second','third','fourth','fifth','sixth','seventh','eighth','ninth','tenth','eleventh','twelfth'];
                  (boards.isolation ? (item.phonemes || []) : []).forEach((_, index) => {
                      const ordinal = ordinalNames[index] || `${index + 1}th`;

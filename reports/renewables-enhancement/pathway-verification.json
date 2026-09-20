@@ -1,0 +1,48 @@
+{
+  "verifiedAt": "2026-09-19T20:11:05.983Z",
+  "feature": "Interactive mechanism energy pathways and proportional balance graphics",
+  "testsPassed": 470,
+  "testFiles": 20,
+  "newPathwayTests": 23,
+  "testExecution": {
+    "initial": {
+      "passedTests": 365,
+      "passedFiles": 16,
+      "exitCode": 1,
+      "issue": "Four thread workers timed out during startup before their test files ran. The JSON reporter lists only completed files and omits these runner errors."
+    },
+    "retry": {
+      "passedTests": 105,
+      "passedFiles": 4,
+      "exitCode": 0,
+      "pool": "forks",
+      "files": [
+        "renewables_demand_shift.test.js",
+        "renewables_grid_pair.test.js",
+        "renewables_grid_study.test.js",
+        "renewables_hybrid.test.js"
+      ]
+    },
+    "allExpectedFilesVerified": true
+  },
+  "accessibilityAudits": 28,
+  "pageErrors": 0,
+  "consoleErrors": 0,
+  "mobileWidths": [
+    390,
+    320
+  ],
+  "mobileOverflow": false,
+  "visualReview": [
+    "pathway-pv.png",
+    "pathway-pv-budget.png",
+    "pathway-phone-320.png",
+    "pathway-budget-dark.png",
+    "pathway-budget-320.png"
+  ],
+  "sha256": "7d86b6bf5eee2769d081abd1d3c5530a02a74d00b3246a5b928ccd90051530a1",
+  "sourceMirrorIdentical": true,
+  "previewMatchesSource": true,
+  "preview": "http://127.0.0.1:8790/",
+  "validationScope": "Isolated local React and Three.js host; no deployed full-application check."
+}

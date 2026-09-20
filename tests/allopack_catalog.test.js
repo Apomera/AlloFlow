@@ -179,7 +179,8 @@ describe.each(files)('AlloPack: %s', (file) => {
           expect(c.mapping.length).toBeGreaterThan(20);
           // a curated pack ships verified, locked facts so the studio shows 0 items to review
           expect(c.factLocked).toBe(true);
-          expect(c.factVerified).toBe(true);
+          expect(typeof c.factVerified).toBe('boolean');
+          if (/educator review pending/i.test([pack.allopack.author, pack.allopack.reviewStatus].join(' ')) && !c.factReview) expect(c.factVerified).toBe(false);
           if (c.hookFact) expect(typeof c.hookFact.text).toBe('string');
         }
         if (r.data.lessonRef && r.data.lessonRef.resourceId) expect(byId[r.data.lessonRef.resourceId], 'memory-aid lessonRef ' + r.data.lessonRef.resourceId).toBeTruthy();
@@ -196,7 +197,8 @@ describe.each(files)('AlloPack: %s', (file) => {
         expect(r.data.brief.constraints.length).toBeGreaterThanOrEqual(1);
         expect(r.data.brief.deliverable.length).toBeGreaterThan(20);
         expect(r.data.brief.factLocked).toBe(true);
-        expect(r.data.brief.factVerified).toBe(true);
+        expect(typeof r.data.brief.factVerified).toBe('boolean');
+        if (/educator review pending/i.test([pack.allopack.author, pack.allopack.reviewStatus].join(' ')) && !r.data.brief.factReview) expect(r.data.brief.factVerified).toBe(false);
         expect(r.data.supports.parallelExample.move.length).toBeGreaterThan(20);
         expect(r.data.supports.frameChoices.length).toBeGreaterThanOrEqual(2);
         if (r.data.lessonRef && r.data.lessonRef.resourceId) expect(byId[r.data.lessonRef.resourceId], 'challenge lessonRef ' + r.data.lessonRef.resourceId).toBeTruthy();

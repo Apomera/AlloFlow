@@ -115,3 +115,19 @@ test('reapplying Systems Challenge preserves manually authored resources', async
     factionResourceMode: 'manual', state: { episodeTurnLimit: 20, systemResources: [{ name: 'Budget', quantity: 900, unit: 'credits' }] }
   });
 });
+
+
+test('reapplying presets clears custom-length presentation even when the count is unchanged',async({page})=>{
+  await load(page);await mountProfiles(page);
+  await page.getByRole('button',{name:/Guided Story/}).click();
+  await page.getByLabel('Episode length',{exact:true}).selectOption('custom');
+  await expect(page.getByLabel('Custom decision count',{exact:true})).toHaveValue('12');
+  await page.getByRole('button',{name:/Guided Story/}).click();
+  await expect(page.getByLabel('Episode length',{exact:true})).toHaveValue('12');
+  await expect(page.getByLabel('Custom decision count',{exact:true})).toHaveCount(0);
+  await page.getByLabel('Episode length',{exact:true}).selectOption('custom');
+  await page.getByLabel('Custom decision count',{exact:true}).fill('27');
+  await page.getByRole('button',{name:/Systems Challenge/}).click();
+  await expect(page.getByLabel('Episode length',{exact:true})).toHaveValue('20');
+  await expect(page.getByLabel('Custom decision count',{exact:true})).toHaveCount(0);
+});

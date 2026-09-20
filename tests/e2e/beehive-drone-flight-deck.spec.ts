@@ -643,3 +643,137 @@ test('Natural foliage uses retained curved meshes and shoreline detail without a
   await page.locator('[data-flight-graphics-mode]').selectOption('eco');await page.locator('[data-flight-inspection-view="flight"]').click();await field.screenshot({path:'scratch/beehive-flight-deck/natural-foliage-flight.png'});
   expect(await physics(page)).toEqual(held);expect(await evidence()).toBe(before);expect(errors).toEqual([]);
 });
+
+test('Stream surface retains its channel and textures while motion follows the model clock',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await mount(page);
+  expect(await page.evaluate(()=>matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+  const field=page.locator('#beehive-drone-playfield');
+  await page.evaluate(()=>{const s=(window as any).__testHooks.beehive.droneStateRef.current;Object.assign(s,{x:20,y:80,z:-500,yaw:0,pitch:0,roll:0,phase:'flight',trainingActive:false,trainingComplete:true,simulationClock:10});});
+  await page.locator('[data-flight-inspection-view="reed"]').click();const held=await physics(page);
+  async function evidence(){return page.evaluate(()=>{const s=(window as any).__testHooks.beehive.droneStateRef.current;return JSON.stringify({birds:s.birds,obstacles:s.obstacles,randomState:s.randomState,telemetry:s.telemetry,decisions:s.decisionLog});});}
+  async function offset(){return page.evaluate(()=>(window as any).__flightWorld.getObjectByName('drone-stream-water').material.map.offset.y);}
+  const before=await evidence();
+  const materials=await page.evaluate(()=>{const w=window as any,water=w.__flightWorld.getObjectByName('drone-stream-water'),bank=w.__flightWorld.getObjectByName('drone-stream-bank');water.material.map.__streamRetained=true;bank.material.map.__streamRetained=true;return {colored:water.material.vertexColors&&bank.material.vertexColors,sameBump:water.material.map===water.material.bumpMap,waterPixels:new Set(water.material.map.image.data).size,bankPixels:new Set(bank.material.map.image.data).size,uvs:water.geometry.attributes.uv.count===water.geometry.attributes.position.count,opaque:!water.material.transparent};});
+  expect(materials).toMatchObject({colored:true,sameBump:true,uvs:true,opaque:true});expect(materials.waterPixels).toBeGreaterThan(20);expect(materials.bankPixels).toBeGreaterThan(20);expect(await offset()).toBe(0);
+  await field.screenshot({path:'scratch/beehive-flight-deck/stream-surface-desktop.png'});
+  await page.emulateMedia({reducedMotion:'no-preference'});await page.locator('[data-flight-inspection-view="reed"]').click();expect(await offset()).toBeCloseTo(.18);
+  const frozen=await offset();await page.waitForTimeout(250);await page.locator('[data-flight-inspection-view="reed"]').click();expect(await offset()).toBe(frozen);
+  await page.evaluate(()=>(window as any).__testHooks.beehive.droneStateRef.current.simulationClock=12);await page.locator('[data-flight-inspection-view="reed"]').click();expect(await offset()).toBeCloseTo(.216);
+  await page.emulateMedia({reducedMotion:'reduce'});await page.locator('[data-flight-inspection-view="reed"]').click();expect(await offset()).toBe(0);
+  // Accessibility preference changes rebuild the existing scene; quality changes should retain that current scene.
+  await page.evaluate(()=>{const w=window as any;for(const name of ['drone-stream-water','drone-stream-bank'])w.__flightWorld.getObjectByName(name).material.map.__streamRetained=true;});
+  await page.locator('[data-flight-comfort-details] > summary').click();await page.locator('[data-flight-graphics-mode]').selectOption('high');
+  expect(await page.evaluate(()=>{const w=window as any;return ['drone-stream-water','drone-stream-bank'].every(name=>w.__flightWorld.getObjectByName(name).material.map.__streamRetained);})).toBe(true);
+  await field.screenshot({path:'scratch/beehive-flight-deck/stream-surface-high.png'});expect(await physics(page)).toEqual(held);expect(await evidence()).toBe(before);expect(errors).toEqual([]);
+});
+
+test('Stream detail stays readable on mobile and releases its textures on fallback',async({page})=>{
+  await page.setViewportSize({width:320,height:844});await mount(page);
+  const field=page.locator('#beehive-drone-playfield');await page.locator('[data-flight-inspection-view="reed"]').click();const held=await physics(page);
+  await field.screenshot({path:'scratch/beehive-flight-deck/stream-surface-mobile.png'});await audit(page,'[data-flight-inspection-controls]');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+  await page.evaluate(()=>{const w=window as any;w.__streamDisposals={water:0,bank:0};for(const kind of ['water','bank'])w.__flightWorld.getObjectByName('drone-stream-'+kind).material.map.addEventListener('dispose',()=>w.__streamDisposals[kind]++);});
+  await page.locator('[data-beehive-drone-webgl]').evaluate(el=>el.dispatchEvent(new Event('webglcontextlost',{cancelable:true})));
+  await expect(page.locator('[data-beehive-drone-canvas]')).toHaveAttribute('data-flight-renderer','canvas-2d-fallback');expect(await page.evaluate(()=>(window as any).__streamDisposals)).toEqual({water:1,bank:1});expect(await physics(page)).toEqual(held);
+  await page.locator('[data-inspection-open-map]').click();await expect(page.locator('[data-flight-route-panel]')).toHaveJSProperty('open',true);
+});
+
+
+test('Butterfly observation frames existing detailed wings and retains flight evidence across quality changes',async({page})=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.emulateMedia({reducedMotion:'reduce'});await mount(page);
+  const canvas=page.locator('[data-beehive-drone-canvas]'),field=page.locator('#beehive-drone-playfield'),panel=page.locator('[data-flight-inspection-controls]');
+  await page.evaluate(()=>{const s=(window as any).__testHooks.beehive.droneStateRef.current;Object.assign(s,{x:0,y:80,z:-400,yaw:0,pitch:0,roll:0,phase:'flight',trainingActive:false,trainingComplete:true});});
+  await page.locator('[data-flight-camera-toggle]').click();const held=await physics(page);
+  async function evidence(){return page.evaluate(()=>{const s=(window as any).__testHooks.beehive.droneStateRef.current;return JSON.stringify({birds:s.birds,flowers:s.flowers,obstacles:s.obstacles,randomState:s.randomState,telemetry:s.telemetry,clock:s.simulationClock,decisions:s.decisionLog});});}
+  async function camera(){return page.evaluate(()=>{const c=(window as any).__flightCamera;return {position:c.position.toArray(),matrix:c.matrixWorld.toArray()};});}
+  const before=await evidence(),normal=await camera();
+  await page.evaluate(()=>{const w=window as any;w.__butterflyRefs=Array.from({length:8},(_,i)=>w.__flightWorld.getObjectByName('drone-butterfly-'+i));});
+  await panel.locator('[data-flight-inspection-view="butterfly"]').click();await expect(canvas).toHaveAttribute('data-flight-inspection-camera','butterfly');await expect(field.locator('[data-flight-director]')).toBeHidden();
+  async function subject(){return page.evaluate(()=>{
+    const w=window as any,T=w.THREE,s=w.__testHooks.beehive.droneStateRef.current,BH=w.__RR_TEST_EXPORTS__.beehive,p=BH.bhDroneButterflySubject(s,matchMedia('(prefers-reduced-motion: reduce)').matches),g=w.__flightWorld.getObjectByName('drone-butterfly-'+p.index),screen=g.getWorldPosition(new T.Vector3()).project(w.__flightCamera),parts:any={};
+    g.traverse((node:any)=>{if(node.name.startsWith('butterfly-'))parts[node.name]=(parts[node.name]||0)+1;});
+    const refs=w.__butterflyRefs;
+    return {index:p.index,indexed:Number(document.querySelector('[data-beehive-drone-canvas]')!.getAttribute('data-flight-inspection-butterfly-index')),screen:{x:screen.x,y:screen.y},point:g.position.toArray(),target:Object.values(p.point),visible:g.visible,parts,retained:refs.every((node:any,i:number)=>node===w.__flightWorld.getObjectByName('drone-butterfly-'+i)),shared:g.getObjectByName('butterfly-forewing').geometry===refs[0].getObjectByName('butterfly-forewing').geometry,beacon:w.__flightWorld.getObjectByName('drone-dca-entry-volume').parent.visible};
+  });}
+  const initial=await subject();expect(initial).toMatchObject({visible:true,retained:true,shared:true,beacon:false,parts:{'butterfly-forewing':2,'butterfly-hindwing':2,'butterfly-leg':6,'butterfly-antenna':2,'butterfly-antenna-tip':2}});expect(initial.point).toEqual(initial.target);expect(initial.index).toBe(initial.indexed);expect(initial.screen.x).toBeCloseTo(0,7);expect(initial.screen.y).toBeCloseTo(0,7);
+  await expect(panel.locator('[data-inspection-butterfly-readout]')).toContainText('two forewings');await expect(panel.locator('[data-inspection-butterfly-readout]')).toContainText('illustrative pattern');
+  await field.screenshot({path:'scratch/beehive-flight-deck/butterfly-observer-desktop.png'});await audit(page,'[data-flight-inspection-controls]');
+  await page.locator('[data-flight-comfort-details] > summary').click();
+  for(const tier of ['high','eco']){await page.locator('[data-flight-graphics-mode]').selectOption(tier);await expect(canvas).toHaveAttribute('data-flight-quality',tier);const p=await subject();expect(p.visible&&p.retained&&p.shared).toBe(true);expect(p.index).toBe(p.indexed);await expect(panel.locator('[data-inspection-butterfly-readout]')).toContainText('Butterfly '+(p.index+1)+' ·');expect(p.point).toEqual(p.target);expect(p.screen.x).toBeCloseTo(0,7);expect(p.screen.y).toBeCloseTo(0,7);expect(await physics(page)).toEqual(held);expect(await evidence()).toBe(before);}
+  await panel.locator('[data-flight-inspection-view="flight"]').click();const restored=await camera();expect(restored).toEqual(normal);await expect(field.locator('[data-flight-director]')).toBeVisible();
+  const guide=page.locator('[data-flight-ecology]');await guide.locator('summary').click();await guide.locator('[data-ecology-observe-butterfly]').click();await expect(field).toBeFocused();await expect(canvas).toHaveAttribute('data-flight-inspection-camera','butterfly');await audit(page,'[data-flight-ecology]');
+  expect(await physics(page)).toEqual(held);expect(await evidence()).toBe(before);expect(errors).toEqual([]);
+  await page.keyboard.press('p');await expect(field).toHaveAttribute('data-flight-state','live');await expect(canvas).toHaveAttribute('data-flight-inspection-camera','flight');await expect(field).toHaveAttribute('data-flight-butterfly-inspection','false');await page.locator('[data-beehive-flight-pause]').click();
+});
+
+test('Butterfly observation fits phones, supports keyboard and themes, and recovers from context loss',async({page})=>{
+  await page.setViewportSize({width:320,height:844});await page.emulateMedia({reducedMotion:'reduce'});await mount(page);
+  const canvas=page.locator('[data-beehive-drone-canvas]'),field=page.locator('#beehive-drone-playfield'),panel=page.locator('[data-flight-inspection-controls]'),button=panel.locator('[data-flight-inspection-view="butterfly"]');
+  await button.focus();await page.keyboard.press('Enter');await expect(button).toHaveAttribute('aria-pressed','true');const held=await physics(page);
+  const bounds=await page.evaluate(()=>{const w=window as any,T=w.THREE,index=document.querySelector('[data-beehive-drone-canvas]')!.getAttribute('data-flight-inspection-butterfly-index'),g=w.__flightWorld.getObjectByName('drone-butterfly-'+index),box=new T.Box3().setFromObject(g),c=document.querySelector('[data-beehive-drone-canvas]') as HTMLCanvasElement,points=[];
+    for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z]){const p=new T.Vector3(x,y,z).project(w.__flightCamera);points.push({x:(p.x+1)*c.clientWidth/2,y:(1-p.y)*c.clientHeight/2});}return {width:c.clientWidth,height:c.clientHeight,points};});
+  for(const p of bounds.points){expect(p.x).toBeGreaterThan(18);expect(p.x).toBeLessThan(bounds.width-18);expect(p.y).toBeGreaterThan(115);expect(p.y).toBeLessThan(bounds.height-110);}
+  await field.screenshot({path:'scratch/beehive-flight-deck/butterfly-observer-mobile.png'});
+  for(const dark of [false,true]){await page.evaluate(dark=>{const w=window as any;w.__ctx.isDark=dark;w.__rerender();},dark);expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);await audit(page,'[data-flight-inspection-controls]');await panel.screenshot({path:'scratch/beehive-flight-deck/butterfly-controls-'+(dark?'dark':'light')+'.png'});}
+  await page.emulateMedia({forcedColors:'active'});await expect(button).toBeVisible();for(const control of await panel.locator('button').all())expect((await control.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  await page.locator('[data-beehive-drone-webgl]').evaluate(el=>el.dispatchEvent(new Event('webglcontextlost',{cancelable:true})));
+  await expect(canvas).toHaveAttribute('data-flight-renderer','canvas-2d-fallback');await expect(button).toHaveCount(0);await expect(panel.locator('[data-inspection-butterfly-readout]')).toHaveCount(0);await expect(page.locator('[data-ecology-observe-butterfly]')).toHaveCount(0);await expect(field).toHaveAttribute('data-flight-butterfly-inspection','false');expect(await physics(page)).toEqual(held);
+  await panel.locator('[data-inspection-open-map]').click();await expect(page.locator('[data-flight-route-panel]')).toHaveJSProperty('open',true);
+});
+
+test('Butterfly poses stay frozen during inspection and respect model time and reduced motion',async({page})=>{
+  await page.emulateMedia({reducedMotion:'no-preference'});await mount(page);const button=page.locator('[data-flight-inspection-view="butterfly"]');await button.click();
+  async function poses(){return page.evaluate(()=>{const w=window as any;return Array.from({length:8},(_,i)=>{const g=w.__flightWorld.getObjectByName('drone-butterfly-'+i);return {position:g.position.toArray(),yaw:g.rotation.y,wing:g.userData.wings[0].pivot.rotation.z};});});}
+  const held=await physics(page),initial=await poses();await button.click();expect(await poses()).toEqual(initial);expect(await physics(page)).toEqual(held);
+  await page.evaluate(()=>{(window as any).__testHooks.beehive.droneStateRef.current.simulationClock+=2;});await button.click();expect(await poses()).not.toEqual(initial);expect(await physics(page)).toEqual(held);
+  await page.emulateMedia({reducedMotion:'reduce'});await expect.poll(()=>page.evaluate(()=>matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);await button.click();const reduced=await poses();
+  await page.evaluate(()=>{(window as any).__testHooks.beehive.droneStateRef.current.simulationClock+=3;});await button.click();expect(await poses()).toEqual(reduced);expect(await physics(page)).toEqual(held);
+});
+
+
+async function trackAnatomyDrawing(page:any){
+  await page.evaluate(()=>{const w=window as any,c=(document.querySelector('[data-beehive-drone-canvas]') as HTMLCanvasElement).getContext('2d')!,clear=c.clearRect.bind(c),arc=c.arc.bind(c),text=c.fillText.bind(c);
+    w.__anatomyDrawing={labels:[],points:[]};
+    c.clearRect=function(...args:any[]){w.__anatomyDrawing={labels:[],points:[]};return (clear as any)(...args);};
+    c.arc=function(x:number,y:number,r:number,...args:any[]){if(r===4.5)w.__anatomyDrawing.points.push({x,y});return (arc as any)(x,y,r,...args);};
+    c.fillText=function(t:string,x:number,y:number,...args:any[]){if(/^(Forewing|Hindwing|Antenna) [12]$/.test(t))w.__anatomyDrawing.labels.push({text:t,x,y});return (text as any)(t,x,y,...args);};
+  });
+}
+async function checkAnatomyAnchors(page:any,feature:string){
+  const data=await page.evaluate(feature=>{const w=window as any,T=w.THREE,canvas=document.querySelector('[data-beehive-drone-canvas]') as HTMLCanvasElement,index=canvas.getAttribute('data-flight-inspection-butterfly-index'),g=w.__flightWorld.getObjectByName('drone-butterfly-'+index),config=w.__RR_TEST_EXPORTS__.beehive.bhDroneButterflyAnatomy(feature),points:any[]=[];
+    g.traverse((n:any)=>{if(n.name===config.mesh){const p=n.localToWorld(new T.Vector3(...config.point)).project(w.__flightCamera);points.push({x:(p.x+1)*canvas.clientWidth/2,y:(1-p.y)*canvas.clientHeight/2});}});
+    return {expected:points.sort((a,b)=>a.x-b.x),drawn:w.__anatomyDrawing,feature:canvas.getAttribute('data-flight-anatomy-feature'),count:canvas.getAttribute('data-flight-anatomy-label-count'),width:canvas.clientWidth,height:canvas.clientHeight,visible:g.visible};
+  },feature);
+  expect(data.feature).toBe(feature);expect(data.count).toBe('2');expect(data.visible).toBe(true);expect(data.drawn.labels).toHaveLength(2);expect(data.drawn.points).toHaveLength(2);
+  data.expected.forEach((p,i)=>{expect(data.drawn.points[i].x).toBeCloseTo(p.x,5);expect(data.drawn.points[i].y).toBeCloseTo(p.y,5);});
+  for(const label of data.drawn.labels){expect(label.x).toBeGreaterThan(50);expect(label.x).toBeLessThan(data.width-50);expect(label.y).toBeGreaterThan(120);expect(label.y).toBeLessThan(data.height-150);}
+}
+
+test('Butterfly anatomy labels track existing meshes and preserve paused evidence through selection and quality changes',async({page})=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.emulateMedia({reducedMotion:'no-preference'});await mount(page);
+  const field=page.locator('#beehive-drone-playfield'),canvas=page.locator('[data-beehive-drone-canvas]'),toolbar=page.locator('[data-butterfly-anatomy-controls]');
+  await page.evaluate(()=>{const s=(window as any).__testHooks.beehive.droneStateRef.current;Object.assign(s,{x:0,y:80,z:-400,yaw:0,pitch:0,roll:0,simulationClock:7.25,phase:'flight',trainingActive:false,trainingComplete:true});});
+  await page.locator('[data-flight-inspection-view="butterfly"]').click();await trackAnatomyDrawing(page);const held=await physics(page);
+  async function evidence(){return page.evaluate(()=>{const s=(window as any).__testHooks.beehive.droneStateRef.current;return JSON.stringify({birds:s.birds,randomState:s.randomState,flowers:s.flowers,obstacles:s.obstacles,telemetry:s.telemetry,clock:s.simulationClock,decisions:s.decisionLog});});}
+  const before=await evidence();await page.locator('[data-beehive-drone-webgl]').evaluate((c:any)=>c.__anatomySceneRetained=true);
+  for(const feature of ['fore','hind','antennae']){await toolbar.locator('[data-butterfly-feature="'+feature+'"]').click();await checkAnatomyAnchors(page,feature);await expect(page.locator('[data-butterfly-anatomy-description]')).toHaveAttribute('data-butterfly-anatomy-description',feature);expect(await physics(page)).toEqual(held);expect(await evidence()).toBe(before);await field.screenshot({path:'scratch/beehive-flight-deck/butterfly-anatomy-'+feature+'-desktop.png'});}
+  await toolbar.locator('[data-butterfly-feature="antennae"]').click();await expect(canvas).toHaveAttribute('data-flight-anatomy-label-count','0');await expect(canvas).toHaveAttribute('data-flight-anatomy-feature','none');await expect(page.locator('[data-butterfly-anatomy-description]')).toContainText('Choose Forewings');
+  await toolbar.locator('[data-butterfly-feature="fore"]').click();await page.locator('[data-flight-comfort-details] > summary').click();
+  for(const tier of ['high','eco']){await page.locator('[data-flight-graphics-mode]').selectOption(tier);await checkAnatomyAnchors(page,'fore');expect(await evidence()).toBe(before);expect(await physics(page)).toEqual(held);}
+  await page.locator('[data-flight-inspection-view="bird"]').click();await expect(toolbar).toHaveCount(0);await expect(canvas).toHaveAttribute('data-flight-anatomy-label-count','0');
+  await page.locator('[data-flight-inspection-view="butterfly"]').click();await expect(canvas).toHaveAttribute('data-flight-anatomy-feature','none');await toolbar.locator('[data-butterfly-feature="hind"]').click();await checkAnatomyAnchors(page,'hind');
+  await expect(page.locator('[data-beehive-drone-webgl]')).toHaveJSProperty('__anatomySceneRetained',true);expect(await evidence()).toBe(before);expect(errors).toEqual([]);
+  await field.focus();await page.keyboard.press('p');await expect(field).toHaveAttribute('data-flight-state','live');await expect(toolbar).toHaveCount(0);await expect(canvas).toHaveAttribute('data-flight-anatomy-feature','none');await page.locator('[data-beehive-flight-pause]').click();
+});
+
+test('Butterfly anatomy labels fit a phone and support keyboard, themes and safe fallback',async({page})=>{
+  await page.setViewportSize({width:320,height:844});await page.emulateMedia({reducedMotion:'reduce'});await mount(page);await page.locator('[data-flight-inspection-view="butterfly"]').click();await trackAnatomyDrawing(page);
+  const field=page.locator('#beehive-drone-playfield'),canvas=page.locator('[data-beehive-drone-canvas]'),toolbar=page.locator('[data-butterfly-anatomy-controls]'),held=await physics(page);
+  for(const [feature,key] of [['fore','Enter'],['hind','Space'],['antennae','Enter']]){const button=toolbar.locator('[data-butterfly-feature="'+feature+'"]');await button.focus();await page.keyboard.press(key);await expect(button).toHaveAttribute('aria-pressed','true');await checkAnatomyAnchors(page,feature);expect(await physics(page)).toEqual(held);await field.screenshot({path:'scratch/beehive-flight-deck/butterfly-anatomy-'+feature+'-mobile.png'});}
+  const fieldBox=(await field.boundingBox())!;for(const button of await toolbar.locator('button').all()){const b=(await button.boundingBox())!;expect(b.height).toBeGreaterThanOrEqual(44);expect(b.x).toBeGreaterThan(fieldBox.x+10);expect(b.x+b.width).toBeLessThan(fieldBox.x+fieldBox.width-10);}
+  for(const dark of [false,true]){await page.evaluate(dark=>{const w=window as any;w.__ctx.isDark=dark;w.__rerender();},dark);await audit(page,'[data-butterfly-anatomy-controls]');await audit(page,'[data-flight-inspection-controls]');expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);}
+  await page.emulateMedia({forcedColors:'active'});await expect(toolbar.locator('[aria-pressed="true"]')).toBeVisible();await toolbar.locator('[data-butterfly-feature="fore"]').focus();await page.keyboard.press('Enter');await checkAnatomyAnchors(page,'fore');
+  await page.locator('[data-beehive-drone-webgl]').evaluate(el=>el.dispatchEvent(new Event('webglcontextlost',{cancelable:true})));
+  await expect(canvas).toHaveAttribute('data-flight-renderer','canvas-2d-fallback');await expect(toolbar).toHaveCount(0);await expect(page.locator('[data-butterfly-anatomy-description]')).toHaveCount(0);await expect(canvas).toHaveAttribute('data-flight-anatomy-label-count','0');await expect(canvas).toHaveAttribute('data-flight-anatomy-feature','none');expect(await page.evaluate(()=>(window as any).__anatomyDrawing.labels)).toEqual([]);expect(await physics(page)).toEqual(held);await field.screenshot({path:'scratch/beehive-flight-deck/butterfly-anatomy-fallback-mobile.png'});
+});

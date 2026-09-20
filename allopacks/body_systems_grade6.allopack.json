@@ -8,7 +8,22 @@
     "gradeLevel": "6th Grade",
     "standards": "NGSS MS-LS1-3 (use argument supported by evidence for how the body is a system of interacting subsystems composed of groups of cells); CCSS.ELA-LITERACY.RST.6-8.4 (determine the meaning of domain-specific words and phrases); CCSS.ELA-LITERACY.RST.6-8.7 (integrate quantitative or technical information expressed in words with a version expressed visually)",
     "createdAt": "2026-07-21T17:00:00.000Z",
-    "imageShotList": "allopacks/body_systems_grade6.IMAGES.md"
+    "imageShotList": "allopacks/body_systems_grade6.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: Body Systems source alignment and AI-assisted investigation revision; educator review pending",
+    "contentSources": [
+      {
+        "title": "Body Systems revision reference",
+        "url": "https://www.nhlbi.nih.gov/health/heart/heart-beats"
+      },
+      {
+        "title": "Body Systems revision reference",
+        "url": "https://www.nhlbi.nih.gov/health/heart"
+      },
+      {
+        "title": "Body Systems revision reference",
+        "url": "https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works"
+      }
+    ]
   },
   "sourceTopic": "Human Body Systems",
   "history": [
@@ -18,7 +33,7 @@
       "title": "Meet the Team Inside You",
       "timestamp": "2026-07-21T17:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nNo system in your body works alone. Take a single breath and eat a single bite, and at least four systems have to cooperate to turn them into energy for your cells. Today you learn the team, and how they pass the ball.\n\n1. Read **The Relay Race** — follow one oxygen molecule to a muscle cell.\n2. Learn the systems in the **Glossary**, then win the **Matching** game and the **Memory** game.\n3. Study the **Who Does What** chart.\n4. Sort the jobs in **Which System Handles This?**\n5. Take the quiz — the last two questions ask how systems WORK TOGETHER.\n6. Fill in the **Cornell Notes** in your own words.\n7. Lock the ideas in with **Remember the Relay Team** — study the example aid, then make one your own.\n8. Finish with **Investigation: What Changes When You Move?** — use what you learned on a real problem, and mark every guess as a guess.\n9. Trace the **The Handoff Map** map before you take notes — read it along the handoffs, not system by system.\n\nBig idea to carry: your body is not a collection of parts. It is a system of systems, and the handoffs between them are the whole point. 🫀🫁",
+        "body": "**Due:** (your teacher will tell you)\n\nFollow how body systems exchange materials and signals. The relay is a model: systems work continuously and overlap.\n\n1. Read **The Relay Race** and trace oxygen from lung air sacs to a muscle cell.\n2. Use the **Glossary**, **Matching**, and **Memory** games to practice the terms.\n3. Study **Who Does What** and sort the jobs in **Which System Handles This?**. Explain how other systems can help.\n4. Use **The Handoff Map** and **Cornell Notes** to connect ideas.\n5. Complete the quiz, then review any answers you want to revise.\n6. Create a cue in **Remember the Relay Team**. Explain both its usefulness and its limits.\n7. Complete **Investigation: What Changes When You Move?** with the supplied fictional data. No exercise or personal measurements are needed.\n\nYou may write, speak, draw with explanations, or use your communication device. Use observations to support a claim and identify what remains uncertain.",
         "objectives": [
           {
             "id": "bs-goal-matching",
@@ -42,7 +57,7 @@
           },
           {
             "id": "bs-goal-trace",
-            "label": "I traced how two body systems worked together during something I did today",
+            "label": "I explained how two systems work together in an imagined activity or lesson example",
             "kind": "manual"
           }
         ]
@@ -54,8 +69,8 @@
       "type": "simplified",
       "title": "The Relay Race",
       "timestamp": "2026-07-21T17:00:01.000Z",
-      "data": "## The Relay Race\n\nRight now your body is running a relay race it never finishes. To keep one muscle cell alive, several systems have to pass materials from one to the next without dropping the baton. Follow a single breath and see how many teammates it takes.\n\nIt begins in the **respiratory system**. You breathe in, and air travels down to your lungs, into tiny sacs called alveoli. Oxygen slips out of those sacs and into your blood. Carbon dioxide, a waste gas, moves the other way, out to be exhaled. The lungs are where the outside air meets the inside of your body.\n\nNow the **circulatory system** takes the baton. Your heart pumps that oxygen-rich blood through a vast network of vessels — arteries carrying it out, veins bringing it back. If you stretched all your blood vessels end to end, they would wrap around the Earth twice. Blood delivers oxygen to every cell and carries waste away.\n\nBut oxygen alone is not food. That comes from the **digestive system**. When you eat, your body breaks food down over a long journey — mouth, stomach, and especially the small intestine, where nutrients pass into the blood. So the circulatory system is now carrying two things to your cells: oxygen from the lungs and nutrients from the gut.\n\nInside the muscle cell, oxygen and nutrients combine to release energy. That is the payoff of the whole relay. The cell can now contract, and you can move.\n\nAnd who told the muscle to move in the first place? The **nervous system**. Your brain sent a signal down nerves faster than you could think about it. The nervous system is the coordinator, sending electrical messages that control nearly everything, often without you noticing.\n\nHolding it all up is the **skeletal system** — 206 bones giving you structure, protecting your organs, and anchoring the muscles of the **muscular system** that actually pull your body into motion.\n\nHere is the lesson underneath all of it. You could memorize each system alone and still miss the point. The point is the handoffs. Breathe during exercise and your respiratory and circulatory systems speed up together, because your muscles are demanding more oxygen and your nervous system noticed. Get scared and your heart races before you decide anything, because your nervous system triggered it. No system is an island. Your body is a system of systems, and staying alive is the sum of a million handoffs happening every minute, most of them without a single thought from you.",
-      "meta": "6th Grade • Leveled reading • ~420 words",
+      "data": "## The Relay Race\n\nA body **system** is a group of parts that work together. Several systems keep a muscle cell working. We can compare their shared jobs to a relay. But the systems work at the same time, not in separate turns.\n\nThe **respiratory** system moves air into the lungs. Tiny air sacs called alveoli have thin walls. **Oxygen** passes through these walls into nearby blood. Carbon dioxide moves the other way and leaves when we breathe out. Moving air and moving gases across a wall are different jobs.\n\nThe **circulatory** system moves blood. The heart is an **organ** that pumps it. Blood goes from the lungs to the left side of the heart, then toward body cells. It returns to the right side and goes to the lungs again. A blood **vessel** is a tube. Arteries carry blood away from the heart. Veins carry it toward the heart. These names tell direction, not oxygen level. All human blood is red; blue in a diagram is a color code.\n\nThe **digestive** system breaks food into smaller parts. A **nutrient** is a substance the body needs. Most nutrients enter the body through the small intestine. Glucose enters blood; many dietary fats first enter lymph, then reach blood. Some nutrients supply energy; others help build or run the body. Lungs supply oxygen, not food.\n\nInside cells, one process uses oxygen and glucose to make ATP, which transfers energy for cell work. This process is called aerobic cellular respiration. It also makes carbon dioxide and water. Cells have other ways to make some ATP without oxygen.\n\nThe **nervous** system helps **coordinate** these jobs. Nerves send signals for movement and other tasks. Some quick reflexes use circuits in the spinal cord before we become aware of them. Do not test a reflex with a hot object.\n\nThe **skeletal** system supports the body and protects organs. A typical adult has about 206 bones, with some variation. Tendons join skeletal muscles to bones. The **muscular** system moves the body as muscles pull. Other muscles move food through organs or pump blood.\n\nDuring activity, breathing and heart rate often rise. Nerves, hormones and local signals help match supply to need. Pacemaker cells in the heart start its beat; nerves adjust the rate. These six systems are part of a larger body with other linked systems too.",
+      "meta": "6th Grade • Systems, transport and coordination",
       "imageSlot": "bs-img-systems-relay"
     },
     {
@@ -96,17 +111,17 @@
         },
         {
           "term": "Muscular",
-          "def": "The system of muscles that move the body.",
+          "def": "Muscles that contract to move the body, move materials through organs and pump blood.",
           "tier": "Domain-Specific"
         },
         {
           "term": "Oxygen",
-          "def": "The gas cells need to release energy from food.",
+          "def": "A gas used in aerobic cellular respiration to help transfer energy from food; not all cellular energy pathways require it.",
           "tier": "Domain-Specific"
         },
         {
           "term": "Nutrient",
-          "def": "A useful substance from food that cells use for energy and growth.",
+          "def": "A substance the body needs to work, grow or repair itself. Some provide energy; others have different jobs.",
           "tier": "Academic"
         },
         {
@@ -141,14 +156,14 @@
             "bullets": [
               "Respiratory: brings in oxygen",
               "Digestive: breaks food into nutrients",
-              "Both hand their goods to the blood"
+              "Oxygen and many nutrients enter blood; many fats travel through lymph first"
             ],
             "iconPrompt": "lungs and a stomach with arrows to a blood drop"
           },
           {
             "label": "DELIVER",
             "bullets": [
-              "Circulatory: heart pumps blood everywhere",
+              "The heart pumps blood through lung and body circuits",
               "Carries oxygen AND nutrients to cells",
               "Carries waste away"
             ],
@@ -157,7 +172,7 @@
           {
             "label": "CONTROL & MOVE",
             "bullets": [
-              "Nervous: sends the signals",
+              "Nerves coordinate signals; hormones and local signals also help",
               "Muscular: pulls the body into motion",
               "Skeletal: the frame that holds it up"
             ],
@@ -166,9 +181,9 @@
           {
             "label": "THE POINT",
             "bullets": [
-              "No system works alone",
-              "Exercise speeds breathing AND heartbeat",
-              "The handoffs are the whole story"
+              "Systems exchange materials and signals",
+              "During activity, breathing and heart rate often increase",
+              "These linked responses do not follow one fixed relay order"
             ],
             "iconPrompt": "gears meshing together"
           }
@@ -183,8 +198,7 @@
       "timestamp": "2026-09-05T21:40:05.000Z",
       "meta": "6 branches • concept map • follow one breath through the body",
       "data": {
-        "structureType": "Key Concept Map",
-        "main": "One muscle cell, kept alive by six systems",
+        "main": "A muscle cell supported by interacting systems",
         "branches": [
           {
             "title": "Respiratory — where outside air meets inside",
@@ -197,31 +211,31 @@
           {
             "title": "Circulatory — the delivery network",
             "items": [
-              "The heart pumps oxygen-rich blood out through arteries",
+              "The heart pumps blood through lung and body circuits; arteries lead away from the heart",
               "Veins bring it back",
-              "It carries two things to the cells: oxygen from the lungs, nutrients from the gut"
+              "Blood carries oxygen and nutrients to cells, along with other materials"
             ]
           },
           {
             "title": "Digestive — where the nutrients come from",
             "items": [
               "Food is broken down along a long journey: mouth, stomach, small intestine",
-              "Nutrients pass into the blood at the small intestine",
+              "Many nutrients enter blood at the small intestine; many dietary fats enter lymph first",
               "Oxygen alone is not food"
             ]
           },
           {
-            "title": "Nervous — the coordinator",
+            "title": "Nervous — helping coordinate",
             "items": [
-              "The brain sends electrical signals down nerves",
-              "Faster than you can think about it",
-              "It controls nearly everything, mostly without you noticing"
+              "Nervous pathways use electrical activity and chemical communication",
+              "Spinal circuits can coordinate rapid withdrawal reflexes",
+              "Nervous, hormonal and local signals work together"
             ]
           },
           {
             "title": "Skeletal and muscular — structure and motion",
             "items": [
-              "206 bones give structure and protect the organs",
+              "A typical adult has about 206 bones, with variation",
               "Bones anchor the muscles",
               "The muscles do the pulling that moves you"
             ]
@@ -229,12 +243,13 @@
           {
             "title": "The handoffs — the actual point",
             "items": [
-              "Exercise: respiratory and circulatory speed up together, because the nervous system noticed the demand",
-              "Fear: the heart races before you decide anything",
+              "During activity, breathing and circulation adjust through several interacting signals",
+              "Fear can change heart rate through nerve and hormone signals",
               "You can memorise every system alone and still miss this"
             ]
           }
-        ]
+        ],
+        "structureType": "Key Concept Map"
       }
     },
     {
@@ -255,8 +270,8 @@
         ],
         "authorshipMode": "scaffolded",
         "reflectionLevel": "quick",
-        "reasoningRequired": false,
-        "sourceExcerpt": "It begins in the respiratory system: oxygen slips out of the alveoli into your blood. The circulatory system takes the baton: your heart pumps oxygen-rich blood through vessels. Food comes from the digestive system, where nutrients pass into the blood in the small intestine. The nervous system is the coordinator. The skeletal system holds it up and anchors the muscular system.",
+        "reasoningRequired": true,
+        "sourceExcerpt": "Oxygen diffuses from alveoli into blood, which travels through the heart to tissues. Many nutrients enter blood through the small intestine; many fats enter lymph first. Nervous, hormonal and local signals coordinate responses. Muscles pull on skeletal attachments.",
         "lessonRef": {
           "resourceId": "bs-reading",
           "title": "The Relay Race"
@@ -268,16 +283,16 @@
             "essentialFacts": [
               "Respiratory: brings oxygen in and carbon dioxide out through the lungs.",
               "Circulatory: the heart and vessels deliver oxygen and nutrients and carry waste away.",
-              "Digestive: breaks food into nutrients that pass into the blood.",
-              "Nervous: sends electrical signals that control and coordinate the body.",
-              "Skeletal: 206 bones give structure and protect organs; Muscular: muscles pull the body into motion."
+              "Digestion breaks food down; many nutrients enter blood and many fats enter lymph first.",
+              "Nervous signals use electrical activity and chemical communication to help coordinate the body.",
+              "A typical adult has about 206 bones; skeletal muscles pull on bones through tendons."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "acronym-acrostic",
             "mode": "scaffolded",
-            "aiExample": "R-C-D-N-S-M: Runners Carry Dinner, Nerves Say 'Move!' Respiratory, Circulatory, Digestive, Nervous, Skeletal, Muscular.",
-            "mapping": "The sentence tells the story in order: air and blood (R, C) carry food (D), the nervous system gives the command (N), and bones and muscles (S, M) do the moving.",
+            "aiExample": "R-C-D-N-S-M: Runners Carry Dinner, Nerves Say Move. Use the letters to name the six systems.",
+            "mapping": "The letters are a list, not a route for food. Lungs take in oxygen. The gut takes in nutrients. Blood carries both to cells.",
             "scaffoldStarter": "R ____ C ____ D ____, N ____ S ____ M ____.",
             "scaffoldSteps": [
               "Write the six systems and circle the first letters.",
@@ -285,13 +300,22 @@
               "Check that your sentence still names all six."
             ],
             "coachPrompts": [
-              "Which of your words shows that the nervous system is the coordinator, not just one worker?"
+              "How does the nervous system help coordinate the body? Which other signals also help?"
             ],
             "studentPrompt": "Write your own six-letter sentence, or reorder the example.",
             "reasoningPrompt": "Explain how each word points to one system and its job.",
             "hookFact": {
-              "text": "If you stretched all your blood vessels end to end, they would wrap around the Earth twice.",
+              "text": "Microscopic capillaries form extensive networks where materials pass between blood and tissues.",
               "sourceTitle": "The Relay Race (this lesson)"
+            },
+            "factReview": {
+              "status": "pending-educator-review",
+              "sources": [
+                "https://www.nhlbi.nih.gov/health/heart/heart-beats",
+                "https://www.nhlbi.nih.gov/health/heart",
+                "https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works"
+              ],
+              "factsHash": "88f3b6670976962bb666350847ec05c720caa498cc8b3456f4a248fe2c689de0"
             }
           },
           {
@@ -299,59 +323,78 @@
             "target": "The oxygen relay: lungs to blood to cell",
             "essentialFacts": [
               "Air enters the lungs and oxygen crosses from tiny sacs called alveoli into the blood.",
-              "The heart pumps oxygen-rich blood out through arteries; veins bring blood back.",
-              "Inside a muscle cell, oxygen and nutrients combine to release energy so the cell can contract."
+              "Blood carries oxygen from lungs to the left heart, then through arteries to tissues; veins return blood toward the heart.",
+              "Aerobic respiration transfers energy from glucose using oxygen, supplying ATP that supports contraction."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "sequence-cue",
             "mode": "scaffolded",
-            "aiExample": "Four batons: Lungs → Blood → Heart pump → Muscle cell. Say it with your hands: breathe in, tap your chest, pump a fist, flex your arm.",
-            "mapping": "One motion per handoff keeps the order in your body, not just in words, and the flex at the end is the payoff: energy released in the cell.",
+            "aiExample": "Trace oxygen: lung air sacs → blood → left heart → body cells. It crosses thin walls at the start and end.",
+            "mapping": "Point, draw or say each step. Oxygen travels in blood, not as air bubbles. The cell uses it in aerobic respiration.",
             "scaffoldStarter": "____ → ____ → ____ → ____.",
             "scaffoldSteps": [
-              "Write the four places oxygen goes, in order.",
-              "Add a hand motion for each.",
-              "Run the relay out loud three times."
+              "Arrange the four places oxygen travels through in order.",
+              "Choose words, pictures, pointing, a communication device, or optional motions for your cue.",
+              "Use your cue to trace the pathway and explain where oxygen crosses a thin wall."
             ],
             "coachPrompts": [
               "Where in your sequence does the digestive system's delivery join the oxygen?"
             ],
-            "studentPrompt": "Create your own four-step relay with motions.",
+            "studentPrompt": "Create your own four-step oxygen pathway using a response format that works for you.",
             "reasoningPrompt": "How does each step of your relay match a system from the reading?",
             "hookFact": {
               "text": "The lungs are where the outside air meets the inside of your body.",
               "sourceTitle": "The Relay Race (this lesson)"
+            },
+            "factReview": {
+              "status": "pending-educator-review",
+              "sources": [
+                "https://www.nhlbi.nih.gov/health/heart/heart-beats",
+                "https://www.nhlbi.nih.gov/health/heart",
+                "https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works"
+              ],
+              "factsHash": "1ff3ee31e6b1c449d289b9b70dc03f9424c18ff218adc6a0ebd4c762bee92b12"
             }
           },
           {
             "id": "bs-ma-handoffs",
-            "target": "Why systems speed up together: the handoffs are the point",
+            "target": "How systems respond to changing activity",
             "essentialFacts": [
-              "During exercise, muscles demand more oxygen, so the respiratory and circulatory systems speed up together.",
-              "The nervous system notices the demand and triggers the change, often before you think about it.",
-              "No system works alone; the body is a system of systems."
+              "Working muscles use more energy. Breathing and blood flow often increase to support oxygen delivery and carbon-dioxide removal.",
+              "Nervous pathways, hormones and local signals help coordinate changing demands; the heart has its own pacemaker.",
+              "Body systems work together continuously; a relay cue does not prove a fixed order of signals."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "story-chain",
             "mode": "scaffolded",
-            "aiExample": "You sprint for the bus → muscles burn through oxygen → nerves notice → heart pounds faster AND breathing deepens → more oxygen reaches the muscles → you make the bus. Cut any link and the chain fails.",
-            "mapping": "Each arrow is a handoff between two systems. Reading it as a chain shows why breathing and heartbeat change at the same time: one demand, two responses, one coordinator.",
-            "scaffoldStarter": "I ____ → my muscles ____ → my nervous system ____ → my ____ and ____ speed up.",
+            "aiExample": "Working muscles use more energy. Breathing and blood flow can change to help meet that need.",
+            "mapping": "Nerves, hormones and local signals help the systems work together. The arrows do not show a fixed order of events.",
+            "scaffoldStarter": "During ____, muscles use more ____. Breathing and blood flow may ____. Several signals help ____.",
             "scaffoldSteps": [
-              "Start with something you did today that took effort.",
-              "Add the system that noticed and the two that responded.",
-              "End with what the muscles got."
+              "Choose an imagined example of physical activity or an example from the lesson.",
+              "Connect changing energy needs with breathing, circulation, and coordinating signals.",
+              "Explain that your story is a model, not a measurement of which signal came first."
             ],
             "coachPrompts": [
-              "Which link in your chain is the nervous system, and what would happen without it?"
+              "Where does your story show systems working together?",
+              "Which parts explain the science, and which would need separate measurements to test?"
             ],
-            "studentPrompt": "Write your own handoff chain for something you did today.",
-            "reasoningPrompt": "How does your chain show that no system works alone?",
+            "studentPrompt": "Describe or draw an imagined activity and the linked responses of body systems.",
+            "reasoningPrompt": "Explain one useful connection and one limit of your story model.",
             "hookFact": {
-              "text": "Get scared and your heart races before you decide anything, because your nervous system triggered it.",
-              "sourceTitle": "The Relay Race (this lesson)"
+              "text": "Nerves and hormones can change heart rate in response to a perceived threat.",
+              "sourceTitle": "The Relay Race (revised lesson)"
+            },
+            "factReview": {
+              "status": "pending-educator-review",
+              "sources": [
+                "https://www.nhlbi.nih.gov/health/heart/heart-beats",
+                "https://www.nhlbi.nih.gov/health/heart",
+                "https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works"
+              ],
+              "factsHash": "fc97bdfa91976adfe4532039569011a3d81cde2c33d3adc847b95b068276bf82"
             }
           }
         ]
@@ -423,7 +466,7 @@
           },
           {
             "id": "bs8",
-            "content": "Controlling your heartbeat without you thinking",
+            "content": "Adjusting the heart’s pacemaker rate through automatic nerve signals",
             "categoryId": "bs-nerv"
           },
           {
@@ -461,14 +504,14 @@
           },
           {
             "type": "mcq",
-            "question": "The circulatory system delivers two things to your cells. What are they?",
+            "question": "Which pair correctly matches the oxygen and glucose pathways described in the lesson?",
             "options": [
-              "Oxygen from the lungs and calcium from the bones",
-              "Nerve signals from the brain and movement from the muscles",
-              "Water from the digestive system and carbon dioxide from the lungs",
-              "Oxygen from the lungs and nutrients from the digestive system"
+              "Oxygen enters through the digestive system; glucose enters through the lungs",
+              "Both oxygen and glucose enter the blood directly from inhaled air",
+              "Glucose comes from bones; oxygen is made by the heart",
+              "Oxygen crosses from lung air sacs into blood; glucose is absorbed from the small intestine into blood"
             ],
-            "correctAnswer": "Oxygen from the lungs and nutrients from the digestive system",
+            "correctAnswer": "Oxygen crosses from lung air sacs into blood; glucose is absorbed from the small intestine into blood",
             "conceptLabel": "circulatory teamwork"
           },
           {
@@ -510,13 +553,13 @@
           {
             "type": "shortAnswer",
             "question": "Trace one oxygen molecule from the air to a muscle cell, naming every system it passes through.",
-            "expectedAnswer": "It enters through the respiratory system (lungs), crosses into the blood, then the circulatory system (heart and vessels) carries it to a muscle cell. The nervous system controlled the breathing and heartbeat that moved it, and the muscular system uses the oxygen to move.",
+            "expectedAnswer": "Oxygen enters the respiratory airways, reaches an alveolus, diffuses into capillary blood, travels through pulmonary veins and the left heart, then body arteries and capillaries. It diffuses into muscle cells and is used in aerobic respiration. Coordination is important but is not another place the molecule passes through.",
             "conceptLabel": "tracing across systems"
           },
           {
             "type": "shortAnswer",
-            "question": "A person eats lunch and then goes for a run. Name two body systems that must work together for the food to power the run, and explain the handoff.",
-            "expectedAnswer": "The digestive system breaks the lunch into nutrients and passes them into the blood. The circulatory system then carries those nutrients to the muscles, where they combine with oxygen to release energy for running. The handoff is nutrients moving from the gut into the bloodstream.",
+            "question": "Explain how the digestive and circulatory systems help deliver glucose from food to a working muscle. What does the muscle cell do with it?",
+            "expectedAnswer": "Digestion breaks down carbohydrates, and glucose is absorbed from the small intestine into blood. Circulation carries it to muscles. In aerobic cellular respiration, muscle cells use glucose and oxygen to make ATP for cell work, including contraction. Many dietary fats take a different initial route through lymph before reaching blood.",
             "conceptLabel": "systems interaction"
           }
         ],
@@ -525,7 +568,7 @@
             "text": "Which body system would you most want to learn more about, and why?"
           },
           {
-            "text": "Pick something you did today. Which body systems worked together to make it happen?"
+            "text": "Choose an imagined activity or an example from the lesson. Which body systems work together?"
           }
         ]
       },
@@ -566,7 +609,7 @@
           },
           {
             "id": "cue-bs-7",
-            "text": "Why speed up together in exercise?"
+            "text": "How can breathing and circulation adjust during activity?"
           },
           {
             "id": "cue-bs-8",
@@ -625,28 +668,28 @@
       "timestamp": "2026-07-21T17:00:07.000Z",
       "data": [
         {
-          "question": "Are blood vessels really long enough to wrap around Earth? 🌍",
-          "answer": "Stretched end to end, an adult's blood vessels reach roughly 60,000 miles — more than twice around the planet. Most of that length is microscopic capillaries thinner than a hair."
+          "question": "Why are there so many tiny blood vessels?",
+          "answer": "Tiny vessels bring blood close to cells. Their thin walls let gases, nutrients and wastes pass between blood and tissues."
         },
         {
           "question": "How fast do nerve signals travel? ⚡",
-          "answer": "The fastest ones move over 250 miles per hour. That is why you pull your hand off something hot before you consciously feel the pain — the reflex signal takes a shortcut through your spinal cord."
+          "answer": "Speeds vary. A quick reflex can use a circuit in the spinal cord before you become aware of it. Signals also reach the brain. Never test this with a hot object."
         },
         {
           "question": "Why does my heart beat faster when I am scared?",
-          "answer": "Your nervous system detects a threat and triggers it automatically, releasing signals that speed the heart to rush oxygen to your muscles — getting you ready to run or react before you have decided anything."
+          "answer": "Nerves and hormones can raise heart rate when you sense a threat. This helps prepare the body to act. The response can start before you choose what to do."
         },
         {
           "question": "Do all my systems ever rest? 😴",
-          "answer": "Not fully. Even in deep sleep your heart pumps, your lungs breathe, and your nervous system keeps them coordinated. Some systems slow down, but the life-support handoffs never stop."
+          "answer": "Some jobs slow down during sleep, but they do not all stop. Your heart still pumps and your lungs still move air."
         },
         {
           "question": "How many bones do I have? 🦴",
-          "answer": "About 206 as an adult. Babies are born with around 300, and many fuse together as they grow — which is why the count goes down, not up."
+          "answer": "A typical adult has about 206 bones. The count can vary. Some bones join as children grow, so age and how we count the parts matter."
         },
         {
           "question": "Which system is the most important?",
-          "answer": "A trick question, and a good one. You cannot rank them, because they depend on each other. Remove any one and the whole team fails. That interdependence is the real lesson."
+          "answer": "The systems depend on one another. People can have different organs and abilities, sometimes with medical support. Study how the parts connect rather than ranking them."
         }
       ],
       "meta": "6 questions • reinforces interdependence"
@@ -660,74 +703,83 @@
       "data": {
         "schemaVersion": 6,
         "title": "What Changes When You Move?",
-        "instructions": "Plan and run a safe investigation that shows two body systems responding to the same demand at the same time. Measure, do not guess, and explain the handoff with lesson facts.",
+        "instructions": "Investigate the supplied fictional observations. Compare breathing and pulse estimates, connect the pattern to lesson facts, and explain what the numbers cannot show. No exercise or personal measurements are needed.",
         "selectionMode": "manual",
         "family": "investigate",
-        "fitReason": "The reading says breathing and heartbeat speed up together because muscles need more oxygen. Students can measure both in one minute and see the handoff instead of memorizing it.",
+        "fitReason": "Comparing two measurements gives students evidence to discuss interacting systems while distinguishing an observed pattern from a causal explanation.",
         "agencyMode": "co-framed",
         "scope": "compact",
         "brief": {
           "family": "investigate",
-          "context": "Your class has stopwatches, a hallway, and permission to do one minute of gentle exercise such as marching in place or walking fast. Some students prefer not to exercise and can be the recorders and timers.",
-          "role": "Student physiologists",
-          "audience": "Your class and a health teacher who will check your method",
-          "drivingQuestion": "When a person exercises gently for one minute, how do breathing rate and heart rate each change, and what does the timing of those changes tell us about how the systems hand off to each other?",
-          "seedDirection": "Measure both at rest first. Without the resting numbers you cannot say anything changed.",
+          "context": "Fictional classroom dataset, invented for calculation practice; these are not measurements of real people or health targets. Three cases each have counts from matched 15-second windows at rest, just after one minute of gentle activity, and two minutes after activity ended. Each pair below is breaths / pulse beats. Case A: rest 4 / 18; just after 6 / 24; two minutes after 4 / 19. Case B: rest 3 / 17; just after 5 / 22; two minutes after 4 / 18. Case C: rest 4 / 20; just after 5 / 23; two minutes after 4 / 20. Multiply each count by four to estimate a rate per minute. These examples illustrate possible patterns, not predictions for every person.",
+          "role": "Student evidence analysts",
+          "audience": "Classmates comparing observations and explanations",
+          "drivingQuestion": "What changes appear in the fictional breathing and pulse counts, and how far can those observations support an explanation about interacting systems?",
+          "seedDirection": "Label the data fictional. Convert each 15-second count to a per-minute estimate, then compare each case with its own resting values.",
           "lockedLessonFacts": [
             "The respiratory system takes in oxygen and releases carbon dioxide through the lungs.",
             "The circulatory system delivers oxygen and nutrients to cells and carries waste away.",
-            "Inside a muscle cell, oxygen and nutrients combine to release energy.",
-            "During exercise, muscles need more oxygen, so respiratory and circulatory systems speed up together.",
-            "The nervous system coordinates the change, often before you notice."
+            "Aerobic respiration transfers energy from glucose using oxygen; muscle cells use ATP to contract.",
+            "Working muscles use more energy. Breathing and blood flow often increase to support oxygen delivery and carbon-dioxide removal.",
+            "Nervous, hormonal and local signals coordinate responses; these rate counts do not identify which signal came first."
           ],
           "openQuestions": [
-            "How do we count breaths and heartbeats accurately in 15 seconds?",
-            "How long after stopping do both rates return to resting?",
-            "Do the two rates change by the same amount, or does one change more?"
+            "How much does each estimated rate change from rest to just after activity?",
+            "At the two-minute observation, which estimates match the resting value and which remain higher?",
+            "Why can three observation times not establish the exact time of recovery or the order of coordinating signals?"
           ],
           "stakeholders": [
-            "Volunteers who exercise",
-            "Recorders and timers",
-            "Anyone with a health reason to sit out",
-            "The health teacher checking safety"
+            "Students using different response formats",
+            "Classmates checking calculations",
+            "The teacher supporting evidence-based explanations"
           ],
           "criteria": [
-            "Resting and after-exercise measurements for both rates, recorded in a table",
-            "At least three volunteers so one odd result does not decide the answer",
-            "The explanation names the demand, the coordinator, and both responding systems",
-            "Uses at least four glossary words correctly"
+            "A table of estimated breaths per minute and pulse beats per minute for all three fictional cases at all three times",
+            "A comparison of each case with its own resting values, with units shown",
+            "An explanation using respiratory and circulatory systems and their coordination, clearly separated from what was counted",
+            "One limit of the data and one follow-up question; explain relevant lesson vocabulary accurately"
           ],
           "constraints": [
-            "Gentle exercise only, one minute, anyone may stop at any time",
-            "No one is required to exercise or to share their numbers",
-            "Measurements in the same 15-second window for everyone",
-            "Finish in one class period"
+            "Use the supplied fictional data; no exercise or personal measurements are required.",
+            "Keep breaths per minute and pulse beats per minute in separate labeled columns.",
+            "Do not use the invented values to judge anyone's health, fitness, or expected response.",
+            "Do not claim the counts measure oxygen use, prove a causal mechanism, or reveal the first coordinating signal.",
+            "Complete in one class period; respond in writing, speech, drawings with explanations, or a communication device."
           ],
-          "deliverable": "A data table (rest, right after, two minutes after) for breathing rate and heart rate for each volunteer, a short written explanation of the handoff, and one question your data raised that you could not answer.",
+          "deliverable": "A labeled results table for the three fictional cases, a short explanation linking a pattern to lesson facts, and a statement of what remains unknown.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false,
+          "factReview": {
+            "status": "pending-educator-review",
+            "sources": [
+              "https://www.nhlbi.nih.gov/health/heart/heart-beats",
+              "https://www.nhlbi.nih.gov/health/heart",
+              "https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works"
+            ],
+            "factsHash": "686fa85ec87a3357932fea8b855e12c09083a2d95660481d7f83bd8c3b03fe6e"
+          }
         },
         "supports": {
           "parallelExample": {
-            "context": "A coach wanted to know whether stair climbing or jogging made the team's hearts work harder.",
-            "move": "She had players measure resting pulse, do two minutes of each activity on different days, and measure pulse and breaths right after. Because everyone measured the same way for the same time, she could compare the two activities fairly.",
-            "whyItHelps": "Same method: rest first, same timing for everyone, two systems measured side by side, and a fair comparison because only one thing changed."
+            "context": "Fictional example: an animal model has 5 breaths counted in a 20-second window and 7 in another 20-second window.",
+            "move": "A student multiplies each count by three: estimated rates are 15 and 21 breaths per minute. The estimate increased by 6 breaths per minute. The student reports the change but does not claim that the counts alone explain its cause.",
+            "whyItHelps": "Match the conversion to the counting window, retain units, and separate a numerical pattern from a causal explanation. Our main dataset uses 15-second windows, so its multiplier is four."
           },
-          "frameStarter": "At rest, breathing was ____ and heart rate was ____. After one minute of ____, they were ____ and ____, because ____.",
+          "frameStarter": "In fictional Case ____, the estimated ____ rate changed from ____ to ____ per minute. This is consistent with ____. The counts alone cannot show ____.",
           "frameChoices": [
-            "Compare rest and after-exercise for both rates",
-            "Track how long recovery takes for each rate",
-            "Compare two gentle activities",
-            "Compare how much each rate changes as a percent"
+            "Compare each case with its own resting estimates",
+            "Compare the two-minute estimate with rest without claiming an exact recovery time",
+            "Draw two graphs with separate labels and units",
+            "Explain how a counting error of one beat or breath changes a per-minute estimate"
           ],
           "coachPrompts": [
-            "Which system noticed the demand first, and can your data show that?",
-            "What would you expect if only the heart sped up and breathing did not?",
-            "How does a bigger heart rate change help a muscle cell?"
+            "Which part of your claim comes from the numbers, and which comes from the lesson?",
+            "Does a faster pulse directly measure the volume of blood pumped or the oxygen used?",
+            "Which questions would need different measurements or a different investigation?"
           ]
         },
-        "coachHint": "Resting numbers first, same timing for everyone, then look at the two rates side by side. The story is in how they move together.",
-        "sourceExcerpt": "Breathe during exercise and your respiratory and circulatory systems speed up together, because your muscles are demanding more oxygen and your nervous system noticed.",
+        "coachHint": "Use count × 4 for each 15-second sample. Compare like units, separate evidence from explanation, and state the limits of three fictional observation times.",
+        "sourceExcerpt": "Activity changes oxygen delivery and waste-removal demands. Breathing and circulation often adjust together through nervous, hormonal and local signals.",
         "lessonRef": {
           "resourceId": "bs-reading",
           "title": "The Relay Race"

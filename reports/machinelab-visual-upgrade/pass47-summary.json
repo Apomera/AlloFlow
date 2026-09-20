@@ -1,0 +1,29 @@
+{
+  "pass": 47,
+  "change": "Comparison navigation and collapsed change counts",
+  "uiTests": 228,
+  "browserChecks": 429,
+  "themes": {
+    "light": {
+      "checks": 143,
+      "screenshots": 12,
+      "errors": [],
+      "overflow": false
+    },
+    "dark": {
+      "checks": 143,
+      "screenshots": 12,
+      "errors": [],
+      "overflow": false
+    },
+    "contrast": {
+      "checks": 143,
+      "screenshots": 12,
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "sourceMirrorIdentical": true,
+  "syntaxValid": true,
+  "localOnly": true
+}

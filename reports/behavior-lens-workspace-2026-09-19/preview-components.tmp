@@ -1,0 +1,149 @@
+    // One source model drives the dashboard, document, accessible table, and print output.
+    const reviewNumber = value => value === null || value === undefined || value === '' || typeof value === 'boolean' || !Number.isFinite(Number(value)) || Number(value) < 0 ? null : Number(value);
+    const reviewValue = value => value === null ? 'Not recorded' : Number(value.toFixed(2)).toLocaleString();
+    function buildBehaviorReviewSeries({ entries = [], sessions = [], targets = [], targetId = '', measurement = 'notes' }) {
+        const runtime = getBehaviorLensWorkspaceRuntime();
+        const matches = item => !targetId || runtime.resolveCanonicalBehavior(item, targets).id === targetId;
+        const selected = sessions.filter(session => !targetId || behaviorLensSessionMatchesTarget(session, targetId, targets));
+        const intervalKey = session => 'interval:' + String(session.data?.mode || 'unspecified') + ':' + String(session.data?.intervalSec || session.data?.intervalLength || 'unspecified');
+        const options = [{ id: 'notes', label: 'Context notes per recorded day', unit: 'Context notes (count)' },
+            { id: 'count', label: 'Occurrences per session', unit: 'Occurrences (count)' }, { id: 'rate', label: 'Occurrences per minute', unit: 'Occurrences per minute' },
+            { id: 'duration', label: 'Total behavior duration', unit: 'Behavior duration (seconds)' }, { id: 'latency', label: 'Time from cue to response', unit: 'Latency (seconds)' }];
+        [...new Set(selected.filter(s => s.method === 'interval').map(intervalKey))].forEach(id => {
+            const [, mode, seconds] = id.split(':');
+            options.push({ id, label: 'Intervals: ' + mode + ' · ' + seconds + ' seconds', unit: 'Intervals with behavior (%)' });
+        });
+        const option = options.find(item => item.id === measurement) || options[0];
+        const notes = option.id === 'notes';
+        let rows = [];
+        let undated = 0;
+        if (notes) {
+            const days = new Map();
+            entries.filter(matches).forEach(entry => {
+                if (!runtime.normalizeIsoTimestamp(entry.occurredAt || entry.timestamp)) { undated++; return; }
+                const date = runtime.localDayKey(entry.occurredAt || entry.timestamp, entry.timezoneOffset);
+                if (!days.has(date)) days.set(date, { id: date, date, phase: '', value: 0, records: [] });
+                const day = days.get(date); day.value++; day.records.push(entry);
+            });
+            rows = [...days.values()].sort((a, b) => a.date.localeCompare(b.date));
+        } else if (targetId) {
+            selected.filter(session => option.id.startsWith('interval:') ? intervalKey(session) === option.id && session.method === 'interval' : session.method === (['count', 'rate'].includes(option.id) ? 'frequency' : option.id)).forEach(session => {
+                const timestamp = runtime.normalizeIsoTimestamp(session.occurredAt || session.timestamp);
+                if (!timestamp) { undated++; return; }
+                const data = session.data || {};
+                let value = null;
+                if (['count', 'rate'].includes(option.id)) {
+                    const counters = Array.isArray(data.counters) ? data.counters : null;
+                    const counts = counters ? counters.filter(counter => matches({ behaviorId: counter.behaviorId, behavior: counter.label })).map(counter => reviewNumber(counter.count)) : [reviewNumber(data.count)];
+                    value = counts.length && counts.every(count => count !== null) ? counts.reduce((sum, count) => sum + count, 0) : null;
+                    if (option.id === 'rate') value = value !== null && reviewNumber(session.duration) > 0 ? value / (Number(session.duration) / 60) : null;
+                } else if (option.id === 'duration') {
+                    value = reviewNumber(data.totalDuration);
+                    if (value === null && Array.isArray(data.durations) && data.durations.length && data.durations.every(duration => reviewNumber(duration) !== null)) value = data.durations.reduce((sum, duration) => sum + Number(duration), 0);
+                } else if (option.id === 'latency') {
+                    value = reviewNumber(data.latencySeconds);
+                    if (value === null && reviewNumber(data.latencyMs) !== null) value = Number(data.latencyMs) / 1000;
+                } else {
+                    // Incomplete sessions cannot masquerade as a complete interval sample.
+                    value = data.complete === false ? null : reviewNumber(data.percentage);
+                    if (value > 100) value = null;
+                }
+                rows.push({ id: session.id, date: timestamp, phase: session.phase || 'Phase not recorded', value, records: [session] });
+            });
+            rows.sort((a, b) => a.date.localeCompare(b.date));
+        }
+        const max = Math.max(1, ...rows.map(row => row.value || 0));
+        return { rows, options, measurement: option.id, unit: option.unit, label: option.label, notes, undated,
+            requiresTarget: !notes && !targetId, max: option.id.startsWith('interval:') ? 100 : Math.ceil(max * 1.1),
+            caption: notes ? 'Counts of saved context notes on recorded days. Days without notes are omitted; these counts do not measure behavior frequency.' : 'One point per dated session, in chronological order with equal session spacing. Missing values leave gaps. Lines stop at recorded phase changes.' };
+    }
+
+    const BehaviorReviewGraph = ({ model, monochrome, onSelect }) => {
+        const { rows, max, notes } = model;
+        if (!rows.length) return h('p', { className: 'p-4 text-sm text-slate-700', role: 'status' }, model.requiresTarget ? 'Choose one target above to graph measured behavior.' : 'No dated records for this measurement in the selected range.');
+        const x = index => rows.length === 1 ? 365 : 85 + index * 555 / (rows.length - 1);
+        const y = value => 275 - value / max * 210;
+        const color = monochrome ? '#111111' : '#4338ca';
+        return h('svg', { viewBox: '0 0 700 340', role: 'img', 'aria-label': model.label + '. Exact values are available in the data table.', style: { width: '100%', height: 'auto', display: 'block' }, 'data-bl-shared-graph': true },
+            h('line', { x1: 75, y1: 55, x2: 75, y2: 275, stroke: '#111' }), h('line', { x1: 75, y1: 275, x2: 650, y2: 275, stroke: '#111' }),
+            [0, 0.25, 0.5, 0.75, 1].map(fraction => h('g', { key: fraction }, h('line', { x1: 70, y1: y(max * fraction), x2: 75, y2: y(max * fraction), stroke: '#111' }), h('text', { x: 64, y: y(max * fraction) + 5, textAnchor: 'end', fontSize: 13, fill: '#111' }, reviewValue(max * fraction)))),
+            h('text', { x: 20, y: 170, transform: 'rotate(-90 20 170)', textAnchor: 'middle', fontSize: 14, fill: '#111' }, model.unit),
+            h('text', { x: 365, y: 330, textAnchor: 'middle', fontSize: 14, fill: '#111' }, notes ? 'Recorded day (chronological order)' : 'Session (chronological order)'),
+            rows.map((row, index) => {
+                const previous = rows[index - 1];
+                const boundary = !notes && previous && row.phase !== previous.phase;
+                return h('g', { key: row.id },
+                    !notes && (!previous || boundary) && h('text', { x: x(index), y: 25 + (index % 2) * 16, textAnchor: index === 0 ? 'start' : index === rows.length - 1 ? 'end' : 'middle', fontSize: 12, fill: '#111' }, row.phase.length > 24 ? row.phase.slice(0, 23) + '…' : row.phase),
+                    boundary && h('line', { 'data-bl-phase-boundary': true, x1: (x(index - 1) + x(index)) / 2, x2: (x(index - 1) + x(index)) / 2, y1: 50, y2: 275, stroke: '#111', strokeDasharray: '5 4' }),
+                    !notes && previous && !boundary && previous.value !== null && row.value !== null && h('line', { 'data-bl-data-path': true, x1: x(index - 1), x2: x(index), y1: y(previous.value), y2: y(row.value), stroke: color, strokeWidth: 2 }),
+                    notes && h('line', { x1: x(index), x2: x(index), y1: 275, y2: y(row.value), stroke: color, strokeWidth: Math.max(2, Math.min(20, 350 / rows.length)) }),
+                    row.value !== null && h('circle', { 'data-bl-data-point': row.id, cx: x(index), cy: y(row.value), r: 5, fill: color, stroke: '#fff', strokeWidth: 1, onClick: onSelect ? () => onSelect(row.id) : undefined }, h('title', null, (index + 1) + ': ' + reviewValue(row.value) + ' · ' + row.date)),
+                    (rows.length <= 10 || index === 0 || index === rows.length - 1 || index % Math.ceil(rows.length / 8) === 0) && h('text', { x: x(index), y: 298, textAnchor: 'middle', fontSize: 13, fill: '#111' }, index + 1));
+            }));
+    };
+
+    const SharedBehaviorReview = ({ entries, sessions, targets, targetId, studentName, dateRange, presentation, setPresentation, onAdvanced }) => {
+        const [selection, setSelection] = useState('');
+        const [printError, setPrintError] = useState('');
+        const [narratives, setNarratives] = useDurableToolState('reviewNarratives', {});
+        const documentRef = useRef(null);
+        const model = useMemo(() => buildBehaviorReviewSeries({ entries, sessions, targets, targetId, measurement: presentation.measurement || 'notes' }), [entries, sessions, targets, targetId, presentation.measurement]);
+        const documentMode = presentation.mode === 'document';
+        const scopeKey = JSON.stringify([targetId, dateRange, model.measurement]);
+        const fingerprint = getBehaviorLensWorkspaceRuntime().stableHash(JSON.stringify([entries, sessions]));
+        const narrative = narratives[scopeKey] || {};
+        const stale = !!narrative.text && narrative.fingerprint !== fingerprint;
+        const target = targets.find(item => item.id === targetId);
+        const selectedRow = model.rows.find(row => row.id === selection);
+        const change = patch => setPresentation(previous => ({ ...previous, ...patch }));
+        const buttonClass = 'min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800';
+        const printDocument = () => {
+            const content = documentRef.current;
+            if (!content) return;
+            const clone = content.cloneNode(true);
+            clone.querySelectorAll('button').forEach(button => button.replaceWith(document.createTextNode(button.textContent)));
+            const popup = window.open('', '_blank');
+            if (!popup) { setPrintError('The print window was blocked. Allow pop-ups for this page and try again.'); return; }
+            popup.opener = null;
+            popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Behavior Lens review</title><style>@page{size:auto;margin:18mm}body{font:12pt Georgia,serif;color:#111;line-height:1.5;max-width:190mm;margin:auto}h1,h2,h3{break-after:avoid}figure{margin:20px 0;break-inside:avoid}svg{width:100%;height:auto}table{width:100%;border-collapse:collapse;font-size:10pt}th,td{padding:8px;border-bottom:1px solid #aaa;text-align:left;overflow-wrap:anywhere}tr{break-inside:avoid}thead{display:table-header-group}p{white-space:pre-wrap;overflow-wrap:anywhere}button{font:inherit}.bl-document-table{overflow:visible!important}</style></head><body>' + clone.innerHTML + '</body></html>');
+            popup.document.close(); popup.focus(); popup.print(); setPrintError('');
+        };
+        return h('section', { className: 'space-y-4', 'data-bl-presentation': documentMode ? 'document' : 'dashboard' },
+            h('div', { className: 'rounded-xl border border-slate-300 bg-white p-4 space-y-3' },
+                h('div', { role: 'group', 'aria-label': 'Review presentation', className: 'flex flex-wrap gap-2' }, ['dashboard', 'document'].map(mode => h('button', { key: mode, type: 'button', 'aria-pressed': (documentMode ? 'document' : 'dashboard') === mode, onClick: () => change({ mode }), className: buttonClass + ((documentMode ? 'document' : 'dashboard') === mode ? ' bg-indigo-100' : '') }, mode === 'dashboard' ? 'Dashboard' : 'Document'))),
+                h('label', { htmlFor: 'bl-review-measurement', className: 'block text-sm font-bold text-slate-800' }, 'Graph measurement'),
+                h('select', { id: 'bl-review-measurement', value: model.measurement, onChange: event => { change({ measurement: event.target.value }); setSelection(''); }, className: 'min-h-11 w-full rounded-lg border border-slate-400 bg-white p-2 text-sm' }, model.options.map(option => h('option', { key: option.id, value: option.id }, option.label))),
+                h('label', { className: 'flex items-center gap-2 min-h-11 text-sm text-slate-800' }, h('input', { type: 'checkbox', checked: !!presentation.monochrome, onChange: event => change({ monochrome: event.target.checked }) }), 'Black and white graph'),
+                h('p', { className: 'text-sm text-slate-700' }, 'Both views use the same filters, graph, and recorded values.')),
+            documentMode && h('div', { className: 'rounded-xl border border-slate-300 bg-white p-4 space-y-3' },
+                h('label', { htmlFor: 'bl-review-narrative', className: 'block text-sm font-bold text-slate-800' }, 'Review notes for this scope'),
+                h('textarea', { id: 'bl-review-narrative', rows: 4, maxLength: 10000, placeholder: 'Describe what the data show, relevant context, limitations, and agreed next steps.', value: narrative.text || '', onChange: event => { const text = event.target.value; setNarratives(previous => ({ ...previous, [scopeKey]: { text, fingerprint } })); }, className: 'w-full rounded-lg border border-slate-400 p-3 text-sm' }),
+                stale && h('p', { role: 'status', className: 'text-sm text-amber-900' }, 'The source data changed. Check your review notes against the updated graph.'),
+                stale && h('button', { type: 'button', onClick: () => setNarratives(previous => ({ ...previous, [scopeKey]: { ...narrative, fingerprint } })), className: buttonClass }, 'Mark notes reviewed'),
+                h('div', { className: 'flex flex-wrap gap-2' }, h('button', { type: 'button', onClick: printDocument, className: buttonClass }, 'Print / Save PDF'), onAdvanced && h('button', { type: 'button', onClick: onAdvanced, className: buttonClass }, 'Advanced report options')),
+                printError && h('p', { role: 'alert', className: 'text-sm text-red-800' }, printError)),
+            h('article', { ref: documentRef, 'data-bl-document': documentMode || undefined, className: 'rounded-xl border border-slate-300 bg-white p-4 sm:p-6 space-y-4', style: documentMode ? { fontFamily: 'Georgia, serif' } : undefined },
+                documentMode && h('header', null, h('h3', { className: 'text-xl font-bold text-slate-900' }, 'Behavior observation review'), h('p', { className: 'mt-2 text-sm text-slate-800' }, studentName + ' · ' + (target?.label || 'All targets') + ' · ' + (dateRange ? 'Last ' + dateRange + ' calendar days, through ' + new Date().toLocaleDateString() : 'All saved dates')), target?.operationalDefinition && h('p', { className: 'mt-2 text-sm whitespace-pre-wrap break-words' }, 'Operational definition: ' + target.operationalDefinition), h('p', { className: 'text-sm mt-2' }, entries.length + ' context notes · ' + sessions.length + ' linked timed sessions in scope.')),
+                h('figure', null, h('h3', { className: 'font-bold text-slate-900' }, model.label), h(BehaviorReviewGraph, { model, monochrome: !!presentation.monochrome, onSelect: setSelection }), h('figcaption', { className: 'text-sm text-slate-700 mt-2' }, 'Figure 1. ' + model.caption), model.undated > 0 && h('p', { className: 'text-sm text-amber-900 mt-2' }, model.undated + ' undated records omitted from the graph.')),
+                documentMode && h('section', null, h('h3', { className: 'font-bold' }, 'Review notes and next steps'), h('p', { className: 'text-sm mt-2 whitespace-pre-wrap break-words' }, narrative.text || 'Review notes have not been added.'), stale && h('p', { className: 'text-sm mt-2' }, 'Draft: source data changed since these notes were reviewed.')),
+                model.rows.length > 0 && h('details', { open: documentMode, className: 'space-y-2' },
+                    h('summary', { className: 'min-h-11 py-2 font-bold text-sm text-slate-800' }, 'Graph data (' + model.rows.length + ' rows)'),
+                    h('div', { className: 'bl-document-table', style: { overflowX: 'auto' }, tabIndex: 0, role: 'region', 'aria-label': 'Graph data table' }, h('table', { className: 'w-full text-sm text-slate-800', style: { borderCollapse: 'collapse' } },
+                        h('thead', null, h('tr', null, ['Point', 'Date', 'Phase', model.unit].map(label => h('th', { key: label, scope: 'col', className: 'p-2 text-start border-b border-slate-400' }, label)))),
+                        h('tbody', null, model.rows.map((row, index) => h('tr', { key: row.id }, h('td', { className: 'p-2 border-b' }, h('button', { type: 'button', className: 'min-h-11 min-w-11 underline font-bold', 'aria-label': 'Inspect graph point ' + (index + 1), onClick: () => setSelection(row.id) }, index + 1)), h('td', { className: 'p-2 border-b' }, model.notes ? row.date : new Date(row.date).toLocaleString()), h('td', { className: 'p-2 border-b' }, row.phase || 'Not applicable'), h('td', { className: 'p-2 border-b' }, reviewValue(row.value))))))))),
+            selectedRow && h('aside', { className: 'rounded-xl border border-indigo-300 bg-indigo-50 p-4 space-y-2', 'aria-label': 'Selected graph record', 'data-bl-selected-point': true }, h('h3', { className: 'font-bold text-slate-900' }, 'Source records · ' + selectedRow.date), selectedRow.records.map(record => h('div', { key: record.id, className: 'text-sm text-slate-800 whitespace-pre-wrap break-words' }, h('p', null, record.behavior || target?.label || 'Observation'), h('p', null, record.antecedent ? 'Before: ' + record.antecedent : ''), h('p', null, record.consequence ? 'After: ' + record.consequence : ''), h('p', null, 'Observer: ' + (record.observer || 'Not recorded')), record.notes && h('p', null, record.notes))), h('button', { type: 'button', onClick: () => setSelection(''), className: buttonClass }, 'Close source records')));
+    };
+
+    const BehaviorGettingStarted = ({ hasRecords, onRecord, onImport, onExample, onReview }) => {
+        const [guide, setGuide] = useDurableToolState('gettingStarted', {});
+        const buttonClass = 'min-h-11 rounded-lg border border-indigo-400 bg-white px-4 py-2 text-sm font-bold text-indigo-900';
+        if (guide.dismissed || (hasRecords && !guide.started)) return h('button', { type: 'button', onClick: () => setGuide({ ...guide, dismissed: false, started: true }), className: 'min-h-11 text-sm text-indigo-800 underline' }, 'Show getting started');
+        const start = action => { setGuide(previous => ({ ...previous, started: true })); action(); };
+        return h('section', { className: 'rounded-xl border border-indigo-300 bg-indigo-50 p-4 sm:p-5 space-y-3', 'aria-labelledby': 'bl-getting-started', 'data-bl-getting-started': true },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('h3', { id: 'bl-getting-started', className: 'text-lg font-bold text-indigo-950' }, hasRecords ? 'Your first review is ready' : 'Start with one observation'), h('button', { type: 'button', onClick: () => setGuide(previous => ({ ...previous, dismissed: true })), className: 'min-h-11 px-2 text-sm text-indigo-900 underline' }, 'Skip guide')),
+            h('p', { className: 'text-sm text-indigo-950', role: 'status' }, '1. Student selected · ' + (hasRecords ? '2. Data saved · 3. Preview your review' : '2. Add data · 3. Preview your review')),
+            h('p', { className: 'text-sm text-indigo-950' }, hasRecords ? 'Open your dashboard, then switch to Document to see the same data in a printable review.' : 'A context note captures what happened before, what you observed, and what happened after. No target setup or AI is required.'),
+            h('div', { className: 'flex flex-wrap gap-2' }, hasRecords ? h('button', { type: 'button', onClick: onReview, className: buttonClass }, 'Preview your data') : h('button', { type: 'button', onClick: () => start(onRecord), className: buttonClass }, 'Record an observation'), h('button', { type: 'button', onClick: () => start(onImport), className: buttonClass }, 'Import existing data'), h('button', { type: 'button', onClick: () => start(onExample), className: buttonClass }, 'Explore an example')),
+            h('p', { className: 'text-sm text-indigo-950' }, 'For systematic measurement, define a target below: count how often, time how long, time from a cue, or sample intervals. Example data opens in a separate practice workspace.'));
+    };
+

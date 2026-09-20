@@ -1,0 +1,593 @@
+{
+  "checks": [
+    {
+      "name": "1280: presentation starts concealed",
+      "passed": true
+    },
+    {
+      "name": "1280: Stone stays neutral",
+      "passed": true
+    },
+    {
+      "name": "1280: Sunlight stays neutral",
+      "passed": true
+    },
+    {
+      "name": "1280: selection does not grade, play sounds, reveal, or write a learner record",
+      "passed": true
+    },
+    {
+      "name": "1280: hidden presentation fits viewport",
+      "passed": true
+    },
+    {
+      "name": "1280: keyboard answer reveal",
+      "passed": true
+    },
+    {
+      "name": "1280: explanation deliberately revealed",
+      "passed": true
+    },
+    {
+      "name": "1280: incorrect discussion selection is explained only after reveal",
+      "passed": true
+    },
+    {
+      "name": "1280: mixed-format guide available",
+      "passed": true
+    },
+    {
+      "name": "1280: hidden-slide answers counted",
+      "passed": true
+    },
+    {
+      "name": "1280: keyboard hide clears all questions",
+      "passed": true
+    },
+    {
+      "name": "1280: reentry starts concealed",
+      "passed": true
+    },
+    {
+      "name": "1280: different assessment clears guides",
+      "passed": true
+    },
+    {
+      "name": "1280: Student View removes stale facilitator surfaces",
+      "passed": true
+    },
+    {
+      "name": "1280: Student View conceals guides",
+      "passed": true
+    },
+    {
+      "name": "1280: ordinary student response works",
+      "passed": true
+    },
+    {
+      "name": "1280: Student View fits viewport",
+      "passed": true
+    },
+    {
+      "name": "1280: student can review before submission",
+      "passed": true
+    },
+    {
+      "name": "1280: independent study retains labeled practice games",
+      "passed": true
+    },
+    {
+      "name": "390: presentation starts concealed",
+      "passed": true
+    },
+    {
+      "name": "390: Stone stays neutral",
+      "passed": true
+    },
+    {
+      "name": "390: Sunlight stays neutral",
+      "passed": true
+    },
+    {
+      "name": "390: selection does not grade, play sounds, reveal, or write a learner record",
+      "passed": true
+    },
+    {
+      "name": "390: hidden presentation fits viewport",
+      "passed": true
+    },
+    {
+      "name": "390: keyboard answer reveal",
+      "passed": true
+    },
+    {
+      "name": "390: explanation deliberately revealed",
+      "passed": true
+    },
+    {
+      "name": "390: incorrect discussion selection is explained only after reveal",
+      "passed": true
+    },
+    {
+      "name": "390: mixed-format guide available",
+      "passed": true
+    },
+    {
+      "name": "390: hidden-slide answers counted",
+      "passed": true
+    },
+    {
+      "name": "390: keyboard hide clears all questions",
+      "passed": true
+    },
+    {
+      "name": "390: reentry starts concealed",
+      "passed": true
+    },
+    {
+      "name": "390: different assessment clears guides",
+      "passed": true
+    },
+    {
+      "name": "390: Student View removes stale facilitator surfaces",
+      "passed": true
+    },
+    {
+      "name": "390: Student View conceals guides",
+      "passed": true
+    },
+    {
+      "name": "390: ordinary student response works",
+      "passed": true
+    },
+    {
+      "name": "390: Student View fits viewport",
+      "passed": true
+    },
+    {
+      "name": "390: student can review before submission",
+      "passed": true
+    },
+    {
+      "name": "390: independent study retains labeled practice games",
+      "passed": true
+    },
+    {
+      "name": "320: presentation starts concealed",
+      "passed": true
+    },
+    {
+      "name": "320: Stone stays neutral",
+      "passed": true
+    },
+    {
+      "name": "320: Sunlight stays neutral",
+      "passed": true
+    },
+    {
+      "name": "320: selection does not grade, play sounds, reveal, or write a learner record",
+      "passed": true
+    },
+    {
+      "name": "320: hidden presentation fits viewport",
+      "passed": true
+    },
+    {
+      "name": "320: keyboard answer reveal",
+      "passed": true
+    },
+    {
+      "name": "320: explanation deliberately revealed",
+      "passed": true
+    },
+    {
+      "name": "320: incorrect discussion selection is explained only after reveal",
+      "passed": true
+    },
+    {
+      "name": "320: mixed-format guide available",
+      "passed": true
+    },
+    {
+      "name": "320: hidden-slide answers counted",
+      "passed": true
+    },
+    {
+      "name": "320: keyboard hide clears all questions",
+      "passed": true
+    },
+    {
+      "name": "320: reentry starts concealed",
+      "passed": true
+    },
+    {
+      "name": "320: different assessment clears guides",
+      "passed": true
+    },
+    {
+      "name": "320: Student View removes stale facilitator surfaces",
+      "passed": true
+    },
+    {
+      "name": "320: Student View conceals guides",
+      "passed": true
+    },
+    {
+      "name": "320: ordinary student response works",
+      "passed": true
+    },
+    {
+      "name": "320: Student View fits viewport",
+      "passed": true
+    },
+    {
+      "name": "320: student can review before submission",
+      "passed": true
+    },
+    {
+      "name": "320: independent study retains labeled practice games",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: presentation starts concealed",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: Stone stays neutral",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: Sunlight stays neutral",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: selection does not grade, play sounds, reveal, or write a learner record",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: hidden presentation fits viewport",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: keyboard answer reveal",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: explanation deliberately revealed",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: incorrect discussion selection is explained only after reveal",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: mixed-format guide available",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: hidden-slide answers counted",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: keyboard hide clears all questions",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: reentry starts concealed",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: different assessment clears guides",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: Student View removes stale facilitator surfaces",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: Student View conceals guides",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: ordinary student response works",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: Student View fits viewport",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: student can review before submission",
+      "passed": true
+    },
+    {
+      "name": "1280-dark: independent study retains labeled practice games",
+      "passed": true
+    },
+    {
+      "name": "390-dark: presentation starts concealed",
+      "passed": true
+    },
+    {
+      "name": "390-dark: Stone stays neutral",
+      "passed": true
+    },
+    {
+      "name": "390-dark: Sunlight stays neutral",
+      "passed": true
+    },
+    {
+      "name": "390-dark: selection does not grade, play sounds, reveal, or write a learner record",
+      "passed": true
+    },
+    {
+      "name": "390-dark: hidden presentation fits viewport",
+      "passed": true
+    },
+    {
+      "name": "390-dark: keyboard answer reveal",
+      "passed": true
+    },
+    {
+      "name": "390-dark: explanation deliberately revealed",
+      "passed": true
+    },
+    {
+      "name": "390-dark: incorrect discussion selection is explained only after reveal",
+      "passed": true
+    },
+    {
+      "name": "390-dark: mixed-format guide available",
+      "passed": true
+    },
+    {
+      "name": "390-dark: hidden-slide answers counted",
+      "passed": true
+    },
+    {
+      "name": "390-dark: keyboard hide clears all questions",
+      "passed": true
+    },
+    {
+      "name": "390-dark: reentry starts concealed",
+      "passed": true
+    },
+    {
+      "name": "390-dark: different assessment clears guides",
+      "passed": true
+    },
+    {
+      "name": "390-dark: Student View removes stale facilitator surfaces",
+      "passed": true
+    },
+    {
+      "name": "390-dark: Student View conceals guides",
+      "passed": true
+    },
+    {
+      "name": "390-dark: ordinary student response works",
+      "passed": true
+    },
+    {
+      "name": "390-dark: Student View fits viewport",
+      "passed": true
+    },
+    {
+      "name": "390-dark: student can review before submission",
+      "passed": true
+    },
+    {
+      "name": "390-dark: independent study retains labeled practice games",
+      "passed": true
+    },
+    {
+      "name": "320-dark: presentation starts concealed",
+      "passed": true
+    },
+    {
+      "name": "320-dark: Stone stays neutral",
+      "passed": true
+    },
+    {
+      "name": "320-dark: Sunlight stays neutral",
+      "passed": true
+    },
+    {
+      "name": "320-dark: selection does not grade, play sounds, reveal, or write a learner record",
+      "passed": true
+    },
+    {
+      "name": "320-dark: hidden presentation fits viewport",
+      "passed": true
+    },
+    {
+      "name": "320-dark: keyboard answer reveal",
+      "passed": true
+    },
+    {
+      "name": "320-dark: explanation deliberately revealed",
+      "passed": true
+    },
+    {
+      "name": "320-dark: incorrect discussion selection is explained only after reveal",
+      "passed": true
+    },
+    {
+      "name": "320-dark: mixed-format guide available",
+      "passed": true
+    },
+    {
+      "name": "320-dark: hidden-slide answers counted",
+      "passed": true
+    },
+    {
+      "name": "320-dark: keyboard hide clears all questions",
+      "passed": true
+    },
+    {
+      "name": "320-dark: reentry starts concealed",
+      "passed": true
+    },
+    {
+      "name": "320-dark: different assessment clears guides",
+      "passed": true
+    },
+    {
+      "name": "320-dark: Student View removes stale facilitator surfaces",
+      "passed": true
+    },
+    {
+      "name": "320-dark: Student View conceals guides",
+      "passed": true
+    },
+    {
+      "name": "320-dark: ordinary student response works",
+      "passed": true
+    },
+    {
+      "name": "320-dark: Student View fits viewport",
+      "passed": true
+    },
+    {
+      "name": "320-dark: student can review before submission",
+      "passed": true
+    },
+    {
+      "name": "320-dark: independent study retains labeled practice games",
+      "passed": true
+    },
+    {
+      "name": "No browser runtime errors",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "No automated accessibility violations",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "accessibility": [
+    {
+      "label": "1280",
+      "surface": "presentation-hidden",
+      "violations": []
+    },
+    {
+      "label": "1280",
+      "surface": "presentation-revealed",
+      "violations": []
+    },
+    {
+      "label": "1280",
+      "surface": "presentation-incorrect-revealed",
+      "violations": []
+    },
+    {
+      "label": "1280",
+      "surface": "student",
+      "violations": []
+    },
+    {
+      "label": "390",
+      "surface": "presentation-hidden",
+      "violations": []
+    },
+    {
+      "label": "390",
+      "surface": "presentation-revealed",
+      "violations": []
+    },
+    {
+      "label": "390",
+      "surface": "presentation-incorrect-revealed",
+      "violations": []
+    },
+    {
+      "label": "390",
+      "surface": "student",
+      "violations": []
+    },
+    {
+      "label": "320",
+      "surface": "presentation-hidden",
+      "violations": []
+    },
+    {
+      "label": "320",
+      "surface": "presentation-revealed",
+      "violations": []
+    },
+    {
+      "label": "320",
+      "surface": "presentation-incorrect-revealed",
+      "violations": []
+    },
+    {
+      "label": "320",
+      "surface": "student",
+      "violations": []
+    },
+    {
+      "label": "1280-dark",
+      "surface": "presentation-hidden",
+      "violations": []
+    },
+    {
+      "label": "1280-dark",
+      "surface": "presentation-revealed",
+      "violations": []
+    },
+    {
+      "label": "1280-dark",
+      "surface": "presentation-incorrect-revealed",
+      "violations": []
+    },
+    {
+      "label": "1280-dark",
+      "surface": "student",
+      "violations": []
+    },
+    {
+      "label": "390-dark",
+      "surface": "presentation-hidden",
+      "violations": []
+    },
+    {
+      "label": "390-dark",
+      "surface": "presentation-revealed",
+      "violations": []
+    },
+    {
+      "label": "390-dark",
+      "surface": "presentation-incorrect-revealed",
+      "violations": []
+    },
+    {
+      "label": "390-dark",
+      "surface": "student",
+      "violations": []
+    },
+    {
+      "label": "320-dark",
+      "surface": "presentation-hidden",
+      "violations": []
+    },
+    {
+      "label": "320-dark",
+      "surface": "presentation-revealed",
+      "violations": []
+    },
+    {
+      "label": "320-dark",
+      "surface": "presentation-incorrect-revealed",
+      "violations": []
+    },
+    {
+      "label": "320-dark",
+      "surface": "student",
+      "violations": []
+    }
+  ],
+  "errors": []
+}

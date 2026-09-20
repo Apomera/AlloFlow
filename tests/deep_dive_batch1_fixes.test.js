@@ -40,6 +40,8 @@ const sliceWait = (stubs) => {
   // slice (never stubbed) and the gate's mutable state arrives as plain values. The probe is the
   // seam this harness always had: it routes through stubs.callGemini so a test can still say
   // "must not probe once aborted".
+  const wStart = dp.indexOf('var _geminiWaitTotals = ');
+  const wEnd = dp.indexOf('  // Retry-After (2026-09-02)', wStart);
   const bStart = dp.indexOf('var _GEMINI_STORM_BUDGET_DEFAULT_MS = ');
   const bEnd = dp.indexOf('var _throttlePendingProbe = null;', bStart);
   const start = dp.indexOf('var waitForGeminiCalm = async function (opts) {');
@@ -48,7 +50,10 @@ const sliceWait = (stubs) => {
   expect(bEnd).toBeGreaterThan(bStart);
   expect(start).toBeGreaterThan(-1);
   expect(end).toBeGreaterThan(start);
-  const src = dp.slice(bStart, bEnd) + '\n' + dp.slice(start, end);
+  expect(wStart).toBeGreaterThan(-1);
+  expect(wEnd).toBeGreaterThan(wStart);
+  const src = 'var _geminiWaiters = []; var _geminiExtraPacing = false;\n'
+    + dp.slice(wStart, wEnd) + '\n' + dp.slice(bStart, bEnd) + '\n' + dp.slice(start, end);
   const make = new Function(
     '_geminiThrottleInfo', '_pulsePipelineWatchdog', 'warnLog', '_geminiProbe', '_rawCallGemini',
     '_pipeLog', '_pipeThrottleEvent', 'window', '_throttleCooldownMsTotal',

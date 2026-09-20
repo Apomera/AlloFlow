@@ -1,0 +1,142 @@
+  const hostPackOnMailboxRef = useRef(null);
+  const mbPendingHostRef = useRef(false);
+  const mbPendingHostResourceIdsRef = useRef(null);
+  const mbPendingHostOptionsRef = useRef(null);
+  // Self-contained variant: no Firestore write, no student auth — the whole
+  // pack is compressed into the URL fragment and decoded by the student shell.
+  // This is the pathway that works when the class backend (e.g. Gemini
+  // Canvas-managed Firebase) refuses anonymous student devices.
+  const createSelfContainedHomeworkLink = useCallback(async (resourceIds = null, options = {}) => {
+      const selectedResourceIds = Array.isArray(resourceIds) ? resourceIds : null;
+      try {
+          const built = await buildAssignmentPackEncoded({ resourceIds: selectedResourceIds, aiPolicy: options?.aiPolicy });
+          if (!built) return null;
+          const shareUrl = _buildAlloPackShareUrl(built.encoded, built.aiPolicy);
+          if (!shareUrl) {
+              addToast('Self-contained link is unavailable from this host. Configure a student app URL first.', 'error');
+              return null;
+          }
+          if (shareUrl.length > ALLO_QR_PACK_MAX_URL_CHARS) {
+              // Too big for a URL, but the Class Mailbox is built for large packs
+              // (up to ~8MB via putpack). Route there instead of dead-ending.
+              // Only announce the redirect when the mailbox is ready; otherwise
+              // let hostPackOnMailbox show the single "connect first" prompt +
+              // setup panel (avoids a misleading double toast).
+              if (mbConfig?.url && mbConfig?.admin) {
+                  addToast('This activity is too large for a self-contained link — hosting it on your Class Mailbox instead (images included).', 'info');
+              }
+              return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current(selectedResourceIds, { includeSharedActivity: false, preparedPack: built }) : null;
+          }
+          copyToClipboard(shareUrl);
+          openQrShareModal({
+              type: 'assignment-pack',
+              title: built.title,
+              url: shareUrl,
+              resourceCount: built.count,
+              noQr: shareUrl.length > ALLO_QR_PACK_QR_MAX_CHARS,
+              sizeChars: shareUrl.length,
+              resourceTitles: built.resourceTitles,
+              deliverySummary: built.deliverySummary,
+              createdAt: built.createdAt,
+              expiresAt: built.expiresAt,
+              aiPolicy: built.aiPolicy,
+          });
+          addToast('Self-contained homework link ready — students need no account and nothing is stored online.', 'success');
+          return shareUrl;
+      } catch (e) {
+          warnLog('Self-contained homework link failed:', e);
+          addToast('Could not create a self-contained homework link.', 'error');
+          return null;
+      }
+  }, [buildAssignmentPackEncoded, copyToClipboard, mbConfig, openQrShareModal]);
+  // Mailbox-hosted variant: the full pack (images included) is chunk-uploaded
+  // to the teacher's own Drive via their mailbox; the QR carries only a tiny
+  // pointer, so it is always small enough to print.
+  const hostPackOnMailbox = useCallback(async (resourceIds = null, options = {}) => {
+      const selectedResourceIds = Array.isArray(resourceIds) ? resourceIds : null;
+      const shareOptions = options && typeof options === 'object' ? options : {};
+      const preparedPack = shareOptions.preparedPack || null;
+      if (preparedPack && (typeof preparedPack.encoded !== 'string' || !preparedPack.encoded
+          || !Array.isArray(preparedPack.sharedActivities) || !Number.isFinite(Date.parse(preparedPack.expiresAt))
+          || Date.parse(preparedPack.expiresAt) <= Date.now())) {
+          addToast('This prepared assignment is no longer ready to share. Create a fresh link from History.', 'info');
+          return null;
+      }
+      const includeSharedActivity = shareOptions.includeSharedActivity !== false;
+      const hasSharedActivity = preparedPack ? preparedPack.sharedActivities.length > 0
+          : includeSharedActivity && sharedAssignmentActivity.enabled;
+      const hasSurvey = preparedPack ? preparedPack.sharedActivities.some(activity => activity.type === 'survey')
+          : hasSharedActivity && sharedAssignmentActivity.type === 'survey';
+      const requiredMailboxVersion = hasSurvey ? 13 : hasSharedActivity ? 11 : 9;
+      if (mbConfig?.url && mbConfig?.admin && Number(mbConfig.v || 0) < requiredMailboxVersion) {
+          addToast(`Update your Class Mailbox script to v${requiredMailboxVersion} before hosting ${hasSharedActivity ? 'a shared class activity' : 'expiring homework'}.`, 'info');
+          setMbPanelOpen(true);
+          return null;
+      }
+      if (!mbConfig?.url || !mbConfig?.admin) {
+          mbPendingHostRef.current = true; // auto-host once the connect self-test lands
+          mbPendingHostResourceIdsRef.current = selectedResourceIds ? selectedResourceIds.slice() : null;
+          mbPendingHostOptionsRef.current = { ...shareOptions };
+          addToast('Connect your Class Mailbox first — open "Live class without accounts" for the one-time setup.', 'info');
+          setMbPanelOpen(true);
+          return null;
+      }
+      try {
+          const built = preparedPack || await buildAssignmentPackEncoded({ includeSharedActivity, resourceIds: selectedResourceIds, aiPolicy: shareOptions.aiPolicy });
+          if (!built) return null;
+          setMbBusy(true);
+          const id = 'PK-' + generateUUID();
+          const secret = _alloRandomToken(16);
+          const parts = _alloSplitPackChunks(built.encoded);
+          for (let i = 0; i < parts.length; i += 1) {
+              await _alloMailboxCall(mbConfig.url, { a: 'putpack', admin: mbConfig.admin, id, k: secret, part: i + 1, of: parts.length, title: built.title, expiresAt: built.expiresAt, activities: built.sharedActivities, data: parts[i] });
+          }
+          const shareUrl = _buildAlloMailboxEntryUrl('allo_mbp', { u: mbConfig.url, id, k: secret, aiPolicy: built.aiPolicy });
+          if (!shareUrl) throw new Error('no student app URL configured');
+          copyToClipboard(shareUrl);
+          openQrShareModal({
+              type: 'assignment-pack-hosted',
+              title: built.title,
+              url: shareUrl,
+              resourceCount: built.count,
+              noQr: false,
+              sizeChars: shareUrl.length,
+              resourceTitles: built.resourceTitles,
+              deliverySummary: built.deliverySummary,
+              createdAt: built.createdAt,
+              expiresAt: built.expiresAt,
+              packId: id,
+              packSecret: secret,
+              sharedActivity: built.sharedActivities[0] || null,
+              // Study bookkeeping (population/timepoint/item-id map) for the
+              // results importer. Client-side only: respondents never see it.
+              researchMeta: hasSharedActivity ? (sharedAssignmentActivity && sharedAssignmentActivity._researchMeta) || null : null,
+              sharedActivityEnabled: built.sharedActivities.length > 0,
+              aiPolicy: built.aiPolicy,
+          });
+          addToast('Homework hosted on your Class Mailbox — small printable QR, images included.', 'success');
+          setMbBusy(false);
+          return shareUrl;
+      } catch (e) {
+          warnLog('Mailbox pack hosting failed', e);
+          addToast('Could not host on the mailbox: ' + (e?.message || e), 'error');
+          setMbBusy(false);
+          return null;
+      }
+  }, [mbConfig, buildAssignmentPackEncoded, copyToClipboard, openQrShareModal, sharedAssignmentActivity]);
+  // Keep the host-callback ref fresh so the self-contained builder's oversize
+  // reroute (above) always calls the current hostPackOnMailbox.
+  useEffect(() => { hostPackOnMailboxRef.current = hostPackOnMailbox; });
+  // Connect-then-host: if a large pack asked to be hosted while the mailbox was
+  // not yet connected, hostPackOnMailbox queued the request and opened setup.
+  // Once the connect self-test lands (mbConfig gains url+admin), run it once.
+  useEffect(() => {
+      if (mbPendingHostRef.current && mbConfig?.url && mbConfig?.admin) {
+          mbPendingHostRef.current = false;
+          const pendingResourceIds = mbPendingHostResourceIdsRef.current;
+          mbPendingHostResourceIdsRef.current = null;
+          const pendingOptions = mbPendingHostOptionsRef.current;
+          mbPendingHostOptionsRef.current = null;
+          if (hostPackOnMailboxRef.current) hostPackOnMailboxRef.current(pendingResourceIds, pendingOptions);
+      }
+  }, [mbConfig]);

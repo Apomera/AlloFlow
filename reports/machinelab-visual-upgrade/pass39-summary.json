@@ -1,0 +1,55 @@
+{
+  "pass": 39,
+  "title": "Clearer prediction feedback",
+  "date": "2026-09-19",
+  "changes": [
+    "Correct and retry answers appear in structured feedback cards with distinct icons.",
+    "Submitted numeric answers show load divided by mechanical advantage and rounded effort.",
+    "Blank answers and young learners choice answers omit the calculation.",
+    "Editing a numeric answer clears stale feedback without removing earned station progress."
+  ],
+  "validation": {
+    "uiTests": 228,
+    "uiReport": "pass39-ui-tests.json",
+    "browser": [
+      {
+        "theme": "light",
+        "file": "pass39-light-final/results.json",
+        "checks": 82,
+        "screenshots": 12,
+        "errors": [],
+        "overflow": false
+      },
+      {
+        "theme": "dark",
+        "file": "pass39-dark/results.json",
+        "checks": 82,
+        "screenshots": 12,
+        "errors": [],
+        "overflow": false
+      },
+      {
+        "theme": "contrast",
+        "file": "pass39-contrast/results.json",
+        "checks": 82,
+        "screenshots": 12,
+        "errors": [],
+        "overflow": false
+      }
+    ],
+    "totalBrowserChecks": 246,
+    "screenshots": 36,
+    "sourceMirrorIdentical": true,
+    "syntax": "passed",
+    "scopedDiffCheck": "passed; CRLF normalization warnings only",
+    "runtimeBrowser": "Chromium",
+    "notes": "The initial light screenshot run timed out on a locator whose heading gained the proven badge. The locator was corrected; the final light run passed."
+  },
+  "reviewedScreenshots": [
+    "pass39-light/proof-windlass-320.png",
+    "pass39-dark/proof-choice-320.png",
+    "pass39-contrast/proof-forced-colors.png"
+  ],
+  "sha256": "249918a296b93910b777d9f850f1588c498dd1af4177e4bb1757a90cf9cd3f23",
+  "publication": "Local only; no commit, push, or deployment"
+}

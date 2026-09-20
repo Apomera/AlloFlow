@@ -1,0 +1,24 @@
+{
+  "faults": [
+    "render",
+    "picking",
+    "context loss"
+  ],
+  "pageErrors": [],
+  "consoleErrors": [],
+  "audits": {
+    "fallback": []
+  },
+  "technologySwitches": 18,
+  "cameraViews": 4,
+  "savedReadingsPreserved": true,
+  "renderers": {
+    "created": 21,
+    "disposed": 20,
+    "renders": 77,
+    "failRender": false,
+    "failPick": false,
+    "badGeometry": 0
+  },
+  "sourceSha256": "aff5dd7e1078d00d5a71fc3316f71c09289dd0ab04e148d36964b737ac97361c"
+}

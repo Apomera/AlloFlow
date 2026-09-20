@@ -6,7 +6,7 @@ const path = require('path');
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 const ROOT = process.cwd();
-const out = path.join(ROOT, 'scratch', 'water-lake-shore-detail-review');
+const out = process.argv[2] ? path.resolve(ROOT, process.argv[2]) : path.join(ROOT, 'scratch', 'water-lake-shore-detail-review');
 const read = p => fs.readFileSync(path.join(ROOT,p),'utf8');
 (async () => {
   fs.mkdirSync(out,{recursive:true});

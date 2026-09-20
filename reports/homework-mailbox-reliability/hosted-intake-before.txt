@@ -1,0 +1,71 @@
+  // Mailbox-hosted homework entry (?allo_mbp=…): fetch the pack from the
+  // teacher's mailbox in slices, then render exactly like #allo_pack.
+  useEffect(() => {
+      const entry = _alloReadMailboxEntryParam('allo_mbp');
+      if (!entry || !entry.id || !entry.k) return undefined;
+      setMbHostedAssignment({ url: entry.u, id: entry.id, secret: String(entry.k) });
+      setSharedHostedActivity(null);
+      let cancelled = false;
+      _alloSetQrStudentAiPolicy('pending', { type: 'assignment-pack-hosted' }, { clearCredentials: true });
+      setHasSelectedMode(true);
+      setHasSelectedRole(true);
+      setShowWizard(false);
+      setShowStudentWelcome(false);
+      setIsTeacherMode(false);
+      setIsParentMode(false);
+      setIsIndependentMode(false);
+      setIsStudentLinkMode(true);
+      setShowStudentEntry(true);
+      const load = async () => {
+          try {
+              let hostedTitle = '';
+              const { assembled } = await _alloFetchMailboxPackParts(
+                  params => _alloMailboxCallWithRetry(entry.u, params),
+                  { a: 'getpack', id: entry.id, k: entry.k },
+                  {
+                      // The effect hook's `cancelled` flag is the unmount signal; throwing
+                      // here lands in the existing catch, which already no-ops when cancelled.
+                      assertOk: () => { if (cancelled) throw new Error('cancelled'); },
+                      onMeta: res => { hostedTitle = res.title || hostedTitle; }
+                  }
+              );
+              if (cancelled) return;
+              const packet = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
+              _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment-pack-hosted', workStory: packet && packet.workStory === true });
+              if (_alloAssignmentIsExpired(packet)) throw new Error('Assignment expired');
+              const sharedActivity = (Array.isArray(packet?.sharedActivities) ? packet.sharedActivities : []).find(candidate => (
+                  candidate
+                  && ['word_cloud', 'rating', 'availability', 'signup', 'survey'].indexOf(candidate.type) >= 0
+                  && candidate.delivery === 'shared_async'
+                  && /^AC-[0-9a-f-]{36}$/i.test(String(candidate.activityId || ''))
+                  && String(candidate.prompt || '').trim()
+              ));
+              const normalizedSharedActivity = sharedActivity?.type === 'rating'
+                  ? _alloNormalizeSharedRatingActivity(sharedActivity)
+                  : (sharedActivity ? {
+                      ...sharedActivity,
+                      prompt: String(sharedActivity.prompt).slice(0, 240),
+                      minParticipants: Math.max(3, Math.min(10, Number(sharedActivity.minParticipants) || 3)),
+                  } : null);
+              setSharedHostedActivity(normalizedSharedActivity ? {
+                  activity: normalizedSharedActivity,
+                  mailbox: { url: entry.u, id: entry.id, secret: String(entry.k) },
+              } : null);
+              const rawResources = Array.isArray(packet?.resources)
+                  ? _alloStudentSafeResources(packet.resources)
+                  : [];
+              if (!rawResources.length) throw new Error('Pack has no resources');
+              setHistory(rawResources);
+              const firstId = packet.currentResourceId || rawResources[0]?.id;
+              const firstResource = rawResources.find(item => item && item.id === firstId) || rawResources[0];
+              setPendingQrAssignmentResource(firstResource);
+              addToast('Homework loaded: ' + (packet.title || hostedTitle || 'AlloFlow assignment'), 'success');
+          } catch (e) {
+              warnLog('Hosted homework load failed:', e);
+              if (!cancelled) setSharedHostedActivity(null);
+              if (!cancelled) addToast('Could not load this homework from the class mailbox. Ask your teacher for a new QR.', 'error');
+          }
+      };
+      load();
+      return () => { cancelled = true; };
+  }, []);

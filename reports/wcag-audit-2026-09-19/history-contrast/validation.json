@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-09-19T23:09:22.920Z",
+  "errors": [],
+  "sourceHashes": {
+    "view_history_panel_source.jsx": "25764086621441bb5a426735ccf22dd6c979acb8d5ca15a03e6edfe81a722996",
+    "view_history_panel_module.js": "16fa31a546f736b66b7869745daa378f1f3cea6b1962d1d161b06ec0560797ac",
+    "reports/wcag-audit-2026-09-19/history-contrast/run-browser.cjs": "b80881e837892940932b74b41940e7dda46533294acad0619601fa2b014478ad",
+    "reports/wcag-audit-2026-09-19/history-contrast/results.json": "69a66ef4adf2c80459d7db3d0f7e8ce1513137028474c2ef134eaa4f71fd6280",
+    "reports/wcag-audit-2026-09-19/history-contrast/final-regressions.json": "e06dbe6e9bdc21e003919f1ddeb59ab2f3cee38a854f39226c57c40fc83eb77b"
+  },
+  "browserPass": true,
+  "regressionPass": true,
+  "regressionAssertions": 17,
+  "moduleMirror": true,
+  "vpat": {
+    "criteria": 55,
+    "unique": 55,
+    "ratings": {
+      "Partially Supports": 53,
+      "Not Applicable": 2
+    }
+  }
+}

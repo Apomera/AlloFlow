@@ -11,7 +11,7 @@ const ReactDOMClient = require(resolve(modulesDir, 'react-dom/client'));
 function loadQuizSourceForVoiceTests() {
   const babel = require(resolve(modulesDir, '@babel/core'));
   const jsxPlugin = require(resolve(modulesDir, '@babel/plugin-transform-react-jsx'));
-  const source = readFileSync(resolve(process.cwd(), 'view_quiz_source.jsx'), 'utf8');
+  const source = readFileSync(resolve(process.cwd(), process.env.ALLO_ASSESS_CANDIDATE ? process.env.ALLO_ASSESS_CANDIDATE.replace('_module.js', '_source.jsx') : 'view_quiz_source.jsx'), 'utf8');
   const compiled = babel.transformSync(source, {
     plugins: [[jsxPlugin, { useBuiltIns: false }]],
     babelrc: false,

@@ -154,6 +154,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
     if (!mission || !mission.completedAt || !(mission.startedAt > 0) || route !== 'earth-mars' || !launched || !Number.isFinite(launched.timestamp) || launched.timestamp > now || launched.timestamp < mission.startedAt || [-30, 60, -60].indexOf(launched.offset) < 0 || launched.offset !== offset || typeof launched.prediction !== 'string' || !launched.prediction.trim()) return null;
     return { launchedAt: launched.timestamp, offset: launched.offset, prediction: launched.prediction };
   }
+  function marsFollowUpHistory(mission, entries) {
+    if (!mission || !mission.completedAt || !(mission.startedAt > 0)) return [];
+    var seen = Object.create(null);
+    return transferExperimentHistory(entries, 'earth-mars').filter(function(entry) {
+      var shot = entry.transferComparison, link = shot.followUp;
+      if (shot.missionStartedAt !== mission.startedAt || !link || !Number.isFinite(link.launchedAt) || link.launchedAt < mission.startedAt || shot.timestamp < link.launchedAt || [-30, 60, -60].indexOf(link.offset) < 0 || shot.offset !== link.offset || typeof link.prediction !== 'string' || !link.prediction.trim() || seen[link.launchedAt]) return false;
+      seen[link.launchedAt] = true; return true;
+    }).sort(function(a, b) { return b.transferComparison.followUp.launchedAt - a.transferComparison.followUp.launchedAt; });
+  }
   function marsFollowUpOutcome(mission, entries) {
     var launched = mission && mission.followUp && mission.followUp.launched;
     if (!launched) return null;
@@ -163,6 +172,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
       var shot = entry.transferComparison, followUp = shot.followUp;
       return shot.missionStartedAt === mission.startedAt && shot.timestamp >= link.launchedAt && shot.offset === link.offset && followUp && followUp.launchedAt === link.launchedAt && followUp.offset === link.offset && followUp.prediction === link.prediction;
     }) || null;
+  }
+  function arrivalAnglePreview(value) {
+    var angle = Number.isFinite(value) ? Math.max(-60, Math.min(60, value)) : 0;
+    var radians = angle * Math.PI / 180, gap = 2 * Math.sin(Math.abs(radians) / 2);
+    return { angle: angle, gap: gap, ratio: gap / (2 * Math.sin(Math.PI / 12)), x: 108 + 72 * Math.cos(radians), y: 108 - 72 * Math.sin(radians), chartX: 150 + 2 * angle, chartY: 132 - 90 * gap };
+  }
+  function marsArrivalGeometry(reference, shot) {
+    if (!reference || !shot || shot.route !== 'earth-mars' || [-30, 60, -60].indexOf(shot.offset) < 0 || !Number.isFinite(reference.separation) || reference.separation < 0 || !Number.isFinite(shot.testGap) || shot.testGap < 0 || !Number.isFinite(reference.days) || reference.days <= 0 || !Number.isFinite(shot.days) || shot.days <= 0 || Math.abs(reference.days - shot.days) > 0.1) return null;
+    function point(offset) {
+      var angle = offset * Math.PI / 180;
+      return { offset: offset, x: 108 + 72 * Math.cos(angle), y: 108 - 72 * Math.sin(angle), arcX: 108 + 29 * Math.cos(angle), arcY: 108 - 29 * Math.sin(angle), sweep: offset > 0 ? 0 : 1 };
+    }
+    var original = Number(reference.separation.toFixed(3)), followUp = Number(shot.testGap.toFixed(3));
+    return { original: point(30), followUp: point(shot.offset), relation: original === followUp ? 'Same gap at the displayed precision' : followUp > original ? 'Larger recorded gap' : 'Smaller recorded gap',
+      insight: Math.abs(shot.offset) === 30 ? 'Opposite angles mirror the destination across the craft–Sun line. The straight-line gaps have equal lengths in this ideal model.' : 'A larger angle opens a longer straight-line gap. Doubling the angle does not exactly double that gap: it is a chord across the circle, not distance along the orbit.' };
+  }
+  function marsFollowUpFlightGuide(mission, entries, route, flight, debrief, now) {
+    var launched = mission && mission.followUp && mission.followUp.launched;
+    var link = launched && marsFollowUpCapture(mission, route, launched.offset, now);
+    if (!link) return null;
+    var shot = debrief && debrief.snapshot, capture = shot && shot.route === route && shot.missionStartedAt === mission.startedAt && shot.timestamp >= link.launchedAt && shot.offset === link.offset && Number.isFinite(shot.referenceGap) && Number.isFinite(shot.testGap) && shot.followUp && shot.followUp.launchedAt === link.launchedAt && shot.followUp.offset === link.offset && shot.followUp.prediction === link.prediction;
+    var stage = marsFollowUpOutcome(mission, entries) ? 'saved' : capture ? 'explain' : !flight.compare || flight.offset !== link.offset ? 'setup' : flight.playing || flight.progress < 1 ? 'inspect' : 'capture';
+    return { stage: stage, offset: link.offset, prediction: link.prediction, step: stage === 'saved' ? 3 : stage === 'explain' ? 2 : stage === 'capture' ? 1 : 0 };
+  }
+  function marsFollowUpSummary(mission, entries) {
+    if (!marsExpeditionDebrief(mission, entries)) return null;
+    var plan = marsFollowUpPlan(mission), history = marsFollowUpHistory(mission, entries), outcome = marsFollowUpOutcome(mission, entries);
+    var launched = mission.followUp && mission.followUp.launched;
+    var validLaunch = launched && marsFollowUpCapture(mission, 'earth-mars', launched.offset, launched.timestamp);
+    var draftChanged = !!plan.prediction.trim() && !plan.launched;
+    var mode = draftChanged || !validLaunch ? 'plan' : outcome ? 'outcome' : 'experiment';
+    return { mode: mode, count: history.length, latestId: validLaunch && history.length ? history[0].transferComparisonId : null,
+      offset: mode === 'plan' ? plan.offset : launched.offset,
+      title: mode === 'plan' ? plan.ready ? 'Prediction ready to test' : plan.prediction.trim() ? 'Finish your prediction' : 'Choose your next investigation' : mode === 'outcome' ? 'Follow-up result saved' : 'Experiment awaiting saved evidence',
+      next: mode === 'plan' ? 'Plan a new launch angle and predict its arrival gap.' : mode === 'outcome' ? 'Compare your launch prediction with the recorded gap and explanation.' : 'Reopen the launched setup, capture Arrival, and save your explanation.',
+      action: mode === 'plan' ? 'Continue follow-up planning' : mode === 'outcome' ? 'Review follow-up result' : 'Reopen follow-up experiment' };
   }
   function addMarsTransferTrial(mission, trial) {
     if (!mission || !mission.active || mission.completedAt || ['meet', 'miss'].indexOf(mission.prediction) < 0) return mission;
@@ -255,6 +300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
       {id:'comparison',title:'Earth + Jupiter comparison',description:'Follow the existing world, size, orbit, and journal checkpoints.',accent:'#93c5fd',icon:'◐',started:!!d.evidenceMissionActive||!!d.evidenceMissionObserved,steps:[step('Earth view',d.evidenceMissionObserved),step('Compare view',d.evidenceMissionCompared),step('Orbit view',d.evidenceMissionOrbitSeen),step('Journal record',d.evidenceMissionActive&&comparisonEntries.length)],next:!d.evidenceMissionObserved?'Visit Earth and inspect its properties':!d.evidenceMissionCompared?'Compare Earth and Jupiter on a shared scale':!d.evidenceMissionOrbitSeen?'Inspect Jupiter in the Orrery':'Review or write your comparison journal entry',evidence:comparisonEntries.map(evidence)},
       {id:'field',title:'Collect → review → explore',description:'Collect one specimen, then save an observation and a next question.',accent:'#6ee7b7',icon:'⬡',started:samples.length>0,steps:[step('Collect a specimen',samples.length>0),step('Save your review',reviews.length>0)],next:reviews.length?'Revisit your specimen observations':samples.length?'Review a collected specimen':'Deploy a rover and collect a specimen',target:nextSample?nextSample.planet:worlds.mars,hasSample:!!samples.length,evidence:samples.map(evidence),summary:samples.length+' specimens recorded · '+reviews.length+' reviewed'}
     ];
+    journeys[0].followUp = marsFollowUpSummary(mars, entries);
     journeys.forEach(function(j){j.done=j.steps.filter(function(st){return st.done;}).length;j.complete=j.done===j.steps.length;});
     var selected=journeys.find(function(j){return j.id===d.solarMissionFocus;})||journeys.find(function(j){return j.started&&!j.complete;})||journeys[0];
     return {journeys:journeys,selected:selected,journalCount:entries.length,completed:journeys.filter(function(j){return j.complete;}).length};
@@ -3956,27 +4002,126 @@ const d = labToolData.solarSystem || {};
               return Object.assign({}, prev, { solarSystem: Object.assign({}, data, { marsMission: Object.assign({}, mission, { completedAt: now }), journalEntries: entries.concat([entry]) }) });
             });
           }
+          function buildMarsArrivalGeometry(reference, shot) {
+            var geometry = marsArrivalGeometry(reference, shot);
+            if (!geometry) return null;
+            var h = React.createElement, ink = isDark ? '#e3edf8' : '#18334c', muted = isDark ? '#b4cadd' : '#4b6478', line = isDark ? '#41627b' : '#adc6d8';
+            return h('figure', { 'aria-label': 'Arrival geometry comparison', 'data-mars-arrival-geometry': true, style: { margin: '14px 0', padding: '12px', borderRadius: '12px', border: '1px solid ' + line, background: isDark ? '#0c2234' : '#f7fbff', color: ink } },
+              h('figcaption', { style: { fontSize: '13px', fontWeight: 800, marginBottom: '5px' } }, 'See where the gap comes from'),
+              h('p', { 'data-arrival-gap-relation': true, style: { fontSize: '12px', fontWeight: 700, margin: '5px 0 10px' } }, geometry.relation),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: '10px' } }, [
+                { label: 'Original +30°', point: geometry.original, gap: reference.separation, color: isDark ? '#85c7ff' : '#2165a1' },
+                { label: 'Follow-up ' + (shot.offset > 0 ? '+' : '') + shot.offset + '°', point: geometry.followUp, gap: shot.testGap, color: isDark ? '#ffb273' : '#a34b12' }
+              ].map(function(row) {
+                var p = row.point, angle = (p.offset > 0 ? '+' : '') + p.offset + '°';
+                return h('div', { key: row.label, style: { minWidth: 0, padding: '8px', borderRadius: '10px', border: '1px solid ' + line, background: isDark ? '#142e42' : '#fff' } },
+                  h('strong', { style: { display: 'block', fontSize: '12px', color: row.color } }, row.label),
+                  h('svg', { viewBox: '0 0 216 208', role: 'img', 'aria-label': row.label + ': craft A and Mars B at arrival; recorded gap ' + row.gap.toFixed(3) + ' AU. Schematic.', style: { display: 'block', width: '100%', maxWidth: '240px', margin: '0 auto', height: 'auto' } },
+                    h('circle', { cx: 108, cy: 108, r: 72, fill: 'none', stroke: line, strokeWidth: 1.5, strokeDasharray: '4 5' }),
+                    h('line', { x1: 108, y1: 108, x2: 180, y2: 108, stroke: muted, strokeWidth: 1, strokeDasharray: '3 3' }),
+                    h('line', { x1: 108, y1: 108, x2: p.x, y2: p.y, stroke: row.color, strokeWidth: 1, strokeOpacity: .65 }),
+                    h('path', { d: 'M 137 108 A 29 29 0 0 ' + p.sweep + ' ' + p.arcX + ' ' + p.arcY, fill: 'none', stroke: row.color, strokeWidth: 2 }),
+                    h('line', { 'data-arrival-gap-line': true, x1: 180, y1: 108, x2: p.x, y2: p.y, stroke: row.color, strokeWidth: 3, strokeLinecap: 'round' }),
+                    h('circle', { cx: 108, cy: 108, r: 8, fill: '#efad38', stroke: isDark ? '#ffdc83' : '#8c5804', strokeWidth: 1 }),
+                    h('text', { x: 108, y: 132, textAnchor: 'middle', fill: muted, fontSize: 11 }, 'Sun'),
+                    h('path', { d: 'M 180 101 L 187 108 L 180 115 L 173 108 Z', fill: isDark ? '#fff' : '#18334c', stroke: isDark ? '#18334c' : '#fff', strokeWidth: 1.5 }),
+                    h('text', { x: 194, y: 112, fill: ink, fontSize: 12, fontWeight: 800 }, 'A'),
+                    h('circle', { 'data-arrival-destination': p.offset, cx: p.x, cy: p.y, r: 6, fill: row.color, stroke: isDark ? '#0c2234' : '#fff', strokeWidth: 1.5 }),
+                    h('text', { x: p.x, y: p.y + (p.offset > 0 ? -13 : 22), textAnchor: 'middle', fill: row.color, fontSize: 12, fontWeight: 800 }, 'B'),
+                    h('text', { x: 108, y: 18, textAnchor: 'middle', fill: row.color, fontSize: 13, fontWeight: 800 }, angle + ' angular separation')
+                  ),
+                  h('p', { style: { margin: 0, fontSize: '12px', fontWeight: 700, textAlign: 'center' } }, row.gap.toFixed(3) + ' AU recorded gap')
+                );
+              })),
+              h('p', { style: { fontSize: '11px', color: muted, lineHeight: 1.6, margin: '10px 0 6px' } }, 'A · spacecraft (diamond). B · Mars (circle). Solid colored line · straight-line gap. Dashed circle · Mars orbit.'),
+              h('p', { style: { fontSize: '12px', lineHeight: 1.6, margin: '8px 0' } }, geometry.insight),
+              h('p', { style: { fontSize: '11px', color: muted, lineHeight: 1.6, margin: 0 } }, 'Schematic of circular, coplanar orbits, rotated to place the arriving craft at the right. Both diagrams use the same normalized orbit size; read the recorded measurements for distances in AU.')
+            );
+          }
+          function buildMarsAngleExplorer(reference, shot, buttonStyle) {
+            if (!marsArrivalGeometry(reference, shot)) return null;
+            var h = React.createElement, stored = d.marsAnglePreview;
+            var preview = arrivalAnglePreview(stored && stored.capture === shot.timestamp ? stored.angle : shot.offset), saved = arrivalAnglePreview(shot.offset);
+            var ink = isDark ? '#e3edf8' : '#18334c', muted = isDark ? '#b4cadd' : '#4b6478', line = isDark ? '#41627b' : '#adc6d8', color = isDark ? '#f5bb78' : '#a34b12';
+            var angleText = (preview.angle > 0 ? '+' : '') + preview.angle + '°', curve = [];
+            for (var a = -60; a <= 60; a += 2) { var p = arrivalAnglePreview(a); curve.push((a === -60 ? 'M ' : 'L ') + p.chartX + ' ' + p.chartY); }
+            function changeAngle(value) { upd('marsAnglePreview', { capture: shot.timestamp, angle: arrivalAnglePreview(value).angle }); }
+            return h('details', { 'data-mars-angle-explorer': true, style: { margin: '14px 0', padding: '12px', borderRadius: '12px', border: '1px solid ' + line, background: isDark ? '#10283b' : '#f4f8ff', color: ink } },
+              h('summary', { style: { minHeight: '44px', boxSizing: 'border-box', paddingTop: '10px', fontSize: '13px', fontWeight: 800, cursor: 'pointer' } }, 'Explore how angle changes the gap'),
+              h('section', { 'aria-label': 'Arrival angle explorer' },
+                h('p', { style: { fontSize: '12px', lineHeight: 1.6, margin: '6px 0 12px' } }, 'Move the angle, then try its mirror. Watch the destination and the curve together. This is a model preview; your saved measurements and prediction stay unchanged.'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: '12px', alignItems: 'center' } },
+                  h('svg', { viewBox: '0 0 216 216', role: 'img', 'aria-label': 'Preview orbit at ' + angleText + ', with a gap of ' + preview.gap.toFixed(3) + ' orbit radii', style: { width: '100%', maxWidth: '250px', display: 'block', margin: 'auto' } },
+                    h('circle', { cx: 108, cy: 108, r: 72, fill: 'none', stroke: line, strokeWidth: 1.5, strokeDasharray: '4 5' }),
+                    h('line', { x1: 108, y1: 108, x2: 180, y2: 108, stroke: muted, strokeDasharray: '3 3' }),
+                    h('line', { x1: 108, y1: 108, x2: preview.x, y2: preview.y, stroke: color, strokeOpacity: .5 }),
+                    h('line', { x1: 180, y1: 108, x2: preview.x, y2: preview.y, stroke: color, strokeWidth: 3 }),
+                    h('circle', { cx: saved.x, cy: saved.y, r: 10, fill: 'none', stroke: muted, strokeWidth: 2, strokeDasharray: '2 3' }),
+                    h('circle', { cx: 108, cy: 108, r: 8, fill: '#efad38' }),
+                    h('text', { x: 108, y: 133, textAnchor: 'middle', fill: muted, fontSize: 11 }, 'Sun'),
+                    h('circle', { 'data-preview-destination': true, cx: preview.x, cy: preview.y, r: 6, fill: color }),
+                    h('path', { d: 'M 180 101 L 187 108 L 180 115 L 173 108 Z', fill: ink, stroke: isDark ? '#10283b' : '#fff', strokeWidth: 1.5 }),
+                    h('text', { x: 108, y: 18, textAnchor: 'middle', fill: color, fontSize: 14, fontWeight: 800 }, angleText + ' preview'),
+                    h('text', { x: 108, y: 204, textAnchor: 'middle', fill: muted, fontSize: 10 }, 'Dotted ring: saved destination')
+                  ),
+                  h('svg', { viewBox: '0 0 300 190', role: 'img', 'aria-label': 'Gap versus angle curve. Equal positive and negative angles have the same gap. Current angle ' + angleText, style: { width: '100%', maxWidth: '360px', margin: 'auto', display: 'block' } },
+                    h('text', { x: 150, y: 17, textAnchor: 'middle', fill: ink, fontSize: 16, fontWeight: 700 }, 'Gap / orbit radius'),
+                    [0, .5, 1].map(function(value) { var y = 132 - 90 * value; return h('g', { key: value }, h('line', { x1: 30, y1: y, x2: 270, y2: y, stroke: line, strokeWidth: 1 }), h('text', { x: 26, y: y + 5, textAnchor: 'end', fill: muted, fontSize: 16 }, value)); }),
+                    [-60, -30, 0, 30, 60].map(function(value) { return h('text', { key: value, x: 150 + 2 * value, y: 153, textAnchor: 'middle', fill: muted, fontSize: 16 }, (value > 0 ? '+' : '') + value + '°'); }),
+                    h('path', { d: curve.join(' '), fill: 'none', stroke: color, strokeWidth: 2.5 }),
+                    h('circle', { cx: saved.chartX, cy: saved.chartY, r: 7, fill: 'none', stroke: muted, strokeWidth: 2, strokeDasharray: '2 2' }),
+                    h('line', { x1: preview.chartX, y1: preview.chartY, x2: preview.chartX, y2: 132, stroke: color, strokeDasharray: '3 3' }),
+                    h('circle', { 'data-preview-curve-point': true, cx: preview.chartX, cy: preview.chartY, r: 5, fill: color, stroke: isDark ? '#10283b' : '#fff', strokeWidth: 1.5 }),
+                    h('text', { x: 150, y: 176, textAnchor: 'middle', fill: muted, fontSize: 16 }, 'Destination angle at arrival')
+                  )
+                ),
+                h('label', { htmlFor: 'mars-arrival-preview-angle', style: { display: 'block', fontSize: '12px', fontWeight: 700, marginTop: '12px' } }, 'Preview arrival angle'),
+                h('input', { id: 'mars-arrival-preview-angle', type: 'range', min: -60, max: 60, step: 1, value: preview.angle, 'aria-valuetext': angleText + '; gap ' + preview.gap.toFixed(3) + ' orbit radii', onChange: function(ev) { changeAngle(Number(ev.target.value)); }, style: { width: '100%', minHeight: '44px', margin: '4px 0', accentColor: color } }),
+                h('div', { role: 'group', 'aria-label': 'Preview angle presets', style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } }, [-60, -30, 0, 30, 60].map(function(value) { return h('button', { key: value, type: 'button', 'aria-pressed': preview.angle === value, onClick: function() { changeAngle(value); }, style: Object.assign({}, buttonStyle, { minHeight: '44px', border: '1px solid ' + (preview.angle === value ? color : line) }) }, (value > 0 ? '+' : '') + value + '°'); })),
+                h('p', { 'data-preview-gap-reading': true, role: 'status', style: { fontSize: '13px', fontWeight: 700, lineHeight: 1.6, margin: '12px 0' } }, angleText + ' → ' + preview.gap.toFixed(3) + ' orbit radii · ' + preview.ratio.toFixed(3) + ' × the +30° model gap'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '7px' } },
+                  h('button', { type: 'button', disabled: preview.angle === 0, onClick: function() { changeAngle(-preview.angle); }, style: Object.assign({}, buttonStyle, { minHeight: '44px' }) }, 'Mirror preview angle'),
+                  h('button', { type: 'button', disabled: preview.angle === shot.offset, onClick: function() { changeAngle(shot.offset); }, style: Object.assign({}, buttonStyle, { minHeight: '44px' }) }, 'Reset to saved angle')),
+                h('p', { style: { fontSize: '11px', color: muted, lineHeight: 1.6, marginBottom: 0 } }, 'One orbit radius is the Sun-to-Mars distance in this circular model. Gap = 2 × orbit radius × sin(|angle| ÷ 2), with the angle in degrees. The curve previews geometry; use the transfer activity to capture evidence for your next investigation.')
+              )
+            );
+          }
           function buildMarsFollowUpOutcome(buttonStyle) {
-            var h = React.createElement, launched = marsMission.followUp && marsMission.followUp.launched;
-            if (!launched) return null;
-            var result = marsFollowUpOutcome(marsMission, journalEntries), savedReport = marsExpeditionDebrief(marsMission, journalEntries);
+            var h = React.createElement, currentLaunch = marsMission.followUp && marsMission.followUp.launched;
+            if (!currentLaunch) return null;
+            var history = marsFollowUpHistory(marsMission, journalEntries);
+            var earlier = history.filter(function(entry) { return entry.transferComparison.followUp.launchedAt !== currentLaunch.timestamp; });
+            var reviewed = earlier.find(function(entry) { return entry.transferComparisonId === d.marsFollowUpReviewId; }) || null;
+            var result = reviewed || marsFollowUpOutcome(marsMission, journalEntries), savedReport = marsExpeditionDebrief(marsMission, journalEntries);
+            var launched = reviewed ? { offset: reviewed.transferComparison.followUp.offset, prediction: reviewed.transferComparison.followUp.prediction, timestamp: reviewed.transferComparison.followUp.launchedAt } : currentLaunch;
             var reference = savedReport && savedReport.trials[1], shot = result && result.transferComparison;
             var line = isDark ? '#496078' : '#bed0df', muted = isDark ? '#bfcede' : '#476078';
             var ruler = Math.max(1, Math.ceil(Math.max(reference ? reference.separation : 0, shot ? shot.testGap : 0)));
             return h('section', { 'data-mars-follow-up-outcome': true, 'aria-label': 'Follow-up outcome', style: { marginTop: '14px', padding: '12px', borderRadius: '12px', border: '1px solid ' + line, background: isDark ? '#122e35' : '#ecf8f1', overflowWrap: 'anywhere' } },
-              h('h4', { id: 'mars-follow-up-result-title', tabIndex: -1, style: { fontSize: '16px', fontWeight: 800, margin: '0 0 10px' } }, result ? 'Prediction → result → explanation' : 'Your last launched experiment'),
-              h('p', { style: { fontSize: '12px', lineHeight: 1.5 } }, 'Launched offset: ' + (launched.offset > 0 ? '+' : '') + launched.offset + '°. This panel follows that launch, even if you edit the next prediction above.'),
+              earlier.length ? h('div', { style: { marginBottom: '14px' } },
+                h('label', { htmlFor: 'mars-follow-up-history', style: { display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' } }, 'Review an investigation'),
+                h('select', { id: 'mars-follow-up-history', value: reviewed ? reviewed.transferComparisonId : 'current', onChange: function(ev) { upd('marsFollowUpReviewId', ev.target.value === 'current' ? null : ev.target.value); }, style: { display: 'block', width: '100%', minWidth: 0, boxSizing: 'border-box', minHeight: '44px', padding: '8px', borderRadius: '8px', border: '1px solid ' + line, background: isDark ? '#102237' : '#fff', color: isDark ? '#e2e8f0' : '#18334c', fontSize: '12px' } },
+                  h('option', { value: 'current' }, 'Current investigation · ' + (currentLaunch.offset > 0 ? '+' : '') + currentLaunch.offset + '°'),
+                  earlier.map(function(entry, index) { var link = entry.transferComparison.followUp; return h('option', { key: entry.transferComparisonId, value: entry.transferComparisonId }, 'Earlier ' + (index + 1) + ' · ' + (link.offset > 0 ? '+' : '') + link.offset + '° · ' + entry.transferComparison.testGap.toFixed(3) + ' AU'); })
+                ),
+                h('p', { style: { fontSize: '11px', lineHeight: 1.5, color: muted, margin: '6px 0 0' } }, history.length + ' saved launches in this mission. Each entry keeps its prediction, latest saved comparison, and explanation together.')
+              ) : null,
+              h('h4', { id: 'mars-follow-up-result-title', tabIndex: -1, style: { fontSize: '16px', fontWeight: 800, margin: '0 0 10px' } }, reviewed ? 'Earlier investigation · saved outcome' : result ? 'Prediction → result → explanation' : 'Your last launched experiment'),
+              h('p', { style: { fontSize: '12px', lineHeight: 1.5 } }, 'Launched offset: ' + (launched.offset > 0 ? '+' : '') + launched.offset + (reviewed ? '°. You are reviewing a saved investigation. Your current plan and launch stay unchanged.' : '°. This panel follows that launch, even if you edit the next prediction above.')),
               h('strong', { style: { fontSize: '12px' } }, 'What you predicted'),
               h('p', { 'data-mars-outcome-prediction': true, style: { fontSize: '12px', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: '5px 0 12px' } }, launched.prediction),
               !result ? h('p', { role: 'status', style: { fontSize: '12px', lineHeight: 1.6 } }, 'No saved comparison is linked to this launch yet. In the transfer activity, inspect Arrival, capture the comparison, and save your explanation. Older captures do not complete this investigation.') : h(React.Fragment, null,
                 h('strong', { style: { fontSize: '12px' } }, 'What you recorded'),
                 [{ label: 'Original +30°', gap: reference ? reference.separation : null, color: '#69a9df' }, { label: 'Follow-up ' + (shot.offset > 0 ? '+' : '') + shot.offset + '°', gap: shot.testGap, color: '#e57c34' }].map(function(row) { return h('div', { key: row.label, style: { margin: '10px 0', fontSize: '12px' } }, h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '5px' } }, h('span', null, row.label), h('strong', null, row.gap === null ? 'Unavailable' : row.gap.toFixed(3) + ' AU')), row.gap === null ? null : h('div', { 'aria-hidden': true, style: { height: '8px', borderRadius: '5px', background: isDark ? '#42566d' : '#d3dfeb', marginTop: '5px' } }, h('div', { style: { height: '100%', width: row.gap / ruler * 100 + '%', borderRadius: '5px', background: row.color } }))); }),
                 h('p', { style: { fontSize: '11px', color: muted, lineHeight: 1.5 } }, 'Shared 0–' + ruler + ' AU ruler. Follow-up arrival time: ' + shot.days.toFixed(1) + ' days. Compare these recorded gaps with your prediction.'),
+                buildMarsArrivalGeometry(reference, shot),
+                buildMarsAngleExplorer(reference, shot, buttonStyle),
                 h('strong', { style: { fontSize: '12px' } }, 'How you explained the evidence'),
                 h('p', { 'data-mars-outcome-explanation': true, style: { fontSize: '12px', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: '5px 0 12px' } }, result.reasoning || result.surprise || 'No explanation recorded.'),
                 h('strong', { style: { fontSize: '12px' } }, 'Your next question'),
                 h('p', { style: { fontSize: '12px', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, result.question || 'What would you test next?'),
-                h('p', { role: 'status', style: { fontSize: '11px', color: muted, lineHeight: 1.5 } }, 'This outcome is linked to the saved experiment. Your explanation is preserved as written, not automatically graded.')
+                h('p', { role: 'status', style: { fontSize: '11px', color: muted, lineHeight: 1.5 } }, 'This outcome is linked to the saved experiment. Your explanation is preserved as written, not automatically graded.'),
+                reviewed ? h('button', { type: 'button', style: buttonStyle, onClick: function() { marsMissionFocusRef.current = '#mars-follow-up-result-title'; upd('marsFollowUpReviewId', null); } }, 'Return to current investigation') : null
               )
             );
           }
@@ -3992,7 +4137,7 @@ const d = labToolData.solarSystem || {};
               setLabToolData(function(prev) {
                 var data = prev.solarSystem || {}, mission = data.marsMission || {}, currentPlan = marsFollowUpPlan(mission);
                 if (!currentPlan.ready) return prev;
-                return Object.assign({}, prev, { solarSystem: Object.assign({}, data, { marsMission: Object.assign({}, mission, { followUp: Object.assign({}, mission.followUp || {}, { offset: currentPlan.offset, launched: { offset: currentPlan.offset, prediction: currentPlan.prediction.trim(), timestamp: Date.now() } }) }), orreryMode: true, modelLens: 'orbit', orr_tab: 5, orr_trf: 'earth', orr_trt: 'mars', orr_paused: true, orr_marsReplay: (Number(data.orr_marsReplay) || 0) + 1, orr_marsReplayOffset: currentPlan.offset }) });
+                return Object.assign({}, prev, { solarSystem: Object.assign({}, data, { marsMission: Object.assign({}, mission, { followUp: Object.assign({}, mission.followUp || {}, { offset: currentPlan.offset, launched: { offset: currentPlan.offset, prediction: currentPlan.prediction.trim(), timestamp: Date.now() } }) }), orreryMode: true, modelLens: 'orbit', orr_tab: 5, orr_trf: 'earth', orr_trt: 'mars', orr_paused: true, orr_marsReplay: (Number(data.orr_marsReplay) || 0) + 1, orr_marsReplayOffset: currentPlan.offset, marsFollowUpReviewId: null }) });
               });
             }
             return h('details', { 'data-mars-follow-up': true, style: { marginTop: '12px', padding: '12px', border: '1px solid ' + line, borderRadius: '12px', background: isDark ? '#102839' : '#f1f7ff' } },
@@ -4179,6 +4324,16 @@ const d = labToolData.solarSystem || {};
             }
             updMulti(patch);
           }
+          function navigateDashboardFollowUp(reviewHistory) {
+            var summary = marsFollowUpSummary(marsMission, journalEntries);
+            if (!summary) return;
+            var patch = { solarMissionFocus: 'mars', solarMissionDashboardOpen: false, marsMission: Object.assign({}, marsMission, { active: true }), marsFollowUpReviewId: reviewHistory ? summary.latestId : null };
+            if (!reviewHistory && summary.mode === 'experiment') {
+              Object.assign(patch, { orreryMode: true, modelLens: 'orbit', orr_tab: 5, orr_trf: 'earth', orr_trt: 'mars', orr_paused: true, orr_marsReplay: (Number(d.orr_marsReplay) || 0) + 1, orr_marsReplayOffset: summary.offset });
+              marsMissionFocusRef.current = '[data-transfer-flight] canvas';
+            } else marsMissionFocusRef.current = { selector: reviewHistory || summary.mode === 'outcome' ? '#mars-follow-up-result-title' : '#mars-follow-up-prediction', reveal: '[data-mars-follow-up]' };
+            updMulti(patch);
+          }
           function buildSolarMissionDashboard() {
             var h = React.createElement, journey = solarDashboard.selected, open = d.solarMissionDashboardOpen !== false;
             var ink = isDark ? '#e2e8f0' : '#18334c', muted = isDark ? '#bdcce0' : '#415973', line = isDark ? '#425a76' : '#b8cce1';
@@ -4209,6 +4364,19 @@ const d = labToolData.solarSystem || {};
                     h('button', { type: 'button', 'data-journey-continue': true, style: Object.assign({}, button, { background: isDark ? '#cde9ff' : '#184c75', color: isDark ? '#102b44' : '#fff' }), onClick: function() { navigateSolarDashboard(journey, false); } }, journey.id === 'mars' && !journey.started ? 'Start Earth-to-Mars mission' : journey.complete ? 'Review journey' : journey.started ? 'Continue journey' : 'Start journey'),
                     h('button', { type: 'button', style: button, onClick: function() { navigateSolarDashboard(journey, true); } }, 'Open evidence journal')
                   ),
+                  journey.followUp ? h('section', { 'data-dashboard-follow-up': true, 'aria-label': 'Mars follow-up shortcut', style: { marginTop: '14px', padding: '12px', borderRadius: '11px', border: '1px solid ' + line, background: isDark ? 'linear-gradient(120deg,#163442,#183c35)' : 'linear-gradient(120deg,#eaf5ff,#e7f7ef)' } },
+                    h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '8px' } },
+                      h('strong', { style: { fontSize: '14px' } }, 'Keep investigating'),
+                      h('span', { style: { fontSize: '11px', border: '1px solid ' + line, borderRadius: '20px', padding: '5px 8px' } }, journey.followUp.count + ' saved follow-up' + (journey.followUp.count === 1 ? '' : 's'))
+                    ),
+                    h('p', { 'data-dashboard-follow-up-state': journey.followUp.mode, style: { fontSize: '13px', fontWeight: 700, margin: '10px 0 5px' } }, journey.followUp.title),
+                    h('p', { style: { fontSize: '12px', lineHeight: 1.6, margin: '5px 0 10px', color: muted } }, journey.followUp.next),
+                    h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
+                      h('button', { type: 'button', style: button, onClick: function() { navigateDashboardFollowUp(false); } }, journey.followUp.action),
+                      journey.followUp.latestId ? h('button', { type: 'button', style: button, onClick: function() { navigateDashboardFollowUp(true); } }, 'Review saved investigations') : null
+                    ),
+                    h('p', { style: { fontSize: '11px', lineHeight: 1.5, margin: '10px 0 0', color: muted } }, 'Your expedition stays complete. Reopening a test preserves its original launch prediction and saved report.')
+                  ) : null,
                   h('details', { key: journey.id, style: { marginTop: '12px', fontSize: '12px', color: muted } },
                     h('summary', { style: { cursor: 'pointer', minHeight: '44px', display: 'list-item', paddingTop: '12px', boxSizing: 'border-box' } }, 'Evidence preview · ' + journey.evidence.length + ' records'),
                     journey.evidence.length ? h('ul', { style: { paddingLeft: '18px', margin: '6px 0' } }, journey.evidence.slice(-3).reverse().map(function(e, i) { return h('li', { key: i, style: { marginBottom: '8px' } }, h('strong', null, e.title), h('p', { style: { margin: '3px 0', whiteSpace: 'pre-wrap' } }, e.detail)); })) : h('p', null, 'No evidence yet. Your recorded observations will appear here.')
@@ -7119,6 +7287,33 @@ const d = labToolData.solarSystem || {};
     var pos = orbitalPos(body.a, body.e, TAU * phase);
     return { x: 160 + 92 * body.e + pos.x * 92 / body.a, y: 120 - pos.y * 92 / body.a };
   }
+  // Fixed-length arrows explain direction; the speed chart carries magnitude.
+  function orbitRhythmDirection(body, time) {
+    var point = orbitRhythmPoint(body, time);
+    var velocity = orbitalVelocity(body.a, body.e, TAU * time / body.T);
+    var norm = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+    var ux = velocity.x / norm, uy = -velocity.y / norm;
+    var start = { x: point.x + 10 * ux, y: point.y + 10 * uy };
+    var tip = { x: point.x + 34 * ux, y: point.y + 34 * uy };
+    var left = { x: tip.x - 6 * ux - 4 * uy, y: tip.y - 6 * uy + 4 * ux };
+    var right = { x: tip.x - 6 * ux + 4 * uy, y: tip.y - 6 * uy - 4 * ux };
+    var coord = function(p) { return p.x.toFixed(3) + " " + p.y.toFixed(3); };
+    return { start: start, tip: tip, ux: ux, uy: uy, path: "M" + coord(start) + " L" + coord(tip) + " M" + coord(left) + " L" + coord(tip) + " L" + coord(right) };
+  }
+  function orbitRhythmSweep(body, time) {
+    var phase = ((time / body.T) % 1 + 1) % 1;
+    var startE = solveKepler(TAU * phase, body.e);
+    var endE = solveKepler(TAU * (phase + 1 / 12), body.e);
+    var points = [{ x: 160 + 92 * body.e, y: 120 }];
+    for (var i = 0; i <= 128; i++) {
+      var E = startE + (endE - startE) * i / 128;
+      points.push({ x: 160 + 92 * Math.cos(E), y: 120 - 92 * Math.sqrt(1 - body.e * body.e) * Math.sin(E) });
+    }
+    var next = points[points.length - 1];
+    return { points: points, next: next,
+      path: points.map(function(p, index) { return (index ? "L" : "M") + p.x.toFixed(4) + " " + p.y.toFixed(4); }).join(" ") + " Z",
+      marker: "M" + next.x.toFixed(4) + " " + (next.y - 6).toFixed(4) + " l5 6 -5 6 -5 -6 Z" };
+  }
   function orbitRhythmGeometry(body) {
     var marks = [], sectors = [];
     for (var k = 0; k < 12; k++) marks.push(orbitRhythmPoint(body, body.T * k / 12));
@@ -7134,6 +7329,38 @@ const d = labToolData.solarSystem || {};
       sectors.push(points);
     });
     return { marks: marks, sectors: sectors };
+  }
+  // Zero-based speed axis keeps nearly circular orbits visually nearly flat.
+  function orbitSpeedPoint(body, time, ceiling) {
+    var phase = ((time / body.T) % 1 + 1) % 1;
+    var velocity = orbitalVelocity(body.a, body.e, TAU * phase);
+    var speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+    return { x: 44 + 260 * phase, y: 108 - 76 * speed / ceiling, speed: speed, phase: phase };
+  }
+  function orbitSpeedInspection(body, time, ceiling) {
+    var point = orbitSpeedPoint(body, time, ceiling);
+    // Keep the right endpoint inspectable even though orbital position repeats.
+    var cycles = time / body.T;
+    if (time > 0 && Math.abs(cycles - Math.round(cycles)) < 1e-9) { point.phase = 1; point.x = 304; }
+    var circular = body.e < 1e-8;
+    var turning = Math.abs(point.phase - 0.5) < 1e-9 || point.phase < 1e-9 || point.phase > 1 - 1e-9;
+    var otherTime = (1 - point.phase) * body.T;
+    var other = orbitSpeedPoint(body, otherTime, ceiling);
+    var direction = circular ? "constant distance from the Sun" : turning ? "at a turning point in distance" : point.phase < 0.5 ? "moving away from the Sun" : "moving toward the Sun";
+    return { point: point, other: other, otherOrbit: orbitRhythmPoint(body, otherTime), otherTime: otherTime, canCompare: !circular && !turning,
+      reading: (point.phase * 100).toFixed(1) + "% of orbit · " + direction };
+  }
+  function orbitSpeedProfile(body) {
+    var peak = orbitSpeedPoint(body, 0, 1).speed;
+    var ceiling = Math.max(1, Math.ceil(peak / 10) * 10);
+    var points = [];
+    for (var i = 0; i <= 192; i++) {
+      var point = orbitSpeedPoint(body, body.T * i / 192, ceiling);
+      // The curve includes the next perihelion; the live clock wraps to the start.
+      if (i === 192) point.x = 304;
+      points.push(point);
+    }
+    return { ceiling: ceiling, points: points };
   }
   function orbitRhythmStep(time, period, direction) {
     var phase = ((time / period) % 1 + 1) % 1;
@@ -7199,7 +7426,7 @@ const d = labToolData.solarSystem || {};
     var dv2 = Math.abs(v2 - vt2) / 1000;
     var transit = PI * Math.sqrt(Math.pow(at, 3) / mu); // seconds
     var transitYrs = transit / (365.25 * 86400);
-    return { dv1: dv1, dv2: dv2, dvTotal: dv1 + dv2, signedDv1: (vt1 - v1) / 1000, signedDv2: (v2 - vt2) / 1000, transitYrs: Math.abs(a2 - a1) < 1e-9 ? 0 : transitYrs };
+    return { arrivalCraftSpeed: vt2 / 1000, destinationSpeed: v2 / 1000, dv1: dv1, dv2: dv2, dvTotal: dv1 + dv2, signedDv1: (vt1 - v1) / 1000, signedDv2: (v2 - vt2) / 1000, transitYrs: Math.abs(a2 - a1) < 1e-9 ? 0 : transitYrs };
   }
 
   // Circular, coplanar heliocentric rendezvous. All angular rates use the
@@ -7221,6 +7448,47 @@ const d = labToolData.solarSystem || {};
     return { ship: ship, origin: origin, destination: destination, idealPhase: idealPhase,
       departurePhase: phase, elapsedDays: elapsed / 86400, transitDays: transit / 86400,
       separation: Math.hypot(ship.x - destination.x, ship.y - destination.y), same: same };
+  }
+
+  function transferArrivalAssessment(a1, a2, progress, offset) {
+    if (!Number.isFinite(a1) || !Number.isFinite(a2) || a1 <= 0 || a2 <= 0 || Math.abs(a1 - a2) < 1e-9 || !Number.isFinite(progress) || progress < 1 || !Number.isFinite(offset)) return null;
+    var position = transferRendezvous(a1, a2, 1, offset), burn = hohmann(a1, a2), matched = position.separation < 1e-8;
+    return { matched: matched, gap: position.separation, days: position.transitDays,
+      craftSpeed: matched ? burn.arrivalCraftSpeed : null, destinationSpeed: matched ? burn.destinationSpeed : null,
+      speedChange: matched ? burn.dv2 : null, action: matched ? burn.signedDv2 >= 0 ? 'speed up' : 'slow down' : null };
+  }
+
+  function transferMarkerLabels(markers, width, height) {
+    if (!Number.isFinite(width) || !Number.isFinite(height) || width < 160 || height < 160) return [];
+    var placed = [], top = 72, bottom = height - 30;
+    function overlap(a, b) { return Math.max(0, Math.min(a.x + a.width + 4, b.x + b.width + 4) - Math.max(a.x - 4, b.x - 4)) * Math.max(0, Math.min(a.y + a.height + 3, b.y + b.height + 3) - Math.max(a.y - 3, b.y - 3)); }
+    markers.forEach(function(marker) {
+      if (marker.skipLabel) return;
+      var boxWidth = Math.min(width - 16, Math.max(28, marker.width)), best = null;
+      [20, 48, 76].forEach(function(distance) {
+        [[distance, -26], [-boxWidth - distance, -26], [-boxWidth / 2, -distance - 20], [-boxWidth / 2, distance], [distance, 8], [-boxWidth - distance, 8]].forEach(function(offset) {
+          var box = { x: Math.max(8, Math.min(width - boxWidth - 8, marker.x + offset[0])), y: Math.max(top, Math.min(bottom - 20, marker.y + offset[1])), width: boxWidth, height: 20 };
+          var score = Math.hypot(box.x + boxWidth / 2 - marker.x, box.y + 10 - marker.y);
+          placed.forEach(function(other) { score += overlap(box, other) * 100; });
+          markers.forEach(function(point) { score += overlap(box, { x: point.x - 12, y: point.y - 12, width: 24, height: 24 }) * 40; });
+          if (!best || score < best.score) best = Object.assign({}, marker, box, { score: score });
+        });
+      });
+      placed.push(best);
+    });
+    return placed;
+  }
+
+  function transferGapSeries(a1, a2, offset) {
+    if (!Number.isFinite(a1) || !Number.isFinite(a2) || a1 <= 0 || a2 <= 0 || Math.abs(a1 - a2) < 1e-9 || !Number.isFinite(offset)) return null;
+    var samples = [], peak = 0;
+    for (var i = 0; i <= 96; i++) {
+      var reference = transferRendezvous(a1, a2, i / 96, 0), trial = transferRendezvous(a1, a2, i / 96, offset);
+      peak = Math.max(peak, reference.separation, trial.separation);
+      samples.push({ progress: i / 96, days: trial.elapsedDays, reference: reference.separation, test: trial.separation });
+    }
+    var smallest = samples.reduce(function(best, point) { return point.test < best.test ? point : best; }, samples[0]);
+    return { samples: samples, smallest: smallest, arrival: samples[96], ceiling: Math.max(0.5, Math.ceil(peak * 2) / 2), days: samples[96].days };
   }
 
   /** Synodic period in years */
@@ -7473,6 +7741,7 @@ const d = labToolData.solarSystem || {};
   var showDwarfs = d.orr_showDwarfs !== false;
   var showLabels = d.orr_showLabels !== false;
   var showGravity = d.orr_showGravity === true;
+  var showRhythmSweep = d.orr_rhythm_sweep === true;
   var snapshotStore = d.orr_snapshots || {};
   var tf_ans = d.orr_tfa || {};
 
@@ -8966,6 +9235,40 @@ const d = labToolData.solarSystem || {};
                 rhythmMarker.setAttribute("cx", rhythmPoint.x);
                 rhythmMarker.setAttribute("cy", rhythmPoint.y);
               }
+              if (showRhythmSweep) {
+                var sweepPath = document.getElementById("orrery-rhythm-sweep");
+                var sweepNext = document.getElementById("orrery-rhythm-next");
+                if (sweepPath && sweepNext) {
+                  var liveSweep = orbitRhythmSweep(liveBody, t);
+                  sweepPath.setAttribute("d", liveSweep.path);
+                  sweepNext.setAttribute("d", liveSweep.marker);
+                  sweepNext.setAttribute("data-next-x", liveSweep.next.x.toFixed(6));
+                  sweepNext.setAttribute("data-next-y", liveSweep.next.y.toFixed(6));
+                }
+              }
+              var speedChart = document.getElementById("orrery-speed-profile");
+              if (speedChart) {
+                var speedInspection = orbitSpeedInspection(liveBody, t, Number(speedChart.getAttribute("data-speed-ceiling")));
+                var speedPoint = speedInspection.point;
+                [["orrery-rhythm-direction", t, true], ["orrery-rhythm-other-direction", speedInspection.otherTime, speedInspection.canCompare]].forEach(function(item) {
+                  var arrow = document.getElementById(item[0]);
+                  if (arrow) { arrow.setAttribute("d", orbitRhythmDirection(liveBody, item[1]).path); arrow.setAttribute("visibility", item[2] ? "visible" : "hidden"); }
+                });
+                var inspectSlider = document.getElementById("orrery-speed-inspect");
+                if (inspectSlider) { inspectSlider.value = (speedPoint.phase * 100).toFixed(1); inspectSlider.setAttribute("aria-valuetext", speedInspection.reading); }
+                var matchButton = document.getElementById("orrery-speed-match");
+                if (matchButton) matchButton.disabled = !speedInspection.canCompare;
+                setLiveText("orrery-speed-inspect-reading", speedInspection.reading);
+                [["orrery-speed-other", speedInspection.other], ["orrery-rhythm-other", speedInspection.otherOrbit]].forEach(function(item) {
+                  var node = document.getElementById(item[0]);
+                  if (node) { node.setAttribute("cx", item[1].x); node.setAttribute("cy", item[1].y); node.setAttribute("visibility", speedInspection.canCompare ? "visible" : "hidden"); }
+                });
+                var speedMarker = document.getElementById("orrery-speed-marker");
+                var speedCursor = document.getElementById("orrery-speed-cursor");
+                if (speedMarker) { speedMarker.setAttribute("cx", speedPoint.x); speedMarker.setAttribute("cy", speedPoint.y); }
+                if (speedCursor) { speedCursor.setAttribute("x1", speedPoint.x); speedCursor.setAttribute("x2", speedPoint.x); }
+                speedChart.setAttribute("data-orbit-phase", speedPoint.phase.toFixed(6));
+              }
               setLiveText("orrery-rhythm-reading", "Now: " + fmt(livePos.r, 3) + " AU from the Sun · " + fmt(liveSpeed, 2) + " km/s");
               var livePhase = orbitPhaseLabel(liveBody, t);
               setLiveText("orrery-motion-explanation", orbitalMotionExplanation(liveBody, t));
@@ -10440,6 +10743,12 @@ const d = labToolData.solarSystem || {};
     if (scrubBody) {
       var rhythm = orbitRhythmGeometry(scrubBody);
       var rhythmNow = orbitRhythmPoint(scrubBody, timeRef.current);
+      var rhythmSweep = showRhythmSweep ? orbitRhythmSweep(scrubBody, timeRef.current) : null;
+      var rhythmSpeedProfile = orbitSpeedProfile(scrubBody);
+      var rhythmInspection = orbitSpeedInspection(scrubBody, timeRef.current, rhythmSpeedProfile.ceiling);
+      var rhythmSpeedNow = rhythmInspection.point;
+      var rhythmDirection = orbitRhythmDirection(scrubBody, timeRef.current);
+      var rhythmOtherDirection = orbitRhythmDirection(scrubBody, rhythmInspection.otherTime);
       var rhythmPeriSpeed = visViva(scrubBody.a * (1 - scrubBody.e), scrubBody.a);
       var rhythmApoSpeed = visViva(scrubBody.a * (1 + scrubBody.e), scrubBody.a);
       var rhythmStepStyle = { minHeight: "44px", padding: "8px 12px", borderRadius: "8px", border: "1px solid " + border, background: cardBg, color: fg, fontSize: "12px", fontWeight: 700, cursor: "pointer", boxShadow: shadowSm };
@@ -10448,42 +10757,78 @@ const d = labToolData.solarSystem || {};
       var rhythmPath = function(points) { return points.map(function(point, index) { return (index ? "L" : "M") + point.x.toFixed(4) + " " + point.y.toFixed(4); }).join(" ") + " Z"; };
       rhythmPanel = h("section", {
         "data-orrery-rhythm": scrubBody.id, "aria-label": "Orbit rhythm for " + scrubBody.name,
-        style: { display: "flex", flexWrap: "wrap", gap: "16px", alignItems: "center", padding: "16px", borderRadius: "14px", border: "1px solid " + border, background: isDark ? "linear-gradient(130deg, #101d35, #111827)" : "linear-gradient(130deg, #eff6ff, #ffffff)", minWidth: 0 }
+        style: { padding: "12px", borderRadius: "14px", border: "1px solid " + border, background: isDark ? "linear-gradient(130deg, #101d35, #111827)" : "linear-gradient(130deg, #eff6ff, #ffffff)", minWidth: 0 }
       },
-        h("div", { style: { flex: "1 1 250px", minWidth: 0, maxWidth: "360px" } },
-          h("svg", { viewBox: "0 0 320 248", role: "img", "aria-labelledby": "orrery-rhythm-title", "aria-describedby": "orrery-rhythm-desc", style: { width: "100%", display: "block" } },
+        h("h3", { style: { margin: "0 0 8px", fontSize: "17px", fontWeight: 800, color: fg } }, "Orbit rhythm · " + scrubBody.name),
+        h("div", { "data-orbit-linked-views": true, style: { display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "center" } },
+          h("div", { style: { flex: "1 1 220px", minWidth: 0 } },
+          h("svg", { viewBox: "0 0 320 248", role: "img", "aria-labelledby": "orrery-rhythm-title", "aria-describedby": "orrery-rhythm-desc", style: { width: "100%", maxHeight: "200px", display: "block", boxShadow: "none" } },
             h("title", { id: "orrery-rhythm-title" }, scrubBody.name + ": equal time, changing speed"),
-            h("desc", { id: "orrery-rhythm-desc" }, "Twelve dots mark equal time intervals. The Sun is at one focus. The shaded regions after perihelion and aphelion each cover one twelfth of the orbital period and have equal area. The outlined marker follows the current simulation time."),
+            h("desc", { id: "orrery-rhythm-desc" }, "Twelve dots mark equal time intervals. The Sun is at one focus. The shaded regions after perihelion and aphelion each cover one twelfth of the orbital period and have equal area. When next-step preview is on, one blue wedge instead shows the upcoming twelfth of the orbit and a diamond marks its endpoint. The solid outlined marker follows the current simulation time. A dotted ring marks the same distance on the other leg of the orbit. Tangent arrows show each position's direction of travel; arrow length does not represent speed."),
             h("line", { x1: 58, y1: 120, x2: 262, y2: 120, stroke: mutedFg, strokeOpacity: 0.35, strokeDasharray: "3 5" }),
-            rhythm.sectors.map(function(points, index) { return h("path", { key: "sector-" + index, "data-rhythm-sector": index, d: rhythmPath(points), fill: index ? rhythmCool : rhythmWarm, fillOpacity: 0.2, stroke: index ? rhythmCool : rhythmWarm, strokeWidth: 1.2 }); }),
+            rhythm.sectors.map(function(points, index) { return h("path", { key: "sector-" + index, "data-rhythm-sector": index, d: rhythmPath(points), visibility: showRhythmSweep ? "hidden" : "visible", fill: index ? rhythmCool : rhythmWarm, fillOpacity: 0.2, stroke: index ? rhythmCool : rhythmWarm, strokeWidth: 1.2 }); }),
+            rhythmSweep ? h("path", { id: "orrery-rhythm-sweep", d: rhythmSweep.path, fill: accent, fillOpacity: 0.22, stroke: accent, strokeWidth: 1.5, "aria-hidden": "true" }) : null,
             h("ellipse", { cx: 160, cy: 120, rx: 92, ry: 92 * Math.sqrt(1 - scrubBody.e * scrubBody.e), fill: "none", stroke: mutedFg, strokeWidth: 1.5 }),
             rhythm.marks.map(function(point, index) { return h("circle", { key: "moment-" + index, "data-rhythm-moment": index, cx: point.x, cy: point.y, r: 3, fill: index === 0 ? rhythmWarm : index === 6 ? rhythmCool : fg }); }),
             h("circle", { cx: 160 + 92 * scrubBody.e, cy: 120, r: 12, fill: rhythmWarm, fillOpacity: 0.12 }),
             h("circle", { cx: 160 + 92 * scrubBody.e, cy: 120, r: 5, fill: rhythmWarm }),
             h("text", { x: 160 + 92 * scrubBody.e, y: 143, fill: fg, textAnchor: "middle", fontSize: 11 }, "Sun"),
+            h("path", { id: "orrery-rhythm-direction", d: rhythmDirection.path, fill: "none", stroke: accent, strokeWidth: 2.5, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" }),
+            h("path", { id: "orrery-rhythm-other-direction", d: rhythmOtherDirection.path, fill: "none", stroke: fg, strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", visibility: rhythmInspection.canCompare ? "visible" : "hidden", "aria-hidden": "true" }),
+            h("circle", { id: "orrery-rhythm-other", cx: rhythmInspection.otherOrbit.x, cy: rhythmInspection.otherOrbit.y, r: 7, fill: cardBg, stroke: fg, strokeWidth: 2, strokeDasharray: "2 3", visibility: rhythmInspection.canCompare ? "visible" : "hidden" }),
+            rhythmSweep ? h("path", { id: "orrery-rhythm-next", d: rhythmSweep.marker, "data-next-x": rhythmSweep.next.x.toFixed(6), "data-next-y": rhythmSweep.next.y.toFixed(6), fill: cardBg, stroke: accent, strokeWidth: 2, "aria-hidden": "true" }) : null,
             h("circle", { id: "orrery-rhythm-marker", cx: rhythmNow.x, cy: rhythmNow.y, r: 7, fill: cardBg, stroke: accent, strokeWidth: 3 }),
             h("text", { x: 60, y: 231, fill: rhythmCool, textAnchor: "middle", fontSize: 11, fontWeight: 700 }, "Aphelion"),
             h("text", { x: 260, y: 231, fill: rhythmWarm, textAnchor: "middle", fontSize: 11, fontWeight: 700 }, "Perihelion")
           )
+          ),
+          h("div", { style: { flex: "1.4 1 280px", minWidth: 0 } },
+          h("figure", { style: { margin: "0", padding: "8px", borderRadius: "10px", border: "1px solid " + border, background: cardBg }, "data-orbit-speed-profile": scrubBody.id },
+            h("figcaption", { style: { fontSize: "12px", fontWeight: 700, color: fg } }, "Speed through one orbit"),
+            h("svg", { id: "orrery-speed-profile", viewBox: "0 0 320 160", role: "img", "aria-labelledby": "orrery-speed-title", "aria-describedby": "orrery-speed-desc orrery-rhythm-reading", "data-speed-ceiling": rhythmSpeedProfile.ceiling, "data-orbit-phase": rhythmSpeedNow.phase.toFixed(6), style: { display: "block", width: "100%", maxHeight: "180px", overflow: "visible", boxShadow: "none" } },
+              h("title", { id: "orrery-speed-title" }, scrubBody.name + ": orbital speed over time"),
+              h("desc", { id: "orrery-speed-desc" }, "Speed relative to the Sun, in kilometers per second, on a zero-based axis. The horizontal axis is elapsed time as a percentage of one orbit, starting at perihelion. The outlined point and dashed cursor follow the shared orbit clock. A dotted ring marks the same speed on the other leg. The curve connects 193 model samples."),
+              h("text", { x: 44, y: 14, fill: mutedFg, fontSize: 11 }, "Speed (km/s)"),
+              [0, 0.5, 1].map(function(fraction) { var y = 108 - fraction * 76; return h("g", { key: "speed-grid-" + fraction },
+                h("line", { x1: 44, x2: 304, y1: y, y2: y, stroke: mutedFg, strokeOpacity: fraction ? 0.22 : 0.55, strokeDasharray: fraction ? "3 4" : undefined }),
+                h("text", { x: 36, y: y + 4, textAnchor: "end", fill: mutedFg, fontSize: 11 }, String(rhythmSpeedProfile.ceiling * fraction))
+              ); }),
+              h("path", { "data-orbit-speed-curve": true, d: rhythmSpeedProfile.points.map(function(point, index) { return (index ? "L" : "M") + point.x.toFixed(3) + " " + point.y.toFixed(3); }).join(" "), fill: "none", stroke: accent, strokeWidth: 2.5, strokeLinejoin: "round" }),
+              h("line", { id: "orrery-speed-cursor", x1: rhythmSpeedNow.x, x2: rhythmSpeedNow.x, y1: 28, y2: 108, stroke: fg, strokeWidth: 1, strokeDasharray: "3 4" }),
+              h("circle", { id: "orrery-speed-other", cx: rhythmInspection.other.x, cy: rhythmInspection.other.y, r: 5, fill: cardBg, stroke: fg, strokeWidth: 2, strokeDasharray: "2 3", visibility: rhythmInspection.canCompare ? "visible" : "hidden" }),
+              h("circle", { id: "orrery-speed-marker", cx: rhythmSpeedNow.x, cy: rhythmSpeedNow.y, r: 5, fill: cardBg, stroke: accent, strokeWidth: 2.5 }),
+              [0, 0.5, 1].map(function(fraction) { return h("text", { key: "speed-time-" + fraction, x: 44 + 260 * fraction, y: 126, textAnchor: fraction === 0 ? "start" : fraction === 1 ? "end" : "middle", fill: mutedFg, fontSize: 11 }, (fraction * 100) + "%"); }),
+              h("text", { x: 174, y: 148, textAnchor: "middle", fill: mutedFg, fontSize: 11 }, "Elapsed time in one orbit")
+            ),
+            h("label", { htmlFor: "orrery-speed-inspect", style: { display: "block", marginTop: "8px", fontSize: "12px", fontWeight: 700, color: fg } }, "Inspect orbit time"),
+            h("input", { id: "orrery-speed-inspect", type: "range", min: 0, max: 100, step: 0.1, value: (rhythmSpeedNow.phase * 100).toFixed(1), "aria-valuetext": rhythmInspection.reading, "aria-describedby": "orrery-speed-inspect-help", onChange: function(ev) { setScrubPhase(Number(ev.target.value) * scrubPeriod / 100); }, style: { width: "100%", minHeight: "32px", margin: "0", accentColor: accent } }),
+            h("p", { id: "orrery-speed-inspect-reading", role: "status", "aria-live": paused ? "polite" : "off", style: { margin: "0 0 8px", fontSize: "12px", color: fg, fontVariantNumeric: "tabular-nums" } }, rhythmInspection.reading),
+            btn("Inspect matching distance", false, function() { var inspection = orbitSpeedInspection(scrubBody, timeRef.current, rhythmSpeedProfile.ceiling); if (inspection.canCompare) setScrubPhase(inspection.otherTime); }, { id: "orrery-speed-match", disabled: !rhythmInspection.canCompare, "aria-describedby": "orrery-speed-inspect-help", style: rhythmStepStyle })
+          )
+          )
         ),
-        h("div", { style: { flex: "2 1 240px", minWidth: 0 } },
-          h("div", { style: { fontSize: "10px", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: accent } }, "Orbit rhythm"),
-          h("h3", { style: { margin: "5px 0 8px", fontSize: "19px", fontWeight: 800, color: fg } }, "Same time. Different distance."),
-          h("p", { style: { fontSize: "12px", lineHeight: 1.6, color: fg, margin: "0 0 10px" } }, "Each gap between dots represents " + fmt(scrubPeriod * 365.25 / 12, 1) + " Earth days: 1/12 of " + scrubBody.name + "’s orbit. Wider spacing means faster travel. Both shaded regions sweep out equal areas."),
+          h("p", { id: "orrery-rhythm-reading", "aria-live": paused ? "polite" : "off", style: { fontSize: "12px", color: fg, fontVariantNumeric: "tabular-nums" } }, "Now: " + fmt(orbitalPos(scrubBody.a, scrubBody.e, TAU * scrubPhase / scrubPeriod).r, 3) + " AU from the Sun · " + fmt(visViva(orbitalPos(scrubBody.a, scrubBody.e, TAU * scrubPhase / scrubPeriod).r, scrubBody.a), 2) + " km/s"),
+          h("div", { role: "group", "aria-label": "Equal-time orbit steps", style: { display: "flex", flexWrap: "wrap", gap: "8px" } },
+            btn("← Back 1/12", false, function() { setScrubPhase(orbitRhythmStep(timeRef.current, scrubPeriod, -1)); }, { "aria-label": "Step backward one twelfth of " + scrubBody.name + "'s orbit", style: rhythmStepStyle }),
+            btn("Forward 1/12 →", false, function() { setScrubPhase(orbitRhythmStep(timeRef.current, scrubPeriod, 1)); }, { "aria-label": "Step forward one twelfth of " + scrubBody.name + "'s orbit", style: rhythmStepStyle }),
+            btn("Preview next step", showRhythmSweep, function() { upd("orr_rhythm_sweep", !showRhythmSweep); }, { "aria-label": "Preview next equal-time step", "aria-pressed": showRhythmSweep, "aria-describedby": "orrery-speed-inspect-help", style: rhythmStepStyle })
+          ),
+        h("p", { id: "orrery-speed-inspect-help", style: { margin: "8px 0", fontSize: "11px", lineHeight: 1.5, color: fg } }, (showRhythmSweep ? "Blue wedge: next " + fmt(scrubPeriod * 365.25 / 12, 1) + " Earth days (1/12 orbit). Diamond: next position. " : "") + "Solid ring: now. Dotted ring: same distance, same speed. Arrows show direction only."),
+        h("details", { "data-orbit-rhythm-details": true, style: { borderTop: "1px solid " + border, paddingTop: "8px", color: fg } },
+          h("summary", { style: { cursor: "pointer", minHeight: "28px", fontSize: "12px", fontWeight: 700 } }, "How to read these views"),
+          h("p", { style: { fontSize: "12px", lineHeight: 1.6, color: fg, margin: "0 0 10px" } }, "Each gap between dots represents " + fmt(scrubPeriod * 365.25 / 12, 1) + " Earth days: 1/12 of " + scrubBody.name + "’s orbit. Wider spacing means faster travel. With preview off, both shaded regions sweep out equal areas. Turn on Preview next step to follow one equal-time wedge: its shape changes around the orbit, but its area stays the same. Forward 1/12 moves the planet to the diamond."),
           h("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", fontSize: "12px", marginBottom: "10px" } },
             h("strong", { style: { color: rhythmWarm } }, "Closest: " + fmt(rhythmPeriSpeed, 2) + " km/s"),
             h("strong", { style: { color: rhythmCool } }, "Farthest: " + fmt(rhythmApoSpeed, 2) + " km/s")
           ),
-          h("p", { id: "orrery-rhythm-reading", "aria-live": paused ? "polite" : "off", style: { fontSize: "12px", color: fg, fontVariantNumeric: "tabular-nums" } }, "Now: " + fmt(orbitalPos(scrubBody.a, scrubBody.e, TAU * scrubPhase / scrubPeriod).r, 3) + " AU from the Sun · " + fmt(visViva(orbitalPos(scrubBody.a, scrubBody.e, TAU * scrubPhase / scrubPeriod).r, scrubBody.a), 2) + " km/s"),
-          h("div", { role: "group", "aria-label": "Equal-time orbit steps", style: { display: "flex", flexWrap: "wrap", gap: "8px" } },
-            btn("← Back 1/12", false, function() { setScrubPhase(orbitRhythmStep(timeRef.current, scrubPeriod, -1)); }, { "aria-label": "Step backward one twelfth of " + scrubBody.name + "'s orbit", style: rhythmStepStyle }),
-            btn("Forward 1/12 →", false, function() { setScrubPhase(orbitRhythmStep(timeRef.current, scrubPeriod, 1)); }, { "aria-label": "Step forward one twelfth of " + scrubBody.name + "'s orbit", style: rhythmStepStyle })
-          ),
+          h("p", { style: { fontSize: "12px", lineHeight: 1.5, color: fg } }, "At matching distances on the two legs, speed is equal but velocity points in different directions. At the closest and farthest points, the two positions meet."),
+          h("p", { style: { fontSize: "11px", lineHeight: 1.5, color: mutedFg } }, "0% and 100%: closest · 50%: farthest. Inspecting pauses the shared clock. The speed axis starts at zero; its upper limit depends on the selected world."),
           h("p", { style: { fontSize: "11px", lineHeight: 1.5, color: mutedFg, margin: "10px 0 0" } }, (scrubBody.e < 0.03 ? "This orbit is nearly circular, so the spacing is nearly even. Try Mercury to see a stronger change. " : "Compare the spacing near the closest and farthest points. ") + "Steps pause the shared clock and wrap around one orbit. Shape is preserved; markers are enlarged. This is an orbit-plane model, not a dated sky map."),
           h("a", { href: "https://science.nasa.gov/solar-system/orbits-and-keplers-laws/", target: "_blank", rel: "noopener noreferrer", style: { display: "inline-block", marginTop: "8px", fontSize: "11px", color: accent, textDecoration: "underline" } }, "Explore Kepler’s laws · NASA")
         )
       );
     }
+
     var playbackBody = selBody ? OB.filter(function(body) { return body.id === selBody; })[0] : null;
     var playbackSeconds = playbackBody ? playbackBody.T / Math.max(speed, 0.001) : 0;
     var formatPlaybackDuration = function(seconds) {
@@ -11852,6 +12197,11 @@ const d = labToolData.solarSystem || {};
     var from = props.fromBody, to = props.toBody;
     var flight = React.useRef({ progress: 0, offset: 0, compare: false, playing: false, stamp: null, uiAt: null }).current;
     var redraw = React.useState(0)[1];
+    var arrivalPreviewState = React.useState(false), previewArrivalBurn = arrivalPreviewState[0], setArrivalBurnPreview = arrivalPreviewState[1];
+    var gapSeriesRef = React.useRef(null), gapChartRef = React.useRef(null);
+    var gapKey = from.a + ':' + to.a + ':' + flight.offset;
+    if (flight.compare && (!gapSeriesRef.current || gapSeriesRef.current.key !== gapKey)) gapSeriesRef.current = { key: gapKey, value: transferGapSeries(from.a, to.a, flight.offset) };
+    var gapSeries = flight.compare && gapSeriesRef.current ? gapSeriesRef.current.value : null;
     var pathRef = React.useRef(null);
     if (!pathRef.current) {
       pathRef.current = [];
@@ -11859,6 +12209,7 @@ const d = labToolData.solarSystem || {};
     }
     var current = transferRendezvous(from.a, to.a, flight.progress, flight.offset);
     function changeFlight(patch) {
+      if ((patch.progress !== undefined && patch.progress < 1) || (patch.offset !== undefined && patch.offset !== flight.offset)) setArrivalBurnPreview(false);
       Object.assign(flight, patch); flight.stamp = null; flight.uiAt = null;
       redraw(function(value) { return value + 1; });
     }
@@ -11883,6 +12234,38 @@ const d = labToolData.solarSystem || {};
       if (debrief.snapshot && debrief.snapshot.offset === flight.offset && debrief.snapshot.days === trial.transitDays && debrief.snapshot.testGap === trial.separation && JSON.stringify(debrief.snapshot.followUp || null) === JSON.stringify(followUp)) return;
       var world = PLANETS.find(function(p) { return p.key.toLowerCase() === to.id; });
       patchDebrief({ snapshot: { route: debriefRoute, from: from.name, to: to.name, planet: world ? world.name : to.name, offset: flight.offset, days: trial.transitDays, referenceGap: reference.separation, testGap: trial.separation, timestamp: capturedAt, followUp: followUp, missionStartedAt: (followUp || marsMission.active) && from.id === 'earth' && to.id === 'mars' ? marsMission.startedAt : null } });
+    }
+    function buildFollowUpFlightGuide() {
+      var guide = marsFollowUpFlightGuide(marsMission, d.journalEntries || [], debriefRoute, flight, debrief, Date.now());
+      if (!guide) return null;
+      var descriptions = {
+        setup: 'The live controls differ from your launched test. Restore its angle to collect evidence for this prediction.',
+        inspect: 'Compare the aligned destination ring with the orange test destination at Arrival. You can play the flight or jump there.',
+        capture: 'Arrival is ready. Capture both gaps to keep this evidence while you write your explanation.',
+        explain: 'Your arrival evidence is captured. Use both gaps to explain whether you would keep or revise your launch prediction.',
+        saved: 'Your explanation is saved with this launch prediction. Review how the result compares with your original mission.'
+      };
+      var actions = { setup: 'Restore launched test', inspect: 'Inspect follow-up arrival', capture: 'Capture follow-up arrival', explain: 'Continue follow-up explanation', saved: 'Review this follow-up result' };
+      function proceed() {
+        if (guide.stage === 'setup') { changeFlight({ offset: guide.offset, compare: true, progress: 0, playing: false }); return; }
+        if (guide.stage === 'inspect') { changeFlight({ progress: 1, playing: false }); return; }
+        if (guide.stage === 'saved') {
+          marsMissionFocusRef.current = { selector: '#mars-follow-up-result-title', reveal: '[data-mars-follow-up]' };
+          updMulti({ marsMission: Object.assign({}, marsMission, { active: true }), marsFollowUpReviewId: null }); return;
+        }
+        marsMissionFocusRef.current = { selector: '#transfer-explanation-variable', reveal: '[data-transfer-debrief]' };
+        if (guide.stage === 'capture') captureComparison();
+        else { changeFlight({ compare: true, playing: false }); updMulti({ orr_tab: 5 }); }
+      }
+      return h('section', { 'aria-label': 'Follow-up flight guide', 'data-follow-up-flight-guide': guide.stage, style: { margin: '12px 0', padding: '12px', borderRadius: '12px', border: '1px solid ' + (isDark ? '#36766e' : '#91c8b8'), background: isDark ? 'linear-gradient(135deg, #13323a, #202e48)' : 'linear-gradient(135deg, #e7f7ef, #edf3ff)', color: fg, overflowWrap: 'anywhere' } },
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '6px', alignItems: 'center' } }, h('strong', { style: { fontSize: '13px' } }, 'Your follow-up in flight'), h('span', { style: { fontSize: '11px', fontWeight: 800, padding: '5px 8px', borderRadius: '20px', background: isDark ? '#234d50' : '#d0ecdf' } }, (guide.offset > 0 ? '+' : '') + guide.offset + '° launched test')),
+        h('ol', { 'aria-label': 'Follow-up investigation steps', style: { display: 'flex', flexWrap: 'wrap', gap: '6px', padding: 0, margin: '12px 0', listStyle: 'none' } }, ['Inspect', 'Capture', 'Explain', 'Review'].map(function(label, index) {
+          return h('li', { key: label, 'aria-current': index === guide.step ? 'step' : undefined, style: { flex: '1 1 90px', fontSize: '11px', padding: '7px', borderRadius: '7px', border: '1px solid ' + (index === guide.step ? (isDark ? '#9be7cd' : '#327a65') : border), background: index === guide.step ? (isDark ? '#28504e' : '#d0ecdf') : 'transparent', fontWeight: index === guide.step ? 800 : 500 } }, (index + 1) + ' · ' + label);
+        })),
+        h('details', null, h('summary', { style: { minHeight: '44px', display: 'list-item', cursor: 'pointer', fontSize: '12px', fontWeight: 700, paddingTop: '10px', boxSizing: 'border-box' } }, 'Prediction at launch'), h('p', { 'data-flight-launch-prediction': true, style: { fontSize: '12px', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: '4px 0 10px' } }, guide.prediction)),
+        h('p', { role: 'status', style: { fontSize: '12px', lineHeight: 1.6, margin: '6px 0 10px' } }, descriptions[guide.stage]),
+        btn(actions[guide.stage], false, proceed, { style: Object.assign({}, buttonStyle, { minHeight: '44px', maxWidth: '100%', whiteSpace: 'normal' }) })
+      );
     }
     function buildTransferDebrief() {
       var snapshot = debrief.snapshot, saved = !!snapshot && debrief.savedSignature === transferDebriefSignature(debrief) && (d.journalEntries || []).some(function(entry) { return entry && entry.transferComparisonId === 'transfer-comparison:' + debriefRoute + ':' + snapshot.timestamp; });
@@ -11916,7 +12299,7 @@ const d = labToolData.solarSystem || {};
             btn(saved ? 'Explanation saved' : 'Save transfer explanation', false, function() { setLabToolData(function(prev) { var data = prev.solarSystem || {}, next = saveTransferDebrief(data, debriefRoute, Date.now()); return next === data ? prev : Object.assign({}, prev, { solarSystem: next }); }); }, { disabled: !ready || saved, style: buttonStyle }),
             h('p', { role: 'status', style: { fontSize: '12px', margin: '8px 0 0' } }, saved ? 'Saved to the evidence journal. Revising this explanation updates the same record.' : 'Draft saved in this tool. A new capture keeps your writing; check its numbers before saving.'),
             saved ? btn('Read saved explanation', false, function() { openLearningJournal('unlinked'); }, { style: Object.assign({}, buttonStyle, { marginTop: '8px' }) }) : null,
-            saved && snapshot.followUp && snapshot.missionStartedAt === marsMission.startedAt ? btn('Review follow-up outcome', false, function() { marsMissionFocusRef.current = { selector: '#mars-follow-up-result-title', reveal: '[data-mars-follow-up]' }; patchMarsMission({ active: true }); }, { style: Object.assign({}, buttonStyle, { margin: '8px 0 0 8px' }) }) : null
+            saved && snapshot.followUp && snapshot.missionStartedAt === marsMission.startedAt ? btn('Review follow-up outcome', false, function() { marsMissionFocusRef.current = { selector: '#mars-follow-up-result-title', reveal: '[data-mars-follow-up]' }; updMulti({ marsMission: Object.assign({}, marsMission, { active: true }), marsFollowUpReviewId: null }); }, { style: Object.assign({}, buttonStyle, { margin: '8px 0 0 8px' }) }) : null
           ) : h('p', { style: { fontSize: '11px' } }, 'No captured comparison yet. Use Arrival in the playback controls above.')
         )
       );
@@ -11993,9 +12376,107 @@ const d = labToolData.solarSystem || {};
         )
       );
     }
+    function inspectTransferView(view) {
+      var chart = gapChartRef.current, panel = chart && chart.closest('[data-transfer-flight]');
+      var target = view === 'orbit' ? panel && panel.querySelector('canvas') : chart;
+      if (!target) return;
+      changeFlight({ playing: false });
+      if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+      target.scrollIntoView({ block: 'center' }); target.focus({ preventScroll: true });
+    }
+    function gapCursorReading(model) {
+      var reference = transferRendezvous(from.a, to.a, flight.progress, 0);
+      return 'Day ' + fmt(model.elapsedDays, 1) + ' · aligned: ' + fmt(reference.separation, 3) + ' AU · test: ' + fmt(model.separation, 3) + ' AU';
+    }
+    function syncGapChart(model) {
+      var root = gapChartRef.current;
+      if (!root || !gapSeries) return;
+      var x = 38 + flight.progress * 260, reference = transferRendezvous(from.a, to.a, flight.progress, 0);
+      root.dataset.progress = String(flight.progress);
+      var cursor = root.querySelector('[data-gap-cursor]');
+      if (cursor) { cursor.setAttribute('x1', x); cursor.setAttribute('x2', x); }
+      [['reference', reference.separation], ['test', model.separation]].forEach(function(row) {
+        var point = root.querySelector('[data-gap-point="' + row[0] + '"]');
+        if (point) { point.setAttribute('cx', x); point.setAttribute('cy', 140 - row[1] / gapSeries.ceiling * 108); }
+      });
+      var reading = root.querySelector('[data-gap-cursor-reading]');
+      if (reading) reading.textContent = gapCursorReading(model);
+      var input = root.querySelector('input');
+      if (input) { input.value = String(flight.progress * 100); input.setAttribute('aria-valuetext', fmt(flight.progress * 100, 0) + '% of flight; day ' + fmt(model.elapsedDays, 1)); }
+    }
+    function buildTransferGapChart() {
+      if (!gapSeries) return null;
+      var green = isDark ? '#8be1c4' : '#126348', orange = isDark ? '#ffb273' : '#a34b12', axis = isDark ? '#7990a7' : '#526b80';
+      var x = 38 + 260 * flight.progress, reference = transferRendezvous(from.a, to.a, flight.progress, 0);
+      var smallest = gapSeries.smallest, arrival = gapSeries.arrival, minimumAtArrival = smallest.progress === 1;
+      var minX = 38 + 260 * smallest.progress, minY = 140 - smallest.test / gapSeries.ceiling * 108;
+      function curve(key) { return gapSeries.samples.map(function(p, i) { return (i ? 'L ' : 'M ') + (38 + 260 * p.progress).toFixed(2) + ' ' + (140 - p[key] / gapSeries.ceiling * 108).toFixed(2); }).join(' '); }
+      return h('figure', { ref: gapChartRef, tabIndex: -1, 'aria-label': 'Gap during the journey', 'data-transfer-gap-chart': true, 'data-progress': flight.progress, style: { margin: '12px 0', padding: '10px', borderRadius: '10px', border: '1px solid ' + border, background: isDark ? '#102638' : '#f8fcff' } },
+        h('figcaption', { style: { fontSize: '13px', fontWeight: 800, marginBottom: '8px' } }, 'Gap during the journey'),
+        btn('Inspect this moment in orbit', false, function() { inspectTransferView('orbit'); }, { style: Object.assign({}, buttonStyle, { marginBottom: '10px' }) }),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '7px 14px', fontSize: '12px', marginBottom: '8px' } }, h('span', { style: { color: green } }, 'Dashed · aligned 0°'), h('span', { style: { color: orange } }, 'Solid · test ' + (flight.offset > 0 ? '+' : '') + flight.offset + '°')),
+        h('svg', { viewBox: '0 0 320 184', role: 'img', 'aria-label': 'Spacecraft-to-destination gap in AU across the same flight time. Dashed curve: aligned launch. Solid curve: test launch. Triangle: smallest plotted test gap. Cursor follows the flight controls.', style: { width: '100%', maxWidth: '600px', margin: 'auto', display: 'block' } },
+          h('text', { x: 168, y: 18, textAnchor: 'middle', fill: axis, fontSize: 15 }, 'Gap (AU)'),
+          [0, gapSeries.ceiling / 2, gapSeries.ceiling].map(function(value) { var y = 140 - value / gapSeries.ceiling * 108; return h('g', { key: value }, h('line', { x1: 38, y1: y, x2: 298, y2: y, stroke: axis, strokeOpacity: .25 }), h('text', { x: 32, y: y + 5, textAnchor: 'end', fill: axis, fontSize: 14 }, Number(value.toFixed(2)))); }),
+          [0, .5, 1].map(function(value) { return h('text', { key: value, x: 38 + value * 260, y: 160, textAnchor: value === 0 ? 'start' : value === 1 ? 'end' : 'middle', fill: axis, fontSize: 14 }, value * 100 + '%'); }),
+          h('text', { x: 168, y: 178, textAnchor: 'middle', fill: axis, fontSize: 14 }, 'Flight progress'),
+          h('path', { 'data-gap-curve': 'reference', d: curve('reference'), fill: 'none', stroke: green, strokeWidth: 2.5, strokeDasharray: '6 4' }),
+          h('path', { 'data-gap-curve': 'test', d: curve('test'), fill: 'none', stroke: orange, strokeWidth: 2.5 }),
+          h('path', { 'data-gap-minimum-marker': true, d: 'M ' + minX + ' ' + (minY - 7) + ' L ' + (minX + 6) + ' ' + (minY + 5) + ' L ' + (minX - 6) + ' ' + (minY + 5) + ' Z', fill: isDark ? '#102638' : '#f8fcff', stroke: orange, strokeWidth: 2 }),
+          h('line', { 'data-gap-cursor': true, x1: x, x2: x, y1: 30, y2: 140, stroke: axis, strokeDasharray: '2 3' }),
+          h('circle', { 'data-gap-point': 'reference', cx: x, cy: 140 - reference.separation / gapSeries.ceiling * 108, r: 5, fill: isDark ? '#102638' : '#f8fcff', stroke: green, strokeWidth: 2 }),
+          h('circle', { 'data-gap-point': 'test', cx: x, cy: 140 - current.separation / gapSeries.ceiling * 108, r: 3.5, fill: orange })
+        ),
+        h('p', { 'data-gap-cursor-reading': true, role: 'status', 'aria-live': flight.playing ? 'off' : 'polite', style: { fontSize: '12px', fontWeight: 700, lineHeight: 1.6 } }, gapCursorReading(current)),
+        h('section', { 'aria-label': 'Closest plotted approach and arrival', 'data-gap-landmarks': true, 'data-smallest-progress': smallest.progress, 'data-smallest-gap': smallest.test, 'data-arrival-gap': arrival.test, style: { margin: '12px 0' } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: '8px' } }, (minimumAtArrival ? [{ title: 'Smallest plotted gap · arrival', point: arrival, action: 'Inspect smallest gap at arrival' }] : [{ title: 'Triangle · smallest plotted gap', point: smallest, action: 'Inspect smallest plotted gap' }, { title: 'At arrival', point: arrival, action: 'Inspect arrival gap' }]).map(function(item) {
+            return h('button', { key: item.title, type: 'button', 'aria-label': item.action, onClick: function() { changeFlight({ progress: item.point.progress, playing: false }); }, style: Object.assign({}, buttonStyle, { minWidth: 0, textAlign: 'left', padding: '11px', borderColor: orange, background: isDark ? '#1c3346' : '#fff' }) },
+              h('span', { style: { display: 'block', fontSize: '11px', lineHeight: 1.5 } }, item.title),
+              h('strong', { style: { display: 'block', fontSize: '21px', color: orange, margin: '5px 0' } }, fmt(item.point.test, 3) + ' AU'),
+              h('span', { style: { display: 'block', fontSize: '11px', lineHeight: 1.5, fontWeight: 500 } }, 'Day ' + fmt(item.point.days, 1) + ' · ' + fmt(item.point.progress * 100, 1) + '% of flight'),
+              h('span', { style: { display: 'block', fontSize: '11px', marginTop: '7px' } }, 'Inspect this moment →'));
+          })),
+          h('p', { 'data-gap-landmark-insight': true, style: { fontSize: '12px', lineHeight: 1.6, margin: '9px 0 6px' } }, minimumAtArrival ? 'For this test, the smallest plotted gap occurs at arrival. Compare its size with the aligned result before deciding whether the positions meet.' : 'The test is closer earlier in the flight than at arrival. Why does the gap grow again? Inspect both moments and watch the destination move.'),
+          h('p', { style: { fontSize: '11px', lineHeight: 1.5, color: axis, margin: 0 } }, 'Minimum among ' + gapSeries.samples.length + ' evenly spaced plotted times. Exact closest approach may fall between samples. These shortcuts inspect the model; use Arrival to capture your comparison.')
+        ),
+        h('label', { htmlFor: 'orrery-gap-chart-progress', style: { display: 'block', fontSize: '12px', fontWeight: 700 } }, 'Inspect journey progress'),
+        h('input', { id: 'orrery-gap-chart-progress', type: 'range', min: 0, max: 100, step: .1, value: flight.progress * 100, 'aria-valuetext': fmt(flight.progress * 100, 0) + '% of flight; day ' + fmt(current.elapsedDays, 1), onChange: function(ev) { changeFlight({ progress: Number(ev.target.value) / 100, playing: false }); }, style: { width: '100%', minHeight: '44px', accentColor: orange } }),
+        h('p', { style: { fontSize: '11px', lineHeight: 1.6, margin: '6px 0 0' } }, 'Both curves share the same clock and distance scale. Arrival is at 100%. A small gap during coasting does not guarantee alignment at arrival. Move the cursor to compare the two gaps at the same moment.')
+      );
+    }
     function comparisonReading(model) {
       var reference = transferRendezvous(from.a, to.a, flight.progress, 0);
       return 'Same flight time · aligned 0° gap: ' + fmt(reference.separation, 3) + ' AU · test ' + (flight.offset > 0 ? '+' : '') + flight.offset + '° gap: ' + fmt(model.separation, 3) + ' AU';
+    }
+    function buildArrivalInspection() {
+      var arrival = transferArrivalAssessment(from.a, to.a, flight.progress, flight.offset);
+      if (!arrival) return null;
+      var tone = arrival.matched ? isDark ? '#92e5c6' : '#17674e' : isDark ? '#ffc087' : '#994610';
+      return h('section', { 'aria-label': 'Arrival inspection', 'data-transfer-arrival-inspection': arrival.matched ? 'matched' : 'missed', style: { marginTop: '10px', padding: '12px', borderRadius: '12px', border: '1px solid ' + tone, color: fg, background: isDark ? '#142b3b' : '#f2f9ff' } },
+        h('p', { style: { fontSize: '11px', fontWeight: 800, letterSpacing: '.06em', color: tone, margin: '0 0 5px' } }, 'ARRIVAL INSPECTION'),
+        h('h3', { style: { fontSize: '18px', margin: '0 0 10px', color: tone } }, arrival.matched ? 'Positions meet' : 'Arrival gap remains'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: '9px' } }, [
+          { label: 'Spacecraft–destination gap', value: fmt(arrival.gap, 3) + ' AU' }, { label: 'Elapsed flight time', value: fmt(arrival.days, 1) + ' days' }
+        ].map(function(item) { return h('div', { key: item.label, style: { minWidth: 0, padding: '9px', borderRadius: '8px', background: isDark ? '#20394d' : '#fff' } }, h('span', { style: { display: 'block', fontSize: '11px', lineHeight: 1.5 } }, item.label), h('strong', { style: { display: 'block', fontSize: '20px', marginTop: '4px', color: tone } }, item.value)); })),
+        h('p', { style: { fontSize: '12px', lineHeight: 1.6, margin: '10px 0' } }, arrival.matched ? 'The spacecraft and destination reach the same position in this ideal model. Matching their motion is a separate step.' : 'The spacecraft reached the transfer endpoint, but the destination is elsewhere. Compare the starting angle and the destination position at arrival.'),
+        arrival.matched ? h('div', { 'data-arrival-speed-comparison': true, 'data-arrival-burn-preview': previewArrivalBurn ? 'after' : 'before', style: { borderTop: '1px solid ' + border, paddingTop: '10px' } },
+          h('strong', { style: { display: 'block', fontSize: '12px', marginBottom: '8px' } }, 'Preview the arrival impulse · speeds relative to the Sun'),
+          h('div', { role: 'group', 'aria-label': 'Arrival impulse preview', style: { display: 'flex', flexWrap: 'wrap', gap: '7px', marginBottom: '12px' } }, [{ after: false, label: 'Before impulse' }, { after: true, label: 'After ideal impulse' }].map(function(choice) {
+            return h('button', { key: choice.label, type: 'button', 'aria-pressed': previewArrivalBurn === choice.after, onClick: function() { setArrivalBurnPreview(choice.after); }, style: Object.assign({}, buttonStyle, { border: '2px solid ' + (previewArrivalBurn === choice.after ? tone : border), background: previewArrivalBurn === choice.after ? isDark ? '#25433e' : '#e1f3e9' : cardBg }) }, choice.label);
+          })),
+          [{ id: 'craft', label: previewArrivalBurn ? 'Spacecraft · after ideal impulse' : 'Spacecraft · before impulse', value: previewArrivalBurn ? arrival.destinationSpeed : arrival.craftSpeed, color: previewArrivalBurn ? tone : isDark ? '#c3dcff' : '#3673ad' }, { id: 'destination', label: to.name, value: arrival.destinationSpeed, color: tone }].map(function(row) {
+            var ceiling = Math.max(arrival.craftSpeed, arrival.destinationSpeed);
+            return h('div', { key: row.id, 'data-arrival-speed-row': row.id, style: { marginBottom: '10px', fontSize: '12px' } }, h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '5px' } }, h('span', null, row.label), h('strong', null, fmt(row.value, 3) + ' km/s')),
+              h('div', { 'aria-hidden': true, style: { position: 'relative', height: '8px', borderRadius: '6px', background: isDark ? '#3b5369' : '#d5e4ee', marginTop: '5px' } },
+                h('div', { 'data-arrival-speed-bar': row.id, style: { width: row.value / ceiling * 100 + '%', height: '100%', borderRadius: '6px', background: row.color, transition: reduceMotion ? 'none' : 'width 260ms ease, background-color 260ms ease' } }),
+                row.id === 'craft' ? h('span', { 'data-arrival-original-speed': true, style: { position: 'absolute', left: 'calc(' + arrival.craftSpeed / ceiling * 100 + '% - 1px)', top: '-3px', height: '14px', borderLeft: '2px dotted ' + (isDark ? '#e2e8f0' : '#18334c') } }) : null));
+          }),
+          h('p', { 'data-arrival-speed-difference': true, role: 'status', style: { fontSize: '13px', fontWeight: 700, lineHeight: 1.6, color: tone, margin: '10px 0' } }, (previewArrivalBurn ? 'After ideal impulse (preview)' : 'Before impulse') + ' · speed difference: ' + fmt(previewArrivalBurn ? 0 : arrival.speedChange, 3) + ' km/s'),
+          h('p', { style: { fontSize: '11px', lineHeight: 1.6, margin: '6px 0' } }, 'Dotted marker: original spacecraft speed. The scale stays fixed as you switch views. This illustration leaves your flight and saved evidence unchanged.'),
+          h('p', { 'data-arrival-burn-guidance': true, style: { padding: '10px', borderRadius: '8px', background: isDark ? '#20423f' : '#e1f3e9', fontSize: '13px', lineHeight: 1.6, margin: '10px 0', fontWeight: 700 } }, 'To match the destination’s circular motion: ' + arrival.action + ' by ' + fmt(arrival.speedChange, 3) + ' km/s.'),
+          h('p', { style: { fontSize: '11px', lineHeight: 1.6, margin: 0 } }, 'Both speed bars start at zero and share one scale. This is the ideal Sun-centered arrival impulse. Capture into an orbit around the destination planet is not simulated.')
+        ) : h('p', { style: { fontSize: '11px', lineHeight: 1.6, margin: 0 } }, flight.compare ? 'The aligned reference reaches the craft at this same arrival time. The test changed only the destination’s starting angle.' : 'Try the aligned launch and inspect arrival again to compare the outcome.')
+      );
     }
     function flightReading(model) {
       if (model.same) return "Choose two different planets to plan a transfer.";
@@ -12008,8 +12489,8 @@ const d = labToolData.solarSystem || {};
     var canvas = h(stableType('CanvasPanel', CanvasPanel), {
       key: "rendezvous-map", width: 560, height: 440, responsive: true, responsiveMinHeight: 320, responsiveMaxHeight: 440,
       panZoom: false, reduceMotion: reduceMotion,
-      ariaLabel: "Hohmann transfer visualization from " + from.name + " to " + to.name + ". Moving planets and a spacecraft demonstrate a timed rendezvous. Use the flight progress and launch alignment controls below.",
-      ariaDescribedBy: "orrery-transfer-evidence", redrawKey: from.id + "-" + to.id,
+      ariaLabel: "Hohmann transfer visualization from " + from.name + " to " + to.name + ". Moving planets and a spacecraft demonstrate a timed rendezvous. Markers: A is the departure planet, B the destination, C the spacecraft, and R the aligned reference when comparing. Use the flight progress and launch alignment controls below.",
+      ariaDescribedBy: "orrery-transfer-evidence" + (flight.compare ? " orrery-transfer-orbit-gap-reading" : ""), redrawKey: from.id + "-" + to.id,
       draw: function(ctx, cv, st, timestamp) {
         if (flight.playing && !reduceMotion && !current.same) {
           var elapsed = flight.stamp === null ? 0 : timestamp - flight.stamp;
@@ -12034,7 +12515,12 @@ const d = labToolData.solarSystem || {};
         ctx.font = "800 12px sans-serif"; ctx.fillStyle = "#e2e8f0";
         ctx.fillText("RENDEZVOUS FLIGHT", 14, 23);
         ctx.font = "11px sans-serif"; ctx.fillStyle = "#a9bdd8";
-        ctx.fillText(model.same ? "Choose a destination" : "Day " + fmt(model.elapsedDays, 0) + " / " + fmt(model.transitDays, 0) + " · " + (flight.progress >= 1 ? "Arrival" : flight.progress > 0 ? "Coast" : "Departure"), 14, 42);
+        var atPlottedMinimum = flight.compare && gapSeries && Math.abs(flight.progress - gapSeries.smallest.progress) < 1e-8;
+        ctx.fillText(model.same ? "Choose a destination" : "Day " + fmt(model.elapsedDays, 0) + " / " + fmt(model.transitDays, 0) + " · " + (flight.progress >= 1 ? "Arrival" : atPlottedMinimum ? "Smallest plotted gap" : flight.progress > 0 ? "Coast" : "Departure"), 14, 42);
+        if (flight.compare && !model.same) {
+          ctx.fillStyle = '#f5c893'; ctx.font = '11px sans-serif';
+          ctx.fillText('R gap ' + fmt(transferRendezvous(from.a, to.a, flight.progress, 0).separation, 3) + ' AU · B gap ' + fmt(model.separation, 3) + ' AU', 14, 61);
+        }
         [from, to].forEach(function(body, index) {
           ctx.beginPath(); ctx.arc(cx, cy, body.a * scale, 0, TAU);
           ctx.strokeStyle = index ? "#7dd3fc" : "#a5b4fc"; ctx.globalAlpha = 0.5; ctx.lineWidth = 1;
@@ -12063,30 +12549,30 @@ const d = labToolData.solarSystem || {};
             ctx.fillStyle = "#fbbf24"; ctx.font = "700 11px sans-serif"; ctx.fillText(String(index + 1), px + 10, py + dy * 26);
           });
         }
-        function drawPlanet(point, color, letter) {
+        function drawPlanet(point, color) {
           var px = sx(point), py = sy(point);
           ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 10;
           ctx.beginPath(); ctx.arc(px, py, 6, 0, TAU); ctx.fill(); ctx.shadowBlur = 0;
-          ctx.fillStyle = "#e2e8f0"; ctx.font = "700 11px sans-serif"; ctx.fillText(letter, px + 9, py - 9);
+
         }
-        drawPlanet(model.origin, "#a5b4fc", "A");
+        drawPlanet(model.origin, "#a5b4fc");
         if (flight.compare && !model.same) {
           var reference = transferRendezvous(from.a, to.a, flight.progress, 0);
           // A hollow ring distinguishes the reference even when both destinations overlap.
           ctx.strokeStyle = '#6ee7b7'; ctx.lineWidth = 2;
           ctx.beginPath(); ctx.arc(sx(reference.destination), sy(reference.destination), 11, 0, TAU); ctx.stroke();
-          ctx.fillStyle = '#a7f3d0'; ctx.font = '700 11px sans-serif'; ctx.fillText('R', sx(reference.destination) - 19, sy(reference.destination) - 13);
-          if (flight.progress >= 1) { ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(sx(model.ship), sy(model.ship)); ctx.lineTo(sx(reference.destination), sy(reference.destination)); ctx.stroke(); ctx.setLineDash([]); }
+
+          ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(sx(model.ship), sy(model.ship)); ctx.lineTo(sx(reference.destination), sy(reference.destination)); ctx.stroke(); ctx.setLineDash([]);
           // A short angular arc shows the changed starting phase; it is not a second spacecraft path.
           if (flight.progress === 0 && Math.abs(flight.offset) > 0.001) {
             var startAngle = -reference.departurePhase, endAngle = -model.departurePhase;
             ctx.strokeStyle = '#fb923c'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, to.a * scale * 0.8, startAngle, endAngle, flight.offset > 0); ctx.stroke();
           }
         }
-        drawPlanet(model.destination, flight.compare ? '#fb923c' : '#7dd3fc', 'B');
-        if (flight.progress >= 1 && Math.abs(flight.offset) > 0.001 && !model.same) {
+        drawPlanet(model.destination, flight.compare ? '#fb923c' : '#7dd3fc');
+        if (!model.same && (flight.compare || (flight.progress >= 1 && Math.abs(flight.offset) > 0.001))) {
           ctx.beginPath(); ctx.moveTo(sx(model.ship), sy(model.ship)); ctx.lineTo(sx(model.destination), sy(model.destination));
-          ctx.strokeStyle = "#fb7185"; ctx.lineWidth = 2; ctx.setLineDash([3, 4]); ctx.stroke(); ctx.setLineDash([]);
+          ctx.strokeStyle = flight.compare ? '#fb923c' : '#fb7185'; ctx.lineWidth = 2; ctx.setLineDash(flight.compare ? [] : [3, 4]); ctx.stroke(); ctx.setLineDash([]);
         }
         if (!model.same) {
           var nearby = transferRendezvous(from.a, to.a, flight.progress < 0.999 ? flight.progress + 0.001 : flight.progress - 0.001, flight.offset).ship;
@@ -12101,12 +12587,31 @@ const d = labToolData.solarSystem || {};
             ctx.strokeStyle = "#6ee7b7"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(sx(model.ship), sy(model.ship), 17, 0, TAU); ctx.stroke();
           }
         }
+        ctx.font = '700 11px sans-serif';
+        var markers = [];
+        function addMarker(id, text, point, color) { markers.push({ id: id, text: text, x: sx(point), y: sy(point), width: ctx.measureText(text).width + 14, color: color }); }
+        if (!model.same) addMarker('craft', 'C · craft', model.ship, '#f1f5f9');
+        if (flight.compare && !model.same) addMarker('reference', 'R · aligned', reference.destination, '#a7f3d0');
+        addMarker('destination', 'B · ' + to.name, model.destination, flight.compare ? '#fdba74' : '#7dd3fc');
+        addMarker('origin', 'A · ' + from.name, model.origin, '#c7d2fe');
+        markers.push({ x: cx, y: cy, skipLabel: true });
+        var labels = transferMarkerLabels(markers, w, ht);
+        labels.forEach(function(label) {
+          var point = markers.find(function(marker) { return marker.id === label.id; });
+          var endX = Math.max(label.x, Math.min(label.x + label.width, point.x)), endY = Math.max(label.y, Math.min(label.y + label.height, point.y));
+          ctx.strokeStyle = label.color; ctx.lineWidth = 1; ctx.globalAlpha = .65; ctx.beginPath(); ctx.moveTo(point.x, point.y); ctx.lineTo(endX, endY); ctx.stroke(); ctx.globalAlpha = 1;
+          ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(label.x, label.y, label.width, label.height, 5); else ctx.rect(label.x, label.y, label.width, label.height);
+          ctx.fillStyle = '#0b172a'; ctx.fill(); ctx.strokeStyle = label.color; ctx.lineWidth = .8; ctx.stroke();
+          ctx.fillStyle = label.color; ctx.font = '700 11px sans-serif'; ctx.fillText(label.text, label.x + 7, label.y + 14, label.width - 14);
+        });
+        cv.dataset.transferMarkerLabels = labels.map(function(label) { return label.id; }).join(',');
         ctx.font = "11px sans-serif"; ctx.fillStyle = "#b8c7dc";
         ctx.fillText("Orbit-plane model · distances share one scale", 14, ht - 15);
         cv.dataset.transferProgress = flight.progress.toFixed(5);
         cv.dataset.transferSeparation = model.separation.toFixed(8);
         cv.dataset.transferPlaying = String(flight.playing);
         cv.dataset.transferComparison = String(flight.compare);
+        cv.dataset.transferGapRulers = String(flight.compare && !model.same);
         cv.dataset.transferReferenceSeparation = transferRendezvous(from.a, to.a, flight.progress, 0).separation.toFixed(8);
         if (flight.uiAt === null || timestamp - flight.uiAt >= 180) {
           flight.uiAt = timestamp;
@@ -12114,6 +12619,9 @@ const d = labToolData.solarSystem || {};
           if (reading) reading.textContent = flightReading(model);
           var comparison = document.getElementById('orrery-transfer-comparison-reading');
           if (comparison) comparison.textContent = comparisonReading(model);
+          syncGapChart(model);
+          var orbitReading = document.getElementById("orrery-transfer-orbit-gap-reading");
+          if (orbitReading) orbitReading.textContent = gapCursorReading(model);
           var progressInput = document.getElementById("orrery-transfer-progress");
           if (progressInput) { progressInput.value = String(flight.progress * 100); progressInput.setAttribute("aria-valuetext", fmt(flight.progress * 100, 0) + "% of flight; day " + fmt(model.elapsedDays, 1)); }
         }
@@ -12121,7 +12629,15 @@ const d = labToolData.solarSystem || {};
     });
     return h("section", { "data-transfer-flight": from.id + "-" + to.id, "aria-label": "Transfer rendezvous experiment", style: { flex: "1 1 480px", minWidth: 0, maxWidth: "100%", padding: "10px", borderRadius: "14px", border: "1px solid " + border, background: cardBg, boxSizing: "border-box" } },
       canvas,
-      marsMission.active && from.id === 'earth' && to.id === 'mars' ? h('div', { 'data-mars-transfer-task': true, style: { padding: '10px', marginTop: '10px', borderRadius: '9px', background: isDark ? '#283149' : '#e8f3ff', color: fg } },
+      buildArrivalInspection(),
+      flight.compare && !current.same ? h('nav', { 'aria-label': 'Transfer view navigation', style: { padding: '10px', marginTop: '9px', borderRadius: '9px', background: isDark ? '#102638' : '#eef7ff', border: '1px solid ' + border, color: fg } },
+        h('strong', { style: { fontSize: '12px' } }, 'One moment, two views'),
+        h('p', { id: 'orrery-transfer-orbit-gap-reading', role: 'status', 'aria-live': flight.playing ? 'off' : 'polite', style: { fontSize: '12px', lineHeight: 1.6, margin: '6px 0' } }, gapCursorReading(current)),
+        h('p', { style: { fontSize: '11px', lineHeight: 1.6, margin: '6px 0 9px' } }, 'Dashed green measures craft-to-R separation; solid amber measures craft-to-B separation. These rulers measure gaps, not travel paths.'),
+        btn('Return to journey chart', false, function() { inspectTransferView('chart'); }, { style: buttonStyle })
+      ) : null,
+      buildFollowUpFlightGuide(),
+      marsMission.active && !marsProgress.complete && from.id === 'earth' && to.id === 'mars' ? h('div', { 'data-mars-transfer-task': true, style: { padding: '10px', marginTop: '10px', borderRadius: '9px', background: isDark ? '#283149' : '#e8f3ff', color: fg } },
         h('strong', { style: { fontSize: '12px' } }, 'Earth-to-Mars mission · test 0° and +30°'),
         h('p', { style: { fontSize: '12px', margin: '6px 0' } }, !marsProgress.predicted ? 'Choose your launch prediction in the mission card first.' : 'Inspect arrival at each launch offset, then record the result. The two trials remain available in your mission card.'),
         h('button', { type: 'button', disabled: !marsProgress.predicted || flight.playing || flight.progress < 1 || (Math.abs(flight.offset) > 0.001 && Math.abs(flight.offset - 30) > 0.001) || marsProgress.complete,
@@ -12129,7 +12645,7 @@ const d = labToolData.solarSystem || {};
         h('span', { role: 'status', style: { display: 'block', fontSize: '11px', marginTop: '6px' } }, ((marsMission.trials && marsMission.trials.aligned ? 1 : 0) + (marsMission.trials && marsMission.trials.offset ? 1 : 0)) + '/2 mission trials recorded')
       ) : null,
       h("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", margin: "9px 0", fontSize: "12px", color: fg } },
-        h("span", null, "A · " + from.name), h("span", null, "B · " + to.name + (flight.compare ? ' · test / filled orange' : '')), flight.compare ? h('span', { style: { color: isDark ? '#a7f3d0' : '#126348' } }, 'R · ' + to.name + ' · aligned / hollow ring') : null, h("span", null, "White craft · amber trail"), h("span", null, "1 · departure burn; 2 · arrival burn")),
+        h("span", null, "A · " + from.name), h("span", null, "B · " + to.name + (flight.compare ? ' · test / filled orange' : '')), flight.compare ? h('span', { style: { color: isDark ? '#a7f3d0' : '#126348' } }, 'R · ' + to.name + ' · aligned / hollow ring') : null, h("span", null, "C · spacecraft · amber trail"), h("span", null, "1 · departure burn; 2 · arrival burn")),
       h("p", { id: "orrery-transfer-flight-reading", role: "status", "aria-live": flight.playing ? "off" : "polite", style: { fontSize: "12px", lineHeight: 1.5, color: fg, minHeight: "36px" } }, flightReading(current)),
       h("div", { role: "group", "aria-label": "Transfer flight playback", style: { display: "flex", flexWrap: "wrap", gap: "7px", marginBottom: "10px" } },
         btn(flight.playing ? "Pause flight" : flight.progress >= 1 ? "Replay flight" : "Play flight", false, function() { changeFlight({ playing: !flight.playing, progress: flight.progress >= 1 ? 0 : flight.progress }); }, { "aria-pressed": flight.playing, disabled: current.same || reduceMotion, style: Object.assign({}, buttonStyle, { opacity: current.same || reduceMotion ? 0.5 : 1 }) }),
@@ -12142,6 +12658,7 @@ const d = labToolData.solarSystem || {};
         flight.compare ? h(React.Fragment, null,
           h('p', { id: 'orrery-transfer-comparison-reading', role: 'status', 'aria-live': flight.playing ? 'off' : 'polite', style: { fontSize: '12px', fontWeight: 700, lineHeight: 1.6, margin: '8px 0' } }, comparisonReading(current)),
           h('p', { style: { fontSize: '11px', lineHeight: 1.5, margin: '6px 0 0' } }, 'Before arrival, a gap is expected. Compare both gaps at Arrival. Why does changing the destination’s starting position change the outcome when the craft follows the same route?'),
+          buildTransferGapChart(),
           buildTransferDebrief()
         ) : null
       ),

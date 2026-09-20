@@ -1,0 +1,26 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "columns": 4,
+      "overflow": false,
+      "clipped": false,
+      "keyboardDisclosure": true
+    },
+    {
+      "width": 320,
+      "columns": 2,
+      "overflow": false,
+      "clipped": false,
+      "keyboardDisclosure": true
+    }
+  ],
+  "assertions": [
+    "Four seasonal landscapes identify the current season with exact day positions and countdowns",
+    "Actual autumn/winter and year transitions agree with annual, perennial, and habitat guidance",
+    "Reading and keyboard disclosure preserve all state, including staged planting previews",
+    "Desktop, 320px, larger text, forced colors, 44px disclosure, bounded progress motion, both reduced-motion preferences, accessibility, and cleanup pass"
+  ],
+  "errors": [],
+  "accessibility": []
+}

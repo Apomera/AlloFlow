@@ -27,6 +27,7 @@
     "changes": true,
     "expires": true,
     "previewCancels": true,
+    "invalidPreviewIgnored": true,
     "changedCropCancels": true,
     "closedCancels": true,
     "reducedCancels": true,

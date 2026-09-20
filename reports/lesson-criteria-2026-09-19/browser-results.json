@@ -1,0 +1,103 @@
+{
+  "results": [
+    {
+      "width": 1280,
+      "legacyCriteria": true,
+      "criterionMetadataPreserved": true,
+      "timingWarning": true,
+      "validTimingRestored": true,
+      "criteriaViolations": []
+    },
+    {
+      "width": 1280,
+      "savedSpokenExports": true
+    },
+    {
+      "width": 1280,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 1280,
+      "listViolations": []
+    },
+    {
+      "width": 1280,
+      "draftSpokenExports": true
+    },
+    {
+      "width": 1280,
+      "savedPrint": true,
+      "draftPrint": true,
+      "draftDownload": true
+    },
+    {
+      "width": 1280,
+      "validationViolations": []
+    },
+    {
+      "width": 1280,
+      "confirmationViolations": []
+    },
+    {
+      "width": 1280,
+      "editEntryFocus": true,
+      "saveControlsFocus": true,
+      "deleteSafeFocus": true,
+      "deleteEscapeFocus": true,
+      "deleteFailureRetry": true,
+      "lastVersionDeleteFocus": true,
+      "deletionViolations": []
+    },
+    {
+      "width": 320,
+      "legacyCriteria": true,
+      "criterionMetadataPreserved": true,
+      "timingWarning": true,
+      "validTimingRestored": true,
+      "criteriaViolations": []
+    },
+    {
+      "width": 320,
+      "savedSpokenExports": true
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "listViolations": []
+    },
+    {
+      "width": 320,
+      "draftSpokenExports": true
+    },
+    {
+      "width": 320,
+      "savedPrint": true,
+      "draftPrint": true,
+      "draftDownload": true
+    },
+    {
+      "width": 320,
+      "validationViolations": []
+    },
+    {
+      "width": 320,
+      "confirmationViolations": []
+    },
+    {
+      "width": 320,
+      "editEntryFocus": true,
+      "saveControlsFocus": true,
+      "deleteSafeFocus": true,
+      "deleteEscapeFocus": true,
+      "deleteFailureRetry": true,
+      "lastVersionDeleteFocus": true,
+      "deletionViolations": []
+    }
+  ],
+  "errors": []
+}

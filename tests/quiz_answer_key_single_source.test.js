@@ -107,8 +107,9 @@ describe('grade, reveal and voice check agree', () => {
 
 describe('no student-facing path re-derives the verdict', () => {
   it('the host grader calls the shared matcher', () => {
-    expect(anti).toContain('const isCorrect = quizAnswerMatches(option, question.correctAnswer);');
-    expect(anti).not.toContain('option.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase()');
+    const hostHandlers = readFileSync('host_handlers_source.jsx', 'utf8');
+    expect(hostHandlers).toContain('const isCorrect = __d.quizAnswerMatches(option, question.correctAnswer);');
+    expect(hostHandlers).not.toContain('option.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase()');
   });
 
   it('the view reaches the host matcher rather than copying it', () => {

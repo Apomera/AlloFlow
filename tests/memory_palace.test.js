@@ -668,7 +668,7 @@ describe('MemoryPalace - live 3D organizer HUD contract', () => {
     expect(source).toContain('tex.anisotropy = Math.max(1, Number(anisotropy) || 1)');
     expect(source).toContain('depthTest: !occlusionSafe');
     expect(source).toContain('sp.renderOrder = occlusionSafe ? 24 : 12');
-    expect(source).toContain("makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, false, _textureAnisotropy, theme.walls || theme.ground ? 'plaque' : 'plate')");
+    expect(source).toContain("makeLabelSprite(THREE, initialCaption, color, 24, false, _textureAnisotropy, theme.walls || theme.ground ? 'plaque' : 'plate')");
     expect(source).toContain('function _setFrameCaptionOcclusionState(force)');
     expect(source).toContain('ref.locus.roomIdx === _captionOverlayRoomIdx');
     expect(source).toContain('label.material.depthTest = !overlay');
@@ -712,7 +712,7 @@ describe('MemoryPalace - live 3D organizer HUD contract', () => {
     expect(view).toContain('I remembered');
     expect(view).toContain('I missed it');
     expect(view).toContain('Reveal, then rate my recall');
-    expect(view).toContain('_laterRecall(() => advanceRecall())');
+    expect(view).toContain('_scheduleRecallAdvance();');
   });
 
   it('shows study-only in-world mastery rings with weak, developing, and strong colors', () => {
@@ -1479,8 +1479,9 @@ describe('MemoryPalace — recall answer leaks and announcements', () => {
   it('answers are announced, not only coloured and beeped', () => {
     const v = view();
     expect(v).toContain("t('memory_palace.answer_wrong')");
-    expect(v).toContain("t('memory_palace.answer_right')");
-    expect(v).toContain('aria-live="assertive"');
+    expect(v).toContain("t('memory_palace.answer_first_try')");
+    expect(v).toContain("t('memory_palace.answer_after_retry')");
+    expect(v).toContain('role="status" aria-live="polite"');
   });
 
   it('progress-rail numerals no longer sit at 1.49:1', () => {
@@ -1537,4 +1538,24 @@ describe('MemoryPalace — graceful degradation and reachability', () => {
     const app = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/App.jsx'), 'utf8');
     expect(app).toContain('const { images, depths, covered, ...keepPalace } = mp;');
   });
+});
+
+
+describe('MemoryPalace unique recall choices',()=>{
+ it('uses distinct distractors instead of filling the bank with repeated facts',()=>{
+  const palace={loci:[{id:'target',label:'Evaporation'},...Array.from({length:8},(_,i)=>({id:'repeat'+i,label:'Condensation'})),{id:'third',label:'Precipitation'}]};
+  const before=JSON.stringify(palace);const choices=MP.buildLocusChoices(palace,'target',{seed:9});
+  expect(choices.map(c=>c.label).sort()).toEqual(['Condensation','Evaporation','Precipitation']);
+  expect(choices.find(c=>c.label==='Evaporation').id).toBe('target');
+  expect(MP.buildLocusChoices(palace,'target',{seed:9})).toEqual(choices);expect(JSON.stringify(palace)).toBe(before);
+ });
+ it('deduplicates case, spacing and compatibility variants while keeping the target identity',()=>{
+  const palace={loci:[{id:'same-target',label:'proton'},{id:'target',label:'Proton'},{id:'a',label:'Light wave'},{id:'b',label:' LIGHT   WAVE '},{id:'c',label:'Ｌｉｇｈｔ ｗａｖｅ'},{id:'d',label:'Neutron'}]};
+  const choices=MP.buildLocusChoices(palace,'target',{seed:2});
+  expect(choices).toHaveLength(3);expect(choices.map(c=>c.id).sort()).toEqual(['a','d','target']);
+ });
+ it('omits blank distractors without merging genuinely different terms',()=>{
+  const palace={loci:[{id:'target',label:'Proton'},{id:'blank',label:' '},{id:'null',label:null},{id:'other',label:'Photon'}]};
+  expect(MP.buildLocusChoices(palace,'target',{seed:2}).map(c=>c.id).sort()).toEqual(['other','target']);
+ });
 });

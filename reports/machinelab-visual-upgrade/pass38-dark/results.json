@@ -1,0 +1,42 @@
+{
+  "errors": [],
+  "overflow": false,
+  "checks": [
+    "Comparison alignment lever/1150",
+    "Comparison alignment pulley/1150",
+    "Comparison alignment windlass/1150",
+    "Comparison alignment ramp/1150",
+    "Comparison alignment wedge/1150",
+    "Comparison alignment screw/1150",
+    "Comparison alignment lever/390",
+    "Comparison alignment pulley/390",
+    "Comparison alignment windlass/390",
+    "Comparison alignment ramp/390",
+    "Comparison alignment wedge/390",
+    "Comparison alignment screw/390",
+    "Comparison alignment lever/320",
+    "Comparison alignment pulley/320",
+    "Comparison alignment windlass/320",
+    "Comparison alignment ramp/320",
+    "Comparison alignment wedge/320",
+    "Comparison alignment screw/320",
+    "Reversed/equal/high advantage 0.2/4",
+    "Reversed/equal/high advantage 1/1",
+    "Reversed/equal/high advantage 4/0.2",
+    "Tiny load-distance endpoint",
+    "Forced-color alignment",
+    "System colors preserve markers"
+  ],
+  "shots": [
+    "comparison-lever-1150",
+    "comparison-pulley-1150",
+    "comparison-windlass-1150",
+    "comparison-ramp-1150",
+    "comparison-wedge-1150",
+    "comparison-screw-1150",
+    "comparison-windlass-390",
+    "comparison-windlass-320",
+    "comparison-screw-tiny",
+    "comparison-forced-colors"
+  ]
+}

@@ -1,0 +1,338 @@
+[
+  {
+    "resourceId": "sm-directions",
+    "path": "data.body",
+    "from": "**Due:** (your teacher will tell you)\n\nIce, water, and steam look like three different things. They are the exact same stuff. The only difference is how fast the tiny pieces are moving.\n\n1. Read **The Dance Floor** — the whole lesson is in that one comparison.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Keep the **Three States** chart nearby.\n4. Sort the cards in **Solid, Liquid, or Gas?**\n5. Practise explaining with **Matter Frames**, then check yourself against the rubric.\n6. Take the quiz. Question 3 is the one that catches almost everybody.\n7. Lock the ideas in with **Remember the Dance Floor** — study the example aid, then make one your own.\n8. Finish with **Investigation: The Disappearing Puddle** — use what you learned on a real problem, and mark every guess as a guess.\n\nOne thing to watch for all lesson: nothing is created or destroyed when matter changes state. It only rearranges. ❄️💧☁️",
+    "to": "**Due:** (your teacher will tell you)\n\nIce, liquid water, and water vapor are the same substance in different states. Their particles are arranged differently and move differently. Water vapor is invisible.\n\n1. Read **The Dance Floor** — the whole lesson is in that one comparison.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Keep the **Three States** chart nearby.\n4. Sort the cards in **Solid, Liquid, or Gas?**\n5. Practise explaining with **Matter Frames**, then check yourself against the rubric.\n6. Take the quiz. Question 3 is the one that catches almost everybody.\n7. Lock the ideas in with **Remember the Dance Floor** — study the example aid, then make one your own.\n8. Finish with **Investigation: The Disappearing Puddle** — use what you learned on a real problem, and mark every guess as a guess.\n\nOne thing to watch for all lesson: nothing is created or destroyed when matter changes state. It only rearranges. ❄️💧☁️\n\nPicture panels: Observing solids, liquids, and gases; Changes in closed containers; Models of tiny particles; Water moving between states. Use these alongside the activities."
+  },
+  {
+    "resourceId": "sm-reading",
+    "path": "data",
+    "from": "## The Dance Floor\n\nEverything around you is made of pieces far too small to see, called **particles**. What makes ice different from water is not what the particles are. It is how they are moving.\n\nPicture a crowded dance floor.\n\nIn a **solid**, everyone is packed shoulder to shoulder and only shivering in place. Nobody moves past anybody. That is why a solid keeps its own shape — an ice cube stays a cube whether you put it in a bowl, a cup, or your hand.\n\nIn a **liquid**, the music starts and people begin sliding past each other, still touching but no longer locked. That is why water flows and takes the shape of whatever holds it, but the amount stays the same. Pour a cup of water into a bowl and you still have a cup of water.\n\nIn a **gas**, everyone breaks loose and bounces around the whole room, far apart and moving fast. That is why a gas spreads out to fill any container completely. Steam does not sit in a puddle in the air.\n\nWhat moves particles between these states is **energy** — usually heat. Add heat and the particles move faster. Take heat away and they slow down.\n\nHeat ice and it **melts** into water. Keep heating and it **evaporates** (or boils) into water vapor. Cool that vapor and it **condenses** back into liquid — that is the fog on a bathroom mirror. Cool the liquid further and it **freezes** back into a solid.\n\nHere is the part that trips people up. When the pot boils, the cloudy stuff you see rising is not steam in the scientific sense — real water vapor is completely invisible. What you see is tiny liquid droplets that formed when hot vapor hit cooler air and condensed. Look right at the spout and you will notice a small clear gap before the cloud starts. That gap is the actual gas.\n\nAnd nothing disappears. A melted ice cube weighs exactly what it weighed frozen. A puddle that dries up did not vanish — its particles spread into the air. Matter changes how it behaves, not how much of it there is. That rule holds everywhere, which is why scientists trust it enough to build on it.",
+    "to": "## The Dance Floor\n\nMatter is made of **particles** too small to see with our eyes. Ice and liquid water contain the same water particles, but those particles are arranged differently and move differently.\n\nImagine a dance floor. In a **solid**, the dancers stay near their places and jiggle. A solid's particles vibrate around fixed positions, so the solid keeps its shape. The comparison is a model: real particles are not people, and not every solid has the same arrangement.\n\nIn a **liquid**, imagine dancers moving past one another while staying close. A liquid flows and takes the shape of the part of its container that it fills. Pour water carefully from a glass into a bowl: the shape changes, but you have not added or removed water.\n\nIn a **gas**, imagine dancers spread throughout a room. Gas particles move in many directions, far apart compared with their size. A gas spreads to fill its container. The particles themselves do not grow when a substance becomes a gas.\n\nHeating transfers **energy** to a substance. It can raise the temperature or cause a change of state. While pure ice melts at its melting point, added energy helps change its arrangement rather than raising its temperature. More heat does not always mean a higher temperature.\n\nIce **melts** into liquid water. Liquid water can **evaporate** from its surface without boiling. Boiling forms vapor bubbles throughout the liquid. Water vapor can **condense** into droplets when it cools. Liquid water can **freeze** when energy leaves it.\n\nWater vapor is invisible. The white cloud beyond a kettle spout is tiny liquid droplets formed as vapor cools. A short clear gap may separate the spout and visible mist.\n\nMatter does not vanish during these changes. In a closed container, the total mass stays the same when ice melts. Include all the contents when measuring. An open puddle loses water to the surrounding air as invisible vapor: its particles still exist, even when they are no longer in the puddle."
+  },
+  {
+    "resourceId": "sm-reading",
+    "path": "meta",
+    "from": "4th-5th Grade • Leveled reading",
+    "to": "4th-5th Grade • Leveled reading • particle models and state changes"
+  },
+  {
+    "resourceId": "sm-glossary",
+    "path": "data.1.def",
+    "from": "One of the tiny pieces that all matter is made of, too small to see.",
+    "to": "A tiny constituent of matter, such as an atom or molecule, too small to see with our eyes."
+  },
+  {
+    "resourceId": "sm-glossary",
+    "path": "data.2.def",
+    "from": "Matter whose particles are packed tightly and hold their own shape.",
+    "to": "A state of matter with a fixed shape; its particles vibrate around fixed positions."
+  },
+  {
+    "resourceId": "sm-glossary",
+    "path": "data.7.def",
+    "from": "To change from a liquid into a gas.",
+    "to": "To change from liquid into gas at the liquid surface, without needing to boil."
+  },
+  {
+    "resourceId": "sm-glossary",
+    "path": "data.9.def",
+    "from": "What makes particles move faster; adding heat gives particles more of it.",
+    "to": "A quantity that can be transferred to cause changes, such as warming or motion."
+  },
+  {
+    "resourceId": "sm-anchor",
+    "path": "data.title",
+    "from": "IT IS ALL ABOUT MOVEMENT",
+    "to": "ARRANGEMENT, MOVEMENT, AND CHANGE"
+  },
+  {
+    "resourceId": "sm-anchor",
+    "path": "data.sections.0.bullets.0",
+    "from": "Particles packed tight, shivering in place",
+    "to": "Particles vibrate around fixed positions"
+  },
+  {
+    "resourceId": "sm-anchor",
+    "path": "data.sections.0.bullets.1",
+    "from": "Keeps its OWN shape",
+    "to": "Keeps its own shape"
+  },
+  {
+    "resourceId": "sm-anchor",
+    "path": "data.sections.0.bullets.2",
+    "from": "Ice, wood, a rock",
+    "to": "Wood, a rock, ice"
+  },
+  {
+    "resourceId": "sm-anchor",
+    "path": "data.sections.2.bullets.0",
+    "from": "Particles far apart, bouncing fast",
+    "to": "Particles spread out and move in many directions"
+  },
+  {
+    "resourceId": "sm-anchor",
+    "path": "data.sections.2.bullets.1",
+    "from": "Fills the whole space",
+    "to": "Fills its container"
+  },
+  {
+    "resourceId": "sm-anchor",
+    "path": "data.sections.3.bullets.0",
+    "from": "Add heat: melt, then evaporate",
+    "to": "Heating can warm matter or change its state"
+  },
+  {
+    "resourceId": "sm-anchor",
+    "path": "data.sections.3.bullets.1",
+    "from": "Remove heat: condense, then freeze",
+    "to": "Melting and evaporation take in energy"
+  },
+  {
+    "resourceId": "sm-anchor",
+    "path": "data.sections.3.bullets.2",
+    "from": "All of these can be reversed",
+    "to": "Condensation and freezing release energy"
+  },
+  {
+    "resourceId": "sm-anchor",
+    "path": "data.sections.4.bullets.0",
+    "from": "Nothing is created or destroyed",
+    "to": "Matter is conserved during state changes"
+  },
+  {
+    "resourceId": "sm-anchor",
+    "path": "data.sections.4.bullets.1",
+    "from": "A melted ice cube weighs the same",
+    "to": "Compare total mass in a closed container"
+  },
+  {
+    "resourceId": "sm-anchor",
+    "path": "data.sections.4.bullets.2",
+    "from": "Matter rearranges, it does not vanish",
+    "to": "Mass stays the same; volume can change"
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.sourceExcerpt",
+    "from": "In a solid, everyone is packed shoulder to shoulder and only shivering in place. In a liquid, people slide past each other, still touching. In a gas, everyone breaks loose and bounces around the whole room. Add heat and the particles move faster. A melted ice cube weighs exactly what it weighed frozen.",
+    "to": "Solids have particles vibrating around fixed positions. Liquid particles move past one another. Gas particles spread throughout a container. In a closed container, total mass stays the same during a state change."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.0.target",
+    "from": "Solid, liquid, gas: how the particles move",
+    "to": "How particles are arranged and move in three states"
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.0.essentialFacts.0",
+    "from": "Solid: particles packed tight, shivering in place, so it keeps its own shape.",
+    "to": "Solid particles vibrate around fixed positions."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.0.essentialFacts.1",
+    "from": "Liquid: particles slide past each other while still touching, so it takes the shape of its container.",
+    "to": "Liquid particles remain close but move past one another."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.0.essentialFacts.2",
+    "from": "Gas: particles far apart and bouncing fast, so it spreads to fill any space.",
+    "to": "Gas particles spread throughout a container."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.0.aiExample",
+    "from": "A crowded dance floor: before the music, everyone stands shoulder to shoulder (solid). Slow song, people drift past each other (liquid). Fast song, everyone spreads across the whole room (gas).",
+    "to": "Imagine dancers jiggling in their places, moving past close neighbors, or moving throughout a room. These represent a solid, a liquid, and a gas."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.0.mapping",
+    "from": "One picture, three moments. The dancers are the particles, and the music is the heat: more energy, more movement, more space between them.",
+    "to": "This crowd shows how parts are spaced and move. It does not show how hot they are or what real water particles look like."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.0.scaffoldStarter",
+    "from": "Before the music: ____. Slow song: ____. Fast song: ____.",
+    "to": "Fixed places: ____. Moving past neighbors: ____. Spread through a room: ____."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.0.scaffoldSteps.0",
+    "from": "Picture your own crowd: a hallway, a playground, a stadium.",
+    "to": "Imagine three arrangements of dancers."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.0.scaffoldSteps.1",
+    "from": "Describe the crowd standing still, drifting, and running.",
+    "to": "Describe how each group can move."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.0.scaffoldSteps.2",
+    "from": "Match each moment to solid, liquid, gas.",
+    "to": "Match each group to solid, liquid, or gas."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.0.coachPrompts.0",
+    "from": "In your picture, what is the heat that makes the crowd move faster?",
+    "to": "How does your model show particles moving even in a solid?"
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.0.hookFact.text",
+    "from": "What makes ice different from water is not what the particles are. It is how they are moving.",
+    "to": "Ice and liquid water contain the same water particles in different arrangements."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.1.aiExample",
+    "from": "Up the ladder with heat: ice → melt → water → evaporate → vapor. Down the ladder without it: vapor → condense → water → freeze → ice. Same rungs, opposite direction.",
+    "to": "Heating can change ice to liquid water and liquid water to vapor. Cooling can change vapor to droplets and liquid water to ice."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.1.mapping",
+    "from": "A ladder puts the changes in order and makes the direction of heat the direction you climb. Going down uses the two 'cold' words.",
+    "to": "The arrows show changes of state and which way energy moves. Heat can change the state without raising the temperature."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.1.scaffoldStarter",
+    "from": "Up with heat: ____ → ____ → ____. Down without it: ____ → ____ → ____.",
+    "to": "Heating: ____ to ____. Cooling: ____ to ____."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.2.essentialFacts.0",
+    "from": "A melted ice cube weighs exactly what it weighed frozen.",
+    "to": "The total mass of a closed container and its contents stays the same when ice melts."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.2.aiExample",
+    "from": "Melt it, freeze it, boil it too — the amount stays just as true.",
+    "to": "Keep all the matter, let ice rearrange; measure the mass through a change."
+  },
+  {
+    "resourceId": "sm-memory",
+    "path": "data.cards.2.hookFact.text",
+    "from": "Matter changes how it behaves, not how much of it there is. That rule holds everywhere, which is why scientists trust it enough to build on it.",
+    "to": "An open puddle loses water to the air; its particles still exist."
+  },
+  {
+    "resourceId": "sm-frames",
+    "path": "data.items.4.text",
+    "from": "When water ____ into ice, the amount of matter ____, because nothing is created or destroyed.",
+    "to": "When water freezes in a closed container, the total mass ____, because ____."
+  },
+  {
+    "resourceId": "sm-quiz",
+    "path": "data.questions.0.options.2",
+    "from": "How fast the particles are moving",
+    "to": "How the particles are arranged and move relative to one another"
+  },
+  {
+    "resourceId": "sm-quiz",
+    "path": "data.questions.0.correctAnswer",
+    "from": "How fast the particles are moving",
+    "to": "How the particles are arranged and move relative to one another"
+  },
+  {
+    "resourceId": "sm-quiz",
+    "path": "data.questions.5.expectedAnswer",
+    "from": "The Sun added energy, so the water particles moved faster and escaped into the air as invisible water vapor. The water did not disappear — it evaporated and its particles spread out into the air.",
+    "to": "Water particles escape from the liquid surface into the air as invisible water vapor. Energy from the surroundings supports evaporation. The particles still exist in the surrounding air."
+  },
+  {
+    "resourceId": "sm-quiz",
+    "path": "data.questions.6.expectedAnswer",
+    "from": "In a solid, people are packed shoulder to shoulder and only shiver in place, so the shape stays the same. In a liquid, they slide past each other while still touching, so it flows and takes the shape of its container.",
+    "to": "In a solid, dancers jiggle around their places. In a liquid, they stay close but can move past one another. This models why a solid keeps its shape and a liquid flows."
+  },
+  {
+    "resourceId": "sm-faq",
+    "path": "data.0.answer",
+    "from": "Yes — plasma, where particles get so much energy that their pieces come apart. Lightning, neon signs, and the Sun are all plasma. Most of the visible universe is plasma, which makes solid, liquid, and gas the unusual ones.",
+    "to": "Yes. Plasma contains freely moving electrons and electrically charged particles. Lightning and the Sun contain plasma. This lesson focuses on solid, liquid, and gas."
+  },
+  {
+    "resourceId": "sm-faq",
+    "path": "data.2.answer",
+    "from": "Water is strange. When it freezes, the particles lock into a pattern with extra space in it, so ice is less dense than water. If it worked the normal way, lakes would freeze from the bottom up and life in them would be very different.",
+    "to": "When water freezes, its molecules form an open arrangement with extra space. Ice is less dense than liquid water, so it floats."
+  },
+  {
+    "resourceId": "sm-faq",
+    "path": "data.3.answer",
+    "from": "At exactly the melting or boiling point, yes — ice water sitting at zero degrees Celsius is solid and liquid together while the change is happening.",
+    "to": "Yes. A mixture can contain ice and liquid water together. During melting, some water is still solid while some is liquid."
+  },
+  {
+    "resourceId": "sm-faq",
+    "path": "data.4.answer",
+    "from": "Frozen carbon dioxide. It skips the liquid stage entirely and goes straight from solid to gas, which is called sublimation. That is why it makes fog without ever making a puddle.",
+    "to": "Dry ice is solid carbon dioxide. At ordinary air pressure it changes directly to invisible gas, called sublimation. The visible fog near it is mainly tiny water droplets formed as surrounding moist air cools."
+  },
+  {
+    "resourceId": "sm-faq",
+    "path": "data.5.answer",
+    "from": "It does. The air in an average classroom weighs roughly as much as a large adult. You do not feel it because it presses on you evenly from every direction.",
+    "to": "Yes. Air has mass and occupies space, even though we cannot see it. Scientists can measure its mass; the amount depends on how much air is present."
+  },
+  {
+    "resourceId": "sm-challenge",
+    "path": "data.fitReason",
+    "from": "Students can say 'the puddle evaporated' without believing the water still exists. An investigation with a scale and a timer turns the big rule into something they measure.",
+    "to": "Measurements of open and covered trays help students distinguish water leaving a tray from matter ceasing to exist."
+  },
+  {
+    "resourceId": "sm-challenge",
+    "path": "data.brief.seedDirection",
+    "from": "Weigh before and after. If the water is 'gone,' the numbers will show whether it left the tray or truly vanished.",
+    "to": "Weigh each tray and its contents before and after. Less mass in an open tray shows that matter left the tray; this measurement alone does not show where it went."
+  },
+  {
+    "resourceId": "sm-challenge",
+    "path": "data.brief.lockedLessonFacts.0",
+    "from": "Adding heat makes particles move faster; taking heat away slows them down.",
+    "to": "Heating transfers energy and can raise temperature or cause a state change."
+  },
+  {
+    "resourceId": "sm-challenge",
+    "path": "data.supports.parallelExample.context",
+    "from": "A student wanted to know whether wet laundry dries faster in the sun or in the wind.",
+    "to": "A student investigated whether moving air changes drying rate."
+  },
+  {
+    "resourceId": "sm-challenge",
+    "path": "data.supports.parallelExample.move",
+    "from": "She weighed two identical wet towels, hung one in the sun with no wind and one in the shade with a fan, and weighed them again after an hour. The lost weight was the water that had evaporated, so the towel that lost more weight dried faster.",
+    "to": "She placed two identical equally wet towels side by side under the same light and temperature. A fan blew across only one. She weighed both before and after the same time interval."
+  },
+  {
+    "resourceId": "sm-challenge",
+    "path": "data.supports.parallelExample.whyItHelps",
+    "from": "Same move: change one thing, weigh instead of guess, and let the missing weight tell you the water left as vapor.",
+    "to": "She aimed to change only air movement. Repeated measurements help her compare how much water left each towel."
+  },
+  {
+    "resourceId": "sm-challenge",
+    "path": "data.supports.coachPrompts.2",
+    "from": "What would the covered tray look like after a day, and what does that prove?",
+    "to": "What might droplets inside a covered tray suggest? What other observations would support your explanation?"
+  },
+  {
+    "resourceId": "sm-challenge",
+    "path": "data.coachHint",
+    "from": "The scale is your proof. Water that leaves a tray shows up as missing grams, and missing grams are not vanished grams.",
+    "to": "Measure carefully. A decrease in an open tray shows matter left that tray; explain where it went using the particle model."
+  }
+]

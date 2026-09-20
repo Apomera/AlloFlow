@@ -1,0 +1,15 @@
+{
+  "checks": [
+    "Automatic source uses the lesson main, not unrelated pasted text; unconfirmed adapted main cannot be selected",
+    "Source role propagates to supported original and its source metadata without affecting another lesson",
+    "Explicit activity choice uses actual adapted text without promoting its role",
+    "Reader role control updates source analysis while adaptation keeps independent role",
+    "Adapted main requires explicit confirmation and Use for activities selects the actual adaptation",
+    "Lesson scoping and All lessons ambiguity are explicit; current paste is available by deliberate selection",
+    "Reopened role metadata preserves independent original and adaptation choices",
+    "Source selector and lesson-role controls fit a 320px viewport",
+    "No browser runtime errors"
+  ],
+  "errors": [],
+  "scope": "Production selector, source analysis and reader modules with shared role/source contract in a stateful fixture; storage uses a local fixture key; AI and audio callbacks mocked."
+}

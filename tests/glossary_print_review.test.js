@@ -1,8 +1,8 @@
 import { beforeAll, afterEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { React } from './helpers/games_live_harness.js';
 import { loadAlloModule } from './setup.js';
 
-beforeAll(() => { loadAlloModule('doc_pipeline_module.js'); loadAlloModule('export_module.js'); });
+beforeAll(() => { window.React = React; loadAlloModule('host_handlers_module.js'); loadAlloModule('doc_pipeline_module.js'); loadAlloModule('export_module.js'); });
 afterEach(() => vi.restoreAllMocks());
 const glossary = { type:'glossary', id:'print-qa', title:'Vocabulary', data:[{term:'Water',def:'A liquid'}], gameData:{grid:[['W','A'],['T','R']],solutions:['0-0'],words:['Water']} };
 function pack(options={}) {
@@ -10,13 +10,10 @@ function pack(options={}) {
   return pipeline.generateFullPackHTML([glossary],'Print QA',true,{}, {includeGlossary:true,includeTeacherKey:false,annotations:[],...options});
 }
 function printWordSearch(gameData) {
-  const source=readFileSync('AlloFlowANTI.txt','utf8');
-  const start=source.indexOf('  const handlePrintGame =');
-  const handler=source.slice(start,source.indexOf('  const chunkText =',start));
   let html=''; const print=vi.fn();
   vi.spyOn(window,'open').mockReturnValue({document:{write:value=>{html+=value},close:vi.fn()},print});
   vi.spyOn(globalThis,'setTimeout').mockImplementation(fn=>{fn();return 1;});
-  new Function('gameData','t','addToast',handler+';handlePrintGame();')(gameData,key=>key,vi.fn());
+  window.AlloModules.createHostHandlers({gameData,t:key=>key,addToast:vi.fn()}).handlePrintGame();
   return {doc:new DOMParser().parseFromString(html,'text/html'),print};
 }
 describe('glossary print output', () => {

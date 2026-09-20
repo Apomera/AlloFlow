@@ -1,0 +1,30 @@
+{
+  "pass": 50,
+  "change": "Contrasting pulley rope bands track fixed material positions through the reeved rope",
+  "tests": 551,
+  "browserChecks": 371,
+  "screenshots": 46,
+  "themes": {
+    "light": {
+      "checks": 122,
+      "screenshots": 15,
+      "errors": [],
+      "overflow": false
+    },
+    "dark": {
+      "checks": 122,
+      "screenshots": 15,
+      "errors": [],
+      "overflow": false
+    },
+    "contrast": {
+      "checks": 127,
+      "screenshots": 16,
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "sourceMirrorIdentical": true,
+  "syntaxValid": true,
+  "localOnly": true
+}

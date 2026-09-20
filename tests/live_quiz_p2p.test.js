@@ -16,6 +16,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+// Host handlers now live in the extracted source. Normalize dependency access for the existing privacy assertions.
+const handlers = readFileSync(resolve(process.cwd(), 'host_handlers_source.jsx'), 'utf8').replace(/\b__d\./g, '');
 const phaseK = readFileSync(resolve(process.cwd(), 'phase_k_helpers_source.jsx'), 'utf8');
 const misc = readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8');
 const viewQuiz = readFileSync(resolve(process.cwd(), 'view_quiz_source.jsx'), 'utf8');
@@ -35,9 +37,9 @@ describe('quiz answers: peer-to-peer first, content-free receipt fallback', () =
   });
 
   it('handleSubmitLiveAnswer sends via P2P first and falls back only to a fixed-shape receipt', () => {
-    const idx = anti.indexOf('const handleSubmitLiveAnswer');
+    const idx = handlers.indexOf('const handleSubmitLiveAnswer');
     expect(idx).toBeGreaterThan(-1);
-    const block = anti.slice(idx, idx + 4800);
+    const block = handlers.slice(idx, handlers.indexOf('\nconst ', idx + 1));
     expect(block).toContain('sentViaChannel = g.sendResponse(payload.questionIdx, responsePayload)');
     expect(block).toContain('if (!sentViaChannel) {');
     const guardIdx = block.indexOf('if (!sentViaChannel) {');
@@ -62,15 +64,15 @@ describe('quiz answers: peer-to-peer first, content-free receipt fallback', () =
 
 describe('concept mastery: device-local, never cloud-synced', () => {
   it('the cloud conceptMastery write is GONE from the submit path', () => {
-    const idx = anti.indexOf('const handleSubmitLiveAnswer');
-    const block = anti.slice(idx, idx + 5000);
+    const idx = handlers.indexOf('const handleSubmitLiveAnswer');
+    const block = handlers.slice(idx, handlers.indexOf('\nconst ', idx + 1));
     expect(block).not.toContain("'conceptMastery'");
     expect(block).toContain('setConceptMasteryLocal(prev =>');
   });
 
   it('mastery persists locally and streams to the teacher peer-to-peer', () => {
     expect(anti).toContain("safeSetItem('allo_concept_mastery'");
-    expect(anti).toContain("g.sendResponse('__mastery__', next)");
+    expect(handlers).toContain("g.sendResponse('__mastery__', next)");
     expect(anti).toContain("sendResponse('__mastery__', m)"); // on-connect snapshot
   });
 
@@ -125,7 +127,7 @@ describe('class-vs-boss: P2P-first answers + anonymous results sharing (2026-07-
 
   it('clears receipt-only submissions at attempt, question, navigation, and mode boundaries', () => {
     const teacher = readFileSync(resolve(process.cwd(), 'teacher_source.jsx'), 'utf8');
-    expect(anti).toContain('"quizState.responseReceipts": {}');
+    expect(handlers).toContain('"quizState.responseReceipts": {}');
     expect(teacher).toContain('"quizState.phase": "answering", "quizState.responses": {}, "quizState.responseReceipts": {}');
     expect(teacher.split('"quizState.responseReceipts": {}').length - 1).toBeGreaterThanOrEqual(4);
     expect(teacher).toContain('const updates = { "quizState.phase": "idle", "quizState.mode": newMode, "quizState.responses": {}, "quizState.responseReceipts": {} }');

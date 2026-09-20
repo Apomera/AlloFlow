@@ -34,6 +34,13 @@
       "pendingSortImages": 0,
       "review": "Visually reviewed; educator review pending",
       "textPolicy": "Text-free artwork; original activity text stays editable"
+    },
+    "contentRefinements": {
+      "count": 56,
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/states_of_matter_grade4/content-refinements.json",
+      "sourceOnlyResourceIds": []
     }
   },
   "sourceTopic": "States of Matter",

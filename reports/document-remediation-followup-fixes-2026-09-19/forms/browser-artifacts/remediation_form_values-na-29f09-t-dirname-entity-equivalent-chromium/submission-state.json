@@ -1,0 +1,73 @@
+{
+  "browserName": "chromium",
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 1.0045146726862302,
+    "textRatio": 1,
+    "textLost": 0
+  },
+  "source": {
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ],
+      [
+        "answer.dir",
+        "rtl"
+      ]
+    ],
+    "controls": [
+      {
+        "value": "مرحبا",
+        "dirname": "answer.dir",
+        "direction": "rtl",
+        "wrap": null,
+        "cols": null
+      }
+    ]
+  },
+  "candidate": {
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ],
+      [
+        "answer.dir",
+        "rtl"
+      ]
+    ],
+    "controls": [
+      {
+        "value": "مرحبا",
+        "dirname": "answer.dir",
+        "direction": "rtl",
+        "wrap": null,
+        "cols": null
+      }
+    ]
+  },
+  "repaired": {
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ],
+      [
+        "answer.dir",
+        "rtl"
+      ]
+    ],
+    "controls": [
+      {
+        "value": "مرحبا",
+        "dirname": "answer.dir",
+        "direction": "rtl",
+        "wrap": null,
+        "cols": null
+      }
+    ]
+  }
+}

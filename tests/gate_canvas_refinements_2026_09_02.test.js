@@ -35,6 +35,7 @@ describe('Retry-After drives the gate cooldown', () => {
         Math, Number, Date, String,
         _GEMINI_RETRY_AFTER_CAP_MS: 300000,
         _geminiCooldownUntil: 0,
+        _geminiRetryAfterUntil: 0,
         _geminiLastRetryAfterMs: 0,
         _throttleRetryAfterApplied: 0,
         _throttleCooldownMsTotal: 0,

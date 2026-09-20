@@ -37,6 +37,115 @@ function harness(seed = garden()) {
 afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); });
 
 describe('Companion Planting garden gameplay', () => {
+  it('searches modeled life cycles while preserving a staged choice and the garden', () => {
+    const app=harness(garden({grid:emptyGrid(),phase:'plan',plantingTarget:8,selectedPlant:'beans',placementPreview:{plot:8,plantId:'beans'}}));
+    const before=structuredClone(app.state());
+    for(const [query,present,absent] of [['  Perennial  ','strawberry','beans'],['annual','beans','strawberry'],['habitat','bee_hotel','marigold']]){
+      app.find('data-seed-search','simulation').props.onChange({target:{value:query}});
+      expect(app.find('data-seed-cycle',present).props['data-cycle-kind']).toBe(query.trim().toLowerCase());
+      expect(()=>app.find('data-planting-candidate',absent)).toThrow();
+      expect(app.find('data-planting-candidate',present).props['aria-label']).toContain('in this lab');
+      expect(app.state()).toEqual({...before,plantingDockSearch:query});
+    }
+  });
+
+  it('previews an annual bed opening and matches the confirmed purchase and harvest', () => {
+    const app=harness(garden({grid:emptyGrid(),phase:'plan',plantingTarget:8})),before=structuredClone(app.state());
+    app.click('data-planting-candidate','radish');
+    const panel=app.find('data-preview-cycle','annual');expect(panel.type).toBe('details');expect(panel.props.open).toBeUndefined();
+    expect(app.find('data-cycle-stage','after').props.children[1].props['data-botanical-crop']).toBe('empty');
+    expect(app.state().grid).toEqual(before.grid);expect(app.state().budget).toBe(before.budget);
+    app.click('data-confirm-placement-preview');expect(app.state().budget).toBe(40.9);expect(app.state().grid[8].plantId).toBe('radish');
+    app.patch({phase:'grow',grid:app.state().grid.map((cell,i)=>i===8?{...cell,growthDay:100,health:80}:cell)});
+    app.click('data-play-primary');expect(app.state().grid[8]).toEqual({plantId:null,growthDay:0,health:100,watered:false,pests:0});
+    expect(app.state().totalHarvested).toBeGreaterThan(0);expect(()=>app.find('data-preview-cycle','annual')).toThrow();
+  });
+
+  it('previews perennial regrowth and preserves its health and pests after real harvest', () => {
+    const app=harness(garden({grid:emptyGrid(),phase:'plan',plantingTarget:8}));app.click('data-planting-candidate','strawberry');
+    expect(app.find('data-preview-cycle','perennial').props['data-preview-cycle-plant']).toBe('strawberry');
+    const art=app.find('data-cycle-stage','after').props.children[1];expect(art.props['data-botanical-stage']).toBe('seed');expect(art.props['data-botanical-crop']).toBe('strawberry');
+    app.click('data-confirm-placement-preview');expect(app.state().budget).toBe(40.4);
+    app.patch({phase:'grow',grid:app.state().grid.map((cell,i)=>i===8?{...cell,growthDay:100,health:80,pests:12,watered:true}:cell)});
+    app.click('data-play-primary');expect(app.state().grid[8]).toEqual({plantId:'strawberry',growthDay:0,health:80,pests:12,watered:false});
+  });
+
+  it('shows habitat without a harvest stage and removes stale life-cycle previews', () => {
+    const app=harness(garden({grid:emptyGrid(),phase:'plan',plantingTarget:8}));app.click('data-planting-candidate','radish');
+    const annual=app.find('data-preview-cycle','annual').key;app.click('data-planting-candidate','bee_hotel');
+    expect(app.find('data-preview-cycle','habitat').key).not.toBe(annual);expect(()=>app.find('data-cycle-stage','after')).toThrow();
+    expect(app.find('data-cycle-stage','before').props.children[1].props['data-botanical-stage']).toBe('structure');
+    app.patch({budget:0});expect(app.find('data-confirm-placement-preview').props.disabled).toBe(true);app.click('data-confirm-placement-preview');
+    expect(app.state().grid[8].plantId).toBeNull();expect(app.state().budget).toBe(0);
+    app.click('data-preview-try-another');expect(()=>app.find('data-preview-cycle','habitat')).toThrow();
+  });
+
+  it('targets weed feedback only at planted plots whose pests actually decreased', () => {
+    const grid=emptyGrid();
+    grid[0]={...grid[0],plantId:'corn',pests:45,health:35};grid[1]={...grid[1],plantId:'beans',pests:0};
+    grid[4]={...grid[4],plantId:'tomato',pests:8};grid[7]={...grid[7],pests:90};grid[10]={...grid[10],plantId:'bee_hotel',pests:4};
+    const app=harness(garden({grid,day:12})),canvas={_cgRequestDraw:vi.fn()};window.__cgCanvasEl=canvas;
+    try {
+      app.click('data-play-weed');
+      expect(canvas._actionBurst).toEqual({kind:'weed',day:12,t0:null,plots:[{index:0,plantId:'corn'},{index:4,plantId:'tomato'},{index:10,plantId:'bee_hotel'}]});
+      expect(app.state().grid.map(cell=>cell.pests)).toEqual([25,0,0,0,0,0,0,90,0,0,0,0,0,0,0,0]);
+      expect(app.state().grid[0].health).toBe(35);expect(app.state().day).toBe(12);expect(app.state().budget).toBe(41);
+      app.patch({grid:app.state().grid.map(cell=>({...cell,pests:0}))});app.click('data-play-weed');
+      expect(canvas._actionBurst).toBeNull();expect(app.state()).not.toHaveProperty('_actionBurst');
+    } finally {delete window.__cgCanvasEl;}
+  });
+
+  it('shows whole-soil care only when moisture or a soil measure changes', () => {
+    const app=harness(garden({day:12,moisture:82,nitrogen:98,phosphorus:100,potassium:100,organicMatter:10}));
+    const canvas={_cgRequestDraw:vi.fn()};window.__cgCanvasEl=canvas;
+    try {
+      app.click('data-play-water');
+      expect(canvas._actionBurst).toMatchObject({kind:'water',day:12,t0:null});
+      expect(canvas._actionBurst.plots).toEqual(Array.from({length:16},(_,index)=>({index})));
+      expect(app.state().moisture).toBe(100);expect(app.state().lastCareAction.changes[0]).toMatchObject({before:82,after:100});
+      canvas._actionBurst=null;app.click('data-play-water');expect(canvas._actionBurst).toBeNull();
+      app.click('data-play-compost');expect(canvas._actionBurst.kind).toBe('compost');expect(canvas._actionBurst.plots).toHaveLength(16);
+      expect(app.state().nitrogen).toBe(100);expect(app.state().organicMatter).toBe(10);
+      app.patch({lastCompostDay:null});app.click('data-play-compost');expect(canvas._actionBurst).toBeNull();
+      expect(app.state().day).toBe(12);expect(app.state().budget).toBe(41);expect(app.state()).not.toHaveProperty('_actionBurst');
+    } finally {delete window.__cgCanvasEl;}
+  });
+
+  it('explains every modeled preview pair, surfaces conflicts first, and preserves the staged planting', () => {
+    const grid=emptyGrid();
+    for(const [index,plantId] of [[0,'corn'],[1,'onion'],[2,'squash'],[4,'onion'],[6,'potato'],[8,'marigold'],[9,'yarrow'],[10,'onion'],[15,'corn']])grid[index]={...grid[index],plantId,growthDay:index===1?0:100,health:index===4?25:95};
+    const app=harness(garden({grid,phase:'plan',day:35,plantingTarget:5,selectedPlant:'radish',placementPreview:{plot:5,plantId:'beans'}})),before=structuredClone(app.state());
+    const panel=app.find('data-preview-pairs','simulation'),first=panel.props.children[1].props.children;
+    const nodes=[];
+    const visit=node=>{if(Array.isArray(node)){node.forEach(visit);return;}if(React.isValidElement(node)){nodes.push(node);visit(node.props.children);}};visit(panel);
+    const find=(key,value=true)=>{const match=nodes.find(node=>node.props[key]===value);if(!match)throw new Error('Missing pair node');return match;};
+    expect(panel.props.children[0].props.children[0].props.children).toBe('How Beans fits here');
+    expect(first.map(card=>card.props['data-preview-pair-plot'])).toEqual([1,4]);
+    expect(first.every(card=>card.props['data-preview-relationship']==='conflict')).toBe(true);
+    expect(find('data-preview-pairs-net').props.children).toBe('+13% net pair effect');
+    const more=find('data-preview-pair-more','simulation');
+    expect(more.type).toBe('details');expect(more.props.children[0].props.children).toBe('Show 6 more relationships · 1 more conflict');
+    expect(more.props.children[1].props.children.map(card=>card.props['data-preview-pair-plot'])).toEqual([10,0,2,6,9,8]);
+    expect(find('data-preview-pair-bonus',0).props.children).toBe('+18%');
+    expect(find('data-preview-pair-bonus',1).props.children).toBe('-15%');
+    expect(find('data-preview-pair-reason',1).props.children).toContain('Onion sulfur compounds');
+    expect(first[0].props.children[0].props.children[0].props.children.props['data-botanical-stage']).toBe('seed');
+    expect(first[1].props.children[0].props.children[0].props.children.props['data-botanical-condition']).toBe('low');
+    expect(()=>find('data-preview-pair-plot',15)).toThrow();expect(app.state()).toEqual(before);
+  });
+
+  it('respects corner neighbors and removes stale pair cards when the preview changes or is cancelled', () => {
+    const grid=emptyGrid();for(const [index,plantId] of [[1,'corn'],[4,'squash'],[5,'onion'],[3,'onion'],[15,'corn']])grid[index]={...grid[index],plantId,growthDay:40};
+    const app=harness(garden({grid,phase:'plan',plantingTarget:0,selectedPlant:'beans',placementPreview:{plot:0,plantId:'beans'}})),before=structuredClone(app.state());
+    expect(app.find('data-preview-pairs-net').props.children).toBe('+15% net pair effect');
+    expect(app.find('data-preview-pair-more','simulation').props.children[0].props.children).toBe('Show 1 more relationship');
+    expect(()=>app.find('data-preview-pair-plot',3)).toThrow();expect(()=>app.find('data-preview-pair-plot',15)).toThrow();
+    app.click('data-preview-try-another');expect(()=>app.find('data-preview-pairs','simulation')).toThrow();
+    expect(app.state().grid).toEqual(before.grid);expect(app.state().budget).toBe(before.budget);expect(app.state().day).toBe(before.day);
+    app.patch({grid:emptyGrid(),plantingTarget:0,selectedPlant:'rain_barrel',placementPreview:{plot:0,plantId:'rain_barrel'}});
+    expect(()=>app.find('data-preview-pairs','simulation')).toThrow();expect(app.find('data-confirm-placement-preview')).toBeTruthy();
+    expect(app.state().grid.every(cell=>cell.plantId===null)).toBe(true);expect(app.state().budget).toBe(before.budget);
+  });
   it('connects a first-plant preview to the garden and back without spending or planting', () => {
     const app=harness(garden({grid:emptyGrid(),phase:'plan',plantingTarget:4,selectedPlant:'beans',placementPreview:{plot:4,plantId:'beans'}}));
     const before=structuredClone(app.state()),canvas={_hoverCell:12,_cgRequestDraw:vi.fn()};window.__cgCanvasEl=canvas;
@@ -302,6 +411,51 @@ describe('Companion Planting garden gameplay', () => {
     expect(app.find('data-play-primary').props.children).toBe('Advance 1 day');
   });
 
+  it('shows exact seasonal day positions and transition countdowns at every boundary', () => {
+    const app=harness(garden());
+    for(const [day,index,name,position,next,remaining] of [[0,0,'Spring',1,'Summer',30],[29,0,'Spring',30,'Summer',1],[30,1,'Summer',1,'Autumn',30],[59,1,'Summer',30,'Autumn',1],[60,2,'Autumn',1,'Winter',30],[89,2,'Autumn',30,'Winter',1],[90,3,'Winter',1,'Spring',30],[119,3,'Winter',30,'Spring',1],[120,0,'Spring',1,'Summer',30],[239,3,'Winter',30,'Spring',1]]){
+      app.patch({day});const before=structuredClone(app.state());
+      expect(app.find('data-season-position').props.children).toBe(name+' · Day '+position+' of 30');
+      expect(app.find('data-season-countdown').props.children).toBe(' · '+next+' in '+remaining+' simulated day'+(remaining===1?'':'s'));
+      expect(app.find('aria-label',name+' day position').props['aria-valuenow']).toBe(position);
+      for(let step=0;step<4;step++){
+        expect(app.find('data-season-step',step).props['aria-current']).toBe(step===index?'step':undefined);
+        expect(app.find('data-season-art',step).props['aria-hidden']).toBe(true);
+      }
+      expect(app.state()).toEqual(before);
+    }
+  });
+
+  it('previews winter carryover counts that match an actual year transition', () => {
+    vi.spyOn(Math,'random').mockReturnValue(.99);
+    const grid=emptyGrid();for(const [index,plantId,growthDay] of [[0,'corn',5],[4,'radish',3],[5,'strawberry',18],[8,'blueberry',7],[6,'rain_barrel',0],[15,'bee_hotel',0]])grid[index]={...grid[index],plantId,growthDay};
+    const app=harness(garden({grid,day:119,year:3,nitrogen:50})),before=structuredClone(app.state());
+    expect(app.find('data-season-annuals',2).props.children).toBe('2 annual beds clear');
+    expect(app.find('data-season-perennials',2).props.children).toBe('2 perennial beds remain');
+    expect(app.find('data-season-structures',2).props.children).toBe('2 habitat structures remain');
+    expect(app.state()).toEqual(before);
+    app.click('data-play-primary');
+    expect(app.state().day).toBe(120);expect(app.state().year).toBe(4);expect(app.state().budget).toBe(before.budget);
+    expect(app.state().grid[0].plantId).toBeNull();expect(app.state().grid[4].plantId).toBeNull();
+    expect(app.state().grid[5]).toMatchObject({plantId:'strawberry',growthDay:8});expect(app.state().grid[8]).toMatchObject({plantId:'blueberry',growthDay:0});
+    expect(app.state().grid[6].plantId).toBe('rain_barrel');expect(app.state().grid[15].plantId).toBe('bee_hotel');
+    expect(app.find('data-season-position').props.children).toBe('Spring · Day 1 of 30');expect(()=>app.find('data-season-carryover')).toThrow();
+  });
+
+  it('keeps seasonal reading passive during a planting preview and handles habitat-only gardens', () => {
+    const app=harness(garden({grid:emptyGrid()}));expect(()=>app.find('data-play-season-outlook')).toThrow();
+    const grid=emptyGrid();grid[0].plantId='bee_hotel';
+    app.patch({grid,day:119,phase:'plan',plantingTarget:1,selectedPlant:'beans',placementPreview:{plot:1,plantId:'beans'}});
+    const staged=structuredClone(app.state());
+    expect(app.find('data-season-annuals',0).props.children).toBe('No annual beds to clear');
+    expect(app.find('data-season-perennials',0).props.children).toBe('0 perennial beds remain');
+    expect(app.find('data-season-structures',1).props.children).toBe('1 habitat structure remains');
+    expect(app.find('data-play-season-outlook').type).toBe('details');expect(app.state()).toEqual(staged);
+    app.patch({grid:grid.map((cell,index)=>index===1?{...cell,plantId:'corn'}:cell),placementPreview:null});
+    expect(app.find('data-season-annuals',1).props.children).toBe('1 annual bed clears');
+    app.patch({day:89});expect(app.find('data-season-next-detail').props.children).toContain('Annual beds stay planted until the year changes.');
+    expect(()=>app.find('data-season-carryover')).toThrow();
+  });
   it('explains winter dormancy and overwatering without preventing day progression', () => {
     vi.spyOn(Math,'random').mockReturnValue(.99);
     const winterGrid=emptyGrid();winterGrid[0]={...winterGrid[0],plantId:'strawberry'};
@@ -347,6 +501,47 @@ describe('Companion Planting garden gameplay', () => {
     expect(app.state().focusMode).toBe(false);
   });
 
+  it('previews every starter bed without spending and plants the exact illustrated layout', () => {
+    const plans={
+      sisters:['corn','beans','squash','marigold','beans','corn','squash','nasturtium',null,'beans','corn','squash',null,'dill',null,'clover'],
+      pollinator:['tomato','basil','marigold','borage','squash','nasturtium','dill','cucumber','sunflower','pepper','lavender','yarrow',null,'clover',null,'bee_hotel'],
+      salad:['lettuce','radish','carrot','onion','peas','lettuce','radish','carrot','dill','broccoli','lettuce','onion',null,'clover',null,'rain_barrel'],
+      soil:['clover','buckwheat','comfrey','yarrow','borage','clover','buckwheat','dill','compost_bin',null,'rain_barrel',null,'clover','nasturtium','marigold',null]
+    };
+    for(const [id,expected] of Object.entries(plans)){
+      const app=harness(garden({grid:emptyGrid(),phase:'plan',budget:50,day:12})),before=structuredClone(app.state());
+      app.change('data-play-starter',id);
+      expect(app.find('data-play-starter-preview-toggle').props['aria-expanded']).toBe(false);app.click('data-play-starter-preview-toggle');
+      expect(app.find('data-starter-preview',id)).toBeTruthy();
+      const map=app.find('data-starter-map'),beds=map.props.children;
+      expect(map.props.role).toBe('img');expect(beds).toHaveLength(16);
+      expect(beds.map(bed=>bed.props['data-starter-plant'])).toEqual(expected.map(id=>id||'empty'));
+      expect(beds.map(bed=>bed.props['data-starter-bed'])).toEqual(Array.from({length:16},(_,i)=>i));
+      expect(app.state().grid).toEqual(before.grid);expect(app.state().budget).toBe(50);expect(app.state().day).toBe(12);
+      const price=app.find('className','cp-starter-price').props['data-starter-price'];
+      expect(price).toBeGreaterThan(0);expect(app.find('data-play-primary').props.children).toContain('$'+price.toFixed(2));
+      app.click('data-play-primary');
+      expect(app.state().grid.map(cell=>cell.plantId)).toEqual(expected);
+      expect(app.state().grid.every(cell=>cell.growthDay===0)).toBe(true);
+      expect(app.state().budget).toBeCloseTo(50-price,2);expect(app.state().expenses).toBe(price);expect(app.state().day).toBe(12);
+      expect(()=>app.find('data-starter-preview',id)).toThrow();
+    }
+  });
+
+  it('shows honest starter balances and keeps custom planting and recovery accessible', () => {
+    const app=harness(garden({grid:emptyGrid(),phase:'plan',budget:3.8,day:95}));
+    app.click('data-play-starter-preview-toggle');
+    expect(app.find('data-starter-balance').props.children).toBe('$0.00 left after planting');
+    expect(app.find('id','cp-starter-note').props.children).toContain('Crop growth pauses during winter.');
+    expect(app.find('data-starter-crop-count','lettuce').props.children[1].props.children).toBe('× 3');
+    expect(app.find('data-play-primary').props.disabled).toBe(false);
+    app.patch({budget:1});
+    expect(app.find('data-starter-balance').props.children).toBe('Need $2.80 more');
+    expect(app.find('data-play-primary').props.disabled).toBe(true);expect(app.find('data-play-edit').props.disabled).toBe(false);
+    app.click('data-play-edit');expect(app.state().playShowPlots).toBe(true);expect(app.state().budget).toBe(1);
+    app.patch({budget:0});expect(()=>app.find('data-starter-preview','salad')).toThrow();
+    expect(app.find('data-play-primary').props.disabled).toBe(false);expect(app.find('data-play-primary').props.children).toContain('free');
+  });
   it('plants a costed starter and awards growth XP only on the first start', () => {
     const app=harness({grid:emptyGrid(),budget:50});
     app.click('data-play-primary');
@@ -489,6 +684,113 @@ describe('Companion Planting garden gameplay', () => {
 });
 
 describe('Companion Planting crop inspection and harvest feedback', () => {
+  it('shows concurrent care signals and clears only the conditions addressed by real care', () => {
+    const grid=emptyGrid();grid[0]={...grid[0],plantId:'corn',growthDay:40,health:25,pests:43.5};
+    const app=harness(garden({grid,relationshipFocus:0,day:12,moisture:22.5,nitrogen:12})),before=structuredClone(app.state());
+    const readings=()=>app.find('data-care-readings',0).props.children;
+    let cards=readings();
+    expect(cards.map(card=>card.props['data-care-attention'])).toEqual([true,true,true]);
+    expect(cards.map(card=>card.props.children[2].props['aria-valuenow'])).toEqual([22.5,43.5,12]);
+    expect(cards[0].props.children[2].props['aria-valuetext']).toContain('Care range 30 to 90%');
+    expect(app.state()).toEqual(before);
+    app.click('data-crop-care-action','water');cards=readings();
+    expect(cards.map(card=>card.props['data-care-attention'])).toEqual([false,true,true]);
+    expect(cards[0].props.children[2].props['aria-valuenow']).toBe(47.5);
+    app.click('data-crop-care-action','weed');cards=readings();
+    expect(cards.map(card=>card.props['data-care-attention'])).toEqual([false,false,true]);
+    expect(cards[1].props.children[2].props['aria-valuenow']).toBe(23.5);
+    app.click('data-crop-care-action','compost');cards=readings();
+    expect(cards.map(card=>card.props['data-care-attention'])).toEqual([false,false,false]);
+    expect(cards[2].props.children[2].props['aria-valuenow']).toBe(27);
+    expect(app.state().grid[0].health).toBe(25);expect(app.state().grid[0].growthDay).toBe(40);
+    expect(app.state().budget).toBe(before.budget);expect(app.state().day).toBe(12);
+  });
+
+  it('uses the selected crop nitrogen role and leaves missing care readings explicitly unknown', () => {
+    const grid=emptyGrid();grid[0]={...grid[0],plantId:'corn',pests:30};grid[1]={...grid[1],plantId:'beans',pests:undefined};grid[2].plantId='rain_barrel';
+    const app=harness(garden({grid,relationshipFocus:0,moisture:90,nitrogen:15}));
+    let cards=app.find('data-care-readings',0).props.children;
+    expect(cards.map(card=>card.props['data-care-attention'])).toEqual([false,false,false]);
+    app.patch({nitrogen:2});app.click('data-play-focus-step',1);cards=app.find('data-care-readings',1).props.children;
+    expect(cards[2].props['data-care-attention']).toBe(false);expect(cards[2].props.children[3].props.children).toBe('Not limiting this crop');
+    expect(cards[2].props.children[2].props.children[0]).toBeNull();
+    expect(cards[1].props.children[1].props.children[0].props.children).toBe('—');
+    expect(cards[1].props.children[2].props.role).toBeUndefined();expect(cards[1].props.children[3].props.children).toBe('Not recorded');
+    expect(app.find('data-crop-care-title').props.children).toBe('Some care readings are missing');
+    app.patch({relationshipFocus:0,moisture:-1,nitrogen:-1});
+    expect(app.find('data-crop-care',0).props['data-crop-care-kind']).toBe('unknown');
+    app.patch({moisture:22.5});expect(app.find('data-crop-care',0).props['data-crop-care-kind']).toBe('water');
+    app.patch({relationshipFocus:1,moisture:90,nitrogen:2});
+    app.click('data-play-focus-step',1);expect(()=>app.find('data-care-readings',2)).toThrow();
+  });
+
+  it('cares from the inspected crop with exact shared effects and no immediate health or maturity recovery', () => {
+    const grid=emptyGrid();grid[0]={...grid[0],plantId:'corn',growthDay:40,health:25,pests:43.5};grid[1]={...grid[1],plantId:'beans',growthDay:20,health:90,pests:8};
+    const app=harness(garden({grid,relationshipFocus:0,day:12,moisture:22.5,nitrogen:12,phosphorus:40,potassium:45,organicMatter:3})),before=structuredClone(app.state());
+    expect(app.find('data-crop-care',0).props['data-crop-care-kind']).toBe('water');
+    expect(app.find('data-crop-care-preview').props.children[1].props.children).toBe('22.5% → 47.5%');
+    app.click('data-crop-care-action','water');expect(app.state().moisture).toBe(47.5);
+    expect(app.find('data-crop-care-result','water')).toBeTruthy();
+    expect(app.find('data-crop-care-preview').props.children[1].props.children).toBe('43.5 → 23.5');
+    app.click('data-crop-care-action','weed');expect(app.state().grid.map(cell=>cell.pests)).toEqual([23.5,0,...Array(14).fill(0)]);
+    expect(app.find('data-crop-care-preview').props.children[1].props.children).toBe('12 → 27');
+    app.click('data-crop-care-action','compost');expect(app.state()).toMatchObject({nitrogen:27,phosphorus:48,potassium:50,organicMatter:3.3,lastCompostDay:12});
+    expect(app.find('data-crop-care',0).props['data-crop-care-kind']).toBe('health');
+    expect(app.find('data-crop-care-result','compost')).toBeTruthy();
+    for(const key of ['budget','day','relationshipFocus','phase'])expect(app.state()[key]).toEqual(before[key]);
+    expect(app.state().grid.map(cell=>[cell.plantId,cell.growthDay,cell.health])).toEqual(before.grid.map(cell=>[cell.plantId,cell.growthDay,cell.health]));
+  });
+
+  it('guards inspector care during planning and previews, honors compost reuse, and excludes habitats', () => {
+    const grid=emptyGrid();grid[0]={...grid[0],plantId:'corn',growthDay:40};grid[1].plantId='rain_barrel';
+    const app=harness(garden({grid,relationshipFocus:0,day:12,nitrogen:2,lastCompostDay:12})),before=structuredClone(app.state());
+    const compost=app.find('data-crop-care-action','compost');expect(compost.props.disabled).toBe(true);compost.props.onClick();expect(app.state()).toEqual(before);
+    app.patch({phase:'plan'});expect(()=>app.find('data-crop-care',0)).toThrow();
+    app.patch({plantingTarget:3,selectedPlant:'beans',placementPreview:{plot:3,plantId:'beans'}});expect(()=>app.find('data-crop-care',0)).toThrow();
+    app.patch({phase:'grow',plantingTarget:null,placementPreview:null,relationshipFocus:1});expect(()=>app.find('data-crop-care',1)).toThrow();
+    app.patch({relationshipFocus:0,nitrogen:50,moisture:95});expect(app.find('data-crop-care',0).props['data-crop-care-kind']).toBe('drain');
+    expect(()=>app.find('data-crop-care-action','water')).toThrow();
+    app.patch({moisture:60});expect(app.find('data-crop-care',0).props['data-crop-care-kind']).toBe('steady');
+    app.patch({grid:grid.map((cell,i)=>i===0?{...cell,growthDay:90}:cell)});expect(app.find('data-crop-care-title').props.children).toBe('Ready for the basket');
+  });
+
+  it('shows live crop-stage progress and keeps illustrative milestones separate from crop health', () => {
+    const grid=emptyGrid();grid[0]={...grid[0],plantId:'corn',growthDay:17.9,health:25};grid[1]={...grid[1],plantId:'beans',growthDay:0};
+    const app=harness(garden({grid,relationshipFocus:0})),before=structuredClone(app.state());
+    const journey=app.find('data-growth-journey',0),steps=journey.props.children[1].props.children;
+    expect(steps.map(step=>step.props['data-growth-state'])).toEqual(['complete','current','ahead','ahead','ahead']);
+    expect(steps[1].props['aria-current']).toBe('step');expect(steps[1].props['aria-label']).toBe('Sprout: current stage');
+    expect(steps[1].props.children[0].props.children.props['data-botanical-condition']).toBe('low');
+    expect(steps[4].props.children[0].props.children.props['data-botanical-condition']).toBe('healthy');
+    expect(journey.props.children[0].props.children[1].props.children).toBe('19% mature');
+    expect(journey.props.children[2].props.children).toBe('Next: Leaves at 20% maturity.');expect(app.state()).toEqual(before);
+    app.patch({grid:grid.map((cell,index)=>index===0?{...cell,growthDay:18}:cell)});
+    expect(app.find('data-growth-step','leaves').props['aria-current']).toBe('step');
+    const afterGrowth=structuredClone(app.state());app.click('data-play-focus-step',1);
+    const other=app.find('data-growth-journey',1);
+    expect(other.props['aria-label']).toBe('Beans growth journey');
+    expect(other.props.children[1].props.children[0].props['aria-current']).toBe('step');
+    expect(other.props.children[1].props.children[0].props.children[0].props.children.props['data-botanical-crop']).toBe('beans');
+    for(const key of ['grid','budget','day'])expect(app.state()[key]).toEqual(afterGrowth[key]);
+    app.click('data-play-focus-close');expect(()=>app.find('data-growth-journey',1)).toThrow();
+  });
+
+  it('keeps full maturity distinct from harvest readiness and explains winter dormancy', () => {
+    const grid=emptyGrid();grid[0]={...grid[0],plantId:'corn',growthDay:89.99,health:20};grid[1].plantId='rain_barrel';
+    const app=harness(garden({grid,relationshipFocus:0,day:95}));
+    expect(app.find('data-growth-maturity').props.children).toBe('99% mature');
+    expect(app.find('data-growth-step','develop').props['aria-current']).toBe('step');
+    expect(app.find('data-growth-next').props.children).toBe('Growth is paused for winter. Next: Mature at 100% maturity.');
+    app.patch({grid:grid.map((cell,index)=>index===0?{...cell,growthDay:90}:cell)});
+    expect(app.find('data-growth-step','mature').props['aria-current']).toBe('step');
+    expect(app.find('data-growth-next').props.children).toBe('Fully grown. Health must be above 20 to harvest.');
+    expect(app.find('data-growth-journey',0).props['data-growth-ready']).toBe(false);
+    app.patch({grid:app.state().grid.map((cell,index)=>index===0?{...cell,health:20.1}:cell)});
+    expect(app.find('data-growth-next').props.children).toBe('Ready to harvest.');expect(app.find('data-growth-journey',0).props['data-growth-ready']).toBe(true);
+    app.click('data-play-focus-step',1);expect(()=>app.find('data-growth-journey',1)).toThrow();
+    expect(app.find('data-play-crop-status').props.children).toBe('Habitat structure');
+  });
+
   it('shows maturity, health, and pest thresholds without rounding a crop ready early', () => {
     const grid=emptyGrid(); grid[0]={...grid[0],plantId:'corn',growthDay:89.9,health:20,pests:31};
     const app=harness(garden({grid,relationshipFocus:0}));
@@ -518,6 +820,53 @@ describe('Companion Planting crop inspection and harvest feedback', () => {
     expect(app.state().day).toBe(before.day);
   });
 
+  it('illustrates the actual neighboring crops and explains the exact mixed companion total', () => {
+    const grid=emptyGrid();
+    for(const [index,plantId] of [[0,'corn'],[1,'onion'],[2,'squash'],[4,'onion'],[5,'beans'],[6,'potato'],[8,'marigold'],[9,'yarrow'],[10,'onion'],[15,'corn']])grid[index]={...grid[index],plantId,growthDay:index===1?0:100,health:index===4?25:95};
+    const app=harness(garden({grid,relationshipFocus:5})),before=structuredClone(app.state());
+    expect(app.find('data-inspector-pair-contribution','helpful').props.children).toBe('+58%');
+    expect(app.find('data-inspector-pair-contribution','conflict').props.children).toBe('-45%');
+    expect(app.find('data-play-neighbor-total',13)).toBeTruthy();
+    expect(app.find('data-inspector-pair-art',1).props.children.props['data-botanical-stage']).toBe('seed');
+    expect(app.find('data-inspector-pair-art',4).props.children.props['data-botanical-condition']).toBe('low');
+    expect(app.find('data-inspector-pair-art',0).props.children.props['data-botanical-stage']).toBe('mature');
+    for(const [index,direction] of [[0,'Northwest'],[1,'North'],[2,'Northeast'],[4,'West'],[6,'East'],[8,'Southwest'],[9,'South'],[10,'Southeast']]){
+      expect(app.find('data-inspector-pair-direction',index).props.children).toBe(direction+' bed');
+      expect(app.find('data-play-neighbor-link',index).props['aria-label']).toContain(direction+' of Beans; row '+(Math.floor(index/4)+1)+', column '+(index%4+1));
+      expect(app.find('data-inspector-pair-art',index).props.children.props['data-botanical-crop']).toBe(grid[index].plantId);
+    }
+    expect(app.find('data-inspector-pairs-more').props.children[0].props.children).toBe('Show 4 more relationships');
+    expect(()=>app.find('data-inspector-pair-art',15)).toThrow();
+    expect(app.state()).toEqual(before);
+    app.click('data-play-neighbor-link',4);
+    expect(app.state().relationshipFocus).toBe(4);
+    for(const key of ['grid','day','budget','phase'])expect(app.state()[key]).toEqual(before[key]);
+    expect(app.awardXP).not.toHaveBeenCalled();
+  });
+
+  it('updates companion contributions, identifies hidden conflicts, and excludes unrelated or absent neighbors', () => {
+    const grid=emptyGrid();grid[5].plantId='beans';
+    for(const index of [0,1,2,4,6,8,9,10])grid[index].plantId='onion';
+    const app=harness(garden({grid,relationshipFocus:5}));
+    expect(app.find('data-inspector-pair-contribution','helpful').props.children).toBe('0%');
+    expect(app.find('data-inspector-pair-contribution','conflict').props.children).toBe('-120%');
+    expect(app.find('data-play-neighbor-total',-120)).toBeTruthy();
+    expect(app.find('data-inspector-pairs-more').props.children[0].props.children).toBe('Show 4 more relationships · 4 more conflicts');
+    const corner=emptyGrid();
+    for(const [index,plantId] of [[0,'beans'],[1,'corn'],[4,'squash'],[5,'onion'],[3,'onion'],[15,'corn']])corner[index].plantId=plantId;
+    app.patch({grid:corner,relationshipFocus:0});
+    expect(app.find('data-inspector-pair-contribution','helpful').props.children).toBe('+30%');
+    expect(app.find('data-inspector-pair-contribution','conflict').props.children).toBe('-15%');
+    expect(app.find('data-play-neighbor-total',15)).toBeTruthy();
+    expect(()=>app.find('data-inspector-pair-art',3)).toThrow();expect(()=>app.find('data-inspector-pairs-more')).toThrow();
+    app.patch({grid:corner.map((cell,index)=>index===5?{...cell,plantId:null}:cell)});
+    expect(app.find('data-inspector-pair-contribution','conflict').props.children).toBe('0%');
+    expect(app.find('data-play-neighbor-total',30)).toBeTruthy();
+    const isolated=emptyGrid();isolated[0].plantId='beans';isolated[1].plantId='bee_hotel';
+    app.patch({grid:isolated});expect(()=>app.find('data-inspector-pair-balance')).toThrow();
+    app.patch({relationshipFocus:1});expect(()=>app.find('data-play-neighbors')).toThrow();
+    app.patch({relationshipFocus:15});expect(()=>app.find('data-play-focus-panel')).toThrow();
+  });
   it('browses occupied beds with wraparound and cancels pending removal on navigation', () => {
     const grid=emptyGrid();grid[1].plantId='corn';grid[8].plantId='beans';grid[15].plantId='bee_hotel';
     const app=harness(garden({grid,relationshipFocus:1}));
@@ -553,6 +902,68 @@ describe('Companion Planting crop inspection and harvest feedback', () => {
     expect(app.find('data-play-focus-step',1).props.disabled).toBe(true);
   });
 
+  it('shows exact per-crop harvest proceeds and exposes every collected type', () => {
+    const grid=emptyGrid();
+    ['corn','corn','carrot','lettuce','tomato','radish','strawberry'].forEach((plantId,index)=>{grid[index]={...grid[index],plantId,growthDay:200};});
+    const app=harness(garden({grid}));app.click('data-play-primary');
+    const before=structuredClone(app.state()),batch=before.lastHarvestBatch;
+    expect(batch.items).toHaveLength(6);expect(batch.cropCount).toBe(7);
+    expect(app.find('aria-label','Harvested crops').props.children).toHaveLength(4);
+    expect(app.find('aria-label','More harvested crops').props.children).toHaveLength(2);
+    expect(app.find('data-harvest-receipt-more').type).toBe('details');
+    for(const item of batch.items){
+      expect(app.find('data-harvest-receipt-value',item.plantId).props.children).toBe('$'+item.revenue.toFixed(2));
+      expect(app.find('data-harvest-receipt-count',item.plantId).props.children).toBe(item.count+' crop'+(item.count===1?'':'s')+' · '+item.points+' pts');
+      expect(app.find('data-harvest-produce',item.plantId).props['aria-hidden']).toBe(true);
+    }
+    expect(app.find('data-harvest-next-note').props.children).toContain('15 open beds');
+    expect(app.find('data-harvest-next-note').props.children).toContain('Perennial crops remain planted');
+    expect(app.state()).toEqual(before);
+  });
+
+  it('shows missing harvest amounts honestly and ignores invalid crop entries in a restored receipt', () => {
+    const batch={id:'legacy-receipt',cropCount:1,items:[{plantId:'carrot',count:1},null,{plantId:'rain_barrel',count:1},{plantId:'missing',count:1},{plantId:'corn',count:-1}]};
+    const app=harness(garden({lastHarvestBatch:batch,harvestBatches:[batch],lastCareAction:{id:'harvest'}}));
+    const before=structuredClone(app.state());
+    expect(app.find('data-play-harvest-receipt',batch.id)).toBeTruthy();
+    expect(app.find('aria-label','Harvested crops').props.children).toHaveLength(1);
+    expect(app.find('data-harvest-receipt-value','carrot').props.children).toBe('Value not recorded');
+    expect(app.find('data-harvest-receipt-count','carrot').props.children).toBe('1 crop · Points not recorded');
+    expect(()=>app.find('data-harvest-receipt-more')).toThrow();
+    expect(app.state()).toEqual(before);
+  });
+  it('shows the live post-harvest garden and opens the chosen bed without spending or repeating rewards', () => {
+    const grid=emptyGrid();grid[0]={...grid[0],plantId:'corn',growthDay:200};grid[5]={...grid[5],plantId:'strawberry',growthDay:200};grid[6].plantId='rain_barrel';grid[8]={...grid[8],plantId:'tomato',growthDay:200,health:20};grid[15].plantId='beans';
+    const app=harness(garden({grid,selectedPlant:'radish'}));app.click('data-play-primary');
+    const before=structuredClone(app.state()),xpCalls=app.awardXP.mock.calls.length;
+    const picker=app.find('data-harvest-replant-picker'),beds=picker.props.children[1].props.children[0].props.children;
+    expect(picker.type).toBe('details');expect(picker.props.children[0].props.children).toBe('Choose from 12 open beds');
+    expect(beds).toHaveLength(16);expect(beds.filter(bed=>!bed.props.disabled)).toHaveLength(12);
+    expect(beds[5].props.children.props.children[1].props['data-botanical-crop']).toBe('strawberry');
+    expect(beds[5].props.children.props.children[1].props['data-botanical-stage']).toBe('seed');
+    expect(beds[6].props.children.props.children[1].props['data-botanical-stage']).toBe('structure');
+    expect(beds[8].props.children.props.children[1].props['data-botanical-condition']).toBe('critical');
+    expect(beds[13].props['aria-label']).toContain('Plot 14, row 4, column 2');expect(app.state()).toEqual(before);
+    app.click('data-harvest-replant-bed',13);
+    expect(app.state()).toMatchObject({phase:'plan',plantingTarget:13,selectedPlant:null,placementPreview:null,relationshipFocus:null,playHarvestSeen:before.lastHarvestBatch.id});
+    for(const key of ['grid','budget','day','score','totalHarvested','lastHarvestBatch','harvestBatches'])expect(app.state()[key]).toEqual(before[key]);
+    expect(app.awardXP).toHaveBeenCalledTimes(xpCalls);expect(()=>app.find('data-harvest-replant-picker')).toThrow();
+    expect(app.find('data-planting-target',14)).toBeTruthy();
+  });
+
+  it('protects standing crops and pending planting previews from every receipt replant route', () => {
+    const grid=emptyGrid();grid[0]={...grid[0],plantId:'corn',growthDay:200};grid[5].plantId='beans';
+    const app=harness(garden({grid}));app.click('data-play-primary');
+    const occupied=app.find('data-harvest-replant-bed',5),before=structuredClone(app.state());
+    expect(occupied.props.disabled).toBe(true);occupied.props.onClick();expect(app.state()).toEqual(before);
+    app.patch({phase:'plan',plantingTarget:3,selectedPlant:'radish',placementPreview:{plot:3,plantId:'radish'}});
+    const staged=structuredClone(app.state());
+    expect(app.find('data-replant-preview-guard')).toBeTruthy();
+    for(const [key,value] of [['data-harvest-replant-bed',13],['data-play-harvest-next',true]]){
+      const control=app.find(key,value);expect(control.props.disabled).toBe(true);control.props.onClick();expect(app.state()).toEqual(staged);
+    }
+    app.patch({placementPreview:null});expect(app.find('data-harvest-replant-bed',13).props.disabled).toBe(false);
+  });
   it('records one harvest, then opens replanting without silently buying or advancing', () => {
     vi.useFakeTimers();
     const grid=emptyGrid();grid[0]={...grid[0],plantId:'lettuce',growthDay:200};grid[5]={...grid[5],plantId:'radish',growthDay:200};
@@ -593,6 +1004,7 @@ describe('Companion Planting crop inspection and harvest feedback', () => {
     const app=harness(garden({grid}));
     app.click('data-play-primary');
     expect(app.find('data-play-harvest-next').props.children).toBe('Keep growing');
+    expect(()=>app.find('data-harvest-replant-picker')).toThrow();
     const budget=app.state().budget;
     app.click('data-play-harvest-next');
     expect(app.state().phase).toBe('grow');
@@ -604,6 +1016,76 @@ describe('Companion Planting crop inspection and harvest feedback', () => {
 
 
 describe('Companion Planting visual garden views', () => {
+  it('keeps natural plot-button readiness, care, and accessible descriptions accurate', () => {
+    const grid=emptyGrid();
+    grid[0]={...grid[0],plantId:'corn',growthDay:89.9};
+    grid[1]={...grid[1],plantId:'radish',growthDay:25,health:20};
+    grid[2]={...grid[2],plantId:'radish',growthDay:25,health:21};
+    grid[3]={...grid[3],plantId:'tomato',growthDay:200,pests:31};
+    grid[4]={...grid[4],plantId:'rain_barrel',growthDay:200,health:0,pests:50};
+    grid[6]={...grid[6],plantId:'beans',growthDay:0};
+    const app=harness(garden({grid,playShowPlots:true}));
+    expect(app.find('data-plot-status',0).props.children).toBe('99% grown');
+    expect(app.find('data-play-plot',0).props['data-plot-ready']).toBe(false);
+    expect(app.find('data-play-plot',1).props['data-plot-ready']).toBe(false);
+    expect(app.find('data-play-plot',1).props['aria-label']).toContain('20% health');
+    expect(app.find('data-play-plot',2).props).toMatchObject({'data-plot-ready':true,'data-plot-care':true});
+    expect(app.find('data-play-plot',2).props['aria-label']).toContain('Ready to harvest. 21% health.');
+    expect(app.find('data-plot-status',3).props.children).toBe('✓ Pests');
+    expect(app.find('data-play-plot',3).props['aria-label']).toContain('High pest pressure');
+    expect(app.find('data-play-plot',4).props).toMatchObject({'data-plot-ready':false,'data-plot-care':false});
+    expect(app.find('data-plot-status',4).props.children).toBe('Habitat');
+    expect(app.find('data-plot-status',5).props.children).toBe('Plant here');
+    expect(app.find('data-plot-status',6).props.children).toBe('0% grown');
+  });
+
+  it('distinguishes staged navigator beds from planted crops until confirmation', () => {
+    const grid=emptyGrid();grid[0]={...grid[0],plantId:'corn',growthDay:30};
+    const app=harness(garden({grid,phase:'plan',playShowPlots:true,plantingTarget:4,selectedPlant:'beans',placementPreview:{plot:4,plantId:'radish'}}));
+    const before=structuredClone(app.state());
+    expect(app.find('data-play-plot',4).props).toMatchObject({'data-plot-preview':true,'data-plot-ready':false,'data-play-plot-tone':'preview'});
+    expect(app.find('data-plot-status',4).props.children).toBe('Preview');
+    expect(app.find('data-play-plot',4).props['aria-label']).toContain('Previewing Radish. Not planted');
+    expect(app.state().grid).toEqual(before.grid);expect(app.state().budget).toBe(before.budget);
+    app.click('data-confirm-placement-preview');
+    expect(app.find('data-play-plot',4).props['data-plot-preview']).toBe(false);
+    expect(app.find('data-plot-status',4).props.children).toBe('0% grown');
+    expect(app.state().grid[4]).toMatchObject({plantId:'radish',growthDay:0});
+    expect(app.state().grid[0]).toEqual(before.grid[0]);expect(app.state().day).toBe(before.day);
+    expect(app.state().budget).toBeLessThan(before.budget);
+  });
+
+  it('marks only truly harvestable crops in the natural guide and canvas description', () => {
+    const grid=emptyGrid();
+    grid[0]={...grid[0],plantId:'corn',growthDay:89.9};
+    grid[1]={...grid[1],plantId:'lettuce',growthDay:200,health:20};
+    grid[2]={...grid[2],plantId:'radish',growthDay:200,health:20.1};
+    grid[3]={...grid[3],plantId:'bee_hotel',growthDay:200};
+    grid[4]={...grid[4],plantId:'tomato',growthDay:200,pests:60};
+    const app=harness(garden({grid}));
+    expect(app.find('data-play-ready-guide',2)).toBeTruthy();
+    expect(app.find('data-play-care-review')).toBeTruthy();
+    expect(app.find('aria-describedby','community-plot-help').props['aria-label']).toContain('2 crops are ready to harvest.');
+    app.patch({grid:grid.map((cell,index)=>index===2?{...cell,health:20}:index===4?{...cell,growthDay:0}:cell)});
+    expect(()=>app.find('data-play-ready-review')).toThrow();
+    expect(app.find('data-play-care-review')).toBeTruthy();
+    expect(app.find('aria-describedby','community-plot-help').props['aria-label']).not.toContain('ready to harvest.');
+  });
+
+  it('takes natural-view harvest guidance through inspection while preserving the growing garden', () => {
+    const grid=emptyGrid();grid[4]={...grid[4],plantId:'radish',growthDay:200};
+    const app=harness(garden({grid})),before=structuredClone(app.state());
+    app.click('data-play-ready-review');expect(app.state().playGardenLens).toBe('harvest');
+    app.click('data-play-lens-inspect',4);expect(app.find('data-play-focus',4)).toBeTruthy();
+    expect(app.state().playLensReturn).toBe('harvest');app.click('data-play-focus-close');
+    expect(app.state().playLensReturn).toBeNull();expect(app.state().playGardenLens).toBe('harvest');
+    for(const field of ['grid','budget','day','moisture'])expect(app.state()[field]).toEqual(before[field]);
+    expect(app.awardXP).not.toHaveBeenCalled();expect(app.saveSnapshot).not.toHaveBeenCalled();
+    app.patch({phase:'plan',playGardenLens:'natural',plantingTarget:0,selectedPlant:'beans',placementPreview:{plot:0,plantId:'beans'}});
+    expect(()=>app.find('data-play-ready-review')).toThrow();
+    app.patch({placementPreview:null});expect(app.find('data-play-ready-guide',1)).toBeTruthy();
+  });
+
   it('shows exact harvest eligibility and maturity without scoring structures or empty beds', () => {
     const grid=emptyGrid();
     grid[0]={...grid[0],plantId:'corn',growthDay:89.9};
@@ -704,6 +1186,65 @@ describe('Companion Planting visual garden views', () => {
 
 
 describe('Companion Planting visual day recaps', () => {
+  it('shows saved before and day-end crop stages without reading the live garden', () => {
+    vi.spyOn(Math,'random').mockReturnValue(.99);
+    const grid=emptyGrid();grid[0]={...grid[0],plantId:'radish',growthDay:4.9,health:75};
+    const app=harness(garden({grid}));app.click('data-play-primary');
+    const saved=structuredClone(app.state().lastDayReport),change=saved.plotChanges[0];
+    const before=app.find('data-day-snapshot','0-before'),after=app.find('data-day-snapshot','0-after');
+    expect(before.props['data-snapshot-maturity']).toBe(change.beforeMaturity);
+    expect(after.props['data-snapshot-maturity']).toBe(change.afterMaturity);
+    expect(before.props['data-snapshot-health']).toBe(change.beforeHealth);
+    expect(after.props['data-snapshot-health']).toBe(change.afterHealth);
+    expect(before.props.children[1].props.children.props['data-botanical-stage']).toBe('sprout');
+    expect(after.props.children[1].props.children.props['data-botanical-stage']).toBe('leafing');
+    app.click('data-play-water');
+    app.patch({grid:grid.map((cell,index)=>index===0?{...cell,plantId:'tomato',growthDay:90,health:5}:cell)});
+    expect(app.find('data-day-snapshot','0-after').props['data-snapshot-plant']).toBe('radish');
+    expect(app.find('data-day-snapshot','0-after').props['data-snapshot-health']).toBe(change.afterHealth);
+    expect(app.state().lastDayReport).toEqual(saved);expect(app.state().day).toBe(1);expect(app.state().budget).toBe(41);
+    expect(()=>app.find('data-play-day-focus',0)).toThrow();
+  });
+
+  it('compares actual cleared annual beds with retained perennials at the year boundary', () => {
+    vi.spyOn(Math,'random').mockReturnValue(.99);
+    const grid=emptyGrid();grid[0]={...grid[0],plantId:'corn',growthDay:30};grid[1]={...grid[1],plantId:'strawberry',growthDay:10};
+    const app=harness(garden({grid,day:119}));app.click('data-play-primary');
+    expect(app.find('data-day-snapshot','0-before').props['data-snapshot-plant']).toBe('corn');
+    const cleared=app.find('data-day-snapshot','0-after');
+    expect(cleared.props['data-snapshot-state']).toBe('empty');expect(cleared.props['data-snapshot-plant']).toBeUndefined();
+    expect(cleared.props.children[1].props.children.props['data-botanical-crop']).toBe('empty');
+    expect(cleared.props.children[2].props.children).toBe('Open bed');
+    expect(app.find('data-day-snapshot','1-before').props['data-snapshot-plant']).toBe('strawberry');
+    expect(app.find('data-day-snapshot','1-after').props['data-snapshot-plant']).toBe('strawberry');
+    expect(app.find('data-day-snapshot','1-after').props['data-snapshot-maturity']).toBe(app.state().lastDayReport.plotChanges[1].afterMaturity);
+    expect(app.find('data-play-day-replant',0)).toBeTruthy();
+  });
+
+  it('distinguishes missing legacy stages, recorded crop replacements, and explicit readiness', () => {
+    const report={day:4,season:'Spring',plotChanges:[
+      {index:0,plantId:'corn',beforeHealth:90,afterHealth:30,afterGrowth:80},
+      {index:1,plantId:'radish',beforeGrowth:99,afterGrowth:100},
+      {index:2,plantId:'tomato',beforePlantId:'corn',afterPlantId:'tomato',beforeMaturity:70,afterMaturity:5,beforeHealth:100,afterHealth:100},
+      {index:3,plantId:'carrot',beforePlantId:null,afterPlantId:'carrot',beforeMaturity:0,afterMaturity:0,beforeHealth:100,afterHealth:100},
+      {index:4,plantId:'beans',beforeMaturity:99,afterMaturity:100,beforeReady:false,afterReady:true,beforeHealth:100,afterHealth:100}
+    ]};
+    const app=harness(garden({phase:'plan',lastDayReport:report})),saved=structuredClone(app.state());
+    const unknown=app.find('data-day-snapshot','0-before');
+    expect(unknown.props['data-snapshot-maturity']).toBeUndefined();
+    expect(unknown.props.children[1].props.children.props.className).toBe('cp-day-snapshot-unknown');
+    expect(app.find('data-day-snapshot','0-after').props['data-snapshot-maturity']).toBe(80);
+    expect(app.find('data-day-snapshot','1-after').props['data-snapshot-ready']).toBe(false);
+    expect(app.find('data-day-snapshot','1-after').props['data-snapshot-health']).toBeUndefined();
+    expect(app.find('data-play-day-highlight',2).props['data-play-highlight-kind']).toBe('changed');
+    expect(app.find('data-day-snapshot','2-before').props['data-snapshot-plant']).toBe('corn');
+    expect(app.find('data-day-snapshot','2-after').props['data-snapshot-plant']).toBe('tomato');
+    expect(app.find('data-day-snapshot','3-before').props['data-snapshot-state']).toBe('empty');
+    expect(app.find('data-day-snapshot','3-after').props.children[1].props.children.props['data-botanical-stage']).toBe('seed');
+    expect(app.find('data-day-snapshot','4-after').props['data-snapshot-ready']).toBe(true);
+    expect(app.state()).toEqual(saved);
+  });
+
   it('records exact readiness and highlights a crop that became harvestable', () => {
     vi.spyOn(Math,'random').mockReturnValue(.99);
     const grid=emptyGrid();grid[0]={...grid[0],plantId:'corn',growthDay:89.9};

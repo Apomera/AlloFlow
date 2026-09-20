@@ -132,6 +132,10 @@ function AdventureSettingsSurface({
       [data-adventure-settings] summary{min-height:48px;padding:12px 2px;cursor:pointer;font-weight:700;font-size:14px;border-radius:4px}
       [data-adventure-settings] summary .as-help{display:inline;margin-left:10px}
       [data-adventure-settings] .as-detail{padding:4px 0 16px}
+      [data-adventure-settings] .as-permissions{border:0;border-top:1px solid var(--as-line);padding:16px 0 0;margin:16px 0 0;min-width:0}
+      [data-adventure-settings] .as-permissions legend{padding-right:8px;margin:0}
+      [data-adventure-settings] .as-resource-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;overflow-wrap:anywhere}
+      [data-adventure-settings] .as-resource-actions .as-help{margin:0;min-width:0}
       [data-adventure-settings] .as-resource{padding:12px;border:1px solid var(--as-line);border-radius:8px;margin:12px 0}
       [data-adventure-settings] .as-resource .as-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,110px),1fr));gap:10px}
       [data-adventure-settings] .as-notice{padding:10px 12px;border-left:3px solid var(--as-accent);background:var(--as-wash);font-size:13px;margin-bottom:16px}
@@ -151,6 +155,51 @@ function AdventureSettingSection({
     className: "as-detail"
   }, children));
 }
+
+// Numeric drafts stay local until valid; empty drafts never erase a saved count.
+function adventureSetupDecisionCount(value, fallback = 20) {
+  const number = Number(value);
+  return String(value ?? '').trim() !== '' && Number.isFinite(number) ? Math.max(3, Math.min(50, Math.round(number))) : fallback;
+}
+function AdventureDecisionInput({
+  value,
+  onCommit,
+  disabled,
+  id,
+  label,
+  describedBy
+}) {
+  const [draft, setDraft] = React.useState(String(value));
+  React.useEffect(() => {
+    setDraft(String(value));
+  }, [value]);
+  const valid = draft.trim() !== '' && Number.isInteger(Number(draft)) && Number(draft) >= 3 && Number(draft) <= 50;
+  return /*#__PURE__*/React.createElement("input", {
+    className: "as-control",
+    type: "number",
+    min: "3",
+    max: "50",
+    step: "1",
+    id: id,
+    "aria-label": label,
+    "aria-describedby": describedBy,
+    "aria-invalid": draft !== '' && !valid ? true : undefined,
+    value: draft,
+    disabled: disabled,
+    onChange: event => {
+      if (disabled) return;
+      const next = event.target.value;
+      setDraft(next);
+      if (next.trim() !== '' && Number.isInteger(Number(next)) && Number(next) >= 3 && Number(next) <= 50) onCommit(Number(next));
+    },
+    onBlur: () => {
+      if (disabled) return;
+      const next = adventureSetupDecisionCount(draft, value);
+      setDraft(String(next));
+      if (next !== value) onCommit(next);
+    }
+  });
+}
 function AdventureEpisodeSettings({
   state,
   onChange,
@@ -163,12 +212,17 @@ function AdventureEpisodeSettings({
 }) {
   const label = (key, fallback) => adventureSetupText(t, key, fallback);
   const limit = adventureSetupLimit(state);
-  const previousLength = React.useRef(limit ?? 12);
+  const previousLength = adventureSetupDecisionCount(state.lastEpisodeTurnLimit, 12);
+  const showCustomLength = state.episodeLengthMode === 'custom' || limit !== null && ![6, 12, 20].includes(limit);
   const disabled = locked || typeof onChange !== 'function';
   const update = (key, value) => {
-    if (!disabled) onChange(previous => ({
+    if (disabled) return;
+    onChange(previous => ({
       ...previous,
-      [key]: value
+      [key]: value,
+      ...(key === 'episodeTurnLimit' ? {
+        lastEpisodeTurnLimit: value === null ? adventureSetupLimit(previous) ?? previous.lastEpisodeTurnLimit ?? 12 : value
+      } : {})
     }));
   };
   return /*#__PURE__*/React.createElement(AdventureSettingsSurface, {
@@ -186,7 +240,7 @@ function AdventureEpisodeSettings({
     name: id + '-format',
     checked: limit !== null,
     disabled: disabled,
-    onChange: () => update('episodeTurnLimit', previousLength.current)
+    onChange: () => update('episodeTurnLimit', previousLength)
   }), label('set_length', 'Set-length episode')), /*#__PURE__*/React.createElement("label", {
     className: "as-option"
   }, /*#__PURE__*/React.createElement("input", {
@@ -194,12 +248,7 @@ function AdventureEpisodeSettings({
     name: id + '-format',
     checked: limit === null,
     disabled: disabled,
-    onChange: () => {
-      if (!disabled) {
-        previousLength.current = limit ?? previousLength.current;
-        update('episodeTurnLimit', null);
-      }
-    }
+    onChange: () => update('episodeTurnLimit', null)
   }), label('open', 'Open-ended')))), /*#__PURE__*/React.createElement("div", {
     className: "as-grid"
   }, limit !== null && /*#__PURE__*/React.createElement("label", {
@@ -209,11 +258,19 @@ function AdventureEpisodeSettings({
     className: "as-control",
     "aria-label": label('length', 'Episode length'),
     id: id,
-    value: String(limit),
+    value: showCustomLength ? 'custom' : String(limit),
     disabled: disabled,
     onChange: e => {
-      previousLength.current = Number(e.target.value);
-      update('episodeTurnLimit', previousLength.current);
+      if (disabled) return;
+      const selected = e.target.value;
+      onChange(previous => ({
+        ...previous,
+        episodeLengthMode: selected === 'custom' ? 'custom' : 'preset',
+        ...(selected === 'custom' ? {} : {
+          episodeTurnLimit: Number(selected),
+          lastEpisodeTurnLimit: Number(selected)
+        })
+      }));
     }
   }, /*#__PURE__*/React.createElement("option", {
     value: "6"
@@ -221,9 +278,22 @@ function AdventureEpisodeSettings({
     value: "12"
   }, label('standard', 'Standard · 12 decisions')), /*#__PURE__*/React.createElement("option", {
     value: "20"
-  }, label('long', 'Long · 20 decisions')), limit != null && ![6, 12, 20].includes(limit) && /*#__PURE__*/React.createElement("option", {
-    value: String(limit)
-  }, limit, " ", label('decisions', 'decisions')))), !freeResponse && /*#__PURE__*/React.createElement("label", {
+  }, label('long', 'Long · 20 decisions')), /*#__PURE__*/React.createElement("option", {
+    value: "custom"
+  }, label('custom_length', 'Custom length')))), limit !== null && showCustomLength && /*#__PURE__*/React.createElement("label", {
+    className: "as-field",
+    htmlFor: id + '-custom'
+  }, label('custom_decisions', 'Custom decision count'), /*#__PURE__*/React.createElement(AdventureDecisionInput, {
+    id: id + '-custom',
+    label: label('custom_decisions', 'Custom decision count'),
+    describedBy: id + '-custom-help',
+    value: limit,
+    disabled: disabled,
+    onCommit: count => update('episodeTurnLimit', count)
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "as-help",
+    id: id + '-custom-help'
+  }, label('custom_length_hint', 'Choose 3–50 decisions. This changes episode length, not choices per decision.'))), !freeResponse && /*#__PURE__*/React.createElement("label", {
     className: "as-field",
     htmlFor: id + '-choices'
   }, label('choices', 'Choices per decision'), /*#__PURE__*/React.createElement("select", {
@@ -249,19 +319,17 @@ function AdventureEpisodeSettings({
   }), label('finale', 'Include a final challenge')), limit === null && state.enableAutoClimax && /*#__PURE__*/React.createElement("label", {
     className: "as-field",
     htmlFor: id + '-earliest'
-  }, label('earliest_finale', 'Earliest finale round (open-ended)'), /*#__PURE__*/React.createElement("input", {
-    className: "as-control",
-    "aria-label": label('earliest_finale', 'Earliest finale round (open-ended)'),
+  }, label('earliest_finale', 'Earliest finale round (open-ended)'), /*#__PURE__*/React.createElement(AdventureDecisionInput, {
     id: id + '-earliest',
-    type: "number",
-    min: "3",
-    max: "50",
-    value: state.climaxMinTurns || 20,
+    label: label('earliest_finale', 'Earliest finale round (open-ended)'),
+    describedBy: id + '-earliest-help',
+    value: adventureSetupDecisionCount(state.climaxMinTurns),
     disabled: disabled,
-    onChange: e => update('climaxMinTurns', Math.max(3, Math.min(50, Number(e.target.value) || 20)))
+    onCommit: count => update('climaxMinTurns', count)
   }), /*#__PURE__*/React.createElement("span", {
-    className: "as-help"
-  }, label('open_finale_hint', 'The finale also waits for sufficient story progress.')))));
+    className: "as-help",
+    id: id + '-earliest-help'
+  }, label('finale_count_hint', 'Choose a whole number from 3 to 50. The finale also waits for sufficient story progress.')))));
 }
 function adventureSetupSummaryParts(props) {
   const state = props.adventureState || {};
@@ -303,7 +371,10 @@ function AdventureSetupFields(props) {
   return /*#__PURE__*/React.createElement(AdventureSettingsSurface, {
     theme: props.theme,
     compact: props.compact
-  }, !props.hideSummary && /*#__PURE__*/React.createElement(AdventureSetupSummary, props), fixed ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }, (props.adventureState?.isLoading || props.isProcessing) && /*#__PURE__*/React.createElement("p", {
+    className: "as-notice",
+    role: "status"
+  }, adventureSetupText(props.t, 'setup_busy_hint', 'The adventure is updating. Editing is temporarily paused.')), !props.hideSummary && /*#__PURE__*/React.createElement(AdventureSetupSummary, props), fixed ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "as-notice"
   }, adventureSetupText(props.t, 'student_locked_hint', 'Your teacher has fixed this setup. You can review the settings and start your adventure.')), /*#__PURE__*/React.createElement("details", null, /*#__PURE__*/React.createElement("summary", null, adventureSetupText(props.t, 'view_teacher_settings', 'View teacher settings')), /*#__PURE__*/React.createElement(AdventureSetupEditor, _extends({}, props, {
     hideNotice: true
@@ -316,6 +387,16 @@ function AdventureSetupEditor(props) {
   const label = (key, fallback) => adventureSetupText(props.t, key, fallback);
   const id = props.idPrefix || 'adventure-setup';
   const locked = permission => adventureSetupLocked(props, permission);
+  // Explain the teacher policy independently of a temporary processing lock.
+  const fixedByTeacher = permission => !props.isTeacherMode && adventureSetupLocked({
+    isTeacherMode: false,
+    studentProjectSettings: settings
+  }, permission);
+  const fixedHint = (permission, key) => fixedByTeacher(permission) && /*#__PURE__*/React.createElement("span", {
+    className: "as-help",
+    id: id + '-' + key + '-fixed'
+  }, label('teacher_fixed_field', 'Set by your teacher.'));
+  const describedBy = (permission, key, help) => [help && id + '-' + key + '-help', fixedByTeacher(permission) && id + '-' + key + '-fixed'].filter(Boolean).join(' ') || undefined;
   const change = (setter, value, permission) => {
     if (!locked(permission) && typeof props[setter] === 'function') props[setter](value);
   };
@@ -323,19 +404,22 @@ function AdventureSetupEditor(props) {
     className: "as-check"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
+    "aria-label": title,
+    "aria-describedby": describedBy(permission, field, help),
     checked: !!props[field],
     disabled: locked(permission) || extraDisabled,
     onChange: e => change(setter, e.target.checked, permission)
   }), /*#__PURE__*/React.createElement("span", null, title, help && /*#__PURE__*/React.createElement("span", {
-    className: "as-help"
-  }, help)));
+    className: "as-help",
+    id: id + '-' + field + '-help'
+  }, help), fixedHint(permission, field)));
   const field = (key, title, value, setter, options, permission, help) => /*#__PURE__*/React.createElement("label", {
     className: "as-field",
     htmlFor: id + '-' + key
   }, title, /*#__PURE__*/React.createElement("select", {
     className: "as-control",
     "aria-label": title,
-    "aria-describedby": help ? id + '-' + key + '-help' : undefined,
+    "aria-describedby": describedBy(permission, key, help),
     id: id + '-' + key,
     value: value,
     disabled: locked(permission) || typeof props[setter] !== 'function',
@@ -346,7 +430,7 @@ function AdventureSetupEditor(props) {
   }, text))), help && /*#__PURE__*/React.createElement("span", {
     className: "as-help",
     id: id + '-' + key + '-help'
-  }, help));
+  }, help), fixedHint(permission, key));
   const modeGuide = props.adventureInputMode === 'debate' ? label('mode_debate_guide', 'Choose a position first. Then support your argument with lesson evidence and consider another perspective.') : props.adventureInputMode === 'system' ? label('mode_system_guide', 'Change a policy or part of a system, then compare its effects and resource tradeoffs.') : props.isSocialStoryMode ? label('mode_social_guide', 'Practise what you could say or do, with room for boundaries, different perspectives, and repair.') : label('mode_story_guide', 'Explore a story through decisions that use ideas from the lesson.');
   const modes = [['choice', label('adventure.mode_choice', 'Standard Adventure Mode')], ['debate', label('adventure.mode_debate', 'Debate')], ['system', label('adventure.mode_system', 'Systems simulation')]];
   const languages = Array.from(new Set((props.selectedLanguages || []).filter(lang => lang !== 'English')));
@@ -354,6 +438,35 @@ function AdventureSetupEditor(props) {
   if (languages.length > 1) languageOptions.push(['All + English', languages.join(', ') + ' · ' + label('with_translation', 'with translation')]);
   // Preserve a saved selection even if the teacher's current language list differs.
   if (props.adventureLanguageMode && !languageOptions.some(option => option[0] === props.adventureLanguageMode)) languageOptions.push([props.adventureLanguageMode, props.adventureLanguageMode]);
+  const resources = Array.isArray(state.systemResources) ? state.systemResources : [];
+  const [removedResource, setRemovedResource] = React.useState(null);
+  const [resourceAnnouncement, setResourceAnnouncement] = React.useState('');
+  const pendingResourceFocus = React.useRef(null);
+  const resourceEditorRef = React.useRef(null);
+  const resourcesLocked = locked() || typeof props.setAdventureState !== 'function';
+  React.useEffect(() => {
+    const target = pendingResourceFocus.current;
+    if (target) {
+      const control = resourceEditorRef.current?.querySelector('[id="' + target + '"]');
+      if (control) {
+        control.focus();
+        pendingResourceFocus.current = null;
+      }
+    }
+  }, [state.systemResources]);
+  React.useEffect(() => {
+    setRemovedResource(null);
+    setResourceAnnouncement('');
+    pendingResourceFocus.current = null;
+  }, [state.currentScene]);
+  const resourceNameKey = value => typeof value === 'string' ? value.trim().slice(0, 80).toLocaleLowerCase() : '';
+  const resourceNameIssue = index => {
+    if (index >= 24) return label('resource_limit_issue', 'Only the first 24 resources are used. Remove an earlier row to include this one.');
+    const key = resourceNameKey(resources[index]?.name);
+    if (!key) return label('resource_name_missing', 'Add a name to include this resource in the story. Unnamed rows are skipped.');
+    if (resources.slice(0, index).some(resource => resourceNameKey(resource?.name) === key)) return label('resource_name_duplicate', 'This name is already used above. Give this resource a distinct name; only the first entry is used.');
+    return '';
+  };
   const resourceMode = props.factionResourceMode === 'manual' ? 'manual' : 'ai';
   const setResourceMode = value => {
     if (locked()) return;
@@ -368,17 +481,55 @@ function AdventureSetupEditor(props) {
       systemResources: update(previous.systemResources || [])
     }));
   };
+  const addResource = () => {
+    if (resourcesLocked || resources.length >= 24) return;
+    pendingResourceFocus.current = id + '-resource-' + resources.length + '-name';
+    editResources(rows => rows.length >= 24 ? rows : [...rows, {
+      name: '',
+      icon: '🔹',
+      quantity: 50,
+      unit: '%',
+      type: 'strategic'
+    }]);
+  };
+  const removeResource = index => {
+    if (resourcesLocked || !resources[index]) return;
+    setRemovedResource({
+      resource: {
+        ...resources[index]
+      },
+      index
+    });
+    setResourceAnnouncement(label('resource_removed', 'Removed resource') + ': ' + (resources[index].name || label('resource_unnamed', 'Unnamed resource')));
+    pendingResourceFocus.current = resources.length > 1 ? id + '-resource-' + Math.min(index, resources.length - 2) + '-name' : id + '-add-resource';
+    editResources(rows => rows.filter((_, i) => i !== index));
+  };
+  const undoResourceRemoval = () => {
+    if (resourcesLocked || !removedResource) return;
+    const index = Math.min(removedResource.index, resources.length);
+    pendingResourceFocus.current = id + '-resource-' + index + '-name';
+    editResources(rows => {
+      const next = rows.slice();
+      next.splice(Math.min(removedResource.index, next.length), 0, {
+        ...removedResource.resource
+      });
+      return next;
+    });
+    setResourceAnnouncement(label('resource_restored', 'Restored resource') + ': ' + (removedResource.resource.name || label('resource_unnamed', 'Unnamed resource')));
+    setRemovedResource(null);
+  };
   const supports = typeof props.setAdventureAutoRead === 'function' || typeof props.setAdventureTypingPaceEnabled === 'function' || typeof props.setAdventureFluencyEnabled === 'function';
   const hasCloud = typeof props.setIsAdventureCloudEnabled === 'function';
-  const permissionToggle = (key, title, help) => props.isTeacherMode && typeof props.setStudentProjectSettings === 'function' && /*#__PURE__*/React.createElement("label", {
+  const permissionToggle = (key, title, help, defaultAllowed = false) => props.isTeacherMode && typeof props.setStudentProjectSettings === 'function' && /*#__PURE__*/React.createElement("label", {
     className: "as-check"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
-    checked: permissions[key] === true,
-    disabled: locked(),
+    "aria-label": title,
+    checked: defaultAllowed ? permissions[key] !== false : permissions[key] === true,
+    disabled: locked() || key !== 'lockAllSettings' && permissions.lockAllSettings === true,
     onChange: e => {
       const checked = e.target.checked;
-      if (!locked()) props.setStudentProjectSettings(previous => ({
+      if (!locked() && (key === 'lockAllSettings' || !permissions.lockAllSettings)) props.setStudentProjectSettings(previous => ({
         ...previous,
         adventurePermissions: {
           ...previous.adventurePermissions,
@@ -394,7 +545,7 @@ function AdventureSetupEditor(props) {
   return /*#__PURE__*/React.createElement(AdventureSettingsSurface, {
     theme: props.theme,
     compact: props.compact
-  }, !props.isTeacherMode && !props.hideNotice && /*#__PURE__*/React.createElement("p", {
+  }, !props.isTeacherMode && !props.hideNotice && !state.isLoading && !props.isProcessing && /*#__PURE__*/React.createElement("p", {
     className: "as-notice"
   }, permissions.lockAllSettings ? label('student_locked_hint', 'Your teacher has fixed this setup. You can review the settings and start your adventure.') : label('student_edit_hint', 'You can adjust the settings your teacher allows. Unavailable controls are set by your teacher.')), /*#__PURE__*/React.createElement("section", {
     className: "as-box",
@@ -409,6 +560,7 @@ function AdventureSetupEditor(props) {
     htmlFor: id + '-response'
   }, label('response_format', 'Student responses'), /*#__PURE__*/React.createElement("select", {
     "aria-label": label('response_format', 'Student responses'),
+    "aria-describedby": describedBy('freeResponse', 'response'),
     id: id + '-response',
     className: "as-control",
     value: props.adventureFreeResponseEnabled ? 'written' : 'choice',
@@ -418,7 +570,7 @@ function AdventureSetupEditor(props) {
     value: "choice"
   }, label('response_choices', 'Choose from suggestions')), /*#__PURE__*/React.createElement("option", {
     value: "written"
-  }, label('response_written', 'Write or dictate'))))), props.isTeacherMode && languageOptions.length === 1 && typeof props.openUniversalSettings === 'function' && /*#__PURE__*/React.createElement("button", {
+  }, label('response_written', 'Write or dictate'))), fixedHint('freeResponse', 'response'))), props.isTeacherMode && typeof props.openUniversalSettings === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "as-button",
     style: {
@@ -428,7 +580,7 @@ function AdventureSetupEditor(props) {
     onClick: () => {
       if (!locked()) props.openUniversalSettings('languages');
     }
-  }, label('add_languages', 'Add languages in Universal Settings')), /*#__PURE__*/React.createElement("div", {
+  }, languageOptions.length === 1 ? label('add_languages', 'Add languages in Universal Settings') : label('manage_languages', 'Manage languages in Universal Settings')), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 16
     }
@@ -466,9 +618,15 @@ function AdventureSetupEditor(props) {
     value: "ai"
   }, label('resources_ai', 'AI-generated resources')), /*#__PURE__*/React.createElement("option", {
     value: "manual"
-  }, label('resources_manual', 'Teacher-defined resources')))), resourceMode === 'manual' && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+  }, label('resources_manual', 'Teacher-defined resources')))), resourceMode === 'manual' && /*#__PURE__*/React.createElement("div", {
+    ref: resourceEditorRef
+  }, /*#__PURE__*/React.createElement("p", {
     className: "as-help"
-  }, label('resources_manual_hint', 'Give each resource a distinct name and unit. Percentages stay between 0 and 100; other values can exceed 100 and include decimals.')), (state.systemResources || []).map((resource, index) => /*#__PURE__*/React.createElement("div", {
+  }, label('resources_manual_hint', 'Give each resource a distinct name and unit. Percentages stay between 0 and 100; other values can exceed 100 and include decimals.')), resources.length === 0 && /*#__PURE__*/React.createElement("p", {
+    className: "as-notice"
+  }, label('resources_empty', 'No resources yet. Add a resource such as Budget (credits), Water (litres), or Trust (%).')), /*#__PURE__*/React.createElement("p", {
+    className: "as-help"
+  }, label('resource_count', 'Resource rows'), ": ", resources.length, " / 24"), resources.map((resource, index) => /*#__PURE__*/React.createElement("div", {
     className: "as-resource",
     key: index
   }, /*#__PURE__*/React.createElement("div", {
@@ -480,12 +638,16 @@ function AdventureSetupEditor(props) {
   }, title, " ", index + 1, /*#__PURE__*/React.createElement("input", {
     id: id + '-resource-' + index + '-' + key,
     className: "as-control",
+    "aria-label": title + ' ' + (index + 1),
+    "aria-invalid": key === 'name' && !!resourceNameIssue(index) ? true : undefined,
+    "aria-describedby": key === 'name' && resourceNameIssue(index) ? id + '-resource-' + index + '-issue' : undefined,
+    maxLength: key === 'name' ? 80 : key === 'unit' ? 30 : undefined,
     type: type,
     min: type === 'number' ? 0 : undefined,
     step: type === 'number' ? 'any' : undefined,
     max: type === 'number' && /^(%|percent|percentage)$/i.test(String(resource.unit || '').trim()) ? 100 : undefined,
     value: resource[key] ?? '',
-    disabled: locked(),
+    disabled: resourcesLocked,
     onChange: e => {
       const value = type === 'number' ? Math.min(/^(%|percent|percentage)$/i.test(String(resource.unit || '').trim()) ? 100 : Infinity, Math.max(0, Number(e.target.value) || 0)) : e.target.value;
       editResources(rows => rows.map((row, i) => i === index ? {
@@ -493,29 +655,41 @@ function AdventureSetupEditor(props) {
         [key]: value
       } : row));
     }
-  })))), /*#__PURE__*/React.createElement("button", {
+  }), key === 'name' && resourceNameIssue(index) && /*#__PURE__*/React.createElement("span", {
+    id: id + '-resource-' + index + '-issue',
+    className: "as-help"
+  }, resourceNameIssue(index))))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "as-button",
     style: {
       marginTop: 10
     },
-    disabled: locked(),
-    onClick: () => editResources(rows => rows.filter((_, i) => i !== index))
+    disabled: resourcesLocked,
+    onClick: () => removeResource(index)
   }, label('remove_resource', 'Remove resource'), " ", index + 1))), /*#__PURE__*/React.createElement("button", {
+    id: id + '-add-resource',
     type: "button",
     className: "as-button",
     style: {
       marginTop: 12
     },
-    disabled: locked(),
-    onClick: () => editResources(rows => [...rows, {
-      name: '',
-      icon: '🔹',
-      quantity: 50,
-      unit: '%',
-      type: 'strategic'
-    }])
-  }, label('adventure.add_state_variable', 'Add resource')))))), supports && /*#__PURE__*/React.createElement(AdventureSettingSection, {
+    disabled: resourcesLocked || resources.length >= 24,
+    onClick: addResource
+  }, label('adventure.add_state_variable', 'Add resource')), /*#__PURE__*/React.createElement("div", {
+    className: "as-resource-actions"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "as-help",
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true"
+  }, resourceAnnouncement), removedResource && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "as-button",
+    disabled: resourcesLocked,
+    onClick: undoResourceRemoval
+  }, label('undo_resource_removal', 'Undo resource removal'))), resources.length >= 24 && /*#__PURE__*/React.createElement("p", {
+    className: "as-help"
+  }, label('resource_limit_hint', 'The story supports up to 24 resources. Remove a row before adding another.')))))), supports && /*#__PURE__*/React.createElement(AdventureSettingSection, {
     title: label('learning_supports', 'Learning supports'),
     summary: [typeof props.setAdventureAutoRead === 'function' && label('auto_read_short', 'Auto-read') + ': ' + onOff(props.adventureAutoRead), label('microphone_practice', 'Microphone practice') + ': ' + onOff(props.adventureFluencyEnabled), props.adventureFreeResponseEnabled && label('adventure.typing_pace_label', 'Typing pace') + ': ' + onOff(props.adventureTypingPaceEnabled)].filter(Boolean).join(' · ')
   }, typeof props.setAdventureAutoRead === 'function' && /*#__PURE__*/React.createElement("label", {
@@ -530,7 +704,7 @@ function AdventureSetupEditor(props) {
     }
   }), label('auto_read_setup', 'Read each scene automatically')), toggle('adventureFluencyEnabled', 'setAdventureFluencyEnabled', label('adventure.fluency_setting_label', 'Scene reading practice'), label('adventure.fluency_setting_desc', 'Offer an optional microphone button for practising the current passage.')), props.adventureFreeResponseEnabled && toggle('adventureTypingPaceEnabled', 'setAdventureTypingPaceEnabled', label('adventure.typing_pace_label', 'Typing pace'), label('adventure.typing_pace_desc', 'Descriptive pace and word count for written responses. Never affects points or grades.'))), /*#__PURE__*/React.createElement(AdventureSettingSection, {
     title: label('story_rules', 'Story & game rules'),
-    summary: label('adventure.chance_mode_label', 'Chance') + ': ' + onOff(props.adventureChanceMode)
+    summary: [label('energy_rewards', 'Energy & rewards') + ': ' + label('adventure.diff_' + (props.adventureDifficulty || 'Normal').toLowerCase() + '_option', props.adventureDifficulty || 'Normal'), label('adventure.story_mode_label', 'Peaceful mode') + ': ' + onOff(props.isAdventureStoryMode), label('adventure.chance_mode_label', 'Chance') + ': ' + onOff(props.adventureChanceMode)].join(' · ')
   }, field('difficulty', label('energy_rewards', 'Energy & rewards'), props.adventureDifficulty || 'Normal', 'setAdventureDifficulty', [['Story', label('adventure.diff_story_option', 'Story')], ['Normal', label('adventure.diff_normal_option', 'Normal')], ['Hard', label('adventure.diff_hard_option', 'Hard')], ['Hardcore', label('adventure.diff_hardcore_option', 'Hardcore')]], 'allowDifficultySwitch', label('difficulty_' + (props.adventureDifficulty || 'Normal'), {
     Story: 'Half energy loss; 1.5× XP. Reasoning expectations follow the lesson.',
     Normal: 'Standard energy loss and XP. Reasoning expectations follow the lesson.',
@@ -538,7 +712,14 @@ function AdventureSetupEditor(props) {
     Hardcore: '2.5× energy loss; 0.5× XP. Success thresholds stay the same.'
   }[props.adventureDifficulty || 'Normal'])), toggle('isAdventureStoryMode', 'setIsAdventureStoryMode', label('adventure.story_mode_label', 'Peaceful mode'), label('adventure.story_mode_desc', 'Focus on exploration and puzzles.')), toggle('adventureChanceMode', 'setAdventureChanceMode', label('adventure.chance_mode_label', 'Chance mode'), label('adventure.chance_mode_desc', 'Chance rolls influence the story outcome.')), toggle('isSocialStoryMode', 'setIsSocialStoryMode', label('adventure.social_story_mode_label', 'Social scenario mode'), label('social_mode_hint', 'Show a target social skill in Essential setup.'))), /*#__PURE__*/React.createElement(AdventureSettingSection, {
     title: label('visual_settings', 'Visuals'),
-    summary: label('adventure.art_style_label', 'Art style') + ': ' + label('adventure.art_' + (props.adventureArtStyle || 'auto'), props.adventureArtStyle || 'Auto')
+    summary: [label('adventure.art_style_label', 'Art style') + ': ' + label('adventure.art_' + (props.adventureArtStyle || 'auto'), props.adventureArtStyle || 'Auto'), label('adventure.protagonist_age_label', 'Protagonist age') + ': ' + label('adventure.protagonist_age_' + (props.adventureProtagonistAge || 'auto').replaceAll('-', '_'), {
+      auto: 'Auto (match the audience)',
+      child: 'Child',
+      teen: 'Teen',
+      'young-adult': 'Young adult',
+      adult: 'Adult',
+      'older-adult': 'Older adult'
+    }[props.adventureProtagonistAge || 'auto'] || props.adventureProtagonistAge), props.adventureConsistentCharacters && label('adventure.consistent_characters_label', 'Consistent characters'), props.useLowQualityVisuals && label('adventure.low_quality_label', 'Faster, simpler visuals')].filter(Boolean).join(' · ')
   }, field('art-style', label('adventure.art_style_label', 'Art style'), props.adventureArtStyle || 'auto', 'setAdventureArtStyle', ['universal', 'auto', 'storybook', 'pixel', 'cinematic', 'anime', 'crayon', 'custom'].map(value => [value, label('adventure.art_' + value, {
     universal: 'Use Universal style',
     auto: 'Auto',
@@ -555,11 +736,13 @@ function AdventureSetupEditor(props) {
     htmlFor: id + '-custom-art'
   }, label('custom_art', 'Custom art style'), /*#__PURE__*/React.createElement("input", {
     id: id + '-custom-art',
+    "aria-label": label('custom_art', 'Custom art style'),
+    "aria-describedby": describedBy('allowVisualsToggle', 'custom-art'),
     className: "as-control",
     value: props.adventureCustomArtStyle || '',
     disabled: locked('allowVisualsToggle'),
     onChange: e => change('setAdventureCustomArtStyle', e.target.value, 'allowVisualsToggle')
-  })), toggle('adventureConsistentCharacters', 'setAdventureConsistentCharacters', label('adventure.consistent_characters_label', 'Consistent characters'), label('adventure.consistent_characters_desc', 'Keep character appearances consistent across scenes.')), field('protagonist-age', label('adventure.protagonist_age_label', 'Protagonist age'), props.adventureProtagonistAge || 'auto', 'setAdventureProtagonistAge', [['auto', label('adventure.protagonist_age_auto', 'Auto (match the audience)')], ['child', label('adventure.protagonist_age_child', 'Child')], ['teen', label('adventure.protagonist_age_teen', 'Teen')], ['young-adult', label('adventure.protagonist_age_young_adult', 'Young adult')], ['adult', label('adventure.protagonist_age_adult', 'Adult')], ['older-adult', label('adventure.protagonist_age_older_adult', 'Older adult')]], 'allowVisualsToggle', label('adventure.protagonist_age_help', 'Who the learner plays as. Auto follows the target level. Reading level is unchanged either way.')), toggle('useLowQualityVisuals', 'setUseLowQualityVisuals', label('adventure.low_quality_label', 'Faster, simpler visuals'), label('adventure.low_quality_desc', 'Faster generation, less data.'), 'allowVisualsToggle')), /*#__PURE__*/React.createElement(AdventureSettingSection, {
+  }), fixedHint('allowVisualsToggle', 'custom-art')), toggle('adventureConsistentCharacters', 'setAdventureConsistentCharacters', label('adventure.consistent_characters_label', 'Consistent characters'), label('adventure.consistent_characters_desc', 'Keep character appearances consistent across scenes.'), 'allowVisualsToggle'), field('protagonist-age', label('adventure.protagonist_age_label', 'Protagonist age'), props.adventureProtagonistAge || 'auto', 'setAdventureProtagonistAge', [['auto', label('adventure.protagonist_age_auto', 'Auto (match the audience)')], ['child', label('adventure.protagonist_age_child', 'Child')], ['teen', label('adventure.protagonist_age_teen', 'Teen')], ['young-adult', label('adventure.protagonist_age_young_adult', 'Young adult')], ['adult', label('adventure.protagonist_age_adult', 'Adult')], ['older-adult', label('adventure.protagonist_age_older_adult', 'Older adult')]], 'allowVisualsToggle', label('adventure.protagonist_age_help', 'Who the learner plays as. Auto follows the target level. Reading level is unchanged either way.')), toggle('useLowQualityVisuals', 'setUseLowQualityVisuals', label('adventure.low_quality_label', 'Faster, simpler visuals'), label('adventure.low_quality_desc', 'Faster generation, less data.'), 'allowVisualsToggle')), /*#__PURE__*/React.createElement(AdventureSettingSection, {
     title: label('story_guidance', 'Story guidance'),
     summary: props.adventureCustomInstructions?.trim() ? label('guidance_added', 'Custom instructions added') : label('guidance_empty', 'No custom instructions')
   }, /*#__PURE__*/React.createElement("label", {
@@ -567,14 +750,16 @@ function AdventureSetupEditor(props) {
     htmlFor: id + '-custom-instructions'
   }, label('input.custom_instructions', 'Custom instructions'), /*#__PURE__*/React.createElement("textarea", {
     id: id + '-custom-instructions',
+    "aria-label": label('input.custom_instructions', 'Custom instructions'),
+    "aria-describedby": describedBy('allowCustomInstructions', 'custom-instructions'),
     className: "as-control",
     value: props.adventureCustomInstructions || '',
     disabled: locked('allowCustomInstructions'),
     onChange: e => change('setAdventureCustomInstructions', e.target.value, 'allowCustomInstructions'),
     placeholder: label('adventure.placeholder_custom', 'Add guidance for this adventure.')
-  }))), (hasCloud || props.isTeacherMode && props.setStudentProjectSettings) && /*#__PURE__*/React.createElement(AdventureSettingSection, {
+  }), fixedHint('allowCustomInstructions', 'custom-instructions'))), (hasCloud || props.isTeacherMode && props.setStudentProjectSettings) && /*#__PURE__*/React.createElement(AdventureSettingSection, {
     title: label('saving_permissions', 'Saving & permissions'),
-    summary: label('cloud_images', 'Cloud images') + ': ' + onOff(props.isAdventureCloudEnabled)
+    summary: [label('cloud_images', 'Cloud images') + ': ' + onOff(props.isAdventureCloudEnabled), permissions.lockAllSettings ? label('student_setup_fixed', 'Student setup fixed') : label('student_setup_adjustable', 'Student setup adjustable')].join(' · ')
   }, hasCloud && (props.isTeacherMode || permissions.allowCloudImageStorage === true) && /*#__PURE__*/React.createElement("label", {
     className: "as-check"
   }, /*#__PURE__*/React.createElement("input", {
@@ -590,7 +775,15 @@ function AdventureSetupEditor(props) {
     className: "as-help"
   }, label('adventure.cloud_storage_desc', 'Store generated images online.')))), props.adventureFreeResponseEnabled && props.isAdventureCloudEnabled && (props.isTeacherMode || permissions.allowCloudImageStorage) && /*#__PURE__*/React.createElement("p", {
     className: "as-notice"
-  }, label('adventure.pii_warning_desc', 'Avoid including personal information in written responses when cloud image storage is enabled.')), permissionToggle('lockAllSettings', label('adventure.lock_settings_label', 'Lock student settings'), label('adventure.lock_settings_desc', 'Keep the adventure setup fixed for students.')), permissionToggle('allowCloudImageStorage', label('adventure.allow_cloud_storage_label', 'Allow cloud image storage'), label('adventure.allow_cloud_storage_desc', 'Allow students to store generated images online.'))));
+  }, label('adventure.pii_warning_desc', 'Avoid including personal information in written responses when cloud image storage is enabled.')), props.isTeacherMode && typeof props.setStudentProjectSettings === 'function' && /*#__PURE__*/React.createElement("fieldset", {
+    className: "as-permissions"
+  }, /*#__PURE__*/React.createElement("legend", {
+    className: "as-title"
+  }, label('student_editing', 'Student editing')), permissionToggle('lockAllSettings', label('adventure.lock_settings_label', 'Lock student settings'), label('adventure.lock_settings_desc', 'Keep the adventure setup fixed for students.')), /*#__PURE__*/React.createElement("p", {
+    className: "as-help"
+  }, permissions.lockAllSettings ? label('permissions_paused_hint', 'Unlock student settings to use the permissions below. Your selections are kept while locked.') : label('permissions_scope_hint', 'Choose which additional settings students can change. Episode pacing, learning supports, and general story rules remain adjustable unless you lock student settings.')), /*#__PURE__*/React.createElement("div", {
+    className: "as-grid"
+  }, permissionToggle('allowModeSwitch', label('allow_mode_edit', 'Change interaction mode'), label('allow_mode_edit_hint', 'Choose standard adventure, debate, or systems simulation.')), permissionToggle('allowLanguageSwitch', label('allow_language_edit', 'Change adventure language'), label('allow_language_edit_hint', 'Choose from the available story languages.')), permissionToggle('allowDifficultySwitch', label('allow_energy_edit', 'Change energy & rewards'), label('allow_energy_edit_hint', 'Adjust energy loss and XP multipliers.')), permissionToggle('allowCustomInstructions', label('allow_guidance_edit', 'Edit story guidance'), label('allow_guidance_edit_hint', 'Add or change custom story instructions.')), permissionToggle('allowVisualsToggle', label('allow_visual_edit', 'Change visual settings'), label('allow_visual_edit_hint', 'Choose art style, protagonist age, character consistency, and faster visuals.'), true), permissionToggle('allowCloudImageStorage', label('adventure.allow_cloud_storage_label', 'Allow cloud image storage'), label('adventure.allow_cloud_storage_desc', 'Allow students to store generated images online.'))))));
 }
 function adventureSettingsText(t, key, fallback) {
   const value = t('adventure.learning_settings.' + key);
@@ -1026,6 +1219,8 @@ function AdventureLearningProfiles(props) {
     setAdventureState(previous => ({
       ...previous,
       episodeTurnLimit: profile.turns,
+      lastEpisodeTurnLimit: profile.turns,
+      episodeLengthMode: 'preset',
       enableAutoClimax: true,
       choiceCount: profile.choices,
       learningProfile: profile.id

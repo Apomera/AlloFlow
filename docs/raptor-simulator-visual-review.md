@@ -795,3 +795,362 @@ Validation:
 - JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop source copies are byte-identical.
 
 Changes remain local. This pass covers the tested compact HUD and target-guidance interactions, not an app-wide test suite or gameplay performance benchmark.
+
+## Consolidated strike feedback and manual-hunt results (2026-09-19)
+
+Catch and miss results now use the existing compact guidance banner. Removed the duplicate central strike overlay and duplicate transient event-stack messages, leaving the bird and flight path visible. The banner uses steady green for catches and amber for misses. Persistent Last strike coaching, catch credit, flight-event history, sounds, camera response, and physical strike effects remain intact.
+
+Active strike results now take priority over the target-assist-off message, so manual hunting receives the same immediate result feedback before returning to normal guidance. Thermal navigation retains its mission-specific priority. Feedback continues to use the simulation clock and freezes while paused; Scenic view hides the banner through the existing presentation rules.
+
+Validation:
+- Six distinct Chromium checks passed during this pass: the new catch/miss presentation sequence, two existing strike-loop regressions, and three assist-presentation checks.
+- Four checks passed together on the final source after the result-color and manual-hunting adjustments. These cover catches and misses at 880px and 320px, assist disabled on the phone, persistent coaching, duplicate-message removal, paused feedback, Scenic view, reduced motion, expiration back to manual guidance, and assist behavior in normal/practice views.
+- The strike-loop regressions cover frozen recovery/feedback/prey replacement during pause, missed-strike coaching, rapid repeated inputs, restart, and quality reset. Real prey are repositioned for deterministic catch/miss scenarios; these are controlled browser checks rather than a full natural-play assessment.
+- Visually inspected the final strike-clean-miss-880.png and strike-clean-hit-320.png in scratch/raptor-flight-review.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop source copies are byte-identical.
+
+Changes remain local. This pass does not claim an app-wide test suite or a gameplay performance benchmark.
+
+## Stable pointer steering and visible drag feedback (2026-09-19)
+
+The flight canvas now keeps a steering gesture with the pointer that started it. A second touch cannot replace the active pointer or drive an abrupt turn, and right/middle mouse buttons cannot start steering. Unrelated pointer releases/cancellations no longer interrupt the original gesture or clear its normal release easing.
+
+Pausing, losing focus, and changing control schemes now release pointer capture as well as clearing pending steering. Gesture ownership is cleared before releasing capture so the resulting lost-capture event cannot cancel normal release easing. Actual cancellation or unexpected loss of capture still stops pending steering. The cursor changes to grabbing during an active drag and returns to the existing crosshair after release or reset.
+
+Validation:
+- The new multi-pointer regression reproduced the previous bug: a second finger changed pending yaw from 0.1 to the 0.75 clamp instead of leaving the original gesture intact.
+- Five distinct Chromium checks passed on the final source: two new pointer checks and three existing keyboard/pause presentation checks.
+- Synthetic touch events with a capture shim cover pointer ownership, unrelated move/release/cancellation, continued original-finger steering, normal release easing, and cancellation cleanup. Real browser mouse input covers right-button rejection, native capture release on pause/focus loss/control remapping, cursor states, and fresh drags after reset.
+- Existing checks preserve equivalent keyboard inputs, paused resize/reduced motion, frozen camera/zoom changes, resume controls, and compact paused layout.
+- The mouse fixture initially read a nonexistent paused snapshot field after Escape. It now checks the visible pause overlay; both pointer checks passed on rerun without another production change.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop source copies are byte-identical.
+
+Changes remain local. Touch ownership is tested with synthetic events; this pass does not claim physical-device testing or an app-wide test suite.
+
+## Accurate held-control feedback and readable phone buttons (2026-09-19)
+
+Flight hold buttons now read their pressed appearance and accessible pressed state from the simulator's aggregated input state. Keyboard holds illuminate the matching on-screen control; pause, focus loss, and control remapping clear the visible state with the held inputs. Feedback updates on input transitions rather than animation frames or repeated keydown events, and teardown skips UI notifications.
+
+Each pointer and each button activation key has its own input source. Releasing one finger, Enter, or Space no longer cancels another still-held source. Losing button focus clears that button's sources while retaining other input origins. Legacy hold commands retain their existing behavior. Right/middle mouse presses cannot activate hold buttons, and disabled thermal-climb controls remain visually inactive.
+
+Visual review exposed a cramped Pull up (Space) label in the former five-column phone layout. The Flight button group now uses three columns on compact screens and two below 400px, allowing labels to fit within their button borders. Other control groups keep their existing layouts.
+
+Validation:
+- All three new browser regressions failed on the previous source, reproducing missing keyboard highlights, early release of overlapping activation keys, and secondary-button activation.
+- Eight Chromium checks passed together on the final source: three held-control checks, three keyboard/pause checks, and two pointer-ownership checks.
+- Coverage includes real keyboard activation, synthetic touch holds with a capture shim, overlapping input sources, normal releases/cancellations, pause/resume, focus loss, remapping, keyboard aliases, frozen camera/zoom/resize/reduced motion, and native mouse capture cleanup.
+- The enhanced held-control check verifies the active background color and each button's overflow at 880px and 320px. Visually inspected held-controls-880.png and the corrected held-controls-320.png in scratch/raptor-flight-review; all phone labels fit.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop source copies are byte-identical.
+
+Changes remain local. This pass does not claim physical touchscreen testing, an app-wide test suite, or a performance benchmark.
+
+## Consistent grounded strikes and explicit takeoff controls (2026-09-19)
+
+Grounded strike handling now follows the simulator's existing Launch first guidance. Both target eligibility and strike execution reject attempts while landed, before tutorial strike credit, catch credit, cooldown, or delayed strike actions can be created. Landed birds watching nearby prey receive the existing watch/launch guidance rather than strike-ready feedback. This aligns the flight game's rules; it is not a new claim about real-world ground hunting.
+
+The Strike button and Strike instrument now share their availability text and explanation: Launch first, Paused, Recovering, or Flight ended. The button is disabled when those states prevent striking, and its accessible label and tooltip reflect the reason. The existing paused-control regression now expects the explicit Strike paused label.
+
+While landed or perched, Pull up becomes Take off with the mapped key and an explicit hold-to-launch tooltip. Take off receives primary visual emphasis while Dive returns to its neutral appearance; airborne flight restores the usual labels and emphasis. Entering perched practice publishes its resting flight state immediately, so the controls do not briefly retain the airborne state while waiting for another animation frame.
+
+Validation:
+- Both new Chromium checks failed on the previous source, reproducing ground strike eligibility and stale airborne feedback immediately after entering perched practice.
+- Seven distinct browser checks passed together: two new landing/takeoff controls checks, three existing keyboard/pause presentation checks, and two existing strike-loop checks.
+- Both new checks passed again on the final source after takeoff emphasis was added. They cover a production-physics ground landing, blocked command/keyboard strikes with no queued strike actions, launch through the focused Take off button, a successful airborne catch, immediate perched state, pause/resume, restored airborne labels/emphasis, and readable 320px buttons.
+- GPU submission is skipped only during the controlled descent loop and restored for subsequent interaction and visual review. Real prey are repositioned to make catch eligibility deterministic.
+- Visually inspected the final scratch/raptor-flight-review/takeoff-controls-320.png. Labels fit, Take off is prominent, and Launch first is visibly disabled.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop source copies are byte-identical.
+
+Changes remain local. This pass does not claim an app-wide suite, physical touchscreen testing, or a full natural-play difficulty assessment.
+
+## Usable custom-control fallbacks and paused remapping (2026-09-19)
+
+Unbound launch and dive actions now name their on-screen controls instead of leaving a blank space in flight guidance. Perch instructions explain drag scanning when look/pitch keys are absent. Landing and recovery messages share the same mapped-key or Take off fallback. The custom-binding warning explains that drag steering and on-screen controls remain available while keys are being assigned.
+
+Contextual prompts now retain a Button badge for an available on-screen action when it has no keyboard shortcut. These badges use a text span rather than keyboard markup, and preserve the matching control's guidance highlight. Mapped keys retain their existing presentation.
+
+Changing control presets or custom bindings refreshes target, perch, mission, and pause instructions immediately. A paused view repaints once without advancing physics, prey, timers, or recorded progress. Reusing a key for another action also refreshes the newly unbound action's fallback.
+
+Validation:
+- Both new Chromium checks failed on the previous source, reproducing empty perch controls and a STOOP instruction with no action after hold.
+- Six focused Chromium checks passed together on the final source: two custom-guidance checks, the existing preset/custom-binding instrument check, and three existing keyboard/pause presentation checks.
+- New checks use the actual settings UI to assign and reassign launch/dive keys while paused; verify unchanged flight time, position, energy, catch count, and prey; and confirm launch still works through an unbound on-screen button.
+- The instrument regression verifies mapped shortcut attributes while a strike is unavailable on the perch, then verifies the enabled mapped strike after takeoff and a HUD update.
+- Visually inspected unbound-perch-guidance-320.png and unbound-dive-key-guide.png in scratch/raptor-flight-review. Phone perch instructions fit and button prompts are visually distinct from keyboard keys.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop source copies are byte-identical.
+
+Changes remain local. Validation is focused on control guidance and paused remapping, not an app-wide suite or a physical touchscreen assessment.
+
+## Flight trail recovery guidance and phone HUD spacing (2026-09-19)
+
+An active flight trail now explains landing, crash recovery, and pausing instead of continuing to display airborne steering instructions. The contextual key guide prioritizes ground controls, and the trail panel uses the current mapped takeoff key or on-screen button fallback. Remapping controls refreshes the trail guidance immediately. Recovery receives a steady amber border; paused guidance receives a blue border, with forced-colors support.
+
+On compact screens, the heading and attitude instruments are hidden during trail practice to give the progress panel clear space. Ground-contact notifications are omitted from the transient event display while the trail provides the same recovery guidance. Events remain in the underlying log and can display after leaving the trail while still recent; other event types are unchanged.
+
+Validation:
+- Two new browser checks exercise actual flight physics: earning ring credit, ordinary landing, launch through the Take off button, a dive-induced crash, and timed ground recovery. Both initially failed against the previous source at the new recovery-state expectations.
+- Five distinct Chromium checks passed together: the two recovery checks and three existing flight-practice checks covering input smoothing, pause, shadow-update limits, complete trail progression, replay, and mapped controls.
+- After the final duplicate-event correction, both recovery checks passed again. Assertions verify preserved ring index, score, passed rings and pips, paused simulation time and position, recovery-specific directions, and restored ground-contact events after leaving trail practice.
+- Visually inspected the final trail-grounded-stage-320.png in scratch/raptor-flight-review. The wind display and recovery panel no longer overlap; the panel text fits. The fixture waits for canvas resize and draws a frame before capture.
+- GPU submission is skipped during long controlled flight loops and restored for interaction and screenshots. No physics shortcuts are used for landing or crash recovery.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. This pass does not claim physical-device testing, an app-wide suite, or new findings about raptor behavior.
+
+## Labeled reserves and compact weather telemetry (2026-09-19)
+
+The top instrument strip now gives calories and stamina separate labeled rows, each with its own percentage and bar. This removes the ambiguous slash-separated values that crowded the weather cell on phones. Weather shows the named day period above the existing cloud-cover percentage and weather glyph. The existing energy thresholds, capped percentages, weather metadata, and simulation rules are unchanged.
+
+The energy metric is now an explicitly named accessibility group. Compact cells can shrink to available space rather than forcing a fixed minimum width. Vertical spacing keeps the two-row readouts clear of the flight-state badge, and the strip supports forced system colors while retaining the existing reduced-motion behavior.
+
+Validation:
+- Five distinct Chromium checks passed on the final production source: the new telemetry check, two existing mission-HUD clearance checks, and two trail landing/crash-recovery checks. The telemetry check passed on its final separate rerun after correcting test assumptions about HUD sampling and post-pull-up stamina.
+- The new check compares live reserve values with actual simulation state, verifies text bounds and instrument clearance at 880, 760, 420, 320, and 300px panel widths, and checks frozen position, energy, and simulation time during paused resize. On resume it allows the existing 10 Hz HUD's bounded lag behind physics.
+- The first layout run caught a 2.9px overlap with the flight-state badge; vertical spacing was corrected before the successful runs.
+- Visually inspected telemetry-clarity-880.png, telemetry-clarity-320.png, and telemetry-clarity-forced-colors.png in scratch/raptor-flight-review. Captures temporarily dismiss the pause card without advancing simulation time so the instruments remain visible.
+- Existing checks preserve mission-panel spacing, earned ring progress, takeoff, crash recovery, and pause behavior.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Validation covers Chromium and simulated narrow layouts, not physical devices or the entire application suite.
+
+## Continuous ring navigation and clearer trail feedback (2026-09-19)
+
+Flight Trail now keeps its steering hint visible during the welcome tip and ring awards. Feedback has a separate, visually secondary line with distinct passed/missed tones; pause and ground recovery hide transient awards so their next-action instructions retain priority. The original welcome announcement remains, with a shorter visible centered-pass tip.
+
+Turn guidance now uses the inner scoring radius and current horizontal distance instead of the former fixed 0.30-radian threshold. Vertical advice also uses the inner scoring radius rather than a fixed six-meter tolerance. This gives earlier corrections on approaches that previously received Hold your line despite aiming outside the centered scoring area. Ring geometry, crossing detection, flight physics, and point awards are unchanged.
+
+On phones, transient feedback occupies the space beside the flight-state and wind badges. This keeps the central progress panel from growing over the approaching ring. Scenic view retains feedback inside its panel because the instrument badges are hidden.
+
+Validation:
+- Six Chromium checks passed together: the new continuous-guidance check, three existing flight-practice checks, and two landing/crash-recovery checks.
+- The new check passed again after the final phone spacing and welcome-copy adjustments. It exercises a real off-axis approach below the former angular threshold, an earned ring pass, simultaneous steering and award feedback, paused feedback timing, stopping the trail, scenic layout, and desktop/320px panel bounds.
+- The first new check needed simulated time for the existing 10 Hz HUD to catch up after steering. Production HUD timing was retained.
+- Visual review caught the enlarged central panel and then a narrow overlap between the welcome tip and longer wind readout. The feedback chip was repositioned, narrowed, and given a shorter tip; explicit overlap and vertical-clearance assertions now pass.
+- Reviewed the phone stage and welcome captures in scratch/raptor-flight-review, including the final trail-steering-intro-320.png. Steering remains prominent and the welcome tip has clear separation from the wind badge.
+- Existing checks preserve full trail completion, replay, best scores, input smoothing, mapped controls, paused progress, earned rings through landing/takeoff, and timed crash recovery.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. This pass does not claim physical-device testing, a full application suite, or a new biological model.
+
+## Compact trail aiming view and unclipped phone wind (2026-09-19)
+
+On phones, the airborne trail panel now uses a compact two-row layout for ring number/distance, score, and steering. This reduces its obstruction of the approaching ring. Individual ring markers remain in the accessibility tree; their full visual presentation returns when paused, grounded, recovering, or reviewing completed results. Desktop presentation retains the full marker row, and scenic feedback spans the compact panel normally.
+
+Wind direction/speed and the optional ground-speed/lift detail now use separate DOM spans. Phones stack the values on two lines between the flight-state badge and heading instrument; desktop keeps a single line. Values, units, conditional ground-speed visibility, lift information, and the existing weather accessibility description are retained. The transient trail tip is anchored to the panel edge so it stays clear of the longer wind readout at the smallest checked widths.
+
+Validation:
+- Seven Chromium checks passed together: two new compact-HUD checks, two free-flight/thermal guidance-layout checks, the existing continuous-trail-guidance check, and two trail landing/crash-recovery checks.
+- After the final notification alignment adjustment, both new checks and the continuous-guidance check passed again (three checks).
+- The new flight check projects the actual first ring through the rendered camera and verifies more than 12px clearance from the compact panel to the ring center. The panel is under 60px high at a 320px wrapper width, retains score and steering, and exposes all five ring markers to role queries.
+- Pause checks verify unchanged flight time, position, ring index, and score; the full visible ring markers return while paused. Scenic layout remains in bounds.
+- Strong-wind checks verify uncut text at 880, 420, 320, and 300px wrapper widths; separation from flight-state, heading, and target cues; combined strong-wind/trail-tip clearance on the two narrowest widths; frozen values during pause; and removal of ground-speed detail when wind no longer changes speed enough to show it.
+- The initial wind fixture used a cross/headwind combination whose resulting speed difference fell below the existing display threshold. It now uses a southeast wind that produces a measurable ground-speed difference; production wind physics were unchanged.
+- Visually reviewed compact-flight-ring-320.png and compact-wind-320.png in scratch/raptor-flight-review. The ring center is visible below the compact panel, and both wind and ground-speed values fit.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Verification covers Chromium and simulated narrow layouts, not physical-device testing or the entire application suite.
+
+## Consistent turning camera and immediate paused motion preferences (2026-09-19)
+
+The chase camera now banks around its actual viewing direction. Previously its up vector tilted along a fixed world axis, so the horizon tilt faded and reversed as the bird changed heading. Both turn directions now retain a consistent visual bank around the compass, with the existing damping and maximum tilt preserved. The correction reuses a cached vector and does not change flight physics.
+
+Enabling reduced motion while paused now rebuilds the camera orientation immediately. Resetting the up vector alone left the rendered view tilted until a later camera update. The correction preserves the camera position and viewing direction and does not advance the simulation.
+
+Validation:
+- A new browser regression reproduced a right turn displaying a wrong-way bank of approximately -0.286 radians before the correction.
+- Both new directional checks use actual flight controls and physics, cover all four heading quadrants, and measure the rendered camera quaternion. They also verify frozen paused state, immediate reduced-motion leveling, preserved camera position and viewing direction, first-person/chase switching, and level flight after resuming with reduced motion.
+- The first combined run passed six existing flight-continuity and input/pause checks. Its two new directional checks exposed the separate paused reduced-motion issue after passing their compass-banking assertions.
+- After correcting paused leveling, both new camera checks and the three existing input/pause checks passed together. The three continuity checks had already passed with the camera-axis correction; they were not rerun after the isolated preference-change correction.
+- The continuity test's obsolete minimum-padding assumption was replaced with telemetry fit and flight-state clearance checks, matching the previously approved compact telemetry layout.
+- Visually reviewed consistent-bank-right.png and consistent-bank-left.png in scratch/raptor-flight-review. The opposing horizon tilts are coherent, and the bird, reticle, and instruments remain clear.
+- Long deterministic flight loops skip GPU submissions; rendering is restored for screenshots. JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Verification covers Chromium with the low-quality rendering fixture, not physical-device testing or the entire application suite.
+
+## Heading-consistent climbing and diving poses (2026-09-19)
+
+The bird model now composes heading before its local pitch and bank. The previous XYZ rotation applied pitch around a world axis, making the nose drop or appear level during a climbing turn as the heading changed. YXZ composition keeps the existing visual pitch amount and damped bank consistent across the compass. Flight physics, camera behavior, animation timing, and resting poses are preserved.
+
+Validation:
+- The new browser regression failed against the previous source with approximately 25.4 degrees of nose-direction error relative to the intended visual pose.
+- Two new checks pass using real flight controls through all four heading quadrants, for both left and right climbing turns. They measure the rendered model quaternion, verify nose-up alignment and consistent bank, then check nose-down alignment during descent, bank settling after steering release, and frozen pose/position/time while paused.
+- Seven distinct Chromium checks passed on the final production source: the two new pose checks, both camera-bank checks, and all three flight-continuity checks.
+- The first combined run passed five checks. The landing check passed its ground-contact and folded-pose assertions but timed out waiting for the Scenic view click; the serial reduced-motion check was skipped. A targeted rerun passed both checks without source or test changes.
+- Visually inspected aligned-climb-right.png and aligned-climb-left.png in scratch/raptor-flight-review. Both show coherent banked climbing poses with clear instruments and reticle.
+- Long deterministic flight loops skip GPU submission and restore rendering for screenshots. JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. These checks use Chromium with the low-quality rendering fixture; this is not physical-device testing or a full application suite.
+
+## Camera-independent attitude instrument (2026-09-19)
+
+The attitude indicator now reads the bird's damped visual bank instead of camera roll. This keeps the bank value and miniature horizon meaningful in first-person view and under reduced motion, where the camera remains level. Grounded and crashed birds report zero pitch and bank, so a perched scanning angle is no longer presented as a dive. Airborne pitch remains the existing flight pitch; physics, model animation, camera behavior, and the HUD sampling rate are unchanged.
+
+Validation:
+- The new browser regression failed against the previous source at its independent model-bank comparison: the camera-derived display read -16 degrees while the rendered bird rounded to -15 degrees.
+- Five Chromium checks passed on the final source: the new attitude check, both compass camera-bank checks, and both grounded-strike/takeoff-control checks.
+- The new check measures bank from the rendered bird quaternion and verifies matching values in chase and first-person views, retained readouts during paused view and reduced-motion changes, unchanged paused simulation time and position, working bank guidance with reduced motion, settling to level after steering release, and a level instrument while scanning from a perch.
+- Existing checks preserve camera banking through all compass quadrants, paused leveling, ground strike restrictions, launch behavior, resumed hunting, and phone control fit.
+- Visually reviewed attitude-first-person.png in scratch/raptor-flight-review. The compact instrument shows the nonzero bank clearly while the first-person camera stays level.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Checks use Chromium and simulated layouts, not physical devices or the full application suite.
+
+## Terrain-relative height scale and clearer labels (2026-09-19)
+
+The side height gauge now scales between the local terrain and the actual mission ceiling. Previously it divided height above terrain by the ceiling's absolute world height, mixing reference levels. A bird at the ceiling above raised ground could therefore appear to have room left to climb. Numeric height remains measured above the terrain, and flight limits and physics are unchanged.
+
+The top metric and side gauge now use Height. The metric has a Height above terrain tooltip and an accessibility group label containing the current value and unit.
+
+Validation:
+- A new browser regression uses normal climb and steering controls to reach the 500-meter world ceiling and fly over the cliff plateau. Against the old source, the gauge showed 94% at the actual ceiling. The initial circular route stayed over low ground; the fixture was extended to elevated terrain to expose the mismatch.
+- Four Chromium checks passed: the new height check, both existing mission-HUD clearance scenarios, and the telemetry clarity check.
+- The new check verifies full-scale fill and marker at the ceiling, the retained terrain-relative numeric value, accurate scale during descent, unchanged paused position/time/readings, accessible naming, and the visible height metric in a narrow layout where the side gauge is hidden.
+- Existing coverage verifies instrument text fit down to 300px, mission-panel separation, pause/resume, and forced-color presentation.
+- Visually inspected height-gauge-ceiling.png in scratch/raptor-flight-review. The gauge is full while the value correctly reads 469m above the raised terrain.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Verification uses Chromium and simulated narrow layouts, not physical-device testing or the entire application suite.
+
+## Pause when leaving the flight window (2026-09-19)
+
+Window focus loss now pauses the simulator through the existing pause path, instead of merely clearing held controls while the bird keeps flying. Returning focus leaves the flight paused until the player resumes. Moving focus from the canvas to controls within the same window retains normal flight behavior. The pause path also gates audio and stops the animation loop.
+
+Validation:
+- The new window-focus browser regression failed on the previous source because the pause overlay stayed hidden after a window blur event.
+- Seven distinct Chromium checks passed on the final source: the new focus check, all three input/pause checks, and all three held-control feedback checks. The original combined run passed six; the existing keyboard-hold test required an explicit resume after its simulated window blur, then passed on its targeted rerun.
+- The new check dispatches window blur/focus events, verifies frozen bird position, heading, energy, camera, wings, simulation time, and render count, checks repeated blur causes no additional render, and confirms focus restoration does not automatically resume. Explicit resume advances exactly the requested simulation time without retaining the previous steering input. A canvas-only blur does not pause.
+- Existing checks cover independent keyboard/touch holds, control remapping, phone button fit, paused resizing and reduced motion, camera/zoom redraws, and the Resume flight card.
+- Visually reviewed window-focus-paused.png in scratch/raptor-flight-review. The pause card presents a clear Resume flight action while keeping the frozen scene visible.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Focus events are simulated in Chromium; native operating-system window switching and physical-device behavior were not tested.
+
+## Immediate paused field-of-view reset for reduced motion (2026-09-19)
+
+Enabling reduced motion while paused now updates the camera projection before the existing paused redraw. Dive-induced widening and strike lens effects resolve to the normal field of view immediately; deliberate acuity zoom remains active. Previously the motion effects were hidden but their widened lens stayed frozen until flight resumed. The existing zoom-aware FOV function is reused, and live-flight easing remains unchanged.
+
+Validation:
+- The new browser regression uses actual dive controls in High Stoop. Against the previous source, its paused field of view remained at approximately 74.86 degrees after reduced motion was enabled instead of returning to 70 degrees. The initial three-second fixture produced only 1.25 degrees of widening and was extended to six seconds to make the starting condition distinct.
+- Six Chromium checks passed together on the final source: the new paused-framing check, both camera-bank checks, and all three input/pause checks.
+- The new check verifies the camera projection matrix, exactly one paused redraw, no continuing animation frames, unchanged position/time/energy/speed/catches, retained acuity zoom across preference changes, correct zoom-off framing, and stable field of view after resume.
+- Existing checks retain heading-independent camera bank, paused leveling, input ownership, paused resize, and camera/zoom controls.
+- Visually inspected reduced-motion-paused-framing.png in scratch/raptor-flight-review. The frozen dive remains framed beneath the pause controls without the widened lens effect.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Verification uses Chromium with the low-quality fixture and an emulated motion preference, not physical-device testing or the full application suite.
+
+## Actual vertical-speed feedback beneath height (2026-09-19)
+
+The height metric now includes a compact vertical-speed line with an up/down arrow, meters per second, and restrained climb/descent colors. It measures world-vertical movement after lift, glide sink, trim, ground contact, and ceiling constraints, rather than inferring it from pitch. Exponential smoothing and a small near-zero threshold keep the cue readable. Grounded/crashed birds and birds held at the mission ceiling report zero. Flight physics are unchanged.
+
+The accessible height description now includes climbing/descending rate or zero vertical speed. The numeric height remains prominent, with smaller secondary text below; forced colors override the decorative tones. The existing HUD clock freezes the readout while paused.
+
+Validation:
+- Three Chromium checks passed together: the new vertical-speed check, the expanded ceiling/height check, and the existing telemetry clarity check. The new check passed again after correcting its visual capture to temporarily hide the covering pause card without advancing simulation time.
+- The new check compares shown climb and descent rates with independently measured position changes, verifies glide sink at level pitch, checks zero on a perch, and confirms paused state/readouts remain unchanged. It covers reduced motion, forced colors, text bounds, and flight-state clearance at 880, 420, 320, and 300px widths.
+- The ceiling check verifies zero vertical speed while climb input is still held at the actual ceiling. Existing coverage retains height scale accuracy, energy labels/values, pause/resume, and compact telemetry bounds.
+- Visually reviewed vertical-speed-320.png in scratch/raptor-flight-review. The frozen climbing example shows 73m height with a smaller upward 7.2m/s cue, and all four visible metrics fit without obstruction.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Verification uses Chromium and simulated layouts, not physical devices or a full application suite. The readout is a smoothed gameplay instrument, not a new biological model.
+
+## Directional return guidance at the flight-area edge (2026-09-19)
+
+The existing mission focus line now explains proximity to the flight-area edge and points left or right toward the center. Once the bird faces inward, the hint changes to keep heading toward center. The contextual key guide shows the mapped return-turn key; when that direction is unbound, the mission hint suggests dragging instead. Normal mission and hunting guidance returns after re-entering the interior.
+
+The existing inward steering and world limits are unchanged. The cue reuses the mission panel and key prompts without another overlay, retains progress and route information, and yields to flight lessons, ring practice, grounded recovery, resolved missions, and urgent predator evasion. Pause retains the scene and gives Resume priority in the key guide.
+
+Validation:
+- Five distinct Chromium checks passed on the final source: the new boundary-return check, both custom-control guidance checks, and both compact guidance-layout checks. The new test initially assumed a literal space between separate key-chip and hint DOM elements; its assertion was corrected before the successful targeted rerun.
+- The new check flies to the boundary using normal physics, independently calculates the correct return direction, verifies custom and unbound controls, checks phone bounds and paused state, follows the inward heading, then verifies restored hunting prompts and preserved catches after returning.
+- Existing checks retain mapped launch/dive fallbacks, paused remapping, and free-flight/thermal guidance clearance.
+- Visually inspected boundary-return-320.png in scratch/raptor-flight-review. The return instruction fits beneath the hunt phase while progress and route steps remain readable.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Verification covers Chromium and simulated narrow layouts, not physical devices or the full application suite.
+
+## Smooth distant-bird recycling (2026-09-19)
+
+Decorative distant birds now fade near their recycling radius, remain fully transparent on the relocation frame, and ease back into view afterward. Reduced motion freezes both their drift and recycling. The four existing sprites reuse their geometry and materials without additional draw calls, and recycling uses the scenery random generator instead of consuming gameplay randomness.
+
+Validation:
+- Five distinct Chromium checks passed across the final runs: the new flock-continuity regression and the four existing cinematic scenery scenarios (cliffs, high-quality lake, low-quality night, and low-quality lake).
+- The new regression verifies near-edge fading, a transparent relocation frame, bounded smooth fade-in, retained geometry/material identities, exact pause behavior, and frozen decorative scenery under reduced motion while the player continues moving.
+- The high-quality lake scenario timed out twice while reading the canvas snapshot. Added immediate canvas-presence and browser-error diagnostics; the targeted rerun passed all existing rendering assertions without production changes. The cause of the earlier timeouts remains unconfirmed. Both low-quality scenarios subsequently passed together.
+- Visually inspected distant-bird-continuity.png in scratch/raptor-flight-review. The four decorative birds were staged ahead of the camera for visibility in this review capture; the raptor and flight HUD remain clear.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Browser verification uses software-rendered Chromium with optional bloom disabled, not physical-device frame-rate profiling or the full application suite.
+
+## Camera-aligned dive streak fades (2026-09-19)
+
+Dive speed streaks now keep following the camera through their fade after the dive control is released. Previously their position and orientation stopped updating while they remained visible, leaving the effect behind as the player moved and turned. Opacity now eases toward speed-dependent intensity on entry and exit, so restarting a dive at speed does not instantly restore a bright effect. Fading streaks retain the current atmosphere tint. Ground contact, crashes, pause, and reduced motion clear the effect through their existing presentation paths.
+
+Validation:
+- The new browser regression reproduced the previous defect: after the first 25ms release frame the visible streak mesh was approximately 1.22m away from the camera.
+- Four Chromium checks passed together on the final source: the new dive-streak regression, the existing paused motion-framing check, and both paused Scenic-view checks.
+- The new check uses real dive and turning controls, verifies camera position/orientation alignment throughout visible fading, monotonic fade-out, gentle re-entry, reused geometry/materials, paused flight state, and hidden streaks during reduced-motion flight.
+- Existing checks retain zoom-aware paused camera framing and Scenic-view visibility without advancing flight or rebuilding effect geometry.
+- Visually reviewed dive-streak-continuity.png in scratch/raptor-flight-review. The subtle streaks frame the diving raptor without obscuring the instruments.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Verification uses software-rendered Chromium with optional bloom disabled, not physical-device frame-rate profiling or the full application suite.
+
+## Heading-relative wind guidance (2026-09-19)
+
+The wind instrument now says WIND TO before its compass direction, matching the simulator's existing wind-travel convention. Its former static arrow now points along wind travel relative to the bird's heading: forward, backward, or sideways as the player turns. Calm air uses a dot. The detail line adds HEAD, TAIL, or DRIFT L/R for winds of at least 1.2m/s, alongside the existing ground-speed reading. Active thermal lift retains priority in that line to keep compact layouts clear.
+
+The accessible weather description spells out the predominant wind effect relative to heading. This is presentation of the existing wind vector; flight physics are unchanged. The directional instrument updates without a decorative transition and remains informative with reduced motion enabled.
+
+Validation:
+- Five Chromium checks passed together: the new wind-guidance regression, both compact flight-instrument checks, and both compact guidance-layout scenarios. The new check passed again after its review capture was adjusted to hide the covering pause card temporarily without advancing simulation time.
+- The new check verifies arrow orientation and text for headwind, tailwind, left drift, and right drift; a turn against fixed world wind; calm presentation; accessible descriptions; paused state; reduced motion; and retained guidance in forced colors.
+- Existing coverage verifies wind text bounds and separation from neighboring instruments at 880, 420, 320, and 300px widths, alongside ring-practice feedback and open-flight/thermal guidance.
+- Visually inspected directional-wind-320.png in scratch/raptor-flight-review. The direction, speed, relative drift, and ground speed fit in two compact rows.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Verification uses software-rendered Chromium and simulated narrow layouts, not physical devices or the full application suite.
+
+## Navigation follows the active flight objective (2026-09-19)
+
+Ring practice now changes the telemetry card from Target to the current ring number and points the heading instrument toward that same ring. Both update as each ring is passed and restore prey information immediately when practice stops. Heading updates share the existing target-feedback refresh, so toggling target assist while paused also clears or restores the bearing without advancing flight.
+
+The practice panel and telemetry card now share their ring-distance update. Visual review of the first implementation caught a one-metre difference caused by their separate refresh schedules; both readouts now stay synchronized. Hunting cues still use prey distance, and thermal missions keep their lift navigation.
+
+Validation:
+- The new browser regression failed against the previous source because starting ring practice left the telemetry label at Target instead of Ring 1.
+- All nine checks in the final Chromium run passed: the new objective-navigation check, the existing continuous trail-guidance check, three paused target-marker checks, and four thermal mission checks.
+- The new check flies through a ring using normal controls, verifies independently calculated ring distance and bearing, checks agreement between both distance readouts, confirms progression to Ring 2, exercises pause and view changes, stops practice, and verifies immediate paused target-assist updates with frozen flight state.
+- An earlier run passed eight checks but the thermal narrow-layout test timed out on an animation-frame-polled resize wait under its deliberately frozen animation clock. Changed its resize and restart waits to timed polling; the complete final run passed.
+- Visually inspected ring-navigation.png in scratch/raptor-flight-review after synchronization. Both the telemetry card and practice panel show Ring 2 at 47m, with the heading instrument pointing to that ring.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Verification uses software-rendered Chromium and simulated narrow layouts, not physical devices or the full application suite.
+
+## Time-based, tapered flight-path trail (2026-09-19)
+
+The flight-path trail now samples elapsed simulation time instead of storing one point per rendered frame. Its existing quality-dependent point count represents roughly 0.4 seconds of flight, with interpolated sample crossings during slower frames and a live head attached to the bird. A static per-vertex opacity taper softens the end of the line. Existing geometry is reused, with no extra draw calls or per-frame allocations. Grounded/crashed states reset the trail alongside reduced motion and inactive flight effects.
+
+Validation:
+- Both new browser regressions failed against the previous source: the low-quality trail represented 110ms of history at 10ms frame intervals and 550ms at 50ms intervals.
+- Five Chromium checks passed together on the final source: both trail-timing cases, the dive-streak continuity check, and both paused Scenic-view checks.
+- Timing checks compare the actual trail tail with independently recorded flight positions, verify roughly 0.4 seconds of history at both frame intervals, confirm head attachment and the retained 12-point low-quality geometry, and exercise the compiled monotonic opacity taper.
+- The new checks also retain unchanged paused geometry across Scenic toggles, hide the effect under reduced motion, and confirm a freshly seeded trail after motion effects resume. Existing coverage preserves dive streak alignment and paused rendering behavior.
+- Visually inspected time-based-flight-trail.png in scratch/raptor-flight-review. The restrained trail fades behind the diving raptor without obscuring the flight instruments.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Timing is verified with controlled simulation frames in software-rendered Chromium at low graphics quality; this is not a hardware frame-rate benchmark or a full application test run.
+
+## Independent, soft-edged night stars (2026-09-20)
+
+Stars now twinkle gently at independent phases and frequencies instead of changing the opacity of the entire starfield together. Their existing random phase/frequency values are stored in one static geometry attribute, while two shader uniforms supply simulation time and the motion preference. A radial fragment fade softens point edges. Atmospheric visibility continues to follow daylight and cloud cover, with the existing star count and single starfield draw call retained.
+
+Reduced motion removes the twinkle immediately, including during a paused flight. Pausing freezes the simulation-time uniform. No per-frame star geometry updates or additional gameplay random draws were added.
+
+Validation:
+- Five Chromium checks passed across the final runs: the new star-rendering regression, the complete low-quality owl night scene, and terrain-lighting continuity at low, balanced, and high quality.
+- The new regression renders the real star geometry/material against a fixed review background and verifies that some pixels brighten while others dim. With motion disabled, pixel buffers at two different shader times match exactly. It also checks compiled shading, retained geometry and phase data, pause, live and paused motion-preference changes, and zero star opacity in daylight.
+- Existing checks retain pause-aware atmosphere and Scenic view, and verify continuous sunlight direction across cached-shadow frames at all quality tiers.
+- Visually inspected independent-night-stars.png (an isolated overhead starfield review) and cinematic-night-low.png (the actual narrow owl flight scene) in scratch/raptor-flight-review.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Verification uses software-rendered Chromium with optional bloom disabled, not physical-device testing or the full application suite. The starfield is a decorative sky, not a mapped astronomical chart.

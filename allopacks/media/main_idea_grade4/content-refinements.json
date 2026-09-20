@@ -15,7 +15,7 @@
     "resourceId": "mi-glossary",
     "path": "data.2.def",
     "from": "A smaller piece of information that supports the main idea.",
-    "to": "A smaller piece of information; a supporting detail helps explain the main idea."
+    "to": "A smaller piece of information. It may help explain a larger point."
   },
   {
     "resourceId": "mi-glossary",
@@ -49,15 +49,163 @@
   },
   {
     "resourceId": "mi-memory",
+    "path": "data.cards.0",
+    "from": {
+      "id": "mi-ma-suitcase",
+      "target": "Topic is a word; main idea is a sentence; details are what is packed inside",
+      "essentialFacts": [
+        "The topic is what a text is about in a word or phrase.",
+        "The main idea is a full sentence that says something about the topic.",
+        "Supporting details are the pieces that belong inside that one idea."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "analogy-pattern",
+      "mode": "scaffolded",
+      "aiExample": "The topic is the luggage tag (one word: 'Bees'). The main idea is the suitcase (a sentence: 'Bees matter to our food supply'). The details are the clothes packed inside, and every one must belong to the trip.",
+      "mapping": "Tag, suitcase, clothes: three sizes for three ideas. The tag is tiny like a topic word; the suitcase holds everything like the main idea; the clothes are the details that must fit.",
+      "scaffoldStarter": "The topic is the ____ (a word). The main idea is the ____ (a sentence). The details are the ____.",
+      "scaffoldSteps": [
+        "Pick your own container: a backpack, a lunchbox, a toy bin.",
+        "Match a label, the container, and the things inside to topic, main idea, and details.",
+        "Test it on the bee paragraph."
+      ],
+      "coachPrompts": [
+        "In your analogy, what happens to a detail that does not belong to the trip?"
+      ],
+      "studentPrompt": "Build your own container analogy.",
+      "reasoningPrompt": "How does your analogy show that a topic is not the same as a main idea?",
+      "hookFact": {
+        "text": "'Dogs' is a topic. 'Dogs can be trained to detect illness' is a main idea.",
+        "sourceTitle": "The Suitcase Test (this lesson)"
+      }
+    },
+    "to": {
+      "id": "mi-ma-suitcase",
+      "target": "Topic is a word; main idea is a sentence; details are what is packed inside",
+      "essentialFacts": [
+        "The topic is what a text is about in a word or phrase.",
+        "The main idea is a full sentence that says something about the topic.",
+        "Supporting details are the pieces that belong inside that one idea."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "analogy-pattern",
+      "mode": "scaffolded",
+      "aiExample": "The topic is the luggage tag (one word: 'Bees'). The main idea is the suitcase (a sentence: 'Bees matter to our food supply'). The details are the clothes packed inside, and every one must belong to the trip.",
+      "mapping": "Tag, suitcase, clothes: three sizes for three ideas. The tag is tiny like a topic word; the suitcase holds everything like the main idea; the clothes are the details that must fit.",
+      "scaffoldStarter": "The topic is the ____ (a word). The main idea is the ____ (a sentence). The details are the ____.",
+      "scaffoldSteps": [
+        "Pick your own container: a backpack, a lunchbox, a toy bin.",
+        "Match a label, the container, and the things inside to topic, main idea, and details.",
+        "Test it on the bee paragraph."
+      ],
+      "coachPrompts": [
+        "In your analogy, what happens to a detail that does not belong to the trip?"
+      ],
+      "studentPrompt": "Build your own container analogy.",
+      "reasoningPrompt": "How does your analogy show that a topic is not the same as a main idea?",
+      "hookFact": {
+        "text": "'Dogs' is a topic. 'Dogs can be trained to detect illness' is a main idea.",
+        "sourceTitle": "The Suitcase Test (this lesson)"
+      },
+      "factReview": {
+        "status": "inherited-review-attribution",
+        "sourcePack": "allopacks/main_idea_grade4.allopack.json",
+        "sourceResourceId": "mi-memory",
+        "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+        "factsHash": "518e2b62518c0cd957917c2465586f3dc5300ac7d4ece0a20e1abb0a359e6c76"
+      }
+    }
+  },
+  {
+    "resourceId": "mi-memory",
     "path": "data.cards.1.essentialFacts.2",
     "from": "Check your sentence against the details: each one should support it, or your idea may be too narrow.",
     "to": "Check your sentence against the important details. A mismatch may mean revising your idea or recognizing background information."
   },
   {
     "resourceId": "mi-memory",
+    "path": "data.cards.1.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "mi-memory",
     "path": "data.cards.1.hookFact.text",
     "from": "Whatever you say out loud after covering the paragraph is usually very close to the main idea.",
     "to": "After covering the paragraph, draft a main idea and check it against the important details."
+  },
+  {
+    "resourceId": "mi-memory",
+    "path": "data.cards.2",
+    "from": {
+      "id": "mi-ma-interesting",
+      "target": "Interesting is not the same as important",
+      "essentialFacts": [
+        "A detail can be true and fascinating and still not be the main idea.",
+        "'Bees have five eyes' is interesting, but a paragraph about pollination is not about bee eyes.",
+        "Ask whether the detail helps prove the main idea; if not, it does not belong in the suitcase."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "rhyme-rhythm",
+      "mode": "scaffolded",
+      "aiExample": "Cool is not the same as key; does it prove the point to me?",
+      "mapping": "The first line names the trap (cool details feel key), and the second line is the test question from the reading, so the rhyme carries the fix along with the warning.",
+      "scaffoldStarter": "____ is not the same as ____; does it ____?",
+      "scaffoldSteps": [
+        "Choose two words for interesting and important that rhyme or bounce.",
+        "End with the test question.",
+        "Try it on the five-eyes detail."
+      ],
+      "coachPrompts": [
+        "Does your rhyme tell you what to DO with a cool detail, not just that it is a trap?"
+      ],
+      "studentPrompt": "Write your own two-line rhyme.",
+      "reasoningPrompt": "How does your rhyme help you decide which details go in the suitcase?",
+      "hookFact": {
+        "text": "Telling interesting from important is most of what good reading is.",
+        "sourceTitle": "The Suitcase Test (this lesson)"
+      }
+    },
+    "to": {
+      "id": "mi-ma-interesting",
+      "target": "Interesting is not the same as important",
+      "essentialFacts": [
+        "A detail can be true and fascinating and still not be the main idea.",
+        "'Bees have five eyes' is interesting, but a paragraph about pollination is not about bee eyes.",
+        "Ask whether the detail helps prove the main idea; if not, it does not belong in the suitcase."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "rhyme-rhythm",
+      "mode": "scaffolded",
+      "aiExample": "Cool is not the same as key; does it prove the point to me?",
+      "mapping": "The first line names the trap (cool details feel key), and the second line is the test question from the reading, so the rhyme carries the fix along with the warning.",
+      "scaffoldStarter": "____ is not the same as ____; does it ____?",
+      "scaffoldSteps": [
+        "Choose two words for interesting and important that rhyme or bounce.",
+        "End with the test question.",
+        "Try it on the five-eyes detail."
+      ],
+      "coachPrompts": [
+        "Does your rhyme tell you what to DO with a cool detail, not just that it is a trap?"
+      ],
+      "studentPrompt": "Write your own two-line rhyme.",
+      "reasoningPrompt": "How does your rhyme help you decide which details go in the suitcase?",
+      "hookFact": {
+        "text": "Telling interesting from important is most of what good reading is.",
+        "sourceTitle": "The Suitcase Test (this lesson)"
+      },
+      "factReview": {
+        "status": "inherited-review-attribution",
+        "sourcePack": "allopacks/main_idea_grade4.allopack.json",
+        "sourceResourceId": "mi-memory",
+        "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+        "factsHash": "85e0b02d58aee76c50478dc7fbfd1fa09e707770a1b562a5a67a1e0ade81ab5b"
+      }
+    }
   },
   {
     "resourceId": "mi-sort",
@@ -117,24 +265,48 @@
     "resourceId": "mi-faq",
     "path": "data.0.answer",
     "from": "A single paragraph usually has one. Whole articles often have several, one per section. Handling that is exactly what the 5th grade standard asks of you.",
-    "to": "A paragraph often develops one main point, but structure varies. Longer texts may develop several related ideas. Choose a statement that fits the section you are summarizing."
+    "to": "A paragraph often builds one main point. Some texts develop more than one. Choose a statement that fits the part you are reading."
+  },
+  {
+    "resourceId": "mi-faq",
+    "path": "data.1.answer",
+    "from": "Often, but not always. Writers sometimes build up to it and put it last. Sometimes they never state it at all. Check the details before you trust the first line.",
+    "to": "No. A writer may state it later or leave you to work it out. Check the details before choosing the first line."
+  },
+  {
+    "resourceId": "mi-faq",
+    "path": "data.2.answer",
+    "from": "The main idea is the single biggest point. A summary is short too, but it includes the main idea PLUS the most important supporting details.",
+    "to": "The main idea names a key point. A summary also gives the most important details in a short account."
   },
   {
     "resourceId": "mi-faq",
     "path": "data.3.answer",
     "from": "Because it sits underneath almost every other reading skill. If you can find what a text is really about, you can answer most questions about it.",
-    "to": "Finding the main idea helps connect details and understand a text. Other reading tasks may also require vocabulary, inference, comparison or evaluating evidence."
+    "to": "It helps you connect details and understand a text. You will also use other skills, such as working out new words or comparing ideas."
+  },
+  {
+    "resourceId": "mi-faq",
+    "path": "data.4.answer",
+    "from": "Totally allowed. In fact, naming it correctly is what makes disagreeing possible. You cannot argue with a point you have not understood yet.",
+    "to": "You can disagree. First explain the point fairly. Then use reasons and evidence to show why you disagree."
   },
   {
     "resourceId": "mi-faq",
     "path": "data.5.answer",
     "from": "Exactly the same. Ask what one sentence captures the whole thing. The suitcase test does not care what form the ideas arrive in.",
-    "to": "Yes, the same questions can help with videos and podcasts. Pause, replay or use a transcript when helpful, and consider sound and visual information too."
+    "to": "Yes. Pause, replay or use a transcript if it helps. Think about what the sounds and pictures add too."
   },
   {
     "resourceId": "mi-challenge",
     "path": "data.brief.lockedLessonFacts.0",
     "from": "The topic is a word; the main idea is a sentence that says something about the topic.",
     "to": "The topic is a word or phrase; the main idea is a sentence that says something about the topic."
+  },
+  {
+    "resourceId": "mi-challenge",
+    "path": "data.brief.factVerified",
+    "from": true,
+    "to": false
   }
 ]

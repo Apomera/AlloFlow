@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "checks": [
+    "Collapsed supporting information",
+    "Keyboard expansion",
+    "Visible lesson question",
+    "Resource descriptions",
+    "Persistent plan edits",
+    "320px layout",
+    "Visible failures and preview",
+    "Diagnostic actions",
+    "Busy controls and stop",
+    "Empty-plan generation guard and guidance",
+    "Completion and partial-run summaries",
+    "Explicit rerun action",
+    "No stale summary while rebuilding"
+  ],
+  "pageErrors": []
+}

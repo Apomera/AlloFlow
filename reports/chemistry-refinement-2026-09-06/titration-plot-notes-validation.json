@@ -1,0 +1,28 @@
+{
+  "date": "2026-09-19",
+  "unit": {
+    "passed": 138,
+    "files": 9,
+    "initialStartupTimeout": true,
+    "cleanRetryPassed": true
+  },
+  "browser": {
+    "focusedAccessibilityLayoutScans": 16,
+    "errors": 0
+  },
+  "source": {
+    "syntax": true,
+    "mirrored": true,
+    "englishStringsChecked": 7,
+    "newStrings": 6,
+    "revisedStrings": 1,
+    "sha256": "97bae9b91ae366594bdb42cd53eb2ad5ff7d68880ffc9fe6472e8637852b676a"
+  },
+  "visualReview": [
+    "editing-1200",
+    "editing-320",
+    "forced-colors-320"
+  ],
+  "deployment": "Local changes only",
+  "localization": "Six new English strings and one revised string; other translations pending"
+}

@@ -1,0 +1,46 @@
+{
+  "status": "review-required",
+  "implementationComplete": true,
+  "reason": "All test assertions passed; concurrent unrelated Git commits prevent a passing revision-stability guard.",
+  "policy": "20260920-2",
+  "remediation": {
+    "testAssertionsPassed": 1226,
+    "unitTests": 801,
+    "unitSuites": 37,
+    "browserTests": 425,
+    "browserSuites": 22,
+    "newRegressionCases": 152,
+    "runs": [
+      {
+        "summary": "validation/summary.json",
+        "commandStatus": "failed",
+        "changedInputs": [],
+        "toolsChanged": false,
+        "before": "81ac723dc1ca1370148a92f8080ba90ad93ec5bc",
+        "after": "19a897c23e60a20a4ec50ee2ef020a94d97b14bc"
+      },
+      {
+        "summary": "validation-final/summary.json",
+        "commandStatus": "failed",
+        "changedInputs": [],
+        "toolsChanged": false,
+        "before": "19a897c23e60a20a4ec50ee2ef020a94d97b14bc",
+        "after": "4f1427c91e0105625ac28b012d85ef34661ef77c"
+      }
+    ]
+  },
+  "calibration": {
+    "status": "passed",
+    "testsPassed": 236,
+    "summary": "../document-remediation-next-fixes-2026-09-20/mcp-calibration-final/summary.json"
+  },
+  "generatedBundles": {
+    "identical": true,
+    "sha256": "44a50ef8f262bfea80278f3a4ec78fd444b7d6b7996bccc6b5a60f66930dc5a5"
+  },
+  "formPayloadVerification": {
+    "optIn": true,
+    "property": "formData",
+    "scope": "Native ordered text entries on HTML forms; no submitter, file bytes, submission or server verification."
+  }
+}

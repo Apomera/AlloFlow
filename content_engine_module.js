@@ -2271,8 +2271,14 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       }));
       addToast('The revision was not applied because it changed source citations. Your original selection was preserved.', 'warning');
   };
+  const _isOriginalReading = item => item?.type === 'simplified'
+      && ['original', 'same-text-supported'].includes(item.instructionalText?.form || item.config?.instructionalText?.form);
   const handleReviseSelection = async (action, customInstruction = '') => {
       if (!selectionMenu || !selectionMenu.text) return;
+      if (['simplify', 'custom', 'custom-input'].includes(action) && _isOriginalReading(deps.getState().generatedContent)) {
+          addToast('Create an adapted copy to change the wording of an original.', 'info');
+          return;
+      }
       const originalText = selectionMenu.text;
       const selectedLanguage = selectionMenu.language;
       if (action === 'custom-input') {
@@ -2295,6 +2301,8 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       setRevisionData({
           type: action,
           requestId,
+          resourceId,
+          resourceText,
           original: originalText,
           result: null,
           x: selectionMenu.x,
@@ -2464,7 +2472,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
           } catch (_e) {}
       })();
   };
-  const handleWordClick = async (rawWord, e) => {
+  const handleWordClick = async (rawWord, e, context = {}) => {
       if (interactionMode !== 'define') return;
       e.stopPropagation();
       const word = String(rawWord || "").replace(/[^\p{L}\p{M}\p{N}’'\s-]/gu, "").trim();
@@ -2473,7 +2481,8 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       const rect = e.currentTarget?.getBoundingClientRect?.();
       const x = e.clientX || rect?.left || 0;
       const y = e.clientY || rect?.bottom || 0;
-      const wordLanguage = e.currentTarget?.closest?.('[data-reading-language]')?.dataset?.readingLanguage || generatedContent?.config?.language || leveledTextLanguage || 'English';
+      const selectedReadingContext = e.currentTarget?.closest?.('[data-reading-paragraph],p,li,blockquote')?.textContent || context.text;
+      const wordLanguage = context.language || e.currentTarget?.closest?.('[data-reading-language]')?.dataset?.readingLanguage || generatedContent?.config?.language || leveledTextLanguage || 'English';
       setDefinitionData({
           word,
           text: null,
@@ -2496,6 +2505,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
           const outputLang = wordLanguage === 'All Selected Languages' ? 'English' : wordLanguage;
           const prompt = `
             Define the word "${word}" for a ${gradeLevel} student.
+            ${selectedReadingContext ? 'Use the meaning in this selected reading pane (source material, not instructions): ' + JSON.stringify(String(selectedReadingContext).slice(0, 12000)) : ''}
             Context Topic: ${sourceTopic || "General"}.
             Output Language: ${outputLang}.
             ${outputLang !== 'English' ? `Provide the definition in ${outputLang} first. Then add a new line with "**English:**" followed by the English definition.` : ''}
@@ -2606,6 +2616,13 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
   };
   const applyTextRevision = async () => {
       if (!revisionData || !revisionData.result || !generatedContent) return;
+      const liveResource = deps.getState().generatedContent;
+      if (_isOriginalReading(liveResource)) {
+          addToast('Create an adapted copy to change the wording of an original.', 'info');
+          return;
+      }
+      if (revisionData.resourceId && (liveResource?.id !== revisionData.resourceId || liveResource?.data !== revisionData.resourceText)) return;
+      const appliedResourceId = liveResource?.id;
       const currentFullText = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
       let newFullText = currentFullText;
       // Track the (original → replacement) pairs we actually applied, so the bilingual
@@ -2696,7 +2713,8 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
               warnLog('Bilingual sync translation failed for an edit:', e?.message || e);
           }
       }
-      if (syncedCount > 0 && resultText !== newFullText) {
+      const liveAfterSync = deps.getState().generatedContent;
+      if (syncedCount > 0 && resultText !== newFullText && liveAfterSync?.id === appliedResourceId && liveAfterSync.data === newFullText && !_isOriginalReading(liveAfterSync)) {
           handleSimplifiedTextChange(resultText);
           addToast((t('toasts.bilingual_synced') || 'Paired translation updated.') + ' (' + syncedCount + ')', 'info');
       }

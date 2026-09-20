@@ -1,0 +1,374 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: dissection-reference-workbench.spec.ts >> comparison and note handoff preserve evidence and focus
+- Location: tests\e2e\dissection-reference-workbench.spec.ts:11:5
+
+# Error details
+
+```
+Tearing down "context" exceeded the test timeout of 120000ms.
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - link "Skip to interactive specimen":
+      - /url: "#diss-canvas"
+    - link "Skip to structure directory and notes":
+      - /url: "#diss-structure-directory"
+    - status [ref=e4]:
+      - generic [ref=e5]: ✓
+      - generic [ref=e6]: Progress saved locally on this device.
+    - region "Virtual Dissection Lab" [ref=e7]:
+      - generic [ref=e8]:
+        - paragraph [ref=e9]: Virtual Biology Laboratory
+        - heading "Virtual Dissection Lab" [level=2] [ref=e10]
+        - paragraph [ref=e11]: "Work through the specimen one clear action at a time. Current focus: Compare."
+        - list "Dissection workflow" [ref=e12]:
+          - listitem [ref=e13]:
+            - generic [ref=e14]: "1"
+            - text: Orient
+          - listitem [ref=e15]:
+            - generic [ref=e16]: "2"
+            - text: Prepare
+          - listitem [ref=e17]:
+            - generic [ref=e18]: "3"
+            - text: Reveal
+          - listitem [ref=e19]:
+            - generic [ref=e20]: "4"
+            - text: Identify
+          - listitem [ref=e21]:
+            - generic [ref=e22]: "5"
+            - text: Record evidence
+          - listitem [ref=e23]:
+            - generic [ref=e24]: "6"
+            - text: Review
+        - paragraph [ref=e25]: Virtual practice supports observation and comparison. Follow your instructor’s safety, ethics, handling, and disposal procedures for any physical specimen.
+        - navigation "Lab workspace shortcuts" [ref=e26]:
+          - button "Go to specimen" [ref=e27] [cursor=pointer]
+          - button "Structures and notes" [ref=e28] [cursor=pointer]
+          - button "Continue activity" [ref=e29] [cursor=pointer]
+      - generic "Current lab status" [ref=e30]:
+        - generic [ref=e31]:
+          - generic [ref=e32]: Specimen
+          - generic "🐸 Frog (Rana)" [ref=e33]
+        - generic [ref=e34]:
+          - generic [ref=e35]: Layer
+          - generic "3 of 5 · Organs" [ref=e36]
+        - generic [ref=e37]:
+          - generic [ref=e38]: Structures viewed
+          - generic "2 of 37" [ref=e39]
+    - region "Compare this structure across specimens" [ref=e40]:
+      - generic "Workflow step 6 of 6" [ref=e41]: Step 6 of 6
+      - generic [ref=e42]:
+        - generic [ref=e43]: Next best action · Compare
+        - heading "Compare this structure across specimens" [level=3] [ref=e44]
+        - paragraph [ref=e45]: Use the selected structure as the shared anatomical reference.
+        - generic "Current lab context" [ref=e46]:
+          - generic [ref=e47]: 🐸 Frog (Rana)
+          - generic [ref=e48]: 🫁 Organs · layer 3/5
+      - generic [ref=e49]:
+        - button "Go to comparison" [ref=e50] [cursor=pointer]
+        - button "View specimen" [ref=e51] [cursor=pointer]
+    - toolbar "Learning route" [ref=e52]:
+      - button "Procedure practice" [ref=e53] [cursor=pointer]: 🔎 Procedure practice
+      - button "Guided investigation" [ref=e54] [cursor=pointer]: 🧭 Guided investigation
+      - button "Study tools" [pressed] [ref=e55] [cursor=pointer]: 📚 Study tools
+      - button "Practice assessment" [ref=e56] [cursor=pointer]: 🧠 Practice assessment
+      - group "Workspace detail" [ref=e57]:
+        - button "Essentials workspace" [pressed] [ref=e58] [cursor=pointer]: Essentials
+        - button "Advanced workspace" [ref=e59] [cursor=pointer]: Advanced
+    - region "Choose a specimen" [ref=e60]:
+      - generic [ref=e61]:
+        - heading "Choose a specimen" [level=3] [ref=e62]
+        - paragraph [ref=e63]: 7 comparative anatomy models
+      - tablist "Dissection specimens" [ref=e64]:
+        - 'tab "Select specimen: Frog (Rana)" [selected] [ref=e65] [cursor=pointer]': 🐸 Frog (Rana)
+        - 'tab "Select specimen: Earthworm (Lumbricus)" [ref=e66] [cursor=pointer]': 🪱 Earthworm (Lumbricus)
+        - 'tab "Select specimen: Fetal Pig (Sus scrofa)" [ref=e67] [cursor=pointer]': 🐷 Fetal Pig (Sus scrofa)
+        - 'tab "Select specimen: Perch (Perca)" [ref=e68] [cursor=pointer]': 🐟 Perch (Perca)
+        - 'tab "Select specimen: Crayfish (Cambarus)" [ref=e69] [cursor=pointer]': 🦞 Crayfish (Cambarus)
+        - 'tab "Select specimen: Sheep Eye" [ref=e70] [cursor=pointer]': 👁️ Sheep Eye
+        - 'tab "Select specimen: Sheep Heart" [ref=e71] [cursor=pointer]': ❤️ Sheep Heart
+    - navigation "Anatomical layers" [ref=e72]:
+      - generic [ref=e73]:
+        - heading "Anatomical layers" [level=3] [ref=e74]
+        - paragraph [ref=e75]: 0 of 5 completed
+        - toolbar "Specimen display and lab tool controls" [ref=e76]:
+          - generic [ref=e77]: Controls
+          - button "View and accessibility options" [ref=e78] [cursor=pointer]: 👁 View & access ▼
+      - generic [ref=e79]:
+        - 'button "Layer 1: Skin, available" [ref=e80] [cursor=pointer]':
+          - generic [ref=e81]: "1"
+          - generic [ref=e82]: 🟢 Skin
+          - generic [ref=e83]: →
+        - 'button "Layer 2: Muscle, available" [ref=e84] [cursor=pointer]':
+          - generic [ref=e85]: "2"
+          - generic [ref=e86]: 💪 Muscle
+          - generic [ref=e87]: →
+        - 'button "Layer 3: Organs, current" [ref=e88] [cursor=pointer]':
+          - generic [ref=e89]: "3"
+          - generic [ref=e90]: 🫁 Organs
+          - generic [ref=e91]: ●
+        - 'button "Layer 4: Skeleton, locked" [disabled] [ref=e92]':
+          - generic [ref=e93]: "4"
+          - generic [ref=e94]: 🦴 Skeleton
+          - generic [ref=e95]: 🔒
+        - 'button "Layer 5: Nervous, locked" [disabled] [ref=e96]':
+          - generic [ref=e97]: "5"
+          - generic [ref=e98]: ⚡ Nervous
+          - generic [ref=e99]: 🔒
+    - 'tabpanel "Select specimen: Frog (Rana)" [ref=e100]':
+      - generic [ref=e101]:
+        - region "🐸 Frog (Rana) · Organs" [ref=e102]:
+          - generic [ref=e103]:
+            - generic [ref=e104]:
+              - generic [ref=e105]: Interactive specimen
+              - heading "🐸 Frog (Rana) · Organs" [level=3] [ref=e106]
+            - generic [ref=e107]: "Selected: Heart (3-chamber)"
+          - group [ref=e108]:
+            - generic "View & orientation Internal · Organs +" [ref=e109] [cursor=pointer]:
+              - strong [ref=e110]: View & orientation
+              - generic [ref=e111]: Internal · Organs
+              - text: +
+          - 'group "Current action: Compare this structure across specimens. Compare. Workflow step 6 of 6" [ref=e112]':
+            - generic [ref=e113]: →
+            - strong [ref=e114]: Next · Compare this structure across specimens
+            - generic [ref=e115]: Compare
+            - generic [ref=e116]: Workflow 6/6
+          - group [ref=e117]:
+            - generic "Field monitor Limited observation field Exposure and tissue-response details" [ref=e118] [cursor=pointer]:
+              - strong [ref=e119]: Field monitor
+              - generic [ref=e120]: Limited observation field
+              - generic [ref=e121]: Exposure and tissue-response details
+          - 'group "Current pointer mode: Prediction required. Complete the prediction checkpoint before this instrument can contact the specimen." [ref=e122]':
+            - generic [ref=e123]: "!"
+            - generic [ref=e124]:
+              - strong [ref=e125]: Pointer mode ? Prediction required
+              - generic [ref=e126]: Complete the prediction checkpoint before this instrument can contact the specimen.
+          - generic [ref=e128]:
+            - generic [ref=e129]: Frog (Rana) interactive specimen · Organs layer, internal view
+            - region "Specimen canvas description" [ref=e130]:
+              - heading "Specimen canvas description" [level=4] [ref=e131]
+              - paragraph [ref=e132]: Every canvas selection and drag action has a keyboard or button alternative. Use the structure directory for equivalent anatomical descriptions, the technique action button instead of drawing a stroke, the pin action button instead of dragging a pin, the probe action button instead of tracing a structure, and the pan controls instead of dragging a zoomed view. When the depth atlas is enabled, surface landmarks use circles, mid-depth landmarks use diamonds, and deep landmarks use double rings.
+              - paragraph [ref=e133]: "Frog (Rana) virtual dissection. Specimen-specific procedure: Frog ventral midline access; recommended view ventral; access route shallow ventral midline corridor; protected landmarks Heart (3-chamber), Liver (3 lobes), Lungs. Current view: internal, standard condition, Organs layer. Progressive exposure: Covered anatomy, 22 percent; decision quality 47 percent. Observation field: Limited observation field, 43 percent; limiting factor: Access width. Surface model: moist chromatophore surface. Surface microtexture uses chromatophores detail aligned to overhead illumination, with sheen adjusted for 72 percent moisture and standard condition. Tool contact response: elastic skin. Light direction: overhead. Illumination 68 percent: Balanced illumination; glare risk 6 percent. Focus isolation on. Tissue relief on and responsive to the inspection light. Depth atlas off. Selected and hovered structures use a labeled depth footprint with front and back edges, visibility-specific line styles, and boundary-attached relationship paths. Relationship types use distinct line patterns and moving marker shapes, with fixed markers when motion is reduced. Tubular, lobed, chambered, layered, and compact structure classes use distinct contours, internal patterns, and text labels. Anatomical orientation axis uses a circle for anterior and a diamond for posterior; current and target views are stated in text. View and layer navigation uses a labeled orientation sweep with circle start and diamond target markers, plus concentric depth rings for deeper or superficial movement; reduced motion switches instantly and uses text announcements. Depth motion off. 0 directly visible structures. Active instrument: probe. Action readiness: Prediction required, 70 percent. Complete the prediction checkpoint before this instrument can contact the specimen.. Directional contact footprint feedback is active. Engaged instrument tips use foreground tissue lips and paired depth notches to show partial insertion and opening-edge occlusion. Guided anatomical access corridor active; circle marks start and diamond marks finish. Directional target guidance uses a dashed arrow, labeled endpoint, and shape-coded reticle when an instrument is spatially misaligned. Localized action outcomes use a one-shot check or warning symbol with the changed tissue metric. Tissue opening, retraction, stabilization, hydration, and risk metrics transition spatially after each action; Undo reverses openings, retraction, pin placement, hydration, wick evidence, and probe traces; reduced motion snaps to the final state. Three-dimensional instrument pitch feedback is active. Light-aware instrument elevation feedback is active. Equivalent keyboard and button actions include an instrument approach, contact, and release replay. Recorded attempt replay progressively traces pressure with line width and states path alignment in text and shape. Direct forceps press-drag-release manipulation shows live lift direction, safe range, calibrated grip, speed, control, slip risk, and excess tension with text and geometry; the technique action button remains equivalent. Live pin stability preview shows endpoint spacing, calibrated angle, insertion depth, and flap tension with text and geometry. Direct pin press-drag-release placement adds shaft alignment, insertion travel, safe depth, and control feedback. Live probe palpation preview shows calibrated pressure, material resistance, anatomical depth, and tissue deformation with text and shape. Direct probe press-drag-release tracing adds contact coverage, alignment, resistance, deformation, and control feedback. Direct dropper press-drag-release hydration adds contact coverage, flow alignment, moisture, dose, and pooling feedback. Direct wick press-drag-release recovery adds pool-edge alignment, contact coverage, recovery distance, and control feedback. Live dropper spread forecast shows dose count, organism-specific flow direction, current saturation, and pooling risk with text and geometry. Absorbent-wick feedback shows pool-edge targeting, fluid recovery, and a localized balanced-film marker with text and cross-hatched geometry. Guided procedure handoff cue connects the next required instrument to its anatomical target and 6-step progress rail with text, shape, and line style. Persistent localized technique evidence maps edge stress, grip compression, anchor tension, probe pressure, and saline pooling to actual contact locations with text and distinct geometry; direct wick recovery maps pool-edge contact, recovery distance, and control. Press a visible structure, trace a short path while monitoring pressure, resistance, and contact, then release when controlled; the equivalent technique action button remains available. Occluded structures remain available in the structure directory."
+            - application "Frog (Rana) interactive specimen · Organs layer, internal view" [ref=e134]
+          - paragraph [ref=e135]: Reviewing previously recorded evidence for Heart (3-chamber). The structure is not currently visible, so no new viewing progress was added.
+          - generic [ref=e136]:
+            - button "Zoom out canvas" [ref=e137] [cursor=pointer]: ➖
+            - generic [ref=e138]: 100%
+            - button "Zoom in canvas" [ref=e139] [cursor=pointer]: ➕
+            - button "Frame selected structure Heart (3-chamber)" [ref=e140] [cursor=pointer]: ◎ Frame Heart (3-chamber)
+          - paragraph [ref=e141]: Every canvas action has a keyboard or button alternative. The specimen canvas description lists them.
+          - status [ref=e142]:
+            - text: "Compare: Compare this structure across specimens. Use the selected structure as the shared anatomical reference."
+            - generic [ref=e143]: Selected Heart (3-chamber) in the Organs layer.
+          - group [ref=e144]:
+            - generic "Evidence notebook · 0/6 frames" [ref=e145] [cursor=pointer]
+          - group "Technique practice · step 1 of 6" [ref=e146]:
+            - generic "Technique controls Inspect ventral landmarks and confirm symmetry" [ref=e147] [cursor=pointer]:
+              - strong [ref=e148]: Technique controls
+              - generic [ref=e149]: Inspect ventral landmarks and confirm symmetry
+        - region "Circulatory pumps" [ref=e150]:
+          - generic [ref=e151]: Comparative anatomy · reference study
+          - heading "Circulatory pumps" [level=3] [ref=e152]
+          - paragraph [ref=e153]: Compare transport function. A shared pumping role does not establish anatomical equivalence or homology.
+          - generic [ref=e154]: "Visual guide: chamber layouts, vessel pairs, or the labeled outward-flow route. Shapes are schematic, not body positions or scale. Colors distinguish structures, not oxygen levels."
+          - generic [ref=e155]:
+            - generic [ref=e156]: Compare with
+            - combobox "Compare with" [ref=e157]:
+              - option "All reference specimens" [selected]
+              - option "Fetal Pig (Sus scrofa)"
+              - option "Perch (Perca)"
+              - option "Crayfish (Cambarus)"
+              - option "Earthworm (Lumbricus)"
+            - status [ref=e158]: Showing all 5 specimens. Choose one reference for a focused comparison.
+          - generic [ref=e159]:
+            - article [ref=e160]:
+              - generic [ref=e161]: Frog (Rana) · Current specimen
+              - heading "Heart (3-chamber)" [level=4] [ref=e162]
+              - generic [ref=e163]: Organs
+              - figure "2 atria · 1 ventricle. Internal flow-directing structures are omitted." [ref=e164]:
+                - 'img "Frog chamber layout: two atria connect to one ventricle. Internal flow-directing structures are omitted." [ref=e165]':
+                  - generic [ref=e168]: Atrium
+                  - generic [ref=e171]: Atrium
+                  - generic [ref=e175]: Ventricle
+                - generic [ref=e176]: 2 atria · 1 ventricle. Internal flow-directing structures are omitted.
+              - paragraph [ref=e177]: Two atria and one ventricle support pulmonary/skin and systemic circulation. Some blood mixing occurs; internal structures help direct flow.
+            - article [ref=e178]:
+              - generic [ref=e179]: Fetal Pig (Sus scrofa) · Reference
+              - heading "Heart (4-chamber)" [level=4] [ref=e180]
+              - generic [ref=e181]: Visceral Organs
+              - figure "2 atria · 2 ventricles. Fetal shunts and placental circulation are not drawn." [ref=e182]:
+                - 'img "Fetal pig chamber count: two atria and two ventricles. Fetal shunts and placental circulation are not drawn." [ref=e183]':
+                  - generic [ref=e186]: Atrium
+                  - generic [ref=e189]: Atrium
+                  - generic [ref=e193]: Ventricle
+                  - generic [ref=e196]: Ventricle
+                - generic [ref=e197]: 2 atria · 2 ventricles. Fetal shunts and placental circulation are not drawn.
+              - paragraph [ref=e198]: Four chambers form the mammalian heart. In this fetal pig, placental gas exchange and fetal shunts must be distinguished from the postnatal pulmonary and systemic circuits. Compared with humans, atrial, venous, ventricular, and great-vessel anatomy differs.
+            - article [ref=e199]:
+              - generic [ref=e200]: Perch (Perca) · Reference
+              - heading "Heart (2-chamber)" [level=4] [ref=e201]
+              - generic [ref=e202]: Internal Organs
+              - figure "2 main pumping chambers. Associated inflow and outflow regions are omitted." [ref=e203]:
+                - 'img "Perch main pumping chambers: one atrium and one ventricle. Associated inflow and outflow regions are omitted." [ref=e204]':
+                  - generic [ref=e207]: Atrium
+                  - generic [ref=e210]: Ventricle
+                - generic [ref=e211]: 2 main pumping chambers. Associated inflow and outflow regions are omitted.
+              - paragraph [ref=e212]: "One atrium and one ventricle are the main pumping chambers. Single circulation: heart → gills → body → heart. Associated inflow and outflow regions are not counted as additional pumping chambers."
+            - article [ref=e213]:
+              - generic [ref=e214]: Crayfish (Cambarus) · Reference
+              - heading "Heart" [level=4] [ref=e215]
+              - generic [ref=e216]: Internal Organs
+              - 'figure "Open circulation: arteries lead into tissue spaces. Gills and the return route are omitted." [ref=e217]':
+                - 'img "Crayfish outward flow: heart to arteries to tissue spaces, or sinuses. Gills and the return route are omitted." [ref=e218]':
+                  - generic [ref=e221]: Heart
+                  - generic [ref=e225]: Arteries
+                  - generic [ref=e228]: Tissue spaces (sinuses)
+                - generic [ref=e229]: "Open circulation: arteries lead into tissue spaces. Gills and the return route are omitted."
+              - paragraph [ref=e230]: "A dorsal heart pumps hemolymph through arteries into tissue spaces (sinuses). Hemolymph returns through openings called ostia: an open circulatory system."
+            - article [ref=e231]:
+              - generic [ref=e232]: Earthworm (Lumbricus) · Reference
+              - heading "Aortic Arches (5 pairs)" [level=4] [ref=e233]
+              - generic [ref=e234]: Internal Organs
+              - figure "Pair count only. Body positions and vessel connections are not shown." [ref=e235]:
+                - 'img "Earthworm: five pairs of contractile aortic arches, represented as five paired vessel symbols. Body positions and connections are not shown." [ref=e236]':
+                  - generic [ref=e238]: "1"
+                  - generic [ref=e242]: "2"
+                  - generic [ref=e246]: "3"
+                  - generic [ref=e250]: "4"
+                  - generic [ref=e254]: "5"
+                  - generic [ref=e257]: 5 pairs of contractile vessels
+                - generic [ref=e258]: Pair count only. Body positions and vessel connections are not shown.
+              - paragraph [ref=e259]: 5 pairs of contractile vessels (segments 7-11). Pump blood in closed circulatory system.
+          - group [ref=e260]:
+            - generic "Diagram sources and scope" [ref=e261] [cursor=pointer]
+          - generic [ref=e262]:
+            - strong [ref=e263]: "Explain with evidence:"
+            - text: Compare the circuit and the pumping structure. Where does fluid go after leaving it?
+            - paragraph [ref=e264]: Reading these references does not mark other specimens as observed. Record one supported similarity, one difference, and what you would need to inspect next.
+            - button "Write comparison in my evidence note" [ref=e266] [cursor=pointer]
+      - complementary "Structure directory and lab notes" [ref=e267]:
+        - link "Return to interactive specimen" [ref=e268] [cursor=pointer]:
+          - /url: "#diss-canvas"
+        - region "Heart (3-chamber)" [ref=e269]:
+          - generic [ref=e270]:
+            - generic [ref=e271]:
+              - heading "Heart (3-chamber)" [active] [level=4] [ref=e272]
+              - status "Heart (3-chamber), structure 1 of 12" [ref=e273]: 1 of 12
+            - generic [ref=e274]:
+              - button "Previous structure" [disabled] [ref=e275]: ◀
+              - button "Next structure" [ref=e276] [cursor=pointer]: ▶
+              - button "Back to structure directory" [ref=e277] [cursor=pointer]: ✕
+          - note [ref=e278]:
+            - strong [ref=e279]: Observe first
+            - paragraph [ref=e280]: Record one visible feature and where it is in the evidence note below. Open the reference whenever you need support, then revise anything the comparison changes.
+          - group [ref=e281]:
+            - generic "Check reference and connections ＋" [ref=e282] [cursor=pointer]
+          - generic [ref=e283]:
+            - generic [ref=e284]: Evidence note
+            - paragraph [ref=e285]: Record what you observed, where it is located, and how that evidence supports your identification.
+            - group "Evidence sentence starters" [ref=e286]:
+              - button "+ Observation" [ref=e287] [cursor=pointer]
+              - button "+ Location" [ref=e288] [cursor=pointer]
+              - button "+ Reasoning" [ref=e289] [cursor=pointer]
+            - textbox "Evidence note" [ref=e290]:
+              - /placeholder: I identified this structure because…
+              - text: I observed a central chambered structure between the lungs. The reference describes two circulation routes.
+            - group "How sure are you, based on your evidence?" [ref=e291]:
+              - generic [ref=e292]: How sure are you, based on your evidence?
+              - generic [ref=e293]:
+                - generic [ref=e294] [cursor=pointer]:
+                  - 'radio "Confidence 1 of 3: Not sure yet" [ref=e295]'
+                  - generic [ref=e296]: 1 · Not sure yet
+                - generic [ref=e297] [cursor=pointer]:
+                  - 'radio "Confidence 2 of 3: Somewhat sure" [checked] [ref=e298]'
+                  - generic [ref=e299]: 2 · Somewhat sure
+                - generic [ref=e300] [cursor=pointer]:
+                  - 'radio "Confidence 3 of 3: Confident" [ref=e301]'
+                  - generic [ref=e302]: 3 · Confident
+            - paragraph [ref=e303]:
+              - strong [ref=e304]: "Calibration cue:"
+              - text: Check one more distinguishing feature or anatomical relationship.
+            - group "Evidence quality coach" [ref=e305]:
+              - generic [ref=e306]:
+                - strong [ref=e307]: Evidence self-check
+                - generic [ref=e308]: 3 of 4 elements included
+              - progressbar "Evidence elements included" [ref=e309]
+              - list [ref=e311]:
+                - listitem [ref=e312]: ✓ Observable feature
+                - listitem [ref=e313]: ✓ Location or relationship
+                - listitem [ref=e314]: ○ Reasoning link
+                - listitem [ref=e315]: ✓ Confidence rating
+              - paragraph [ref=e316]: "Next: Explain why those observations support this identification."
+              - paragraph [ref=e317]: This checklist detects writing elements, not scientific accuracy or a grade. Revise it when new evidence changes your thinking.
+          - generic [ref=e318]:
+            - strong [ref=e319]: "Your record:"
+            - text: Note and confidence recorded
+            - 'button "Continue notes: Lungs" [ref=e320] [cursor=pointer]'
+          - generic [ref=e321]:
+            - button "🤖 AI Explain" [ref=e322] [cursor=pointer]
+            - button "Copy Heart (3-chamber) information to clipboard" [ref=e323] [cursor=pointer]: 📋 Copy
+        - generic [ref=e324]:
+          - generic [ref=e325]: Layer Progress
+          - generic [ref=e327]: 🟢 Skin
+          - generic [ref=e329]: 💪 Muscle
+          - generic [ref=e331]: 🫁 Organs
+          - generic [ref=e333]: 🦴 Skeleton
+          - generic [ref=e335]: ⚡ Nervous
+          - generic [ref=e336]:
+            - paragraph [ref=e337]: Classic vertebrate — 3-chambered heart, cutaneous respiration, metamorphosis.
+            - paragraph [ref=e338]: "Comparative learning model: specimen observations and human clinical connections are labeled separately. Anatomy varies by species, age, preservation, and individual."
+        - group [ref=e339]:
+          - generic "Biology fact ＋" [ref=e340] [cursor=pointer]
+        - generic [ref=e341]:
+          - generic [ref=e342]:
+            - generic [ref=e343]: 📊 Learning evidence
+            - generic [ref=e344]: 4%
+          - 'progressbar "Observation: structures viewed 2 of 37" [ref=e346]'
+          - generic [ref=e347]: "Observation: 2 of 37 structures viewed"
+          - generic "Learning evidence dimensions" [ref=e348]:
+            - generic [ref=e349]:
+              - generic [ref=e350]:
+                - generic [ref=e351]: Technique
+                - generic [ref=e352]: 0%
+              - generic [ref=e353]:
+                - progressbar "Technique evidence"
+            - generic [ref=e354]:
+              - generic [ref=e355]:
+                - generic [ref=e356]: Observation
+                - generic [ref=e357]: 5%
+              - progressbar "Observation evidence" [ref=e359]
+            - generic [ref=e360]:
+              - generic [ref=e361]:
+                - generic [ref=e362]: Evidence
+                - generic [ref=e363]: 3%
+              - progressbar "Evidence evidence" [ref=e365]
+            - generic [ref=e366]:
+              - generic [ref=e367]:
+                - generic [ref=e368]: Understanding
+                - generic [ref=e369]: 7%
+              - progressbar "Understanding evidence" [ref=e371]
+          - generic [ref=e372]: 0/2 guided identifications verified · 1/37 evidence records · completed first-attempt assessment 0/0
+          - generic [ref=e373]:
+            - generic [ref=e374]: Practice in progress
+            - generic [ref=e375]: Continue the investigation; the log distinguishes viewing from verified understanding.
+            - button "Copy practice log to clipboard" [ref=e376] [cursor=pointer]: Copy practice log
+        - group [ref=e377]:
+          - generic "Specimen stats ＋" [ref=e378] [cursor=pointer]
+        - group [ref=e379]:
+          - generic "Learning objectives ＋" [ref=e380] [cursor=pointer]
+        - text: ＋
+        - group [ref=e381]:
+          - generic "Key terms ＋" [ref=e382] [cursor=pointer]
+  - status [ref=e383]
+```

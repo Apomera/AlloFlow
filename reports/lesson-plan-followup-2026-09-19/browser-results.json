@@ -1,0 +1,23 @@
+{
+  "results": [
+    {
+      "width": 1280,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 1280,
+      "listViolations": []
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "listViolations": []
+    }
+  ],
+  "errors": []
+}

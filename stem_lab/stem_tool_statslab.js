@@ -1896,17 +1896,17 @@ window.StemLab = window.StemLab || {
         h('div', {
           role: 'tablist',
           'aria-label': __alloT('stem.statslab.statistics_lab_navigation', 'Statistics Lab navigation'),
-          style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }
+          style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 6, marginBottom: 16 }
         },
           [
-            { id: 'home', label: __alloT('stem.statslab.home', '🏠 Home'), desc: __alloT('stem.statslab.sample_datasets_about', 'Sample datasets + about') },
-            { id: 'wizard', label: __alloT('stem.statslab.wizard', '🧙 Wizard'), desc: __alloT('stem.statslab.pick_the_right_test', 'Pick the right test') },
+            { id: 'home', label: __alloT('stem.statslab.tab_sample_data', 'Sample datasets'), desc: __alloT('stem.statslab.sample_datasets_about', 'Sample datasets + about') },
+            { id: 'wizard', label: __alloT('stem.statslab.tab_choose_test', 'Choose a test'), desc: __alloT('stem.statslab.pick_the_right_test', 'Pick the right test') },
             { id: 'data', label: __alloT('stem.statslab.data', '📋 Data'), desc: __alloT('stem.statslab.enter_paste_data', 'Enter / paste data') },
-            { id: 'test', label: __alloT('stem.statslab.test', '⚖️ Test'), desc: __alloT('stem.statslab.choose_run_a_test', 'Choose + run a test') },
+            { id: 'test', label: __alloT('stem.statslab.tab_run_test', 'Run a test'), desc: __alloT('stem.statslab.choose_run_a_test', 'Choose + run a test') },
             { id: 'results', label: __alloT('stem.statslab.results', '📈 Results'), desc: __alloT('stem.statslab.view_results_ai_grade', 'View results + AI grade') },
-            { id: 'power', label: __alloT('stem.statslab.power', '🔋 Power'), desc: __alloT('stem.statslab.sample_size_calc', 'Sample size calc') },
-            { id: 'mastery', label: __alloT('stem.statslab.mastery', '🏅 Mastery'), desc: __alloT('stem.statslab.ap_quiz_concept_progress', 'AP-quiz concept progress') },
-            { id: 'inquiry', label: __alloT('stem.statslab.inquiry', '🔬 Inquiry'), desc: __alloT('stem.statslab.power_effect_alpha_sandbox', 'Power × effect × alpha sandbox') }
+            { id: 'power', label: __alloT('stem.statslab.tab_sample_size', 'Power & sample size'), desc: __alloT('stem.statslab.sample_size_calc', 'Sample size calc') },
+            { id: 'mastery', label: __alloT('stem.statslab.tab_quiz_progress', 'Quiz progress'), desc: __alloT('stem.statslab.ap_quiz_concept_progress', 'AP-quiz concept progress') },
+            { id: 'inquiry', label: __alloT('stem.statslab.tab_explore_power', 'Explore test power'), desc: __alloT('stem.statslab.power_effect_alpha_sandbox', 'Power × effect × alpha sandbox') }
           ].map(function(tab, tabIndex) {
             var sel = d.mode === tab.id;
             return h('button', {
@@ -1925,7 +1925,7 @@ window.StemLab = window.StemLab || {
                 background: sel ? 'linear-gradient(135deg,#4338ca,#3730a3)' : 'var(--sl-accent-soft)',
                 color: sel ? '#fff' : 'var(--sl-heading)',
                 border: '1px solid ' + (sel ? '#312e81' : 'var(--sl-accent-border)'),
-                borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 700, minHeight: 36
+                borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 700, minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere'
               }
             }, tab.label);
           })

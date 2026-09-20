@@ -8,7 +8,8 @@
     "gradeLevel": "2nd Grade",
     "standards": "CCSS.ELA-LITERACY.RL.2.5 (describe the overall structure of a story, including how the beginning introduces it and the ending concludes the action); CCSS.ELA-LITERACY.RL.2.2 (recount stories and determine their central message); CCSS.ELA-LITERACY.SL.2.4 (tell a story with relevant descriptive details, speaking audibly in coherent sentences)",
     "createdAt": "2026-09-05T21:20:00.000Z",
-    "imageShotList": "allopacks/story_retell_grade2.IMAGES.md"
+    "imageShotList": "allopacks/story_retell_grade2.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Story Structure and Retelling",
   "history": [
@@ -55,7 +56,7 @@
       "title": "Three Parts of Every Story",
       "timestamp": "2026-09-05T21:20:01.000Z",
       "data": "## Three Parts of Every Story\n\nEvery **story** has three parts. Once you know them, you can tell any book back to somebody.\n\nThe **beginning** tells you who and where. You meet the **character**, and you find out the **setting** — the place and the time.\n\nThe **middle** is where the trouble starts. Something goes wrong. That trouble is the **problem**. The character tries to fix it, and the first try often flops.\n\nThe **end** is where the trouble gets fixed at last. That fix is the **solution**. Then things go quiet again.\n\nHere is a short one. Ada gets a new puppy. The puppy chews her shoe, then her hat, then her library book. Ada hides them all, but the puppy keeps finding them. So Ada gives the puppy a rope toy of its own. Now the puppy chews the rope, and the shoes are safe.\n\nCan you hear the three parts? The puppy arrives. The chewing goes on and on. The rope toy fixes it.\n\nNow **retell** it. Say the beginning, then the middle, then the end. Keep that **order**. If you tell the end first, nobody knows why the rope toy matters.\n\nOne more trick. Listen for the word \"but.\" Stories turn at a but. Ada loved her puppy, but it chewed her things. That little word is the door into the middle.",
-      "meta": "2nd Grade • Leveled reading • ~235 words • includes a story to point at",
+      "meta": "2nd Grade • Leveled reading • includes a story to point at",
       "imageSlot": "st-img-three-parts"
     },
     {

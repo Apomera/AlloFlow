@@ -293,6 +293,7 @@ const useGameDialogFocus = (dialogRef, initialFocusRef, onClose, active = true) 
     const getFocusable = () => getGameDialogFocusable(dialog);
     (initialFocusRef?.current || getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
+      if (event.target?.closest?.('[role="dialog"]') !== dialog) return;
       if (event.key === "Escape") {
         event.preventDefault();
         closeHandlerRef.current?.();
@@ -422,13 +423,17 @@ const gameMessage = (t, key, fallback) => {
   const value = t(key);
   return value && value !== key ? value : fallback;
 };
-const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t }) => {
+const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t, onPractice, practiceCount = 0, playAgainLabel, focusOnMount = false }) => {
   const reviewTitleId = React.useId();
+  const reviewTitleRef = useRef(null);
+  useEffect(() => {
+    if (focusOnMount) reviewTitleRef.current?.focus();
+  }, [focusOnMount]);
   const correct = items.filter((i) => i.status === "correct").length;
   const total = items.length;
-  return /* @__PURE__ */ React.createElement("div", { role: "region", "aria-labelledby": reviewTitleId, className: `mt-4 bg-white rounded-2xl border-2 border-indigo-100 shadow-lg overflow-hidden${useReducedMotion() ? "" : " animate-in fade-in slide-in-from-bottom-2 duration-300"}` }, /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-indigo-700 to-purple-700 p-4 text-white text-center" }, /* @__PURE__ */ React.createElement("h3", { id: reviewTitleId, className: "text-xl font-black" }, title || "Review"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-4 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: "bg-white/20 px-3 py-1 rounded-full text-sm font-bold" }, score, " pts"), /* @__PURE__ */ React.createElement("span", { className: "bg-white/20 px-3 py-1 rounded-full text-sm font-bold" }, correct, "/", total, " ", t("common.correct") || "correct"))), /* @__PURE__ */ React.createElement("div", { className: "max-h-[300px] overflow-y-auto custom-scrollbar p-3" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, items.map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, className: `flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${item.status === "correct" ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: `w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black ${item.status === "correct" ? "bg-green-700 text-white" : "bg-red-700 text-white"}` }, item.status === "correct" ? "\u2713" : "\u2717"), /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, item.status === "correct" ? t("common.correct") || "Correct" : t("common.incorrect") || "Incorrect"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-sm text-slate-800 break-words" }, item.label), item.detail && /* @__PURE__ */ React.createElement("div", { className: "text-sm leading-relaxed text-slate-600 break-words" }, item.detail)), /* @__PURE__ */ React.createElement(SpeakButton, { text: item.label, size: 12 }))))), /* @__PURE__ */ React.createElement("div", { className: "p-3 border-t border-slate-200 flex gap-2 justify-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onPlayAgain, className: "min-h-11 px-5 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center gap-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }), " ", t("memory.play_again") || "Play Again"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-h-11 px-5 py-2 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" }, t("common.close") || "Close")));
+  return /* @__PURE__ */ React.createElement("div", { role: "region", "aria-labelledby": reviewTitleId, className: `mt-4 bg-white rounded-2xl border-2 border-indigo-100 shadow-lg overflow-hidden${useReducedMotion() ? "" : " animate-in fade-in slide-in-from-bottom-2 duration-300"}` }, /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-indigo-700 to-purple-700 p-4 text-white text-center" }, /* @__PURE__ */ React.createElement("h3", { ref: reviewTitleRef, tabIndex: -1, id: reviewTitleId, "aria-describedby": reviewTitleId + "-summary", className: "text-xl font-black" }, title || "Review"), /* @__PURE__ */ React.createElement("div", { id: reviewTitleId + "-summary", className: "flex flex-wrap items-center justify-center gap-3 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: "bg-white/20 px-3 py-1 rounded-full text-sm font-bold" }, score, " pts"), /* @__PURE__ */ React.createElement("span", { className: "bg-white/20 px-3 py-1 rounded-full text-sm font-bold" }, correct, "/", total, " ", gameMessage(t, "common.correct", "correct")))), /* @__PURE__ */ React.createElement("div", { className: "max-h-[300px] overflow-y-auto custom-scrollbar p-3" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, items.map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, className: `flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${item.status === "correct" ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: `w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black ${item.status === "correct" ? "bg-green-700 text-white" : "bg-red-700 text-white"}` }, item.status === "correct" ? "\u2713" : "\u2717"), /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, item.status === "correct" ? gameMessage(t, "common.correct", "Correct") : item.status === "unanswered" ? gameMessage(t, "games.review.unanswered", "Not answered") : gameMessage(t, "common.incorrect", "Incorrect")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-sm text-slate-800 break-words" }, item.label), item.detail && /* @__PURE__ */ React.createElement("div", { className: "text-sm leading-relaxed text-slate-600 break-words" }, item.detail), item.note && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs font-semibold text-slate-600" }, item.note)), /* @__PURE__ */ React.createElement(SpeakButton, { text: item.label, size: 12 }))))), /* @__PURE__ */ React.createElement("div", { className: "p-3 border-t border-slate-200 flex flex-wrap gap-2 justify-center" }, onPractice && practiceCount > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", "data-game-review-practice": true, onClick: onPractice, className: "min-h-11 px-5 py-2 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2" }, gameMessage(t, "games.review.practice_words", "Practice these words"), " (", practiceCount, ")"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onPlayAgain, className: "min-h-11 px-5 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center gap-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }), " ", playAgainLabel || gameMessage(t, "memory.play_again", "Play Again")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-h-11 px-5 py-2 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" }, t("common.close") || "Close")));
 };
-const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete }) => {
+const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete, roundSize = 10 }) => {
   const { t } = useContext(LanguageContext);
   const [cards, setCards] = useState([]);
   const [flippedIndices, setFlippedIndices] = useState([]);
@@ -484,12 +489,12 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   };
   useEffect(() => {
     initializeGame();
-  }, [data, gameMode]);
+  }, [data, gameMode, roundSize]);
   const initializeGame = () => {
     clearTimeout(pairTimerRef.current);
     clearTimeout(scoreDeltaTimerRef.current);
     setScoreDelta(null);
-    const gameItems = fisherYatesShuffle((Array.isArray(data) ? data : []).filter((item) => item && typeof item.term === "string" && item.term.trim() && (typeof item.def === "string" && item.def.trim() || item.image))).slice(0, 10);
+    const gameItems = fisherYatesShuffle((Array.isArray(data) ? data : []).filter((item) => item && typeof item.term === "string" && item.term.trim() && (typeof item.def === "string" && item.def.trim() || item.image))).slice(0, Math.max(1, Math.min(10, Math.floor(Number(roundSize)) || 10)));
     const deck = gameItems.flatMap((item, index) => {
       const pairId = index;
       let strategy = gameMode;
@@ -838,8 +843,33 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
     ))
   );
 });
-const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
+function matchingImageDescription(item) {
+  if (item.imageDecorative === true || typeof item.imageAlt !== "string") return "";
+  if (item.imageAltHash) {
+    const image = typeof item.image === "string" ? item.image : "";
+    let hash = 2166136261;
+    const mix = (code) => {
+      hash ^= code;
+      hash = Math.imul(hash, 16777619) >>> 0;
+    };
+    String(image.length).split("").forEach((ch) => mix(ch.charCodeAt(0)));
+    const step = Math.max(1, Math.floor(image.length / 4096));
+    for (let i = 0; i < image.length; i += step) mix(image.charCodeAt(i));
+    if (item.imageAltHash !== "img-" + image.length.toString(36) + "-" + hash.toString(16).padStart(8, "0")) return "";
+  }
+  return item.imageAlt.trim();
+}
+function MatchingClue({ clue, pictureMode, t }) {
+  const [failedImage, setFailedImage] = useState(null);
+  if (!pictureMode) return /* @__PURE__ */ React.createElement("span", null, clue.text);
+  return /* @__PURE__ */ React.createElement("figure", { className: "w-full min-w-0 flex flex-col items-center justify-center gap-1" }, clue.image && failedImage !== clue.image ? /* @__PURE__ */ React.createElement("img", { src: clue.image, alt: clue.text, draggable: false, onError: () => setFailedImage(clue.image), style: { width: "100%", height: 104, objectFit: "contain" } }) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] font-semibold text-slate-500" }, clue.image ? gameMessage(t, "matching.picture_unavailable", "Picture unavailable") : gameMessage(t, "matching.definition_clue", "Definition clue")), /* @__PURE__ */ React.createElement("span", null, clue.definition || clue.text)), clue.image && clue.credit && /* @__PURE__ */ React.createElement("figcaption", { className: "text-[9px] leading-tight text-slate-500 break-words" }, clue.credit));
+}
+const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, roundSize = 8 }) => {
   const { t } = useContext(LanguageContext);
+  const [clueMode, setClueMode] = useState("definitions");
+  const [isPracticeRound, setIsPracticeRound] = useState(false);
+  const originalRoundRef = useRef([]);
+  const focusRoundRef = useRef(false);
   const [items, setItems] = useState([]);
   const [rightCol, setRightCol] = useState([]);
   const [connections, setConnections] = useState([]);
@@ -873,7 +903,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     }
   };
   const shuffleDefinitions = (validItems) => {
-    const defs = validItems.map((item) => ({ id: item.id, text: item.def }));
+    const defs = validItems.map((item) => ({ id: item.id, text: clueMode === "pictures" && item.image ? item.description : item.def, image: clueMode === "pictures" ? item.image : "", definition: item.def, credit: item.credit }));
     if (defs.length <= 1) return defs;
     const originalOrder = defs.map((d) => d.id);
     for (let attempt = 0; attempt < 20; attempt++) {
@@ -888,11 +918,16 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   useEffect(() => {
     dragCleanupRef.current?.();
     setTempLine(null);
-    const validItems = fisherYatesShuffle((Array.isArray(data) ? data : []).filter((d) => d && typeof d.term === "string" && d.term.trim() && typeof d.def === "string" && d.def.trim())).slice(0, 8).map((item, i) => ({
+    const validItems = fisherYatesShuffle((Array.isArray(data) ? data : []).filter((d) => d && typeof d.term === "string" && d.term.trim() && (typeof d.def === "string" && d.def.trim() || clueMode === "pictures" && typeof d.image === "string" && d.image.trim()))).slice(0, Math.max(1, Math.min(8, Math.floor(Number(roundSize)) || 8))).map((item, i) => ({
       id: "match-" + i,
       term: item.term,
-      def: item.def
+      def: typeof item.def === "string" ? item.def : "",
+      image: typeof item.image === "string" ? item.image.trim() : "",
+      description: matchingImageDescription(item) || typeof item.def === "string" && item.def.trim() || item.term,
+      credit: item.imageAttribution ? [item.imageAttribution.set, item.imageAttribution.author, item.imageAttribution.license].filter((value) => typeof value === "string" && value.trim()).join(" \xB7 ") : ""
     }));
+    originalRoundRef.current = validItems;
+    setIsPracticeRound(false);
     setItems(validItems);
     setRightCol(shuffleDefinitions(validItems));
     setConnections([]);
@@ -901,7 +936,18 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     setScore(0);
     setKeyboardSelectedTerm(null);
     setAnnouncement("");
-  }, [data]);
+  }, [data, roundSize, clueMode]);
+  useEffect(() => {
+    if (isChecked) {
+      if (scrollRef.current) scrollRef.current.scrollTop = 0;
+      return;
+    }
+    if (focusRoundRef.current) {
+      focusRoundRef.current = false;
+      if (scrollRef.current) scrollRef.current.scrollTop = 0;
+      matchingDialogRef.current?.querySelector('[data-help-key="matching_term_item"]')?.focus();
+    }
+  }, [items, isChecked]);
   const getDotPos = (element) => {
     if (!element || !canvasRef.current) return { x: 0, y: 0 };
     const rect = element.getBoundingClientRect();
@@ -1035,10 +1081,11 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     window.addEventListener("touchmove", onMove, { passive: false });
     window.addEventListener("touchend", onUp);
   };
+  const matchesMatchingClue = (item, clue) => clueMode === "pictures" && clue.image ? item.image === clue.image : item.def === clue.text;
   const isCorrectConnection = (connection) => {
     const term = items.find((item) => item.id === connection.termId);
     const definition = rightCol.find((item) => item.id === connection.defId);
-    return !!term && !!definition && items.some((item) => item.term === term.term && item.def === definition.text);
+    return !!term && !!definition && items.some((item) => item.term === term.term && matchesMatchingClue(item, definition));
   };
   const checkAnswers = () => {
     if (isChecked || !items.length || !connections.length) return;
@@ -1058,7 +1105,17 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       });
     }
   };
-  const reset = () => {
+  const practiceItems = items.slice();
+  connections.filter(isCorrectConnection).forEach((connection) => {
+    const term = items.find((item) => item.id === connection.termId);
+    const clue = rightCol.find((item) => item.id === connection.defId);
+    const index = practiceItems.findIndex((item) => item.term === term.term && matchesMatchingClue(item, clue));
+    if (index >= 0) practiceItems.splice(index, 1);
+  });
+  const startMatchingRound = (round, practice = false) => {
+    focusRoundRef.current = true;
+    setItems(round.slice());
+    setIsPracticeRound(practice);
     dragCleanupRef.current?.();
     setTempLine(null);
     setSnapTarget(null);
@@ -1066,10 +1123,11 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     setIsChecked(false);
     setScore(0);
     setKeyboardSelectedTerm(null);
-    setRightCol(shuffleDefinitions(items));
-    setAnnouncement("");
+    setRightCol(shuffleDefinitions(round));
+    setAnnouncement(practice ? gameMessage(t, "games.review.practice_round", "Practice round") : gameMessage(t, "games.review.full_round", "Full round restarted"));
   };
-  return /* @__PURE__ */ React.createElement("div", { ref: matchingDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "matching-game-title", className: `allo-glossary-print-dialog glossary-matching-dialog fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden${useReducedMotion() ? "" : " animate-in fade-in duration-300"}` }, /* @__PURE__ */ React.createElement(GlossaryPrintStyles, null), /* @__PURE__ */ React.createElement("section", { className: "glossary-matching-sheet" }, /* @__PURE__ */ React.createElement("h2", null, t("matching.print_title")), /* @__PURE__ */ React.createElement("p", null, t("matching.print_name"), ": ____________________ \xA0 ", t("matching.print_date"), ": ______________"), /* @__PURE__ */ React.createElement("p", null, t("matching.print_instructions")), /* @__PURE__ */ React.createElement("table", null, /* @__PURE__ */ React.createElement("tbody", null, items.map((item, index) => /* @__PURE__ */ React.createElement("tr", { key: item.id }, /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("strong", null, index + 1, ". ", item.term), " ", /* @__PURE__ */ React.createElement("span", null, "_____")), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("strong", null, String.fromCharCode(65 + index), "."), " ", rightCol[index]?.text)))))), /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "bg-white border-b border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm no-print z-20 relative" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "matching-game-title", className: "font-bold text-lg flex items-center gap-2 text-indigo-900" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 20, className: "text-orange-500" }), " ", t("matching.title")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, t("matching.instructions")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mt-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-400 px-2 py-0.5 rounded-full" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 10, className: "text-slate-600" }), " ", t("matching.pairs") || "Pairs", ": ", connections.length, "/", items.length), isChecked && /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${score === items.length * 25 ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-indigo-100 text-indigo-700 border-indigo-200"} ${!useReducedMotion() ? "animate-in zoom-in duration-300" : ""}` }, /* @__PURE__ */ React.createElement(Trophy, { size: 10, className: "text-yellow-500" }), " ", t("matching.score_display"), ": ", score, " pts"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 p-1 rounded-full bg-slate-50 border border-slate-400 shadow-sm self-end sm:self-auto" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => window.print(), "data-help-key": "matching_print_btn", disabled: !items.length, className: "min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 rounded-full focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement(Printer, { size: 14, "aria-hidden": "true" }), " ", t("common.print")), /* @__PURE__ */ React.createElement(
+  const reset = () => startMatchingRound(originalRoundRef.current);
+  return /* @__PURE__ */ React.createElement("div", { ref: matchingDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "matching-game-title", className: `allo-glossary-print-dialog glossary-matching-dialog fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden${useReducedMotion() ? "" : " animate-in fade-in duration-300"}` }, /* @__PURE__ */ React.createElement(GlossaryPrintStyles, null), /* @__PURE__ */ React.createElement("section", { className: "glossary-matching-sheet" }, /* @__PURE__ */ React.createElement("h2", null, t("matching.print_title")), /* @__PURE__ */ React.createElement("p", null, t("matching.print_name"), ": ____________________ \xA0 ", t("matching.print_date"), ": ______________"), /* @__PURE__ */ React.createElement("p", null, clueMode === "pictures" ? gameMessage(t, "matching.picture_print_instructions", "Write the letter of the matching picture or definition beside each word.") : t("matching.print_instructions")), /* @__PURE__ */ React.createElement("table", null, /* @__PURE__ */ React.createElement("tbody", null, items.map((item, index) => /* @__PURE__ */ React.createElement("tr", { key: item.id }, /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("strong", null, index + 1, ". ", item.term), " ", /* @__PURE__ */ React.createElement("span", null, "_____")), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("strong", null, String.fromCharCode(65 + index), "."), " ", rightCol[index] && /* @__PURE__ */ React.createElement(MatchingClue, { clue: rightCol[index], pictureMode: clueMode === "pictures", t }))))))), /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "bg-white border-b border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm no-print z-20 relative" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "matching-game-title", className: "font-bold text-lg flex items-center gap-2 text-indigo-900" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 20, className: "text-orange-500" }), " ", t("matching.title")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, clueMode === "pictures" ? gameMessage(t, "matching.picture_instructions", "Choose a word, then its picture. Words without pictures use definitions.") : t("matching.instructions")), /* @__PURE__ */ React.createElement("label", { className: "flex flex-wrap items-center gap-2 mt-2 text-xs font-semibold text-slate-700" }, gameMessage(t, "matching.match_with", "Match words with"), /* @__PURE__ */ React.createElement("select", { "aria-label": gameMessage(t, "matching.match_with", "Match words with"), "aria-describedby": "matching-mode-help", value: clueMode, onChange: (event) => setClueMode(event.target.value), className: "min-h-11 max-w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-slate-900" }, /* @__PURE__ */ React.createElement("option", { value: "definitions" }, gameMessage(t, "matching.definitions", "Definitions")), /* @__PURE__ */ React.createElement("option", { value: "pictures" }, gameMessage(t, "matching.pictures", "Pictures")))), isPracticeRound && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs font-bold text-amber-800", "data-game-practice-round": true }, gameMessage(t, "games.review.practice_round", "Practice round"), " \xB7 ", items.length, "/", originalRoundRef.current.length, " ", gameMessage(t, "matching.pairs", "pairs")), /* @__PURE__ */ React.createElement("p", { id: "matching-mode-help", className: "text-xs text-slate-600 mt-1" }, gameMessage(t, "matching.mode_help", "Changing this starts a new round.")), clueMode === "pictures" && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1", role: "status" }, gameMessage(t, "matching.pictures", "Pictures"), ": ", items.filter((item) => item.image).length, "/", items.length, ". ", gameMessage(t, "matching.picture_fallback", "Missing or unavailable pictures use text clues.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mt-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-400 px-2 py-0.5 rounded-full" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 10, className: "text-slate-600" }), " ", t("matching.pairs") || "Pairs", ": ", connections.length, "/", items.length), isChecked && /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${score === items.length * 25 ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-indigo-100 text-indigo-700 border-indigo-200"} ${!useReducedMotion() ? "animate-in zoom-in duration-300" : ""}` }, /* @__PURE__ */ React.createElement(Trophy, { size: 10, className: "text-yellow-500" }), " ", t("matching.score_display"), ": ", score, " pts"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-end items-center gap-1 p-1 rounded-full bg-slate-50 border border-slate-400 shadow-sm self-end sm:self-auto" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => window.print(), "data-help-key": "matching_print_btn", disabled: !items.length, className: "min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 rounded-full focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement(Printer, { size: 14, "aria-hidden": "true" }), " ", t("common.print")), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1081,14 +1139,14 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       "data-help-key": "matching_audio_hints"
     },
     /* @__PURE__ */ React.createElement(Volume2, { size: 14, "aria-hidden": "true" }),
-    /* @__PURE__ */ React.createElement("span", null, t("a11y.read_aloud") || "Audio hints"),
+    /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, t("a11y.read_aloud") || "Audio hints"),
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: `w-1.5 h-1.5 rounded-full ${audioHintsEnabled ? "bg-emerald-500" : "bg-slate-300"}` })
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: reset,
-      className: "flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 allo-ghov-tint rounded-full transition-colors",
+      className: "min-h-11 flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 allo-ghov-tint rounded-full transition-colors",
       title: t("matching.reset_aria"),
       "aria-label": t("matching.reset_aria"),
       "data-help-key": "matching_reset_btn"
@@ -1113,6 +1171,33 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       ref: scrollRef,
       className: "flex-grow overflow-y-auto relative touch-pan-y bg-white"
     },
+    isChecked && /* @__PURE__ */ React.createElement("div", { className: "px-6 pb-2" }, items.length > 0 && score === items.length * 25 && !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement(
+      GameReviewScreen,
+      {
+        score,
+        title: t("matching.title") || "Matching",
+        items: connections.filter(isCorrectConnection).map((connection) => {
+          const term = items.find((item) => item.id === connection.termId);
+          const clue = rightCol.find((item) => item.id === connection.defId);
+          return { label: term.term, detail: clue.definition || clue.text, status: "correct" };
+        }).concat(practiceItems.map((item) => {
+          const attempted = connections.some((connection) => items.find((term) => term.id === connection.termId)?.term === item.term && !isCorrectConnection(connection));
+          return {
+            label: item.term,
+            detail: item.def || item.description,
+            status: attempted ? "incorrect" : "unanswered",
+            note: !attempted ? gameMessage(t, "games.review.unanswered", "Not answered") : void 0
+          };
+        })),
+        onPlayAgain: reset,
+        playAgainLabel: isPracticeRound ? gameMessage(t, "matching.restart_all", "Restart all pairs") : void 0,
+        onPractice: () => startMatchingRound(practiceItems, true),
+        practiceCount: practiceItems.length,
+        focusOnMount: true,
+        onClose,
+        t
+      }
+    )),
     /* @__PURE__ */ React.createElement(
       "div",
       {
@@ -1166,7 +1251,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
           }
         )),
         items.length === 0 && /* @__PURE__ */ React.createElement("p", { role: "status", className: "rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900" }, gameMessage(t, "games.matching.empty", "Add glossary terms and definitions to play Matching.")),
-        /* @__PURE__ */ React.createElement("div", { className: "flex justify-between gap-3 sm:gap-12 h-full" }, /* @__PURE__ */ React.createElement("div", { className: "w-2/5 sm:w-1/3 min-w-0 space-y-6" }, items.map((item) => /* @__PURE__ */ React.createElement("div", { key: item.id, className: "flex items-center justify-between h-28 sm:h-24 group relative z-20" }, /* @__PURE__ */ React.createElement(
+        /* @__PURE__ */ React.createElement("div", { className: "flex justify-between gap-3 sm:gap-12 h-full" }, /* @__PURE__ */ React.createElement("div", { className: "w-2/5 sm:w-1/3 min-w-0 space-y-6" }, items.map((item) => /* @__PURE__ */ React.createElement("div", { key: item.id, className: `flex items-center justify-between ${clueMode === "pictures" ? "h-44" : "h-28 sm:h-24"} group relative z-20` }, /* @__PURE__ */ React.createElement(
           "div",
           {
             onClick: () => {
@@ -1203,7 +1288,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
             "aria-pressed": keyboardSelectedTerm === item.id,
             className: `w-6 h-6 shrink-0 bg-white border-4 rounded-full cursor-pointer touch-none hover:scale-110 transition-transform ms-1 sm:ms-4 print:bg-black print:border-black print:w-4 print:h-4 print:scale-100 focus:ring-4 focus:ring-indigo-300 ${tempLine && tempLine.termId === item.id || keyboardSelectedTerm === item.id ? "border-yellow-500 ring-4 ring-yellow-200 scale-110 animate-pulse motion-reduce:animate-none" : "border-indigo-300"}`
           }
-        )))), /* @__PURE__ */ React.createElement("div", { className: "w-3/5 sm:w-2/3 min-w-0 space-y-6" }, rightCol.map((def) => /* @__PURE__ */ React.createElement("div", { key: def.id, className: "flex items-center justify-between h-28 sm:h-24 relative z-20" }, /* @__PURE__ */ React.createElement(
+        )))), /* @__PURE__ */ React.createElement("div", { className: "w-3/5 sm:w-2/3 min-w-0 space-y-6" }, rightCol.map((def) => /* @__PURE__ */ React.createElement("div", { key: def.id, className: `flex items-center justify-between ${clueMode === "pictures" ? "h-44" : "h-28 sm:h-24"} relative z-20` }, /* @__PURE__ */ React.createElement(
           "div",
           {
             "data-id": def.id,
@@ -1211,7 +1296,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
             onKeyDown: (e) => handleDefKeyDown(e, def.id),
             tabIndex: 0,
             role: "button",
-            "aria-label": `${t("matching.connect_def_aria")}: ${def.text}`,
+            "aria-label": `${clueMode === "pictures" && def.image ? gameMessage(t, "matching.connect_picture_aria", "Connect to picture") : t("matching.connect_def_aria")}: ${def.text}`,
             className: `def-dot w-6 h-6 shrink-0 bg-white border-4 rounded-full cursor-pointer transition-all me-1 sm:me-4 print:bg-black print:border-black print:w-4 print:h-4 focus:ring-4 focus:ring-indigo-300 ${snapTarget === def.id ? "border-green-500 scale-125 bg-green-50" : "border-slate-300 hover:border-slate-500"}`
           }
         ), /* @__PURE__ */ React.createElement(
@@ -1235,33 +1320,15 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
             onKeyDown: (e) => handleDefKeyDown(e, def.id),
             tabIndex: 0,
             role: "button",
-            "aria-label": `${t("matching.connect_def_aria")}: ${def.text}`,
+            "aria-label": `${clueMode === "pictures" && def.image ? gameMessage(t, "matching.connect_picture_aria", "Connect to picture") : t("matching.connect_def_aria")}: ${def.text}`,
             className: `bg-white border border-slate-400 p-3 rounded-lg w-full shadow-sm text-sm text-slate-700 flex items-center h-full break-words overflow-y-auto leading-snug print:border-slate-300 print:bg-white print:text-black select-none cursor-pointer hover:bg-slate-50 focus:ring-2 focus:ring-indigo-400 transition-colors ${keyboardSelectedTerm ? "hover:border-indigo-300 hover:shadow-md" : ""}`,
             "data-help-key": "matching_def_item"
           },
-          def.text
+          /* @__PURE__ */ React.createElement(MatchingClue, { clue: def, pictureMode: clueMode === "pictures", t })
         )))))
       )
     )
-  ), isChecked && /* @__PURE__ */ React.createElement("div", { className: "px-6 pb-2" }, items.length > 0 && score === items.length * 25 && !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement(
-    GameReviewScreen,
-    {
-      score,
-      title: t("matching.title") || "Matching",
-      items: items.map((item) => {
-        const conn = connections.find((c) => c.termId === item.id);
-        const matched = conn ? isCorrectConnection(conn) : false;
-        return {
-          label: item.term,
-          detail: item.def,
-          status: matched ? "correct" : "incorrect"
-        };
-      }),
-      onPlayAgain: reset,
-      onClose,
-      t
-    }
-  )), /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 no-print z-30" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 max-w-md" }, !isChecked && items.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "h-1.5 flex-grow rounded-full bg-slate-200 overflow-hidden" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 no-print z-30" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 max-w-md" }, !isChecked && items.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "h-1.5 flex-grow rounded-full bg-slate-200 overflow-hidden" }, /* @__PURE__ */ React.createElement(
     "div",
     {
       className: `h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 ${!useReducedMotion() ? "transition-all duration-500 ease-out" : ""}`,
@@ -3543,7 +3610,11 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
     }
   };
   const focusMultiBucketItem = (itemId) => {
-    window.setTimeout(() => gameContainerRef.current?.querySelector(`[data-multi-bucket-item-id="${itemId}"]`)?.focus(), 0);
+    window.setTimeout(() => {
+      const dialog = gameContainerRef.current;
+      if (dialog?.querySelector('[aria-labelledby="mb-victory-title"]')) playAgainRef.current?.focus();
+      else dialog?.querySelector(`[data-multi-bucket-item-id="${itemId}"]`)?.focus();
+    }, 0);
   };
   const cancelMultiBucketSelection = () => {
     const itemId = keyboardSelectedItemId;
@@ -3797,27 +3868,16 @@ const ConceptMapSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate
   );
 });
 const ProblemSolutionSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
+  const { t } = useContext(LanguageContext);
   const adapted = useMemo(() => {
     const branches = Array.isArray(data?.branches) ? data.branches : [];
-    const allSolutions = [];
-    branches.forEach((b, bi) => {
-      (b.items || []).forEach((it, ii) => {
-        const text = typeof it === "object" ? it.text || "" : String(it);
-        if (text) allSolutions.push({ text, branchIdx: bi, itemIdx: ii });
+    const buckets = branches.map((branch, index) => ({ id: `pl-b-${index}`, title: branch.title || `Solution ${index + 1}` }));
+    const items = [];
+    branches.forEach((branch, bi) => {
+      (Array.isArray(branch?.items) ? branch.items : []).forEach((item, ii) => {
+        const text = typeof item === "object" && item !== null ? item.text || item.label || "" : String(item ?? "");
+        if (text.trim()) items.push({ id: `pl-i-${bi}-${ii}`, text, correctBucketId: `pl-b-${bi}` });
       });
-    });
-    const total = allSolutions.length;
-    const buckets = [
-      { id: "pl-first", title: "Try First" },
-      { id: "pl-next", title: "Try Next" },
-      { id: "pl-last", title: "Last Resort" }
-    ];
-    const items = allSolutions.map((sol, idx) => {
-      let correctBucketId;
-      if (idx < total / 3) correctBucketId = "pl-first";
-      else if (idx < 2 * total / 3) correctBucketId = "pl-next";
-      else correctBucketId = "pl-last";
-      return { id: `pl-i-${idx}`, text: sol.text, correctBucketId };
     });
     return { buckets, items };
   }, [data]);
@@ -3825,7 +3885,7 @@ const ProblemSolutionSortGame = React.memo(({ data, onClose, playSound, onScoreU
     _MultiBucketSortGame,
     {
       data: adapted,
-      theme: { accentColor: "rose", headerGradient: "from-rose-600 to-pink-600", title: "Prioritize the Solutions" },
+      theme: { accentColor: "rose", headerGradient: "from-rose-600 to-pink-600", title: t("games.problem_solution_sort.match_btn") === "games.problem_solution_sort.match_btn" ? "Match Details to Solutions" : t("games.problem_solution_sort.match_btn") || "Match Details to Solutions" },
       onClose,
       playSound,
       topicTitle,
@@ -3879,7 +3939,7 @@ const OutlineSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, o
     _MultiBucketSortGame,
     {
       data: adapted,
-      theme: { accentColor: "amber", headerGradient: "from-amber-600 to-orange-600", title: "Outline Sort" },
+      theme: { accentColor: "amber", headerGradient: "from-amber-600 to-orange-600", title: data?.activityLabel || "Outline Sort" },
       onClose,
       playSound,
       topicTitle,
@@ -5828,6 +5888,9 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
   const [hintLevel, setHintLevel] = useState(0);
   const [results, setResults] = useState([]);
   const [announcement, setAnnouncement] = useState("");
+  const [isPracticeRound, setIsPracticeRound] = useState(false);
+  const originalItemsRef = useRef([]);
+  const hadMistakeRef = useRef(false);
   const scrambleDialogRef = useRef(null);
   const scrambleInputRef = useRef(null);
   const scrambleTimerRef = useRef(null);
@@ -5850,6 +5913,9 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
       const j = Math.floor(Math.random() * (i + 1));
       [items[i], items[j]] = [items[j], items[i]];
     }
+    originalItemsRef.current = items;
+    hadMistakeRef.current = false;
+    setIsPracticeRound(false);
     setGameItems(items);
     setCurrentIndex(0);
     setScore(0);
@@ -5879,7 +5945,12 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
       isPerfect: totalItems > 0 && correctCount === totalItems
     });
   }, [isGameOver, results, gameItems.length, score, onGameComplete]);
-  const resetScrambleGame = () => {
+  const practiceItems = results.filter((result) => !result.correct || result.needsPractice).map((result) => gameItems[result.itemIndex]).filter(Boolean);
+  const startScrambleRound = (items, practice = false) => {
+    setGameItems(items.slice());
+    setIsPracticeRound(practice);
+    hadMistakeRef.current = false;
+    setAnnouncement(practice ? gameMessage(t, "games.review.practice_round", "Practice round") : gameMessage(t, "games.review.full_round", "Full round restarted"));
     clearTimeout(scrambleTimerRef.current);
     roundLockedRef.current = false;
     setIsGameOver(false);
@@ -5889,16 +5960,18 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
     setGuess("");
     setFeedback("idle");
     setHintLevel(0);
-    if (gameItems.length > 0) {
-      setScrambled(scrambleWord(gameItems[0].letters));
+    if (items.length > 0) {
+      setScrambled(scrambleWord(items[0].letters));
       requestAnimationFrame(() => scrambleInputRef.current?.focus());
     } else setScrambled("");
   };
+  const resetScrambleGame = () => startScrambleRound(originalItemsRef.current);
   const nextRound = (currentScore) => {
     clearTimeout(scrambleTimerRef.current);
     if (currentIndex < gameItems.length - 1) {
       const nextIdx = currentIndex + 1;
       roundLockedRef.current = false;
+      hadMistakeRef.current = false;
       setCurrentIndex(nextIdx);
       setScrambled(scrambleWord(gameItems[nextIdx].letters));
       setGuess("");
@@ -5925,7 +5998,8 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
       if (playSound) playSound("correct");
       setFeedback("correct");
       setAnnouncement(t("games.scramble.correct") || "Correct");
-      setResults((prev) => [...prev, { term: currentItem.display, def: currentItem.def, correct: true }]);
+      const needsPractice = hintLevel > 0 || hadMistakeRef.current;
+      setResults((prev) => [...prev, { term: currentItem.display, def: currentItem.def, correct: true, itemIndex: currentIndex, needsPractice, usedHint: hintLevel > 0 }]);
       const newScore = score + Math.max(0, 10 - hintLevel * 3);
       setScore(newScore);
       scrambleTimerRef.current = setTimeout(() => {
@@ -5933,6 +6007,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
       }, 1e3);
     } else {
       if (playSound) playSound("incorrect");
+      hadMistakeRef.current = true;
       setFeedback("incorrect");
       setAnnouncement(t("games.scramble.incorrect") || "Incorrect. Try again.");
       scrambleTimerRef.current = setTimeout(() => setFeedback("idle"), 800);
@@ -5944,7 +6019,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
     clearTimeout(scrambleTimerRef.current);
     const currentItem = gameItems[currentIndex];
     if (currentItem) {
-      setResults((prev) => [...prev, { term: currentItem.display, def: currentItem.def, correct: false }]);
+      setResults((prev) => [...prev, { term: currentItem.display, def: currentItem.def, correct: false, itemIndex: currentIndex, needsPractice: true }]);
       setAnnouncement(`${currentItem.display}. ${t("common.skip")}`);
     }
     nextRound(score);
@@ -5971,13 +6046,17 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
       "aria-label": t("common.close")
     },
     /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" })
-  ), /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("div", { className: "w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600" }, /* @__PURE__ */ React.createElement(Type, { size: 32, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h2", { id: "word-scramble-title", className: "text-3xl font-black text-indigo-900 mb-2" }, t("games.scramble.title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-medium" }, t("games.scramble.subtitle"))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow flex flex-col items-center justify-center min-h-[300px] bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 p-3 sm:p-6 gap-4 sm:gap-6" }, isGameOver ? /* @__PURE__ */ React.createElement("div", { role: "status", className: "text-center motion-safe:animate-in motion-safe:zoom-in" }, !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement(Trophy, { size: 64, className: "text-yellow-500 mx-auto mb-4", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("h2", { className: "text-3xl font-black text-slate-800 mb-2" }, t("games.syntax.complete")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-indigo-600 mb-6 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100 inline-block" }, t("games.scramble.score"), ": ", score), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("div", { className: "w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600" }, /* @__PURE__ */ React.createElement(Type, { size: 32, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h2", { id: "word-scramble-title", className: "text-3xl font-black text-indigo-900 mb-2" }, t("games.scramble.title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-medium" }, t("games.scramble.subtitle")), isPracticeRound && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm font-bold text-amber-800", "data-game-practice-round": true }, gameMessage(t, "games.review.practice_round", "Practice round"), " \xB7 ", gameItems.length, "/", originalItemsRef.current.length, " ", gameMessage(t, "games.review.words", "words"))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow flex flex-col items-center justify-center min-h-[300px] bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 p-3 sm:p-6 gap-4 sm:gap-6" }, isGameOver ? /* @__PURE__ */ React.createElement("div", { role: "status", className: "text-center motion-safe:animate-in motion-safe:zoom-in" }, !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement(Trophy, { size: 64, className: "text-yellow-500 mx-auto mb-4", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("h2", { className: "text-3xl font-black text-slate-800 mb-2" }, t("games.syntax.complete")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-indigo-600 mb-6 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100 inline-block" }, t("games.scramble.score"), ": ", score), /* @__PURE__ */ React.createElement(
     GameReviewScreen,
     {
       score,
       title: t("games.scramble.title"),
-      items: results.map((r) => ({ label: r.term, detail: r.def, status: r.correct ? "correct" : "incorrect" })),
+      items: results.map((r) => ({ label: r.term, detail: r.def, status: r.correct ? "correct" : "unanswered", note: !r.correct ? gameMessage(t, "games.review.skipped", "Skipped") : r.usedHint ? gameMessage(t, "games.review.hint_used", "Solved with a hint") : r.needsPractice ? gameMessage(t, "games.review.another_try", "Solved after another try") : void 0 })),
       onPlayAgain: resetScrambleGame,
+      playAgainLabel: isPracticeRound ? gameMessage(t, "games.scramble.restart_all", "Restart all words") : void 0,
+      onPractice: () => startScrambleRound(practiceItems, true),
+      practiceCount: practiceItems.length,
+      focusOnMount: true,
       onClose,
       t
     }

@@ -1,0 +1,50 @@
+{
+  "date": "2026-09-19",
+  "sourceSha256": "a59b33b4f17fd581e93813c4183152acf3a51731bc384856625bd36b12203086",
+  "canonical": "stem_lab/stem_tool_anatomy.js",
+  "mirror": "desktop/web-app/public/stem_lab/stem_tool_anatomy.js",
+  "identical": true,
+  "regression": {
+    "tests": 320,
+    "files": 6
+  },
+  "finalPolish": {
+    "tests": 50,
+    "files": 2
+  },
+  "translations": [
+    {
+      "language": "french",
+      "keys": 34,
+      "mirrorIdentical": true
+    },
+    {
+      "language": "spanish_latin_america",
+      "keys": 34,
+      "mirrorIdentical": true
+    },
+    {
+      "language": "arabic",
+      "keys": 34,
+      "mirrorIdentical": true
+    }
+  ],
+  "browser": {
+    "checks": [
+      "keyboard jump, single practice attempt and stable swapped result",
+      "clear comparison restores focus to pin control",
+      "scientific memberships and responsive comparison at 390px and 320px",
+      "grade 1 shows simple comparison and hides adult detail",
+      "grade 4 shows simple comparison and hides adult detail",
+      "shared anatomical structure has explanation instead of ambiguous quiz",
+      "french comparison instructions and answer",
+      "spanish_latin_america comparison instructions and answer",
+      "arabic comparison instructions and answer"
+    ],
+    "axeScans": 10,
+    "violations": 0,
+    "incomplete": 0,
+    "errors": 0,
+    "screenshots": 8
+  }
+}

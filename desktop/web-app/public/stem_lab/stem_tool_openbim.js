@@ -323,6 +323,46 @@
     var fits = d.workWidth <= d.width && d.workDepth <= d.depth;
     return { dimensions: d, area: area, workArea: workArea, fits: fits, meetsBrief: fits && area <= 60 && workArea >= 24 };
   }
+
+  function designConstraintFeedback(value) {
+    var result=evaluateDesignStudy(value),d=result.dimensions;
+    function rounded(n){return Math.round(n*10000)/10000;}
+    var floorExcess=rounded(Math.max(0,result.area-60)),workShortfall=rounded(Math.max(0,24-result.workArea));
+    var widthOverflow=rounded(Math.max(0,d.workWidth-d.width)),depthOverflow=rounded(Math.max(0,d.workDepth-d.depth));
+    return [
+      {id:'floor',met:floorExcess===0,label:'Floor area: at most 60 m²',detail:floorExcess?'Over the target by '+floorExcess+' m².':result.area===60?'Exactly at the target.':rounded(60-result.area)+' m² below the maximum.'},
+      {id:'work',met:workShortfall===0,label:'Work area: at least 24 m²',detail:workShortfall?'Needs '+workShortfall+' m² more work area.':result.workArea===24?'Exactly at the target.':rounded(result.workArea-24)+' m² above the minimum.'},
+      {id:'fit',met:result.fits,label:'Work rectangle fits inside the floor',detail:result.fits?'Both work dimensions fit within the corresponding floor dimensions.':(widthOverflow?'Work width exceeds floor width by '+widthOverflow+' m. ':'')+(depthOverflow?'Work depth exceeds floor depth by '+depthOverflow+' m.':'')}
+    ];
+  }
+
+  function normalizeDesignTrials(value) {
+    var usedIds = new Set();
+    return (Array.isArray(value) ? value : []).filter(function(row) {
+      return row && row.dimensions && ['width','depth','workWidth','workDepth'].every(function(key) {
+        var n = Number(row.dimensions[key]); return String(row.dimensions[key]).trim() !== '' && isFinite(n) && n >= 1 && n <= 100;
+      });
+    }).slice(-20).map(function(row, index) {
+      var baseId = plain(row.id, 80) || 'imported-trial-' + index, id = baseId, suffix = 1;
+      while (usedIds.has(id)) id = baseId + '-' + suffix++;
+      usedIds.add(id);
+      return { id: id, label: plain(row.label, 80) || 'Design trial',
+        dimensions: normalizeDesignStudy(row.dimensions), reasoning: plain(row.reasoning, 1500), date: plain(row.date, 40) };
+    });
+  }
+  function compareDesignTrials(before, after) {
+    var a=evaluateDesignStudy(before),b=evaluateDesignStudy(after);
+    return {floorChange:Math.round((b.area-a.area)*10000)/10000,workChange:Math.round((b.workArea-a.workArea)*10000)/10000,
+      previousFits:a.fits,currentFits:b.fits,previousMeetsBrief:a.meetsBrief,currentMeetsBrief:b.meetsBrief};
+  }
+  function designTrialMarkdown(trials) {
+    return ['# OpenBIM design trials','Classroom targets: work area at least 24 m², floor area at most 60 m², with the work rectangle fitting inside the floor.','These studies are not IFC geometry or accessibility clearance checks.']
+      .concat(normalizeDesignTrials(trials).map(function(row) {
+        var r=evaluateDesignStudy(row.dimensions),d=r.dimensions;
+        return '## '+row.label+'\n'+row.date+'\n\nFloor: '+d.width+' × '+d.depth+' m = '+r.area+' m².\n\nWork area: '+d.workWidth+' × '+d.workDepth+' m = '+r.workArea+' m².\n\nFits: '+(r.fits?'yes':'no')+'. Classroom targets: '+(r.meetsBrief?'met':'not yet met')+'.\n\nReasoning: '+(row.reasoning||'Not recorded.');
+      })).join('\n\n');
+  }
+
   function comparePlans(before, after) {
     if (!before || !after) return [];
     var changes = [], a = normalizeDesignStudy(before.designStudy), b = normalizeDesignStudy(after.designStudy);
@@ -369,6 +409,7 @@
     normalized.architectureStudio = architecture;
     normalized.designStudy = normalizeDesignStudy(parsed.designStudy);
     normalized.designReasoning = plain(parsed.designReasoning,1500);
+    normalized.designTrials = normalizeDesignTrials(parsed.designTrials);
     warnings.push('Imported approval was cleared; review and approve this proposal again.');
     return { plan: normalized, warnings: uniqueStrings(warnings, '', 10), errors: [] };
   }
@@ -379,6 +420,7 @@
     recipe.version = RECIPE_VERSION;
     recipe.status = 'approved-concept';
     recipe.designStudy = normalizeDesignStudy(plan.designStudy);
+    recipe.designTrials = normalizeDesignTrials(plan.designTrials);
     recipe.approvedAt = new Date().toISOString();
     recipe.reviewQuestions = analyzePlan(recipe).questions;
     recipe.interoperability = {
@@ -527,6 +569,7 @@
   }
 
   window.OpenBIMBridge = {
+    designConstraintFeedback: designConstraintFeedback, normalizeDesignTrials: normalizeDesignTrials, compareDesignTrials: compareDesignTrials, designTrialMarkdown: designTrialMarkdown,
     normalizeDesignStudy: normalizeDesignStudy, evaluateDesignStudy: evaluateDesignStudy, comparePlans: comparePlans,
     schema: RECIPE_SCHEMA,
     version: RECIPE_VERSION,
@@ -620,6 +663,7 @@
       function setSample(value) { update({ brief: value, stage: 'brief', proposal: null, approvedRecipe: null }); }
 
       function saveProposal(next, message) {
+        update({designDraft:null,selectedDesignTrial:'',removedDesignTrial:null,designTrialLabel:''});
         update({ proposal: next, approvedRecipe: null, stage: 'review', aiBusy: false, statusMessage: message });
         announce(message);
       }
@@ -900,6 +944,9 @@
         var model = evaluateDesignStudy(plan.designStudy), dims = model.dimensions;
         var draft = state.designDraft || dims;
         var fields = [['width','Floor width'],['depth','Floor depth'],['workWidth','Work area width'],['workDepth','Work area depth']];
+        var trials = normalizeDesignTrials(plan.designTrials);
+        var selectedTrial = trials.find(function(row) { return row.id === state.selectedDesignTrial; }) || null;
+        var pendingDimensions = fields.some(function(f) { return String(draft[f[0]]).trim() === '' || Number(draft[f[0]]) !== dims[f[0]]; });
         var changes = state.comparisonBaseline ? comparePlans(state.comparisonBaseline, plan) : [];
         var scale = Math.min(300 / Math.max(dims.width,dims.workWidth), 170 / Math.max(dims.depth,dims.workDepth));
         function applyDimensions() {
@@ -908,6 +955,65 @@
           var next = JSON.parse(JSON.stringify(plan)); next.designStudy = normalizeDesignStudy(draft);
           update({ proposal:next,approvedRecipe:null,stage:'review',designDraft:null,designNotice:'Study dimensions updated. Review the changed concept before exporting.' });
           announce('Design study updated.');
+        }
+
+        function saveTrial() {
+          if (pendingDimensions) { update({ designNotice:'Apply the edited dimensions before saving a trial.' }); return; }
+          if (trials.length >= 20) { update({ designNotice:'This notebook has 20 trials. Export it, then remove a trial before adding another.' }); return; }
+          var baseId='design-'+Date.now(),id=baseId,suffix=1;
+          while(trials.some(function(row){return row.id===id;}) || (state.removedDesignTrial && state.removedDesignTrial.id===id)) id=baseId+'-'+suffix++;
+          var row={id:id,label:plain(state.designTrialLabel,80)||'Trial '+(trials.length+1),date:new Date().toISOString(),dimensions:dims,reasoning:plan.designReasoning||''};
+          var next=Object.assign({},plan,{designTrials:normalizeDesignTrials(trials.concat([row]))});
+          update({proposal:next,approvedRecipe:null,stage:'review',selectedDesignTrial:id,designTrialLabel:'',designNotice:'Trial saved. Change one dimension and compare the effect.'});
+          announce('Design trial saved.');
+        }
+        function restoreTrial() {
+          if(!selectedTrial)return;
+          var next=Object.assign({},plan,{designStudy:Object.assign({},selectedTrial.dimensions),designReasoning:selectedTrial.reasoning});
+          update({proposal:next,approvedRecipe:null,stage:'review',designDraft:null,designNotice:'Saved dimensions and reasoning restored. Review before exporting.'});
+          announce('Saved design trial restored.');
+        }
+        function trialNotebook() {
+          var delta=selectedTrial?compareDesignTrials(selectedTrial.dimensions,dims):null;
+          function signed(n){return (n>0?'+':'')+n;}
+          return el('section',{'data-design-trials':true,style:{marginTop:16,padding:14,border:'1px solid '+colors.border,borderRadius:10}},
+            el('h4',null,'Design trial notebook'),
+            el('p',null,'Save a trial, change one dimension, and explain the tradeoff. Rotating the work rectangle preserves its area but can change whether it fits.'),
+            el('div',{style:{display:'flex',gap:8,flexWrap:'wrap'}},
+              button('Rotate work area 90°',function(){
+                if(pendingDimensions){update({designNotice:'Apply the edited dimensions before rotating the work area.'});return;}
+                var next=Object.assign({},plan,{designStudy:Object.assign({},dims,{workWidth:dims.workDepth,workDepth:dims.workWidth})});
+                update({proposal:next,approvedRecipe:null,stage:'review',designDraft:null,designNotice:'Work area rotated. Its area stays the same; compare the fit.'});
+                announce('Work area rotated.');
+              }),
+              button('Export design trials',function(){var ok=downloadText('openbim-design-trials.md',designTrialMarkdown(trials),'text/markdown;charset=utf-8');update({designNotice:ok?'Design trials exported.':'The browser could not download the notebook.'});},{disabled:!trials.length})),
+            el('label',{style:{display:'block',marginTop:10}},'Trial name (optional)',
+              el('input',{value:state.designTrialLabel||'',maxLength:80,onChange:function(e){update({designTrialLabel:e.target.value});},style:{display:'block',width:'100%',padding:10,color:colors.ink,background:colors.surface,border:'1px solid '+colors.border}})),
+            button('Save design trial',saveTrial,{disabled:trials.length>=20}),
+            el('p',null,trials.length+'/20 saved trials. Trials and reasoning travel with the exported AlloFlow recipe.'),
+            trials.length ? el('div',null,
+              el('label',null,'Compare with a saved trial',
+                el('select',{value:selectedTrial?selectedTrial.id:'',onChange:function(e){update({selectedDesignTrial:e.target.value});},style:{display:'block',width:'100%',padding:10,color:colors.ink,background:colors.surface,border:'1px solid '+colors.border}},
+                  el('option',{value:''},'Choose a trial'),trials.map(function(row,i){return el('option',{key:row.id,value:row.id},(i+1)+'. '+row.label);}))),
+              selectedTrial && el('div',{'data-design-trial-comparison':true},
+                el('p',{role:'status'},'Current compared with '+selectedTrial.label+': floor area '+signed(delta.floorChange)+' m²; work area '+signed(delta.workChange)+' m². Fit: '+(delta.previousFits?'fits':'does not fit')+' → '+(delta.currentFits?'fits':'does not fit')+'.'),
+                el('p',null,'Saved reasoning: '+(selectedTrial.reasoning||'Not recorded.')),
+                button('Restore selected trial',restoreTrial),
+                button('Remove selected trial',function(){
+                  var next=Object.assign({},plan,{designTrials:trials.filter(function(row){return row.id!==selectedTrial.id;})});
+                  update({proposal:next,approvedRecipe:null,stage:'review',selectedDesignTrial:'',removedDesignTrial:selectedTrial,designNotice:'Trial removed. You can undo this removal.'});
+                })),
+              state.removedDesignTrial && button('Undo trial removal',function(){
+                if(trials.length>=20){update({designNotice:'Remove a trial first; the notebook holds 20 trials.'});return;}
+                var next=Object.assign({},plan,{designTrials:normalizeDesignTrials(trials.concat([state.removedDesignTrial]))});
+                update({proposal:next,approvedRecipe:null,stage:'review',selectedDesignTrial:state.removedDesignTrial.id,removedDesignTrial:null,designNotice:'Trial restored to the notebook.'});
+              })
+            ) : state.removedDesignTrial ? button('Undo trial removal',function(){
+              var next=Object.assign({},plan,{designTrials:normalizeDesignTrials([state.removedDesignTrial])});
+              update({proposal:next,approvedRecipe:null,stage:'review',selectedDesignTrial:state.removedDesignTrial.id,removedDesignTrial:null,designNotice:'Trial restored to the notebook.'});
+            }) : null,
+            el('p',{style:{fontSize:12,color:colors.soft}},'Unused floor area is not a measurement of usable circulation or accessibility clearance.')
+          );
         }
         return el('section',{ 'data-openbim-workbench':true, style:{margin:'16px 0',padding:16,border:'1px solid '+colors.border,borderRadius:12,background:colors.panel} },
           el('h3',null,'Design workbench'),
@@ -925,6 +1031,12 @@
             el('text',{x:40,y:23,fill:colors.ink,fontSize:13},'Floor width: '+dims.width+' m'),
             el('text',{x:40,y:230,fill:colors.ink,fontSize:13},'Floor depth: '+dims.depth+' m; dashed outline = work area')),
           el('p',{role:'status','data-design-result':model.meetsBrief?'meets':'revise'},'Floor: '+model.area+' m². Work area: '+model.workArea+' m². '+(!model.fits?'The work area extends beyond the floor.':model.meetsBrief?'Both classroom targets are met. Explain your tradeoff.':'Revise dimensions to meet both classroom targets.')),
+          el('section',{'data-design-constraints':true,style:{margin:'12px 0',padding:14,border:'1px solid '+colors.border,borderRadius:10}},
+            el('h4',null,'Check each design target'),
+            pendingDimensions ? el('p',null,'These checks use the applied dimensions. Apply your edits to update them.') : null,
+            el('ul',null,designConstraintFeedback(dims).map(function(check){return el('li',{key:check.id,'data-design-constraint':check.id,style:{marginBottom:10}},
+              el('strong',null,(check.met?'Met: ':'Revise: ')+check.label),el('p',{style:{margin:'4px 0'}},check.detail));})),
+            el('p',null,'Change one dimension and check all three targets again. Meeting an area target alone does not guarantee a fit.')),
           el('details',null,el('summary',null,'Inspect storeys and planned spaces'),
             plan.storeys.map(function(st){return el('p',{key:st.id},st.name+' at '+st.elevationMetres+' m: '+st.spaces.join(', '));})),
           el('label',{style:{display:'block',marginTop:12}},'Design reasoning',
@@ -932,6 +1044,7 @@
           el('div',{style:{display:'flex',gap:8,flexWrap:'wrap',marginTop:10}},
             button(state.comparisonBaseline?'Replace comparison baseline':'Save comparison baseline',function(){update({comparisonBaseline:JSON.parse(JSON.stringify(plan)),designNotice:'Comparison baseline saved in this project.'});}),
             button('Import revised recipe',function(){update({stage:'brief',statusMessage:'Use Resume an exported recipe below. Your comparison baseline is retained.'});})),
+          trialNotebook(),
           state.comparisonBaseline && el('div',{'data-openbim-comparison':true},
             el('h4',null,'Changes since saved baseline'),
             changes.length?el('ul',null,changes.map(function(change,i){return el('li',{key:i},change);})):el('p',null,'No dimension, inventory, spatial-plan, proxy-geometry, or brief changes.'),

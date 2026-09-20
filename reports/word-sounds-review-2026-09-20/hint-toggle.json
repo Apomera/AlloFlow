@@ -1,0 +1,20 @@
+{
+  "timestamp": 1700000000000,
+  "sessionId": "ws-run-1700000000000-f4bipx",
+  "language": "en",
+  "textSupported": false,
+  "cluesShown": [],
+  "mode": "sound_only",
+  "firstTry": true,
+  "activity": "counting",
+  "word": "cat",
+  "correct": true,
+  "difficulty": "easy",
+  "wordDifficulty": "easy",
+  "phonemes": [
+    "k",
+    "a",
+    "t"
+  ],
+  "attempts": 1
+}

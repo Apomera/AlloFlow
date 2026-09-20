@@ -203,5 +203,16 @@
       "Count kinds. Ten ants may all be one kind. A bird and an ant are two kinds.",
       "The cue helps us count kinds, not just how many things we saw."
     ]
-  ]
+  ],
+  "frames": [
+    "In this place, I found these kinds: ____.",
+    "Both places had ____. Only one showed ____.",
+    "We looked for the same time. We noticed ____.",
+    "Our search may have missed ____ because ____."
+  ],
+  "parallelExample": {
+    "context": "Two photos show small parts of a pond edge and a lawn.",
+    "move": "List the kinds you can see in each. Count kinds, not just how many living things there are. Name something the photos might miss.",
+    "whyItHelps": "The photos help you practice the same kind of comparison. A photo or short search cannot show everything."
+  }
 }

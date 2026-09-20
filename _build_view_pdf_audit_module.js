@@ -95,6 +95,8 @@ window.AlloModules.PdfWorkspace = { state: _pdfWorkspaceState, jump: _pdfWorkspa
 window.AlloModules.PdfPreservationReview = _PdfPreservationReview;
 window.AlloModules.PdfAuditView = (typeof PdfAuditView !== 'undefined') ? PdfAuditView : null;
 window.AlloModules.PdfAuditVerificationEngineList = (typeof _PdfAuditVerificationEngineList !== 'undefined') ? _PdfAuditVerificationEngineList : null;
+window.AlloModules.PdfAuditVerificationReasons = _PdfAuditVerificationReasons;
+window.AlloModules.PdfReviewAttestations = _viewWithReviewAttestations;
 window.AlloModules.PdfHtmlFoundationMatrix = (typeof _PdfHtmlFoundationMatrix !== 'undefined') ? _PdfHtmlFoundationMatrix : null;
 window.AlloModules.PdfFoundationEvidence = (typeof _viewFoundationEvidence !== 'undefined') ? _viewFoundationEvidence : null;
 window.AlloModules.AccessibleOfficeExport = { build: _buildAccessibleOfficeExport };

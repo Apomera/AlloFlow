@@ -1,0 +1,17 @@
+const fs=require('fs'),crypto=require('crypto'),path=require('path');
+const dir='reports/remediation-ux-review-2026-09-19';
+const final=JSON.parse(fs.readFileSync(dir+'/final-tests.json'));
+const rerun=JSON.parse(fs.readFileSync(dir+'/progress-rerun.json'));
+const latest=new Map(final.testResults.map(r=>[r.name,r]));for(const r of rerun.testResults)latest.set(r.name,r);
+let total=0,passed=0,failed=0;for(const r of latest.values())for(const a of r.assertionResults){total++;if(a.status==='passed')passed++;else if(a.status==='failed')failed++;}
+if(failed||passed!==total)throw Error('Outstanding unit cases');
+const ui=JSON.parse(fs.readFileSync(dir+'/ui-validation.json'));
+const files=['doc_pipeline_source.jsx','doc_pipeline_module.js','view_pdf_audit_source.jsx','view_pdf_audit_module.js','remediation_workspace_component.jsx','remediation_workspace.css','AlloFlowANTI.txt','desktop/web-app/src/App.jsx','desktop/web-app/src/AlloFlowANTI.txt','help_strings.js'];
+const hashes=Object.fromEntries(files.map(f=>[f,crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex')]));
+const mirrors=['doc_pipeline_module.js','view_pdf_audit_module.js','help_strings.js'].map(f=>({file:f,equal:fs.readFileSync(f).equals(fs.readFileSync('desktop/web-app/public/'+f))}));if(mirrors.some(m=>!m.equal))throw Error('Mirror drift');
+const result={unit:{uniqueCases:total,passed,failed,finalRun:{passed:final.numPassedTests,failed:final.numFailedTests},focusedRerun:{passed:rerun.numPassedTests,failed:rerun.numFailedTests,testTimeoutMs:30000},note:'One source-AST inspection exceeded the initial allowance; all 18 tests in its suite passed on the focused rerun. Counts overlap.'},browser:{passed:23,failed:0,retries:0},additionalUi:ui,mirrors,hashes,liveProviderCalls:false,deployed:false};
+fs.writeFileSync(dir+'/implementation-validation.json',JSON.stringify(result,null,2));
+let report=fs.readFileSync(dir+'/IMPLEMENTATION.md','utf8');report=report.replace('- Final unit totals are recorded in `final-tests.json` and `implementation-validation.json` when the run completes.',`- **${total} unit cases passed across the final run and focused rerun.** The final run passed ${final.numPassedTests}/${final.numTotalTests}; one source-AST inspection exceeded its initial time allowance. Its full ${rerun.numPassedTests}-test suite passed with a 30-second allowance. No application changes were needed for that rerun. Counts overlap; see \`implementation-validation.json\`, \`final-tests.json\`, and \`progress-rerun.json\`.`);fs.writeFileSync(dir+'/IMPLEMENTATION.md',report);
+const review=fs.readFileSync(dir+'/README.md','utf8');if(!review.includes('IMPLEMENTATION.md'))fs.writeFileSync(dir+'/README.md',review.replace(/(\r?\n)/,'$1\n**Follow-up:** approved changes are implemented; see [implementation and validation](IMPLEMENTATION.md).\n'));
+fs.appendFileSync('AGENT_HANDOFF.md',`\nRemediation follow-up complete: ${total} unique unit cases pass across the final run/focused rerun; 23 maintained browser tests and 13 additional UI checks pass. One slow AST inspection needed a 30-second allowance on rerun. Host JSX, pipeline integrity, scoped whitespace, and web/desktop module/help parity checked. Details: reports/remediation-ux-review-2026-09-19/IMPLEMENTATION.md. No live AI calls or deployment. Shared pre-existing changes remain preserved.\n`);
+console.log(JSON.stringify({unit:{total,passed,failed},browser:result.browser,uiChecks:ui.passed,mirrors},null,2));

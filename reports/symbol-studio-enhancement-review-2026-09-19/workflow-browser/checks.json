@@ -1,0 +1,41 @@
+[
+  {
+    "width": 1440,
+    "favoriteFailureVisible": true,
+    "retryPersisted": true,
+    "hiddenSelectionIncluded": true,
+    "selectionOrderPreserved": true,
+    "boardReferencesSaved": true,
+    "existingBoardPreserved": true,
+    "draftCancelPreserved": true,
+    "clearUndoRestored": true,
+    "workspaceOverflow": [],
+    "errors": []
+  },
+  {
+    "width": 390,
+    "favoriteFailureVisible": true,
+    "retryPersisted": true,
+    "hiddenSelectionIncluded": true,
+    "selectionOrderPreserved": true,
+    "boardReferencesSaved": true,
+    "existingBoardPreserved": true,
+    "draftCancelPreserved": true,
+    "clearUndoRestored": true,
+    "workspaceOverflow": [],
+    "errors": []
+  },
+  {
+    "width": 320,
+    "favoriteFailureVisible": true,
+    "retryPersisted": true,
+    "hiddenSelectionIncluded": true,
+    "selectionOrderPreserved": true,
+    "boardReferencesSaved": true,
+    "existingBoardPreserved": true,
+    "draftCancelPreserved": true,
+    "clearUndoRestored": true,
+    "workspaceOverflow": [],
+    "errors": []
+  }
+]

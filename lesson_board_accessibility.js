@@ -1,9 +1,9 @@
-const { useEffect, useRef } = window.React;
+const { useLayoutEffect, useRef } = window.React;
 
 // Handle nested dismissal before the setup dialog's native Escape listener.
 export function useBoardEscape(ref, onEscape, active = true) {
   const callback = useRef(onEscape); callback.current = onEscape;
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = ref.current; if (!active || !element) return;
     const key = event => {
       if (event.key !== 'Escape') return;

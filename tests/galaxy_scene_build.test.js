@@ -270,6 +270,9 @@ describe('galaxy 3-D scene builder', () => {
       for (const [angle, phi] of [['face', 0.1], ['angled', Math.PI * 0.35], ['edge', Math.PI * 0.5]]) {
         await React.act(async () => { host.querySelector('[data-galaxy-view-angle="' + angle + '"]').click(); now += 800; restoreLoops.step(); });
         expect(canvas._galaxyOrbit.phi).toBeCloseTo(phi, 8);
+        expect(host.querySelector('[data-galaxy-view-angle="' + angle + '"]').getAttribute('aria-pressed')).toBe('true');
+        expect(host.querySelectorAll('[data-galaxy-view-angle][aria-pressed="true"]').length).toBe(1);
+        expect(host.querySelector('[data-galaxy-current-zoom]').textContent).toBe('Zoom ' + Math.round(100 * canvas._galaxyOverviewRadius / radius) + '%');
         expect(canvas._galaxyOrbit.r).toBe(radius);
         expect(canvas._galaxyOrbit.theta).toBe(theta);
         expect(canvas._layers).toBe(layers);
@@ -288,10 +291,116 @@ describe('galaxy 3-D scene builder', () => {
         expect(canvas._galaxyOrbit, input).toEqual(orbit);
       }
       const orbit = { ...canvas._galaxyOrbit };
+      await React.act(async () => { canvas._galaxyOrbit.phi = 0.6; canvas._galaxyUpdateCam(); });
+      expect(host.querySelector('[data-galaxy-current-angle]').textContent).toBe('Free orbit');
+      expect(host.querySelectorAll('[data-galaxy-view-angle][aria-pressed="true"]').length).toBe(0);
+      canvas._galaxyOrbit.phi = orbit.phi;
       canvas._galaxySetViewAngle('__proto__');
       expect(canvas._galaxyOrbit).toEqual(orbit);
+      await React.act(async () => { host.querySelector('[data-galaxy-overview-reset]').click(); now += 800; restoreLoops.step(); });
+      expect(host.querySelector('[data-galaxy-current-zoom]').textContent).toBe('Zoom 100%');
+      expect(host.querySelector('[data-galaxy-view-angle="angled"]').getAttribute('aria-pressed')).toBe('true');
+      expect(canvas._layers).toBe(layers);
       assertClean();
     } finally { clock.mockRestore(); }
+  }, SCENE_TIMEOUT);
+
+  it('keeps zoom slider limits, camera feedback, and manual takeover consistent', async () => {
+    const getState = await mountGalaxy({ ...LIGHT, galaxyQuality: 'balanced', galaxyAutoRotate: false });
+    const canvas = host.querySelector('[data-galaxy-canvas]');
+    const slider = host.querySelector('[data-galaxy-zoom-slider]');
+    const layers = canvas._layers;
+    const phi = canvas._galaxyOrbit.phi;
+    const theta = canvas._galaxyOrbit.theta;
+    for (const [position, radius, value] of [[-10, 3, '0'], [50, Math.sqrt(0.6), '50'], [120, 0.2, '100']]) {
+      await React.act(async () => { canvas._galaxySetZoomPosition(position); });
+      expect(canvas._galaxyOrbit.r).toBeCloseTo(radius, 8);
+      expect(slider.value).toBe(value);
+      expect(slider.getAttribute('aria-valuetext')).toBe(host.querySelector('[data-galaxy-current-zoom]').textContent);
+      expect(canvas._galaxyOrbit.phi).toBe(phi);
+      expect(canvas._galaxyOrbit.theta).toBe(theta);
+      expect(canvas._layers).toBe(layers);
+    }
+    for (const invalid of [NaN, Infinity, undefined]) {
+      const orbit = { ...canvas._galaxyOrbit };
+      canvas._galaxySetZoomPosition(invalid);
+      expect(canvas._galaxyOrbit).toEqual(orbit);
+    }
+    let now = Date.now();
+    const clock = vi.spyOn(Date, 'now').mockImplementation(() => now);
+    try {
+      await React.act(async () => { canvas._galaxySetViewAngle('face'); canvas._galaxySetZoomPosition(50); now += 1000; restoreLoops.step(); });
+      expect(canvas._galaxyOrbit.phi).toBe(phi);
+      expect(canvas._galaxyOrbit.r).toBeCloseTo(Math.sqrt(0.6), 8);
+      await React.act(async () => { canvas._galaxySetTour(true); canvas._galaxySetZoomPosition(50); now += 1000; restoreLoops.step(); });
+      expect(getState().galaxy.galaxyTourActive).toBe(false);
+      expect(canvas._galaxyOrbit.r).toBeCloseTo(Math.sqrt(0.6), 8);
+      await React.act(async () => { canvas._galaxyZoom('out'); });
+      expect(Number(slider.value)).toBeLessThan(50);
+      await React.act(async () => { canvas._galaxyOrbit.phi = 0.6; canvas._galaxyUpdateCam(); host.querySelector('[data-galaxy-zoom-overview]').click(); now += 1000; restoreLoops.step(); });
+      expect(canvas._galaxyOrbit.phi).toBe(0.6);
+      expect(canvas._galaxyOrbit.theta).toBe(theta);
+      expect(canvas._galaxyOrbit.r).toBeCloseTo(canvas._galaxyOverviewRadius, 8);
+      expect(slider.getAttribute('aria-valuetext')).toBe('Zoom 100%');
+      expect(slider.style.getPropertyValue('--galaxy-zoom-fill')).toBe(slider.value + '%');
+      expect(canvas._layers).toBe(layers);
+      await React.act(async () => { host.querySelector('[data-galaxy-overview-reset]').click(); now += 1000; restoreLoops.step(); });
+      expect(slider.getAttribute('aria-valuetext')).toBe('Zoom 100%');
+      assertClean();
+    } finally { clock.mockRestore(); }
+  }, SCENE_TIMEOUT);
+
+  it('undoes the latest camera reset once without rebuilding the scene', async () => {
+    await mountGalaxy({ ...LIGHT, galaxyQuality: 'balanced', galaxyAutoRotate: false });
+    const canvas = host.querySelector('[data-galaxy-canvas]');
+    const layers = canvas._layers;
+    const undo = host.querySelector('[data-galaxy-undo-reset]');
+    expect(undo.disabled).toBe(true);
+    let now = Date.now();
+    const clock = vi.spyOn(Date, 'now').mockImplementation(() => now);
+    try {
+      for (const reset of ['_galaxyResetView', '_galaxyResetZoom']) {
+        await React.act(async () => { canvas._galaxyOrbit.theta = 0.8; canvas._galaxyOrbit.phi = 0.6; canvas._galaxySetZoomPosition(55); });
+        const original = { ...canvas._galaxyOrbit };
+        await React.act(async () => { canvas[reset](); now += 1000; restoreLoops.step(); });
+        expect(undo.disabled).toBe(false);
+        expect(canvas._galaxyOrbit.r).toBeCloseTo(canvas._galaxyOverviewRadius, 8);
+        await React.act(async () => { undo.click(); now += 1000; restoreLoops.step(); });
+        expect(canvas._galaxyOrbit.theta).toBeCloseTo(original.theta, 8);
+        expect(canvas._galaxyOrbit.phi).toBeCloseTo(original.phi, 8);
+        expect(canvas._galaxyOrbit.r).toBeCloseTo(original.r, 8);
+        expect(undo.disabled).toBe(true);
+        const restored = { ...canvas._galaxyOrbit };
+        canvas._galaxyUndoReset();
+        expect(canvas._galaxyOrbit).toEqual(restored);
+        expect(canvas._layers).toBe(layers);
+      }
+      await React.act(async () => { canvas._galaxyResetView(); now += 1000; restoreLoops.step(); canvas._galaxyUndoReset(); canvas._galaxySetZoomPosition(40); });
+      const manual = { ...canvas._galaxyOrbit };
+      await React.act(async () => { now += 1000; restoreLoops.step(); });
+      expect(canvas._galaxyOrbit).toEqual(manual);
+      assertClean();
+    } finally { clock.mockRestore(); }
+  }, SCENE_TIMEOUT);
+
+  it.each(['elliptical', 'irregular'])('keeps the %s field height consistent and uses framing labels', async (galaxyType) => {
+    await mountGalaxy({ ...LIGHT, galaxyType, galaxyQuality: 'balanced', galaxyAutoRotate: false });
+    const canvas = host.querySelector('[data-galaxy-canvas]');
+    const panelField = host.querySelector('[data-galaxy-panel-field-height]');
+    const hudField = host.querySelector('[data-galaxy-live-scale-value]');
+    const context = host.querySelector('[data-galaxy-panel-scale-regime]');
+    await React.act(async () => { canvas._galaxySetZoomPosition(100); });
+    expect(panelField.textContent).toBe('~3.5 kpc high');
+    expect(hudField.textContent).toBe(panelField.textContent);
+    expect(context.textContent).toBe('Close detail');
+    await React.act(async () => { canvas._galaxyOrbit.r = canvas._galaxyOverviewRadius * 0.5; canvas._galaxyUpdateCam(); });
+    expect(context.textContent).toBe('Local structure');
+    expect(host.querySelector('[data-galaxy-scale-regime]').textContent).toBe(context.textContent);
+    await React.act(async () => { canvas._galaxySetZoomPosition(0); });
+    expect(panelField.textContent).toBe('~52 kpc high');
+    expect(hudField.textContent).toBe(panelField.textContent);
+    expect(host.querySelector('[data-galaxy-live-scale]').getAttribute('role')).toBe('group');
+    assertClean();
   }, SCENE_TIMEOUT);
 
   it('exposes working scene handles after building', async () => {

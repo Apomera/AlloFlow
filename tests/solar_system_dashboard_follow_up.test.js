@@ -1,0 +1,11 @@
+import {describe,it,expect} from 'vitest';import {readFileSync} from 'node:fs';
+const s=readFileSync('stem_lab/stem_tool_solarsystem.js','utf8');const summary=new Function(s.slice(s.indexOf('  function marsMissionProgress('),s.indexOf('  var _stableViewTypes'))+';return marsFollowUpSummary;')();
+const report={source:'mission',missionId:'earth-mars',missionStartedAt:100,observation:'Report',expedition:{reflection:'Saved explanation'}};
+const prediction='I predict a larger arrival gap.',mission={startedAt:100,completedAt:200,followUp:{offset:60,prediction,launched:{offset:60,prediction,timestamp:300}}};
+const result=(launch=300)=>({source:'experiment',transferComparisonId:'result-'+launch,observation:'Saved comparison',transferComparison:{route:'earth-mars',missionStartedAt:100,offset:60,days:258.9,referenceGap:0,testGap:1.524,timestamp:launch+10,followUp:{launchedAt:launch,offset:60,prediction}}});
+describe('dashboard follow-up status',()=>{
+ it('appears only when a completed expedition report is available',()=>{expect(summary({...mission,completedAt:null},[report])).toBeNull();expect(summary(mission,[])).toBeNull();expect(summary({...mission,followUp:undefined},[report])).toMatchObject({mode:'plan',count:0,title:'Choose your next investigation'});});
+ it('distinguishes unfinished and ready predictions',()=>{expect(summary({...mission,followUp:{prediction:'Short'}},[report])).toMatchObject({mode:'plan',title:'Finish your prediction'});expect(summary({...mission,followUp:{prediction}},[report])).toMatchObject({mode:'plan',title:'Prediction ready to test'});});
+ it('does not mistake an older saved launch for the current result',()=>{expect(summary(mission,[report,result(250)])).toMatchObject({mode:'experiment',count:1,offset:60});expect(summary(mission,[report,result()])).toMatchObject({mode:'outcome',count:1,latestId:'result-300'});});
+ it('prioritizes a revised draft without erasing previous outcomes',()=>{const m={...mission,followUp:{...mission.followUp,prediction:'An edited prediction for the next experiment.'}},entries=[report,result()],before=JSON.stringify({m,entries});expect(summary(m,entries)).toMatchObject({mode:'plan',count:1});expect(JSON.stringify({m,entries})).toBe(before);});
+});

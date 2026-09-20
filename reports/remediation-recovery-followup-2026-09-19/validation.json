@@ -1,0 +1,93 @@
+{
+  "date": "2026-09-19",
+  "liveProviderCalls": false,
+  "deployed": false,
+  "unitGroups": [
+    {
+      "name": "Gate recovery and audit ownership",
+      "files": [
+        "tests/remediation_pacing_preference.test.js",
+        "tests/gemini_pacing_stagger.test.js",
+        "tests/gemini_gate_canvas_hold_signature.test.js",
+        "tests/gemini_probe_representative_recovery.test.js",
+        "tests/gate_canvas_refinements_2026_09_02.test.js",
+        "tests/storm_budget_and_calm_refinements.test.js",
+        "tests/watchdog_breaker_reset.test.js",
+        "tests/storm_wait_autocontinue.test.js",
+        "tests/deep_dive_batch1_fixes.test.js",
+        "tests/gemini_breaker_feeds_on_canvas_throttle.test.js",
+        "tests/gemini_auth_debounce.test.js",
+        "tests/pipeline_throttle_telemetry.test.js",
+        "tests/remediation_audit_ownership.test.js"
+      ],
+      "passed": 151,
+      "evidence": "Shell output from initial run and affected rerun; final affected rerun 70/70."
+    },
+    {
+      "name": "Visible Stop, workspace states and first-start ownership",
+      "files": [
+        "tests/remediation_audit_stop.test.js",
+        "tests/remediation_workspace.test.js",
+        "tests/pdf_audit_first_start_visibility.test.js"
+      ],
+      "passed": 48,
+      "evidence": "Shell output, all three files passed."
+    },
+    {
+      "name": "Existing one-click and stalled-audit regressions",
+      "passed": 43,
+      "evidence": "Subtask shell output; updated wrapper extraction seams and stronger cancellation assertion."
+    },
+    {
+      "name": "Intake, batch, image, rebind and handoff integration",
+      "passed": 98,
+      "files": [
+        "pipeline_rebind_isolation.test.js",
+        "remediation_audit_fix_handoff.test.js",
+        "remediation_image_core.test.js",
+        "remediation_intake_hardening.test.js",
+        "remediation_retry_startup.test.js",
+        "remediation_upload_lifecycle.test.js"
+      ],
+      "evidence": "audit-integration-tests.json initially 93/98; image-signal-tests.json rerun passed 6 cases; remediation_upload_lifecycle.test.js all 16 passed after stale source-location test seams were updated."
+    }
+  ],
+  "browser": {
+    "passed": 26,
+    "maintained": 23,
+    "new": 3,
+    "retries": 0,
+    "scope": "Compiled local modal with controlled provider fixtures; stop/late result, restart, wait transitions, batch continuity, keyboard/focus, phone layouts and scoped axe checks."
+  },
+  "visual": {
+    "screenshots": 5,
+    "reviewed": [
+      "audit-wait-390-dark.png",
+      "audit-wait-320-light.png",
+      "verification-390-light.png"
+    ],
+    "pageErrors": []
+  },
+  "build": {
+    "pipelineIntegrity": true,
+    "hostJsxSmoke": true,
+    "scopedWhitespace": true,
+    "mirrors": [
+      {
+        "file": "doc_pipeline_module.js",
+        "identical": true,
+        "sha256": "2c4f0dff7cd8e1f6821be6f7fd249352a4838bf1aeb4e0e7f78c4c41a68b4ba2"
+      },
+      {
+        "file": "view_pdf_audit_module.js",
+        "identical": true,
+        "sha256": "9a22464c3df004e8841b48c121da163ccfe0d2914a00450d399285774680f4b7"
+      },
+      {
+        "file": "help_strings.js",
+        "identical": true,
+        "sha256": "230185f0ec6d6caefedbec4eaa4bbd10fcb47f4b2fced42873c8b0a3681f0660"
+      }
+    ]
+  }
+}

@@ -8,7 +8,8 @@
     "gradeLevel": "4th Grade",
     "standards": "NGSS 4-PS3-1 (use evidence to construct an explanation relating the speed of an object to the energy of that object); NGSS 4-PS3-2 (make observations to provide evidence that energy can be transferred from place to place by sound, light, heat, and electric currents); NGSS 4-PS3-3 (ask questions and predict outcomes about the changes in energy that occur when objects collide); NGSS 4-PS3-4 (apply scientific ideas to design, test, and refine a device that converts energy from one form to another)",
     "createdAt": "2026-09-06T04:20:00.000Z",
-    "imageShotList": "allopacks/energy_transfer_grade4.IMAGES.md"
+    "imageShotList": "allopacks/energy_transfer_grade4.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Energy Transfer, Speed, Collisions, and Energy Conversion",
   "history": [
@@ -55,7 +56,7 @@
       "title": "Energy Moves",
       "timestamp": "2026-09-06T04:20:01.000Z",
       "data": "## Energy Moves\n\nYou cannot hold **energy** in your hand. You cannot put it in a jar. But you can see what it does.\n\nEnergy is what lets one thing make something else happen. A moving ball knocks over a cup. A hot pan warms the soup. A battery lights a bulb. In each one, something changed, and energy is the reason.\n\n### Faster means more\n\nAnything moving has energy, and how much depends on its **speed**. Roll a ball slowly into a stack of blocks and one block wobbles. Roll the same ball fast and the whole stack scatters.\n\nThe ball did not get heavier. It got faster, and faster means more energy of **motion**. This is why running into someone hurts more than walking into them.\n\n### Energy does not stay put\n\nHere is the important part. Energy can move from one place to another. That move is called a **transfer**, and it happens in four ways you meet every day.\n\n**Sound.** A drum is hit, the drum skin shakes, and the shaking travels through the air. When it reaches your ear, you hear it. If the drum is loud enough you feel it in your chest, because the energy really did travel to you.\n\n**Light.** The Sun is very far away, and its energy still reaches your face. A torch sends energy across a dark room to the wall.\n\n**Heat.** Put a metal spoon in hot soup and the handle warms up. The energy moved along the spoon, from the hot end toward the cool end. It always goes that way, warm to cool, never the other way.\n\n**Electric current.** A wire carries energy from a battery to a bulb. Nothing you can see is moving along the wire, but the energy arrives, and the bulb glows.\n\n### Crashes are transfers\n\nWhen two things **collide**, energy moves between them. A rolling marble hits a still marble, stops, and the still one shoots away. The energy went from the first to the second.\n\nSome of it usually leaks out too. A collision often makes a sound, and the objects can get slightly warmer. That sound and that warmth are energy, leaving in another form.\n\n### It never just vanishes\n\nPeople say energy gets used up. It does not. It **changes** form and it spreads out.\n\nA torch does not destroy the energy in its battery. It turns it into light and a little heat. A bouncing ball ends up still on the floor, and the energy went into sound and warming the ground very slightly.\n\nSo when something stops happening, do not ask where the energy went missing. Ask where it went. There is always an answer.",
-      "meta": "4th Grade • Leveled reading • ~445 words",
+      "meta": "4th Grade • Leveled reading",
       "imageSlot": "en-img-transfer"
     },
     {

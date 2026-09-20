@@ -1,0 +1,66 @@
+{
+  "passed": 129,
+  "failed": 0,
+  "files": 11,
+  "fileResults": [
+    {
+      "file": "lan_live_session_identity.test.js",
+      "passed": 3,
+      "status": "passed"
+    },
+    {
+      "file": "live_session_connection_recovery.test.js",
+      "passed": 21,
+      "status": "passed"
+    },
+    {
+      "file": "organizer_3d_remote_stop.test.js",
+      "passed": 2,
+      "status": "passed"
+    },
+    {
+      "file": "organizer_activity_type_pairing.test.js",
+      "passed": 5,
+      "status": "passed"
+    },
+    {
+      "file": "organizer_integration_runtime.test.js",
+      "passed": 22,
+      "status": "passed"
+    },
+    {
+      "file": "organizer_item_object_render.test.js",
+      "passed": 3,
+      "status": "passed"
+    },
+    {
+      "file": "organizer_private_lan.test.js",
+      "passed": 17,
+      "status": "passed"
+    },
+    {
+      "file": "organizer_reflection_runtime.test.js",
+      "passed": 24,
+      "status": "passed"
+    },
+    {
+      "file": "organizer_reflection_submission.test.js",
+      "passed": 14,
+      "status": "passed"
+    },
+    {
+      "file": "organizer_review_runtime.test.js",
+      "passed": 11,
+      "status": "passed"
+    },
+    {
+      "file": "visual_organizer_hardening.test.js",
+      "passed": 7,
+      "status": "passed"
+    }
+  ],
+  "lanChecks": 33,
+  "browserChecks": 20,
+  "aggregation": "Latest passing result for each affected test file, including final feedback-draft rerun.",
+  "deployed": false
+}

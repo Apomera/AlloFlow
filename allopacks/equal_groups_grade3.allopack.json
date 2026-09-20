@@ -8,7 +8,8 @@
     "gradeLevel": "3rd Grade",
     "standards": "CCSS.MATH.CONTENT.3.OA.A.1 (interpret products of whole numbers, e.g., interpret 5 x 7 as the total number of objects in 5 groups of 7 objects each); CCSS.MATH.CONTENT.3.OA.A.3 (use multiplication and division within 100 to solve word problems in situations involving equal groups and arrays); CCSS.MATH.CONTENT.3.OA.B.5 (apply properties of operations as strategies to multiply and divide)",
     "createdAt": "2026-09-06T03:30:00.000Z",
-    "imageShotList": "allopacks/equal_groups_grade3.IMAGES.md"
+    "imageShotList": "allopacks/equal_groups_grade3.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Multiplication as Equal Groups and Arrays",
   "history": [
@@ -55,7 +56,7 @@
       "title": "What Times Really Means",
       "timestamp": "2026-09-06T03:30:01.000Z",
       "data": "## What Times Really Means\n\nYou already know how to find 4 + 4 + 4. Multiplication is just a shorter way to write that.\n\nWhen you see **4 × 3**, read it out loud as **four groups of three**. Not \"four three.\" Four groups of three. The first number tells you how many groups. The second number tells you how many are in each group. The answer, 12, is called the **product**.\n\nThere is one rule that makes all of this work, and it is easy to skip past. **The groups have to be equal.**\n\nImagine three plates. One has 2 crackers, one has 5, and one has 1. Can you multiply? No. You have to add: 2 + 5 + 1 = 8. Multiplication has nothing to grab onto, because there is no \"how many in each group\" to name.\n\nNow imagine three plates with 4 crackers on every one. That you can multiply. 3 × 4 = 12. The equal groups are what let you take the shortcut.\n\n### The same thing, drawn as a rectangle\n\nAn **array** is equal groups lined up in rows and columns. Three rows of 4 chairs is an array. You can count the chairs one at a time and get 12, or you can multiply and get 12 faster.\n\nArrays show you something surprising. Turn the array of 3 rows of 4 on its side. Now it is 4 rows of 3. Nothing was added or taken away, so the total cannot have changed. It is 12 either way.\n\nThat means **3 × 4 and 4 × 3 give the same product.** This is worth more than it looks. If you know 3 × 8, you also know 8 × 3 for free. Every fact you learn comes with a second one attached.\n\n### Using a fact you already know\n\nSay you get stuck on 9 × 6. You may already know 10 × 6 = 60, because tens are easy. Nine groups is one group less than ten groups. So take one group of 6 away: 60 − 6 = 54.\n\nYou did not memorise anything new. You leaned on a fact you had and moved one step.\n\nThat is really the whole idea. Multiplication counts equal groups fast, and the facts you know can carry you to the ones you do not.",
-      "meta": "3rd Grade • Leveled reading • ~330 words",
+      "meta": "3rd Grade • Leveled reading",
       "imageSlot": "eq-img-array"
     },
     {

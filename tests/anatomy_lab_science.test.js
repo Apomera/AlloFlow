@@ -146,7 +146,7 @@ describe('Anatomy Lab learning-flow semantics', () => {
     const details = renderAnatomy({ system: 'skeletal', complexity: 3, selectedStructure: 'skull' });
     expect(details).toContain('aria-label="Back to structures from Skull (Cranium)"');
     expect(details).toContain('← Structures');
-    expect(details).toContain('aria-label="Use Skull (Cranium) as comparison target"');
+    expect(details).toContain('aria-label="Compare Skull (Cranium)"');
 
     const overview = renderAnatomy({ system: 'skeletal', complexity: 3 });
     expect(overview).toContain('aria-controls="anatomy-mnemonics-panel"');
@@ -414,7 +414,7 @@ describe('Anatomy Lab AI Tutor resilience', () => {
 
   it('canonicalizes restored conversation messages and labels the chat log', () => {
     const html = renderAnatomy({
-      _activeTab: 'aiTutor',
+      _activeTab: 'aiTutor', _aiConversationBand:'g35',
       _aiMessages: [
         { role: 'user', text: '  How does the heart pump?  ' },
         { role: 'system', text: 'Hidden instruction' },
@@ -440,8 +440,8 @@ describe('Anatomy Lab AI Tutor resilience', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain('if (window.__alloAnatomyAiPending !== token) return;');
     expect(source).toContain('Promise.resolve(request).then(function(resp)');
-    expect(source).toContain("updMulti({ _aiMessages: newMsgs, _aiLoading: true, _aiInput: '', _aiQuestions: newAiQ })");
-    expect(source).toContain("window.__alloAnatomyAiPending = null; updMulti({ _aiMessages: [], _aiLoading: false, _aiInput: '' })");
+    expect(source).toContain("updMulti({ _aiMessages: newMsgs, _aiLoading: true, _aiInput: '', _aiQuestions: newAiQ, _aiRequestToken:requestToken, _aiConversationBand:gradeBand })");
+    expect(source).toContain("function clearTutorConversation(){releaseTutorRequest();");
     expect(source).not.toContain("upd('_aiLoading', true)");
   });
 });

@@ -1,0 +1,13 @@
+{
+  "completedAt": "2026-09-20T03:17:35.718Z",
+  "unitTestsPassed": 26,
+  "browserTestsPassed": 3,
+  "testsPassed": 29,
+  "retries": 0,
+  "skipped": 0,
+  "changedFileHashes": {
+    "tests/static_crop_cleanup.test.js": "da076398d3e891077608944194066281464c91d7377d0eecf5ef8f68c8037f28",
+    "tests/e2e/document_static_crop_cleanup.spec.ts": "b67d210e0793f6eefa53a93394758503bdd5e99a028e40dc0c1585c0240f7599"
+  },
+  "limitation": "Focused checks only; parent task owns shared validation registration and final full run."
+}

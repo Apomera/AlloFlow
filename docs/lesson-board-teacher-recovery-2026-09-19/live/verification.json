@@ -1,0 +1,169 @@
+{
+  "passed": true,
+  "teacherRecovery": {
+    "receivedCount": true,
+    "pauseRetainsResponses": true,
+    "resolveWaitsForConfirmation": true,
+    "keyboardRetry": true
+  },
+  "delivery": {
+    "cacheClock": "Simulated quiet intervals between accessibility audits; production rate limits unchanged",
+    "hungRequestRetry": true,
+    "identicalRequestId": true,
+    "lateCompletionNoDuplicate": true,
+    "restoredUnconfirmedStatus": true,
+    "offlineRetainedAction": true,
+    "explicitReconnectRetry": true
+  },
+  "transport": "Production Class Mailbox adapter and Code.gs sandbox",
+  "mailboxVersion": 24,
+  "browsers": 4,
+  "sharing": {
+    "privateNoSharedWrites": true,
+    "optionalNameBlank": true,
+    "otherLearnersExcluded": true,
+    "separateTeacherDemonstration": true,
+    "htmlAndTextDownloads": true,
+    "restartClearsView": true
+  },
+  "adaptiveReplay": {
+    "draftReload": true,
+    "feedbackReload": true,
+    "privateNoSharedWrites": true,
+    "pausedControls": true,
+    "finalePreserved": true,
+    "restartClearsView": true
+  },
+  "world": {
+    "beforeComparison": true,
+    "builtLandmarks": true
+  },
+  "finale": {
+    "completed": true,
+    "studentReload": true,
+    "privateNoSharedWrites": true,
+    "separateTeacherPlan": true,
+    "pausedEditsDisabled": true,
+    "export": true,
+    "restartClearsView": true
+  },
+  "constructionGoals": {
+    "selectionsPrivate": true,
+    "studentReload": true,
+    "teacherRemount": true
+  },
+  "ai": "Fixture provider; invalid then repaired JSON",
+  "writes": 42,
+  "completedDocumentChars": 9026,
+  "scans": [
+    {
+      "label": "import review",
+      "violations": []
+    },
+    {
+      "label": "replace saved confirmation",
+      "violations": []
+    },
+    {
+      "label": "teacher setup",
+      "violations": []
+    },
+    {
+      "label": "expanded board editor",
+      "violations": []
+    },
+    {
+      "label": "timed-out delivery recovery",
+      "violations": []
+    },
+    {
+      "label": "offline retained action 320",
+      "violations": []
+    },
+    {
+      "label": "received response waiting for confirmation",
+      "violations": []
+    },
+    {
+      "label": "received response retained during pause",
+      "violations": []
+    },
+    {
+      "label": "resolved class learning",
+      "violations": []
+    },
+    {
+      "label": "late join settings mobile",
+      "violations": []
+    },
+    {
+      "label": "waiting for responses",
+      "violations": []
+    },
+    {
+      "label": "order 320",
+      "violations": []
+    },
+    {
+      "label": "order 390",
+      "violations": []
+    },
+    {
+      "label": "order 768",
+      "violations": []
+    },
+    {
+      "label": "order 1280",
+      "violations": []
+    },
+    {
+      "label": "order dark",
+      "violations": []
+    },
+    {
+      "label": "200 percent text",
+      "violations": []
+    },
+    {
+      "label": "text spacing",
+      "violations": []
+    },
+    {
+      "label": "forced colors",
+      "violations": []
+    },
+    {
+      "label": "teacher activity",
+      "violations": []
+    },
+    {
+      "label": "completion",
+      "violations": []
+    },
+    {
+      "label": "completed class learning",
+      "violations": []
+    },
+    {
+      "label": "private completed finale restored",
+      "violations": []
+    },
+    {
+      "label": "private adaptive route restored",
+      "violations": []
+    },
+    {
+      "label": "private learning summary preview",
+      "violations": []
+    },
+    {
+      "label": "separate learner learning summary",
+      "violations": []
+    },
+    {
+      "label": "teacher demonstration summary",
+      "violations": []
+    }
+  ],
+  "consoleErrors": []
+}

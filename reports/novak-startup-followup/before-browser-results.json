@@ -1,0 +1,130 @@
+{
+  "phase": "before",
+  "sourceHash": "009F56453F519FA7DB5F46728E0664E0C6C13C1029E74BB76C9E15E1C49EB88F",
+  "scope": "Actual shell QuickStartWizard adapter and CDNModuleGate in local Chromium, controlled wizard export and loader; not a full-app cold-load or performance benchmark.",
+  "fixtureResponseDelayMs": 200,
+  "externalRequests": [],
+  "scenarios": [
+    {
+      "name": "demand-open",
+      "text": "🚀Loading Setup Wizard...Module loading from CDN.Close",
+      "ready": false,
+      "retryVisible": false,
+      "loaderCalls": 0,
+      "scriptRequests": 0,
+      "closed": 0,
+      "status": "unrequested",
+      "errors": []
+    },
+    {
+      "name": "role-prewarm",
+      "settled": {
+        "text": "🚀Loading Setup Wizard...Module loading from CDN.Close",
+        "ready": false,
+        "retryVisible": false,
+        "loaderCalls": 1,
+        "scriptRequests": 1,
+        "closed": 0,
+        "status": "loaded"
+      },
+      "afterSamePropsRerenders": {
+        "text": "🚀Loading Setup Wizard...Module loading from CDN.Close",
+        "ready": false,
+        "retryVisible": false,
+        "loaderCalls": 1,
+        "scriptRequests": 1,
+        "closed": 0,
+        "status": "loaded"
+      },
+      "errors": []
+    },
+    {
+      "name": "failure-retry",
+      "failed": {
+        "text": "🚀Loading Setup Wizard...Module loading from CDN.Close",
+        "ready": false,
+        "retryVisible": false,
+        "loaderCalls": 1,
+        "scriptRequests": 1,
+        "closed": 0,
+        "status": "failed"
+      },
+      "afterRetry": {
+        "text": "🚀Loading Setup Wizard...Module loading from CDN.Close",
+        "ready": false,
+        "retryVisible": false,
+        "loaderCalls": 1,
+        "scriptRequests": 1,
+        "closed": 0,
+        "status": "failed"
+      },
+      "errors": []
+    },
+    {
+      "name": "close-pending-reopen",
+      "closed": {
+        "text": "",
+        "ready": false,
+        "retryVisible": false,
+        "loaderCalls": 1,
+        "scriptRequests": 1,
+        "closed": 1,
+        "status": "loaded"
+      },
+      "reopened": {
+        "text": "Wizard readyClose wizard",
+        "ready": true,
+        "retryVisible": false,
+        "loaderCalls": 1,
+        "scriptRequests": 1,
+        "closed": 1,
+        "status": "loaded"
+      },
+      "errors": []
+    },
+    {
+      "name": "late-loader",
+      "text": "🚀Loading Setup Wizard...Module loading from CDN.Close",
+      "ready": false,
+      "retryVisible": false,
+      "loaderCalls": 0,
+      "scriptRequests": 0,
+      "closed": 0,
+      "status": "unrequested",
+      "errors": []
+    },
+    {
+      "name": "initially-closed",
+      "closed": {
+        "text": "",
+        "ready": false,
+        "retryVisible": false,
+        "loaderCalls": 0,
+        "scriptRequests": 0,
+        "closed": 0,
+        "status": "unrequested"
+      },
+      "opened": {
+        "text": "🚀Loading Setup Wizard...Module loading from CDN.Close",
+        "ready": false,
+        "retryVisible": false,
+        "loaderCalls": 0,
+        "scriptRequests": 0,
+        "closed": 0,
+        "status": "unrequested"
+      },
+      "errors": []
+    },
+    {
+      "name": "close-before-loader",
+      "text": "",
+      "ready": false,
+      "retryVisible": false,
+      "loaderCalls": 0,
+      "scriptRequests": 0,
+      "closed": 1,
+      "status": "unrequested",
+      "errors": []
+    }
+  ]
+}

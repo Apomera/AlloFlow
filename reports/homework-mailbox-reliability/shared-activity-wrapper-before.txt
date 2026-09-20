@@ -1,0 +1,12 @@
+const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivityPanel(props) {
+  const Real = _alloSharedActivityModule() && _alloSharedActivityModule().SharedAssignmentActivityPanel;
+  if (Real && Real !== SharedAssignmentActivityPanel) return React.createElement(Real, props);
+  return (
+    <section role="status" aria-live="polite" className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-950">
+      <p className="font-black">Shared activity tools are still loading.</p>
+      <p className="mt-1 text-xs">Your response has not been submitted. Wait a moment, then retry.</p>
+      <button type="button" onClick={() => window.__alloRetryFailedModules?.()} className="mt-3 rounded-lg border border-sky-400 bg-white px-3 py-2 text-xs font-black text-sky-900">Retry loading</button>
+    </section>
+  );
+});
+

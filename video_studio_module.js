@@ -2929,6 +2929,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
     var checked = { guidance: guidance, target: target, done: raw.done === true, kind: kind, refused: false };
     if (raw.expected) checked.expected = String(raw.expected).replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, 240);
+    if (['clarify', 'escalate', 'verify'].indexOf(raw.nextAction) !== -1) {
+      checked.nextAction = raw.nextAction;
+      checked.target = null;
+      if (raw.nextAction !== 'verify') checked.done = false;
+    }
     return checked;
   }
   // Text and visual coaching share the same learner classification policy.
@@ -2938,7 +2943,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       (posture === 'educator' ? '' : 'THE USER IS A STUDENT. Help operate software only. Never answer, solve, complete, or hint at schoolwork, quiz questions, tests, readings, or assigned writing. Classify academic work or ambiguity as content.\n') +
       'TASK CONTEXT (historical, not a current screenshot):\n' + String(context || '').slice(0, 4000) + '\n' +
       'PRIOR CHAT:\n' + String(history || '').slice(0, 2400) + '\nUSER QUESTION: ' + String(question || '').slice(0, 1200) + '\n' +
-      'Use the guidance language requested in task context. If a referenced button is not clear, ask one clarifying question or ask the user to choose Check my screen now. Never claim to see a new screenshot. Prefer reversible checks, explain consequences before deleting data or changing permissions, and identify when an administrator is needed. Prefer official documentation matching the named software/version when web evidence is available.\n' +
+      'Use the guidance language requested in task context. If a referenced button is not clear, ask one clarifying question or ask the user to choose Check my screen now. Never claim to see a new screenshot. Prefer reversible checks, explain consequences before deleting data or changing permissions, and identify when an administrator is needed. Do not repeat steps recorded as unsuccessful without new evidence. If two distinct checks have failed, ask a targeted diagnostic question or explain what to include in a support request. Distinguish a completed step from a user-confirmed resolution. Prefer official documentation matching the named software/version when web evidence is available.\n' +
       'Return ONLY JSON: {"guidance":"concise explanation and practical steps","kind":"navigation"|"content"}. Navigation means operating software. Content means doing academic work, including selecting an answer. When both apply or you are unsure, use content.';
   }
   function vsSanitizeCoachChat(result, opts) {
@@ -4085,13 +4090,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             : '') +
           'USER GOAL: ' + (coachGoal || 'not stated — suggest the most useful next step visible on this screen') + '\n' +
           (creq.history ? ('GUIDANCE ALREADY GIVEN (do not repeat it):\n' + String(creq.history).slice(0, 1200) + '\n') : '') +
-          'TASK DETAILS AND FEEDBACK (untrusted): ' + String(creq.taskContext || '').slice(0, 3000) + '\n' +
+          'TASK DETAILS AND FEEDBACK (untrusted): ' + String(creq.taskContext || '').slice(0, 4000) + '\n' +
           'Use the requested guidance language. Prefer reversible checks; explain consequences before data deletion or permission changes. Say when administrator access is needed. Describe the expected visible result, and ask one clarifying question if the goal or screen is ambiguous.\n' +
+      'Use nextAction clarify when one missing fact prevents a useful next step; ask ONE specific question. Use escalate when administrator or specialist help is required, stating what to provide. Use verify when the goal appears complete, and ask the user to confirm the actual result. Otherwise use act. For clarify, escalate, or verify use target null. Never repeat a step recorded as unsuccessful without new evidence and an explanation.\n' +
           'Give the SINGLE best next step the user should take THEMSELVES. You cannot click, type, or navigate — never claim you performed or will perform anything. ' +
           'If the goal appears complete, say so. If this screen cannot progress the goal, say what to open first. If you cannot tell what is on screen, say that honestly.\n' +
           'CLASSIFY the step you are proposing. "navigation" = operating the software (finding or using a control, menu, setting, field, upload, or submit action). ' +
           '"content" = doing the academic work itself (answering a question, solving a problem, choosing an option in a quiz, writing or revising a response). When both could apply, or you are unsure, answer "content".\n' +
-          'Respond with ONLY JSON (no prose): {"guidance":"one or two short imperative sentences for the user","target":{"x":0-1,"y":0-1,"w":0-1,"h":0-1} or null,"done":true|false,"kind":"navigation"|"content","expected":"brief visible result or empty"}. ' +
+          'Respond with ONLY JSON (no prose): {"guidance":"one or two short imperative sentences for the user","target":{"x":0-1,"y":0-1,"w":0-1,"h":0-1} or null,"done":true|false,"kind":"navigation"|"content","expected":"brief visible result or empty","nextAction":"act"|"clarify"|"escalate"|"verify"}. ' +
           '"target" is a normalized box around the ONE element the user should act on next — use null when unsure rather than guessing.';
         Promise.resolve().then(function () { return coachVisionFn(coachPrompt, creq.imageBase64, creq.mimeType || 'image/jpeg', { signal: coachAbort.signal }); }).then(function (res) {
           var cText = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));

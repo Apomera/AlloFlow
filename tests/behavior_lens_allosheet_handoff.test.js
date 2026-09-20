@@ -456,6 +456,9 @@ describe('BehaviorLens -> AlloSheet review UI contract', () => {
         await new Promise((resolvePromise) => window.setTimeout(resolvePromise, 20));
       });
 
+      await React.act(async () => {
+        Array.from(host.querySelectorAll('button')).find(button => button.textContent.trim() === 'All tools').click();
+      });
       const exportCard = host.querySelector('[aria-labelledby="bl-tool-export-title"]');
       const exportButton = exportCard && Array.from(exportCard.querySelectorAll('button')).find((button) =>
         !button.hasAttribute('aria-pressed') && !button.disabled

@@ -1905,6 +1905,37 @@ function validLanWordSoundsValue(value, probe) {
   return true;
 }
 
+function validLanOrganizerProgress(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var allowed = { activityId: 1, type: 1, gameType: 1, status: 1, score: 1, correct: 1, total: 1, attempts: 1, at: 1 };
+  var keys = Object.keys(value);
+  if (keys.length !== 9) return false;
+  for (var i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
+  var types = ['venn', 'tchart', 'cesort', 'pipeline', 'conceptmap', 'outline', 'fishbone', 'problemsolution', 'frayer', 'seethinkwonder', 'storymap', 'strandchallenge3d', 'conceptrecall3d', 'palacerecall', 'reflection'];
+  var gameTypes = ['vennDiagram', 'tchartSort', 'causeEffectSort', 'pipelineBuilder', 'conceptMapSort', 'outlineSort', 'fishboneSort', 'problemSolutionSort', 'frayerSort', 'seeThinkWonderSort', 'storyMapSort', 'strandChallenge3d', 'strandChallenge3dAttempt', 'conceptRecall', 'conceptRecallAttempt', 'palaceRecall', 'palaceRecallAttempt'];
+  if (!(typeof value.activityId === 'string' && /^[A-Za-z0-9:_-]{8,160}$/.test(value.activityId))) return false;
+  if (types.indexOf(value.type) === -1) return false;
+  if (value.gameType !== null && gameTypes.indexOf(value.gameType) === -1) return false;
+  if (['loading', 'ready', 'failed', 'working', 'attempted', 'complete'].indexOf(value.status) === -1) return false;
+  if (!validLanMetricNumber(value.score) || !validLanMetricNumber(value.correct) || !validLanMetricNumber(value.total)) return false;
+  if (!validLanMetricNumber(value.attempts, 10000) || !validLanMetricNumber(value.at, 999999999999999)) return false;
+  if (![value.score, value.correct, value.total, value.attempts].every(Number.isInteger) || value.at <= 0) return false;
+  return true;
+}
+function validLanActivityProgress(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var allowed = { version: 1, activityId: 1, kind: 1, status: 1, completed: 1, total: 1, at: 1 };
+  var keys = Object.keys(value);
+  if (keys.length !== 7) return false;
+  for (var i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
+  if (value.version !== 1 || !Number.isInteger(value.completed) || !Number.isInteger(value.total)) return false;
+  if (!(typeof value.activityId === 'string' && /^[A-Za-z0-9][A-Za-z0-9:_-]{0,159}$/.test(value.activityId))) return false;
+  if (!(typeof value.kind === 'string' && /^[a-z][a-z0-9_]{0,39}$/.test(value.kind))) return false;
+  if (['waiting', 'loading', 'ready', 'working', 'opened', 'attempted', 'submitted', 'revised', 'complete', 'failed', 'paused'].indexOf(value.status) < 0) return false;
+  if (!validLanMetricNumber(value.completed) || !validLanMetricNumber(value.total) || value.completed > Math.max(value.total, 0)) return false;
+  if (!validLanMetricNumber(value.at, 999999999999999) || value.at <= 0) return false;
+  return true;
+}
 function validLanRosterField(field, value, uid) {
   if (isDeleteFieldSentinel(value)) return field !== 'uid';
   if (field === 'uid') return value === uid;
@@ -1913,8 +1944,11 @@ function validLanRosterField(field, value, uid) {
   if (field === 'status') return value === 'active';
   if (field === 'xp') return validLanMetricNumber(value, 10000000);
   if (field === 'signal') return value === null || ['stuck', 'slow', 'repeat', 'ready'].includes(value);
-  if (field === 'signalAt' || field === 'viewingAt') return value === null || validLanMetricNumber(value, 999999999999999);
+  if (field === 'signalAt' || field === 'viewingAt' || field === 'viewingResourceAt' || field === 'lastSeen') return value === null || validLanMetricNumber(value, 999999999999999);
   if (field === 'viewingResourceId') return value === null || (typeof value === 'string' && value.length <= 100);
+  if (field === 'viewingResourceStatus') return value === null || ['loading', 'ready', 'failed'].includes(value);
+  if (field === 'organizerProgress') return validLanOrganizerProgress(value);
+  if (field === 'activityProgress') return validLanActivityProgress(value);
   if (field === 'wsProgress') return validLanWordSoundsValue(value, false);
   if (field === 'wsProbeResult') return validLanWordSoundsValue(value, true);
   return false;
@@ -1953,7 +1987,7 @@ function validateParticipantLanUpdates(updates, auth) {
   validatePublicLanUpdates(updates);
   const uid = bindLanParticipant(auth, updates);
   const rosterRoot = 'roster.' + uid;
-  const rosterFields = new Set(['uid', 'name', 'joinedAt', 'status', 'xp', 'signal', 'signalAt', 'viewingResourceId', 'viewingAt', 'wsProgress', 'wsProbeResult']);
+  const rosterFields = new Set(['uid', 'name', 'joinedAt', 'status', 'xp', 'signal', 'signalAt', 'viewingResourceId', 'viewingAt', 'viewingResourceAt', 'viewingResourceStatus', 'lastSeen', 'wsProgress', 'wsProbeResult', 'organizerProgress', 'activityProgress']);
   const ownedRoots = [
     'quizState.allResponses.' + uid,
     'quizState.responses.' + uid,
@@ -2122,6 +2156,8 @@ function getLanBridgeStatus(config, origin = getDefaultRuntimeOrigin()) {
   };
 }
 
+const organizerReflectionStore = require('./organizer-reflections.cjs').createOrganizerReflectionStore({ sessions: lanSessions, compact: compactLanSessions });
+
 function serializeLanSession(code, auth = null) {
   compactLanSessions();
   const entry = lanSessions.get(code);
@@ -2149,12 +2185,15 @@ function upsertLanSession(code, data, options = {}, config = readConfig()) {
   assertLanSessionCapacity(cleanCode, nextData);
   const entry = {
     data: nextData,
+    organizerReflections: existing?.organizerReflections || [],
+    organizerReflectionLaunch: existing?.organizerReflectionLaunch || null,
     createdAt: existing?.createdAt || now.toISOString(),
     updatedAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + ttlMinutes * 60 * 1000).toISOString(),
     expiresAtMs: now.getTime() + ttlMinutes * 60 * 1000,
   };
   lanSessions.set(cleanCode, entry);
+  organizerReflectionStore.captureLaunch(cleanCode);
   notifyLanSessionSubscribers(cleanCode);
   return serializeLanSession(cleanCode);
 }
@@ -2168,6 +2207,7 @@ function updateLanSession(code, updates) {
   existing.data = nextData;
   existing.updatedAt = new Date().toISOString();
   lanSessions.set(cleanCode, existing);
+  organizerReflectionStore.captureLaunch(cleanCode);
   notifyLanSessionSubscribers(cleanCode);
   return serializeLanSession(cleanCode);
 }
@@ -5092,6 +5132,19 @@ async function handleApi(req, res, url) {
     return;
   }
 
+  const reflectionRoute = url.pathname.match(/^\/api\/lan-sessions\/([A-Za-z0-9_-]+)\/reflections$/);
+  if (reflectionRoute) {
+    const code = sanitizeLanSessionCode(reflectionRoute[1]);
+    const auth = null;
+    res.setHeader('Cache-Control', 'no-store');
+    try {
+      if (req.method === 'GET') jsonResponse(res, 200, organizerReflectionStore.list(code, auth));
+      else if (req.method === 'PATCH') jsonResponse(res, 200, organizerReflectionStore.feedback(code, await readRequestJson(req, 16384)));
+      else jsonResponse(res, 403, { error: 'That reflection action is not available on this connection.' });
+    } catch (error) { jsonResponse(res, error.statusCode || 400, { error: error.message }); }
+    return;
+  }
+
   const lanSessionMatch = url.pathname.match(/^\/api\/lan-sessions\/([A-Za-z0-9_-]+)(\/events)?$/);
   if (lanSessionMatch) {
     const code = lanSessionMatch[1];
@@ -5267,6 +5320,21 @@ async function handlePublicLanApi(req, res, url) {
 
   if (req.method === 'POST' && url.pathname === '/api/lan-sessions') {
     jsonResponse(res, 403, { error: 'Only the teacher desktop can create LAN class sessions.' });
+    return;
+  }
+
+  const reflectionRoute = url.pathname.match(/^\/api\/lan-sessions\/([A-Za-z0-9_-]+)\/reflections$/);
+  if (reflectionRoute) {
+    const code = sanitizeLanSessionCode(reflectionRoute[1]);
+    const auth = requireLanToken(req, res, url, code);
+    if (!auth) return;
+    if (!consumeLanRateLimit(req, res, 'reflections', req.method === 'GET' ? LAN_READ_RATE_PER_MINUTE : LAN_WRITE_RATE_PER_MINUTE, auth)) return;
+    res.setHeader('Cache-Control', 'no-store');
+    try {
+      if (req.method === 'GET') jsonResponse(res, 200, organizerReflectionStore.list(code, auth));
+      else if (req.method === 'POST') jsonResponse(res, 200, organizerReflectionStore.submit(code, auth, await readRequestJson(req, 32768)));
+      else jsonResponse(res, 403, { error: 'That reflection action is not available on this connection.' });
+    } catch (error) { jsonResponse(res, error.statusCode || 400, { error: error.message }); }
     return;
   }
 

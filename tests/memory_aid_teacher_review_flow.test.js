@@ -271,7 +271,7 @@ describe('student-focused view', () => {
     await render({ ...baseData, cards: [{ ...generatedCard, factVerified: false }] }, { isTeacherMode: true });
     expect(host.textContent).toContain('Auto Mix');
     expect(host.textContent).toContain('Needs teacher review');
-    expect(host.querySelector('[aria-label="Facts awaiting teacher review"]')).toBeTruthy();
+    expect(host.querySelector('[data-studio-review="facts"]').getAttribute('aria-label')).toBe('Facts for target 1: ' + generatedCard.target);
   });
 });
 

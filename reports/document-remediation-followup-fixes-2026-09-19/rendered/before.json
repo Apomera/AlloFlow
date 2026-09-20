@@ -1,0 +1,164 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/document-remediation-followup-fixes-2026-09-19/rendered/before-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "rendered_fidelity_content_regressions.spec.ts",
+      "file": "rendered_fidelity_content_regressions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "empty selected option label cannot conceal changed native choice text",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1060,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"\u001b[7mreview-requir\u001b[27med\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mpass\u001b[27med\"\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"\u001b[7mreview-requir\u001b[27med\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mpass\u001b[27med\"\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\rendered_fidelity_content_regressions.spec.ts:97:25",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\rendered_fidelity_content_regressions.spec.ts",
+                      "column": 25,
+                      "line": 97
+                    },
+                    "snippet": "   95 |   expect(nativeNames).toEqual([['Warm'], ['Cold']]);\n   96 |   const report = await compare(browser, testInfo, emptyLabelChoice, candidate, selectedChoiceProperties);\n>  97 |   expect(report.status).toBe('review-required');\n      |                         ^\n   98 |   expect(report.coverage.complete).toBe(true);\n   99 |   expect(report.checks[0].properties.find((p: any) => p.property === 'selected')).toMatchObject({\n  100 |     status: 'failed', source: [{ index: 0, value: 'temperature', label: 'Warm' }], candidate: [{ index: 0, value: 'temperature', label: 'Cold' }],"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\rendered_fidelity_content_regressions.spec.ts",
+                        "column": 25,
+                        "line": 97
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"\u001b[7mreview-requir\u001b[27med\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mpass\u001b[27med\"\u001b[39m\n\n   95 |   expect(nativeNames).toEqual([['Warm'], ['Cold']]);\n   96 |   const report = await compare(browser, testInfo, emptyLabelChoice, candidate, selectedChoiceProperties);\n>  97 |   expect(report.status).toBe('review-required');\n      |                         ^\n   98 |   expect(report.coverage.complete).toBe(true);\n   99 |   expect(report.checks[0].properties.find((p: any) => p.property === 'selected')).toMatchObject({\n  100 |     status: 'failed', source: [{ index: 0, value: 'temperature', label: 'Warm' }], candidate: [{ index: 0, value: 'temperature', label: 'Cold' }],\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\rendered_fidelity_content_regressions.spec.ts:97:25"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-20T03:16:21.904Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-followup-fixes-2026-09-19\\rendered\\before-artifacts\\rendered_fidelity_content_-a52cd--changed-native-choice-text-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-followup-fixes-2026-09-19\\rendered\\before-artifacts\\rendered_fidelity_content_-a52cd--changed-native-choice-text-chromium\\video.webm"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-followup-fixes-2026-09-19\\rendered\\before-artifacts\\rendered_fidelity_content_-a52cd--changed-native-choice-text-chromium\\test-failed-2.png"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-followup-fixes-2026-09-19\\rendered\\before-artifacts\\rendered_fidelity_content_-a52cd--changed-native-choice-text-chromium\\test-failed-3.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-followup-fixes-2026-09-19\\rendered\\before-artifacts\\rendered_fidelity_content_-a52cd--changed-native-choice-text-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-followup-fixes-2026-09-19\\rendered\\before-artifacts\\rendered_fidelity_content_-a52cd--changed-native-choice-text-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\rendered_fidelity_content_regressions.spec.ts",
+                    "column": 25,
+                    "line": 97
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "4349a85f642babe6c8bb-001e48ba4cb354c7a411",
+          "file": "rendered_fidelity_content_regressions.spec.ts",
+          "line": 82,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-20T03:16:21.073Z",
+    "duration": 2166.339,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

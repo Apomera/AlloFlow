@@ -1,0 +1,44 @@
+[
+  {
+    "width": 1440,
+    "hiddenSelection": true,
+    "duplicatePreview": true,
+    "existingContentPreserved": true,
+    "openDestination": true,
+    "failedSaveRetainsChoices": true,
+    "retryCreatesOnePack": true,
+    "selectionOrder": true,
+    "previewOverflow": [],
+    "savedOverflow": [],
+    "minimumControlHeight": 44,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "hiddenSelection": true,
+    "duplicatePreview": true,
+    "existingContentPreserved": true,
+    "openDestination": true,
+    "failedSaveRetainsChoices": true,
+    "retryCreatesOnePack": true,
+    "selectionOrder": true,
+    "previewOverflow": [],
+    "savedOverflow": [],
+    "minimumControlHeight": 44,
+    "errors": []
+  },
+  {
+    "width": 320,
+    "hiddenSelection": true,
+    "duplicatePreview": true,
+    "existingContentPreserved": true,
+    "openDestination": true,
+    "failedSaveRetainsChoices": true,
+    "retryCreatesOnePack": true,
+    "selectionOrder": true,
+    "previewOverflow": [],
+    "savedOverflow": [],
+    "minimumControlHeight": 44,
+    "errors": []
+  }
+]

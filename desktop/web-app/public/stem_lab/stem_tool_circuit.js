@@ -4337,7 +4337,7 @@ window.StemLab = window.StemLab || {
 
               components.length > 0 && h('span', { className: 'self-center text-xs text-slate-400 ml-auto font-mono' }, components.length + ' / 8 parts' + (components.length >= 8 ? ' · bench full' : ''))
             )); };
-          var renderSchematic = function() { return h('div', { className: 'relative', hidden: d.benchView === '3d', style:{maxWidth:'100%',overflowX:'auto'} },
+          var renderSchematic = function() { return h('div', { className: 'relative', hidden: d.benchView === '3d', tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.circuit.schematic_scroll_region', 'Circuit schematic'), style:{maxWidth:'100%',overflowX:'auto'} },
               h('p', {className:'circuit-help'}, 'Schematic: scroll sideways on small screens. Exact measurements are available in Inspect part.' + (components.length > 1 ? ' ' + __alloT('stem.circuit.schematic_drag_hint', 'Drag a part along the wire to move it, or click one to inspect it; readings do not change with position.') : '')),
               h('svg', {
                 viewBox: '0 0 ' + W + ' ' + H,

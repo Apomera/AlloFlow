@@ -1,0 +1,1 @@
+const fs=require('fs'),file='tests/memory_aid_study_flow.test.js';const s=fs.readFileSync(file,'utf8'),old=".toEqual(['Memory target'])";if(!s.includes(old))throw Error('Expected heading assertion not found');fs.writeFileSync(file,s.replace(old,".toEqual(['Memory target 1'])"));

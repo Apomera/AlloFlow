@@ -10,6 +10,7 @@ const glossarySource=fs.readFileSync('view_glossary_source.jsx','utf8');
 const getAlt=new Function(glossarySource.slice(0,glossarySource.indexOf('// Lazy Lucide'))+'\nreturn getGlossaryImageAlt;')();
 const slug='cell_structure_grade7',folder='allopacks/media/'+slug+'/',pack=read('allopacks/illustrated/'+slug+'.allopack.json'),original=read('allopacks/'+slug+'.allopack.json'),manifest=read(folder+'manifest.json');
 require('../dev-tools/cell_content_refinements.cjs').refine(original);
+require('../dev-tools/lib/allopack_quality_refinements_20260919.cjs').apply(original,slug,{targetEnvelope:pack.allopack});
 const get=t=>pack.history.find(r=>r.type===t),panels=pack.history.filter(r=>r.type==='image').flatMap(r=>r.data.visualPlan.panels);
 const slots=[...get('glossary').data.map(g=>({url:g.image,alt:g.imageAlt,hash:g.imageAltHash})),...get('anchor-chart').data.sections.map(s=>({url:s.iconUrl,alt:s.iconAlt,hash:s.iconAltHash})),...get('concept-sort').data.items.map(s=>({url:s.image,alt:s.imageAlt,hash:s.imageAltHash})),...panels.map(p=>({url:p.imageUrl,alt:p.alt,hash:p.altHash}))];
 describe('cell_structure_grade7 illustrated edition',()=>{
@@ -29,5 +30,5 @@ for(const tag of ['data-boundary="wall"','data-boundary="membrane"','data-organe
 it('records every changed field and retains valid answer keys',()=>{
 for(const q of get('quiz').data.questions.filter(q=>q.type==='mcq'))expect(q.options).toContain(q.correctAnswer);
 const pristine=read('allopacks/'+slug+'.allopack.json'),changes=read(folder+'content-refinements.json');expect(changes.length).toBe(pack.allopack.contentRefinements.count);
-for(const c of changes){let old=pristine.history.find(r=>r.id===c.resourceId),now=pack.history.find(r=>r.id===c.resourceId);for(const key of c.path.split('.')){old=old[key];now=now[key];}if(c.resourceId.endsWith('-directions')&&c.path==='data.body')old+='\n\nPicture panels: '+manifest.groups.join('; ')+'. '+manifest.note;expect(old).toEqual(c.from);expect(now).toEqual(c.to);}
+for(const c of changes){let old=pristine.history.find(r=>r.id===c.resourceId),now=pack.history.find(r=>r.id===c.resourceId);for(const key of c.path.split('.')){old=old[key];now=now[key];}if(c.resourceId.endsWith('-directions')&&c.path==='data.body')old+='\n\nPicture panels: '+manifest.groups.join('; ')+'. '+manifest.note;if(c.stripArtwork){const clean=n=>JSON.parse(JSON.stringify(n),(k,v)=>/^(image|iconUrl|iconAlt)/.test(k)?undefined:v);old=clean(old);now=clean(now);}expect(old).toEqual(c.from);expect(now).toEqual(c.to);}
 });});

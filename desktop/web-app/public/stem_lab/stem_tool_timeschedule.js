@@ -503,13 +503,13 @@
         });
       }
       function formatToggle() {
-        return h('div', { className: 'inline-flex rounded-lg border border-slate-300 bg-slate-100 p-1',
+        return h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 }, className: 'rounded-lg border border-slate-300 bg-slate-100 p-1',
           role: 'group', 'aria-label': t('stem.timeschedule.time_display_format', "Time display format") },
           h('button', { type: 'button', onClick: function () { upd({ use24: false }); },
-            'aria-pressed': !use24, className: "px-3 py-1.5 rounded-md text-xs font-bold " +
+            style: { minHeight: 44 }, 'aria-pressed': !use24, className: "px-3 py-1.5 rounded-md text-xs font-bold " +
               (!use24 ? 'bg-white text-sky-800 shadow-sm' : 'text-slate-600') }, '12-hour'),
           h('button', { type: 'button', onClick: function () { upd({ use24: true }); },
-            'aria-pressed': use24, className: "px-3 py-1.5 rounded-md text-xs font-bold " +
+            style: { minHeight: 44 }, 'aria-pressed': use24, className: "px-3 py-1.5 rounded-md text-xs font-bold " +
               (use24 ? 'bg-white text-sky-800 shadow-sm' : 'text-slate-600') }, '24-hour')
         );
       }
@@ -598,7 +598,7 @@
                   role: 'group', 'aria-label': t('stem.timeschedule.adjust_the_clock', "Adjust the clock") },
                   [-60, -5, -1, 1, 5, 60].map(function (delta) {
                     return h('button', { key: delta, type: 'button',
-                      onClick: function () { setClock(clock + delta); },
+                      style: { minHeight: 44 }, onClick: function () { setClock(clock + delta); },
                       className: 'rounded-lg border border-sky-200 bg-sky-50 px-2 py-2 text-xs font-black text-sky-800 hover:bg-sky-100 focus:ring-2 focus:ring-sky-600' },
                       (delta > 0 ? '+' : '−') + (Math.abs(delta) === 60 ? 1 : Math.abs(delta)) +
                       (Math.abs(delta) === 60 ? t('stem.timeschedule.hr', " hr") : t('stem.timeschedule.min', " min")));
@@ -609,8 +609,8 @@
                     onChange: function (e) { setClock(Math.floor(clock / 60) * 60 + +e.target.value); },
                     className: 'w-full accent-sky-600', 'aria-label': t('stem.timeschedule.minute_hand_value', "Minute hand value"),
                     'aria-valuetext': minute + t('stem.timeschedule.minutes', " minutes") }))),
-              h('aside', { className: 'rounded-xl border border-indigo-200 bg-indigo-50 p-4' },
-                h('h4', { className: 'text-sm font-black text-indigo-900' }, t('stem.timeschedule.n_12_24_hour_bridge', "12 ↔ 24-hour bridge")),
+              h('details', { 'data-time-format-guide': true, className: 'rounded-xl border border-indigo-200 bg-indigo-50 p-4' },
+                h('summary', { style: { minHeight: 44 }, className: 'cursor-pointer text-sm font-black text-indigo-900' }, t('stem.timeschedule.format_guide_title', 'How 12- and 24-hour time match')),
                 h('div', { className: 'grid grid-cols-2 gap-3 mt-2 text-center' },
                   h('div', { className: 'rounded-lg bg-white border border-indigo-100 p-3' },
                     h('div', { className: 'text-[0.625rem] uppercase text-indigo-700 font-bold' }, t('stem.timeschedule.n_12_hour', "12-hour")),
@@ -1181,7 +1181,7 @@
           role: 'tablist', 'aria-label': t('stem.timeschedule.time_and_schedule_lab_sections', "Time and Schedule Lab sections") },
           TABS.map(function (item, index) {
             var selected = tab === item[0];
-            return h('button', { key: item[0], id: 'ts-tab-' + item[0], type: 'button', role: 'tab',
+            return h('button', { style: { minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }, key: item[0], id: 'ts-tab-' + item[0], type: 'button', role: 'tab',
               'aria-selected': selected, 'aria-controls': 'ts-tab-panel', tabIndex: selected ? 0 : -1,
               onClick: function () { setTab(item[0]); },
               onKeyDown: function (event) { handleTabKeyDown(event, index); },
@@ -1190,7 +1190,7 @@
                   'border-slate-200 bg-white text-slate-700 hover:border-sky-300 hover:bg-sky-50') },
               h('div', { className: 'flex items-center gap-2' },
                 h('span', { className: 'text-xl', 'aria-hidden': 'true' }, item[2]),
-                h('span', null, h('span', { className: 'block text-sm font-black' }, item[1]),
+                h('span', { style: { minWidth: 0 } }, h('span', { className: 'block text-sm font-black' }, item[1]),
                   h('span', { className: 'block text-[0.625rem] ' +
                     (selected ? 'text-white' : 'text-slate-700') }, item[3]))));
           })),

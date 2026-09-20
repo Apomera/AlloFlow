@@ -1,0 +1,541 @@
+{
+  "checks": [
+    "Notebook evidence labels, full-capacity removal, exact undo including notes and guide attribution, paused/other setups, serialized recovery, last removal only, new edits and reused IDs, clear recovery, last row, keyboard focus, plot selection, forced colors and stable 3D viewer pass.",
+    "Prediction diagrams: guide disclosure, keyboard range controls, exact scale changes, boundary and off-scale predictions, saved-state isolation, report preview and static exported diagram pass.",
+    "Report preview and real download preserve saved evidence and notes; keyboard open/close/Escape, other live setups, free exploration, long and hostile text, Unicode truncation, print control/media, invalidation and remount pass.",
+    "Actual additions and shared notebook saves drive all five steps; older notebook data is excluded, notes and practice records persist, and serialized remount restores the completed study.",
+    "Keyboard focus, optional hints, invalid predictions, setup pause/restore, free exploration, cleared/full notebooks, revisiting volume, 3D viewer identity, context-loss fallback, and forced colors pass."
+  ],
+  "scans": [
+    {
+      "state": "intro",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "intro",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "prediction-hint",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "prediction-hint",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "baseline",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "baseline",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "collect",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "collect",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "comparison",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "comparison",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "explanation",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "explanation",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "guide-map-closeup",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "guide-map-closeup",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "guide-map-full-range",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "guide-map-full-range",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "complete",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "complete",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "notebook-evidence",
+      "width": 1200,
+      "overflow": false,
+      "missingReferences": [],
+      "forcedColors": false,
+      "violations": []
+    },
+    {
+      "state": "notebook-evidence",
+      "width": 320,
+      "overflow": false,
+      "missingReferences": [],
+      "forcedColors": false,
+      "violations": []
+    },
+    {
+      "state": "notebook-room-and-undo",
+      "width": 1200,
+      "overflow": false,
+      "missingReferences": [],
+      "forcedColors": false,
+      "violations": []
+    },
+    {
+      "state": "notebook-room-and-undo",
+      "width": 320,
+      "overflow": false,
+      "missingReferences": [],
+      "forcedColors": false,
+      "violations": []
+    },
+    {
+      "state": "notebook-evidence-removed",
+      "width": 1200,
+      "overflow": false,
+      "missingReferences": [],
+      "forcedColors": false,
+      "violations": []
+    },
+    {
+      "state": "notebook-evidence-removed",
+      "width": 320,
+      "overflow": false,
+      "missingReferences": [],
+      "forcedColors": false,
+      "violations": []
+    },
+    {
+      "state": "notebook-plot-after-removal",
+      "width": 1200,
+      "overflow": false,
+      "missingReferences": [],
+      "forcedColors": false,
+      "violations": []
+    },
+    {
+      "state": "notebook-plot-after-removal",
+      "width": 320,
+      "overflow": false,
+      "missingReferences": [],
+      "forcedColors": false,
+      "violations": []
+    },
+    {
+      "state": "notebook-cleared-recoverable",
+      "width": 1200,
+      "overflow": false,
+      "missingReferences": [],
+      "forcedColors": false,
+      "violations": []
+    },
+    {
+      "state": "notebook-cleared-recoverable",
+      "width": 320,
+      "overflow": false,
+      "missingReferences": [],
+      "forcedColors": false,
+      "violations": []
+    },
+    {
+      "state": "notebook-forced-colors",
+      "width": 1200,
+      "overflow": false,
+      "missingReferences": [],
+      "forcedColors": true,
+      "violations": []
+    },
+    {
+      "state": "notebook-forced-colors",
+      "width": 320,
+      "overflow": false,
+      "missingReferences": [],
+      "forcedColors": true,
+      "violations": []
+    },
+    {
+      "state": "report-preview",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "report-preview",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "report-map-full-range",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "report-map-full-range",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "downloaded-report",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "downloaded-report",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "printed-report",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "printed-report",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "report-other-setup",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "report-other-setup",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "report-free-exploration",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "report-free-exploration",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "report-long-text",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "report-long-text",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "downloaded-long-text",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "downloaded-long-text",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "report-forced-colors",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": true,
+      "automatedColorContrast": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "report-forced-colors",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": true,
+      "automatedColorContrast": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "paused",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "paused",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "missing-evidence",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "missing-evidence",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "notebook-full",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "notebook-full",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "revisit",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "revisit",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "3d-guide",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "3d-guide",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "fallback",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "fallback",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "forced-colors",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": true,
+      "automatedColorContrast": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "forced-colors",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": true,
+      "automatedColorContrast": false,
+      "missingReferences": [],
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "success": true
+}

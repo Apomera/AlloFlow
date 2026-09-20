@@ -254,7 +254,8 @@ describe('complexity adjustment citation contract', () => {
     await generationHelpers.handleComplexityAdjustment(harness.deps);
 
     expect(harness.setGeneratedContent).toHaveBeenCalledTimes(1);
-    const saved = harness.setGeneratedContent.mock.calls[0][0];
+    const savedValue = harness.setGeneratedContent.mock.calls[0][0];
+    const saved = typeof savedValue === 'function' ? savedValue(harness.deps.generatedContent) : savedValue;
     expect(saved.data).toContain('Texto revisado.');
     expect(saved.data.indexOf('Revised text.')).toBeLessThan(saved.data.indexOf('Source Text References'));
     expect(saved.data).toContain(references);

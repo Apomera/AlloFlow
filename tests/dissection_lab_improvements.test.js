@@ -2797,60 +2797,34 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     expect(selection?.textContent).not.toMatch(/x:\d+% y:\d+%/);
   });
 
-  it('coaches evidence construction without presenting the checklist as a grade', () => {
-    const renderEvidence = (note, confidence) => renderTool('dissection', {
-      dissection: {
-        specimen: 'frog',
-        activeLayer: 'skin',
-        selectedOrgan: 'dorsal_skin',
-        _dissLoadedSpec: 'frog',
-        organNotes: { 'frog|dorsal_skin': note },
-        organConfidence: confidence ? { 'frog|dorsal_skin': confidence } : {},
-      },
-    });
-
-    const beginningHtml = renderEvidence('', 0);
-    expect(beginningHtml).toContain('Evidence sentence starters');
-    expect(beginningHtml).toContain('data-evidence-starter="observation"');
-    expect(beginningHtml).toContain('data-evidence-starter="location"');
-    expect(beginningHtml).toContain('data-evidence-starter="reasoning"');
-    expect(beginningHtml).toContain('data-evidence-readiness="0"');
-    expect(beginningHtml).toContain('aria-valuenow="0"');
-    expect(beginningHtml).toContain('Evidence self-check');
-    expect(beginningHtml).toContain('aria-label="Evidence elements included"');
-    expect(beginningHtml).toContain('<fieldset class="diss-confidence-scale"');
-    expect(beginningHtml).toContain('How sure are you, based on your evidence?');
-    expect(beginningHtml).toContain('aria-label="Confidence 1 of 3: Not sure yet"');
-    expect(beginningHtml).toContain('data-confidence-level="2"');
-    expect(beginningHtml).toContain('1 \u00B7 Not sure yet');
-    expect(beginningHtml).toContain('2 \u00B7 Somewhat sure');
-    expect(beginningHtml).toContain('3 \u00B7 Confident');
-    expect(beginningHtml).toContain('aria-describedby="diss-observe-first-dorsal_skin diss-evidence-help-dorsal_skin"');
-    expect(beginningHtml).not.toContain('data-evidence-countercheck="true"');
-    expect(beginningHtml).toContain('Next: Describe a visible color, shape, texture, size, or movement.');
-    expect(beginningHtml).toContain('Choose based on the evidence in your note, not on how familiar the answer feels.');
-    expect(beginningHtml).toContain('This checklist detects writing elements, not scientific accuracy or a grade.');
-
-    const surfaceOnlyHtml = renderEvidence('Moist, pigmented external surface.', 2);
-    expect(surfaceOnlyHtml).toContain('data-evidence-readiness="2"');
-    expect(surfaceOnlyHtml).toContain('Next: Add where it is or what structure it touches or connects to.');
-    expect(surfaceOnlyHtml).toContain('Check one more distinguishing feature or anatomical relationship.');
-
-    const readyHtml = renderEvidence(
-      'I observed a moist, pigmented surface. It is located on the dorsal side near the tympanum. This supports the identification because it covers the back.',
-      3,
-    );
-    expect(readyHtml).toContain('data-evidence-readiness="4"');
-    expect(readyHtml).toContain('data-ready="true"');
-    expect(readyHtml).toContain('aria-valuenow="4"');
-    expect(readyHtml).toContain('4 of 4 elements included');
-    expect(readyHtml).toContain('Your observation, location or relationship, reasoning, and confidence are included. Compare your note with the reference, revise anything it changes, or try the optional countercheck below.');
-    expect(readyHtml).toContain('Check that each claim in your note matches what you actually observed.');
-    expect(readyHtml).toContain('data-evidence-countercheck="true"');
-    expect(readyHtml).toContain('Optional challenge: test your identification');
-    expect(readyHtml).toContain('What different feature, location, or connection would make this identification less likely\u2014or suggest a different structure?');
-    expect(readyHtml).toContain('Add a countercheck starter');
-    expect(readyHtml).toContain('This reflection does not change your 4-of-4 evidence status.');
+  it('offers an ungraded evidence review without inferring explanation quality from words', () => {
+    function evidence(note, confidence) {
+      const host=document.createElement('div');
+      host.innerHTML=renderTool('dissection',{dissection:{specimen:'frog',activeLayer:'skin',selectedOrgan:'dorsal_skin',_dissLoadedSpec:'frog',organNotes:{'frog|dorsal_skin':note},organConfidence:{'frog|dorsal_skin':confidence}}});
+      return host.querySelector('[data-dissection-evidence]');
+    }
+    const empty=evidence('',0);
+    expect(empty.querySelector('[data-evidence-draft]').dataset.evidenceDraft).toBe('empty');
+    expect(empty.textContent).toContain('Note not started');
+    expect(empty.textContent).toContain('Confidence not rated');
+    expect(empty.querySelector('[data-evidence-countercheck]')).not.toBeNull();
+    expect(empty.querySelector('[data-evidence-starter="reference"]')).not.toBeNull();
+    expect(empty.querySelectorAll('[data-confidence-level]')).toHaveLength(3);
+    for(const note of ['I observed. It is located. This supports the identification because.', '表面有斑点。', 'Moist, pigmented surface near the tympanum.']) {
+      const draft=evidence(note,3);
+      expect(draft.querySelector('[data-evidence-draft]').dataset.evidenceDraft).toBe('present');
+      expect(draft.textContent).toContain('Draft present · review needed');
+      expect(draft.textContent).toContain('Confidence: Confident');
+      expect(draft.querySelector('[role="progressbar"]')).toBeNull();
+      expect(draft.querySelector('[data-evidence-readiness]')).toBeNull();
+      expect(draft.textContent).not.toMatch(/elements included|4-of-4|Your observation, location/);
+      expect([...draft.querySelectorAll('.diss-draft-review__steps strong')].map(el=>el.textContent)).toEqual(['Observe','Locate','Explain']);
+      expect(draft.textContent).toContain('separate its claims from what you saw');
+      expect(draft.textContent).toContain('does not verify the explanation');
+      expect(draft.querySelector('textarea').value).toBe(note);
+    }
+    expect(evidence('   ',2).textContent).toContain('Note not started');
+    expect(evidence('',2).textContent).toContain('Confidence: Somewhat sure');
   });
 
   it('updates labeled confidence choices and appends the optional countercheck once', async () => {
@@ -2924,7 +2898,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       const savedNote = latestToolData.dissection.organNotes['frog|dorsal_skin'];
       expect(savedNote.split(countercheckText).length - 1).toBe(1);
       expect(host.querySelector('#diss-note-dorsal_skin')?.value).toContain(countercheckText);
-      expect(host.querySelector('[data-evidence-readiness]')?.getAttribute('data-evidence-readiness')).toBe('4');
+      expect(host.querySelector('[data-evidence-draft]')?.getAttribute('data-evidence-draft')).toBe('present');
       expect(host.querySelector('button[data-evidence-countercheck-action="true"]')?.disabled).toBe(true);
       expect(host.querySelector('.diss-countercheck__status')?.textContent).toContain('Finish the countercheck sentence');
 

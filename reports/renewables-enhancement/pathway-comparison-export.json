@@ -1,0 +1,359 @@
+{
+  "format": "renewables-mechanism-investigation",
+  "readingName": "D",
+  "title": "Renewables Lab: individual energy mechanisms",
+  "modelVersion": 1,
+  "selected": "solarPv",
+  "settings": {
+    "irradiance": 1000,
+    "area": 80,
+    "efficiency": 20,
+    "incidence": 0
+  },
+  "phase": 0,
+  "result": {
+    "version": 1,
+    "id": "solarPv",
+    "settings": {
+      "irradiance": 1000,
+      "area": 80,
+      "efficiency": 20,
+      "incidence": 0
+    },
+    "power": 15.36,
+    "available": 80,
+    "loss": 64.64,
+    "status": "Generating",
+    "stages": [
+      {
+        "label": "Light intercepted",
+        "value": 80,
+        "unit": "kW"
+      },
+      {
+        "label": "DC electricity",
+        "value": 16,
+        "unit": "kW"
+      },
+      {
+        "label": "AC electricity",
+        "value": 15.36,
+        "unit": "kW"
+      }
+    ],
+    "extra": {
+      "efficiency": 0.192
+    }
+  },
+  "note": "Note D",
+  "assumptions": "Direct-beam model only: no diffuse sky light, shading, temperature effects, tracking schedule, or inverter clipping. A 90° beam contributes zero. This is not a daily yield estimate.",
+  "scenarioAssumptions": null,
+  "formula": "P_AC = irradiance × area × cos(angle) × module efficiency × 0.96 / 1,000",
+  "source": "https://www.energy.gov/cmei/systems/how-does-solar-work",
+  "operatingScenario": null,
+  "comparison": {
+    "first": {
+      "profileId": "steady",
+      "profileName": "Steady conditions",
+      "phase": 0,
+      "baseSettings": {
+        "irradiance": 1000,
+        "area": 60,
+        "efficiency": 20,
+        "incidence": 0
+      },
+      "run": {
+        "version": 1,
+        "id": "solarPv",
+        "settings": {
+          "irradiance": 1000,
+          "area": 60,
+          "efficiency": 20,
+          "incidence": 0
+        },
+        "power": 11.52,
+        "available": 60,
+        "loss": 48.480000000000004,
+        "status": "Generating",
+        "stages": [
+          {
+            "label": "Light intercepted",
+            "value": 60,
+            "unit": "kW"
+          },
+          {
+            "label": "DC electricity",
+            "value": 12,
+            "unit": "kW"
+          },
+          {
+            "label": "AC electricity",
+            "value": 11.52,
+            "unit": "kW"
+          }
+        ],
+        "extra": {
+          "efficiency": 0.192
+        }
+      },
+      "energy": null,
+      "totals": null
+    },
+    "second": {
+      "profileId": "steady",
+      "profileName": "Steady conditions",
+      "phase": 0,
+      "baseSettings": {
+        "irradiance": 1000,
+        "area": 80,
+        "efficiency": 20,
+        "incidence": 0
+      },
+      "run": {
+        "version": 1,
+        "id": "solarPv",
+        "settings": {
+          "irradiance": 1000,
+          "area": 80,
+          "efficiency": 20,
+          "incidence": 0
+        },
+        "power": 15.36,
+        "available": 80,
+        "loss": 64.64,
+        "status": "Generating",
+        "stages": [
+          {
+            "label": "Light intercepted",
+            "value": 80,
+            "unit": "kW"
+          },
+          {
+            "label": "DC electricity",
+            "value": 16,
+            "unit": "kW"
+          },
+          {
+            "label": "AC electricity",
+            "value": 15.36,
+            "unit": "kW"
+          }
+        ],
+        "extra": {
+          "efficiency": 0.192
+        }
+      },
+      "energy": null,
+      "totals": null
+    },
+    "changes": [
+      {
+        "key": "area",
+        "label": "Panel area",
+        "before": 60,
+        "after": 80,
+        "unit": "m²"
+      }
+    ],
+    "context": [],
+    "comparable": true,
+    "controlled": true,
+    "powerDelta": 3.84,
+    "powerPercent": 33.33333333333333,
+    "energyDelta": null
+  },
+  "experiments": [],
+  "designMaps": [],
+  "notebooks": [
+    {
+      "id": "solarPv",
+      "name": "Solar PV",
+      "readings": [
+        {
+          "name": "C",
+          "note": "Note C",
+          "profileId": "steady",
+          "phase": 0,
+          "baseSettings": {
+            "irradiance": 1000,
+            "area": 60,
+            "efficiency": 20,
+            "incidence": 0
+          },
+          "result": {
+            "version": 1,
+            "id": "solarPv",
+            "settings": {
+              "irradiance": 1000,
+              "area": 60,
+              "efficiency": 20,
+              "incidence": 0
+            },
+            "power": 11.52,
+            "available": 60,
+            "loss": 48.480000000000004,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Light intercepted",
+                "value": 60,
+                "unit": "kW"
+              },
+              {
+                "label": "DC electricity",
+                "value": 12,
+                "unit": "kW"
+              },
+              {
+                "label": "AC electricity",
+                "value": 11.52,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.192
+            }
+          },
+          "accumulatedEnergy": null,
+          "scenarioTotals": null
+        },
+        {
+          "name": "B",
+          "note": "Note B",
+          "profileId": "steady",
+          "phase": 0,
+          "baseSettings": {
+            "irradiance": 1000,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 0
+          },
+          "result": {
+            "version": 1,
+            "id": "solarPv",
+            "settings": {
+              "irradiance": 1000,
+              "area": 40,
+              "efficiency": 20,
+              "incidence": 0
+            },
+            "power": 7.68,
+            "available": 40,
+            "loss": 32.32,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Light intercepted",
+                "value": 40,
+                "unit": "kW"
+              },
+              {
+                "label": "DC electricity",
+                "value": 8,
+                "unit": "kW"
+              },
+              {
+                "label": "AC electricity",
+                "value": 7.68,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.192
+            }
+          },
+          "accumulatedEnergy": null,
+          "scenarioTotals": null
+        },
+        {
+          "name": "D",
+          "note": "Note D",
+          "profileId": "steady",
+          "phase": 0,
+          "baseSettings": {
+            "irradiance": 1000,
+            "area": 80,
+            "efficiency": 20,
+            "incidence": 0
+          },
+          "result": {
+            "version": 1,
+            "id": "solarPv",
+            "settings": {
+              "irradiance": 1000,
+              "area": 80,
+              "efficiency": 20,
+              "incidence": 0
+            },
+            "power": 15.36,
+            "available": 80,
+            "loss": 64.64,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Light intercepted",
+                "value": 80,
+                "unit": "kW"
+              },
+              {
+                "label": "DC electricity",
+                "value": 16,
+                "unit": "kW"
+              },
+              {
+                "label": "AC electricity",
+                "value": 15.36,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.192
+            }
+          },
+          "accumulatedEnergy": null,
+          "scenarioTotals": null
+        }
+      ]
+    },
+    {
+      "id": "wind",
+      "name": "Wind",
+      "readings": []
+    },
+    {
+      "id": "hydro",
+      "name": "Hydropower",
+      "readings": []
+    },
+    {
+      "id": "geothermal",
+      "name": "Geothermal",
+      "readings": []
+    },
+    {
+      "id": "solarThermal",
+      "name": "Concentrating solar",
+      "readings": []
+    },
+    {
+      "id": "wave",
+      "name": "Wave energy",
+      "readings": []
+    },
+    {
+      "id": "tidal",
+      "name": "Tidal stream",
+      "readings": []
+    },
+    {
+      "id": "biomass",
+      "name": "Biomass",
+      "readings": []
+    },
+    {
+      "id": "storage",
+      "name": "Battery storage",
+      "readings": []
+    }
+  ]
+}

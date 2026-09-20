@@ -1,0 +1,262 @@
+{
+  "checks": [
+    "Actual additions and shared notebook saves drive all five steps; older notebook data is excluded, notes and practice records persist, and serialized remount restores the completed study.",
+    "Keyboard focus, optional hints, invalid predictions, setup pause/restore, free exploration, cleared/full notebooks, revisiting volume, 3D viewer identity, context-loss fallback, and forced colors pass."
+  ],
+  "scans": [
+    {
+      "state": "intro",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "intro",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "prediction-hint",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "prediction-hint",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "baseline",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "baseline",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "collect",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "collect",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "comparison",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "comparison",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "explanation",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "explanation",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "complete",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "complete",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "paused",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "paused",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "missing-evidence",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "missing-evidence",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "notebook-full",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "notebook-full",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "revisit",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "revisit",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "3d-guide",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "3d-guide",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "fallback",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "fallback",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "forced-colors",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": true,
+      "automatedColorContrast": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "forced-colors",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": true,
+      "automatedColorContrast": false,
+      "missingReferences": [],
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "success": true
+}

@@ -665,9 +665,9 @@ describe('Canvas workspace recovery integration contracts', () => {
     expect(autosave).not.toContain('const baseStore = ALLO_WORKSPACE_RECOVERY.normalizeStore(rawStore)');
 
     // resetCanvasWorkspaceSettings is module-resident, clearCanvasWorkspaceState host-resident:
-    // end the reset at its own next top-level closure.
-    const resetStart = anti.indexOf('const resetCanvasWorkspaceSettings');
-    const reset = anti.slice(resetStart, Math.min(...[anti.indexOf('\n  const ', resetStart + 1), anti.indexOf('\nconst ', resetStart + 1)].filter(i => i > 0)));
+    // inspect the implementation directly, not its optional multiline host wrapper.
+    const resetStart = handlerBodies.indexOf('const resetCanvasWorkspaceSettings');
+    const reset = handlerBodies.slice(resetStart, Math.min(...[handlerBodies.indexOf('\n  const ', resetStart + 1), handlerBodies.indexOf('\nconst ', resetStart + 1)].filter(i => i > 0)));
     expect(reset).toContain("setGradeLevel('5th Grade')");
     expect(reset).toContain('setStudentInterests([])');
     expect(reset).toContain("setSourceCustomInstructions('')");

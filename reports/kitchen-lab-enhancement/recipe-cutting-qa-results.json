@@ -1,0 +1,20 @@
+{
+  "checks": [
+    "Default layout exposes one preparation tool, keeps readings and time above actions, and expands full controls on request. Pointer placement, keyboard positioning, guarded cuts, and a fresh sample work.",
+    "mushroom for 2 completed through manual board cuts and scene actions, with independent evidence, protected in-pan pieces, restored dimensions, and historical cutting replay.",
+    "tomato for 4 completed through manual board cuts and scene actions, with independent evidence, protected in-pan pieces, restored dimensions, and historical cutting replay.",
+    "Cutting remains available in mobile text mode and without the 3D runtime."
+  ],
+  "accessibility": [
+    {
+      "label": "Compact kitchen and interactive cutting board",
+      "issues": []
+    },
+    {
+      "label": "320px text-mode cutting board",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

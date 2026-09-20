@@ -97,9 +97,64 @@ function AnalysisView(props) {
   // Components
   var BilingualFieldRenderer = props.BilingualFieldRenderer;
   var SourceReferencesPanel = props.SourceReferencesPanel;
+  const readingApi = window.AlloModules && window.AlloModules.InstructionalContext;
+  const readingProfile = readingApi?.getInstructionalText?.(generatedContent) || generatedContent?.instructionalText || {
+    role: 'unspecified',
+    form: 'original'
+  };
+  const readingRoleLabel = readingProfile.role === 'primary' ? 'Main reading' : readingProfile.role === 'supplemental' ? 'Supporting reading' : 'Not designated';
+  const readingFormLabel = readingProfile.form === 'adapted' ? 'Adapted text' : readingProfile.form === 'same-text-supported' ? 'Original with supports' : 'Original text';
+  const mainNeedsReview = readingProfile.form === 'adapted' && readingProfile.role === 'primary' && !(readingProfile.replacementAuthorization?.authorized === true && readingProfile.replacementAuthorization?.source === 'educator');
+  const changeReadingRole = nextRole => {
+    const adaptedPrimary = readingProfile.form === 'adapted' && nextRole === 'primary';
+    if (adaptedPrimary && !(readingProfile.role === 'primary' && readingProfile.replacementAuthorization?.authorized === true && readingProfile.replacementAuthorization?.source === 'educator')) {
+      if (!window.confirm('Use this adapted text as a main reading for this lesson? This records your explicit teacher designation. The original will remain available.')) return;
+    }
+    props.onInstructionalRoleChange?.(generatedContent, nextRole, {
+      authorizeReplacement: adaptedPrimary
+    });
+  };
+  const readingRoleControl = /*#__PURE__*/React.createElement("section", {
+    "data-source-instructional-role": readingProfile.role,
+    className: "rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-2"
+  }, /*#__PURE__*/React.createElement("strong", null, readingFormLabel), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "·"), /*#__PURE__*/React.createElement("span", null, readingRoleLabel, mainNeedsReview ? ' — needs review' : '')), isTeacherMode && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 flex flex-wrap items-center gap-3"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "inline-flex flex-wrap items-center gap-2"
+  }, "Use in this lesson", /*#__PURE__*/React.createElement("select", {
+    "aria-label": "Use in this lesson",
+    value: readingProfile.role,
+    disabled: isProcessing || !props.onInstructionalRoleChange,
+    onChange: event => changeReadingRole(event.target.value),
+    className: "min-h-11 rounded-lg border border-slate-300 bg-white px-2"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "primary"
+  }, "Main reading"), /*#__PURE__*/React.createElement("option", {
+    value: "supplemental"
+  }, "Supporting reading"), /*#__PURE__*/React.createElement("option", {
+    value: "unspecified"
+  }, "Not designated"))), mainNeedsReview && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => changeReadingRole('primary'),
+    className: "min-h-11 rounded-lg border border-amber-400 px-3"
+  }, "Review main-reading choice"), props.onSelectReadingSource && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: isProcessing,
+    onClick: () => props.onSelectReadingSource(generatedContent),
+    className: "min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900"
+  }, "Use for activities")));
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, readingRoleControl, props.onReadOriginal && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-read-original": true,
+    onClick: () => props.onReadOriginal(generatedContent),
+    className: "min-h-11 rounded-xl bg-indigo-700 px-4 py-2 font-bold text-white focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+  }, analysisLabel('analysis.read_with_supports', 'Read with supports')), /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 p-4 rounded-lg border border-slate-400 mb-6"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-800",
@@ -524,6 +579,8 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1 p-2 bg-indigo-50 border-b border-indigo-100"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('formatting.bold') || 'Bold',
     onClick: () => handleFormatText('bold', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.bold')
@@ -531,12 +588,16 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
     size: 16,
     strokeWidth: 3
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('formatting.italic') || 'Italic',
     onClick: () => handleFormatText('italic', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.italic')
   }, /*#__PURE__*/React.createElement(Italic, {
     size: 16
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('formatting.highlight') || 'Highlight',
     onClick: () => handleFormatText('highlight', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.highlight')
@@ -545,26 +606,36 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
   })), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-4 bg-indigo-200 mx-1"
   }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('formatting.h1') || 'Heading 1',
     onClick: () => handleFormatText('h1', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs",
     title: t('formatting.h1')
   }, "H1"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('formatting.h2') || 'Heading 2',
     onClick: () => handleFormatText('h2', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs",
     title: t('formatting.h2')
   }, "H2"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('formatting.h3') || 'Heading 3',
     onClick: () => handleFormatText('h3', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs",
     title: t('formatting.h3') || 'Heading 3'
   }, "H3"), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-4 bg-indigo-200 mx-1"
   }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('formatting.list') || 'Bulleted list',
     onClick: () => handleFormatText('list', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.list')
   }, /*#__PURE__*/React.createElement(List, {
     size: 16
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('formatting.numlist') || 'Numbered list',
     onClick: () => handleFormatText('numlist', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.numlist') || 'Numbered List'

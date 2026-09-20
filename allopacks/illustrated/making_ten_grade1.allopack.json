@@ -29,10 +29,15 @@
       "textPolicy": "Text-free artwork; original activity text stays editable"
     },
     "contentRefinements": {
-      "count": 51,
+      "count": 54,
       "audit": "allopacks/media/making_ten_grade1/content-refinements.json",
-      "review": "Mathematical wording refined; educator review pending"
-    }
+      "review": "Mathematical wording refined; educator review pending",
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/making_ten_grade1/content-refinements.json",
+      "sourceOnlyResourceIds": []
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Making Ten as an Addition Strategy",
   "history": [
@@ -79,7 +84,7 @@
       "title": "Ten Is a Friendly Number",
       "timestamp": "2026-09-06T00:50:01.000Z",
       "data": "## Ten Is a Friendly Number\n\nLook at a ten frame. It has two rows of five spaces. Fill each space with one counter. Now you have **ten**!\n\nEach whole number from zero to ten has a **partner** that makes ten. Six and four are partners. Seven and three are partners. Five and five are partners too. Ten and zero make ten: one group can be empty.\n\nA number **bond** shows a whole and its parts. Here, our whole is ten.\n\nTry 8 + 5 with counters. Eight needs two more to be ten. **Break** the five into two and three. Move the two to the eight. Now you have ten and three **left**. Ten and three make thirteen.\n\nYou moved counters between groups. You did not add any new counters or take any away. The **sum** stays the same.\n\nTry 9 + 6. Nine needs one more. Break six into one and five. Move one to the nine. Ten and five make fifteen.\n\nYou can also count on or use a **double**, like 6 + 6. Different ways can help. Use counters, drawings or fingers if they work for you. Take the time you need.\n\nCan you show one way to make ten?",
-      "meta": "1st Grade • Leveled reading • ~200 words • read-aloud friendly",
+      "meta": "1st Grade • Leveled reading • read-aloud friendly",
       "imageSlot": "mn-img-make-ten"
     },
     {
@@ -411,7 +416,7 @@
               "Each whole number from zero to ten has a whole-number partner that makes ten."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "visual-association",
             "mode": "scaffolded",
             "aiExample": "Fill six spaces in a ten frame. Four spaces are empty. Six and four make ten. Add one counter to each empty space to check.",
@@ -441,7 +446,7 @@
               "Break the other number and give that part over."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "sequence-cue",
             "mode": "scaffolded",
             "aiExample": "LOOK, NEED, MOVE. Look at eight. It needs two. Split five into two and three, then move two to eight. Ten and three make thirteen.",
@@ -879,7 +884,7 @@
           ],
           "deliverable": "A page with your ways to make ten, each one drawn as two piles, and one sentence about something you noticed.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

@@ -433,6 +433,20 @@ function createWordSoundsCore() {
     const board={version:VERSION,mode,targetChar:soundKey(target),difficulty:word.length<=3?'easy':word.length<=4?'medium':'hard',options:shuffled(short(yes),seed).slice(0,limit),distractors:shuffled(short(no),seed+1).slice(0,limit-1)};
     return validSoundBoard(board,word,pool)?board:null;
   };
+  // Prepared family boards must be answerable and unambiguous. This checks
+  // their spelling-family structure; it is not a pronunciation/decodability test.
+  const validWordFamilyBoard = (board, word) => {
+    if (!board || typeof board.rime !== 'string' || !/^[\p{L}\p{M}]+$/u.test(board.rime)) return false;
+    if (!Array.isArray(board.options) || !board.options.length || !Array.isArray(board.distractors) || !board.distractors.length) return false;
+    const values = [...board.options, ...board.distractors];
+    if (values.some(v => typeof v !== 'string' || !v.trim() || normalize(v) !== v || v === normalize(word))) return false;
+    if (new Set(values).size !== values.length) return false;
+    if (board.teacherEdited === true) return true;
+    return normalize(word).endsWith(board.rime) && normalize(word).length > board.rime.length &&
+      board.options.every(v => v.endsWith(board.rime) && v.length > board.rime.length) &&
+      board.distractors.every(v => !v.endsWith(board.rime));
+  };
+  const wordFamilyInstruction = rime => `Find all words in the ${rime} family`;
   const difficultyDecision = (history, activity, support={}) => {
     const rows=(history||[]).filter(h=>h && h.activity===activity && !h.practiceOnly && h.activity!=='letter_tracing' && h.taskKind!=='word_matching' && !h.answerExposed && !!h.aacAssisted===!!support.aacAssisted && (h.mode||'sound_only')===(support.mode||'sound_only'));
     let band=0, block=[], reason='starting', changes=0;
@@ -478,5 +492,5 @@ function createWordSoundsCore() {
     const unknown=unique(String(text||'').normalize('NFC').match(/[\p{L}\p{M}]+/gu)||[]).filter(w=>!canRead(w));
     return {status:unknown.length?'review':'within_taught_spellings',untaughtWords:unknown};
   };
-  return {VERSION,soundKey,edgeSound,validSoundBoard,buildSoundSort,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  return {VERSION,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }

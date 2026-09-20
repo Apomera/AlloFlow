@@ -30,6 +30,7 @@ const PAIRS = [
   'agent_core_contracts_module.js',
   'agent_core_blueprint_service_module.js',
   'agent_core_ui_adapter_module.js',
+  'agent_core_resource_pack_module.js',
 ];
 const MIRROR_DIR = path.join('desktop', 'web-app', 'public');
 

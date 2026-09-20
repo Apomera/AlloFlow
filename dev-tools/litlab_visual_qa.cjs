@@ -50,6 +50,18 @@ const root = path.resolve(__dirname, '..');
   await page.getByText('Narration saved with this script on this device.',{exact:true}).waitFor();
   await page.getByText('2 of 2 narration lines ready',{exact:true}).waitFor();
   await audit('saved narration');
+  await page.getByLabel('Audio options for line 1',{exact:true}).click();
+  await page.getByRole('button',{name:'Regenerate audio for line 1',exact:true}).click();
+  await page.getByText('The new take was saved with this script.',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Remove audio for line 1',exact:true}).click();
+  await page.getByText('1 of 2 narration lines ready',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Regenerate audio for line 1',exact:true}).click();
+  await page.getByText('The new take was saved with this script.',{exact:true}).waitFor();
+  await page.getByText('2 of 2 narration lines ready',{exact:true}).waitFor();
+  await audit('line narration controls');
+  await check('phone line narration controls');
+  await page.getByLabel('Audio options for line 1',{exact:true}).click();
+
   await page.setViewportSize({width:1280,height:1000});
   await audit('performance');
   await page.screenshot({path:path.join(output,'desktop-performance.png')});

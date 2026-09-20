@@ -1,0 +1,5 @@
+{
+  "status": "interrupted",
+  "reason": "Stopped a redundant repeat of the already checked focus profiles under resource contention. Final native-scroll/search tests run separately; no combined-suite pass claimed.",
+  "at": "2026-09-19T19:41:42.439Z"
+}

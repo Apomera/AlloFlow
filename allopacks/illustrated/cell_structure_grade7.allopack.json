@@ -29,10 +29,15 @@
       "textPolicy": "Text-free artwork; original activity text stays editable"
     },
     "contentRefinements": {
-      "count": 88,
+      "count": 92,
       "audit": "allopacks/media/cell_structure_grade7/content-refinements.json",
-      "review": "Scientific wording refined; educator review pending"
-    }
+      "review": "Scientific wording refined; educator review pending",
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/cell_structure_grade7/content-refinements.json",
+      "sourceOnlyResourceIds": []
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Cell Structure and Function",
   "history": [
@@ -42,7 +47,7 @@
       "title": "Tour the Factory",
       "timestamp": "2026-07-21T01:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nYour body contains tens of trillions of cells with different jobs. This lesson compares typical animal and photosynthetic plant cells using a factory analogy.\n\n1. Read **The Factory You Are Made Of**. Each part has a JOB — that is the whole idea.\n2. Learn the parts in the **Glossary**, then win the **Matching** game and the **Memory** game.\n3. Study the **Job Chart** — it pairs each part with what it actually does.\n4. Sort the cards in **Plant, Animal, or Both?** Use the pictured typical cells; not every plant or animal cell has every illustrated feature.\n5. Take the quiz. It asks WHY, not just WHAT.\n6. Fill in the **Cornell Notes** page in your own words — that page is your study sheet later.\n7. Lock the ideas in with **Remember the Factory Floor** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: Build a Cell That Could Live Somewhere Else** — use what you learned on a real problem, and mark every guess as a guess.\n9. Read the **The Factory Floor Plan** map by department before you take notes — structure fits function every time.\n\nIf you finish everything, you will be able to explain a cell without a diagram in front of you. That is the real goal. 🔬\n\nPicture panels: Cell discoveries and plant structure; Animal cells and boundaries; Energy-processing organelles; Water and support. Text-free illustrations use editable captions and image-specific descriptions. Diagrams simplify scale, anatomy and processes; colors and tokens are explained in captions. Follow the lesson text for scientific context. Educator review is pending.",
+        "body": "**Due:** (your teacher will tell you)\n\nYour body contains tens of trillions of cells with different jobs. This lesson compares typical animal and photosynthetic plant cells using a factory analogy.\n\n1. Read **The Factory You Are Made Of**. Each part has a JOB — that is the whole idea.\n2. Learn the parts in the **Glossary**, then win the **Matching** game and the **Memory** game.\n3. Study the **Job Chart** — it pairs each part with what it actually does.\n4. Sort the cards in **Plant, Animal, or Both?** Use the pictured typical cells; not every plant or animal cell has every illustrated feature.\n5. Take the quiz. It asks WHY, not just WHAT.\n6. Fill in the **Cornell Notes** page in your own words — that page is your study sheet later.\n7. Lock the ideas in with **Remember the Factory Floor** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: Build a Cell That Could Live Somewhere Else** — use what you learned on a real problem, and mark every guess as a guess.\n9. Read the **The Factory Floor Plan** map by department before you take notes — structure fits function every time.\n\nIf you finish everything, you will be able to explain a cell without a diagram in front of you. That is the real goal. 🔬\n\nPicture panels: Cell discoveries and plant structure; Animal cells and boundaries; Energy-processing organelles; Water and support. Text-free illustrations use editable captions and image-specific descriptions. Diagrams simplify scale, anatomy and processes; colors and tokens are explained in captions. Follow the lesson text for scientific context. Educator review is pending.\n\nSort by the two cell models in this lesson. The groups need not have equal numbers. After sorting, explain why many structures belong in BOTH and why “No cell wall” belongs in the animal-model group.",
         "objectives": [
           {
             "id": "cl-goal-matching",
@@ -463,7 +468,8 @@
               "Specialized cells do not all have the same set of organelles"
             ]
           }
-        ]
+        ],
+        "structureType": "Key Concept Map"
       }
     },
     {
@@ -501,7 +507,7 @@
               "Ribosomes make proteins; rough ER and Golgi process many exported proteins, with vesicles transporting them."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "analogy-pattern",
             "mode": "scaffolded",
             "aiExample": "A cell is like a factory: a selective boundary, DNA library, ATP supply and protein assembly and processing areas. ER is a processing area, not just a hallway. No part thinks or chooses.",
@@ -531,7 +537,7 @@
               "A large central vacuole stores water; water loss can reduce turgor."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "acronym-acrostic",
             "mode": "scaffolded",
             "aiExample": "W-C-V: Wall, Chloroplast, Vacuole. Picture a supported green cell with water storage. Then picture an onion bulb cell to remember that not every plant cell has chloroplasts.",
@@ -561,7 +567,7 @@
               "The pattern holds at every level of biology, and it starts in the cell."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "visual-association",
             "mode": "scaffolded",
             "aiExample": "Picture a mitochondrion with a folded inner membrane. Folds provide area for proteins involved in ATP production; the model is not a literal crumpled paper ball.",
@@ -1011,7 +1017,7 @@
           ],
           "deliverable": "A labeled model or drawing of the adapted cell, plus a museum card that names the environment, lists each changed part, and gives the structure-fits-function reason for every change.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

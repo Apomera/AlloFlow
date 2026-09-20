@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "87c272a4898720e76bec521e229512d434df485f0448aee4f51226e627475a19",
+    "bytes": 290
+  },
+  "candidate": {
+    "sha256": "f1e3efa8490530852333e3a9ef6d0270fd49193f5636e26a5ce8979414148917",
+    "bytes": 290
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 21188.382300000005,
+  "status": "review-required",
+  "coverage": {
+    "requested": 2,
+    "inspected": 2,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "response-payload",
+      "sourceSelector": "#response",
+      "candidateSelector": "#response",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "formData",
+          "status": "failed",
+          "source": [
+            [
+              "answer",
+              "abcdefghijk\nlmnopqrstuv\nwxyz"
+            ]
+          ],
+          "candidate": [
+            [
+              "answer",
+              "abcdefghijklmnopqrstuv\nwxyz"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dom-value",
+      "sourceSelector": "textarea",
+      "candidateSelector": "textarea",
+      "status": "passed",
+      "properties": [
+        {
+          "property": "value",
+          "status": "passed",
+          "source": "abcdefghijklmnopqrstuvwxyz",
+          "candidate": "abcdefghijklmnopqrstuvwxyz"
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

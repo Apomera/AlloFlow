@@ -1,0 +1,30 @@
+{
+  "pass": 51,
+  "change": "Quarter-turn position guides for wheel-and-axle and screw",
+  "uniqueTests": 559,
+  "browserChecks": 286,
+  "screenshots": 43,
+  "themes": {
+    "light": {
+      "checks": 94,
+      "screenshots": 14,
+      "errors": [],
+      "overflow": false
+    },
+    "dark": {
+      "checks": 94,
+      "screenshots": 14,
+      "errors": [],
+      "overflow": false
+    },
+    "contrast": {
+      "checks": 98,
+      "screenshots": 15,
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "sourceMirrorIdentical": true,
+  "syntaxValid": true,
+  "localOnly": true
+}

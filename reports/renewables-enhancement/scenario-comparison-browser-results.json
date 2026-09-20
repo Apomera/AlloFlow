@@ -1,0 +1,50 @@
+{
+  "scenarios": [
+    "solarPv/clouds",
+    "solarPv/daylight",
+    "wind/gust",
+    "wind/lull",
+    "hydro/dry",
+    "hydro/release",
+    "geothermal/interruption",
+    "geothermal/ramp",
+    "solarThermal/clouds",
+    "solarThermal/haze",
+    "wave/swell",
+    "wave/calm",
+    "tidal/reversal",
+    "tidal/weak",
+    "biomass/feed",
+    "biomass/quality",
+    "storage/evening",
+    "storage/interrupted"
+  ],
+  "behavior": [
+    "real saved baseline and notebook undo",
+    "keyboard navigation between workbench and notebook",
+    "all scenario metrics reconcile with model",
+    "largest difference opens current 3D at matching minute",
+    "selected minute stays synchronized",
+    "inspection preserves inputs and saved readings",
+    "battery stored energy and flow-to-3D inspection",
+    "metric selection pauses playback",
+    "export includes full comparison samples and totals",
+    "incompatible baseline explained and baseline undo updates chart",
+    "phone keyboard scrubber and accessible data table",
+    "zero and tiny output remain finite"
+  ],
+  "audits": {
+    "battery-flow": [],
+    "different-scenario": [],
+    "desktop-power": [],
+    "desktop-energy": [],
+    "dark-energy": [],
+    "phone-390": [],
+    "phone-320": [],
+    "phone-data-table": [],
+    "tiny-output": []
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "sourceSha256": "59cdda19f7bff1ae29681aafd8411757778846c5d2afc2024d9e9d511ff20bb8"
+}

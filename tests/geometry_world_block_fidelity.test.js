@@ -172,19 +172,26 @@ describe('Geometry World worksheet escapes authored content', () => {
     expect(html).toContain('Archaeologist');
     expect(html).toContain('Look at the stepped sides.');
     expect(html).toContain('Surveyor');
-    expect(html).toContain('Notes / Observations');
+    const printed = new DOMParser().parseFromString(html, 'text/html');
+    expect(printed.querySelectorAll('[data-guide-task]')).toHaveLength(2);
+    expect(printed.querySelectorAll('[data-page-kind=activity] .work-space.sketch')).toHaveLength(2);
   });
 
-  it('still prints the Garden field journal for the Garden itself', () => {
-    const html = gen.generateWorksheetHTML({ title: 'Geometry Garden', npcs: [] });
-    expect(html).toContain('This is a Field Journal');
-    expect(html).toContain('Station 1: The Single Cube');
+  it('prints a Garden lesson from its actual guide tasks instead of inventing stations from its title', () => {
+    const html = gen.generateWorksheetHTML({ title: 'Geometry Garden', npcs: [
+      { name: 'Garden observer', dialogue: 'Sketch the two arches and compare their symmetry.', question: null },
+    ] });
+    const printed = new DOMParser().parseFromString(html, 'text/html');
+    expect(printed.querySelector('[data-guide-task]').textContent).toBe('Sketch the two arches and compare their symmetry.');
+    expect(html).not.toContain('Station 1: The Single Cube');
+    expect(html).not.toContain('The Hidden Garden');
   });
 
-  it('gives an NPC-less lesson something to do', () => {
+  it('gives an NPC-less lesson an investigation and handwritten work space', () => {
     const html = gen.generateWorksheetHTML({ title: 'Empty World', npcs: [] });
-    expect(html).toContain('Explore the World');
-    expect(html).toContain('Notes / Observations');
+    const printed = new DOMParser().parseFromString(html, 'text/html');
+    expect(printed.querySelector('[data-lesson-task]').textContent).toContain('Choose or build a structure.');
+    expect(printed.querySelectorAll('[data-page-kind=activity] .work-space')).toHaveLength(3);
   });
 
   it('still renders ordinary lessons unchanged', () => {
@@ -216,7 +223,9 @@ function loadValidateLesson() {
     + 'var addToast = function (m, k) { toasts.push({ message: m, kind: k }); };\n'
     + 'var __alloT = function (k, fb) { return fb || k; };\n';
   // eslint-disable-next-line no-new-func
-  return new Function(prelude + SOURCE.slice(start, end) + '\nreturn { validateLesson, toasts, MAX_BLOCKS };')();
+  const normalizeStart = SOURCE.indexOf('  function normalizeGeometryQuestion(');
+  const normalizeEnd = SOURCE.indexOf('  // Projection, not another lesson author:', normalizeStart);
+  return new Function(prelude + SOURCE.slice(normalizeStart, normalizeEnd) + SOURCE.slice(start, end) + '\nreturn { validateLesson, toasts, MAX_BLOCKS };')();
 }
 
 describe('Geometry World lesson block budget', () => {

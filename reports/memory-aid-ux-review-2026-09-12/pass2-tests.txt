@@ -1,0 +1,32 @@
+
+describe('Memory Aid returning learners and flexible recall',()=>{
+ it('opens and focuses the saved application directly without reopening it after each autosave',async()=>{
+  await seed([card()]);await mount();await click('Continue my application and plan');
+  const details=host.querySelector('[data-memory-application]'),summary=details.querySelector('summary');
+  expect(details.open).toBe(true);expect(document.activeElement).toBe(summary);expect(host.querySelector('[aria-label="Your explanation"]').value).toBe('Earlier private explanation');
+  await act(async()=>{details.open=false;});await input(host.querySelector('[aria-label="Review again on"]'),'2026-10-20');
+  expect(details.open).toBe(false);expect(saved().solid).toHaveLength(1);
+ });
+ it('preserves writing when switching response modes, then saves it only when the learner chooses written recall',async()=>{
+  await mount();await click('Try recall');await click('Start recall practice');await input(host.querySelector('textarea[aria-label^="Recall response"]'),'Keep my current writing.');
+  await act(async()=>host.querySelector('input[value="self-check"]').click());expect(host.querySelector('textarea[aria-label^="Recall response"]')).toBeNull();expect(host.textContent).toContain('Your writing is kept in this open attempt');
+  await act(async()=>host.querySelector('input[value="written"]').click());expect(host.querySelector('textarea[aria-label^="Recall response"]').value).toBe('Keep my current writing.');
+  await click('Reveal the facts');for(const radio of [...host.querySelectorAll('input[type=radio][value=recalled]')].filter(visible))await act(async()=>radio.click());expect(saved().solid[0]).toMatchObject({responseMode:'written',response:'Keep my current writing.'});
+ });
+ it('keeps a cue-assisted rescue honest and does not save hidden writing for a non-written response',async()=>{
+  await mount();await click('Try recall');const none=[...host.querySelectorAll('input[type=radio]')].find(el=>visible(el)&&el.parentElement.textContent==='Without hints');await act(async()=>none.click());await click('Start recall practice');
+  await input(host.querySelector('textarea[aria-label^="Recall response"]'),'HIDDEN_WRITING_MUST_NOT_BE_SAVED');await act(async()=>host.querySelector('input[value="self-check"]').click());await act(async()=>host.querySelector('.memory-aid-practice-panel input[type=checkbox]').click());
+  expect(button('Reveal the facts').disabled).toBe(false);await click('Show my cue');expect(document.activeElement.getAttribute('aria-label')).toBe('Your memory cue');expect(host.querySelector('.memory-aid-practice-panel input[type=checkbox]').checked).toBe(false);expect(button('Reveal the facts').disabled).toBe(true);expect(button('Show my cue')).toBeUndefined();
+  await act(async()=>host.querySelector('.memory-aid-practice-panel input[type=checkbox]').click());await click('Reveal the facts');for(const radio of [...host.querySelectorAll('input[type=radio][value=recalled]')].filter(visible))await act(async()=>radio.click());
+  expect(saved().solid[0]).toMatchObject({supportMode:'cue',responseMode:'self-check',response:''});expect(JSON.stringify(saved())).not.toContain('HIDDEN_WRITING_MUST_NOT_BE_SAVED');
+ });
+ it('retains a written response when requesting the cue and records the completed attempt as supported',async()=>{
+  await mount();await click('Try recall');const none=[...host.querySelectorAll('input[type=radio]')].find(el=>visible(el)&&el.parentElement.textContent==='Without hints');await act(async()=>none.click());await click('Start recall practice');
+  await input(host.querySelector('textarea[aria-label^="Recall response"]'),'My first thoughts stay here.');await click('Show my cue');expect(host.querySelector('textarea[aria-label^="Recall response"]').value).toBe('My first thoughts stay here.');
+  await click('Reveal the facts');for(const radio of [...host.querySelectorAll('input[type=radio][value=recalled]')].filter(visible))await act(async()=>radio.click());expect(saved().solid[0]).toMatchObject({supportMode:'cue',response:'My first thoughts stay here.'});
+ });
+ it('starts a fresh recall normally after resuming an earlier application',async()=>{
+  await seed([card()]);await mount();await click('Continue my application and plan');await click('Practice again');expect(document.activeElement.tagName).toBe('H3');expect(host.querySelector('textarea[aria-label^="Recall response"]').value).toBe('');
+  await input(host.querySelector('textarea[aria-label^="Recall response"]'),'A fresh attempt.');await click('Reveal the facts');for(const radio of [...host.querySelectorAll('input[type=radio][value=recalled]')].filter(visible))await act(async()=>radio.click());expect(host.querySelector('[data-memory-application]').open).toBe(false);expect(host.querySelector('[aria-label="Your explanation"]').value).toBe('');expect(saved().solid).toHaveLength(2);
+ });
+});

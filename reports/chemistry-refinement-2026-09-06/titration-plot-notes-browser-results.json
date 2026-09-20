@@ -1,0 +1,138 @@
+{
+  "checks": [
+    "Plot and notebook note editing stay synchronized across filtered and mixed setups; notes reach CSV and completed reports without changing investigation attribution, live values, comparison choices, or 3D viewer identity.",
+    "Editor supports keyboard focus, Done and two-stage Escape; closes on list, point, setup and removal changes; enforces 500 characters; safely renders literal text; preserves undo for viewing only and invalidates it for real edits; persists through remount and clear recovery."
+  ],
+  "scans": [
+    {
+      "state": "empty-observation",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "empty-observation",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "editing-saved-observation",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "editing-saved-observation",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "saved-note-preview",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "saved-note-preview",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "maximum-observation",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "maximum-observation",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "redox-observation",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "redox-observation",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "restored-observation",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "restored-observation",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "forced-colors-editor",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "forced-colors-editor",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "clear-and-recover",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "clear-and-recover",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "missingReferences": [],
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "success": true
+}

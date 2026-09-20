@@ -1,7 +1,7 @@
 const fs=require('fs'),path=require('path'),assert=require('assert/strict'),{chromium}=require('@playwright/test');
 const R=require('../stem_lab/kitchen_studio/recipe_lab_engine.js'),cook=require('./kitchen_recipe_fixture.cjs');
 (async()=>{const browser=await chromium.launch({headless:true,args:['--enable-unsafe-swiftshader']});const out=path.resolve('reports/kitchen-lab-enhancement'),results={checks:[],accessibility:[],errors:[]};try{
-const page=await browser.newPage({viewport:{width:1360,height:1050},reducedMotion:'reduce'});page.on('pageerror',e=>results.errors.push(e.message));const url='http://127.0.0.1:53061/stem_lab/kitchen_studio/recipe_lab.html';
+const page=await browser.newPage({viewport:{width:1360,height:1050},reducedMotion:'reduce'});page.on('pageerror',e=>results.errors.push(e.message));const url=(process.env.KITCHEN_RECIPE_URL||'http://127.0.0.1:53061/stem_lab/kitchen_studio/recipe_lab.html');
 const completed=R.submit({...cook().state,answers:[0,0],hints:1,reflection:'I sampled before draining.'}),source=R.restore({...completed,log:[{action:'cut',value:null},...completed.log]});
 await page.addInitScript(()=>{const seed=sessionStorage.getItem('recipe-replay-seed');if(seed){localStorage.setItem('alloflow-kitchen-recipes-v1',seed);sessionStorage.removeItem('recipe-replay-seed');}});await page.goto(url);assert.equal(await page.locator('#openRecipeReplay').isVisible(),false);
 await page.evaluate(source=>sessionStorage.setItem('recipe-replay-seed',JSON.stringify({version:1,current:source,history:[]})),source);await page.reload();await page.locator('#recipeResult').waitFor();const saved=await page.evaluate(()=>JSON.stringify(JSON.parse(localStorage.getItem('alloflow-kitchen-recipes-v1')).current));

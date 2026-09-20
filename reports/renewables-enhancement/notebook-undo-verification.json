@@ -1,0 +1,23 @@
+{
+  "sourceSha256": "87ff8acb1fb85ae679201d8e87db52ad73180ae7a5c9eff62ce2a689b2f28f47",
+  "sourceAndDesktopIdentical": true,
+  "previewIdentical": true,
+  "syntaxValid": true,
+  "regressionTests": 115,
+  "testFiles": 4,
+  "browserBehaviors": 25,
+  "technologies": 9,
+  "accessibilityAudits": 7,
+  "pageErrors": [],
+  "consoleErrors": [],
+  "viewportWidths": [
+    1280,
+    390,
+    320
+  ],
+  "visualReview": [
+    "notebook-undo-desktop.jpg",
+    "notebook-undo-phone-320.jpg"
+  ],
+  "scope": "Isolated local React/Three.js host and running local preview source; no deployment."
+}

@@ -3680,11 +3680,85 @@ function _builderEditorPageCss(enabled, pageSetup) {
     ].join('\n');
 }
 
+function _builderReadingHistory(history) {
+  const source = Array.isArray(history) ? history : [];
+  const contract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
+  return contract?.ensureReadingSourcePairs ? contract.ensureReadingSourcePairs(source) : source;
+}
+function _builderReadingAccessReview(history, exportConfig) {
+    const source = _builderReadingHistory(history);
+    const toggleForType = {
+      analysis: 'includeAnalysis', simplified: 'includeSimplified', glossary: 'includeGlossary', quiz: 'includeQuiz',
+      'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
+      outline: 'includeOutline', faq: 'includeFaq', 'sentence-frames': 'includeSentenceFrames', image: 'includeImage',
+      math: 'includeMath', dbq: 'includeDbq', 'lesson-plan': 'includeLessonPlan', 'udl-advice': 'includeUdlAdvice',
+      brainstorm: 'includeBrainstorm',
+    };
+    const selected = source.filter((item) => {
+      if (!item) return false;
+      const key = _builderIsOriginalReading(item) ? 'includeOriginalReading' : toggleForType[item.type];
+      return !key || exportConfig[key] !== false;
+    });
+    const contract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
+    if (contract?.summarizeReadingAccess) {
+      const summary = contract.summarizeReadingAccess(selected, { includeSourcePairs: false });
+      const missingPrimary = summary.missingPrimaryCompanions || [];
+      const missingSource = summary.missingSourceCompanions || [];
+      return {
+        primaryCount: summary.primary.length, supplementalCount: summary.supplemental.length,
+        unspecifiedAdaptedCount: summary.unspecifiedAdapted.length,
+        unauthorizedPrimaryAdaptationCount: summary.unauthorizedPrimaryAdaptations.length,
+        missingSourceCount: missingSource.length, missingPrimaryCount: missingPrimary.length,
+        missingSourceIds: missingSource.map(item => item.id), missingPrimaryIds: missingPrimary.map(item => item.id),
+        supplementalWithoutPrimary: missingPrimary.some(item => contract.getInstructionalText(item).role === 'supplemental'),
+        unspecifiedAdaptedWithoutPrimary: missingPrimary.some(item => contract.getInstructionalText(item).role === 'unspecified'),
+      };
+    }
+    const profileFor = (item) => {
+      const config = item && item.config && typeof item.config === 'object' ? item.config : {};
+      const raw = item && (item.instructionalText || config.instructionalText || item.textProfile || config.textProfile) || {};
+      const role = ['primary', 'supplemental', 'unspecified'].includes(raw.role) ? raw.role : 'unspecified';
+      const form = ['original', 'same-text-supported', 'adapted'].includes(raw.form)
+        ? raw.form : (item && item.type === 'simplified' ? 'adapted' : 'original');
+      const auth = raw.replacementAuthorization && typeof raw.replacementAuthorization === 'object'
+        ? raw.replacementAuthorization : {};
+      return { role, form, authorized: auth.authorized === true && auth.source === 'educator' };
+    };
+    const validPrimary = selected.filter((item) => {
+      const profile = profileFor(item);
+      return profile.role === 'primary'
+        && (profile.form !== 'same-text-supported' || _builderIsOriginalReading(item))
+        && (profile.form !== 'adapted' || profile.authorized);
+    });
+    const supplemental = selected.filter((item) => profileFor(item).role === 'supplemental');
+    const unspecifiedAdapted = selected.filter((item) => {
+      const profile = profileFor(item);
+      return profile.role === 'unspecified' && profile.form === 'adapted';
+    });
+    const unauthorizedPrimaryAdaptations = selected.filter((item) => {
+      const profile = profileFor(item);
+      return profile.role === 'primary' && profile.form === 'adapted' && !profile.authorized;
+    });
+    return {
+      primaryCount: validPrimary.length,
+      supplementalCount: supplemental.length,
+      unspecifiedAdaptedCount: unspecifiedAdapted.length,
+      unauthorizedPrimaryAdaptationCount: unauthorizedPrimaryAdaptations.length,
+      supplementalWithoutPrimary: supplemental.length > 0 && validPrimary.length === 0,
+      unspecifiedAdaptedWithoutPrimary: unspecifiedAdapted.length > 0 && validPrimary.length === 0,
+    };
+
+}
+function _builderIsOriginalReading(item) {
+  const contract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
+  return !!contract?.isSupportedOriginal?.(item);
+}
 // One catalog drives the visible resources, their defaults and bulk selection.
 function _builderResourceOptions(history, t) {
   const translate = typeof t === 'function' ? t : () => '';
   const entries = [
     ['includeAnalysis', '📊 Source Analysis', 'analysis'],
+    ['includeOriginalReading', '📖 Original with supports', 'same-text-supported'],
     ['includeSimplified', '📖 Adapted Text', 'simplified'],
     ['includeGlossary', '📚 Glossary', 'glossary'],
     ['includeQuiz', '❓ Quiz', 'quiz'],
@@ -3700,11 +3774,11 @@ function _builderResourceOptions(history, t) {
     ['includeUdlAdvice', '🧩 UDL Advice', 'udl-advice'],
     ['includeBrainstorm', '💡 Brainstorm', 'brainstorm'],
   ];
-  const types = new Set((Array.isArray(history) ? history : []).filter(Boolean).map(item => item.type));
+  const types = new Set(_builderReadingHistory(history).filter(Boolean).map(item => _builderIsOriginalReading(item) ? 'same-text-supported' : item.type));
   return entries.filter(([, , type]) => types.has(type));
 }
 function _builderResourceIncluded(config, key) {
-  return ['includeMemoryAid', 'includeAppliedChallenge'].includes(key) ? config?.[key] !== false : !!config?.[key];
+  return ['includeMemoryAid', 'includeAppliedChallenge', 'includeOriginalReading'].includes(key) ? config?.[key] !== false : !!config?.[key];
 }
 function _builderBulkResourceUpdate(history, config, t) {
   const available = _builderResourceOptions(history, t);
@@ -3714,12 +3788,14 @@ function _builderBulkResourceUpdate(history, config, t) {
 function _builderSelectedResourceItems(history, config, t) {
   const options = _builderResourceOptions(history, t);
   const definitions = new Map(options.map(([key, label, type]) => [type, { key, label }]));
-  return (Array.isArray(history) ? history : []).filter(Boolean).flatMap((item, index) => {
-    const definition = definitions.get(item.type);
+  return _builderReadingHistory(history).filter(Boolean).flatMap((item, index) => {
+    const definition = definitions.get(_builderIsOriginalReading(item) ? 'same-text-supported' : item.type);
     if (!definition) return [];
     const candidate = item.title || item.data?.title || item.result?.title;
     const title = typeof candidate === 'string' && candidate.trim() ? candidate.replace(/<[^>]*>/g, '').trim().slice(0, 120) : definition.label;
-    return [{ id: String(item.id || index), title, type: definition.label, included: _builderResourceIncluded(config, definition.key) }];
+    const contract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
+    const roleLabel = ['analysis', 'simplified'].includes(item.type) ? contract?.getReadingRoleLabel?.(item) || '' : '';
+    return [{ id: String(item.id || index), title, type: definition.label, roleLabel, included: _builderResourceIncluded(config, definition.key) }];
   });
 }
 function _builderVisibleDocumentTitle(doc, fallback) {
@@ -3727,11 +3803,169 @@ function _builderVisibleDocumentTitle(doc, fallback) {
   return String(title).replace(/\s+/g, ' ').trim().slice(0, 160) || 'Untitled document';
 }
 function _builderSaveStatusLabel(state, at) {
-  const labels = { capturing: 'Saving changes…', saved: 'Saved on this device', restored: 'Local draft restored', captured: 'Saved for this session', ready: 'No local changes yet', error: 'Changes not captured. Try Save again.' };
+  const labels = { capturing: 'Saving changes…', saved: 'Saved on this device', restored: 'Local draft restored', captured: 'Session only — download a backup', ready: 'No local changes yet', error: 'Changes not captured. Try Save again.' };
   const label = labels[state] || 'Local save unavailable';
   const date = new Date(at || 0);
   return at && Number.isFinite(date.getTime()) && ['saved', 'restored', 'captured'].includes(state)
     ? label + ' · ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : label;
+}
+
+const _BUILDER_BACKUP_MAX_BYTES = 20 * 1024 * 1024;
+let _builderBackupPurifierPromise = null;
+function _builderLoadBackupPurifier() {
+  if (window.DOMPurify?.sanitize) return Promise.resolve(window.DOMPurify);
+  if (_builderBackupPurifierPromise) return _builderBackupPurifierPromise;
+  _builderBackupPurifierPromise = (async () => {
+    // Use the same vendored asset as the document pipeline, including its Canvas origin.
+    for (const url of ['/dompurify/3.1.7/purify.min.js', 'https://alloflow-cdn.pages.dev/dompurify/3.1.7/purify.min.js']) {
+      const loaded = await new Promise(resolve => {
+        const script = document.createElement('script');
+        let finished = false;
+        const finish = () => {
+          if (finished) return;
+          finished = true; window.clearTimeout(timer); script.remove();
+          resolve(window.DOMPurify?.sanitize ? window.DOMPurify : null);
+        };
+        const timer = window.setTimeout(finish, 6000);
+        script.onload = finish; script.onerror = finish; script.src = url;
+        document.head.appendChild(script);
+      });
+      if (loaded) return loaded;
+    }
+    throw new Error('The backup reader could not load. Check your connection and choose the file again.');
+  })().finally(() => { _builderBackupPurifierPromise = null; });
+  return _builderBackupPurifierPromise;
+}
+function _builderSanitizeBackupDocument(html, purifier, depth = 0) {
+  if (!purifier?.sanitize) throw new Error('The backup reader is unavailable.');
+  if (depth > 5) throw new Error('This backup has review data that is too deeply nested to restore.');
+  if (typeof html !== 'string' || html.length > _BUILDER_BACKUP_MAX_BYTES) throw new Error('Choose an HTML backup smaller than 20 MB.');
+  // Keep scripts only in the inert sanitizer result so citation JSON can be read.
+  // Every script is removed or rebuilt as normalized, escaped citation data below.
+  const clean = purifier.sanitize(html, {
+    WHOLE_DOCUMENT: true, USE_PROFILES: { html: true, svg: true, svgFilters: true, mathMl: true }, ADD_TAGS: ['script'],
+    FORBID_TAGS: ['iframe', 'object', 'embed', 'base', 'link', 'meta', 'form', 'template', 'foreignObject', 'animate', 'set', 'animateMotion', 'animateTransform'],
+    FORBID_ATTR: ['srcdoc', 'autofocus', 'contenteditable', 'formaction', 'action', 'srcset'],
+  });
+  const doc = new DOMParser().parseFromString(clean, 'text/html');
+  doc.querySelectorAll('script').forEach(node => {
+    if (node.namespaceURI !== 'http://www.w3.org/1999/xhtml' || node.getAttribute('type') !== 'application/json' || node.getAttribute('data-allo-citation-store') !== '1') { node.remove(); return; }
+    let sources;
+    try { sources = _builderNormalizeCitationSources(JSON.parse(node.textContent)); } catch (_) { node.remove(); return; }
+    const style = _builderNormalizeCitationStyle(node.getAttribute('data-allo-citation-style'));
+    const reviewAttributes = Array.from(node.attributes).filter(attr => _BUILDER_TRACKED_META_ATTRIBUTES.has(attr.name)).map(attr => [attr.name, attr.value]);
+    Array.from(node.attributes).forEach(attr => node.removeAttribute(attr.name));
+    reviewAttributes.forEach(([name, value]) => node.setAttribute(name, value));
+    node.type = 'application/json'; node.setAttribute('data-allo-citation-store', '1'); node.setAttribute('data-allo-citation-style', style);
+    node.textContent = JSON.stringify(sources).replace(/</g, '\\u003c');
+  });
+  doc.querySelectorAll('#allo-builder-edit-css,.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles').forEach(node => node.remove());
+  // Remote styles and CSS resource loads are unnecessary for a portable backup.
+  const unsafeCss = /url\s*\(|@import|expression\s*\(|behavior\s*:|-moz-binding|\\/i;
+  doc.querySelectorAll('style').forEach(node => { if (unsafeCss.test(node.textContent)) node.remove(); });
+  doc.querySelectorAll('*').forEach(node => {
+    if (unsafeCss.test(node.getAttribute('style') || '')) node.removeAttribute('style');
+    for (const name of ['href', 'xlink:href', 'src', 'poster', 'background']) {
+      const value = node.getAttribute(name);
+      if (value && !/^(?:https?:\/\/|#|mailto:|tel:|data:image\/(?:png|jpe?g|gif|webp);base64,)/i.test(value.trim())) node.removeAttribute(name);
+    }
+    // Revision snapshots can contain HTML/attributes applied later by Accept/Reject.
+    for (const name of ['data-allo-change-before', 'data-allo-change-after']) {
+      if (!node.hasAttribute(name)) continue;
+      const snapshot = _builderRevisionSnapshotDecode(node.getAttribute(name));
+      if (!snapshot) { node.setAttribute(name, 'null'); continue; }
+      if (!/^[a-z][a-z0-9]*$/.test(snapshot.tag || '')) throw new Error('This backup contains an invalid review snapshot.');
+      const staging = doc.implementation.createHTMLDocument('');
+      const element = staging.createElement(snapshot.tag);
+      Object.entries(snapshot.attributes || {}).forEach(([key, value]) => { try { element.setAttribute(key, String(value)); } catch (_) {} });
+      if (Object.prototype.hasOwnProperty.call(snapshot, 'html')) element.innerHTML = String(snapshot.html || '');
+      staging.body.appendChild(element);
+      const safe = _builderSanitizeBackupDocument(staging.documentElement.outerHTML, purifier, depth + 1).body.firstElementChild;
+      if (!safe || safe.tagName.toLowerCase() !== snapshot.tag) throw new Error('This backup contains a review snapshot that cannot be restored safely.');
+      node.setAttribute(name, JSON.stringify(_builderCaptureElementRevision(safe, { attributeMode: snapshot.attributeMode, includeContent: Object.prototype.hasOwnProperty.call(snapshot, 'html') })));
+    }
+  });
+  return doc;
+}
+function _builderReadBackup(html, purifier) {
+  if (!/<(?:html|body|p|h[1-6]|div|section|main|table|img)\b/i.test(String(html || ''))) throw new Error('Choose an HTML document backup.');
+  const doc = _builderSanitizeBackupDocument(html, purifier);
+  const readable = doc.body.cloneNode(true);
+  readable.querySelectorAll('script,style').forEach(node => node.remove());
+  if (!readable.textContent.trim() && !readable.querySelector('img,table,hr')) throw new Error('This backup has no document content to restore.');
+  const title = _builderVisibleDocumentTitle(doc, 'Imported document');
+  const policy = doc.createElement('meta'); policy.httpEquiv = 'Content-Security-Policy';
+  policy.content = "default-src 'none'; img-src data: https: http:; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'";
+  doc.head.prepend(policy);
+  const output = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+  return { html: output, title, words: readable.textContent.trim().split(/\s+/).filter(Boolean).length,
+    previewHtml: output.replace(policy.outerHTML, policy.outerHTML.replace('img-src data: https: http:', 'img-src data:')) };
+}
+
+function _builderToolDisabledReason(target, label) {
+  const explicit = target.getAttribute('data-builder-disabled-reason');
+  if (explicit) return explicit;
+  if (target.tagName === 'SELECT' && target.options?.length === 1) return target.options[0].textContent.trim();
+  if (/citation|bibliography/i.test(label)) return 'Add and select a source in Source Manager first.';
+  if (/cross.reference/i.test(label)) return 'Add and select a bookmark first.';
+  if (/previous section/i.test(label)) return 'You are in the first section.';
+  if (/next section/i.test(label)) return 'You are in the last section.';
+  if (/section start|merge this section/i.test(label)) return 'Select a section after the first section.';
+  if (/clear tabs/i.test(label)) return 'Add a paragraph tab stop first.';
+  if (/remove row/i.test(label)) return 'Select a body row and keep at least one body row.';
+  if (/remove column/i.test(label)) return 'The table must keep at least one column.';
+  return 'Unavailable in the current document state. Review its panel for the required selection or input.';
+}
+function _builderSearchText(value) {
+  return String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9\u0080-\uffff]+/g, ' ').trim();
+}
+function _builderSearchTerms(value) {
+  const aliases = { picture: 'image', pictures: 'image', photo: 'image', photos: 'image', photograph: 'image', images: 'image', typeface: 'font', fonts: 'font', colour: 'color', colours: 'color', colors: 'color', margins: 'margin', pages: 'page', tables: 'table', rows: 'row', columns: 'column', citations: 'citation', restore: 'restore', recovery: 'restore' };
+  return _builderSearchText(value).split(/\s+/).filter(Boolean).map(word => aliases[word] || word);
+}
+
+// Search points at the existing controls, including tools inside collapsed tabs.
+// The DOM targets stay in a ref; only display labels enter React state.
+function _builderCollectToolTargets(container) {
+  if (!container) return [];
+  const seen = new Set();
+  const text = value => String(value || '').replace(/\s+/g, ' ').trim();
+  return Array.from(container.querySelectorAll('[id^="builder-ribbon-panel-"] button,[id^="builder-ribbon-panel-"] input,[id^="builder-ribbon-panel-"] select,[id^="builder-ribbon-panel-"] textarea,#builder-settings-panel button,#builder-settings-panel input,#builder-settings-panel select,#builder-settings-panel textarea'))
+    .flatMap(target => {
+      if (target.type === 'hidden' || target.type === 'file' || target.closest('[data-builder-tool-search]')) return [];
+      const labelNode = target.labels?.[0]?.cloneNode(true);
+      labelNode?.querySelectorAll('input,select,textarea,button').forEach(node => node.remove());
+      const label = text(target.getAttribute('aria-label') || labelNode?.textContent || target.getAttribute('title') || target.textContent);
+      if (!label) return [];
+      const panel = target.closest('[id^="builder-ribbon-panel-"]');
+      const tab = panel?.id.replace('builder-ribbon-panel-', '') || '';
+      const section = tab ? text(container.querySelector('#builder-ribbon-tab-' + tab)?.textContent) || tab : 'Document settings';
+      const legend = text(target.closest('fieldset')?.querySelector('legend')?.textContent);
+      const key = section + ':' + label;
+      if (seen.has(key)) return [];
+      seen.add(key);
+      const disabled = target.matches(':disabled') || target.getAttribute('aria-disabled') === 'true';
+      const reason = disabled ? _builderToolDisabledReason(target, label) : '';
+      return [{ target, label, section, tab, disabled, reason, keywords: text([label, section, legend, target.getAttribute('title')].join(' ')) }];
+    });
+}
+function _builderFilterTools(tools, query) {
+  const phrase = _builderSearchText(query), words = _builderSearchTerms(query);
+  return tools.map((tool, index) => {
+    const label = _builderSearchText(tool.label), keywords = _builderSearchText(tool.keywords);
+    const terms = _builderSearchTerms(tool.keywords);
+    if (!words.every(word => terms.some(term => term.includes(word)))) return null;
+    const score = !phrase ? 0 : label === phrase ? 1000 : label.startsWith(phrase) ? 850 : label.includes(phrase) ? 700 : keywords.includes(phrase) ? 500 : 100;
+    return { tool, index, score };
+  }).filter(Boolean).sort((a, b) => b.score - a.score || a.index - b.index).slice(0, 24).map(entry => entry.tool);
+}
+function _builderSelectedImage(doc, target) {
+  if (target?.tagName === 'IMG' && target.ownerDocument === doc && doc.body?.contains(target)) return target;
+  const selection = doc?.getSelection?.();
+  const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+  const node = range && range.startContainer === range.endContainer && range.endOffset === range.startOffset + 1
+    ? range.startContainer.childNodes[range.startOffset] : null;
+  return node?.tagName === 'IMG' && doc.body?.contains(node) ? node : null;
 }
 
 // Keyboard traversal must agree across the parent dialog and editable iframe.
@@ -3767,6 +4001,11 @@ const _BUILDER_RESPONSIVE_LAYOUT_CSS = `
 .allo-docsuite .builder-compact-format select { max-width:9rem; }
 .allo-docsuite .builder-ribbon-tabs { margin-left:auto; }
 .allo-docsuite .builder-ribbon-tabs button { min-height:2rem; }
+.allo-docsuite .builder-tool-search-panel { position:absolute; top:100%; left:.5rem; width:min(32rem,calc(100% - 1rem)); max-height:min(60dvh,30rem); overflow:auto; overscroll-behavior:contain; z-index:110; padding:.75rem; border:1px solid #94a3b8; border-radius:.75rem; background:#fff; color:#334155; box-shadow:0 12px 32px #0f172a33; }
+.allo-docsuite .builder-tool-search-panel input { width:100%; min-height:2.75rem; border:1px solid #64748b; border-radius:.5rem; padding:.5rem; background:#fff; color:#0f172a; }
+.allo-docsuite .builder-tool-search-panel button { min-height:2.75rem; }
+.allo-docsuite .builder-tool-result { display:flex; width:100%; justify-content:space-between; gap:1rem; align-items:center; padding:.4rem .5rem; border-radius:.4rem; text-align:left; }
+.allo-docsuite .builder-tool-result:hover,.allo-docsuite .builder-tool-result:focus-visible { background:#e0e7ff; color:#312e81; }
 .allo-docsuite .builder-tool-tray { position:absolute; top:100%; right:.5rem; width:min(52rem,calc(100% - 1rem)); max-height:min(60dvh,32rem); overflow:auto; overscroll-behavior:contain; border-radius:0 0 .75rem .75rem; }
 .allo-docsuite .builder-tray-heading { position:sticky; top:0; z-index:90; }
 .allo-docsuite .builder-tool-tray [role="tabpanel"] { min-width:0; }
@@ -4186,6 +4425,18 @@ function ExportPreviewView(props) {
   const [pageMetrics, setPageMetrics] = React.useState({ count: 1, active: 0, sections: [], documentSections: [{ id: 'section-1', index: 0, name: 'Section 1', startType: 'document', page: 0 }], activeSection: 0 });
   const [sectionNameDraft, setSectionNameDraft] = React.useState('Section 1');
   const [draftCaptureState, setDraftCaptureState] = React.useState('ready');
+  const [pendingBackup, setPendingBackup] = React.useState(null);
+  const [backupRollback, setBackupRollback] = React.useState(null);
+  const backupFileRef = React.useRef(null);
+  const backupDialogRef = React.useRef(null);
+  const backupReadRunRef = React.useRef(0);
+  const [toolSearchOpen, setToolSearchOpen] = React.useState(false);
+  const [toolSearchQuery, setToolSearchQuery] = React.useState('');
+  const [toolSearchItems, setToolSearchItems] = React.useState([]);
+  const toolSearchTargetsRef = React.useRef([]);
+  const toolSearchButtonRef = React.useRef(null);
+  const selectedBuilderImageRef = React.useRef(null);
+  const [hasSelectedImage, setHasSelectedImage] = React.useState(false);
   const [draftCaptureAt, setDraftCaptureAt] = React.useState(null);
   const [formatState, setFormatState] = React.useState({
     bold: false, italic: false, underline: false,
@@ -4417,6 +4668,65 @@ function ExportPreviewView(props) {
     return () => root.classList.remove('allo-docbuilder-focus');
   }, [showExportPreview, isFocusMode]);
 
+  const closeBuilderToolSearch = React.useCallback((restoreFocus = true) => {
+    setToolSearchOpen(false);
+    toolSearchTargetsRef.current = [];
+    if (restoreFocus) window.setTimeout(() => toolSearchButtonRef.current?.focus(), 0);
+  }, []);
+  const openBuilderToolSearch = React.useCallback(() => {
+    setToolSearchQuery('');
+    setBuilderFocusMode(false);
+    setMobileSettingsOpen(false);
+    setRibbonCollapsed(true);
+    setToolSearchOpen(true);
+  }, [setBuilderFocusMode]);
+  const revealBuilderTool = React.useCallback((target) => {
+    const element = target?.nodeType === 1 ? target : null;
+    if (element && (!element.isConnected || !exportDialogRef.current?.contains(element))) return;
+    if (element?.matches(':disabled') || element?.getAttribute('aria-disabled') === 'true') return;
+    const panel = element?.closest('[id^="builder-ribbon-panel-"]');
+    const tab = panel?.id.replace('builder-ribbon-panel-', '') || target?.tab;
+    if (!element && (!tab || !target?.selector)) return;
+    setToolSearchOpen(false);
+    setBuilderFocusMode(false);
+    setMobileSettingsOpen(Boolean(element?.closest('#builder-settings-panel')));
+    if (tab) {
+      setActiveRibbonTab(tab);
+      setRibbonCollapsed(false);
+    }
+    for (let parent = element?.parentElement; parent && parent !== exportDialogRef.current; parent = parent.parentElement) {
+      if (parent.tagName === 'DETAILS') parent.open = true;
+    }
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+      const control = element || exportDialogRef.current?.querySelector(target.selector);
+      if (!mountedRef.current || !control?.isConnected || !exportDialogRef.current?.contains(control)) return;
+      control.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      control.focus({ preventScroll: true });
+      toolSearchTargetsRef.current = [];
+    }));
+  }, [setBuilderFocusMode]);
+  React.useEffect(() => {
+    if (!toolSearchOpen || !showExportPreview) return undefined;
+    // Closed tabs normally unmount. Mount their controls only while searching,
+    // inside the hidden tray, and index them after React has committed the DOM.
+    const collect = () => {
+      const targets = _builderCollectToolTargets(exportDialogRef.current);
+      toolSearchTargetsRef.current = targets;
+      setToolSearchItems(targets.map(({ label, section, keywords, disabled, reason }, id) => ({ id, label, section, keywords, disabled, reason })));
+    };
+    collect();
+    const observer = new MutationObserver(collect);
+    exportDialogRef.current?.querySelectorAll('#builder-tool-tray,#builder-settings-panel').forEach(panel => observer.observe(panel, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['disabled', 'aria-disabled', 'data-builder-disabled-reason'] }));
+    const timer = window.setTimeout(() => exportDialogRef.current?.querySelector('#builder-tool-query')?.focus(), 0);
+    return () => { window.clearTimeout(timer); observer.disconnect(); };
+  }, [toolSearchOpen, showExportPreview]);
+  React.useEffect(() => {
+    if (!showExportPreview || mobileSettingsOpen || isFocusMode) {
+      setToolSearchOpen(false);
+      toolSearchTargetsRef.current = [];
+    }
+  }, [showExportPreview, mobileSettingsOpen, isFocusMode]);
+
   React.useEffect(() => {
     if (!showExportPreview) return undefined;
     const onFullscreenChange = () => {
@@ -4424,6 +4734,7 @@ function ExportPreviewView(props) {
     };
     const onFocusExit = () => setBuilderFocusMode(false);
     const onDismissTools = () => {
+      if (toolSearchOpen) { closeBuilderToolSearch(); return; }
       const dialog = exportDialogRef.current;
       const menu = dialog?.querySelector('#builder-export-menu[open]');
       if (menu) { menu.open = false; menu.querySelector('summary')?.focus(); return; }
@@ -4432,6 +4743,10 @@ function ExportPreviewView(props) {
     };
     const onOpenFind = (event) => openFindTools(event?.detail?.mode === 'replace' ? 'replace' : 'find');
     const onShortcut = (event) => {
+      if (backupDialogRef.current?.contains(event.target)) return;
+      if (event.altKey && !event.ctrlKey && !event.metaKey && (event.code === 'KeyQ' || event.key.toLowerCase() === 'q')) {
+        event.preventDefault(); openBuilderToolSearch(); return;
+      }
       const target = event.target;
       const tag = target && target.tagName ? target.tagName.toLowerCase() : '';
       if ((tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) && !target?.closest?.('#document-builder-preview')) return;
@@ -4459,15 +4774,17 @@ function ExportPreviewView(props) {
     document.addEventListener('alloflow-builder-exit-focus', onFocusExit);
     document.addEventListener('alloflow-builder-dismiss-tools', onDismissTools);
     document.addEventListener('alloflow-builder-open-find', onOpenFind);
+    document.addEventListener('alloflow-builder-find-tool', openBuilderToolSearch);
     document.addEventListener('keydown', onShortcut);
     return () => {
       document.removeEventListener('fullscreenchange', onFullscreenChange);
       document.removeEventListener('alloflow-builder-exit-focus', onFocusExit);
       document.removeEventListener('alloflow-builder-dismiss-tools', onDismissTools);
       document.removeEventListener('alloflow-builder-open-find', onOpenFind);
+      document.removeEventListener('alloflow-builder-find-tool', openBuilderToolSearch);
       document.removeEventListener('keydown', onShortcut);
     };
-  }, [showExportPreview, isFocusMode, setBuilderFocusMode, openFindTools]);
+  }, [showExportPreview, isFocusMode, setBuilderFocusMode, openFindTools, toolSearchOpen, closeBuilderToolSearch, openBuilderToolSearch]);
 
   const closeBuilderSettings = React.useCallback(() => {
     setMobileSettingsOpen(false);
@@ -4512,12 +4829,13 @@ function ExportPreviewView(props) {
   }, []);
 
   React.useEffect(() => {
-    if (!showExportPreview || pendingImageFile) return undefined;
+    if (!showExportPreview || pendingImageFile || pendingBackup) return undefined;
     const dialog = exportDialogRef.current;
     if (!dialog) return undefined;
     const getFocusable = () => _builderKeyboardTargets(dialog);
     if (!dialog.contains(document.activeElement)) (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
+      if (event.target?.closest?.('[data-builder-tool-search]')) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         if (dialog.getAttribute('data-builder-settings-open') === 'true') {
@@ -4540,7 +4858,7 @@ function ExportPreviewView(props) {
     };
     dialog.addEventListener('keydown', onKeyDown);
     return () => dialog.removeEventListener('keydown', onKeyDown);
-  }, [showExportPreview, pendingImageFile, setShowExportPreview, setBuilderFocusMode]);
+  }, [showExportPreview, pendingImageFile, Boolean(pendingBackup), setShowExportPreview, setBuilderFocusMode]);
 
   React.useEffect(() => {
     if (!pendingImageFile) return undefined;
@@ -5742,14 +6060,17 @@ function ExportPreviewView(props) {
     applyPageElements({ headerText: '', headerAlignment: 'left', footerText: '', pageNumbers: 'none' });
   }, [applyPageElements]);
 
-  const refreshTableContext = React.useCallback(() => {
+  const refreshTableContext = React.useCallback((target = null) => {
     const doc = exportPreviewRef.current?.contentDocument;
     if (!doc) return;
+    const image = _builderSelectedImage(doc, target);
+    selectedBuilderImageRef.current = image;
+    setHasSelectedImage(Boolean(image));
     let selectedNode = doc.getSelection?.()?.anchorNode;
     if (selectedNode?.nodeType === 3) selectedNode = selectedNode.parentElement;
     const cell = selectedNode?.closest?.('td,th') || null;
     const table = cell?.closest?.('table') || null;
-    const next = table && cell ? {
+    const next = !image && table && cell ? {
       active: true,
       rows: table.rows.length,
       columns: Math.max(0, ...Array.from(table.rows).map((row) => row.cells.length)),
@@ -7929,9 +8250,10 @@ function ExportPreviewView(props) {
       doc.open();
       doc.write(html);
       doc.close();
+      exportPreviewRef.current.__alloInitializeBuilderDocument?.(doc);
       if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1');
       const captured = draftCaptureLatestRef.current?.(doc, 'Restored draft', draftContext);
-      setDraftCaptureState(captured ? 'restored' : 'error');
+      if (!captured) setDraftCaptureState('error');
       if (captured) setDraftCaptureAt(Date.now());
         refreshDocumentStats();
         refreshReviewComments();
@@ -7939,7 +8261,7 @@ function ExportPreviewView(props) {
         refreshActiveHeading();
         refreshPageMetrics();
         refreshFormattingState();
-      if (mountedRef.current && captured) setDraftCaptureState('restored');
+      // Capture reports persistent storage versus session-only recovery accurately.
       addToast && addToast(message, 'success');
       return true;
     } catch (_) {
@@ -8073,9 +8395,131 @@ function ExportPreviewView(props) {
     anchor.click();
     anchor.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-    try { if (typeof onExportSuccess === 'function') onExportSuccess({ kind: 'file', format: extension, fileName }); } catch (_) {}
+    try { if (options.notifySuccess !== false && typeof onExportSuccess === 'function') onExportSuccess({ kind: 'file', format: extension, fileName }); } catch (_) {}
     return fileName;
   }, [getCleanBuilderDocument, onExportSuccess]);
+
+  const downloadBuilderBackup = React.useCallback(() => {
+    try {
+      const clean = getCleanBuilderDocument();
+      if (!clean?.html) throw new Error('The editable document is not ready.');
+      downloadBuilderBlob(new Blob([clean.html], { type: 'text/html;charset=utf-8' }), { extension: 'html', suffix: '-backup', notifySuccess: false });
+      addToast && addToast('HTML backup downloaded. Keep it before closing this session.', 'success');
+    } catch (_) {
+      addToast && addToast('The backup could not be downloaded. Keep this document open and try again.', 'error');
+    }
+  }, [getCleanBuilderDocument, downloadBuilderBlob, addToast]);
+  const closeBackupImport = React.useCallback(() => {
+    backupReadRunRef.current += 1;
+    setPendingBackup(null);
+    window.setTimeout(() => {
+      const button = exportDialogRef.current?.querySelector('[data-builder-open-backup]');
+      (button || toolSearchButtonRef.current)?.focus();
+    }, 0);
+  }, []);
+  const chooseBuilderBackup = React.useCallback(() => {
+    if (backupFileRef.current) { backupFileRef.current.value = ''; backupFileRef.current.click(); }
+  }, []);
+  const readBuilderBackupFile = React.useCallback(async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const run = ++backupReadRunRef.current;
+    const doc = exportPreviewRef.current?.contentDocument;
+    const token = doc?.__alloBuilderCaptureToken;
+    const context = draftContextRef.current;
+    const current = () => mountedRef.current && run === backupReadRunRef.current && exportPreviewRef.current?.contentDocument === doc && doc?.__alloBuilderCaptureToken === token && draftContextRef.current === context;
+    setPendingBackup({ status: 'loading', fileName: file.name });
+    try {
+      if (!/\.html?$/i.test(file.name)) throw new Error('Choose an HTML (.html or .htm) backup.');
+      if (file.size > _BUILDER_BACKUP_MAX_BYTES) throw new Error('Choose an HTML backup smaller than 20 MB.');
+      const [html, purifier] = await Promise.all([file.text(), _builderLoadBackupPurifier()]);
+      if (!current()) return;
+      const result = _builderReadBackup(html, purifier);
+      if (current()) setPendingBackup({ ...result, status: 'ready', fileName: file.name, doc, token, context });
+    } catch (error) {
+      if (current()) setPendingBackup({ status: 'error', fileName: file.name, error: error.message || 'This backup could not be read.' });
+    }
+  }, [exportPreviewRef]);
+  const restoreBuilderBackup = React.useCallback(() => {
+    const pending = pendingBackup;
+    const doc = exportPreviewRef.current?.contentDocument;
+    if (pending?.status !== 'ready') return;
+    if (pending.doc !== doc || pending.token !== doc?.__alloBuilderCaptureToken || pending.context !== draftContextRef.current) {
+      setPendingBackup({ ...pending, status: 'error', error: 'The document changed while this preview was open. Choose the backup again.' });
+      return;
+    }
+    const before = getCleanBuilderDocument();
+    if (!before?.html || !draftStorageKey) {
+      setPendingBackup({ ...pending, status: 'error', error: 'The current document is not ready to preserve. Keep it open and try again.' });
+      return;
+    }
+    draftCaptureRef.current?.flush();
+    const at = Date.now();
+    const saved = persistLocalDraft(before.html, at, 'Before backup restore');
+    // Keep an independent session copy even if storage is full or a write later fails.
+    setBackupRollback({ html: before.html, context: pending.context, saved, at });
+    if (!restoreDraftHtml(pending.html, 'Backup restored. The previous document is available in Version History.')) return;
+    setVersionComparison(null);
+    setActiveRibbonTab('review'); setRibbonCollapsed(false);
+    closeBackupImport();
+    window.requestAnimationFrame(() => { const history = exportDialogRef.current?.querySelector('#builder-version-history'); if (history) history.open = true; });
+  }, [pendingBackup, exportPreviewRef, getCleanBuilderDocument, draftStorageKey, persistLocalDraft, restoreDraftHtml, closeBackupImport]);
+  const undoBuilderBackupRestore = React.useCallback(() => {
+    if (!backupRollback || backupRollback.context !== draftContextRef.current) return;
+    const current = getCleanBuilderDocument();
+    if (current?.html) persistLocalDraft(current.html, Date.now(), 'Before undoing backup restore');
+    if (restoreDraftHtml(backupRollback.html, 'Previous document restored.')) setBackupRollback(null);
+  }, [backupRollback, getCleanBuilderDocument, persistLocalDraft, restoreDraftHtml]);
+  const downloadPreviousBuilderDocument = React.useCallback(() => {
+    if (!backupRollback || backupRollback.context !== draftContextRef.current) return;
+    try {
+      downloadBuilderBlob(new Blob([backupRollback.html], { type: 'text/html;charset=utf-8' }), { extension: 'html', suffix: '-before-restore', notifySuccess: false });
+    } catch (_) { addToast && addToast('The previous document could not be downloaded. Keep this builder open and try again.', 'error'); }
+  }, [backupRollback, downloadBuilderBlob, addToast]);
+  React.useEffect(() => {
+    if (!showExportPreview) { backupReadRunRef.current += 1; setPendingBackup(null); }
+    if (backupRollback && backupRollback.context !== draftContext) setBackupRollback(null);
+    if (pendingBackup?.context && pendingBackup.context !== draftContext) { backupReadRunRef.current += 1; setPendingBackup(null); }
+  }, [showExportPreview, draftContext, backupRollback, pendingBackup]);
+  React.useEffect(() => {
+    if (!pendingBackup) return undefined;
+    const dialog = backupDialogRef.current;
+    const timer = window.setTimeout(() => dialog?.querySelector('[data-backup-cancel]')?.focus(), 0);
+    const onKeyDown = event => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeBackupImport(); return; }
+      if (event.key !== 'Tab') return;
+      const targets = _builderKeyboardTargets(dialog);
+      if (event.shiftKey && event.target === targets[0]) { event.preventDefault(); targets[targets.length - 1]?.focus(); }
+      else if (!event.shiftKey && event.target === targets[targets.length - 1]) { event.preventDefault(); targets[0]?.focus(); }
+    };
+    dialog?.addEventListener('keydown', onKeyDown);
+    return () => { window.clearTimeout(timer); dialog?.removeEventListener('keydown', onKeyDown); };
+  }, [Boolean(pendingBackup), closeBackupImport]);
+
+  const editSelectedImageAlt = React.useCallback(async () => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const image = selectedBuilderImageRef.current;
+    if (!image?.isConnected || image.ownerDocument !== doc) return;
+    const originalAlt = image.getAttribute('alt') || '';
+    const value = await promptForBuilderText('Describe the image. Leave blank only if it is decorative.', originalAlt, { title: 'Image alternative text', confirmText: 'Save alternative text', maxLength: 2000 });
+    if (value == null) return;
+    if (exportPreviewRef.current?.contentDocument !== doc || !image.isConnected || (image.getAttribute('alt') || '') !== originalAlt) {
+      addToast && addToast('The image changed while its description was open. Select it again.', 'info');
+      return;
+    }
+    resumeTrackedEditingView(true);
+    const before = doc.body?.getAttribute('data-allo-track-changes') === '1' ? _builderCaptureElementRevision(image, { attributeMode: 'all' }) : null;
+    image.setAttribute('alt', String(value).trim());
+    if (before) _builderRecordElementRevision(image, before, 'format', 'Image alternative text changed');
+    commitTrackedChangeMutation('Image alternative text updated.');
+    image.focus();
+  }, [exportPreviewRef, promptForBuilderText, resumeTrackedEditingView, commitTrackedChangeMutation, addToast]);
+  const cropSelectedImage = React.useCallback(() => {
+    const doc = exportPreviewRef.current?.contentDocument;
+    const image = selectedBuilderImageRef.current;
+    if (!image?.isConnected || image.ownerDocument !== doc) return;
+    doc.dispatchEvent(new doc.defaultView.CustomEvent('alloflow-builder-crop-image', { detail: { image } }));
+  }, [exportPreviewRef]);
 
   // A synchronous shared lock covers both the primary action and format exports.
   const beginAlternativeExport = React.useCallback((kind) => {
@@ -8270,52 +8714,7 @@ function ExportPreviewView(props) {
     ? exportConfig.vennExportMode
     : 'completed';
   const effectiveVennExportMode = exportConfig.assessmentMode === true ? 'activity' : requestedVennExportMode;
-  const textAccessExportReview = React.useMemo(() => {
-    const source = Array.isArray(history) ? history : [];
-    const toggleForType = {
-      analysis: 'includeAnalysis', simplified: 'includeSimplified', glossary: 'includeGlossary', quiz: 'includeQuiz',
-      'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
-      outline: 'includeOutline', faq: 'includeFaq', 'sentence-frames': 'includeSentenceFrames', image: 'includeImage',
-      math: 'includeMath', dbq: 'includeDbq', 'lesson-plan': 'includeLessonPlan', 'udl-advice': 'includeUdlAdvice',
-      brainstorm: 'includeBrainstorm',
-    };
-    const selected = source.filter((item) => {
-      if (!item) return false;
-      const key = toggleForType[item.type];
-      return !key || exportConfig[key] !== false;
-    });
-    const profileFor = (item) => {
-      const config = item && item.config && typeof item.config === 'object' ? item.config : {};
-      const raw = item && (item.instructionalText || config.instructionalText || item.textProfile || config.textProfile) || {};
-      const role = ['primary', 'supplemental', 'unspecified'].includes(raw.role) ? raw.role : 'unspecified';
-      const form = ['original', 'same-text-supported', 'adapted'].includes(raw.form)
-        ? raw.form : (item && item.type === 'simplified' ? 'adapted' : 'original');
-      const auth = raw.replacementAuthorization && typeof raw.replacementAuthorization === 'object'
-        ? raw.replacementAuthorization : {};
-      return { role, form, authorized: auth.authorized === true && auth.source === 'educator' };
-    };
-    const validPrimary = selected.filter((item) => {
-      const profile = profileFor(item);
-      return profile.role === 'primary' && (profile.form !== 'adapted' || profile.authorized);
-    });
-    const supplemental = selected.filter((item) => profileFor(item).role === 'supplemental');
-    const unspecifiedAdapted = selected.filter((item) => {
-      const profile = profileFor(item);
-      return profile.role === 'unspecified' && profile.form === 'adapted';
-    });
-    const unauthorizedPrimaryAdaptations = selected.filter((item) => {
-      const profile = profileFor(item);
-      return profile.role === 'primary' && profile.form === 'adapted' && !profile.authorized;
-    });
-    return {
-      primaryCount: validPrimary.length,
-      supplementalCount: supplemental.length,
-      unspecifiedAdaptedCount: unspecifiedAdapted.length,
-      unauthorizedPrimaryAdaptationCount: unauthorizedPrimaryAdaptations.length,
-      supplementalWithoutPrimary: supplemental.length > 0 && validPrimary.length === 0,
-      unspecifiedAdaptedWithoutPrimary: unspecifiedAdapted.length > 0 && validPrimary.length === 0,
-    };
-  }, [history, exportConfig]);
+  const textAccessExportReview = React.useMemo(() => _builderReadingAccessReview(history, exportConfig), [history, exportConfig]);
 
   if (!showExportPreview) return null;
 
@@ -8349,7 +8748,35 @@ function ExportPreviewView(props) {
                 </div>
               </div>
             )}
-            <div data-help-key="doc_builder_document" data-builder-focus={isFocusMode ? 'true' : 'false'} data-builder-settings-open={mobileSettingsOpen && !isFocusMode ? 'true' : 'false'} ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className={`builder-dialog relative bg-white shadow-2xl flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2 rounded-none max-w-none max-h-none h-full`} inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined} onClick={(e) => e.stopPropagation()}>
+            <input id="builder-backup-file" ref={backupFileRef} type="file" accept=".html,.htm,text/html" hidden onChange={readBuilderBackupFile} />
+            {pendingBackup && (
+              <div className="absolute inset-0 z-[250] flex items-center justify-center bg-slate-950/60 p-3" onClick={event => event.stopPropagation()}>
+                <section ref={backupDialogRef} role="dialog" aria-modal="true" aria-labelledby="builder-backup-title" aria-describedby="builder-backup-description" className="flex max-h-full w-full max-w-3xl flex-col gap-3 overflow-auto rounded-xl border border-slate-300 bg-white p-4 text-slate-800 shadow-2xl">
+                  <div className="flex items-start justify-between gap-3"><h2 id="builder-backup-title" className="text-lg font-bold">Restore an HTML backup</h2><button data-backup-cancel type="button" onClick={closeBackupImport} className="min-h-10 rounded px-3 font-semibold hover:bg-slate-100">Cancel</button></div>
+                  <p id="builder-backup-description" className="text-sm">Preview the backup before replacing this document. A restore point keeps your current work; if device storage is unavailable, it stays available until you close the builder.</p>
+                  <p className="break-all text-sm font-semibold">{pendingBackup.fileName}</p>
+                  {pendingBackup.status === 'loading' && <p role="status">Reading backup…</p>}
+                  {pendingBackup.status === 'error' && <p role="alert" className="rounded bg-red-50 p-3 text-sm text-red-800">{pendingBackup.error}</p>}
+                  {pendingBackup.status === 'ready' && <>
+                    <p className="text-sm font-semibold">{pendingBackup.title}</p>
+                    <iframe title="Backup document preview" sandbox="allow-same-origin" tabIndex={-1} onLoad={event => {
+                      event.currentTarget.contentDocument?.addEventListener('click', clickEvent => { if (clickEvent.target?.closest?.('a')) clickEvent.preventDefault(); });
+                      event.currentTarget.contentDocument?.addEventListener('keydown', keyEvent => {
+                        if (keyEvent.key === 'Escape') { keyEvent.preventDefault(); closeBackupImport(); }
+                        if (keyEvent.key === 'Tab') { keyEvent.preventDefault(); backupDialogRef.current?.querySelector('[data-backup-cancel]')?.focus(); }
+                      });
+                    }} srcDoc={pendingBackup.previewHtml} style={{ height: '40vh', minHeight: 160, flexShrink: 0 }} className="w-full rounded border border-slate-400 bg-white" />
+                    <p className="text-xs text-slate-600">Scripts and external styles are removed. Linked images are hidden in this preview and may load after restoration. Comments, citations and supported tracked changes are retained.</p>
+                    <button type="button" onClick={restoreBuilderBackup} className="min-h-11 self-end rounded bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800">Restore backup</button>
+                  </>}
+                </section>
+              </div>
+            )}
+
+            <div data-help-key="doc_builder_document" data-builder-focus={isFocusMode ? 'true' : 'false'} data-builder-settings-open={mobileSettingsOpen && !isFocusMode ? 'true' : 'false'} ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className={`builder-dialog relative bg-white shadow-2xl flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2 rounded-none max-w-none max-h-none h-full`} inert={pendingImageFile || pendingBackup ? true : undefined} aria-hidden={pendingImageFile || pendingBackup ? 'true' : undefined} onClick={(e) => {
+              e.stopPropagation();
+              if (toolSearchOpen && !e.target.closest?.('[data-builder-tool-search]') && !toolSearchButtonRef.current?.contains(e.target)) closeBuilderToolSearch(false);
+            }}>
               {editingCitationId && (
                 <form ref={citationEditorRef} id="builder-citation-editor" data-builder-citation-editor="1" tabIndex={-1} role="dialog" aria-modal="false" aria-labelledby="builder-citation-editor-title" aria-describedby="builder-citation-editor-help" onSubmit={saveCitationEdit} className="absolute right-3 top-16 z-[190] flex max-h-[calc(100%-5rem)] w-[min(32rem,calc(100%-1.5rem))] flex-col overflow-hidden rounded-xl border border-cyan-400 bg-white text-slate-800 shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700">
                   <div className="flex items-start justify-between gap-3 border-b border-cyan-200 bg-cyan-50 px-3 py-2">
@@ -9068,17 +9495,18 @@ const _downloadBRF = (brf) => {
                   </div>
                 </div>
 
-                {(textAccessExportReview.supplementalWithoutPrimary || textAccessExportReview.unspecifiedAdaptedWithoutPrimary || textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0) && (
+                {(textAccessExportReview.missingSourceCount > 0 || textAccessExportReview.supplementalWithoutPrimary || textAccessExportReview.unspecifiedAdaptedWithoutPrimary || textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0) && (
                   <div className="rounded-lg border border-amber-300 bg-amber-50 p-2" role="status" aria-live="polite">
                     <p className="text-[11px] font-bold text-amber-950">Text-access review before sharing</p>
+                    {textAccessExportReview.missingSourceCount > 0 && <p className="mt-1 text-[11px] leading-snug text-amber-900">{textAccessExportReview.missingSourceCount} adapted reading{textAccessExportReview.missingSourceCount === 1 ? "" : "s"} do not include a matching saved original. Include the matching source before sharing.</p>}
                     {textAccessExportReview.supplementalWithoutPrimary && (
-                      <p className="mt-1 text-[11px] leading-snug text-amber-900">The current student selection includes {textAccessExportReview.supplementalCount} supplemental text{textAccessExportReview.supplementalCount === 1 ? '' : 's'} but no designated primary text. Confirm that students will receive the intended primary separately, or include it in this export.</p>
+                      <p className="mt-1 text-[11px] leading-snug text-amber-900">Some supporting readings do not include their matching main lesson text. Include that reading, or review the assigned roles before sharing.</p>
                     )}
                     {textAccessExportReview.unspecifiedAdaptedWithoutPrimary && (
-                      <p className="mt-1 text-[11px] leading-snug text-amber-900">The current student selection includes {textAccessExportReview.unspecifiedAdaptedCount} adapted text{textAccessExportReview.unspecifiedAdaptedCount === 1 ? '' : 's'} whose instructional role is not set, and no designated primary text. Confirm the intended relationship before distribution.</p>
+                      <p className="mt-1 text-[11px] leading-snug text-amber-900">Some adapted readings have no assigned role or matching main lesson text in this selection. Review each reading pair before sharing.</p>
                     )}
                     {textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0 && (
-                      <p className="mt-1 text-[11px] leading-snug text-amber-900">An adapted text is marked primary without an explicit educator replacement decision. Keep it supplemental or update the designation before distribution.</p>
+                      <p className="mt-1 text-[11px] leading-snug text-amber-900">An adapted reading is marked as the main lesson text without educator confirmation. Keep it supporting or confirm that designation before sharing.</p>
                     )}
                     <p className="mt-1 text-[10px] text-amber-800">This notice is advisory and does not make an IEP or legal-compliance determination.</p>
                   </div>
@@ -9108,7 +9536,7 @@ const _downloadBRF = (brf) => {
                   <details className="rounded-lg border border-slate-300 bg-white p-2" data-builder-resource-list>
                     <summary className="cursor-pointer text-xs font-bold text-slate-700">{includedResourceCount} of {resourceItems.length} resources selected</summary>
                     <ol className="mt-2 space-y-1 text-xs text-slate-700">
-                      {resourceItems.map((item, index) => <li key={item.id + '-' + index} className="flex items-start gap-2"><span aria-label={item.included ? 'Selected' : 'Not selected'}>{item.included ? '✓' : '−'}</span><span>{item.title}<span className="block text-[10px] text-slate-500">{item.type}</span></span></li>)}
+                      {resourceItems.map((item, index) => <li key={item.id + '-' + index} className="flex items-start gap-2"><span aria-label={item.included ? 'Selected' : 'Not selected'}>{item.included ? '✓' : '−'}</span><span>{item.title}<span className="block text-[10px] text-slate-500">{item.type}{item.roleLabel ? ' · ' + item.roleLabel : ''}</span></span></li>)}
                     </ol>
                   </details>
                 </React.Fragment>)}
@@ -10111,11 +10539,23 @@ const _downloadBRF = (brf) => {
                       </details>
                     </div>
 
-                    <div className="builder-compact-format" role="group" aria-label="Quick formatting">
+                    <button ref={toolSearchButtonRef} type="button" onClick={openBuilderToolSearch} aria-keyshortcuts="Alt+Q" aria-expanded={toolSearchOpen} aria-controls="builder-tool-search-panel" className="min-h-8 rounded border border-slate-300 px-2 text-xs font-bold text-slate-700 hover:bg-indigo-50" title="Find a document tool (Alt+Q)">Find a tool</button>
+                    <div className="builder-compact-format" role="group" aria-label={hasSelectedImage ? 'Selected image tools' : tableContext.active ? 'Selected table tools' : 'Quick formatting'}>
+                      {hasSelectedImage ? <>
+                        <span className="text-xs font-semibold text-slate-600">Image</span>
+                        <button type="button" onMouseDown={event => event.preventDefault()} onClick={editSelectedImageAlt} className="min-h-8 rounded px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">Alt text</button>
+                        <button type="button" onMouseDown={event => event.preventDefault()} onClick={cropSelectedImage} aria-label="Crop selected image" className="min-h-8 rounded px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">Crop</button>
+                      </> : tableContext.active ? <>
+                        <span className="text-xs font-semibold text-slate-600">Table</span>
+                        <button type="button" onMouseDown={event => event.preventDefault()} onClick={() => editSelectedTable('add-row')} aria-label="Add table row" className="min-h-8 rounded px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">+ Row</button>
+                        <button type="button" onMouseDown={event => event.preventDefault()} onClick={() => editSelectedTable('add-column')} aria-label="Add table column" className="min-h-8 rounded px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">+ Column</button>
+                        <button type="button" onMouseDown={event => event.preventDefault()} onClick={() => revealBuilderTool({ tab: 'insert', selector: '#builder-table-context-tools button' })} aria-label="More table tools" className="min-h-8 rounded px-2 text-xs font-bold text-slate-700 hover:bg-indigo-50">More</button>
+                      </> : <>
                       <select aria-label="Paragraph style" value={formatState.namedStyle} onChange={(event) => applyBuilderStyle(event.target.value)} className="h-8 rounded border border-slate-300 bg-white px-2 text-xs text-slate-700">
                         {builderStyleGallery.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
                       </select>
                       {['bold', 'italic', 'underline'].map((command) => <button key={command} type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => runEditorCommand(command)} aria-label={command === 'bold' ? 'Bold' : command === 'italic' ? 'Italic' : 'Underline'} aria-pressed={formatState[command]} className={'w-8 h-8 rounded text-sm font-bold ' + (formatState[command] ? 'bg-indigo-700 text-white' : 'text-slate-700 hover:bg-indigo-50')}><span style={{ fontStyle: command === 'italic' ? 'italic' : undefined, textDecoration: command === 'underline' ? 'underline' : undefined }}>{command[0].toUpperCase()}</span></button>)}
+                      </>}
                     </div>
                 <div className="builder-ribbon-tabs flex flex-wrap items-center gap-1" role="tablist" aria-label="Document Builder ribbon">
                   {/* The Expert Workbench IS here and always has been — this tab
@@ -10142,7 +10582,32 @@ const _downloadBRF = (brf) => {
                   <button type="button" onClick={() => setRibbonCollapsed((value) => !value)} aria-expanded={!ribbonCollapsed} aria-controls={`builder-ribbon-panel-${activeRibbonTab}`} className="builder-ribbon-toggle ml-auto rounded px-2 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-white hover:text-indigo-700" title={ribbonCollapsed ? 'Expand the ribbon' : 'Collapse the ribbon'}>{ribbonCollapsed ? 'Expand ribbon' : 'Collapse ribbon'}</button>
                 </div>
                   </div>
-                  <div id="builder-tool-tray" className="builder-tool-tray bg-white border border-slate-300 shadow-xl" hidden={ribbonCollapsed} onKeyDownCapture={(event) => {
+                  {toolSearchOpen && (
+                  <section id="builder-tool-search-panel" data-builder-tool-search role="dialog" aria-modal="false" aria-labelledby="builder-tool-search-title" className="builder-tool-search-panel" onKeyDown={event => {
+                    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeBuilderToolSearch(); return; }
+                    const targets = _builderKeyboardTargets(event.currentTarget);
+                    if (event.key === 'Tab' && targets.length) {
+                      if (event.shiftKey && event.target === targets[0]) { event.preventDefault(); targets[targets.length - 1].focus(); }
+                      else if (!event.shiftKey && event.target === targets[targets.length - 1]) { event.preventDefault(); targets[0].focus(); }
+                    }
+                    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                      event.preventDefault();
+                      const results = Array.from(event.currentTarget.querySelectorAll('[data-builder-tool-result]'));
+                      const index = results.indexOf(event.target);
+                      const next = event.key === 'ArrowDown' ? (index + 1) % results.length : (index <= 0 ? results.length - 1 : index - 1);
+                      results[next]?.focus();
+                    }
+                  }}>
+                    <div className="flex items-center justify-between gap-3"><strong id="builder-tool-search-title" className="text-sm">Find a tool</strong><button type="button" onClick={() => closeBuilderToolSearch()} className="rounded px-2 text-xs font-bold" aria-label="Close tool search">Close</button></div>
+                    <label className="sr-only" htmlFor="builder-tool-query">Find a document tool</label>
+                    <input id="builder-tool-query" type="search" value={toolSearchQuery} onChange={event => setToolSearchQuery(event.target.value)} placeholder="Try margins, table, page numbers…" aria-describedby="builder-tool-search-help" />
+                    <p id="builder-tool-search-help" className="my-2 text-xs text-slate-600">Choose a result to open its controls. Arrow keys move through results. Unavailable tools explain what is needed.</p>
+                    <div role="status" aria-live="polite" className="sr-only">{_builderFilterTools(toolSearchItems, toolSearchQuery).length} tools shown</div>
+                    {_builderFilterTools(toolSearchItems, toolSearchQuery).map(tool => <button key={tool.id} type="button" data-builder-tool-result aria-disabled={tool.disabled || undefined} className="builder-tool-result" onClick={() => { if (!tool.disabled) revealBuilderTool(toolSearchTargetsRef.current[tool.id]?.target); }}><span className="min-w-0"><span className="block text-sm font-semibold">{tool.label}</span>{tool.disabled && <span className="block text-xs text-slate-600">{tool.reason}</span>}</span><span className="text-xs text-slate-500">{tool.section}</span></button>)}
+                    {!_builderFilterTools(toolSearchItems, toolSearchQuery).length && <p className="p-2 text-sm">No matching tools. Try a shorter term, such as picture, margins or backup.</p>}
+                  </section>
+                )}
+                <div id="builder-tool-tray" className="builder-tool-tray bg-white border border-slate-300 shadow-xl" hidden={ribbonCollapsed || toolSearchOpen} onKeyDownCapture={(event) => {
                     if (event.key !== 'Escape' || event.defaultPrevented || event.target.closest('details[open]')) return;
                     event.preventDefault(); event.stopPropagation(); setRibbonCollapsed(true);
                     window.setTimeout(() => document.getElementById('builder-ribbon-tab-' + activeRibbonTab)?.focus(), 0);
@@ -10151,7 +10616,7 @@ const _downloadBRF = (brf) => {
                       <span className="text-xs font-bold text-slate-700">{activeRibbonTab === 'expert' ? 'Expert Workbench' : activeRibbonTab === 'home' ? 'Formatting' : activeRibbonTab.charAt(0).toUpperCase() + activeRibbonTab.slice(1)}</span>
                       <button type="button" onClick={() => { setRibbonCollapsed(true); document.getElementById('builder-ribbon-tab-' + activeRibbonTab)?.focus(); }} className="min-h-8 rounded px-2 text-xs font-bold text-slate-600 hover:bg-white" aria-label="Close ribbon tools">Close</button>
                     </div>
-                {!ribbonCollapsed && activeRibbonTab === 'review' && (
+                {(toolSearchOpen || (!ribbonCollapsed && activeRibbonTab === 'review')) && (
                   <div id="builder-ribbon-panel-review" role="tabpanel" aria-labelledby="builder-ribbon-tab-review" className="shrink-0">
                     <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-3 py-2">                    <button onClick={toggleA11yInspect}
                       aria-pressed={a11yInspectMode}
@@ -10244,8 +10709,9 @@ const _downloadBRF = (brf) => {
                   <div className="border-t border-slate-200 bg-slate-50 p-2">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-[10px] text-slate-500">Recent restore points stay on this device.</span>
-                      <button type="button" onClick={saveVersionSnapshot} className="rounded bg-indigo-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-indigo-800">Save snapshot</button>
+                      <div className="flex flex-wrap gap-2"><button type="button" data-builder-open-backup onClick={chooseBuilderBackup} className="min-h-9 rounded border border-indigo-500 bg-white px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">Open HTML backup</button><button type="button" onClick={downloadBuilderBackup} className="min-h-9 rounded border border-slate-400 bg-white px-2 text-xs font-semibold text-slate-700">Download HTML backup</button><button type="button" onClick={saveVersionSnapshot} className="rounded bg-indigo-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-indigo-800">Save snapshot</button></div>
                     </div>
+                    {backupRollback && <div className="my-2 rounded border border-amber-400 bg-amber-50 p-2 text-xs text-amber-950"><p>{backupRollback.saved ? 'Your previous document was saved as a restore point.' : 'Your previous document is kept for this session only. Download it before closing the builder.'}</p><div className="mt-1 flex flex-wrap gap-2"><button type="button" onClick={undoBuilderBackupRestore} className="min-h-9 rounded border border-amber-700 px-2 font-bold">Undo backup restore</button><button type="button" onClick={downloadPreviousBuilderDocument} className="min-h-9 rounded border border-amber-700 px-2 font-bold">Download previous document</button></div></div>}
                     <div className="mt-2 max-h-36 space-y-1 overflow-y-auto">
                       {versionHistory.length ? versionHistory.map((snapshot) => (
                         <div key={snapshot.id} className="flex items-center gap-2 rounded border border-slate-200 bg-white px-2 py-1">
@@ -10310,7 +10776,7 @@ const _downloadBRF = (brf) => {
                 </details>
                   </div>
                 )}
-                {!ribbonCollapsed && activeRibbonTab === 'home' && (
+                {(toolSearchOpen || (!ribbonCollapsed && activeRibbonTab === 'home')) && (
                   <div id="builder-ribbon-panel-home" role="tabpanel" aria-labelledby="builder-ribbon-tab-home" className="shrink-0">
                 <div className="flex flex-wrap items-center gap-1 border-b border-slate-200 bg-slate-50 px-2 py-1" aria-label="Styles and Format Painter">
                   <span className="mr-1 text-[10px] font-black uppercase tracking-wider text-slate-500">Styles</span>
@@ -10494,7 +10960,7 @@ const _downloadBRF = (brf) => {
                 </div>
                   </div>
                 )}
-                {!ribbonCollapsed && activeRibbonTab === 'insert' && (
+                {(toolSearchOpen || (!ribbonCollapsed && activeRibbonTab === 'insert')) && (
                   <div id="builder-ribbon-panel-insert" role="tabpanel" aria-labelledby="builder-ribbon-tab-insert" className="shrink-0 border-b border-slate-200 bg-white">
                                         <button ref={imageAddButtonRef} type="button" onClick={openImagePicker} className="min-h-8 text-xs font-bold text-slate-700 hover:text-indigo-700 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100" aria-label="Add an image and provide alternative text" title="Insert image into document">
                       <ImageIcon size={12} aria-hidden="true" /> Add Image
@@ -10596,8 +11062,8 @@ const _downloadBRF = (brf) => {
                         </label>
                       </div>
                       {tableContext.active ? (
-                        <div className="flex flex-wrap items-center gap-1 rounded border border-emerald-300 bg-emerald-50 px-2 py-1" role="toolbar" aria-label="Selected table tools">
-                          <span className="mr-1 text-[10px] font-black uppercase tracking-wide text-emerald-800">Selected table · {tableContext.rows} rows × {tableContext.columns} columns</span>
+                        <div id="builder-table-context-tools" className="flex flex-wrap items-center gap-1 rounded border border-emerald-300 bg-emerald-50 px-2 py-1" role="toolbar" aria-label="Selected table tools">
+                          <span id="builder-table-context-heading" className="mr-1 text-[10px] font-black uppercase tracking-wide text-emerald-800">Selected table · {tableContext.rows} rows × {tableContext.columns} columns</span>
                           <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editSelectedTable('add-row')} className="h-7 rounded border border-emerald-500 bg-white px-2 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100">Add row</button>
                           <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editSelectedTable('add-column')} className="h-7 rounded border border-emerald-500 bg-white px-2 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100">Add column</button>
                           <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => editSelectedTable('remove-row')} disabled={tableContext.headerCell || tableContext.rows <= (tableContext.hasHeader ? 2 : 1)} className="h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40">Remove row</button>
@@ -10609,7 +11075,7 @@ const _downloadBRF = (brf) => {
                     </div>
                   </div>
                 )}
-                {!ribbonCollapsed && activeRibbonTab === 'layout' && (
+                {(toolSearchOpen || (!ribbonCollapsed && activeRibbonTab === 'layout')) && (
                   <div id="builder-ribbon-panel-layout" role="tabpanel" aria-labelledby="builder-ribbon-tab-layout" className="shrink-0 border-b border-slate-200 bg-white">
                     <div className="flex flex-wrap items-stretch gap-2 px-2 py-1.5" role="group" aria-label="Document layout tools">
                       <fieldset className="flex min-w-72 flex-1 flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1">
@@ -10685,7 +11151,7 @@ const _downloadBRF = (brf) => {
                     </div>
                   </div>
                 )}
-                {!ribbonCollapsed && activeRibbonTab === 'view' && (
+                {(toolSearchOpen || (!ribbonCollapsed && activeRibbonTab === 'view')) && (
                   <div id="builder-ribbon-panel-view" role="tabpanel" aria-labelledby="builder-ribbon-tab-view" className="shrink-0 border-b border-slate-200 bg-white">                    <button type="button" onClick={() => {
                       const active = showNavigationPane && navigationPaneTab === 'headings';
                       if (active) setShowNavigationPane(false);
@@ -10763,7 +11229,7 @@ const _downloadBRF = (brf) => {
                     </div>
                   </div>
                 )}
-                {!ribbonCollapsed && activeRibbonTab === 'expert' && (
+                {(toolSearchOpen || (!ribbonCollapsed && activeRibbonTab === 'expert')) && (
                   <div id="builder-ribbon-panel-expert" role="tabpanel" aria-labelledby="builder-ribbon-tab-expert" className="shrink-0">
                 {/* Same Expert Workbench the remediation panel offers, driven by the
                     same processExpertCommand. A one-line description because the
@@ -11414,7 +11880,12 @@ const _downloadBRF = (brf) => {
                           setDraftCaptureState('ready');
                           setDraftCaptureAt(null);
                         }
+                        backupReadRunRef.current += 1;
+                        setPendingBackup(null);
                         editorSelectionRangeRef.current = null;
+                        selectedBuilderImageRef.current = null;
+                        setHasSelectedImage(false);
+                        setToolSearchOpen(false);
                         formatPainterRef.current = null;
                         setFormatPainterActive(false);
                         const _rememberSelection = () => {
@@ -11433,6 +11904,10 @@ const _downloadBRF = (brf) => {
                         const _syncActiveHeading = () => refreshActiveHeading();
                         const _syncPageMetrics = () => { refreshActiveHeading(); refreshPageMetrics(); };
                         const _activateReviewMarker = (event) => {
+                          if (!event.target?.closest?.('[data-allo-crop-ui]')) {
+                            setToolSearchOpen(false);
+                            refreshTableContext(event.target);
+                          }
                           try {
                             const hostDoc = window.parent && window.parent.document;
                             const commentMarker = event.target?.closest?.(_BUILDER_COMMENT_SELECTOR);
@@ -11456,6 +11931,7 @@ const _downloadBRF = (brf) => {
                           } catch (_) {}
                         };
                         doc.addEventListener('selectionchange', _rememberSelection);
+                        doc.addEventListener('focusin', (event) => refreshTableContext(event.target));
                         doc.addEventListener('click', _activateReviewMarker);
                         doc.addEventListener('keyup', _syncFormatting);
                         doc.addEventListener('mouseup', _syncFormatting);
@@ -11687,10 +12163,11 @@ const _downloadBRF = (brf) => {
                 <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] text-slate-600 shrink-0" aria-label="Document status bar">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="font-semibold text-slate-700">{isFocusMode ? 'Focus mode' : 'Editing enabled'}</span>
-                    <span data-builder-save-status role="status" aria-live="polite" className={`inline-flex items-center gap-1 font-medium ${draftCaptureState === 'capturing' ? 'text-amber-700' : ['saved', 'restored', 'captured'].includes(draftCaptureState) ? 'text-emerald-700' : 'text-slate-500'}`}>
-                      <span className={`h-1.5 w-1.5 rounded-full ${draftCaptureState === 'capturing' ? 'bg-amber-500 animate-pulse motion-reduce:animate-none' : ['saved', 'restored', 'captured'].includes(draftCaptureState) ? 'bg-emerald-600' : 'bg-slate-400'}`} aria-hidden="true"></span>
+                    <span data-builder-save-status role="status" aria-live="polite" className={`inline-flex items-center gap-1 font-medium ${['capturing', 'captured'].includes(draftCaptureState) ? 'text-amber-800' : draftCaptureState === 'error' ? 'text-red-700' : ['saved', 'restored'].includes(draftCaptureState) ? 'text-emerald-700' : 'text-slate-500'}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${draftCaptureState === 'capturing' ? 'bg-amber-500 animate-pulse motion-reduce:animate-none' : draftCaptureState === 'captured' ? 'bg-amber-600' : draftCaptureState === 'error' ? 'bg-red-600' : ['saved', 'restored'].includes(draftCaptureState) ? 'bg-emerald-600' : 'bg-slate-400'}`} aria-hidden="true"></span>
                       {_builderSaveStatusLabel(draftCaptureState, draftCaptureAt)}
                     </span>
+                    {['captured', 'error'].includes(draftCaptureState) && <button type="button" onClick={downloadBuilderBackup} className="rounded border border-amber-700 bg-amber-50 px-2 py-1 font-bold text-amber-900 hover:bg-amber-100" title="Download the current document as HTML before closing. Saving on this device is unavailable.">Download backup</button>}
                     <button type="button" onClick={() => openTrackedChanges(activeTrackedChangeId)} aria-controls="document-builder-navigation" className={`rounded px-1.5 py-1 font-semibold ${trackChangesEnabled ? 'bg-violet-100 text-violet-800 hover:bg-violet-200' : pendingTrackedChangeCount ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'text-slate-500 hover:bg-slate-200'}`} title="Open tracked changes review">Track: {trackChangesEnabled ? 'On' : 'Off'} &middot; {pendingTrackedChangeCount} change{pendingTrackedChangeCount === 1 ? '' : 's'}</button>
                     <div className="relative">
                       <button ref={wordCountButtonRef} type="button" onClick={(event) => showWordCountDetails ? closeWordCountDetails(true) : openWordCountDetails(event)} aria-expanded={showWordCountDetails} aria-controls="builder-word-count-panel" aria-keyshortcuts="Control+Shift+G" className="rounded px-1.5 py-1 font-semibold text-slate-700 hover:bg-indigo-100 hover:text-indigo-800" title="Open detailed Word Count (Ctrl+Shift+G)">{selectionStatistics.active ? `Words: ${selectionStatistics.words.toLocaleString()} of ${wordCount.toLocaleString()}` : `Words: ${wordCount.toLocaleString()}`}</button>
@@ -11855,6 +12332,8 @@ async function updateExportPreview(deps) {
     doc.write(html);
     doc.close();
 
+    // Restoring a backup/version needs the same editor behavior as the first render.
+    iframe.__alloInitializeBuilderDocument = (doc) => {
     // Initialize edit mode in the iframe doc directly here
     try {
       doc.designMode = 'on';
@@ -11947,6 +12426,12 @@ async function updateExportPreview(deps) {
       editStyle.textContent = `${_baseEditCss}\n${_pageCss}\n        body { zoom: ${_editorZoom}%; }`;
       doc.head.appendChild(editStyle);
       doc.addEventListener('keydown', function(e) {
+        if (e.altKey && !e.ctrlKey && !e.metaKey && (e.code === 'KeyQ' || e.key.toLowerCase() === 'q')) {
+          e.preventDefault(); e.stopPropagation();
+          const hostDoc = window.parent?.document;
+          hostDoc?.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-find-tool'));
+          return;
+        }
         const _citationField = e.target?.closest?.(_BUILDER_CITATION_SELECTOR);
         if (_citationField && (e.key === 'Enter' || e.key === ' ') && !e.altKey && !e.ctrlKey && !e.metaKey) {
           try {
@@ -11972,7 +12457,7 @@ async function updateExportPreview(deps) {
             e.preventDefault();
             const _parentDoc = window.parent && window.parent.document;
             const _toolTray = _parentDoc?.getElementById('builder-tool-tray');
-            if (_parentDoc?.querySelector('#builder-export-menu[open]') || (_toolTray && !_toolTray.hidden && _toolTray.getClientRects().length)) {
+            if (_parentDoc?.querySelector('#builder-tool-search-panel,#builder-export-menu[open]') || (_toolTray && !_toolTray.hidden && _toolTray.getClientRects().length)) {
               _parentDoc.dispatchEvent(new window.parent.CustomEvent('alloflow-builder-dismiss-tools'));
               return;
             }
@@ -12375,6 +12860,10 @@ async function updateExportPreview(deps) {
         doc.body.appendChild(overlay);
         try { applyBtn.focus(); } catch (_) {}
       };
+      doc.addEventListener('alloflow-builder-crop-image', event => {
+        const image = event.detail?.image;
+        if (image?.tagName === 'IMG' && image.ownerDocument === doc && doc.body?.contains(image)) _openBuilderCropModal(image);
+      });
       const _dismissCropBtn = () => { try { const b = doc.getElementById('allo-crop-btn'); if (b) b.remove(); } catch (_) {} };
       doc.addEventListener('scroll', _dismissCropBtn, true); // scrolled = the absolute-positioned button no longer hugs its image
       doc.addEventListener('click', (ev) => {
@@ -12423,4 +12912,6 @@ async function updateExportPreview(deps) {
         warnLog('[Export preview] applyA11yInspector failed:', _inspErr);
       }
     }
+    };
+    iframe.__alloInitializeBuilderDocument(doc);
 }

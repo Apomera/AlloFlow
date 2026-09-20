@@ -46,11 +46,11 @@ describe('acl-1: the watchdog can actually stop the auto-continue loop', () => {
 
 describe('CB-1: the Gemini breaker is reset at the start of each run', () => {
   it('defines _resetGeminiBreaker clearing cap/streaks/cooldown/announced', () => {
-    const s = pipe.indexOf('var _resetGeminiBreaker = function() {');
+    const s = pipe.indexOf('var _resetGeminiBreaker = function(');
     expect(s).toBeGreaterThan(0);
-    // Widened: the per-run telemetry-epoch reset (2026-08-16) now precedes the
-    // breaker fields inside the same function.
-    const body = pipe.slice(s, s + 1400);
+    const end = pipe.indexOf(String.fromCharCode(10) + '  };', s);
+    expect(end).toBeGreaterThan(s);
+    const body = pipe.slice(s, end);
     expect(body).toMatch(/_geminiCap = _GEMINI_MAX_CONCURRENT;/);
     expect(body).toMatch(/_geminiAuthStreak = 0;/);
     expect(body).toMatch(/_geminiTransientStreak = 0;/);
@@ -64,7 +64,7 @@ describe('CB-1: the Gemini breaker is reset at the start of each run', () => {
     const pacing = pipe.indexOf('// Heavy-doc PROACTIVE pacing', telemetry);
     expect(telemetry).toBeGreaterThan(0);
     expect(pacing).toBeGreaterThan(telemetry);
-    expect(pipe.slice(telemetry, pacing)).toContain('_resetGeminiBreaker();');
+    expect(pipe.slice(telemetry, pacing)).toMatch(/_resetGeminiBreaker\([^;]+\);/);
     expect(pipe).toContain('if (_geminiInFlight > 0 || _geminiWaiters.length > 0) {');
   });
   it('the OPENING-AUDIT reset honors the same busy-gate skip (M3 parity, 2026-07-16)', () => {
@@ -78,20 +78,21 @@ describe('CB-1: the Gemini breaker is reset at the start of each run', () => {
     expect(auditIdx).toBeGreaterThan(0);
     const before = pipe.slice(Math.max(0, auditIdx - 900), auditIdx);
     expect(before).toContain('if (_geminiInFlight > 0 || _geminiWaiters.length > 0) {');
-    expect(before).toContain('_resetGeminiBreaker();');
+    expect(before).toContain('_resetGeminiBreaker(_extraRequestPacing);');
     expect(before).toContain('Opening-audit breaker reset SKIPPED');
   });
 });
 
 describe('CB-2: recovery clears the stale cooldown', () => {
-  it('_geminiNoteSuccess sets _geminiCooldownUntil = 0 before pumping on recovery', () => {
+  it('_geminiNoteSuccess clears adaptive cooldown while retaining the provider deadline before pumping', () => {
     const s = pipe.indexOf('var _geminiNoteSuccess = function(');
     expect(s).toBeGreaterThan(0);
     const end = pipe.indexOf(String.fromCharCode(10) + '  };', s);
     expect(end).toBeGreaterThan(s);
     const body = pipe.slice(s, end);
-    expect(body).toMatch(/_geminiCooldownUntil = 0;/);
-    expect(body.indexOf('_geminiCooldownUntil = 0')).toBeLessThan(body.indexOf('_geminiPump()'));
+    const recovery = '_geminiCooldownUntil = _geminiRetryAfterUntil > Date.now() ? _geminiRetryAfterUntil : 0;';
+    expect(body).toContain(recovery);
+    expect(body.indexOf(recovery)).toBeLessThan(body.indexOf('_geminiPump()'));
   });
 });
 

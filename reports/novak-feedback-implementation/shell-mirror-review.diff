@@ -1,0 +1,27 @@
+Index: normalized-shell
+===================================================================
+--- normalized-shell
++++ normalized-shell
+@@ -38590,8 +38590,11 @@
+   const handleReadOriginal = (selected = null) => {
+     const api = window.AlloModules?.InstructionalContext;
+     if (!api?.createSourceSnapshot || !api?.createSupportedReading) { addToast('Reading tools are still loading. Try again in a moment.', 'info'); return; }
+     let snapshot = selected ? api.getSourceSnapshot(selected) : null;
++    // A selected analysis opens its current saved prose. Existing adaptations
++    // still own their earlier snapshot, even after this analysis is revised.
++    if (selected?.type === 'analysis' && snapshot?.text !== selected.data?.originalText) snapshot = null;
+     let sourceItem = selected;
+     if (!snapshot) {
+       if (selected?.type === 'simplified') { addToast('Original not captured. Open the matching source to read it with supports.', 'info'); return; }
+       if (!sourceItem && !String(inputText || '').trim()) sourceItem = [...history].reverse().find(item => item?.type === 'analysis');
+@@ -38614,9 +38617,9 @@
+     const snapshot = contract?.getSourceSnapshot?.(item);
+     const generate = window.AlloModules?.GenDispatcher?.generateReadingSupports;
+     if (!snapshot || !contract.isSupportedOriginal(item)) throw new Error('Open a preserved original before adding word supports.');
+     if (typeof generate !== 'function') throw new Error('Word-support tools are still loading. Try again in a moment.');
+-    const result = await generate(snapshot, { callGemini, cleanJson, gradeLevel, language: snapshot.language || leveledTextLanguage });
++    const result = await generate(snapshot, { callGemini, cleanJson, gradeLevel: item.config?.grade || gradeLevel, language: snapshot.language || leveledTextLanguage });
+     const applied = onUpdateResource(item.id, current => {
+       const liveSnapshot = contract.getSourceSnapshot(current);
+       if (!contract.isSupportedOriginal(current) || liveSnapshot?.fingerprint !== snapshot.fingerprint || liveSnapshot.text !== snapshot.text) return current;
+       return { ...current, readingSupports: result };

@@ -2655,6 +2655,16 @@ const handleRecognizeStudents = async (uids, scopeLabel = 'students', overrides 
       return delivered;
   };
 const handleSubmitLiveAnswer = async (payload) => {
+      if (payload && payload.requireConfirmation === true) {
+          const activityId = String(__d.sessionData?.quizState?.activityId || '');
+          const guest = __d.quizGuestRef.current;
+          if (!__d.activeSessionCode || !__d.user?.uid || !activityId || payload.activityId !== activityId || !__d.sessionData?.quizState?.isActive || !guest || typeof guest.sendConfirmedResponse !== 'function') return { status: 'unavailable' };
+          if (!Number.isInteger(payload.questionIdx) || payload.questionIdx < 0 || payload.questionIdx > 9999) return { status: 'invalid' };
+          return guest.sendConfirmedResponse(payload.questionIdx, {
+              itemType: payload.itemType, answer: payload.answer, conceptLabel: String(payload.conceptLabel || '').slice(0, 240),
+              timestamp: payload.timestamp || Date.now(), submitted: payload.answered !== false, assessmentActivityId: activityId,
+          }, String(payload.requestId || ''));
+      }
       if (!__d.activeSessionCode || !__d.user || !__d.user.uid) return;
       if (!payload || !Number.isInteger(payload.questionIdx) || payload.questionIdx < 0 || payload.questionIdx > 9999) return;
       const sessionRef = __d.doc(__d.db, 'artifacts', __d.appId, 'public', 'data', 'sessions', __d.activeSessionCode);
@@ -5053,8 +5063,21 @@ const handleQuizChange = (qIndex, field, value, optIndex = null, isEn = false) =
     __d.setGeneratedContent(updatedContent);
     __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? { ...item, data: newData } : item));
   };
-const handleQuizQuestionAction = (qIndex, action, payload = null) => {
+const handleQuizQuestionAction = async (qIndex, action, payload = null) => {
     if (!__d.generatedContent || __d.generatedContent.type !== 'quiz' || !__d.generatedContent.data) return;
+    if (action === 'release-feedback') {
+        if (!__d.isTeacherMode || !payload || typeof payload.signature !== 'string' || !payload.signature) return false;
+        const targetId = __d.generatedContent.id;
+        const release = { resourceId: String(targetId || ''), signature: payload.signature, releasedAt: Date.now() };
+        if (__d.activeSessionCode) {
+            const ref = __d.doc(__d.db, 'artifacts', __d.appId, 'public', 'data', 'sessions', __d.activeSessionCode);
+            await __d.updateDoc(ref, { 'quizState.assessmentFeedbackRelease': release });
+        }
+        const applyRelease = item => item && item.id === targetId ? { ...item, data: { ...item.data, deliverySettings: { ...item.data.deliverySettings, feedbackReleasedFor: payload.signature } } } : item;
+        __d.setGeneratedContent(applyRelease);
+        __d.setHistory(prev => prev.map(applyRelease));
+        return true;
+    }
     const newData = { ...__d.generatedContent.data };
     const newQuestions = Array.isArray(newData.questions) ? [...newData.questions] : [];
     const index = Math.max(0, Math.min(newQuestions.length - 1, Number(qIndex) || 0));
@@ -5420,49 +5443,35 @@ const processPersonaTtsQueue = async () => {
           }
       }
   };
-const saveUDLAdvice = async (text, contextQuery) => {
+const saveUDLAdvice = async (text, contextQuery = '', evidence = null) => {
      __d.setIsSavingAdvice(true);
      try {
-         const prompt = `
-            Summarize the following pedagogical advice into a clear, concise list of actionable steps for a teacher to implement in the classroom.
-            Remove any conversational fluff. Keep it strictly to the strategy and the 'how-to'.
-            Context/Question: "${contextQuery}"
-            Advice to Summarize:
-            "${text}"
-         `;
-         const summary = await __d.callGemini(prompt);
-         const finalData = `**Context:** ${contextQuery}\n\n${summary}`;
+         if (typeof text !== 'string' || !text.trim()) throw new Error('No advice to save.');
+         // Preserve the reviewed reply and citations without another AI request.
+         const privacy = window.AlloFlowChatPrivacy;
+         const saved = privacy?.savedAdvice
+             ? privacy.savedAdvice(text, contextQuery, evidence)
+             : { data: (contextQuery ? '**Context:** ' + contextQuery + '\n\n' : '') + String(text || '') };
+         if (!saved.data.trim()) throw new Error('No advice to save.');
          const newItem = {
              id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
              type: 'udl-advice',
-             data: finalData,
-             meta: __d.t('output.meta_actionable_steps') || "Actionable Steps (AI Summary)",
-             title: __d.t('output.title_differentiation_strategy') || "Differentiation Strategy",
+             ...saved,
+             meta: 'Saved Allobot advice (as shown)',
+             title: __d.t('output.title_differentiation_strategy') || 'Differentiation Strategy',
              timestamp: new Date(),
              config: {}
          };
          __d.setHistory(prev => [...prev, newItem]);
-         __d.setGeneratedContent({ type: 'udl-advice', data: finalData, id: newItem.id });
+         __d.setGeneratedContent({ ...newItem });
          __d.setActiveView('udl-advice');
          __d.setShowUDLGuide(false);
-         __d.addToast(__d.t('chat_guide.advice_saved'), "success");
-     } catch (e) {
-         __d.warnLog("Unhandled error:", e);
-         const finalData = `**Context:** ${contextQuery}\n\n${text}`;
-         const newItem = {
-             id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-             type: 'udl-advice',
-             data: finalData,
-             meta: __d.t('output.meta_udl_guide_advice') || "UDL Guide Advice",
-             title: __d.t('output.title_differentiation_strategy') || "Differentiation Strategy",
-             timestamp: new Date(),
-             config: {}
-         };
-         __d.setHistory(prev => [...prev, newItem]);
-         __d.setGeneratedContent({ type: 'udl-advice', data: finalData, id: newItem.id });
-         __d.setActiveView('udl-advice');
-         __d.setShowUDLGuide(false);
-         __d.addToast(__d.t('chat_guide.advice_saved_raw'), "success");
+         __d.addToast('Advice copied to History without another AI request.', 'success');
+         return { ok: true };
+     } catch (_) {
+         __d.warnLog('Allobot advice save failed', { code: 'save-failed' });
+         __d.addToast('Advice could not be saved. The conversation is still available; try again.', 'error');
+         return { ok: false };
      } finally {
          __d.setIsSavingAdvice(false);
      }
@@ -5610,8 +5619,9 @@ const handleGenerateTermImage = async (index, term) => {
              }
         }
         if (!imageUrl) throw new Error('No image returned');
-        if (!task.commit(() => ({ image: imageUrl })) || !task.visible()) return;
+        if (!task.commit(() => ({ image: imageUrl, imageAlt: '', imageAltHash: '', imageAltSource: '', imageDecorative: false, imageSource: 'ai-generated', imageAttribution: null })) || !task.visible()) return;
         __d.addToast(__d.t('glossary.actions.icon_generated', { term: term }), "success");
+        return imageUrl;
     } catch (e) {
         if (!task.isCurrent() || !task.visible()) return;
         __d.warnLog("Unhandled error:", e);
@@ -6303,15 +6313,15 @@ const handleGameCompletion = (gameType, data) => {
       if (receipt) {
         const receiptSig = `${receipt.activityId}|${receipt.status}|${receipt.gameType}|${receipt.score}|${receipt.correct}|${receipt.total}|${receipt.attempts}`;
         if (__d.lastOrganizerProgressWriteRef.current !== receiptSig) {
-          __d.lastOrganizerProgressWriteRef.current = receiptSig;
+          const receiptScope = __d.lastOrganizerProgressWriteRef.scope;
           try {
             const progressRef = __d.doc(__d.db, 'artifacts', __d.activeSessionAppId || __d.appId, 'public', 'data', 'sessions', __d.activeSessionCode);
             const progressUpdates = { [`roster.${__d.user.uid}.organizerProgress`]: receipt };
             if (__d.canWriteLiveActivityProgress()) {
               progressUpdates[`roster.${__d.user.uid}.activityProgress`] = __d.normalizeLiveActivityProgress({ version: 1, activityId: receipt.activityId, kind: 'visual_organizer', status: receipt.status, completed: receipt.correct, total: receipt.total, at: receipt.at });
             }
-            __d.writeToSession(progressRef, progressUpdates)
-              .catch(error => __d.warnLog('Organizer completion receipt skipped:', error));
+            __d.persistOrganizerProgress(__d.lastOrganizerProgressWriteRef, receiptSig, () => __d.writeToSession(progressRef, progressUpdates), () => __d.lastOrganizerProgressWriteRef.scope === receiptScope)
+              .then(saved => { if (!saved) __d.warnLog('Organizer completion receipt could not sync; it may be retried.'); });
           } catch (error) { __d.warnLog('Organizer completion receipt unavailable:', error); }
         }
       }
@@ -6929,6 +6939,12 @@ const broadcastInteractiveOrganizer = async (type, activityConfig = null) => {
       __d.addToast('Start a live session before sending this activity to students.', 'info');
       return { ok: false, reason: 'no-session' };
     }
+    // Capture the clicked diagram and session before entering the write queue.
+    const launchSessionCode = __d.activeSessionCode;
+    const launchAppId = __d.activeSessionAppId || __d.appId;
+    const launchResource = __d.generatedContent;
+    const launchData = window.AlloModules?.ViewRenderers?.normalizeVisualOrganizerData?.(launchResource?.data) || launchResource?.data;
+    const launchRevision = type ? __d.getLiveOrganizerResourceRevision(launchResource) : '';
     const previousType = __d.activeInteractiveOrganizerTypeRef.current || __d.sessionData?.interactiveOrganizer?.type || null;
     __d.setInteractiveOrganizerSync({ status: type ? 'starting' : 'stopping', type: type || previousType, activityId: null, error: null });
     __d.addToast(type ? 'Starting the student activityâ€¦' : 'Stopping the student activityâ€¦', 'info');
@@ -6937,11 +6953,18 @@ const broadcastInteractiveOrganizer = async (type, activityConfig = null) => {
     __d.interactiveOrganizerWriteQueueRef.current = new Promise(resolve => { releaseWrite = resolve; });
     await previousWrite.catch(() => {});
     try {
-      const targetAppId = __d.activeSessionAppId || __d.appId;
-      const sessionRef = __d.doc(__d.db, 'artifacts', targetAppId, 'public', 'data', 'sessions', __d.activeSessionCode);
-      const armedAt = Date.now();
+      if (__d.activeSessionCode !== launchSessionCode || (__d.activeSessionAppId || __d.appId) !== launchAppId) {
+        return { ok: false, reason: 'session-changed' };
+      }
+      if (type && (String(__d.generatedContent?.id || '') !== String(launchResource?.id || '')
+          || __d.getLiveOrganizerResourceRevision(__d.generatedContent) !== launchRevision)) {
+        throw new Error('The open organizer changed while the activity was queued. Start it again from the current diagram.');
+      }
+      const targetAppId = launchAppId;
+      const sessionRef = __d.doc(__d.db, 'artifacts', targetAppId, 'public', 'data', 'sessions', launchSessionCode);
+      const armedAt = Math.max(Date.now(), Number(__d.activeInteractiveOrganizerTypeRef.armedAt || 0) + 1);
       const resourceId = String(__d.generatedContent?.id || '').trim().slice(0, 160);
-      const structureType = String(__d.generatedContent?.data?.structureType || '').trim().slice(0, 80);
+      const structureType = String(launchData?.structureType || '').trim().slice(0, 80);
       const readiness = type ? __d.getLiveOrganizerReadiness(type, __d.generatedContent) : { ok: true };
       if (type && (!resourceId || !structureType || !readiness.ok)) {
         throw new Error(readiness.message || 'Open and save the visual organizer before starting its student activity.');
@@ -6965,6 +6988,10 @@ const broadcastInteractiveOrganizer = async (type, activityConfig = null) => {
         interactiveOrganizer = { ...interactiveOrganizer, gameData };
       }
       await window.__alloWriteToSession(sessionRef, { interactiveOrganizer });
+      // Keep the acknowledged identity synchronously: React state and provider snapshots can lag the queue.
+      __d.activeInteractiveOrganizerTypeRef.activityId = activityId;
+      __d.activeInteractiveOrganizerTypeRef.armedAt = armedAt;
+      __d.activeInteractiveOrganizerTypeRef.sessionKey = targetAppId + '/' + launchSessionCode;
       if (type) {
         __d.activeInteractiveOrganizerTypeRef.current = type;
         __d._setOnlyInteractiveOrganizer(type);
@@ -7006,12 +7033,21 @@ const retryInteractiveOrganizerStudents = async (uids) => {
     const remote = __d.sessionData?.interactiveOrganizer;
     const retryUids = Array.from(new Set((Array.isArray(uids) ? uids : []).map(uid => String(uid || '').trim().slice(0, 128)).filter(Boolean))).slice(0, 250);
     if (!__d.isTeacherMode || !__d.activeSessionCode || !remote?.activityId || !retryUids.length) return { ok: false, reason: 'no-targets' };
+    const retrySessionCode = __d.activeSessionCode;
+    const retryAppId = __d.activeSessionAppId || __d.appId;
     __d.setInteractiveOrganizerRetrying(true);
     const previousWrite = __d.interactiveOrganizerWriteQueueRef.current;
     let releaseWrite;
     __d.interactiveOrganizerWriteQueueRef.current = new Promise(resolve => { releaseWrite = resolve; });
     await previousWrite.catch(() => {});
     try {
+      // A queued stop or replacement wins over a stale retry request.
+      if (__d.activeSessionCode !== retrySessionCode || (__d.activeSessionAppId || __d.appId) !== retryAppId
+          || __d.sessionData?.interactiveOrganizer?.activityId !== remote.activityId
+          || (__d.activeInteractiveOrganizerTypeRef.sessionKey === retryAppId + '/' + retrySessionCode
+              && __d.activeInteractiveOrganizerTypeRef.activityId !== remote.activityId)) {
+        return { ok: false, reason: 'activity-changed' };
+      }
       const sessionRef = __d.doc(__d.db, 'artifacts', __d.activeSessionAppId || __d.appId, 'public', 'data', 'sessions', __d.activeSessionCode);
       const retryAt = Date.now();
       await window.__alloWriteToSession(sessionRef, {
@@ -7251,6 +7287,21 @@ const suggestPollTimes = async () => {
     } catch (error) { __d.addToast('Could not suggest options: ' + ((error && error.message) || 'unknown'), 'error'); }
     finally { __d.setPollAiBusy(false); }
   };
+const _savedShareMailboxConnection = (share) => {
+      const target = __d._alloResolveHostedShareMailbox(share);
+      const configured = __d.mbConfig;
+      if (!target || !configured?.admin || __d._alloCleanMailboxUrl(configured.url) !== target.url) {
+          __d.addToast(target
+              ? 'Reconnect the Class Mailbox that created this homework link, then try again.'
+              : 'This saved homework link has incomplete or inconsistent Class Mailbox details. Create a fresh homework link from History.', 'info');
+          if (target) __d.setMbUrlInput(target.url);
+          __d.setMbPanelOpen(true);
+          return null;
+      }
+      // Capture primitives before any confirmation or network await. A later
+      // mailbox switch must not redirect an action for this saved assignment.
+      return { target, connection: { url: target.url, admin: configured.admin, v: configured.v } };
+  };
 const extendAssignmentCenterShare = async (share) => {
       if (!share?.url || share.type !== 'assignment-pack-hosted' || share.revokedAt) return;
       const currentExpiry = Date.parse(share.expiresAt || '');
@@ -7259,7 +7310,10 @@ const extendAssignmentCenterShare = async (share) => {
           __d.addToast('Expired assignments cannot be revived. Duplicate this assignment instead.', 'info');
           return;
       }
-      if (!__d.mbConfig?.url || !__d.mbConfig?.admin || Number(__d.mbConfig.v || 0) < 12) {
+      const resolved = _savedShareMailboxConnection(share);
+      if (!resolved) return;
+      const { target, connection } = resolved;
+      if (Number(connection.v || 0) < 12) {
           __d.addToast('Update and reconnect your Class Mailbox to v12 before changing assignment deadlines.', 'info');
           __d.setMbPanelOpen(true);
           return;
@@ -7273,7 +7327,7 @@ const extendAssignmentCenterShare = async (share) => {
       }
       __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [share.url]: { kind: 'extending' } }));
       try {
-          await __d._alloMailboxCallWithRetry(__d.mbConfig.url, { a: 'extendpack', admin: __d.mbConfig.admin, id: share.packId, expiresAt: new Date(nextExpiry).toISOString() });
+          await __d._alloMailboxCallWithRetry(connection.url, { a: 'extendpack', admin: connection.admin, id: target.id, expiresAt: new Date(nextExpiry).toISOString() });
           const expiresAt = new Date(nextExpiry).toISOString();
           __d.setRecentQrShares(previous => previous.map(item => item.url === share.url ? { ...item, expiresAt } : item));
           __d.setQrShareModal(previous => previous?.url === share.url ? { ...previous, expiresAt } : previous);
@@ -7288,7 +7342,10 @@ const extendAssignmentCenterShare = async (share) => {
 const duplicateAssignmentCenterShare = async (share) => {
       const sourceExpiry = Date.parse(share?.expiresAt || '');
       if (!share?.url || share.type !== 'assignment-pack-hosted' || share.revokedAt || !Number.isFinite(sourceExpiry) || sourceExpiry > Date.now()) return;
-      if (!__d.mbConfig?.url || !__d.mbConfig?.admin || Number(__d.mbConfig.v || 0) < 12) {
+      const resolved = _savedShareMailboxConnection(share);
+      if (!resolved) return;
+      const { target, connection } = resolved;
+      if (Number(connection.v || 0) < 12) {
           __d.addToast('Update and reconnect your Class Mailbox to v12 before duplicating assignments.', 'info');
           __d.setMbPanelOpen(true);
           return;
@@ -7299,8 +7356,8 @@ const duplicateAssignmentCenterShare = async (share) => {
           const secret = __d._alloRandomToken(16);
           const createdAt = new Date().toISOString();
           const expiresAt = new Date(Date.now() + __d.homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString();
-          await __d._alloMailboxCallWithRetry(__d.mbConfig.url, { a: 'clonepack', admin: __d.mbConfig.admin, sourceId: share.packId, id, k: secret, expiresAt });
-          const url = __d._buildAlloMailboxEntryUrl('allo_mbp', { u: __d.mbConfig.url, id, k: secret, aiPolicy: share.aiPolicy });
+          await __d._alloMailboxCallWithRetry(connection.url, { a: 'clonepack', admin: connection.admin, sourceId: target.id, id, k: secret, expiresAt });
+          const url = __d._buildAlloMailboxEntryUrl('allo_mbp', { u: connection.url, id, k: secret, aiPolicy: share.aiPolicy });
           if (!url) throw new Error('No student app URL is configured');
           const duplicate = { ...share, url, packId: id, packSecret: secret, createdAt, expiresAt, revokedAt: undefined };
           __d.setAssignmentCenterStatusByUrl(previous => ({ ...previous, [url]: { state: 'idle' } }));
@@ -7344,6 +7401,7 @@ const connectMailbox = async () => {
       }
       __d.setMbBusy(true);
       __d.setMbStatus('Testing mailbox…');
+      let connectedConfig = null;
       try {
           const t0 = Date.now();
           const mbHello = await __d._alloMailboxCall(execUrl, { a: 'hello' });
@@ -7385,7 +7443,8 @@ const connectMailbox = async () => {
               localStorage.setItem(__d.ALLO_MB_VERSION_KEY, String(Number(mbHello && mbHello.v) || 0));
           } catch (_) {}
           __d.setMbAdminInput('');
-          __d.setMbConfig({ url: execUrl, admin, v: Number(mbHello && mbHello.v) || 0, latencyMs: Date.now() - t0 });
+          const verifiedConfig = { url: execUrl, admin, v: Number(mbHello && mbHello.v) || 0, latencyMs: Date.now() - t0 };
+          __d.setMbConfig(verifiedConfig);
           __d.setMbStatus('Connected — round-trip ' + (Date.now() - t0) + 'ms.' + (freshlyClaimed ? ' SAVE YOUR ADMIN TOKEN (shown below): you will paste it to reconnect from a new device or a fresh Canvas.' : ' Ready for live sessions and hosted homework QR.'));
           // Server-side resume: ask the mailbox for any still-open sessions
           // this admin owns. Works in Canvas where local storage does not.
@@ -7396,11 +7455,13 @@ const connectMailbox = async () => {
                   if (open.length) __d.setMbResumable(open);
               } catch (resumeErr) { __d.warnLog('mysessions query failed', resumeErr?.message); }
           }
+          connectedConfig = verifiedConfig;
       } catch (e) {
           __d.warnLog('Mailbox connect failed', e);
           __d.setMbStatus('Could not reach the mailbox (' + (e?.message || e) + '). Check the /exec URL and that the deployment access is set to "Anyone".');
       }
       __d.setMbBusy(false);
+      return connectedConfig?.admin ? connectedConfig : null;
   };
 const rotateMailboxAdmin = async () => {
       if (!__d.mbConfig?.url || !__d.mbConfig?.admin) return;
@@ -7764,6 +7825,8 @@ const printQrSheet = (svg, heading, detail, modeLabel, fallbackCode = '') => {
 const revokeHomeworkAssignment = async (shareOverride = null) => {
       const current = shareOverride && typeof shareOverride === 'object' && shareOverride.url ? shareOverride : __d.qrShareModal;
       if (!current || current.type === 'assignment-pack') return;
+      const resolved = current.type === 'assignment-pack-hosted' ? _savedShareMailboxConnection(current) : null;
+      if (current.type === 'assignment-pack-hosted' && !resolved) return;
       // In-app dialog, not window.confirm: the sandboxed Canvas iframe can
       // silently return false from confirm(), leaving a dead button.
       const confirmed = await new Promise(resolve => __d.setConfirmDialog({
@@ -7778,8 +7841,7 @@ const revokeHomeworkAssignment = async (shareOverride = null) => {
       __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [current.url]: { kind: 'revoking' } }));
       try {
           if (current.type === 'assignment-pack-hosted') {
-              if (!__d.mbConfig?.url || !__d.mbConfig?.admin || !current.packId) throw new Error('Mailbox connection is unavailable');
-              await __d._alloMailboxCall(__d.mbConfig.url, { a: 'delpack', admin: __d.mbConfig.admin, id: current.packId });
+              await __d._alloMailboxCall(resolved.connection.url, { a: 'delpack', admin: resolved.connection.admin, id: resolved.target.id });
           } else {
               await __d.deleteDoc(__d.doc(__d.db, 'artifacts', current.hostAppId || __d.appId, 'public', 'data', 'sessions', current.assignmentId));
           }
@@ -7892,11 +7954,13 @@ const onUpdateResource = (resourceId, updater) => {
     if (!artifact) return false;
     const candidate = updater(artifact);
     if (!candidate || candidate === artifact) return false;
+    const preservesOriginal = (before, after) => before?.instructionalText?.form !== 'same-text-supported' || (after?.data === before.data && after?.sourceSnapshot?.text === before.sourceSnapshot?.text && after?.instructionalText?.form === 'same-text-supported');
+    if (!preservesOriginal(artifact, candidate)) return false;
     const updatedAt = new Date().toISOString();
     const apply = previous => {
       if (!previous || String(previous.id) !== id || previous.type !== artifact.type) return previous;
       const next = previous === artifact ? candidate : updater(previous);
-      if (!next || next === previous) return previous;
+      if (!next || next === previous || !preservesOriginal(previous, next)) return previous;
       return { ...next, id: previous.id, type: previous.type, updatedAt };
     };
     __d.setHistory(previous => previous.map(apply));
@@ -9324,7 +9388,7 @@ const handleLessonPlanChange = (field, value, index = null) => {
           return { ...previous, data: { ...data, [field]: typeof value === 'function' ? value(data[field]) : value } };
       });
   };
-const handleQuizOptionClick = (e, option) => {
+const handleQuizOptionClick = (e, option, onAdvance) => {
       e.stopPropagation();
       if (__d.quizSelectedOption) return;
       const currentItem = __d.generatedContent?.data[__d.flashcardIndex];
@@ -9342,6 +9406,7 @@ const handleQuizOptionClick = (e, option) => {
           __d.playSound('incorrect');
       }
       setTimeout(() => {
+          if (typeof onAdvance === 'function') { onAdvance(); return; }
           if (__d.flashcardIndex < __d.generatedContent?.data.length - 1) {
               __d.nextFlashcard(null);
           } else {
@@ -10312,11 +10377,12 @@ const evaluateMathExpression = (expr) => {
       return typeof result === 'number' && isFinite(result) ? Math.round(result * 10000) / 10000 : null;
     } catch { return null; }
   };
-const handleGenerateBingo = () => {
+const handleGenerateBingo = (activityData) => {
       if (!__d.generatedContent || __d.generatedContent.type !== 'glossary') return;
-      const cards = __d.generateBingoCards(__d.generatedContent?.data, __d.bingoSettings.cardCount, __d.bingoSettings.gridSize);
+      const words = Array.isArray(activityData) ? activityData : __d.generatedContent?.data;
+      const cards = __d.generateBingoCards(words, __d.bingoSettings.cardCount, __d.bingoSettings.gridSize);
       if (cards) {
-          const terms = __d.generatedContent?.data.map(i => i.term);
+          const terms = words.map(i => i.term);
           __d.setBingoState({
               cards,
               drawPile: __d.fisherYatesShuffle(terms),
@@ -10721,7 +10787,7 @@ const launchInteractiveFlashcards = (mode = 'standard') => {
       __d.setIsFlashcardFlipped(false);
       __d.setIsInteractiveFlashcards(true);
       __d.setStandardDeckLang('English Only');
-      __d.setShowFlashcardImages(false);
+      __d.setShowFlashcardImages(true);
       __d.setFlashcardScore(0);
       __d.setIsFlashcardQuizMode(__d.isIndependentMode);
       __d.setFlashcardOptions([]);
@@ -10793,6 +10859,7 @@ const handleDeleteTermImage = (index) => {
     __d.addToast(__d.t('glossary.actions.icon_removed'), "info");
   };
 const _applySimplifiedTextMutation = (item, value) => {
+    if (item?.instructionalText?.form === 'same-text-supported') return item;
     const evidence = __d._getFreshTextComplexityEvidence(item, value);
     const updated = {
       ...item,

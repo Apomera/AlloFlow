@@ -1,0 +1,141 @@
+{
+  "phase": "after",
+  "sourceHash": "0f0a5eecc598f569350a756cb6e4f2a8b851336eadc6c6ae28fadc4014e30f70",
+  "scope": "Actual shell QuickStartWizard adapter and CDNModuleGate in local Chromium, controlled wizard export and loader; not a full-app cold-load or performance benchmark.",
+  "fixtureResponseDelayMs": 200,
+  "externalRequests": [],
+  "scenarios": [
+    {
+      "name": "demand-open",
+      "text": "Wizard readyClose wizard",
+      "ready": true,
+      "retryVisible": false,
+      "loaderCalls": 1,
+      "scriptRequests": 1,
+      "closed": 0,
+      "status": "loaded",
+      "loadingOverlayZIndex": null,
+      "errors": []
+    },
+    {
+      "name": "role-prewarm",
+      "settled": {
+        "text": "Wizard readyClose wizard",
+        "ready": true,
+        "retryVisible": false,
+        "loaderCalls": 2,
+        "scriptRequests": 1,
+        "closed": 0,
+        "status": "loaded",
+        "loadingOverlayZIndex": null
+      },
+      "afterSamePropsRerenders": {
+        "text": "Wizard readyClose wizard",
+        "ready": true,
+        "retryVisible": false,
+        "loaderCalls": 2,
+        "scriptRequests": 1,
+        "closed": 0,
+        "status": "loaded",
+        "loadingOverlayZIndex": null
+      },
+      "errors": []
+    },
+    {
+      "name": "failure-retry",
+      "failed": {
+        "text": "🚀Setup Wizard could not load. Your work is preserved.Module loading from CDN. If this persists, check your connection.Retry loadingClose",
+        "ready": false,
+        "retryVisible": true,
+        "loaderCalls": 2,
+        "scriptRequests": 1,
+        "closed": 0,
+        "status": "failed",
+        "loadingOverlayZIndex": "300"
+      },
+      "afterRetry": {
+        "text": "Wizard readyClose wizard",
+        "ready": true,
+        "retryVisible": false,
+        "loaderCalls": 3,
+        "scriptRequests": 2,
+        "closed": 0,
+        "status": "loaded",
+        "loadingOverlayZIndex": null
+      },
+      "errors": []
+    },
+    {
+      "name": "close-pending-reopen",
+      "closed": {
+        "text": "",
+        "ready": false,
+        "retryVisible": false,
+        "loaderCalls": 2,
+        "scriptRequests": 1,
+        "closed": 1,
+        "status": "loaded",
+        "loadingOverlayZIndex": null
+      },
+      "reopened": {
+        "text": "Wizard readyClose wizard",
+        "ready": true,
+        "retryVisible": false,
+        "loaderCalls": 2,
+        "scriptRequests": 1,
+        "closed": 1,
+        "status": "loaded",
+        "loadingOverlayZIndex": null
+      },
+      "errors": []
+    },
+    {
+      "name": "late-loader",
+      "text": "Wizard readyClose wizard",
+      "ready": true,
+      "retryVisible": false,
+      "loaderCalls": 1,
+      "scriptRequests": 1,
+      "closed": 0,
+      "status": "loaded",
+      "loadingOverlayZIndex": null,
+      "errors": []
+    },
+    {
+      "name": "initially-closed",
+      "closed": {
+        "text": "",
+        "ready": false,
+        "retryVisible": false,
+        "loaderCalls": 0,
+        "scriptRequests": 0,
+        "closed": 0,
+        "status": "unrequested",
+        "loadingOverlayZIndex": null
+      },
+      "opened": {
+        "text": "Wizard readyClose wizard",
+        "ready": true,
+        "retryVisible": false,
+        "loaderCalls": 1,
+        "scriptRequests": 1,
+        "closed": 0,
+        "status": "loaded",
+        "loadingOverlayZIndex": null
+      },
+      "errors": []
+    },
+    {
+      "name": "close-before-loader",
+      "text": "",
+      "ready": false,
+      "retryVisible": false,
+      "loaderCalls": 0,
+      "scriptRequests": 0,
+      "closed": 1,
+      "status": "unrequested",
+      "loadingOverlayZIndex": null,
+      "errors": []
+    }
+  ]
+}

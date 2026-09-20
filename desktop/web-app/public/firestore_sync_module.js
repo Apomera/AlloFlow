@@ -138,7 +138,10 @@
   // regenerated locally.
   function sanitizeHistoryForCloud(historyItems) {
     const cleaned = historyItems.filter(item => !isPrivatePersonaHistoryItem(item)).map(rawItem => {
-        const item = sanitizeMemoryAidResourceForBoundary(rawItem);
+        const safeItem = normalizeReadingRoleMetadata(sanitizeMemoryAidResourceForBoundary(rawItem));
+        const item = normalizeReadingPreservation(typeof safeItem.data === 'string'
+          ? { ...safeItem, dataEncoding: safeItem.dataEncoding === 'json-text/v1' ? 'json-text/v1' : 'text/v1' }
+          : safeItem);
         if (item.type === 'glossary' && Array.isArray(item.data)) {
             const cleanData = item.data.map(gItem => {
                 const { image, ...rest } = gItem;
@@ -411,9 +414,20 @@
           out[key] = null;
           return;
         }
+        // Canonical reading strings can legitimately begin with data:/blob:.
+        // Keep exact text within the same existing string budget; oversized
+        // sources become unavailable rather than a falsely preserved excerpt.
+        const canonicalReadingText = key === 'data' && value.type === 'simplified' && typeof v === 'string';
+        const canonicalSnapshotText = key === 'text' && value.schemaVersion === 1
+          && typeof value.fingerprint === 'string' && typeof v === 'string';
+        if (canonicalReadingText || canonicalSnapshotText) {
+          out[key] = v.length <= SESSION_RESOURCE_STRING_MAX_CHARS ? v
+            : (canonicalReadingText && !value.sourceSnapshot ? trimSessionString(v) : null);
+          return;
+        }
         out[key] = sanitizeSessionValue(v, key);
       });
-      return out;
+      return normalizeReadingPreservation(normalizeReadingRoleMetadata(out), 'live-session-size-limit');
     }
     return value;
   }
@@ -429,13 +443,17 @@
     try {
       const api = window.AlloModules && window.AlloModules.InstructionalContext;
       if (raw && api && typeof api.normalizeInstructionalText === 'function') value = api.normalizeInstructionalText(raw, { defaultForm: inferredForm });
+      else if (!raw && api && typeof api.getInstructionalText === 'function') value = api.getInstructionalText(item);
     } catch (e) { value = raw; }
+    if (!value && item.type === 'analysis' && item.data && (item.data.originalText || item.data.rawEnglishText)) {
+      value = { role: 'primary', form: 'original', designationSource: 'workflow-default' };
+    }
     value = value && typeof value === 'object' ? value : {};
     const role = ['primary', 'supplemental', 'unspecified'].includes(value.role) ? value.role : 'unspecified';
     const form = ['original', 'same-text-supported', 'adapted'].includes(value.form) ? value.form : inferredForm;
     const auth = value.replacementAuthorization && typeof value.replacementAuthorization === 'object'
       ? value.replacementAuthorization : {};
-    const authorized = auth.authorized === true && auth.source === 'educator';
+    const authorized = form === 'adapted' && auth.authorized === true && auth.source === 'educator';
     const complexity = value.complexity && typeof value.complexity === 'object' ? value.complexity : {};
     return stripUndefined({
       schemaVersion: 1,
@@ -461,11 +479,133 @@
     });
   }
 
+  // Persist one normalized role at each boundary, including the default on
+  // fresh analyses. Source-role metadata is separate from adaptation intent.
+  function normalizeReadingRoleMetadata(item) {
+    if (!item || typeof item !== 'object' || !['analysis', 'simplified'].includes(item.type)) return item;
+    const profile = normalizePersistedInstructionalText(item);
+    const api = window.AlloModules && window.AlloModules.InstructionalContext;
+    const rawSource = item.sourceInstructionalText || (item.config && item.config.sourceInstructionalText);
+    let sourceProfile;
+    if (api && typeof api.getSourceInstructionalText === 'function') {
+      sourceProfile = api.getSourceInstructionalText({ ...item, instructionalText: profile });
+    } else {
+      const sourceValue = profile.form !== 'adapted' ? profile : (rawSource || {
+        role: profile.role === 'primary' && profile.replacementAuthorization.authorized ? 'supplemental' : 'primary',
+        designationSource: 'workflow-default'
+      });
+      sourceProfile = normalizePersistedInstructionalText({ type: 'analysis', instructionalText: sourceValue });
+      sourceProfile = { ...sourceProfile, form: 'original', replacementAuthorization: { authorized: false, source: 'none' } };
+    }
+    const configuredFamily = item.sourceFamilyId || (item.config && item.config.sourceFamilyId);
+    const fallbackFamily = (item.type === 'analysis' && profile.form !== 'adapted' ? item.id : null)
+      || (item.sourceSnapshot && item.sourceSnapshot.sourceArtifactId)
+      || profile.sourceArtifactId || profile.primaryArtifactId || (profile.form !== 'adapted' ? item.id : null);
+    const familyId = api && typeof api.getReadingSourceFamilyId === 'function'
+      ? api.getReadingSourceFamilyId({ ...item, instructionalText: profile }) : configuredFamily || fallbackFamily;
+    const unitValue = item.unitId !== undefined ? item.unitId : item.config && item.config.unitId;
+    const unitId = unitValue == null || ['all', 'uncategorized', ''].includes(String(unitValue)) ? null : String(unitValue).slice(0, 160);
+    const next = { ...item, instructionalText: profile, sourceInstructionalText: sourceProfile, unitId };
+    if (familyId) next.sourceFamilyId = String(familyId).trim().slice(0, 200);
+    if (item.config && typeof item.config === 'object') {
+      next.config = { ...item.config, instructionalText: { ...profile } };
+      if (rawSource) next.config.sourceInstructionalText = { ...sourceProfile };
+      delete next.config.textProfile;
+    }
+    delete next.textProfile;
+    return next;
+  }
+
+  // FirestoreSync can load before InstructionalContext. Keep the same exact
+  // identity check here so late module loading cannot grant preservation.
+  function validReadingSnapshot(item) {
+    const snapshot = item && item.sourceSnapshot;
+    if (!snapshot || snapshot.schemaVersion !== 1 || typeof snapshot.text !== 'string') return null;
+    const api = window.AlloModules && window.AlloModules.InstructionalContext;
+    if (api && typeof api.getSourceSnapshot === 'function') return api.getSourceSnapshot(item);
+    let hash = 2166136261;
+    for (let i = 0; i < snapshot.text.length; i++) {
+      hash ^= snapshot.text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    const fingerprint = 'source-utf16-v1-' + (hash >>> 0).toString(16).padStart(8, '0') + '-' + snapshot.text.length;
+    if (snapshot.fingerprint !== fingerprint) return null;
+    const provenance = snapshot.provenance && typeof snapshot.provenance === 'object' ? snapshot.provenance : {};
+    return {
+      schemaVersion: 1, text: snapshot.text, fingerprint,
+      language: String(snapshot.language || 'English').slice(0, 80),
+      format: String(snapshot.format || 'plain-text').slice(0, 80),
+      sourceArtifactId: snapshot.sourceArtifactId == null ? null : String(snapshot.sourceArtifactId).slice(0, 160),
+      capturedAt: String(snapshot.capturedAt || '').slice(0, 80),
+      provenance: {
+        selection: String(provenance.selection || 'selected-text').slice(0, 100),
+        origin: String(provenance.origin || 'selected-source').slice(0, 100),
+        note: String(provenance.note || '').slice(0, 600)
+      }
+    };
+  }
+
+  function hasOwnReadingSnapshot(item) {
+    return !!item && Object.prototype.hasOwnProperty.call(item, 'sourceSnapshot');
+  }
+
+  function normalizeReadingPreservation(item, failureReason) {
+    if (!item || typeof item !== 'object' || item.type !== 'simplified') return item;
+    const profile = normalizePersistedInstructionalText(item);
+    const snapshot = validReadingSnapshot(item);
+    const claimedOriginal = profile && profile.form === 'same-text-supported';
+    const hasSnapshot = Object.prototype.hasOwnProperty.call(item, 'sourceSnapshot');
+    let canonicalData = item.data;
+    if (item.dataEncoding === 'json-text/v1' && typeof canonicalData === 'string') {
+      try { const decoded = JSON.parse(canonicalData); if (typeof decoded === 'string') canonicalData = decoded; } catch (_) { /* invalid envelope stays unverified */ }
+    }
+    const sameText = !!snapshot && typeof canonicalData === 'string' && canonicalData === snapshot.text;
+    const missingSharedBody = failureReason === 'live-session-size-limit' && hasOwnReadingSnapshot(item) && typeof item.data !== 'string';
+    let out = item;
+    if (snapshot) out = { ...out, sourceSnapshot: snapshot };
+    if ((hasSnapshot && !snapshot) || (claimedOriginal && !sameText) || missingSharedBody) {
+      out = { ...out };
+      if (!snapshot) delete out.sourceSnapshot;
+      delete out.readingSupports;
+      const reason = failureReason || (!snapshot ? 'source-snapshot-unavailable' : 'source-text-mismatch');
+      out.readingSourceAvailability = { status: 'unavailable', reason };
+      if (failureReason === 'live-session-size-limit') {
+        out.syncTruncated = true;
+        out.syncNotice = 'This reading exceeds live session limits. Open the teacher device or a complete exported pack.';
+      }
+      if (claimedOriginal) {
+        const downgraded = {
+          ...profile, form: 'adapted', role: 'unspecified', designationSource: 'legacy-inferred',
+          replacementAuthorization: { authorized: false, source: 'none' }
+        };
+        out.instructionalText = downgraded;
+        if (out.config && typeof out.config === 'object') {
+          out.config = { ...out.config, instructionalText: { ...downgraded } };
+          delete out.config.textProfile;
+        }
+        delete out.textProfile;
+        out.readingPreservation = { status: 'unavailable', reason };
+      }
+    } else if (claimedOriginal) {
+      out = { ...out, instructionalText: { ...profile, replacementAuthorization: { authorized: false, source: 'none' } } };
+      if (out.config && typeof out.config === 'object') {
+        out.config = { ...out.config, instructionalText: { ...out.instructionalText } };
+        delete out.config.textProfile;
+      }
+      delete out.textProfile;
+    }
+    const api = window.AlloModules && window.AlloModules.InstructionalContext;
+    if (snapshot && out.readingSupports && api && typeof api.validateReadingSupports === 'function') {
+      out = { ...out, readingSupports: api.validateReadingSupports(out, out.readingSupports) };
+    }
+    return out;
+  }
+
   function compactSessionResource(item) {
     const data = item && item.data && typeof item.data === 'object' ? item.data : {};
     const instructionalText = normalizePersistedInstructionalText(item);
     const itemConfig = item && item.config && typeof item.config === 'object' ? item.config : {};
-    return stripUndefined({
+    return normalizeReadingPreservation(stripUndefined({
       id: item && item.id,
       type: item && item.type,
       title: (item && item.title) || data.title || data.main || 'Shared resource',
@@ -483,9 +623,13 @@
       localStats: item && item.localStats,
       targetGradeLevel: item && item.targetGradeLevel,
       sourceProvenance: item && item.sourceProvenance,
+      sourceInstructionalText: item && item.sourceInstructionalText,
+      sourceFamilyId: item && item.sourceFamilyId,
+      unitId: item && item.unitId,
       syncTruncated: true,
       syncNotice: 'This resource was too large for the live session document. Open the teacher device or exported pack for the full version.',
-    });
+      readingSourceAvailability: item && item.sourceSnapshot ? { status: 'unavailable', reason: 'live-session-size-limit' } : undefined,
+    }), 'live-session-size-limit');
   }
 
   function prepareSessionResourcesForWrite(resources, options) {
@@ -537,11 +681,24 @@
       if (!Array.isArray(items)) return [];
       return items.filter(item => item && typeof item === 'object').map(item => {
           let parsedData = item.data;
-          if (typeof parsedData === 'string') {
-              try {
-                  const result = JSON.parse(parsedData);
-                  parsedData = result;
-              } catch (e) {
+          if (typeof parsedData === 'string' && item.dataEncoding !== 'text/v1') {
+              // A saved snapshot disambiguates even a quoted JSON passage.
+              const exactSnapshot = validReadingSnapshot(item);
+              if (!exactSnapshot || exactSnapshot.text !== parsedData) {
+                  try {
+                      const result = JSON.parse(parsedData);
+                      const serializedText = item.dataEncoding === 'json-text/v1';
+                      if (serializedText) {
+                          if (typeof result === 'string') parsedData = result;
+                      } else if (item.type === 'simplified') {
+                          // Legacy text was JSON-stringified once. Raw numbers,
+                          // null, arrays and JSON-looking prose must stay strings.
+                          if (typeof result === 'string') parsedData = result;
+                      } else {
+                          parsedData = result;
+                      }
+                  } catch (e) {
+                  }
               }
           }
           let parsedGameData = item.gameData;
@@ -557,9 +714,10 @@
           const hydratedItem = {
               ...item,
               data: parsedData,
-              gameData: parsedGameData || item.gameData
+              gameData: parsedGameData || item.gameData,
+              ...(typeof parsedData === 'string' ? { dataEncoding: 'text/v1' } : {})
           };
-          const boundarySafeItem = sanitizeMemoryAidResourceForBoundary(hydratedItem);
+          const boundarySafeItem = normalizeReadingPreservation(normalizeReadingRoleMetadata(sanitizeMemoryAidResourceForBoundary(hydratedItem)));
           const instructionalText = normalizePersistedInstructionalText(boundarySafeItem);
           return instructionalText ? { ...boundarySafeItem, instructionalText } : boundarySafeItem;
       });
@@ -577,6 +735,8 @@
   window.fitArtworkToBudget = fitArtworkToBudget;
   window.prepareSessionResourcesForWrite = prepareSessionResourcesForWrite;
   window.normalizePersistedInstructionalText = normalizePersistedInstructionalText;
+  window.normalizeReadingPreservation = normalizeReadingPreservation;
+  window.normalizeReadingRoleMetadata = normalizeReadingRoleMetadata;
   // Exposed for the student-pack serializer (mailbox/QR channels): packs must
   // apply the SAME binary-null + string-trim pass the Firebase session path
   // gets, instead of narrowing items to a five-field allowlist.

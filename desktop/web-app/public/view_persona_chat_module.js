@@ -123,6 +123,8 @@ function PersonaChatView(props) {
   var personaReflectionReturnFocusRef = React.useRef(null);
   var personaSummaryDialogRef = React.useRef(null);
   var personaSummaryReturnFocusRef = React.useRef(null);
+  var personaArchiveReturnFocusRef = React.useRef(null);
+  var personaArchiveCloseRef = React.useRef(null);
   // Setters
   var setPersonaState = props.setPersonaState;
   var setPersonaInput = props.setPersonaInput;
@@ -193,6 +195,76 @@ function PersonaChatView(props) {
   var recoveryLabel = function (key, fallback) {
     var value = t('persona.recovery.' + key);
     return value && value !== 'persona.recovery.' + key ? value : fallback;
+  };
+  var navigationLabel = function (key, fallback) {
+    var value = t('persona.navigation.' + key);
+    return value && value !== 'persona.navigation.' + key ? value : fallback;
+  };
+  var archiveActionLabel = function (key, fallback) {
+    var value = t('persona.archive_actions.' + key);
+    return value && value !== 'persona.archive_actions.' + key ? value : fallback;
+  };
+  var _characterDetailsOpenState = React.useState(false);
+  var characterDetailsOpen = _characterDetailsOpenState[0];
+  var setCharacterDetailsOpen = _characterDetailsOpenState[1];
+  var _conversationPositionState = React.useState({
+    away: false,
+    unread: false
+  });
+  var conversationPosition = _conversationPositionState[0];
+  var setConversationPosition = _conversationPositionState[1];
+  var conversationHistory = personaState.chatHistory || [];
+  var latestConversationMessage = conversationHistory[conversationHistory.length - 1];
+  var latestReplySignature = latestConversationMessage && latestConversationMessage.role === 'model' ? JSON.stringify([conversationHistory.length, latestConversationMessage.text, latestConversationMessage.speakerName || '']) : null;
+  var previousReplySignatureRef = React.useRef(latestReplySignature);
+  React.useEffect(function () {
+    if (latestReplySignature && latestReplySignature !== previousReplySignatureRef.current && personaScrollRef.current && personaScrollRef.current.__alloStickToBottom === false) {
+      setConversationPosition({
+        away: true,
+        unread: true
+      });
+    }
+    previousReplySignatureRef.current = latestReplySignature;
+  }, [latestReplySignature, personaScrollRef]);
+  var handlePersonaConversationScroll = function (event) {
+    var node = event.currentTarget;
+    var away = node.scrollHeight - node.scrollTop - node.clientHeight >= 120;
+    node.__alloStickToBottom = !away;
+    setConversationPosition(function (previous) {
+      var unread = away && previous.unread;
+      return previous.away === away && previous.unread === unread ? previous : {
+        away: away,
+        unread: unread
+      };
+    });
+  };
+  var jumpToLatestPersonaReply = function () {
+    var node = personaScrollRef.current;
+    if (!node) return;
+    node.__alloStickToBottom = true;
+    node.scrollTop = node.scrollHeight;
+    setConversationPosition({
+      away: false,
+      unread: false
+    });
+    node.focus({
+      preventScroll: true
+    });
+  };
+  var renderPersonaLatestControl = function () {
+    if (!conversationPosition.away) return null;
+    return /*#__PURE__*/React.createElement("div", {
+      "data-persona-latest-control": true,
+      className: "shrink-0 border-t border-indigo-100 bg-white px-3 py-2 text-center"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: jumpToLatestPersonaReply,
+      className: "min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-4 py-2 text-sm font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+    }, conversationPosition.unread && /*#__PURE__*/React.createElement("span", null, navigationLabel('new_reply', 'New reply'), " · "), navigationLabel('latest', 'Jump to latest')), /*#__PURE__*/React.createElement("span", {
+      className: "sr-only",
+      role: "status",
+      "aria-live": "polite"
+    }, conversationPosition.unread ? navigationLabel('new_reply_announcement', 'A new reply is available. Use Jump to latest to read it.') : ''));
   };
   var renderPersonaTurnError = function () {
     if (!personaState.turnError || personaState.isLoading) return null;
@@ -390,9 +462,12 @@ function PersonaChatView(props) {
   var _archiveErrorState = React.useState(false);
   var personaArchiveError = _archiveErrorState[0];
   var setPersonaArchiveError = _archiveErrorState[1];
-  var _archiveBusyState = React.useState(null);
-  var personaArchiveBusyKey = _archiveBusyState[0];
-  var setPersonaArchiveBusyKey = _archiveBusyState[1];
+  var _archiveActionState = React.useState(null);
+  var personaArchiveAction = _archiveActionState[0];
+  var setPersonaArchiveAction = _archiveActionState[1];
+  var personaArchiveBusyKey = personaArchiveAction && personaArchiveAction.status === 'pending' ? personaArchiveAction.key : null;
+  // Lock synchronously: repeated activation can happen before React renders.
+  var _archiveActionRef = React.useRef(null);
   var _archiveConfirmState = React.useState(null);
   var personaArchiveConfirmKey = _archiveConfirmState[0];
   var setPersonaArchiveConfirmKey = _archiveConfirmState[1];
@@ -424,36 +499,77 @@ function PersonaChatView(props) {
       setPersonaArchiveError(true);
     });
   };
-  var _openPersonaArchive = function () {
+  React.useEffect(function () {
+    if (!isPersonaArchiveOpen) return;
+    return function () {
+      var previous = personaArchiveReturnFocusRef.current;
+      if (previous && previous.isConnected && typeof previous.focus === 'function') previous.focus({
+        preventScroll: true
+      });
+      personaArchiveReturnFocusRef.current = null;
+    };
+  }, [isPersonaArchiveOpen]);
+  var _openPersonaArchive = function (event) {
+    personaArchiveReturnFocusRef.current = event && event.currentTarget ? event.currentTarget : document.activeElement;
     setIsPersonaArchiveOpen(true);
     setPersonaArchiveConfirmKey(null);
+    setPersonaArchiveAction(_archiveActionRef.current);
     _loadPersonaArchive();
   };
+  var _runPersonaArchiveAction = function (row, kind, request) {
+    if (_archiveActionRef.current) return;
+    var action = {
+      key: row.key,
+      kind: kind,
+      status: 'pending'
+    };
+    _archiveActionRef.current = action;
+    setPersonaArchiveConfirmKey(null);
+    setPersonaArchiveAction(action);
+    Promise.resolve().then(request).then(function (ok) {
+      // Host handlers report storage/download failures as null as well as rejects.
+      if (ok !== true) throw new Error('Persona archive action failed');
+      if (kind === 'delete') {
+        setPersonaArchiveAction(null);
+        var closeControl = personaArchiveCloseRef.current;
+        if (closeControl && closeControl.isConnected) closeControl.focus({
+          preventScroll: true
+        });
+        _loadPersonaArchive();
+      } else {
+        setPersonaArchiveAction({
+          key: row.key,
+          kind: kind,
+          status: 'complete'
+        });
+      }
+    }).catch(function () {
+      setPersonaArchiveAction({
+        key: row.key,
+        kind: kind,
+        status: 'failed'
+      });
+    }).finally(function () {
+      if (_archiveActionRef.current === action) _archiveActionRef.current = null;
+    });
+  };
   var _archiveDownload = function (row, format) {
-    if (personaArchiveBusyKey || !row || typeof handleDownloadPersonaSessionArchive !== 'function') return;
-    setPersonaArchiveBusyKey(row.key);
-    Promise.resolve().then(function () {
+    if (_archiveActionRef.current || !row || typeof handleDownloadPersonaSessionArchive !== 'function') return;
+    _runPersonaArchiveAction(row, format, function () {
       return handleDownloadPersonaSessionArchive(row.key, format);
-    }).catch(function () {}).finally(function () {
-      setPersonaArchiveBusyKey(null);
     });
   };
   var _archiveDelete = function (row) {
-    if (personaArchiveBusyKey || !row || typeof handleDeletePersonaSessionArchive !== 'function') return;
+    if (_archiveActionRef.current || !row || typeof handleDeletePersonaSessionArchive !== 'function') return;
     // Two-tap arm: the first tap turns the button into a confirm control, the
     // second deletes. No window.confirm - it is blocked in embedded hosts.
     if (personaArchiveConfirmKey !== row.key) {
+      setPersonaArchiveAction(null);
       setPersonaArchiveConfirmKey(row.key);
       return;
     }
-    setPersonaArchiveBusyKey(row.key);
-    Promise.resolve().then(function () {
+    _runPersonaArchiveAction(row, 'delete', function () {
       return handleDeletePersonaSessionArchive(row.key);
-    }).then(function (ok) {
-      if (ok) _loadPersonaArchive();
-    }).catch(function () {}).finally(function () {
-      setPersonaArchiveBusyKey(null);
-      setPersonaArchiveConfirmKey(null);
     });
   };
   var personaCloseHandlerRef = React.useRef(handleClosePersonaChat);
@@ -604,6 +720,41 @@ function PersonaChatView(props) {
   var setPersonaResumeOffer = _dsResumeState[1];
   var _dsCheckedKeyRef = React.useRef(null);
   var _dsSaveTimerRef = React.useRef(null);
+  var _dsSaveGenerationRef = React.useRef(0);
+  var _dsClosedRef = React.useRef(false);
+  var _dsReadReadyState = React.useState(null);
+  var _dsReadReadyKey = _dsReadReadyState[0];
+  var setDsReadReadyKey = _dsReadReadyState[1];
+  var _dsResumeOfferVersionRef = React.useRef(null);
+  var _getPersonaResumeContext = function (state) {
+    return JSON.stringify([state.mode, state.selectedCharacter && [state.selectedCharacter.id, state.selectedCharacter.name], (state.selectedCharacters || []).map(function (character) {
+      return character && [character.id, character.name];
+    }), (state.chatHistory || []).length, (state.chatHistory || []).slice(-80).map(function (message) {
+      return message && [message.role, message.text, message.speakerName];
+    })]);
+  };
+  var _dsResumeContext = _getPersonaResumeContext(personaState);
+  var _dsConversationRef = React.useRef({
+    context: _dsResumeContext,
+    version: 0
+  });
+  if (_dsConversationRef.current.context !== _dsResumeContext) {
+    _dsConversationRef.current = {
+      context: _dsResumeContext,
+      version: _dsConversationRef.current.version + 1
+    };
+  }
+  var _dsConversationVersion = _dsConversationRef.current.version;
+  React.useEffect(function () {
+    _dsClosedRef.current = false;
+    return function () {
+      _dsClosedRef.current = true;
+      _dsSaveGenerationRef.current += 1;
+    };
+  }, []);
+  React.useEffect(function () {
+    if (personaResumeOffer && _dsResumeOfferVersionRef.current !== _dsConversationVersion) setPersonaResumeOffer(null);
+  }, [_dsConversationVersion, personaResumeOffer]);
   var _ensureDeviceStorage = function () {
     if (!window.__alloDeviceStoragePromise) {
       window.__alloDeviceStoragePromise = window.alloDeviceStorage ? Promise.resolve(window.alloDeviceStorage) : new Promise(function (resolve, reject) {
@@ -628,6 +779,11 @@ function PersonaChatView(props) {
     });
   };
   var _clearPersonaSnapshot = function (keyOverride) {
+    // A storage bridge may become ready after the user discards or closes.
+    // Invalidate already-fired saves as well as the debounce timer.
+    _dsSaveGenerationRef.current += 1;
+    if (_dsSaveTimerRef.current) clearTimeout(_dsSaveTimerRef.current);
+    _dsSaveTimerRef.current = null;
     var snapshotKeyToClear = typeof keyOverride === 'string' && keyOverride ? keyOverride : _personaSnapshotKey;
     if (!snapshotKeyToClear) return;
     _ensureDeviceStorage().then(function (ds) {
@@ -798,6 +954,8 @@ function PersonaChatView(props) {
   };
   var _dsChatLen = (personaState.chatHistory || []).length;
   React.useEffect(function () {
+    resumeActionPendingRef.current = false;
+    setDsReadReadyKey(null);
     if (!_personaSnapshotEnabled) {
       setPersonaResumeOffer(null);
       if (_personaRetentionDays === 0 && _personaSnapshotResourceId && _personaSnapshotStudentId) _clearPersonaSnapshot(_personaSnapshotKey);
@@ -808,6 +966,7 @@ function PersonaChatView(props) {
     _dsCheckedKeyRef.current = _personaSnapshotKey;
     setPersonaResumeOffer(null);
     var mountMsgs = _dsChatLen;
+    var requestedConversationVersion = _dsConversationVersion;
     _ensureDeviceStorage().then(function (ds) {
       // v1 used one global key for every resource/student. Remove that unsafe
       // legacy record before looking up the scoped v2 snapshot.
@@ -816,6 +975,7 @@ function PersonaChatView(props) {
       });
     }).then(function (snap) {
       if (cancelled || _dsCheckedKeyRef.current !== requestedKey) return;
+      if (_dsClosedRef.current || !_personaSnapshotEnabledRef.current || _dsConversationRef.current.version !== requestedConversationVersion) return;
       var savedTime = snap && Date.parse(snap.savedAt);
       var isExpired = !Number.isFinite(savedTime) || Date.now() - savedTime > _personaRetentionDays * 86400000;
       if (isExpired) {
@@ -831,12 +991,17 @@ function PersonaChatView(props) {
         _clearPersonaSnapshot();
         return;
       }
-      if (normalizedSnapshot.state.chatHistory.length > mountMsgs) setPersonaResumeOffer(normalizedSnapshot);
-    }).catch(function () {});
+      if (normalizedSnapshot.state.chatHistory.length > mountMsgs) {
+        _dsResumeOfferVersionRef.current = requestedConversationVersion;
+        setPersonaResumeOffer(normalizedSnapshot);
+      }
+    }).catch(function () {}).finally(function () {
+      if (!cancelled && !_dsClosedRef.current && _dsCheckedKeyRef.current === requestedKey) setDsReadReadyKey(requestedKey);
+    });
     return function () {
       cancelled = true;
     };
-  }, [_personaSnapshotKey]);
+  }, [_personaSnapshotKey, _personaSnapshotEnabled, _personaRetentionDays]);
   var _dsTopicSparkCount = _boundedSnapshotNumber(personaState.topicSparkCount, 0, 2, 0);
   var _dsSuggestionFingerprint = '';
   try {
@@ -868,16 +1033,20 @@ function PersonaChatView(props) {
     }));
   } catch (_) {}
   React.useEffect(function () {
+    var scheduledSnapshotGeneration = ++_dsSaveGenerationRef.current;
     if (_dsSaveTimerRef.current) {
       clearTimeout(_dsSaveTimerRef.current);
       _dsSaveTimerRef.current = null;
     }
     if (!_personaSnapshotEnabled || personaState.isLoading || _dsChatLen < 2 || personaResumeOffer) return undefined;
+    // Finish the initial read before a panel greeting can replace an older conversation.
+    if (_dsReadReadyKey !== _personaSnapshotKey || _dsClosedRef.current) return undefined;
     var st = personaState;
     var scheduledSnapshotKey = _personaSnapshotKey;
+    var scheduledConversationVersion = _dsConversationVersion;
     _dsSaveTimerRef.current = setTimeout(function () {
       _dsSaveTimerRef.current = null;
-      if (!_personaSnapshotEnabledRef.current || _personaSnapshotLoadingRef.current || _personaSnapshotKeyRef.current !== scheduledSnapshotKey) return;
+      if (_dsClosedRef.current || _dsConversationRef.current.version !== scheduledConversationVersion || _dsSaveGenerationRef.current !== scheduledSnapshotGeneration || !_personaSnapshotEnabledRef.current || _personaSnapshotLoadingRef.current || _personaSnapshotKeyRef.current !== scheduledSnapshotKey) return;
       var avatarOk = typeof st.avatarUrl === 'string' && st.avatarUrl.length < 300000;
       var snap;
       try {
@@ -915,22 +1084,23 @@ function PersonaChatView(props) {
         return;
       }
       _ensureDeviceStorage().then(function (ds) {
-        if (!_personaSnapshotEnabledRef.current || _personaSnapshotLoadingRef.current || _personaSnapshotKeyRef.current !== scheduledSnapshotKey) return;
-        return ds.set('persona_sessions', _personaSnapshotKey, snap);
+        if (_dsClosedRef.current || _dsConversationRef.current.version !== scheduledConversationVersion || _dsSaveGenerationRef.current !== scheduledSnapshotGeneration || !_personaSnapshotEnabledRef.current || _personaSnapshotLoadingRef.current || _personaSnapshotKeyRef.current !== scheduledSnapshotKey) return;
+        return ds.set('persona_sessions', scheduledSnapshotKey, snap);
       }).catch(function () {});
     }, 1500);
     return function () {
+      _dsSaveGenerationRef.current += 1;
       if (_dsSaveTimerRef.current) clearTimeout(_dsSaveTimerRef.current);
       _dsSaveTimerRef.current = null;
     };
-  }, [_personaSnapshotKey, _personaSnapshotEnabled, _personaRetentionDays, personaState.isLoading, _dsChatLen, personaState.harmonyScore, (personaState.earnedBadges || []).length, _dsTopicSparkCount, _dsSuggestionFingerprint, _dsPersistenceFingerprint, !!personaResumeOffer]);
+  }, [_personaSnapshotKey, _personaSnapshotEnabled, _personaRetentionDays, personaState.isLoading, _dsChatLen, personaState.harmonyScore, (personaState.earnedBadges || []).length, _dsTopicSparkCount, _dsSuggestionFingerprint, _dsPersistenceFingerprint, !!personaResumeOffer, _dsReadReadyKey]);
   var _resumeSnapshotName = personaResumeOffer ? personaResumeOffer.state.selectedCharacter && personaResumeOffer.state.selectedCharacter.name || (personaResumeOffer.state.selectedCharacters || []).map(function (c) {
     return c && c.name;
   }).filter(Boolean).join(' & ') || 'your character' : null;
   var _handleResumeSnapshot = function () {
-    if (resumeActionPendingRef.current) return;
+    if (resumeActionPendingRef.current || personaState.isLoading || personaState.isGeneratingTopicSpark || _dsClosedRef.current || !_personaSnapshotEnabledRef.current || _dsResumeOfferVersionRef.current !== _dsConversationRef.current.version) return;
     resumeActionPendingRef.current = true;
-    var snap = personaResumeOffer;
+    var snap = _normalizePersonaResumeSnapshot(personaResumeOffer);
     if (!snap || snap.appId !== (appId || null) || snap.resourceId !== _personaSnapshotResourceId || snap.studentId !== _personaSnapshotStudentId) {
       _clearPersonaSnapshot();
       setPersonaResumeOffer(null);
@@ -938,7 +1108,13 @@ function PersonaChatView(props) {
     }
     if (typeof stopPlayback === 'function') stopPlayback();
     if (typeof setPersonaAutoRead === 'function') setPersonaAutoRead(false);
+    if (personaScrollRef.current) personaScrollRef.current.__alloStickToBottom = true;
+    setConversationPosition({
+      away: false,
+      unread: false
+    });
     setPersonaState(function (prev) {
+      if (prev.isLoading || _getPersonaResumeContext(prev) !== _dsResumeContext) return prev;
       return {
         ...prev,
         ...snap.state,
@@ -969,6 +1145,7 @@ function PersonaChatView(props) {
     setPersonaResumeOffer(null);
   };
   var _handleCloseAndClearSnapshot = function () {
+    _dsClosedRef.current = true;
     _clearPersonaSnapshot();
     if (typeof stopPlayback === 'function') stopPlayback();
     if (typeof setPersonaAutoRead === 'function') setPersonaAutoRead(false);
@@ -1125,7 +1302,8 @@ function PersonaChatView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: _handleResumeSnapshot,
-    className: "text-xs font-bold bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none"
+    disabled: Boolean(personaState.isLoading || personaState.isGeneratingTopicSpark),
+    className: "disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none"
   }, t('persona.resume_btn') || 'Resume'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: _handleDiscardSnapshot,
@@ -1448,12 +1626,10 @@ function PersonaChatView(props) {
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 flex flex-col bg-slate-50/50 relative min-w-0 md:min-w-[320px]"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar",
+    className: "flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600",
     ref: personaScrollRef,
-    onScroll: e => {
-      const el = e.currentTarget;
-      personaScrollRef.current.__alloStickToBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
-    },
+    onScroll: handlePersonaConversationScroll,
+    tabIndex: 0,
     role: "log",
     "aria-live": "polite",
     "aria-atomic": "false",
@@ -1640,7 +1816,7 @@ function PersonaChatView(props) {
     className: "flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-full"
   }, /*#__PURE__*/React.createElement(Volume2, {
     size: 12
-  }), " ", t('persona.speak_definition'))))), !isPersonaFreeResponse && renderPersonaTurnError(), (showPersonaHints || !isPersonaFreeResponse) && (personaState.panelSuggestions || []).length > 0 && !personaState.isLoading && !panelChoicePending ? /*#__PURE__*/React.createElement("div", {
+  }), " ", t('persona.speak_definition'))))), renderPersonaLatestControl(), !isPersonaFreeResponse && renderPersonaTurnError(), (showPersonaHints || !isPersonaFreeResponse) && (personaState.panelSuggestions || []).length > 0 && !personaState.isLoading && !panelChoicePending ? /*#__PURE__*/React.createElement("div", {
     className: "p-3 sm:p-4 bg-white border-t border-slate-200 max-h-[45vh] overflow-y-auto overscroll-contain"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 text-center mb-3 font-medium"
@@ -1757,7 +1933,7 @@ function PersonaChatView(props) {
   }, t('persona.ai_quality_score') || 'AI Reflection Estimate')), /*#__PURE__*/React.createElement("div", {
     className: "bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200 flex items-center justify-center gap-3"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-white shadow-md"
+    className: "w-12 h-12 bg-yellow-700 rounded-full flex items-center justify-center text-white shadow-md"
   }, /*#__PURE__*/React.createElement(Star, {
     size: 24,
     className: "fill-current"
@@ -1852,8 +2028,25 @@ function PersonaChatView(props) {
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 18,
     className: "text-yellow-700 fill-current"
-  }), reflectionBusy ? t('persona.status_grading') : t('persona.submit_xp')))))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "w-full md:w-1/3 max-h-[40vh] md:max-h-none bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 p-3 sm:p-4 md:p-6 flex flex-col items-center text-center overflow-y-auto shrink-0 z-10 relative custom-scrollbar"
+  }), reflectionBusy ? t('persona.status_grading') : t('persona.submit_xp')))))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-persona-character-details": true,
+    "aria-expanded": characterDetailsOpen,
+    "aria-controls": "persona-character-profile",
+    onClick: () => setCharacterDetailsOpen(!characterDetailsOpen),
+    className: "md:hidden flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 text-left text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "min-w-0"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "block text-sm font-bold"
+  }, personaState.selectedCharacter.name), /*#__PURE__*/React.createElement("span", {
+    className: "block text-xs text-slate-600"
+  }, navigationLabel(characterDetailsOpen ? 'hide_details' : 'show_details', characterDetailsOpen ? 'Hide character details' : 'Show character details'))), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    className: "text-xl"
+  }, characterDetailsOpen ? '−' : '+')), /*#__PURE__*/React.createElement("div", {
+    id: "persona-character-profile",
+    className: 'w-full md:w-1/3 max-h-[25vh] md:max-h-none bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 p-3 sm:p-4 md:p-6 ' + (characterDetailsOpen ? 'flex' : 'hidden') + ' md:flex flex-col items-center text-center overflow-y-auto shrink-0 z-10 relative custom-scrollbar'
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-24 h-32 sm:w-32 sm:h-48 md:w-80 md:h-[28rem] bg-yellow-100 rounded-2xl border-4 border-white shadow-xl overflow-hidden mb-3 md:mb-6 shrink-0 relative group"
   }, personaState.avatarUrl && /*#__PURE__*/React.createElement("img", {
@@ -1903,7 +2096,7 @@ function PersonaChatView(props) {
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest"
   }, t('persona.trust_rapport_label')), /*#__PURE__*/React.createElement("span", {
-    className: `text-xs font-bold ${singleRapport >= 70 ? 'text-green-600' : singleRapport >= 30 ? 'text-yellow-600' : 'text-red-500'}`
+    className: `text-xs font-bold ${singleRapport >= 70 ? 'text-green-700' : singleRapport >= 30 ? 'text-yellow-800' : 'text-red-700'}`
   }, singleRapport, "%")), /*#__PURE__*/React.createElement("div", {
     role: "progressbar",
     "aria-label": t('persona.trust_rapport_label'),
@@ -1940,7 +2133,7 @@ function PersonaChatView(props) {
   }, quest.text), !quest.isCompleted && /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] uppercase tracking-wider font-bold opacity-60"
   }, inquiryLabel('bonus', 'Optional story bonus at rapport'), " ", quest.difficulty)))))))), /*#__PURE__*/React.createElement("div", {
-    className: "flex-1 flex flex-col h-full bg-white relative min-w-0"
+    className: "flex-1 min-h-0 flex flex-col bg-white relative min-w-0"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-persona-initial-focus": true,
@@ -2143,12 +2336,10 @@ function PersonaChatView(props) {
     "aria-busy": personaState.isGeneratingTopicSpark || topicSparkPending ? 'true' : 'false',
     className: "rounded border border-red-300 bg-white px-2 py-1 font-bold hover:bg-red-100 disabled:opacity-50"
   }, t('persona.topic_spark_retry')))), /*#__PURE__*/React.createElement("div", {
-    className: "flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30 custom-scrollbar",
+    className: "flex-1 min-h-0 overflow-y-auto p-6 space-y-6 bg-slate-50/30 custom-scrollbar focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600",
     ref: personaScrollRef,
-    onScroll: e => {
-      const el = e.currentTarget;
-      personaScrollRef.current.__alloStickToBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
-    },
+    onScroll: handlePersonaConversationScroll,
+    tabIndex: 0,
     role: "log",
     "aria-live": "polite",
     "aria-atomic": "false",
@@ -2324,7 +2515,7 @@ function PersonaChatView(props) {
     style: {
       animationDelay: '240ms'
     }
-  })))))), /*#__PURE__*/React.createElement("div", {
+  })))))), renderPersonaLatestControl(), /*#__PURE__*/React.createElement("div", {
     className: "bg-white border-t border-slate-100 flex flex-col shrink-0 max-h-[45vh] overflow-y-auto overscroll-contain z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
   }, !isPersonaFreeResponse && renderPersonaTurnError(), isPersonaFreeResponse && !showPersonaHints && !personaState.isLoading && /*#__PURE__*/React.createElement("div", {
     className: "px-4 pt-2 pb-0 flex justify-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 fade-in"
@@ -2422,7 +2613,7 @@ function PersonaChatView(props) {
   }, t('persona.ai_quality_score') || 'AI Reflection Estimate')), /*#__PURE__*/React.createElement("div", {
     className: "bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200 flex items-center justify-center gap-3"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-white shadow-md"
+    className: "w-12 h-12 bg-yellow-700 rounded-full flex items-center justify-center text-white shadow-md"
   }, /*#__PURE__*/React.createElement(Star, {
     size: 24,
     className: "fill-current"
@@ -2555,6 +2746,7 @@ function PersonaChatView(props) {
   }, t('persona.archive_subtitle'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     autoFocus: true,
+    ref: personaArchiveCloseRef,
     "aria-label": t('common.close'),
     onClick: () => setIsPersonaArchiveOpen(false),
     className: "rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
@@ -2566,16 +2758,27 @@ function PersonaChatView(props) {
     className: "text-sm text-slate-600",
     role: "status",
     "aria-live": "polite"
-  }, t('persona.archive_loading')) : personaArchiveError ? /*#__PURE__*/React.createElement("p", {
+  }, t('persona.archive_loading')) : personaArchiveError ? /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-red-700",
     role: "alert"
-  }, t('persona.archive_list_failed')) : personaArchiveRows.sessions.length === 0 ? /*#__PURE__*/React.createElement("p", {
+  }, t('persona.archive_list_failed')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => {
+      _loadPersonaArchive();
+      if (personaArchiveCloseRef.current) personaArchiveCloseRef.current.focus();
+    },
+    className: "min-h-11 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-900 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"
+  }, navigationLabel('archive_retry', 'Retry loading saved sessions'))) : personaArchiveRows.sessions.length === 0 ? /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600"
   }, t('persona.archive_empty')) : /*#__PURE__*/React.createElement("ul", {
     className: "space-y-3"
-  }, personaArchiveRows.sessions.map(function (row) {
+  }, personaArchiveRows.sessions.map(function (row, rowIndex) {
     var rowBusy = personaArchiveBusyKey === row.key;
     var rowArmed = personaArchiveConfirmKey === row.key;
+    var rowAction = personaArchiveAction && personaArchiveAction.key === row.key ? personaArchiveAction : null;
+    var deletePromptId = 'persona-archive-delete-' + rowIndex;
     var rowCraft = row.questionCraft && typeof row.questionCraft === 'object' ? {
       good: Number(row.questionCraft.good) || 0,
       neutral: Number(row.questionCraft.neutral) || 0,
@@ -2586,6 +2789,7 @@ function PersonaChatView(props) {
     var rowCraftTotal = rowCraft ? rowCraft.good + rowCraft.neutral + rowCraft.poor + rowCraft.coached + rowCraft.freeform : 0;
     return /*#__PURE__*/React.createElement("li", {
       key: row.key,
+      "data-persona-archive-row": true,
       className: "rounded-xl border border-slate-200 bg-slate-50 p-3"
     }, /*#__PURE__*/React.createElement("p", {
       className: "break-words [overflow-wrap:anywhere] text-sm font-bold text-slate-900"
@@ -2602,33 +2806,60 @@ function PersonaChatView(props) {
       poor: rowCraft.poor,
       coached: rowCraft.coached,
       freeform: rowCraft.freeform
-    })), /*#__PURE__*/React.createElement("div", {
+    })), rowArmed && /*#__PURE__*/React.createElement("p", {
+      id: deletePromptId,
+      className: "mt-2 text-sm text-red-800"
+    }, archiveActionLabel('delete_prompt', 'Delete this saved session and its narration from this device? This cannot be undone.')), /*#__PURE__*/React.createElement("div", {
       className: "mt-2 flex flex-wrap gap-2"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
-      disabled: rowBusy,
-      "aria-busy": rowBusy ? 'true' : 'false',
+      disabled: Boolean(personaArchiveBusyKey),
+      "aria-busy": rowBusy && rowAction.kind === 'html' ? 'true' : 'false',
+      "aria-label": t('persona.archive_download_page') + ': ' + row.title,
       onClick: function () {
         _archiveDownload(row, 'html');
       },
-      className: "rounded-lg border border-emerald-200 bg-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-800 hover:bg-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
+      className: "min-h-[44px] rounded-lg border border-emerald-200 bg-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-800 hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
     }, t('persona.archive_download_page')), /*#__PURE__*/React.createElement("button", {
       type: "button",
-      disabled: rowBusy,
-      "aria-busy": rowBusy ? 'true' : 'false',
+      disabled: Boolean(personaArchiveBusyKey),
+      "aria-busy": rowBusy && rowAction.kind === 'json' ? 'true' : 'false',
+      "aria-label": t('persona.archive_download_file') + ': ' + row.title,
       onClick: function () {
         _archiveDownload(row, 'json');
       },
-      className: "rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+      className: "min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
     }, t('persona.archive_download_file')), /*#__PURE__*/React.createElement("button", {
       type: "button",
-      disabled: rowBusy,
-      "aria-busy": rowBusy ? 'true' : 'false',
+      "data-persona-archive-delete": true,
+      disabled: Boolean(personaArchiveBusyKey),
+      "aria-busy": rowBusy && rowAction.kind === 'delete' ? 'true' : 'false',
+      "aria-label": (rowArmed ? t('persona.archive_delete_confirm') : t('persona.archive_delete')) + ': ' + row.title,
+      "aria-describedby": rowArmed ? deletePromptId : undefined,
       onClick: function () {
         _archiveDelete(row);
       },
-      className: rowArmed ? 'rounded-lg border border-red-300 bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed' : 'rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed'
-    }, rowArmed ? t('persona.archive_delete_confirm') : t('persona.archive_delete'))));
+      className: rowArmed ? 'min-h-[44px] rounded-lg border border-red-300 bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed' : 'min-h-[44px] rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+    }, rowArmed ? t('persona.archive_delete_confirm') : t('persona.archive_delete')), rowArmed && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      disabled: Boolean(personaArchiveBusyKey),
+      onClick: function (event) {
+        var rowElement = event.currentTarget.closest('[data-persona-archive-row]');
+        var deleteControl = rowElement && rowElement.querySelector('[data-persona-archive-delete]');
+        setPersonaArchiveConfirmKey(null);
+        if (deleteControl) deleteControl.focus({
+          preventScroll: true
+        });
+      },
+      className: "min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+    }, archiveActionLabel('cancel_delete', 'Cancel deletion'))), rowAction && rowAction.status === 'failed' && /*#__PURE__*/React.createElement("p", {
+      role: "alert",
+      className: "mt-2 text-sm text-red-800"
+    }, rowAction.kind === 'delete' ? archiveActionLabel('delete_failed', 'This session could not be deleted. Try again.') : archiveActionLabel('download_failed', 'This session could not be downloaded. Try downloading again.')), rowAction && rowAction.status !== 'failed' && /*#__PURE__*/React.createElement("p", {
+      role: "status",
+      "aria-live": "polite",
+      className: "mt-2 text-sm text-slate-700"
+    }, rowAction.status === 'complete' ? archiveActionLabel('download_started', 'Download started.') : rowAction.kind === 'delete' ? archiveActionLabel('deleting', 'Deleting session…') : archiveActionLabel('downloading', 'Preparing download…')));
   })), personaArchiveRows && Array.isArray(personaArchiveRows.unreadable) && personaArchiveRows.unreadable.length > 0 && /*#__PURE__*/React.createElement("p", {
     className: "mt-3 text-xs text-amber-700"
   }, t('persona.archive_unreadable', {

@@ -1,0 +1,104 @@
+[
+  {
+    "id": "openBim",
+    "theme": "light",
+    "ok": true,
+    "a11y": [],
+    "sizes": [
+      {
+        "width": 375,
+        "scroll": 375
+      },
+      {
+        "width": 320,
+        "scroll": 320
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "organismId",
+    "theme": "light",
+    "ok": true,
+    "a11y": [],
+    "sizes": [
+      {
+        "width": 375,
+        "scroll": 375
+      },
+      {
+        "width": 320,
+        "scroll": 320
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "openBim",
+    "theme": "dark",
+    "ok": true,
+    "a11y": [],
+    "sizes": [
+      {
+        "width": 375,
+        "scroll": 375
+      },
+      {
+        "width": 320,
+        "scroll": 320
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "organismId",
+    "theme": "dark",
+    "ok": true,
+    "a11y": [],
+    "sizes": [
+      {
+        "width": 375,
+        "scroll": 375
+      },
+      {
+        "width": 320,
+        "scroll": 320
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "openBim",
+    "theme": "contrast",
+    "ok": true,
+    "a11y": [],
+    "sizes": [
+      {
+        "width": 375,
+        "scroll": 375
+      },
+      {
+        "width": 320,
+        "scroll": 320
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "organismId",
+    "theme": "contrast",
+    "ok": true,
+    "a11y": [],
+    "sizes": [
+      {
+        "width": 375,
+        "scroll": 375
+      },
+      {
+        "width": 320,
+        "scroll": 320
+      }
+    ],
+    "errors": []
+  }
+]

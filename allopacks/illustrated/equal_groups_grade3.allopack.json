@@ -27,6 +27,14 @@
       "pendingSortImages": 0,
       "review": "Visually reviewed; educator review pending",
       "textPolicy": "Text-free artwork; original activity text stays editable"
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending",
+    "contentRefinements": {
+      "count": 3,
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/equal_groups_grade3/content-refinements.json",
+      "sourceOnlyResourceIds": []
     }
   },
   "sourceTopic": "Multiplication as Equal Groups and Arrays",
@@ -74,7 +82,7 @@
       "title": "What Times Really Means",
       "timestamp": "2026-09-06T03:30:01.000Z",
       "data": "## What Times Really Means\n\nYou already know how to find 4 + 4 + 4. Multiplication is just a shorter way to write that.\n\nWhen you see **4 × 3**, read it out loud as **four groups of three**. Not \"four three.\" Four groups of three. The first number tells you how many groups. The second number tells you how many are in each group. The answer, 12, is called the **product**.\n\nThere is one rule that makes all of this work, and it is easy to skip past. **The groups have to be equal.**\n\nImagine three plates. One has 2 crackers, one has 5, and one has 1. Can you multiply? No. You have to add: 2 + 5 + 1 = 8. Multiplication has nothing to grab onto, because there is no \"how many in each group\" to name.\n\nNow imagine three plates with 4 crackers on every one. That you can multiply. 3 × 4 = 12. The equal groups are what let you take the shortcut.\n\n### The same thing, drawn as a rectangle\n\nAn **array** is equal groups lined up in rows and columns. Three rows of 4 chairs is an array. You can count the chairs one at a time and get 12, or you can multiply and get 12 faster.\n\nArrays show you something surprising. Turn the array of 3 rows of 4 on its side. Now it is 4 rows of 3. Nothing was added or taken away, so the total cannot have changed. It is 12 either way.\n\nThat means **3 × 4 and 4 × 3 give the same product.** This is worth more than it looks. If you know 3 × 8, you also know 8 × 3 for free. Every fact you learn comes with a second one attached.\n\n### Using a fact you already know\n\nSay you get stuck on 9 × 6. You may already know 10 × 6 = 60, because tens are easy. Nine groups is one group less than ten groups. So take one group of 6 away: 60 − 6 = 54.\n\nYou did not memorise anything new. You leaned on a fact you had and moved one step.\n\nThat is really the whole idea. Multiplication counts equal groups fast, and the facts you know can carry you to the ones you do not.",
-      "meta": "3rd Grade • Leveled reading • ~330 words",
+      "meta": "3rd Grade • Leveled reading",
       "imageSlot": "eq-img-array"
     },
     {
@@ -423,6 +431,13 @@
             "hookFact": {
               "text": "Not four three. Four groups of three.",
               "sourceTitle": "What Times Really Means (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/equal_groups_grade3.allopack.json",
+              "sourceResourceId": "eq-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "7d3af2c553d201131b68f037ee7393a88438b96b80e29824a1005c8ef4e03b43"
             }
           },
           {
@@ -453,6 +468,13 @@
             "hookFact": {
               "text": "Every fact you learn comes with a second one attached.",
               "sourceTitle": "What Times Really Means (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/equal_groups_grade3.allopack.json",
+              "sourceResourceId": "eq-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "710cc07782bc82c86a305c0aa5c437e1b80415aacd02387d50a18f4dba2f4c27"
             }
           }
         ]
@@ -909,7 +931,14 @@
           ],
           "deliverable": "A page for the class wall. Show at least four real arrays. Write both facts and the product under each one. Then add one near-miss, with a sentence on why you cannot multiply it.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": true,
+          "factReview": {
+            "status": "inherited-review-attribution",
+            "sourcePack": "allopacks/equal_groups_grade3.allopack.json",
+            "sourceResourceId": "eq-challenge",
+            "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+            "factsHash": "24c3e2647b0147c6bcf325cd3f9cdc2afa7f1f425c64c243c8a8909609b11917"
+          }
         },
         "supports": {
           "parallelExample": {

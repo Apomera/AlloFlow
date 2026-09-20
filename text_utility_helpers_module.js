@@ -423,7 +423,7 @@ const generateHelpfulHint = async (type, text, shouldSpeak = false, deps) => {
     warnLog("Hint generation failed", e);
   }
 };
-const generateWordSearch = (targetLang, deps) => {
+const generateWordSearch = (targetLang, deps, activityData) => {
   const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, glossaryDefinitionLevel, wordSearchLang, creativeMode, standardsInput, targetStandards, dokLevel, alloBotRef, isLineFocusMode, clozeInstanceSet, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setHelpfulHint, setHintHistory, setClozeInstanceSet, setFoundWords, setGameData, setGameMode, setSelectedLetters, setShowWordSearchAnswers, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, fetchTTSBytes, callTTS, playSound, handleScoreUpdate, getDefaultTitle, ClozeInput, highlightGlossaryTerms: highlightGlossaryTerms2, repairGeneratedText: repairGeneratedText2, getReadableContent, generateHelpfulHint: generateHelpfulHint2 } = deps;
   try {
     if (window._DEBUG_PHASE_M) console.log("[PhaseM] generateWordSearch fired");
@@ -433,7 +433,7 @@ const generateWordSearch = (targetLang, deps) => {
   targetLang = targetLang || wordSearchLang || "English";
   const segmenter = typeof Intl.Segmenter === "function" ? new Intl.Segmenter(void 0, { granularity: "grapheme" }) : null;
   const cellsOf = (value) => segmenter ? Array.from(segmenter.segment(value), (part) => part.segment) : Array.from(value);
-  const candidates = (Array.isArray(generatedContent.data) ? generatedContent.data : []).map((item) => {
+  const candidates = (Array.isArray(activityData) ? activityData : Array.isArray(generatedContent.data) ? generatedContent.data : []).map((item) => {
     if (!item) return null;
     let text = item.term;
     if (targetLang !== "English") {

@@ -1,0 +1,31 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "overflow": false,
+      "clipped": false,
+      "paired": true,
+      "targets": true,
+      "keyboardDisclosure": true
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "clipped": false,
+      "paired": true,
+      "targets": true,
+      "keyboardDisclosure": true
+    }
+  ],
+  "assertions": [
+    "Actual daily reports render exact before and after crop identities, stages, health, and readiness",
+    "Historical portraits remain unchanged after tending or replacing live crops",
+    "Annual clearing, perennial carryover, habitat exclusion, empty-to-seed, and crop replacements are distinct",
+    "Missing legacy stage and health values are explicit; full maturity alone does not imply readiness",
+    "Desktop and 320px paired cards, expandable evidence, inspection, and replanting preserve gameplay",
+    "Readable text, still snapshots, forced-color focus, scoped accessibility, and cleanup pass"
+  ],
+  "errors": [],
+  "accessibility": [],
+  "rolloverAccessibility": []
+}

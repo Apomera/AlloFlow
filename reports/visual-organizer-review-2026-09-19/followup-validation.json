@@ -1,0 +1,98 @@
+{
+  "passed": 416,
+  "failed": 0,
+  "files": 17,
+  "aggregation": "Latest result per test file: full 17-file run plus affected 3-file rerun after teacher-preview control fix.",
+  "fileResults": [
+    {
+      "file": "concept_recall.test.js",
+      "passed": 30,
+      "failed": 0
+    },
+    {
+      "file": "games_golden.test.js",
+      "passed": 26,
+      "failed": 0
+    },
+    {
+      "file": "lan_live_session_identity.test.js",
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "file": "live_session_connection_recovery.test.js",
+      "passed": 21,
+      "failed": 0
+    },
+    {
+      "file": "memory_palace.test.js",
+      "passed": 117,
+      "failed": 0
+    },
+    {
+      "file": "memory_palace_generation_runtime.test.js",
+      "passed": 73,
+      "failed": 0
+    },
+    {
+      "file": "multi_bucket_game_dialog_a11y.test.js",
+      "passed": 8,
+      "failed": 0
+    },
+    {
+      "file": "multi_zone_sort_shared_a11y.test.js",
+      "passed": 11,
+      "failed": 0
+    },
+    {
+      "file": "organizer_3d_remote_stop.test.js",
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "file": "organizer_activity_type_pairing.test.js",
+      "passed": 5,
+      "failed": 0
+    },
+    {
+      "file": "organizer_integration_runtime.test.js",
+      "passed": 22,
+      "failed": 0
+    },
+    {
+      "file": "organizer_item_object_render.test.js",
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "file": "organizer_reflection_runtime.test.js",
+      "passed": 24,
+      "failed": 0
+    },
+    {
+      "file": "organizer_reflection_submission.test.js",
+      "passed": 11,
+      "failed": 0
+    },
+    {
+      "file": "pipeline_builder_branching.test.js",
+      "passed": 8,
+      "failed": 0
+    },
+    {
+      "file": "session_transport.test.js",
+      "passed": 45,
+      "failed": 0
+    },
+    {
+      "file": "visual_organizer_hardening.test.js",
+      "passed": 7,
+      "failed": 0
+    }
+  ],
+  "lanChecks": 18,
+  "browserChecks": 10,
+  "hostSourcesParsed": 3,
+  "mirroredRuntimeFiles": 12,
+  "deployed": false
+}

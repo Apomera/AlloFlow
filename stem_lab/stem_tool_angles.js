@@ -700,7 +700,7 @@ window.StemLab = window.StemLab || {
           role: 'tab', 'aria-selected': active,
           'aria-controls': 'stem-angles-panel-' + id,
           tabIndex: active ? 0 : -1,
-          className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-violet-400 ' +
+          style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }, className: 'px-3 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-violet-400 ' +
             (active ? 'bg-purple-700 text-white shadow-md' : 'bg-white text-purple-600 hover:bg-purple-50 border border-purple-600')
         }, icon + ' ' + label);
       };
@@ -809,11 +809,11 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Tab Navigation ──
-        h('div', { className: 'flex gap-2 overflow-x-auto', role: 'tablist', 'aria-label': t('stem.angles.angle_explorer_sections', 'Angle Explorer sections') },
-          tabBtn('explore', 'Explore', '\uD83D\uDCD0'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }, className: 'gap-2', role: 'tablist', 'aria-label': t('stem.angles.angle_explorer_sections', 'Angle Explorer sections') },
+          tabBtn('explore', t('stem.angles.tab_measure_angles', 'Measure angles'), '\uD83D\uDCD0'),
           tabBtn('challenges', 'Challenges', '\uD83C\uDFAF'),
-          tabBtn('reference', 'Learn', '\uD83D\uDCDA'),
-          tabBtn('tools', 'Tools', '\uD83D\uDEE0\uFE0F')
+          tabBtn('reference', t('stem.angles.tab_angle_relationships', 'Angle relationships'), '\uD83D\uDCDA'),
+          tabBtn('tools', t('stem.angles.tab_bisector_calculator', 'Bisector & calculator'), '\uD83D\uDEE0\uFE0F')
         ),
 
         // ── Topic-accent hero band per tab ──

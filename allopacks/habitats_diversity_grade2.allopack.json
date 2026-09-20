@@ -16,7 +16,8 @@
       }
     ],
     "reviewStatus": "AI content and structural checks; educator review pending",
-    "imageStatus": "planned-not-generated"
+    "imageStatus": "planned-not-generated",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Who Lives Here? — Comparing Habitats",
   "history": [
@@ -210,16 +211,16 @@
         "mode": "list",
         "items": [
           {
-            "text": "I notice ____. This matters because ____."
+            "text": "In this place, I found these kinds: ____."
           },
           {
-            "text": "I compared ____ with ____. They differ because ____."
+            "text": "Both places had ____. Only one showed ____."
           },
           {
-            "text": "My evidence is ____. It supports ____."
+            "text": "We looked for the same time. We noticed ____."
           },
           {
-            "text": "At first I thought ____. Now I think ____ because ____."
+            "text": "Our search may have missed ____ because ____."
           }
         ],
         "rubric": "| Look for | Check |\n|---|---|\n| Names the idea | Uses a lesson word correctly |\n| Gives support | Points to an observation or worked example |"
@@ -351,7 +352,7 @@
               "Habitats meet needs of living things."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "aiExample": "Look for life. Draw the plants and animals you see in each place.",
             "mapping": "The cue helps us record what we see. It does not mean we found all the life there.",
             "scaffoldStarter": "My cue is ____. It helps me remember ____.",
@@ -377,7 +378,7 @@
               "Diversity describes variety, not only the number of individuals."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "aiExample": "Count kinds. Ten ants may all be one kind. A bird and an ant are two kinds.",
             "mapping": "The cue helps us count kinds, not just how many things we saw.",
             "scaffoldStarter": "My cue is ____. It helps me remember ____.",
@@ -461,13 +462,13 @@
           ],
           "deliverable": "Make two picture lists. Tell what is alike and what is different. Say what your search may have missed.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {
-            "context": "A classmate checks a related claim from this lesson.",
-            "move": "They use the lesson rule: Habitats meet needs of living things. They record an example, then check whether it supports the claim.",
-            "whyItHelps": "A clear example helps another person check the reasoning instead of trusting a guess."
+            "context": "Two photos show small parts of a pond edge and a lawn.",
+            "move": "List the kinds you can see in each. Count kinds, not just how many living things there are. Name something the photos might miss.",
+            "whyItHelps": "The photos help you practice the same kind of comparison. A photo or short search cannot show everything."
           },
           "frameStarter": "Our evidence is ____. It supports ____. A limit is ____.",
           "frameChoices": [

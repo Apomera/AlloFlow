@@ -1,0 +1,15 @@
+{
+  "checks": [
+    "Inline edit focuses the editor and saves plain-text teacher wording without changing the source",
+    "Teacher edits and pins made during generation survive the arriving suggestions",
+    "Lighter view retains pinned explanations",
+    "Removed supports remain suppressed through regeneration",
+    "Repeated words require a deliberate occurrence choice before saving",
+    "Reopening retains curated wording, pins and removals",
+    "Teacher support controls fit a 320px viewport",
+    "The original pane in Both edits its own preserved reading supports",
+    "No browser runtime errors"
+  ],
+  "errors": [],
+  "scope": "Actual reader and contract in a stateful fixture; AI suggestions and audio callbacks mocked. Host save concurrency is separately tested against extracted production handlers."
+}

@@ -1,0 +1,56 @@
+{
+  "sourceSha256": "44b52d22b42aa0872d8b3e669eff4e3a20a41ea905812deaf9afb9aba3d97289",
+  "scope": "Analysis-only execution of extracted current-source functions with synthetic state; no production storage or application source changes.",
+  "automaticReuse": {
+    "chosen": "preferred-needs-changes",
+    "status": "needs_changes",
+    "approvedAlternativeAvailable": true
+  },
+  "resourceGrowthWithoutPractice": {
+    "contexts": 3,
+    "taps": 0,
+    "score": 0,
+    "growth": "growing"
+  },
+  "unicodeGarden": [
+    {
+      "label": "Café",
+      "key": "café",
+      "score": 0.754,
+      "reportedTaps": 19
+    },
+    {
+      "label": "Café",
+      "key": "café",
+      "score": 0.754,
+      "reportedTaps": 0
+    }
+  ],
+  "unicodeSpelling": {
+    "displayLabel": "Café",
+    "input": "Café",
+    "canonicallyEquivalent": true,
+    "accepted": false
+  },
+  "storySegmentation": {
+    "text": "我喝水。",
+    "label": "水",
+    "found": false
+  },
+  "messageMetrics": {
+    "tapEvents": 3,
+    "messageEvents": 1,
+    "recordedMessageLength": 2,
+    "debriefMean": 2,
+    "csvTotalUtterances": "3",
+    "csvUniqueUtterances": "3",
+    "csvMeanSymbolsPerMessage": "3.00"
+  },
+  "downloadAllScheduling": {
+    "formula": "one anchor click per asset at i * 250 ms",
+    "library1000": {
+      "downloads": 1000,
+      "lastScheduledAfterSeconds": 249.75
+    }
+  }
+}

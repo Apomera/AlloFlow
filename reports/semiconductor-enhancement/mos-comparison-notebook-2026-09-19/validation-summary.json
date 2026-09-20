@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "tests": {
+    "passed": 472,
+    "failed": 0,
+    "files": 24
+  },
+  "browser": {
+    "newWorkflow": true,
+    "gateComparisonRegression": true,
+    "accessibilityScans": 10,
+    "violations": 0,
+    "mobileWidths": [
+      390,
+      320
+    ],
+    "visuallyReviewed": "comparison-notebook-mobile-390.png"
+  },
+  "sourceMirrorParity": true,
+  "sourceSHA256": "5d43a01dbd7554c60a22d09d2213c8d399d23630416d4e8239b189b24dc1d927",
+  "syntaxCheck": true,
+  "scopedDiffCheck": true
+}

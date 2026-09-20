@@ -1,0 +1,32 @@
+[
+  {
+    "width": 1280,
+    "answerOnlyDefault": true,
+    "explicitQuestionPreview": true,
+    "questionOptIn": true,
+    "sourceSnapshotPreserved": true,
+    "saveFailureRetryable": true,
+    "realModalIntegration": true,
+    "keyboardSave": true,
+    "aiCalls": 0,
+    "networkRequests": 0,
+    "axeViolations": 0,
+    "saveControlOverflow": false,
+    "pageErrors": []
+  },
+  {
+    "width": 320,
+    "answerOnlyDefault": true,
+    "explicitQuestionPreview": true,
+    "questionOptIn": true,
+    "sourceSnapshotPreserved": true,
+    "saveFailureRetryable": true,
+    "realModalIntegration": true,
+    "keyboardSave": true,
+    "aiCalls": 0,
+    "networkRequests": 0,
+    "axeViolations": 0,
+    "saveControlOverflow": false,
+    "pageErrors": []
+  }
+]

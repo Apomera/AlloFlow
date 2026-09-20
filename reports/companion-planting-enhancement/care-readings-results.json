@@ -1,0 +1,33 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "overflow": false,
+      "cards": 3,
+      "clipped": false
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "cards": 3,
+      "clipped": false
+    }
+  ],
+  "assertions": [
+    "All concurrent care needs remain visible and only addressed signals clear after real actions",
+    "Meters retain exact values, scopes, and accessible care ranges with no false health recovery",
+    "Nitrogen guidance follows each of 31 crops; habitat and unknown values are excluded",
+    "Desktop, 320px, larger text, keyboard focus, forced colors, and accessibility pass",
+    "Value transitions finish and respect both reduced-motion preferences",
+    "Planning and preview guards, stale-crop navigation, and cleanup remain correct"
+  ],
+  "errors": [],
+  "accessibility": [],
+  "rules": {
+    "crops": 31,
+    "structures": 3,
+    "thresholds": true,
+    "unknownValues": true,
+    "legacyHighValues": true
+  }
+}

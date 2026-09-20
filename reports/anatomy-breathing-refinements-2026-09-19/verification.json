@@ -1,0 +1,52 @@
+{
+  "date": "2026-09-19",
+  "sourceSha256": "692dacc2a6cfda86ae4d0c9511be7c8b210db5d205e574da149ca853dbf4a3d4",
+  "canonical": "stem_lab/stem_tool_anatomy.js",
+  "mirror": "desktop/web-app/public/stem_lab/stem_tool_anatomy.js",
+  "identical": true,
+  "regression": {
+    "tests": 358,
+    "files": 7
+  },
+  "translations": [
+    {
+      "language": "french",
+      "keys": 59,
+      "mirrorIdentical": true
+    },
+    {
+      "language": "spanish_latin_america",
+      "keys": 59,
+      "mirrorIdentical": true
+    },
+    {
+      "language": "arabic",
+      "keys": 59,
+      "mirrorIdentical": true
+    }
+  ],
+  "browser": {
+    "checks": [
+      "keyboard phase selection, consistent airflow and unscored answer revisions",
+      "restores phase and feedback from saved state",
+      "320px and 390px layouts with readable dark-mode feedback",
+      "grade 1 uses simple text and a new concept check",
+      "grade 4 uses simple text and a new concept check",
+      "french translated phase, explanation and feedback",
+      "spanish_latin_america translated phase, explanation and feedback",
+      "arabic translated phase, explanation and feedback",
+      "diaphragm alias supports the same breathing lesson"
+    ],
+    "axeScans": 11,
+    "violations": 0,
+    "incomplete": 0,
+    "errors": 0,
+    "screenshots": 10
+  },
+  "visualReview": [
+    "desktop-in",
+    "desktop-out",
+    "phone-320-dark",
+    "arabic-320"
+  ]
+}

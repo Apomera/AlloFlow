@@ -31,8 +31,13 @@
     "contentRefinements": {
       "review": "Mathematical wording refined; educator review pending",
       "audit": "allopacks/media/volume_grade5/content-refinements.json",
-      "count": 22
-    }
+      "count": 22,
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/volume_grade5/content-refinements.json",
+      "sourceOnlyResourceIds": []
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Volume of Rectangular Prisms",
   "history": [
@@ -79,7 +84,7 @@
       "title": "Filling Space",
       "timestamp": "2026-09-05T23:30:01.000Z",
       "data": "## Filling Space\n\nHere is a formula you have probably met: volume equals length times width times height. It works. But why should multiplying three numbers tell you anything about a box?\n\nStart somewhere simpler. **Volume** is how much space a solid shape takes up. For solids built from cubes, we measure it by counting how many **unit** cubes fit inside, with no gaps and no overlaps. Other shapes may require parts of cubes or other methods. A unit cube is one centimetre on every edge, or one inch, or one metre. Whichever you pick, the answer comes out in **cubic** units, because you are counting cubes.\n\nNow build a box out of cubes and watch what happens.\n\nLay one row along the bottom, four cubes long. Add rows beside it until the floor is covered. If the floor is 4 cubes by 3 cubes, that layer holds 12 cubes. The **area** of the base is 12 square units. A **layer** one unit high above that base contains 12 unit cubes and has volume 12 cubic units.\n\nNow stack. Put an identical layer on top. Then another. If the box is 5 cubes tall, you have 5 layers of 12, which is 60.\n\nThat is the whole formula. Length times width gives you one layer. Multiplying by the height counts the layers. So l × w × h is not three random numbers multiplied. It is *cubes in a layer, times how many layers*.\n\nOnce you see it that way, a shortcut appears. Volume equals **base** area times height, for a prism or cylinder. Height means the perpendicular distance between the parallel bases.\n\nWhat about an L-shaped solid made by joining rectangular **prisms**? Split it into non-overlapping rectangular prisms, find each volume, and add them. Not every solid can be split into rectangular prisms; a sloping roof, for example, may need a different method. Mathematicians call this **decomposing**, and it is the same move you already use with awkward shapes when finding area.\n\nOne last warning worth having. Volume is not the same as **capacity**, quite. Volume is the space a shape takes up. Capacity is how much a container holds. A thick-walled box has less capacity than its outside volume suggests, because the walls take up room too.",
-      "meta": "5th Grade • Leveled reading • ~360 words",
+      "meta": "5th Grade • Leveled reading",
       "imageSlot": "vl-img-layers"
     },
     {
@@ -423,7 +428,7 @@
               "So the formula is cubes in a layer, times layers."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "visual-association",
             "mode": "scaffolded",
             "aiExample": "Picture a rectangular stack of identical slices, each one unit thick. Find the volume of one slice, then multiply by the number of slices. If thickness changes, slice count alone no longer gives height in those units.",
@@ -472,6 +477,13 @@
             "hookFact": {
               "text": "Whichever you pick, the answer comes out in cubic units, because you are counting cubes.",
               "sourceTitle": "Filling Space (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/volume_grade5.allopack.json",
+              "sourceResourceId": "vl-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "a9ff199e92b36a43fc064bf770a2068ffe9322363afc287747d2b80e0721bd42"
             }
           }
         ]
@@ -899,7 +911,14 @@
           ],
           "deliverable": "A table of every box that works with its surface area, a marked sketch of the one you recommend, and two sentences: why it wastes the least, and what you would give up by choosing it.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": true,
+          "factReview": {
+            "status": "inherited-review-attribution",
+            "sourcePack": "allopacks/volume_grade5.allopack.json",
+            "sourceResourceId": "vl-challenge",
+            "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+            "factsHash": "720ba4159a93b7311896606208eefe15038744337e50e6950437ea4a8c7f3797"
+          }
         },
         "supports": {
           "parallelExample": {

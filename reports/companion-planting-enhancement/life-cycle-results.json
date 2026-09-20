@@ -1,0 +1,27 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "readableMode": false,
+      "overflow": false,
+      "clipped": false,
+      "keyboardDisclosure": true
+    },
+    {
+      "width": 320,
+      "readableMode": true,
+      "overflow": false,
+      "clipped": false,
+      "keyboardDisclosure": true
+    }
+  ],
+  "assertions": [
+    "Every catalog choice has the simulation-correct annual, perennial, or habitat label",
+    "Trait search preserves the staged preview, target, funds, and garden",
+    "Illustrations match actual annual clearing and perennial regrowth, including retained health and pests",
+    "Habitat omits crop harvest stages; changing choices resets disclosure; unaffordable purchases remain disabled",
+    "Desktop and 320px layouts, larger text, keyboard disclosure, forced colors, static portraits, and scoped accessibility pass"
+  ],
+  "errors": [],
+  "accessibility": []
+}

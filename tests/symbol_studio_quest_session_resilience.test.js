@@ -162,6 +162,7 @@ describe('Symbol Studio AAC session resilience', () => {
     expect(usage['quest-profile'].sessions).toHaveLength(1);
     expect(usage['quest-profile'].sessions[0].entries).toHaveLength(1);
     await act(async () => { await vi.advanceTimersByTimeAsync(5100); });
+    click('Close session summary');
     click('Use board in AAC mode');
     expect(host.querySelector('[aria-label^="Sentence strip"]').getAttribute('aria-label')).toContain('empty');
     click('Exit AAC mode');

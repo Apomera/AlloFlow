@@ -38,6 +38,13 @@
       "pendingSortImages": 0,
       "review": "Visually reviewed; educator review pending",
       "textPolicy": "Text-free artwork; original activity text stays editable"
+    },
+    "contentRefinements": {
+      "count": 70,
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/plant_needs_grade3/content-refinements.json",
+      "sourceOnlyResourceIds": []
     }
   },
   "sourceTopic": "What Plants Need to Grow",

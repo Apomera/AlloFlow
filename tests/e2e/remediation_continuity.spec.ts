@@ -13,8 +13,10 @@ async function mountWorkspace(page: Page, savedBatch: any = null) {
   await page.setContent('<!doctype html><html><body><div id="root"></div></body></html>');
   for (const file of ['desktop/web-app/node_modules/react/umd/react.development.js',
     'desktop/web-app/node_modules/react-dom/umd/react-dom.development.js',
-    'doc_pipeline_module.js', 'view_pdf_audit_module.js', 'app_styles_module.js']) await page.addScriptTag({ path: path.join(ROOT, file) });
-  await page.addStyleTag({ path: path.join(ROOT, 'app/static/css/main.bba82ce3.css') });
+    'verification_policy_module.js', 'doc_pipeline_module.js', 'view_pdf_audit_module.js', 'app_styles_module.js']) await page.addScriptTag({ path: path.join(ROOT, file) });
+  const css = fs.readdirSync(path.join(ROOT, 'app/static/css')).find(file => /^main\..*\.css$/.test(file));
+  if (!css) throw new Error('Built application stylesheet is missing');
+  await page.addStyleTag({ path: path.join(ROOT, 'app/static/css', css) });
   await page.evaluate(({ names, savedBatch }) => {
     const w = window as any;
     w.warnLog = () => {}; w.debugLog = () => {};
@@ -83,7 +85,7 @@ test('modal retains active runs across manual, review, auto, batch and focused m
   expect(errors).toEqual([]);
 });
 
-const SHOTS = path.join(ROOT, 'reports/remediation-recovery-2026-09-12');
+const SHOTS = process.env.REMEDIATION_QA_SHOTS || path.join(ROOT, 'reports/remediation-recovery-2026-09-12');
 async function setResult(page: Page, patch: any = {}) {
   await page.evaluate(patch => {
     const w = window as any;
@@ -566,5 +568,302 @@ test('per-file review preserves the active document and is readable with keyboar
   await expect(review).not.toHaveAttribute('open');
   expect(await page.evaluate(() => (window as any).__modalState.pendingPdfFile.name)).toBe('sample.docx');
   expect(await page.evaluate(() => (window as any).__originalPanel === document.querySelector('[data-help-key="pdf_audit_view_panel"]'))).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+
+async function deferVisibleAudits(page: Page) {
+  await page.evaluate(() => {
+    const w = window as any;
+    w.__visibleAudits = []; w.__visibleAuditFixes = 0; w.__auditStopEpochs = [];
+    w.__setModalState({
+      runPdfAccessibilityAudit: () => new Promise(resolve => {
+        // Deliberately ignore abort, like a parser or provider that returns late.
+        w.__visibleAudits.push({ resolve, controller: new AbortController() });
+      }),
+      fixAndVerifyPdf: async () => { w.__visibleAuditFixes++; return null; },
+      _docPipeline: Object.assign({}, w.__modalState._docPipeline, {
+        getPdfAuditWait: () => null,
+        stopPdfAccessibilityAudit: (epoch: number) => {
+          w.__auditStopEpochs.push(epoch);
+          w.__visibleAudits.at(-1).controller.abort();
+          return true;
+        },
+      }),
+    });
+  });
+}
+
+test('initial audit Stop restores the attached chooser and ignores an abort-insensitive late result', async ({ page }) => {
+  const { dialog, errors } = await mountWorkspace(page);
+  await deferVisibleAudits(page);
+  const start = page.locator('[data-help-key="pdf_audit_view_make_accessible_btn"]');
+  await start.click();
+  await expect(page.getByRole('button', { name: 'Stop audit', exact: true })).toBeEnabled();
+  await expect(page.locator('[data-help-key="pdf_audit_view_close_btn"]')).toBeDisabled();
+  await page.getByRole('button', { name: 'Stop audit', exact: true }).click();
+  await expect(dialog).toBeVisible();
+  await expect(start).toBeEnabled();
+  await expect(start).toBeFocused();
+  await expect(page.locator('[data-help-key="pdf_audit_view_close_btn"]')).toBeEnabled();
+  expect(await page.evaluate(() => {
+    const w = window as any;
+    return { chooser: w.__modalState.pdfAuditResult._choosing, attached: w.__modalState.pendingPdfFile.name,
+      loading: w.__modalState.pdfAuditLoading, aborted: w.__visibleAudits[0].controller.signal.aborted,
+      stoppedEpochs: w.__auditStopEpochs, fixes: w.__visibleAuditFixes };
+  })).toEqual({ chooser: true, attached: 'sample.docx', loading: false, aborted: true, stoppedEpochs: [4], fixes: 0 });
+  await page.evaluate(async () => {
+    const w = window as any;
+    w.__visibleAudits[0].resolve({ score: 37, fileName: 'late-old-result.docx', critical: [], serious: [], moderate: [], minor: [] });
+    await new Promise(resolve => setTimeout(resolve, 350));
+  });
+  await expect(start).toBeEnabled();
+  expect(await page.evaluate(() => ({ chooser: (window as any).__modalState.pdfAuditResult._choosing, fixes: (window as any).__visibleAuditFixes })))
+    .toEqual({ chooser: true, fixes: 0 });
+  expect(errors).toEqual([]);
+});
+
+test('initial audit restart owns its result when the stopped audit finishes afterward', async ({ page }) => {
+  const { errors } = await mountWorkspace(page);
+  await deferVisibleAudits(page);
+  await page.locator('[data-help-key="pdf_audit_view_make_accessible_btn"]').click();
+  await page.getByRole('button', { name: 'Stop audit', exact: true }).click();
+  await expect(page.locator('[data-help-key="pdf_audit_view_make_accessible_btn"]')).toBeEnabled();
+  const manual = page.locator('[data-help-key="pdf_workspace_manual"]');
+  await manual.locator('summary').click();
+  await page.locator('[data-help-key="pdf_audit_view_start_btn"]').click();
+  await expect.poll(() => page.evaluate(() => (window as any).__visibleAudits.length)).toBe(2);
+  await page.evaluate(() => (window as any).__visibleAudits[1].resolve({
+    score: 91, fileName: 'new-result.docx', fileSize: 100, pageCount: 1,
+    critical: [], serious: [], moderate: [], minor: [], _auditFinalized: true,
+  }));
+  await expect(page.locator('[data-help-key="pdf_audit_results_score_badge"]')).toContainText('91');
+  await expect(page.locator('[data-help-key="pdf_audit_view_close_btn"]')).toBeEnabled();
+  await page.evaluate(async () => {
+    (window as any).__visibleAudits[0].resolve({ score: 37, fileName: 'late-old-result.docx' });
+    await new Promise(resolve => setTimeout(resolve, 350));
+  });
+  await expect(page.locator('[data-help-key="pdf_audit_results_score_badge"]')).toContainText('91');
+  expect(await page.evaluate(() => {
+    const w = window as any;
+    return { name: w.__modalState.pdfAuditResult.fileName, loading: w.__modalState.pdfAuditLoading, fixes: w.__visibleAuditFixes };
+  })).toEqual({ name: 'new-result.docx', loading: false, fixes: 0 });
+  expect(errors).toEqual([]);
+});
+
+test('initial audit wait explanations and countdown remain readable on a phone in dark and contrast themes', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  const { errors } = await mountWorkspace(page);
+  await deferVisibleAudits(page);
+  await page.clock.install();
+  await page.evaluate(() => {
+    const w = window as any;
+    w.__auditWaitSnapshot = { reason: 'pacing', until: Date.now() + 3000 };
+    w.__auditWaitEpochs = [];
+    w.__setModalState({ theme: 'dark', _docPipeline: Object.assign({}, w.__modalState._docPipeline, {
+      getPdfAuditWait: (epoch: number) => {
+        w.__auditWaitEpochs.push(epoch);
+        const current = w.__auditWaitSnapshot;
+        return { reason: current.reason, remainingMs: current.until ? Math.max(0, current.until - Date.now()) : null,
+          pacingMs: 0, recoveryMs: 0, queueMs: 0, extraRequestPacing: true };
+      },
+    }) });
+  });
+  await page.locator('[data-help-key="pdf_audit_view_make_accessible_btn"]').click();
+  const wait = page.locator('[data-audit-wait]');
+  const status = page.getByTestId('pdf-workspace-header').getByRole('status');
+  await expect(wait).toHaveAttribute('data-audit-wait', 'pacing');
+  await expect(wait.getByRole('status')).toContainText('Spacing out AI requests');
+  await expect(status).toHaveText('Audit: spacing AI requests');
+  await expect(wait.locator('[aria-hidden="true"]')).toHaveText('Next request in about 3s.');
+  await page.clock.runFor(1000);
+  await expect(wait.locator('[aria-hidden="true"]')).toHaveText('Next request in about 2s.');
+  await page.evaluate(() => { (window as any).__auditWaitSnapshot = { reason: 'queue', until: null }; });
+  await page.clock.runFor(1000);
+  await expect(wait.getByRole('status')).toContainText('Waiting for another AI request to finish');
+  await expect(status).toHaveText('Audit: AI request queued');
+  await expect(wait.locator('[aria-hidden="true"]')).toHaveCount(0);
+  await page.evaluate(() => { (window as any).__auditWaitSnapshot = { reason: 'recovery', until: Date.now() + 6000 }; });
+  await page.clock.runFor(1000);
+  await expect(wait.getByRole('status')).toContainText('Waiting before retrying the AI service');
+  await expect(status).toHaveText('Audit: waiting for AI service');
+  await expect(wait.locator('[aria-hidden="true"]')).toHaveText('Next request in about 5s.');
+  await page.addScriptTag({ path: path.join(ROOT, 'node_modules/axe-core/axe.min.js') });
+  await page.clock.resume();
+  for (const theme of ['dark', 'contrast']) {
+    await page.evaluate(theme => (window as any).__setModalState({ theme }), theme);
+    const shell = page.locator('.pdf-workspace-shell');
+    await expect.poll(() => shell.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+    const violations = await page.evaluate(async () => (await (window as any).axe.run({ include: [
+      ['.pdf-workspace-header'], ['[data-audit-wait]'], ['[data-help-key="pdf_audit_stop"]'],
+    ] })).violations);
+    expect(violations, theme).toEqual([]);
+  }
+  expect(await page.evaluate(() => [...new Set((window as any).__auditWaitEpochs)])).toEqual([4]);
+  await page.getByRole('button', { name: 'Stop audit', exact: true }).click();
+  await expect(wait).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+
+// Bind completed result fixtures to their exact HTML, as finalization does.
+async function completeResult(page: Page, patch: any = {}) {
+  await setResult(page, {
+    verificationState: 'complete', verificationReasons: [], _aiVerificationIncomplete: false,
+    verificationCoverage: { standard: 'WCAG 2.2 AA', ai: 'complete', axe: 'complete', equalAccess: 'complete' },
+    verificationAudit: { score: 100, issues: [], critical: [], serious: [], moderate: [], minor: [] },
+    axeAudit: { score: 100, totalViolations: 0, totalIncomplete: 0, incomplete: [], critical: [], serious: [], moderate: [], minor: [], passes: [] },
+    secondEngineAudit: { score: 100, failViolations: 0, potentialViolations: 0, manualViolations: 0, reviewFindingCount: 0, fails: [], potentialFindings: [], manualFindings: [] },
+    ...patch,
+  });
+  const html = await page.evaluate(() => (window as any).__modalState.pdfFixResult.accessibleHtml);
+  const crypto = await import('node:crypto');
+  const binding = { version: 1, algorithm: 'SHA-256', digest: crypto.createHash('sha256').update(html).digest('hex'), utf8ByteLength: Buffer.byteLength(html) };
+  await page.evaluate(binding => {
+    const w = window as any; const result = { ...w.__modalState.pdfFixResult, verificationHtmlBinding: binding };
+    Object.defineProperty(result, '_verificationHtmlSnapshot', { value: result.accessibleHtml, enumerable: false });
+    Object.defineProperty(result, '_verificationHtmlBindingDigest', { value: binding.digest, enumerable: false });
+    w.__setModalState({ pdfFixResult: result });
+  }, binding);
+}
+
+test('results lead with accurate static-scope verification and optional repair tools use native disclosure', async ({ page }) => {
+  const { errors } = await mountWorkspace(page);
+  await completeResult(page, { verificationState: 'complete-for-tested-scope', verificationReasons: ['static-source-audit'] });
+  const verification = page.locator('#pdf-verification-status');
+  const repairs = page.locator('#pdf-additional-repairs');
+  await expect(verification.getByRole('heading')).toHaveText('WCAG verification: Complete for static source');
+  await expect(verification).toContainText('Review keyboard navigation and live interactions');
+  await expect(page.locator('.pdf-workspace-primary')).toHaveAccessibleName('Review tested scope');
+  expect(await verification.evaluate(el => !!(el.compareDocumentPosition(document.querySelector('#pdf-additional-repairs')!) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+  await expect(repairs).not.toHaveAttribute('open');
+  const summary = repairs.locator('summary'); await summary.focus(); await page.keyboard.press('Enter');
+  await expect(repairs).toHaveAttribute('open', '');
+  await page.keyboard.press('Tab'); await expect(repairs.getByRole('button').first()).toBeFocused();
+  await summary.focus(); await page.keyboard.press('Space'); await expect(repairs).not.toHaveAttribute('open');
+  await page.locator('.pdf-workspace-primary').click(); await expect(verification).toBeFocused();
+  await page.evaluate(() => { const w = window as any; w.__setModalState({ pdfFixResult: { ...w.__modalState.pdfFixResult, accessibleHtml: w.__modalState.pdfFixResult.accessibleHtml + '<p>Changed after verification.</p>' } }); });
+  await expect(verification.getByRole('heading')).toHaveText('WCAG verification: Partial');
+  await expect(page.locator('.pdf-workspace-primary')).toHaveAccessibleName('Review verification');
+  expect(errors).toEqual([]);
+});
+
+test('results next action follows incomplete checks, manual review, repair findings and preservation concerns', async ({ page }) => {
+  const { errors } = await mountWorkspace(page);
+  await setResult(page); const primary = page.locator('.pdf-workspace-primary');
+  await expect(primary).toHaveAccessibleName('Review verification');
+  await primary.click(); await expect(page.locator('#pdf-verification-status')).toBeFocused();
+  await completeResult(page, {
+    verificationState: 'review-required',
+    axeAudit: { score: 100, totalViolations: 0, totalIncomplete: 1, critical: [], serious: [], moderate: [], minor: [], incomplete: [{ id: 'color-contrast', description: 'Check the contrast against the image background.', nodes: [] }] },
+  });
+  await expect(primary).toHaveAccessibleName('Review findings'); await primary.click();
+  await expect(page.locator('#pdf-review-findings')).toBeFocused();
+  await expect(page.locator('#pdf-review-findings')).toContainText('Check the contrast against the image background.');
+  await completeResult(page, { verificationState: 'review-required', verificationAudit: { score: 90, issues: [{ id: 'link-name', severity: 'serious', issue: 'Name the link' }], critical: [], serious: [], moderate: [], minor: [] } });
+  await expect(primary).toHaveAccessibleName('Review repair options'); await primary.click();
+  await expect(page.locator('#pdf-additional-repairs')).toHaveAttribute('open', '');
+  await expect(page.locator('#pdf-additional-repairs > summary')).toBeFocused();
+  await completeResult(page, { fidelityLimited: true, fidelityNotes: ['Compare the table wording with the source.'] });
+  await expect(primary).toHaveAccessibleName('Review document preservation'); await primary.click();
+  await expect(page.locator('#pdf-content-fidelity-review')).toBeFocused();
+  await expect(page.locator('#pdf-content-fidelity-review')).toContainText('Compare the table wording with the source.');
+  expect(errors).toEqual([]);
+});
+
+test('export formats use native tab order and preserve focus after forwarding a download', async ({ page }) => {
+  const { errors } = await mountWorkspace(page); await setResult(page);
+  await page.evaluate(() => (window as any).__setModalState({ pendingPdfFile: { name: 'sample.pdf', type: 'application/pdf', size: 100 } }));
+  await page.getByTestId('pdf-workspace-header').getByRole('button', { name: 'Downloads', exact: true }).click();
+  const formats = page.getByRole('group', { name: 'Export formats', exact: true });
+  await expect(formats).toBeVisible(); await expect(formats.getByRole('menuitem')).toHaveCount(0);
+  await expect(formats.getByRole('button', { name: /Tagged PDF/ })).toHaveText(/Tagged PDF \(\.pdf\)/);
+  await page.keyboard.press('Tab'); await expect(formats.getByRole('button', { name: /Tagged PDF/ })).toBeFocused();
+  await page.keyboard.press('Tab'); const word = formats.getByRole('button', { name: /Word/ }); await expect(word).toBeFocused();
+  await page.evaluate(() => {
+    const w = window as any; w.__forwardedWordExports = 0;
+    document.querySelector('#allo-export-docx')!.addEventListener('click', e => { e.preventDefault(); e.stopImmediatePropagation(); w.__forwardedWordExports++; }, true);
+  });
+  await page.keyboard.press('Enter');
+  expect(await page.evaluate(() => (window as any).__forwardedWordExports)).toBe(1);
+  await expect(word).toBeFocused(); await expect(formats).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+async function enableReviewCommits(page: Page) {
+  await page.evaluate(() => {
+    const w = window as any;
+    w.__rejectReviewCommits = false;
+    w.__setModalState({
+      capturePdfHtmlCommitToken: () => ({ documentEpoch: w.__modalState.pdfDocumentEpoch, revision: 0, html: w.__modalState.pdfFixResult?.accessibleHtml }),
+      commitPdfFixResultIfCurrent: (token: any, update: any) => {
+        const state = w.__modalState;
+        if (w.__rejectReviewCommits || !token || token.documentEpoch !== state.pdfDocumentEpoch || token.html !== state.pdfFixResult?.accessibleHtml) return false;
+        w.__setModalState({ pdfFixResult: update(state.pdfFixResult) });
+        return true;
+      },
+    });
+  });
+}
+
+test('human review keeps focus, supports individual undo and preserves verification evidence', async ({ page }) => {
+  const { errors } = await mountWorkspace(page);
+  await completeResult(page, { verificationState: 'review-required', axeAudit: {
+    score: 100, totalViolations: 0, totalIncomplete: 2, critical: [], serious: [], moderate: [], minor: [], passes: [],
+    incomplete: [
+      { id: 'color-contrast', description: 'Check text against the image background.', nodes: [] },
+      { id: 'link-in-text-block', description: 'Check that the link is distinguishable without color.', nodes: [] },
+    ],
+  } });
+  await enableReviewCommits(page);
+  await page.locator('.pdf-workspace-primary').click();
+  const queue = page.locator('#pdf-review-findings');
+  const mark = (id: string) => queue.locator('[data-review-action="mark"][data-review-key="axe|incomplete|' + id + '"]');
+  const before = await page.evaluate(() => (window as any).__modalState.pdfFixResult.accessibleHtml);
+  await mark('color-contrast').click();
+  await expect(mark('link-in-text-block')).toBeFocused();
+  await expect(queue).toContainText('1 pending');
+  await queue.locator('.pdf-workspace-reviewed > summary').click();
+  await queue.locator('[data-review-action="undo"][data-review-key="axe|incomplete|color-contrast"]').click();
+  await expect(mark('color-contrast')).toBeFocused();
+  await expect(queue).toContainText('2 pending');
+  await mark('color-contrast').click(); await mark('link-in-text-block').click();
+  await expect(queue.locator('[data-review-completion]')).toBeFocused();
+  await expect(queue).toContainText('0 pending');
+  await expect(page.locator('#pdf-verification-status').getByRole('heading')).toHaveText('WCAG verification: Human review required');
+  expect(await page.evaluate(() => {
+    const w = window as any; const result = w.__modalState.pdfFixResult;
+    return { html: result.accessibleHtml, live: w.__modalState._docPipeline.isLiveVerificationHtmlBound(result), reviewed: Object.keys(result.reviewedFindings || {}).length };
+  })).toEqual({ html: before, live: true, reviewed: 2 });
+  const reviewed = queue.locator('.pdf-workspace-reviewed');
+  if (await reviewed.getAttribute('open') === null) await reviewed.locator('summary').click();
+  await queue.locator('[data-review-action="reset"]').click();
+  await expect(mark('color-contrast')).toBeFocused();
+  await page.evaluate(() => { (window as any).__rejectReviewCommits = true; });
+  await mark('color-contrast').click();
+  await expect(mark('color-contrast')).toBeFocused(); await expect(queue).toContainText('2 pending');
+  expect(await page.evaluate(() => Object.keys((window as any).__modalState.pdfFixResult.reviewedFindings || {}).length)).toBe(0);
+  await queue.locator('[data-review-action="workbench"][data-review-key="axe|incomplete|color-contrast"]').click();
+  await expect(page.locator('#allo-sec-workbench')).toHaveAttribute('open', '');
+  await expect(page.locator('#allo-sec-workbench > summary')).toBeFocused();
+  await expect(page.getByRole('textbox', { name: 'Expert remediation command', exact: true })).toHaveValue(/Check text against the image background/);
+  expect(errors).toEqual([]);
+});
+
+test('changed documents explain why previous engine results are not current', async ({ page }) => {
+  const { errors } = await mountWorkspace(page);
+  await completeResult(page);
+  await page.evaluate(() => {
+    const w = window as any; const result = w.__modalState.pdfFixResult;
+    w.__setModalState({ pdfFixResult: { ...result, accessibleHtml: result.accessibleHtml.replace('Read the passage', 'Read the updated passage') } });
+  });
+  const card = page.locator('#pdf-verification-status');
+  await expect(card.getByRole('heading')).toHaveText('WCAG verification: Partial');
+  await card.getByText('Why this status?', { exact: true }).click();
+  await expect(card).toContainText('Run verification again');
+  await expect(card).not.toContainText('verification-html-binding-missing-or-stale');
+  const engines = card.getByTestId('pdf-verification-engine-list');
+  await expect(engines.locator('[data-verification-freshness="unconfirmed"]')).toHaveCount(3);
+  await expect(page.locator('.pdf-workspace-primary')).toHaveAccessibleName('Review verification');
   expect(errors).toEqual([]);
 });

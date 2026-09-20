@@ -73,12 +73,46 @@ describe('resource restore handler extraction', () => {
 
     deps._alloBuildLocalAacPayload.mockReturnValue(null);
     deps._alloFollowResourceLive.mockClear();
-    restoreView(item, {}, deps);
+    expect(restoreView(item, {}, deps)).toBe(false);
     expect(deps.addToast).toHaveBeenCalledWith(
       'This AAC Board could not be opened because its portable data is invalid.',
       'error',
     );
     expect(deps._alloFollowResourceLive).not.toHaveBeenCalled();
+  });
+
+  it('preserves waiting homework after the real AAC validator rejects a manual open, then cancels it after a successful open', () => {
+    const aacWindow = { React: {}, AlloModules: {} };
+    new Function('window', readFileSync('live_aac_module.js', 'utf8'))(aacWindow);
+    const invalid = { id: 'broken-aac', type: 'aac-board', data: {} };
+    const waiting = { id: 'waiting-reading', type: 'simplified', data: 'Fair is foul.' };
+    const deps = genericDeps({
+      _alloBuildLocalAacPayload: aacWindow.AlloModules.LiveAac.buildLocal,
+      addToast: vi.fn(),
+    });
+    expect(deps._alloBuildLocalAacPayload(invalid.data, invalid.id)).toBeNull();
+    const host = readFileSync('AlloFlowANTI.txt', 'utf8');
+    const wrapper = host.slice(
+      host.indexOf('  const pendingQrAssignmentOpenGenerationRef = useRef(0);'),
+      host.indexOf('  // BEGIN LEARNING_WEB_RESOURCE_OPEN_BRIDGE'),
+    );
+    let pending = waiting;
+    const generationRef = { current: 0 };
+    const setPending = vi.fn(value => { pending = typeof value === 'function' ? value(pending) : value; });
+    const open = new Function('window', '_alloMiscHandlersDeps', 'useRef', 'setPendingQrAssignmentResource',
+      wrapper + '\nreturn handleRestoreView;')(window, () => deps, () => generationRef, setPending);
+
+    expect(open(invalid)).toBe(false);
+    expect(deps.setGeneratedContent).not.toHaveBeenCalled();
+    expect(deps.setActiveView).not.toHaveBeenCalled();
+    expect(pending).toBe(waiting);
+    expect(generationRef.current).toBe(0);
+    expect(setPending).not.toHaveBeenCalled();
+
+    expect(open({ id: 'valid-quiz', type: 'quiz', data: { questions: [] } })).toBeUndefined();
+    expect(deps.setActiveView).toHaveBeenCalledWith('quiz');
+    expect(pending).toBeNull();
+    expect(generationRef.current).toBe(1);
   });
 
   it('recomputes portable Word Sounds audio readiness instead of trusting saved flags', () => {
@@ -132,7 +166,8 @@ describe('resource restore handler extraction', () => {
       owner.indexOf('const detectClimaxArchetype'),
     );
 
-    expect(wrapper).toContain('moduleApi.handleRestoreView(item, options, _alloMiscHandlersDeps())');
+    expect(wrapper).toContain('const { preservePendingAssignment, ...restoreOptions } = options || {}');
+    expect(wrapper).toContain('moduleApi.handleRestoreView(item, restoreOptions, _alloMiscHandlersDeps())');
     expect(wrapper).not.toContain("item.type === 'word-sounds'");
     expect(implementation).toContain("item.type === 'word-sounds'");
     expect(implementation).toContain("item.type === 'manipulative-resource'");

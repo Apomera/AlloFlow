@@ -1,0 +1,15 @@
+{
+  "sourceSha256": "aff5dd7e1078d00d5a71fc3316f71c09289dd0ab04e148d36964b737ac97361c",
+  "mirrorMatches": true,
+  "previewMatches": true,
+  "syntaxValid": true,
+  "technologies": 9,
+  "scenarios": 18,
+  "componentLinks": 27,
+  "testsPassed": 115,
+  "testFiles": 4,
+  "accessibilityAudits": 18,
+  "extremePercentagesAndLongNames": true,
+  "pageErrors": [],
+  "consoleErrors": []
+}

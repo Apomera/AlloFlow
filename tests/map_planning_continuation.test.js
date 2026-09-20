@@ -20,6 +20,11 @@ function runtime(){
  vm.runInNewContext(fs.readFileSync('concept_map_handlers_source.jsx','utf8'),sandbox);
  return {window,sandbox,utils:window.AlloModules.UtilsPure,cmap:window.AlloModules.CmapHandlers};
 }
+function currentHostHandlers(window,deps){
+ window.React=window.React||{};
+ vm.runInNewContext(fs.readFileSync('host_handlers_module.js','utf8'),{window,console});
+ return window.AlloModules.HostHandlers(deps);
+}
 const clone=v=>JSON.parse(JSON.stringify(v));
 function saved(data){
  const {utils}=runtime(),graph=utils.outlineNodeBlueprints(data);
@@ -83,8 +88,10 @@ describe('saved organizer synchronization',()=>{
   const {window}=runtime(),source=fs.readFileSync(file,'utf8');
   let active={id:'saved',type:'outline',data:saved(base)},history=[active];
   const a=source.indexOf('const handleOutlineChange ='),b=source.indexOf('const handleTimelineChange =',a);
-  const handler=new Function('window','generatedContent','setGeneratedContent','setHistory','addToast',source.slice(a,b)+';return handleOutlineChange;');
-  handler(window,active,v=>active=v,f=>history=f(history),vi.fn())(0,'title','Changed');
+  const deps={get generatedContent(){return active;},setGeneratedContent:v=>active=v,setHistory:f=>history=f(history),addToast:vi.fn()};
+  const handlers=currentHostHandlers(window,deps);
+  const handler=new Function('_alloHostHandlers',source.slice(a,b)+';return handleOutlineChange;')(()=>handlers);
+  handler(0,'title','Changed');
   expect(active.data.nodes.find(n=>n.id==='b-0').text).toBe('Changed');
   expect(clone(history)[0].data.nodes).toEqual(clone(active).data.nodes);
  });
@@ -188,7 +195,9 @@ describe('planning disclosure',()=>{
 
 describe('canonical saved flow graphs',()=>{
  const source=fs.readFileSync('AlloFlowANTI.txt','utf8'),a=source.indexOf('  const parseFlowChartData ='),b=source.indexOf('  // Shared deps for every CmapHandlers',a);
- const parse=new Function('t',source.slice(a,b)+';return parseFlowChartData;')(k=>k);
+ const r=runtime();
+ const handlers=currentHostHandlers(r.window,{t:k=>k});
+ const parse=new Function('_alloHostHandlers',source.slice(a,b)+';return parseFlowChartData;')(()=>handlers);
  it('reconnects the end marker after adding a step to an actual saved flow chart',()=>{
   const r=runtime(),data={main:'Process',structureType:'Flow Chart',branches:[{title:'First',items:[]}]},graph=parse(data);
   const before={...data,...graph};
@@ -250,7 +259,11 @@ describe('dispatcher guide provenance',()=>{
  });
  it.each(['AlloFlowANTI.txt','desktop/web-app/src/AlloFlowANTI.txt','desktop/web-app/src/App.jsx'])('wires traced context, scoped map cancellation and safe resource opening in %s',file=>{
   const host=fs.readFileSync(file,'utf8');
-  expect(host).toContain('trace: options.trace');
+  const a=host.indexOf('const getLessonContext ='),b=host.indexOf('\n  };',a)+5;
+  const getLessonContext=vi.fn(),trace=vi.fn(),window={AlloModules:{ExportHandlers:{getLessonContext}}};
+  const wrapper=new Function('window','history','targetStandards','inputText','activeUnitId','selectedReadingSourceId',host.slice(a,b)+';return getLessonContext;')(window,[],[],'','unit','source');
+  wrapper([],{trace});
+  expect(getLessonContext.mock.calls[0][1].trace).toBe(trace);
   expect(host).toContain('}, [organizerHydrationKey]);');
   expect(host).toContain('scope.request.cancelled = true; scope.request = null; setIsMapLayoutProcessing(false);');
   expect(host).toContain('setIsProcessing: setIsMapLayoutProcessing');

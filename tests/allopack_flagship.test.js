@@ -169,8 +169,9 @@ describe('authoring rules (the ones that bite)', () => {
     expect(hp).toContain('{itemMeta && <span>');
   });
   it('whole-pack translate repoints directions goal tethers and isolates per-item failures (source pins)', () => {
-    expect(anti).toContain('_translatedIdMap[item.id] = newItem.id;');
-    expect(anti).toContain("objectives: (Array.isArray(newItem.data.objectives) ? newItem.data.objectives : []).map(o => (o && o.resourceRef && _translatedIdMap[o.resourceRef]) ? { ...o, resourceRef: _translatedIdMap[o.resourceRef] } : o),");
-    expect(anti).toContain('_translateFailures.push(item.title || item.type);');
+    const host=readFileSync(resolve(process.cwd(),'host_handlers_module.js'),'utf8').replace(/\s+/g,'');
+    expect(host).toContain('_translatedIdMap[item.id]=newItem.id;');
+    expect(host).toContain("objectives:(Array.isArray(newItem.data.objectives)?newItem.data.objectives:[]).map(o=>o&&o.resourceRef&&_translatedIdMap[o.resourceRef]?{...o,resourceRef:_translatedIdMap[o.resourceRef]}:o)");
+    expect(host).toContain('_translateFailures.push(item.title||item.type);');
   });
 });

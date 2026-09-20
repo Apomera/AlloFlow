@@ -1,0 +1,9 @@
+const fs=require('fs');
+const p='tests/applied_challenge_interaction.test.js';let s=fs.readFileSync(p,'utf8');const old="host.querySelector('input[type=\"url\"]').value";if(!s.includes(old))throw Error('Missing artifact-link assertion');s=s.replace(old,"host.querySelector('#applied-artifact-url').value");fs.writeFileSync(p,s);
+const report='reports/applied-problem-solving-review-2026-09-12/finalize-pass9.cjs';let r=fs.readFileSync(report,'utf8');r=r.replace("const regression=read('pass9-regression.json'),browser=read('pass9-browser-results.json');",`const broad=read('pass9-regression.json'),recheck=read('pass9-final-recheck.json'),browser=read('pass9-browser-results.json');
+const suites=new Map();for(const run of [broad,recheck])for(const suite of run.testResults)suites.set(path.basename(suite.name),suite);
+const assertions=[...suites.values()].flatMap(suite=>suite.assertionResults);
+const regression={success:assertions.every(test=>test.status==='passed'),numFailedTests:assertions.filter(test=>test.status!=='passed').length,numPassedTests:assertions.filter(test=>test.status==='passed').length,testResults:[...suites.values()]};`);
+r=r.replace("- **${summary.passed} passing tests across ${summary.suites} suites.**", "- **${summary.passed} passing tests across ${summary.suites} suites**, using the latest result for each suite. The broad run passed 183 of 184 tests; its remaining assertion selected the first URL input, which is now the manual source field in the all-steps view. The final recheck targets the artifact field by its stable ID and verifies the complete interaction suite.");
+r=r.replace('- [Regression results](pass9-regression.json)','- [Broad regression results](pass9-regression.json)\n- [Final interaction recheck](pass9-final-recheck.json)');
+fs.writeFileSync(report,r);

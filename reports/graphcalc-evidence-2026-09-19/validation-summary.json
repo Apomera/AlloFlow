@@ -1,0 +1,18 @@
+{
+  "testsPassed": 32,
+  "browserThemesPassed": 3,
+  "browserScenarios": [
+    "touching root and intersection",
+    "keyboard trace",
+    "parameter change and stale results",
+    "real-domain gaps",
+    "sampled overlap",
+    "Markdown exports"
+  ],
+  "checkedAnalysisAccessibilityViolations": 0,
+  "mobileWidths": [
+    375,
+    320
+  ],
+  "sourceMirrorParity": true
+}

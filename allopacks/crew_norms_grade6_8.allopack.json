@@ -8,7 +8,8 @@
     "gradeLevel": "6th-8th Grade",
     "createdAt": "2026-09-13T18:00:00.000Z",
     "imageShotList": "allopacks/crew_norms_grade6_8.IMAGES.md",
-    "standards": "King Middle School HOWL Respect (work cooperatively with others); CASEL Relationship Skills (teamwork and collaborative problem-solving; communicating effectively); EL Education Crew (Crew Launch: norms and expectations); Maine DOE PBIS Tier 1 (teaching expected behaviors in context)"
+    "standards": "King Middle School HOWL Respect (work cooperatively with others); CASEL Relationship Skills (teamwork and collaborative problem-solving; communicating effectively); EL Education Crew (Crew Launch: norms and expectations); Maine DOE PBIS Tier 1 (teaching expected behaviors in context)",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Crew norms and cooperative participation",
   "history": [
@@ -48,7 +49,7 @@
       "title": "Norms We Can Name and Keep",
       "timestamp": "2026-09-13T18:00:00.000Z",
       "data": "## Norms We Can Name and Keep\n\n**HOWL: \"I am a respectful member of the King community.\"**\n\nA **Crew** is a small group of people who agree to look out for each other. That agreement does not happen by accident. It happens when the group names, out loud, how it wants to treat each other, and then keeps checking whether it is doing that. Those named agreements are called **norms**.\n\nA norm is not a **rule** from a poster. A rule is something an adult gives you. A norm is something the group chooses together and can explain in its own words. \"Be respectful\" is a rule. \"We wait until someone finishes before we answer\" is a norm, because you can see it happening or not happening.\n\nHere is a moment from a fictional Crew. On the second day, Amara starts to **share** about her weekend and two people begin a side conversation. Amara stops mid-sentence. Nobody is trying to be mean. But the Crew has not yet decided what it does when someone is talking. The Crew leader, Mr. Okafor, does not lecture. He asks, \"What do we want to happen when someone is sharing?\" The group builds a norm together: one voice at a time, and a small hand **signal** if you need to add something. The next day, when the side talk starts again, a student taps the signal. The talking stops. Nobody had to be told.\n\nGood norms have three parts. They are **specific**, so you can tell whether they happened. They are shared, so everyone helped choose them. And they are **revisited**, so the group can change them when they stop working. A norm that nobody remembers is not a norm. It is a poster.\n\nNorms protect **participation**, too. Some people speak easily. Some need time to think. Some would rather write or draw than talk. A Crew that only rewards fast talkers is not a respectful Crew, even if everyone is being polite. So strong norms include a way to **pass**, a way to think first, and a way to join later. A pass is not a refusal. It is a signal that you are still part of the circle.\n\nWorking **cooperatively** is the first respect behavior in the King **HOWLs**. Cooperation is not the same as agreeing. It means you can disagree and still keep the norms. It means the group's work gets done and nobody got run over while it happened.\n\nThis week, your Crew will name its norms. The test of a norm is not whether it sounds nice. The test is whether you can catch yourself keeping it on Thursday.",
-      "meta": "6th-8th Grade • Leveled reading • ~440 words"
+      "meta": "6th-8th Grade • Leveled reading"
     },
     {
       "id": "cn-glossary",
@@ -423,7 +424,7 @@
               "They are revisited, so the group can change them when they stop working."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "acronym-acrostic",
             "mode": "scaffolded",
             "aiExample": "S-S-R: See it, Share it, Revisit it. If you can See it happen, everyone Shared in choosing it, and you Revisit it when it fails, it is a norm.",
@@ -452,7 +453,7 @@
               "It is a signal that you are still part of the circle."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "keyword-association",
             "mode": "scaffolded",
             "aiExample": "PASS = still PRESENT. The two words start the same way. Passing keeps you present; it just skips your turn to talk.",
@@ -527,7 +528,7 @@
           ],
           "deliverable": "A one-page Crew norms card with four norms, the pass signal, and the revisit date, plus a short decision record of what was cut and why.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

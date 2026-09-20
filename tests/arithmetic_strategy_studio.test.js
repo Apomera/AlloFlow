@@ -226,7 +226,7 @@ describe('Arithmetic Strategy Studio', () => {
     const root = ReactDOMClient.createRoot(document.getElementById('root'));
     await React.act(async () => { root.render(React.createElement(App)); });
     expect(document.querySelector('[data-practice-problem-id="a1"]')).toBeTruthy();
-    const challenge = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Challenge');
+    const challenge = document.querySelector('[data-arithmetic-level="3"]');
     await React.act(async () => { challenge.click(); });
     expect(latest._arithmeticStudio).toMatchObject({ level: 3, practiceIndex: 0, answerInput: '', estimateInput: '' });
     expect(document.querySelector('[data-practice-problem-id="a5"]')).toBeTruthy();
@@ -589,4 +589,12 @@ describe('Arithmetic Strategy Studio', () => {
     expect(app).toContain("'stem_lab/stem_tool_arithmetic.js'");
     expect(fs.readFileSync('desktop/web-app/public/stem_lab/stem_tool_arithmetic.js', 'utf8')).toBe(fs.readFileSync(FILE, 'utf8'));
   });
+});
+
+
+it('preserves current practice work when the selected level is clicked again', async () => {
+ const tool=loadTool(FILE,ID);let latest;
+ function App(){const [state,setState]=React.useState({_arithmeticStudio:{tab:'practice',operation:'add',level:1,practiceProblemId:'a1',answerInput:'61',estimateInput:'60',showPracticeHint:true}});latest=state;return tool.render(makeCtx({toolData:state,setToolData:setState}));}
+ const root=ReactDOMClient.createRoot(document.getElementById('root'));
+ try {await React.act(async()=>root.render(React.createElement(App)));const before=JSON.parse(JSON.stringify(latest));await React.act(async()=>document.querySelector('[data-arithmetic-level="1"]').click());expect(latest).toEqual(before);await React.act(async()=>document.querySelector('[data-arithmetic-level="2"]').click());expect(latest._arithmeticStudio).toMatchObject({level:2,answerInput:'',estimateInput:'',showPracticeHint:false});}finally{await React.act(async()=>root.unmount());}
 });

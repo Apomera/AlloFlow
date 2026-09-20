@@ -1,0 +1,94 @@
+{
+  "studioDesktopAxe": [],
+  "studioZeroAxe": [],
+  "studioDarkAxe": [],
+  "studioMobile390Axe": [],
+  "studioMobile320Axe": [],
+  "solarPvVisualMobileAxe": [],
+  "windVisualMobileAxe": [],
+  "hydroVisualMobileAxe": [],
+  "geothermalVisualMobileAxe": [],
+  "solarThermalVisualMobileAxe": [],
+  "waveVisualMobileAxe": [],
+  "tidalVisualMobileAxe": [],
+  "biomassVisualMobileAxe": [],
+  "storageVisualMobileAxe": [],
+  "studioScenarioAxe": [],
+  "behavior": {
+    "nineTechnologyIcons": true,
+    "liveOutputMatchesModel": true,
+    "zeroOutputAndMeter": true,
+    "cameraLeavesSettingsUnchanged": true,
+    "batteryMeterMatchesSoc": true,
+    "scenarioOutputMatchesModel": true,
+    "mobileOverflow": false,
+    "oneCanvas": true,
+    "extremeReadings": [
+      {
+        "id": "solarPv",
+        "documentFits": true,
+        "headingFits": true,
+        "readingInside": true,
+        "text": "Electrical output0 kW"
+      },
+      {
+        "id": "wind",
+        "documentFits": true,
+        "headingFits": true,
+        "readingInside": true,
+        "text": "Electrical output8,000 kW"
+      },
+      {
+        "id": "hydro",
+        "documentFits": true,
+        "headingFits": true,
+        "readingInside": true,
+        "text": "Electrical output69,896.25 kW"
+      },
+      {
+        "id": "geothermal",
+        "documentFits": true,
+        "headingFits": true,
+        "readingInside": true,
+        "text": "Electrical output22,061.41 kW"
+      },
+      {
+        "id": "solarThermal",
+        "documentFits": true,
+        "headingFits": true,
+        "readingInside": true,
+        "text": "Electrical output13,365 kW"
+      },
+      {
+        "id": "wave",
+        "documentFits": true,
+        "headingFits": true,
+        "readingInside": true,
+        "text": "Electrical output3,391.06 kW"
+      },
+      {
+        "id": "tidal",
+        "documentFits": true,
+        "headingFits": true,
+        "readingInside": true,
+        "text": "Electrical output3,000 kW"
+      },
+      {
+        "id": "biomass",
+        "documentFits": true,
+        "headingFits": true,
+        "readingInside": true,
+        "text": "Electrical output4,222.22 kW"
+      },
+      {
+        "id": "storage",
+        "documentFits": true,
+        "headingFits": true,
+        "readingInside": true,
+        "text": "Discharge output200 kW"
+      }
+    ]
+  },
+  "pageErrors": [],
+  "consoleErrors": []
+}

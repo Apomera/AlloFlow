@@ -1,0 +1,60 @@
+{
+  "pass": 40,
+  "title": "Work-balance area diagrams",
+  "date": "2026-09-19",
+  "changes": [
+    "Paired work-in/work-out diagrams encode distance as width and force as height using common scales.",
+    "Equal areas show equal work with readable force × distance products and joule totals.",
+    "Very thin rectangles retain exact proportions, with an explanatory note and numeric values.",
+    "Existing reading-level boundaries are preserved and system high contrast uses system colors."
+  ],
+  "validation": {
+    "uiTests": 228,
+    "uiReport": "pass40-ui-tests.json",
+    "browser": [
+      {
+        "theme": "light",
+        "file": "pass40-light-final/results.json",
+        "checks": 26,
+        "screenshots": 10,
+        "errors": [],
+        "overflow": false
+      },
+      {
+        "theme": "dark",
+        "file": "pass40-dark-final/results.json",
+        "checks": 26,
+        "screenshots": 10,
+        "errors": [],
+        "overflow": false
+      },
+      {
+        "theme": "contrast",
+        "file": "pass40-contrast-final/results.json",
+        "checks": 26,
+        "screenshots": 10,
+        "errors": [],
+        "overflow": false
+      }
+    ],
+    "totalBrowserChecks": 78,
+    "screenshots": 30,
+    "sourceMirrorIdentical": true,
+    "syntax": "passed",
+    "scopedDiffCheck": "passed; CRLF normalization warnings only",
+    "runtimeBrowser": "Chromium",
+    "precision": "SVG area equality is checked within 1e-7. Comparison with CSS bar ratios uses 1e-5 relative tolerance because CSSOM serializes percentage widths to six significant digits; the initial stricter absolute comparison was corrected after inspecting exact values."
+  },
+  "reviewedScreenshots": [
+    "pass40-light/work-windlass-320.png",
+    "pass40-dark-final/work-lever-1150.png",
+    "pass40-contrast-final/work-forced-colors.png"
+  ],
+  "nextOpportunities": [
+    "Compact phone camera controls to bring pose inspection closer to the scene.",
+    "Save and compare two configurations with linked force and distance results.",
+    "Guided experiments that change one parameter and ask learners to predict the effect."
+  ],
+  "sha256": "469e9f011dd2402bea9238dd5a1340733aba2d02f0dba25fc5d465f5d9edad0c",
+  "publication": "Local only; no commit, push, or deployment"
+}

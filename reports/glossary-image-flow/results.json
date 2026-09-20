@@ -1,0 +1,67 @@
+{
+  "service": "fixture",
+  "upload": {
+    "source": "author-upload",
+    "savedToHistory": true
+  },
+  "liveSearch": {
+    "ok": true,
+    "results": 1
+  },
+  "previewRetry": true,
+  "selection": {
+    "source": "mulberry",
+    "png": true,
+    "license": "CC BY-SA 4.0",
+    "savedToHistory": true
+  },
+  "automaticSearch": true,
+  "descriptionDraftRetained": true,
+  "description": {
+    "text": "A green leaf with a dark central vein.",
+    "hash": "img-16pm-f48c3e3d",
+    "history": "A green leaf with a dark central vein."
+  },
+  "renderedAltText": [
+    "A green leaf with a dark central vein."
+  ],
+  "undo": {
+    "source": "author-upload",
+    "history": "author-upload",
+    "description": ""
+  },
+  "layouts": [
+    {
+      "width": 1280,
+      "left": 320,
+      "right": 960,
+      "bottom": 574,
+      "viewportHeight": 800,
+      "scrollWidth": 638,
+      "clientWidth": 638,
+      "modal": true
+    },
+    {
+      "width": 390,
+      "left": 16,
+      "right": 374,
+      "bottom": 678,
+      "viewportHeight": 800,
+      "scrollWidth": 356,
+      "clientWidth": 356,
+      "modal": true
+    },
+    {
+      "width": 320,
+      "left": 16,
+      "right": 304,
+      "bottom": 730,
+      "viewportHeight": 800,
+      "scrollWidth": 286,
+      "clientWidth": 286,
+      "modal": true
+    }
+  ],
+  "keyboard": "Tab stays in the dialog; Escape closes and restores focus",
+  "errors": []
+}

@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "uniqueTests": 424,
+  "testFiles": 21,
+  "main": {
+    "passed": 372,
+    "failed": 3,
+    "limitation": "Three 5-second render timeouts and two fork-worker startup timeouts."
+  },
+  "retry": {
+    "passed": 89,
+    "files": 4,
+    "pool": "threads",
+    "testTimeoutMs": 60000
+  },
+  "browser": {
+    "newCutaway": true,
+    "existingDevices": true,
+    "automatedAccessibilityScans": 10,
+    "violations": 0,
+    "mobileWidths": [
+      390,
+      320
+    ],
+    "visuallyInspected": [
+      "Desktop with gate layers visible",
+      "390 px revealed channel"
+    ]
+  },
+  "sourceMirrorMatch": true,
+  "sourceSHA256": "0665c44ece0f41e3362a36b9c94412f8c136f3d0cb451bd51e30ef8c983a8c18"
+}

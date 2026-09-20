@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "scans": [
+    {
+      "label": "received response",
+      "violations": []
+    },
+    {
+      "label": "paused received response",
+      "violations": []
+    },
+    {
+      "label": "paused received response 320",
+      "violations": []
+    }
+  ],
+  "consoleErrors": [],
+  "bundleSha256": "3b15025b8d953ca768478298239ed3db47f87fcc2561530c280e4235e79564e9"
+}

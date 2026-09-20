@@ -1,0 +1,148 @@
+{
+  "scope": "Actual recovery helpers/ref/observer in a minimal production React component; 4x CPU; synthetic SEL state; one warmup and three paired samples per version. Poll callbacks are invoked explicitly instead of depending on wall-clock timing. Not a whole-app benchmark.",
+  "beforeInitializer": "  const canvasRecoverySelFingerprintRef = useRef(_alloCanvasSelAuthoringFingerprint());",
+  "afterInitializer": "  const canvasRecoverySelFingerprintRef = useRef('');",
+  "stateBytes": 508955,
+  "updatesPerRun": 100,
+  "results": [
+    {
+      "recoveryActive": false,
+      "warmup": [
+        {
+          "mode": "before",
+          "hundredUpdatesMs": 194.19999999925494,
+          "fingerprintCalls": 100
+        },
+        {
+          "mode": "after",
+          "hundredUpdatesMs": 36.899999998509884,
+          "fingerprintCalls": 0
+        }
+      ],
+      "measured": [
+        {
+          "mode": "before",
+          "hundredUpdatesMs": 126,
+          "fingerprintCalls": 100
+        },
+        {
+          "mode": "after",
+          "hundredUpdatesMs": 3.199999999254942,
+          "fingerprintCalls": 0
+        },
+        {
+          "mode": "after",
+          "hundredUpdatesMs": 12.099999997764826,
+          "fingerprintCalls": 0
+        },
+        {
+          "mode": "before",
+          "hundredUpdatesMs": 66.70000000298023,
+          "fingerprintCalls": 100
+        },
+        {
+          "mode": "before",
+          "hundredUpdatesMs": 55.599999997764826,
+          "fingerprintCalls": 100
+        },
+        {
+          "mode": "after",
+          "hundredUpdatesMs": 2,
+          "fingerprintCalls": 0
+        }
+      ],
+      "medians": {
+        "before": 66.70000000298023,
+        "after": 3.199999999254942
+      },
+      "behavior": {
+        "before": {
+          "mountCalls": 1,
+          "eventRevision": 0,
+          "eventCalls": 0,
+          "pollRevision": 0,
+          "pollCalls": 0,
+          "timersAfterUnmount": 0
+        },
+        "after": {
+          "mountCalls": 0,
+          "eventRevision": 0,
+          "eventCalls": 0,
+          "pollRevision": 0,
+          "pollCalls": 0,
+          "timersAfterUnmount": 0
+        }
+      }
+    },
+    {
+      "recoveryActive": true,
+      "warmup": [
+        {
+          "mode": "before",
+          "hundredUpdatesMs": 544.9000000022352,
+          "fingerprintCalls": 100
+        },
+        {
+          "mode": "after",
+          "hundredUpdatesMs": 11.300000000745058,
+          "fingerprintCalls": 0
+        }
+      ],
+      "measured": [
+        {
+          "mode": "before",
+          "hundredUpdatesMs": 4454,
+          "fingerprintCalls": 100
+        },
+        {
+          "mode": "after",
+          "hundredUpdatesMs": 0.8999999985098839,
+          "fingerprintCalls": 0
+        },
+        {
+          "mode": "after",
+          "hundredUpdatesMs": 0.8000000007450581,
+          "fingerprintCalls": 0
+        },
+        {
+          "mode": "before",
+          "hundredUpdatesMs": 128.5,
+          "fingerprintCalls": 100
+        },
+        {
+          "mode": "before",
+          "hundredUpdatesMs": 283.0999999977648,
+          "fingerprintCalls": 100
+        },
+        {
+          "mode": "after",
+          "hundredUpdatesMs": 0.8999999985098839,
+          "fingerprintCalls": 0
+        }
+      ],
+      "medians": {
+        "before": 283.0999999977648,
+        "after": 0.8999999985098839
+      },
+      "behavior": {
+        "before": {
+          "mountCalls": 2,
+          "eventRevision": 1,
+          "eventCalls": 2,
+          "pollRevision": 2,
+          "pollCalls": 2,
+          "timersAfterUnmount": 0
+        },
+        "after": {
+          "mountCalls": 1,
+          "eventRevision": 1,
+          "eventCalls": 1,
+          "pollRevision": 2,
+          "pollCalls": 1,
+          "timersAfterUnmount": 0
+        }
+      }
+    }
+  ],
+  "errors": []
+}

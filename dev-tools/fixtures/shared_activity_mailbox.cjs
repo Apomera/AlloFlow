@@ -2,16 +2,16 @@
 const fs = require('fs');
 const path = require('path');
 const gsSource = fs.readFileSync(path.resolve(__dirname, '../../apps_script/session_mailbox/Code.gs'),'utf8');
-function makeGsSandbox() {
-    const cacheStore = new Map();
+function makeGsSandbox({ now = Date.now } = {}) {
+    const cacheStore = new Map(), expires = new Map();
     const props = new Map();
     const driveFiles = new Map();
     let uuidCounter = 0;
     const cache = {
-        get: k => (cacheStore.has(k) ? cacheStore.get(k) : null),
-        put: (k, v) => { cacheStore.set(k, String(v)); },
-        getAll: keys => { const o = {}; keys.forEach(k => { if (cacheStore.has(k)) o[k] = cacheStore.get(k); }); return o; },
-        remove: k => { cacheStore.delete(k); },
+        get: k => { if (expires.has(k) && expires.get(k) <= now()) { cacheStore.delete(k); expires.delete(k); } return cacheStore.has(k) ? cacheStore.get(k) : null; },
+        put: (k, v, ttl = 600) => { cacheStore.set(k, String(v)); expires.set(k, now() + ttl * 1000); },
+        getAll: keys => { const o = {}; keys.forEach(k => { const value = cache.get(k); if (value !== null) o[k] = value; }); return o; },
+        remove: k => { cacheStore.delete(k); expires.delete(k); },
     };
     const fileObj = name => ({
         setContent: c => { driveFiles.set(name, String(c)); },
@@ -49,7 +49,7 @@ function makeGsSandbox() {
     const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle };');
     const api = factory(...Object.values(services));
     const call = payload => JSON.parse(api.handle(payload).getContent());
-    return { call, driveFiles, readDocument: (code, token = 's') => JSON.parse(cacheStore.get('d:' + code + ':' + token) || 'null')?.d };
+    return { call, driveFiles, readDocument: (code, token = 's') => JSON.parse(cache.get('d:' + code + ':' + token) || 'null')?.d };
 }
 
 module.exports = { makeGsSandbox };

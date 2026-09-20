@@ -8,7 +8,8 @@
     "gradeLevel": "1st Grade",
     "standards": "C3 Framework D2.Civ.1.K-2 (describe roles and responsibilities of people in authority); C3 Framework D2.Civ.6.K-2 (describe how communities work to accomplish common tasks, establish responsibilities, and fulfill roles of authority); C3 Framework D2.Civ.12.K-2 (identify and explain how rules function in public settings)",
     "createdAt": "2026-09-06T03:10:00.000Z",
-    "imageShotList": "allopacks/rules_and_fairness_grade1.IMAGES.md"
+    "imageShotList": "allopacks/rules_and_fairness_grade1.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Rules, Fairness, and Living Together",
   "history": [
@@ -55,7 +56,7 @@
       "title": "Why We Have Rules",
       "timestamp": "2026-09-06T03:10:01.000Z",
       "data": "## Why We Have Rules\n\nThink about your day. You line up. You raise a hand. You walk in the hall. Those are **rules**.\n\nA rule is something we all agree to do. It is not just one person telling you what to do. It is a plan we **share**.\n\nWhy do we need them? Try to picture a game with no rules. Everyone grabs the ball. Nobody knows whose **turn** it is. The game stops being fun very fast.\n\nMost rules do one of two jobs.\n\nSome rules keep us **safe**. We hold the rail on the stairs. We stop at the curb. Those rules are about bodies.\n\nSome rules keep things **fair**. We take turns on the swing. We **share** the markers. Those rules are about people getting the same chance.\n\nHere is a good question to ask about any rule. Who does this rule help?\n\nSometimes a rule helps everyone. Sometimes a rule only helps one person. That second kind is worth asking about.\n\nRules can change. Grown-ups change them. Kids can ask for a change too. In a lot of places, people **vote** to decide.\n\nAsking about a rule is not the same as breaking it. You can follow a rule today and still ask for a better one tomorrow.",
-      "meta": "1st Grade • Leveled reading • ~215 words • read-aloud friendly",
+      "meta": "1st Grade • Leveled reading • read-aloud friendly",
       "imageSlot": "rf-img-rules"
     },
     {

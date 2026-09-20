@@ -1,0 +1,13 @@
+{
+  "sourceSyntax": true,
+  "sourcePublicMatch": true,
+  "traceLiteralReferences": 11,
+  "traceEnglishKeys": 9,
+  "newEnglishKeys": 4,
+  "fallbacksMatchCatalog": true,
+  "forcedColorsSystemPalette": true,
+  "translationsPending": true,
+  "sharedViewerSyntax": true,
+  "sharedViewerPublicMatch": true,
+  "scopedDiffCheck": true
+}

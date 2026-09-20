@@ -29,10 +29,15 @@
       "textPolicy": "Text-free artwork; original activity text stays editable"
     },
     "contentRefinements": {
-      "count": 47,
+      "count": 51,
       "audit": "allopacks/media/proportional_relationships_grade7/content-refinements.json",
-      "review": "Mathematical wording refined; educator review pending"
-    }
+      "review": "Mathematical wording refined; educator review pending",
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/proportional_relationships_grade7/content-refinements.json",
+      "sourceOnlyResourceIds": []
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Proportional Relationships",
   "history": [
@@ -72,7 +77,7 @@
       "title": "When Doubling One Doubles the Other",
       "timestamp": "2026-07-21T15:00:01.000Z",
       "data": "## When Doubling One Doubles the Other\n\nImagine every taco costs $3, with no fees or discounts. One costs $3, two cost $6, four cost $12. The cost is **proportional** to the number bought under those assumptions.\n\nA proportional model has the rule **y = kx**. Here x is the input, y the output, and k the **constant of proportionality**. For tacos, k is $3 per taco. At every nonzero input, y divided by x equals 3. When x is zero, the rule gives y = 0; do not calculate 0 divided by 0.\n\nThe same multiplier connects the quantities throughout the model's domain. Scaling an input by a factor scales the output by that factor, as long as both inputs are allowed. Whole taco counts are whole numbers; their graph is a set of points on a line. A continuous quantity may fill the line or a segment.\n\nTo check an exact table, divide y by x for every nonzero x. Check any zero-input row separately: its output must be zero. Matching ratios show that the listed pairs fit a proportional rule. A few matching pairs alone do not prove an unobserved relationship will always follow it.\n\nWith the fixed-price assumption, nine tacos cost 9 times 3, or $27. A fee, discount or change in product would require checking the model again. For real measurements, small differences in ratios may reflect uncertainty or rounding. Report the range tested and whether a proportional model is a reasonable approximation.\n\nA pool that already contains ten gallons and gains five per minute follows y = 5x + 10 while filling steadily and before it reaches capacity. At zero minutes it has ten gallons. It is not proportional to elapsed time. The amount ADDED since the start can be proportional, so define your output carefully.\n\nOn equally interpreted coordinate axes, y = kx lies on a straight nonvertical line through the **origin**, (0,0). Passing through the origin alone is not enough; curved graphs can do that too. The value k is the numerical slope, calculated from units on the axes. Changing the display scales changes the apparent angle, not the underlying rate.\n\nA table, equation and graph can describe the same model. Name the input, output, units, constant and allowed values. Then explain which assumptions make your prediction reasonable.",
-      "meta": "7th Grade • Leveled reading • ~460 words",
+      "meta": "7th Grade • Leveled reading",
       "imageSlot": "pr-img-three-forms"
     },
     {
@@ -423,7 +428,7 @@
               "For measured data, assess uncertainty before interpreting small ratio differences."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "rhyme-rhythm",
             "mode": "scaffolded",
             "aiExample": "NONZERO: divide. ZERO: inspect. MATCH: a model fits. Then check whether the situation supports that model beyond the table.",
@@ -453,7 +458,7 @@
               "A proportional function has points on a nonvertical straight line through the origin; a zero point alone is insufficient."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "keyword-association",
             "mode": "scaffolded",
             "aiExample": "No head start. If one side starts with something before the other side does anything, it is not proportional. Zero in, zero out, or it is out.",
@@ -483,7 +488,7 @@
               "Graph: y = kx lies on a straight nonvertical line through the origin; domain may restrict it to points or a segment."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "chunking",
             "mode": "scaffolded",
             "aiExample": "T-E-G, one k: Table (same ratio), Equation (y = kx), Graph (line through zero). Three views of one number.",
@@ -965,7 +970,7 @@
           ],
           "deliverable": "A table with an output-over-input column. A graph with the origin marked. A verdict with the reason. And a plain-language sentence saying what the constant means, if there is one.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

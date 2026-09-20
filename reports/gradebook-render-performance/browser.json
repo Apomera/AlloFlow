@@ -1,0 +1,55 @@
+{
+  "baselineRef": "e883ad2b3fd2466575bc9a1b77c88dff72836a86",
+  "scope": "Actual generated Inbox with production React and synthetic local grades; counts Object.values scans of response-score collections. Checks closed, submission, student, expanded, delete, grouping and reopen states. No network provider or user data.",
+  "scenarios": [
+    {
+      "entries": 60,
+      "responsesPerEntry": 20,
+      "rendersPerState": 25,
+      "before": {
+        "closedScans": 0,
+        "submissionScans": 1500,
+        "studentScans": 1500,
+        "expandedScans": 1550,
+        "reclosedScans": 0,
+        "remainingEntries": 59
+      },
+      "after": {
+        "closedScans": 0,
+        "submissionScans": 0,
+        "studentScans": 0,
+        "expandedScans": 0,
+        "reclosedScans": 0,
+        "remainingEntries": 59
+      },
+      "displayParity": true,
+      "deleteRefresh": true,
+      "groupSwitchAndReopen": true
+    },
+    {
+      "entries": 600,
+      "responsesPerEntry": 20,
+      "rendersPerState": 25,
+      "before": {
+        "closedScans": 0,
+        "submissionScans": 15000,
+        "studentScans": 15000,
+        "expandedScans": 15500,
+        "reclosedScans": 0,
+        "remainingEntries": 599
+      },
+      "after": {
+        "closedScans": 0,
+        "submissionScans": 0,
+        "studentScans": 0,
+        "expandedScans": 0,
+        "reclosedScans": 0,
+        "remainingEntries": 599
+      },
+      "displayParity": true,
+      "deleteRefresh": true,
+      "groupSwitchAndReopen": true
+    }
+  ],
+  "errors": []
+}

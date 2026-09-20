@@ -1,0 +1,20 @@
+{
+  "checks": [
+    "mushroom for 2: preview does not change evidence; keyboard selection, two measured pours, reload, all five dish criteria, independent submission, and immutable historical pour replay.",
+    "tomato for 4: preview does not change evidence; keyboard selection, two measured pours, reload, all five dish criteria, independent submission, and immutable historical pour replay.",
+    "Pouring pauses playback; reduced-motion mode, amount clamping, empty-jug lock, and keyboard focus recovery work.",
+    "Measured pours remain usable on a 320px screen, in text mode, and without the 3D runtime."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop measured pouring",
+      "issues": []
+    },
+    {
+      "label": "320px text-mode measured pouring",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

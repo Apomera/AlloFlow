@@ -899,7 +899,7 @@ const _fullPackInstructionalText = (type, raw, options = {}) => {
     schemaVersion: 1,
     role: isAdapted ? 'supplemental' : (isPrimaryAnalysis ? 'primary' : 'unspecified'),
     form: isAdapted ? 'adapted' : 'original',
-    sourceArtifactId: options.primaryArtifactId || null,
+    sourceArtifactId: options.sourceArtifactId || options.primaryArtifactId || null,
     primaryArtifactId: options.primaryArtifactId || null,
     designationSource: 'workflow-default',
     replacementAuthorization: { authorized: false, source: 'none' },
@@ -1895,8 +1895,37 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
       }
 };
 
+const resolveFullPackReadingSource = (deps, priorRun = null) => {
+    const contextModule = _getInstructionalContextModule();
+    const prior = priorRun?.preflight?.readingSource;
+    const choice = prior ? prior.inputArtifactId || '__input__' : deps.selectedReadingSourceId || '';
+    const options = { type: 'full-pack', inputText: deps.inputText, history: (deps.history || []).filter(item => !item?._fullPackPlannedArtifact),
+        selectedReadingSourceId: choice, activeUnitId: prior?.unitId || deps.activeUnitId || null, contextModule };
+    const dispatcher = typeof window !== 'undefined' && window.AlloModules?.GenDispatcher;
+    if (typeof dispatcher?.resolveGenerationSource === 'function') return dispatcher.resolveGenerationSource(options);
+    if (typeof contextModule?.resolveReadingSource === 'function') return contextModule.resolveReadingSource({
+        items: options.history, sourceArtifactId: choice || null, inputText: options.inputText, unitId: options.activeUnitId });
+    // Compatibility with an older module bundle: never choose globally latest.
+    const candidates = options.history.filter(item => item?.type === 'analysis'
+        && (!options.activeUnitId || (item.unitId || item.config?.unitId) === options.activeUnitId)
+        && typeof item.data?.originalText === 'string' && item.data.originalText.trim()
+        && (!item.instructionalText || item.instructionalText.role === 'primary'));
+    const selected = choice && choice !== '__input__' ? candidates.find(item => String(item.id) === String(choice))
+        : !choice && candidates.length === 1 ? candidates[0] : null;
+    if (!selected && choice !== '__input__' && (choice || candidates.length)) return {
+        status: !choice && candidates.length > 1 ? 'ambiguous' : 'missing', text: '', candidates };
+    const text = selected?.data.originalText || (typeof options.inputText === 'string' ? options.inputText : '');
+    const id = selected?.id || null;
+    return { status: text.trim() ? 'resolved' : 'missing', text, inputArtifactId: id, sourceArtifactId: id,
+        sourceSnapshot: contextModule?.createSourceSnapshot?.(text, { sourceArtifactId: id }) || null,
+        sourceFamilyId: id, unitId: options.activeUnitId,
+        instructionalText: selected?.instructionalText || (selected ? _fullPackInstructionalText('analysis', null) : null),
+        sourceInstructionalText: selected?.instructionalText || (selected ? _fullPackInstructionalText('analysis', null) : null),
+        selection: selected ? 'designated-primary' : 'input-text', artifact: selected };
+};
+
 const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
-  const { isProcessing, fullPackTargetGroup, fullPackGroupId, rosterKey, gradeLevel, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, studentInterests, dokLevel, differentiationRange, differentiationTypes, differentiationCustomGrades, generationSignal, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, imageGenerationStyle, imageAspectRatio, history, inputText, sourceTopic, standardsInput, standardsContext, instructionalContext, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, glossaryCustomInstructions, personaCustomInstructions, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, setIsProcessing, setGenerationStep, setGenerationStage, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setFullPackRun, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest, getDifferentiationGrades, aiProviderProfile } = deps;
+  const { isProcessing, fullPackTargetGroup, fullPackGroupId, rosterKey, gradeLevel, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, studentInterests, dokLevel, differentiationRange, differentiationTypes, differentiationCustomGrades, generationSignal, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, imageGenerationStyle, imageAspectRatio, history, inputText, sourceTopic, standardsInput, standardsContext, instructionalContext, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, glossaryCustomInstructions, personaCustomInstructions, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, setIsProcessing, setGenerationStep, setGenerationStage, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setFullPackRun, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest, getDifferentiationGrades, aiProviderProfile, selectedReadingSourceId, activeUnitId } = deps;
   // Resolved once from the host-threaded policy. Falls back to the historical
   // rule (gloss into English when the content is not English) if an older host
   // has not threaded the resolver yet, so a stale CDN never silently changes
@@ -1993,6 +2022,8 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
     if (_fullPackRunAbortCtl) _fullPackAbortCtl = _fullPackRunAbortCtl;
     const _fullPackGenerationConfig = _captureFullPackGenerationConfig(deps);
     const _fullPackSettingsSnapshot = Object.freeze({
+        selectedReadingSourceId: selectedReadingSourceId || '',
+        activeUnitId: activeUnitId || null,
         gradeLevel,
         leveledTextLanguage,
         translationMode,
@@ -2307,18 +2338,23 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         handleApplyRosterGroup(targetGroup);
         await new Promise(r => setTimeout(r, 100));
     }
-    // Virtual artifacts are inserted only to make later roster-group plans
-    // account for reuse. They are not real source artifacts and must never be
-    // written into an approved row as its primary/source artifact id.
-    const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis'
-        && h._fullPackPlannedArtifact !== true);
-    let batchSourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
-        ? latestAnalysis.data.originalText
-        : (typeof inputText === 'string' ? inputText.trim() : '');
-    if (!batchSourceText) {
-        const noSourceError = new Error('No source text is available for Full Pack generation.');
+    const batchSource = resolveFullPackReadingSource(deps, _planSourceRun);
+    const batchSourceText = batchSource.status === 'resolved' ? batchSource.text : '';
+    const batchSourceSnapshot = batchSource.sourceSnapshot || null;
+    const batchSourceUse = {
+        inputArtifactId: batchSource.inputArtifactId || null,
+        inputInstructionalText: batchSource.instructionalText || null,
+        sourceArtifactId: batchSource.sourceArtifactId || null,
+        sourceInstructionalText: batchSource.sourceInstructionalText || null,
+        sourceFamilyId: batchSource.sourceFamilyId || null,
+        unitId: batchSource.unitId || activeUnitId || null,
+        primaryArtifactId: batchSource.instructionalText?.role === 'primary' ? batchSource.inputArtifactId || null : null,
+        sourceSelection: batchSource.selection || '',
+    };
+    if (!batchSourceText.trim()) {
+        const noSourceError = new Error(batchSource.status === 'ambiguous' ? 'Choose a reading in Based on before planning the Full Pack. This lesson has more than one main reading.' : (selectedReadingSourceId ? 'The selected reading is unavailable. Choose a reading in Based on before planning the Full Pack.' : 'No source text is available for Full Pack generation. Add text or choose a reading in Based on.'));
         recordFullPackFailure({ type: 'preflight', index: 0, reason: noSourceError.message, error: noSourceError, sourceTextChars: 0 });
-        addToast(t('process.source_missing'), "error");
+        addToast(noSourceError.message, "info");
         updateFullPackRun(prev => Object.assign({}, prev, { status: 'failed', finishedAt: new Date().toISOString(), elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt) }));
         if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', { status: 'failed' });
         if (_fullPackAbortCtl === _fullPackRunAbortCtl) _fullPackAbortCtl = null;
@@ -2336,6 +2372,20 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', { status: 'failed' });
         if (_fullPackAbortCtl === _fullPackRunAbortCtl) _fullPackAbortCtl = null;
         if (_ownsFullPackAbort) _fullPackRunInFlight = false;
+        return false;
+    }
+    const plannedReadingSource = _planSourceRun?.preflight?.readingSource;
+    const readingRoleSignature = use => {
+        const profile = value => [value?.role || '', value?.form || '', value?.replacementAuthorization?.authorized === true, value?.replacementAuthorization?.source || 'none'];
+        return JSON.stringify([use.inputArtifactId, use.sourceArtifactId, use.sourceFamilyId, use.unitId,
+            profile(use.inputInstructionalText), profile(use.sourceInstructionalText)]);
+    };
+    if (plannedReadingSource && readingRoleSignature(plannedReadingSource) !== readingRoleSignature(batchSourceUse)) {
+        const reason = 'The reading role changed since this Full Pack plan was created. Create a new plan to review the current reading choice.';
+        updateFullPackRun(prev => Object.assign({}, prev, { status: 'failed', reason, finishedAt: new Date().toISOString() }));
+        addToast(reason, 'info');
+        if (_ownsFullPackAbort) _fullPackRunInFlight = false;
+        if (_fullPackAbortCtl === _fullPackRunAbortCtl) _fullPackAbortCtl = null;
         return false;
     }
     if (_planSourceRun && _planSourceRun.preflight && _planSourceRun.preflight.standardsFingerprint
@@ -2542,13 +2592,14 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 planFailures.push({ type, index: planIndex, reason: 'Unsupported Full Pack resource type: ' + type, sourceTextChars: batchSourceText.length });
                 return;
             }
-            const primaryArtifact = latestAnalysis && latestAnalysis.id ? latestAnalysis.id : null;
+            const primaryArtifact = batchSourceUse.primaryArtifactId;
             normalizedResources.push(Object.assign({}, item, {
                 type,
-                instructionalText: _fullPackInstructionalText(type, item.instructionalText, {
+                instructionalText: _fullPackInstructionalText(type, type === 'analysis' ? (batchSourceUse.inputInstructionalText || item.instructionalText) : item.instructionalText, {
                     gradeLevel: _activeInstructionalContext.instructionalGrade || gradeLevel,
                     language: leveledTextLanguage,
                     primaryArtifactId: primaryArtifact,
+                    sourceArtifactId: batchSourceUse.sourceArtifactId,
                 })
             }));
         });
@@ -2592,7 +2643,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             : _buildFullPackGenerationSettings({
                 sourceText: batchSourceText,
                 sourceFingerprint: _sourceFingerprint,
-                sourceArtifactId: latestAnalysis && latestAnalysis.id || null,
+                sourceArtifactId: batchSourceUse.sourceArtifactId,
                 gradeLevel,
                 language: leveledTextLanguage,
                 leveledTextLanguage,
@@ -2641,7 +2692,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 settings: _matrixSettings,
                 sourceText: batchSourceText,
                 sourceFingerprint: _sourceFingerprint,
-                sourceArtifactId: latestAnalysis && latestAnalysis.id || null,
+                sourceArtifactId: batchSourceUse.sourceArtifactId,
                 existingArtifacts: history,
                 allowVariants: true,
                 groupId: fullPackGroupId || null,
@@ -2673,6 +2724,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         const _fullPackPreflight = {
             createdAt: new Date().toISOString(),
             sourceTextChars: batchSourceText.length,
+            readingSource: _cloneFullPackValue(batchSourceUse),
             sourceFingerprint: _sourceFingerprint,
             retryOf: _retryRun && _retryRun.runId || null,
             selected: runnableResources.map((item, index) => Object.assign({}, item, {
@@ -2748,7 +2800,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             const applyResultToLessonDna = (type, resultItem) => {
                 if (!resultItem || !resultItem.data) return;
                 if (type === 'analysis') {
-                    if (resultItem.data.originalText) batchSourceText = resultItem.data.originalText;
+                    // Keep the selected source; analysis display may be translated or edited.
                     if (Array.isArray(resultItem.data.concepts) && lessonDNA.concepts.length === 0) {
                         lessonDNA.concepts = resultItem.data.concepts.slice(0, 5);
                     }
@@ -2806,6 +2858,10 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                     ...batchConfig,
                     ..._cloneFullPackValue(_fullPackGenerationConfig.toolOptions || {}),
                     ..._fullPackActivityOptions(plannedRow),
+                    ...batchSourceUse,
+                    sourceSnapshot: batchSourceSnapshot,
+                    generationInputText: batchSourceText,
+                    textFormat,
                     lessonDNA,
                     customInstructions: combinedInstructions,
                     standardsContext: activeStandardsContext,
@@ -2977,7 +3033,9 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                         resultItem = null;
                         failureReason = redactFullPackDiagnosticText((finalError && (finalError.message || finalError.name)) || String(finalError), 2000);
                         failurePolicy = _fullPackFailurePolicy(finalError);
-                        if (!_isFullPackAbort(finalError, _fullPackSignal) && failurePolicy.retryable) {
+                        attempts = Math.max(attempts, Math.min(2, Number(finalError && finalError.structuredActivityAttempts) || 1));
+                        if (!_isFullPackAbort(finalError, _fullPackSignal) && failurePolicy.retryable
+                            && finalError?.automaticRecoveryExhausted !== true) {
                             attempts = 2;
                             maxAttempts = Math.max(maxAttempts, attempts);
                             updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, {
@@ -3140,6 +3198,10 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             const stepConfig = {
                 ...batchConfig,
                 ..._cloneFullPackValue(_fullPackGenerationConfig.toolOptions || {}),
+                ...batchSourceUse,
+                sourceSnapshot: batchSourceSnapshot,
+                generationInputText: batchSourceText,
+                textFormat,
                 lessonDNA: lessonDNA,
                 customInstructions: combinedInstructions,
                 standardsContext: activeStandardsContext,
@@ -3275,9 +3337,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 currentSessionHistory.push(resultItem);
                 if (resultItem.data) {
                     if (type === 'analysis') {
-                        if (resultItem.data.originalText) {
-                            batchSourceText = resultItem.data.originalText;
-                        }
+                        // Analysis enriches lesson DNA, never changes the selected source.
                         if (Array.isArray(resultItem.data.concepts) && lessonDNA.concepts.length === 0) {
                             lessonDNA.concepts = resultItem.data.concepts.slice(0, 5);
                         }
@@ -3404,6 +3464,7 @@ const handleComplexityAdjustment = async (deps) => {
     if (!standardsValue) return '';
     if (typeof standardsValue === 'string') return standardsValue.trim();
     if (typeof standardsValue.promptText === 'string' && standardsValue.promptText.trim()) return standardsValue.promptText.trim();
+
     const entries = Array.isArray(standardsValue.standards) ? standardsValue.standards : (Array.isArray(standardsValue) ? standardsValue : []);
     return entries.map(entry => typeof entry === 'string'
       ? entry
@@ -3436,6 +3497,15 @@ const handleComplexityAdjustment = async (deps) => {
   try { if (window._DEBUG_GEN_HELPERS) console.log("[GenerationHelpers] handleComplexityAdjustment fired"); } catch(_) {}
     const supportedTypes = ['simplified', 'quiz', 'sentence-frames', 'glossary'];
     if (complexityLevel === 5 || !generatedContent || !supportedTypes.includes(generatedContent.type)) return;
+    const originalForm = generatedContent.instructionalText?.form || generatedContent.config?.instructionalText?.form;
+    if (generatedContent.type === 'simplified' && ['original', 'same-text-supported'].includes(originalForm)) {
+        addToast('Create an adapted copy to change the wording of an original.', 'info');
+        return;
+    }
+    const requestResourceId = generatedContent.id;
+    const requestResourceData = generatedContent.data;
+    const canUpdateResource = item => item?.id === requestResourceId && item.data === requestResourceData
+        && (item.type !== 'simplified' || !['original', 'same-text-supported'].includes(item.instructionalText?.form || item.config?.instructionalText?.form));
     setIsProcessing(true);
     try {
         const isSimpler = complexityLevel < 5;
@@ -3503,7 +3573,8 @@ const handleComplexityAdjustment = async (deps) => {
             };
             const direction = isSimpler ? "Simpler / Easier to read" : "More Complex / Academic / Rigorous";
             prompt = `
-                Rewrite the following educational text.
+                Rewrite the following educational text as an adapted companion to the unchanged original.
+                ${window.AlloModules?.GenDispatcher?.buildAdaptationFormatPolicy?.(generatedContent.config?.textFormat || 'Standard Text') || 'Preserve the current format and tone while adjusting language.'}
                 Goal: Make the text ${direction} relative to its current version.
                 Intensity of Change: ${intensity} out of 5 (1=Slight adjustment, 5=Major revision).
                 Target Audience: ${effectiveGrade} students.
@@ -3762,13 +3833,13 @@ const handleComplexityAdjustment = async (deps) => {
                 timestamp: new Date(),
                 config: adjustedConfig
             });
-            setGeneratedContent(newItem); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms);
-            setHistory(prev => [...prev, newItem]);
+            setGeneratedContent(prev => canUpdateResource(prev) ? newItem : prev); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms);
+            setHistory(prev => prev.some(canUpdateResource) ? [...prev, newItem] : prev);
             addToast(t('toasts.saved_new_version', { label: changeLabel }), "success");
         } else {
             const updatedContent = refreshSimplifiedComplexity({ ...generatedContent, data: updatedData, config: adjustedConfig });
-            setGeneratedContent(updatedContent);
-            setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+            setGeneratedContent(prev => canUpdateResource(prev) ? updatedContent : prev);
+            setHistory(prev => prev.map(item => canUpdateResource(item) ? updatedContent : item));
             addToast(t('toasts.adjusted_version', { label: changeLabel }), "success");
         }
     } catch (err) {
@@ -3873,6 +3944,11 @@ const _nextFullPackPlanUiId = (selected, type, requestedUiId = '') => {
 const _safeFullPackPlanInstructionalText = (type, raw, options = {}, resetForType = false, educatorAdaptation = false) => {
   const normalized = _fullPackInstructionalText(type, resetForType ? null : _cloneFullPackValue(raw), options);
   const isAdapted = type === 'simplified' || (normalized && normalized.form === 'adapted');
+  // Analysis describes the selected reading without rewriting it. Preserve its
+  // educator role, including an authorized adapted main, in the reviewed row.
+  if (type === 'analysis' && !resetForType && normalized.form === 'adapted'
+      && (normalized.role !== 'primary' || (normalized.replacementAuthorization?.authorized === true
+          && normalized.replacementAuthorization?.source === 'educator'))) return normalized;
   if (isAdapted) {
     return Object.assign({}, normalized, {
       role: 'supplemental',
@@ -4516,6 +4592,7 @@ window.AlloModules.GenerationHelpers = {
   prepareGeneratedMathContent,
   generateMathAssessment,
   handleGenerateFullPack,
+  resolveFullPackReadingSource,
   handlePlanFullPack,
   getFullPackEditableResourceTypes,
   addFullPackPlanResource,

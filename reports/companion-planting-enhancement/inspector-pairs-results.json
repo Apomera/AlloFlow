@@ -1,0 +1,29 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "collapsed": 4,
+      "expanded": 8,
+      "targets": true,
+      "overflow": false,
+      "clipped": false
+    },
+    {
+      "width": 320,
+      "collapsed": 4,
+      "expanded": 8,
+      "targets": true,
+      "overflow": false,
+      "clipped": false
+    }
+  ],
+  "assertions": [
+    "Exact support, conflict, and net effects agree with current modeled neighbors",
+    "All eight compass directions and current botanical stages/health reflect the actual garden",
+    "Keyboard inspection preserves plantings, funds, time, and harvest rewards; returning resets the disclosure",
+    "Live changes, hidden conflict counts, corner adjacency, empty pairs, habitat, and invalid selection pass",
+    "Desktop, 320px, larger text, 44px targets, forced colors, bounded hover, both reduced-motion settings, accessibility, and cleanup pass"
+  ],
+  "errors": [],
+  "accessibility": []
+}

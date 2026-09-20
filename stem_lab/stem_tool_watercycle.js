@@ -12426,6 +12426,25 @@ const d = labToolData.waterCycle || {};
             scene.add(sunPatchLabel);
             // Cache triangle weights once. Following the actual ocean vertices
             // also follows a paused or reduced-motion surface without a new clock.
+            // Expanding landing rings need fresh weights at their changing XZ.
+            // Read the rendered triangles, including a frozen reduced-motion sea.
+            function samplePilotOceanHeight(x, z) {
+              var grid = oceanGeo.parameters.widthSegments, stride = grid + 1;
+              var cell = oceanGeo.parameters.width / grid, half = oceanGeo.parameters.width / 2;
+              var gx = Math.max(0, Math.min(grid, (x + half) / cell));
+              var gz = Math.max(0, Math.min(grid, (z + half) / cell));
+              var col = Math.min(grid - 1, Math.floor(gx)), row = Math.min(grid - 1, Math.floor(gz));
+              var u = gx - col, v = gz - row, a = row * stride + col;
+              var water = oceanGeo.attributes.position;
+              return u + v <= 1
+                ? water.getY(a) * (1 - u - v) + water.getY(a + stride) * v + water.getY(a + 1) * u
+                : water.getY(a + stride) * (1 - u) + water.getY(a + stride + 1) * (u + v - 1) + water.getY(a + 1) * (1 - v);
+            }
+            function rainWaterSurfaceY(x, z) {
+              if (surfaceUnder(x, z) !== 'water') return -Infinity;
+              var inlandHeight = collectedWaterSurfaceY(x, z);
+              return (inlandHeight > 0 ? inlandHeight : samplePilotOceanHeight(x, z)) + 0.03;
+            }
             function cacheSunlightSurface(mesh) {
               var positions = mesh.geometry.attributes.position;
               var grid = oceanGeo.parameters.widthSegments, stride = grid + 1;
@@ -12513,6 +12532,61 @@ const d = labToolData.waterCycle || {};
               return landGeometry;
             }
 
+            // Replace the beach's vertical extrusion with a smooth profile.
+            // This is static scenery: the existing landing outline stays authoritative.
+            function slopingBeachGeometry(innerX, innerZ, outerX, outerZ, topY, bottomY) {
+              var coastPoints = coastShelfCurve.getPoints(COAST_OUTLINE.length * 8);
+              var beachShape = new THREE.Shape();
+              coastPoints.forEach(function(point, index) {
+                var x = COAST_CENTRE_X + (point.x - COAST_CENTRE_X) * innerX;
+                var z = COAST_CENTRE_Z + (point.z - COAST_CENTRE_Z) * innerZ;
+                if (index === 0) beachShape.moveTo(x, -z); else beachShape.lineTo(x, -z);
+              });
+              beachShape.closePath();
+              var beachCap = new THREE.ShapeGeometry(beachShape);
+              beachCap.rotateX(-Math.PI / 2); beachCap.translate(0, topY, 0);
+              var capPositions = beachCap.attributes.position;
+              var positions = Array.from(capPositions.array), indices = Array.from(beachCap.index.array);
+              var uv = [], tones = [];
+              for (var capIndex = 0; capIndex < capPositions.count; capIndex++) {
+                uv.push(capPositions.getX(capIndex) / 128, capPositions.getZ(capIndex) / 128);
+                tones.push(1, 1, 1);
+              }
+              var profileBase = capPositions.count;
+              for (var coastRing = 0; coastRing < coastPoints.length; coastRing++) {
+                var point = coastPoints[coastRing];
+                for (var coastAcross = 0; coastAcross <= 10; coastAcross++) {
+                  var coastT = coastAcross / 10;
+                  var coastEase = coastT * coastT * (3 - 2 * coastT);
+                  var coastX = COAST_CENTRE_X + (point.x - COAST_CENTRE_X) * (innerX + (outerX - innerX) * coastT);
+                  var coastZ = COAST_CENTRE_Z + (point.z - COAST_CENTRE_Z) * (innerZ + (outerZ - innerZ) * coastT);
+                  positions.push(coastX, topY + (bottomY - topY) * coastEase, coastZ);
+                  uv.push(coastX / 128, coastZ / 128);
+                  var coastTone = 1 - coastEase * 0.22;
+                  tones.push(coastTone, coastTone, coastTone);
+                  if (coastRing < coastPoints.length - 1 && coastAcross < 10) {
+                    var coastVertex = profileBase + coastRing * 11 + coastAcross;
+                    indices.push(coastVertex, coastVertex + 11, coastVertex + 1,
+                      coastVertex + 1, coastVertex + 11, coastVertex + 12);
+                  }
+                }
+              }
+              // Both the filled cap and sloping rim face upward.
+              for (var face = 0; face < indices.length; face += 3) {
+                var a = indices[face] * 3, b = indices[face + 1] * 3, c = indices[face + 2] * 3;
+                var faceY = (positions[b + 2] - positions[a + 2]) * (positions[c] - positions[a])
+                  - (positions[b] - positions[a]) * (positions[c + 2] - positions[a + 2]);
+                if (faceY < 0) { var swap = indices[face + 1]; indices[face + 1] = indices[face + 2]; indices[face + 2] = swap; }
+              }
+              var geometry = new THREE.BufferGeometry();
+              geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+              geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+              geometry.setAttribute('color', new THREE.Float32BufferAttribute(tones, 3));
+              geometry.setIndex(indices); geometry.computeVertexNormals();
+              geometry.userData.beachProfile = { base: profileBase, rings: coastPoints.length, columns: 11, top: topY, bottom: bottomY };
+              beachCap.dispose();
+              return geometry;
+            }
             var wetSandTexture = makeTerrainTexture(3, 7, 5);
             var beachTexture = makeTerrainTexture(7, 8, 5);
             var meadowTexture = makeTerrainTexture(13, 7, 5);
@@ -12521,20 +12595,22 @@ const d = labToolData.waterCycle || {};
             // fringe at the waterline. It grounds the shoreline visually and
             // makes the collection boundary readable without another label.
             var wetSand = new THREE.Mesh(
-              sculptedLandGeometry(COAST_OUTLINE, -1.65, 3.95, 1.045, 1.06),
+              slopingBeachGeometry(1.02, 1.03, 1.085, 1.12, 2.15, -1.85),
               new THREE.MeshStandardMaterial({
-                color: 0x6f6653, map: wetSandTexture, bumpMap: wetSandTexture,
-                bumpScale: 0.22, roughness: 0.78, metalness: 0.02
+                color: 0x6f6653, map: wetSandTexture, bumpMap: wetSandTexture, vertexColors: true,
+                bumpScale: 0.055, roughness: 0.78, metalness: 0.02
               })
             );
+            wetSand.name = 'pilot-wet-sand-slope';
             land.add(wetSand);
             var beach = new THREE.Mesh(
-              sculptedLandGeometry(COAST_OUTLINE, -1.6, 4.4, 1, 1),
+              slopingBeachGeometry(0.96, 0.96, 1.025, 1.035, 4.85, 2.1),
               new THREE.MeshStandardMaterial({
-                color: 0x9c8a63, map: beachTexture, bumpMap: beachTexture,
-                bumpScale: 0.34, roughness: 1
+                color: 0x9c8a63, map: beachTexture, bumpMap: beachTexture, vertexColors: true,
+                bumpScale: 0.085, roughness: 1
               })
             );
+            beach.name = 'pilot-dry-sand-slope';
             land.add(beach);
             var meadow = new THREE.Mesh(
               sculptedLandGeometry(MEADOW_OUTLINE, -1.8, 8.2, 1, 1),
@@ -12734,7 +12810,9 @@ const d = labToolData.waterCycle || {};
             // and the canopy gives the eye a scale reference on the way down.
             // Four instanced fields replace scores of one-off meshes: the forest
             // is denser and more natural while collapsing its draw-call cost.
-            var treeGroup = new THREE.Group();
+            var treeGroup = new THREE.Group(); treeGroup.name = 'pilot-forest';
+            land.updateMatrixWorld(true);
+            var treeGroundRay = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
             var TREE_COUNT = 68;
             var treeSeeds = [];
             for (var treeCandidate = 0; treeSeeds.length < TREE_COUNT && treeCandidate < 420; treeCandidate++) {
@@ -12745,36 +12823,101 @@ const d = labToolData.waterCycle || {};
               var treeLakeX = treeX - 268, treeLakeZ = treeZ + 104;
               if (!pointInOutline(treeX, treeZ, MEADOW_OUTLINE)
                 || treeLakeX * treeLakeX + treeLakeZ * treeLakeZ < 44 * 44) continue;
+              treeGroundRay.ray.origin.set(treeX, 500, treeZ);
+              var treeGroundHits = treeGroundRay.intersectObjects([wetSand, beach, meadow, hardpan, ridgeSurface, ridgeBackdrop], false);
+              if (!treeGroundHits.length) continue;
+              var treeGroundY = treeGroundHits[0].point.y;
+              var treeFooting = true;
+              for (var treeFoot = 0; treeFoot < 4; treeFoot++) {
+                var treeFootAngle = treeFoot * Math.PI / 2;
+                treeGroundRay.ray.origin.set(treeX + Math.cos(treeFootAngle) * 1.4, 500, treeZ + Math.sin(treeFootAngle) * 1.4);
+                var treeFootHits = treeGroundRay.intersectObjects([wetSand, beach, meadow, hardpan, ridgeSurface, ridgeBackdrop], false);
+                if (!treeFootHits.length || Math.abs(treeFootHits[0].point.y - treeGroundY) > 0.45) treeFooting = false;
+              }
+              if (!treeFooting) continue;
               treeSeeds.push({
-                x: treeX, z: treeZ,
+                x: treeX, z: treeZ, ground: treeGroundHits[0].point.y,
+                crownWidth: 0.85 + ((treeCandidate * 13) % 11) * 0.035,
+                crownHeight: 0.86 + ((treeCandidate * 19) % 9) * 0.035,
                 scale: 0.72 + ((treeCandidate * 37) % 15) / 24,
                 rotation: ((treeCandidate * 29) % 31) / 31 * Math.PI * 2,
                 crownShift: (((treeCandidate * 43) % 17) - 8) / 18
               });
             }
             TREE_COUNT = treeSeeds.length;
-            var trunkGeo = new THREE.CylinderGeometry(0.78, 1.14, 7, 7);
-            var canopyGeo = new THREE.IcosahedronGeometry(4.8, 1);
-            var canopyPositions = canopyGeo.attributes.position;
-            for (var canopyVertex = 0; canopyVertex < canopyPositions.count; canopyVertex++) {
-              var canopyY = canopyPositions.getY(canopyVertex);
-              var canopyWarp = 1 + Math.sin(canopyY * 1.7 + canopyVertex * 0.61) * 0.055;
-              canopyPositions.setX(canopyVertex, canopyPositions.getX(canopyVertex) * canopyWarp);
-              canopyPositions.setZ(canopyVertex, canopyPositions.getZ(canopyVertex) * (2 - canopyWarp));
+            var trunkGeo = new THREE.CylinderGeometry(0.56, 0.82, 7, 7, 4);
+            var trunkPositions = trunkGeo.attributes.position, trunkColors = [];
+            for (var trunkVertex = 0; trunkVertex < trunkPositions.count; trunkVertex++) {
+              var trunkYFraction = (trunkPositions.getY(trunkVertex) + 3.5) / 7;
+              var trunkFlare = 1 + Math.pow(1 - trunkYFraction, 5) * 0.48;
+              trunkPositions.setX(trunkVertex, trunkPositions.getX(trunkVertex) * trunkFlare);
+              trunkPositions.setZ(trunkVertex, trunkPositions.getZ(trunkVertex) * trunkFlare);
+              var trunkTone = 0.7 + trunkYFraction * 0.3;
+              trunkColors.push(trunkTone, trunkTone, trunkTone);
             }
+            trunkGeo.setAttribute('color', new THREE.Float32BufferAttribute(trunkColors, 3));
+            trunkGeo.computeVertexNormals();
+            var canopyGeo = new THREE.IcosahedronGeometry(4.8, 1);
+            var canopyPositions = canopyGeo.attributes.position, canopyColors = [], canopyTop = -Infinity;
+            for (var canopyVertex = 0; canopyVertex < canopyPositions.count; canopyVertex++) {
+              var canopyX = canopyPositions.getX(canopyVertex), canopyY = canopyPositions.getY(canopyVertex);
+              var canopyZ = canopyPositions.getZ(canopyVertex);
+              // Coordinate-based shaping keeps shared face corners coincident.
+              var canopyWarp = 1 + Math.sin(canopyX * 0.72 + canopyZ * 0.51) * 0.07
+                + Math.cos(canopyY * 0.81 - canopyZ * 0.37) * 0.045;
+              canopyPositions.setXYZ(canopyVertex, canopyX * canopyWarp, canopyY * (0.96 + canopyWarp * 0.04), canopyZ * (2 - canopyWarp));
+              canopyTop = Math.max(canopyTop, canopyPositions.getY(canopyVertex));
+              var leafTone = 0.76 + (canopyY / 4.8 + 1) * 0.12 + Math.sin(canopyX * 1.4 + canopyZ * 0.9) * 0.035;
+              canopyColors.push(leafTone, leafTone, leafTone * 0.96);
+            }
+            canopyGeo.setAttribute('color', new THREE.Float32BufferAttribute(canopyColors, 3));
             canopyPositions.needsUpdate = true;
             canopyGeo.computeVertexNormals();
-            var treeSnowGeo = new THREE.SphereGeometry(3.9, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2);
-            var trunkMat = new THREE.MeshStandardMaterial({ color: 0x46301f, roughness: 1 });
-            var lowerCanopyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.96 });
-            var upperCanopyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.92 });
+            // Snow follows the canopy itself; slope and patch masks reveal foliage
+            // between deposits instead of placing a separate dome above each tree.
+            var treeSnowGeo = canopyGeo.clone();
+            function addWinterSurfaceSnow(material, overlay, lakeMargin) {
+              material.onBeforeCompile = function(shader) {
+                shader.uniforms.pilotSurfaceSnow = ridgeWinterSnow;
+                shader.vertexShader = 'varying vec3 vSnowWorld; varying float vSnowLocalHeight;\n' + shader.vertexShader;
+                shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>', [
+                  '#include <worldpos_vertex>',
+                  'vec4 snowVertex = vec4(transformed, 1.0);',
+                  '#ifdef USE_INSTANCING',
+                  'snowVertex = instanceMatrix * snowVertex;',
+                  '#endif',
+                  'vSnowWorld = (modelMatrix * snowVertex).xyz; vSnowLocalHeight = position.y;'
+                ].join('\n'));
+                shader.fragmentShader = 'varying vec3 vSnowWorld; varying float vSnowLocalHeight; uniform float pilotSurfaceSnow;\n' + shader.fragmentShader;
+                shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_maps>', [
+                  '#include <normal_fragment_maps>',
+                  'float snowUp = clamp(inverseTransformDirection(normal, viewMatrix).y, 0.0, 1.0);',
+                  'float snowPatch = sin(vSnowWorld.x * 1.3 + sin(vSnowWorld.z * 0.91)) * 0.11 + sin(vSnowWorld.z * 2.7 - vSnowWorld.x * 0.6) * 0.04;',
+                  'float snowCover = smoothstep(0.38, 0.78, snowUp + snowPatch) * pilotSurfaceSnow;',
+                  overlay ? 'snowCover *= smoothstep(0.1, 1.5, vSnowLocalHeight + snowPatch * 2.0);' : '',
+                  lakeMargin ? 'snowCover *= smoothstep(34.6, 35.8, distance(vSnowWorld.xz, vec2(268.0, -104.0)) + snowPatch * 0.5);' : '',
+                  'vec3 surfaceSnowTint = mix(vec3(0.73, 0.82, 0.86), vec3(0.94, 0.97, 0.98), snowUp);',
+                  overlay ? 'diffuseColor.rgb = surfaceSnowTint; diffuseColor.a *= snowCover; if (diffuseColor.a < 0.025) discard;'
+                    : 'diffuseColor.rgb = mix(diffuseColor.rgb, surfaceSnowTint, snowCover);',
+                  material.isMeshStandardMaterial ? 'roughnessFactor = mix(roughnessFactor, 0.93, snowCover);' : ''
+                ].join('\n'));
+                material.userData.snowShader = shader;
+              };
+              material.customProgramCacheKey = function() { return 'pilot-surface-snow-v2-' + (overlay ? 'canopy' : lakeMargin ? 'shore' : 'rock'); };
+            }
+            var trunkMat = new THREE.MeshStandardMaterial({ color: 0x46301f, vertexColors: true, roughness: 1 });
+            var lowerCanopyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.96 });
+            var upperCanopyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.92 });
             var treeSnowMat = new THREE.MeshStandardMaterial({
-              color: 0xf1f5f9, roughness: 0.82, transparent: true, opacity: 0.88
+              color: 0xf1f5f9, roughness: 0.93, transparent: true, opacity: 0.98, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1
             });
+            addWinterSurfaceSnow(treeSnowMat, true);
             var trunkField = new THREE.InstancedMesh(trunkGeo, trunkMat, TREE_COUNT);
             var lowerCanopyField = new THREE.InstancedMesh(canopyGeo, lowerCanopyMat, TREE_COUNT);
             var upperCanopyField = new THREE.InstancedMesh(canopyGeo, upperCanopyMat, TREE_COUNT);
             var treeSnowField = new THREE.InstancedMesh(treeSnowGeo, treeSnowMat, TREE_COUNT);
+            trunkField.name = 'pilot-forest-trunks'; lowerCanopyField.name = 'pilot-forest-lower-crowns';
+            upperCanopyField.name = 'pilot-forest-upper-crowns'; treeSnowField.name = 'pilot-forest-snow';
             [trunkField, lowerCanopyField, upperCanopyField, treeSnowField].forEach(function(treeField) {
               treeField.frustumCulled = false;
               if (THREE.DynamicDrawUsage) treeField.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -12794,19 +12937,22 @@ const d = labToolData.waterCycle || {};
               treeSeeds.forEach(function(treeSeed, treeIndex) {
                 var treeVisible = !isDesert || treeIndex % 5 === 0;
                 var visibleScale = treeVisible ? treeSeed.scale : 0.0001;
-                var trunkY = 8.25 + 3.5 * visibleScale;
-                var crownY = 12.9 + visibleScale * 4.1;
+                var trunkY = treeSeed.ground - 0.08 + 3.5 * visibleScale;
+                var crownY = treeSeed.ground + visibleScale * 7.4;
+                var crownWidth = visibleScale * treeSeed.crownWidth;
+                var crownHeight = visibleScale * treeSeed.crownHeight;
+                var upperCrownY = crownY + crownHeight * 3.4;
                 setTreeInstance(trunkField, treeIndex, treeSeed.x, trunkY, treeSeed.z,
                   visibleScale * 0.8, visibleScale, visibleScale * 0.8, treeSeed.rotation);
                 setTreeInstance(lowerCanopyField, treeIndex,
                   treeSeed.x + treeSeed.crownShift, crownY, treeSeed.z - treeSeed.crownShift * 0.6,
-                  visibleScale * 1.08, visibleScale * 0.8, visibleScale, treeSeed.rotation);
+                  crownWidth * 1.08, crownHeight * 0.8, crownWidth, treeSeed.rotation);
                 setTreeInstance(upperCanopyField, treeIndex,
-                  treeSeed.x - treeSeed.crownShift * 0.5, crownY + visibleScale * 4.25, treeSeed.z + treeSeed.crownShift,
-                  visibleScale * 0.82, visibleScale * 0.72, visibleScale * 0.8, treeSeed.rotation + 0.8);
+                  treeSeed.x - treeSeed.crownShift * 0.5, upperCrownY, treeSeed.z + treeSeed.crownShift,
+                  crownWidth * 0.82, crownHeight * 0.72, crownWidth * 0.8, treeSeed.rotation + 0.8);
                 setTreeInstance(treeSnowField, treeIndex,
-                  treeSeed.x - treeSeed.crownShift * 0.5, crownY + visibleScale * 7.35, treeSeed.z + treeSeed.crownShift,
-                  visibleScale * 0.72, visibleScale * 0.24, visibleScale * 0.7, treeSeed.rotation);
+                  treeSeed.x - treeSeed.crownShift * 0.5, upperCrownY + 0.035, treeSeed.z + treeSeed.crownShift,
+                  crownWidth * 0.82 * 1.004, crownHeight * 0.72 * 1.004, crownWidth * 0.8 * 1.004, treeSeed.rotation + 0.8);
                 if (isDesert) {
                   treeLowerColor.setHSL(0.16, 0.32, 0.31);
                   treeUpperColor.setHSL(0.18, 0.28, 0.38);
@@ -12840,26 +12986,68 @@ const d = labToolData.waterCycle || {};
             lake.position.set(268, 8.6, -104);
             lake.name = 'pilot-lake-water';
             var pilotLakeTime = { value: 0 };
+            var pilotLakeSunlight = { value: 0 };
             lake.material.onBeforeCompile = function(shader) {
               shader.uniforms.pilotLakeTime = pilotLakeTime;
+              shader.uniforms.pilotLakeSunlight = pilotLakeSunlight;
+              shader.uniforms.pilotLakeWind = pilotWaterUniforms.rippleStrength;
+              shader.uniforms.pilotLakeWinter = ridgeWinterSnow;
               shader.vertexShader = 'varying vec3 vPilotLakeWorld;\n' + shader.vertexShader;
               shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>',
                 '#include <worldpos_vertex>\nvPilotLakeWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;');
-              shader.fragmentShader = 'varying vec3 vPilotLakeWorld;\nuniform float pilotLakeTime;\n' + shader.fragmentShader;
-              shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>',
-                '#include <color_fragment>\nfloat lakeRadius = length(vPilotLakeWorld.xz - vec2(268.0, -104.0)) / 34.0;\nfloat lakeShallows = smoothstep(0.45, 1.0, lakeRadius);\nfloat lakeShelf = smoothstep(0.79, 0.99, lakeRadius + sin(vPilotLakeWorld.x * 0.37 + sin(vPilotLakeWorld.z * 0.29)) * 0.012);\nfloat lakeBedGrain = fract(sin(dot(floor(vPilotLakeWorld.xz * 3.2), vec2(127.1, 311.7))) * 43758.5453);\nfloat lakeBedDetail = 1.0 - smoothstep(24.0, 100.0, length(vViewPosition));\nvec3 lakeWaterTint = mix(vec3(0.045, 0.18, 0.24), vec3(0.16, 0.43, 0.43), lakeShallows);\ndiffuseColor.rgb *= mix(lakeWaterTint, vec3(0.25, 0.39, 0.34) * (0.94 + lakeBedGrain * 0.12 * lakeBedDetail), lakeShelf * 0.55);');
+              shader.fragmentShader = [
+                'varying vec3 vPilotLakeWorld;',
+                'uniform float pilotLakeTime;',
+                'uniform float pilotLakeWinter;',
+                'uniform float pilotLakeSunlight;',
+                'uniform float pilotLakeWind;',
+                'float pilotLakeHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+                'float pilotLakeBed(vec2 p) {',
+                '  vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);',
+                '  return mix(mix(pilotLakeHash(i), pilotLakeHash(i + vec2(1.0, 0.0)), f.x), mix(pilotLakeHash(i + vec2(0.0, 1.0)), pilotLakeHash(i + vec2(1.0)), f.x), f.y);',
+                '}',
+                shader.fragmentShader
+              ].join('\n');
+              shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
+                '#include <color_fragment>',
+                'float lakeRadius = length(vPilotLakeWorld.xz - vec2(268.0, -104.0)) / 34.0;',
+                'float lakeBedPatch = pilotLakeBed(vPilotLakeWorld.xz * 0.18);',
+                // Preserve the outermost tint where lake and stream meet.
+                'float lakeDepthContour = lakeRadius + (lakeBedPatch - 0.5) * 0.11 * (1.0 - smoothstep(0.86, 1.0, lakeRadius));',
+                'float lakeShallows = smoothstep(0.45, 1.0, lakeDepthContour);',
+                'float lakeShelf = smoothstep(0.79, 0.99, lakeRadius + sin(vPilotLakeWorld.x * 0.37 + sin(vPilotLakeWorld.z * 0.29)) * 0.012);',
+                'float lakeBedGrain = pilotLakeHash(floor(vPilotLakeWorld.xz * 3.2));',
+                'float lakeBedDetail = 1.0 - smoothstep(24.0, 100.0, length(vViewPosition));',
+                'vec3 lakeWaterTint = mix(vec3(0.045, 0.18, 0.24), vec3(0.16, 0.43, 0.43), lakeShallows);',
+                'diffuseColor.rgb *= mix(lakeWaterTint, vec3(0.25, 0.39, 0.34) * (0.94 + lakeBedGrain * 0.12 * lakeBedDetail), lakeShelf * 0.55);',
+                // Soft refracted-light cues use the same frozen clock as ripples.
+                'float lakeLightA = abs(sin(dot(vPilotLakeWorld.xz, vec2(0.85, 0.56)) + sin(dot(vPilotLakeWorld.xz, vec2(0.21, -0.31))) * 1.2 + lakeBedPatch * 3.4 + pilotLakeTime * 0.32));',
+                'float lakeLightB = abs(sin(dot(vPilotLakeWorld.xz, vec2(-0.43, 1.03)) + cos(dot(vPilotLakeWorld.xz, vec2(0.33, 0.19))) * 1.1 - lakeBedPatch * 2.8 - pilotLakeTime * 0.24));',
+                'float lakeLightBreaks = smoothstep(0.22, 0.58, pilotLakeBed(vPilotLakeWorld.xz * 0.57 + vec2(pilotLakeTime * 0.06, -pilotLakeTime * 0.035)));',
+                'float lakeLightNet = pow(max(0.0, 1.0 - min(lakeLightA, lakeLightB)), 10.0) * lakeLightBreaks;',
+                'float lakeLightBand = smoothstep(0.52, 0.82, lakeRadius) * (1.0 - smoothstep(0.93, 1.0, lakeRadius));',
+                'diffuseColor.rgb += vec3(0.8, 0.98, 0.72) * lakeLightNet * lakeLightBand * lakeBedDetail * pilotLakeSunlight * mix(1.0, 0.45, pilotLakeWinter) * (0.026 + lakeBedPatch * 0.018);'
+              ].join('\n'));
               shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_maps>', [
                 '#include <normal_fragment_maps>',
-                'float lakeWaveA = dot(vPilotLakeWorld.xz, vec2(0.85, 0.44)) - pilotLakeTime * 1.3 + sin(dot(vPilotLakeWorld.xz, vec2(0.17, 0.23))) * 0.9;',
-                'float lakeWaveB = dot(vPilotLakeWorld.xz, vec2(-0.37, 1.1)) + pilotLakeTime * 0.8 + sin(dot(vPilotLakeWorld.xz, vec2(0.31, -0.13))) * 0.65;',
+                // Overlapping directions and slowly changing phases avoid repeated
+                // reflection bands. Small ripples soften before distant broad waves.
+                'float lakeWaveA = dot(vPilotLakeWorld.xz, vec2(0.85, 0.44)) - pilotLakeTime * 1.3 + sin(dot(vPilotLakeWorld.xz, vec2(0.17, 0.23)) + pilotLakeTime * 0.17) * 1.25;',
+                'float lakeWaveB = dot(vPilotLakeWorld.xz, vec2(-0.37, 1.1)) + pilotLakeTime * 0.8 + sin(dot(vPilotLakeWorld.xz, vec2(0.31, -0.13)) - pilotLakeTime * 0.11) * 1.1;',
+                'float lakeWaveC = dot(vPilotLakeWorld.xz, vec2(1.9, -1.4)) - pilotLakeTime * 1.7 + sin(lakeWaveA) * 0.65;',
+                'float lakeFineDetail = 1.0 - smoothstep(22.0, 100.0, length(vViewPosition));',
                 'float lakeDetail = 1.0 - smoothstep(90.0, 350.0, length(vViewPosition));',
-                'normal = normalize(normal + mat3(viewMatrix) * vec3(sin(lakeWaveA) * 0.048, 0.0, cos(lakeWaveB) * 0.036) * lakeDetail);'
+                'vec2 lakeGradient = sin(lakeWaveA) * vec2(0.82, 0.38) * 0.032 + sin(lakeWaveB) * vec2(-0.47, 0.94) * 0.025;',
+                'lakeGradient += sin(lakeWaveC) * vec2(0.52, -0.85) * 0.012 * lakeFineDetail;',
+                'float lakeWindStrength = mix(0.72, 1.18, clamp((pilotLakeWind - 0.45) / 0.7, 0.0, 1.0));',
+                'float lakeShoreCalm = mix(1.0, 0.62, lakeShelf);',
+                'normal = normalize(normal + mat3(viewMatrix) * vec3(lakeGradient.x, 0.0, lakeGradient.y) * lakeDetail * lakeWindStrength * lakeShoreCalm * mix(1.0, 0.32, pilotLakeWinter));'
               ].join('\n'));
               shader.fragmentShader = shader.fragmentShader.replace('#include <envmap_fragment>',
-                '#include <envmap_fragment>\nfloat lakeFresnel = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 4.0);\noutgoingLight = mix(outgoingLight, vec3(0.52, 0.68, 0.72), lakeFresnel * 0.28);');
+                '#include <envmap_fragment>\nfloat lakeFresnel = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 4.0);\noutgoingLight = mix(outgoingLight, mix(vec3(0.52, 0.68, 0.72), vec3(0.70, 0.78, 0.82), pilotLakeWinter), lakeFresnel * 0.28);');
               lake.userData.surfaceShader = shader;
             };
-            lake.material.customProgramCacheKey = function() { return 'pilot-lake-depth-ripples-v3'; };
+            lake.material.customProgramCacheKey = function() { return 'pilot-lake-depth-ripples-v6'; };
             land.add(lake);
             var lakeShore = new THREE.Group(); lakeShore.name = 'pilot-lake-shore';
             lakeShore.position.set(268, 0, -104);
@@ -12867,12 +13055,16 @@ const d = labToolData.waterCycle || {};
             var lakeShoreRadii = [34, 34.8, 36.2, 37.2], lakeShoreHeights = [8.58, 8.85, 9, 8.25];
             for (var lakeRing = 0; lakeRing <= 96; lakeRing++) {
               var lakeAngle = lakeRing / 96 * Math.PI * 2;
+              // Lower the gravel shoulders gradually beside the outlet opening.
+              var lakeOutletShoulder = Math.max(0, Math.min(1, (Math.abs(lakeAngle - 2.63) - 0.2) / 0.22));
+              lakeOutletShoulder = lakeOutletShoulder * lakeOutletShoulder * (3 - 2 * lakeOutletShoulder);
               for (var lakeAcross = 0; lakeAcross < 4; lakeAcross++) {
                 var lakeR = lakeShoreRadii[lakeAcross] + (lakeAcross / 3) * Math.sin(lakeAngle * 7) * 0.7;
-                lakeShoreVertices.push(Math.cos(lakeAngle) * lakeR, lakeShoreHeights[lakeAcross], Math.sin(lakeAngle) * lakeR);
+                lakeShoreVertices.push(Math.cos(lakeAngle) * lakeR,
+                  8.55 + (lakeShoreHeights[lakeAcross] - 8.55) * lakeOutletShoulder, Math.sin(lakeAngle) * lakeR);
                 lakeShoreUV.push(lakeRing / 8, lakeAcross / 3);
                 var shoreTone = [0.48, 0.74, 1.06, 0.84][lakeAcross]
-                  * (0.96 + Math.sin(lakeAngle * 11) * 0.04);
+                  * (0.96 + Math.sin(lakeAngle * 11) * 0.04) * (0.8 + lakeOutletShoulder * 0.2);
                 lakeShoreColors.push(shoreTone, shoreTone * (lakeAcross < 2 ? 1.04 : 0.97),
                   shoreTone * (lakeAcross < 2 ? 0.96 : 0.86));
                 // Leave the southwest outlet open to the existing stream.
@@ -12890,6 +13082,7 @@ const d = labToolData.waterCycle || {};
             lakeShoreGeometry.setAttribute('color', new THREE.Float32BufferAttribute(lakeShoreColors, 3));
             lakeShoreGeometry.setIndex(lakeShoreIndices); lakeShoreGeometry.computeVertexNormals();
             var lakeShoreMaterial = new THREE.MeshPhongMaterial({color: 0x82765b, map: ridgeTexture, vertexColors: true, shininess: 5, side: THREE.DoubleSide});
+            addWinterSurfaceSnow(lakeShoreMaterial, false, true);
             var lakeShoreGround = new THREE.Mesh(lakeShoreGeometry, lakeShoreMaterial);
             lakeShoreGround.name = 'pilot-lake-shore-ground'; lakeShore.add(lakeShoreGround);
             lakeShore.updateMatrixWorld(true);
@@ -12902,6 +13095,7 @@ const d = labToolData.waterCycle || {};
             var lakeStones = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1),
               new THREE.MeshPhongMaterial({color: 0x8a8b79, map: ridgeTexture, shininess: 12}), 48);
             lakeStones.name = 'pilot-lake-shore-stones';
+            addWinterSurfaceSnow(lakeStones.material, false);
             var lakeStoneDummy = new THREE.Object3D();
             for (var lakeStoneIndex = 0; lakeStoneIndex < 48; lakeStoneIndex++) {
               var lakeStoneAngle = 2.83 + (lakeStoneIndex + 0.5 + Math.sin(lakeStoneIndex * 2.39) * 0.3) / 48 * (Math.PI * 2 - 0.4);
@@ -12971,8 +13165,17 @@ const d = labToolData.waterCycle || {};
                 streamCurve.getPointAt(tubeRing / tubularSegments, streamRingCentre);
                 for (var tubeSide = 0; tubeSide <= radialSegments; tubeSide++) {
                   var streamYIndex = (tubeRing * (radialSegments + 1) + tubeSide) * 3 + 1;
-                  streamPositions.array[streamYIndex] = streamRingCentre.y
+                  var streamFlatY = streamRingCentre.y
                     + (streamPositions.array[streamYIndex] - streamRingCentre.y) * verticalScale;
+                  // Meet the lake at its actual level, then ease into the river's
+                  // existing slope. Keep a tiny cross-section to avoid coincident faces.
+                  var outletRadius = Math.hypot(streamPositions.array[streamYIndex - 1] - 268,
+                    streamPositions.array[streamYIndex + 1] + 104);
+                  var outletBlend = Math.max(0, Math.min(1, (outletRadius - 34.8) / 9.2));
+                  outletBlend = outletBlend * outletBlend * (3 - 2 * outletBlend);
+                  var outletY = lake.position.y
+                    + (streamFlatY - streamRingCentre.y - 0.33) * 0.001;
+                  streamPositions.array[streamYIndex] = outletY * (1 - outletBlend) + streamFlatY * outletBlend;
                 }
               }
               streamPositions.needsUpdate = true;
@@ -13008,6 +13211,13 @@ const d = labToolData.waterCycle || {};
             streamChannelTexture.minFilter = THREE.LinearFilter;
             var pilotStreamChannelActive = { value: 1 };
             streamGroup.userData.channelMask = streamChannelTexture;
+            // A low, damp margin blends the channel's raised banks into the lake.
+            // Used at setup only; outer terrain edges keep their sampled heights.
+            function pilotOutletBankHeight(x, z, height) {
+              var bankBlend = Math.max(0, Math.min(1, (Math.hypot(x - 268, z + 104) - 34.5) / 7.5));
+              bankBlend = bankBlend * bankBlend * (3 - 2 * bankBlend);
+              return 8.55 + (height - 8.55) * bankBlend;
+            }
             var streamBankVertices = [], streamBankUV = [], streamBankIndices = [], streamBankColors = [];
             var streamBankPoint = new THREE.Vector3(), streamBankTangent = new THREE.Vector3();
             var streamBankNextTangent = new THREE.Vector3();
@@ -13023,8 +13233,10 @@ const d = labToolData.waterCycle || {};
                 for (var bankAcross = 0; bankAcross < 4; bankAcross++) {
                   var bankOffset = bankSign * (streamBankOffsets[bankAcross] + Math.sin(bankRing * 0.57) * 0.12
                     + gravelShelf * bankAcross / 3);
-                  streamBankVertices.push(streamBankPoint.x - streamBankTangent.z * bankOffset,
-                    streamBankPoint.y + streamBankHeights[bankAcross], streamBankPoint.z + streamBankTangent.x * bankOffset);
+                  var bankX = streamBankPoint.x - streamBankTangent.z * bankOffset;
+                  var bankZ = streamBankPoint.z + streamBankTangent.x * bankOffset;
+                  streamBankVertices.push(bankX,
+                    pilotOutletBankHeight(bankX, bankZ, streamBankPoint.y + streamBankHeights[bankAcross]), bankZ);
                   streamBankUV.push(bankRing / 8, bankAcross / 3);
                   // Dark waterline, damp gravel, then a drier upper margin.
                   var bankTone = [0.48, 0.76, 1.1, 0.88][bankAcross] * (0.95 + Math.sin(bankRing * 1.7) * 0.05);
@@ -13104,7 +13316,11 @@ const d = labToolData.waterCycle || {};
                   var terrainBankT = terrainBankAcross / 8;
                   var terrainBankEase = terrainBankT * terrainBankT * (3 - 2 * terrainBankT);
                   var terrainBankOffset = terrainBankInner + (13 - terrainBankInner) * terrainBankT;
-                  var terrainBankY = (streamTerrainPoint.y + 0.02) * (1 - terrainBankEase)
+                  var terrainBankInnerY = pilotOutletBankHeight(
+                    streamTerrainPoint.x + terrainBankNX * terrainBankSign * terrainBankInner,
+                    streamTerrainPoint.z + terrainBankNZ * terrainBankSign * terrainBankInner,
+                    streamTerrainPoint.y + 0.02);
+                  var terrainBankY = terrainBankInnerY * (1 - terrainBankEase)
                     + (terrainBankTop - 0.035) * terrainBankEase;
                   streamTerrainPositions.push(streamTerrainPoint.x + terrainBankNX * terrainBankSign * terrainBankOffset,
                     terrainBankY, streamTerrainPoint.z + terrainBankNZ * terrainBankSign * terrainBankOffset);
@@ -13146,6 +13362,50 @@ const d = labToolData.waterCycle || {};
               })
             );
             streamMesh.name = 'pilot-stream-water';
+            // Index the static stream triangles once. Landing rings can sample
+            // its slopes and banks without raycasting the full mesh each frame.
+            streamMesh.geometry.computeBoundingBox();
+            var streamHeightBounds = streamMesh.geometry.boundingBox;
+            var streamHeightCellSize = 8;
+            var streamHeightColumns = Math.floor((streamHeightBounds.max.x - streamHeightBounds.min.x) / streamHeightCellSize) + 1;
+            var streamHeightRows = Math.floor((streamHeightBounds.max.z - streamHeightBounds.min.z) / streamHeightCellSize) + 1;
+            var streamHeightCells = new Array(streamHeightColumns * streamHeightRows);
+            var streamHeightPositions = streamMesh.geometry.attributes.position;
+            var streamHeightIndices = streamMesh.geometry.index;
+            for (var streamTriangle = 0; streamTriangle < streamHeightIndices.count; streamTriangle += 3) {
+              var streamA = streamHeightIndices.getX(streamTriangle), streamB = streamHeightIndices.getX(streamTriangle + 1), streamC = streamHeightIndices.getX(streamTriangle + 2);
+              var ax = streamHeightPositions.getX(streamA), ay = streamHeightPositions.getY(streamA), az = streamHeightPositions.getZ(streamA);
+              var bx = streamHeightPositions.getX(streamB), by = streamHeightPositions.getY(streamB), bz = streamHeightPositions.getZ(streamB);
+              var cx = streamHeightPositions.getX(streamC), cy = streamHeightPositions.getY(streamC), cz = streamHeightPositions.getZ(streamC);
+              var streamDet = (bx - ax) * (cz - az) - (bz - az) * (cx - ax);
+              if (Math.abs(streamDet) < 0.0000001) continue;
+              var streamHeightTriangle = [ax, ay, az, bx - ax, by - ay, bz - az, cx - ax, cy - ay, cz - az, 1 / streamDet];
+              var streamMinCol = Math.floor((Math.min(ax, bx, cx) - streamHeightBounds.min.x) / streamHeightCellSize);
+              var streamMaxCol = Math.floor((Math.max(ax, bx, cx) - streamHeightBounds.min.x) / streamHeightCellSize);
+              var streamMinRow = Math.floor((Math.min(az, bz, cz) - streamHeightBounds.min.z) / streamHeightCellSize);
+              var streamMaxRow = Math.floor((Math.max(az, bz, cz) - streamHeightBounds.min.z) / streamHeightCellSize);
+              for (var streamRow = streamMinRow; streamRow <= streamMaxRow; streamRow++) {
+                for (var streamCol = streamMinCol; streamCol <= streamMaxCol; streamCol++) {
+                  var streamCellIndex = streamRow * streamHeightColumns + streamCol;
+                  if (!streamHeightCells[streamCellIndex]) streamHeightCells[streamCellIndex] = [];
+                  streamHeightCells[streamCellIndex].push(streamHeightTriangle);
+                }
+              }
+            }
+            function samplePilotStreamHeight(x, z) {
+              var col = Math.floor((x - streamHeightBounds.min.x) / streamHeightCellSize);
+              var row = Math.floor((z - streamHeightBounds.min.z) / streamHeightCellSize);
+              if (col < 0 || row < 0 || col >= streamHeightColumns || row >= streamHeightRows) return NaN;
+              var triangles = streamHeightCells[row * streamHeightColumns + col], height = -Infinity;
+              if (!triangles) return NaN;
+              for (var i = 0; i < triangles.length; i++) {
+                var tri = triangles[i], dx = x - tri[0], dz = z - tri[2];
+                var u = (dx * tri[8] - dz * tri[6]) * tri[9];
+                var v = (tri[3] * dz - tri[5] * dx) * tri[9];
+                if (u >= -0.000001 && v >= -0.000001 && u + v <= 1.000001) height = Math.max(height, tri[1] + u * tri[4] + v * tri[7]);
+              }
+              return height === -Infinity ? NaN : height;
+            }
             // Cross-channel coordinates let shading follow the actual bends.
             var streamSurfacePositions = streamMesh.geometry.attributes.position;
             var streamCrossChannel = [], streamProfilePoint = new THREE.Vector3(), streamProfileTangent = new THREE.Vector3();
@@ -13174,7 +13434,11 @@ const d = labToolData.waterCycle || {};
                 'float streamGravel = fract(sin(dot(floor(vPilotStreamWorld.xz * 3.2), vec2(127.1, 311.7))) * 43758.5453);',
                 'float gravelDetail = 1.0 - smoothstep(25.0, 100.0, length(vViewPosition));',
                 'vec3 streamShallowTint = vec3(0.27, 0.39, 0.34) * (0.9 + streamGravel * 0.18 * gravelDetail);',
-                'diffuseColor.rgb = mix(diffuseColor.rgb * 0.84, streamShallowTint, streamShallow * 0.7);'
+                'diffuseColor.rgb = mix(diffuseColor.rgb * 0.84, streamShallowTint, streamShallow * 0.7);',
+                // Match the lake's mineral shallows where the two surfaces meet.
+                'float outletColorBlend = smoothstep(34.0, 44.0, distance(vPilotStreamWorld.xz, vec2(268.0, -104.0)));',
+                'vec3 outletTint = mix(vec3(0.16, 0.43, 0.43), vec3(0.25, 0.39, 0.34) * (0.94 + streamGravel * 0.12 * gravelDetail), 0.55);',
+                'diffuseColor.rgb = mix(outletTint, diffuseColor.rgb, outletColorBlend);'
               ].join('\n'));
               shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_maps>', [
                 '#include <normal_fragment_maps>',
@@ -13187,11 +13451,11 @@ const d = labToolData.waterCycle || {};
                 '#include <envmap_fragment>\nfloat streamFresnel = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 4.0);\noutgoingLight = mix(outgoingLight, vec3(0.48, 0.65, 0.69), streamFresnel * 0.2);');
               streamMesh.userData.surfaceShader = shader;
             };
-            streamMesh.material.customProgramCacheKey = function() { return 'pilot-stream-depth-ripples-v2'; };
+            streamMesh.material.customProgramCacheKey = function() { return 'pilot-stream-depth-ripples-v3'; };
             streamGroup.add(streamMesh);
             // Small broken wave crests identify steeper reaches. This is a
             // visual riffle cue, not a discharge or sediment-transport solver.
-            var riffleVertices = [], riffleUV = [], riffleIndices = [];
+            var riffleVertices = [], riffleUV = [], riffleEdges = [], riffleIndices = [];
             var rifflePoint = new THREE.Vector3(), riffleTangent = new THREE.Vector3();
             for (var riffleStep = 1; riffleStep < 91; riffleStep++) {
               var riffleU = riffleStep / 96;
@@ -13199,17 +13463,23 @@ const d = labToolData.waterCycle || {};
               if (riffleTangent.y > -0.055 || Math.hypot(rifflePoint.x - 268, rifflePoint.z + 104) < 35) continue;
               var riffleStart = riffleVertices.length / 3;
               var riffleHorizontal = Math.max(0.001, Math.hypot(riffleTangent.x, riffleTangent.z));
-              for (var riffleColumn = 0; riffleColumn <= 12; riffleColumn++) {
-                var acrossRiffle = (riffleColumn / 12 - 0.5) * 4.1;
-                var riffleBend = Math.sin(riffleColumn / 12 * Math.PI) * 0.22;
+              var riffleSpan = 3.5 + 0.6 * (0.5 + 0.5 * Math.sin(riffleStep * 1.73));
+              for (var riffleColumn = 0; riffleColumn <= 20; riffleColumn++) {
+                var acrossRiffle = (riffleColumn / 20 - 0.5) * riffleSpan;
+                var riffleBend = Math.sin(riffleColumn / 20 * Math.PI) * (0.12 + 0.16 * Math.sin(riffleStep * 1.21))
+                  + Math.sin(riffleColumn / 20 * 9 + riffleStep * 2.4) * 0.06;
+                var riffleWidth = 0.14 + 0.12 * Math.pow(Math.sin(riffleColumn * 0.83 + riffleStep * 1.37), 2);
                 for (var riffleEdge = 0; riffleEdge < 2; riffleEdge++) {
-                  var alongRiffle = riffleBend + (riffleEdge - 0.5) * 0.2;
-                  riffleVertices.push(rifflePoint.x + (-riffleTangent.z * acrossRiffle + riffleTangent.x * alongRiffle) / riffleHorizontal,
-                    rifflePoint.y + 0.36 + riffleTangent.y * alongRiffle,
-                    rifflePoint.z + (riffleTangent.x * acrossRiffle + riffleTangent.z * alongRiffle) / riffleHorizontal);
-                  riffleUV.push(riffleColumn / 12, riffleStep / 96);
+                  var alongRiffle = riffleBend + (riffleEdge - 0.5) * riffleWidth;
+                  var riffleX = rifflePoint.x + (-riffleTangent.z * acrossRiffle + riffleTangent.x * alongRiffle) / riffleHorizontal;
+                  var riffleZ = rifflePoint.z + (riffleTangent.x * acrossRiffle + riffleTangent.z * alongRiffle) / riffleHorizontal;
+                  var riffleWaterY = samplePilotStreamHeight(riffleX, riffleZ);
+                  riffleVertices.push(riffleX, Number.isFinite(riffleWaterY) ? riffleWaterY + 0.085
+                    : rifflePoint.y + 0.36 + riffleTangent.y * alongRiffle, riffleZ);
+                  riffleUV.push(riffleColumn / 20, riffleStep / 96);
+                  riffleEdges.push(riffleEdge);
                 }
-                if (riffleColumn < 12) {
+                if (riffleColumn < 20) {
                   var rv = riffleStart + riffleColumn * 2;
                   riffleIndices.push(rv, rv + 1, rv + 2, rv + 1, rv + 3, rv + 2);
                 }
@@ -13218,19 +13488,20 @@ const d = labToolData.waterCycle || {};
             var streamRiffleGeometry = new THREE.BufferGeometry();
             streamRiffleGeometry.setAttribute('position', new THREE.Float32BufferAttribute(riffleVertices, 3));
             streamRiffleGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(riffleUV, 2));
+            streamRiffleGeometry.setAttribute('riffleEdge', new THREE.Float32BufferAttribute(riffleEdges, 1));
             streamRiffleGeometry.setIndex(riffleIndices);
             var streamRiffleMaterial = new THREE.MeshBasicMaterial({color: 0xd1e7df, transparent: true, opacity: 0.5,
               depthWrite: false, side: THREE.DoubleSide});
             streamRiffleMaterial.onBeforeCompile = function(shader) {
               shader.uniforms.pilotStreamTime = pilotStreamTime;
-              shader.vertexShader = 'varying vec2 vRiffleUV;\n' + shader.vertexShader;
-              shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvRiffleUV = uv;');
-              shader.fragmentShader = 'varying vec2 vRiffleUV;\nuniform float pilotStreamTime;\n' + shader.fragmentShader;
+              shader.vertexShader = 'attribute float riffleEdge; varying float vRiffleEdge; varying vec2 vRiffleUV;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvRiffleUV = uv; vRiffleEdge = riffleEdge;');
+              shader.fragmentShader = 'varying float vRiffleEdge; varying vec2 vRiffleUV;\nuniform float pilotStreamTime;\n' + shader.fragmentShader;
               shader.fragmentShader = shader.fragmentShader.replace('#include <alphatest_fragment>',
-                'float riffleEdgeFade = sin(vRiffleUV.x * 3.14159);\nfloat riffleBreaks = smoothstep(-0.3, 0.5, sin(vRiffleUV.x * 34.0 + vRiffleUV.y * 79.0));\ndiffuseColor.a *= riffleEdgeFade * riffleBreaks * (0.7 + 0.3 * sin(pilotStreamTime * 1.4 + vRiffleUV.y * 42.0));\n#include <alphatest_fragment>');
+                'float riffleEdgeFade = sin(vRiffleUV.x * 3.14159) * sin(clamp(vRiffleEdge, 0.0, 1.0) * 3.14159);\nfloat riffleBreaks = smoothstep(-0.3, 0.5, sin(vRiffleUV.x * 34.0 + vRiffleUV.y * 79.0 + sin(vRiffleUV.x * 19.0 - vRiffleUV.y * 42.0) * 1.2));\ndiffuseColor.a *= riffleEdgeFade * riffleBreaks * (0.7 + 0.3 * sin(pilotStreamTime * 1.4 + vRiffleUV.y * 42.0));\n#include <alphatest_fragment>');
               streamRiffles.userData.surfaceShader = shader;
             };
-            streamRiffleMaterial.customProgramCacheKey = function() { return 'pilot-stream-riffles-v1'; };
+            streamRiffleMaterial.customProgramCacheKey = function() { return 'pilot-stream-riffles-v2'; };
             var streamRiffles = new THREE.Mesh(streamRiffleGeometry, streamRiffleMaterial);
             streamRiffles.name = 'pilot-stream-riffles'; streamRiffles.renderOrder = 3;
             streamGroup.add(streamRiffles);
@@ -13262,11 +13533,14 @@ const d = labToolData.waterCycle || {};
               depthWrite: false, side: THREE.DoubleSide});
             streamCascadeMaterial.onBeforeCompile = function(shader) {
               shader.uniforms.pilotStreamTime = pilotStreamTime;
-              shader.vertexShader = 'attribute float streamCrossChannel;\nattribute float cascadeAlong;\nattribute float cascadeStrength;\nattribute float cascadeHeight;\nvarying vec4 vCascade;\n' + shader.vertexShader;
+              shader.vertexShader = 'attribute float streamCrossChannel;\nattribute float cascadeAlong;\nattribute float cascadeStrength;\nattribute float cascadeHeight;\nvarying vec4 vCascade; varying float vCascadeDistance;\n' + shader.vertexShader;
               shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
                 '#include <begin_vertex>\nvCascade = vec4(cascadeAlong, streamCrossChannel, cascadeStrength, cascadeHeight);');
+              shader.vertexShader = shader.vertexShader.replace('#include <project_vertex>',
+                '#include <project_vertex>\nvCascadeDistance = length(mvPosition.xyz);');
               shader.fragmentShader = [
                 'varying vec4 vCascade;',
+                'varying float vCascadeDistance;',
                 'uniform float pilotStreamTime;',
                 'float cascadeHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
                 'float cascadeNoise(vec2 p) {',
@@ -13278,21 +13552,31 @@ const d = labToolData.waterCycle || {};
               shader.fragmentShader = shader.fragmentShader.replace('#include <alphatest_fragment>', [
                 'float cascadeCross = vCascade.y;',
                 'vec2 cascadeTravel = vec2(cascadeCross * 5.0 + sin(vCascade.x * 0.19) * 0.5, vCascade.x * 0.6 - pilotStreamTime * 1.1);',
-                'float cascadeBroken = cascadeNoise(cascadeTravel) * 0.7 + cascadeNoise(cascadeTravel * 2.6 + vec2(7.3, 2.1)) * 0.3;',
-                'float cascadeFoam = smoothstep(0.48, 0.78, cascadeBroken);',
+                // Warped broad patches and finer strands share the downstream clock.
+                // Fade fine contrast with distance to avoid sparkling grain.
+                'float cascadeDetail = 1.0 - smoothstep(22.0, 95.0, vCascadeDistance);',
+                'float cascadeWarp = cascadeNoise(cascadeTravel * 0.42 + vec2(3.7, 9.2)) - 0.5;',
+                'vec2 cascadeWarped = cascadeTravel + vec2(cascadeWarp * 0.85, sin(cascadeCross * 7.0 + vCascade.x * 0.1) * 0.23);',
+                'float cascadeBroad = cascadeNoise(cascadeWarped);',
+                'float cascadeFine = cascadeNoise(cascadeWarped * vec2(2.8, 1.6) + vec2(7.3, 2.1));',
+                'float cascadeBody = smoothstep(0.43, 0.75, cascadeBroad * 0.78 + mix(0.5, cascadeFine, cascadeDetail) * 0.22);',
+                'float cascadeStrands = 1.0 - smoothstep(0.035, 0.16, abs(cascadeFine - 0.52));',
+                'float cascadeFoam = clamp(cascadeBody * 0.88 + cascadeStrands * cascadeDetail * 0.2 * smoothstep(0.28, 0.7, cascadeBroad), 0.0, 1.0);',
+                'diffuseColor.rgb *= mix(vec3(0.78, 0.9, 0.95), vec3(1.0), cascadeBody);',
                 'float cascadeEdge = 1.0 - smoothstep(0.5, 0.94, abs(cascadeCross));',
                 'float cascadeTop = smoothstep(0.0, 0.18, vCascade.w);',
-                'diffuseColor.a *= vCascade.z * cascadeEdge * cascadeTop * (0.025 + cascadeFoam * 0.975);',
+                'diffuseColor.a *= vCascade.z * cascadeEdge * cascadeTop * (0.008 + cascadeFoam * 0.992);',
                 '#include <alphatest_fragment>'
               ].join('\n'));
               streamCascades.userData.surfaceShader = shader;
             };
-            streamCascadeMaterial.customProgramCacheKey = function() { return 'pilot-stream-cascades-v2'; };
+            streamCascadeMaterial.customProgramCacheKey = function() { return 'pilot-stream-cascades-v3'; };
             var streamCascades = new THREE.Mesh(streamCascadeGeometry, streamCascadeMaterial);
             streamCascades.name = 'pilot-stream-cascades'; streamCascades.position.y = 0.055;
             streamCascades.renderOrder = 3; streamGroup.add(streamCascades);
             var streamStoneGeometry = new THREE.IcosahedronGeometry(1, 1);
             var streamStoneMaterial = new THREE.MeshPhongMaterial({color: 0x7d8175, map: ridgeTexture, shininess: 14});
+            addWinterSurfaceSnow(streamStoneMaterial, false);
             var streamStones = new THREE.InstancedMesh(streamStoneGeometry, streamStoneMaterial, 56);
             streamStones.name = 'pilot-stream-bank-stones';
             // Ground decorative detail on the displayed banks once at setup.
@@ -13345,13 +13629,59 @@ const d = labToolData.waterCycle || {};
             }
             streamGroup.add(streamGravel);
             var streamIce = new THREE.Mesh(
-              flattenStreamTube(new THREE.TubeGeometry(streamCurve, 96, 2.9, 8, false), 0.08),
+              streamMesh.geometry.clone(),
               new THREE.MeshPhongMaterial({
                 color: 0xcffafe, specular: 0xffffff, shininess: 110,
                 transparent: true, opacity: 0.64, depthWrite: false
               })
             );
+            // A thin cover follows the same surface through the outlet and bends.
+            streamIce.position.y = 0.025;
             streamIce.name = 'pilot-stream-ice';
+            // Static frost and fine cellular seams suggest an ice cover. This is
+            // visual detail, not a model of ice thickness or load-bearing safety.
+            streamIce.material.onBeforeCompile = function(shader) {
+              shader.vertexShader = 'attribute float streamCrossChannel;\nvarying vec3 vPilotIceWorld;\nvarying float vPilotIceCross;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
+                '#include <begin_vertex>\nvPilotIceCross = streamCrossChannel;');
+              shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>',
+                '#include <worldpos_vertex>\nvPilotIceWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+              shader.fragmentShader = [
+                'varying vec3 vPilotIceWorld;',
+                'varying float vPilotIceCross;',
+                'float pilotIceHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+                'float pilotIceCloud(vec2 p) {',
+                '  vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);',
+                '  return mix(mix(pilotIceHash(i), pilotIceHash(i + vec2(1.0, 0.0)), f.x), mix(pilotIceHash(i + vec2(0.0, 1.0)), pilotIceHash(i + vec2(1.0)), f.x), f.y);',
+                '}',
+                'float pilotIceSeam(vec2 p) {',
+                '  vec2 cell = floor(p), local = fract(p); float first = 10.0, second = 10.0;',
+                '  for (int y = -1; y <= 1; y++) { for (int x = -1; x <= 1; x++) {',
+                '    vec2 offset = vec2(float(x), float(y));',
+                '    vec2 seed = vec2(pilotIceHash(cell + offset), pilotIceHash(cell + offset + vec2(19.7, 43.1)));',
+                '    vec2 delta = offset + 0.2 + seed * 0.6 - local; float d = dot(delta, delta);',
+                '    second = min(second, max(first, d)); first = min(first, d);',
+                '  } }',
+                '  return 1.0 - smoothstep(0.018, 0.075, sqrt(second) - sqrt(first));',
+                '}',
+                shader.fragmentShader
+              ].join('\n');
+              shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
+                '#include <color_fragment>',
+                'float iceDetail = 1.0 - smoothstep(25.0, 95.0, length(vViewPosition));',
+                'float iceCloud = pilotIceCloud(vPilotIceWorld.xz * 0.23);',
+                'float iceEdge = smoothstep(0.35, 0.95, abs(vPilotIceCross));',
+                'float iceFrost = clamp(iceEdge * 0.68 + smoothstep(0.3, 0.78, iceCloud) * 0.45, 0.0, 1.0);',
+                'float iceSeam = pilotIceSeam(vPilotIceWorld.xz * 0.28) * iceDetail;',
+                'diffuseColor.rgb *= mix(vec3(0.40, 0.66, 0.73), vec3(0.83, 0.91, 0.94), iceFrost);',
+                'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.88, 0.96, 0.97), iceSeam * 0.22);',
+                'diffuseColor.a *= 0.78 + iceFrost * 0.22;'
+              ].join('\n'));
+              shader.fragmentShader = shader.fragmentShader.replace('#include <specularmap_fragment>',
+                '#include <specularmap_fragment>\nspecularStrength *= 1.0 - iceFrost * 0.6;');
+              streamIce.userData.surfaceShader = shader;
+            };
+            streamIce.material.customProgramCacheKey = function() { return 'pilot-stream-ice-frost-v1'; };
             streamIce.visible = false;
             streamGroup.add(streamIce);
             // Suppress the upstream decoration inside the lake so its outlet
@@ -13376,22 +13706,71 @@ const d = labToolData.waterCycle || {};
             // blank slab without multiplying draw calls. Rocks mark hard ground;
             // reeds trace the moist corridor beside the stream.
             var terrainDummy = new THREE.Object3D();
-            var ROCK_COUNT = 38;
-            var rockField = new THREE.InstancedMesh(
-              new THREE.DodecahedronGeometry(1.55, 0),
-              new THREE.MeshStandardMaterial({ color: 0x6b6258, roughness: 0.98, flatShading: true }),
-              ROCK_COUNT
-            );
-            for (var rockIndex = 0; rockIndex < ROCK_COUNT; rockIndex++) {
-              var rockX = 18 + ((rockIndex * 67) % 272);
-              var rockZ = -126 + ((rockIndex * 47) % 170);
-              var rockScale = 0.55 + ((rockIndex * 29) % 15) / 10;
-              terrainDummy.position.set(rockX, 5.1 + rockScale * 0.45, rockZ);
-              terrainDummy.rotation.set(rockIndex * 0.31, rockIndex * 0.57, rockIndex * 0.19);
-              terrainDummy.scale.set(rockScale, rockScale * 0.7, rockScale * 0.9);
-              terrainDummy.updateMatrix();
-              rockField.setMatrixAt(rockIndex, terrainDummy.matrix);
+            var ROCK_COUNT = 114;
+            var terrainRockGeometry = new THREE.DodecahedronGeometry(1.55, 1);
+            var terrainRockVertices = terrainRockGeometry.attributes.position;
+            // Coherent deformation keeps duplicate face vertices together.
+            for (var rockVertex = 0; rockVertex < terrainRockVertices.count; rockVertex++) {
+              var rockVX = terrainRockVertices.getX(rockVertex), rockVY = terrainRockVertices.getY(rockVertex);
+              var rockVZ = terrainRockVertices.getZ(rockVertex);
+              var rockRelief = 0.94 + Math.sin(rockVX * 2.3 + rockVZ * 1.7) * 0.08
+                + Math.cos(rockVY * 3.1 - rockVX * 0.8) * 0.04;
+              terrainRockVertices.setXYZ(rockVertex, rockVX * rockRelief, rockVY * rockRelief, rockVZ * rockRelief);
             }
+            terrainRockGeometry.computeVertexNormals();
+            var rockField = new THREE.InstancedMesh(terrainRockGeometry,
+              new THREE.MeshStandardMaterial({color: 0x6b6258, map: ridgeTexture, roughness: 0.98, flatShading: true}), ROCK_COUNT);
+            rockField.name = 'pilot-landscape-rocks';
+            addWinterSurfaceSnow(rockField.material, false);
+            var terrainRockRay = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
+            var terrainRockSurfaces = [wetSand, beach, meadow, hardpan];
+            land.updateMatrixWorld(true);
+            function rockGroundHeight(x, z) {
+              terrainRockRay.ray.origin.set(x, 500, z);
+              var rockHits = terrainRockRay.intersectObjects(terrainRockSurfaces, false);
+              return rockHits.length ? rockHits[0].point.y : NaN;
+            }
+            var rockPlaced = 0, rockColor = new THREE.Color(), rockLocalVertex = new THREE.Vector3();
+            for (var rockIndex = 0; rockIndex < ROCK_COUNT; rockIndex++) {
+              var rockCluster = Math.floor(rockIndex / 3), rockMember = rockIndex % 3;
+              var rockAngle = rockCluster * 2.399963 + rockMember * 1.9;
+              var rockDistance = rockMember ? 3.2 + rockMember * 1.3 : 0;
+              var rockX = 18 + ((rockCluster * 67) % 272) + Math.cos(rockAngle) * rockDistance;
+              var rockZ = -126 + ((rockCluster * 47) % 170) + Math.sin(rockAngle) * rockDistance;
+              var rockScale = (0.65 + ((rockCluster * 29) % 15) / 10) * (rockMember ? 0.22 + rockMember * 0.1 : 1);
+              var rockRadius = rockScale * 1.8;
+              // Keep clusters off the lake, river, and the river's carved corridor.
+              if (Math.hypot(rockX - 268, rockZ + 104) < 38 + rockRadius) continue;
+              var rockNearStream = streamSurfaceSamples.some(function(point) {
+                return Math.hypot(rockX - point.x, rockZ - point.z) < 14 + rockRadius;
+              });
+              if (rockNearStream) continue;
+              var rockGround = rockGroundHeight(rockX, rockZ);
+              if (!Number.isFinite(rockGround) || rockGround < 2) continue;
+              var rockSupported = true;
+              for (var rockFoot = 0; rockFoot < 4; rockFoot++) {
+                var footAngle = rockFoot * Math.PI / 2;
+                var footY = rockGroundHeight(rockX + Math.cos(footAngle) * rockRadius * 0.65,
+                  rockZ + Math.sin(footAngle) * rockRadius * 0.65);
+                if (!Number.isFinite(footY) || Math.abs(footY - rockGround) > rockScale * 0.55) rockSupported = false;
+              }
+              if (!rockSupported) continue;
+              terrainDummy.position.set(0, 0, 0);
+              terrainDummy.rotation.set(rockIndex * 0.31, rockIndex * 0.57, rockIndex * 0.19);
+              terrainDummy.scale.set(rockScale * (0.88 + (rockCluster % 3) * 0.12),
+                rockScale * (0.48 + (rockIndex % 4) * 0.07), rockScale * 0.9);
+              terrainDummy.updateMatrix();
+              var rockBottom = Infinity;
+              for (var supportVertex = 0; supportVertex < terrainRockVertices.count; supportVertex++) {
+                rockLocalVertex.fromBufferAttribute(terrainRockVertices, supportVertex).applyMatrix4(terrainDummy.matrix);
+                rockBottom = Math.min(rockBottom, rockLocalVertex.y);
+              }
+              terrainDummy.position.set(rockX, rockGround - rockBottom - rockScale * 0.22, rockZ);
+              terrainDummy.updateMatrix(); rockField.setMatrixAt(rockPlaced, terrainDummy.matrix);
+              rockColor.setHex([0xc7beae, 0xb4b9b1, 0xd4c8b5, 0xaeb6b5, 0xc4b9a8][rockCluster % 5]);
+              rockField.setColorAt(rockPlaced, rockColor); rockPlaced++;
+            }
+            rockField.count = rockPlaced;
             rockField.instanceMatrix.needsUpdate = true;
             land.add(rockField);
 
@@ -13728,6 +14107,7 @@ const d = labToolData.waterCycle || {};
               transparent: true, opacity: 0.52, depthWrite: false,
               blending: THREE.AdditiveBlending, sizeAttenuation: true
             }));
+            waterGlints.name = 'pilot-water-surface-glints';
             waterGlints.frustumCulled = false;
             scene.add(waterGlints);
 
@@ -13736,18 +14116,27 @@ const d = labToolData.waterCycle || {};
             // the landing model, so the visual pathway and the physics agree.
             var STREAM_FLOW_COUNT = 28;
             var streamFlowPos = new Float32Array(STREAM_FLOW_COUNT * 6);
+            var streamFlowAlpha = new Float32Array(STREAM_FLOW_COUNT * 2);
             var streamFlowSeed = new Float32Array(STREAM_FLOW_COUNT);
             var streamFlowPoint = new THREE.Vector3();
-            var streamFlowTail = new THREE.Vector3(), streamFlowTangent = new THREE.Vector3();
+            var streamFlowTangent = new THREE.Vector3();
             for (var streamFlowIndex = 0; streamFlowIndex < STREAM_FLOW_COUNT; streamFlowIndex++) {
               streamFlowSeed[streamFlowIndex] = streamFlowIndex / STREAM_FLOW_COUNT;
             }
             var streamFlowGeo = new THREE.BufferGeometry();
             streamFlowGeo.setAttribute('position', new THREE.BufferAttribute(streamFlowPos, 3));
+            streamFlowGeo.setAttribute('streamAlpha', new THREE.BufferAttribute(streamFlowAlpha, 1));
             var streamFlow = new THREE.LineSegments(streamFlowGeo, new THREE.LineBasicMaterial({
               color: 0xc4e4e0, transparent: true, opacity: 0.56, depthWrite: false
             }));
             streamFlow.name = 'pilot-stream-flow-streaks';
+            streamFlow.material.onBeforeCompile = function(shader) {
+              shader.vertexShader = 'attribute float streamAlpha; varying float vStreamAlpha;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvStreamAlpha = streamAlpha;');
+              shader.fragmentShader = 'varying float vStreamAlpha;\n' + shader.fragmentShader;
+              shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.a *= vStreamAlpha;');
+            };
+            streamFlow.material.customProgramCacheKey = function() { return 'pilot-stream-flow-fade-v1'; };
             streamFlow.frustumCulled = false;
             scene.add(streamFlow);
 
@@ -13822,13 +14211,28 @@ const d = labToolData.waterCycle || {};
             // illustrative motion, not an additional source of simulated water.
             var oceanLanding = new THREE.Group();
             oceanLanding.name = 'pilot-ocean-landing'; oceanLanding.visible = false; oceanLanding.renderOrder = 4;
-            var landingRingGeometry = new THREE.RingGeometry(0.94, 1, 64);
+            var landingRingGeometry = new THREE.RingGeometry(0.94, 1, 64, 2);
+            var landingEdge = new Float32Array(landingRingGeometry.attributes.position.count);
+            for (var landingEdgeIndex = 0; landingEdgeIndex < landingEdge.length; landingEdgeIndex++) {
+              var landingEdgePos = landingRingGeometry.attributes.position;
+              var landingEdgeRadius = Math.sqrt(Math.pow(landingEdgePos.getX(landingEdgeIndex), 2) + Math.pow(landingEdgePos.getY(landingEdgeIndex), 2));
+              landingEdge[landingEdgeIndex] = Math.sin(Math.PI * Math.max(0, Math.min(1, (landingEdgeRadius - 0.94) / 0.06)));
+            }
+            landingRingGeometry.setAttribute('landingEdge', new THREE.BufferAttribute(landingEdge, 1));
+            var landingWet = new Float32Array(landingEdge.length); landingWet.fill(1);
+            landingRingGeometry.setAttribute('landingWet', new THREE.BufferAttribute(landingWet, 1));
             var landingSurfaceKind = { value: 0 }; // ocean, lake, stream
             var landingSurfaceHeight = 0;
-            function clipLandingToWater(material) {
+            function clipLandingToWater(material, softRing) {
               material.pilotStreamChannelTexture = streamChannelTexture;
               material.onBeforeCompile = function(shader) {
                 shader.uniforms.landingSurfaceKind = landingSurfaceKind;
+                if (softRing) {
+                  shader.vertexShader = 'attribute float landingEdge; attribute float landingWet; varying float vLandingEdge;\n' + shader.vertexShader;
+                  shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvLandingEdge = landingEdge * landingWet;');
+                  shader.fragmentShader = 'varying float vLandingEdge;\n' + shader.fragmentShader;
+                  shader.fragmentShader = shader.fragmentShader.replace('#include <alphatest_fragment>', 'diffuseColor.a *= vLandingEdge;\n#include <alphatest_fragment>');
+                }
                 shader.uniforms.landingChannelMask = { value: streamChannelTexture };
                 shader.vertexShader = 'varying vec2 vLandingXZ;\n' + shader.vertexShader;
                 shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
@@ -13846,14 +14250,16 @@ const d = labToolData.waterCycle || {};
                   'if (diffuseColor.a < 0.01) discard;'
                 ].join('\n'));
               };
-              material.customProgramCacheKey = function() { return 'pilot-water-landing-shore-v1'; };
+              material.customProgramCacheKey = function() { return 'pilot-water-landing-shore-v3-' + (softRing ? 'ring' : 'spray'); };
             }
             var landingRings = [];
             for (var landingRingIndex = 0; landingRingIndex < 3; landingRingIndex++) {
-              var landingRing = new THREE.Mesh(landingRingGeometry, new THREE.MeshBasicMaterial({
+              var landingRing = new THREE.Mesh(landingRingIndex === 0 ? landingRingGeometry : landingRingGeometry.clone(), new THREE.MeshBasicMaterial({
                 color: 0xc7edfa, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide
               }));
-              clipLandingToWater(landingRing.material);
+              clipLandingToWater(landingRing.material, true);
+              landingRing.name = 'pilot-landing-ripple-' + landingRingIndex;
+              landingRing.frustumCulled = false;
               landingRing.rotation.x = -Math.PI / 2;
               oceanLanding.add(landingRing); landingRings.push(landingRing);
             }
@@ -13899,12 +14305,11 @@ const d = labToolData.waterCycle || {};
               var landingDuration = seeping ? 2.4 : inflowing ? 2.1 : 1.8;
               if (age >= landingDuration) { oceanLanding.visible = false; canvasEl.dataset.oceanLanding = 'hidden'; canvasEl.dataset.waterLanding = 'hidden'; return; }
               var visualAge = motionReduced ? 0.38 : age + (surfaceArrival ? 0.34 : 0.1);
-              var waveTime = motionReduced ? 0 : sim.elapsed;
               var inlandLanding = landingSurfaceKind.value > 0;
               var streamLanding = landingSurfaceKind.value === 2;
               oceanLanding.position.y = inlandLanding ? landingSurfaceHeight + 0.14
-                : 1.2 + Math.sin(oceanLanding.position.x * 0.072 + waveTime * 1.3) * 0.9
-                  + Math.cos(oceanLanding.position.z * 0.058 + waveTime * 0.9) * 0.7;
+                : samplePilotOceanHeight(oceanLanding.position.x, oceanLanding.position.z) + 0.12;
+              var landingCos = Math.cos(oceanLanding.rotation.y), landingSin = Math.sin(oceanLanding.rotation.y);
               landingRings.forEach(function(ring, index) {
                 var ringAge = Math.max(0, visualAge - index * 0.16) * (seeping ? 0.6 : inflowing ? 0.8 : 1);
                 // Start outside the enlarged parcel so the teaching pause shows
@@ -13913,6 +14318,24 @@ const d = labToolData.waterCycle || {};
                   : (surfaceArrival ? 4.2 : inlandLanding ? 2.8 : 3.6) + ringAge * (5.5 - index * 0.6);
                 // Mesh-local Y becomes the long axis along the stream after rotation.
                 ring.scale.set(ringRadius * (streamLanding ? 0.65 : 1), ringRadius, 1);
+                ring.position.z = streamLanding ? ringAge * 0.7 : 0;
+                var landingPositions = ring.geometry.attributes.position;
+                for (var landingVertex = 0; landingVertex < landingPositions.count; landingVertex++) {
+                  // Ring-local Z becomes world height after the -90 degree rotation.
+                  // Include the downstream rotation and drift before sampling the water.
+                  var landingLocalX = landingPositions.getX(landingVertex) * ring.scale.x;
+                  var landingLocalZ = ring.position.z - landingPositions.getY(landingVertex) * ring.scale.y;
+                  var landingWorldX = oceanLanding.position.x + landingLocalX * landingCos + landingLocalZ * landingSin;
+                  var landingWorldZ = oceanLanding.position.z - landingLocalX * landingSin + landingLocalZ * landingCos;
+                  var landingHeight = streamLanding ? samplePilotStreamHeight(landingWorldX, landingWorldZ)
+                    : inlandLanding ? landingSurfaceHeight : samplePilotOceanHeight(landingWorldX, landingWorldZ);
+                  var landingOnWater = Number.isFinite(landingHeight);
+                  ring.geometry.attributes.landingWet.setX(landingVertex, landingOnWater ? 1 : 0);
+                  landingPositions.setZ(landingVertex, landingOnWater
+                    ? landingHeight + (inlandLanding ? 0.14 : 0.12) - oceanLanding.position.y : 0);
+                }
+                landingPositions.needsUpdate = true;
+                ring.geometry.attributes.landingWet.needsUpdate = true;
                 ring.material.opacity = ringAge > 0 ? Math.max(0, 0.68 * (1 - ringAge / 1.8)) : 0;
                 // Fade moving inflow rings out before the pooled cue is hidden.
                 if (surfaceArrival && !motionReduced) ring.material.opacity *= Math.min(1, (landingDuration - age) / 0.45);
@@ -13924,6 +14347,15 @@ const d = labToolData.waterCycle || {};
                 landingSprayPositions[sprayIndex * 3] = Math.cos(sprayAngle) * sprayRadius;
                 landingSprayPositions[sprayIndex * 3 + 1] = Math.max(0, (5 + (sprayIndex % 3)) * visualAge - 9 * visualAge * visualAge);
                 landingSprayPositions[sprayIndex * 3 + 2] = Math.sin(sprayAngle) * sprayRadius;
+                if (streamLanding) {
+                  var sprayLocalX = landingSprayPositions[sprayIndex * 3], sprayLocalZ = landingSprayPositions[sprayIndex * 3 + 2];
+                  var sprayWaterY = samplePilotStreamHeight(oceanLanding.position.x + sprayLocalX * landingCos + sprayLocalZ * landingSin,
+                    oceanLanding.position.z - sprayLocalX * landingSin + sprayLocalZ * landingCos);
+                  if (Number.isFinite(sprayWaterY)) landingSprayPositions[sprayIndex * 3 + 1] += sprayWaterY + 0.14 - oceanLanding.position.y;
+                }
+                if (!inlandLanding) landingSprayPositions[sprayIndex * 3 + 1] += samplePilotOceanHeight(
+                  oceanLanding.position.x + landingSprayPositions[sprayIndex * 3],
+                  oceanLanding.position.z + landingSprayPositions[sprayIndex * 3 + 2]) + 0.12 - oceanLanding.position.y;
               }
               landingSprayGeometry.attributes.position.needsUpdate = true;
               landingSpray.material.opacity = Math.max(0, 0.85 - visualAge);
@@ -13938,7 +14370,7 @@ const d = labToolData.waterCycle || {};
               var ctx = cv.getContext('2d');
               ctx.translate(64, 64);
               ctx.strokeStyle = '#f0f9ff'; ctx.lineWidth = 3.2; ctx.lineJoin = 'miter';
-              ctx.shadowColor = '#bae6fd'; ctx.shadowBlur = 2;
+              ctx.shadowColor = '#cbe6f2'; ctx.shadowBlur = 2;
               for (var armIndex = 0; armIndex < 6; armIndex++) {
                 ctx.save(); ctx.rotate(armIndex * Math.PI / 3);
                 ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(52, 0);
@@ -13946,6 +14378,10 @@ const d = labToolData.waterCycle || {};
                 ctx.moveTo(24, 0); ctx.lineTo(36, 14);
                 ctx.moveTo(39, 0); ctx.lineTo(48, -9);
                 ctx.moveTo(39, 0); ctx.lineTo(48, 9);
+                // A cool edge and bright center remain legible over sky and water.
+                ctx.strokeStyle = 'rgba(57,83,105,0.72)'; ctx.lineWidth = 7;
+                ctx.stroke();
+                ctx.strokeStyle = '#f0f9ff'; ctx.lineWidth = 3.8;
                 ctx.stroke(); ctx.restore();
               }
               return new THREE.CanvasTexture(cv);
@@ -13953,7 +14389,12 @@ const d = labToolData.waterCycle || {};
             var SNOW_CRYSTAL_COUNT = 76;
             var snowFieldPos = new Float32Array(SNOW_CRYSTAL_COUNT * 3);
             var snowFieldSeed = new Float32Array(SNOW_CRYSTAL_COUNT * 3);
+            var snowVisual = new Float32Array(SNOW_CRYSTAL_COUNT * 3);
+            var snowVisualTime = { value: 0 };
             for (var si = 0; si < SNOW_CRYSTAL_COUNT; si++) {
+              snowVisual[si * 3] = 0.6 + ((si * 17) % 13) * 0.05;
+              snowVisual[si * 3 + 1] = si * 2.399963;
+              snowVisual[si * 3 + 2] = (si % 2 ? -1 : 1) * (0.12 + (si % 5) * 0.035);
               snowFieldSeed[si * 3] = -46 + ((si * 43) % 93);
               snowFieldSeed[si * 3 + 1] = ((si * 47) % 112);
               snowFieldSeed[si * 3 + 2] = -42 + ((si * 59) % 87);
@@ -13963,11 +14404,34 @@ const d = labToolData.waterCycle || {};
             }
             var snowFieldGeo = new THREE.BufferGeometry();
             snowFieldGeo.setAttribute('position', new THREE.BufferAttribute(snowFieldPos, 3));
+            snowFieldGeo.setAttribute('snowVisual', new THREE.BufferAttribute(snowVisual, 3));
             var snowField = new THREE.Points(snowFieldGeo, new THREE.PointsMaterial({
-              color: 0xf8fafc, size: 3.6, map: makePilotSnowTexture(), alphaTest: 0.06,
+              color: 0xf8fafc, size: 2.5, map: makePilotSnowTexture(), alphaTest: 0.06,
               transparent: true, opacity: 0.88, depthWrite: false, sizeAttenuation: true
             }));
             snowField.name = 'pilot-snow-field';
+            // Vary the pooled sprites without adding draws. Camera-near flakes
+            // fade away, and a pixel cap keeps the landscape readable.
+            snowField.material.onBeforeCompile = function(shader) {
+              shader.uniforms.snowVisualTime = snowVisualTime;
+              shader.vertexShader = 'attribute vec3 snowVisual; uniform float snowVisualTime; varying float vSnowAngle; varying float vSnowVisibility;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace('#include <logdepthbuf_vertex>', [
+                'gl_PointSize = min(gl_PointSize * snowVisual.x, 28.0);',
+                'vSnowAngle = snowVisual.y + snowVisualTime * snowVisual.z;',
+                'vSnowVisibility = smoothstep(2.0, 12.0, -mvPosition.z) * (0.7 + snowVisual.x * 0.25);',
+                '#include <logdepthbuf_vertex>'
+              ].join('\n'));
+              shader.fragmentShader = 'varying float vSnowAngle; varying float vSnowVisibility;\n' + shader.fragmentShader;
+              shader.fragmentShader = shader.fragmentShader.replace('#include <map_particle_fragment>', [
+                'vec2 snowUV = gl_PointCoord - vec2(0.5);',
+                'float snowCos = cos(vSnowAngle), snowSin = sin(vSnowAngle);',
+                'snowUV = mat2(snowCos, -snowSin, snowSin, snowCos) * snowUV + vec2(0.5);',
+                'diffuseColor *= mapTexelToLinear(texture2D(map, snowUV));',
+                'diffuseColor.a *= vSnowVisibility;'
+              ].join('\n'));
+              snowField.material.userData.snowShader = shader;
+            };
+            snowField.material.customProgramCacheKey = function() { return 'pilot-snow-depth-v1'; };
             snowField.frustumCulled = false;
             snowField.visible = false;
             scene.add(snowField);
@@ -14326,6 +14790,27 @@ const d = labToolData.waterCycle || {};
             var meltingCrystalMaterial = snowCrystalMaterial.clone();
             meltingCrystalMaterial.transparent = true; meltingCrystalMaterial.opacity = 0.82;
             meltingCrystalMaterial.depthWrite = false; meltingCrystalMaterial.roughness = 0.06;
+            var meltFrontRadius = { value: 5.3 };
+            // A softened retreating edge makes the brief phase-change cue readable.
+            // This is an illustration; the kernel still owns the water's phase.
+            meltingCrystalMaterial.onBeforeCompile = function(shader) {
+              shader.uniforms.meltFrontRadius = meltFrontRadius;
+              shader.vertexShader = 'varying vec2 vMeltCrystalXZ;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
+                '#include <begin_vertex>\nvMeltCrystalXZ = position.xz;');
+              shader.fragmentShader = 'uniform float meltFrontRadius; varying vec2 vMeltCrystalXZ;\n' + shader.fragmentShader;
+              shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
+                '#include <color_fragment>',
+                'float meltEdgeDistance = length(vMeltCrystalXZ);',
+                'diffuseColor.a *= 1.0 - smoothstep(meltFrontRadius - 0.3, meltFrontRadius + 0.12, meltEdgeDistance);'
+              ].join('\n'));
+              shader.fragmentShader = shader.fragmentShader.replace('#include <roughnessmap_fragment>', [
+                '#include <roughnessmap_fragment>',
+                'roughnessFactor = mix(0.24, 0.045, smoothstep(meltFrontRadius - 1.1, meltFrontRadius, meltEdgeDistance));'
+              ].join('\n'));
+              meltingCrystalMaterial.userData.meltShader = shader;
+            };
+            meltingCrystalMaterial.customProgramCacheKey = function() { return 'pilot-melting-crystal-front-v1'; };
             var meltingCrystal = new THREE.Mesh(snowGeometry, meltingCrystalMaterial);
             meltingSnow.add(meltingCrystal);
             var meltingDropPreview = new THREE.Mesh(rainMesh.geometry, rainMesh.material);
@@ -14353,12 +14838,16 @@ const d = labToolData.waterCycle || {};
               var meltProgress = motionReduced ? 0.48 : Math.min(1, meltingElapsed / 1.6);
               var meltEase = meltProgress * meltProgress * (3 - 2 * meltProgress);
               meltingCrystal.scale.setScalar(1 - meltEase * 0.74);
+              meltFrontRadius.value = 5.3 - meltEase * 4.1;
               meltingCrystalMaterial.opacity = 0.82 * (1 - meltEase);
               meltBeadMaterial.opacity = 0.85 * (1 - meltEase);
               for (var meltIndex = 0; meltIndex < 6; meltIndex++) {
                 var meltAngle = meltIndex * Math.PI / 3;
-                var meltRadius = 4.6 * (1 - meltEase) + 0.4;
-                meltDummy.position.set(Math.cos(meltAngle) * meltRadius, Math.sin(meltAngle) * meltRadius, 0.2);
+                var meltRadius = (meltFrontRadius.value - 0.15) * meltingCrystal.scale.x;
+                // Snow geometry lies in local XZ after its construction rotation.
+                // Keep each bead attached to an arm as its visible edge retreats.
+                meltDummy.position.set(Math.cos(meltAngle) * meltRadius,
+                  0.16 * meltingCrystal.scale.x, -Math.sin(meltAngle) * meltRadius);
                 meltDummy.scale.setScalar(0.6 + meltEase * 0.65); meltDummy.updateMatrix();
                 meltBeads.setMatrixAt(meltIndex, meltDummy.matrix);
               }
@@ -15536,6 +16025,7 @@ const d = labToolData.waterCycle || {};
               skyUniforms.midColor.value.setHex(warm > 26 ? 0x64a7ce : warm > 12 ? 0x60a5fa : 0x93a8c4);
               skyUniforms.horizonColor.value.setHex(warm > 26 ? 0xd9e4e5 : warm > 12 ? 0xdbeafe : 0xe2e8f0);
               sun.intensity = 0.6 + env.solar * 0.5;
+              pilotLakeSunlight.value = Math.max(0, Math.min(1, env.solar));
               var sunElevationRad = env.sunElevationDeg * Math.PI / 180;
               var sunHorizontalDistance = 240;
               sun.position.set(-192, Math.tan(sunElevationRad) * sunHorizontalDistance, 144);
@@ -15653,6 +16143,10 @@ const d = labToolData.waterCycle || {};
               if (lake.visible && waterLakeX * waterLakeX + waterLakeZ * waterLakeZ < 34 * 34) return lake.position.y;
               var waterBestDistance = 6.2 * 6.2, waterSurfaceY = 0;
               if (streamGroup.visible) {
+                // Use the visible triangles, including the level lake outlet,
+                // for rain contact and the collected-water display height.
+                var waterStreamHeight = samplePilotStreamHeight(x, z);
+                if (isFinite(waterStreamHeight)) return waterStreamHeight;
                 // Project onto adjacent route segments so travelling collected
                 // water follows the slope without stepping between sample heights.
                 for (var waterSampleIndex = 0; waterSampleIndex < streamSurfaceSamples.length - 1; waterSampleIndex++) {
@@ -16301,49 +16795,22 @@ const d = labToolData.waterCycle || {};
               snowField.visible = showingSnow;
               canvasEl.dataset.precipitationField = showingRain
                 ? 'rain-streaks' : showingSnow ? 'snow-crystals' : 'hidden';
-              if (showingRain) {
-                rainField.position.set(px, py, pz);
-                var rainAttr = rainFieldGeo.attributes.position;
-                for (var rf = 0; rf < RAIN_STREAK_COUNT; rf++) {
-                  var rainPhase = motionReduced ? rainFieldSeed[rf * 3 + 1]
-                    : (rainFieldSeed[rf * 3 + 1] + t * (58 + (rf % 7) * 3)) % 120;
-                  var rainHeadY = 60 - rainPhase;
-                  var rainLength = 5 + (rf % 6) * 1.3;
-                  var rainSlant = env.windMs * 0.035 * rainLength;
-                  var rainHeadX = rainFieldSeed[rf * 3] + env.windMs * 0.035 * rainPhase;
-                  var rainZ = rainFieldSeed[rf * 3 + 2];
-                  var rainWorldX = px + rainHeadX, rainWorldZ = pz + rainZ;
-                  // Clip to each water surface, including raised inland water.
-                  // Terrestrial geometry continues to use normal depth testing.
-                  var rainFloor = surfaceUnder(rainWorldX, rainWorldZ) === 'water'
-                    ? collectedWaterSurfaceY(rainWorldX, rainWorldZ) - py : -Infinity;
-                  var rainHidden = rainHeadY + rainLength < rainFloor;
-                  for (var rainVertex = 0; rainVertex < 4; rainVertex++) {
-                    var rainAlong = rainVertex === 0 ? 0 : rainVertex === 3 ? 1 : 0.55;
-                    var rainY = rainHeadY + rainLength * (1 - rainAlong);
-                    var clippedAlong = rainY < rainFloor ? Math.max(0, Math.min(1, (rainHeadY + rainLength - rainFloor) / rainLength)) : rainAlong;
-                    var rainOffset = rf * 12 + rainVertex * 3;
-                    rainAttr.array[rainOffset] = rainHeadX - rainSlant * (1 - clippedAlong);
-                    rainAttr.array[rainOffset + 1] = Math.max(rainFloor, rainY);
-                    rainAttr.array[rainOffset + 2] = rainZ;
-                    rainFieldAlpha[rf * 4 + rainVertex] = rainHidden ? 0 : rainVertex === 0 ? 0.04 : rainVertex === 3 ? 0.9 : 0.36;
-                  }
-                }
-                rainFieldGeo.attributes.rainAlpha.needsUpdate = true;
-                rainAttr.needsUpdate = true;
-              }
               if (showingSnow) {
                 snowField.position.set(px, py, pz);
+                if (!motionReduced) snowVisualTime.value = t;
                 var snowAttr = snowFieldGeo.attributes.position;
                 for (var sf = 0; sf < SNOW_CRYSTAL_COUNT; sf++) {
                   var snowPhase = motionReduced
-                    ? snowFieldSeed[sf * 3 + 1]
-                    : (snowFieldSeed[sf * 3 + 1] + t * 14) % 112;
-                  snowAttr.array[sf * 3] = snowFieldSeed[sf * 3]
-                    + (motionReduced ? 0 : Math.sin(t * 0.8 + sf * 0.73) * 4.2);
+                    ? 56 - snowAttr.array[sf * 3 + 1]
+                    : (snowFieldSeed[sf * 3 + 1] + t * (9 + (sf % 7) * 1.3)) % 112;
+                  if (!motionReduced) {
+                    snowAttr.array[sf * 3] = snowFieldSeed[sf * 3]
+                      + Math.sin(t * 0.6 + sf * 0.73) * (2.4 + (sf % 4) * 0.55)
+                      + env.windMs * 0.018 * (snowPhase - 56);
+                    snowAttr.array[sf * 3 + 2] = snowFieldSeed[sf * 3 + 2]
+                      + Math.cos(t * 0.45 + sf * 0.51) * 2.6;
+                  }
                   snowAttr.array[sf * 3 + 1] = 56 - snowPhase;
-                  snowAttr.array[sf * 3 + 2] = snowFieldSeed[sf * 3 + 2]
-                    + (motionReduced ? 0 : Math.cos(t * 0.65 + sf * 0.51) * 3.1);
                 }
                 snowAttr.needsUpdate = true;
               }
@@ -16393,35 +16860,40 @@ const d = labToolData.waterCycle || {};
               // reduced-motion keeps the explanatory direction but freezes it.
               streamFlow.visible = streamGroup.visible;
               canvasEl.dataset.watershedConnection = streamGroup.visible ? 'lake-stream-ocean' : 'dry-basin';
-              if (streamFlow.visible) {
-                var streamAttr = streamFlowGeo.attributes.position;
-                for (var sfp = 0; sfp < STREAM_FLOW_COUNT; sfp++) {
-                  var streamU = motionReduced
-                    ? streamFlowSeed[sfp]
-                    : (streamFlowSeed[sfp] + t * streamFlowRate) % 1;
-                  streamCurve.getPointAt(streamU, streamFlowPoint);
-                  streamCurve.getPointAt(Math.min(1, streamU + 0.004 + (sfp % 3) * 0.002), streamFlowTail);
-                  streamCurve.getTangentAt(streamU, streamFlowTangent);
-                  var streamLane = ((sfp * 7) % 9 - 4) * 0.35;
-                  streamAttr.array[sfp * 6] = streamFlowPoint.x - streamFlowTangent.z * streamLane;
-                  streamAttr.array[sfp * 6 + 1] = streamFlowPoint.y + 0.37;
-                  streamAttr.array[sfp * 6 + 2] = streamFlowPoint.z + streamFlowTangent.x * streamLane;
-                  streamAttr.array[sfp * 6 + 3] = streamFlowTail.x - streamFlowTangent.z * streamLane;
-                  streamAttr.array[sfp * 6 + 4] = streamFlowTail.y + 0.37;
-                  streamAttr.array[sfp * 6 + 5] = streamFlowTail.z + streamFlowTangent.x * streamLane;
-                  var lakeFlowX = streamFlowPoint.x - 268, lakeFlowZ = streamFlowPoint.z + 104;
-                  if (lakeFlowX * lakeFlowX + lakeFlowZ * lakeFlowZ < 34 * 34) {
-                    streamAttr.array[sfp * 6 + 1] = streamAttr.array[sfp * 6 + 4] = -9999;
-                  }
-                }
-                streamAttr.needsUpdate = true;
-              }
-
               if (!motionReduced) {
                 pilotLakeTime.value = t * (env.id === 'mountainWinter' ? 0.35 : 1);
                 pilotStreamTime.value = t * streamFlowRate / 0.075;
                 pilotWaterUniforms.rippleTime.value = t;
               }
+              if (streamFlow.visible) {
+                var streamAttr = streamFlowGeo.attributes.position;
+                for (var sfp = 0; sfp < STREAM_FLOW_COUNT; sfp++) {
+                  var streamU = (streamFlowSeed[sfp] + pilotStreamTime.value * 0.075) % 1;
+                  var streamLane = ((sfp * 7) % 9 - 4) * 0.35;
+                  for (var streamEnd = 0; streamEnd < 2; streamEnd++) {
+                    var streamEndU = Math.min(1, streamU + streamEnd * (0.006 + (sfp % 3) * 0.002));
+                    streamCurve.getPointAt(streamEndU, streamFlowPoint);
+                    streamCurve.getTangentAt(streamEndU, streamFlowTangent);
+                    var streamHorizontal = Math.max(0.001, Math.hypot(streamFlowTangent.x, streamFlowTangent.z));
+                    var flowX = streamFlowPoint.x - streamFlowTangent.z / streamHorizontal * streamLane;
+                    var flowZ = streamFlowPoint.z + streamFlowTangent.x / streamHorizontal * streamLane;
+                    var flowY = samplePilotStreamHeight(flowX, flowZ);
+                    var flowOnWater = Number.isFinite(flowY), flowOffset = sfp * 6 + streamEnd * 3;
+                    streamAttr.array[flowOffset] = flowX;
+                    streamAttr.array[flowOffset + 1] = flowOnWater ? flowY + 0.06 : 0;
+                    streamAttr.array[flowOffset + 2] = flowZ;
+                    // A brighter downstream tip communicates direction. Fade at
+                    // the lake outlet and mouth without drawing across either join.
+                    var flowOutletFade = Math.max(0, Math.min(1, (Math.hypot(flowX - 268, flowZ + 104) - 34) / 4));
+                    var flowMouthFade = Math.max(0, Math.min(1, (1 - streamEndU) / 0.025));
+                    streamFlowAlpha[sfp * 2 + streamEnd] = flowOnWater
+                      ? (streamEnd ? 0.95 : 0.12) * flowOutletFade * flowMouthFade : 0;
+                  }
+                }
+                streamFlowGeo.attributes.streamAlpha.needsUpdate = true;
+                streamAttr.needsUpdate = true;
+              }
+
               canvasEl.dataset.waterReflection = 'fresnel-sky-ripples';
               // Ocean shimmer.
               if (!motionReduced) {
@@ -16440,22 +16912,62 @@ const d = labToolData.waterCycle || {};
                 op.needsUpdate = true;
                 oceanGeo.computeVertexNormals();
               }
+              // Contact effects sample this frame's updated ocean, avoiding a wave-frame lag.
+              if (showingRain) {
+                rainField.position.set(px, py, pz);
+                var rainAttr = rainFieldGeo.attributes.position;
+                for (var rf = 0; rf < RAIN_STREAK_COUNT; rf++) {
+                  var rainPhase = (rainFieldSeed[rf * 3 + 1]
+                    + pilotWaterUniforms.rippleTime.value * (58 + (rf % 7) * 3)) % 120;
+                  var rainHeadY = 60 - rainPhase;
+                  var rainLength = 5 + (rf % 6) * 1.3;
+                  var rainSlant = env.windMs * 0.035 * rainLength;
+                  var rainHeadX = rainFieldSeed[rf * 3] + env.windMs * 0.035 * rainPhase;
+                  var rainZ = rainFieldSeed[rf * 3 + 2];
+                  var rainWorldX = px + rainHeadX, rainWorldZ = pz + rainZ;
+                  // Find contact along the wind-slanted streak, not at flat sea level.
+                  // Terrain still uses depth testing; inland water keeps its raised height.
+                  var rainTailY = rainHeadY + rainLength;
+                  var rainHidden = rainTailY + py < rainWaterSurfaceY(rainWorldX - rainSlant, rainWorldZ);
+                  var rainEnd = 1;
+                  if (!rainHidden && rainHeadY + py < rainWaterSurfaceY(rainWorldX, rainWorldZ)) {
+                    var rainAbove = 0, rainBelow = 1;
+                    for (var rainContactStep = 0; rainContactStep < 16; rainContactStep++) {
+                      var rainMid = (rainAbove + rainBelow) * 0.5;
+                      var rainMidX = rainWorldX - rainSlant * (1 - rainMid);
+                      if (rainTailY - rainLength * rainMid + py >= rainWaterSurfaceY(rainMidX, rainWorldZ)) rainAbove = rainMid;
+                      else rainBelow = rainMid;
+                    }
+                    rainEnd = rainAbove;
+                  }
+                  for (var rainVertex = 0; rainVertex < 4; rainVertex++) {
+                    var rainAlong = rainVertex === 0 ? 0 : rainVertex === 3 ? 1 : 0.55;
+                    var clippedAlong = Math.min(rainAlong, rainEnd);
+                    var rainY = rainTailY - rainLength * clippedAlong;
+                    var rainOffset = rf * 12 + rainVertex * 3;
+                    rainAttr.array[rainOffset] = rainHeadX - rainSlant * (1 - clippedAlong);
+                    rainAttr.array[rainOffset + 1] = rainY;
+                    rainAttr.array[rainOffset + 2] = rainZ;
+                    rainFieldAlpha[rf * 4 + rainVertex] = rainHidden ? 0 : rainVertex === 0 ? 0.04 : rainVertex === 3 ? 0.9 : 0.36;
+                  }
+                }
+                rainFieldGeo.attributes.rainAlpha.needsUpdate = true;
+                rainAttr.needsUpdate = true;
+              }
               var waterGlintAttr = waterGlintGeo.attributes.position;
-              var waterGlintT = motionReduced ? 0 : t;
+              var waterGlintT = pilotWaterUniforms.rippleTime.value;
               for (var wgi = 0; wgi < WATER_GLINT_COUNT; wgi++) {
                 var waterGlintX = waterGlintSeed[wgi * 3]
-                  + (motionReduced ? 0 : Math.sin(t * 0.72 + wgi * 1.7) * 0.42);
+                  + Math.sin(waterGlintT * 0.72 + wgi * 1.7) * 0.42;
                 var waterGlintZ = waterGlintSeed[wgi * 3 + 2]
-                  + (motionReduced ? 0 : Math.cos(t * 0.58 + wgi * 1.3) * 0.34);
+                  + Math.cos(waterGlintT * 0.58 + wgi * 1.3) * 0.34;
                 waterGlintAttr.array[wgi * 3] = waterGlintX;
-                waterGlintAttr.array[wgi * 3 + 1] = 1.15
-                  + Math.sin(waterGlintX * 0.072 + waterGlintT * 1.3) * 0.9
-                  + Math.cos(waterGlintZ * 0.058 + waterGlintT * 0.9) * 0.7;
+                waterGlintAttr.array[wgi * 3 + 1] = samplePilotOceanHeight(waterGlintX, waterGlintZ) + 0.08;
                 waterGlintAttr.array[wgi * 3 + 2] = waterGlintZ;
               }
               waterGlintAttr.needsUpdate = true;
               waterGlints.material.opacity = Math.max(0.34, Math.min(0.7,
-                0.34 + env.solar * 0.22 + (motionReduced ? 0 : Math.sin(t * 1.1) * 0.06)));
+                0.34 + env.solar * 0.22 + Math.sin(waterGlintT * 1.1) * 0.06));
               updateSunlightSurface(coastalShelf);
               coastalShelf.material.opacity = (env.id === 'mountainWinter' ? 0.17 : env.id === 'desertBasin' ? 0.18 : 0.24)
                 + Math.sin(pilotWaterUniforms.rippleTime.value * 0.74) * 0.015;

@@ -1,0 +1,41 @@
+{
+  "passed": true,
+  "checks": [
+    "NMOS and PMOS guided cycles",
+    "signed terminal voltages and current directions",
+    "zero-bias and cutoff suppress arrows",
+    "exact saturation boundary",
+    "gate/oxide reveal preserves electrical state",
+    "layer selection reveals selected layer",
+    "keyboard rotation and Home reset",
+    "near-threshold preset and slider step alignment",
+    "390 and 320 px overflow"
+  ],
+  "scans": [
+    {
+      "name": "N-MOSFET zero bias",
+      "violations": []
+    },
+    {
+      "name": "N-MOSFET saturation",
+      "violations": []
+    },
+    {
+      "name": "P-MOSFET zero bias",
+      "violations": []
+    },
+    {
+      "name": "P-MOSFET saturation",
+      "violations": []
+    },
+    {
+      "name": "revealed channel",
+      "violations": []
+    },
+    {
+      "name": "mobile channel",
+      "violations": []
+    }
+  ],
+  "errors": []
+}

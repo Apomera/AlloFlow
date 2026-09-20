@@ -6,7 +6,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { performance } = require('node:perf_hooks');
 const { inspectDocumentDependencies } = require('./document_html_dependencies.cjs');
-const PROPERTIES = ['text', 'visible', 'exposed', 'name', 'role', 'disabled', 'value', 'checked', 'selected', 'href', 'targetText', 'language', 'direction'];
+const PROPERTIES = ['text', 'visible', 'exposed', 'name', 'role', 'disabled', 'value', 'formData', 'checked', 'selected', 'href', 'targetText', 'language', 'direction'];
 const MAX_BYTES = 8 * 1024 * 1024, MAX_CHECKPOINTS = 100;
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const normalText = value => String(value || '').normalize('NFC').replace(/\s+/gu, ' ').trim();
@@ -155,25 +155,64 @@ async function snapshot(browser, html, checkpoints, side, viewport, media) {
           const visible = () => style.display === 'contents'
             ? Array.from(el.querySelectorAll('*')).some(child => child.checkVisibility(visibilityOptions)) || Array.from(el.childNodes).some(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim() && textIsVisible(node))
             : el.checkVisibility(visibilityOptions);
+          const linkDestination = () => {
+            if (tag !== 'a') return null;
+            const svg = el.namespaceURI === 'http://www.w3.org/2000/svg';
+            if (!svg && el.namespaceURI !== 'http://www.w3.org/1999/xhtml') return null;
+            // SVG href is an animated string, not a resolved URL. Its base value
+            // respects href precedence over xlink:href, including an empty href.
+            const literal = svg ? el.hasAttribute('href') ? el.getAttribute('href') : el.getAttributeNS('http://www.w3.org/1999/xlink', 'href') : el.getAttribute('href');
+            if (literal == null) return null;
+            let resolved;
+            try { resolved = new URL(svg ? el.href.baseVal : el.href, el.baseURI).href; } catch { return null; }
+            if (typeof resolved !== 'string') return null;
+            // A synthetic origin is not the document's real base. Preserve relative
+            // spelling as well as browser resolution, including an authored <base>.
+            return !/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(literal.trim()) ? { relative: literal, resolved } : resolved;
+          };
+          const effectiveLanguage = () => {
+            for (let node = el; node; node = node.parentElement) {
+              // Only namespaced xml:lang takes precedence. In HTML, the literal
+              // xml:lang spelling has no XML namespace and must not override lang.
+              const language = node.getAttributeNS('http://www.w3.org/XML/1998/namespace', 'lang') ?? node.getAttribute('lang');
+              // Empty attributes explicitly reset inheritance to unknown language.
+              if (language !== null) return language.replace(/[A-Z]/g, letter => letter.toLowerCase());
+            }
+            // Chromium also inherits a document language from active metadata.
+            // Use native matching rather than DOM order: HTML parsing can relocate
+            // meta elements. The longest matching declaration identifies the full
+            // tag rather than a shorter :lang prefix (for example en vs en-US).
+            // Preserve literal lists/whitespace and explicit empty resets as the
+            // browser does, instead of choosing a language from a comma list.
+            return Array.from(document.querySelectorAll('meta[http-equiv][content]'))
+              .filter(meta => meta instanceof HTMLMetaElement && meta.httpEquiv.toLowerCase() === 'content-language')
+              .map(meta => meta.content.replace(/[A-Z]/g, letter => letter.toLowerCase()))
+              .sort((a, b) => b.length - a.length)
+              .find(language => language !== '' && el.matches(':lang(' + CSS.escape(language) + ')')) || '';
+          };
           const result = {}, textEvidence = {};
           for (const property of properties) {
             if (property === 'text') result.text = normal(el.textContent);
             else if (property === 'visible') result.visible = visible();
             else if (property === 'disabled') result.disabled = /^(input|select|textarea|button|option|optgroup|fieldset)$/.test(tag) ? el.matches(':disabled') : null;
             else if (property === 'value') result.value = 'value' in el ? String(el.value) : null;
+            else if (property === 'formData') {
+              // Native serialization includes CSS-dependent hard wrapping, successful
+              // controls, duplicate names, dirname entries and external form owners.
+              // No submitter is chosen and no navigation or submission is performed.
+              // File bytes cannot be established from a static HTML checkpoint.
+              const entries = el instanceof HTMLFormElement ? Array.from(new FormData(el).entries()) : null;
+              result.formData = entries && entries.every(([, value]) => typeof value === 'string') ? entries : null;
+            }
             else if (property === 'checked') result.checked = 'checked' in el ? el.checked : null;
-            else if (property === 'selected') result.selected = tag === 'select' ? Array.from(el.selectedOptions).map(option => ({ index: option.index, value: option.value, label: normal(option.label) })) : tag === 'option' ? el.selected : null;
-            else if (property === 'href') {
-              const literal = el.getAttribute('href');
-              // A synthetic origin is not the document's real base. Preserve relative
-              // spelling as well as browser resolution, including any authored <base>.
-              result.href = tag === 'a' ? literal != null && !/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(literal.trim()) ? { relative: literal, resolved: el.href } : el.href : null;
-            } else if (property === 'targetText') {
+            else if (property === 'selected') result.selected = tag === 'select' ? Array.from(el.selectedOptions).map(option => ({ index: option.index, value: option.value, label: normal(option.label || option.text) })) : tag === 'option' ? el.selected : null;
+            else if (property === 'href') result.href = linkDestination();
+            else if (property === 'targetText') {
               result.targetText = null;
               if (tag === 'a' && el.hash && el.href.split('#')[0] === location.href.split('#')[0]) {
                 try { const target = document.getElementById(decodeURIComponent(el.hash.slice(1))); if (target) result.targetText = normal(target.textContent); } catch (_) {}
               }
-            } else if (property === 'language') result.language = el.closest('[lang]')?.getAttribute('lang') || '';
+            } else if (property === 'language') result.language = effectiveLanguage();
             else if (property === 'direction') result.direction = style.direction;
           }
           const parts = requested.has('text') && (requested.has('visible') || requested.has('exposed')) ? textParts() : null;

@@ -1,0 +1,67 @@
+{
+  "pass": 33,
+  "title": "Clearer distance tracks",
+  "status": "complete",
+  "published": false,
+  "sourceSha256": "030de78b0f94cc40bf13162294ba1e9c3e89d5369e56d586c62d0b766ff824fe",
+  "changes": [
+    "Fixed end caps mark each full-stroke endpoint on the shared distance scale",
+    "Dark silhouette edges strengthen the moving diamond and open ring",
+    "Larger theme-aware legend explains rails, traveled bars, and end caps"
+  ],
+  "tests": {
+    "passed": 554,
+    "added": 8,
+    "report": "pass33-final-tests.json"
+  },
+  "browser": {
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "widths": [
+      1150,
+      390,
+      320
+    ],
+    "orbitViews": [
+      [
+        0,
+        8
+      ],
+      [
+        72,
+        16
+      ],
+      [
+        -65,
+        32
+      ]
+    ],
+    "checks": 81,
+    "screenshots": 33,
+    "errors": 0,
+    "horizontalOverflow": false,
+    "reports": [
+      "pass33-light-final/results.json",
+      "pass33-dark-final/results.json",
+      "pass33-contrast-final/results.json"
+    ],
+    "visuallyReviewed": [
+      "pass33-light-final/header-windlass-320.png",
+      "pass33-dark-final/tracks-view-72.png",
+      "pass33-contrast-final/tracks-view-0.png"
+    ]
+  },
+  "verification": {
+    "mirrorIdentical": true,
+    "syntax": true,
+    "diffCheck": true
+  },
+  "resolvedIssues": [
+    "Initial silhouette edge encroached on bar clearance at full marker scale. Reduced edge thickness and placed end caps at track height; all geometry regressions now pass.",
+    "Updated exact legend-text assertions to include the end-cap explanation."
+  ],
+  "pending": null
+}

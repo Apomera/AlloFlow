@@ -295,7 +295,7 @@ describe('Memory Aid translation namespace', () => {
       expect(text).toContain('[memory_aid.visual_source_line]');
       expect(text).not.toContain('Try it from memory');
       expect(text).not.toContain('Teacher-verified facts');
-      expect(host.querySelector('[aria-label="[memory_aid.facts_ready]"]')).not.toBeNull();
+      expect(host.querySelector('[aria-label="[memory_aid.facts_region_aria]"]')).not.toBeNull();
       expect(host.querySelector('[aria-label="[memory_aid.feedback_region_aria]"]')).toBeNull();
       const panel = document.createElement('div');
       document.body.appendChild(panel);
@@ -347,7 +347,8 @@ describe('Memory Aid host wiring and help', () => {
     expect(start).toBeGreaterThan(-1);
     expect(wiring).toMatch(/\bt,/);
     expect(wiring).toContain('onPrint: (item, options) => handlePrintResourceSheet(item');
-    expect(source).toContain('const handlePrintResourceSheet = (item, options = {}) => {');
+    expect(source).toContain('const handlePrintResourceSheet = (...__a) => _alloHostHandlers().handlePrintResourceSheet(...__a);');
+    expect(readFileSync(resolve(process.cwd(), 'host_handlers_source.jsx'), 'utf8')).toContain('const handlePrintResourceSheet = (item, options = {}) => {');
   });
 
   it('documents both studio tiles in help mode', () => {

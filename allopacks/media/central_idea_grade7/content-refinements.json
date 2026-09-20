@@ -27,31 +27,31 @@
     "resourceId": "ci-glossary",
     "path": "data.2.def",
     "from": "Specific proof offered for a claim: a fact, example, statistic, or quotation.",
-    "to": "Information offered to support a claim, which must be evaluated rather than treated as automatic proof."
+    "to": "Information used to support a claim. Check it rather than treating it as proof on its own."
   },
   {
     "resourceId": "ci-glossary",
     "path": "data.3.def",
     "from": "To point to the exact place in a text that supports your answer.",
-    "to": "To identify a source and location for information, whether quoted or faithfully paraphrased."
+    "to": "Name the source and where to find the words or information you used."
   },
   {
     "resourceId": "ci-glossary",
     "path": "data.4.def",
     "from": "Actually proving the claim, not just related to the topic.",
-    "to": "Bearing on the particular claim or question, not merely sharing its topic."
+    "to": "Related to the exact claim, not just the same topic."
   },
   {
     "resourceId": "ci-glossary",
     "path": "data.5.def",
     "from": "How an idea grows or changes across a text.",
-    "to": "To build, extend, illustrate, complicate or qualify an idea across a text."
+    "to": "Build or change an idea across a text by adding details, examples or limits."
   },
   {
     "resourceId": "ci-glossary",
     "path": "data.6.def",
     "from": "A conclusion you build from clues the text does not state outright.",
-    "to": "A conclusion reached from textual clues and reasoning rather than a direct statement."
+    "to": "A conclusion drawn from clues and reasoning rather than stated directly."
   },
   {
     "resourceId": "ci-glossary",
@@ -63,19 +63,19 @@
     "resourceId": "ci-glossary",
     "path": "data.8.def",
     "from": "Based on facts, not personal feelings.",
-    "to": "Presenting information fairly and accurately without personal evaluation."
+    "to": "Giving a fair, accurate account without adding your own judgment."
   },
   {
     "resourceId": "ci-glossary",
     "path": "data.9.def",
     "from": "A leaning toward one side that can shape what a writer includes or leaves out.",
-    "to": "A leaning that can shape wording, selection or interpretation of information."
+    "to": "A leaning that can affect which facts someone selects and how they explain them."
   },
   {
     "resourceId": "ci-glossary",
     "path": "data.10.def",
     "from": "The exact words copied from a text and set between a pair of \" \" marks so a reader knows they are not yours.",
-    "to": "Exact source words identified as borrowed, commonly with quotation marks."
+    "to": "Exact words borrowed from a source and clearly marked as borrowed."
   },
   {
     "resourceId": "ci-glossary",
@@ -217,6 +217,12 @@
   },
   {
     "resourceId": "ci-memory",
+    "path": "data.cards.0.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "ci-memory",
     "path": "data.cards.0.aiExample",
     "from": "CLAIM = what they WANT. EVIDENCE = what they can SHOW. Want versus show: if it is only wanted, it is a claim; if it can be shown, it is evidence.",
     "to": "Claim: what is being argued? Evidence: what information is offered for it?"
@@ -307,6 +313,12 @@
   },
   {
     "resourceId": "ci-memory",
+    "path": "data.cards.1.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "ci-memory",
     "path": "data.cards.1.aiExample",
     "from": "W-W-W: Where, What, Why. Point to it, quote it, connect it. If your answer is missing a W, it is missing a wall of the house.",
     "to": "Where, what, why: paragraph 2; the organizer’s exact schedule statement; how it supports coordination."
@@ -388,6 +400,12 @@
     "path": "data.cards.2.essentialFacts.2",
     "from": "Ask what evidence is offered, whether it is relevant, and what has been left out.",
     "to": "Check source quality and missing information as well."
+  },
+  {
+    "resourceId": "ci-memory",
+    "path": "data.cards.2.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "ci-memory",
@@ -537,31 +555,31 @@
     "resourceId": "ci-quiz",
     "path": "data.questions.0.options.0",
     "from": "A text can have more than one central idea, and ideas develop across the text",
-    "to": "Explain how details introduce, extend or qualify one or more central ideas"
+    "to": "Explain how details build or qualify key ideas"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.0.options.1",
     "from": "There is no difference — it is the same skill with a new name for middle school",
-    "to": "Assume every text contains exactly two ideas"
+    "to": "Assume a long text must have exactly two ideas"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.0.options.2",
     "from": "You no longer need to use evidence, because older readers are trusted to know",
-    "to": "Stop using evidence in longer texts"
+    "to": "Choose one striking detail and ignore the rest"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.0.options.3",
     "from": "Central ideas are always stated in the first sentence of each paragraph",
-    "to": "Copy the first sentence of every paragraph"
+    "to": "Copy each opening sentence without explaining it"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.0.correctAnswer",
     "from": "A text can have more than one central idea, and ideas develop across the text",
-    "to": "Explain how details introduce, extend or qualify one or more central ideas"
+    "to": "Explain how details build or qualify key ideas"
   },
   {
     "resourceId": "ci-quiz",
@@ -573,31 +591,31 @@
     "resourceId": "ci-quiz",
     "path": "data.questions.1.options.0",
     "from": "A claim is always an opinion that turns out false; evidence is always true",
-    "to": "A claim is always false"
+    "to": "A claim must be false before evidence can support it"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.1.options.1",
     "from": "A claim is what someone wants you to accept; evidence is the specific proof for it",
-    "to": "The claim states what is put forward; evidence is information offered to support it"
+    "to": "A claim becomes proven when any evidence is added"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.1.options.2",
     "from": "A claim is longer and more detailed than evidence, which is a short fact",
-    "to": "Evidence is always conclusive proof"
+    "to": "A claim states a position; evidence offers support"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.1.options.3",
     "from": "They are two words for the same thing, used by different kinds of writers",
-    "to": "Only numbers can count as evidence"
+    "to": "A claim needs numbers; other details cannot support it"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.1.correctAnswer",
     "from": "A claim is what someone wants you to accept; evidence is the specific proof for it",
-    "to": "The claim states what is put forward; evidence is information offered to support it"
+    "to": "A claim states a position; evidence offers support"
   },
   {
     "resourceId": "ci-quiz",
@@ -609,31 +627,31 @@
     "resourceId": "ci-quiz",
     "path": "data.questions.2.options.0",
     "from": "'The garden club planted 200 trees downtown'",
-    "to": "The project involved a stream"
+    "to": "The project took place beside a stream in the town"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.2.options.1",
     "from": "Neither sentence is evidence, because a passage can only make claims",
-    "to": "The organizer says in paragraph 2, “A clear schedule helped us share the work”"
+    "to": "The organizer says a clear schedule helped share the work"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.2.options.2",
     "from": "'Within five years, summer street temperatures there dropped by three degrees'",
-    "to": "The group had not measured biological conditions"
+    "to": "The group had not measured changes in living things"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.2.options.3",
     "from": "Both sentences are claims, so the passage offers no evidence at all",
-    "to": "A stream has banks"
+    "to": "The stream had banks where the project took place"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.2.correctAnswer",
     "from": "'Within five years, summer street temperatures there dropped by three degrees'",
-    "to": "The organizer says in paragraph 2, “A clear schedule helped us share the work”"
+    "to": "The organizer says a clear schedule helped share the work"
   },
   {
     "resourceId": "ci-quiz",
@@ -681,31 +699,31 @@
     "resourceId": "ci-quiz",
     "path": "data.questions.4.options.0",
     "from": "The text basically says people liked it, so the program was clearly a success",
-    "to": "The project obviously worked in every way"
+    "to": "“A clear schedule helped us share the work” proves every goal was met"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.4.options.1",
     "from": "In paragraph two, the author writes that 'attendance doubled,' which shows the program was popular",
-    "to": "Paragraph 2 says, “A clear schedule helped us share the work”; this supports the idea that coordination helped"
+    "to": "“A clear schedule helped us share the work” links planning to teamwork (paragraph 2)"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.4.options.2",
     "from": "I just feel like the program worked, based on reading the whole article carefully",
-    "to": "Everyone knows schedules guarantee success"
+    "to": "“A clear schedule helped us share the work” proves the water is safe"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.4.options.3",
     "from": "Everyone knows programs like this are popular, so no quotation is needed",
-    "to": "The river became safe, although the passage gives no measurements"
+    "to": "“A clear schedule helped us share the work” shows that no further checks are needed"
   },
   {
     "resourceId": "ci-quiz",
     "path": "data.questions.4.correctAnswer",
     "from": "In paragraph two, the author writes that 'attendance doubled,' which shows the program was popular",
-    "to": "Paragraph 2 says, “A clear schedule helped us share the work”; this supports the idea that coordination helped"
+    "to": "“A clear schedule helped us share the work” links planning to teamwork (paragraph 2)"
   },
   {
     "resourceId": "ci-quiz",
@@ -729,37 +747,37 @@
     "resourceId": "ci-faq",
     "path": "data.0.answer",
     "from": "Yes — they are usually about different aspects of the same topic. An article on a hurricane might carry one central idea about the storm's science and another about how a community recovered. Both are true and both matter.",
-    "to": "Yes. A text can develop distinct but connected ideas, such as how people organize work and how they evaluate results. Their number must be established from the text, not assumed from its length."
+    "to": "Yes. A text can develop connected ideas, such as how people share work and how they judge results. Use the text to decide how many ideas it develops."
   },
   {
     "resourceId": "ci-faq",
     "path": "data.1.answer",
     "from": "Evidence can be checked by someone else: a statistic, a study, a quotation, an observation. An opinion is a preference. 'This is the best song' is opinion; 'this song spent ten weeks at number one' is evidence.",
-    "to": "Evidence is information offered as support. Opinions are judgments or beliefs and can also be claims. A ranking statistic can support a popularity claim, but does not by itself settle artistic quality."
+    "to": "Evidence is information used as support. An opinion is a belief or judgment. A sales rank can support a claim about popularity, but not prove that a book is the best."
   },
   {
     "resourceId": "ci-faq",
     "path": "data.2.answer",
     "from": "Because it is the difference between reading and remembering. Pointing to the exact spot proves you got it from the text, and it lets someone check your reasoning. Every field — science, law, history — runs on this.",
-    "to": "A source and location let another reader check the wording, context and reasoning. Finding a line does not by itself establish that your interpretation is sound."
+    "to": "It lets others check the words and their context. You still need to explain how that evidence supports your reading."
   },
   {
     "resourceId": "ci-faq",
     "path": "data.3.answer",
     "from": "Enormously. Persuasion mixes real claims with loaded language and missing facts. Asking 'what is the evidence, is it relevant, and what got left out?' is a defense you will use your whole life.",
-    "to": "Look for claims, supporting information and missing context. Some persuasive writing is fair; evaluate specific wording and sources rather than assuming every writer is hiding facts."
+    "to": "Find the claim and its support. Ask what context is missing. Judge the specific message; do not assume every writer is hiding facts."
   },
   {
     "resourceId": "ci-faq",
     "path": "data.4.answer",
     "from": "Then you build it by inference — a conclusion from the clues. That is harder and completely legitimate; you just have to be able to point to the clues you used.",
-    "to": "Infer it from details and relationships, then explain the evidence. Your interpretation should remain open to revision as you read further."
+    "to": "Build a possible idea from the details. Explain how they fit. Be ready to revise it when you read more."
   },
   {
     "resourceId": "ci-faq",
     "path": "data.5.answer",
     "from": "The opposite — quoting the exact words IS the skill. You quote the evidence, then add your own words to explain why it supports your point. Both parts are required.",
-    "to": "Use quotation marks for exact borrowed words and cite the source. A faithful paraphrase also needs citation. Add your explanation of relevance; follow any instruction requiring direct quotations."
+    "to": "You may use exact words if you mark them as a quote and cite the source. A paraphrase needs a source too. Explain how the words support your point."
   },
   {
     "resourceId": "ci-challenge",
@@ -802,6 +820,12 @@
     "path": "data.brief.criteria.3",
     "from": "The report names one thing the text leaves out and explains why it matters",
     "to": "Identify relevant missing information if present, or explain what remains uncertain; do not invent an omission"
+  },
+  {
+    "resourceId": "ci-challenge",
+    "path": "data.brief.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "ci-challenge",

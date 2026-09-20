@@ -45,6 +45,34 @@ describe('Cell comparison model', () => {
     expect(C.cellComparisonReport([], {})).toBe('No organisms available.');
   });
 });
+describe('Cell comparison evidence collection', () => {
+  it('preserves spaces and line breaks in all draft fields while bounding their length', () => {
+    const writing = '  First sentence. \nSecond line.  ';
+    const model = C.cellComparisonModel(database, { _cmpDrafts: { '0:1': { claim: writing, evidence: writing, reasoning: writing } } });
+    for (const field of ['claim', 'evidence', 'reasoning']) expect(model.draft[field]).toBe(writing);
+    expect(C.cellComparisonModel(database, { _cmpDrafts: { '0:1': { claim: 'x'.repeat(3100), evidence: {}, reasoning: null } } }).draft).toMatchObject({ claim: 'x'.repeat(3000), evidence: '', reasoning: '' });
+  });
+  it('validates selected property keys and keeps them with their unordered pair', () => {
+    const raw = { _cmpDrafts: { '0:1': { evidenceKeys: ['movement', 'bad', 'movement', null, 'kingdom'], claim: 'My claim' } } };
+    const model = C.cellComparisonModel(database, raw);
+    expect(model.kept.map(row => row.key)).toEqual(['kingdom', 'movement']);
+    expect(model.draft.evidenceKeys).toEqual(['kingdom', 'movement']);
+    const swapped = C.cellComparisonModel(database, { ...raw, _cmpA: 1, _cmpB: 0, _cmpFilter: 'shared' });
+    expect(swapped.kept.find(row => row.key === 'movement')).toMatchObject({ a: 'Flagella', b: 'Cilia' });
+    expect(swapped.draft.claim).toBe('My claim');
+    expect(C.cellComparisonModel(database, { ...raw, _cmpB: 2 }).kept).toEqual([]);
+    expect(C.cellComparisonModel(database, { _cmpDrafts: { '0:1': { evidenceKeys: 'movement' } } }).kept).toEqual([]);
+  });
+  it('exports kept evidence independently of the visible property filter', () => {
+    const report = C.cellComparisonReport(database, { _cmpFilter: 'shared', _cmpDrafts: { '0:1': { evidenceKeys: ['movement'], evidence: 'My own explanation. ' } } });
+    const kept = report.split('KEPT REFERENCE EVIDENCE\n')[1].split('CLAIM')[0];
+    expect(kept).toContain('Movement\nA: Cilia\nB: Flagella');
+    expect(kept).not.toContain('Habitat');
+    expect(report).toContain('My own explanation. ');
+    expect(C.cellComparisonReport(database, {})).not.toContain('KEPT REFERENCE EVIDENCE');
+  });
+});
+
 describe('Cell comparison integrated rendering', () => {
   it('renders invalid saved selections with real organisms and a complete workspace', () => {
     const html = renderTool('cell', { cell: { mode: 'compare', _cmpA: 9999, _cmpB: -1 } });

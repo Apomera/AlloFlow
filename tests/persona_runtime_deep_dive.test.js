@@ -1,5 +1,8 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
+
+// Extracted handlers receive host values through __d; preserve the same code contracts.
+const hostHandlersSource = fs.readFileSync('host_handlers_source.jsx', 'utf8').replace(/\b__d\./g, '');
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { loadAlloModule } from './setup.js';
@@ -118,7 +121,8 @@ describe('Persona runtime deep-dive fixes', () => {
     expect(artifactSource).toContain('.slice(-24)');
     expect(artifactSource).toContain('.slice(-5000)');
     expect(artifactSource).toContain('String.fromCharCode(92) + escapeCodes[char]');
-    expect(appSource).toContain('const prompt = buildSecurePersonaReflectionPro');
+    expect(appSource).toContain('_alloHostHandlers().handleGenerateReflectionPrompt(...__a)');
+    expect(hostHandlersSource).toContain('const prompt = buildSecurePersonaReflectionPro');
     expect(appSource).not.toContain('let basePrompt = ""');
   });
 
@@ -263,13 +267,14 @@ describe('Persona runtime deep-dive fixes', () => {
 
   it('uses a persistent, generation-scoped auto-read queue with latest-only enable semantics', () => {
     expect(appSource).toContain('const personaTtsQueueRef = useRef([])');
-    expect(appSource).toContain('const processPersonaTtsQueue = async () =>');
-    expect(appSource).toContain('entry.generation !== personaTtsQueueGenerationRef.current');
+    expect(appSource).toContain('_alloHostHandlers().processPersonaTtsQueue(...__a)');
+    expect(hostHandlersSource).toContain('const processPersonaTtsQueue = async () =>');
+    expect(hostHandlersSource).toContain('entry.generation !== personaTtsQueueGenerationRef.current');
     expect(appSource).toContain('const justEnabled = !personaAutoReadWasEnabledRef.current');
     expect(appSource).toMatch(/if \(justEnabled\) \{[\s\S]*for \(let index = lastIndex; index >= 0; index -= 1\)/);
     expect(appSource).not.toContain('if (!personaAutoRead || personaState.isLoading) return;');
     expect(appSource).toContain('phaseKPersonaTts.prewarmPersonaMessageAudio(entry.msg.text, entry.index');
-    expect(appSource).toContain("Promise.resolve(speakResult).catch(error =>");
+    expect(hostHandlersSource).toContain("Promise.resolve(speakResult).catch(error =>");
     expect(appSource).toContain('setPersonaAutoRead: setPersonaAutoReadSafely');
     expect(appSource).toContain('const [personaAutoReadEpoch, setPersonaAutoReadEpoch] = useState(0)');
     expect(appSource).toContain('const personaTtsVoiceSignature = JSON.stringify({');
@@ -277,9 +282,9 @@ describe('Persona runtime deep-dive fixes', () => {
     expect(appSource).toContain('personaAutoReadEpoch, personaTtsVoiceSignature');
     expect(appSource).toContain('const personaTtsQueuedMessageKeysRef = useRef(new Set())');
     expect(appSource).toContain('const personaTtsHistoryKeysRef = useRef([])');
-    expect(appSource).toContain('event?.detail?.playbackSessionId === expectedPlaybackSessionId');
-    expect(appSource).toContain("const reason = String(event?.detail?.reason || 'manual')");
-    expect(appSource).toContain("handleSpeak(entry.msg.text, contentId, 0, true)");
+    expect(hostHandlersSource).toContain('event?.detail?.playbackSessionId === expectedPlaybackSessionId');
+    expect(hostHandlersSource).toContain("const reason = String(event?.detail?.reason || 'manual')");
+    expect(hostHandlersSource).toContain("handleSpeak(entry.msg.text, contentId, 0, true)");
     expect(appSource).toContain('historyKeys[index] !== previousHistoryKeys[index]');
     expect(appSource).toContain('!isPersonaChatOpen ||');
   });
@@ -289,16 +294,17 @@ describe('Persona runtime deep-dive fixes', () => {
     expect(appSource).toContain('const personaReflectionGradeAbortRef = useRef(null)');
     expect(appSource).toContain('personaReflectionPromptAbortRef.current?.controller?.abort()');
     expect(appSource).toContain('personaReflectionGradeAbortRef.current?.controller?.abort()');
-    expect(appSource).toContain('callGemini(prompt, false, false, null, null, promptController?.signal || null)');
+    expect(hostHandlersSource).toContain('callGemini(prompt, false, false, null, null, promptController?.signal || null)');
     expect(appSource).toContain('}, 30000)');
-    expect(appSource).toContain("typeof result?.text === 'string'");
+    expect(hostHandlersSource).toContain("typeof result?.text === 'string'");
     expect(appSource).toContain('.slice(0, 1000)');
   });
 
   it('keeps active Persona edits synchronized and locks candidate controls during startup', () => {
-    expect(appSource).toContain('selectedCharacter: prev.selectedCharacter?.name === currentPersona.name');
-    expect(appSource).toContain('{ ...prev.selectedCharacter, ...nextPersona }');
-    expect(appSource).toContain('character?.name === currentPersona.name');
+    expect(appSource).toContain('_alloHostHandlers().savePersonaTeacherEditor(...__a)');
+    expect(hostHandlersSource).toContain('selectedCharacter: prev.selectedCharacter?.name === currentPersona.name');
+    expect(hostHandlersSource).toContain('{ ...prev.selectedCharacter, ...nextPersona }');
+    expect(hostHandlersSource).toContain('character?.name === currentPersona.name');
     const candidateStart = workspaceSource.indexOf('<ErrorBoundary');
     const candidateEnd = workspaceSource.indexOf('{isTeacherMode && personaTeacherEditor && (', candidateStart);
     const candidateScreen = workspaceSource.slice(candidateStart, candidateEnd);
@@ -314,15 +320,15 @@ describe('Persona runtime deep-dive fixes', () => {
     expect(appSource).toContain("if (value == null || String(value).trim() === '') return 14");
     expect(appSource).toContain('Number.isFinite(parsed) && [0, 7, 14, 30].includes(parsed) ? parsed : 14');
     expect(workspaceSource).toContain("normalizePersonaResumeDays(localStorage.getItem('allo_persona_resume_days'))");
-    expect(appSource).toContain('const voiceOptions = getPersonaVoiceOptions()');
-    expect(appSource).toContain('voiceOptions.find(voice => voice.toLowerCase() === requestedVoice)');
-    expect(appSource).toContain("|| String(currentPersona.voice || '').trim().slice(0, 100)");
+    expect(hostHandlersSource).toContain('const voiceOptions = getPersonaVoiceOptions()');
+    expect(hostHandlersSource).toContain('voiceOptions.find(voice => voice.toLowerCase() === requestedVoice)');
+    expect(hostHandlersSource).toContain("|| String(currentPersona.voice || '').trim().slice(0, 100)");
     expect(workspaceSource).toContain('<option value={personaTeacherEditor.voice}>');
-    expect(appSource).toContain("persona?.guardrailsSource === 'teacher'");
-    expect(appSource).toContain("guardrailsSource: 'teacher'");
-    expect(appSource).toContain('Math.max(0, Math.min(100, Math.round(parsedDifficulty)))');
-    expect(appSource).toContain(': 20;');
-    expect(appSource).toContain('isCompleted: existing.isCompleted === true');
+    expect(hostHandlersSource).toContain("persona?.guardrailsSource === 'teacher'");
+    expect(hostHandlersSource).toContain("guardrailsSource: 'teacher'");
+    expect(hostHandlersSource).toContain('Math.max(0, Math.min(100, Math.round(parsedDifficulty)))');
+    expect(hostHandlersSource).toContain(': 20;');
+    expect(hostHandlersSource).toContain('isCompleted: existing.isCompleted === true');
   });
 
   it('preserves evidence notes and wires summary/follow-up handlers to the view', () => {

@@ -229,6 +229,26 @@ async function _alloLanFetch(pathname, init) {
   if (init && init.body) headers['Content-Type'] = 'application/json';
   return fetch(cfg.base + pathname, Object.assign({}, init, { headers }));
 }
+async function _alloLanOrganizerRequest(code, method = 'GET', body = null, signal) {
+  const cfg = _alloLanConfig();
+  if (!cfg || !code) throw new Error('Join a LAN class before using reflections.');
+  const controller = new AbortController();
+  const cancel = () => controller.abort();
+  if (signal?.aborted) controller.abort(); else signal?.addEventListener('abort', cancel, { once: true });
+  const timeout = setTimeout(cancel, 20000);
+  try {
+    const response = await fetch(cfg.base + '/api/lan-sessions/' + encodeURIComponent(code) + '/reflections', {
+      method, signal: controller.signal, headers: { ...(cfg.token ? { Authorization: 'Bearer ' + cfg.token } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}),
+    });
+    let value; try { value = await response.json(); } catch (_) { throw new Error('This desktop version does not support reflection review. Update the teacher desktop and retry.'); }
+    if (!response.ok) { const error = new Error(value.error || 'The reflection request failed. Try again.'); error.status = response.status; throw error; }
+    return value;
+  } catch (error) {
+    if (error.name === 'AbortError' && !signal?.aborted) throw new Error('The reflection request timed out. Your draft is still saved; try again.');
+    throw error;
+  } finally { clearTimeout(timeout); signal?.removeEventListener('abort', cancel); }
+}
+
 function _alloLanSnap(ref, payload) {
   // Mimics the Firestore v9 DocumentSnapshot surface the app actually uses:
   // exists() / data() / id / ref. payload is the bridge's {id, data, …} or null.
@@ -1631,13 +1651,14 @@ function _alloQuickHash(text) {
     for (let i = 0; i < source.length; i += 1) hash = ((hash << 5) + hash + source.charCodeAt(i)) >>> 0;
     return source.length + ':' + hash.toString(36);
 }
-function _alloReadMailboxEntryParam(name) {
-    if (typeof window === 'undefined') return null;
+function _alloReadMailboxEntryParam(name, entryUrl = null) {
+    if (entryUrl == null && typeof window === 'undefined') return null;
     try {
-        const search = new URLSearchParams(window.location.search || '');
+        const location = entryUrl == null ? window.location : new URL(String(entryUrl));
+        const search = new URLSearchParams(location.search || '');
         let encoded = search.get(name) || '';
-        if (!encoded && window.location.hash && window.location.hash.length > 1) {
-            encoded = new URLSearchParams(window.location.hash.replace(/^#/, '')).get(name) || '';
+        if (!encoded && location.hash && location.hash.length > 1) {
+            encoded = new URLSearchParams(location.hash.replace(/^#/, '')).get(name) || '';
         }
         if (!encoded) return null;
         const parsed = JSON.parse(_alloBase64UrlDecode(encoded) || 'null');
@@ -1647,6 +1668,15 @@ function _alloReadMailboxEntryParam(name) {
     } catch (_) {
         return null;
     }
+}
+// A saved student link binds its pack capability to one exact mailbox deployment.
+// Never combine an old pack id with the currently selected mailbox's credentials.
+function _alloResolveHostedShareMailbox(share) {
+    if (!share || share.type !== 'assignment-pack-hosted' || typeof share.url !== 'string') return null;
+    const entry = _alloReadMailboxEntryParam('allo_mbp', share.url);
+    if (!entry || typeof entry.id !== 'string' || !/^PK-[0-9a-f-]{36}$/i.test(entry.id) || typeof entry.k !== 'string' || !entry.k) return null;
+    if (share.packId !== entry.id || (share.packSecret != null && share.packSecret !== entry.k)) return null;
+    return { url: entry.u, id: entry.id, k: entry.k };
 }
 function _buildAlloMailboxEntryUrl(name, payload) {
     if (typeof window === 'undefined') return '';
@@ -3364,7 +3394,8 @@ const _alloProjectStudentActivityResource = (item) => {
 const _alloStudentSafeResources = (items) => {
     const ST = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SessionTransport;
     if (ST && typeof ST.studentSafeResources === 'function') return ST.studentSafeResources(items, TEACHER_ONLY_TYPES, _alloProjectStudentActivityResource);
-    return (Array.isArray(items) ? items : []).map(item => {
+    const readingItems = window.AlloModules?.InstructionalContext?.ensureReadingSourcePairs?.(items) || items;
+    return (Array.isArray(readingItems) ? readingItems : []).map(item => {
         if (!item || !item.id || !item.type) return null;
         if (item.type === 'brainstorm') return _alloProjectStudentActivityResource(item);
         return TEACHER_ONLY_TYPES.includes(item.type) ? null : item;
@@ -4878,14 +4909,10 @@ function _alloNextSharedActivitySummaryOrder(...args) {
   return api && typeof api.nextSummaryOrder === 'function' ? api.nextSummaryOrder(...args) : _alloNextSharedActivitySummaryOrderFallback(...args);
 }
 const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivityPanel(props) {
-  const Real = _alloSharedActivityModule() && _alloSharedActivityModule().SharedAssignmentActivityPanel;
-  if (Real && Real !== SharedAssignmentActivityPanel) return React.createElement(Real, props);
   return (
-    <section role="status" aria-live="polite" className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-950">
-      <p className="font-black">Shared activity tools are still loading.</p>
-      <p className="mt-1 text-xs">Your response has not been submitted. Wait a moment, then retry.</p>
-      <button type="button" onClick={() => window.__alloRetryFailedModules?.()} className="mt-3 rounded-lg border border-sky-400 bg-white px-3 py-2 text-xs font-black text-sky-900">Retry loading</button>
-    </section>
+    <CDNModuleGate moduleKey="SharedActivity.SharedAssignmentActivityPanel" loaderName="__alloLazySharedActivity" displayName="Shared activity tools" size="inline" icon="💬" t={props.t}>
+      {(Real) => React.createElement(Real, props)}
+    </CDNModuleGate>
   );
 });
 
@@ -5232,6 +5259,7 @@ const CDNModuleGate = (function () {
 
     var _tickState = React.useState(0);
     var setTick = _tickState[1];
+    var [loaderUnavailable, setLoaderUnavailable] = React.useState(false);
     // moduleKey may be either a flat key ("DynamicAssessment") or a dotted
     // path ("EducatorHubModal.EducatorHubModal") for modules that export
     // an object with the component as a property of the same name.
@@ -5246,14 +5274,31 @@ const CDNModuleGate = (function () {
       return cur || null;
     };
     var Mod = resolve();
+    // Child effects can run before the host installs its lazy-loader callbacks.
+    // Discover the callback without repeatedly requesting an already pending module.
+    var requestLoad = function () {
+      var loader = window[props.loaderName];
+      if (typeof loader !== 'function') return false;
+      try { loader(); setLoaderUnavailable(false); }
+      catch (_) { setLoaderUnavailable(true); }
+      return true;
+    };
 
     React.useEffect(function () {
       if (!isOpen) return undefined;
       if (resolve()) return undefined;
       var refresh = function () { setTick(function (v) { return v + 1; }); };
       var watch = _alloWatchModuleChanges(resolve, String(moduleKey).split('.')[0], refresh);
-      if (props.loaderName) {
-        try { window[props.loaderName]?.(); } catch (_) {}
+      var loaderTimer = null;
+      if (props.loaderName && !requestLoad()) {
+        var attempts = 0;
+        loaderTimer = setInterval(function () {
+          attempts++;
+          if (resolve() || requestLoad() || attempts >= 50) {
+            clearInterval(loaderTimer); loaderTimer = null;
+            if (!resolve() && typeof window[props.loaderName] !== 'function') setLoaderUnavailable(true);
+          }
+        }, 100);
       }
       var id = null;
       var poll = function () {
@@ -5271,6 +5316,7 @@ const CDNModuleGate = (function () {
       syncPolling();
       return function () {
         if (id !== null) clearInterval(id);
+        if (loaderTimer !== null) clearInterval(loaderTimer);
         document.removeEventListener('visibilitychange', syncPolling);
         watch.dispose();
       };
@@ -5279,8 +5325,8 @@ const CDNModuleGate = (function () {
     if (!isOpen) return null;
     if (Mod) return typeof children === 'function' ? children(Mod) : (children || null);
 
-    var failed = !!props.loaderName && window.__alloModuleRegistry?.[String(moduleKey).split('.')[0]]?.status === 'failed';
-    var retryButton = failed ? <button type="button" onClick={() => { try { window[props.loaderName]?.(); } catch (_) {} }} className="mt-4 min-h-11 px-4 py-2 bg-indigo-700 text-white font-bold rounded-lg text-sm">{tr(t, 'common.retry', null, 'Retry loading')}</button> : null;
+    var failed = !!props.loaderName && (loaderUnavailable || window.__alloModuleRegistry?.[String(moduleKey).split('.')[0]]?.status === 'failed');
+    var retryButton = failed ? <button type="button" onClick={() => { if (!requestLoad()) setLoaderUnavailable(true); }} className="mt-4 min-h-11 px-4 py-2 bg-indigo-700 text-white font-bold rounded-lg text-sm">{tr(t, 'common.retry', null, 'Retry loading')}</button> : null;
     var loadingLabel = tr(t, 'common.loading_module', { name: displayName }, 'Loading ' + displayName + '...');
     if (failed) loadingLabel = displayName + ' could not load. Your work is preserved.';
     var hintLabel = (hintVariant === 'short')
@@ -5302,7 +5348,7 @@ const CDNModuleGate = (function () {
     }
 
     return (
-      <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={onClose}>
+      <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" style={props.modalZIndex ? { zIndex: props.modalZIndex } : undefined} onClick={onClose}>
         <div role="status" aria-live="polite" aria-label={loadingLabel} className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={function (e) { e.stopPropagation(); }}>
           <div className="relative w-14 h-14 mx-auto mb-4">
             <div aria-hidden="true" className="absolute inset-0 rounded-full border-4 border-slate-200" />
@@ -8858,9 +8904,10 @@ const summarizeLiveSessionResourceDelivery = ({ roster, groups, currentResourceI
 const LIVE_ORGANIZER_TYPES = new Set([
     'venn', 'tchart', 'cesort', 'pipeline', 'conceptmap', 'outline',
     'fishbone', 'problemsolution', 'frayer', 'seethinkwonder', 'storymap',
-    'strandchallenge3d', 'conceptrecall3d', 'palacerecall',
+    'strandchallenge3d', 'conceptrecall3d', 'palacerecall', 'reflection',
 ]);
 const LIVE_ORGANIZER_GAME_TYPES = Object.freeze({
+    reflection: new Set(),
     venn: new Set(['vennDiagram']),
     tchart: new Set(['tchartSort']),
     cesort: new Set(['causeEffectSort']),
@@ -8877,12 +8924,13 @@ const LIVE_ORGANIZER_GAME_TYPES = Object.freeze({
     palacerecall: new Set(['palaceRecall', 'palaceRecallAttempt']),
 });
 const LIVE_ORGANIZER_STRUCTURE_TYPES = Object.freeze({
+    reflection: new Set(['KWL Chart', 'Claim-Evidence-Reasoning', 'Cause and Effect', 'Frayer Model', 'See-Think-Wonder', 'Venn Diagram', 'T-Chart', 'Fishbone', 'Structured Outline', 'Key Concept Map', 'Mind Map', 'Flow Chart', 'Process Flow / Sequence', 'Problem Solution', 'Story Map', '3D Concept Space', 'Memory Palace']),
     venn: new Set(['Venn Diagram']),
     tchart: new Set(['T-Chart']),
     cesort: new Set(['Cause and Effect']),
     pipeline: new Set(['Flow Chart', 'Process Flow / Sequence']),
     conceptmap: new Set(['Key Concept Map', 'Mind Map']),
-    outline: new Set(['Structured Outline']),
+    outline: new Set(['Structured Outline', 'Claim-Evidence-Reasoning']),
     fishbone: new Set(['Fishbone']),
     problemsolution: new Set(['Problem Solution']),
     frayer: new Set(['Frayer Model']),
@@ -8909,7 +8957,7 @@ const _liveOrganizerText = (value) => typeof value === 'object' && value !== nul
     : String(value == null ? '' : value).trim();
 const getLiveOrganizerResourceRevision = (resource) => {
     if (!resource || resource.type !== 'outline' || !resource.data) return '';
-    const data = resource.data;
+    const data = window.AlloModules?.ViewRenderers?.normalizeVisualOrganizerData?.(resource.data) || resource.data;
     const branches = (Array.isArray(data.branches) ? data.branches : []).map(branch => ({
         title: String(branch?.title || ''),
         role: String(branch?.role || branch?.semanticRole || ''),
@@ -8953,11 +9001,14 @@ const getLiveOrganizerReadiness = (type, resource) => {
     if (!resource || resource.type !== 'outline' || !resource.data) {
         return { ok: false, message: 'Open and save the visual organizer before starting its student activity.' };
     }
+    const normalizedData = window.AlloModules?.ViewRenderers?.normalizeVisualOrganizerData?.(resource.data) || resource.data;
+    resource = { ...resource, data: normalizedData };
     const structureType = String(resource.data.structureType || '').trim();
     if (!(LIVE_ORGANIZER_STRUCTURE_TYPES[type] && LIVE_ORGANIZER_STRUCTURE_TYPES[type].has(structureType))) {
         return { ok: false, message: 'This activity does not match the open visual organizer.' };
     }
     if (type === 'venn') return { ok: true };
+    if (type === 'reflection') return Array.isArray(resource.data.branches) && resource.data.branches.length > 0 && (structureType !== 'KWL Chart' || resource.data.branches.length === 3) ? { ok: true } : { ok: false, message: 'Open a complete diagram before starting its reflection.' };
     const branches = Array.isArray(resource.data.branches) ? resource.data.branches : [];
     const countItems = (list) => list.reduce((sum, branch) => sum + (Array.isArray(branch?.items) ? branch.items.filter(item => _liveOrganizerText(item)).length : 0), 0);
     const itemCount = (branch) => Array.isArray(branch?.items) ? branch.items.filter(item => _liveOrganizerText(item)).length : 0;
@@ -8976,12 +9027,15 @@ const getLiveOrganizerReadiness = (type, resource) => {
             : { ok: false, message: 'Add pictures or sculptures to at least three concepts before starting Concept Recall.' };
     }
     if (type === 'problemsolution') {
-        const outcomeIndex = branches.findIndex(branch => /outcome|result|evaluation/i.test(String(branch?.title || '')));
+        const outcomeIndex = branches.findIndex(branch => ['outcome', 'result', 'evaluation'].includes(String(branch?.role || branch?.semanticRole || '').toLowerCase()) || /outcome|result|evaluation/i.test(String(branch?.title || '')));
         const solutionBranches = branches.filter((_, index) => index !== outcomeIndex);
         const solutionItems = countItems(solutionBranches);
         return solutionBranches.length >= 2 && solutionBranches.filter(branch => itemCount(branch) > 0).length >= 2 && solutionItems >= 6
             ? { ok: true }
             : { ok: false, message: 'Add at least two populated solution paths and six solution cards before starting the student activity.' };
+    }
+    if (structureType === 'Claim-Evidence-Reasoning' && (branches.length !== 3 || nonEmptyBranches.length !== 3)) {
+        return { ok: false, message: 'Add a claim, evidence, and reasoning before starting CER Sort.' };
     }
     const exactBranchCounts = { frayer: 4, seethinkwonder: 3, storymap: 5 };
     if (exactBranchCounts[type] && branches.length !== exactBranchCounts[type]) {
@@ -9019,6 +9073,35 @@ const getLiveOrganizerReadiness = (type, resource) => {
     }
     return { ok: true };
 };
+// Content-free organizer receipts are acknowledged only after a successful write.
+// Serialize writes so an older loading retry cannot overwrite ready/submitted.
+const persistOrganizerProgress = (state, signature, write, isCurrent = () => true) => {
+    if (!isCurrent()) return Promise.resolve(false);
+    if (state.current === signature) return Promise.resolve(true);
+    state.pending = state.pending || new Map();
+    if (state.pending.has(signature)) return state.pending.get(signature);
+    state.latest = signature;
+    const run = async () => {
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+            if (!isCurrent() || state.latest !== signature) return false;
+            try {
+                await write();
+                if (isCurrent() && state.latest === signature) state.current = signature;
+                return true;
+            } catch (error) {
+                if (attempt === 2) return false;
+                await new Promise(resolve => setTimeout(resolve, [250, 750][attempt]));
+            }
+        }
+        return false;
+    };
+    const pending = Promise.resolve(state.queue).catch(() => {}).then(run);
+    state.queue = pending;
+    state.pending.set(signature, pending);
+    pending.finally(() => { if (state.pending.get(signature) === pending) state.pending.delete(signature); });
+    return pending;
+};
+
 const normalizeLiveOrganizerProgress = (value) => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
     const activityId = String(value.activityId || '').trim().slice(0, 160);
@@ -9082,7 +9165,7 @@ const summarizeLiveOrganizerProgress = ({ roster, interactiveOrganizer } = {}) =
             summary.pending += 1;
             return;
         }
-        summary[progress.status] += 1;
+        summary[progress.status === 'loading' && Date.now() - progress.at > 30000 ? 'failed' : progress.status] += 1;
     });
     return summary;
 };
@@ -9091,7 +9174,7 @@ const getRetryableLiveOrganizerUids = ({ roster, interactiveOrganizer } = {}) =>
     if (!activityId || !roster || typeof roster !== 'object' || Array.isArray(roster)) return [];
     return Object.entries(roster).slice(0, 250).reduce((uids, [uid, entry]) => {
         const progress = normalizeLiveOrganizerProgress(entry?.organizerProgress);
-        if (!progress || progress.activityId !== activityId || progress.status === 'failed') uids.push(String(uid).slice(0, 128));
+        if (!progress || progress.activityId !== activityId || progress.status === 'failed' || (progress.status === 'loading' && Date.now() - progress.at > 30000)) uids.push(String(uid).slice(0, 128));
         return uids;
     }, []).filter(Boolean);
 };
@@ -10761,21 +10844,20 @@ const TeacherDashboard = React.memo((props) => {
         </div>
     );
 });
-const QuickStartWizard = React.memo((props) => {
-    const Ext = window.AlloModules && window.AlloModules.QuickStartWizard;
-    if (Ext) return <Ext {...props} />;
-    if (!props.isOpen) return null;
-    return (
-        <div className="fixed inset-0 z-[300] bg-slate-900/90 flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={props.onClose}>
-            <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                <div className="text-4xl mb-3">🚀</div>
-                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Setup Wizard' }) || 'Loading Setup Wizard...'}</p>
-                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
-                <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
-            </div>
-        </div>
-    );
-});
+const QuickStartWizard = React.memo((props) => (
+    <CDNModuleGate
+        moduleKey="QuickStartWizard"
+        loaderName="__alloLazyQuickStartWizard"
+        isOpen={props.isOpen}
+        onClose={props.onClose}
+        icon="🚀"
+        displayName="Setup Wizard"
+        modalZIndex={300}
+        t={props.t}
+    >
+        {(Wizard) => <Wizard {...props} />}
+    </CDNModuleGate>
+));
 const FocusReaderOverlay = React.memo((props) => {
     const Ext = window.AlloModules && (window.AlloModules.FocusReaderOverlay || window.AlloModules.SpeedReaderOverlay);
     if (Ext) return <Ext {...props} />;
@@ -11442,7 +11524,7 @@ const AlloFlowContent = () => {
     get _alloAlignmentAuditSummary() { return _alloAlignmentAuditSummary; }, get _alloAlignmentExportFromRegistryEntry() { return _alloAlignmentExportFromRegistryEntry; }, get _alloAlignmentExportSchema() { return _alloAlignmentExportSchema; }, get _alloApplyCanvasSelAuthoringState() { return _alloApplyCanvasSelAuthoringState; },
     get _alloArtifactListLength() { return _alloArtifactListLength; }, get _alloArtifactMatchesInstanceId() { return _alloArtifactMatchesInstanceId; }, get _alloBeginGlossaryTask() { return _alloBeginGlossaryTask; }, get _alloBoundLearningWebGraphForExplorer() { return _alloBoundLearningWebGraphForExplorer; },
     get _alloBuildAssignmentCenterCsv() { return _alloBuildAssignmentCenterCsv; }, get _alloCheckpointArtifact() { return _alloCheckpointArtifact; }, get _alloCheckpointRecordsRef() { return _alloCheckpointRecordsRef; }, get _alloCheckpointSaltRef() { return _alloCheckpointSaltRef; },
-    get _alloCheckpointSupports() { return _alloCheckpointSupports; }, get _alloCheckpointSupportsRef() { return _alloCheckpointSupportsRef; }, get _alloCleanMailboxUrl() { return _alloCleanMailboxUrl; }, get _alloClearCachedDeviceStoragePromises() { return _alloClearCachedDeviceStoragePromises; },
+    get _alloCheckpointSupports() { return _alloCheckpointSupports; }, get _alloCheckpointSupportsRef() { return _alloCheckpointSupportsRef; }, get _alloCleanMailboxUrl() { return _alloCleanMailboxUrl; }, get _alloResolveHostedShareMailbox() { return _alloResolveHostedShareMailbox; }, get _alloClearCachedDeviceStoragePromises() { return _alloClearCachedDeviceStoragePromises; },
     get _alloCmdCtx() { return _alloCmdCtx; }, get _alloCmdCtxRef() { return _alloCmdCtxRef; }, get _alloCreateDefaultStudentProjectSettings() { return _alloCreateDefaultStudentProjectSettings; }, get _alloDiagnosticBoundedInt() { return _alloDiagnosticBoundedInt; },
     get _alloDiagnosticReason() { return _alloDiagnosticReason; }, get _alloDiagnosticResourceType() { return _alloDiagnosticResourceType; }, get _alloDiagnosticRunId() { return _alloDiagnosticRunId; }, get _alloDiagnosticTimestamp() { return _alloDiagnosticTimestamp; },
     get _alloDirectionsGoalResources() { return _alloDirectionsGoalResources; }, get _alloEnsureLedger() { return _alloEnsureLedger; }, get _alloFollowResourceLive() { return _alloFollowResourceLive; }, get _alloGenerationHelpersDeps() { return _alloGenerationHelpersDeps; },
@@ -11538,7 +11620,7 @@ const AlloFlowContent = () => {
     get mbStudent() { return mbStudent; }, get mbUpCursorRef() { return mbUpCursorRef; }, get mbUrlInput() { return mbUrlInput; }, get newGroupName() { return newGroupName; },
     get newProfileName() { return newProfileName; }, get nextFlashcard() { return nextFlashcard; }, get nodeInputText() { return nodeInputText; }, get normalizeAlloEvaluationPortalUrl() { return normalizeAlloEvaluationPortalUrl; },
     get normalizeAlloHavenClassroomReward() { return normalizeAlloHavenClassroomReward; }, get normalizeClassGoals() { return normalizeClassGoals; }, get normalizeGuidedPlanBrief() { return normalizeGuidedPlanBrief; }, get normalizeGuidedProgress() { return normalizeGuidedProgress; },
-    get normalizeInteractiveVennGameData() { return normalizeInteractiveVennGameData; }, get normalizeLiveActivityProgress() { return normalizeLiveActivityProgress; }, get normalizeLiveOrganizerProgress() { return normalizeLiveOrganizerProgress; }, get normalizeQuizReceiptQuestionIndexes() { return normalizeQuizReceiptQuestionIndexes; },
+    get normalizeInteractiveVennGameData() { return normalizeInteractiveVennGameData; }, get normalizeLiveActivityProgress() { return normalizeLiveActivityProgress; }, get normalizeLiveOrganizerProgress() { return normalizeLiveOrganizerProgress; }, get persistOrganizerProgress() { return persistOrganizerProgress; }, get normalizeQuizReceiptQuestionIndexes() { return normalizeQuizReceiptQuestionIndexes; },
     get normalizeRosterSessionCodename() { return normalizeRosterSessionCodename; }, get noteColor() { return noteColor; }, get noteTemplate() { return noteTemplate; }, get onUpdateResource() { return onUpdateResource; },
     get openQrShareModal() { return openQrShareModal; }, get openReadThisPagePanel() { return openReadThisPagePanel; }, get parseTaggedContent() { return parseTaggedContent; }, get pasteEvents() { return pasteEvents; },
     get pauseReadThisPage() { return pauseReadThisPage; }, get pdfAutoContinueAbortCtrlRef() { return pdfAutoContinueAbortCtrlRef; }, get pdfAutoContinueAbortRef() { return pdfAutoContinueAbortRef; }, get pdfDocumentSelectionEpochRef() { return pdfDocumentSelectionEpochRef; },
@@ -11621,7 +11703,7 @@ const AlloFlowContent = () => {
     get setLiveResourceRetryEpoch() { return setLiveResourceRetryEpoch; }, get setMapAddInput() { return setMapAddInput; }, get setMathCheckResults() { return setMathCheckResults; }, get setMathEditingProblem() { return setMathEditingProblem; },
     get setMathHintData() { return setMathHintData; }, get setMathInput() { return setMathInput; }, get setMathMode() { return setMathMode; }, get setMathProbeForm() { return setMathProbeForm; },
     get setMathSelfGradeMode() { return setMathSelfGradeMode; }, get setMathStudentAnswers() { return setMathStudentAnswers; }, get setMbAdminInput() { return setMbAdminInput; }, get setMbBusy() { return setMbBusy; },
-    get setMbConfig() { return setMbConfig; }, get setMbDirectionsDraft() { return setMbDirectionsDraft; }, get setMbJoinError() { return setMbJoinError; }, get setMbJoinRetryable() { return setMbJoinRetryable; },
+    get setMbConfig() { return setMbConfig; }, get setMbUrlInput() { return setMbUrlInput; }, get setMbDirectionsDraft() { return setMbDirectionsDraft; }, get setMbJoinError() { return setMbJoinError; }, get setMbJoinRetryable() { return setMbJoinRetryable; },
     get setMbJoinStatus() { return setMbJoinStatus; }, get setMbLive() { return setMbLive; }, get setMbMode() { return setMbMode; }, get setMbPanelOpen() { return setMbPanelOpen; },
     get setMbResumable() { return setMbResumable; }, get setMbRoster() { return setMbRoster; }, get setMbShowAdmin() { return setMbShowAdmin; }, get setMbStatus() { return setMbStatus; },
     get setMemoryAidCustomInstructions() { return setMemoryAidCustomInstructions; }, get setMicBannerDismissed() { return setMicBannerDismissed; }, get setMicPermissionStatus() { return setMicPermissionStatus; }, get setNewGroupName() { return setNewGroupName; },
@@ -13783,7 +13865,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '33acfe614';
+    var pluginCdnVersion = '1789851299180';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -14147,31 +14229,31 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=33acfe614');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=33acfe614');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=33acfe614');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=33acfe614');
-    loadModule('DeviceAccessCode', 'https://alloflow-cdn.pages.dev/device_access_code_module.js?v=33acfe614');
-    loadModule('AlloDeviceVault', 'https://alloflow-cdn.pages.dev/allo_device_vault_module.js?v=33acfe614');
-    loadModule('AlloRecoveryVaultIntegration', 'https://alloflow-cdn.pages.dev/allo_recovery_vault_integration_module.js?v=33acfe614');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('ToolCatalog', './tool_catalog_module.js');
+    loadModule('SubmissionCrypto', './submission_crypto_module.js');
+    loadModule('AlloCrypto', './allo_crypto_module.js');
+    loadModule('DeviceAccessCode', './device_access_code_module.js');
+    loadModule('AlloDeviceVault', './allo_device_vault_module.js');
+    loadModule('AlloRecoveryVaultIntegration', './allo_recovery_vault_integration_module.js');
     // Shared quest/goal vocabulary for directions goals, STEAM Lab and SEL Hub
     // quests. Tiny and dependency-free; every consumer degrades gracefully if it
     // has not landed yet, so load order is not load-bearing.
-    loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=33acfe614');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=33acfe614');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=bf7ca129');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=33acfe614');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=33acfe614');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=33acfe614');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=33acfe614');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=33acfe614');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=33acfe614');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=47162871');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=a3fb7ab7');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=8067cdd8');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=33acfe614');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=33acfe614');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=33acfe614');
+    loadModule('AlloQuestContract', './allo_quest_contract_module.js');
+    loadModule('SubmissionInbox', './view_submission_inbox_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('Fluency', './fluency_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
     // Word Sounds is the largest CDN module in the app (~744KB) and was loaded
     // eagerly here for EVERY user at boot, including the majority who never open
     // it. It registers exactly one component, WordSoundsModal, and the only
@@ -14184,43 +14266,43 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // The render site already has a "Loading Word Sounds..." fallback with a
     // Close escape, and the module registry re-renders the app when the load
     // lands, so the fallback resolves on its own.
-    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=33acfe614'); }; })();
-    loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=33acfe614');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=33acfe614');
-    loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=33acfe614');
+    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', './word_sounds_module.js'); }; })();
+    loadModule('AlloSheetTransferAdapter', './allo_sheet/transfer_adapter.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('AlloSheetHostBridge', './allo_sheet/host_bridge.js');
     window.__alloLazyBehaviorLens = (function() { var started = false; return function() { if (started) return; started = true;
       const startBehaviorLens = function() {
         if (!(window.AlloModules && window.AlloModules.BehaviorLensWorkspace)) return false;
         window.removeEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=33acfe614');
+        loadModule('BehaviorLens', './behavior_lens_module.js');
         return true;
       };
       if (!startBehaviorLens()) {
         window.addEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLensWorkspace', 'https://alloflow-cdn.pages.dev/behavior_lens_workspace_module.js?v=33acfe614');
+        loadModule('BehaviorLensWorkspace', './behavior_lens_workspace_module.js');
       }
     }; })();
     if (window.__alloBehaviorLensRequested) window.__alloLazyBehaviorLens();
-    window.__alloLazyDirectionsComposer = () => { loadModule('DirectionsComposer', 'https://alloflow-cdn.pages.dev/view_directions_composer_module.js?v=33acfe614'); };
-    window.__alloLazyPersonaWorkspace = () => { loadModule('PersonaWorkspace', 'https://alloflow-cdn.pages.dev/view_persona_workspace_module.js?v=33acfe614'); };
-    window.__alloLazyReportWriter = () => { loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=33acfe614'); };
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=33acfe614');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=33acfe614');
+    window.__alloLazyDirectionsComposer = () => { loadModule('DirectionsComposer', './view_directions_composer_module.js'); };
+    window.__alloLazyPersonaWorkspace = () => { loadModule('PersonaWorkspace', './view_persona_workspace_module.js'); };
+    window.__alloLazyReportWriter = () => { loadModule('ReportWriter', './report_writer_module.js'); };
+    loadModule('CinematicStudio', './cinematic_studio_module.js');
+    loadModule('BrandProfile', './brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=33acfe614'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', './symbol_studio_module.js'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=33acfe614'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=33acfe614'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', './studio_module.js'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', './allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
     // lazy-loaded from the Roster panel's Seating Chart button.
-    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=33acfe614'); }; })();
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', './seating_chart_module.js'); }; })();
     // UDL Walkthrough (Aug 3 2026) — admin/coach classroom-visit tool,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080307'); }; })();
@@ -14233,68 +14315,68 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Meeting Documentation is its third tool (needs callGemini).
     window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=29e9a817'); }; })();
     // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
-    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=33acfe614'); }; })();
-    window.__alloLazySchoolRewards = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SchoolRewards', 'https://alloflow-cdn.pages.dev/school_rewards_module.js?v=33acfe614'); }; })();
+    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', './educator_evaluation_module.js'); }; })();
+    window.__alloLazySchoolRewards = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SchoolRewards', './school_rewards_module.js'); }; })();
     // Math Studio (Aug 17 2026) — the former STEM Lab Create tab, math-owned.
-    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', 'https://alloflow-cdn.pages.dev/math_create_module.js?v=33acfe614'); }; })();
+    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', './math_create_module.js'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
-    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=33acfe614'); }; })();
+    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', './stem_lab/stem_tool_eligibility.js'); }; })();
     window.__alloLazyFamilyAnnouncements = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FamilyAnnouncements', 'https://alloflow-cdn.pages.dev/family_announcements_module.js?v=fa080301'); }; })();
     window.__alloLazyMtssTriage = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MtssTriage', 'https://alloflow-cdn.pages.dev/mtss_triage_module.js?v=mt080301'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=33acfe614');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=33acfe614');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=33acfe614');
-    window.__alloLazyReadingLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=33acfe614'); }; })();
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    window.__alloLazyReadingLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ReadingLibrary', './reading_library_module.js'); }; })();
     if (window.__alloReadingLibraryRequested) window.__alloLazyReadingLibrary();
-    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=33acfe614');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=33acfe614');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=33acfe614');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=33acfe614');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=33acfe614');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=33acfe614');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=33acfe614');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=33acfe614');
+    loadModule('AccessibilityEvidence', './accessibility_evidence_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('AuditRemediator', './audit_remediator_module.js');
+    loadModule('QuizModeStrategies', './quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', './quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', './quiz_live_aggregators.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
     window.__alloLazyQuickStartWizard = function() {
-      loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=33acfe614');
+      loadModule('QuickStartWizard', './quickstart_module.js');
     };
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=33acfe614');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=33acfe614');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=33acfe614'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=33acfe614'); }; })();
-    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', 'https://alloflow-cdn.pages.dev/learning_web_explorer_module.js?v=33acfe614'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=33acfe614'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=33acfe614'); }; })();
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', './story_forge_module.js'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', './story_stage_module.js'); }; })();
+    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', './learning_web_explorer_module.js'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', './mind_map_module.js'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', './poet_tree_module.js'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    window.__alloLazyVisualPanel = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=33acfe614'); }; })();
+    window.__alloLazyVisualPanel = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualPanelModule', './visual_panel_module.js'); }; })();
     if (window.__alloVisualPanelRequested) window.__alloLazyVisualPanel();
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=33acfe614');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=33acfe614');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=6142f6d7');
-    window.__alloLazyMathFluency = () => { loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=33acfe614'); };
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=33acfe614');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=33acfe614');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=33acfe614');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=33acfe614');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    window.__alloLazyMathFluency = () => { loadModule('MathFluency', './math_fluency_module.js'); };
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('UIFontLibrary', './ui_font_library_module.js');
+    loadModule('VoiceConfig', './voice_config_module.js');
+    loadModule('CanvasTips', './canvas_tips_module.js');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=33acfe614'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', './view_kokoro_offer_modal_module.js'); }; })();
     // Process Provenance (Work Story). Stable label pin, like the storage
     // module: this file is not in build.js MODULES, so a hash pin would freeze.
     window.__alloLazyProvenance = (function() { var L=false; return function() { if(L)return; L=true; loadModule('Provenance', 'https://alloflow-cdn.pages.dev/allo_provenance_module.js?v=prov-p1'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=33acfe614');
+    loadModule('ConfirmDialog', './view_confirm_dialog_module.js');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=33acfe614');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=33acfe614'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=33acfe614'); }; })();
+    loadModule('PromptDialog', './view_prompt_dialog_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', './view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', './view_xp_modal_module.js'); }; })();
     // Large document features stay off the network until a workflow actually
     // needs them. These loaders deliberately have no permanent "requested"
     // latch: the registry owns deduplication and an exact failed-module retry.
@@ -14302,7 +14384,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (window.AlloModules && typeof window.AlloModules.createDocPipeline === 'function') return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.DocPipelineModule;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('DocPipelineModule');
-      loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=33acfe614');
+      loadModule('DocPipelineModule', './doc_pipeline_module.js');
       return true;
     };
     var __alloLazyEnsurePromises = window.__alloLazyEnsurePromises || (window.__alloLazyEnsurePromises = {});
@@ -14355,15 +14437,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Teaching-script research and editor load only when a teacher opens a plan.
     window.__alloLazyLessonTeachingScript = function() {
       const retry = name => window.__alloModuleRegistry?.[name]?.status === 'failed' && window.__alloRetryModule(name);
-      if (!window.AlloModules?.LessonTeachingScript && !retry('LessonTeachingScriptModule')) loadModule('LessonTeachingScriptModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_script_module.js?v=33acfe614');
-      if (!window.AlloModules?.LessonTeachingScriptHost && !retry('LessonTeachingScriptHostModule')) loadModule('LessonTeachingScriptHostModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_script_host_module.js?v=33acfe614');
-      if (!window.AlloModules?.LessonTeachingScriptView && !retry('ViewLessonTeachingScriptModule')) loadModule('ViewLessonTeachingScriptModule', 'https://alloflow-cdn.pages.dev/view_lesson_teaching_script_module.js?v=33acfe614');
+      if (!window.AlloModules?.LessonTeachingScript && !retry('LessonTeachingScriptModule')) loadModule('LessonTeachingScriptModule', './lesson_teaching_script_module.js');
+      if (!window.AlloModules?.LessonTeachingScriptHost && !retry('LessonTeachingScriptHostModule')) loadModule('LessonTeachingScriptHostModule', './lesson_teaching_script_host_module.js');
+      if (!window.AlloModules?.LessonTeachingScriptView && !retry('ViewLessonTeachingScriptModule')) loadModule('ViewLessonTeachingScriptModule', './view_lesson_teaching_script_module.js');
       if (!window.AlloModules?.ResourceContentFingerprint && !retry('ResourceContentFingerprint')) loadModule('ResourceContentFingerprint', 'https://alloflow-cdn.pages.dev/resource_content_fingerprint_module.js');
     };
     window.__alloLazyLessonTeachingResearch = () => {
       if (window.AlloModules?.LessonTeachingResearch) return;
       if (window.__alloModuleRegistry?.LessonTeachingResearchModule?.status === 'failed') window.__alloRetryModule('LessonTeachingResearchModule');
-      else loadModule('LessonTeachingResearchModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_research_module.js?v=33acfe614');
+      else loadModule('LessonTeachingResearchModule', './lesson_teaching_research_module.js');
     };
     window.__alloEnsureLessonTeachingScript = () => Promise.all([
       ['LessonTeachingScriptModule', 'LessonTeachingScript'],
@@ -14374,57 +14456,57 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloEnsureDocPipeline = function() {
       return window.__alloEnsureLazyModule('DocPipelineModule', '__alloLazyDocPipeline', 'createDocPipeline');
     };
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { try { window.__alloLazyDocPipeline(); } catch (_) {} if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=b3668673'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=33acfe614'); }; })();
-    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', 'https://alloflow-cdn.pages.dev/view_video_library_module.js?v=33acfe614'); }; })();
-    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', 'https://alloflow-cdn.pages.dev/view_video_ref_player_module.js?v=33acfe614'); }; })();
-    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=33acfe614'); }; })();
-    window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', 'https://alloflow-cdn.pages.dev/view_assignment_center_module.js?v=33acfe614'); }; })();
-    window.__alloLazyMailboxScriptSource = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=33acfe614'); }; })();
-    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=ed7f26f4'); }; })();
-    window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', 'https://alloflow-cdn.pages.dev/view_full_pack_run_module.js?v=dabce57a'); }; })();
-    window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=ad0cab28'); }; })();
-    window.__alloLazyCanvasRecoveryDialogView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CanvasRecoveryDialogView', 'https://alloflow-cdn.pages.dev/view_canvas_recovery_dialog_module.js?v=5f13b334'); }; })();
-    window.__alloLazyColdPathSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ColdPathSurfaces', 'https://alloflow-cdn.pages.dev/view_cold_path_surfaces_module.js?v=00e1145e'); }; })();
-    window.__alloLazyVideoStudioHostBridgeView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudioHostBridgeView', 'https://alloflow-cdn.pages.dev/video_studio_host_bridge_module.js?v=081de825'); }; })();
-    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js?v=33acfe614'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=33acfe614'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=2fc79874'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=33acfe614'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=33acfe614');
-    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=33acfe614'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { try { window.__alloLazyDocPipeline(); } catch (_) {} if(L)return; L=true; loadModule('StorybookExportModal', './view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', './view_info_modal_module.js'); }; })();
+    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', './view_video_library_module.js'); }; })();
+    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', './view_video_ref_player_module.js'); }; })();
+    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', './view_end_session_preview_module.js'); }; })();
+    window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', './view_assignment_center_module.js'); }; })();
+    window.__alloLazyMailboxScriptSource = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MailboxScriptSource', './mailbox_script_source_module.js'); }; })();
+    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', './view_live_session_dock_module.js'); }; })();
+    window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', './view_full_pack_run_module.js'); }; })();
+    window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', './view_share_session_surfaces_module.js'); }; })();
+    window.__alloLazyCanvasRecoveryDialogView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CanvasRecoveryDialogView', './view_canvas_recovery_dialog_module.js'); }; })();
+    window.__alloLazyColdPathSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ColdPathSurfaces', './view_cold_path_surfaces_module.js'); }; })();
+    window.__alloLazyVideoStudioHostBridgeView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudioHostBridgeView', './video_studio_host_bridge_module.js'); }; })();
+    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', './view_directions_result_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', './view_session_modal_module.js'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', './view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', './view_global_level_up_module.js'); }; })();
+    loadModule('HeaderBar', './view_header_module.js');
+    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', './view_guided_mode_banner_module.js'); }; })();
     if (window.__alloGuidedBannerRequested) window.__alloLazyGuidedModeBanner();
-    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=33acfe614');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=bbc2e62f');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=543494fa');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=33acfe614');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=33acfe614');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=33acfe614');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=33acfe614');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=33acfe614');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=33acfe614'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=33acfe614'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=33acfe614'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=33acfe614'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=33acfe614'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=33acfe614'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=33acfe614'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=33acfe614'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=33acfe614'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=33acfe614'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', 'https://alloflow-cdn.pages.dev/lexical_graph_module.js?v=33acfe614'); loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=33acfe614'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=33acfe614'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=33acfe614');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=33acfe614');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=33acfe614');
+    loadModule('LiveLessonRun', './view_live_lesson_run_module.js');
+    loadModule('StudentJoinPanel', './view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', './view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', './view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', './view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', './view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', './view_history_panel_module.js');
+    loadModule('FabStack', './view_fab_stack_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', './view_study_timer_modal_module.js'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', './view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', './brand_profile_editor_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', './view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', './view_learning_hub_modal_module.js'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', './music_studio/open_groove_core.js'); loadModule('OpenGrooveScheduler', './music_studio/open_groove_scheduler.js'); loadModule('OpenGrooveAudio', './music_studio/open_groove_audio.js'); loadModule('OpenGrooveStudio', './music_studio/open_groove_module.js'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', './timeline_studio_module.js'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', './lexical_graph_module.js'); loadModule('LinguaPractice', './lingua_practice_module.js'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', './test_prep_hub_module.js'); }; })();
+    loadModule('ClozeInteractionPanel', './view_cloze_interaction_panel_module.js');
+    loadModule('LabelPositions', './label_positions_module.js');
+    loadModule('UILanguageSelector', './ui_language_selector_module.js');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=33acfe614');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=33acfe614');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=33acfe614');
+    loadModule('AudioBanks', './audio_banks_module.js');
+    loadModule('VerificationPolicy', './verification_policy_module.js');
+    loadModule('DocBuilderRenderer', './doc_builder_renderer_module.js');
     window.__alloLazyPdfAuditView = function() {
       try { window.__alloLazyDocPipeline(); } catch (_) {}
       if (window.AlloModules && window.AlloModules.PdfAuditView) return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.PdfAuditView;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('PdfAuditView');
-      loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=33acfe614');
+      loadModule('PdfAuditView', './view_pdf_audit_module.js');
       return true;
     };
     window.__alloEnsurePdfAuditView = function() {
@@ -14433,14 +14515,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         window.__alloEnsureLazyModule('PdfAuditView', '__alloLazyPdfAuditView', 'PdfAuditView')
       ]).then(function(values) { return values[1]; });
     };
-    loadModule('SemanticReview', 'https://alloflow-cdn.pages.dev/semantic_review_module.js?v=33acfe614');
-    loadModule('ReviewDocumentSession', 'https://alloflow-cdn.pages.dev/review_document_session_module.js?v=33acfe614');
+    loadModule('SemanticReview', './semantic_review_module.js');
+    loadModule('ReviewDocumentSession', './review_document_session_module.js');
     window.__alloLazyExportPreviewView = function() {
       try { window.__alloLazyDocPipeline(); } catch (_) {}
       if (window.AlloModules && window.AlloModules.ExportPreviewView) return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.ExportPreviewView;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('ExportPreviewView');
-      loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=33acfe614');
+      loadModule('ExportPreviewView', './view_export_preview_module.js');
       return true;
     };
     window.__alloEnsureExportPreviewView = function() {
@@ -14449,17 +14531,24 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         window.__alloEnsureLazyModule('ExportPreviewView', '__alloLazyExportPreviewView', 'ExportPreviewView')
       ]).then(function(values) { return values[1]; });
     };
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=33acfe614');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=33acfe614');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=33acfe614');
-    loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=33acfe614');
-    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=33acfe614');
-    loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=33acfe614');
-    loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=33acfe614');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=33acfe614');
-    window.__alloEnsureSidebarPanels = () => { loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=33acfe614'); };
+    loadModule('MiscModals', './view_misc_modals_module.js');
+    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
+    loadModule('MiscPanels', './view_misc_panels_module.js');
+    loadModule('AppStyles', './app_styles_module.js');
+    loadModule('LiveAac', './live_aac_module.js');
+    window.__alloLazySharedActivity = function() {
+      if (window.AlloModules?.SharedActivity?.SharedAssignmentActivityPanel) return true;
+      const entry = window.__alloModuleRegistry?.SharedActivity;
+      if (entry?.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('SharedActivity');
+      loadModule('SharedActivity', './shared_activity_module.js');
+      return true;
+    };
+    window.__alloLazySharedActivity();
+    loadModule('GuidedModeConfig', './guided_mode_config_module.js');
+    loadModule('UIPolish', './ui_polish_module.js');
+    window.__alloEnsureSidebarPanels = () => { loadModule('SidebarPanels', './view_sidebar_panels_module.js'); };
     window.__alloEnsureSidebarPanels();
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=33acfe614');
+    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // Current module builds invoke _upgradeModuleScopeExtras after registration.
     // Keep this short poll only for stale cached module copies that predate the
@@ -14480,12 +14569,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=188e3e93');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=33acfe614');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=33acfe614');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=33acfe614');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=33acfe614');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
     // actually DOES, ~110 KB for 139 tools. The lesson-plan prompt ranks and
     // caps against this instead of dumping every tool name, and unlike
@@ -14510,23 +14599,23 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           .catch(function () {});
       } catch (_) {}
     })();
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=33acfe614');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=33acfe614');
-    loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=33acfe614');
-    loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=33acfe614');
-    loadModule('GenerationMatrix', 'https://alloflow-cdn.pages.dev/generation_matrix_module.js?v=33acfe614');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('StandardsContext', './standards_context_module.js');
+    loadModule('InstructionalContext', './instructional_context_module.js');
+    loadModule('GenerationMatrix', './generation_matrix_module.js');
     loadModule('ResourceContentFingerprint', 'https://alloflow-cdn.pages.dev/resource_content_fingerprint_module.js');
-    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=33acfe614');
+    loadModule('StandardsProvider', './standards_provider_module.js');
     // Learning Web owns durable cross-view graph snapshots; domain modules keep
     // their richer standards, audit, unit, and lexical records. The engine is
     // eager here because the Alignment Map can render before Throughline opens.
-    loadModule('ConceptGraphEngine', 'https://alloflow-cdn.pages.dev/concept_graph_engine_module.js?v=33acfe614');
-    loadModule('LearningWebRegistry', 'https://alloflow-cdn.pages.dev/learning_web_registry_module.js?v=33acfe614');
+    loadModule('ConceptGraphEngine', './concept_graph_engine_module.js');
+    loadModule('LearningWebRegistry', './learning_web_registry_module.js');
     // Driving Questions Board. The contract carries the invariants both
     // transports enforce; the view module is inert until a surface mounts it.
-    loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=33acfe614');
-    loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=33acfe614');
-    loadModule('QuestionBoardTransport', 'https://alloflow-cdn.pages.dev/question_board_transport_module.js?v=33acfe614');
+    loadModule('QuestionBoardContract', './question_board_contract_module.js');
+    loadModule('QuestionBoardView', './question_board_view_module.js');
+    loadModule('QuestionBoardTransport', './question_board_transport_module.js');
 
     // Reviewed local standards snapshots (Learning Commons v1.11.0, CC BY 4.0).
     // DELIBERATE enablement per LEARNING_COMMONS_SNAPSHOT_IMPORT.md: publishing a
@@ -14541,86 +14630,86 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       loadModule('StandardsSnapshotCcssEla', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-ela.js?v=e805fe3c7');
     }; })();
     if (window.__alloStandardsSnapshotsRequested) window.__alloLazyStandardsSnapshots();
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=33acfe614');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=33acfe614');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=33acfe614');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=33acfe614');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=33acfe614');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=33acfe614');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=33acfe614');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=33acfe614');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=5ebfbbb5');
+    loadModule('AgentCoreContracts', './agent_core_contracts_module.js');
+    loadModule('AgentCoreBlueprintService', './agent_core_blueprint_service_module.js');
+    loadModule('AgentCoreUIAdapter', './agent_core_ui_adapter_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('KaraokeAudioStoreModule', './karaoke_audio_store_module.js');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
-    loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
+    loadModule('WordTimingModule', './word_timing_module.js');
     // Unified live-session content channel (SessionTransport stage 1).
-    loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=e9c93913');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=32af9127');
-    loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=9a934766');
-    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
-    loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=02102365');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=33acfe614');
+    loadModule('SessionTransportModule', './session_transport_module.js');
+    loadModule('ReadAloudAudioServiceModule', './read_aloud_audio_service_module.js');
+    loadModule('ReadAloudArtifactContractModule', './read_aloud_artifact_contract_module.js');
+    loadModule('ReadAloudArtifactAudioModule', './read_aloud_artifact_audio_module.js');
+    loadModule('PersonaSessionArtifactModule', './persona_session_artifact_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
     // File selection must promote intake ahead of deferred background tools.
     // The registry handles in-flight deduplication and failed-load retries.
-    window.__alloLazyFileIntake = () => { loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=33acfe614'); };
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=33acfe614');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=33acfe614');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=33acfe614');
-    loadModule('MathManipulativeGraderModule', 'https://alloflow-cdn.pages.dev/math_manipulative_grader_module.js?v=33acfe614');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=33acfe614');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=33acfe614');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=7c388e37');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=33acfe614');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=33acfe614');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=33acfe614');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=33acfe614');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=33acfe614');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=33acfe614');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=8b58b318');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=33acfe614');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=33acfe614');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=33acfe614');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=33acfe614');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=33acfe614');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=bbecf772'); }; })();
+    window.__alloLazyFileIntake = () => { loadModule('MiscHandlersModule', './misc_handlers_module.js'); };
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('MathManipulativeGraderModule', './math_manipulative_grader_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', './view_simplified_module.js'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=33acfe614');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=33acfe614');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=33acfe614');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=33acfe614');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=33acfe614');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=33acfe614');
-    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=a07fa69d'); }; })();
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', './view_persona_chat_module.js'); }; })();
     if (window.__alloPersonaChatRequested) window.__alloLazyPersonaChat();
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=33acfe614');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=33acfe614');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=33acfe614');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js?v=a012c2fd');
-    loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=d9950c8d');
-    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=014b36c5');
+    loadModule('AlloCommandContext', './allo_command_context_module.js');
+    loadModule('HostHandlers', './host_handlers_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=33acfe614');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=33acfe614');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=33acfe614');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=33acfe614');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=33acfe614');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=33acfe614');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=33acfe614');
-    loadModule('ImageAssetEditorModule', 'https://alloflow-cdn.pages.dev/image_asset_editor_module.js?v=33acfe614');
-    loadModule('AltTextModule', 'https://alloflow-cdn.pages.dev/alt_text_module.js?v=33acfe614');
-    loadModule('ResourceReadAloudModule', 'https://alloflow-cdn.pages.dev/resource_read_aloud_module.js?v=33acfe614');
-    loadModule('StudioResponseModule', 'https://alloflow-cdn.pages.dev/studio_response_module.js?v=33acfe614');
-    loadModule('MemoryAidModule', 'https://alloflow-cdn.pages.dev/memory_aid_module.js?v=33acfe614');
-    loadModule('AppliedChallengeModule', 'https://alloflow-cdn.pages.dev/applied_challenge_module.js?v=33acfe614');
-    window.__alloLazyLivePolling = () => { loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=33acfe614'); };
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=33acfe614');
-    loadModule('ConceptQuestEngineModule', 'https://alloflow-cdn.pages.dev/concept_quest_engine.js?v=33acfe614');
-    loadModule('ConceptQuestTeacherModule', 'https://alloflow-cdn.pages.dev/concept_quest_teacher_module.js?v=33acfe614');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=33acfe614');
-    window.__alloLazyConceptQuestSolo = () => loadModule('ConceptQuestSoloModule', 'https://alloflow-cdn.pages.dev/concept_quest_solo_module.js?v=33acfe614');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
+    loadModule('PhaseNHelpersModule', './phase_n_misc_helpers_module.js');
+    loadModule('PhaseOHandlersModule', './phase_o_misc_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', './annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', './note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', './anchor_charts_module.js');
+    loadModule('ImageAssetEditorModule', './image_asset_editor_module.js');
+    loadModule('AltTextModule', './alt_text_module.js');
+    loadModule('ResourceReadAloudModule', './resource_read_aloud_module.js');
+    loadModule('StudioResponseModule', './studio_response_module.js');
+    loadModule('MemoryAidModule', './memory_aid_module.js');
+    loadModule('AppliedChallengeModule', './applied_challenge_module.js');
+    window.__alloLazyLivePolling = () => { loadModule('LivePolling', './live_polling_module.js'); };
+    loadModule('ConceptPictionaryModule', './concept_pictionary_module.js');
+    loadModule('ConceptQuestEngineModule', './concept_quest_engine.js');
+    loadModule('ConceptQuestTeacherModule', './concept_quest_teacher_module.js');
+    loadModule('EscapeRoomModule', './escape_room_module.js');
+    window.__alloLazyConceptQuestSolo = () => loadModule('ConceptQuestSoloModule', './concept_quest_solo_module.js');
     window.__alloLazyConnectedEscape = () => loadModule('ConnectedEscapeRoomModule', 'https://alloflow-cdn.pages.dev/connected_escape_room_module.js?v=2a8d292216');
     window.__alloLazyConnectedEscape();
-    window.__alloLazyLessonBoard = () => loadModule('LessonBoardModule', 'https://alloflow-cdn.pages.dev/lesson_board_module.js?v=1f53dc08d2');
+    window.__alloLazyLessonBoard = () => loadModule('LessonBoardModule', 'https://alloflow-cdn.pages.dev/lesson_board_module.js?v=c6633cf6a3');
     window.__alloLazyLessonBoard();
     window.__alloLessonBoardConditionalUpdate = _alloLessonBoardConditionalUpdate;
     window.__alloLessonBoardMailboxVersion = () => _alloMbBridgeState?.isTeacher ? Number(alloReadMailboxConfigCache()?.v || 0) : null;
@@ -14797,6 +14886,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_echolocation.js',
         'stem_lab/stem_tool_echotrainer.js',
         'stem_lab/stem_tool_beehive.js',
+        'stem_lab/stem_sim_meadow.js',
+        'stem_lab/stem_tool_butterfly.js',
         'stem_lab/stem_tool_moonmission.js',
         'stem_lab/stem_tool_music.js',
         'stem_lab/stem_tool_geometryworld.js',
@@ -15185,6 +15276,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           // are resolved recursively and serially, so opening one tile never
           // triggers the full STEM manifest or races a consumer ahead of its data.
           var stemModuleDependencies = {
+            'stem_lab/stem_tool_beehive.js': ['stem_lab/stem_sim_meadow.js'],
+            'stem_lab/stem_tool_butterfly.js': ['stem_lab/stem_sim_meadow.js'],
             'stem_lab/stem_tool_fieldjourneys.js': ['stem_lab/stem_tool_treelab.js'],
             'stem_lab/stem_tool_cellatlas.js': ['stem_lab/stem_data_cellatlas_muraro.js'],
             'stem_lab/stem_tool_dataplot.js': ['data_kernel_loader.js'],
@@ -16459,7 +16552,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [isChunkReaderActive]);
   useEffect(() => {
       // Reset typewriter on chunk change. Tick advance happens in the renderer's
-      // own RAF loop (see view_simplified_module.js?v=e7f6955f typewriter logic) so the char
+      // own RAF loop (see view_simplified_module.js?v=222054b7 typewriter logic) so the char
       // count doesn't depend on prop drilling another timer through the chain.
       setChunkTypewriterCharIdx(0);
   }, [chunkReaderIdx, chunkReaderMood, isChunkReaderActive]);
@@ -16727,6 +16820,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const profileInputRef = useRef(null);
   const [units, setUnits] = useState([]);
   const [activeUnitId, setActiveUnitId] = useState('all');
+  const [selectedReadingSourceId, setSelectedReadingSourceId] = useState('');
+  useEffect(() => {
+    setSelectedReadingSourceId(previous => {
+      if (!previous || previous === '__input__') return '';
+      const selected = history.find(item => String(item?.id) === previous);
+      const selectedUnit = selected?.unitId || null;
+      const scopedUnit = activeUnitId === 'uncategorized' ? null : activeUnitId;
+      return selected && (activeUnitId === 'all' || selectedUnit === scopedUnit) ? previous : '';
+    });
+  }, [activeUnitId]);
   const [newUnitName, setNewUnitName] = useState('');
   const [movingItemId, setMovingItemId] = useState(null);
   const textEditorRef = useRef(null);
@@ -18006,7 +18109,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const mailboxPanelRef = useRef(null);
   useFocusTrap(sessionStartOptionsRef, showSessionStartOptions, () => setShowSessionStartOptions(false));
   useFocusTrap(liveLessonPrepRef, showLiveLessonPrep, () => setShowLiveLessonPrep(false));
-  useFocusTrap(mailboxPanelRef, mbPanelOpen, () => setMbPanelOpen(false));
+  useFocusTrap(mailboxPanelRef, mbPanelOpen, () => closeMailboxSetup());
   const xpModalRef = useRef(null);
   useFocusTrap(xpModalRef, showXPModal, () => setShowXPModal(false));
   const studyTimerRef = useRef(null);
@@ -18405,6 +18508,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   useEffect(() => { conceptMasteryLocalRef.current = conceptMasteryLocal; }, [conceptMasteryLocal]);
   const quizResponseGateRef = useRef({ currentQuestionIndex: 0, questionCount: 0 });
   quizResponseGateRef.current = {
+      activityId: String(sessionData?.quizState?.activityId || ''),
       roundId: sessionData?.quizState?.roundId || '',
       phase: sessionData?.quizState?.phase,
       currentQuestionIndex: Number(sessionData?.quizState?.currentQuestionIndex) || 0,
@@ -18476,6 +18580,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               const pollId = payload.pollId;
               if (pollId === '__mastery__') return true;
               const gate = quizResponseGateRef.current || {};
+              if (payload.response?.assessmentActivityId && payload.response.assessmentActivityId !== gate.activityId) return false;
+              if (payload.response?.itemType === 'assessment-complete') return payload.response.assessmentActivityId === gate.activityId && payload.pollId === gate.questionCount;
               if (typeof pollId === 'string' && pollId === 'boss:' + gate.currentQuestionIndex + (gate.roundId ? ':' + gate.roundId : '') && gate.phase === 'answering') return true;
               const questionIndex = Number.isInteger(pollId)
                   ? pollId
@@ -20422,10 +20528,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isInteractiveStrandChallenge, setIsInteractiveStrandChallenge] = useState(false);
   const [isInteractiveConceptRecall3d, setIsInteractiveConceptRecall3d] = useState(false);
   const [isInteractivePalaceRecall, setIsInteractivePalaceRecall] = useState(false);
+  const [isInteractiveReflection, setIsInteractiveReflection] = useState(false);
+  const [isReflectionPlaying, setIsReflectionPlaying] = useState(false);
   const [interactiveOrganizerSync, setInteractiveOrganizerSync] = useState({ status: 'idle', type: null, activityId: null, error: null });
   const [interactiveOrganizerRetrying, setInteractiveOrganizerRetrying] = useState(false);
   const activeInteractiveOrganizerTypeRef = useRef(null);
   const lastOrganizerProgressWriteRef = useRef(null);
+  const organizerProgressScope = JSON.stringify([activeSessionAppId || appId, activeSessionCode, user?.uid, sessionData?.interactiveOrganizer?.activityId]);
+  if (lastOrganizerProgressWriteRef.scope !== organizerProgressScope) { lastOrganizerProgressWriteRef.scope = organizerProgressScope; lastOrganizerProgressWriteRef.current = null; lastOrganizerProgressWriteRef.latest = null; lastOrganizerProgressWriteRef.pending = new Map(); lastOrganizerProgressWriteRef.launchKey = null; }
   const organizerLaunchTimerRef = useRef(null);
 
   // Venn live-session payloads are bounded before entering Tier-1 session state.
@@ -20465,6 +20575,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const lastSeenInteractiveRetryRef = useRef(null);
   const interactiveOrganizerWriteQueueRef = useRef(Promise.resolve());
   const _interactiveOrganizerSetters = {
+    reflection: setIsInteractiveReflection,
     venn: setIsInteractiveVenn,
     tchart: setIsInteractiveTChart,
     cesort: setIsInteractiveCESort,
@@ -20523,29 +20634,29 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     });
     const receiptSig = receipt ? `${receipt.activityId}|${receipt.status}` : null;
     if (!receipt || lastOrganizerProgressWriteRef.current === receiptSig) return Promise.resolve(false);
-    lastOrganizerProgressWriteRef.current = receiptSig;
+    const receiptScope = lastOrganizerProgressWriteRef.scope;
     try {
       const progressRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
       const progressUpdates = { [`roster.${user.uid}.organizerProgress`]: receipt };
       if (canWriteLiveActivityProgress()) {
         progressUpdates[`roster.${user.uid}.activityProgress`] = normalizeLiveActivityProgress({ version: 1, activityId: receipt.activityId, kind: 'visual_organizer', status: receipt.status, completed: receipt.correct, total: receipt.total, at: receipt.at });
       }
-      return writeToSession(progressRef, progressUpdates)
-        .then(() => true)
-        .catch(error => { warnLog(`Organizer ${status} receipt skipped:`, error); return false; });
+      return persistOrganizerProgress(lastOrganizerProgressWriteRef, receiptSig, () => writeToSession(progressRef, progressUpdates), () => lastOrganizerProgressWriteRef.scope === receiptScope);
     } catch (error) {
       warnLog(`Organizer ${status} receipt unavailable:`, error);
       return Promise.resolve(false);
     }
   }, [isTeacherMode, user?.uid, activeSessionCode, activeSessionAppId, appId, sessionData?.interactiveOrganizer]);
-  const handleInteractiveOrganizerReady = useCallback(() => {
+  const handleInteractiveOrganizerReady = useCallback((expectedActivityId) => {
+    if (expectedActivityId && expectedActivityId !== sessionData?.interactiveOrganizer?.activityId) return Promise.resolve(false);
     _clearOrganizerLaunchTimer();
     return writeInteractiveOrganizerLaunchStatus('ready');
-  }, [_clearOrganizerLaunchTimer, writeInteractiveOrganizerLaunchStatus]);
-  const handleInteractiveOrganizerFailed = useCallback(() => {
+  }, [_clearOrganizerLaunchTimer, writeInteractiveOrganizerLaunchStatus, sessionData?.interactiveOrganizer?.activityId]);
+  const handleInteractiveOrganizerFailed = useCallback((expectedActivityId) => {
+    if (expectedActivityId && expectedActivityId !== sessionData?.interactiveOrganizer?.activityId) return Promise.resolve(false);
     _clearOrganizerLaunchTimer();
     return writeInteractiveOrganizerLaunchStatus('failed');
-  }, [_clearOrganizerLaunchTimer, writeInteractiveOrganizerLaunchStatus]);
+  }, [_clearOrganizerLaunchTimer, writeInteractiveOrganizerLaunchStatus, sessionData?.interactiveOrganizer?.activityId]);
   useEffect(() => () => _clearOrganizerLaunchTimer(), [_clearOrganizerLaunchTimer]);
   useEffect(() => {
     if (isTeacherMode) return;
@@ -20566,29 +20677,20 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // A rerender of the open organizer must not downgrade an already-opened arm
     // from `ready` back to `loading` (or re-arm an activity the student closed).
     if (remote.armedAt === lastSeenInteractiveArmRef.current && !isTargetedRetry) return;
-    _clearOrganizerLaunchTimer();
-    writeInteractiveOrganizerLaunchStatus('loading');
-    // Resource delivery can lag behind the arm. Keep reporting `loading` while the
-    // exact resource arrives, but turn a genuine delivery/readiness stall into a
-    // teacher-visible failure instead of leaving the receipt pending forever.
-    organizerLaunchTimerRef.current = {
-      poll: null,
-      timeout: setTimeout(() => handleInteractiveOrganizerFailed(), 16000),
-    };
-    // Only react when this is a NEW arm (different armedAt). If the student already
-    // dismissed this same arm event, don't re-arm — wait for the teacher to cycle.
-    // These four guards mean "this arm is not for the resource currently open".
-    // That is an ordinary state on the way to an activity (delivery lags the arm)
-    // AND the permanent state for a student who has navigated elsewhere. Leaving
-    // the 16s timer running on the way out reported a `failed` activity to the
-    // teacher's roster for a student who was simply reading something else, so
-    // each of these exits stops the clock. A later snapshot that does match
-    // re-arms it, because armedAt has not been consumed yet.
-    const _stallWatchOff = () => { _clearOrganizerLaunchTimer(); return true; };
-    if (remote.resourceId && String(generatedContent?.id || '') !== String(remote.resourceId) && _stallWatchOff()) return;
-    if (remote.structureType && String(generatedContent?.data?.structureType || '') !== String(remote.structureType) && _stallWatchOff()) return;
-    if (remote.resourceRevision && getLiveOrganizerResourceRevision(generatedContent) !== String(remote.resourceRevision) && _stallWatchOff()) return;
-    if (!getLiveOrganizerReadiness(remote.type, generatedContent).ok && _stallWatchOff()) return;
+    const launchKey = remote.activityId + '|' + (retryToken || '');
+    // Keep one deadline while the resource is being delivered; roster rerenders must not restart it.
+    if (lastOrganizerProgressWriteRef.launchKey !== launchKey) {
+      lastOrganizerProgressWriteRef.launchKey = launchKey;
+      _clearOrganizerLaunchTimer();
+      writeInteractiveOrganizerLaunchStatus('loading');
+      organizerLaunchTimerRef.current = { key: launchKey, poll: null,
+        timeout: setTimeout(() => handleInteractiveOrganizerFailed(remote.activityId), 16000) };
+    }
+    if (remote.resourceId && String(generatedContent?.id || '') !== String(remote.resourceId)) return;
+    const renderedStructureType = window.AlloModules?.ViewRenderers?.normalizeVisualOrganizerData?.(generatedContent?.data)?.structureType || generatedContent?.data?.structureType;
+    if (remote.structureType && String(renderedStructureType || '') !== String(remote.structureType)) return;
+    if (remote.resourceRevision && getLiveOrganizerResourceRevision(generatedContent) !== String(remote.resourceRevision)) return;
+    if (!getLiveOrganizerReadiness(remote.type, generatedContent).ok) return;
     let syncedGameData = null;
     if (remote.type === 'venn') {
       syncedGameData = normalizeInteractiveVennGameData(remote.gameData);
@@ -20601,20 +20703,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       Object.values(_interactiveOrganizerSetters).forEach(candidate => candidate(false));
       if (syncedGameData) setVennGameData(syncedGameData);
       setter(true);
-      _clearOrganizerLaunchTimer();
-      const requiredModule = LIVE_ORGANIZER_REQUIRED_MODULES[remote.type];
-      if (remote.type === 'venn') {
-        handleInteractiveOrganizerReady();
-      } else {
-        const startedAt = Date.now();
-        const poll = requiredModule ? setInterval(() => {
-          if (window.AlloModules && window.AlloModules[requiredModule]) handleInteractiveOrganizerReady();
-          else if (Date.now() - startedAt >= 15000) handleInteractiveOrganizerFailed();
-        }, 250) : null;
-        const timeout = setTimeout(() => handleInteractiveOrganizerFailed(), 16000);
-        organizerLaunchTimerRef.current = { poll, timeout };
-        if (requiredModule && window.AlloModules && window.AlloModules[requiredModule]) handleInteractiveOrganizerReady();
-      }
+      // Readiness is acknowledged by the mounted activity surface, never by module registration.
+      // The existing launch deadline also covers missing bundles and render failures.
+
     }
   }, [sessionData?.interactiveOrganizer?.type, sessionData?.interactiveOrganizer?.armedAt, isTeacherMode,
       sessionData?.interactiveOrganizer?.resourceId, sessionData?.interactiveOrganizer?.resourceRevision,
@@ -20980,7 +21071,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       currentGenContentRevisionRef.current = getLiveOrganizerResourceRevision(generatedContent);
   }, [generatedContent]);
   useEffect(() => {
-      if (!isFlashcardQuizMode || !generatedContent || generatedContent.type !== 'glossary' || !generatedContent?.data) {
+      if (!isInteractiveFlashcards || !isFlashcardQuizMode || !generatedContent || generatedContent.type !== 'glossary' || !generatedContent?.data) {
           return;
       }
       const currentItem = generatedContent?.data[flashcardIndex];
@@ -20998,7 +21089,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setFlashcardOptions(finalOptions);
       setFlashcardFeedback(null);
       setQuizSelectedOption(null);
-  }, [isFlashcardQuizMode, flashcardIndex, generatedContent, flashcardMode, flashcardLang]);
+  }, [isInteractiveFlashcards, isFlashcardQuizMode, flashcardIndex, generatedContent, flashcardMode, flashcardLang]);
   useEffect(() => {
       setClozeCompletedSet(new Set());
       setClozeInstanceSet(new Set());
@@ -21265,7 +21356,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const canvasRecoveryPendingSaveCountRef = useRef(0);
   const canvasRecoveryImmediateSaveRef = useRef(false);
   const canvasRecoveryWriteQueueRef = useRef(Promise.resolve());
-  const canvasRecoverySelFingerprintRef = useRef(_alloCanvasSelAuthoringFingerprint());
+  // The recovery observer initializes this when enabled; keep serialization out of render.
+  const canvasRecoverySelFingerprintRef = useRef('');
   const queueCanvasRecoveryStorage = (operation) => {
       const run = () => operation();
       const queued = canvasRecoveryWriteQueueRef.current.catch(() => undefined).then(() => {
@@ -22319,14 +22411,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                           String(data.interactiveOrganizer?.activityId || ''),
                           String(data.interactiveOrganizer?.armedAt || ''),
                           organizerResourceRevision,
+                          data.interactiveOrganizer?.retryUids?.includes(user.uid) ? String(data.interactiveOrganizer?.retryAt || '') : '',
                       ].join('|');
-                      if (organizerResourceIsCurrent
-                          && lastOrganizerPushKeyRef.current !== organizerPushKey
+                      const isNewOrganizerPush = organizerResourceIsCurrent && lastOrganizerPushKeyRef.current !== organizerPushKey;
+                      // Consume delivery even if this exact diagram was already open.
+                      // Otherwise the next roster update pulls a learner back after they leave.
+                      if (isNewOrganizerPush) lastOrganizerPushKeyRef.current = organizerPushKey;
+                      if (isNewOrganizerPush
                           && (
                           currentGenContentIdRef.current !== organizerResourceId
                           || currentGenContentRevisionRef.current !== organizerResourceRevision
                       )) {
-                          lastOrganizerPushKeyRef.current = organizerPushKey;
                           setGeneratedContent({ ...organizerResource });
                           setActiveView(organizerResource.type);
                           hydrateWordSoundsFromSync(organizerResource);
@@ -23089,7 +23184,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                 let dataToSave = item.data;
                 let parsedData = dataToSave;
                 if (typeof dataToSave === 'string') {
-                    try { parsedData = JSON.parse(dataToSave); } catch(e) { warnLog('Caught error:', e?.message || e); }
+                    if (item.type !== 'simplified' && item.dataEncoding !== 'text/v1') {
+                        try { parsedData = JSON.parse(dataToSave); } catch(e) { warnLog('Caught error:', e?.message || e); }
+                    }
                 } else {
                     parsedData = structuredClone(dataToSave);
                 }
@@ -23170,6 +23267,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                     timestamp: item.timestamp || new Date(),
                     data: JSON.stringify(parsedData) || "{}",
                 };
+                if (typeof parsedData === 'string' && (item.type === 'simplified' || item.dataEncoding === 'text/v1')) serializedItem.dataEncoding = 'json-text/v1';
+                if (item.sourceSnapshot) serializedItem.sourceSnapshot = item.sourceSnapshot;
+                if (item.sourceInstructionalText) serializedItem.sourceInstructionalText = item.sourceInstructionalText;
+                if (item.sourceFamilyId) serializedItem.sourceFamilyId = item.sourceFamilyId;
+                if (item.inputArtifactId) serializedItem.inputArtifactId = item.inputArtifactId;
+                if (item.readingSupports) serializedItem.readingSupports = item.readingSupports;
                 if (item.gameData) serializedItem.gameData = JSON.stringify(item.gameData);
                 if (item.levelCheck) serializedItem.levelCheck = item.levelCheck;
                 if (item.alignmentCheck) serializedItem.alignmentCheck = item.alignmentCheck;
@@ -23298,7 +23401,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [editTitle, setEditTitle] = useState('');
   const [gradeLevel, setGradeLevel] = useState('5th Grade');
   const [differentiationRange, setDifferentiationRange] = useState('None');
-  const [textFormat, setTextFormat] = useState('Standard Text');
+  const [textFormat, setTextFormat] = useState('Keep Source Format and Tone');
   const [leveledTextLength, setLeveledTextLength] = useState('Same as Source');
   const [studentInterests, setStudentInterests] = useState([]);
   const [interestInput, setInterestInput] = useState('');
@@ -23803,6 +23906,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           addToast('Mailbox restored on this device.', 'success');
       } catch (error) { addToast('Could not read that file: ' + ((error && error.message) || 'unknown'), 'error'); }
   }, [addToast]);
+  const qrShareMailbox = useMemo(() => {
+      const target = _alloResolveHostedShareMailbox(qrShareModal);
+      if (!target || !mbConfig?.admin || _alloCleanMailboxUrl(mbConfig.url) !== target.url) return null;
+      return { url: target.url, id: target.id, secret: target.k, admin: mbConfig.admin };
+  }, [qrShareModal, mbConfig]);
   const [mbStatus, setMbStatus] = useState('');
   const [mbBusy, setMbBusy] = useState(false);
   const [pollAsk, setPollAsk] = useState('');
@@ -23836,10 +23944,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           hosted.forEach(share => { next[share.url] = { state: 'loading' }; });
           return next;
       });
+      const connection = { url: _alloCleanMailboxUrl(mbConfig.url), admin: mbConfig.admin };
       const results = await Promise.all(hosted.map(async share => {
+          const target = _alloResolveHostedShareMailbox(share);
+          if (!target || target.url !== connection.url) return [share.url, { state: 'error' }];
           try {
-              const summary = await _alloMailboxCallWithRetry(mbConfig.url, {
-                  a: 'getactivityadmin', admin: mbConfig.admin, id: share.packId, aid: share.sharedActivity.activityId,
+              const summary = await _alloMailboxCallWithRetry(target.url, {
+                  a: 'getactivityadmin', admin: connection.admin, id: target.id, aid: share.sharedActivity.activityId,
               });
               return [share.url, { state: 'ready', summary: _alloAssignmentCenterActivityStatus(summary) }];
           } catch (_) {
@@ -23866,12 +23977,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // The Suite module owns its storage schema; this only fetches the organizer
   // summary and hands it over with the study bookkeeping from the share.
   const importSurveyShareToResearchSuite = useCallback(async (share) => {
-      if (!mbConfig?.url || !mbConfig?.admin) { addToast('Connect your Class Mailbox first.', 'info'); return; }
+      const target = _alloResolveHostedShareMailbox(share);
+      if (!target) { addToast('This saved assignment link is incomplete. Open its original link before importing results.', 'info'); return; }
+      const connection = { url: _alloCleanMailboxUrl(mbConfig?.url), admin: mbConfig?.admin };
+      if (!connection.admin || connection.url !== target.url) {
+          addToast('Reconnect the Class Mailbox used for this assignment, then import its results again.', 'info');
+          setMbUrlInput(target.url); setMbPanelOpen(true); return;
+      }
       const activityId = String(share?.sharedActivity?.activityId || '');
       const packId = String(share?.packId || '');
       if (!activityId || !packId) { addToast('This link has no importable survey.', 'info'); return; }
       try {
-          const summary = await _alloMailboxCallWithRetry(mbConfig.url, { a: 'getactivityadmin', admin: mbConfig.admin, id: packId, aid: activityId });
+          const summary = await _alloMailboxCallWithRetry(target.url, { a: 'getactivityadmin', admin: connection.admin, id: target.id, aid: activityId });
           const internals = window.AlloModules && window.AlloModules.StudentAnalyticsInternals;
           if (!internals || typeof internals.importMailboxSurveySummary !== 'function') {
               addToast('Analytics module not loaded yet - open the Assessment Center once, then retry.', 'info');
@@ -24710,8 +24827,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       const fallbackCurrent = _alloStudentSafeResources([generatedContent]);
       const resourceCandidates = _alloStudentSafeResources(history);
       if (Array.isArray(resourceIds)) {
-          const requestedIds = new Set(resourceIds.map(id => String(id || '').trim().slice(0, 160)).filter(Boolean).slice(0, 25));
-          return resourceCandidates.filter(item => requestedIds.has(String(item.id || '')));
+          const requestedIds = Array.from(new Set(resourceIds.map(id => String(id || '').trim().slice(0, 160)).filter(Boolean)));
+          if (requestedIds.length > 25) return [];
+          const resourcesById = new Map(resourceCandidates.map(item => [String(item.id || ''), item]));
+          // Selection order determines the student's opening resource. Never
+          // silently substitute a surviving subset after History has changed.
+          if (requestedIds.some(id => !resourcesById.has(id))) return [];
+          const selected = requestedIds.map(id => resourcesById.get(id));
+          // Pair after explicit selection so its matching original and curated
+          // word help travel too. Search only the student-safe lesson resources.
+          const readingContract = window.AlloModules?.InstructionalContext;
+          const paired = readingContract?.ensureReadingSourcePairs
+              ? readingContract.ensureReadingSourcePairs(selected, { history: resourceCandidates }) : selected;
+          const selectedIds = new Set(selected.map(item => String(item.id)));
+          // Keep the requested resource first for the assignment title/opening.
+          return selected.concat(paired.filter(item => !selectedIds.has(String(item.id))));
       }
       return resourceCandidates.length > 0 ? resourceCandidates : fallbackCurrent;
   }, [generatedContent, history]);
@@ -24753,17 +24883,39 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // queued host can auto-run after a late mailbox connect. Mirrors the
   // startClassSessionRef idiom above (avoids a TDZ from the forward reference).
   const hostPackOnMailboxRef = useRef(null);
-  const mbPendingHostRef = useRef(false);
-  const mbPendingHostResourceIdsRef = useRef(null);
+  const mbPendingHostRequestRef = useRef(null);
+  const mbHostRequestGenerationRef = useRef(0);
+  const mbSetupConnectPromiseRef = useRef(null);
+  const [pendingMailboxShare, setPendingMailboxShare] = useState(null);
+  const clearPendingMailboxShare = useCallback(() => {
+      const hadPending = !!mbPendingHostRequestRef.current;
+      mbHostRequestGenerationRef.current += 1;
+      mbPendingHostRequestRef.current = null;
+      setPendingMailboxShare(null);
+      return hadPending;
+  }, []);
+  const cancelPendingMailboxShare = useCallback(() => {
+      if (clearPendingMailboxShare()) addToast('Pending share cancelled. Connecting your mailbox later will not upload this assignment.', 'info');
+  }, [clearPendingMailboxShare, addToast]);
+  const closeMailboxSetup = useCallback(() => {
+      cancelPendingMailboxShare();
+      setMbPanelOpen(false);
+  }, [cancelPendingMailboxShare]);
+  useEffect(() => () => {
+      mbHostRequestGenerationRef.current += 1;
+      mbPendingHostRequestRef.current = null;
+  }, []);
   // Self-contained variant: no Firestore write, no student auth — the whole
   // pack is compressed into the URL fragment and decoded by the student shell.
   // This is the pathway that works when the class backend (e.g. Gemini
   // Canvas-managed Firebase) refuses anonymous student devices.
-  const createSelfContainedHomeworkLink = useCallback(async (resourceIds = null) => {
-      const selectedResourceIds = Array.isArray(resourceIds) ? resourceIds : null;
+  const createSelfContainedHomeworkLink = useCallback(async (resourceIds = null, options = {}) => {
+      const selectedResourceIds = Array.isArray(resourceIds) ? resourceIds.slice() : null;
+      clearPendingMailboxShare();
+      const generation = mbHostRequestGenerationRef.current;
       try {
-          const built = await buildAssignmentPackEncoded({ resourceIds: selectedResourceIds });
-          if (!built) return null;
+          const built = await buildAssignmentPackEncoded({ resourceIds: selectedResourceIds, aiPolicy: options?.aiPolicy });
+          if (generation !== mbHostRequestGenerationRef.current || !built) return null;
           const shareUrl = _buildAlloPackShareUrl(built.encoded, built.aiPolicy);
           if (!shareUrl) {
               addToast('Self-contained link is unavailable from this host. Configure a student app URL first.', 'error');
@@ -24778,7 +24930,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               if (mbConfig?.url && mbConfig?.admin) {
                   addToast('This activity is too large for a self-contained link — hosting it on your Class Mailbox instead (images included).', 'info');
               }
-              return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current(selectedResourceIds) : null;
+              return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current(selectedResourceIds, { includeSharedActivity: false, preparedPack: built }) : null;
           }
           copyToClipboard(shareUrl);
           openQrShareModal({
@@ -24789,6 +24941,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               noQr: shareUrl.length > ALLO_QR_PACK_QR_MAX_CHARS,
               sizeChars: shareUrl.length,
               resourceTitles: built.resourceTitles,
+              deliverySummary: built.deliverySummary,
               createdAt: built.createdAt,
               expiresAt: built.expiresAt,
               aiPolicy: built.aiPolicy,
@@ -24796,86 +24949,119 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           addToast('Self-contained homework link ready — students need no account and nothing is stored online.', 'success');
           return shareUrl;
       } catch (e) {
+          if (generation !== mbHostRequestGenerationRef.current) return null;
           warnLog('Self-contained homework link failed:', e);
           addToast('Could not create a self-contained homework link.', 'error');
           return null;
       }
-  }, [buildAssignmentPackEncoded, copyToClipboard, mbConfig, openQrShareModal]);
-  // Mailbox-hosted variant: the full pack (images included) is chunk-uploaded
-  // to the teacher's own Drive via their mailbox; the QR carries only a tiny
-  // pointer, so it is always small enough to print.
-  const hostPackOnMailbox = useCallback(async (resourceIds = null) => {
-      const selectedResourceIds = Array.isArray(resourceIds) ? resourceIds : null;
-      const requiredMailboxVersion = (sharedAssignmentActivity.enabled && sharedAssignmentActivity.type === 'survey') ? 13
-          : sharedAssignmentActivity.enabled ? 11 : 9;
-      if (mbConfig?.url && mbConfig?.admin && Number(mbConfig.v || 0) < requiredMailboxVersion) {
-          addToast(`Update your Class Mailbox script to v${requiredMailboxVersion} before hosting ${sharedAssignmentActivity.enabled ? 'a shared class activity' : 'expiring homework'}.`, 'info');
-          setMbPanelOpen(true);
-          return null;
-      }
-      if (!mbConfig?.url || !mbConfig?.admin) {
-          mbPendingHostRef.current = true; // auto-host once the connect self-test lands
-          mbPendingHostResourceIdsRef.current = selectedResourceIds;
-          addToast('Connect your Class Mailbox first — open "Live class without accounts" for the one-time setup.', 'info');
-          setMbPanelOpen(true);
-          return null;
-      }
+  }, [buildAssignmentPackEncoded, copyToClipboard, mbConfig, openQrShareModal, clearPendingMailboxShare]);
+  // Hosting prepares one immutable student packet before asking for setup.
+  // A queued packet resumes only from an explicit successful setup connection.
+  const hostPackOnMailbox = useCallback(async (resourceIds = null, options = {}) => {
+      const selectedResourceIds = Array.isArray(resourceIds) ? resourceIds.slice() : null;
+      const shareOptions = options && typeof options === 'object' ? options : {};
+      if (shareOptions.pendingRequest && mbPendingHostRequestRef.current !== shareOptions.pendingRequest) return null;
+      if (!shareOptions.pendingRequest) clearPendingMailboxShare();
+      const generation = mbHostRequestGenerationRef.current;
+      const connection = shareOptions.mailboxConfig || mbConfig;
+      const preparedPack = shareOptions.preparedPack || null;
+      const includeSharedActivity = shareOptions.includeSharedActivity !== false;
+      const researchMeta = Object.prototype.hasOwnProperty.call(shareOptions, 'researchMeta')
+          ? shareOptions.researchMeta : (sharedAssignmentActivity && sharedAssignmentActivity._researchMeta) || null;
+      let uploading = false;
       try {
-          const built = await buildAssignmentPackEncoded({ includeSharedActivity: true, resourceIds: selectedResourceIds });
-          if (!built) return null;
+          const built = preparedPack || await buildAssignmentPackEncoded({ includeSharedActivity, resourceIds: selectedResourceIds, aiPolicy: shareOptions.aiPolicy });
+          if (generation !== mbHostRequestGenerationRef.current || !built) return null;
+          if (typeof built.encoded !== 'string' || !built.encoded || !Array.isArray(built.sharedActivities)
+              || !Number.isFinite(Date.parse(built.expiresAt)) || Date.parse(built.expiresAt) <= Date.now()) {
+              clearPendingMailboxShare();
+              addToast('This prepared assignment is no longer ready to share. Create a fresh link from History.', 'info');
+              return null;
+          }
+          const hasSharedActivity = built.sharedActivities.length > 0;
+          const hasSurvey = built.sharedActivities.some(activity => activity.type === 'survey');
+          const requiredMailboxVersion = hasSurvey ? 13 : hasSharedActivity ? 11 : 9;
+          if (!connection?.url || !connection?.admin || Number(connection.v || 0) < requiredMailboxVersion) {
+              mbPendingHostRequestRef.current = {
+                  resourceIds: selectedResourceIds, generation,
+                  options: { includeSharedActivity, aiPolicy: built.aiPolicy, preparedPack: built, researchMeta: hasSharedActivity ? researchMeta : null },
+              };
+              setPendingMailboxShare({
+                  title: String(built.title || 'Homework assignment').slice(0, 140),
+                  resourceCount: built.count, aiPolicy: built.aiPolicy,
+                  sharedActivityTitle: hasSharedActivity ? built.sharedActivities[0].prompt || 'Shared class activity' : '',
+                  requiredMailboxVersion,
+              });
+              if (connection?.url) setMbUrlInput(connection.url);
+              addToast(connection?.url && connection?.admin
+                  ? 'Update your Class Mailbox script, then use Connect and share to send the waiting assignment.'
+                  : 'Your assignment is ready. Connect and share from Class Mailbox setup, or cancel the pending share.', 'info');
+              setMbPanelOpen(true);
+              return null;
+          }
+          // Cancellation/supersession is checked after every asynchronous build
+          // and immediately before the first external write.
+          if (generation !== mbHostRequestGenerationRef.current) return null;
+          mbPendingHostRequestRef.current = null;
+          setPendingMailboxShare(null);
+          uploading = true;
           setMbBusy(true);
           const id = 'PK-' + generateUUID();
           const secret = _alloRandomToken(16);
           const parts = _alloSplitPackChunks(built.encoded);
           for (let i = 0; i < parts.length; i += 1) {
-              await _alloMailboxCall(mbConfig.url, { a: 'putpack', admin: mbConfig.admin, id, k: secret, part: i + 1, of: parts.length, title: built.title, expiresAt: built.expiresAt, activities: built.sharedActivities, data: parts[i] });
+              await _alloMailboxCall(connection.url, { a: 'putpack', admin: connection.admin, id, k: secret, part: i + 1, of: parts.length, title: built.title, expiresAt: built.expiresAt, activities: built.sharedActivities, data: parts[i] });
           }
-          const shareUrl = _buildAlloMailboxEntryUrl('allo_mbp', { u: mbConfig.url, id, k: secret, aiPolicy: built.aiPolicy });
+          const shareUrl = _buildAlloMailboxEntryUrl('allo_mbp', { u: connection.url, id, k: secret, aiPolicy: built.aiPolicy });
           if (!shareUrl) throw new Error('no student app URL configured');
           copyToClipboard(shareUrl);
           openQrShareModal({
-              type: 'assignment-pack-hosted',
-              title: built.title,
-              url: shareUrl,
-              resourceCount: built.count,
-              noQr: false,
-              sizeChars: shareUrl.length,
-              resourceTitles: built.resourceTitles,
-              createdAt: built.createdAt,
-              expiresAt: built.expiresAt,
-              packId: id,
-              packSecret: secret,
-              sharedActivity: built.sharedActivities[0] || null,
-              // Study bookkeeping (population/timepoint/item-id map) for the
-              // results importer. Client-side only: respondents never see it.
-              researchMeta: (sharedAssignmentActivity && sharedAssignmentActivity._researchMeta) || null,
-              sharedActivityEnabled: built.sharedActivities.length > 0,
-              aiPolicy: built.aiPolicy,
+              type: 'assignment-pack-hosted', title: built.title, url: shareUrl,
+              resourceCount: built.count, noQr: false, sizeChars: shareUrl.length,
+              resourceTitles: built.resourceTitles, deliverySummary: built.deliverySummary,
+              createdAt: built.createdAt, expiresAt: built.expiresAt,
+              packId: id, packSecret: secret, sharedActivity: built.sharedActivities[0] || null,
+              researchMeta: hasSharedActivity ? researchMeta : null,
+              sharedActivityEnabled: hasSharedActivity, aiPolicy: built.aiPolicy,
           });
           addToast('Homework hosted on your Class Mailbox — small printable QR, images included.', 'success');
-          setMbBusy(false);
           return shareUrl;
       } catch (e) {
+          if (!uploading && generation !== mbHostRequestGenerationRef.current) return null;
           warnLog('Mailbox pack hosting failed', e);
           addToast('Could not host on the mailbox: ' + (e?.message || e), 'error');
-          setMbBusy(false);
           return null;
+      } finally {
+          if (uploading) setMbBusy(false);
       }
-  }, [mbConfig, buildAssignmentPackEncoded, copyToClipboard, openQrShareModal, sharedAssignmentActivity.enabled]);
-  // Keep the host-callback ref fresh so the self-contained builder's oversize
-  // reroute (above) always calls the current hostPackOnMailbox.
+  }, [mbConfig, buildAssignmentPackEncoded, copyToClipboard, openQrShareModal, sharedAssignmentActivity, clearPendingMailboxShare]);
   useEffect(() => { hostPackOnMailboxRef.current = hostPackOnMailbox; });
-  // Connect-then-host: if a large pack asked to be hosted while the mailbox was
-  // not yet connected, hostPackOnMailbox queued the request and opened setup.
-  // Once the connect self-test lands (mbConfig gains url+admin), run it once.
-  useEffect(() => {
-      if (mbPendingHostRef.current && mbConfig?.url && mbConfig?.admin) {
-          mbPendingHostRef.current = false;
-          const pendingResourceIds = mbPendingHostResourceIdsRef.current;
-          mbPendingHostResourceIdsRef.current = null;
-          if (hostPackOnMailboxRef.current) hostPackOnMailboxRef.current(pendingResourceIds);
-      }
-  }, [mbConfig]);
+  const connectMailboxForSetup = useCallback(() => {
+      if (mbSetupConnectPromiseRef.current) return mbSetupConnectPromiseRef.current;
+      const request = mbPendingHostRequestRef.current;
+      const generation = mbHostRequestGenerationRef.current;
+      const attempt = (async () => {
+          try {
+              const connected = await connectMailbox();
+              if (connected?.url && connected?.admin && request
+                  && generation === mbHostRequestGenerationRef.current
+                  && mbPendingHostRequestRef.current === request && hostPackOnMailboxRef.current) {
+                  await hostPackOnMailboxRef.current(request.resourceIds, {
+                      ...request.options, pendingRequest: request, mailboxConfig: connected,
+                  });
+              }
+              return connected;
+          } catch (error) {
+              warnLog('Mailbox setup connection failed', error);
+              addToast('Could not finish connecting the mailbox. Try connecting again when you are ready.', 'warning');
+              return null;
+          } finally {
+              mbSetupConnectPromiseRef.current = null;
+          }
+      })();
+      mbSetupConnectPromiseRef.current = attempt;
+      return attempt;
+  }, [connectMailbox, addToast]);
   const reportMailboxImageProgress = useCallback(async (progress) => {
       if (!mbStudent || isTeacherMode || !activeSessionCode || !user?.uid || !canWriteMailboxImageDelivery()) return;
       const receipt = normalizeMailboxImageDelivery({
@@ -25006,9 +25192,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [addToast]);
   const createHomeworkAssignmentLink = useCallback(async (resourceIds = null) => {
       const selectedResourceIds = Array.isArray(resourceIds) ? resourceIds : null;
+      const requestedIds = selectedResourceIds && Array.from(new Set(selectedResourceIds.map(id => String(id || '').trim().slice(0, 160)).filter(Boolean)));
+      if (requestedIds && requestedIds.length > 25) {
+          addToast('Select at most 25 resources for one homework link. Create another link for the remaining resources.', 'info');
+          return null;
+      }
       const resourcesToAssign = resolveAssignmentResources(selectedResourceIds);
-      if (!resourcesToAssign.length) {
-          addToast('Create or restore a teacher resource before making a homework QR.', 'info');
+      if (selectedResourceIds?.length && (!requestedIds.length || requestedIds.some(id => !resourcesToAssign.some(item => String(item.id) === id)))) {
+          addToast('These selected resources are no longer available. Select the resources again in History before creating another link.', 'info');
           return null;
       }
       // Shared assignments need durable state while the teacher is offline.
@@ -25016,6 +25207,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       // because either route would produce a QR whose class cloud cannot work.
       if (sharedAssignmentActivity.enabled) {
           return hostPackOnMailbox(selectedResourceIds);
+      }
+      if (!resourcesToAssign.length) {
+          addToast('Create or restore a teacher resource before making a homework QR.', 'info');
+          return null;
       }
       // Canvas-managed Firestore accepts the TEACHER's write but refuses the
       // anonymous STUDENT read (proven on a real phone 2026-07-09), so a
@@ -25033,6 +25228,24 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           return createSelfContainedHomeworkLink(selectedResourceIds);
       }
       try {
+          const studentResources = resourcesToAssign.map(item => _alloSerializeResourceForStudentPack(item)).filter(Boolean);
+          if (!studentResources.length || (selectedResourceIds && resourcesToAssign.some(item => !studentResources.some(resource => String(resource.id) === String(item.id))))) {
+              addToast('Some selected resources cannot be shared with students. Choose different resources in History before creating a link.', 'info');
+              return null;
+          }
+          // The live-session budget may trim resources or replace a reading
+          // with a placeholder. Homework must retain the complete assignment.
+          const needsFullPack = prepared => prepared.droppedCount > 0 || prepared.overLimit
+              || (prepared.resources || []).some(item => item.syncTruncated === true);
+          const preflight = prepareSessionResourcesForWrite(studentResources);
+          if (needsFullPack(preflight)) {
+              addToast('This assignment needs a full resource pack. Preparing a link that keeps every selected resource.', 'info');
+              return createSelfContainedHomeworkLink(selectedResourceIds);
+          }
+          if (!preflight.resources?.length || studentResources.some(item => !preflight.resources.some(resource => String(resource.id) === String(item.id)))) {
+              addToast('Some selected resources cannot be shared with students. Choose different resources in History before creating a link.', 'info');
+              return null;
+          }
           const assignmentId = 'HW-' + generateUUID();
           const title = String((selectedResourceIds ? resourcesToAssign[0]?.title : (sourceTopic || generatedContent?.title)) || resourcesToAssign[0]?.title || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
           const shareUrl = buildAlloShareUrl({ allo_assignment: assignmentId, allo_host: appId, allo_ai: studentAiPolicyForShare === 'student-byok' ? 'byok' : 'off' });
@@ -25040,10 +25253,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               addToast('Homework QR is unavailable from this host. Configure a student app URL or use export sharing.', 'error');
               return null;
           }
-          const uploadedResources = await uploadSessionAssets(appId, resourcesToAssign, assignmentId);
-          const prepared = prepareSessionResourcesForWrite(uploadedResources || resourcesToAssign);
-          const assignmentRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', assignmentId);
+          const uploadedResources = await uploadSessionAssets(appId, studentResources, assignmentId);
+          const prepared = prepareSessionResourcesForWrite(uploadedResources || studentResources);
+          if (needsFullPack(prepared)) {
+              addToast('This assignment needs a full resource pack. Preparing a link that keeps every selected resource.', 'info');
+              return createSelfContainedHomeworkLink(selectedResourceIds);
+          }
           const resources = prepared.resources || [];
+          if (!resources.length || studentResources.some(item => !resources.some(resource => String(resource.id) === String(item.id)))) {
+              addToast('Some selected resources cannot be shared with students. Choose different resources in History before creating a link.', 'info');
+              return null;
+          }
+          const assignmentRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', assignmentId);
           await setDoc(assignmentRef, stripUndefined({
               kind: 'assignment',
               assignmentId,
@@ -25067,11 +25288,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               version: 1,
           }));
           copyToClipboard(shareUrl);
-          openQrShareModal({ type: 'assignment', title, url: shareUrl, resourceCount: resources.length || resourcesToAssign.length, resourceTitles: resourcesToAssign.map(item => item.title || item.type || 'Untitled resource'), createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString(), assignmentId, hostAppId: appId, aiPolicy: studentAiPolicyForShare });
+          openQrShareModal({ type: 'assignment', title, url: shareUrl, resourceCount: resources.length, resourceTitles: resources.map(item => item.title || item.type || 'Untitled resource'), deliverySummary: _alloSharedActivityModule()?.describeAssignmentDelivery?.(resources, resources[0]?.id, selectedResourceIds), createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString(), assignmentId, hostAppId: appId, aiPolicy: studentAiPolicyForShare });
           addToast(studentAiPolicyForShare === 'student-byok' ? 'Homework QR ready. Students may connect their own tested AI provider.' : 'Homework QR ready. Student AI stays off.', 'success');
-          if (prepared.droppedCount > 0 || prepared.overLimit) {
-              addToast('Some older resources were trimmed to keep the QR assignment reliable.', 'info');
-          }
           return shareUrl;
       } catch (e) {
           warnLog('Homework QR creation failed:', e);
@@ -26468,6 +26686,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // Storm budget (2026-09-02): minutes of deliberate rate-limit waiting one remediation run may spend
   // before the AI passes pause at the last verified version (0 = keep waiting, the pre-09-02 behaviour).
   // Read by the pipeline via window.__docPipelineState.pdfStormBudgetMinutes.
+  const [pdfExtraRequestPacing, setPdfExtraRequestPacing] = useState(() => { try { const v = localStorage.getItem('alloflow_pdf_extra_pacing'); return v === null ? _isCanvasEnv : v !== 'off'; } catch { return _isCanvasEnv; } });
+  React.useEffect(() => { try { localStorage.setItem('alloflow_pdf_extra_pacing', pdfExtraRequestPacing ? 'on' : 'off'); } catch {} }, [pdfExtraRequestPacing]);
   const [pdfStormBudgetMinutes, setPdfStormBudgetMinutes] = useState(() => { try { const v = localStorage.getItem('alloflow_pdf_storm_budget_min'); return (v == null || v === '') ? 18 : Math.max(0, Number(v) || 0); } catch { return 18; } });
   React.useEffect(() => { try { localStorage.setItem('alloflow_pdf_storm_budget_min', String(Number(pdfStormBudgetMinutes) || 0)); } catch {} }, [pdfStormBudgetMinutes]);
   // Run history (2026-06-10): one summary row per completed remediation.
@@ -26901,6 +27121,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     includeBrainstorm: false,
     includeLessonPlan: true,
     includeSimplified: true,
+    includeOriginalReading: true,
     // Worksheet-only variant of includeSimplified: blank the glossary terms in
     // the passage and print a word bank. Off by default; the checkbox only
     // appears for a Worksheet export that has a glossary to blank against.
@@ -27076,7 +27297,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // Mutations identify the artifact, never whichever view happens to be open
   // when an asynchronous operation finishes. Updaters must be pure.
   const _resourceMutationStateRef = useRef({});
-  _resourceMutationStateRef.current = { history, generatedContent, inputText };
+  _resourceMutationStateRef.current = { history, generatedContent, inputText, isTeacherMode };
   const onUpdateResource = useCallback((...__a) => _alloHostHandlers().onUpdateResource(...__a), [setHistory, setGeneratedContent]);
   const handleNoteUpdate = useCallback((key, value) => {
     if (!generatedContent || !['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(generatedContent.type)) return;
@@ -29314,6 +29535,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // majority union of 3 wrappers).
   // Built fresh per call; module destructuring ignores unused keys.
   const _alloGenerationHelpersDeps = () => ({
+      selectedReadingSourceId, activeUnitId,
       // currentUiLanguage travels with translationMode as DATA for the
       // translation resolver only ('auto' glosses into the language the
       // teacher reads). It is not a generation input on its own; the content
@@ -30341,6 +30563,7 @@ const parseTaggedContent = (text) => {
     return controller ? controller.generate(current.generatedContent.id, settings) : Promise.resolve({ ok: false, error: 'Teaching-script tools are still loading. Retry the tools.' });
   };
   const onCancelTeachingScript = planId => teachingScriptControllerRef.current?.cancel(planId);
+  const onDeleteTeachingScript = (planId, versionId, expectedVersion) => getTeachingScriptController()?.deleteVersion(planId, versionId, expectedVersion) || { ok: false, error: 'Teaching-script tools are still loading.' };
   const onUpdateTeachingScript = (planId, versionId, steps, expectedSteps) => getTeachingScriptController()?.saveEdits(planId, versionId, steps, expectedSteps) || { ok: false, error: 'Teaching-script tools are still loading.' };
   const teachingScriptPlan = history.find(item => item?.type === 'lesson-plan' && String(item.id) === String(generatedContent?.id)) || generatedContent;
   const teachingScriptMaterials = teachingScriptLoadState === 'ready' && window.AlloModules?.LessonTeachingScriptHost
@@ -30950,9 +31173,9 @@ const parseTaggedContent = (text) => {
     throw new Error("[generateBingoCards] PureHelpers module not loaded - reload the page");
   };
   const handleGenerateBingo = (...__a) => _alloHostHandlers().handleGenerateBingo(...__a);
-  const generateWordSearch = (targetLang = wordSearchLang) => {
+  const generateWordSearch = (targetLang = wordSearchLang, activityData) => {
     const _m = window.AlloModules && window.AlloModules.TextUtilityHelpers;
-    if (_m && typeof _m.generateWordSearch === "function") return _m.generateWordSearch(targetLang, _alloTextUtilityHelpersDeps());
+    if (_m && typeof _m.generateWordSearch === "function") return _m.generateWordSearch(targetLang, _alloTextUtilityHelpersDeps(), activityData);
     throw new Error("[generateWordSearch] TextUtilityHelpers module not loaded - reload the page");
   };
   const toggleLetterSelection = (...__a) => _alloHostHandlers().toggleLetterSelection(...__a);
@@ -31388,9 +31611,9 @@ const parseTaggedContent = (text) => {
     if (_m && typeof _m.playSequence === "function") return _m.playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, preloadedAudio, retryCount, speakerName, _alloPhaseKHelpersDeps(), contentId);
     throw new Error("[playSequence] PhaseKHelpers module not loaded - reload the page");
   };
-  const handleSpeak = async (text, contentId, startIndex = 0, forceRestart = false) => {
+  const handleSpeak = async (text, contentId, startIndex = 0, forceRestart = false, languageOverride = null) => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
-    if (_m && typeof _m.handleSpeak === "function") return _m.handleSpeak(text, contentId, startIndex, _alloPhaseKHelpersDeps(), forceRestart);
+    if (_m && typeof _m.handleSpeak === "function") return _m.handleSpeak(text, contentId, startIndex, languageOverride ? { ..._alloPhaseKHelpersDeps(), leveledTextLanguage: languageOverride } : _alloPhaseKHelpersDeps(), forceRestart);
     throw new Error("[handleSpeak] PhaseKHelpers module not loaded - reload the page");
   };
   useEffect(() => {
@@ -32411,7 +32634,7 @@ const parseTaggedContent = (text) => {
     pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
     pdfDocumentEpoch: pdfDocumentEpochLive,
     pdfAutoSaveProject,
-    pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfTargetScore, pdfOcrLanguage, pdfStormBudgetMinutes,
+    pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfTargetScore, pdfOcrLanguage, pdfExtraRequestPacing, pdfStormBudgetMinutes,
     pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
     pdfBatchQueue, pdfBatchSummary, pdfExperimentMode, pdfExperimentRuns,
     customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef,
@@ -35116,11 +35339,12 @@ const parseTaggedContent = (text) => {
     // the share QR; the page falls back to the encrypted file download whenever
     // the POST fails, the share expired, or no capability was available.
     const _hostedSubmitShare = (recentQrShares || []).filter(share => share?.type === 'assignment-pack-hosted'
-        && share.packId && share.packSecret && !share.revokedAt
+        && share.packId && share.packSecret && !share.revokedAt && _alloResolveHostedShareMailbox(share)
         && (!share.expiresAt || Date.parse(share.expiresAt) > Date.now()))
         .sort((a, b) => ((Date.parse(b?.createdAt || '') || 0) - (Date.parse(a?.createdAt || '') || 0)))[0] || null;
-    const _mailboxSubmitTarget = (mbConfig?.url && _hostedSubmitShare)
-        ? { url: mbConfig.url, id: _hostedSubmitShare.packId, k: _hostedSubmitShare.packSecret,
+    const _savedSubmitTarget = _alloResolveHostedShareMailbox(_hostedSubmitShare);
+    const _mailboxSubmitTarget = _savedSubmitTarget
+        ? { ..._savedSubmitTarget,
             ...(_hostedSubmitShare.expiresAt ? { expiresAt: _hostedSubmitShare.expiresAt } : {}) }
         : null;
     const cfgBase = (!isWorksheet && rosterKey?.submissionKey?.publicJwk)
@@ -35583,10 +35807,21 @@ const parseTaggedContent = (text) => {
   // followed on Firebase but never on mailbox sync-mode.
   const _alloFollowResourceLive = (...__a) => _alloHostHandlers()._alloFollowResourceLive(...__a);
   // Resource-opening behavior belongs to MiscHandlers; the host supplies current React state.
+  const pendingQrAssignmentOpenGenerationRef = useRef(0);
   const handleRestoreView = (item, options = {}) => {
       const moduleApi = window.AlloModules && window.AlloModules.MiscHandlers;
       if (moduleApi && typeof moduleApi.handleRestoreView === 'function') {
-          return moduleApi.handleRestoreView(item, options, _alloMiscHandlersDeps());
+          const { preservePendingAssignment, ...restoreOptions } = options || {};
+          const result = moduleApi.handleRestoreView(item, restoreOptions, _alloMiscHandlersDeps());
+          // Explicit rejection leaves waiting homework recoverable; undefined
+          // remains the legacy success result of existing resource openers.
+          if (result !== false && preservePendingAssignment !== true) {
+              // A successful explicit open supersedes homework still waiting
+              // for its opener, including before the effect cleanup commits.
+              pendingQrAssignmentOpenGenerationRef.current += 1;
+              setPendingQrAssignmentResource(null);
+          }
+          return result;
       }
       try { window.__alloRetryFailedModules?.(); } catch (_) {}
       throw new Error('[handleRestoreView] MiscHandlers module not loaded - reload the page');
@@ -35612,8 +35847,52 @@ const parseTaggedContent = (text) => {
   // END LEARNING_WEB_RESOURCE_OPEN_BRIDGE
   useEffect(() => {
       if (!pendingQrAssignmentResource || isTeacherMode) return;
-      handleRestoreView(pendingQrAssignmentResource);
-      setPendingQrAssignmentResource(null);
+      const resource = pendingQrAssignmentResource;
+      let cancelled = false;
+      const openGeneration = pendingQrAssignmentOpenGenerationRef.current;
+      const isCurrent = () => !cancelled && openGeneration === pendingQrAssignmentOpenGenerationRef.current;
+      let opened = false;
+      let restoreFailed = false;
+      const openWhenReady = () => {
+          if (!isCurrent() || opened || restoreFailed) return false;
+          const api = window.AlloModules?.MiscHandlers;
+          if (typeof api?.handleRestoreView !== 'function') return false;
+          try {
+              const result = handleRestoreView(resource, { suppressLiveFollow: true, preservePendingAssignment: true });
+              if (result === false) throw new Error('Homework resource was rejected by the opener');
+              opened = true;
+              setPendingQrAssignmentResource(current => current === resource ? null : current);
+              return true;
+          } catch (error) {
+              restoreFailed = true;
+              warnLog('Homework resource could not be opened:', error);
+              addToast('Homework is still available in History, but could not be opened. Select it there to retry, or reload this homework link.', 'warning');
+              return false;
+          }
+      };
+      if (openWhenReady() || restoreFailed) return;
+      // Fragment packs can decode before the deferred resource opener loads.
+      // Promote that one dependency and keep the packet intact through retries.
+      addToast('Opening homework tools…', 'info');
+      const onModuleChange = () => { openWhenReady(); };
+      window.addEventListener('alloflow:module-registry-changed', onModuleChange);
+      Promise.resolve().then(() => {
+          if (!isCurrent() || opened) return;
+          if (typeof window.__alloEnsureLazyModule !== 'function') throw new Error('Homework loader is not ready');
+          return window.__alloEnsureLazyModule('MiscHandlersModule', '__alloLazyFileIntake', 'MiscHandlers');
+      }).then(() => {
+          if (isCurrent() && !opened && !restoreFailed && !openWhenReady()) throw new Error('Homework opener is not ready');
+      }).catch(error => {
+          if (!isCurrent() || opened || restoreFailed) return;
+          warnLog('Homework tools are not ready:', error);
+          addToast('Homework is still available in History. Use Retry in the loading notice when available, or reload this homework link.', 'warning');
+      });
+      // The bounded loader stops waiting on failure/timeout. Keep this listener
+      // so the existing Retry control can finish the same pending open later.
+      return () => {
+          cancelled = true;
+          window.removeEventListener('alloflow:module-registry-changed', onModuleChange);
+      };
   }, [pendingQrAssignmentResource, isTeacherMode]);
   useEffect(() => {
       let cancelled = false;
@@ -36096,7 +36375,7 @@ const parseTaggedContent = (text) => {
               );
               if (cancelled) return;
               const packet = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
-              _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment-pack-hosted', workStory: packet && packet.workStory === true });
+              if (cancelled) return;
               if (_alloAssignmentIsExpired(packet)) throw new Error('Assignment expired');
               const sharedActivity = (Array.isArray(packet?.sharedActivities) ? packet.sharedActivities : []).find(candidate => (
                   candidate
@@ -36112,18 +36391,20 @@ const parseTaggedContent = (text) => {
                       prompt: String(sharedActivity.prompt).slice(0, 240),
                       minParticipants: Math.max(3, Math.min(10, Number(sharedActivity.minParticipants) || 3)),
                   } : null);
+              const rawResources = Array.isArray(packet?.resources)
+                  ? _alloStudentSafeResources(packet.resources)
+                  : [];
+              if (!rawResources.length && !normalizedSharedActivity) throw new Error('Pack has no resources or shared activity');
+              _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment-pack-hosted', workStory: packet && packet.workStory === true });
               setSharedHostedActivity(normalizedSharedActivity ? {
                   activity: normalizedSharedActivity,
                   mailbox: { url: entry.u, id: entry.id, secret: String(entry.k) },
               } : null);
-              const rawResources = Array.isArray(packet?.resources)
-                  ? _alloStudentSafeResources(packet.resources)
-                  : [];
-              if (!rawResources.length) throw new Error('Pack has no resources');
               setHistory(rawResources);
               const firstId = packet.currentResourceId || rawResources[0]?.id;
               const firstResource = rawResources.find(item => item && item.id === firstId) || rawResources[0];
-              setPendingQrAssignmentResource(firstResource);
+              setPendingQrAssignmentResource(firstResource || null);
+              if (!rawResources.length) setShowSharedHostedActivity(true);
               addToast('Homework loaded: ' + (packet.title || hostedTitle || 'AlloFlow assignment'), 'success');
           } catch (e) {
               warnLog('Hosted homework load failed:', e);
@@ -36239,7 +36520,11 @@ const parseTaggedContent = (text) => {
   const formatLessonDNA = (...__a) => _alloHostHandlers().formatLessonDNA(...__a);
   const getLessonContext = (historySource = history, options = {}) => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
-    if (_m && typeof _m.getLessonContext === 'function') return _m.getLessonContext(historySource, { history, targetStandards, inputText, trace: options.trace });
+    if (_m && typeof _m.getLessonContext === 'function') return _m.getLessonContext(historySource, {
+      history, targetStandards, inputText, ...options, activeUnitId,
+      unitId: options.unitId ?? activeUnitId,
+      selectedReadingSourceId: options.selectedReadingSourceId ?? options.sourceArtifactId ?? selectedReadingSourceId
+    });
     return '';
   };
   // The translation policy is resolved HERE, once, from the `language` these
@@ -37863,6 +38148,7 @@ const parseTaggedContent = (text) => {
     if (type) setAlloGenerationType(type);
     console.log('[VisualDebug] handleGenerate shim called with type=', type, 'module loaded?', !!_m);
     if (_m && typeof _m.handleGenerate === "function") return _m.handleGenerate(type, langOverride, keepLoading, textOverride, configOverride, switchView, Object.assign({
+        selectedReadingSourceId, activeUnitId,
         gradeLevel,
         outlineType,
         visualStyle,
@@ -38250,6 +38536,55 @@ const parseTaggedContent = (text) => {
   // 'constellation' (student-weighted concept links for the 3D constellation view). Passing
   // null clears that store.
   const handleConceptSpacePersist = (...__a) => _alloHostHandlers().handleConceptSpacePersist(...__a);
+const organizerReflectionRequest = useCallback((method, body, signal) => _alloLanOrganizerRequest(activeSessionCode, method, body, signal), [activeSessionCode, activeSessionAppId]);
+const handleSubmitOrganizerReflection = async (reflection) => {
+    if (isTeacherMode || !reflection || reflection.resourceId !== String(generatedContent?.id || '')) return { ok: false, message: 'Open the matching diagram before submitting this reflection.' };
+    const resource = generatedContent;
+    const submissionScope = lastOrganizerProgressWriteRef.scope;
+    const remote = sessionData?.interactiveOrganizer;
+    if (reflection.activityId && (!activeSessionCode || remote?.activityId !== reflection.activityId || remote.type !== 'reflection')) return { ok: false, message: 'This live reflection has ended or changed. Your draft is still saved; reopen the current activity.' };
+    const safe = { version: 1, resourceId: String(resource.id), structureType: String(resource.data?.structureType || ''), activityId: reflection.activityId || null,
+      revision: Math.max(1, Math.min(10000, Number(reflection.revision) || 1)), submittedAt: Date.now(),
+      fields: (Array.isArray(reflection.fields) ? reflection.fields : []).slice(0, 6).map(field => ({ id: String(field.id || '').slice(0, 40), label: String(field.label || '').slice(0, 120), text: String(field.text || '').slice(0, 2000) })) };
+    if (!safe.fields.some(field => field.text.trim())) return { ok: false, message: 'Add your own response before submitting.' };
+    setStudentResponses(previous => ({ ...previous, [resource.id]: { ...previous[resource.id], organizerReflection: safe } }));
+    if (!activeSessionCode) return { ok: true, message: 'Reflection saved in your work on this device. It has not been sent to a teacher.' };
+    const submission = { kind: 'alloflow-student-submission', schemaVersion: 2, studentName: studentNickname || 'Learner', nickname: studentNickname || 'Learner',
+      submissionDate: new Date().toISOString(), timestamp: new Date().toISOString(), docTitle: String(resource.title || resource.data?.main || 'Organizer reflection'),
+      assignmentId: reflection.activityId || String(resource.id), answers: { [resource.id]: { organizerReflection: safe } }, responses: { [resource.id]: { organizerReflection: safe } },
+      content: [{ id: resource.id, type: 'outline', title: 'Learner reflection: ' + String(resource.title || resource.data?.main || ''), data: { structureType: resource.data?.structureType, main: resource.data?.main || '', branches: safe.fields.map(field => ({ title: field.label, items: field.text ? [field.text] : [] })), organizerReflection: safe } }] };
+    const filename = 'organizer-reflection-' + String(resource.id).replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 80) + '-v' + safe.revision + '.json';
+    let delivery = 'download';
+    if (reflection.activityId && typeof _alloLanConfig === 'function' && _alloLanConfig()) {
+      try {
+        const result = await _alloLanOrganizerRequest(activeSessionCode, 'POST', safe);
+        safe.revision = result.reflection.revision;
+        delivery = 'lan';
+      } catch (error) { return { ok: false, message: error.message || 'Your reflection could not reach the teacher. Your draft is saved; retry submission.' }; }
+    } else if (mbStudent) {
+      try {
+        const parts = _alloSplitPackChunks(JSON.stringify(submission), 60000);
+        const sid = 'SUB-' + generateUUID();
+        for (let index = 0; index < parts.length; index += 1) await _alloMailboxCallWithRetry(mbStudent.url, { a: 'putsubmission', c: mbStudent.code, uid: mbStudent.uid, pt: mbStudent.participant, sid, part: index + 1, of: parts.length, data: parts[index] }, 3, 700);
+        delivery = 'mailbox';
+      } catch (_) {
+        downloadSubmissionBackup(submission, filename);
+        return { ok: false, message: 'The mailbox could not receive your reflection. A backup was downloaded and your draft is saved. Share the backup or retry submission.' };
+      }
+    } else downloadSubmissionBackup(submission, filename);
+    if (reflection.activityId) {
+      if (lastOrganizerProgressWriteRef.scope !== submissionScope) return { ok: false, message: 'The live activity changed while sending. Your writing was saved, but reopen the current activity before submitting again.' };
+      const scope = submissionScope;
+      const receipt = normalizeLiveOrganizerProgress({ activityId: reflection.activityId, type: 'reflection', gameType: null, status: 'complete', score: 0, correct: 0, total: safe.fields.length, attempts: safe.revision, at: Date.now() });
+      const progressRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
+      const updates = { [`roster.${user.uid}.organizerProgress`]: receipt };
+      if (canWriteLiveActivityProgress()) updates[`roster.${user.uid}.activityProgress`] = normalizeLiveActivityProgress({ version: 1, activityId: receipt.activityId, kind: 'visual_organizer', status: safe.revision > 1 ? 'revised' : 'submitted', completed: safe.fields.filter(field => field.text.trim()).length, total: safe.fields.length, at: receipt.at });
+      const saved = await persistOrganizerProgress(lastOrganizerProgressWriteRef, receipt.activityId + '|complete|reflection|' + safe.revision, () => writeToSession(progressRef, updates), () => lastOrganizerProgressWriteRef.scope === scope);
+      if (!saved) return { ok: false, message: 'Your writing was ' + (delivery === 'lan' ? 'sent privately to your teacher' : delivery === 'mailbox' ? 'sent to the mailbox' : 'downloaded') + ', but live progress could not sync. Your draft is safe; retry to update the teacher.' };
+    }
+    return { ok: true, revision: safe.revision, message: delivery === 'lan' ? 'Reflection submitted privately to your teacher. You can revise it and check for feedback below.' : delivery === 'mailbox' ? 'Reflection submitted to your teacher’s Class Mailbox. You can submit a revision later.' : (reflection.activityId ? 'Your progress was shared. ' : '') + 'Your reflection file was downloaded; send it to your teacher or LMS to share the writing.' };
+  };
+
   const renderOutlineContent = () => {
     const _m = window.AlloModules && window.AlloModules.ViewRenderers;
     if (_m && typeof _m.renderOutlineContent === "function") return _m.renderOutlineContent({
@@ -38327,7 +38662,13 @@ const parseTaggedContent = (text) => {
         isInteractiveStrandChallenge, setIsInteractiveStrandChallenge,
         isInteractiveConceptRecall3d, setIsInteractiveConceptRecall3d,
         isInteractivePalaceRecall, setIsInteractivePalaceRecall,
-        broadcastInteractiveOrganizer, interactiveOrganizerSync,
+        broadcastInteractiveOrganizer, interactiveOrganizerSync, activeSessionCode,
+        isInteractiveReflection, isReflectionPlaying, setIsReflectionPlaying,
+        closeReflection: () => { setIsReflectionPlaying(false); setIsInteractiveReflection(false); },
+        organizerLearnerId: user?.uid || studentNickname || 'local',
+        reflectionSubmissionMethod: _alloLanConfig() ? 'lan' : mbStudent?.url ? 'mailbox' : 'download',
+        organizerReflectionRequest: _alloLanConfig() ? organizerReflectionRequest : null,
+        liveOrganizer: sessionData?.interactiveOrganizer, handleSubmitOrganizerReflection,
         getLiveOrganizerReadiness,
         handleInteractiveOrganizerReady, handleInteractiveOrganizerFailed,
         handleGenerateFrayerImage,
@@ -38566,10 +38907,112 @@ const parseTaggedContent = (text) => {
   const _applySimplifiedTextMutation = (...__a) => _alloHostHandlers()._applySimplifiedTextMutation(...__a);
   const handleSimplifiedTextChange = (value) => {
     if (!generatedContent || generatedContent.type !== 'simplified') return;
+    if (generatedContent.instructionalText?.form === 'same-text-supported') { addToast('The original stays unchanged. Create an adapted companion to change its wording.', 'info'); return; }
     _recordTextChange('simplified', generatedContent.id, typeof generatedContent.data === 'string' ? generatedContent.data : '', value);
     const updatedContent = _applySimplifiedTextMutation(generatedContent, value);
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+  };
+  const handleSelectReadingSource = (item) => {
+    if (!isTeacherMode || !item?.id) return;
+    const itemUnit = item.unitId || 'uncategorized';
+    if (activeUnitId !== 'all' && activeUnitId !== itemUnit) setActiveUnitId(itemUnit);
+    setSelectedReadingSourceId(String(item.id));
+    addToast('Activities will use: ' + (item.title || 'this reading'), 'success');
+  };
+  const handleReadingRoleChange = (selected, nextRole, options = {}) => {
+    const api = window.AlloModules?.InstructionalContext;
+    if (!isTeacherMode || !selected || !api?.updateReadingFamilyRole) return false;
+    const result = api.updateReadingFamilyRole(history, selected, nextRole, { authorizeReplacement: options.authorizeReplacement === true });
+    if (!result?.item || !result.changedIds?.length) return false;
+    setHistory(previous => api.updateReadingFamilyRole(previous, selected, nextRole, { authorizeReplacement: options.authorizeReplacement === true }).items);
+    setGeneratedContent(current => {
+      if (!current) return current;
+      const liveItems = [...history.filter(item => String(item?.id) !== String(current.id)), current];
+      const liveSelected = String(current.id) === String(selected.id) ? current : selected;
+      const changed = api.updateReadingFamilyRole(liveItems, liveSelected, nextRole, { authorizeReplacement: options.authorizeReplacement === true });
+      return changed.items.find(item => String(item?.id) === String(current.id)) || current;
+    });
+    return true;
+  };
+  // A reader snapshot belongs to its source, independent of later analysis edits.
+  const openReadingArtifact = (item, compare = false) => {
+    if (!item) return;
+    stopPlayback(); setSelectionMenu(null); setRevisionData(null); setPhonicsData(null);
+    setIsEditingLeveledText(false); setIsFluencyMode(false); setIsCompareMode(!!compare); setInteractionMode('read');
+    setGeneratedContent(item); setActiveView('simplified');
+  };
+  const handleReadOriginal = (selected = null) => {
+    const api = window.AlloModules?.InstructionalContext;
+    if (!api?.createSourceSnapshot || !api?.createSupportedReading || !api?.resolveReadingSource) { addToast('Reading tools are still loading. Try again in a moment.', 'info'); return; }
+    let sourceItem = selected, resolved = null;
+    if (!sourceItem) {
+      resolved = api.resolveReadingSource({ items: history, sourceArtifactId: selectedReadingSourceId || '', inputText, unitId: activeUnitId, language: leveledTextLanguage });
+      if (resolved.status !== 'resolved') { addToast(resolved.status === 'ambiguous' ? 'Choose a passage in Based on before opening its original.' : 'Add a source passage or choose an available reading first.', 'info'); return; }
+      sourceItem = resolved.artifact || null;
+    }
+    const profile = sourceItem ? api.getInstructionalText(sourceItem) : null;
+    let snapshot = sourceItem ? api.getSourceSnapshot(sourceItem) : resolved.sourceSnapshot;
+    // An analyzed adaptation retains its captured original; a source analysis
+    // opens its current saved prose without changing older companions.
+    if (sourceItem?.type === 'analysis' && profile.form !== 'adapted' && snapshot?.text !== sourceItem.data?.originalText) snapshot = null;
+    if (!snapshot) {
+      if (sourceItem?.type === 'simplified' || profile?.form === 'adapted') { addToast('Original not captured. Open the matching source to read it with supports.', 'info'); return; }
+      const text = sourceItem?.type === 'analysis' ? sourceItem.data?.originalText : resolved?.text;
+      if (typeof text !== 'string' || !text.trim()) { addToast('Add a source passage first.', 'info'); return; }
+      snapshot = api.createSourceSnapshot(text, { sourceArtifactId: sourceItem?.id || null, language: sourceItem?.config?.language || leveledTextLanguage || 'English', format: 'plain-text', selection: sourceItem ? 'saved-analysis' : 'input' });
+    }
+    const unitId = sourceItem ? (sourceItem.unitId || null) : (activeUnitId && !['all', 'uncategorized'].includes(activeUnitId) ? activeUnitId : null);
+    const familyId = sourceItem ? api.getReadingSourceFamilyId(sourceItem) : resolved.sourceFamilyId;
+    const family = sourceItem || { sourceFamilyId: familyId, unitId, sourceSnapshot: snapshot };
+    const existing = history.find(item => api.isSupportedOriginal(item) && api.sameReadingFamily(item, family) && item.data === snapshot.text);
+    const linkedSource = sourceItem && history.find(item => item.type === 'analysis' && api.getInstructionalText(item).form !== 'adapted' && api.sameReadingFamily(item, sourceItem));
+    const sourceProfile = api.getSourceInstructionalText(linkedSource || sourceItem || { instructionalText: resolved?.instructionalText });
+    const item = existing || api.createSupportedReading(snapshot, { id: 'original-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8), title: (sourceItem?.title || sourceTopic || 'Source text') + ' — Original with supports', config: { grade: sourceItem?.config?.grade || gradeLevel, language: snapshot.language }, sourceInstructionalText: sourceProfile, sourceFamilyId: familyId, unitId });
+    if (!existing) { item.timestamp = new Date(); setHistory(previous => [...previous, item]); }
+    openReadingArtifact(item);
+  };
+  const handleCreateAdaptedCompanion = (source) => {
+    const snapshot = window.AlloModules?.InstructionalContext?.getSourceSnapshot(source);
+    if (!snapshot) { addToast('Open the original source first.', 'info'); return; }
+    return handleGenerate('simplified', snapshot.language || null, false, snapshot.text, { sourceSnapshot: snapshot, sourceArtifactId: snapshot.sourceArtifactId || source.id, primaryArtifactId: source.instructionalText?.role === 'primary' ? source.id : null, sourceInstructionalText: window.AlloModules.InstructionalContext.getSourceInstructionalText(source), sourceFamilyId: window.AlloModules.InstructionalContext.getReadingSourceFamilyId(source), unitId: source.unitId || null, inputArtifactId: source.id, instructionalText: { role: 'supplemental', form: 'adapted', designationSource: 'workflow-default' } });
+  };
+  const handleUpdateReadingSupports = (item, action) => {
+    const contract = window.AlloModules?.InstructionalContext;
+    const snapshot = contract?.getSourceSnapshot?.(item);
+    if (!_resourceMutationStateRef.current.isTeacherMode || !snapshot || !contract.isSupportedOriginal(item)) throw new Error('Open a preserved original in teacher mode to edit word supports.');
+    if (!contract.upsertReadingSupport || !contract.removeReadingSupport || !contract.setReadingSupportPinned) throw new Error('Word-support tools are still loading. Try again in a moment.');
+    let saved = null, failure = null;
+    const applied = onUpdateResource(item.id, current => {
+      const liveSnapshot = contract.getSourceSnapshot(current);
+      if (!_resourceMutationStateRef.current.isTeacherMode || !contract.isSupportedOriginal(current) || !contract.sameReadingFamily(current, item) || liveSnapshot?.fingerprint !== snapshot.fingerprint || liveSnapshot.text !== snapshot.text) return current;
+      try {
+        if (action?.type === 'upsert') saved = contract.upsertReadingSupport(current, current.readingSupports, action.annotation);
+        else if (action?.type === 'remove') saved = contract.removeReadingSupport(current, current.readingSupports, action.id);
+        else if (action?.type === 'pin') saved = contract.setReadingSupportPinned(current, current.readingSupports, action.id, action.pinned === true);
+        else throw new Error('Choose a word-support action and try again.');
+        return { ...current, readingSupports: saved };
+      } catch (error) { failure = error; return current; }
+    });
+    if (!applied) throw failure || new Error('The reading changed before this support could be saved. Reopen it and try again.');
+    return saved;
+  };
+  const handleGenerateReadingSupports = async (item) => {
+    const contract = window.AlloModules?.InstructionalContext;
+    const snapshot = contract?.getSourceSnapshot?.(item);
+    const generate = window.AlloModules?.GenDispatcher?.generateReadingSupports;
+    if (!_resourceMutationStateRef.current.isTeacherMode || !snapshot || !contract.isSupportedOriginal(item)) throw new Error('Open a preserved original in teacher mode before adding word supports.');
+    if (typeof generate !== 'function' || !contract.mergeReadingSupports) throw new Error('Word-support tools are still loading. Try again in a moment.');
+    const result = await generate(snapshot, { callGemini, cleanJson, gradeLevel: item.config?.grade || gradeLevel, language: snapshot.language || leveledTextLanguage });
+    let merged = null;
+    const applied = onUpdateResource(item.id, current => {
+      const liveSnapshot = contract.getSourceSnapshot(current);
+      if (!_resourceMutationStateRef.current.isTeacherMode || !contract.isSupportedOriginal(current) || !contract.sameReadingFamily(current, item) || liveSnapshot?.fingerprint !== snapshot.fingerprint || liveSnapshot.text !== snapshot.text) return current;
+      merged = contract.mergeReadingSupports(current, current.readingSupports, result);
+      return { ...current, readingSupports: merged };
+    });
+    if (!applied) throw new Error('The reading or editing mode changed before supports finished. The original was not changed.');
+    return merged;
   };
   const getFilteredHistory = () => {
       if (!Array.isArray(history)) return [];
@@ -39013,7 +39456,12 @@ const parseTaggedContent = (text) => {
     }
   };
   const hasAnalysisInHistory = useMemo(() => history.some(h => h && h.type === 'analysis'), [history]);
-  const hasSourceOrAnalysis = inputText || hasAnalysisInHistory;
+  const activityReadingResolution = window.AlloModules?.InstructionalContext?.resolveReadingSource?.({
+    items: history, sourceArtifactId: selectedReadingSourceId || '', inputText,
+    unitId: activeUnitId, language: leveledTextLanguage
+  });
+  const hasSourceOrAnalysis = Boolean(inputText?.trim() || activityReadingResolution?.status === 'resolved' ||
+    activityReadingResolution?.candidates?.some(candidate => candidate.eligible !== false));
   // ── Adventure: which lesson, and is there a story for THIS one? ──
   // The device keeps one adventure save. Before this, "Resume Adventure" was
   // offered whenever any save existed, so a student could be pulled back into a
@@ -39391,7 +39839,7 @@ const parseTaggedContent = (text) => {
         {...{
         BookOpen, ClipboardList, Copy, ExternalLink, Printer, Share2, SharedAssignmentActivityPanel, Trash2,
         X, addToast, copyToClipboard, createSelfContainedHomeworkLink, homeworkQrDialogRef, hostPackOnMailbox, mbBusy, mbConfig,
-        printQrSheet, qrShareError, qrShareModal, qrShareSvg, revokeHomeworkAssignment, setQrShareModal, t, testHomeworkAsStudent
+        printQrSheet, qrShareError, qrShareModal, qrShareMailbox, qrShareSvg, revokeHomeworkAssignment, setQrShareModal, t, testHomeworkAsStudent
         }}
       />
         </div>
@@ -39448,14 +39896,14 @@ const parseTaggedContent = (text) => {
         </div>
       )}
       {mbPanelOpen && (
-        <div ref={mailboxPanelRef} className="fixed inset-0 bg-black/70 z-[152] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label={t('mailbox.live_dialog_aria') || 'Class Mailbox live session'} onClick={() => setMbPanelOpen(false)}>
+        <div ref={mailboxPanelRef} className="fixed inset-0 bg-black/70 z-[152] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label={t('mailbox.live_dialog_aria') || 'Class Mailbox live session'} onClick={closeMailboxSetup}>
           <ClassMailboxSetupView
         __alloDisplayName="Class Mailbox"
         __alloOverlay={false}
-        __alloOnClose={() => setMbPanelOpen(false)}
+        __alloOnClose={closeMailboxSetup}
         {...{
         ClipboardList, Copy, ExternalLink, Eye, EyeOff, FolderDown, Maximize, Printer,
-        Sparkles, X, addDirectionsToPack, alloPersistMailboxConfig, closeAllMailboxSessions, connectMailbox, copyMailboxScriptSource, copyToClipboard,
+        Sparkles, X, pendingMailboxShare, cancelPendingMailboxShare, closeMailboxSetup, addDirectionsToPack, alloPersistMailboxConfig, closeAllMailboxSessions, connectMailbox: connectMailboxForSetup, copyMailboxScriptSource, copyToClipboard,
         deriveDirectionsDraft, directionsDeriving, exportMailboxConfig, importMailboxConfig, mailboxScriptState, mbAdminInput, mbBusy, mbConfig,
         mbDirectionsDraft, mbHwEvidence, mbLive, mbMode, mbNow, mbQrSvg, mbResumable, mbRoster,
         mbShowAdmin, mbStatus, mbUrlInput, openStudentQrPreview, printQrSheet, requestEndLiveSession, resumeMailboxLiveSession, retryMailboxScriptSource,
@@ -39893,8 +40341,8 @@ const parseTaggedContent = (text) => {
         )}
         <div
             id="workspace-sidebar-pane"
-            aria-label={t('sidebar.tools_header')}
-            role={!isWide ? 'tabpanel' : undefined}
+            aria-label={isWide ? (t('sidebar.tools_header') || 'Workspace tools') : undefined}
+            role={isWide ? 'region' : 'tabpanel'}
             aria-labelledby={!isWide ? (workspacePane === 'history' ? 'workspace-tab-history' : 'workspace-tab-create') : undefined}
             aria-hidden={!isWide && workspacePane === 'preview' ? 'true' : undefined}
             className={`flex flex-col gap-4 overflow-y-auto pe-2 custom-scrollbar transition-all duration-200 ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''}`}
@@ -39919,6 +40367,15 @@ const parseTaggedContent = (text) => {
           )}
           {guidedMode && guidedModeConfigReady && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} guidedSkippedIds={guidedSkippedIds} guidedCreatedHistoryIds={guidedCreatedHistoryIds} wordSoundsHistory={wordSoundsHistory} currentUiLanguage={currentUiLanguage} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} guidedPresets={GUIDED_PRESETS} applyGuidedPreset={applyGuidedPreset} applyGuidedPlanToRemaining={applyGuidedPlanToRemaining} generateGuidedPlanFromGoal={generateGuidedPlanFromGoal} guidedPhases={GUIDED_PHASES} guidedDeliveryGroups={GUIDED_DELIVERY_GROUPS} openGuidedDocumentBuilder={() => openExportPreview('print', guidedCreatedHistoryIds)} createGuidedHomeworkShare={createGuidedHomeworkShare} startGuidedLiveSession={() => setShowSessionStartOptions(true)} canPreviewGuidedStudentAssignment={!!latestStudentPreviewShare} previewGuidedStudentAssignment={previewGuidedStudentAssignment} guidedDeliveryEvidence={guidedDeliveryEvidence} guidedPlanBrief={guidedPlanBrief} guidedAdvanceNotice={guidedAdvanceNotice} clearGuidedAdvanceNotice={() => setGuidedAdvanceNotice(null)} undoGuidedAutoAdvance={undoGuidedAutoAdvance} guidedNavigationUndo={guidedNavigationUndo} undoGuidedNavigation={undoGuidedNavigation} clearGuidedNavigationUndo={() => setGuidedNavigationUndo(null)} guidedStepCostNote={guidedStepCostNote} guidedSettingsSummary={guidedSettingsSummary} openUniversalSettings={openUniversalSettings} guidedStepError={guidedStepError} retryGuidedStep={retryGuidedStep} isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting} openGuidedHistoryItem={handleRestoreView} guidedAutoAdvance={guidedAutoAdvance} setGuidedAutoAdvance={setGuidedAutoAdvance} handleCompleteGuidedMode={handleCompleteGuidedMode} handleGuidedJump={handleGuidedJump} focusGuidedTarget={focusGuidedTarget} processingProgress={processingProgress} generationStep={generationStep} guidedProviderProfile={String(ai?.backend || ai?.textBackend || ai?.provider || 'default')} guidedProgressSaveState={guidedProgressSaveState} retryGuidedProgressSave={retryGuidedProgressSave} openGuidedProjectBackup={history.length > 0 ? initiateSaveTeacherProject : null} />}
           {isTeacherMode && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} subtitle={isIndependentMode ? t('sidebar.ai_guide_sub_independent') : undefined} />}
+          {isTeacherMode && <div
+            id="sidebar-create-panel"
+            role={isWide ? 'tabpanel' : undefined}
+            aria-labelledby={isWide ? 'tab-create' : undefined}
+            tabIndex={isWide ? 0 : undefined}
+            hidden={activeSidebarTab !== 'create'}
+            className="flex flex-col gap-4"
+            style={{ display: activeSidebarTab === 'create' ? undefined : 'none' }}
+          >
           {isTeacherMode && activeSidebarTab === 'create' && (
           <CDNModuleGate moduleKey="SidebarPanels.SourceInputShellView" loaderName="__alloEnsureSidebarPanels" size="inline" displayName="Source input" t={t}>
   {(View) => React.createElement(View, {
@@ -39949,7 +40406,7 @@ const parseTaggedContent = (text) => {
           {isTeacherMode && activeSidebarTab === 'create' && (
           <CDNModuleGate moduleKey="SidebarPanels.GeneratorActionsView" loaderName="__alloEnsureSidebarPanels" size="inline" displayName="Generator tools" t={t}>
   {(View) => React.createElement(View, {
-    openUniversalSettings,
+    openUniversalSettings, selectedReadingSourceId, setSelectedReadingSourceId, activeUnitId,
     AlertTriangle, ArrowDown, ArrowRight, ArrowUp, BRIDGE_MODES, BookOpen, Calculator, CheckSquare,
     ChevronDown, ChevronRight, ChevronUp, ClipboardList, Clock, Cloud, CloudOff, Copy, Cpu, Download,
     Eye, EyeOff, FileQuestion, FileText, Filter, FullPackRunView, GUIDED_DELIVERY_GROUPS, Globe, History,
@@ -39994,6 +40451,7 @@ const parseTaggedContent = (text) => {
     isToolCatalogItemVisible, isTranslationControlRelevant, isUniversalSettingsOpen, keepCitations,
     languageInput, lessonCustomAdditions, leveledTextCustomInstructions, leveledTextLanguage,
     leveledTextLength, mathInput, mathMode, mathQuantity, mathSubject, mcqVisualMode,
+    handleReadOriginal,
     memoryAidAuthorshipMode, memoryAidCount, memoryAidCustomInstructions, memoryAidIncludeHookFacts,
     memoryAidIncludeVisuals, memoryAidReasoningRequired, memoryAidReflectionLevel,
     memoryAidSelectionMode, memoryAidTypes, noText, noteTakingCustomInstructions, noteTakingTemplateType,
@@ -40045,6 +40503,7 @@ const parseTaggedContent = (text) => {
   })}
 </CDNModuleGate>
           )}
+          </div>}
             {!isTeacherMode && !activeSessionCode && <StudentJoinPanel appId={appId} handleSetIsJoinPanelExpandedToFalse={handleSetIsJoinPanelExpandedToFalse} handleSetIsJoinPanelExpandedToTrue={handleSetIsJoinPanelExpandedToTrue} isJoinPanelExpanded={isJoinPanelExpanded} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} t={t} />}
             {!isTeacherMode && activeSessionCode && sessionData?.roster?.[user?.uid] && (
                 <div className={`${studentLobbyStyles.panel} p-4 rounded-3xl mb-4 flex items-center justify-between animate-in slide-in-from-top-4`}>
@@ -40104,6 +40563,15 @@ const parseTaggedContent = (text) => {
                 onMisfit: () => _alloRecordCheckpoint('skipped', '', 'text')
             })}
           {!isTeacherMode && <StudentSaveAdventurePanel activeSessionCode={activeSessionCode} globalPoints={globalPoints} handleResumeAdventure={handleResumeAdventure} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleStartAdventure={handleStartAdventure} hasSavedAdventure={hasSavedAdventureForLesson} isAdventureAvailable={isAdventureAvailable} initiateSaveStudentProject={initiateSaveStudentProject} isResumingAdventure={isResumingAdventure} isSaveActionPulsing={isSaveActionPulsing} projectFileInputRef={projectFileInputRef} sessionData={sessionData} studentProjectSettings={studentProjectSettings} t={t} />}
+          <div
+            id={isTeacherMode ? 'sidebar-history-panel' : undefined}
+            role={isTeacherMode && isWide ? 'tabpanel' : undefined}
+            aria-labelledby={isTeacherMode && isWide ? 'tab-history' : undefined}
+            tabIndex={isTeacherMode && isWide ? 0 : undefined}
+            hidden={isTeacherMode && activeSidebarTab !== 'history'}
+            className="flex flex-col gap-4"
+            style={{ display: isTeacherMode && activeSidebarTab !== 'history' ? 'none' : undefined }}
+          >
             {/* N2 (2026-08-16): History now opens during Guided Mode instead of the click
                 being swallowed. The run is still live, so say so and give one obvious way
                 back to the step, rather than leaving the teacher to guess whether they
@@ -40122,6 +40590,7 @@ const parseTaggedContent = (text) => {
             )}
             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} onDifferentiateByGroup={() => { setRosterBatchOpenRequest(request => request + 1); setIsRosterKeyOpen(true); }} t={t} />}
             {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
+          </div>
         </div>
         {isWide && !isFullscreen && !isZenMode && (
             <div
@@ -40727,7 +41196,8 @@ const parseTaggedContent = (text) => {
               <ErrorBoundary key={(generatedContent && generatedContent.id) + ':' + activeView} fallbackMessage={t('errors.content_viewer') || 'The content viewer encountered an error. Try regenerating the resource or switching views.'}>
               <div id="screenshot-target" ref={contentRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500 h-full">
                 {activeView === 'analysis' && window.AlloModules && window.AlloModules.AnalysisView && React.createElement(window.AlloModules.AnalysisView, {
-                    onUpdateResource, onCorrectAnalysisText,
+                    onUpdateResource, onCorrectAnalysisText, onReadOriginal: handleReadOriginal,
+                    onInstructionalRoleChange: handleReadingRoleChange, onSelectReadingSource: handleSelectReadingSource,
                     t, generatedContent, selectedDiscrepancies, selectedGrammarErrors,
                     isTeacherMode, isProcessing, isEditingAnalysis, sourceRefineInstruction,
                     analysisEditorRef,
@@ -40929,7 +41399,7 @@ const parseTaggedContent = (text) => {
                     isEditingGlossary, isAddingTerm, newGlossaryTerm,
                     glossarySearchTerm, glossaryFilter, glossaryImageSize, glossaryRefinementInputs,
                     flashcardIndex, flashcardMode, flashcardLang, standardDeckLang,
-                    isFlashcardQuizMode, isFlashcardFlipped, showFlashcardImages,
+                    isFlashcardQuizMode, isFlashcardFlipped, showFlashcardImages, setQuizSelectedOption,
                     flashcardScore, flashcardOptions, flashcardFeedback, quizSelectedOption,
                     isInteractiveFlashcards,
                     isGeneratingTermImage, isGeneratingAudio, isGeneratingEtymology,
@@ -40949,6 +41419,7 @@ const parseTaggedContent = (text) => {
                     setGlossaryImageStyle, setNewGlossaryTerm, setShowHealthCheckPanel, setGlossaryRefinementInputs,
                     handleAddGlossaryTerm, handleQuickAddGlossary,
                     handleGenerateTermImage, handleDeleteTermImage, handleGenerateTermEtymology,
+                    beginGlossaryImageTask: index => { const task = _alloBeginGlossaryTask(index, ['term', 'image'], 'image'); if (task) task.busy(setIsGeneratingTermImage, false); return task; },
                     handleRefineGlossaryImage, handleGlossaryChange, handleSpeak, handleDownloadAudio,
                     handleCardAudioSequence, handleExportFlashcards, handleQuizOptionClick,
                     // The view paints the green "this was the right one" highlight; it must
@@ -41029,6 +41500,8 @@ const parseTaggedContent = (text) => {
                     />;
                 })()}
                 {activeView === 'simplified' && React.createElement(LazySimplifiedView, {
+                    onInstructionalRoleChange: handleReadingRoleChange, onSelectReadingSource: handleSelectReadingSource,
+                    onGenerateReadingSupports: handleGenerateReadingSupports, onUpdateReadingSupports: handleUpdateReadingSupports, onReadOriginal: handleReadOriginal, onOpenReadingArtifact: openReadingArtifact, onCreateAdaptedCompanion: handleCreateAdaptedCompanion,
                     t, generatedContent, inputText, gradeLevel, leveledTextLanguage,
                     studentInterests, standardsInput, sourceTopic,
                     isTeacherMode, studentAiFeaturesHidden, isProcessing, isPlaying,
@@ -41566,7 +42039,9 @@ const parseTaggedContent = (text) => {
                     isTeacherMode, isIndependentMode, isParentMode,
                     teachingScriptMaterials, teachingScriptLoadState,
                     teachingScriptDraftScope: teachingScriptTeacher ? teachingScriptActor : '',
-                    createTeachingScriptAudio,
+                    createTeachingScriptAudio, onDeleteTeachingScript,
+                    teachingScriptVoice: selectedVoice, teachingScriptSpeed: voiceSpeed,
+                    onOpenTeachingScriptVoiceSettings: () => setShowVoiceSettings(true),
                     teachingScriptAudioProfile: JSON.stringify([selectedVoice, voiceSpeed, _aiConfig.ttsProvider, _aiConfig.backend, _aiConfig.models?.tts]),
                     onRetryTeachingScriptLoad: () => setTeachingScriptLoadAttempt(previous => previous + 1),
                     onGenerateTeachingScript, onCancelTeachingScript, onUpdateTeachingScript, onOpenTeachingMaterial,
@@ -42114,6 +42589,7 @@ const parseTaggedContent = (text) => {
             {showLiveDock && (
               <div role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowLiveDock(false); }} style={{position:'fixed',inset:0,zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center',padding:'clamp(1rem, 4vh, 3rem)',background:'rgba(15,23,42,0.58)'}}>
               <LiveSessionDockView
+        organizerReflectionRequest={_alloLanConfig() ? organizerReflectionRequest : null}
         __alloDisplayName="Live Session Dashboard"
         __alloOverlay={false}
         __alloOnClose={() => setShowLiveDock(false)}
@@ -42884,7 +43360,7 @@ const parseTaggedContent = (text) => {
           setPdfAutoFixPasses, setPdfAutoSaveProject, setPdfBatchMode, setPdfBatchQueue, setPdfBatchSummary,
           setPdfFixLoading, setPdfFixMode, setPdfFixResult, setPdfFixStep, setPdfMultiSession,
           setPdfPageRange, setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
-          setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, pdfStormBudgetMinutes, setPdfStormBudgetMinutes, setPendingPdfBase64, setPendingPdfFile,
+          setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, pdfStormBudgetMinutes, setPdfStormBudgetMinutes, pdfExtraRequestPacing, setPdfExtraRequestPacing, setPendingPdfBase64, setPendingPdfFile,
           setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, capturePdfDocumentIntakeEpoch, isPdfDocumentIntakeCurrent, startPipelineTour,
           pdfRunHistory, setPdfRunHistory,
           openRemediationBuilder: () => {

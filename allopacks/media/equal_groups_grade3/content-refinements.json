@@ -1,0 +1,231 @@
+[
+  {
+    "resourceId": "eq-memory",
+    "path": "data.cards.0",
+    "from": {
+      "id": "eq-ma-groups-of",
+      "target": "The times sign is read as the words groups of",
+      "essentialFacts": [
+        "Read 4 x 3 as four groups of three.",
+        "The first number is how many groups.",
+        "The second number is how many in each group."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "sequence-cue",
+      "mode": "scaffolded",
+      "aiExample": "Cover the times sign with your finger and say the words groups of out loud instead. 6 x 5 becomes six groups of five. The picture shows up on its own once you hear the words.",
+      "mapping": "Replacing a symbol with words you can picture stops it from being a blank spot you read past. The finger makes it a physical habit.",
+      "scaffoldStarter": "____ x ____ means ____ groups of ____.",
+      "scaffoldSteps": [
+        "Cover the times sign.",
+        "Say the sentence with groups of in it.",
+        "Draw the groups before you find the answer."
+      ],
+      "coachPrompts": [
+        "How many groups, and how many in each one?"
+      ],
+      "studentPrompt": "Make your own way to remember which number is the groups.",
+      "reasoningPrompt": "Why does saying it out loud help more than just looking at it?",
+      "hookFact": {
+        "text": "Not four three. Four groups of three.",
+        "sourceTitle": "What Times Really Means (this lesson)"
+      }
+    },
+    "to": {
+      "id": "eq-ma-groups-of",
+      "target": "The times sign is read as the words groups of",
+      "essentialFacts": [
+        "Read 4 x 3 as four groups of three.",
+        "The first number is how many groups.",
+        "The second number is how many in each group."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "sequence-cue",
+      "mode": "scaffolded",
+      "aiExample": "Cover the times sign with your finger and say the words groups of out loud instead. 6 x 5 becomes six groups of five. The picture shows up on its own once you hear the words.",
+      "mapping": "Replacing a symbol with words you can picture stops it from being a blank spot you read past. The finger makes it a physical habit.",
+      "scaffoldStarter": "____ x ____ means ____ groups of ____.",
+      "scaffoldSteps": [
+        "Cover the times sign.",
+        "Say the sentence with groups of in it.",
+        "Draw the groups before you find the answer."
+      ],
+      "coachPrompts": [
+        "How many groups, and how many in each one?"
+      ],
+      "studentPrompt": "Make your own way to remember which number is the groups.",
+      "reasoningPrompt": "Why does saying it out loud help more than just looking at it?",
+      "hookFact": {
+        "text": "Not four three. Four groups of three.",
+        "sourceTitle": "What Times Really Means (this lesson)"
+      },
+      "factReview": {
+        "status": "inherited-review-attribution",
+        "sourcePack": "allopacks/equal_groups_grade3.allopack.json",
+        "sourceResourceId": "eq-memory",
+        "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+        "factsHash": "7d3af2c553d201131b68f037ee7393a88438b96b80e29824a1005c8ef4e03b43"
+      }
+    }
+  },
+  {
+    "resourceId": "eq-memory",
+    "path": "data.cards.1",
+    "from": {
+      "id": "eq-ma-turn-it",
+      "target": "Every fact you learn comes with a second one attached",
+      "essentialFacts": [
+        "Turning an array on its side does not change the total.",
+        "3 x 4 and 4 x 3 give the same product.",
+        "If you know 3 x 8, you also know 8 x 3."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "visual-association",
+      "mode": "scaffolded",
+      "aiExample": "Picture turning a carton of eggs sideways on the table. The rows and columns swap places, but not one egg fell out. The total cannot have changed.",
+      "mapping": "You can actually picture the turn, and the reason is right there in the picture: nothing was added or taken away.",
+      "scaffoldStarter": "If I know ____ x ____, I also know ____ x ____ because ____.",
+      "scaffoldSteps": [
+        "Draw an array.",
+        "Turn your paper sideways.",
+        "Write both facts it shows."
+      ],
+      "coachPrompts": [
+        "Did anything get added when you turned it?"
+      ],
+      "studentPrompt": "Find a real thing in rows and write both of its facts.",
+      "reasoningPrompt": "Why does turning it prove the totals must match?",
+      "hookFact": {
+        "text": "Every fact you learn comes with a second one attached.",
+        "sourceTitle": "What Times Really Means (this lesson)"
+      }
+    },
+    "to": {
+      "id": "eq-ma-turn-it",
+      "target": "Every fact you learn comes with a second one attached",
+      "essentialFacts": [
+        "Turning an array on its side does not change the total.",
+        "3 x 4 and 4 x 3 give the same product.",
+        "If you know 3 x 8, you also know 8 x 3."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "visual-association",
+      "mode": "scaffolded",
+      "aiExample": "Picture turning a carton of eggs sideways on the table. The rows and columns swap places, but not one egg fell out. The total cannot have changed.",
+      "mapping": "You can actually picture the turn, and the reason is right there in the picture: nothing was added or taken away.",
+      "scaffoldStarter": "If I know ____ x ____, I also know ____ x ____ because ____.",
+      "scaffoldSteps": [
+        "Draw an array.",
+        "Turn your paper sideways.",
+        "Write both facts it shows."
+      ],
+      "coachPrompts": [
+        "Did anything get added when you turned it?"
+      ],
+      "studentPrompt": "Find a real thing in rows and write both of its facts.",
+      "reasoningPrompt": "Why does turning it prove the totals must match?",
+      "hookFact": {
+        "text": "Every fact you learn comes with a second one attached.",
+        "sourceTitle": "What Times Really Means (this lesson)"
+      },
+      "factReview": {
+        "status": "inherited-review-attribution",
+        "sourcePack": "allopacks/equal_groups_grade3.allopack.json",
+        "sourceResourceId": "eq-memory",
+        "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+        "factsHash": "710cc07782bc82c86a305c0aa5c437e1b80415aacd02387d50a18f4dba2f4c27"
+      }
+    }
+  },
+  {
+    "resourceId": "eq-challenge",
+    "path": "data.brief",
+    "from": {
+      "family": "investigate",
+      "context": "Your classroom, your school and your home are full of things in rows and equal groups. Window panes. Floor tiles. Egg cartons. Muffin trays. Lockers. Chairs. You may draw them or take a photo of them.",
+      "role": "Array hunters",
+      "audience": "The class, who will build a wall of real arrays with the facts written under each one",
+      "drivingQuestion": "Where are the equal groups hiding in the places I go every day?",
+      "seedDirection": "Start with something in straight rows. Those are the easiest to count. Then look for the harder kind, where the groups match but are not lined up.",
+      "lockedLessonFacts": [
+        "The first number tells you how many groups, and the second how many are in each group.",
+        "The groups have to be equal or you cannot multiply.",
+        "An array is equal groups lined up in rows and columns.",
+        "Turning an array on its side gives the same product."
+      ],
+      "openQuestions": [
+        "Which was harder to find, an array or a near-miss?",
+        "Did anyone find the same object but count it a different way?",
+        "Is there a shape that is almost an array but has one row wrong?"
+      ],
+      "stakeholders": [
+        "Your class, who will check your counting",
+        "A student who still reads the times sign as and",
+        "Your teacher, who will use your wall next year"
+      ],
+      "criteria": [
+        "At least four real arrays or equal groups, each one drawn or photographed",
+        "Both facts written under every one",
+        "The product worked out, then checked by a partner",
+        "At least one near-miss that is not equal, with a sentence saying why it fails"
+      ],
+      "constraints": [
+        "The things have to be real and findable, not invented",
+        "No array bigger than 10 by 10",
+        "Under 60 words of writing on the whole page"
+      ],
+      "deliverable": "A page for the class wall. Show at least four real arrays. Write both facts and the product under each one. Then add one near-miss, with a sentence on why you cannot multiply it.",
+      "factLocked": true,
+      "factVerified": true
+    },
+    "to": {
+      "family": "investigate",
+      "context": "Your classroom, your school and your home are full of things in rows and equal groups. Window panes. Floor tiles. Egg cartons. Muffin trays. Lockers. Chairs. You may draw them or take a photo of them.",
+      "role": "Array hunters",
+      "audience": "The class, who will build a wall of real arrays with the facts written under each one",
+      "drivingQuestion": "Where are the equal groups hiding in the places I go every day?",
+      "seedDirection": "Start with something in straight rows. Those are the easiest to count. Then look for the harder kind, where the groups match but are not lined up.",
+      "lockedLessonFacts": [
+        "The first number tells you how many groups, and the second how many are in each group.",
+        "The groups have to be equal or you cannot multiply.",
+        "An array is equal groups lined up in rows and columns.",
+        "Turning an array on its side gives the same product."
+      ],
+      "openQuestions": [
+        "Which was harder to find, an array or a near-miss?",
+        "Did anyone find the same object but count it a different way?",
+        "Is there a shape that is almost an array but has one row wrong?"
+      ],
+      "stakeholders": [
+        "Your class, who will check your counting",
+        "A student who still reads the times sign as and",
+        "Your teacher, who will use your wall next year"
+      ],
+      "criteria": [
+        "At least four real arrays or equal groups, each one drawn or photographed",
+        "Both facts written under every one",
+        "The product worked out, then checked by a partner",
+        "At least one near-miss that is not equal, with a sentence saying why it fails"
+      ],
+      "constraints": [
+        "The things have to be real and findable, not invented",
+        "No array bigger than 10 by 10",
+        "Under 60 words of writing on the whole page"
+      ],
+      "deliverable": "A page for the class wall. Show at least four real arrays. Write both facts and the product under each one. Then add one near-miss, with a sentence on why you cannot multiply it.",
+      "factLocked": true,
+      "factVerified": true,
+      "factReview": {
+        "status": "inherited-review-attribution",
+        "sourcePack": "allopacks/equal_groups_grade3.allopack.json",
+        "sourceResourceId": "eq-challenge",
+        "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+        "factsHash": "24c3e2647b0147c6bcf325cd3f9cdc2afa7f1f425c64c243c8a8909609b11917"
+      }
+    }
+  }
+]

@@ -39,6 +39,30 @@ function put(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
 beforeEach(() => localStorage.clear());
 
 describe('Symbol Studio backup and storage resilience', () => {
+  it('round-trips completed stories with all page text and illustrations for each learner', () => {
+    const h = helpers();
+    const story = { id: 'story-a', title: 'A story', situation: 'Taking a break', studentName: 'A', details: 'A quiet corner', pages: [{ id: 'page-a', text: 'I can pause.', image: 'data:image/png;base64,AA==', imagePrompt: 'quiet corner' }] };
+    const other = { ...story, id: 'story-b', title: 'B story', studentName: 'B' };
+    put('alloSavedStories__b', [other]);
+    const backup = h.buildStudioBackup(liveState({ profiles: [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }], stories: [story] }));
+    expect(backup.profileData.a.stories).toEqual([story]); expect(backup.profileData.b.stories).toEqual([other]);
+    localStorage.clear();
+    const prepared = h.prepareStudioBackupImport(JSON.parse(JSON.stringify(backup)), liveState());
+    h.commitStudioBackupImport(prepared.writes);
+    expect(h.loadScoped('alloSavedStories', [], 'a')).toEqual([story]);
+    expect(h.loadScoped('alloSavedStories', [], 'b')).toEqual([other]);
+    expect(h.buildStudioBackup(liveState()).profileData.a.stories).toEqual([]);
+    const legacy = h.prepareStudioBackupImport({ version: 7, gallery: [] }, liveState({ stories: [story] }));
+    expect(legacy.active.stories).toEqual([story]);
+  });
+
+  it('rejects malformed saved story pages before writing a backup', () => {
+    const h = helpers();
+    expect(() => h.prepareStudioBackupImport({ stories: [{ id: 'bad', title: 'Bad', pages: [] }] }, liveState())).toThrow('must contain pages');
+    expect(() => h.prepareStudioBackupImport({ stories: [{ id: 'bad', pages: [{ text: {}, image: null }] }] }, liveState())).toThrow('text');
+    expect(() => h.prepareStudioBackupImport({ stories: [{ id: 'bad', pages: [{ text: 'Good', image: {} }] }] }, liveState())).toThrow('image');
+    expect(localStorage.getItem('alloSavedStories__a')).toBeNull();
+  });
   it('backs up and restores each student dataset under its original profile', () => {
     const h = helpers();
     put('alloSymbolGallery__b', [{ id: 'symbol-b', label: 'Break', image: 'data:image/png;base64,Qg==' }]);
@@ -136,7 +160,7 @@ describe('Symbol Studio backup and storage resilience', () => {
     const active = { current: 'a' };
     const toast = vi.fn();
     const deps = {
-      symbolWorkRef: { current: { epoch: 0 } }, useCallback: (callback) => callback, backupStateRef: latest, backupImportEpochRef: { current: 0 }, activeProfileIdRef: active,
+      savedStoryLibraryRef: { current: null }, setSavedStoryLibrary: vi.fn(), symbolWorkRef: { current: { epoch: 0 } }, useCallback: (callback) => callback, backupStateRef: latest, backupImportEpochRef: { current: 0 }, activeProfileIdRef: active,
       FileReader: class { constructor() { reader = this; } readAsText() {} },
       prepareStudioBackupImport: h.prepareStudioBackupImport, commitStudioBackupImport: h.commitStudioBackupImport,
       addToast: toast, warnLog: vi.fn(), notifyVisualSupportsUpdated: vi.fn(),
@@ -197,7 +221,7 @@ describe('Symbol Studio cloud and hidden-session resilience', () => {
   it('installs no keyboard listener, focus timer, or scanner timer while closed', () => {
     const listeners = vi.fn(); const timer = vi.fn();
     const deps = {
-      useEffect: (effect) => effect(), isOpen: false, mulberryOpen: false, useBoardId: 'board', scanBoardId: 'board',
+      useEffect: (effect) => effect(), isOpen: false, sessionDebrief: null, mulberryOpen: false, useBoardId: 'board', scanBoardId: 'board',
       window: { addEventListener: listeners }, setTimeout: timer, setInterval: timer,
       clearInterval: vi.fn(), scanIntervalRef: { current: null }, scanPaused: false, scanManual: false,
       scanSpeed: 1500, savedBoards: [],

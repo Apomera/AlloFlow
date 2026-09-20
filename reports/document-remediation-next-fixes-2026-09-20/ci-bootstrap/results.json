@@ -1,0 +1,19 @@
+{
+  "checkedAt": "2026-09-20T04:07:00.173Z",
+  "command": "npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0",
+  "fixture": "Fresh minimal private package in an isolated desktop/web-app directory; not a full repository dependency installation or GitHub run.",
+  "exitCode": 0,
+  "files": {
+    "react/umd/react.development.js": {
+      "bytes": 109931,
+      "sha256": "28348fef6cb0ed8b2ceeb22deaf824428fd13875d84c73d38f77dd216fc24e7f"
+    },
+    "react-dom/umd/react-dom.development.js": {
+      "bytes": 1080227,
+      "sha256": "f9044a5e9c39db8bb1a204dff924e526ec0a621e695bb69de1035811be8709e4"
+    }
+  },
+  "reactVersion": "18.3.1",
+  "reactDomVersion": "18.3.1",
+  "renderedHtml": "<button type=\"button\">React harness loaded</button>"
+}

@@ -1,0 +1,57 @@
+{
+  "checks": [
+    "Measured addition raises flask level and lowers burette meniscus; reduced motion stays still."
+  ],
+  "errors": [],
+  "scans": [],
+  "initial": {
+    "state": "ready",
+    "qaVisible": true,
+    "qaRaf": 0,
+    "qaPending": null,
+    "qaHidden": false,
+    "contextLost": false,
+    "canvas": {
+      "w": 762,
+      "h": 580
+    },
+    "objects": 105,
+    "flashVisible": false,
+    "flashOpacity": 0,
+    "ripples": 0,
+    "focus": "apparatus",
+    "reading": 0,
+    "delivered": 0,
+    "fillFraction": 0.3333333333333333,
+    "liquidSurface": 0.4617158626401806,
+    "meniscus": 6.24,
+    "color": "rgba(200,220,255,0.25)",
+    "animating": false,
+    "previewMs": null
+  },
+  "endpoint": {
+    "state": "ready",
+    "qaVisible": true,
+    "qaRaf": 0,
+    "qaPending": null,
+    "qaHidden": false,
+    "contextLost": false,
+    "canvas": {
+      "w": 762,
+      "h": 580
+    },
+    "objects": 105,
+    "flashVisible": false,
+    "flashOpacity": 0,
+    "ripples": 0,
+    "focus": "apparatus",
+    "reading": 26,
+    "delivered": 26,
+    "fillFraction": 0.68,
+    "liquidSurface": 0.8785874873636701,
+    "meniscus": 4.6176,
+    "color": "#ec4899",
+    "animating": false,
+    "previewMs": null
+  }
+}

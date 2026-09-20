@@ -31,8 +31,13 @@
     "contentRefinements": {
       "review": "Mathematical wording refined; educator review pending",
       "audit": "allopacks/media/fractions_number_line_grade4/content-refinements.json",
-      "count": 16
-    }
+      "count": 21,
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/fractions_number_line_grade4/content-refinements.json",
+      "sourceOnlyResourceIds": []
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Fractions on the Number Line",
   "history": [
@@ -72,7 +77,7 @@
       "title": "The Space Between 0 and 1",
       "timestamp": "2026-07-21T02:00:01.000Z",
       "data": "## The Space Between 0 and 1\n\nCount out loud: 1, 2, 3, 4. Easy. Now count what is *between* 1 and 2.\n\nThere is a whole world in there, and fractions are how we name the places inside it.\n\nStart with a number line. Put 0 at the left and 1 at the right. That whole trip from 0 to 1 is the **whole**, and this distance sets the size of one whole. Fractions greater than 1 extend beyond it. Cut it into two equal pieces and you get **halves**. Now cut the same space into **4 equal pieces** instead. The cuts land on new places, and each place has a name: one-fourth, two-fourths, three-fourths. Written as numbers: 1/4, 2/4, 3/4. One single piece of that size is called a **unit** fraction, so 1/4 is one unit of a fourth.\n\nThe bottom number — the **denominator** — tells you *how many equal pieces the whole was cut into*. The top number — the **numerator** — tells you *how many of those pieces you counted from zero*.\n\nA picture of equal pizza slices can model 3/4, and 3/4 is also a number with a **location**. Walk three of the four steps from 0 toward 1 and stop. That is where 3/4 lives.\n\nHere is where the number line earns its keep. Look at 2/4. Now look at 1/2. They land on the exact same spot. Same location, two names. That is what **equivalent fractions** means — different words, same place, like a friend who goes by a nickname.\n\nThe number line also fixes the most common fraction mistake. When you **compare** two fractions, you are really asking which one sits farther to the right. For these positive fractions, that also means farther from 0. Which is bigger, 1/4 or 1/8? Many people say 1/8, because 8 is bigger than 4. But look: cutting the space into 8 pieces makes each piece *smaller*. So 1/8 sits closer to 0, and 1/4 is bigger. **For the same whole, more equal pieces means smaller unit fractions.** The number line shows you that instantly, and it never lies.\n\nOne more thing. Fractions do not stop at 1. Keep going: 5/4 is one step past 1. Fractions are just numbers, and the number line goes on forever in both directions. Once you see fractions as places instead of slices, they stop being a special weird topic and become ordinary numbers — which is exactly what they are.",
-      "meta": "3rd-4th Grade • Leveled reading • ~340 words",
+      "meta": "3rd-4th Grade • Leveled reading",
       "imageSlot": "fr-img-number-line-fourths"
     },
     {
@@ -435,6 +440,13 @@
             "hookFact": {
               "text": "3/4 is a number with a location: walk three fourth-sized steps from 0 and stop. Equal slices can also model that amount.",
               "sourceTitle": "The Space Between 0 and 1 (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/fractions_number_line_grade4.allopack.json",
+              "sourceResourceId": "fr-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "475fe98a8253c6ec821a46d0e8e77cd065f218032f08149196ef9be27c05ec9a"
             }
           },
           {
@@ -465,6 +477,13 @@
             "hookFact": {
               "text": "Many people say 1/8 is bigger than 1/4 because 8 is bigger than 4. The number line shows you instantly that it is not, and it never lies.",
               "sourceTitle": "The Space Between 0 and 1 (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/fractions_number_line_grade4.allopack.json",
+              "sourceResourceId": "fr-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "2b2608635eff21db8a1b883abd82d944fb6e4bf9c74c5625dfd51a1d5ca608b9"
             }
           },
           {
@@ -495,6 +514,13 @@
             "hookFact": {
               "text": "Same location, two names, like a friend who goes by a nickname.",
               "sourceTitle": "The Space Between 0 and 1 (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/fractions_number_line_grade4.allopack.json",
+              "sourceResourceId": "fr-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "38b3d1635a8de0fc5a4fcdb840e9cad49ae6623a1e6d283d183b343d62363072"
             }
           }
         ]
@@ -875,27 +901,27 @@
       "data": [
         {
           "question": "Why do we even need fractions? 🤷",
-          "answer": "Because almost nothing in real life comes in whole numbers. Half an hour, three-quarters of a cup, a quarter mile. Whole numbers alone cannot measure the world."
+          "answer": "Fractions help us name parts of an amount, such as half an hour or three-fourths of a cup. Whole numbers alone cannot name every amount."
         },
         {
           "question": "Is 1/2 the same as 0.5?",
-          "answer": "Yes! They name the same location. A terminating decimal can be written as a fraction with a denominator of 10, 100, 1000, and so on: 0.5 = 5/10 = 1/2. Some fractions have repeating decimals, such as 1/3 = 0.333..., which does not terminate."
+          "answer": "Yes. Both land at the same point: 0.5 = 5/10 = 1/2. Some fractions have decimals that keep repeating. For example, 1/3 = 0.333... ."
         },
         {
           "question": "Can the top number be bigger than the bottom? 🤔",
-          "answer": "Absolutely. 5/4 just means you walked five fourth-sized steps, which takes you past 1. Those are called improper fractions, though there is nothing improper about them."
+          "answer": "Yes. 5/4 means five steps of size one-fourth from zero. You pass 1 and reach 1 1/4. It is called an improper fraction."
         },
         {
           "question": "Why does my brain say 1/8 is bigger than 1/4?",
-          "answer": "Because 8 is bigger than 4, and your brain is pattern-matching to whole numbers. It is the single most common fraction mistake — which is why the number line is worth drawing every time."
+          "answer": "You may be thinking that 8 is larger than 4. But with the same whole, cutting it into eight equal pieces makes each piece smaller than one of four equal pieces. Draw both on the same line."
         },
         {
           "question": "What is the biggest fraction strictly between 0 and 1?",
-          "answer": "There is no greatest fraction strictly less than 1 and greater than 0. Given any fraction there, the halfway value between it and 1 is another, larger fraction still below 1. Between any two distinct fractions there is another fraction."
+          "answer": "There is no biggest one. Pick a fraction below 1. The point halfway from it to 1 is a larger fraction that is still below 1. You can do this again."
         },
         {
           "question": "Do fractions go on the negative side of the number line too?",
-          "answer": "They do — negative one-half sits exactly as far left of 0 as one-half sits right of it. You will work with those more in later grades."
+          "answer": "Yes. Negative one-half is as far left of zero as one-half is to the right."
         }
       ],
       "meta": "6 questions • includes the infinity surprise"
@@ -994,7 +1020,7 @@
           ],
           "deliverable": "A plan drawing with measured distances, the built line, a test record (three second graders asked to walk to 3/4, 1/2, and 5/4, and where they stopped), and one sentence about what you would change.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

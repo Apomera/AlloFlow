@@ -737,7 +737,8 @@ var useFocusTrap = _scHooks.useFocusTrap || function() {
 function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToast, live }) {
   var _llCtx = React.useContext(LANG_CTX);
   var uiLang = _llCtx && _llCtx.currentUiLanguage || typeof window !== "undefined" && window.__alloTextLanguage || "English";
-  var _llCacheRef = React.useRef(llLoad());
+  var _llCacheRef = React.useRef(null);
+  if (_llCacheRef.current === null) _llCacheRef.current = llLoad();
   var _llAttemptedRef = React.useRef({});
   var _setLlTick = React.useState(0)[1];
   LL_CUR.lang = uiLang;
@@ -1096,19 +1097,32 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     };
     frame.srcdoc = html;
   };
-  const gaps = layout ? anchorGaps(layout, seating.constraints) : [];
+  const gaps = React.useMemo(
+    () => layout ? anchorGaps(layout, seating.constraints) : [],
+    [layout, seating.constraints]
+  );
   const liveScore = React.useMemo(
     () => layout ? scoreAssignment(layout, layout.assignments, seating.constraints) : { score: 0, violations: [] },
     [layout, seating.constraints]
   );
-  const sortedSeats = layout ? layout.seats.slice().sort((a, b) => a.y - b.y || a.x - b.x) : [];
-  const seatNumberOf = {};
-  sortedSeats.forEach((s, i) => {
-    seatNumberOf[s.id] = i + 1;
-  });
-  const overlaps = mode === "edit" && layout ? overlappingSeatIds(layout) : {};
+  const { sortedSeats, seatNumberOf } = React.useMemo(() => {
+    const sortedSeats2 = layout ? layout.seats.slice().sort((a, b) => a.y - b.y || a.x - b.x) : [];
+    const seatNumberOf2 = {};
+    sortedSeats2.forEach((s, i) => {
+      seatNumberOf2[s.id] = i + 1;
+    });
+    return { sortedSeats: sortedSeats2, seatNumberOf: seatNumberOf2 };
+  }, [layout]);
+  const overlaps = React.useMemo(
+    () => mode === "edit" && layout ? overlappingSeatIds(layout) : {},
+    [mode, layout]
+  );
   const overlapCount = Object.keys(overlaps).length;
-  const livePods = live && mode === "live" ? listPods(rosterKey) : [];
+  const hasLive = !!live;
+  const livePods = React.useMemo(
+    () => hasLive && mode === "live" ? listPods(rosterKey) : [],
+    [hasLive, mode, rosterKey]
+  );
   if (!isOpen) return null;
   const btn = "px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none disabled:opacity-40";
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center p-2 sm:p-4", onClick: onClose }, /* @__PURE__ */ React.createElement(
@@ -1340,7 +1354,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     ))), selectedStudent && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 mt-1.5" }, tr("Now click a seat for {name}.", { name: displayNameOf(selectedStudent) }))), showConstraints && /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 pt-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black text-slate-600 uppercase tracking-wide mb-1.5" }, tr("Constraints")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, tr("Your professional judgment, encoded once \u2014 Auto-arrange honors it every time.")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5 mb-2" }, seating.constraints.map((c) => {
       const unmet = liveScore.violations.some((v) => v.id === c.id);
       const gap = gaps.some((g) => g.id === c.id);
-      return /* @__PURE__ */ React.createElement("div", { key: c.id, className: "flex items-start gap-1.5 rounded-lg px-2 py-1.5 text-[11px] " + (unmet ? "bg-amber-50 border border-amber-200" : "bg-slate-50") }, /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, /* @__PURE__ */ React.createElement("b", null, constraintTypeLabel(c.type)), ": ", c.students.map(displayNameOf).join(" + "), c.type === "fixed_seat" && seatNumberOf[c.seatId] ? " \u2192 " + tr("Seat {n}", { n: seatNumberOf[c.seatId] }) : "", unmet && /* @__PURE__ */ React.createElement("span", { className: "block text-amber-700" }, tr("unmet in current arrangement")), gap && /* @__PURE__ */ React.createElement("span", { className: "block text-sky-700" }, tr("add a {kind} to the map for this to work", { kind: furnitureLabel(CONSTRAINT_TYPES.filter((s) => s.type === c.type)[0].anchor) }))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeConstraint(c.id), "aria-label": tr("Remove constraint"), className: "text-slate-400 hover:text-rose-600 font-bold" }, "\u2715"));
+      return /* @__PURE__ */ React.createElement("div", { key: c.id, className: "flex items-start gap-1.5 rounded-lg px-2 py-1.5 text-[11px] " + (unmet ? "bg-amber-50 border border-amber-200" : "bg-slate-50") }, /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, /* @__PURE__ */ React.createElement("b", null, constraintTypeLabel(c.type)), ": ", c.students.map(displayNameOf).join(" + "), c.type === "fixed_seat" && seatNumberOf[c.seatId] ? " \u2192 " + tr("Seat {n}", { n: seatNumberOf[c.seatId] }) : "", unmet && /* @__PURE__ */ React.createElement("span", { className: "block text-amber-700" }, tr("unmet in current arrangement")), gap && /* @__PURE__ */ React.createElement("span", { className: "block text-sky-700" }, tr("add a {kind} to the map for this to work", { kind: furnitureLabel(CONSTRAINT_TYPES.filter((s) => s.type === c.type)[0].anchor) }))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeConstraint(c.id), "aria-label": tr("Remove constraint"), className: "text-slate-600 hover:text-rose-600 font-bold" }, "\u2715"));
     }), !seating.constraints.length && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, tr("None yet."))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5 bg-slate-50 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("select", { value: cType, onChange: (e) => setCType(e.target.value), "aria-label": tr("Constraint type"), className: "w-full px-2 py-1 rounded border border-slate-400 text-[11px] bg-white" }, CONSTRAINT_TYPES.map((ct) => /* @__PURE__ */ React.createElement("option", { key: ct.type, value: ct.type }, constraintTypeLabel(ct.type)))), /* @__PURE__ */ React.createElement("select", { value: cA, onChange: (e) => setCA(e.target.value), "aria-label": tr("Student"), className: "w-full px-2 py-1 rounded border border-slate-400 text-[11px] bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tr("Student"), "\u2026"), studentNames.map((n2) => /* @__PURE__ */ React.createElement("option", { key: n2, value: n2 }, displayNameOf(n2)))), (CONSTRAINT_TYPES.filter((ct) => ct.type === cType)[0] || {}).pair && /* @__PURE__ */ React.createElement("select", { value: cB, onChange: (e) => setCB(e.target.value), "aria-label": tr("Second student"), className: "w-full px-2 py-1 rounded border border-slate-400 text-[11px] bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tr("Second student"), "\u2026"), studentNames.filter((n2) => n2 !== cA).map((n2) => /* @__PURE__ */ React.createElement("option", { key: n2, value: n2 }, displayNameOf(n2)))), cType === "fixed_seat" && /* @__PURE__ */ React.createElement("select", { value: cSeat, onChange: (e) => setCSeat(e.target.value), "aria-label": tr("Seat"), className: "w-full px-2 py-1 rounded border border-slate-400 text-[11px] bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tr("Seat"), "\u2026"), sortedSeats.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.id, value: s.id }, tr("Seat {n}", { n: seatNumberOf[s.id] })))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addConstraint, disabled: !cA, className: btn + " w-full bg-indigo-600 text-white hover:bg-indigo-700" }, "\uFF0B ", tr("Add constraint")))), lastSolve && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg px-2.5 py-2 text-[11px] " + (lastSolve.violations.length ? "bg-amber-50 text-amber-800" : "bg-emerald-50 text-emerald-800") }, lastSolve.violations.length ? tr("{n} constraints could not be fully satisfied \u2014 they are marked in the list above.", { n: lastSolve.violations.length }) : "\u2713 " + tr("All constraints satisfied."))), Object.keys(groups).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "p-2.5 border-t border-slate-100 flex flex-wrap gap-2" }, Object.keys(groups).map((gid) => /* @__PURE__ */ React.createElement("span", { key: gid, className: "inline-flex items-center gap-1 text-[10px] font-bold text-slate-600" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "w-2.5 h-2.5 rounded-full inline-block", style: { background: groups[gid] && groups[gid].color || "#94a3b8" } }), groups[gid] && groups[gid].name || gid)))))),
     confirmState && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[220] bg-black/40 flex items-center justify-center p-4", onClick: () => setConfirmState(null) }, /* @__PURE__ */ React.createElement("div", { role: "alertdialog", "aria-modal": "true", "aria-label": confirmState.message, onClick: (e) => e.stopPropagation(), className: "bg-white rounded-xl shadow-2xl p-5 max-w-sm w-full" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-700 font-medium" }, confirmState.message), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-end mt-4" }, /* @__PURE__ */ React.createElement("button", { type: "button", autoFocus: true, "data-safe-default": "true", onClick: () => setConfirmState(null), className: btn + " bg-slate-100 text-slate-700 hover:bg-slate-200" }, t && t("common.cancel") || tr("Cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       const fn = confirmState.onYes;

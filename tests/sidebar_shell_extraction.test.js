@@ -17,6 +17,8 @@ const shell = readFileSync('AlloFlowANTI.txt', 'utf8');
 const ast = parse(source, { sourceType: 'script', plugins: ['jsx'] });
 const names = ['GeneratorActionsView', 'SourceInputShellView'];
 const functions = ast.program.body.filter(n => n.type === 'FunctionDeclaration' && names.includes(n.id.name));
+// Helpers declared in this same module are valid dependencies, not missing host captures.
+const moduleHelpers = new Set(ast.program.body.filter(n => n.type === 'FunctionDeclaration').map(n => n.id.name));
 let api, Gate, root, host;
 beforeAll(() => {
   global.IS_REACT_ACT_ENVIRONMENT = true;
@@ -74,7 +76,7 @@ describe('sidebar shell CDN boundaries', () => {
       const text = source.slice(node.start, node.end);
       const mini = parse(text, { sourceType: 'script', plugins: ['jsx'] });
       const free = new Set(); traverse(mini, { ReferencedIdentifier(p) { if (!p.scope.getBinding(p.node.name)) free.add(p.node.name); } });
-      expect([...free].filter(n => !['React', 'window', 'document', 'String', 'Array', 'Number', 'JSON', 'Error', 'FileReader', 'undefined'].includes(n))).toEqual([]);
+      expect([...free].filter(n => !moduleHelpers.has(n) && !['React', 'window', 'document', 'String', 'Array', 'Number', 'JSON', 'Error', 'FileReader', 'undefined'].includes(n))).toEqual([]);
       expect(text.includes('useState(')).toBe(false); expect(text.includes('useEffect(')).toBe(false);
     }
     for (const file of ['AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx', 'desktop/web-app/src/AlloFlowANTI.txt']) {
@@ -103,6 +105,19 @@ describe('sidebar shell CDN boundaries', () => {
     expect(p.toggleTool).toHaveBeenCalledWith('math');
     const hidden = api.GeneratorActionsView({ ...p, isGuidedToolVisible: () => false });
     expect(all(hidden).find(n => n.props.id === 'tour-tool-math').props.style.display).toBe('none');
+  });
+  it('passes the current pasted source through the generated analysis panel action', () => {
+    const inputText = 'Current pasted passage\nwith exact punctuation.';
+    const p = fixture('GeneratorActionsView', { expandedTools: ['analysis'], inputText, hasSourceOrAnalysis: true, isProcessing: false });
+    const panel = all(api.GeneratorActionsView(p)).find(node => node.type === window.AlloModules.AnalysisPanel);
+    expect(panel).toBeTruthy();
+    expect(panel.props.inputText).toBe(inputText);
+    host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host);
+    act(() => root.render(panel));
+    const generate = host.querySelector('[data-help-key="analysis_generate_button"]');
+    expect(generate.disabled).toBe(false);
+    act(() => generate.click());
+    expect(p.handleGenerate).toHaveBeenCalledWith('analysis', null, false, inputText, { selectedReadingSourceId: '__input__' });
   });
   it('preserves catalog callbacks and suppresses discovery in Guided Mode', () => {
     const p = fixture('GeneratorActionsView'); const tree = api.GeneratorActionsView(p);

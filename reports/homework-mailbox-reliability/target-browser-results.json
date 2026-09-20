@@ -1,0 +1,48 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-09-20T04:29:43.862Z",
+  "browser": "148.0.7778.96",
+  "hashes": {
+    "view_share_session_surfaces_module.js": "4fbf452cc2a6531792efaf569f22e2fd0f5183eab76aa5541b50463ec67a9d08",
+    "desktop/web-app/node_modules/react/umd/react.production.min.js": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd",
+    "desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d",
+    "desktop/web-app/build/static/css/main.1fb7b97e.css": "4b9a6e181169d48efc6e208af5f3987ffc9cd63ab255bc60eae40e4fa7a98761",
+    "mailboxHelperRegion": "5f0c85790a6bb7e4c4a292178d918b61fd92de4dde84da3554b0d748cc8d590d",
+    "qrTargetMemoRegion": "a80c89ea68500e3fc37f325622e9016b94ac6c530e9386329352c2b7b8659356"
+  },
+  "scenarios": [
+    {
+      "name": "matching-mailbox-320",
+      "passed": true,
+      "panelInstantiated": true,
+      "reconnectRequired": false,
+      "noAdminInDOM": true,
+      "layout": {
+        "width": 320,
+        "documentWidth": 320,
+        "panelWidth": 294,
+        "scrollWidth": 294,
+        "left": 12,
+        "right": 308
+      }
+    },
+    {
+      "name": "different-mailbox-320",
+      "passed": true,
+      "panelInstantiated": false,
+      "reconnectRequired": true,
+      "noAdminInDOM": true,
+      "layout": {
+        "width": 320,
+        "documentWidth": 320,
+        "panelWidth": 294,
+        "scrollWidth": 294,
+        "left": 12,
+        "right": 308
+      }
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "scope": "Actual canonical mailbox helper and target memo plus generated QR dialog; local React/CSS and a recording teacher-panel adapter. No full shell, actual activity-panel network behavior, mailbox service, authentication, upload, deployment or native screen-reader validation."
+}

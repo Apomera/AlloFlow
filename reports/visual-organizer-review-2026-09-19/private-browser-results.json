@@ -1,0 +1,27 @@
+{
+  "passed": 20,
+  "checks": [
+    "Production reflection mounts in a separate student browser",
+    "Actual host submission reaches private teacher review",
+    "Private teacher feedback reaches the original learner",
+    "Incoming revision does not change the teacher selection",
+    "Teacher can compare the revised response with its prior version",
+    "Inbox refresh preserves an unsent feedback draft",
+    "Reconnect restores the saved learner draft and private feedback",
+    "Keyboard reaches the next labeled response",
+    "Teacher review fits at 200 percent zoom",
+    "Teacher export includes both revisions and feedback",
+    "Spanish review uses translated controls",
+    "Spanish phone review has no horizontal overflow",
+    "Spanish review has no accessibility violations",
+    "French review uses translated controls",
+    "French phone review has no horizontal overflow",
+    "French review has no accessibility violations",
+    "Learner reflection has no accessibility violations",
+    "Learner phone layout has no horizontal overflow",
+    "Teacher stop prevents late submission and preserves the draft",
+    "No browser runtime errors"
+  ],
+  "errors": [],
+  "scope": "Separate teacher/student Chromium contexts; production reflection/review bundle, actual host submission callback and LAN transport; real isolated LAN runtime. Reference diagram is a deterministic fixture. Axe scans include color contrast."
+}

@@ -72,7 +72,10 @@
       "w": 762,
       "h": 580
     },
-    "objects": 78,
+    "objects": 105,
+    "flashVisible": false,
+    "flashOpacity": 0,
+    "ripples": 0,
     "focus": "apparatus",
     "reading": 0,
     "delivered": 0,
@@ -80,7 +83,8 @@
     "liquidSurface": 0.4617158626401806,
     "meniscus": 6.24,
     "color": "rgba(200,220,255,0.25)",
-    "animating": false
+    "animating": false,
+    "previewMs": null
   },
   "endpoint": {
     "state": "ready",
@@ -89,7 +93,10 @@
       "w": 762,
       "h": 580
     },
-    "objects": 78,
+    "objects": 105,
+    "flashVisible": false,
+    "flashOpacity": 0,
+    "ripples": 0,
     "focus": "apparatus",
     "reading": 26,
     "delivered": 26,
@@ -97,7 +104,8 @@
     "liquidSurface": 0.8785874873636701,
     "meniscus": 4.6176,
     "color": "#ec4899",
-    "animating": false
+    "animating": false,
+    "previewMs": null
   },
   "refill": {
     "state": "ready",
@@ -106,7 +114,10 @@
       "w": 318,
       "h": 390
     },
-    "objects": 78,
+    "objects": 105,
+    "flashVisible": false,
+    "flashOpacity": 0,
+    "ripples": 0,
     "focus": "flask",
     "reading": 25,
     "delivered": 75,
@@ -114,7 +125,8 @@
     "liquidSurface": 1.531968492360424,
     "meniscus": 4.68,
     "color": "#ec4899",
-    "animating": false
+    "animating": false,
+    "previewMs": null
   },
   "redox": {
     "state": "ready",
@@ -123,14 +135,18 @@
       "w": 318,
       "h": 390
     },
-    "objects": 78,
-    "focus": "flask",
+    "objects": 105,
+    "flashVisible": false,
+    "flashOpacity": 0,
+    "ripples": 0,
+    "focus": "apparatus",
     "reading": 0,
     "delivered": 0,
     "fillFraction": 0.6756756756756757,
     "liquidSurface": 0.8719288863764678,
     "meniscus": 6.24,
     "color": "rgba(214,240,226,0.200)",
-    "animating": false
+    "animating": false,
+    "previewMs": null
   }
 }

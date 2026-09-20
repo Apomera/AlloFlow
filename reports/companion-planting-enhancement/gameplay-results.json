@@ -2,15 +2,15 @@
   "viewports": [
     {
       "width": 390,
-      "height": 3799,
-      "canvasTop": 944.59375,
-      "primaryTop": 363.09375,
+      "height": 3754,
+      "canvasTop": 938.078125,
+      "primaryTop": 328.5,
       "overflow": false
     },
     {
       "width": 320,
-      "height": 3480,
-      "canvasTop": 935.5,
+      "height": 3938,
+      "canvasTop": 1035.21875,
       "primaryTop": 388.5,
       "overflow": false
     }
@@ -55,8 +55,8 @@
     },
     {
       "width": 320,
-      "height": 1249,
-      "canvasTop": 722.5,
+      "height": 1267,
+      "canvasTop": 740.5,
       "primaryTop": 388.5,
       "overflow": false
     }

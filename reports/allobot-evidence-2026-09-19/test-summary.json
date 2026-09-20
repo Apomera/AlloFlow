@@ -1,0 +1,22 @@
+{
+  "tests": {
+    "passed": 141,
+    "failed": 5,
+    "failures": [
+      "recognition cannot reach generic command AI uses only a generic view hint and keeps noopener on the actual host launch",
+      "preview wiring guardrails AlloFlowANTI.txt passes an EXPLICIT render config",
+      "preview wiring guardrails desktop/web-app/src/AlloFlowANTI.txt passes an EXPLICIT render config",
+      "preview wiring guardrails desktop/web-app/src/App.jsx passes an EXPLICIT render config",
+      "UDL guide modal — WCAG 2.2 AA synchronizes the deployable module"
+    ]
+  },
+  "focused-tests": {
+    "passed": 84,
+    "failed": 0,
+    "failures": []
+  },
+  "finalEvidence": {
+    "passed": 20,
+    "failed": 0
+  }
+}

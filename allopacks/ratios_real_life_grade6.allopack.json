@@ -8,7 +8,8 @@
     "gradeLevel": "6th Grade",
     "standards": "CCSS.MATH.CONTENT.6.RP.A.1 (understand the concept of a ratio and use ratio language); CCSS.MATH.CONTENT.6.RP.A.2 (understand the concept of a unit rate); CCSS.MATH.CONTENT.6.RP.A.3 (use ratio and rate reasoning to solve real-world problems)",
     "createdAt": "2026-07-21T06:00:00.000Z",
-    "imageShotList": "allopacks/ratios_real_life_grade6.IMAGES.md"
+    "imageShotList": "allopacks/ratios_real_life_grade6.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Ratios and Unit Rates",
   "history": [
@@ -48,7 +49,7 @@
       "title": "The Four-Second Trick",
       "timestamp": "2026-07-21T06:00:01.000Z",
       "data": "## The Four-Second Trick\n\nTwo boxes of cereal sit on the shelf. The 12-ounce box costs $3.60. The 18-ounce box costs $5.76. Which one is the better deal?\n\nMost people grab the big one because bigger usually means cheaper per ounce. Most people are guessing. You are about to stop guessing.\n\nA **ratio** compares two amounts. Here it is dollars to ounces. Ratios can be written as 12 to 18, as 12:18, or as the fraction 12/18 — three notations for the same relationship.\n\nThe move that makes ratios useful is turning them into a **unit rate**: how much for exactly ONE of something. Divide the price by the number of ounces.\n\nBox A: $3.60 ÷ 12 = **$0.30 per ounce**.\nBox B: $5.76 ÷ 18 = **$0.32 per ounce**.\n\nThe smaller box is the better deal. The store is counting on you not checking. This happens constantly in real stores — bulk sizes are usually cheaper per unit, but not always, and \"usually\" is exactly the assumption that costs you money.\n\nUnit rates are everywhere once you look. Miles per hour is a unit rate: distance for one hour. Words per minute. Points per game. Price per ounce. Each one answers the same question — how much per ONE — and that is what makes different-sized things comparable.\n\nRatios also stay true when you scale them. A pancake recipe using 2 cups of flour to 3 cups of milk has a 2:3 ratio. Doubling to 4 cups and 6 cups keeps the ratio identical, and the pancakes taste the same. These are **equivalent ratios**, and they are why recipes work for four people or forty.\n\nMaps run on the same idea. A scale of 1 inch : 50 miles means every inch on paper stands for 50 real miles. Measure 3.5 inches between two towns and you know the distance is 175 miles without driving it.\n\nHere is the thing worth remembering: ratio reasoning is not really a math topic. It is a habit — the habit of asking *per what?* When someone tells you a number, ask what it is being compared to. That question is most of the work.",
-      "meta": "6th Grade • Leveled reading • ~330 words",
+      "meta": "6th Grade • Leveled reading",
       "imageSlot": "rt-img-unit-price"
     },
     {

@@ -11,10 +11,10 @@ beforeAll(() => {
   global.React = window.React = React;
   global.IS_REACT_ACT_ENVIRONMENT = true;
   window.AlloIcons = new Proxy({}, { get: () => () => null });
-  loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js'); loadAlloModule('view_simplified_module.js');
+  loadAlloModule('instructional_context_module.js'); loadAlloModule('pure_helpers_module.js'); loadAlloModule('phase_n_misc_helpers_module.js'); loadAlloModule('view_simplified_module.js');
   pure = window.AlloModules.PureHelpers; phase = window.AlloModules.PhaseNHelpers; View = window.AlloModules.SimplifiedView;
 });
-afterEach(() => { if (root) act(() => root.unmount()); host?.remove(); root = null; });
+afterEach(() => { localStorage.removeItem('alloflow_reading_width'); localStorage.removeItem('alloflow_reading_show_changes'); if (root) act(() => root.unmount()); host?.remove(); root = null; });
 const splitParts = text => {
   const parts = String(text).split('--- ENGLISH TRANSLATION ---');
   return parts.length < 2 ? null : { source: parts[0].trim().split(/\n{2,}/), target: parts[1].trim().split(/\n{2,}/), sourceFull: parts[0].trim(), targetFull: parts[1].trim() };
@@ -117,7 +117,7 @@ describe('Teacher comparison', () => {
   });
   it('preserves complete long text without allocating an unbounded comparison matrix', () => {
     const text = ('Water flows.\n\n').repeat(1200);
-    mount({ isTeacherMode: true, isCompareMode: true, inputText: text, generatedContent: content(text + 'FINAL_SENTINEL') });
+    mount({ isTeacherMode: true, isCompareMode: true, inputText: 'Different current input', history: [{ id: 'long-source', type: 'analysis', data: { originalText: text } }], generatedContent: { ...content(text + 'FINAL_SENTINEL'), instructionalText: { sourceArtifactId: 'long-source' } } });
     expect(host.textContent).toContain('without word change highlighting'); expect(host.querySelector('[data-compare-version="adapted"]').textContent).toBe(text + 'FINAL_SENTINEL');
   });
 });
@@ -126,21 +126,21 @@ describe('Teacher comparison', () => {
 describe('Student reading workflow and teacher boundaries', () => {
   it.each(['revise', 'add-glossary'])('keeps stale %s state out of student view', interactionMode => {
     const { props } = mount({ interactionMode, isZenMode: false, isCompareMode: true, isEditingLeveledText: true, revisionData: { type: 'simplify', result: 'TEACHER_REVISION', x: 10, y: 10 }, generatedContent: { ...content('Student passage.'), levelCheck: { feedback: 'TEACHER_LEVEL' }, alignmentCheck: { rigorReport: 'TEACHER_RIGOR' } } });
-    expect(host.querySelector('[data-reading-passage]')).not.toBeNull();
+    expect(host.querySelector('[data-reading-comparison]')).not.toBeNull();
     expect(host.querySelector('textarea')).toBeNull();
-    expect(host.querySelector('[data-reading-comparison]')).toBeNull();
-    expect(host.querySelector('[data-instructional-role]')).toBeNull();
+    expect(host.querySelector('[data-reading-comparison]')).not.toBeNull();
+    expect(host.querySelector('[data-instructional-role]')).not.toBeNull();
     expect(host.textContent).not.toMatch(/TEACHER_|Instructional use|Primary replacement/);
     expect(props.setInteractionMode).toHaveBeenCalledWith('read');
-    expect(props.setIsCompareMode).toHaveBeenCalledWith(false);
+    expect(host.querySelector('select[aria-label="Set instructional text role"]')).toBeNull();
     expect(props.handleToggleIsEditingLeveledText).toHaveBeenCalledTimes(1);
   });
   it('removes authoring UI on a live teacher-to-student role switch', () => {
     const { props } = mount({ isTeacherMode: true, isCompareMode: true });
     expect(host.querySelector('[data-reading-comparison]')).not.toBeNull();
     act(() => root.render(React.createElement(View, { ...props, isTeacherMode: false })));
-    expect(host.querySelector('[data-reading-comparison]')).toBeNull();
-    expect(host.querySelector('[data-reading-passage]')).not.toBeNull();
+    expect(host.querySelector('[data-reading-comparison]')).not.toBeNull();
+    expect(host.querySelector('select[aria-label="Set instructional text role"]')).toBeNull();
   });
   it('clears previous help and stops passage audio when the resource changes', () => {
     const { props } = mount({ isPlaying: true, playingContentId: 'simplified-main' });
@@ -289,5 +289,191 @@ describe('Discoverable Focus view', () => {
     const picker = host.querySelector('[data-adapted-theme-picker]');picker.focus();
     act(() => root.render(React.createElement(View, { ...props, isZenMode: false })));
     expect(document.activeElement).toBe(picker);
+  });
+});
+
+
+describe('Novak source-preserving reading', () => {
+  const captured = (source, adapted = 'Upon the open land.') => ({ ...content(adapted), instructionalText: { role: 'supplemental', form: 'adapted' }, sourceSnapshot: window.AlloModules.InstructionalContext.createSourceSnapshot(source, { language: 'English' }) });
+  it('lets students toggle red/green changes without changing either text', () => {
+    const original = 'Upon the heath.\n\nAnon!';
+    const adapted = 'Upon the open land.\n\nSoon!';
+    mount({ isCompareMode: true, generatedContent: captured(original, adapted) });
+    const source = () => host.querySelector('[data-compare-version="source"]').textContent;
+    const target = () => host.querySelector('[data-compare-version="adapted"]').textContent;
+    const toggle = host.querySelector('input[aria-label="Show changes"]');
+    expect(toggle.checked).toBe(false); expect(host.querySelector('del,ins')).toBeNull();
+    expect(source()).toBe(original); expect(target()).toBe(adapted);
+    act(() => toggle.click());
+    expect(host.querySelector('del')).not.toBeNull(); expect(host.querySelector('ins')).not.toBeNull();
+    expect(source()).toBe(original); expect(target()).toBe(adapted);
+    act(() => toggle.click());
+    expect(host.querySelector('del,ins')).toBeNull(); expect(source()).toBe(original); expect(target()).toBe(adapted);
+  });
+  it('never substitutes unrelated history when the captured source is missing', () => {
+    mount({ isCompareMode: true, inputText: 'WRONG INPUT', history: [{ id: 'other', type: 'analysis', data: { originalText: 'WRONG LESSON' } }], generatedContent: { ...content('Adapted passage.'), instructionalText: { sourceArtifactId: 'missing' } } });
+    expect(host.querySelector('[data-compare-version="source"]').textContent).toBe('');
+    expect(host.textContent).toContain('Original not captured');
+    expect(host.querySelector('input[aria-label="Show changes"]').disabled).toBe(true);
+  });
+  it('keeps exact original text and additive glosses separate, including CRLF', () => {
+    const api = window.AlloModules.InstructionalContext;
+    const original = 'THIRD WITCH\r\nUpon the heath.\r\n\r\nAnon!';
+    const item = api.createSupportedReading(original, { id: 'original' });
+    const start = original.indexOf('heath');
+    item.readingSupports = api.validateReadingSupports(item.sourceSnapshot, [{ id: 'heath', start, end: start + 5, quote: 'heath', text: 'Open land with low shrubs.' }]);
+    mount({ generatedContent: item, isTeacherMode: true, isZenMode: false, isEditingLeveledText: true });
+    expect(host.querySelector('textarea')).toBeNull();
+    expect(host.querySelector('[data-reading-gloss]').textContent).toContain('Open land');
+    const toggle = Array.from(host.querySelectorAll('input[type="checkbox"]')).find(node => node.parentElement.textContent.includes('Show glosses'));
+    act(() => toggle.click());
+    expect(host.querySelector('[data-original-source]').textContent).toBe(original);
+    expect(item.data).toBe(original); expect(api.isSupportedOriginal(item)).toBe(true);
+  });
+  it('keeps a supported original form on role changes without replacement authorization', () => {
+    const api = window.AlloModules.InstructionalContext;
+    const item = api.createSupportedReading('Upon the heath.', { id: 'original' });
+    const updated = View.updateInstructionalRole(item, 'primary');
+    expect(updated.instructionalText.form).toBe('same-text-supported');
+    expect(updated.instructionalText.replacementAuthorization.authorized).toBe(false);
+  });
+  it('uses the selected comparison pane for word meaning context', () => {
+    const item = captured('Upon the heath.');
+    const { handleWordClick } = mount({ isCompareMode: true, interactionMode: 'define', generatedContent: item });
+    const word = host.querySelector('[data-compare-version="source"] [data-exact-word]');
+    act(() => word.click());
+    expect(handleWordClick.mock.calls[0][2]).toEqual({ text: 'Upon the heath.', language: 'English' });
+  });
+});
+
+describe('Paired reader playback and supported original continuity', () => {
+  const api = () => window.AlloModules.InstructionalContext;
+  function pair() {
+    const original = api().createSupportedReading('Upon the heath.\r\nAnon!', { id: 'original', language: 'English' });
+    const start = original.data.indexOf('heath');
+    original.readingSupports = api().validateReadingSupports(original.sourceSnapshot, [{ id: 'heath', start, end: start + 5, quote: 'heath', text: 'Open land with low shrubs.' }]);
+    const adapted = { ...content('Upon the open land.\nSoon!'), sourceSnapshot: original.sourceSnapshot, config: { language: 'English' }, instructionalText: { form: 'adapted', role: 'supplemental' } };
+    return { original, adapted };
+  }
+  it('keeps the currently selected adapted version when another companion is newer', () => {
+    const { original, adapted } = pair(), onOpenReadingArtifact = vi.fn();
+    const newer = { ...adapted, id: 'newer', data: 'Another adaptation.' };
+    mount({ generatedContent: adapted, history: [original, adapted, newer], onOpenReadingArtifact });
+    const both = [...host.querySelectorAll('[data-reading-versions] button')].find(node => node.textContent === 'Both');
+    act(() => both.click());
+    expect(onOpenReadingArtifact).toHaveBeenCalledWith(adapted, true);
+  });
+  it('shows matching original glosses in Both and preserves clean/redline toggle behavior', () => {
+    const { original, adapted } = pair();
+    mount({ isCompareMode: true, generatedContent: adapted, history: [original, adapted] });
+    expect(host.querySelector('[data-compare-version="source"] [data-reading-gloss]').textContent).toContain('Open land');
+    expect(host.querySelector('[data-compare-version="adapted"] [data-reading-gloss]')).toBeNull();
+    const glossToggle = host.querySelector('input[aria-label="Show glosses"]');
+    act(() => glossToggle.click());
+    expect(host.querySelector('[data-compare-version="source"]').textContent).toBe(original.data);
+    act(() => glossToggle.click());
+    const changes = host.querySelector('input[aria-label="Show changes"]');
+    act(() => changes.click());
+    expect(host.querySelector('[data-reading-gloss]')).toBeNull();
+    expect(glossToggle.disabled).toBe(true);
+    expect(host.querySelector('[data-compare-version="source"]').textContent).toBe(original.data);
+    act(() => changes.click());
+    expect(host.querySelector('[data-reading-gloss]')).not.toBeNull();
+    expect(original.data).toBe(original.sourceSnapshot.text);
+  });
+  it('toggles the active original pane from Listen to Stop without restarting audio', () => {
+    const { original, adapted } = pair();
+    const { props } = mount({ isCompareMode: true, generatedContent: adapted, history: [original] });
+    act(() => host.querySelector('button[aria-label="Listen to original"]').click());
+    expect(props.handleSpeak).toHaveBeenCalledWith(original.data, 'reading-reading-source', 0, true, 'English');
+    act(() => root.render(React.createElement(View, { ...props, isPlaying: true, playingContentId: 'reading-reading-source' })));
+    expect(host.querySelector('button[aria-label="Stop original"]').textContent).toBe('Stop');
+    act(() => host.querySelector('button[aria-label="Stop original"]').click());
+    expect(props.handleSpeak).toHaveBeenCalledTimes(1);
+    expect(props.stopPlayback).toHaveBeenCalledTimes(2);
+  });
+  it('provides a Stop action in the original-only reader', () => {
+    const { original } = pair();
+    const { props } = mount({ generatedContent: original, isPlaying: true, playingContentId: 'reading-original-original' });
+    expect(host.querySelector('[data-reader-listen]').textContent).toBe('Stop original');
+    act(() => host.querySelector('[data-reader-listen]').click());
+    expect(props.stopPlayback).toHaveBeenCalledTimes(1);
+    expect(props.handleSpeak).not.toHaveBeenCalled();
+  });
+  it('uses the source pane language for phonics alongside a translated companion', () => {
+    const { original, adapted } = pair();
+    const { props } = mount({ generatedContent: { ...adapted, config: { language: 'Spanish' } }, history: [original], isCompareMode: true, interactionMode: 'phonics' });
+    act(() => host.querySelector('[data-compare-version="source"] [data-exact-word]').click());
+    expect(props.handlePhonicsClick.mock.calls[0][2]).toEqual({ language: 'English', audioPlayback: 'reader' });
+  });
+  it('reports unavailable gloss generation without claiming the supports are ready', async () => {
+    const { original } = pair();
+    mount({ generatedContent: original, isTeacherMode: true, onGenerateReadingSupports: async () => ({ status: 'unavailable', annotations: [] }) });
+    const button = [...host.querySelectorAll('button')].find(node => ['Add word supports', 'Refresh suggested supports'].includes(node.textContent));
+    await act(async () => button.click());
+    expect(host.textContent).toContain('Word supports could not be generated. The original is unchanged.');
+    expect(host.textContent).not.toContain('Word supports are ready.');
+  });
+});
+
+it('disables change highlighting across languages and retains RTL source direction', () => {
+  const api = window.AlloModules.InstructionalContext;
+  const sourceSnapshot = api.createSourceSnapshot('على التل.\nقريبا!', { language: 'Arabic' });
+  localStorage.setItem('alloflow_reading_show_changes', 'on');
+  mount({ isCompareMode: true, generatedContent: { ...content('Upon the heath.\nSoon!'), sourceSnapshot, config: { language: 'English' }, instructionalText: { form: 'adapted', role: 'supplemental' } } });
+  expect(host.querySelector('input[aria-label="Show changes"]').disabled).toBe(true);
+  expect(host.querySelector('del,ins')).toBeNull();
+  const sourcePane = host.querySelector('[data-compare-version="source"]');
+  expect(sourcePane.dir).toBe('rtl');
+  expect(sourcePane.lang).toBe('ar');
+  expect(sourcePane.textContent).toBe(sourceSnapshot.text);
+});
+
+it('keeps a captured bilingual original complete when the adapted comparison language changes', () => {
+  const original = 'Texto original.\r\n\r\n--- ENGLISH TRANSLATION ---\r\n\r\nOriginal text.\r\n';
+  const sourceSnapshot = window.AlloModules.InstructionalContext.createSourceSnapshot(original, { language: 'Spanish' });
+  mount({ isTeacherMode: true, isCompareMode: true, generatedContent: { ...content('Texto más fácil.\n\n--- ENGLISH TRANSLATION ---\n\nEasier text.'), sourceSnapshot, config: { language: 'Spanish' }, instructionalText: { form: 'adapted', role: 'supplemental' } } });
+  const sourcePane = () => host.querySelector('[data-compare-version="source"]').textContent;
+  expect(sourcePane()).toBe(original);
+  const languageChoice = [...host.querySelectorAll('select')].find(node => [...node.options].some(option => option.value === 'english'));
+  act(() => { languageChoice.value = 'english'; languageChoice.dispatchEvent(new Event('change', { bubbles: true })); });
+  expect(host.querySelector('[data-compare-version="adapted"]').textContent).toBe('Easier text.');
+  expect(sourcePane()).toBe(original);
+});
+
+
+it('original reader describes its actual listen control and does not offer in-place cloze', () => {
+  const api = window.AlloModules.InstructionalContext;
+  const item = api.createSupportedReading('The original stays intact.', { id: 'original-hint' });
+  mount({ generatedContent: item, interactionMode: 'cloze' });
+  expect(host.textContent).toContain('Use Listen to hear the original.');
+  expect(host.textContent).not.toContain('Choose any sentence to listen from there.');
+  expect(host.querySelector('[data-help-key="simplified_cloze_mode"]')).toBeNull();
+  expect(host.querySelector('[data-original-source]').textContent).toBe(item.data);
+});
+
+
+describe('Remembered reading width', () => {
+  it('restores the last width when reopening the reader without changing text or playback', () => {
+    const { props } = mount();const passage = host.querySelector('[data-reading-passage]');const text = passage.textContent;
+    const select = host.querySelector('select[aria-label="Reading width"]');
+    act(() => { select.value = '40';select.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(localStorage.getItem('alloflow_reading_width')).toBe('40');expect(passage.textContent).toBe(text);expect(props.stopPlayback).not.toHaveBeenCalled();
+    act(() => root.unmount());host.remove();root = null;mount();
+    expect(host.querySelector('select[aria-label="Reading width"]').value).toBe('40');
+    expect(host.querySelector('[data-simplified-reading-body]').style.maxWidth).toContain('40ch');
+  });
+  it('falls back to a valid width if saved settings are damaged', () => {
+    localStorage.setItem('alloflow_reading_width', 'unexpected');mount();
+    expect(host.querySelector('select[aria-label="Reading width"]').value).toBe('72');
+  });
+  it('allows changing width when browser storage is blocked', () => {
+    const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('Blocked'); });
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('Blocked'); });
+    try {
+      mount();const select = host.querySelector('select[aria-label="Reading width"]');
+      expect(select.value).toBe('72');act(() => { select.value = '56';select.dispatchEvent(new Event('change', { bubbles: true })); });
+      expect(select.value).toBe('56');expect(host.querySelector('[data-simplified-reading-body]').style.maxWidth).toContain('56ch');
+    } finally { getItem.mockRestore();setItem.mockRestore(); }
   });
 });

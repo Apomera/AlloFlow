@@ -3007,9 +3007,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-flight-inspection[hidden] { display:none; }
       .bee-flight-inspection>strong { display:block; font-size:13px; }
       [data-flight-height-inspection="true"] [data-flight-director] { display:none!important; }
-      .bee-inspection-views [data-flight-inspection-view="height"],.bee-inspection-views [data-flight-inspection-view="bird"] { grid-column:span 2; }
-      [data-flight-bird-inspection="true"] [data-flight-director] { display:none!important; }
+      .bee-inspection-views [data-flight-inspection-view="height"] { grid-column:1 / -1; }
+      .bee-inspection-views [data-flight-inspection-view="bird"],.bee-inspection-views [data-flight-inspection-view="butterfly"] { grid-column:span 2; }
+      [data-flight-bird-inspection="true"] [data-flight-director],[data-flight-butterfly-inspection="true"] [data-flight-director] { display:none!important; }
       [data-flight-plant-inspection="true"] [data-flight-director] { display:none!important; }
+      .bee-butterfly-anatomy-toolbar { position:absolute; z-index:22; left:50%; bottom:94px; transform:translateX(-50%); width:min(390px,calc(100% - 28px)); padding:4px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; background:#0b2532; border:1px solid #7895a1; border-radius:12px; color:#eef8fc; }
+      [data-beehive-root="true"] .bee-butterfly-anatomy-toolbar button { min-height:44px; min-width:0; padding:7px 3px; border:1px solid transparent; border-radius:7px; background:transparent; color:inherit; font:700 12px/1.3 system-ui,sans-serif; }
+      [data-beehive-root="true"] .bee-butterfly-anatomy-toolbar button[aria-pressed="true"] { color:#102b37; background:#ffe5b4; border-color:#ffe5b4; }
+      .bee-butterfly-anatomy-toolbar button:focus-visible { outline:3px solid #fff; outline-offset:2px; }
+      @media(forced-colors:active) { .bee-butterfly-anatomy-toolbar { background:Canvas; color:CanvasText; border-color:CanvasText; } [data-beehive-root="true"] .bee-butterfly-anatomy-toolbar button[aria-pressed="true"] { background:Highlight; color:HighlightText; border-color:Highlight; forced-color-adjust:none; } .bee-butterfly-anatomy-toolbar button:focus-visible { outline-color:Highlight; } }
       .bee-inspection-plants { margin-top:12px; padding-top:10px; border-top:1px solid #8198a5; }
       .bee-inspection-plants>div { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin-top:6px; }
       @media(max-width:479px) { .bee-inspection-plants>div { grid-template-columns:1fr; } }
@@ -3020,6 +3026,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-inspection-height-note p { margin:4px 0 0; }
       .bee-inspection-views { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:8px; }
       .bee-flight-inspection button { min-height:44px; padding:8px 10px; border:1px solid #8198a5; border-radius:8px; color:inherit; background:transparent; font:700 12px/1.4 system-ui,sans-serif; }
+      [data-beehive-root="true"] .bee-flight-inspection button,[data-beehive-root="true"] .bee-ecology-observe { min-height:44px; }
       .bee-flight-inspection button[aria-pressed="true"] { background:#164a60; color:#fff; border-color:#164a60; }
       .bee-flight-inspection button:focus-visible { outline:3px solid #0284c7; outline-offset:3px; }
       .bee-flight-inspection p { margin:10px 0; }
@@ -3268,51 +3275,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   // Shared decorative meshes; coordinates remain inside the observer's bounds.
   // These use no random stream and never enter the flight or collision model.
   function bhDroneVegetationMesh(kind) {
-    if (['shrub','grass','reed','seed'].indexOf(kind)<0) return null;
-    var positions=[],colors=[],smoothVertices=0;
-    function tri(a,b,c) {
-      var ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
-      if (Math.hypot(uy*vz-uz*vy,uz*vx-ux*vz,ux*vy-uy*vx)<1e-9) return;
-      [a,b,c].forEach(function(p){positions.push(p[0],p[1],p[2]);var shade=p[3]==null?1:p[3];colors.push(shade,shade,shade);});
+    return window.StemMeadow.vegetation(kind);
+  }
+
+  function bhDroneStreamSurface(kind) {
+    if (kind!=='water' && kind!=='bank') return null;
+    var positions=[],uvs=[],tones=[];
+    function row(z) {
+      var center=-270+Math.sin(z*.004)*55,outer=20+Math.sin(z*.043)*1.4+Math.cos(z*.071)*.7;
+      var offsets=kind==='water'?[-14,-11,-7,0,7,11,14]:[-outer,-17.7,-14,14,17.7,outer];
+      var palette=kind==='water'?[0x718c79,0x477e7f,0x326877,0x2d5e70,0x326877,0x477e7f,0x718c79]:[0x85915f,0xb0a37b,0x807b60,0x807b60,0xb0a37b,0x85915f];
+      return offsets.map(function(x,i){return {x:center+x,y:kind==='water'?-.53:-.57,z:z,u:(x+outer)/(outer*2),v:z/(kind==='water'?40:28),tone:palette[i]};});
     }
-    function ellipsoid(cx,cy,cz,rx,ry,rz,shade,segments,rings) {
-      function point(lat,lon){var a=lat*Math.PI/rings,b=lon*Math.PI*2/segments;return [cx+rx*Math.sin(a)*Math.cos(b),cy+ry*Math.cos(a),cz+rz*Math.sin(a)*Math.sin(b),shade];}
-      for(var lat=0;lat<rings;lat++)for(var lon=0;lon<segments;lon++){
-        var a=point(lat,lon),b=point(lat+1,lon),c=point(lat,lon+1),d=point(lat+1,lon+1);tri(a,c,b);tri(b,c,d);
+    function triangle(a,b,c){[a,b,c].forEach(function(p){positions.push(p.x,p.y,p.z);uvs.push(p.u,p.v);tones.push(p.tone);});}
+    var previous=row(300);
+    for(var section=0;section<72;section++){
+      var next=row(265-section*35);
+      for(var band=0;band<previous.length-1;band++){
+        triangle(previous[band],previous[band+1],next[band]);triangle(previous[band+1],next[band+1],next[band]);
       }
+      previous=next;
     }
-    if(kind==='shrub') {
-      ellipsoid(0,0,0,.8,.8,.8,.86,10,6);smoothVertices=positions.length/3;
-      for(var leaf=0;leaf<34;leaf++){
-        var ny=1-2*(leaf+.5)/34,a=leaf*2.399963,ring=Math.sqrt(1-ny*ny),n=[Math.cos(a)*ring,ny,Math.sin(a)*ring];
-        var u=[-Math.sin(a),0,Math.cos(a)],v=[ny*Math.cos(a),-ring,ny*Math.sin(a)],shade=.75+(leaf%5)*.06;
-        function leafPoint(along,across,lift,tone){return [n[0]*(.82+lift)+u[0]*along+v[0]*across,n[1]*(.82+lift)+u[1]*along+v[1]*across,n[2]*(.82+lift)+u[2]*along+v[2]*across,tone];}
-        var tip=leafPoint(.36,0,0,shade),base=leafPoint(-.28,0,0,shade*.8),left=leafPoint(0,.15,0,shade*.84),right=leafPoint(0,-.15,0,shade*.9),ridge=leafPoint(0,0,.09,shade);
-        tri(base,left,ridge);tri(left,tip,ridge);tri(tip,right,ridge);tri(right,base,ridge);
-      }
-    } else if(kind==='seed') {
-      ellipsoid(0,0,0,.055,1,.055,.78,5,3);
-      for(var seed=0;seed<9;seed++){
-        var side=seed%2?-1:1,sy=-.7+seed*.17,reach=.26*(1-seed*.055);
-        ellipsoid(side*reach,sy,Math.sin(seed*2.1)*.11,.19,.19,.12,.78+(seed%3)*.1,5,3);
-      }
-    } else {
-      // A central stalk supports the seed head. Folded ribbons reveal a curved,
-      // tapered blade instead of a large triangular sail at ground level.
-      if(kind==='grass') {
-        tri([-.022,0,0,.7],[.022,0,0,.7],[.014,1,0,.9]);tri([-.022,0,0,.7],[.014,1,0,.9],[-.014,1,0,.9]);
-        tri([0,0,-.022,.7],[0,1,.014,.9],[0,0,.022,.7]);tri([0,0,-.022,.7],[0,1,-.014,.9],[0,1,.014,.9]);
-      }
-      for(var blade=0;blade<4;blade++){
-        var angle=blade*2.399963,dx=Math.cos(angle),dz=Math.sin(angle),height=.76+(blade%2)*.2,reach=.48+(blade%3)*.085;
-        function bladePoint(t,edge){var bend=reach*t*t,y=height*(t-.32*t*t*t),width=.12*Math.sin(Math.PI*t),ridge=edge===0?.025*Math.sin(Math.PI*t):0;return [dx*bend-dz*width*edge,y+ridge,dz*bend+dx*width*edge,edge===0?.98:.69+(blade%3)*.07];}
-        for(var section=0;section<5;section++){
-          var t=section/5,next=(section+1)/5;
-          [-1,1].forEach(function(side){var a=bladePoint(t,side),b=bladePoint(next,side),c=bladePoint(t,0),d=bladePoint(next,0);tri(a,b,c);tri(b,d,c);});
-        }
-      }
+    return {positions:positions,uvs:uvs,tones:tones};
+  }
+
+  // Small periodic textures keep ripples and soil grain seamless when repeated.
+  // Color and shine are illustrative; there is no water-depth or flow solver.
+  function bhDroneStreamTexture(kind) {
+    if (kind!=='water' && kind!=='bank') return null;
+    var size=128,pixels=new Uint8Array(size*size*4),tau=Math.PI*2;
+    function grain(u,v,grid,salt){
+      var x=u*grid,y=v*grid,ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy;fx=fx*fx*(3-2*fx);fy=fy*fy*(3-2*fy);
+      function sample(x,y){var n=Math.imul(x%grid,374761393)+Math.imul(y%grid,668265263)+salt;n=Math.imul(n^(n>>>13),1274126177);return ((n^(n>>>16))>>>0)/4294967295;}
+      var a=sample(ix,iy)*(1-fx)+sample(ix+1,iy)*fx,b=sample(ix,iy+1)*(1-fx)+sample(ix+1,iy+1)*fx;return (a*(1-fy)+b*fy)*2-1;
     }
-    return {positions:positions,colors:colors,smoothVertices:smoothVertices};
+    for(var y=0;y<size;y++)for(var x=0;x<size;x++){
+      var u=x/size,v=y/size,shade;
+      if(kind==='water') shade=219+Math.sin(tau*(3*u+v))*5+Math.sin(tau*16*v+Math.sin(tau*2*u)*1.4+Math.sin(tau*(3*u+2*v))*.4)*(6+grain(u,v,4,47)*2)+Math.sin(tau*(32*v+4*u))*2;
+      else shade=223+grain(u,v,8,23)*12+grain(u,v,32,61)*9+grain(u,v,64,127)*5;
+      var at=(y*size+x)*4;pixels[at]=pixels[at+1]=pixels[at+2]=Math.round(shade);pixels[at+3]=255;
+    }
+    return {size:size,pixels:pixels};
+  }
+
+  function bhDroneStreamOffset(state,reducedMotion) {
+    var clock=state && Number.isFinite(state.simulationClock)?Math.max(0,state.simulationClock):0;
+    return reducedMotion?0:(clock*.018)%1;
   }
 
   function bhDroneStreamDetail() {
@@ -3382,10 +3390,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       note: 'The ruler measures vertically to model ground level (0 ft). It does not measure clearance above trees or buildings. This is a learning overlay.' };
   }
 
+  // Decorative butterflies share one pose calculation with the observer. They
+  // never consume course randomness or enter the flight/collision model.
+  function bhDroneButterflyVisible(index, tier) {
+    return Number.isInteger(index) && index >= 0 && index < 8 && (tier === 'eco' ? index < 2 : tier === 'balanced' ? index % 2 === 0 : true);
+  }
+  function bhDroneButterflyPose(index, state, reducedMotion) {
+    return window.StemMeadow.ambientPose(index, state, reducedMotion);
+  }
+
+  function bhDroneButterflySubject(state, reducedMotion) {
+    var s=state||{}, nearest=null;
+    if (![s.x,s.y,s.z].every(Number.isFinite)) return null;
+    for(var index=0;index<8;index++){
+      if(!bhDroneButterflyVisible(index,s.graphicsTier))continue;
+      var pose=bhDroneButterflyPose(index,s,reducedMotion),p=pose.point,distance=Math.hypot(s.x-p.x,s.y-p.y,s.z-p.z);
+      if(!nearest || distance<nearest.distance)nearest={index:index,point:p,yaw:pose.yaw,distance:distance};
+    }
+    return nearest;
+  }
+  // A generic, enlarged butterfly: two distinct wing shapes with dark margins,
+  // branching lines and pale spots. The pattern is illustrative, not a species ID.
+  function bhDroneButterflyWing(kind) {
+    return window.StemMeadow.butterflyWing(kind);
+  }
+
+  // Local points belong to the named avatar meshes. The renderer transforms
+  // these through the actual wing pivots and camera, including the held flap.
+  function bhDroneButterflyAnatomy(feature) {
+    var features={
+      fore:{title:'Forewings',singular:'Forewing',mesh:'butterfly-forewing',point:[5.3,.22,-3.3],
+        caption:'Forewings · the front pair',fact:'The forewings are the front pair, closest to the head. Each attaches to the thorax, the middle body region. The two markers identify one wing on each side.'},
+      hind:{title:'Hindwings',singular:'Hindwing',mesh:'butterfly-hindwing',point:[4.6,.22,3.9],
+        caption:'Hindwings · the rear pair',fact:'The hindwings are the rear pair and also attach to the thorax. Two forewings plus two hindwings make four wings. Compare the shapes of the two pairs on this model.'},
+      antennae:{title:'Antennae',singular:'Antenna',mesh:'butterfly-antenna-tip',point:[0,0,0],
+        caption:'Antennae · sensing scents',fact:'Butterflies detect scents with their antennae. The two markers point to the thickened tips on this illustrative model. Trace each antenna back to the head.'}
+    };
+    return Object.prototype.hasOwnProperty.call(features,feature)?features[feature]:null;
+  }
+  function bhDroneButterflyCallouts(points,width,height) {
+    if(!Number.isFinite(width)||!Number.isFinite(height)||width<220||height<320)return [];
+    var usable=(Array.isArray(points)?points:[]).filter(function(p){return p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.x<=width&&p.y>170&&p.y<height-150;}).slice(0,2);
+    if(usable.length!==2)return [];
+    usable.sort(function(a,b){return a.x-b.x;});
+    var labelWidth=Math.min(104,(width-42)/2);
+    return usable.map(function(p,index){var center=index===0?Math.max(14+labelWidth/2,width*.25):Math.min(width-14-labelWidth/2,width*.75);
+      return {number:index+1,anchor:{x:p.x,y:p.y},box:{x:center-labelWidth/2,y:134,width:labelWidth,height:28}};
+    });
+  }
+
   // Human inspection viewpoints move only the camera around a paused bee.
-  function bhDroneInspectionCamera(state, view, aspect, habitat) {
+  function bhDroneInspectionCamera(state, view, aspect, habitat, reducedMotion) {
     var s = state || {};
-    if (!s.paused || s.pacing === 'steps' || s.phase === 'end' || ['left', 'right', 'above', 'height', 'bird', 'shrub', 'grass', 'reed'].indexOf(view) < 0 || ![s.x, s.y, s.z, s.yaw].every(Number.isFinite)) return null;
+    if (!s.paused || s.pacing === 'steps' || s.phase === 'end' || ['left', 'right', 'above', 'height', 'bird', 'butterfly', 'shrub', 'grass', 'reed'].indexOf(view) < 0 || ![s.x, s.y, s.z, s.yaw].every(Number.isFinite)) return null;
+    if (view === 'butterfly') {
+      var butterfly=bhDroneButterflySubject(s,reducedMotion == null?beePrefersReducedMotion():reducedMotion);if(!butterfly)return null;
+      var ratio=Number.isFinite(aspect)&&aspect>0?aspect:1,halfFov=Math.min(29*Math.PI/180,Math.atan(Math.tan(29*Math.PI/180)*ratio));
+      var distance=14/Math.sin(halfFov)*1.4,horizontal=distance*Math.cos(Math.PI*.31),heading=butterfly.yaw;
+      return {position:{x:butterfly.point.x+horizontal*(Math.cos(heading)*.25-Math.sin(heading)*.9682458),
+        y:butterfly.point.y+distance*Math.sin(Math.PI*.31),z:butterfly.point.z+horizontal*(-Math.sin(heading)*.25-Math.cos(heading)*.9682458)},
+        target:butterfly.point,label:'Observing butterfly '+(butterfly.index+1),butterflyIndex:butterfly.index};
+    }
     if (view === 'bird') {
       var nearestBird=bhDroneNearestBird(s); if (!nearestBird) return null;
       var birdAspect=Number.isFinite(aspect) && aspect > 0 ? aspect : 1;
@@ -20913,10 +20978,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var _droneRedraw = React.useRef(null);
         var droneInspectionState = React.useState('flight'), droneRendererState = React.useState('loading');
         var _droneInspectionView = React.useRef('flight');
+        var droneButterflyFeatureState=React.useState('none'),_droneButterflyFeature=React.useRef('none');
         var _droneHabitatLayout = React.useRef(null);
         if (!_droneHabitatLayout.current) _droneHabitatLayout.current=bhDroneHabitatLayout();
         var droneInspectionView = dronePaused && droneRendererState[0] === 'three-webgl' ? droneInspectionState[0] : 'flight';
         _droneInspectionView.current = droneInspectionView;
+        var droneButterflyFeature=droneInspectionView==='butterfly'?droneButterflyFeatureState[0]:'none';
+        _droneButterflyFeature.current=droneButterflyFeature;
+        React.useEffect(function(){if(droneInspectionView!=='butterfly'){_droneButterflyFeature.current='none';droneButterflyFeatureState[1]('none');}},[droneInspectionView]);
         React.useEffect(function() {
           if (!droneFlightActive || !dronePaused || droneRendererState[0] === 'canvas-2d-fallback') {
             _droneInspectionView.current = 'flight'; droneInspectionState[1]('flight');
@@ -21319,8 +21388,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         function setDroneInspectionView(view) {
           var state = _droneState.current, canvas = _droneCvRef.current;
           if (!state || !state.paused || state.phase === 'end' || state.pacing === 'steps' || !canvas || canvas.getAttribute('data-flight-renderer') !== 'three-webgl') return;
-          if (['flight', 'left', 'right', 'above', 'height', 'bird', 'shrub', 'grass', 'reed'].indexOf(view) < 0) return;
-          if (['bird','shrub','grass','reed'].indexOf(view)>=0 && !bhDroneInspectionCamera(state,view,1,_droneHabitatLayout.current)) return;
+          if (['flight', 'left', 'right', 'above', 'height', 'bird', 'butterfly', 'shrub', 'grass', 'reed'].indexOf(view) < 0) return;
+          if (['bird','butterfly','shrub','grass','reed'].indexOf(view)>=0 && !bhDroneInspectionCamera(state,view,1,_droneHabitatLayout.current)) return;
           _droneInspectionView.current = view; droneInspectionState[1](view);
           if (_droneRedraw.current) _droneRedraw.current();
           var pose = bhDroneInspectionCamera(state, view,1,_droneHabitatLayout.current);
@@ -21332,7 +21401,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var field=document.getElementById('beehive-drone-playfield');
           if(field){field.focus({preventScroll:true});field.scrollIntoView({block:'center',behavior:'auto'});}
         }
-        function observeDronePlant(kind) {
+        function observeDroneButterfly() { observeDroneSubject('butterfly'); }
+        function observeDroneSubject(kind) {
           setDroneInspectionView(kind);
           if (_droneInspectionView.current!==kind) return;
           var field=document.getElementById('beehive-drone-playfield');
@@ -21352,14 +21422,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var map = document.querySelector('[data-flight-route-panel]'); if (!map) return;
           map.open = true; var summary = map.querySelector('summary'); if (summary) summary.focus();
         }
+        function selectDroneButterflyFeature(feature) {
+          var state=_droneState.current,canvas=_droneCvRef.current;
+          if(!state||!state.paused||state.pacing==='steps'||state.phase==='end'||_droneInspectionView.current!=='butterfly'||!canvas||canvas.getAttribute('data-flight-renderer')!=='three-webgl'||!bhDroneButterflyAnatomy(feature))return;
+          var next=_droneButterflyFeature.current===feature?'none':feature;
+          _droneButterflyFeature.current=next;droneButterflyFeatureState[1](next);
+          if(_droneRedraw.current)_droneRedraw.current();
+        }
+        function renderDroneButterflyToolbar() {
+          if(droneInspectionView!=='butterfly')return null;
+          return h('div',{className:'bee-butterfly-anatomy-toolbar','data-butterfly-anatomy-controls':'true',role:'group','aria-label':'Explore butterfly anatomy'},
+            ['fore','hind','antennae'].map(function(feature){var item=bhDroneButterflyAnatomy(feature);return h('button',{key:feature,type:'button','data-butterfly-feature':feature,'aria-pressed':droneButterflyFeature===feature,'aria-controls':'beehive-butterfly-anatomy-description',onClick:function(){selectDroneButterflyFeature(feature);}},item.title);}));
+        }
         function renderDroneInspectionControls() {
           var heightGuide = bhDroneHeightGuide(_droneState.current), observedBird=bhDroneNearestBird(_droneState.current);
+          var observedButterfly=bhDroneButterflySubject(_droneState.current,beePrefersReducedMotion());
           var observedPlant=bhDronePlantSubject(_droneState.current,droneInspectionView,_droneHabitatLayout.current);
           return h('div', { className: 'bee-flight-inspection', 'data-flight-inspection-controls': 'true', hidden: !dronePaused, role: 'group', 'aria-label': 'Paused scene inspection' },
             h('strong', null, 'Paused · inspect the scene'),
             droneRendererState[0] === 'three-webgl' ? h('div', null,
-              h('div', { className: 'bee-inspection-views' }, [['flight','Flight camera'],['left','Left side'],['right','Right side'],['above','Above'],['height','Height above ground'],['bird','Observe bee-eater']].map(function(item) {
-                return h('button', { key: item[0], type: 'button', 'data-flight-inspection-view': item[0], disabled: item[0] === 'bird' && !observedBird, 'aria-pressed': droneInspectionView === item[0], onClick: function() { setDroneInspectionView(item[0]); } }, item[1]);
+              h('div', { className: 'bee-inspection-views' }, [['flight','Flight camera'],['left','Left side'],['right','Right side'],['above','Above'],['height','Height above ground'],['bird','Observe bee-eater'],['butterfly','Observe butterfly']].map(function(item) {
+                return h('button', { key: item[0], type: 'button', 'data-flight-inspection-view': item[0], disabled: (item[0] === 'bird' && !observedBird) || (item[0] === 'butterfly' && !observedButterfly), 'aria-pressed': droneInspectionView === item[0], onClick: function() { setDroneInspectionView(item[0]); } }, item[1]);
               })),
               h('p', null, 'Inspect your trail and nearby obstacles. These viewpoints move only the camera. Steering directions remain relative to the bee. Resuming restores your flight camera.'),renderDronePlantControls())
               : h('p', null, droneRendererState[0] === 'loading' ? 'Preparing 3D viewpoints. The route map is also available below.' : 'Use the route map to inspect your path in this 2D flight view.'),
@@ -21368,6 +21451,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             droneInspectionView === 'bird' && observedBird && h('div',{className:'bee-inspection-height-note','data-inspection-bird-readout':'true',role:'status'},
               h('strong',null,'Observing bee-eater '+(observedBird.index+1)+' · '+Math.round(observedBird.distance)+' model units from your bee'),
               h('p',null,'Look at this model’s long bill, pointed wings and tail streamers. Only the camera has moved; your bee and the bird remain paused. Route beacons hide during this close-up. Choose Flight camera or resume to return.')),
+            droneInspectionView === 'butterfly' && observedButterfly && h('div',{className:'bee-inspection-height-note','data-inspection-butterfly-readout':'true'},
+              h('strong',null,'Butterfly '+(observedButterfly.index+1)+' · nearest visible butterfly'),
+              h('p',null,'Find the two forewings near the head and the two rounder hindwings. Look for the slender antennae with thickened tips. Compare the broad wings and narrow body with your bee.'),
+              h('p',{id:'beehive-butterfly-anatomy-description','data-butterfly-anatomy-description':droneButterflyFeature,role:'status','aria-atomic':'true'},bhDroneButterflyAnatomy(droneButterflyFeature)?bhDroneButterflyAnatomy(droneButterflyFeature).fact:'Choose Forewings, Hindwings or Antennae on the scene to reveal labels. Select the same feature again to hide its labels.'),
+              h('p',null,'This enlarged model uses an illustrative pattern, not a species identification. Only the camera moves; the butterfly and your flight stay paused. Choose Flight camera or resume to return.')),
             observedPlant && h('div',{className:'bee-inspection-height-note','data-inspection-plant-readout':observedPlant.kind,role:'status'},
               h('strong',null,observedPlant.label+' · nearest visible patch'),h('p',null,observedPlant.look),
               h('p',null,'These are illustrative plant forms, not species identifications. Plants do not refuel this male drone. Flight markers hide for this close-up. Only the camera moves; choose Flight camera or resume to return.')),
@@ -21376,7 +21464,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         function renderDroneEcologyGuide() {
           var r=bhDronePredatorReadout(_droneState.current);
-          function plantButton(kind,label){return droneRendererState[0]==='three-webgl' && dronePacing!=='steps' && h('button',{type:'button',className:'bee-ecology-observe','data-ecology-observe-plant':kind,disabled:!dronePaused || !bhDronePlantSubject(_droneState.current,kind,_droneHabitatLayout.current),onClick:function(){observeDronePlant(kind);}},label);}
+          function plantButton(kind,label){return droneRendererState[0]==='three-webgl' && dronePacing!=='steps' && h('button',{type:'button',className:'bee-ecology-observe','data-ecology-observe-plant':kind,disabled:!dronePaused || !bhDronePlantSubject(_droneState.current,kind,_droneHabitatLayout.current),onClick:function(){observeDroneSubject(kind);}},label);}
           function source(url,label){return h('a',{href:url,target:'_blank',rel:'noopener noreferrer'},label);}
           return h('details',{className:'bee-flight-motion bee-flight-ecology','data-flight-ecology':'true',onToggle:function(event){
             if(!event.currentTarget.open)return;
@@ -21389,7 +21477,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div',{className:'bee-ecology-cards'},
                 h('div',null,h('strong',null,'Flowers & shrubs'),h('p',null,'Flowering plants can provide nectar and pollen. Different plants bloom at different times; real habitat planting should use species suited to the location.'),plantButton('shrub','Observe flowering shrub')),
                 h('div',null,h('strong',null,'Grasses & waterside plants'),h('p',null,'Vegetation also provides structure and shelter. Look for the tall seed heads and the brown reed heads along the stream. These new plants are scenery, not extra collision obstacles.'),plantButton('grass','Observe seed grass'),' ',plantButton('reed','Observe streamside reeds')),
-                h('div',null,h('strong',null,'Butterflies'),h('p',null,'The fluttering flower visitors are harmless scenery here. They do not attack the drone, award points or refill its energy.')),
+                h('div',null,h('strong',null,'Butterflies'),h('p',null,'Look for two pairs of patterned wings and antennae with thickened tips. These enlarged, illustrative butterflies are harmless scenery here; they do not attack the drone, award points or refill its energy.'),droneRendererState[0]==='three-webgl' && dronePacing!=='steps' && h('button',{type:'button',className:'bee-ecology-observe','data-ecology-observe-butterfly':'true',disabled:!dronePaused || !bhDroneButterflySubject(_droneState.current,beePrefersReducedMotion()),onClick:observeDroneButterfly},'Observe nearest butterfly')),
                 h('div',null,h('strong',null,'Bee-eating birds'),h('p',null,'Bee-eaters catch bees and other flying insects. A successful capture kills the prey. The colorful, long-billed birds represent these predators; not every bird species hunts bees.'))),
               h('div',{className:'bee-ecology-encounter'},h('strong',null,'How this flight represents predation'),
                 h('p',null,'This activity uses practice encounters: bird contact costs 15 energy units and up to 10 points, then the bird moves away. It does not animate eating or simulate survival after a real capture. Red rings and warning distances are game aids, not measured hunting ranges.'),
@@ -21397,7 +21485,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 droneRendererState[0] === 'three-webgl' && dronePacing !== 'steps' && h('button',{type:'button',className:'bee-ecology-observe','data-ecology-observe-bird':'true',disabled:!dronePaused || !bhDroneNearestBird(_droneState.current),onClick:observeDroneBird},'Observe nearest bee-eater')),
 
               h('p',null,(_droneState.current && _droneState.current.pacing === 'steps' ? 'Try observing: advance a short climb, then compare the low flowers, shrubs and taller grasses.' : 'Try observing: pause, choose Height above ground, and compare the low flowers, shrubs and taller grasses.') + ' Which parts of the meadow would you investigate for food, shelter or predators?'),
-              h('p',null,'Read more: ',source('https://www.rspb.org.uk/whats-happening/news/buzz-as-rare-rainbow-birds-set-up-summer-home-in-norfolk','RSPB: bee-eaters'),'; ',source('https://www.sanbi.org/animal-of-the-week/carmine-bee-eater/','SANBI: an African bee-eater'),'; ',source('https://xerces.org/bring-back-the-pollinators/grow-pollinator-friendly-flowers','Xerces: varied plant habitat'),'.')));
+              h('p',null,'Read more: ',source('https://www.rspb.org.uk/whats-happening/news/buzz-as-rare-rainbow-birds-set-up-summer-home-in-norfolk','RSPB: bee-eaters'),'; ',source('https://www.sanbi.org/animal-of-the-week/carmine-bee-eater/','SANBI: an African bee-eater'),'; ',source('https://xerces.org/bring-back-the-pollinators/grow-pollinator-friendly-flowers','Xerces: varied plant habitat'),'; ',source('https://australian.museum/learn/species-identification/ask-an-expert/what-do-butterflies-moths-and-skippers-look-like/','Australian Museum: butterfly anatomy'),'; ',source('https://www.amnh.org/exhibitions/butterflies/anatomy','AMNH: butterfly senses'),'.')));
         }
         function syncDroneEcologyGuide(state) {
           var node=document.querySelector('[data-ecology-predator-readout]');if(!node)return;
@@ -21922,7 +22010,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             (objects.depthMarkers || []).forEach(function(node, index) { node.visible = tier === 'high' || index % profile.detailStride === 0; });
             (objects.clouds || []).forEach(function(node, index) { node.visible = tier !== 'eco' || index % 2 === 0; });
             (objects.grassTufts || []).forEach(function(node, index) { node.visible = !objects.meadowBlades && (tier === 'high' || index % profile.detailStride === 0); });
-            (objects.butterflies || []).forEach(function(node, index) { node.visible = tier === 'eco' ? index < 2 : tier === 'high' || index % 2 === 0; });
+            (objects.butterflies || []).forEach(function(node, index) { node.visible = bhDroneButterflyVisible(index,tier); });
             updateDroneQualityBadge(tier, reason || 'quality applied');
           }
           function syncAdaptiveDroneQuality(dt) {
@@ -22208,7 +22296,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               eye: mat(0x1c1917, { roughness: 0.25, metalness: 0.1 }),
               pollen: mat(0xf59e0b, { emissive: 0xb45309, emissiveIntensity: 0.35, roughness: 0.9 }),
               rival: mat(0xd97706),
-              butterflyWing: mat(0xfda4af, { transparent: true, opacity: 0.85, side: THREE.DoubleSide, emissive: 0xf43f5e, emissiveIntensity: 0.12 }),
+              butterflyWing: mat(0xffffff, { vertexColors:true, roughness:.86, side:THREE.DoubleSide }),
               grass: mat(0x2f7d3f, { roughness: 1 }),
               queen: mat(0xf59e0b, { emissive: 0x7c2d12, emissiveIntensity: 0.45 }),
               boost: mat(0xfacc15, { emissive: 0xca8a04, emissiveIntensity: 0.9 }),
@@ -22241,19 +22329,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               field.receiveShadow = true; scene.add(field); objects.scenery.push(field);
             }
             if (THREE.BufferGeometry && THREE.Float32BufferAttribute) {
-              var riverVertices = [], bankVertices = [];
-              function riverSection(vertices, z1, z2, halfWidth, height) {
-                var x1=-270+Math.sin(z1*0.004)*55, x2=-270+Math.sin(z2*0.004)*55;
-                var w1=halfWidth+(halfWidth===20?Math.sin(z1*.043)*1.4+Math.cos(z1*.071)*.7:0),w2=halfWidth+(halfWidth===20?Math.sin(z2*.043)*1.4+Math.cos(z2*.071)*.7:0);
-                vertices.push(x1-w1,height,z1, x2-w2,height,z2, x1+w1,height,z1,
-                  x1+w1,height,z1, x2-w2,height,z2, x2+w2,height,z2);
-              }
-              for (var riverIndex=0;riverIndex<72;riverIndex++) { riverSection(riverVertices,300-riverIndex*35,265-riverIndex*35,14,-0.53); riverSection(bankVertices,300-riverIndex*35,265-riverIndex*35,20,-0.57); }
-              [[bankVertices,0xb4ae80],[riverVertices,0x448c9a]].forEach(function(spec){
-                var geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(spec[0],3)); geo.computeVertexNormals();
-                var ribbon=mesh(geo,mat(spec[1],{roughness:spec[1]===0x448c9a?0.32:1,side:THREE.DoubleSide})); scene.add(ribbon); objects.scenery.push(ribbon);
+              ['bank','water'].forEach(function(kind){
+                var data=bhDroneStreamSurface(kind),geo=new THREE.BufferGeometry(),colors=[],tint=new THREE.Color();
+                data.tones.forEach(function(tone){tint.setHex(tone).convertSRGBToLinear();colors.push(tint.r,tint.g,tint.b);});
+                geo.setAttribute('position',new THREE.Float32BufferAttribute(data.positions,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(data.uvs,2));geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.computeVertexNormals();
+                var texture=null;
+                if(THREE.DataTexture){
+                  var tile=bhDroneStreamTexture(kind);texture=new THREE.DataTexture(tile.pixels,tile.size,tile.size,THREE.RGBAFormat);
+                  texture.name='drone-stream-'+kind+'-texture';texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.magFilter=THREE.LinearFilter;texture.minFilter=THREE.LinearMipmapLinearFilter;texture.generateMipmaps=true;texture.encoding=THREE.sRGBEncoding;
+                  if(renderer.capabilities && renderer.capabilities.getMaxAnisotropy)texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());texture.needsUpdate=true;
+                }
+                // Reuse the ripple texture for bump detail, so normal lighting can
+                // catch the surface without another image or a reflection render.
+                var material=mat(0xffffff,{roughness:kind==='water'?.24:1,metalness:0,vertexColors:true,side:THREE.DoubleSide,map:texture,bumpMap:kind==='water'?texture:null,bumpScale:kind==='water'?.045:0});
+                var ribbon=mesh(geo,material);ribbon.name='drone-stream-'+kind;ribbon.receiveShadow=true;scene.add(ribbon);objects.scenery.push(ribbon);
+                if(kind==='water')objects.streamWater=ribbon;
               });
             }
+
             // Small shoreline stones stay outside the water ribbon. Their own
             // visual seed keeps course layouts and future decisions unchanged.
             if (THREE.InstancedMesh) {
@@ -22475,18 +22568,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // enter the collision or scoring model, so a learner can watch them
             // without wondering whether they were meant to chase one.
             var butterflies = [];
+            function butterflyWingGeometry(kind){
+              var data=bhDroneButterflyWing(kind),g=new THREE.BufferGeometry(),colors=[];
+              data.tones.forEach(function(tone){var color=new THREE.Color(tone).convertSRGBToLinear();colors.push(color.r,color.g,color.b);});
+              g.setAttribute('position',new THREE.Float32BufferAttribute(data.positions,3));g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.computeVertexNormals();return g;
+            }
+            var butterflyFore=butterflyWingGeometry('fore'),butterflyHind=butterflyWingGeometry('hind');
+            var butterflyBody=mat(0x42332b,{roughness:.9}),butterflyTip=mat(0xcbae79,{roughness:.9});
+            var antennaPath=new THREE.CatmullRomCurve3([new THREE.Vector3(.35,.3,-2.6),new THREE.Vector3(.7,1,-3.8),new THREE.Vector3(1.4,1.5,-5.3),new THREE.Vector3(2,1.65,-5.7)]);
+            var antennaGeometry=new THREE.TubeGeometry(antennaPath,12,.065,5,false);
+            var legGeometry=new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(.4,-.3,0),new THREE.Vector3(1.3,-1.4,.3),new THREE.Vector3(2,-1.8,1.1)]),5,.055,4,false);
             for (var flutterIndex = 0; flutterIndex < 8; flutterIndex++) {
-              var flutter = new THREE.Group();
-              flutter.add(mesh(sphere, shared.dark, [0.7, 0.7, 2.6]));
+              var flutter = new THREE.Group();flutter.name='drone-butterfly-'+flutterIndex;
+              var thorax=mesh(sphere,butterflyBody,[.65,.65,1.35]);thorax.name='butterfly-thorax';thorax.position.z=-.65;flutter.add(thorax);
+              var abdomen=mesh(sphere,butterflyBody,[.43,.43,2.15]);abdomen.name='butterfly-abdomen';abdomen.position.z=2;flutter.add(abdomen);
+              var head=mesh(sphere,butterflyBody,[.64,.6,.58]);head.name='butterfly-head';head.position.set(0,.15,-2.25);flutter.add(head);
               var flutterWings = [];
               [-1, 1].forEach(function(side) {
                 var flutterPivot = new THREE.Group();
-                var flutterBlade = mesh(sphere, shared.butterflyWing, [5.2, 0.2, 4.0]);
-                flutterBlade.position.x = side * 5.0;
-                flutterPivot.add(flutterBlade); flutter.add(flutterPivot);
-                flutterWings.push({ pivot: flutterPivot, side: side });
+                var fore=new THREE.Mesh(butterflyFore,shared.butterflyWing),hind=new THREE.Mesh(butterflyHind,shared.butterflyWing);
+                fore.name='butterfly-forewing';hind.name='butterfly-hindwing';fore.scale.x=side;hind.scale.x=side;
+                fore.position.y=.12;flutterPivot.add(hind);flutterPivot.add(fore);flutter.add(flutterPivot);
+                flutterWings.push({pivot:flutterPivot,side:side});
+                var antenna=new THREE.Mesh(antennaGeometry,butterflyBody);antenna.name='butterfly-antenna';antenna.scale.x=side;flutter.add(antenna);
+                var tip=mesh(sphere,butterflyTip,[.16,.16,.3]);tip.name='butterfly-antenna-tip';tip.position.set(side*2,1.65,-5.7);tip.rotation.y=-side*.55;flutter.add(tip);
+                var eye=mesh(sphere,shared.dark,[.23,.3,.25]);eye.position.set(side*.5,.22,-2.38);flutter.add(eye);
+                for(var leg=0;leg<3;leg++){var limb=new THREE.Mesh(legGeometry,butterflyBody);limb.name='butterfly-leg';limb.scale.x=side;limb.position.z=-1.2+leg*.7;limb.rotation.y=side*(leg-1)*.3;flutter.add(limb);}
               });
-              flutter.userData = { wings: flutterWings, baseX: Math.sin(flutterIndex * 1.9) * 150, baseZ: -90 - flutterIndex * 165, baseY: 16 + (flutterIndex % 4) * 9, phase: flutterIndex * 0.83 };
+              flutter.userData = { wings: flutterWings };
               scene.add(flutter); butterflies.push(flutter);
             }
             objects.butterflies = butterflies;
@@ -22861,6 +22970,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (ds.pacing === 'steps') now = (ds.simulationClock || 0) * 1000;
             else { if (!ds.paused || ds._heldVisualTime == null) ds._heldVisualTime = now; now = ds._heldVisualTime; }
             var t = threeWorld, THREE = t.THREE, o = t.objects;
+            if(o.streamWater && o.streamWater.material.map){
+              o.streamWater.material.map.offset.y=bhDroneStreamOffset(ds,beePrefersReducedMotion());
+            }
             var scenarioVisual = DRONE_SCENARIOS[ds.scenario] || DRONE_SCENARIOS.clear;
             var skyBlend = Math.max(0, Math.min(1, ((ds.y || 0) - 50) / 130));
             var skyColor = new THREE.Color(scenarioVisual.skyLow).lerp(new THREE.Color(scenarioVisual.skyHigh), skyBlend);
@@ -22868,18 +22980,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var cameraMode = _droneCameraMode.current === 'chase' ? 'chase' : 'cockpit';
             cv.setAttribute('data-flight-camera', cameraMode);
             var inspectionPose = bhDroneInspectionCamera(ds, _droneInspectionView.current, t.camera.aspect, habitatLayout);
-            if (!inspectionPose && ['bird','shrub','grass','reed'].indexOf(_droneInspectionView.current)>=0) {
+            if (!inspectionPose && ['bird','butterfly','shrub','grass','reed'].indexOf(_droneInspectionView.current)>=0) {
               _droneInspectionView.current='flight';droneInspectionState[1]('flight');
             }
             cv.setAttribute('data-flight-inspection-camera', inspectionPose ? _droneInspectionView.current : 'flight');
+            cv.setAttribute('data-flight-inspection-butterfly-index',inspectionPose && inspectionPose.butterflyIndex!=null?String(inspectionPose.butterflyIndex):'');
             cv.setAttribute('data-flight-inspection-plant-index',inspectionPose && inspectionPose.plantIndex!=null?String(inspectionPose.plantIndex):'');
             if (o.heightFootprint) {
               o.heightFootprint.visible = !!inspectionPose && _droneInspectionView.current === 'height';
               if (o.heightFootprint.visible) o.heightFootprint.position.set(ds.x, 0, ds.z);
             }
-            var plantStudy=!!inspectionPose && ['shrub','grass','reed'].indexOf(_droneInspectionView.current)>=0;
+            var fieldStudy=!!inspectionPose && ['butterfly','shrub','grass','reed'].indexOf(_droneInspectionView.current)>=0;
             var studyDetailStride=droneGraphicsProfile(t.qualityTier).detailStride;
-            (o.depthMarkers || []).forEach(function(node,index){node.visible=!plantStudy && (t.qualityTier==='high' || index%studyDetailStride===0);});
+            (o.depthMarkers || []).forEach(function(node,index){node.visible=!fieldStudy && (t.qualityTier==='high' || index%studyDetailStride===0);});
             var cameraStabilized = _droneCameraStabilized.current !== false;
             ds.cameraStabilized = cameraStabilized;
             var cameraBob = (prefersReducedMotion || ds.paused) ? 0 : Math.sin(now * 0.008) * Math.min(cameraStabilized ? 0.006 : 0.018, (ds.speed || 0) * 0.0015);
@@ -22933,13 +23046,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
             if (o.butterflies && o.butterflies.length) {
               o.butterflies.forEach(function(flutter, flutterIndex) {
-                var base = flutter.userData || {};
-                var wander = prefersReducedMotion ? 0 : now * 0.00042 + (base.phase || 0);
-                flutter.position.set((base.baseX || 0) + Math.cos(wander) * 34, (base.baseY || 16) + Math.sin(wander * 1.7) * 5, (base.baseZ || -200) + Math.sin(wander) * 34);
-                flutter.rotation.y = -wander;
-                (base.wings || []).forEach(function(fw) {
-                  fw.pivot.rotation.z = fw.side * (prefersReducedMotion ? 0.5 : 0.35 + 0.75 * (0.5 + 0.5 * Math.sin(now * 0.011 + flutterIndex)));
-                });
+                var pose=bhDroneButterflyPose(flutterIndex,ds,beePrefersReducedMotion());
+                flutter.position.set(pose.point.x,pose.point.y,pose.point.z);flutter.rotation.y=pose.yaw;
+                (flutter.userData.wings || []).forEach(function(fw) { fw.pivot.rotation.z=fw.side*pose.wingAngle; });
               });
             }
             if (inspectionPose) {
@@ -23018,8 +23127,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               });
             }
 
-            if (o.dcaBeacon) { o.dcaBeacon.visible = ['bird','shrub','grass','reed'].indexOf(_droneInspectionView.current)<0 && !ds.reachedDca && ds.phase !== 'mating' && ds.phase !== 'end'; o.dcaBeacon.rotation.y = 0; o.dcaBeacon.children[1].rotation.z = 0; }
-            if (o.queenBeacon && ds.nearQueens && ds.nearQueens[0]) { var signalQueen = ds.nearQueens[0]; o.queenBeacon.position.set(signalQueen.x, 0, signalQueen.z); o.queenBeacon.visible = ['bird','shrub','grass','reed'].indexOf(_droneInspectionView.current)<0 && !signalQueen.caught && (ds.phase === 'congregation' || ds.reachedDca); o.queenBeacon.rotation.y = -now * 0.0004; o.queenBeacon.children[1].rotation.z = now * 0.0007; }
+            if (o.dcaBeacon) { o.dcaBeacon.visible = ['bird','butterfly','shrub','grass','reed'].indexOf(_droneInspectionView.current)<0 && !ds.reachedDca && ds.phase !== 'mating' && ds.phase !== 'end'; o.dcaBeacon.rotation.y = 0; o.dcaBeacon.children[1].rotation.z = 0; }
+            if (o.queenBeacon && ds.nearQueens && ds.nearQueens[0]) { var signalQueen = ds.nearQueens[0]; o.queenBeacon.position.set(signalQueen.x, 0, signalQueen.z); o.queenBeacon.visible = ['bird','butterfly','shrub','grass','reed'].indexOf(_droneInspectionView.current)<0 && !signalQueen.caught && (ds.phase === 'congregation' || ds.reachedDca); o.queenBeacon.rotation.y = -now * 0.0004; o.queenBeacon.children[1].rotation.z = now * 0.0007; }
             if (o.matingFlash) {
               var mfAge = ds.matingFlashAt ? (now - ds.matingFlashAt) / 1500 : 2;
               if (mfAge >= 0 && mfAge < 1 && ds.matingFlashPos) {
@@ -23042,7 +23151,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (o.obstacleWarn) {
               var nearbyObstacle = ds.nearestObstacle || droneNearestObstacle(ds);
               var obstacleWarningVisible = nearbyObstacle && nearbyObstacle.obstacle && nearbyObstacle.horizontalDistance < 150 && nearbyObstacle.clearance < 90 && ds.phase !== 'end';
-              o.obstacleWarn.visible = !!obstacleWarningVisible && !plantStudy;
+              o.obstacleWarn.visible = !!obstacleWarningVisible && !fieldStudy;
               if (obstacleWarningVisible) {
                 o.obstacleWarn.position.set(nearbyObstacle.obstacle.x, nearbyObstacle.obstacle.h * 0.5, nearbyObstacle.obstacle.z);
                 var warningPulse = 1 + 0.12 * Math.sin(now * 0.01);
@@ -23057,7 +23166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 (ds.nearQueens || []).some(function(q) { if (!q.caught) { routeTarget = q; return true; } return false; });
                 routeColor = 0xf59e0b; routeVisible = !!routeTarget;
               }
-              o.routeLine.visible = routeVisible && !plantStudy;
+              o.routeLine.visible = routeVisible && !fieldStudy;
               if (routeVisible && routeTarget) {
                 var routePositions = o.routeLine.geometry.attributes.position;
                 routePositions.setXYZ(0, ds.x, ds.y + 3, ds.z); routePositions.setXYZ(1, routeTarget.x, routeTarget.y, routeTarget.z); routePositions.needsUpdate = true;
@@ -23068,7 +23177,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (o.routeGates && o.routeGates.length) {
               var approachGuides = bhDroneApproachCues(ds).guides;
               o.routeGates.forEach(function(gate, idx) {
-                var cue = approachGuides[idx]; gate.group.visible = cue.visible && !plantStudy; gate.group.userData.active = cue.active;
+                var cue = approachGuides[idx]; gate.group.visible = cue.visible && !fieldStudy; gate.group.userData.active = cue.active;
                 gate.group.children.forEach(function(frame) { frame.material.opacity = cue.opacity; });
               });
             }
@@ -23098,15 +23207,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               windPositions.setXYZ(1, baseX + activeWindNorm.x * activeWindLength, baseY, baseZ + activeWindNorm.z * activeWindLength);
               windPositions.needsUpdate = true;
               line.material.opacity = activeWindSpeed > 0.05 ? 0.18 + Math.min(0.34, activeWindSpeed * 0.13) : 0.08;
-              line.visible = ds.phase !== 'end' && !plantStudy;
+              line.visible = ds.phase !== 'end' && !fieldStudy;
             });
-            o.flowers.forEach(function(item, idx) { var active = !item.flower.collected && item.flower.hasNectar !== false; item.group.visible = true; item.bloom.scale.setScalar(active ? 1 + 0.08 * Math.sin(now * 0.006 + idx) : 0.48); if (item.halo) item.halo.visible = active && !plantStudy; });
+            o.flowers.forEach(function(item, idx) { var active = !item.flower.collected && item.flower.hasNectar !== false; item.group.visible = true; item.bloom.scale.setScalar(active ? 1 + 0.08 * Math.sin(now * 0.006 + idx) : 0.48); if (item.halo) item.halo.visible = active && !fieldStudy; });
             // Read the current preference without restarting the persistent world.
             var thermalMotionReduced = beePrefersReducedMotion();
             o.thermals.forEach(function(group, index) {
               var data = group.userData.lift; if (!data) return;
               var sample = bhDroneThermalSample(ds, data.thermal), active = sample.lift > 0;
-              group.visible = sample.distance < 1100 && !plantStudy;
+              group.visible = sample.distance < 1100 && !fieldStudy;
               group.userData.liftActive = active;
               data.column.material.opacity = active ? 0.075 : 0.035;
               data.boundary.color.setHex(active ? 0xffedd5 : 0xfdba74);
@@ -23132,7 +23241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
 
             o.drones.forEach(function(item) { var trafficDx = ds.x - item.drone.x, trafficDy = ds.y - item.drone.y, trafficDz = ds.z - item.drone.z; var trafficDistance = Math.sqrt(trafficDx * trafficDx + trafficDy * trafficDy + trafficDz * trafficDz); item.group.position.set(item.drone.x, item.drone.y, item.drone.z); item.group.rotation.y = Math.atan2(item.drone.vx, -item.drone.vz); dressBeeAvatar(item.group, 0.75, 0); if (item.alert) { item.alert.visible = trafficDistance < 110; item.alert.material.opacity = trafficDistance < 30 ? 0.95 : 0.7; item.alert.scale.setScalar(1 + 0.1 * Math.sin(now * 0.009)); } });
-            o.birds.forEach(function(item) { item.group.position.set(item.bird.x, item.bird.y, item.bird.z); item.group.rotation.y = Math.atan2(-item.bird.vx, -item.bird.vz); var flap = prefersReducedMotion ? 0.12 : Math.sin(item.bird.wingPhase) * 0.42; item.wings[0].rotation.z = -0.28 - flap; item.wings[1].rotation.z = 0.28 + flap; var hazardDx = ds.x - item.bird.x, hazardDy = ds.y - item.bird.y, hazardDz = ds.z - item.bird.z; var hazardDist = Math.sqrt(hazardDx * hazardDx + hazardDy * hazardDy + hazardDz * hazardDz); if (item.alert) { item.alert.visible = hazardDist < 120 && !(ds.paused && ['bird','shrub','grass','reed'].indexOf(_droneInspectionView.current)>=0); item.alert.material.opacity = hazardDist < 45 ? 0.92 : 0.42; item.alert.scale.setScalar(prefersReducedMotion ? 1 : 1 + 0.12 * Math.sin(now * 0.01)); } });
+            o.birds.forEach(function(item) { item.group.position.set(item.bird.x, item.bird.y, item.bird.z); item.group.rotation.y = Math.atan2(-item.bird.vx, -item.bird.vz); var flap = prefersReducedMotion ? 0.12 : Math.sin(item.bird.wingPhase) * 0.42; item.wings[0].rotation.z = -0.28 - flap; item.wings[1].rotation.z = 0.28 + flap; var hazardDx = ds.x - item.bird.x, hazardDy = ds.y - item.bird.y, hazardDz = ds.z - item.bird.z; var hazardDist = Math.sqrt(hazardDx * hazardDx + hazardDy * hazardDy + hazardDz * hazardDz); if (item.alert) { item.alert.visible = hazardDist < 120 && !(ds.paused && ['bird','butterfly','shrub','grass','reed'].indexOf(_droneInspectionView.current)>=0); item.alert.material.opacity = hazardDist < 45 ? 0.92 : 0.42; item.alert.scale.setScalar(prefersReducedMotion ? 1 : 1 + 0.12 * Math.sin(now * 0.01)); } });
             o.queens.forEach(function(item) { item.group.position.set(item.queen.x, item.queen.y, item.queen.z); item.group.visible = !item.queen.caught; item.group.rotation.y += 0.006; dressBeeAvatar(item.group, 0.45, 0); item.group.children[1].scale.setScalar(1 + 0.16 * Math.sin(now * 0.004)); });
             var particleLimit = t.particleLimit || 240;
             for (var pi = 0; pi < 240; pi++) { var pt = pi < particleLimit ? (ds.particles || [])[pi] : null; var off = pi * 3; t.particlePositions[off] = pt ? pt.x : 0; t.particlePositions[off + 1] = pt ? pt.y : -9999; t.particlePositions[off + 2] = pt ? pt.z : 0; }
@@ -23153,7 +23262,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           function initThreeWorld() {
             if (!(window.StemLab && typeof window.StemLab.ensureThree === 'function')) { setDroneRendererState('canvas-2d-fallback', '2D flight view'); return; }
             setDroneRendererState('loading', 'Preparing 3D');
-            window.StemLab.ensureThree({ failMessage: 'The 3D flight engine could not load; the accessible 2D flight view remains active.' }).then(function(THREE) {
+            Promise.all([window.StemLab.ensureThree({ failMessage: 'The 3D flight engine could not load; the accessible 2D flight view remains active.' }), (window.StemMeadow ? Promise.resolve(window.StemMeadow) : window.StemLab.ensureMeadow())]).then(function(dependencies) {
+              var THREE=dependencies[0];
               if (!threeAlive) return;
               if (!THREE) { setDroneRendererState('canvas-2d-fallback', '2D flight view'); return; }
               try { threeWorld = buildThreeWorld(THREE); }
@@ -23167,6 +23277,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               threeWorld.contextLossHandler = function(event) {
                 if (event && event.preventDefault) event.preventDefault();
                 disableThreeWorld(new Error('WebGL context lost'));
+                // A paused scene has no next animation frame to repaint the HUD.
+                // Draw the 2D view now so observation labels cannot linger.
+                if(ds.paused && _droneRedraw.current)_droneRedraw.current();
               };
               threeWorld.canvas.addEventListener('webglcontextlost', threeWorld.contextLossHandler, false);
               setDroneRendererState('three-webgl', '3D scene active');
@@ -24431,6 +24544,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath();if(c.roundRect)c.roundRect(14,H-86,W-28,62,10);else c.rect(14,H-86,W-28,62);c.fill();
                 c.textAlign='center';c.fillStyle='#fef3c7';c.font='700 15px system-ui';c.fillText('Bee-eater · paused observation',halfW,H-61);
                 c.fillStyle='#e0f2fe';c.font='500 11px system-ui';c.fillText(Math.round(observedBird.distance)+' model units from your bee',halfW,H-40);c.restore();
+              }
+            }
+
+            cv.setAttribute('data-flight-anatomy-feature','none');cv.setAttribute('data-flight-anatomy-label-count','0');
+            if (usingThreeScene && ds.paused && _droneInspectionView.current==='butterfly') {
+              c.clearRect(0,0,W,H);drawCuePlaque('MEADOW FIELD STUDY',halfW,108,'#ffe5b4',false);
+              c.save();c.fillStyle='rgba(9,27,39,0.96)';
+              c.beginPath();if(c.roundRect)c.roundRect(14,H-86,W-28,62,10);else c.rect(14,H-86,W-28,62);c.fill();
+              c.textAlign='center';c.fillStyle='#ffe5b4';c.font='700 15px system-ui';c.fillText('Butterfly · paused observation',halfW,H-61);
+              var anatomy=bhDroneButterflyAnatomy(_droneButterflyFeature.current);
+              c.fillStyle='#e0f2fe';c.font='500 11px system-ui';c.fillText(anatomy?anatomy.caption:'Choose a feature to explore',halfW,H-40);c.restore();
+              if(anatomy){
+                var subject=bhDroneButterflySubject(ds,beePrefersReducedMotion()),avatar=subject&&threeWorld.objects.butterflies[subject.index],projected=[];
+                if(avatar&&avatar.visible)avatar.traverse(function(node){
+                  if(node.name!==anatomy.mesh)return;
+                  var point=node.localToWorld(new threeWorld.THREE.Vector3(anatomy.point[0],anatomy.point[1],anatomy.point[2]));point.project(threeWorld.camera);
+                  if(point.z>=-1&&point.z<=1)projected.push({x:(point.x+1)*halfW,y:(1-point.y)*halfH});
+                });
+                var callouts=bhDroneButterflyCallouts(projected,W,H);
+                cv.setAttribute('data-flight-anatomy-feature',_droneButterflyFeature.current);cv.setAttribute('data-flight-anatomy-label-count',String(callouts.length));
+                c.save();c.lineJoin='round';c.lineCap='round';c.shadowBlur=0;
+                callouts.forEach(function(label){
+                  var b=label.box,p=label.anchor,x=b.x+b.width/2;
+                  c.beginPath();c.moveTo(x,b.y+b.height);c.lineTo(x,Math.max(b.y+b.height+10,p.y-25));c.lineTo(p.x,p.y);
+                  c.strokeStyle='rgba(9,27,39,.85)';c.lineWidth=4;c.stroke();c.strokeStyle='#ffe5b4';c.lineWidth=1.5;c.stroke();
+                  c.beginPath();c.arc(p.x,p.y,4.5,0,Math.PI*2);c.fillStyle='#0b2532';c.fill();c.strokeStyle='#ffe5b4';c.lineWidth=2;c.stroke();
+                  c.fillStyle='#0b2532';c.beginPath();if(c.roundRect)c.roundRect(b.x,b.y,b.width,b.height,7);else c.rect(b.x,b.y,b.width,b.height);c.fill();
+                  c.strokeStyle='#ffe5b4';c.lineWidth=1;c.stroke();c.textAlign='center';c.fillStyle='#ffe5b4';c.font='700 12px system-ui';c.fillText(anatomy.singular+' '+label.number,x,b.y+18);
+                });c.restore();
               }
             }
 
@@ -29102,8 +29244,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', { className: 'text-[0.625rem] mt-0.5 opacity-70' }, diff.desc));
                     })),
                   h('p', { className: 'text-[0.6875rem] ' + (dk ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.beehive.arrow_keys_wasd_steer_space_climb_shif', 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Glowing route markers score control evidence but do not restore energy.')))
-              : h('div', { id: 'beehive-drone-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_drone_flight_playfield', 'Drone Flight playfield'), 'data-flight-pacing': dronePacing, 'data-flight-hud': droneData.detailedHud === true ? 'detailed' : 'clear', 'data-beehive-stage': 'drone', 'data-flight-state': dronePaused ? 'paused' : 'live', 'data-flight-inspection-active': droneInspectionView !== 'flight' ? 'true' : 'false', 'data-flight-height-inspection': droneInspectionView === 'height' ? 'true' : 'false', 'data-flight-bird-inspection': droneInspectionView === 'bird' ? 'true' : 'false', 'data-flight-plant-inspection': ['shrub','grass','reed'].indexOf(droneInspectionView)>=0 ? 'true' : 'false', className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-indigo-500/60' : 'border-indigo-400'), style: { height: 'clamp(440px, 56vw, 620px)', background: dk ? 'linear-gradient(180deg,#111827 0%,#312e81 52%,#1e1b4b 100%)' : 'linear-gradient(180deg,#dbeafe 0%,#c7d2fe 55%,#eef2ff 100%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(129,140,248,0.25)' : '0 18px 38px rgba(99,102,241,0.20), 0 0 0 1px rgba(129,140,248,0.30)' } },
-                  renderDroneDirector(),
+              : h('div', { id: 'beehive-drone-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_drone_flight_playfield', 'Drone Flight playfield'), 'data-flight-pacing': dronePacing, 'data-flight-hud': droneData.detailedHud === true ? 'detailed' : 'clear', 'data-beehive-stage': 'drone', 'data-flight-state': dronePaused ? 'paused' : 'live', 'data-flight-inspection-active': droneInspectionView !== 'flight' ? 'true' : 'false', 'data-flight-height-inspection': droneInspectionView === 'height' ? 'true' : 'false', 'data-flight-bird-inspection': droneInspectionView === 'bird' ? 'true' : 'false', 'data-flight-butterfly-inspection': droneInspectionView === 'butterfly' ? 'true' : 'false', 'data-flight-plant-inspection': ['shrub','grass','reed'].indexOf(droneInspectionView)>=0 ? 'true' : 'false', className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-indigo-500/60' : 'border-indigo-400'), style: { height: 'clamp(440px, 56vw, 620px)', background: dk ? 'linear-gradient(180deg,#111827 0%,#312e81 52%,#1e1b4b 100%)' : 'linear-gradient(180deg,#dbeafe 0%,#c7d2fe 55%,#eef2ff 100%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(129,140,248,0.25)' : '0 18px 38px rgba(99,102,241,0.20), 0 0 0 1px rgba(129,140,248,0.30)' } },
+                  renderDroneDirector(),renderDroneButterflyToolbar(),
                   h('canvas', { tabIndex: 0, ref: _droneCvRef, 'data-beehive-drone-canvas': 'true', 'data-flight-layer': 'hud-overlay', role: 'img', 'aria-describedby': 'beehive-drone-canvas-description', 'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D Space Shift P Escape', 'aria-label': __alloT('stem.beehive.drone_flight_simulation_use_arrow_keys', 'Drone flight simulation — use arrow keys to fly'), style: { position: 'relative', zIndex: 1, width: '100%', height: '100%', display: 'block', background: 'transparent' } }),
                   h('span', { 'data-flight-renderer-badge': 'true', 'data-renderer-state': 'loading', 'data-frame-health': 'warming', role: 'status', 'aria-live': 'polite', style: { position: 'absolute', top: '58px', right: '8px', zIndex: 20 }, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide text-cyan-100 shadow-md backdrop-blur-md' }, 'Preparing 3D'),
                   h('span', { 'data-flight-quality-badge': 'true', role: 'status', 'aria-live': 'off', 'data-quality-mode': droneGraphicsMode, 'data-quality-tier': droneGraphicsMode === 'auto' ? 'high' : droneGraphicsMode, style: { position: 'absolute', top: '58px', left: '8px', zIndex: 20 }, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide text-lime-100 shadow-md backdrop-blur-md', 'aria-label': (droneGraphicsMode === 'auto' ? 'Automatic graphics, High quality' : droneGraphicsProfile(droneGraphicsMode).label + ' graphics quality') }, (droneGraphicsMode === 'auto' ? 'AUTO - HIGH' : droneGraphicsMode.toUpperCase())),
@@ -29111,7 +29253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { 'data-flight-training-step': 'true', className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] text-cyan-200' }, cue.complete ? 'Complete' : 'Step ' + (cue.index + 1) + ' / ' + cue.total), h('span', { 'data-flight-training-label': 'true', className: 'truncate text-[0.625rem] font-black text-amber-200' }, cue.label)),
                     h('p', { 'data-flight-training-instruction': 'true', className: 'mt-0.5 text-[0.625rem] font-semibold leading-snug text-white' }, cue.instruction),
                     h('p', { 'data-flight-training-hint': 'true', className: 'mt-0.5 hidden text-[0.625rem] leading-snug text-slate-300 sm:block' }, cue.hint)); })(),
-                  h('p', { id: 'beehive-drone-canvas-description', className: 'sr-only' }, dronePacing === 'steps' ? 'The scene waits for your choices. Use the pause-and-plan panel after the scene to choose and advance a maneuver. The map, direction descriptions, and evidence table provide the flight information in text. No held keys are required.' : 'Use Arrow keys or WASD to steer, Space to climb, Shift to descend, P to toggle pause, Escape to pause without resuming, and V to switch between cockpit and chase camera. The scene uses a 3D or 2D flight view. While paused, the inspection controls offer left, right and overhead 3D viewpoints without moving the bee. Height above ground fits the bee and model ground in one view, with a vertical ruler and an equivalent text readout. Observe bee-eater frames the nearest predator without moving either animal. Plant close-ups frame existing shrubs, seed grasses or streamside reeds, with observation prompts below the scene. Resuming restores your flight camera. Open Route map & checkpoints to pause and inspect your recent path, heading, and DCA entry conditions. Easy mode includes a five-step flight-school cue, and a white heading diamond and cyan motion ring compare orientation with actual movement. A cyan trail connects recent recorded positions as a learning overlay. Open Heading, motion & wind below the controls for an explanation and a trail visibility switch. Flight controls follow the scene. Display settings include a clear view, detailed HUD, graphics quality, steering sensitivity, and camera stabilization. The optional detailed HUD includes radar with distinct shapes for route targets, predator birds, thermals, and route markers, plus an arrow for wind drift. Three cyan open frames are optional approach guides; the gold volume marks the modeled DCA entry region. The route map explains the symbols. Obstacle warnings appear in both camera modes. Equivalent labeled touch controls follow the canvas. Open Meadow life and bee predators to pause and explore plant layers, harmless butterflies, bee-eating birds, and the practice encounter rules.'),
+                  h('p', { id: 'beehive-drone-canvas-description', className: 'sr-only' }, dronePacing === 'steps' ? 'The scene waits for your choices. Use the pause-and-plan panel after the scene to choose and advance a maneuver. The map, direction descriptions, and evidence table provide the flight information in text. No held keys are required.' : 'Use Arrow keys or WASD to steer, Space to climb, Shift to descend, P to toggle pause, Escape to pause without resuming, and V to switch between cockpit and chase camera. The scene uses a 3D or 2D flight view. While paused, the inspection controls offer left, right and overhead 3D viewpoints without moving the bee. Height above ground fits the bee and model ground in one view, with a vertical ruler and an equivalent text readout. Observe bee-eater frames the nearest predator without moving either animal. Observe butterfly frames an existing visible butterfly to explore its four wings and antennae. In that view, select Forewings, Hindwings or Antennae to reveal labels attached to the model and a text explanation below the scene. Select the same feature again to hide its labels. Plant close-ups frame existing shrubs, seed grasses or streamside reeds, with observation prompts below the scene. Resuming restores your flight camera. Open Route map & checkpoints to pause and inspect your recent path, heading, and DCA entry conditions. Easy mode includes a five-step flight-school cue, and a white heading diamond and cyan motion ring compare orientation with actual movement. A cyan trail connects recent recorded positions as a learning overlay. Open Heading, motion & wind below the controls for an explanation and a trail visibility switch. Flight controls follow the scene. Display settings include a clear view, detailed HUD, graphics quality, steering sensitivity, and camera stabilization. The optional detailed HUD includes radar with distinct shapes for route targets, predator birds, thermals, and route markers, plus an arrow for wind drift. Three cyan open frames are optional approach guides; the gold volume marks the modeled DCA entry region. The route map explains the symbols. Obstacle warnings appear in both camera modes. Equivalent labeled touch controls follow the canvas. Open Meadow life and bee predators to pause and explore plant layers, harmless butterflies, bee-eating birds, and the practice encounter rules.'),
                   h('div', { 'data-beehive-stage-chip': 'drone', style: { position: 'absolute', left: '50%', bottom: '12px', zIndex: 20, maxWidth: 'calc(100% - 24px)', transform: 'translateX(-50%)' }, 'aria-hidden': 'true' },
                     h('span', { 'data-stage-dot': 'true' }),
                     h('span', { 'data-flight-scene-phase': 'true', className: 'shrink-0 text-[0.625rem] font-black text-amber-200' }, droneFlightActive && _droneState.current && _droneState.current.phase !== 'launch' ? droneInstrumentPhase(_droneState.current).label : 'Flight objective'),
@@ -30994,7 +31136,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       bhSeedFromInput: bhSeedFromInput,
       bhFreshExperimentSeed: bhFreshExperimentSeed,
       bhCreateSeededRandom: bhCreateSeededRandom,
-      bhDroneDecisionKeys: bhDroneDecisionKeys, bhDroneDecisionReadout: bhDroneDecisionReadout, bhDroneNavigationTarget: bhDroneNavigationTarget, bhDroneFlightDirector: bhDroneFlightDirector, bhDroneApproachGuide: bhDroneApproachGuide, bhDroneApproachCues: bhDroneApproachCues, bhDroneInspectionCamera: bhDroneInspectionCamera, bhDroneHeightGuide: bhDroneHeightGuide, bhDroneHabitatLayout: bhDroneHabitatLayout, bhDroneVegetationMesh: bhDroneVegetationMesh, bhDroneStreamDetail: bhDroneStreamDetail, bhDronePlantSubject: bhDronePlantSubject, bhDroneHabitatFraction: bhDroneHabitatFraction, bhDronePredatorReadout: bhDronePredatorReadout, bhDroneNearestBird: bhDroneNearestBird, bhDroneMotionReadout: bhDroneMotionReadout, bhDroneFlightTrail: bhDroneFlightTrail, bhDroneThermalSample: bhDroneThermalSample, bhDroneLiftReadout: bhDroneLiftReadout, bhDroneRouteOverview: bhDroneRouteOverview,
+      bhDroneDecisionKeys: bhDroneDecisionKeys, bhDroneDecisionReadout: bhDroneDecisionReadout, bhDroneNavigationTarget: bhDroneNavigationTarget, bhDroneFlightDirector: bhDroneFlightDirector, bhDroneApproachGuide: bhDroneApproachGuide, bhDroneApproachCues: bhDroneApproachCues, bhDroneInspectionCamera: bhDroneInspectionCamera, bhDroneHeightGuide: bhDroneHeightGuide, bhDroneHabitatLayout: bhDroneHabitatLayout, bhDroneVegetationMesh: bhDroneVegetationMesh, bhDroneStreamDetail: bhDroneStreamDetail, bhDroneStreamSurface: bhDroneStreamSurface, bhDroneStreamTexture: bhDroneStreamTexture, bhDroneStreamOffset: bhDroneStreamOffset, bhDronePlantSubject: bhDronePlantSubject, bhDroneHabitatFraction: bhDroneHabitatFraction, bhDronePredatorReadout: bhDronePredatorReadout, bhDroneNearestBird: bhDroneNearestBird, bhDroneButterflyVisible: bhDroneButterflyVisible, bhDroneButterflyPose: bhDroneButterflyPose, bhDroneButterflySubject: bhDroneButterflySubject, bhDroneButterflyWing: bhDroneButterflyWing, bhDroneButterflyAnatomy: bhDroneButterflyAnatomy, bhDroneButterflyCallouts: bhDroneButterflyCallouts, bhDroneMotionReadout: bhDroneMotionReadout, bhDroneFlightTrail: bhDroneFlightTrail, bhDroneThermalSample: bhDroneThermalSample, bhDroneLiftReadout: bhDroneLiftReadout, bhDroneRouteOverview: bhDroneRouteOverview,
       bhRunHoneyLab: bhRunHoneyLab, bhNewHoneyLab: bhNewHoneyLab,
       bhNormalizeHoneyLab: bhNormalizeHoneyLab, bhHoneyLabReady: bhHoneyLabReady,
       bhHoneyLabPlan: bhHoneyLabPlan, bhHoneyLabComparison: bhHoneyLabComparison,

@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "helpBeforeAttempts": true,
+  "noInventedAttempts": true,
+  "noRevealPoints": true,
+  "learnerControlsContinue": true,
+  "keyboardReveal": true,
+  "selfCheckSeparate": true,
+  "widths": [
+    1280,
+    390,
+    320
+  ],
+  "pageErrors": []
+}

@@ -15,7 +15,9 @@
 
 ## 🚀 What is AlloFlow?
 
-AlloFlow is an **open-source, privacy-first AI classroom assistant and instructional differentiation engine** built for educators, special education teams, and school psychologists. Use the keyless Google-managed Gemini Canvas path with no installation, or run AlloFlow Desktop for a local-first teacher-laptop workflow. AlloFlow can transform source material into interactive, differentiated learning resources.
+AlloFlow is an **open-source, privacy-first AI classroom assistant and instructional differentiation engine** built for educators, special education teams, and school psychologists. Use the keyless Google-managed Gemini Canvas path with no installation, or run AlloFlow Desktop for a local-first teacher-laptop workflow.
+
+For reading, start with the selected original text and add optional supports. Create an adapted companion when it serves the learning goal, keeping the original available alongside it. AlloFlow also creates learning activities and other differentiated resources.
 
 **No AlloFlow software subscription. Local classroom flows can run without student accounts or required PII. Cloud-provider terms, data handling, and costs depend on the deployment you choose.**
 
@@ -36,9 +38,14 @@ AlloFlow is an **open-source, privacy-first AI classroom assistant and instructi
 ## ⚡ Quick Start
 
 1. **[Click to launch](https://apomera.github.io/AlloFlow/launch.html)** — opens the Gemini Canvas path (eligible Google account required; availability and school administrator settings apply)
-2. **Paste your lesson text** into the Source Material box, or let the AI generate from a topic
-3. **Click Fullpack** — leveled text, glossary, quizzes, and scaffolds generated in one click
-4. **Start a Live Session** to push resources to student devices in real-time
+2. **Paste your lesson text** into the Source Material box and identify the learning goal. If you generate a source from a topic, review it before teaching from it.
+3. **Choose Read original with supports** to open the selected text unchanged. Use read-aloud and focus tools, and add optional word explanations. Opening the original does not require an AI call; generating explanations does.
+4. **Add a support when useful** — a glossary, organizer, practice activity, or an adapted companion. An adaptation is supplemental by default; use Original / Adapted / Both to compare it with the captured source.
+5. **Review and try the student view before sharing.** Check contextual meanings, important ideas, and learner fit. Then use a Live Session or export, and test what learners receive on their devices.
+
+**Reading walkthrough:** [Open the original, add word supports, compare versions, and check student delivery](./docs/reading-with-supports-walkthrough.md).
+
+**Need several resources?** Full Pack can draft a set from your selected source. Use it when a lesson needs several supports, and review each resource before sharing.
 
 > 💡 For local-first use on a teacher laptop, see [desktop/README.md](./desktop/README.md). For school-owned server/appliance experiments, see [School Box](#-local-first-desktop-and-school-box) below.
 >
@@ -73,7 +80,8 @@ An agent can author the same portable resource-pack structure without opening th
 
 | Feature | Description |
 |---------|-------------|
-| **Leveled Text & Scaffolds** | Instantly rewrite any source to K-12 plus higher-education/adult reading levels with bilingual side-by-side views, cloze passages, and scaffolded writing frames |
+| **Original Reading & Supports** | Read the selected original unchanged with read-aloud, focus tools, and optional contextual word explanations; teachers can review and edit explanations |
+| **Adapted Companions & Scaffolds** | Draft supplemental readings for a chosen complexity and language, compare Original / Adapted / Both, and add cloze passages or writing frames; review meaning and learner fit before sharing |
 | **Fullpack Generation** | One click generates glossary, leveled reader, quiz, visual organizer, and lesson plan simultaneously |
 | **Live Session (Classroom Sync)** | Push your screen to all student devices in real-time — Teacher Paced or Student Paced modes |
 | **Group Differentiation** | Assign different resources to different student groups simultaneously during a live session |

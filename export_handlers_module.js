@@ -147,7 +147,8 @@
     let normalized = raw;
     try {
       const api = window.AlloModules && window.AlloModules.InstructionalContext;
-      if (raw && api && typeof api.normalizeInstructionalText === 'function') normalized = api.normalizeInstructionalText(raw, { defaultForm: inferredForm });
+      if (api && typeof api.getInstructionalText === 'function') normalized = api.getInstructionalText(artifact);
+      else if (raw && api && typeof api.normalizeInstructionalText === 'function') normalized = api.normalizeInstructionalText(raw, { defaultForm: inferredForm });
     } catch (_) { normalized = raw; }
     normalized = normalized && typeof normalized === 'object' ? normalized : {};
     const role = ['primary', 'supplemental', 'unspecified'].includes(normalized.role) ? normalized.role : 'unspecified';
@@ -181,17 +182,21 @@
     if (!item) return '';
     const data = item.data;
     if (item.type === 'analysis') {
-      return String(item.originalText || (data && data.originalText) || item.rawEnglishText || '').trim();
+      return String(item.originalText || (data && data.originalText) || item.rawEnglishText || '');
     }
-    if (typeof data === 'string') return data.trim();
+    if (typeof data === 'string') return data;
     if (data && typeof data === 'object') {
-      return String(data.originalText || data.sourceText || data.text || data.simplifiedText || '').trim();
+      return String(data.originalText || data.sourceText || data.text || data.simplifiedText || '');
     }
     return '';
   };
 
-  const _alloTextAccessSummary = (items) => {
-    const list = Array.isArray(items) ? items : [];
+  const _alloTextAccessSummary = (items, options = {}) => {
+    const contract = window.AlloModules && window.AlloModules.InstructionalContext;
+    const supplied = Array.isArray(items) ? items : [];
+    if (contract && typeof contract.summarizeReadingAccess === 'function') return contract.summarizeReadingAccess(supplied, options);
+    const list = options.includeSourcePairs && contract && typeof contract.ensureReadingSourcePairs === 'function'
+      ? contract.ensureReadingSourcePairs(supplied, options) : supplied;
     const primary = [];
     const supplemental = [];
     const unauthorizedPrimaryAdaptations = [];
@@ -200,10 +205,12 @@
       const profile = _alloInstructionalTextForExport(item);
       if (profile.role === 'primary' && profile.form === 'adapted' && !profile.replacementAuthorization.authorized) {
         unauthorizedPrimaryAdaptations.push(item);
-      } else if (profile.role === 'primary') primary.push(item);
+      } else if (profile.role === 'primary' && (profile.form !== 'same-text-supported'
+        || (contract && typeof contract.isSupportedOriginal === 'function' && contract.isSupportedOriginal(item)))) primary.push(item);
       if (profile.role === 'supplemental') supplemental.push(item);
     });
     return {
+      items: list,
       primary,
       supplemental,
       unauthorizedPrimaryAdaptations,
@@ -2874,23 +2881,49 @@
   // strings together a context blob the lesson-planner / Socratic chat
   // / scaffold builders consume. No state writes.
   const getLessonContext = (historySource, deps) => {
-    const { history, targetStandards, inputText } = deps || {};
-    const src = historySource || history || [];
+    const { history, targetStandards: rawStandards, inputText: rawInputText } = deps || {};
+    const targetStandards = Array.isArray(rawStandards) ? rawStandards.filter(value => typeof value === 'string' && value.trim()) : [];
+    const inputText = typeof rawInputText === 'string' ? rawInputText : '';
+    // A malformed explicit scope must not fall back to unrelated ambient History.
+    const scope = historySource == null ? history : historySource;
+    const src = (Array.isArray(scope) ? scope : []).filter(item => item && typeof item === 'object' && !Array.isArray(item));
     const findLatest = function(type) { return src.slice().reverse().find(function(h) { return h && h.type === type; }); };
-    const analysisItem = findLatest('analysis');
+    const contract = window.AlloModules && window.AlloModules.InstructionalContext;
+    const unitId = deps?.unitId !== undefined ? deps.unitId : deps?.activeUnitId;
+    const explicitSourceId = deps?.selectedReadingSourceId || deps?.sourceArtifactId || '';
+    const access = _alloTextAccessSummary(src, { includeSourcePairs: true, history: src });
+    const readingItems = access.items || src;
+    const hasSavedReading = src.some(item => item && ['analysis', 'simplified'].includes(item.type));
+    const resolution = contract?.resolveReadingSource?.({
+      items: readingItems, sourceArtifactId: explicitSourceId || undefined, unitId,
+      inputText: explicitSourceId === '__input__' || !hasSavedReading ? inputText : undefined,
+      inputInstructionalText: deps?.inputInstructionalText,
+    });
+    const inputReading = resolution?.status === 'resolved' && !resolution.artifact && resolution.sourceSnapshot
+      ? contract.createSupportedReading(resolution.sourceSnapshot, {
+          id: '__input__', instructionalText: resolution.instructionalText,
+          sourceFamilyId: resolution.sourceFamilyId, unitId: resolution.unitId,
+        }) : null;
+    const unresolvedSelection = resolution ? resolution.status !== 'resolved'
+      : !!explicitSourceId && !src.some(item => item && String(item.id) === String(explicitSourceId));
+    const focalText = resolution ? (resolution.artifact || inputReading)
+      : explicitSourceId ? src.find(item => item && String(item.id) === String(explicitSourceId))
+        : src.slice().reverse().find(item => item && ['analysis', 'simplified'].includes(item.type) && _alloArtifactTextForContext(item));
+    const sameFamily = item => !unresolvedSelection && (!focalText || item === focalText || !contract?.sameReadingSourceFamily
+      || contract.sameReadingSourceFamily(item, focalText));
+    const selectedActivityItem = explicitSourceId && !unresolvedSelection ? focalText : null;
+    const primaryTextItem = inputReading && contract.getInstructionalText(inputReading).role === 'primary'
+      ? inputReading : access.primary.slice().reverse().find(item => sameFamily(item) && _alloArtifactTextForContext(item));
+    const supplementalTextItem = access.supplemental.slice().reverse().find(item => sameFamily(item)
+      && _alloInstructionalTextForExport(item).form === 'adapted' && _alloArtifactTextForContext(item));
+    const sourceSupportItem = readingItems.slice().reverse().find(item => item !== primaryTextItem && item !== selectedActivityItem && sameFamily(item)
+      && _alloArtifactTextForContext(item) && _alloInstructionalTextForExport(item).form !== 'adapted'
+      && _alloInstructionalTextForExport(item).role !== 'primary'
+      && (_alloInstructionalTextForExport(item).form !== 'same-text-supported' || contract?.isSupportedOriginal?.(item)));
+    const analysisItem = src.slice().reverse().find(item => item && item.type === 'analysis' && sameFamily(item));
     const alignmentItem = findLatest('alignment-report');
-    const simplifiedItem = findLatest('simplified');
-    const primaryTextItem = src.slice().reverse().find(function(item) {
-      if (!item || !_alloArtifactTextForContext(item)) return false;
-      const profile = _alloInstructionalTextForExport(item);
-      return profile.role === 'primary'
-        && (profile.form !== 'adapted' || profile.replacementAuthorization.authorized === true);
-    });
-    const supplementalTextItem = src.slice().reverse().find(function(item) {
-      if (!item || item === primaryTextItem || !_alloArtifactTextForContext(item)) return false;
-      const profile = _alloInstructionalTextForExport(item);
-      return profile.role === 'supplemental' && profile.form === 'adapted';
-    });
+    const simplifiedItem = src.slice().reverse().find(item => item && item.type === 'simplified' && sameFamily(item)
+      && _alloInstructionalTextForExport(item).form === 'adapted');
     const glossaryItem = findLatest('glossary');
     const imageItem = findLatest('image');
     const quizItem = findLatest('quiz');
@@ -2906,42 +2939,63 @@
       traceOffset = context.length;
     };
     if (analysisItem && analysisItem.data) {
-      const concepts = Array.isArray(analysisItem.data.concepts) ? analysisItem.data.concepts.join(', ') : 'N/A';
-      const level = typeof analysisItem.data.readingLevel === 'object' ? analysisItem.data.readingLevel.range : analysisItem.data.readingLevel;
+      const concepts = Array.isArray(analysisItem.data.concepts) ? analysisItem.data.concepts.filter(value => typeof value === 'string').join(', ') : 'N/A';
+      const readingLevel = analysisItem.data.readingLevel;
+      const levelValue = readingLevel && typeof readingLevel === 'object' ? readingLevel.range : readingLevel;
+      const level = typeof levelValue === 'string' || (typeof levelValue === 'number' && Number.isFinite(levelValue)) ? levelValue : 'N/A';
       context += '\n--- CONTEXT: ANALYSIS ---\nKey Concepts: ' + concepts + '\nDetected Reading Level: ' + level + '\n';
     }
     record(analysisItem, 'Analysis summary');
-    if (alignmentItem && alignmentItem.data && alignmentItem.data.reports && alignmentItem.data.reports[0]) {
+    const alignmentReport = Array.isArray(alignmentItem?.data?.reports) ? alignmentItem.data.reports[0] : null;
+    const hasAlignmentStandard = alignmentReport && typeof alignmentReport.standard === 'string' && alignmentReport.standard.trim();
+    if (hasAlignmentStandard) {
       const std = alignmentItem.data.reports[0].standard;
       const breakdown = alignmentItem.data.reports[0].standardBreakdown ? JSON.stringify(alignmentItem.data.reports[0].standardBreakdown) : 'N/A';
       context += '\n--- CONTEXT: STANDARDS ---\nTarget Standard: ' + std + '\nStandard Breakdown: ' + breakdown + '\n';
     } else if (targetStandards && targetStandards.length > 0) {
       context += '\n--- CONTEXT: STANDARDS ---\nTarget Standard(s): ' + targetStandards.join(', ') + '\n';
     }
-    record(alignmentItem?.data?.reports?.[0] ? alignmentItem : null, 'Target standards');
+    record(hasAlignmentStandard ? alignmentItem : null, 'Target standards');
+    if (selectedActivityItem) {
+      const selectedProfile = _alloInstructionalTextForExport(selectedActivityItem);
+      const selectedText = resolution?.text ?? _alloArtifactTextForContext(selectedActivityItem);
+      context += '\n--- CONTEXT: SELECTED ACTIVITY TEXT ---\n'
+        + 'The educator selected this passage for this activity. Build from this passage even when its lesson role is supporting; other readings are context.\n'
+        + 'Assigned role: ' + selectedProfile.role + '. Form: ' + selectedProfile.form + '.\n'
+        + selectedText.substring(0, 6000) + (selectedText.length > 6000 ? '...' : '') + '\n';
+      record(selectedActivityItem, 'Selected activity text');
+    } else if (unresolvedSelection) {
+      context += '\n--- CONTEXT: SELECTED ACTIVITY TEXT UNAVAILABLE ---\n'
+        + (resolution?.status === 'ambiguous' ? 'More than one passage is available. ' : 'The selected passage is unavailable. ')
+        + 'Ask the educator to select a passage; do not substitute another saved reading or the current input.\n';
+      record(null, 'Source selection required');
+    }
     if (primaryTextItem) {
       const text = _alloArtifactTextForContext(primaryTextItem);
       const profile = _alloInstructionalTextForExport(primaryTextItem);
       context += '\n--- CONTEXT: PRIMARY TEXT (EDUCATOR/WORKFLOW DESIGNATED) ---\n'
         + 'Form: ' + profile.form + '. Requested grade: ' + (profile.complexity.requestedGrade || 'not recorded')
         + '. Measured grade: ' + (profile.complexity.measuredGrade == null ? 'not recorded' : profile.complexity.measuredGrade) + '.\n'
-        + text.substring(0, 2000) + (text.length > 2000 ? '...' : '') + '\n';
-    } else if (analysisItem && _alloArtifactTextForContext(analysisItem)) {
-      const text = _alloArtifactTextForContext(analysisItem);
-      context += '\n--- CONTEXT: PRIMARY-TEXT FALLBACK (ANALYZED SOURCE; ROLE NOT YET CONFIRMED) ---\n'
-        + 'Use this source before any adapted companion, but do not claim that its grade-level status or instructional designation has been verified.\n'
-        + text.substring(0, 2000) + (text.length > 2000 ? '...' : '') + '\n';
-    } else if (inputText) {
+        + (primaryTextItem === selectedActivityItem ? 'Use the exact selected passage above.' : text.substring(0, 2000) + (text.length > 2000 ? '...' : '')) + '\n';
+    } else if (inputText && !focalText && !unresolvedSelection) {
       context += '\n--- CONTEXT: PRIMARY-TEXT FALLBACK (CURRENT SOURCE INPUT) ---\n'
         + 'Use this source before any adapted companion; its role and grade-level status have not been independently verified.\n'
         + inputText.substring(0, 2000) + (inputText.length > 2000 ? '...' : '') + '\n';
     } else {
       context += '\n--- CONTEXT: PRIMARY TEXT NOT AVAILABLE ---\nDo not describe a supplemental or unspecified adapted text as the core or primary text.\n';
     }
-    record(primaryTextItem || (analysisItem && _alloArtifactTextForContext(analysisItem) ? analysisItem : null), inputText || primaryTextItem || analysisItem ? 'Source text excerpt' : 'Source availability guidance');
+    record(primaryTextItem, primaryTextItem || (!focalText && inputText && !unresolvedSelection) ? 'Source text excerpt' : 'Source availability guidance');
+    if (sourceSupportItem) {
+      const text = _alloArtifactTextForContext(sourceSupportItem);
+      const profile = _alloInstructionalTextForExport(sourceSupportItem);
+      context += '\n--- CONTEXT: SOURCE TEXT (SUPPORTING REFERENCE) ---\n'
+        + 'Assigned role: ' + profile.role + '. Keep this source available for reference; do not promote it to the main lesson text.\n'
+        + text.substring(0, 2000) + (text.length > 2000 ? '...' : '') + '\n';
+      record(sourceSupportItem, 'Supporting source text excerpt');
+    }
     const adaptedSupportItem = supplementalTextItem
       || (!primaryTextItem && simplifiedItem && simplifiedItem !== analysisItem ? simplifiedItem : null);
-    if (adaptedSupportItem && adaptedSupportItem !== primaryTextItem) {
+    if (adaptedSupportItem && adaptedSupportItem !== primaryTextItem && adaptedSupportItem !== selectedActivityItem) {
       const text = _alloArtifactTextForContext(adaptedSupportItem);
       const profile = _alloInstructionalTextForExport(adaptedSupportItem);
       if (text) {
@@ -2952,30 +3006,32 @@
       }
     }
     record(adaptedSupportItem, 'Adapted text excerpt');
-    if (glossaryItem && glossaryItem.data) {
-      const terms = glossaryItem.data.map(function(t) { return t.term; }).join(', ');
-      context += '\n--- CONTEXT: VOCABULARY (Glossary) ---\nKey Terms: ' + terms + '\n';
+    if (Array.isArray(glossaryItem?.data)) {
+      const terms = glossaryItem.data.filter(item => item && typeof item.term === 'string' && item.term.trim()).map(item => item.term).join(', ');
+      if (terms) context += '\n--- CONTEXT: VOCABULARY (Glossary) ---\nKey Terms: ' + terms + '\n';
     }
     record(glossaryItem, 'Vocabulary terms');
-    if (imageItem && imageItem.data && imageItem.data.prompt) {
+    if (typeof imageItem?.data?.prompt === 'string' && imageItem.data.prompt.trim()) {
       context += '\n--- CONTEXT: VISUAL SUPPORT ---\nAvailable Image: "' + imageItem.data.prompt + '". Use this for the Hook or Visual Anchor.\n';
     }
     record(imageItem, 'Visual support summary');
-    if (quizItem && quizItem.data && quizItem.data.questions) {
-      context += '\n--- CONTEXT: ASSESSMENT (Exit Ticket) ---\nHas ' + quizItem.data.questions.length + ' Multiple Choice Questions and ' + ((quizItem.data.reflections && quizItem.data.reflections.length) || 0) + ' Reflection prompts. Use this for Closure.\n';
+    if (Array.isArray(quizItem?.data?.questions)) {
+      context += '\n--- CONTEXT: ASSESSMENT (Exit Ticket) ---\nHas ' + quizItem.data.questions.length + ' Multiple Choice Questions and ' + (Array.isArray(quizItem.data.reflections) ? quizItem.data.reflections.length : 0) + ' Reflection prompts. Use this for Closure.\n';
     }
     record(quizItem, 'Assessment summary');
-    if (scaffoldItem && scaffoldItem.data) {
+    if (scaffoldItem?.data && ['list', 'paragraph'].includes(scaffoldItem.data.mode)) {
       const type = scaffoldItem.data.mode === 'list' ? 'Sentence Starters' : 'Paragraph Frame';
       context += '\n--- CONTEXT: WRITING SCAFFOLDS ---\nType: ' + type + '. Use this for Independent Practice.\n';
     }
     record(scaffoldItem, 'Writing scaffold summary');
-    if (timelineItem && timelineItem.data) {
-      context += '\n--- CONTEXT: SEQUENCE BUILDER ACTIVITY ---\n' + (Array.isArray(timelineItem.data) ? timelineItem.data.length : (timelineItem.data.items?.length || 0)) + ' Events available for sequencing. Use for Guided Practice.\n';
+    const timelineEvents = Array.isArray(timelineItem?.data) ? timelineItem.data : timelineItem?.data?.items;
+    if (Array.isArray(timelineEvents)) {
+      context += '\n--- CONTEXT: SEQUENCE BUILDER ACTIVITY ---\n' + timelineEvents.length + ' Events available for sequencing. Use for Guided Practice.\n';
     }
     record(timelineItem, 'Sequence summary');
-    if (conceptItem && conceptItem.data) {
-      context += '\n--- CONTEXT: CONCEPT SORT ---\nCategories: ' + conceptItem.data.categories.map(function(c) { return c.label; }).join(', ') + '. Use for Guided Practice.\n';
+    if (Array.isArray(conceptItem?.data?.categories)) {
+      const categories = conceptItem.data.categories.filter(item => item && typeof item.label === 'string' && item.label.trim()).map(item => item.label);
+      if (categories.length) context += '\n--- CONTEXT: CONCEPT SORT ---\nCategories: ' + categories.join(', ') + '. Use for Guided Practice.\n';
     }
     record(conceptItem, 'Concept sort summary');
     if (adventureItem) {
@@ -2988,14 +3044,25 @@
   // Normalize an export copy only; saved lesson data and other languages stay intact.
   const prepareLessonPlanExport = plan => {
     if (!plan || plan.type !== 'lesson-plan' || !plan.data || typeof plan.data !== 'object') return null;
-    const text = value => typeof value === 'string' || typeof value === 'number' ? String(value) : Array.isArray(value) ? value.map(text).filter(Boolean).join('\n') : value && typeof value === 'object' ? text(value.en || value.text || value.description || value.title || value.label || value.name || value.item) : '';
+    const text = value => {
+      if (typeof value === 'string' || typeof value === 'number') return String(value);
+      if (Array.isArray(value)) return value.map(text).filter(Boolean).join('\n');
+      if (value && typeof value === 'object') {
+        // Match the editor: blank text and numeric zero must not revive a secondary alias.
+        const key = ['en', 'text', 'description', 'title', 'label', 'name', 'item'].find(key =>
+          typeof value[key] === 'string' || typeof value[key] === 'number'
+          || (value[key] && typeof value[key] === 'object'));
+        return key ? text(value[key]) : '';
+      }
+      return '';
+    };
     const list = value => (Array.isArray(value) ? value : value == null ? [] : [value]).filter(value => value != null);
     const data = { ...plan.data };
     ['essentialQuestion', 'hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'].forEach(key => { data[key] = text(data[key]); });
     ['objectives', 'materialsNeeded', 'assessmentIdeas'].forEach(key => { data[key] = list(data[key]).map(text).filter(Boolean); });
-    data.extensions = list(data.extensions).map(item => typeof item === 'object' ? { ...item, title: text(item.title || item.name), description: text(item.description || item.text || item.en), guide: text(item.guide) } : text(item)).filter(item => typeof item === 'string' ? item.trim() : item.title || item.description || item.guide);
+    data.extensions = list(data.extensions).map(item => typeof item === 'object' ? { ...item, title: text(item.title ?? item.name), description: text(item.description ?? item.text ?? item.en), guide: text(item.guide) } : text(item)).filter(item => typeof item === 'string' ? item.trim() : item.title || item.description || item.guide);
     if (!data.extensions.length) delete data.extensions;
-    data.activities = list(data.activities).map(item => typeof item === 'object' ? { ...item, title: text(item.title || item.name), description: text(item.description || item.text), duration: text(item.duration) } : { title: text(item) });
+    data.activities = list(data.activities).map(item => typeof item === 'object' ? { ...item, title: text(item.title ?? item.name), description: text(item.description ?? item.text), duration: text(item.duration) } : { title: text(item) });
     const config = plan.config || {};
     return {
       resource: { ...plan, data },

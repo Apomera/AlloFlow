@@ -735,16 +735,16 @@ window.StemLab = window.StemLab || {
             : __alloT('stem.inequality.hint_type_1d', 'Type an inequality like x > 3 or a compound like -2 < x \u2264 5 to visualize it on a number line.')),
 
         // ── Mode tabs: 1D / 2D ──
-        h('div', { className: 'flex gap-1 mb-3', role: 'tablist', },
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }, className: 'gap-1 mb-3', role: 'tablist', 'aria-label': __alloT('stem.inequality.graph_views', 'Inequality graph views'), },
           ['1d', '2d'].map(function(m, tabIndex) {
-            var labels = { '1d': '\uD83D\uDCCF ' + __alloT('stem.inequality.mode_number_line', 'Number Line'), '2d': '\uD83D\uDCC8 ' + __alloT('stem.inequality.mode_2d_graph', '2D Graph') };
+            var labels = { '1d': '\uD83D\uDCCF ' + __alloT('stem.inequality.mode_number_line', 'Number Line'), '2d': '\uD83D\uDCC8 ' + __alloT('stem.inequality.mode_coordinate_plane', 'Coordinate plane') };
             return h('button', { key: m, role: 'tab', 'aria-selected': graphMode === m,
               id: 'stem-inequality-tab-' + m,
               'aria-controls': 'stem-inequality-panel-' + m,
               tabIndex: graphMode === m ? 0 : -1,
               onKeyDown: function(e) { inequalityTabKeyDown(e, tabIndex); },
               onClick: function() { upd('graphMode', m); trackMode(m); },
-              className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-fuchsia-400 ' +
+              style: { minHeight: 44, whiteSpace: 'normal', overflowWrap: 'anywhere' }, className: 'px-3 py-2 text-xs font-bold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-fuchsia-400 ' +
                 (graphMode === m ? 'bg-fuchsia-700 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
               title: m === '1d' ? __alloT('stem.inequality.shortcut_1_key', '1 key') : __alloT('stem.inequality.shortcut_2_key', '2 key')
             }, labels[m]);
@@ -1216,7 +1216,7 @@ window.StemLab = window.StemLab || {
         // ── Keyboard shortcuts legend ──
         h('div', { className: 'text-[0.6875rem] text-slate-600 text-center mt-3 space-x-3' + onHostInk },
           h('span', null, '1 ' + __alloT('stem.inequality.mode_number_line', 'Number Line')),
-          h('span', null, '2 ' + __alloT('stem.inequality.mode_2d_graph', '2D Graph')),
+          h('span', null, '2 ' + __alloT('stem.inequality.mode_coordinate_plane', 'Coordinate plane')),
           h('span', null, 'Q ' + __alloT('stem.inequality.legend_quiz', 'Quiz')),
           h('span', null, 'C ' + __alloT('stem.inequality.legend_tips', 'Tips')),
           h('span', null, 'B ' + __alloT('stem.inequality.badges', 'Badges')),

@@ -191,3 +191,28 @@ describe('Student word-help audio controls', () => {
     expect(audioButton('phonics-word')).not.toBeNull();
   });
 });
+
+describe('Word-help keyboard boundaries', () => {
+  it('handles Escape once without triggering the workspace shortcut', () => {
+    const globalEscape = vi.fn();window.addEventListener('keydown', globalEscape);
+    const closePhonics = vi.fn();mount({ phonicsData: phonics, closePhonics });
+    const dialog = host.querySelector('[aria-labelledby="phonics-popup-title"]');
+    act(() => dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
+    expect(closePhonics).toHaveBeenCalledOnce();expect(globalEscape).not.toHaveBeenCalled();
+    window.removeEventListener('keydown', globalEscape);
+  });
+  it('wraps through the pronunciation disclosure and ignores hidden controls', () => {
+    mount({ phonicsData: phonics });
+    const dialog = host.querySelector('[aria-labelledby="phonics-popup-title"]');
+    const close = dialog.querySelector('button');const summary = dialog.querySelector('summary');
+    const hidden = document.createElement('div');hidden.style.display = 'none';hidden.innerHTML = '<button>Hidden action</button>';dialog.append(hidden);
+    const collapsedButton = document.createElement('button');collapsedButton.textContent = 'Collapsed action';summary.parentElement.append(collapsedButton);
+    const tab = (element, shiftKey = false) => act(() => { element.focus();element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey, bubbles: true, cancelable: true })); });
+    tab(close, true);expect(document.activeElement).toBe(summary);
+    tab(summary);expect(document.activeElement).toBe(close);
+    summary.parentElement.open = true;
+    tab(close, true);expect(document.activeElement).toBe(collapsedButton);
+    tab(collapsedButton);expect(document.activeElement).toBe(close);
+    tab(dialog);expect(document.activeElement).toBe(close);
+  });
+});

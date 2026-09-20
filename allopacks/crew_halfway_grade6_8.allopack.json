@@ -8,7 +8,8 @@
     "gradeLevel": "6th-8th Grade",
     "createdAt": "2026-09-13T18:00:00.000Z",
     "imageShotList": "allopacks/crew_halfway_grade6_8.IMAGES.md",
-    "standards": "King Middle School HOWL Responsibility (arrive prepared for class; complete assignments thoughtfully and timely); CASEL Self-Management (setting personal goals; using planning and organizational skills; exhibiting self-discipline); CASEL Self-Awareness (having a growth mindset); EL Education Crew (Crew Launch: goal review and HOWL reflection); Maine DOE PBIS Tier 1 (teaching self-monitoring as an expected behavior)"
+    "standards": "King Middle School HOWL Responsibility (arrive prepared for class; complete assignments thoughtfully and timely); CASEL Self-Management (setting personal goals; using planning and organizational skills; exhibiting self-discipline); CASEL Self-Awareness (having a growth mindset); EL Education Crew (Crew Launch: goal review and HOWL reflection); Maine DOE PBIS Tier 1 (teaching self-monitoring as an expected behavior)",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Mid-trimester review of systems and goals",
   "history": [
@@ -48,7 +49,7 @@
       "title": "The Halfway Check",
       "timestamp": "2026-09-13T18:00:00.000Z",
       "data": "## The Halfway Check\n\n**HOWL: \"I take responsibility for my success as a learner.\"**\n\nYou are **halfway** through the trimester. Six weeks ago, in the week on **systems**, you built a capture spot, a launch check, and a weekly reset, and you **counted** the mornings you had everything. Some of that system is still running. Some of it broke in week two and you have been getting by. This week is not about starting over. It is about looking at what you built, keeping what worked, and fixing the one part that did not.\n\nHere is why halfway matters. Responsibility, in the King **HOWLs**, includes arriving **prepared** and completing assignments thoughtfully and on time. Those are not things you do once. They are things you do on a Tuesday in November when nobody is watching and the system you built in September has quietly stopped. The students who stay prepared through a whole trimester are not the ones with perfect systems. They are the ones who check.\n\nHere is a moment from a fictional **Crew**. In week four, Marcus built a good system: assignments captured in his phone notes, a launch check at 8 pm, a Sunday reset. For two weeks he had everything every morning. Then his family got a puppy. The 8 pm check **collided** with the puppy's walk, and Marcus stopped doing it. He did not decide to stop. It just stopped. By week eight he was missing a book about twice a week and telling himself he was bad at this.\n\nAt the halfway check, Marcus looked at his count. The capture spot still worked. The Sunday reset still worked. Only the launch check had died, and it died for a reason he could name: it was scheduled at the wrong time. He moved it to right after dinner, before the walk. That is the whole **revision**. One part, moved. Not a new system. Not a new person.\n\nA **review** has three questions. What did I say I would do? What actually happened, by the count? What is the one thing to change? The first question needs the goal you wrote. The second needs honest numbers, which is why the count matters more than the feeling. The third question is the hard one, because the temptation is to change everything. Change one thing. Test it for a week. Then check again.\n\nThis is also the week to look at your HOWL Tracker goals from the start of the trimester. A goal from September that you have not looked at since is not a goal. It is a **wish**. A goal you review halfway, with a count, and revise, is what responsibility looks like on the inside.",
-      "meta": "6th-8th Grade • Leveled reading • ~450 words"
+      "meta": "6th-8th Grade • Leveled reading"
     },
     {
       "id": "ch-glossary",
@@ -426,7 +427,7 @@
               "What is the one thing to change?"
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "sequence-cue",
             "mode": "scaffolded",
             "aiExample": "Said, Happened, Change. Past, past, future. Two looks back, one step forward.",
@@ -455,7 +456,7 @@
               "Change one thing, test it for a week, then check again."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "analogy-pattern",
             "mode": "scaffolded",
             "aiExample": "A bike with a flat tire does not need a new bike. It needs one tire. Fix the tire, ride for a week, then look again.",
@@ -530,7 +531,7 @@
           ],
           "deliverable": "A one-page decision record: three answers, the candidate list with reasons, the one change chosen, and the five-day count.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

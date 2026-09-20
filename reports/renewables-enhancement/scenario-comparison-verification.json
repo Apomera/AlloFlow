@@ -1,0 +1,21 @@
+{
+  "sourceSha256": "59cdda19f7bff1ae29681aafd8411757778846c5d2afc2024d9e9d511ff20bb8",
+  "sourceAndDesktopIdentical": true,
+  "previewIdentical": true,
+  "syntaxValid": true,
+  "regressionTests": 133,
+  "newTests": 18,
+  "testFiles": 5,
+  "scenarios": 18,
+  "technologies": 9,
+  "browserBehaviors": 12,
+  "accessibilityAudits": 9,
+  "pageErrors": [],
+  "consoleErrors": [],
+  "viewportWidths": [
+    1280,
+    390,
+    320
+  ],
+  "scope": "Isolated local React/Three.js browser host and running preview source; no deployment."
+}

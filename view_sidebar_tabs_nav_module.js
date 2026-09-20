@@ -37,7 +37,7 @@ function SidebarTabsNav({
   return /* @__PURE__ */ React.createElement(
     "nav",
     {
-      "aria-label": t("common.content_tabs"),
+      "aria-label": translatedLabel("common.content_tabs", "Content tabs"),
       "aria-orientation": "horizontal",
       role: "tablist",
       className: "grid grid-cols-2 gap-1 rounded-xl border border-slate-200/90 bg-slate-100/90 p-1 mb-4 shrink-0 shadow-inner shadow-slate-200/60"
@@ -46,15 +46,16 @@ function SidebarTabsNav({
       "button",
       {
         ref: createTabRef,
+        type: "button",
         role: "tab",
         "aria-selected": activeSidebarTab === "create",
         tabIndex: activeSidebarTab === "create" ? 0 : -1,
-        "aria-controls": "tour-input-panel",
+        "aria-controls": "sidebar-create-panel",
         id: "tab-create",
-        "aria-label": t("common.create_new_content"),
         onClick: handleSetActiveSidebarTabToCreate,
         onKeyDown: (event) => {
-          if (event.key === "ArrowRight" || event.key === "End") focusSiblingTab(event, historyTabRef);
+          if (event.key === "ArrowLeft" || event.key === "ArrowRight" || event.key === "End") focusSiblingTab(event, historyTabRef);
+          else if (event.key === "Home") focusSiblingTab(event, createTabRef);
         },
         className: `relative min-h-11 px-3 py-2 text-sm font-bold rounded-lg border transition-[background-color,color,border-color,box-shadow] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${activeSidebarTab === "create" ? "bg-white text-indigo-700 border-slate-200 shadow-sm shadow-slate-900/5" : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/70"}`,
         "data-help-key": "sidebar_tab_create"
@@ -67,18 +68,19 @@ function SidebarTabsNav({
       "button",
       {
         ref: historyTabRef,
+        type: "button",
         role: "tab",
         "aria-selected": activeSidebarTab === "history",
         tabIndex: activeSidebarTab === "history" ? 0 : -1,
-        "aria-controls": "ui-roster-strip",
+        "aria-controls": "sidebar-history-panel",
         id: "tab-history",
-        "aria-label": t("common.history"),
         onClick: () => {
           setActiveSidebarTab("history");
           setIsHistoryPulsing(false);
         },
         onKeyDown: (event) => {
-          if (event.key === "ArrowLeft" || event.key === "Home") focusSiblingTab(event, createTabRef);
+          if (event.key === "ArrowLeft" || event.key === "ArrowRight" || event.key === "Home") focusSiblingTab(event, createTabRef);
+          else if (event.key === "End") focusSiblingTab(event, historyTabRef);
         },
         className: `relative min-h-11 px-3 py-2 text-sm font-bold rounded-lg border transition-[background-color,color,border-color,box-shadow] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${activeSidebarTab === "history" ? "bg-white text-indigo-700 border-slate-200 shadow-sm shadow-slate-900/5" : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/70"} ${isHistoryPulsing ? "ring-2 ring-indigo-200 ring-offset-1 ring-offset-slate-100" : ""}`,
         "data-help-key": "sidebar_tab_history"

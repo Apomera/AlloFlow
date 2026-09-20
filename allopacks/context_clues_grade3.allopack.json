@@ -8,7 +8,8 @@
     "gradeLevel": "3rd Grade",
     "standards": "CCSS.ELA-LITERACY.L.3.4.A (use sentence-level context as a clue to the meaning of a word or phrase); CCSS.ELA-LITERACY.L.3.4.B (determine the meaning of a new word formed when a known affix is added to a known word); CCSS.ELA-LITERACY.L.3.4.C (use a known root word as a clue to the meaning of an unknown word with the same root); CCSS.ELA-LITERACY.RI.3.4 (determine the meaning of general academic and domain-specific words and phrases in a text)",
     "createdAt": "2026-09-05T23:10:00.000Z",
-    "imageShotList": "allopacks/context_clues_grade3.IMAGES.md"
+    "imageShotList": "allopacks/context_clues_grade3.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Context Clues and Word Parts",
   "history": [
@@ -55,7 +56,7 @@
       "title": "The Words Around the Word",
       "timestamp": "2026-09-05T23:10:01.000Z",
       "data": "## The Words Around the Word\n\nRead this: *The path was so narrow that we had to walk single file.*\n\nSuppose you did not know **narrow**. You would still have a good guess. If people have to walk one behind the other, the path must be thin. You did not look anything up. The sentence told you.\n\nThat is what a **context** **clue** is. The words around a word hint at what it means. You have been doing it since you were small.\n\nThere are four kinds worth knowing by name.\n\nSometimes the writer just tells you. *A glacier, a huge slow-moving river of ice, carved this valley.* That is a **definition** clue, and it is the easiest one.\n\nSometimes you get cases instead. *She packed produce: apples, carrots, and lettuce.* Nobody defined produce, but the **example** clue shows you it means fruits and vegetables.\n\nSometimes a nearby word means almost the same thing. *He was furious. I had never seen him so angry.* Angry is a **synonym**, and it hands you the meaning.\n\nSometimes the sentence swings the other way. *The room was not tidy; it was a shambles.* The little word not tells you a shambles is the opposite of tidy. That is an **antonym** clue.\n\nWatch for **signal** words. Or, that is, and such as often bring a definition or an example. But, however and instead often bring an opposite.\n\nThe word itself can help too. A **prefix** is a word part on the front. Un- means not, so unhappy is not happy. A **suffix** is a word part on the end. -ful means full of, so joyful is full of joy. Underneath is the **root**, the main part carrying the meaning.\n\nNow the honest part. Sometimes there is no clue at all. The sentence gives you nothing, and guessing harder will not help. That is the moment to ask someone or use a dictionary. Knowing when to stop guessing is a reading skill too.",
-      "meta": "3rd Grade • Leveled reading • ~350 words",
+      "meta": "3rd Grade • Leveled reading",
       "imageSlot": "cc-img-four-clues"
     },
     {

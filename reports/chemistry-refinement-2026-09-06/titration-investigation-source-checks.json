@@ -1,0 +1,7 @@
+{
+  "syntax": true,
+  "sourcePublicMatch": true,
+  "englishKeys": 65,
+  "fallbacksMatch": true,
+  "scopedDiffCheck": true
+}

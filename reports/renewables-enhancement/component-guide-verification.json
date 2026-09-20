@@ -1,0 +1,49 @@
+{
+  "verifiedAt": "2026-09-19T20:54:13.620Z",
+  "feature": "Guided component inspector",
+  "testsPassed": 470,
+  "testFiles": 20,
+  "testPool": "forks",
+  "accessibilityAudits": 19,
+  "componentGuides": 27,
+  "inputLinksChecked": 45,
+  "pageErrors": 0,
+  "consoleErrors": 0,
+  "mobileWidths": [
+    390,
+    320
+  ],
+  "mobileOverflow": false,
+  "visualReview": [
+    "component-guide-pv.png",
+    "component-guide-inputs.png",
+    "component-guide-320.png",
+    "component-guide-dark.png"
+  ],
+  "sha256": "4218ae27d8d66ea9b77077ebe5e78b216e3615fc66b4987b37d756e200da5e3f",
+  "sourceMirrorIdentical": true,
+  "previewMatchesSource": true,
+  "behavior": {
+    "all27Components": true,
+    "distinctPrompts": 27,
+    "inputJumps": 45,
+    "keyboardNavigation": true,
+    "boundedPreviousNext": true,
+    "linkedControlHighlight": true,
+    "linksPreserveSettingsAndTime": true,
+    "noteFocusPreservesText": true,
+    "liveReadingUpdates": true,
+    "fixedInverterExplained": true,
+    "pauseOnInspection": true,
+    "baseVsEffectiveScenarioInputs": true,
+    "isolatedAndExplodedSelection": true,
+    "combinedEfficiency": true,
+    "scheduledStorageContext": true,
+    "mobileOverflow": false,
+    "visibleFocusedMobileControl": true,
+    "flowFallback": true,
+    "contextRecovery": true,
+    "singleRenderer": true
+  },
+  "validationScope": "Isolated local React and Three.js host; no deployed full-application check."
+}

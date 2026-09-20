@@ -70,3 +70,34 @@ describe('Word Sounds recorded display support',()=>{
   expect(rows[0]).toMatchObject({correct:true,mode:'visual',textSupported:true,cluesShown:['printed_sound_labels']});
  });
 });
+
+
+describe('completed matching boards in the full player',()=>{
+ for(const activity of ['sound_sort','word_families']){
+  it(activity+' saves one completed board after rapid matching selections',async()=>{
+   const {host,word,rows}=await mount(activity);
+   const reveal=[...host.querySelectorAll('button')].find(b=>b.textContent.includes('👂'));
+   await act(async()=>reveal.click());
+   const options=word.activityItems[activity].options;
+   const buttons=options.map(w=>[...host.querySelectorAll('button')].find(b=>b.getAttribute('aria-label')===w));
+   expect(buttons.length).toBeGreaterThan(0);for(const button of buttons)expect(button).toBeTruthy();
+   await act(async()=>{for(const button of buttons)button.click();});
+   await act(async()=>{await new Promise(resolve=>setTimeout(resolve,1250));});
+   expect(rows).toHaveLength(1);
+   expect(rows[0]).toMatchObject({activity,correct:true,attempts:1,textSupported:true,mode:'visual'});
+  });
+ }
+});
+
+
+describe('Word Families prepared choices',()=>{
+ it('renders exactly the compiled matches and distractors',async()=>{
+  const {host,word,calls}=await mount('word_families');
+  const reveal=[...host.querySelectorAll('button')].find(b=>b.textContent.includes('👂'));
+  await act(async()=>reveal.click());
+  const labels=[...host.querySelectorAll('button[aria-label]')].filter(b=>b.getAttribute('aria-label')===b.textContent.trim()).map(b=>b.getAttribute('aria-label')).filter(label=>/^[a-z]+$/.test(label));
+  const board=word.activityItems.word_families;
+  expect(labels.sort()).toEqual([...board.options,...board.distractors].sort());
+  expect(calls).toEqual([]);
+ });
+});

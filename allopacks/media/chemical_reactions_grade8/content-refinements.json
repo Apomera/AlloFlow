@@ -9,43 +9,49 @@
     "resourceId": "cr-reading",
     "path": "data",
     "from": "## Did Anything New Actually Form?\n\nDrop an antacid tablet in water and it fizzes furiously. Boil that same water and it bubbles just as hard. One of those is a chemical **reaction** and one is not. The bubbles cannot tell you which.\n\nThat is the problem this lesson solves.\n\nA **substance** is a material with its own fixed **property** set: melting point, density, colour, how it reacts with other things. In a chemical reaction, the substances you start with — the **reactants** — are used up, and different substances — the **products** — appear in their place. In a **physical** change, no new substance appears. The same stuff has changed form.\n\nWater boiling is physical. Steam is still water. Sugar dissolving is physical too, which surprises people, because the sugar vanishes from sight. Evaporate the water and the sugar comes back, unchanged. It was never destroyed, only spread out.\n\nSo what counts as evidence? Textbooks list five **indicators**: bubbles of gas, a colour change, a temperature change, light, and a **precipitate** — a solid appearing when two clear liquids mix.\n\nHere is the part usually left out. **Every one of those five has a physical impostor.** Bubbles can be boiling. A colour change can be dilution. A temperature change can be dissolving, which warms or cools a solution without any reaction at all. Light can be an object glowing simply because it is hot. And a solid can appear because something merely suspended has settled out, with nothing new formed. Each indicator says *look closer*. None of them proves anything by itself.\n\nThe real test is the definition. Compare the properties before and after. If what you have at the end melts at a different temperature, or has a different density, or refuses to dissolve where the original dissolved easily, then you have different substances, and a reaction happened.\n\nNow the second rule, and it is stranger.\n\nBurn a log and the ash weighs far less than the wood. Mass looks lost. It is not. Carbon dioxide and water vapour left as gases, and nobody weighed them. Do the same burning inside a sealed container and the total mass does not budge.\n\nThat is because **atoms** are not created or destroyed in a reaction. They are rearranged. Every atom that goes in comes out, in some new arrangement, so mass is **conserved**. Antoine Lavoisier established this in the 1770s by insisting on sealed vessels and a good balance, which is a reminder that better measurement, not a better idea, settled it.\n\nSo ask two questions. Are the properties different now? And where did the atoms go?",
-    "to": "## Did Anything New Actually Form?\n\nFizzing can come from a reaction, boiling or dissolved gas escaping. Bubbles establish that gas is present, but they do not identify its origin. What evidence would distinguish these explanations?\n\nA chemical **reaction** forms new substances as atoms rearrange and bonds change. **Reactants** participate as inputs; **products** form through the reaction. Reactants need not be completely used up, and some product may already be present in a mixture.\n\nA pure **substance** has a characteristic composition and properties. Measurements such as density depend on conditions, including temperature and pressure. Mixtures and concentration changes complicate comparisons. In a **physical** change, chemical identity is retained even when form, state or distribution changes.\n\nBoiling water is a physical change: water molecules remain water molecules. In ordinary sugar dissolving, sugar molecules disperse through water without becoming a new substance. Recovering sugar supports that account, but reversibility alone is not a universal test: chemical reactions can also be reversed.\n\nFive useful **indicators** are gas bubbles, color change, temperature change, light and a solid appearing. A **precipitate** is a solid that separates from a solution; in a precipitation reaction an insoluble product forms. The starting solutions need not be colorless.\n\nEach observation needs context. Bubbles may be water vapor. A solution can become paler when diluted. Physical mixing or some dissolving processes can warm or cool materials; other dissolving involves reactions. A hot object can glow. Existing suspended particles can settle, and evaporation can yield crystals without forming a new substance.\n\nBuild an explanation from several observations and appropriate tests. Compare identified materials under matched conditions. A different density or melting point by itself does not prove a reaction: temperature, concentration or impurities may explain it. Stronger evidence identifies a new substance and rules out plausible physical explanations.\n\nNow account for the atoms. A burning log combines with oxygen from the air, producing gases and ash. Comparing ash with wood alone leaves out both incoming oxygen and outgoing gases. This is an explanation of combustion, not a classroom burning procedure.\n\nIn ordinary chemical reactions, atoms of each element are conserved. A closed system exchanges no matter with its surroundings; at classroom precision its total mass stays the same. Count all reactants, all products and the same apparatus before and after. Differences in measurements may reflect material crossing a boundary or measurement uncertainty.\n\nOur diagrams use colored tokens to track particles. The paired red and blue atom model is an unnamed counting example, not a recipe or a specific real reaction. The box outlines mark conceptual system boundaries, not sealed reaction vessels.\n\nAsk: what evidence identifies a new substance, under what conditions was it measured, and where did every atom go?"
+    "to": "## Did Anything New Actually Form?\n\nA liquid fizzes. Did a reaction happen? Perhaps. Bubbles can also come from boiling or gas escaping from a drink. They show that gas is present, but not where it came from.\n\nA chemical **reaction** forms new substances. Atoms rearrange and bonds change. **Reactants** are used in the change; **products** form. Some reactant may be left over. Some product may already be in the starting mixture.\n\nA pure **substance** has a set chemical makeup. Its **properties**, such as density, help us study it. Conditions matter: the same material can have different density at a different temperature. A mixture can also behave differently from a pure substance.\n\nIn a **physical** change, the chemical identity stays the same. Boiling water is still water. When ordinary sugar dissolves in water, its molecules spread out but remain sugar. Getting the sugar back supports that account. Yet “can it be reversed?” is not a sure test. Some chemical reactions can go in both directions too.\n\nUseful **indicators** include bubbles, color change, a change in temperature, light, and a solid appearing. A **precipitate** is a solid that separates from a solution. A reaction can form a new solid that does not dissolve.\n\nLook for other explanations as well. Adding water can make a colored solution paler. Some physical mixing can warm or cool materials. A hot object may glow. Particles already in a liquid can settle. Crystals may appear as water leaves, without a new substance forming.\n\nUse several observations and suitable tests. Compare materials under matched conditions. Does the evidence identify a new substance? Could temperature, concentration or an impurity explain the difference instead?\n\nNow track the matter. When wood burns, it combines with oxygen from the air. Gases and ash form. We cannot compare only the wood and ash: that leaves out the oxygen that came in and gases that left.\n\nIn an ordinary chemical reaction, **atoms** of each element are **conserved**. They are not created or lost. In a closed system, no matter enters or leaves. Its mass stays the same at the precision of classroom tools. Count the same apparatus and all materials before and after. Check for leaks and measurement error if results differ.\n\nOur colored tokens model atoms. The red and blue pairs are an invented counting example, not a real reaction or a recipe. The drawn boxes mark system boundaries, not containers to seal and heat. Use the model to ask where every atom went."
   },
   {
     "resourceId": "cr-glossary",
     "path": "data.1.def",
     "from": "A substance you start with, before the change.",
-    "to": "A substance consumed in a reaction; an excess amount may remain afterward."
+    "to": "A substance used up in a reaction. Some may be left over."
   },
   {
     "resourceId": "cr-glossary",
     "path": "data.2.def",
     "from": "A substance that exists only after the change.",
-    "to": "A substance formed by a reaction; some may also have been present initially."
+    "to": "A substance formed in a reaction. Some may already be in the mixture."
   },
   {
     "resourceId": "cr-glossary",
     "path": "data.3.def",
     "from": "A material with its own fixed set of properties.",
-    "to": "A material with a characteristic chemical composition and properties under specified conditions."
+    "to": "A material with a set chemical makeup and properties we can study under known conditions."
   },
   {
     "resourceId": "cr-glossary",
     "path": "data.4.def",
     "from": "Something measurable about a material, such as density or melting point.",
-    "to": "An observable or measurable characteristic; many depend on temperature, pressure or concentration."
+    "to": "A feature we can observe or measure. Temperature or other conditions may affect it."
+  },
+  {
+    "resourceId": "cr-glossary",
+    "path": "data.5.def",
+    "from": "Describing a change of form only, with nothing new made.",
+    "to": "Describing a change that keeps the same chemical identity, such as a change of state."
   },
   {
     "resourceId": "cr-glossary",
     "path": "data.6.def",
     "from": "A solid that appears when two clear liquids are mixed.",
-    "to": "A solid separating from a solution; a precipitation reaction forms an insoluble product."
+    "to": "A solid that separates from a solution. In some reactions, it is a new product that does not dissolve."
   },
   {
     "resourceId": "cr-glossary",
     "path": "data.7.def",
     "from": "A sign worth investigating, which on its own proves nothing.",
-    "to": "An observation that supports investigation but may have more than one explanation."
+    "to": "An observation that gives us a clue to investigate. It may have more than one cause."
   },
   {
     "resourceId": "cr-anchor",
@@ -217,6 +223,12 @@
   },
   {
     "resourceId": "cr-memory",
+    "path": "data.cards.0.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "cr-memory",
     "path": "data.cards.0.aiExample",
     "from": "SIGNS ARE SUSPECTS. A suspect is worth questioning and is not a conviction. Bubbles are a suspect. Boiling is the alibi. You convict on properties, not on appearance.",
     "to": "CLUE, CHECK, ACCOUNT: notice a clue, check chemical identity under matched conditions, then account for atoms. A clue begins an explanation; it does not finish one."
@@ -256,6 +268,12 @@
     "path": "data.cards.1.essentialFacts.2",
     "from": "In a sealed container the total mass does not change.",
     "to": "A closed system conserves mass at classroom precision; compare the same complete system."
+  },
+  {
+    "resourceId": "cr-memory",
+    "path": "data.cards.1.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "cr-memory",
@@ -313,15 +331,33 @@
   },
   {
     "resourceId": "cr-quiz",
+    "path": "data.questions.1.options.0",
+    "from": "The mixture became noticeably warmer while stirring",
+    "to": "The mixture became warmer while it was being stirred"
+  },
+  {
+    "resourceId": "cr-quiz",
     "path": "data.questions.1.options.1",
     "from": "The solid left behind melts at a different temperature",
-    "to": "Controlled tests identify a new substance and rule out physical explanations"
+    "to": "Tests identify a new substance and rule out physical causes"
+  },
+  {
+    "resourceId": "cr-quiz",
+    "path": "data.questions.1.options.2",
+    "from": "The colour shifted from dark blue to a paler blue",
+    "to": "The color shifted from dark blue to a paler shade of blue"
+  },
+  {
+    "resourceId": "cr-quiz",
+    "path": "data.questions.1.options.3",
+    "from": "Bubbles rose steadily from the bottom of the flask",
+    "to": "Bubbles rose from the bottom as the liquid was heated"
   },
   {
     "resourceId": "cr-quiz",
     "path": "data.questions.1.correctAnswer",
     "from": "The solid left behind melts at a different temperature",
-    "to": "Controlled tests identify a new substance and rule out physical explanations"
+    "to": "Tests identify a new substance and rule out physical causes"
   },
   {
     "resourceId": "cr-quiz",
@@ -369,37 +405,37 @@
     "resourceId": "cr-faq",
     "path": "data.0.answer",
     "from": "Usually yes. A raw egg turning solid is proteins changing shape and bonding differently, and you cannot get the raw egg back. Melting butter, though, is physical. Cooking is a mix of both.",
-    "to": "Cooking can include chemical changes such as browning and changes in proteins, as well as physical changes such as melting. Whether a change is easy to reverse does not by itself classify it."
+    "to": "Cooking can cause both kinds of change. Browning makes new substances. Melting changes state. Being hard to reverse does not, by itself, tell us which kind occurred."
   },
   {
     "resourceId": "cr-faq",
     "path": "data.1.answer",
     "from": "Not in the same simple way. In nuclear changes a tiny amount of mass converts to energy, which is what E = mc squared describes. For every chemical reaction you will meet in this course, mass is conserved.",
-    "to": "Energy transfers correspond to very small mass differences. These are negligible at ordinary classroom precision for chemical reactions; nuclear processes require explicit mass-energy accounting. Atom conservation in ordinary chemistry does not describe nuclear transmutation."
+    "to": "Nuclear changes need an account of both mass and energy. The tiny mass changes linked to energy transfers in ordinary chemistry are too small for classroom tools to detect. Nuclear changes can also change one element into another."
   },
   {
     "resourceId": "cr-faq",
     "path": "data.2.answer",
     "from": "Oxygen in the air reacts with compounds in the fruit, helped along by an enzyme released when you cut the cells open. It is a genuine chemical reaction, which is why lemon juice slows it down.",
-    "to": "Cutting damages tissue and brings enzymes, oxygen and other compounds into contact, allowing browning reactions. Color alone would not identify an unknown reaction."
+    "to": "Cutting damages cells. Oxygen, enzymes and other materials can then take part in browning reactions. Color alone would not identify a reaction in an unknown material."
   },
   {
     "resourceId": "cr-faq",
     "path": "data.3.answer",
     "from": "Many can. Some run both ways at once and settle at a balance point. Others are practically one-way, like burning. Reversible does not mean easy to reverse.",
-    "to": "Many reactions can run in both directions. At dynamic equilibrium forward and reverse reactions continue at equal rates; concentrations remain steady rather than all motion stopping."
+    "to": "Many reactions can run both ways. At equilibrium, the two directions proceed at the same rate. The amounts stay steady even though reactions continue."
   },
   {
     "resourceId": "cr-faq",
     "path": "data.4.answer",
     "from": "Usually not, and this trips up everyone. Salt in water separates into the charged particles it is built from, and evaporating brings the salt back unchanged. Some dissolvings do involve reactions, so the recovery test is the one to trust.",
-    "to": "It depends on the substances and conditions. Ordinary sugar dissolving preserves sugar molecules. Other materials react as they dissolve. Recovery alone is not decisive because chemical reactions can also be reversed."
+    "to": "It depends on the materials. Sugar molecules stay sugar when they dissolve in water. Other materials can react as they dissolve. Check what substances are present."
   },
   {
     "resourceId": "cr-faq",
     "path": "data.5.answer",
     "from": "By weighing very carefully in sealed vessels. Lavoisier could not see an atom, but he could show that closed systems do not change mass. Good measurement settled it long before good microscopes existed.",
-    "to": "Careful mass measurements in systems with controlled matter exchange support conservation. Models and balanced equations account for atoms; a small measured difference must be assessed against uncertainty."
+    "to": "They made careful mass measurements while tracking matter that entered or left. A balanced equation also accounts for each kind of atom. Small measurement differences need to be checked against the limits of the tools."
   },
   {
     "resourceId": "cr-challenge",
@@ -514,6 +550,12 @@
     "path": "data.brief.deliverable",
     "from": "A one-page report: your procedure, a table of masses for both runs, the difference in each, and a paragraph explaining to the younger group why the open beaker appeared to lose mass while nothing was actually lost.",
     "to": "A one-page report with two system sketches, a table of supplied masses and calculated differences, a particle model, and an explanation of the open result. Label all supplied values as invented practice data."
+  },
+  {
+    "resourceId": "cr-challenge",
+    "path": "data.brief.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "cr-challenge",

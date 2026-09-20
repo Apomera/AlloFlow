@@ -11763,16 +11763,16 @@ window.StemLab = window.StemLab || {
       rummy: ['Rummy-nose tetra','tetra','rummy',0xc7d6c8,[.46,.17,.12],'swim','fork','Red head and contrasting black-and-white tail bars.','Representative rummy-nose tetra group.'],
       guppy: ['Guppy','guppy','guppy',0xbca56d,[.4,.16,.12],'swim','fan','Slender livebearer with a broad patterned fan tail.','Representative fancy male; sexes and domestic strains vary.'],
       cory: ['Corydoras catfish','corydoras','cory',0x9c9279,[.47,.19,.22],'swim','fork','Arched back, two rows of flank armor, mottling and short mouth barbels.','Representative Corydoras group.'],
-      angel: ['Angelfish','angelfish','angel',0xcbd0bf,[.38,.43,.115],'swim','fork','Tall diamond silhouette, dark vertical bars and long pelvic filaments.','Representative silver domestic form.'],
+      angel: ['Angelfish','angelfish','angel',0xcbd0bf,[.38,.43,.115],'swim','truncate','Compressed silver body with four dark bars, tall dorsal and anal fins, a nearly straight tail edge with extended outer rays, and two fine pelvic filaments.','Representative adult silver domestic form; bar intensity and fin extensions vary. Fin-ray detail and swimming strokes are illustrative.'],
       platy: ['Platy','platy','plain',0xe78d46,[.4,.255,.17],'swim','rounded','Short, deep livebearer body with a small rounded tail.','Representative orange domestic form.'],
       molly: ['Molly','molly','plain',0x343e3b,[.54,.235,.18],'swim','rounded','Longer livebearer body and a modest rounded dorsal fin.','Representative black domestic form; not a claim of a sailfin male.'],
       nerite: ['Nerite snail','snail','nerite',0xb19e66,null,'crawl',null,'Low domed patterned shell, broad crawling foot and fine tentacles with eyes near their bases.','Representative patterned nerite group.'],
       dwarffrog: ['African dwarf frog','frog','frog',0x8e9270,null,'swim',null,'Mottled olive body, pale underside, lateral eyes, folded hind legs and webbing on both forefeet and hindfeet.','Representative Hymenochirus dwarf frog; species and captive forms vary.'],
       oto: ['Otocinclus','otocinclus','oto',0xb4ad87,[.55,.13,.135],'swim','fork','Slender armored body, dark lateral stripe and underside sucker mouth.','Representative Otocinclus group.'],
       shrimp: ['Cherry shrimp','shrimp','cherry',0xbe493e,null,'crawl',null,'Red translucent carapace, six abdominal segments, fine antennae and a horizontal tail fan.','Representative red cherry shrimp.'],
-      betta: ['Betta','betta','plain',0xb83c65,[.49,.2,.135],'swim','flowing','Slender body with flowing caudal, dorsal and anal fins.','Representative long-fin domestic male; other forms vary.'],
-      clown: ['Clownfish','clownfish','clown',0xef8b2e,[.43,.245,.15],'swim','rounded','Three white body bands edged in black on an orange body.','Representative orange three-band clownfish.'],
-      tang: ['Palette tang','tang','tang',0x2875d8,[.49,.35,.125],'swim','fork','Blue compressed oval body, black palette marking and yellow tail.','Representative palette tang coloration.'],
+      betta: ['Betta','betta','plain',0xb83c65,[.49,.2,.135],'swim','flowing','Slender body, swept dorsal fin, long-based anal fin, flowing single tail and two slender pelvic fins beneath the pectorals.','Representative long-fin domestic male; other forms vary. Fin ripples are illustrative, not a fluid simulation.'],
+      clown: ['Clownfish','clownfish','clown',0xef8b2e,[.43,.245,.15],'swim','rounded','Orange body with three narrow black-edged white bands, a forward bulge in the middle band, a connected notched dorsal fin, rounded dark-edged fins and paired pelvic fins.','Representative orange Amphiprion ocellaris form; clownfish species and captive color strains differ. Proportions, fin rays and swimming strokes are illustrative.'],
+      tang: ['Palette tang','tang','tang',0x2875d8,[.49,.35,.125],'swim','truncate','Blue compressed body with a connected black palette marking, continuous dorsal fin, long anal fin, yellow tail with black upper and lower borders, and a folded spine on each side of the tail base.','Representative palette tang with an adult-type tail outline; proportions, fin rays and swimming strokes are illustrative. Color and fin shape vary with age and locality.'],
       goby: ['Watchman goby','goby','goby',0xb7ab6a,[.61,.18,.18],'swim','rounded','Elongate bottom fish with a blunt head and two separate dorsal fins.','Representative watchman goby group.'],
       anemone: ['Sea anemone','anemone','anemone',0xbe8d9d,null,'sessile',null,'Anchored pedal disc, textured body column, radial oral disc with a central mouth and a crown of tapered tentacles.','Representative sea anemone; tentacle form, count and coloration vary by species.'],
       stonycoral: ['Stony coral','coral','coral',0xc8ad8d,null,'sessile',null,'Attached branching colony with tapered rigid branches, outward-facing skeletal cups and small tentacled polyps.','Representative branching stony coral; growth forms and polyp anatomy vary. Visible polyps are illustrative, not a colony census.'],
@@ -11783,7 +11783,7 @@ window.StemLab = window.StemLab || {
       pike: ['Pike cichlid','pikecichlid','pike',0xa8a98e,[.86,.17,.18],'swim','rounded','Long, low body with a subdued lateral stripe and long dorsal fin.','Representative pike cichlid group.'],
       pleco: ['Plecostomus','pleco','pleco',0x7d8069,[.65,.18,.26],'swim','fork','Broad flattened head, tapering armored body, sucker mouth and large dorsal.','Representative suckermouth armored catfish group.'],
       slider: ['Red-eared slider','turtle','slider',0x6c7849,null,'swim',null,'Low oval shell with central and paired side scutes, yellow-marked underside, striped neck and limbs, webbed clawed feet and red patches behind the eyes.','Representative red-eared slider with short claws; age, sex and individual shell markings vary.'],
-      goldfish: ['Goldfish','goldfish','plain',0xe79b3d,[.57,.235,.18],'swim','fork','Elongate gold body with a single forked tail.','Representative common or feeder goldfish; fancy breeds differ.'],
+      goldfish: ['Goldfish','goldfish','plain',0xe79b3d,[.57,.235,.18],'swim','fork','Elongate scaled body, long-based dorsal fin, single forked tail, paired pectoral and pelvic fins, short anal fin and a small terminal mouth without barbels.','Representative orange common goldfish; fancy breeds have different body and fin forms. Scale and fin-ray detail is illustrative.'],
       cleaner: ['Cleaner shrimp','shrimp','cleaner',0xcf6b54,null,'crawl',null,'White dorsal stripe bordered in red, stalked eyes, long white antennae and a red-and-white tail fan.','Representative skunk cleaner shrimp.'],
       urchin: ['Sea urchin','urchin','urchin',0x6b587b,null,'crawl',null,'Rounded test, tapered spines around the body and tube feet arranged in five radial bands.','Representative sea urchin group.'],
       crab: ['Hermit crab','hermitcrab','hermit',0xa9704a,null,'crawl',null,'Carried spiral shell with a defined aperture, two pairs of exposed walking legs, paired claws, eyestalks and antennae.','Representative marine hermit crab; shell form and which claw is larger vary among species. Reduced rear legs and the soft abdomen remain inside the shell.'],
@@ -12836,11 +12836,16 @@ window.StemLab = window.StemLab || {
           paint(pigment,range(x,cx-halfLength,cx+halfLength,.005)*(1-soft(height-.003,height+.003,abs(y-cy))));
         }
         var bodyPainter=null;
-        if(shape==='clownfish')bodyPainter=function(x,y){for(var i=0;i<3;i++){var center=i===0?-.28:i===1?.04:.28;verticalBand(x,y,center,.095,charcoal);verticalBand(x,y,center,.066,white);}};
-        else if(shape==='angelfish'){var barColor=rgb(0x334142);bodyPainter=function(x,y){verticalBand(x,y,-.21,.061,barColor);verticalBand(x,y,0,.061,barColor);verticalBand(x,y,.23,.061,barColor);};}
+        if(shape==='clownfish')bodyPainter=function(x,y){for(var i=0;i<3;i++){var center=i===0?-.335:i===1?.015+.055*Math.exp(-y*y/.0081):.205,bandWidth=i===0?.047:i===1?.085:.064;verticalBand(x,y,center,bandWidth+.018,charcoal);verticalBand(x,y,center,bandWidth,white);}};
+        else if(shape==='angelfish'){var barColor=rgb(0x334142);bodyPainter=function(x,y){verticalBand(x,y,-.34,.037,barColor);verticalBand(x,y,-.17,.073,barColor);verticalBand(x,y,.055,.046,barColor);verticalBand(x,y,.235,.044,barColor,.035);};}
         else if(pattern==='neon'||pattern==='cardinal'){var redCenter=pattern==='neon'?-.17:-.015,redLength=pattern==='neon'?.19:.35;bodyPainter=function(x,y){lateralStripe(x,y,stripeBlue,.012,.035,.35,.026);lateralStripe(x,y,stripeRed,redCenter,-.055,redLength,.038);};}
         else if(pattern==='rummy'){var headColor=rgb(0xb94238);bodyPainter=function(x){paint(headColor,soft(.19,.21,x));};}
-        else if(shape==='tang')bodyPainter=function(x,y){var outer=1-soft(.96,1.03,ellipse(x,y,-.03,.04,.28,.24)),inner=1-soft(.96,1.03,ellipse(x,y,.03,.035,.19,.145));paint(charcoal,outer*(1-inner));};
+        else if(shape==='tang')bodyPainter=function(x,y){
+          var outer=1-soft(.96,1.03,ellipse(x,y,-.03,.04,.28,.24)),inner=1-soft(.96,1.03,ellipse(x,y,.03,.035,.19,.145));paint(charcoal,outer*(1-inner));
+          var headBand=range(x,.10,.32,.012)*(1-soft(.018,.038,abs(y-(.24-(x-.12)*.87))));
+          var rearBand=range(x,-bodyX,-.20,.018)*(1-soft(.08,.16,abs(y)));paint(charcoal,Math.max(headBand,rearBand));
+          var wedge=(1-soft(-.335,-.315,x))*(1-soft(.008,.022,abs(y)-Math.max(0,-.32-x)*.37));paint(rgb(0xfbd24b),wedge);
+        };
         else if(pattern==='oto'||pattern==='pike'){var lateralColor=rgb(0x414638),lateralHeight=pattern==='oto'?.038:.025;bodyPainter=function(x,y){lateralStripe(x,y,lateralColor,-.03,-.005,bodyX*.87,lateralHeight);};}
         else if(mottled){
           var mottleColor=rgb(pattern==='oscar'?0xc9823f:pattern==='goby'?0x8b966d:pattern==='rockfish'?0x5d6957:0x485043),ocellusColor=rgb(0xd49a51),mottleCells={};
@@ -12861,6 +12866,15 @@ window.StemLab = window.StemLab || {
           bodyColor[0]=base[0]*shade;bodyColor[1]=base[1]*shade;bodyColor[2]=base[2]*shade;mix(bodyColor,pale,bellyAmount);
           var variation=1+sin(x/bodyX*92+y/bodyY*43)*sin(y/bodyY*67)*.013;bodyColor[0]*=variation;bodyColor[1]*=variation;bodyColor[2]*=variation;
           if(bodyPainter)bodyPainter(x,y,z);
+          if(shape==='goldfish'){
+            // Flush overlapping scale arcs; no raised armor or per-scale meshes.
+            var nx=x/bodyX,ny=y/bodyY,row=(ny+1)*7,rowIndex=Math.floor(row),fy=row-rowIndex-.5;
+            var column=(nx+1)*13+(rowIndex%2)*.5,fx=column-Math.floor(column);
+            var arc=.28+.45*Math.sqrt(Math.max(0,1-fy*fy*4)),edge=Math.abs(fx-arc);
+            var flank=range(nx,-.87,.38,.08)*range(ny,-.86,.86,.12)*soft(.25,.65,Math.abs(z/bodyZ));
+            paint(rgb(0x9d6028),(1-soft(.025,.09,edge))*flank*.22);
+            paint(rgb(0xffdc87),(1-soft(.025,.09,Math.abs(fx-arc+.10)))*flank*.12);
+          }
           if(catfish){
             // Flush seams suggest dermal armor without raised rods across the flank.
             // Corydoradines have two flank rows; loricariid plate counts vary.
@@ -12877,7 +12891,7 @@ window.StemLab = window.StemLab || {
         for(var row=0;row<mapWidth/2;row++){var latitude=(1-(row+.5)/(mapWidth/2))*Math.PI;latitudeSin[row]=sin(latitude);latitudeCos[row]=cos(latitude);}
         for(var col=0;col<mapWidth;col++){var longitude=(col+.5)/mapWidth*Math.PI*2;longitudeSin[col]=sin(longitude);longitudeCos[col]=cos(longitude);}
         var bodyMap=pigmentMap(mapWidth,mapWidth/2,'body-pigment',function(u,v,col,row){return bodyPigment(-longitudeCos[col]*latitudeSin[row]*bodyX,latitudeCos[row]*bodyY,longitudeSin[col]*latitudeSin[row]*bodyZ);});
-        var bodySkin=pigment(0xffffff,{map:bodyMap,roughness:.47,metalness:.035});
+        var bodySkin=pigment(0xffffff,{map:bodyMap,roughness:tall?.38:.47,metalness:tall?.10:.035});
         var bodyMesh=sphere(group,bodySkin,0,0,0,bodyX,bodyY,bodyZ,bodyDetail);bodyMesh.userData.anatomyPart='body';bodyMesh.userData.surfaceModel='continuous-pigment';
         function catfishContour(x,y,z){
           var broad=shape==='pleco',cory=shape==='corydoras';
@@ -12894,6 +12908,12 @@ window.StemLab = window.StemLab || {
           }
           smoothSurfaceNormals(bodyMesh.geometry);bodyMesh.geometry.computeBoundingBox();bodyMesh.geometry.computeBoundingSphere();
           bodyMesh.userData.bodyContour=shape;bodyMesh.userData.armorSurface='flush-pigment';
+        }
+        function goldfishContour(x,y,z){var rear=.62+.38*soft(-.95,.12,x);return [x,y*rear*(y>0?1.04:.97),z*(.62+.38*soft(-.8,.1,x))];}
+        if(shape==='goldfish'){
+          var goldPositions=bodyMesh.geometry.attributes.position;
+          for(var v=0;v<goldPositions.count;v++){var point=goldfishContour(goldPositions.getX(v),goldPositions.getY(v),goldPositions.getZ(v));goldPositions.setXYZ(v,point[0],point[1],point[2]);}
+          smoothSurfaceNormals(bodyMesh.geometry);bodyMesh.geometry.computeBoundingBox();bodyMesh.geometry.computeBoundingSphere();bodyMesh.userData.bodyContour='common-goldfish';bodyMesh.userData.scaleSurface='flush-overlapping-arcs';
         }
         if(round){
           var pufferPositions=bodyMesh.geometry.attributes.position;
@@ -12915,18 +12935,22 @@ window.StemLab = window.StemLab || {
         if(pattern==='neon'||pattern==='cardinal'||pattern==='rummy')group.userData.redExtent=pattern==='neon'?'rear-half':pattern==='cardinal'?'full-lower-body':'head-only';
         if(pattern==='figure8')group.userData.dorsalOcellusCount=3;
         var tailType=profile?profile.tail:round?'rounded':shape==='betta'?'flowing':shape==='guppy'?'fan':'fork',fan=tailType==='fan'||tailType==='flowing',rounded=tailType==='rounded';
-        var tailHeight=round?.135:tailType==='flowing'?.43:fan?.33:rounded?.19:tall?.25:.21;
-        var tailLength=round?.26:fan?.6:rounded?.36:.38,smallClear=shape==='tetra'||shape==='otocinclus';
+        var tailHeight=shape==='tang'?.20:shape==='goldfish'?.235:round?.135:tailType==='flowing'?.43:fan?.33:rounded?.19:tall?.25:.21;
+        var tailLength=tall||shape==='tang'?.36:shape==='goldfish'?.4:round?.26:fan?.6:rounded?.36:.38,smallClear=shape==='tetra'||shape==='otocinclus';
         function makeFinMaterial(caudal){
-          var size=lowDetail?64:quality==='high'?256:128,finColor=rgb(shape==='tang'&&caudal?0xfbd24b:smallClear?0xb5c8c0:baseColor),rayColor=rgb(smallClear?0x627f7b:0x756952);
-          var alpha=round?.60:smallClear?.28:tailType==='flowing'?.66:caudal?.57:.43,finPixel=[0,0,0,0],rummyWhite=rgb(0xebeee5),rummyDark=rgb(0x172422);
+          var size=lowDetail?64:quality==='high'?256:128,finColor=rgb(shape==='tang'&&caudal?0xfbd24b:smallClear?0xb5c8c0:baseColor),rayColor=rgb(shape==='tang'?0x23304f:shape==='betta'?0x682945:smallClear?0x627f7b:0x756952);
+          var alpha=shape==='tang'?.66:shape==='betta'?.76:round?.60:smallClear?.28:tailType==='flowing'?.66:caudal?.57:.43,finPixel=[0,0,0,0],rummyWhite=rgb(0xebeee5),rummyDark=rgb(0x172422);
           var map=pigmentMap(size,size,caudal?'caudal-membrane':'fin-membrane',function(u,v){
             var color=finPixel,a=alpha*(.57+.43*soft(.02,.32,u)),ray=0;color[0]=finColor[0];color[1]=finColor[1];color[2]=finColor[2];
             for(var i=0;i<7;i++){var slope=(i/6*2-1)*.68,distance=Math.abs((v-.5)-u*slope);ray=Math.max(ray,1-soft(.004,.01,distance));}
-            color=mix(color,rayColor,ray*.36);a+=ray*.12;
+            color=mix(color,rayColor,ray*(shape==='tang'&&caudal?.12:.36));a+=ray*.12;
+            if(shape==='betta'){var fold=1+Math.sin((v-.5)*31-u*8)*.055;for(var channel=0;channel<3;channel++)color[channel]*=fold;a*=1-soft(.86,1,u)*.2;}
             if(caudal&&pattern==='guppy')for(var spot=0;spot<6;spot++){
               var x=-u*tailLength,y=(v*2-1)*tailHeight,ex=ellipse(x,y,-.25-spot%2*.17,(Math.floor(spot/2)-1)*.13,.031,.041),amount=1-soft(.86,1.09,ex);
               color=mix(color,rgb(spot%2?0x243633:0x477f91),amount);a=Math.max(a,amount*.85);
+            }
+            if(caudal&&shape==='tang'){
+              var tx=-u*tailLength,ty=(v*2-1)*tailHeight,border=soft(.008,.022,abs(ty)-(.012+.31*(-tx)));mix(color,charcoal,border);a=.88;
             }
             if(caudal&&pattern==='rummy'){
               var y=(v*2-1)*tailHeight,x=-u*tailLength,bar=range(Math.abs(y),.10,.145,.003)*range(x,-.348,-.17,.008);
@@ -12940,29 +12964,81 @@ window.StemLab = window.StemLab || {
         function membrane(parent,points,mat,part,caudal,x,y,z){
           var outline=new THREE.Shape();outline.moveTo(points[0][0],points[0][1]);
           for(var n=1;n<points.length;n++){
-            var previous=points[n-1],point=points[n],next=points[(n+1)%points.length],rounding=caudal&&fan?.16:.07;
+            var previous=points[n-1],point=points[n],next=points[(n+1)%points.length],rounding=shape==='clownfish'?.24:caudal&&fan?.16:.07;
             outline.lineTo(point[0]+(previous[0]-point[0])*rounding,point[1]+(previous[1]-point[1])*rounding);
             outline.quadraticCurveTo(point[0],point[1],point[0]+(next[0]-point[0])*rounding,point[1]+(next[1]-point[1])*rounding);
           }
           outline.closePath();var flat=new THREE.ShapeGeometry(outline,lowDetail?3:6),positions=flat.attributes.position,order=flat.index;
           var vertices=[],indices=[],uvs=[],lookup={},minX=Math.min.apply(null,points.map(function(p){return p[0];})),maxX=Math.max.apply(null,points.map(function(p){return p[0];})),minY=Math.min.apply(null,points.map(function(p){return p[1];})),maxY=Math.max.apply(null,points.map(function(p){return p[1];}));
+          if(tall&&(part==='dorsal-fin'||part==='anal-fin')){
+            var finSize=lowDetail?64:quality==='high'?256:128,finPale=rgb(0xcbd4cc),finDark=rgb(0x344441),finPixel=[0,0,0,0];
+            var finMap=pigmentMap(finSize,finSize,'angelfish-'+part,function(u,v){
+              var px=maxX-u*(maxX-minX),py=minY+v*(maxY-minY),bar=range(px,-.215,-.125,.008),frontBar=range(px,.032,.077,.008)*.65;
+              finPixel[0]=finPale[0];finPixel[1]=finPale[1];finPixel[2]=finPale[2];mix(finPixel,finDark,Math.max(bar,frontBar));
+              var phase=(u*.86+v*.12)*16,ray=1-soft(.025,.09,Math.abs(phase-Math.round(phase)));mix(finPixel,finDark,ray*.23);finPixel[3]=(Math.max(bar*.84,frontBar*.72,.51)+ray*.08)*255;return finPixel;
+            });
+            mat=pigment(0xffffff,{map:finMap,transparent:true,opacity:1,side:THREE.DoubleSide,roughness:.58,depthWrite:false,alphaTest:.02});mat.userData.materialRole='fin-membrane';
+          }
+          if(shape==='clownfish'){
+            var finSize=lowDetail?64:quality==='high'?256:128,finPixel=[0,0,0,0],finOrange=rgb(baseColor),finBlack=rgb(0x252b29),edgeStart=caudal?1:0,edgeEnd=caudal?7:part==='dorsal-fin'?9:part==='anal-fin'?4:part==='pectoral-fin'?5:3;
+            var finMap=pigmentMap(finSize,finSize,'clown-'+part,function(u,v){
+              var px=caudal?-u*tailLength:maxX-u*(maxX-minX),py=caudal?(v*2-1)*tailHeight:minY+v*(maxY-minY),distance=Infinity;
+              for(var edge=edgeStart;edge<edgeEnd;edge++){var a=points[edge],b=points[edge+1],dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((px-a[0])*dx+(py-a[1])*dy)/(dx*dx+dy*dy)));distance=Math.min(distance,Math.hypot(px-a[0]-t*dx,py-a[1]-t*dy));}
+              finPixel[0]=finOrange[0];finPixel[1]=finOrange[1];finPixel[2]=finOrange[2];
+              if(part==='dorsal-fin'||part==='anal-fin'){var center=.015+.055*Math.exp(-py*py/.0081);mix(finPixel,finBlack,range(px,center-.0515,center+.0515,.004));mix(finPixel,white,range(px,center-.0425,center+.0425,.004));}
+              var phase=(v-.5)/(Math.max(.12,u))*9,ray=1-soft(.025,.085,Math.abs(phase-Math.round(phase)));mix(finPixel,finBlack,ray*.09);mix(finPixel,finBlack,1-soft(.010,.021,distance));finPixel[3]=230;return finPixel;
+            });
+            mat=pigment(0xffffff,{map:finMap,transparent:true,opacity:1,side:THREE.DoubleSide,roughness:.62,depthWrite:false,alphaTest:.02});mat.userData.materialRole='fin-membrane';
+          }
           function vertex(p){var key=p.x.toFixed(7)+':'+p.y.toFixed(7);if(lookup[key]!==undefined)return lookup[key];var u=caudal?-p.x/tailLength:(maxX-p.x)/Math.max(.01,maxX-minX),v=caudal?(p.y/tailHeight+1)/2:(p.y-minY)/Math.max(.01,maxY-minY);
             var bend=Math.sin(clamp(u,0,1)*Math.PI)*.012+Math.sin((v-.5)*Math.PI)*u*.016,index=vertices.length/3;vertices.push(p.x,p.y,bend);uvs.push(u,v);lookup[key]=index;return index;}
           function triangle(a,b,c,depth){if(depth>0){var ab=a.clone().add(b).multiplyScalar(.5),bc=b.clone().add(c).multiplyScalar(.5),ca=c.clone().add(a).multiplyScalar(.5);triangle(a,ab,ca,depth-1);triangle(ab,b,bc,depth-1);triangle(ca,bc,c,depth-1);triangle(ab,bc,ca,depth-1);}else indices.push(vertex(a),vertex(b),vertex(c));}
           for(var tri=0;tri<(order?order.count:positions.count);tri+=3){var a=new THREE.Vector3().fromBufferAttribute(positions,order?order.getX(tri):tri),b=new THREE.Vector3().fromBufferAttribute(positions,order?order.getX(tri+1):tri+1),c=new THREE.Vector3().fromBufferAttribute(positions,order?order.getX(tri+2):tri+2);triangle(a,b,c,lowDetail?0:1);}
           flat.dispose();var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.computeVertexNormals();
-          var fin=mesh(geometry,mat,parent,x||0,y||0,z||0);fin.userData.anatomyPart=part;fin.userData.surfaceModel='curved-membrane';return fin;
+          var fin=mesh(geometry,mat,parent,x||0,y||0,z||0);fin.userData.anatomyPart=part;fin.userData.surfaceModel='curved-membrane';
+          if(shape==='betta'&&/^(caudal|dorsal|anal)-fin$/.test(part)){
+            var rest=new Float32Array(geometry.attributes.position.array),weights=new Float32Array(rest.length/3);
+            for(var v=0;v<weights.length;v++){var distance=caudal?-rest[v*3]/tailLength:part==='dorsal-fin'?(rest[v*3+1]-.17)/.25:(-rest[v*3+1]-.19)/.28;weights[v]=Math.pow(clamp(distance,0,1),1.5);}
+            if(!group.bettaMembranes)group.bettaMembranes=[];group.bettaMembranes.push({mesh:fin,rest:rest,weights:weights});fin.userData.deformation='rooted-fin-ripple';group.userData.softMotionEnvelope=.03;
+          }
+          return fin;
         }
         tail=new THREE.Group();tail.position.x=-bodyX*.86;group.add(tail);
         var tailPoints=fan?[[0,0],[-.22,tailHeight*.76],[-.5,tailHeight],[-.59,tailHeight*.42],[-.6,-tailHeight*.46],[-.48,-tailHeight],[-.19,-tailHeight*.7]]:rounded?[[0,0],[-.24,tailHeight],[-.34,tailHeight*.66],[-.36,0],[-.34,-tailHeight*.66],[-.24,-tailHeight]]:[[0,0],[-.38,tailHeight],[-.27,0],[-.38,-tailHeight]];
+        if(shape==='clownfish')tailPoints=[[0,.025],[-.12,.13],[-.25,.17],[-.33,.115],[-.36,0],[-.33,-.115],[-.25,-.17],[-.12,-.13],[0,-.025]];
+        if(shape==='tang')tailPoints=[[0,.035],[-.22,.15],[-.36,.20],[-.34,.10],[-.34,-.10],[-.36,-.20],[-.22,-.15],[0,-.035]];
+        if(tall)tailPoints=[[0,.035],[-.24,.17],[-.35,.23],[-.32,.12],[-.32,-.12],[-.35,-.23],[-.24,-.17],[0,-.035]];
+        if(shape==='betta')tailPoints=[[0,.035],[-.19,.22],[-.42,.34],[-.55,.29],[-.60,.10],[-.58,-.22],[-.49,-.43],[-.32,-.39],[-.16,-.20],[0,-.035]];
+        if(shape==='goldfish')tailPoints=[[0,.045],[-.16,.10],[-.4,.235],[-.37,.09],[-.26,0],[-.37,-.09],[-.4,-.235],[-.16,-.10],[0,-.045]];
         if(round)tailPoints=[[0,0],[-.17,.135],[-.24,.09],[-.26,0],[-.24,-.09],[-.17,-.135]];
         membrane(tail,tailPoints,tailMat,'caudal-fin',true);if(pattern==='rummy')group.userData.tailPattern='black-white-bars';
+        if(tall)[-1,1].forEach(function(side){curve(tail,[[-.24,side*.16,0],[-.34,side*.225,.005],[-.45,side*.275,.008]],.0035,belly,12).userData.anatomyPart='caudal-filament';});
         var dorsalPoints;
         if(shape==='pikecichlid')dorsalPoints=[[.4,bodyY*.6],[.25,bodyY+.09],[-.64,bodyY+.09],[-.7,bodyY*.35]];
         else if(shape==='pleco')dorsalPoints=[[.16,bodyY*.6],[-.02,bodyY+.43],[-.45,bodyY*.55]];
         else if(shape==='rockfish'){dorsalPoints=[[.32,bodyY*.65]];for(var spine=0;spine<8;spine++){var sx=.29-spine*.08;dorsalPoints.push([sx,bodyY+.13+(spine<4?.035:0)],[sx-.037,bodyY+.025]);}dorsalPoints.push([-.39,bodyY*.45]);}
         else dorsalPoints=[[bodyX*.5,bodyY*.65],[-.09,bodyY+(tall?.4:tailType==='flowing'?.25:fan?.18:.12)],[-bodyX*.73,bodyY*.45]];
-        if(round){
+        if(shape==='clownfish'){
+          membrane(group,[[.25,.15],[.20,.28],[.12,.31],[.02,.31],[-.065,.29],[-.09,.255],[-.13,.32],[-.21,.34],[-.30,.30],[-.38,.13],[-.30,.16],[-.14,.22],[.04,.24]],membraneMat,'dorsal-fin',false);
+          membrane(group,[[.025,-.23],[-.08,-.335],[-.23,-.32],[-.34,-.23],[-.38,-.115],[-.24,-.18],[-.09,-.24]],membraneMat,'anal-fin',false);
+          Object.assign(group.userData,{dorsalFinCount:1,analFinCount:1,pelvicFinCount:2,pectoralFinCount:2,caudalFinCount:1,dorsalOutline:'connected-with-notch',caudalOutline:'rounded',clownfishForm:'representative-orange-ocellaris',bodyBandCount:3});
+        }else if(shape==='tang'){
+          membrane(group,[[.29,.23],[.22,.37],[.05,.46],[-.17,.44],[-.36,.30],[-.45,.09],[-.33,.18],[-.15,.31],[.06,.34]],membraneMat,'dorsal-fin',false);
+          membrane(group,[[.14,-.27],[.04,-.39],[-.18,-.42],[-.36,-.27],[-.45,-.085],[-.32,-.17],[-.14,-.31]],membraneMat,'anal-fin',false);
+          Object.assign(group.userData,{dorsalFinCount:1,analFinCount:1,pelvicFinCount:2,pectoralFinCount:2,caudalFinCount:1,caudalSpineCount:2,caudalSpineState:'folded',caudalOutline:'truncate-with-short-lobes',tailPattern:'yellow-wedge-black-margins'});
+        }else if(tall){
+          membrane(group,[[.22,.28],[.13,.47],[-.045,.68],[-.20,.88],[-.26,.70],[-.28,.44],[-.38,.20],[-.20,.33],[0,.43]],membraneMat,'dorsal-fin',false);
+          membrane(group,[[.15,-.31],[.07,-.47],[-.09,-.66],[-.26,-.80],[-.30,-.56],[-.37,-.21],[-.19,-.34],[0,-.42]],membraneMat,'anal-fin',false);
+          Object.assign(group.userData,{dorsalFinCount:1,analFinCount:1,pelvicFinCount:2,pectoralFinCount:2,caudalFinCount:1,caudalFilamentCount:2,adultBarCount:4,caudalOutline:'truncate-with-marginal-filaments'});
+        }else if(shape==='betta'){
+          membrane(group,[[.025,.17],[-.055,.31],[-.18,.43],[-.34,.40],[-.49,.25],[-.47,.12],[-.21,.17]],membraneMat,'dorsal-fin',false);
+          membrane(group,[[.25,-.12],[.16,-.24],[-.03,-.35],[-.32,-.47],[-.5,-.42],[-.4,-.10],[-.12,-.19]],membraneMat,'anal-fin',false);
+          Object.assign(group.userData,{dorsalFinCount:1,analFinCount:1,pelvicFinCount:2,pectoralFinCount:2,caudalFinCount:1,bettaForm:'representative-long-fin-male',finMotionNote:'Rooted fin ripples are illustrative; fluid forces and fin-ray biomechanics are not simulated.'});
+        }else if(shape==='goldfish'){
+          membrane(group,[[.18,.19],[.15,.43],[.055,.405],[-.11,.36],[-.29,.31],[-.40,.12],[-.18,.20],[.03,.235]],membraneMat,'dorsal-fin',false);
+          membrane(group,[[-.19,-.17],[-.27,-.32],[-.40,-.25],[-.39,-.115]],membraneMat,'anal-fin',false);
+          Object.assign(group.userData,{dorsalFinCount:1,analFinCount:1,pelvicFinCount:2,pectoralFinCount:2,caudalFinCount:1,barbelCount:0,goldfishForm:'common-single-tail'});
+        }else if(round){
           var dorsalBase=new THREE.Group(),analBase=new THREE.Group();dorsalBase.position.set(-bodyX*.61,.12,0);analBase.position.set(-bodyX*.68,-.12,0);group.add(dorsalBase,analBase);
           var pufferDorsal=membrane(dorsalBase,[[.04,0],[.005,.115],[-.07,.135],[-.135,.085],[-.115,0]],membraneMat,'dorsal-fin',false);
           var pufferAnal=membrane(analBase,[[.025,0],[-.015,-.09],[-.09,-.115],[-.13,-.07],[-.10,0]],membraneMat,'anal-fin',false);
@@ -12973,9 +13049,41 @@ window.StemLab = window.StemLab || {
         }else if(shape==='goby'){
           fins.push(membrane(group,[[.15,bodyY*.7],[.035,bodyY+.19],[-.14,bodyY*.68]],membraneMat,'dorsal-fin',false),membrane(group,[[-.18,bodyY*.75],[-.27,bodyY+.14],[-.49,bodyY*.37]],membraneMat,'dorsal-fin',false));group.userData.dorsalFinCount=2;
         }else{fins.push(membrane(group,dorsalPoints,membraneMat,'dorsal-fin',false));group.userData.dorsalFinCount=1;}
-        if(tall||shape==='betta')membrane(group,[[.12,-bodyY*.65],[-.28,-bodyY-(tall?.29:.25)],[-.38,-bodyY*.42]],membraneMat,'anal-fin',false);
         [-1,1].forEach(function(side){
-          if(round){
+          if(shape==='clownfish'){
+            var pectoral=membrane(group,[[0,0],[-.08,.035],[-.175,.005],[-.205,-.065],[-.16,-.12],[-.075,-.12],[.01,-.035]],membraneMat,'pectoral-fin',false,.14,-.035,side*.143);
+            pectoral.rotation.y=side*.68;pectoral.userData.baseYaw=pectoral.rotation.y;pectoral.userData.clownPectoral=true;pectoral.userData.side=side;fins.push(pectoral);
+            var pelvic=membrane(group,[[0,0],[-.05,-.085],[-.14,-.125],[-.15,-.075],[-.07,-.015]],membraneMat,'pelvic-fin',false,.095,-.20,side*.064);pelvic.rotation.y=side*.40;
+            var gillPoints=[[.22,.12],[.16,.055],[.15,-.06],[.20,-.155]].map(function(p){return [p[0],p[1],side*(bodyZ*Math.sqrt(Math.max(0,1-p[0]*p[0]/(bodyX*bodyX)-p[1]*p[1]/(bodyY*bodyY)))+.004)];});
+            curve(group,gillPoints,.0027,pigment(0x965529,{roughness:.65}),14).userData.anatomyPart='gill-cover';
+          }else if(shape==='tang'){
+            var pectoral=membrane(group,[[0,0],[-.08,.015],[-.20,-.08],[-.17,-.14],[-.08,-.15],[.015,-.04]],membraneMat,'pectoral-fin',false,.14,-.07,side*.122);
+            pectoral.rotation.y=side*.65;pectoral.userData.baseYaw=pectoral.rotation.y;pectoral.userData.tangPectoral=true;pectoral.userData.side=side;fins.push(pectoral);
+            var pelvic=membrane(group,[[0,0],[-.035,-.10],[-.13,-.14],[-.10,-.025]],membraneMat,'pelvic-fin',false,.12,-.29,side*.043);pelvic.rotation.y=side*.34;
+            var groove=[-.435,-.395,-.348].map(function(x){return [x,0,side*(bodyZ*Math.sqrt(1-x*x/(bodyX*bodyX))+.004)];});
+            curve(group,groove,.0034,pigment(0x626241,{roughness:.6}),12).userData.anatomyPart='caudal-spine-groove';
+            var bladeGeometry=new THREE.BufferGeometry();bladeGeometry.setAttribute('position',new THREE.Float32BufferAttribute([-.424,-.011,side*.075,-.348,0,side*.098,-.424,.011,side*.075],3));bladeGeometry.computeVertexNormals();
+            var blade=mesh(bladeGeometry,pigment(0x485a68,{side:THREE.DoubleSide,roughness:.48}),group);blade.userData.anatomyPart='caudal-spine';blade.userData.side=side;blade.userData.spineState='folded';
+            curve(group,[[.245,.135,side*.096],[.185,.065,side*.117],[.17,-.11,side*.114],[.22,-.20,side*.09]],.003,pigment(0x274b87,{roughness:.6}),14).userData.anatomyPart='gill-cover';
+          }else if(tall){
+            var pectoral=membrane(group,[[0,0],[-.10,.033],[-.18,.005],[-.20,-.03],[-.13,-.075],[.014,-.035]],membraneMat,'pectoral-fin',false,.105,-.015,side*.109);
+            pectoral.rotation.y=side*.66;pectoral.userData.baseYaw=pectoral.rotation.y;pectoral.userData.angelPectoral=true;pectoral.userData.side=side;fins.push(pectoral);
+            membrane(group,[[0,.012],[.02,-.13],[-.035,-.36],[-.14,-.61],[-.075,-.33],[-.032,-.04]],membraneMat,'pelvic-membrane',false,.15,-.28,side*.052);
+            curve(group,[[.15,-.28,side*.052],[.14,-.50,side*.078],[.03,-.76,side*.089],[.01,-.89,side*.083]],.004,belly,18).userData.anatomyPart='pelvic-fin';
+            curve(group,[[.21,.19,side*.075],[.15,.09,side*.104],[.13,-.10,side*.106],[.18,-.24,side*.075]],.003,pigment(0x829188,{roughness:.6}),16).userData.anatomyPart='gill-cover';
+          }else if(shape==='betta'){
+            var pectoral=membrane(group,[[0,0],[-.06,.035],[-.135,.015],[-.155,-.04],[-.095,-.09],[.005,-.025]],membraneMat,'pectoral-fin',false,.19,-.02,side*.125);
+            pectoral.rotation.y=side*.72;pectoral.userData.baseYaw=pectoral.rotation.y;pectoral.userData.bettaPectoral=true;pectoral.userData.side=side;fins.push(pectoral);
+            var pelvic=membrane(group,[[0,0],[-.008,-.13],[-.10,-.33],[-.07,-.12],[-.035,-.015]],membraneMat,'pelvic-fin',false,.19,-.125,side*.055);pelvic.rotation.y=side*.18;
+            curve(group,[[.245,.093,side*.095],[.18,.04,side*.13],[.19,-.06,side*.119],[.255,-.105,side*.084]],.003,pigment(0x72354d,{roughness:.6}),14).userData.anatomyPart='gill-cover';
+          }else if(shape==='goldfish'){
+            var pectoral=membrane(group,[[0,0],[-.075,-.025],[-.225,-.10],[-.20,-.15],[-.12,-.17],[.016,-.035]],membraneMat,'pectoral-fin',false,.17,-.04,side*.165);
+            pectoral.rotation.y=side*.63;pectoral.userData.baseYaw=pectoral.rotation.y;pectoral.userData.goldfishPaddle=true;pectoral.userData.side=side;fins.push(pectoral);
+            var pelvic=membrane(group,[[0,0],[-.07,-.02],[-.18,-.115],[-.105,-.15],[.012,-.04]],membraneMat,'pelvic-fin',false,-.035,-.196,side*.065);
+            pelvic.rotation.y=side*.42;pelvic.rotation.x=side*.32;pelvic.userData.baseYaw=pelvic.rotation.y;pelvic.userData.goldfishPaddle=true;pelvic.userData.side=side;pelvic.userData.pelvic=true;fins.push(pelvic);
+            var gillPoints=[[.40,.65],[.27,.35],[.24,-.10],[.36,-.65]].map(function(p){var c=goldfishContour(p[0],p[1],side*(Math.sqrt(Math.max(0,1-p[0]*p[0]-p[1]*p[1]))+.025));return [c[0]*bodyX,c[1]*bodyY,c[2]*bodyZ];});
+            curve(group,gillPoints,.0035,pigment(0xb47838,{roughness:.65}),16).userData.anatomyPart='gill-cover';
+          }else if(round){
             var pufferPectoral=membrane(group,[[0,0],[-.07,.056],[-.135,.032],[-.15,-.025],[-.075,-.073],[.008,-.02]],membraneMat,'pectoral-fin',false,.018,.004,side*.205);
             pufferPectoral.rotation.y=side*.70;pufferPectoral.userData.baseYaw=pufferPectoral.rotation.y;pufferPectoral.userData.pufferScull=true;fins.push(pufferPectoral);
             sphere(group,dark,.072,.008,side*.212,.008,.033,.007,12).userData.anatomyPart='gill-slit';
@@ -12990,7 +13098,6 @@ window.StemLab = window.StemLab || {
           }else{
             var pectoral=membrane(group,[[0,0],[-.18,-.17],[.08,-.1]],membraneMat,'pectoral-fin',false,.13,-.04,side*bodyZ*.91);pectoral.rotation.y=side*.65;pectoral.userData.baseYaw=pectoral.rotation.y;fins.push(pectoral);
           }
-          if(tall)curve(group,[[.16,-.25,side*.065],[.1,-.58,side*.1],[-.03,-.81,side*.09]],.009,belly,9);
           if(shape==='corydoras')curve(group,[[bodyX*.86,-.08,side*.06],[bodyX+.09,-.13,side*.11],[bodyX+.14,-.15,side*.16]],.008,belly,7);
           if(catfish){
             var pelvic=membrane(group,[[0,0],[-.17,-.065],[-.06,.035]],membraneMat,'pelvic-fin',false,-bodyX*.3,-bodyY*.46,side*bodyZ*.55);pelvic.rotation.x=side*.95;
@@ -13016,6 +13123,19 @@ window.StemLab = window.StemLab || {
           var suckerRadius=shape==='pleco'?.069:.038,suckerY=-bodyY*.52;
           var sucker=mesh(new THREE.TorusGeometry(suckerRadius,.011,8,24),belly,group,bodyX*.79,suckerY,0);sucker.rotation.x=-Math.PI/2;sucker.userData.suckerMouth=true;sucker.userData.anatomyPart='sucker-lip';
           var opening=mesh(new THREE.CircleGeometry(suckerRadius*.8,20),dark,group,bodyX*.79,suckerY-.009,0);opening.rotation.x=Math.PI/2;opening.userData.anatomyPart='sucker-opening';
+        }
+        else if(shape==='clownfish'){
+          var lip=mesh(new THREE.TorusGeometry(.017,.004,7,18),pigment(0xdc8a42,{roughness:.6}),group,bodyX*.998,-.008,0);lip.rotation.y=Math.PI/2;lip.scale.y=.8;lip.userData.anatomyPart='terminal-mouth-lip';
+          sphere(group,dark,bodyX*1.005,-.008,0,.006,.010,.013,10).userData.anatomyPart='terminal-mouth-opening';
+        }
+        else if(shape==='betta'){
+          var lip=mesh(new THREE.TorusGeometry(.019,.0045,7,20),belly,group,bodyX*.99,.021,0);lip.rotation.y=Math.PI/2;lip.scale.y=.75;lip.userData.anatomyPart='mouth-lip';
+          sphere(group,dark,bodyX*1.004,.021,0,.007,.011,.016,12).userData.anatomyPart='mouth-opening';
+        }
+        else if(shape==='goldfish'){
+          var lip=mesh(new THREE.TorusGeometry(.023,.005,7,20),belly,group,bodyX*.998,-.006,0);lip.rotation.y=Math.PI/2;lip.scale.y=.8;lip.userData.anatomyPart='terminal-mouth-lip';
+          sphere(group,dark,bodyX*1.007,-.006,0,.008,.015,.019,12).userData.anatomyPart='terminal-mouth-opening';
+          group.userData.propulsionNote='Paired fin strokes are illustrative; fluid forces and fin-ray biomechanics are not simulated.';
         }
         else if(round){
           var lip=mesh(new THREE.TorusGeometry(.027,.0065,8,24),belly,group,bodyX*.994,-.014,0);lip.rotation.y=Math.PI/2;lip.scale.y=.67;lip.userData.anatomyPart='beak-lip';
@@ -13509,9 +13629,21 @@ window.StemLab = window.StemLab || {
               for(var v=0;v<positions.count;v++){var weight=tissue.weights[v],phase=tissue.phases[v],wave=Math.sin(motionTime*.85+phase),cross=Math.cos(motionTime*.63+phase*.8);positions.setXYZ(v,tissue.rest[v*3]+amplitude*weight*wave,tissue.rest[v*3+1],tissue.rest[v*3+2]+amplitude*.65*weight*cross);}
               positions.needsUpdate=true;tissue.mesh.geometry.computeVertexNormals();tissue.mesh.geometry.computeBoundingBox();tissue.mesh.geometry.computeBoundingSphere();data.tissueFlowOutput=filterFlow.on?filterFlow.intensity:0;
             }
-            if(data.tail)data.tail.rotation.y=Math.sin(motionTime*(data.speed*18+3)+data.phase)*(data.shape==='pufferfish'?.075:.16+data.activityHealth*.0009);
+            if(data.tail)data.tail.rotation.y=Math.sin(motionTime*(data.speed*18+3)+data.phase)*(data.shape==='pufferfish'?.075:data.shape==='betta'?.10:data.shape==='angelfish'?.13:data.shape==='tang'?.15:data.shape==='clownfish'?.14:.16+data.activityHealth*.0009);
+            if(group.bettaMembranes)group.bettaMembranes.forEach(function(tissue,index){
+              var geometry=tissue.mesh.geometry,positions=geometry.attributes.position;
+              for(var v=0;v<positions.count;v++){var x=tissue.rest[v*3],y=tissue.rest[v*3+1],wave=Math.sin(motionTime*3.3+data.phase+index*.8-x*5+y*3)*.75+Math.sin(motionTime*5.2+data.phase+x*10)*.25;positions.setZ(v,tissue.rest[v*3+2]+.026*tissue.weights[v]*wave);}
+              positions.needsUpdate=true;geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
+            });
             (data.mudskipperPectorals||[]).forEach(function(paddle){paddle.rotation.y=paddle.userData.side*Math.sin(motionTime*(1.5+data.activityHealth*.004)+data.phase)*.065;});
-            (data.fins||[]).forEach(function(fin,index){var scull=fin.userData.pufferScull===true;fin.rotation.y=(fin.userData.baseYaw||0)+Math.sin(motionTime*(scull?7.2:4.5)+data.phase+index)*(scull?.18:.11);});
+            (data.fins||[]).forEach(function(fin,index){
+              if(fin.userData.clownPectoral)fin.rotation.y=fin.userData.baseYaw+fin.userData.side*Math.sin(motionTime*5.8+data.phase)*.17;
+              else if(fin.userData.tangPectoral)fin.rotation.y=fin.userData.baseYaw+fin.userData.side*Math.sin(motionTime*5.6+data.phase)*.13;
+              else if(fin.userData.angelPectoral)fin.rotation.y=fin.userData.baseYaw+fin.userData.side*Math.sin(motionTime*5+data.phase)*.10;
+              else if(fin.userData.bettaPectoral)fin.rotation.y=fin.userData.baseYaw+fin.userData.side*Math.sin(motionTime*7+data.phase)*.18;
+              else if(fin.userData.goldfishPaddle){var pelvic=fin.userData.pelvic;fin.rotation.y=fin.userData.baseYaw+fin.userData.side*Math.sin(motionTime*4.2+data.phase+(pelvic?.6:0))*(pelvic?.07:.12);}
+              else{var scull=fin.userData.pufferScull===true;fin.rotation.y=(fin.userData.baseYaw||0)+Math.sin(motionTime*(scull?7.2:4.5)+data.phase+index)*(scull?.18:.11);}
+            });
           });
           var flow=equipmentState('filter');var sway=.013+(flow.on?flow.intensity*.018:0);
           plantRoot.children.forEach(function(group){group.rotation.z=(group.userData.baseRotation||0)+Math.sin(motionTime*.7+group.userData.phase)*sway;});

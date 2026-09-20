@@ -1,0 +1,43 @@
+{
+  "decision": {
+    "accepted": false,
+    "reason": "table-semantics-changed",
+    "sourceLocation": "table:1/cell:4"
+  },
+  "source": {
+    "row": {
+      "role": "row",
+      "name": "North 95",
+      "ignored": false
+    },
+    "datum": {
+      "role": "gridcell",
+      "name": "95",
+      "ignored": false
+    }
+  },
+  "candidate": {
+    "row": {
+      "role": "row",
+      "name": "North 95",
+      "ignored": false
+    },
+    "datum": {
+      "role": "button",
+      "name": "95",
+      "ignored": false
+    }
+  },
+  "repaired": {
+    "row": {
+      "role": "row",
+      "name": "North 95",
+      "ignored": false
+    },
+    "datum": {
+      "role": "gridcell",
+      "name": "95",
+      "ignored": false
+    }
+  }
+}

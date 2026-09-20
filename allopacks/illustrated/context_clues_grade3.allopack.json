@@ -29,10 +29,15 @@
       "textPolicy": "Text-free artwork; original activity text stays editable"
     },
     "contentRefinements": {
-      "count": 32,
+      "count": 33,
       "audit": "allopacks/media/context_clues_grade3/content-refinements.json",
-      "review": "Literacy content refined; educator review pending"
-    }
+      "review": "Literacy content refined; educator review pending",
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/context_clues_grade3/content-refinements.json",
+      "sourceOnlyResourceIds": []
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Context Clues and Word Parts",
   "history": [
@@ -79,7 +84,7 @@
       "title": "The Words Around the Word",
       "timestamp": "2026-09-05T23:10:01.000Z",
       "data": "## The Words Around the Word\n\nRead this: *The path was so narrow that we had to walk single file.*\n\nSuppose you did not know **narrow**. You would still have a good guess. If people have to walk one behind the other, the path is probably not wide. You did not look anything up. The sentence told you.\n\nThat is what a **context** **clue** is. The words around a word hint at what it means. You can practice this strategy with support.\n\nThere are four kinds worth knowing by name.\n\nSometimes the writer just tells you. *A glacier, a large mass of ice formed on land that moves under its own weight, carved this valley.* That is a **definition** clue, and it gives the meaning directly.\n\nSometimes you get cases instead. *She packed produce: apples, carrots, and lettuce.* Nobody defined produce, but the **example** clue shows you it means fruits and vegetables.\n\nSometimes a nearby word means almost the same thing. *He was furious. I had never seen him so angry.* Angry is a **synonym**, and it hands you the meaning.\n\nSometimes the sentence swings the other way. *The room was not tidy; it was a shambles.* The little word not tells you a shambles is the opposite of tidy. That is an **antonym** clue.\n\nWatch for **signal** words. Or, that is, and such as often bring a definition or an example. But, however and instead can introduce a contrast.\n\nThe word itself can help too. A **prefix** is a word part on the front. Un- means not, so unhappy is not happy. A **suffix** is a word part on the end. -ful means full of, so joyful is full of joy. Underneath is the **root**, the main part carrying the meaning.\n\nNow the honest part. Sometimes there is no clue at all. The sentence gives you nothing, and guessing harder will not help. That is the moment to ask someone or use a dictionary. Knowing when to stop guessing is a reading skill too.\n\nThe clue types can overlap. Name the clearest clue and explain the wording that supports it. A contrast is not always an exact opposite. Word parts provide another kind of help, separate from surrounding context. Do not remove arbitrary letters: unbreakable has un- + break + -able, but other words have different structures. A meaning that sounds plausible can still be wrong; check reliable explanations when uncertain.",
-      "meta": "3rd Grade • Leveled reading • ~350 words",
+      "meta": "3rd Grade • Leveled reading",
       "imageSlot": "cc-img-four-clues"
     },
     {
@@ -150,7 +155,7 @@
         },
         {
           "term": "Definition",
-          "def": "Words that state a meaning directly; a definition need not be a full sentence.",
+          "def": "Words that directly tell what something means. They need not be a full sentence.",
           "tier": "Academic",
           "image": "data:image/webp;base64,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",
           "imageAlt": "One wide teal box points down to one wide gold box.",
@@ -220,7 +225,7 @@
         },
         {
           "term": "Signal",
-          "def": "A word or phrase that may signal a relationship, such as but, or or such as.",
+          "def": "A word or phrase that can show a link, such as but, or or such as.",
           "tier": "Academic",
           "image": "data:image/webp;base64,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Dhw4cOHDhw4cOHDhw4cOHDhkhr8LyN9Q4cOHDhw4cOHDhw4cOHDhw4cOHDhw4cMkNOUNP1Dhw4cOHDhw4cOHDhw4cOHDhw4cOHDhw35eXThp+ocOHDhw4cOHDhw4cOHDhw4cOHDhw4cOG/LyJryN9Q4cOHDhw4cOHDhw4cOHDhvwOD/K0dLONadxbrLi3WXFusuLdZcW6y4t1lxbrLiRaXdCx4afqHDhw4cOHDhw4cOHDhw4cN+O45qVaIGVcQIECA/xGK1tZNPqHDhw4cOHDhw4cOHDhw4ZFMLHZGWuuUmVcQIECBAf4EXFJmKCSX6u5vkGugWdOnTp06dOnTp06dN91PWuxHyOsuLdZcW6y4t1lxbrLi3WXFusuLdZcU4r7Q8Is6dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp04XR5BXnYe89JAs6dOnTp06dOnTp06dOnTp06dOnTp06dOJncm+7oAAP7/+Jy+ihcojtxSq/3E7E2UR4TveJ8a10zccAA9/pD6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",
           "imageAlt": "A bent teal route ends in a gold arrow.",
@@ -465,8 +470,8 @@
             "factVerified": true,
             "type": "acronym-acrostic",
             "mode": "scaffolded",
-            "aiExample": "D-E-S-A: Dogs Eat Some Apples. Definition, Example, Synonym, Antonym. Silly on purpose, because silly sticks.",
-            "mapping": "Each first letter is one kind of clue. Saying the four-word sentence walks you through all four, so you never leave one out.",
+            "aiExample": "D-E-S-A: Dogs Eat Some Apples. The letters stand for Definition, Example, Synonym and Antonym.",
+            "mapping": "Use the first letters to recall four kinds of clue. Then find a real clue in the text.",
             "scaffoldStarter": "D is for ____. E is for ____. S is for ____. A is for ____.",
             "scaffoldSteps": [
               "Name the four clue types.",
@@ -481,6 +486,13 @@
             "hookFact": {
               "text": "If people have to walk one behind the other, the path is probably not wide. You did not look anything up.",
               "sourceTitle": "The Words Around the Word (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/context_clues_grade3.allopack.json",
+              "sourceResourceId": "cc-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "78118af5d658bc70198a408955d0cc06fcbd6b8184f1fb31e1456d628df0a946"
             }
           },
           {
@@ -492,11 +504,11 @@
               "A root carries core meaning; a base is a form to which a prefix or suffix can be added. Not every word has three parts."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "chunking",
             "mode": "scaffolded",
-            "aiExample": "In unbreakable, identify the familiar base break and the known parts un- and -able. Cover or highlight those meaningful parts, then check the meaning: not able to be broken. Do not remove random letters from every word.",
-            "mapping": "Separating known meaningful parts can clarify a word. The method works when the proposed parts are real parts of that word.",
+            "aiExample": "Look at unbreakable. Find break, un- and -able. Together they mean not able to be broken. Cover or mark each known part.",
+            "mapping": "Use parts that really belong to the word. Do not cut off random letters. Check whether the meaning fits the sentence.",
             "scaffoldStarter": "Cover the front: ____. Cover the end: ____. What is left is ____.",
             "scaffoldSteps": [
               "Find a long word with a prefix or suffix.",
@@ -894,7 +906,14 @@
           ],
           "deliverable": "Four finished cards, plus one sentence: which clue your partner found easiest, and which one you had to rewrite.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": true,
+          "factReview": {
+            "status": "inherited-review-attribution",
+            "sourcePack": "allopacks/context_clues_grade3.allopack.json",
+            "sourceResourceId": "cc-challenge",
+            "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+            "factsHash": "073e53d72ecab739784bddde25596efd0fc17973d537075521f6b4540ca7aed2"
+          }
         },
         "supports": {
           "parallelExample": {

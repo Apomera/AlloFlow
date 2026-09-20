@@ -177,6 +177,614 @@
     return fingerprintText(serialized);
   }
 
+
+  // Exact UTF-16 source identity: unlike readability fingerprints, CRLF,
+  // whitespace and Unicode normalization remain distinct. This checksum is
+  // not proof of historical authenticity; preservation also uses equality.
+  function fingerprintSourceText(text) {
+    if (typeof text !== 'string') return '';
+    var hash = 2166136261;
+    for (var i = 0; i < text.length; i++) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return 'source-utf16-v1-' + (hash >>> 0).toString(16).padStart(8, '0') + '-' + text.length;
+  }
+
+  function createSourceSnapshot(text, options) {
+    if (typeof text !== 'string') return null;
+    var opts = isObject(options) ? options : {};
+    var provenance = isObject(opts.provenance) ? opts.provenance : {};
+    return {
+      schemaVersion: 1,
+      text: text,
+      language: cleanText(opts.language, 80) || 'English',
+      format: cleanText(opts.format, 80) || 'plain-text',
+      sourceArtifactId: opts.sourceArtifactId == null ? null : cleanText(opts.sourceArtifactId, 160) || null,
+      capturedAt: cleanText(opts.capturedAt, 80) || new Date().toISOString(),
+      fingerprint: fingerprintSourceText(text),
+      provenance: {
+        selection: cleanText(provenance.selection || opts.selection, 100) || 'selected-text',
+        origin: cleanText(provenance.origin, 100) || 'selected-source',
+        note: cleanText(provenance.note, 600)
+      }
+    };
+  }
+
+  function getSourceSnapshot(item) {
+    if (!isObject(item)) return null;
+    var candidate = item.sourceSnapshot || (!item.type && item.schemaVersion === 1 && typeof item.text === 'string' ? item : null);
+    if (!isObject(candidate) || candidate.schemaVersion !== 1 || typeof candidate.text !== 'string'
+        || candidate.fingerprint !== fingerprintSourceText(candidate.text)) return null;
+    // Owned whitelisted copy; never search unrelated history for a source.
+    return createSourceSnapshot(candidate.text, candidate);
+  }
+
+  function isSupportedOriginal(item) {
+    if (!isObject(item) || item.type !== 'simplified' || typeof item.data !== 'string') return false;
+    var snapshot = getSourceSnapshot(item);
+    return !!snapshot && getInstructionalText(item).form === 'same-text-supported'
+      && item.data === snapshot.text;
+  }
+
+
+  function normalizeReadingUnitId(value) {
+    var unit = value == null ? '' : cleanText(value, 160);
+    return !unit || unit === 'all' || unit === 'uncategorized' ? null : unit;
+  }
+
+  function readingUnit(item) {
+    return normalizeReadingUnitId(item && (item.unitId !== undefined ? item.unitId : item.config && item.config.unitId));
+  }
+
+  function normalizeSourceInstructionalText(raw, options) {
+    var opts = isObject(options) ? options : {};
+    var profile = normalizeInstructionalText(raw, {
+      role: opts.role || 'primary', form: 'original', designationSource: opts.designationSource || 'workflow-default',
+      sourceArtifactId: opts.sourceArtifactId, primaryArtifactId: opts.sourceArtifactId,
+      complexity: { language: opts.language || 'English' }
+    });
+    return Object.assign({}, profile, { form: 'original', replacementAuthorization: { authorized: false, source: 'none' } });
+  }
+
+  function isAuthorizedAdaptedPrimary(item) {
+    var profile = getInstructionalText(item);
+    return profile.form === 'adapted' && profile.role === 'primary'
+      && profile.replacementAuthorization.authorized === true && profile.replacementAuthorization.source === 'educator';
+  }
+
+  function getSourceInstructionalText(item) {
+    var source = isObject(item) ? item : {};
+    var profile = getInstructionalText(source);
+    var raw = source.sourceInstructionalText || (source.config && source.config.sourceInstructionalText);
+    if (profile.form !== 'adapted') raw = profile;
+    var snapshot = getSourceSnapshot(source);
+    return normalizeSourceInstructionalText(raw, {
+      // A legacy educator-selected adapted main does not automatically make
+      // its retained original another main text.
+      role: isAuthorizedAdaptedPrimary(source) ? 'supplemental' : 'primary',
+      sourceArtifactId: snapshot && snapshot.sourceArtifactId,
+      language: snapshot && snapshot.language
+    });
+  }
+
+  function readingFamilyIds(item) {
+    if (!isObject(item)) return [];
+    var profile = getInstructionalText(item), snapshot = getSourceSnapshot(item);
+    var values = [item.sourceFamilyId, item.config && item.config.sourceFamilyId];
+    if (item.type === 'analysis' && profile.form !== 'adapted') values.push(item.id);
+    if (snapshot) values.push(snapshot.sourceArtifactId);
+    values.push(profile.sourceArtifactId, profile.primaryArtifactId);
+    if (profile.form !== 'adapted') values.push(item.id);
+    return values.map(function (value) { return value == null ? '' : String(value); })
+      .filter(function (value, index, all) { return value && all.indexOf(value) === index; });
+  }
+
+  function getReadingSourceFamilyId(item) {
+    var ids = readingFamilyIds(item);
+    return ids.length ? ids[0] : null;
+  }
+
+  function sameReadingSourceFamily(left, right) {
+    if (!isObject(left) || !isObject(right) || readingUnit(left) !== readingUnit(right)) return false;
+    var leftExplicit = left.sourceFamilyId || (left.config && left.config.sourceFamilyId);
+    var rightExplicit = right.sourceFamilyId || (right.config && right.config.sourceFamilyId);
+    if (leftExplicit && rightExplicit) return String(leftExplicit) === String(rightExplicit);
+    var leftIds = readingFamilyIds(left), rightIds = readingFamilyIds(right);
+    if (leftIds.some(function (id) { return rightIds.indexOf(id) !== -1; })) return true;
+    var a = getSourceSnapshot(left), b = getSourceSnapshot(right);
+    // Legacy unlinked copies can match exact text only within the same lesson,
+    // and never override two competing explicit source identities.
+    var aOrigin = a && a.sourceArtifactId, bOrigin = b && b.sourceArtifactId;
+    if ((leftExplicit && rightExplicit) || (aOrigin && bOrigin && aOrigin !== bOrigin)) return false;
+    return !!a && !!b && !aOrigin && !bOrigin && a.fingerprint === b.fingerprint && a.text === b.text;
+  }
+
+  function createSupportedReading(textOrSnapshot, options) {
+    var opts = isObject(options) ? options : {};
+    var snapshot = typeof textOrSnapshot === 'string'
+      ? createSourceSnapshot(textOrSnapshot, opts) : getSourceSnapshot(textOrSnapshot);
+    if (!snapshot) return null;
+    var inherited = opts.instructionalText || opts.sourceInstructionalText
+      || (opts.sourceItem && getSourceInstructionalText(opts.sourceItem))
+      || (opts.config && opts.config.instructionalText);
+    var sourceProfile = normalizeSourceInstructionalText(inherited, {
+      role: opts.role || 'primary', sourceArtifactId: snapshot.sourceArtifactId,
+      language: snapshot.language, designationSource: opts.designationSource
+    });
+    var profile = normalizeInstructionalText(Object.assign({}, sourceProfile, {
+      form: 'same-text-supported', replacementAuthorization: { authorized: false, source: 'none' }
+    }));
+    var config = isObject(opts.config) ? clonePlain(opts.config) : {};
+    config.language = snapshot.language;
+    config.instructionalText = clonePlain(profile);
+    if (config.sourceInstructionalText) config.sourceInstructionalText = clonePlain(sourceProfile);
+    delete config.sourceSnapshot;
+    delete config.textProfile;
+    var id = opts.id == null ? 'original-' + snapshot.fingerprint : String(opts.id);
+    var familyId = cleanText(opts.sourceFamilyId || (opts.sourceItem && getReadingSourceFamilyId(opts.sourceItem)) || snapshot.sourceArtifactId || id, 200);
+    var unitId = normalizeReadingUnitId(opts.unitId !== undefined ? opts.unitId : opts.sourceItem && opts.sourceItem.unitId);
+    var reading = {
+      id: id, type: 'simplified', title: cleanText(opts.title, 300) || 'Original with supports',
+      data: snapshot.text, dataEncoding: 'text/v1', sourceSnapshot: snapshot,
+      instructionalText: profile, sourceInstructionalText: sourceProfile,
+      sourceFamilyId: familyId, unitId: unitId, config: config
+    };
+    if (opts.instructionalContext) reading.instructionalContext = clonePlain(opts.instructionalContext);
+    if (opts.standardsContext) reading.standardsContext = clonePlain(opts.standardsContext);
+    if (opts.readingSupports) reading.readingSupports = validateReadingSupports(reading, opts.readingSupports);
+    return reading;
+  }
+
+  function getReadingArtifactLabel(item) {
+    if (isSupportedOriginal(item)) return 'Original with supports';
+    if (item && item.readingPreservation && item.readingPreservation.status === 'unavailable') return 'Original unavailable';
+    var profile = getInstructionalText(item);
+    if (profile.form === 'same-text-supported') return 'Reading text (original unavailable)';
+    if (profile.form === 'adapted') return 'Adapted text';
+    return item && item.type === 'analysis' ? 'Source analysis' : 'Original text';
+  }
+
+  function getReadingRoleLabel(itemOrProfile) {
+    var profile = isObject(itemOrProfile) && !itemOrProfile.type && itemOrProfile.role
+      ? normalizeInstructionalText(itemOrProfile) : getInstructionalText(itemOrProfile);
+    return profile.role === 'primary' ? 'Main reading' : profile.role === 'supplemental' ? 'Supporting reading' : 'Not designated';
+  }
+
+  function updateInstructionalRole(item, requestedRole, options) {
+    if (!isObject(item) || ROLES.indexOf(requestedRole) === -1) return item;
+    var opts = isObject(options) ? options : {};
+    var current = getInstructionalText(item);
+    if (current.form === 'same-text-supported' && !isSupportedOriginal(item) && requestedRole === 'primary') return item;
+    var authorized = current.form === 'adapted' && requestedRole === 'primary'
+      && (opts.authorizeReplacement === true || isAuthorizedAdaptedPrimary(item));
+    if (current.form === 'adapted' && requestedRole === 'primary' && !authorized) return item;
+    var profile = normalizeInstructionalText(Object.assign({}, current, {
+      role: requestedRole, designationSource: 'educator',
+      replacementAuthorization: { authorized: authorized, source: authorized ? 'educator' : 'none' }
+    }));
+    var out = Object.assign({}, item, { instructionalText: profile });
+    if (isObject(item.config)) out.config = Object.assign({}, item.config, { instructionalText: clonePlain(profile) });
+    if (current.form !== 'adapted') {
+      out.sourceInstructionalText = normalizeSourceInstructionalText(profile);
+      if (out.config && out.config.sourceInstructionalText) out.config.sourceInstructionalText = clonePlain(out.sourceInstructionalText);
+    }
+    return out;
+  }
+
+  function updateReadingFamilyRole(items, selectedItem, requestedRole, options) {
+    var source = Array.isArray(items) ? items : [];
+    var selected = source.find(function (item) { return item && selectedItem && String(item.id) === String(selectedItem.id); }) || selectedItem;
+    var updated = updateInstructionalRole(selected, requestedRole, options);
+    if (updated === selected) return { items: source, item: selected, changedIds: [] };
+    var adaptedEdit = getInstructionalText(selected).form === 'adapted';
+    var sourceProfile = adaptedEdit ? null : normalizeSourceInstructionalText(updated.instructionalText);
+    var changedIds = [];
+    var output = source.map(function (item) {
+      var next = item;
+      if (item === selected || (item && selected && String(item.id) === String(selected.id))) next = updated;
+      else if (!adaptedEdit && sameReadingSourceFamily(item, selected)) {
+        if (getInstructionalText(item).form === 'adapted') {
+          next = Object.assign({}, item, { sourceInstructionalText: clonePlain(sourceProfile) });
+          if (item.config && item.config.sourceInstructionalText) next.config = Object.assign({}, item.config, { sourceInstructionalText: clonePlain(sourceProfile) });
+        }
+        else {
+          next = updateInstructionalRole(item, requestedRole, options);
+          if (next !== item) next.sourceInstructionalText = clonePlain(sourceProfile);
+        }
+      }
+      if (next !== item) changedIds.push(String(item.id));
+      return next;
+    });
+    return { items: output, item: updated, changedIds: changedIds };
+  }
+
+  function ensureReadingSourcePairs(items, options) {
+    var source = Array.isArray(items) ? items.filter(isObject) : [];
+    var history = options && Array.isArray(options.history) ? options.history : [];
+    var available = source.concat(history.filter(function (item) { return item && !source.some(function (current) { return current.id === item.id; }); }));
+    var originals = source.filter(isSupportedOriginal), output = [];
+    source.forEach(function (item) {
+      var snapshot = ['analysis', 'simplified'].indexOf(item.type) !== -1 && getInstructionalText(item).form === 'adapted' ? getSourceSnapshot(item) : null;
+      if (snapshot && !originals.some(function (original) {
+        return sameReadingSourceFamily(original, item) && original.data === snapshot.text;
+      })) {
+        var existing = available.find(function (candidate) {
+          return isSupportedOriginal(candidate) && sameReadingSourceFamily(candidate, item) && candidate.data === snapshot.text;
+        });
+        var linkedSource = existing || available.find(function (candidate) {
+          return candidate.type === 'analysis' && sameReadingSourceFamily(candidate, item);
+        });
+        var role = linkedSource ? getSourceInstructionalText(linkedSource) : getSourceInstructionalText(item);
+        var reading = existing || createSupportedReading(snapshot, {
+          title: (cleanText(item.title, 260) || 'Reading') + ' — original',
+          config: { language: snapshot.language, grade: item.config && item.config.grade },
+          sourceInstructionalText: role, sourceFamilyId: getReadingSourceFamilyId(item),
+          unitId: readingUnit(item), instructionalContext: item.instructionalContext, standardsContext: item.standardsContext
+        });
+        if (!existing) {
+          var baseId = reading.id, suffix = 1;
+          while (source.concat(output).some(function (entry) { return entry.id === reading.id; })) reading.id = baseId + '-' + suffix++;
+        }
+        originals.push(reading);
+        output.push(reading);
+      }
+      output.push(item);
+    });
+    return output;
+  }
+
+  function readableArtifactText(item) {
+    if (!isObject(item)) return '';
+    if (item.type === 'analysis') return typeof (item.data && item.data.originalText) === 'string' ? item.data.originalText : '';
+    return item.type === 'simplified' && typeof item.data === 'string' ? item.data : '';
+  }
+
+  function usablePrimary(item) {
+    var profile = getInstructionalText(item);
+    if (profile.role !== 'primary' || !readableArtifactText(item).trim()) return false;
+    if (profile.form === 'same-text-supported') return isSupportedOriginal(item);
+    if (profile.form === 'adapted') return isAuthorizedAdaptedPrimary(item);
+    return item.type === 'analysis' || (getSourceSnapshot(item) && item.data === getSourceSnapshot(item).text);
+  }
+
+  function resolveReadingSource(options) {
+    var opts = isObject(options) ? options : {};
+    var items = Array.isArray(opts.items) ? opts.items : (Array.isArray(opts.history) ? opts.history : []);
+    var hasScope = opts.unitId !== undefined && opts.unitId !== 'all';
+    var scope = normalizeReadingUnitId(opts.unitId);
+    var candidates = items.filter(function (item) {
+      return item && ['analysis', 'simplified'].indexOf(item.type) !== -1 && readableArtifactText(item).trim()
+        && (!hasScope || readingUnit(item) === scope);
+    }).map(function (item) {
+      var profile = getInstructionalText(item);
+      return { id: item.id, title: item.title || 'Reading', artifact: item, item: item, unitId: readingUnit(item),
+        instructionalText: profile, profile: profile, sourceFamilyId: getReadingSourceFamilyId(item),
+        eligible: (profile.form !== 'same-text-supported' || isSupportedOriginal(item))
+          && (profile.form !== 'adapted' || profile.role !== 'primary' || isAuthorizedAdaptedPrimary(item)) };
+    });
+    function resolved(artifact, selection, textOverride, suppliedSnapshot) {
+      var text = textOverride !== undefined ? textOverride : readableArtifactText(artifact);
+      var profile = artifact ? getInstructionalText(artifact) : normalizeInstructionalText(opts.inputInstructionalText || opts.instructionalText, { role: 'primary', form: 'original', designationSource: 'workflow-default', complexity: { language: opts.language || 'English' } });
+      var snapshot = suppliedSnapshot || (artifact && getSourceSnapshot(artifact));
+      if (artifact && artifact.type === 'analysis' && profile.form !== 'adapted' && (!snapshot || snapshot.text !== text || !snapshot.sourceArtifactId)) {
+        snapshot = createSourceSnapshot(text, { sourceArtifactId: artifact.id, language: artifact.config && artifact.config.language || opts.language, selection: 'saved-analysis' });
+      }
+      if (!artifact && !snapshot && profile.form !== 'adapted') snapshot = createSourceSnapshot(text, { language: opts.language, selection: selection });
+      var unitId = artifact ? readingUnit(artifact) : scope;
+      var sourceRole = opts.sourceInstructionalText ? normalizeSourceInstructionalText(opts.sourceInstructionalText)
+        : artifact ? getSourceInstructionalText(artifact) : profile.form === 'adapted'
+          ? getSourceInstructionalText({ type: 'simplified', instructionalText: profile, sourceSnapshot: snapshot }) : normalizeSourceInstructionalText(profile);
+      var familyId = cleanText(opts.sourceFamilyId || (artifact && getReadingSourceFamilyId(artifact))
+        || (snapshot && snapshot.sourceArtifactId) || (snapshot && 'input-' + (unitId || 'uncategorized') + '-' + snapshot.fingerprint), 200) || null;
+      return {
+        status: 'resolved', selection: selection, text: text, artifact: artifact || null, item: artifact || null,
+        inputArtifactId: artifact ? artifact.id : opts.inputArtifactId || null,
+        sourceArtifactId: snapshot ? snapshot.sourceArtifactId : null, sourceFamilyId: familyId,
+        unitId: unitId, instructionalText: profile, sourceInstructionalText: sourceRole,
+        sourceSnapshot: snapshot || null, candidates: candidates
+      };
+    }
+    if (opts.sourceArtifactId === '__input__') {
+      if (typeof opts.inputText !== 'string' || !opts.inputText.trim()) return { status: 'missing', reason: 'empty-input', candidates: candidates, text: '' };
+      return resolved(null, 'explicit-input', opts.inputText, getSourceSnapshot(opts.sourceSnapshot));
+    }
+    var explicit = opts.selected || (opts.sourceArtifactId != null && String(opts.sourceArtifactId)
+      ? candidates.find(function (candidate) { return String(candidate.id) === String(opts.sourceArtifactId); }) : null);
+    if (explicit && explicit.artifact) explicit = explicit.artifact;
+    var supplied = getSourceSnapshot(opts.sourceSnapshot);
+    if (typeof opts.textOverride === 'string') {
+      if (!opts.textOverride.trim()) return { status: 'missing', reason: 'empty-override', candidates: candidates, text: '' };
+      var matching = explicit && readableArtifactText(explicit) === opts.textOverride ? explicit : null;
+      return resolved(matching, 'explicit-text', opts.textOverride, supplied);
+    }
+    if (opts.selected || (opts.sourceArtifactId != null && String(opts.sourceArtifactId))) {
+      if (!explicit || !readableArtifactText(explicit).trim()) return { status: 'missing', reason: 'selected-source-unavailable', candidates: candidates, text: '' };
+      if (getInstructionalText(explicit).form === 'same-text-supported' && !isSupportedOriginal(explicit)) {
+        return { status: 'missing', reason: 'unverified-original', candidates: candidates, text: '' };
+      }
+      if (getInstructionalText(explicit).form === 'adapted' && getInstructionalText(explicit).role === 'primary' && !isAuthorizedAdaptedPrimary(explicit)) {
+        return { status: 'missing', reason: 'unauthorized-adapted-main', candidates: candidates, text: '' };
+      }
+      return resolved(explicit, 'explicit-artifact');
+    }
+    var eligible = candidates.filter(function (candidate) { return candidate.eligible; });
+    if (!hasScope && new Set(eligible.map(function (candidate) { return candidate.unitId; })).size > 1) {
+      return { status: 'ambiguous', reason: 'choose-lesson-source', candidates: candidates, text: '' };
+    }
+    var mains = eligible.filter(function (candidate) { return usablePrimary(candidate.artifact); });
+    var pool = mains.length ? mains : eligible.filter(function (candidate) { return getInstructionalText(candidate.artifact).role !== 'primary'; });
+    var distinct = [];
+    pool.forEach(function (candidate) {
+      if (!distinct.some(function (other) {
+        return sameReadingSourceFamily(candidate.artifact, other.artifact) && readableArtifactText(candidate.artifact) === readableArtifactText(other.artifact);
+      })) distinct.push(candidate);
+    });
+    if (distinct.length === 1) return resolved(distinct[0].artifact, mains.length ? 'lesson-main' : 'lesson-source');
+    if (!eligible.length && typeof opts.inputText === 'string' && opts.inputText.trim()) return resolved(null, 'input', opts.inputText, supplied);
+    return { status: distinct.length ? 'ambiguous' : 'missing', reason: distinct.length ? 'choose-source' : 'no-readable-source', candidates: candidates, text: '' };
+  }
+
+  function summarizeReadingAccess(items, options) {
+    var opts = isObject(options) ? options : {};
+    var source = Array.isArray(items) ? items.filter(isObject) : [];
+    var readings = opts.includeSourcePairs === true ? ensureReadingSourcePairs(source, opts) : source;
+    var primary = readings.filter(usablePrimary);
+    var supplemental = readings.filter(function (item) { return getInstructionalText(item).role === 'supplemental' && readableArtifactText(item).trim(); });
+    var adaptations = readings.filter(function (item) { return ['analysis', 'simplified'].indexOf(item.type) !== -1 && getInstructionalText(item).form === 'adapted'; });
+    var unspecified = adaptations.filter(function (item) { return getInstructionalText(item).role === 'unspecified'; });
+    var unauthorized = adaptations.filter(function (item) { return getInstructionalText(item).role === 'primary' && !isAuthorizedAdaptedPrimary(item); });
+    var missingSource = adaptations.filter(function (item) {
+      var snapshot = getSourceSnapshot(item);
+      return !snapshot || !readings.some(function (candidate) {
+        return candidate !== item && sameReadingSourceFamily(candidate, item) && getInstructionalText(candidate).form !== 'adapted'
+          && readableArtifactText(candidate) === snapshot.text
+          && (candidate.type === 'analysis' || isSupportedOriginal(candidate));
+      });
+    });
+    var missingPrimary = adaptations.filter(function (item) {
+      return !primary.some(function (candidate) { return candidate === item || sameReadingSourceFamily(candidate, item); });
+    });
+    return { items: readings, primary: primary, supplemental: supplemental, unspecifiedAdapted: unspecified,
+      unauthorizedPrimaryAdaptations: unauthorized, missingSourceCompanions: missingSource,
+      missingPrimaryCompanions: missingPrimary, hasPrimary: primary.length > 0,
+      hasSupplementalWithoutPrimary: supplemental.some(function (item) {
+        return !primary.some(function (candidate) { return sameReadingSourceFamily(candidate, item); });
+      })
+    };
+  }
+
+
+  function isSourceTextBoundary(text, offset) {
+    if (offset <= 0 || offset >= text.length) return true;
+    var before = text.charCodeAt(offset - 1);
+    var after = text.charCodeAt(offset);
+    return !(before >= 0xD800 && before <= 0xDBFF && after >= 0xDC00 && after <= 0xDFFF);
+  }
+
+  function readingSupportScope(value) {
+    if (!isObject(value) || ['analysis', 'simplified'].indexOf(value.type) === -1) return null;
+    var snapshot = getSourceSnapshot(value);
+    return { sourceFamilyId: getReadingSourceFamilyId(value), unitId: readingUnit(value),
+      ownerArtifactId: value.id == null ? null : String(value.id),
+      sourceFingerprint: snapshot && snapshot.fingerprint, preserved: isSupportedOriginal(value) };
+  }
+
+  function readingSupportScopeMismatch(scope, envelope) {
+    if (!scope) return false;
+    var familyMismatch = envelope.sourceFamilyId && scope.sourceFamilyId && String(envelope.sourceFamilyId) !== String(scope.sourceFamilyId);
+    // Moving the same saved original keeps its own curation. A different artifact
+    // cannot borrow supports from another lesson merely because its prose matches.
+    var samePreservedOwner = scope.preserved && scope.ownerArtifactId && envelope.ownerArtifactId
+      && String(envelope.ownerArtifactId) === scope.ownerArtifactId
+      && envelope.sourceFingerprint === scope.sourceFingerprint
+      && envelope.sourceFamilyId && String(envelope.sourceFamilyId) === String(scope.sourceFamilyId);
+    return !!familyMismatch || (Object.prototype.hasOwnProperty.call(envelope, 'unitId')
+      && normalizeReadingUnitId(envelope.unitId) !== scope.unitId && !samePreservedOwner);
+  }
+
+  function sameSupportRange(left, right) {
+    return left.start === right.start && left.end === right.end && left.quote === right.quote;
+  }
+
+  function overlappingSupportRanges(left, right) {
+    return left.start < right.end && left.end > right.start;
+  }
+
+  function validSupportAnchor(snapshot, entry) {
+    return !!snapshot && isObject(entry) && Number.isInteger(entry.start) && Number.isInteger(entry.end)
+      && entry.start >= 0 && entry.end > entry.start && entry.end <= snapshot.text.length
+      && isSourceTextBoundary(snapshot.text, entry.start) && isSourceTextBoundary(snapshot.text, entry.end)
+      && typeof entry.quote === 'string' && snapshot.text.slice(entry.start, entry.end) === entry.quote;
+  }
+
+  // Anchors are half-open UTF-16 ranges in canonical sourceSnapshot.text.
+  // Curation is additive metadata; neither annotations nor removals change prose.
+  function validateReadingSupports(snapshotValue, candidates) {
+    var snapshot = getSourceSnapshot(snapshotValue);
+    var scope = readingSupportScope(snapshotValue);
+    var envelope = isObject(candidates) ? candidates : {};
+    var entries = Array.isArray(candidates) ? candidates : (Array.isArray(envelope.annotations) ? envelope.annotations : []);
+    var previousRejected = Number.isInteger(envelope.rejectedCount) && envelope.rejectedCount > 0 ? envelope.rejectedCount : 0;
+    var annotations = [], suppressedAnnotations = [];
+    var rejectedCount = previousRejected;
+    var invalidSource = !snapshot || (envelope.schemaVersion !== undefined && envelope.schemaVersion !== 1)
+      || (envelope.sourceFingerprint && envelope.sourceFingerprint !== snapshot.fingerprint)
+      || readingSupportScopeMismatch(scope, envelope);
+    var ids = Object.create(null);
+    (Array.isArray(envelope.suppressedAnnotations) ? envelope.suppressedAnnotations : []).forEach(function (entry) {
+      if (invalidSource || !validSupportAnchor(snapshot, entry)) { rejectedCount++; return; }
+      if (!suppressedAnnotations.some(function (current) { return sameSupportRange(current, entry); })) {
+        suppressedAnnotations.push({ start: entry.start, end: entry.end, quote: entry.quote });
+      }
+    });
+    entries.forEach(function (entry) {
+      var valid = !invalidSource && validSupportAnchor(snapshot, entry)
+        && typeof entry.text === 'string' && !!entry.text.trim() && entry.text.length <= 2400
+        && ['gloss', 'definition', 'explanation'].indexOf(entry.kind || 'gloss') !== -1;
+      var id = valid ? cleanText(entry.id, 160) || 'support-' + entry.start + '-' + entry.end : '';
+      if (valid && suppressedAnnotations.some(function (removed) { return overlappingSupportRanges(removed, entry); })) return;
+      if (valid && (ids[id] || annotations.some(function (annotation) { return overlappingSupportRanges(entry, annotation); }))) valid = false;
+      if (!valid) { rejectedCount++; return; }
+      ids[id] = true;
+      annotations.push({
+        id: id, kind: entry.kind || 'gloss', start: entry.start, end: entry.end,
+        quote: entry.quote, text: entry.text,
+        language: cleanText(entry.language, 80) || snapshot.language,
+        origin: entry.origin === 'educator' ? 'educator' : 'generated',
+        pinned: entry.pinned === true,
+        priority: entry.priority === 'essential' ? 'essential' : 'helpful'
+      });
+    });
+    annotations.sort(function (left, right) { return left.start - right.start; });
+    suppressedAnnotations.sort(function (left, right) { return left.start - right.start; });
+    var coverageInvalid = false;
+    var seenCoverage = [];
+    function validatedRanges(value) {
+      if (!Array.isArray(value)) return [];
+      var ranges = [];
+      value.forEach(function (entry) {
+        var valid = !invalidSource && isObject(entry) && Number.isInteger(entry.start) && Number.isInteger(entry.end)
+          && entry.start >= 0 && entry.end > entry.start && entry.end <= snapshot.text.length
+          && isSourceTextBoundary(snapshot.text, entry.start) && isSourceTextBoundary(snapshot.text, entry.end);
+        if (valid && seenCoverage.some(function (range) { return overlappingSupportRanges(entry, range); })) valid = false;
+        if (!valid) { coverageInvalid = true; return; }
+        var range = { start: entry.start, end: entry.end };
+        if (entry.reason) range.reason = cleanText(entry.reason, 100);
+        ranges.push(range);
+        seenCoverage.push(range);
+      });
+      return ranges.sort(function (left, right) { return left.start - right.start; });
+    }
+    var coveredRanges = validatedRanges(envelope.coveredRanges);
+    var skippedRanges = validatedRanges(envelope.skippedRanges);
+    var result = {
+      schemaVersion: 1, sourceFingerprint: snapshot ? snapshot.fingerprint : '', annotations: annotations,
+      suppressedAnnotations: suppressedAnnotations, rejectedCount: rejectedCount,
+      coveredRanges: coveredRanges, skippedRanges: skippedRanges,
+      status: invalidSource || envelope.status === 'unavailable' ? 'unavailable' : (rejectedCount || skippedRanges.length || coverageInvalid || envelope.status === 'partial' ? 'partial' : 'complete')
+    };
+    if (scope || envelope.sourceFamilyId) result.sourceFamilyId = scope ? scope.sourceFamilyId : cleanText(envelope.sourceFamilyId, 200) || null;
+    if (scope || Object.prototype.hasOwnProperty.call(envelope, 'unitId')) result.unitId = scope ? scope.unitId : normalizeReadingUnitId(envelope.unitId);
+    if (scope || envelope.ownerArtifactId) result.ownerArtifactId = scope ? scope.ownerArtifactId : cleanText(envelope.ownerArtifactId, 200) || null;
+    return result;
+  }
+
+  function requireReadingSupportState(snapshotValue, supports) {
+    var snapshot = getSourceSnapshot(snapshotValue);
+    var envelope = isObject(supports) ? supports : {};
+    if (!snapshot) throw new Error('A complete saved source is required to edit word supports.');
+    if ((envelope.schemaVersion !== undefined && envelope.schemaVersion !== 1)
+      || (envelope.sourceFingerprint && envelope.sourceFingerprint !== snapshot.fingerprint)
+      || readingSupportScopeMismatch(readingSupportScope(snapshotValue), envelope)) {
+      throw new Error('These word supports belong to a different source or lesson. Reopen the matching original.');
+    }
+    return validateReadingSupports(snapshotValue, supports);
+  }
+
+  function upsertReadingSupport(snapshotValue, supports, annotation) {
+    var current = requireReadingSupportState(snapshotValue, supports);
+    if (!isObject(annotation)) throw new Error('Choose an exact source occurrence and enter its word support.');
+    var existing = current.annotations.find(function (entry) { return annotation.id ? entry.id === annotation.id : sameSupportRange(entry, annotation); });
+    var proposed = Object.assign({}, existing || {}, annotation, { origin: 'educator' });
+    var checked = validateReadingSupports(snapshotValue, [proposed]);
+    if (checked.annotations.length !== 1 || checked.rejectedCount) throw new Error('Choose an exact source occurrence and enter a nonempty word support of at most 2,400 characters.');
+    proposed = checked.annotations[0];
+    var others = current.annotations.filter(function (entry) { return !existing || entry.id !== existing.id; });
+    if (others.some(function (entry) { return entry.id === proposed.id || overlappingSupportRanges(entry, proposed); })) {
+      throw new Error('This word support overlaps another support. Edit or remove that support first.');
+    }
+    // An intentional teacher addition restores its selected occurrence, including
+    // a narrower or wider range than an earlier removal.
+    return validateReadingSupports(snapshotValue, Object.assign({}, current, {
+      annotations: others.concat([proposed]),
+      suppressedAnnotations: current.suppressedAnnotations.filter(function (entry) { return !overlappingSupportRanges(entry, proposed); }),
+      status: current.status === 'unavailable' ? 'partial' : current.status
+    }));
+  }
+
+  function removeReadingSupport(snapshotValue, supports, id) {
+    var current = requireReadingSupportState(snapshotValue, supports);
+    var removed = current.annotations.find(function (entry) { return entry.id === id; });
+    if (!removed) throw new Error('That word support is no longer available. Reopen the support list.');
+    return validateReadingSupports(snapshotValue, Object.assign({}, current, {
+      annotations: current.annotations.filter(function (entry) { return entry.id !== id; }),
+      suppressedAnnotations: current.suppressedAnnotations.concat([{ start: removed.start, end: removed.end, quote: removed.quote }])
+    }));
+  }
+
+  function setReadingSupportPinned(snapshotValue, supports, id, pinned) {
+    var current = requireReadingSupportState(snapshotValue, supports);
+    var selected = current.annotations.find(function (entry) { return entry.id === id; });
+    if (!selected) throw new Error('That word support is no longer available. Reopen the support list.');
+    return validateReadingSupports(snapshotValue, Object.assign({}, current, {
+      annotations: current.annotations.map(function (entry) { return entry.id === id ? Object.assign({}, entry, { pinned: pinned === true }) : entry; })
+    }));
+  }
+
+  function mergeReadingSupports(snapshotValue, supports, regenerated) {
+    var current = requireReadingSupportState(snapshotValue, supports);
+    var incoming = requireReadingSupportState(snapshotValue, regenerated);
+    var retained = current.annotations.filter(function (entry) {
+      return entry.origin === 'educator' || entry.pinned || incoming.status === 'unavailable'
+        || incoming.skippedRanges.some(function (range) { return overlappingSupportRanges(range, entry); });
+    });
+    // Regeneration can suggest priority, never educator provenance or pins.
+    var generated = incoming.annotations.filter(function (entry) {
+      return !retained.some(function (saved) { return overlappingSupportRanges(saved, entry); })
+        && !current.suppressedAnnotations.some(function (removed) { return overlappingSupportRanges(removed, entry); });
+    }).map(function (entry) { return Object.assign({}, entry, { origin: 'generated', pinned: false }); });
+    return validateReadingSupports(snapshotValue, Object.assign({}, incoming, {
+      annotations: retained.concat(generated), suppressedAnnotations: current.suppressedAnnotations,
+      status: incoming.status === 'unavailable' && retained.length ? 'partial' : incoming.status
+    }));
+  }
+
+  function selectReadingSupports(snapshotValue, supports, options) {
+    var checked = validateReadingSupports(snapshotValue, supports);
+    if (!options || options.density !== 'light') return checked.annotations;
+    var snapshot = getSourceSnapshot(snapshotValue);
+    if (!snapshot) return [];
+    var paragraphs = [], paragraphStart = 0;
+    var breaks = /(?:\r\n|\n|\r(?!\n))[\t ]*(?:\r\n|\n|\r(?!\n))/g, match;
+    while ((match = breaks.exec(snapshot.text))) {
+      paragraphs.push({ start: paragraphStart, end: match.index });
+      paragraphStart = match.index + match[0].length;
+    }
+    paragraphs.push({ start: paragraphStart, end: snapshot.text.length });
+    var selected = checked.annotations.filter(function (entry) { return entry.pinned; });
+    paragraphs.forEach(function (paragraph) {
+      var words = [], segmenter;
+      if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
+        try { segmenter = new Intl.Segmenter(undefined, { granularity: 'word' }); } catch (_) {}
+      }
+      var text = snapshot.text.slice(paragraph.start, paragraph.end);
+      if (segmenter) for (var word of segmenter.segment(text)) { if (word.isWordLike) words.push(paragraph.start + word.index); }
+      else {
+        var pattern = /[\p{L}\p{M}\p{N}]+(?:[’'-][\p{L}\p{M}\p{N}]+)*/gu, found;
+        while ((found = pattern.exec(text))) words.push(paragraph.start + found.index);
+      }
+      function wordIndex(offset) { var index = 0; while (index < words.length && words[index] < offset) index++; return index; }
+      var maximum = Math.max(1, Math.min(3, Math.ceil(words.length / 55)));
+      var inParagraph = function (entry) { return entry.start >= paragraph.start && entry.start < paragraph.end; };
+      var candidates = checked.annotations.filter(function (entry) { return !entry.pinned && inParagraph(entry); });
+      candidates.sort(function (left, right) {
+        return Number(right.priority === 'essential') - Number(left.priority === 'essential')
+          || Number(right.origin === 'educator') - Number(left.origin === 'educator') || left.start - right.start;
+      });
+      candidates.forEach(function (entry) {
+        var nearby = selected.filter(inParagraph);
+        if (nearby.length >= maximum) return;
+        if (nearby.some(function (other) {
+          var earlier = other.start < entry.start ? other : entry, later = earlier === other ? entry : other;
+          return wordIndex(later.start) - wordIndex(earlier.end) < 8;
+        })) return;
+        selected.push(entry);
+      });
+    });
+    return selected.sort(function (left, right) { return left.start - right.start; });
+  }
+
   function _sourceFooterLabel(value) {
     return String(value || '')
       .trim()
@@ -400,7 +1008,7 @@
     if (DESIGNATION_SOURCES.indexOf(designationSource) === -1) designationSource = 'legacy-inferred';
     var rawAuthorization = isObject(source.replacementAuthorization) ? source.replacementAuthorization : {};
     var authorizationSource = cleanText(rawAuthorization.source, 40);
-    var authorized = rawAuthorization.authorized === true && authorizationSource === 'educator';
+    var authorized = form === 'adapted' && rawAuthorization.authorized === true && authorizationSource === 'educator';
     return {
       schemaVersion: TEXT_SCHEMA_VERSION,
       role: role,
@@ -637,6 +1245,32 @@
     getSourceCalibrationStyle: getSourceCalibrationStyle,
     buildSourceCalibrationGuidance: buildSourceCalibrationGuidance,
     fingerprintText: fingerprintText,
+    fingerprintSourceText: fingerprintSourceText,
+    createSourceSnapshot: createSourceSnapshot,
+    getSourceSnapshot: getSourceSnapshot,
+    normalizeReadingUnitId: normalizeReadingUnitId,
+    normalizeSourceInstructionalText: normalizeSourceInstructionalText,
+    getSourceInstructionalText: getSourceInstructionalText,
+    getReadingSourceFamilyId: getReadingSourceFamilyId,
+    sameReadingSourceFamily: sameReadingSourceFamily,
+    sameReadingFamily: sameReadingSourceFamily,
+    getReadingRoleLabel: getReadingRoleLabel,
+    updateInstructionalRole: updateInstructionalRole,
+    updateReadingFamilyRole: updateReadingFamilyRole,
+    resolveReadingSource: resolveReadingSource,
+    summarizeReadingAccess: summarizeReadingAccess,
+
+    createSupportedReading: createSupportedReading,
+    isSupportedOriginal: isSupportedOriginal,
+    getReadingArtifactLabel: getReadingArtifactLabel,
+    ensureReadingSourcePairs: ensureReadingSourcePairs,
+    validateReadingSupports: validateReadingSupports,
+    upsertReadingSupport: upsertReadingSupport,
+    removeReadingSupport: removeReadingSupport,
+    setReadingSupportPinned: setReadingSupportPinned,
+    mergeReadingSupports: mergeReadingSupports,
+    selectReadingSupports: selectReadingSupports,
+
     fingerprintValue: fingerprintValue,
     extractMeasurableSourceBody: extractMeasurableSourceBody,
     measureSourceComplexity: measureSourceComplexity,

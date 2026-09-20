@@ -1,0 +1,23 @@
+[
+  {
+    "module": "udl_chat_module.js",
+    "before": [
+      "udl_chat_module.js?v=33acfe614"
+    ],
+    "after": "3c1f0182"
+  },
+  {
+    "module": "view_misc_modals_module.js",
+    "before": [
+      "view_misc_modals_module.js?v=33acfe614"
+    ],
+    "after": "429dff79"
+  },
+  {
+    "module": "host_handlers_module.js",
+    "before": [
+      "host_handlers_module.js?v=d62a4d61"
+    ],
+    "after": "28a487ea"
+  }
+]

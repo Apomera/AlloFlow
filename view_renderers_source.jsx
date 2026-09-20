@@ -869,75 +869,219 @@ const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange,
   );
 };
 
-const KwlResponseBoard = ({ main, branches, t }) => {
-  const storageKey = React.useMemo(() => {
-    const seed = [main || '', ...(Array.isArray(branches) ? branches.slice(0, 3).map(branch => branch?.title || '') : [])].join('|');
-    let hash = 0;
-    for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
-    return `alloflow_kwl_notes_${Math.abs(hash)}`;
-  }, [main, branches]);
-  const loadValues = (key) => {
-    if (typeof window === 'undefined' || !window.localStorage) return ['', '', ''];
+const ORGANIZER_REFLECTION_FIELDS = {
+  'KWL Chart': [['know', 'What I know', 'Describe your own prior knowledge. It is okay to be unsure.'], ['want', 'What I want to know', 'Ask a question you would like to investigate.'], ['learned', 'What I learned or revised', 'Return after learning. What changed, and what evidence helped?']],
+  'Claim-Evidence-Reasoning': [['claim', 'My claim', 'Answer the question in your own words.'], ['evidence', 'My evidence', 'Give specific observations, data, or a quotation and its source location.'], ['reasoning', 'My reasoning', 'Explain why your evidence supports the claim. Consider another explanation.']],
+  'Cause and Effect': [['cause', 'Cause and linked effect', 'Pair a cause with its effect from the diagram, or propose a supported alternative.'], ['mechanism', 'How they are connected', 'Explain what happens between the cause and the effect.'], ['evidence', 'Evidence and limits', 'Name your source or observation. Could something else explain the effect?']],
+  'Frayer Model': [['example', 'My own example', 'Give a new example of the term.'], ['nonexample', 'My own non-example', 'Give something that does not fit the term.'], ['reasoning', 'Why they fit or do not fit', 'Use the defining characteristics to explain both choices.']],
+  'See-Think-Wonder': [['see', 'I observe', 'Record what you can directly observe.'], ['think', 'I infer', 'Explain your interpretation and the observations that support it.'], ['wonder', 'I wonder', 'Ask a question that could help you learn more.']],
+};
+const organizerReflectionFields = type => ORGANIZER_REFLECTION_FIELDS[type] || [
+  ['item', 'Item or relationship', 'Identify something in this diagram you want to explain.'],
+  ['placement', 'My placement or interpretation', 'Use the diagram or propose another valid arrangement.'],
+  ['reasoning', 'Evidence and explanation', 'Explain your reasoning and cite the relevant source or observation.'],
+];
+const organizerReflectionKey = ({ resourceId, learnerId, sessionCode, structureType }) =>
+  'alloflow_organizer_reflection_v1:' + encodeURIComponent(JSON.stringify([String(learnerId || 'local'), String(resourceId || ''), String(sessionCode || 'local'), String(structureType || '')]));
+const organizerTranslate = (t, key, fallback) => { const value = typeof t === 'function' ? t(key) : ''; return value && value !== key ? value : fallback; };
+
+const useOrganizerInbox = (request, scope) => {
+  const [state, setState] = React.useState({ scope, records: [], error: '', loading: true });
+  const [refreshKey, refresh] = React.useReducer(value => value + 1, 0);
+  React.useEffect(() => {
+    if (typeof request !== 'function') return;
+    let active = true, timer; const controller = new AbortController();
+    setState(previous => ({ scope, records: previous.scope === scope ? previous.records : [], error: '', loading: true }));
+    const load = async () => {
+      try {
+        const result = await request('GET', null, controller.signal);
+        if (active) setState({ scope, records: Array.isArray(result.reflections) ? result.reflections : [], error: '', loading: false });
+      } catch (error) { if (active) setState(previous => ({ ...previous, loading: false, error: error.message || 'Could not refresh reflections.' })); }
+      if (active) timer = setTimeout(load, 8000);
+    };
+    load(); return () => { active = false; controller.abort(); clearTimeout(timer); };
+  }, [request, scope, refreshKey]);
+  return { ...(state.scope === scope ? state : { scope, records: [], error: '', loading: true }), refresh };
+};
+const organizerReviewText = (t, key, fallback) => organizerTranslate(t, 'organizer_reflection.' + key, fallback);
+const OrganizerFeedbackEditor = ({ record, request, onSaved, t, draftStore, draftKey }) => {
+  const tr = (key, fallback) => organizerReviewText(t, key, fallback);
+  const cachedDraft = draftStore?.get(draftKey);
+  const [draft, setDraft] = React.useState(cachedDraft?.text ?? record.feedback?.text ?? '');
+  const [base, setBase] = React.useState(cachedDraft?.base ?? record.feedback?.updatedAt ?? 0);
+  React.useEffect(() => { draftStore?.set(draftKey, { text: draft, base }); }, [draftStore, draftKey, draft, base]);
+  const [busy, setBusy] = React.useState(false), [notice, setNotice] = React.useState('');
+  const alive = React.useRef(true);
+  React.useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
+  const save = async () => {
+    if (busy) return; setBusy(true); setNotice(''); const sentText = draft;
     try {
-      const parsed = JSON.parse(window.localStorage.getItem(key) || 'null');
-      if (Array.isArray(parsed) && parsed.length === 3) return parsed.map(value => String(value || ''));
-    } catch (_) {}
-    return ['', '', ''];
+      const result = await request('PATCH', { id: record.id, text: sentText, expectedUpdatedAt: base });
+      if (!alive.current) return;
+      setBase(result.reflection.feedback.updatedAt); onSaved?.();
+      setNotice(tr('feedback_sent', 'Feedback sent to this learner.'));
+    } catch (error) { if (alive.current) setNotice(error.message || tr('feedback_failed', 'Feedback could not be saved. Your draft is still here.')); }
+    finally { if (alive.current) setBusy(false); }
   };
-  const [entry, setEntry] = React.useState(() => ({ key: storageKey, values: loadValues(storageKey) }));
-  React.useEffect(() => {
-    if (entry.key !== storageKey) setEntry({ key: storageKey, values: loadValues(storageKey) });
-  }, [storageKey, entry.key]);
-  React.useEffect(() => {
-    if (entry.key !== storageKey) return;
-    if (typeof window === 'undefined' || !window.localStorage) return;
-    try { window.localStorage.setItem(storageKey, JSON.stringify(entry.values)); } catch (_) {}
-  }, [entry, storageKey]);
-  const labels = [0, 1, 2].map(index => branches?.[index]?.title || [
-    t('outline.kwl_know') || 'Know',
-    t('outline.kwl_want') || 'Want to Know',
-    t('outline.kwl_learned') || 'Learned',
-  ][index]);
-  const updateValue = (index, value) => {
-    setEntry(current => {
-      const values = [...current.values];
-      values[index] = value;
-      return { ...current, values };
-    });
+  return <section className="mt-5 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+    <label className="block font-bold">{tr('teacher_feedback', 'Teacher feedback')}<textarea aria-label={tr('teacher_feedback', 'Teacher feedback')} rows={4} maxLength={2000} value={draft} onChange={event => { setDraft(event.target.value); setNotice(''); }} className="mt-2 block w-full rounded-lg border border-slate-400 bg-white p-3 font-normal text-slate-900" /></label>
+    <p className="mt-2 text-sm">{tr('feedback_scope', 'Feedback applies to this revision and is visible only to this learner and the teacher.')}</p>
+    {(record.feedback?.updatedAt || 0) !== base && <div role="status" className="mt-2 text-sm"><p>{tr('feedback_changed', 'Saved feedback has changed. Your draft has been kept.')}</p><button type="button" onClick={() => { setDraft(record.feedback?.text || ''); setBase(record.feedback?.updatedAt || 0); setNotice(''); }} className="mt-2 min-h-11 rounded-lg border border-indigo-600 px-3">{tr('load_feedback', 'Load saved feedback')}</button></div>}
+    <button type="button" disabled={busy} onClick={save} className="mt-3 min-h-11 rounded-lg bg-indigo-700 px-4 font-bold text-white disabled:opacity-50">{busy ? tr('sending', 'Sending…') : tr('send_feedback', 'Send feedback')}</button>
+    <p role="status" aria-live="polite" className="mt-2 text-sm">{notice}</p>
+  </section>;
+};
+const OrganizerReviewPanel = ({ request, sessionCode, t }) => {
+  const tr = (key, fallback) => organizerReviewText(t, key, fallback);
+  const inbox = useOrganizerInbox(request, sessionCode);
+  const feedbackDrafts = React.useRef(new Map());
+  const [selected, setSelected] = React.useState('');
+  const [revisionId, setRevisionId] = React.useState('');
+  const groups = new Map();
+  inbox.records.forEach(record => { const key = record.uid + '|' + record.activityId; if (!groups.has(key)) groups.set(key, []); groups.get(key).push(record); });
+  const groupKey = groups.has(selected) ? selected : [...groups.keys()].at(-1);
+  const revisions = (groups.get(groupKey) || []).slice().sort((a, b) => a.revision - b.revision);
+  const record = revisions.find(item => item.id === revisionId) || revisions.at(-1);
+  React.useEffect(() => { if (groupKey && !selected) setSelected(groupKey); if (record && !revisionId) setRevisionId(record.id); }, [groupKey, record?.id, selected, revisionId]);
+  const previous = record && revisions.find(item => item.revision === record.revision - 1);
+  const exportWork = () => {
+    const url = URL.createObjectURL(new Blob([JSON.stringify({ kind: 'alloflow-organizer-review', version: 1, sessionCode, exportedAt: new Date().toISOString(), reflections: inbox.records }, null, 2)], { type: 'application/json' }));
+    const link = document.createElement('a'); link.href = url; link.download = 'organizer-reflections-' + String(sessionCode).replace(/[^a-z0-9_-]/gi, '_') + '.json'; document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
-  const clearValues = () => setEntry(current => ({ ...current, values: ['', '', ''] }));
-  return (
-    <section className="mt-5 rounded-2xl border-2 border-emerald-200 bg-emerald-50/40 p-4" aria-label={t('outline.kwl_personal_notes') || 'My KWL notes'}>
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <div>
-          <h4 className="font-black text-emerald-900">{t('outline.kwl_personal_notes') || 'My KWL notes'}</h4>
-          <p className="text-xs text-emerald-800">{t('outline.kwl_saved_locally') || 'Your responses are saved only on this device.'}</p>
-        </div>
-        <button type="button" onClick={clearValues} className="min-h-11 px-4 py-2 rounded-full text-xs font-bold text-emerald-900 bg-white border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">
-          {t('outline.kwl_clear_notes') || 'Clear my notes'}
-        </button>
+  return <section aria-label={tr('review_title', 'Review organizer reflections')} className="my-4 rounded-2xl border border-indigo-300 bg-white p-4 text-slate-900" style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+    <h3 className="text-lg font-bold">{tr('review_title', 'Review organizer reflections')}</h3>
+    <p className="mt-2 text-sm">{tr('review_intro', 'Read learner thinking beside the diagram, compare revisions, and send feedback. Reflections are not automatically scored.')}</p>
+    <p className="mt-2 text-sm">{tr('export_reminder', 'Export before ending the class. This inbox is kept on the teacher’s device until the session expires, is deleted, or the desktop runtime closes.')}</p>
+    <div className="my-3 flex flex-wrap gap-2"><button type="button" onClick={inbox.refresh} className="min-h-11 rounded-lg border border-indigo-600 px-3 font-bold">{tr('refresh', 'Refresh')}</button><button type="button" disabled={!inbox.records.length} onClick={exportWork} className="min-h-11 rounded-lg border border-indigo-600 px-3 font-bold disabled:opacity-50">{tr('export', 'Export reflections')}</button></div>
+    {inbox.error && <p role="alert" className="my-2 text-red-800">{inbox.error}</p>}
+    <p role="status" aria-live="polite" className="text-sm">{inbox.loading ? tr('loading', 'Loading reflections…') : !inbox.records.length ? tr('empty', 'No reflections submitted yet.') : ''}</p>
+    {!!record && <>
+      <div className="my-4 grid gap-3 sm:grid-cols-2">
+        <label className="font-bold">{tr('learner_activity', 'Learner and activity')}<select aria-label={tr('learner_activity', 'Learner and activity')} value={groupKey} onChange={event => { setSelected(event.target.value); setRevisionId(''); }} className="mt-1 min-h-11 w-full min-w-0 rounded-lg border border-slate-400 bg-white p-2 font-normal">{[...groups.entries()].map(([key, values]) => <option key={key} value={key}>{values[0].studentName} — {values[0].diagram.title} ({values[0].activityId.slice(-6)})</option>)}</select></label>
+        <label className="font-bold">{tr('revision', 'Revision')}<select aria-label={tr('revision', 'Revision')} value={record.id} onChange={event => setRevisionId(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border border-slate-400 bg-white p-2 font-normal">{revisions.map(item => <option key={item.id} value={item.id}>{tr('revision', 'Revision')} {item.revision} — {new Date(item.submittedAt).toLocaleString()}</option>)}</select></label>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {labels.map((label, index) => (
-          <label key={index} className="block text-xs font-bold text-slate-700">
-            <span className="block mb-1">{label}</span>
-            <textarea
-              value={entry.values[index]}
-              onChange={event => updateValue(index, event.target.value)}
-              maxLength={2000}
-              rows={5}
-              className="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm font-normal text-slate-800 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
-              aria-label={`${label}: ${t('outline.kwl_personal_response') || 'personal response'}`}
-              placeholder={index === 2 ? (t('outline.kwl_learned_response_placeholder') || 'What did you learn?') : (t('outline.kwl_response_placeholder') || 'Add your thinking…')}
-            />
-          </label>
-        ))}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <section className="min-w-0 rounded-xl border border-slate-300 bg-slate-50 p-4" aria-label={tr('diagram_reference', 'Diagram when activity started')}>
+          <h4 className="font-bold">{tr('diagram_reference', 'Diagram when activity started')}</h4><p className="mt-2 font-semibold">{record.diagram.main}</p><p className="text-sm">{record.diagram.structureType}</p>
+          <div className="mt-3 grid gap-3">{record.diagram.branches.map((branch, index) => <section key={index} className="rounded-lg border border-slate-300 bg-white p-3"><h5 className="font-bold">{branch.title}</h5><ul className="ml-4 list-disc text-sm">{branch.items.map((item, i) => <li key={i}>{item}</li>)}</ul></section>)}</div>
+        </section>
+        <section className="min-w-0 rounded-xl border border-indigo-200 p-4" aria-label={tr('learner_writing', 'Learner writing')}>
+          <h4 className="font-bold">{tr('learner_writing', 'Learner writing')}</h4>
+          {record.fields.map(field => { const before = previous?.fields.find(item => item.id === field.id); const changed = previous && before?.text !== field.text; return <section key={field.id} className="mt-4"><h5 className="font-bold">{field.label}</h5>{changed && <p className="text-sm font-bold text-indigo-800">{tr('changed', 'Changed since the previous revision')}</p>}<p className="mt-1 whitespace-pre-wrap text-sm">{field.text || tr('blank', 'Not yet answered')}</p>{changed && <details className="mt-2 text-sm"><summary className="cursor-pointer font-semibold">{tr('previous', 'Previous response')}</summary><p className="mt-1 whitespace-pre-wrap">{before?.text || tr('blank', 'Not yet answered')}</p></details>}</section>; })}
+          {React.createElement(OrganizerFeedbackEditor, { key: sessionCode + '|' + record.id, record, request, onSaved: inbox.refresh, t, draftStore: feedbackDrafts.current, draftKey: sessionCode + '|' + record.id })}
+        </section>
       </div>
-    </section>
-  );
+    </>}
+  </section>;
+};
+const OrganizerLearnerFeedback = ({ request, sessionCode, resourceId, activityId, refreshKey, t }) => {
+  const tr = (key, fallback) => organizerReviewText(t, key, fallback);
+  const inbox = useOrganizerInbox(request, sessionCode + '|' + resourceId + '|' + (activityId || '') + '|' + (refreshKey || ''));
+  const records = inbox.records.filter(record => record.resourceId === resourceId && (!activityId || record.activityId === activityId));
+  const feedback = records.filter(record => record.feedback?.text);
+  return <section aria-label={tr('your_feedback', 'Feedback on your reflections')} className="mt-5 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+    <h4 className="font-bold">{tr('your_feedback', 'Feedback on your reflections')}</h4>
+    <button type="button" onClick={inbox.refresh} className="mt-2 min-h-11 rounded-lg border border-indigo-600 px-3 font-bold">{tr('refresh_feedback', 'Refresh feedback')}</button>
+    {inbox.error && <p role="alert" className="mt-2 text-sm text-red-800">{inbox.error}</p>}
+    <div aria-live="polite" aria-relevant="additions text">{feedback.length ? feedback.map(record => <article key={record.id} className="mt-3"><h5 className="font-bold">{tr('revision', 'Revision')} {record.revision}</h5><p className="whitespace-pre-wrap text-sm">{record.feedback.text}</p></article>) : <p className="mt-2 text-sm">{tr('no_feedback', 'No teacher feedback yet. You can keep revising your draft.')}</p>}</div>
+  </section>;
 };
 
-const renderOutlineContent = (deps) => {
+const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId, submissionMethod, reflectionRequest, isTeacherMode, onSubmit, onClose, t }) => {
+  const tr = (key, fallback) => organizerReviewText(t, key, fallback);
+  const type = resource?.data?.structureType || 'Structured Outline';
+  const fieldPrefix = ORGANIZER_REFLECTION_FIELDS[type] ? type.toLowerCase().replace(/[^a-z0-9]+/g, '_') : 'generic';
+  const fields = organizerReflectionFields(type).map(([id, label, prompt]) => [id, tr(fieldPrefix + '_' + id + '_label', label), tr(fieldPrefix + '_' + id + '_prompt', prompt)]);
+  const storageKey = organizerReflectionKey({ resourceId: resource?.id, learnerId: isTeacherMode ? 'teacher-preview:' + (learnerId || 'local') : learnerId, sessionCode, structureType: type });
+  const empty = () => ({ key: storageKey, values: {}, submitted: null });
+  const load = key => {
+    try { const value = JSON.parse(window.localStorage.getItem(key) || 'null');
+      if (value && value.version === 1) return { key, values: Object.fromEntries(fields.map(([id]) => [id, String(value.values?.[id] || '').slice(0, 2000)])), submitted: value.submitted || null };
+    } catch (_) {}
+    return { key, values: {}, submitted: null };
+  };
+  const [entry, setEntry] = React.useState(() => load(storageKey));
+  const [busy, setBusy] = React.useState(false);
+  const [notice, setNotice] = React.useState('');
+  const [storageFailed, setStorageFailed] = React.useState(false);
+  const submissionOwner = storageKey + '|' + (activityId || 'local');
+  const owner = React.useRef(submissionOwner); owner.current = submissionOwner;
+  const shown = entry.key === storageKey ? entry : empty();
+  let earlierKwlNotes = null;
+  if (type === 'KWL Chart' && !isTeacherMode) {
+    try {
+      const seed = [resource?.data?.main || '', ...(resource?.data?.branches || []).slice(0, 3).map(branch => branch?.title || '')].join('|');
+      let hash = 0; for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
+      const saved = JSON.parse(window.localStorage.getItem('alloflow_kwl_notes_' + Math.abs(hash)) || 'null');
+      if (Array.isArray(saved) && saved.length === 3 && saved.some(value => typeof value === 'string' && value.trim())) earlierKwlNotes = saved.map(value => String(value || '').slice(0, 2000));
+    } catch (_) {}
+  }
+  const signature = JSON.stringify(fields.map(([id]) => shown.values[id] || ''));
+  const changed = shown.submitted && shown.submitted.signature !== signature;
+  React.useEffect(() => { setEntry(load(storageKey)); setNotice(''); setBusy(false); }, [storageKey, activityId]);
+  React.useEffect(() => {
+    if (entry.key !== storageKey) return;
+    try { window.localStorage.setItem(storageKey, JSON.stringify({ version: 1, values: entry.values, submitted: entry.submitted })); setStorageFailed(false); }
+    catch (_) { setStorageFailed(true); }
+  }, [entry, storageKey]);
+  const submit = async () => {
+    if (busy || !fields.some(([id]) => String(shown.values[id] || '').trim())) return;
+    const key = storageKey;
+    const requestOwner = submissionOwner;
+    const snapshot = { version: 1, resourceId: String(resource?.id || ''), structureType: type, activityId: activityId || null,
+      revision: Number(shown.submitted?.revision || 0) + 1, submittedAt: Date.now(),
+      fields: fields.map(([id, label]) => ({ id, label, text: String(shown.values[id] || '').trim().slice(0, 2000) })) };
+    setBusy(true); setNotice('');
+    try {
+      const result = isTeacherMode ? { ok: true, message: tr("preview_saved", "Preview saved on this device. It was not submitted as student work.") }
+        : typeof onSubmit === 'function' ? await onSubmit(snapshot) : { ok: true, message: tr("local_no_connection", "Saved on this device. No live submission connection is available.") };
+      if (owner.current !== requestOwner) return;
+      if (!result?.ok) throw new Error(result?.message || tr("submit_failed", "Your reflection could not be submitted. Your draft is still here; try again."));
+      setEntry(current => current.key !== key ? current : { ...current, submitted: { signature, revision: result.revision || snapshot.revision, at: snapshot.submittedAt } });
+      setNotice(result.message || tr("submitted_ungraded", "Reflection submitted. Your words have not been automatically graded."));
+    } catch (error) { if (owner.current === requestOwner) setNotice(error.message || tr("submission_failed", "Submission failed. Your draft is still here.")); }
+    finally { if (owner.current === requestOwner) setBusy(false); }
+  };
+  return <section data-organizer-activity-ready="true" aria-label={type + ' reflection'} className="mx-auto my-5 max-w-5xl rounded-2xl border-2 border-indigo-200 bg-white p-5 text-slate-900">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <h3 className="text-xl font-bold">{type === 'KWL Chart' ? tr("kwl_title", "My KWL reflection") : type === 'Claim-Evidence-Reasoning' ? tr("cer_title", "Build an argument") : tr("explain_title", "Explain your thinking")}</h3>
+      {onClose && <button type="button" onClick={onClose} className="min-h-11 rounded-lg border border-slate-400 px-4">{tr("back_diagram", "Back to diagram")}</button>}
+    </div>
+    <p className="mt-2 text-sm">{tr("student_intro", "Write in your own words. The diagram is a reference, not your response. Different interpretations can be supported by evidence.")}</p>
+    <p className="mt-2 text-sm font-semibold">{isTeacherMode ? tr("teacher_preview", "Teacher preview — never submitted as student work.") : sessionCode ? (submissionMethod === 'lan' ? tr("lan_submit_info", "Drafts stay on this device. Submit sends your reflection privately to your teacher.") : submissionMethod === 'mailbox' ? tr("mailbox_submit_info", "Drafts stay on this device. Submit sends your reflection to your teacher’s Class Mailbox.") : tr("download_submit_info", "Submit downloads your reflection for you to share with your teacher.") + (activityId ? tr("progress_info", " Your live progress is updated too.") : '')) : tr("local_info", "Local practice — your reflection stays on this device.")}</p>
+    {earlierKwlNotes && !fields.some(([id]) => shown.values[id]) && <div className="mt-3 text-sm"><p>{tr("import_info", "Earlier KWL notes for this topic are saved on this device. Import them if they are yours.")}</p><button type="button" onClick={() => setEntry({ key: storageKey, values: Object.fromEntries(fields.map(([id], index) => [id, earlierKwlNotes[index]])), submitted: null })} className="mt-2 min-h-11 rounded-lg border border-indigo-600 px-4 font-bold text-indigo-800">{tr("import_notes", "Import my earlier KWL notes")}</button></div>}
+    <div className="mt-4 grid gap-4 md:grid-cols-3">{fields.map(([id, label, prompt]) => <label key={id} className="block text-sm font-semibold">
+      <span>{label}</span><span className="my-1 block text-xs font-normal text-slate-700">{prompt}</span>
+      <textarea aria-label={label} rows={7} maxLength={2000} value={shown.values[id] || ''} onChange={event => { const text = event.target.value; setEntry(current => ({ ...(current.key === storageKey ? current : empty()), values: { ...(current.key === storageKey ? current.values : {}), [id]: text } })); setNotice(''); }} className="w-full rounded-lg border border-slate-400 p-3 font-normal focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700" />
+    </label>)}</div>
+    <p className="mt-3 text-sm">{type === 'KWL Chart' ? tr("kwl_guidance", "Submit your current thinking; you can return to Learned and submit a revision later. Blank sections are allowed.") : tr("reasoning_guidance", "Before submitting, check that you explained your choices and named supporting evidence. This is not automatically scored.")}</p>
+    {storageFailed && <p role="alert" className="mt-2 text-sm text-red-800">{tr("storage_failed", "This browser could not save your draft. Keep this page open and copy your writing before leaving.")}</p>}
+    {changed && <p role="status" className="mt-2 text-sm font-semibold text-amber-900">{tr("draft_changes", "You have changes that have not been submitted.")}</p>}
+    <button type="button" onClick={submit} disabled={busy || !fields.some(([id]) => String(shown.values[id] || '').trim())} className="mt-4 min-h-11 rounded-lg bg-indigo-700 px-5 py-2 font-bold text-white disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2">{busy ? tr("submitting", "Submitting…") : isTeacherMode || !sessionCode ? tr("save_reflection", "Save reflection") : shown.submitted ? tr("submit_revision", "Submit revision") : tr("submit_reflection", "Submit reflection")}</button>
+    <p role="status" aria-live="polite" className="mt-3 text-sm">{notice || (shown.submitted && !changed ? tr("version_saved", "This version is saved. You can keep revising.") : '')}</p>
+    {!isTeacherMode && reflectionRequest && React.createElement(OrganizerLearnerFeedback, { key: submissionOwner, request: reflectionRequest, sessionCode, resourceId: String(resource?.id || ''), activityId, refreshKey: shown.submitted?.revision, t })}
+  </section>;
+};
+
+const OrganizerMountReceipt = ({ children, activityKey, onReady, onFailed }) => {
+  const [mountFailed, setMountFailed] = React.useState(false);
+  const element = React.useRef(null);
+  const ready = React.useRef(onReady); ready.current = onReady;
+  const failed = React.useRef(onFailed); failed.current = onFailed;
+  React.useEffect(() => {
+    let done = false;
+    const check = () => {
+      if (!done && element.current?.querySelector('[role="dialog"], [data-organizer-activity-ready="true"]')) { done = true; ready.current?.(); }
+    };
+    check();
+    const poll = setInterval(check, 100);
+    const timeout = setTimeout(() => { if (!done) { done = true; setMountFailed(true); failed.current?.(); } }, 15000);
+    return () => { done = true; clearInterval(poll); clearTimeout(timeout); };
+  }, [activityKey]);
+  return mountFailed ? <div role="alert" className="mx-auto my-6 max-w-xl rounded-xl border-2 border-amber-400 bg-amber-50 p-5 text-amber-950"><h3 className="font-bold">This activity could not be opened.</h3><p className="mt-2">Ask your teacher to retry the activity from the Live Dashboard. Your saved work is still on this device.</p></div> : <div ref={element}>{children}</div>;
+};
+
+const renderOutlineContentCore = (deps) => {
   const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, isInteractiveConceptRecall3d, setIsInteractiveConceptRecall3d, isInteractivePalaceRecall, setIsInteractivePalaceRecall, broadcastInteractiveOrganizer, interactiveOrganizerSync } = deps;
   // Fallback if older host hasn't passed broadcastInteractiveOrganizer yet — no-op, local-only behavior preserved.
   const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {});
@@ -1016,7 +1160,7 @@ const renderOutlineContent = (deps) => {
             'T-Chart': 'tchart', 'Fishbone': 'fishbone', 'Cause and Effect': 'cesort',
             'Problem Solution': 'problemsolution', 'Key Concept Map': 'conceptmap', 'Mind Map': 'conceptmap',
             'Frayer Model': 'frayer', 'See-Think-Wonder': 'seethinkwonder', 'Story Map': 'storymap',
-            'Structured Outline': 'outline',
+            'Structured Outline': 'outline', 'Claim-Evidence-Reasoning': 'outline',
         };
         const organizerActivityType = activityTypeByStructure[type] || null;
         // One resource, one truth: the activity type and its readiness contract
@@ -1026,20 +1170,31 @@ const renderOutlineContent = (deps) => {
         const _readinessFor = (activityType) => _liveReadinessFor(activityType, organizerResource);
         const organizerLaunchReadiness = organizerActivityType ? _readinessFor(organizerActivityType) : { ok: true };
         const showGameButton = !!organizerActivityType;
-        const _startOrganizerGame = (activityType, startLocal, activityConfig = null) => {
+        const _startOrganizerGame = async (activityType, startLocal, activityConfig = null) => {
             const readiness = _readinessFor(activityType);
             if (!readiness.ok) {
                 if (typeof deps.addToast === 'function') deps.addToast(readiness.message || 'Finish setting up this organizer before starting the activity.', 'info');
                 return false;
             }
+            // Keep launch errors visible and only open the teacher preview after delivery succeeds.
+            if (isTeacherMode && deps.activeSessionCode) {
+                const result = await _broadcastInteractiveOrganizer(activityType, activityConfig);
+                if (!result?.ok) return false;
+            }
             startLocal();
-            _broadcastInteractiveOrganizer(activityType, activityConfig);
             return true;
         };
         // Every Play-Sort-Game control shares one description and, when needed,
         // the exact repair guidance returned by the authoritative launch contract.
+        const localPractice = {
+            pipeline: setIsPipelinePlaying, tchart: setIsTChartPlaying, cesort: setIsCESortPlaying,
+            conceptmap: setIsConceptMapSortPlaying, outline: setIsOutlineSortPlaying,
+            fishbone: setIsFishboneSortPlaying, problemsolution: setIsProblemSolutionSortPlaying,
+            frayer: setIsFrayerSortPlaying, seethinkwonder: setIsSeeThinkWonderSortPlaying, storymap: setIsStoryMapSortPlaying,
+        }[organizerActivityType];
         const GameButtonHint = () => (
             <>
+                {isTeacherMode && deps.activeSessionCode && localPractice && <button type="button" disabled={!organizerLaunchReadiness.ok} onClick={() => localPractice(true)} className="mr-2 min-h-11 rounded-full border border-indigo-500 bg-white px-4 text-sm font-bold text-indigo-800 disabled:opacity-50">Practice activity</button>}
                 <p id="game-btn-hint" className="sr-only">
                     {t('games.button_hint') || 'Practice what you just learned with a quick drag-and-drop sorting game. Keyboard friendly: press Enter to select an item, then choose a destination.'}
                 </p>
@@ -1178,7 +1333,7 @@ const renderOutlineContent = (deps) => {
                           aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
                           aria-label={t('games.pipeline.title') || 'Pipeline Builder'}
                         >
-                          <Gamepad2 size={16} /> {t('games.pipeline.play_btn') || 'Build the Flow'}
+                          <Gamepad2 size={16} /> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                         </button>
                         <LiveOrganizerStatus type="pipeline" />
                       </div>
@@ -1380,17 +1535,16 @@ const renderOutlineContent = (deps) => {
                         </div>
                         <div className="mb-4 flex justify-center"><LiveOrganizerStatus type="venn" /></div>
                         <button
-                            aria-label={t('common.start_game')}
+                            aria-label={isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             disabled={!isVennGameReady}
                             aria-describedby={!isVennGameReady ? 'venn-game-readiness' : undefined}
                             className="w-full py-4 bg-indigo-600 text-white rounded-xl font-black text-xl shadow-lg hover:bg-indigo-700 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:bg-slate-400 disabled:cursor-not-allowed disabled:hover:scale-100"
                             onClick={() => {
                                 if (!isVennGameReady) return;
-                                handleSetIsVennPlayingToTrue();
-                                _broadcastInteractiveOrganizer('venn', { gameData: vennGameData });
+                                _startOrganizerGame('venn', handleSetIsVennPlayingToTrue, { gameData: vennGameData });
                             }}
                         >
-                            <Gamepad2 size={24} className="fill-current text-yellow-700"/> {t('concept_map.venn.start_game')}
+                            <Gamepad2 size={24} className="fill-current text-yellow-700"/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                         </button>
                         {!isVennGameReady && (
                             <p id="venn-game-readiness" role="status" className="mt-3 text-center text-sm font-bold text-amber-800">
@@ -1578,9 +1732,9 @@ const renderOutlineContent = (deps) => {
                                 disabled={!organizerLaunchReadiness.ok}
                                 className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                                 aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
-                                aria-label={t('games.tchart_sort.play_btn') || 'Play T-Chart Sort Game'}
+                                aria-label={isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             >
-                                <Gamepad2 size={16}/> {t('games.tchart_sort.play_btn') || 'Sort Into Columns'}
+                                <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
                             <LiveOrganizerStatus type="tchart" />
                         </div>
@@ -1651,9 +1805,9 @@ const renderOutlineContent = (deps) => {
                                 disabled={!organizerLaunchReadiness.ok}
                                 className="flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                                 aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
-                                aria-label={t('games.fishbone_sort.play_btn') || 'Play Fishbone Sort Game'}
+                                aria-label={isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             >
-                                <Gamepad2 size={16}/> {t('games.fishbone_sort.play_btn') || 'Sort Causes Onto Bones'}
+                                <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
                             <LiveOrganizerStatus type="fishbone" />
                         </div>
@@ -1827,7 +1981,7 @@ const renderOutlineContent = (deps) => {
                                 aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
                                 aria-label={t('games.ce_sort.title') || 'Sort Causes and Effects'}
                             >
-                                <Gamepad2 size={16}/> {t('games.ce_sort.play_btn') || 'Sort Causes & Effects'}
+                                <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
                             <LiveOrganizerStatus type="cesort" />
                         </div>
@@ -1885,7 +2039,7 @@ const renderOutlineContent = (deps) => {
                             aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
                             aria-label={t('games.ce_sort.title') || 'Sort Causes and Effects'}
                         >
-                            <Gamepad2 size={16}/> {t('games.ce_sort.play_btn') || 'Sort Causes & Effects'}
+                            <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                         </button>
                         <LiveOrganizerStatus type="cesort" />
                     </div>
@@ -1936,19 +2090,20 @@ const renderOutlineContent = (deps) => {
         }
         if (type === 'Problem Solution') {
             const outcomeIndex = branches.findIndex(b =>
+                ['outcome', 'result', 'evaluation'].includes(String(b.role || b.semanticRole || '').toLowerCase()) ||
                 b.title.toLowerCase().includes('outcome') ||
                 b.title.toLowerCase().includes('result') ||
                 b.title.toLowerCase().includes('evaluation')
             );
             const outcomeBranch = outcomeIndex !== -1 ? branches[outcomeIndex] : null;
             const solutionBranches = branches.filter((_, i) => i !== outcomeIndex);
-            // ── Problem Solution Prioritize Game ──
+            // ── Problem Solution category matching ──
             // Keep the control visible when incomplete; the shared validator supplies
             // the six-solution requirement and the exact repair guidance.
             const showPSGame = !!organizerActivityType;
             if (isProblemSolutionSortPlaying || (isInteractiveProblemSolutionSort && !isTeacherMode)) {
                 return (
-                    <ErrorBoundary fallbackMessage="Solution Prioritize encountered an error.">
+                    <ErrorBoundary fallbackMessage="Solution Sort encountered an error.">
                         <ProblemSolutionSortGame
                             data={{ branches: solutionBranches }}
                             onClose={closeProblemSolutionSort}
@@ -1970,9 +2125,9 @@ const renderOutlineContent = (deps) => {
                                  disabled={!organizerLaunchReadiness.ok}
                                  className="flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                                  aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
-                                 aria-label={t('games.problem_solution_sort.play_btn') || 'Prioritize the Solutions'}
+                                 aria-label={(t('games.problem_solution_sort.match_btn') === 'games.problem_solution_sort.match_btn' ? 'Match Details to Solutions' : (t('games.problem_solution_sort.match_btn') || 'Match Details to Solutions'))}
                              >
-                                 <Gamepad2 size={16}/> {t('games.problem_solution_sort.play_btn') || 'Prioritize the Solutions'}
+                                 <Gamepad2 size={16}/> {(t('games.problem_solution_sort.match_btn') === 'games.problem_solution_sort.match_btn' ? 'Match Details to Solutions' : (t('games.problem_solution_sort.match_btn') || 'Match Details to Solutions'))}
                              </button>
                              <LiveOrganizerStatus type="problemsolution" />
                          </div>
@@ -2088,9 +2243,9 @@ const renderOutlineContent = (deps) => {
                                 disabled={!organizerLaunchReadiness.ok}
                                 className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                                 aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
-                                aria-label={t('games.concept_map_sort.play_btn') || 'Play Concept Map Sort Game'}
+                                aria-label={isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             >
-                                <Gamepad2 size={16}/> {t('games.concept_map_sort.play_btn') || 'Sort Onto Branches'}
+                                <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
                             <LiveOrganizerStatus type="conceptmap" />
                         </div>
@@ -2135,7 +2290,7 @@ const renderOutlineContent = (deps) => {
                 return (
                     <ErrorBoundary fallbackMessage="Frayer Sort encountered an error.">
                         <FrayerSortGame
-                            data={generatedContent?.data}
+                            data={organizerData}
                             onClose={closeFrayerSort}
                             playSound={playSound}
                             topicTitle={main || ''}
@@ -2196,9 +2351,9 @@ const renderOutlineContent = (deps) => {
                                 disabled={!organizerLaunchReadiness.ok}
                                 className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                                 aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
-                                aria-label={t('games.frayer_sort.play_btn') || 'Play Frayer Sort Game'}
+                                aria-label={isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             >
-                                <Gamepad2 size={16}/> {t('games.frayer_sort.play_btn') || 'Sort into Quadrants'}
+                                <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
                             <LiveOrganizerStatus type="frayer" />
                         </div>
@@ -2269,7 +2424,7 @@ const renderOutlineContent = (deps) => {
                 return (
                     <ErrorBoundary fallbackMessage="See-Think-Wonder Sort encountered an error.">
                         <SeeThinkWonderSortGame
-                            data={generatedContent?.data}
+                            data={organizerData}
                             onClose={closeSeeThinkWonderSort}
                             playSound={playSound}
                             topicTitle={main || ''}
@@ -2319,9 +2474,9 @@ const renderOutlineContent = (deps) => {
                                 disabled={!organizerLaunchReadiness.ok}
                                 className="flex items-center gap-2 bg-gradient-to-r from-sky-500 to-amber-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                                 aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
-                                aria-label={t('games.see_think_wonder_sort.play_btn') || 'Play See-Think-Wonder Sort Game'}
+                                aria-label={isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             >
-                                <Gamepad2 size={16}/> {t('games.see_think_wonder_sort.play_btn') || 'Sort: Observation, Inference, or Question?'}
+                                <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
                             <LiveOrganizerStatus type="seethinkwonder" />
                         </div>
@@ -2382,7 +2537,7 @@ const renderOutlineContent = (deps) => {
                         {renderColumn(wantBranch,    'violet',  null)}
                         {renderColumn(learnedBranch, 'emerald', t('outline.kwl_learned_placeholder') || '(students fill this in after the lesson)')}
                     </div>
-                    {React.createElement(KwlResponseBoard, { main, branches, t })}
+
                     <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.kwl_caption') || 'KWL Chart: prior knowledge on the left, anticipated questions in the middle, learning captured on the right after the lesson.'}</p>
                 </div>
             );
@@ -2395,6 +2550,15 @@ const renderOutlineContent = (deps) => {
                 return renderOrganizerFallback(
                     t('outline.cer_invalid_title') || 'This CER organizer is incomplete',
                     t('outline.cer_invalid_desc') || 'A CER organizer needs exactly three sections: Claim, Evidence, and Reasoning. Regenerate it or switch to edit mode to repair the sections.'
+                );
+            }
+            if (isOutlineSortPlaying || (isInteractiveOutlineSort && !isTeacherMode)) {
+                return (
+                    <ErrorBoundary fallbackMessage="CER Sort encountered an error.">
+                        <OutlineSortGame data={{ branches, activityLabel: t('games.cer_sort.title') === 'games.cer_sort.title' ? 'Claim, Evidence, or Reasoning?' : (t('games.cer_sort.title') || 'Claim, Evidence, or Reasoning?') }}
+                            onClose={closeOutlineSort} playSound={playSound} topicTitle={main || ''}
+                            onScoreUpdate={handleGameScoreUpdate} onGameComplete={handleGameCompletion} />
+                    </ErrorBoundary>
                 );
             }
             const cerStages = [
@@ -2410,6 +2574,16 @@ const renderOutlineContent = (deps) => {
             return (
                 <div className="max-w-6xl mx-auto px-4 py-6">
                     <MainTitle />
+                    <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
+                        <GameButtonHint />
+                        <button type="button" disabled={!organizerLaunchReadiness.ok}
+                            onClick={() => _startOrganizerGame('outline', () => setIsOutlineSortPlaying(true))}
+                            aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
+                            className="min-h-11 rounded-full bg-indigo-700 px-5 py-2 font-bold text-white focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50">
+                            {isTeacherMode && deps.activeSessionCode ? 'Start CER sorting for students' : 'Practice CER sorting'}
+                        </button>
+                        <LiveOrganizerStatus type="outline" />
+                    </div>
                     <div className="mb-5 rounded-2xl border-2 border-slate-300 bg-white px-5 py-4 text-center shadow-sm">
                         <div className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-600">{t('outline.cer_question') || 'Question or phenomenon'}</div>
                         <div className="mt-1 font-bold text-slate-900">{main}</div>
@@ -2464,7 +2638,7 @@ const renderOutlineContent = (deps) => {
                 return (
                     <ErrorBoundary fallbackMessage="Story Map Sort encountered an error.">
                         <StoryMapSortGame
-                            data={generatedContent?.data}
+                            data={organizerData}
                             onClose={closeStoryMapSort}
                             playSound={playSound}
                             topicTitle={main || ''}
@@ -2493,9 +2667,9 @@ const renderOutlineContent = (deps) => {
                                 disabled={!organizerLaunchReadiness.ok}
                                 className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-rose-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                                 aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
-                                aria-label={t('games.story_map_sort.play_btn') || 'Play Story Map Sort Game'}
+                                aria-label={isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             >
-                                <Gamepad2 size={16}/> {t('games.story_map_sort.play_btn') || 'Sort Events Along the Arc'}
+                                <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
                             <LiveOrganizerStatus type="storymap" />
                         </div>
@@ -2645,9 +2819,9 @@ const renderOutlineContent = (deps) => {
                                 disabled={!organizerLaunchReadiness.ok}
                                 className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                                 aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
-                                aria-label={t('games.outline_sort.play_btn') || 'Play Outline Sort Game'}
+                                aria-label={isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             >
-                                <Gamepad2 size={16}/> {t('games.outline_sort.play_btn') || 'Sort Under Headings'}
+                                <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
                             <LiveOrganizerStatus type="outline" />
                         </div>
@@ -4455,6 +4629,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const [nearbyEmpty, setNearbyEmpty] = React.useState(null); // proximity-driven customization card
     const nearbyEmptyRef = React.useRef(null);
     const currentRef = React.useRef(null);
+    const sceneContextRef = React.useRef(null);
+    const recallNavigationRef = React.useRef(0);
     // Freshest memoryPalace store — sequential async gens (furnish/sculpt) and the
     // recall finish read THIS at persist time, so a late write merges into the CURRENT
     // data, never a stale render snapshot (which would clobber other art or mastery).
@@ -4523,16 +4699,21 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const recallResultsRef = React.useRef({});                  // {locusId: {attempts, correct, revealed}}
     const attemptsTotalRef = React.useRef(0);
     const startedByArmRef = React.useRef(false);
-    const bankRef = React.useRef([]);                                 // live choices for the in-VR answer chips (stale-closure safe)
     const [answered, setAnswered] = React.useState(0);
     const recallPanelRef = React.useRef(null);
     const recallKeyboardRef = React.useRef(false);
+    const [recallAutoAdvance, setRecallAutoAdvance] = React.useState(true);
+    const recallPaceRef = React.useRef({ auto: true });
+    const recallToolbarRef = React.useRef(null);
+    const recallReturnModeRef = React.useRef(null);
+    const recallEntryFocusRef = React.useRef(false);
     const [recallHint, setRecallHint] = React.useState(null);
-    const [canReveal, setCanReveal] = React.useState(false);
     const [typedAnswer, setTypedAnswer] = React.useState('');
+    const recallDraftsRef = React.useRef(new Map()); // Unsubmitted work belongs to a stop and the current review only.
     const [wrongFlash, setWrongFlash] = React.useState(false);
-    const [recallSaid, setRecallSaid] = React.useState('');   // spoken result of the last answer
+    const [recallAttempt, setRecallAttempt] = React.useState(0);
     const [selfRevealId, setSelfRevealId] = React.useState(null);
+    const pendingSelfRatingsRef = React.useRef(new Set());
     // Quiz VISITING order (forward / backward / shuffled). The palace itself never
     // moves — only the sequence the check walks — so scoring, mastery and the
     // geography are untouched. Reciting a route backwards is the classic probe for
@@ -4548,7 +4729,41 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         try { return MP.buildPalace(data || {}).route.filter((id) => id !== '__entry').length; } catch (error) { return 0; }
     }, [data, ready]);
     const recallEligible = totalItems >= 2;
+    // Only learning content and geography invalidate a review. Decoration and
+    // mastery saves must not interrupt a walk.
+    const recallContentKey = JSON.stringify({
+        branches: (Array.isArray(data?.branches) ? data.branches : []).map((branch) => ({ title: branch.title, items: branch.items, mnemonics: branch.mnemonics })),
+        rooms: data?.memoryPalace?.extraRooms || [],
+        loci: data?.memoryPalace?.extraLoci || [],
+        route: data?.memoryPalace?.routeOrder || [],
+    });
+    const recallContentRef = React.useRef(recallContentKey);
+    recallContentRef.current = recallContentKey;
+    const recallRunContentRef = React.useRef(recallContentKey);
+    const [recallContentChanged, setRecallContentChanged] = React.useState(false);
+    const _recallContentCurrent = () => recallRunContentRef.current === recallContentRef.current;
+    const _sceneStartAt = (palace) => {
+        const previous = sceneContextRef.current;
+        const id = currentRef.current?.id;
+        if (previous && previous.content === recallContentKey && previous.recall === recall
+            && previous.nonce === nonce && palace?.route?.includes(id)) return id;
+        return recall?.startAt;
+    };
+    const _recallSceneState = () => {
+        const state = {};
+        if (!recall || !_recallContentCurrent()) return state;
+        recallOrderRef.current.forEach((id) => {
+            const result = recallResultsRef.current[id];
+            if (result?.correct || result?.revealed || result?.selfChecked) {
+                state[id] = { revealed: true, status: result.correct ? 'correct' : 'incorrect' };
+            } else if (recall.mode === 'self' && pendingSelfRatingsRef.current.has(id)) {
+                state[id] = { revealed: true };
+            }
+        });
+        return state;
+    };
     const dataKey = JSON.stringify({
+        recallContent: recallContentKey,
         m: data?.main,
         b: (Array.isArray(data?.branches) ? data.branches : []).map((b) => ({ t: b.title, i: b.items, mn: b.mnemonics })),
         img: data?.memoryPalace?.generatedAt || 0,
@@ -4648,6 +4863,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const activeRouteOrder = routePreview || data?.memoryPalace?.routeOrder || undefined;
         setNoWalk(false);
         palaceRef.current = MP.buildPalace(data || {}, { routeOrder: activeRouteOrder });
+        const startAt = _sceneStartAt(palaceRef.current);
+        sceneContextRef.current = { content: recallContentKey, recall, nonce };
         handleRef.current = MP.render(hostRef.current, data, {
             t,
             routeOrder: activeRouteOrder,
@@ -4669,26 +4886,28 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             },
             mastery: recall ? undefined : _withoutStale(data?.memoryPalace?.mastery),   // recall-driven dimming (study mode only)
             recall: !!recall,
+            recallState: _recallSceneState(),
             // In-VR recall bank: the palace spawns the remaining answers as ray-
             // selectable chips; a pick routes through the SAME submitRecallAnswer
             // as a 2D chip click (refs-based, so the once-mounted closure stays live).
             vrRecall: recall ? {
-                getBank: () => (bankRef.current || []).map((c) => ({ id: c.id, label: c.label })),
-                onPick: (locusId, chip) => { if (chip) submitRecallAnswer(chip.label, chip.id); },
+                getBank: (locusId) => _getVrRecallChoices(locusId),
+                onPick: (locusId, chip) => _pickVrRecall(locusId, chip),
             } : undefined,
-            startAt: recall ? recall.startAt : undefined,
+            startAt,
             onLocusChange: (locus, idx, total) => {
                 if (!locus) return;
+                recallNavigationRef.current += 1;
                 currentRef.current = locus;
                 setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, source: locus.mnemonicSource, aiMnemonic: locus.aiMnemonic, mine: !!locus.mine, idx, total: total - 1, entry: locus.id === '__entry' });
                 if (quickCreateRef.current && quickCreateRef.current.id !== locus.id && quickCreateRef.current.status !== 'generating') setQuickCreate(null);
                 // Re-surface earned hints when revisiting a struggled locus.
                 const r = recallResultsRef.current[locus.id];
+                setRecallAttempt(r?.attempts || 0);
                 setRecallHint(r && r.attempts >= 2 && locus.mnemonic && !r.correct && !r.revealed ? locus.mnemonic : null);
-                setCanReveal(!!(r && r.attempts >= 3 && !r.correct && !r.revealed));
-                setTypedAnswer('');
+                setTypedAnswer(recall?.mode === 'type' && _recallContentCurrent() && !r?.correct && !r?.revealed ? (recallDraftsRef.current.get(locus.id) || '') : '');
                 setWrongFlash(false);
-                setSelfRevealId(null);
+                setSelfRevealId(recall?.mode === 'self' && _recallContentCurrent() && pendingSelfRatingsRef.current.has(locus.id) ? locus.id : null);
             },
             onEmptyLocusApproach: (locus, near, idx, total, reason) => {
                 if (!locus || recall || tourOpenRef.current) return;
@@ -4820,14 +5039,25 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     }, [recall, finished]);
 
     const _resetRecallRun = () => {
+        recallNavigationRef.current += 1;
+        pendingSelfRatingsRef.current.clear();
+        recallDraftsRef.current.clear();
         recallResultsRef.current = {}; attemptsTotalRef.current = 0;
         finishedRef.current = false;
         recallTimersRef.current.forEach((id) => { try { clearTimeout(id); } catch (e) {} });
         recallTimersRef.current = [];
         elapsedRef.current = 0; setElapsed(0);
-        setAnswered(0); setFinished(null); setRecallHint(null); setCanReveal(false); setTypedAnswer(''); setWrongFlash(false); setSelfRevealId(null); setRecallSaid('');
+        setAnswered(0); setRecallAttempt(0); setFinished(null); setRecallHint(null); setTypedAnswer(''); setWrongFlash(false); setSelfRevealId(null);
     };
 
+    const _recallModeForPalace = (mode, palace) => {
+        if (mode === 'type' || mode === 'self') return mode;
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        const first = palace?.route?.find((id) => id !== '__entry');
+        const choices = first && MP?.buildLocusChoices ? MP.buildLocusChoices(palace, first) : null;
+        // One visible answer is not a recognition question; use honest self-ratings.
+        return choices?.length === 1 ? 'self' : 'bank';
+    };
     const startRecall = (mode, viaArm, direction, only) => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         if (!MP || recall || artJobRef.current || noWalk) return;
@@ -4839,6 +5069,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const targets = palace.route.filter((id) => id !== '__entry');
         if (targets.length < 2) { if (addToast) addToast(t('memory_palace.recall_empty') || 'Not enough loci to play yet.', 'info'); return; }
         _resetRecallRun();
+        recallRunContentRef.current = recallContentRef.current;
+        setRecallContentChanged(false);
         const seed = (Date.now() % 2147483647) || 7;
         const dir = (MP.RECALL_DIRECTIONS || ['forward']).indexOf(direction) >= 0 ? direction : 'forward';
         // `only` narrows the walk to the loci actually due — that is what makes the
@@ -4847,7 +5079,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed, only }) : targets;
         recallOrderRef.current = order.length ? order : targets;
         startedByArmRef.current = viaArm === true;
-        setRecall({ mode: mode === 'type' ? 'type' : (mode === 'self' ? 'self' : 'bank'), seed, direction: dir, focused: !!(only && only.length), startAt: recallOrderRef.current[0] });
+        const effectiveMode = _recallModeForPalace(mode, palace);
+        setRecall({ mode: effectiveMode, choiceFallback: effectiveMode === 'self' && mode !== 'self', seed, direction: dir, focused: !!(only && only.length), startAt: recallOrderRef.current[0] });
         if (addToast) addToast(t('memory_palace.recall_start') || '🧠 The labels are covered. Walk the palace and recall what lives at each locus!', 'info');
         // Teacher start arms every student in the live session (2D sort-game contract).
         if (isTeacherMode && viaArm !== true && typeof onRecallArm === 'function') { try { onRecallArm(); } catch (e) {} }
@@ -4859,13 +5092,22 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         startedByArmRef.current = false;
         if (typeof onRecallClose === 'function') { try { onRecallClose(); } catch (e) {} }
     };
+    const _invalidateChangedRecall = () => {
+        if (!recall || _recallContentCurrent()) return;
+        exitRecall();
+        setRecallContentChanged(true);
+    };
+    React.useEffect(() => { _invalidateChangedRecall(); }, [recallContentKey, recall]);
+    // A live review resumes only after a new arm signal or an explicit start.
+    React.useEffect(() => { if (!armed) setRecallContentChanged(false); }, [armed]);
+
     // `direction` re-runs the same palace in a harder order. Restarting THROUGH here
     // (rather than exit-then-start) matters: exitRecall's setRecall(null) has not
     // landed yet inside one handler, so a start call would still see the old recall
     // state and bail — and dropping to null would also disarm a live session.
     const retryRecall = (direction, onlyIds) => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
-        if (!MP || !recall || !palaceRef.current) return;
+        if (!MP || !recall || !palaceRef.current || !_recallContentCurrent()) return;
         const mode = recall.mode;
         const palace = palaceRef.current;
         const targets = palace.route.filter((id) => id !== '__entry');
@@ -4882,11 +5124,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (!order.length) return;
         _resetRecallRun();
         recallOrderRef.current = order;
-        setRecall({ mode, seed, direction: dir, focused: !!only, startAt: order[0] });
+        setRecall({ mode, choiceFallback: !!recall.choiceFallback, seed, direction: dir, focused: !!only, startAt: order[0] });
     };
 
     const _recallStopsToStrengthen = () => {
-        if (!finished || !palaceRef.current) return [];
+        if (!finished || !palaceRef.current || !_recallContentCurrent()) return [];
         const palace = palaceRef.current;
         const scope = recallOrderRef.current.length ? recallOrderRef.current : palace.route;
         return scope.filter((id) => id !== '__entry').flatMap((id) => {
@@ -4900,10 +5142,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
 
     // Live-session arming (mirrors the Strand Challenge contract).
     React.useEffect(() => {
-        if (armed && !isTeacherMode && !recall && ready && !failed && hasContent) startRecall('bank', true);
+        if (armed && !isTeacherMode && !recall && !recallContentChanged && ready && !failed && hasContent) startRecall('bank', true);
         else if (!armed && !isTeacherMode && recall && startedByArmRef.current) { startedByArmRef.current = false; exitRecall(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [armed, isTeacherMode, ready, failed, recall, hasContent]);
+    }, [armed, isTeacherMode, ready, failed, recall, hasContent, recallContentChanged]);
     React.useEffect(() => {
         if (!armed || isTeacherMode) return;
         if (failed || noWalk) { if (typeof onActivityFailed === 'function') onActivityFailed(); return; }
@@ -4920,13 +5162,43 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (!palaceRef.current || !current || current.entry) return [];
         try { return MP.buildLocusChoices(palaceRef.current, current.id, { seed: recall.seed }); } catch (e) { return []; }
     }, [recall, current, nonce]);
-    bankRef.current = recallChoices;
 
-    const _inRecallScope = (id) => !!id && id !== '__entry'
+    const _inRecallScope = (id) => _recallContentCurrent() && !!id && id !== '__entry'
         && (!recallOrderRef.current.length || recallOrderRef.current.includes(id));
 
+    const _getVrRecallChoices = (locusId) => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        const id = locusId || currentRef.current?.id;
+        if (!recall || recall.mode !== 'bank' || finishedRef.current || !_inRecallScope(id)
+            || id !== currentRef.current?.id || !palaceRef.current || !MP?.buildLocusChoices) return [];
+        const result = recallResultsRef.current[id];
+        if (result?.correct || result?.revealed || result?.selfChecked) return [];
+        return MP.buildLocusChoices(palaceRef.current, id, { seed: recall.seed });
+    };
+    const _pickVrRecall = (locusId, chip) => {
+        if (!chip || locusId !== currentRef.current?.id) return;
+        const choice = _getVrRecallChoices(locusId).find((item) => item.id === chip.id);
+        if (choice) submitRecallAnswer(choice.label, choice.id);
+    };
+    const _setRecallPace = (auto) => {
+        // A new preference object also invalidates any pending advance, even if
+        // the learner switches off and back on before its timer fires.
+        recallPaceRef.current = { auto: !!auto };
+        setRecallAutoAdvance(!!auto);
+    };
+    const _scheduleRecallAdvance = () => {
+        const preference = recallPaceRef.current;
+        if (!preference.auto) return;
+        const navigation = recallNavigationRef.current;
+        const locusId = currentRef.current?.id;
+        _laterRecall(() => {
+            if (recallPaceRef.current === preference && recallNavigationRef.current === navigation
+                && currentRef.current?.id === locusId) advanceRecall();
+        });
+    };
+
     const advanceRecall = () => {
-        if (!palaceRef.current || !handleRef.current) return;
+        if (!_recallContentCurrent() || !palaceRef.current || !handleRef.current) return;
         const route = palaceRef.current.route;
         const res = recallResultsRef.current;
         // The quiz walks its own order (forward / backward / shuffled); the palace
@@ -4952,12 +5224,32 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         handleRef.current.goTo(nextIdx);
     };
 
+    const _recallResultLabel = (result) => {
+        if (result?.selfChecked) return result.correct
+            ? (t('memory_palace.self_recorded_remembered') || 'Self-check: you marked this as remembered')
+            : (t('memory_palace.self_recorded_missed') || 'Self-check: you marked this as missed');
+        if (result?.revealed) return t('memory_palace.answer_revealed') || 'Answer revealed';
+        if (result?.correct) return result.attempts === 1
+            ? (t('memory_palace.answer_first_try') || 'Correct on the first try')
+            : (t('memory_palace.answer_after_retry') || 'Correct after another try');
+        return t('memory_palace.recall_recorded') || 'Response recorded.';
+    };
+    const _recallSummary = (score) => {
+        if (score.total > 0 && score.selfRated === score.total) {
+            return (t('memory_palace.self_check_summary') || 'Self-check complete: you marked {ok} of {total} as remembered.')
+                .replace('{ok}', String(score.firstTry + score.eventual)).replace('{total}', String(score.total));
+        }
+        if (score.perfect) return t('memory_palace.recall_perfect') || '🏛✨ Perfect walk! Every locus recalled on the first try.';
+        return (t('memory_palace.recall_summary') || 'Recalled {ok} of {total} ({first} on the first try).')
+            .replace('{ok}', String(score.firstTry + score.eventual)).replace('{total}', String(score.total)).replace('{first}', String(score.firstTry));
+    };
+
     const finishRecall = () => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         // Synchronous ref guard: two auto-advance timers scheduled while finished===null
         // could both reach here and double-award points/telemetry. The `finished` STATE
         // is captured per-render and can't dedupe them; finishedRef can.
-        if (!MP || !palaceRef.current || finishedRef.current) return;
+        if (!_recallContentCurrent() || !MP || !palaceRef.current || finishedRef.current) return;
         finishedRef.current = true;
         // Score and reschedule ONLY what this walk covered. A due-filtered review
         // visits a subset, and scoring the whole route would write a give-up record
@@ -4978,12 +5270,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         }));
         if (score.perfect) {
             if (playSound) playSound('correct');
-            if (addToast) addToast(t('memory_palace.recall_perfect') || '🏛✨ Perfect walk! Every locus recalled on the first try.', 'success');
+            if (addToast) addToast(_recallSummary(score), 'success');
             if (onScoreUpdate) onScoreUpdate(score.points, 'Memory Palace Recall');
         } else {
             if (playSound) playSound('reveal');
-            if (addToast) addToast((t('memory_palace.recall_summary') || 'Recalled {ok} of {total} ({first} on the first try).')
-                .replace('{ok}', String(score.firstTry + score.eventual)).replace('{total}', String(score.total)).replace('{first}', String(score.firstTry)), 'info');
+            if (addToast) addToast(_recallSummary(score), 'info');
         }
         if (onGameComplete) onGameComplete(score.perfect ? 'palaceRecall' : 'palaceRecallAttempt', {
             score: score.points, correctPlacements: score.firstTry + score.eventual, totalItems: score.total,
@@ -5002,21 +5293,23 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         const cur = currentRef.current;
         if (!_inRecallScope(cur?.id)) return;
-        if (!MP || !recall || !cur || cur.id === '__entry' || finished) return;
+        if (!MP || !recall || recall.mode === 'self' || !cur || cur.id === '__entry' || finished) return;
         const res = recallResultsRef.current;
         const r = res[cur.id] || (res[cur.id] = { attempts: 0, correct: false, revealed: false });
         if (r.correct || r.revealed) return;
         r.attempts += 1; attemptsTotalRef.current += 1;
-        const ok = chipId ? (chipId === cur.id || MP.matchAnswer(cur.label, given)) : MP.matchAnswer(cur.label, given);
+        setRecallAttempt(r.attempts);
+        // Selected choices already have an identity; spelling tolerance is for typed answers only.
+        const ok = chipId ? chipId === cur.id : MP.matchAnswer(cur.label, given);
         if (ok) {
             r.correct = true;
+            recallDraftsRef.current.delete(cur.id);
             setWrongFlash(false);
-            setRecallSaid(t('memory_palace.answer_right') || 'Correct.');
             if (playSound) playSound('correct');
             if (handleRef.current) { handleRef.current.revealLocus(cur.id); handleRef.current.setLocusStatus(cur.id, 'correct'); }
-            setRecallHint(null); setCanReveal(false); setTypedAnswer('');
+            setRecallHint(null); setTypedAnswer('');
             setAnswered((n) => n + 1);
-            _laterRecall(() => advanceRecall());
+            _scheduleRecallAdvance();
         } else {
             if (playSound) playSound('reveal');
             if (handleRef.current) handleRef.current.setLocusStatus(cur.id, 'incorrect');
@@ -5028,31 +5321,24 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 if (currentRef.current?.id === cur.id) setWrongFlash(false);
                 if (handleRef.current && !rr.correct && !rr.revealed) handleRef.current.setLocusStatus(cur.id, null);
             });
-            // Colour + sound reaches neither a screen-reader user nor anyone who
-            // cannot distinguish the flash. Say it.
-            setRecallSaid(
-                (t('memory_palace.answer_wrong') || 'Not quite — try again.')
-                + (r.attempts >= 2 && cur.mnemonic ? ' ' + (t('memory_palace.picture_this') || 'Picture this:') + ' ' + cur.mnemonic : '')
-            );
             if (r.attempts >= 2 && cur.mnemonic) setRecallHint(cur.mnemonic);   // the mnemonic IS the hint
-            if (r.attempts >= 3) setCanReveal(true);
         }
     };
 
     const revealCurrent = () => {
         const cur = currentRef.current;
         if (!_inRecallScope(cur?.id)) return;
-        if (!cur || !recall || finished || cur.id === '__entry') return;
+        if (!cur || !recall || recall.mode === 'self' || finished || cur.id === '__entry') return;
         const res = recallResultsRef.current;
         const r = res[cur.id] || (res[cur.id] = { attempts: 0, correct: false, revealed: false });
         if (r.correct || r.revealed) return;
         r.revealed = true;
+        recallDraftsRef.current.delete(cur.id);
         if (handleRef.current) { handleRef.current.revealLocus(cur.id); handleRef.current.setLocusStatus(cur.id, 'incorrect'); }
-        setRecallHint(null); setCanReveal(false); setTypedAnswer('');
+        setRecallHint(null); setTypedAnswer('');
         setAnswered((n) => n + 1);
         // A revealed answer needs reading time. Continue is learner-controlled.
         setWrongFlash(false);
-        setRecallSaid('');
     };
 
     // Low-pressure guided journey: the learner recalls privately, reveals the
@@ -5061,7 +5347,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const revealSelfCheck = () => {
         const cur = currentRef.current;
         if (!_inRecallScope(cur?.id)) return;
-        if (!cur || !recall || recall.mode !== 'self' || finished || cur.id === '__entry') return;
+        if (!cur || !recall || recall.mode !== 'self' || finished || cur.id === '__entry' || recallResultsRef.current[cur.id]?.selfChecked) return;
+        pendingSelfRatingsRef.current.add(cur.id);
         if (handleRef.current) handleRef.current.revealLocus(cur.id);
         setSelfRevealId(cur.id);
     };
@@ -5075,12 +5362,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         // selfRated travels with the result so the scheduler and the summary can
         // tell an unverified self-report from a measured retrieval.
         res[cur.id] = { attempts: 1, correct: !!remembered, revealed: false, selfChecked: true, selfRated: true };
+        pendingSelfRatingsRef.current.delete(cur.id);
         attemptsTotalRef.current += 1;
         if (handleRef.current) handleRef.current.setLocusStatus(cur.id, remembered ? 'correct' : 'incorrect');
         if (playSound) playSound(remembered ? 'correct' : 'reveal');
         setAnswered((n) => n + 1);
         setSelfRevealId(null);
-        _laterRecall(() => advanceRecall());
+        _scheduleRecallAdvance();
     };
 
     // Furnish: one Imagen illustration per locus, driven by the MNEMONIC (the
@@ -5121,16 +5409,26 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     // and a deliberate move to the walking controls keep their own focus.
     React.useLayoutEffect(() => {
         const panel = recallPanelRef.current;
-        if (!recall || !panel || !recallKeyboardRef.current) return;
-        const active = document.activeElement;
-        if (active && active !== document.body && !panel.contains(active)) {
+        if (!recall) {
+            const mode = recallReturnModeRef.current;
+            recallReturnModeRef.current = null;
+            recallEntryFocusRef.current = false;
             recallKeyboardRef.current = false;
+            if (mode && (document.activeElement === document.body || recallToolbarRef.current?.contains(document.activeElement))) {
+                recallToolbarRef.current?.querySelector('[data-recall-mode="' + mode + '"]:not(:disabled)')?.focus({ preventScroll: true });
+            }
+            return;
+        }
+        if (!panel || !recallKeyboardRef.current) return;
+        const active = document.activeElement;
+        if (active && active !== document.body && !panel.contains(active) && !(recallEntryFocusRef.current && recallToolbarRef.current?.contains(active))) {
+            recallKeyboardRef.current = false;
+            recallEntryFocusRef.current = false;
             return;
         }
         const next = panel.querySelector('[data-recall-focus], input:not(:disabled), button:not(:disabled)');
-        if (next) next.focus({ preventScroll: true });
+        if (next) { next.focus({ preventScroll: true }); recallEntryFocusRef.current = false; }
     }, [mnLocusId, selfRevealId, answered, finished, recall]);
-    React.useEffect(() => { setRecallSaid(''); }, [mnLocusId]);
     React.useEffect(() => { setMnEditing(false); setMnDraft(''); }, [mnLocusId]);
     const mnFeedback = React.useMemo(() => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
@@ -5304,7 +5602,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (depth && handleRef.current?.setLocusRelief) handleRef.current.setLocusRelief(id, image, depth);
         else handleRef.current?.setLocusImage?.(id, image);
     };
-    React.useEffect(() => { setDirectEval(null); setDirectPrompt(''); setRefinePrompt(''); }, [mnLocusId, directType, dataKey]);
+    // A format switch changes the evaluation context, not the learner's draft.
+    React.useEffect(() => { setDirectEval(null); }, [mnLocusId, directType, dataKey]);
+    React.useEffect(() => { setDirectPrompt(''); setRefinePrompt(''); }, [mnLocusId, dataKey]);
     // ── Voice input for Direct-the-AI (hands-free / accessible making): walk to a
     //    locus and SPEAK what belongs there; the spoken prompt runs through the
     //    same eval → generate flow as typing. Feature-detected on Web Speech, so
@@ -6074,8 +6374,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     <div className="mb-1 flex items-center gap-2 text-sm font-extrabold text-slate-900"><span className="h-2 w-2 rounded-full bg-indigo-500" aria-hidden="true" />{recall ? (t('memory_palace.practice_heading') || 'Recall practice') : (t('memory_palace.study_heading') || 'Explore, picture, remember')}</div>
                     {recall
                         ? (recall.mode === 'self'
-                            ? (t('memory_palace.self_check_hint') || 'Picture the cue and recall the fact privately. Reveal the answer, then rate whether you remembered it. Every rating moves you forward.')
-                            : (t('memory_palace.recall_hint') || '🧠 The labels are covered — the image is your cue. Recall what lives at each locus; after two misses the mnemonic appears.'))
+                            ? (t('memory_palace.self_check_steps') || 'Picture the cue and recall the fact privately. Reveal the answer, then rate whether you remembered it.')
+                            : (t('memory_palace.recall_help_steps') || 'Use the image to recall the fact at each stop. After two misses, your memory cue appears. You can reveal an answer whenever you need help.'))
                         : (t('memory_palace.hint') || 'A memory palace works through repetition: walk the route, picture each mnemonic vividly, then walk it again from memory.')}
                     {recall && recall.direction && recall.direction !== 'forward' && (
                         <span className="ml-1.5 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
@@ -6085,7 +6385,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         </span>
                     )}
                 </div>
-                <div className={(recall ? 'flex flex-wrap ' : 'grid sm:grid-cols-2 ') + 'w-full min-w-0 gap-3 [&_button]:min-h-[44px] [&_button]:rounded-xl [&_button]:justify-center [&_button]:focus-visible:outline [&_button]:focus-visible:outline-2 [&_button]:focus-visible:outline-offset-2 [&_button]:focus-visible:outline-indigo-600'} data-palace-toolbar="true">
+                <div className={(recall ? 'flex flex-wrap ' : 'grid sm:grid-cols-2 ') + 'w-full min-w-0 gap-3 [&_button]:min-h-[44px] [&_button]:rounded-xl [&_button]:justify-center [&_button]:focus-visible:outline [&_button]:focus-visible:outline-2 [&_button]:focus-visible:outline-offset-2 [&_button]:focus-visible:outline-indigo-600'} data-palace-toolbar="true" ref={recallToolbarRef} onClickCapture={(event) => { recallKeyboardRef.current = event.detail === 0; recallEntryFocusRef.current = event.detail === 0 && !!event.target.closest('[data-recall-mode]'); }}>
                     {recall ? (
                         <>
                             <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums">
@@ -6101,11 +6401,21 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                             )}
                             <button
-                                onClick={exitRecall}
+                                onClick={(event) => { recallReturnModeRef.current = event.detail === 0 ? (recall.choiceFallback ? 'bank' : recall.mode) : null; exitRecall(); }}
                                 className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
                             >
                                 {t('memory_palace.recall_exit') || 'Exit recall'}
                             </button>
+                            {!finished && <div className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2" data-palace-recall-pace="true">
+                                <label className="flex min-h-[44px] cursor-pointer items-center gap-3 text-xs font-bold text-slate-800">
+                                    <input type="checkbox" checked={recallAutoAdvance} onChange={(event) => _setRecallPace(event.target.checked)} className="h-4 w-4 shrink-0 accent-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-600" />
+                                    {t('memory_palace.auto_advance') || 'Move on automatically'}
+                                </label>
+                                <p className="pb-1 text-xs leading-relaxed text-slate-600">{recallAutoAdvance
+                                    ? (t('memory_palace.auto_advance_help') || 'After correct answers and self-ratings. Revealed answers wait for you.')
+                                    : (t('memory_palace.manual_advance_help') || 'Use Continue review after each response, including the last stop.')}</p>
+                            </div>}
+
                         </>
                     ) : (
                         <>
@@ -6163,6 +6473,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 {!recallEligible && <p className="mb-2 text-xs leading-relaxed text-slate-600">{t('memory_palace.practice_minimum') || 'Add a second memory stop to unlock recall practice.'}</p>}
                                 <div className="flex flex-wrap gap-2">                            {hasContent && !failed && !noWalk && recallEligible && (
                                 <button
+                                    data-recall-mode="bank"
                                     onClick={() => startRecall('bank', false)}
                                     disabled={artBusy || routeEditing || (isTeacherMode && liveRecallReadiness?.ok === false)}
                                     className="flex items-center gap-1 bg-indigo-700 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-indigo-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
@@ -6173,6 +6484,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             )}
                             {hasContent && !failed && !noWalk && recallEligible && (
                                 <button
+                                    data-recall-mode="self"
                                     onClick={() => startRecall('self', false)}
                                     disabled={artBusy || routeEditing || (isTeacherMode && liveRecallReadiness?.ok === false)}
                                     className="flex items-center gap-1 bg-white text-indigo-700 border border-indigo-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -6183,6 +6495,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             )}
                             {hasContent && !failed && recallEligible && isTeacherMode && (
                                 <button
+                                    data-recall-mode="type"
                                     onClick={() => startRecall('type', false)}
                                     disabled={artBusy || routeEditing || (isTeacherMode && liveRecallReadiness?.ok === false)}
                                     className="flex items-center gap-1 bg-white text-amber-700 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -6352,6 +6665,12 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             {t('memory_palace.stale_clear') || 'Clear it'}
                         </button>
                     )}
+                </div>
+            )}
+            {!presenting && recallContentChanged && !recall && (
+                <div className="mb-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950" role="status">
+                    <p className="font-bold">{t('memory_palace.content_changed_heading') || 'The palace has changed'}</p>
+                    <p className="mt-1 leading-relaxed">{t('memory_palace.content_changed_help') || 'The previous review ended because its facts or stops changed. Its unfinished results were not scored. Start a new review when you are ready.'}</p>
                 </div>
             )}
             {!presenting && !recall && dueInfo && dueInfo.dueCount > 0 && (
@@ -6996,6 +7315,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 <button disabled={artBusy || !canImagen} aria-pressed={directType === 'image'} onClick={() => { setDirectType('image'); setDirectEval(null); }} className={`px-2.5 py-1 rounded-full text-xs font-bold border ${directType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🖼 {t('memory_palace.direct_image') || 'Image'}</button>
                                 <button disabled={artBusy || !window.AlloModules?.Prim3D} aria-pressed={directType === 'sculpture'} onClick={() => { setDirectType('sculpture'); setDirectEval(null); }} className={`px-2.5 py-1 rounded-full text-xs font-bold border ${directType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🗿 {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
                             </div>
+                            <p className="mb-3 text-xs leading-relaxed text-fuchsia-800">{t('memory_palace.direct_format_draft') || 'Switch between image and sculpture without losing your prompt.'}</p>
                             {directEval && directEval.verdict === 'reject' && (
                                 <div className="mb-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2" role="status" aria-live="polite">
                                     <span className="font-bold">{t('memory_palace.direct_rejected') || 'Let’s adjust:'}</span> {directEval.reason}
@@ -7116,13 +7436,16 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             )}
             {!presenting && recall && (
                 <div ref={recallPanelRef} onClickCapture={(event) => { recallKeyboardRef.current = event.detail === 0; }} data-palace-recall-panel="true">
+            {!finished && recall.choiceFallback && (
+                <div className="mt-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950" role="status" data-palace-choice-fallback="true">
+                    <p className="font-bold">{t('memory_palace.repeated_answers_heading') || 'Guided self-check for repeated answers'}</p>
+                    <p className="mt-1 leading-relaxed">{t('memory_palace.repeated_answers_help') || 'These stops share the same answer. Recall it privately, reveal it, then mark whether you remembered it.'}</p>
+                </div>
+            )}
             {finished && (
                 <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-900 [&_button]:min-h-[44px] [&_button]:rounded-xl [&_button:focus-visible]:outline [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2" role="status">
                     <span className="font-bold outline-none" tabIndex={-1} data-recall-focus="true">
-                        {finished.perfect
-                            ? (t('memory_palace.recall_perfect') || '🏛✨ Perfect walk! Every locus recalled on the first try.')
-                            : (t('memory_palace.recall_summary') || 'Recalled {ok} of {total} ({first} on the first try).')
-                                .replace('{ok}', String(finished.firstTry + finished.eventual)).replace('{total}', String(finished.total)).replace('{first}', String(finished.firstTry))}
+                        {_recallSummary(finished)}
                     </span>
                     {' '}· ⏱ {fmtTime(elapsed)} · {(t('memory_palace.recall_points') || '{points} points').replace('{points}', String(finished.points))}
                     {/* Say what kind of evidence this walk produced. A focused review
@@ -7136,7 +7459,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     )}
                     {finished.selfRated > 0 && (
                         <div className="mt-1 text-xs text-emerald-800">
-                            {(t('memory_palace.recall_self_rated_note') || 'You rated {count} of these yourself — practice, not a tested recall.').replace('{count}', String(finished.selfRated))}
+                            {(t('memory_palace.self_rated_guidance') || 'These are your own ratings for {count} stops. Try Recall walk to check your answers against the facts.').replace('{count}', String(finished.selfRated))}
                         </div>
                     )}
                     {(() => {
@@ -7204,20 +7527,26 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         </button>
                     </div>
                 ) : current.entry ? (
-                    <div className="mt-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-600">
-                        {t('memory_palace.recall_at_entry') || 'Walk forward (▶ or →) to the first locus to begin recalling.'}
+                    <div className="mt-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950" role="status">
+                        <p className="font-bold">{t('memory_palace.recall_entrance_heading') || 'You are at the entrance'}</p>
+                        <p className="mt-1 leading-relaxed">{answered > 0 && answered === recallOrderRef.current.length
+                            ? (t('memory_palace.recall_entrance_complete') || 'All review stops are complete. Continue to see your results.')
+                            : (t('memory_palace.recall_entrance_help') || 'Return to the next unanswered stop in your review. Your recorded responses are kept.')}</p>
+                        <button type="button" onClick={advanceRecall} className="mt-3 min-h-[44px] rounded-xl bg-indigo-700 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                            {t('memory_palace.next_review_stop') || 'Continue review'}
+                        </button>
                     </div>
                 ) : (
                     <div className={`mt-3 rounded-xl px-4 py-3 border transition-colors [&_button]:min-h-[44px] [&_button]:rounded-xl [&_button:focus-visible]:outline [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2 ${wrongFlash ? 'bg-red-50 border-red-300' : 'bg-amber-50 border-amber-200'}`}>
-                        <div className="text-xs font-bold text-amber-800 mb-2">
-                            {(t('memory_palace.review_stop_of') || 'Review stop {idx} of {total}').replace('{idx}', String(recallOrderRef.current.indexOf(current.id) + 1)).replace('{total}', String(recallOrderRef.current.length || current.total))} — {t('memory_palace.recall_q') || 'What belongs at this locus?'}
+                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-amber-800">
+                            <span>{(t('memory_palace.review_stop_of') || 'Review stop {idx} of {total}').replace('{idx}', String(recallOrderRef.current.indexOf(current.id) + 1)).replace('{total}', String(recallOrderRef.current.length || current.total))}</span>
+                            <span className="rounded-lg border border-amber-200 bg-white px-2 py-1 tabular-nums text-slate-600">{(t('memory_palace.review_frame_number') || 'Palace frame {number}').replace('{number}', String(current.idx))}</span>
                         </div>
+                        <h3 className="mb-3 text-sm font-bold text-slate-900">{t('memory_palace.recall_q') || 'What belongs at this locus?'}</h3>
                         {recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed || recallResultsRef.current[current.id]?.selfChecked ? (
                             <div className="space-y-3 text-sm text-amber-950">
                                 <div className="rounded-xl border border-amber-200 bg-white px-3 py-3" role="status">
-                                    <p className="text-[11px] font-extrabold uppercase tracking-wide text-amber-800">{recallResultsRef.current[current.id]?.revealed
-                                        ? (t('memory_palace.answer_revealed') || 'Answer revealed')
-                                        : (t('memory_palace.recall_recorded') || 'Response recorded.')}</p>
+                                    <p className="text-xs font-bold leading-relaxed text-amber-800">{_recallResultLabel(recallResultsRef.current[current.id])}</p>
                                     <p className="mt-1 break-words font-bold text-slate-900">{current.label}</p>
                                     {current.mnemonic && <p className="mt-1 break-words leading-relaxed text-slate-600">{current.mnemonic}</p>}
                                     {recallResultsRef.current[current.id]?.revealed && <p className="mt-2 text-xs leading-relaxed text-amber-900">{t('memory_palace.reveal_pause') || 'Take a moment to connect this fact with the cue. Continue when you are ready.'}</p>}
@@ -7231,6 +7560,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         <span className="font-bold">{current.label}</span>
                                         {current.mnemonic ? <span className="block mt-1 text-xs text-slate-600">💡 {current.mnemonic}</span> : null}
                                     </div>
+                                    <p className="text-sm leading-relaxed text-slate-700">{t('memory_palace.self_rate_before_reveal') || 'Before revealing the answer, did you remember it? Rate that first recall.'}</p>
                                     <div className="flex flex-wrap gap-2" aria-label={t('memory_palace.self_check_result') || 'How well did you remember this locus?'}>
                                         <button
                                             onClick={() => markSelfCheck(true)}
@@ -7255,12 +7585,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                             )
                         ) : recall.mode === 'bank' ? (
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2" data-palace-recall-choices="true">
+                                <p className="w-full text-sm leading-relaxed text-slate-700">{t('memory_palace.recall_choice_guidance') || 'Picture the cue at this stop, then choose its answer.'}</p>
                                 {recallChoices.map((chip) => (
                                     <button
                                         key={chip.id}
                                         onClick={() => submitRecallAnswer(chip.label, chip.id)}
-                                        className="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-amber-900 border border-amber-300 hover:bg-amber-100 hover:scale-105 transition-all"
+                                        className="min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] px-3 py-2 rounded-full text-left text-sm leading-relaxed font-bold bg-white text-amber-900 border border-amber-300 hover:bg-amber-100 transition-colors"
                                     >
                                         {chip.label}
                                     </button>
@@ -7268,39 +7599,52 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             </div>
                         ) : (
                             <form className="flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); if (typedAnswer.trim()) submitRecallAnswer(typedAnswer, null); }}>
+                                <p className="w-full text-sm leading-relaxed text-slate-700">{t('memory_palace.recall_type_guidance') || 'Type the answer from memory, then press Enter or choose Check.'}</p>
                                 <input
                                     type="text"
                                     value={typedAnswer}
-                                    onChange={(e) => setTypedAnswer(e.target.value)}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        recallDraftsRef.current.set(current.id, value);
+                                        setTypedAnswer(value);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        // Enter may confirm a character before the learner submits their answer.
+                                        if (e.key === 'Enter' && (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229)) e.preventDefault();
+                                    }}
                                     placeholder={t('memory_palace.recall_type_placeholder') || 'Type what belongs here…'}
                                     aria-label={t('memory_palace.recall_q') || 'What belongs at this locus?'}
-                                    className="min-w-0 flex-1 text-sm p-2 rounded-lg border border-amber-300 focus:ring-2 focus:ring-amber-400 bg-white"
+                                    className="min-h-11 min-w-0 basis-48 flex-1 text-base p-2 rounded-lg border border-amber-300 focus:ring-2 focus:ring-amber-400 bg-white"
                                 />
                                 <button
                                     type="submit"
                                     disabled={!typedAnswer.trim()}
-                                    className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-colors disabled:opacity-50"
+                                    className="min-h-11 px-4 py-2 rounded-lg text-sm font-bold bg-amber-700 text-white hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {t('memory_palace.recall_submit') || 'Check'}
                                 </button>
+                                <p className="w-full text-xs leading-relaxed text-slate-600">{t('memory_palace.recall_draft_guidance') || 'Your draft stays at this stop during this review.'}</p>
                             </form>
                         )}
                         <div role="status" aria-live="polite" aria-atomic="true" className="mt-2 text-sm font-semibold text-amber-950">
-                            {recallSaid && !(recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed || recallResultsRef.current[current.id]?.selfChecked)
-                                ? (t('memory_palace.answer_wrong') || 'Not quite — try again.') : ''}
+                            {recallResultsRef.current[current.id]?.attempts > 0 && !(recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed || recallResultsRef.current[current.id]?.selfChecked)
+                                ? <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                    <span>{t('memory_palace.answer_wrong') || 'Not quite — try again.'}</span>
+                                    <span className="rounded-md border border-amber-300 bg-white px-2 py-1 text-xs font-semibold tabular-nums text-amber-900">{(t('memory_palace.recall_attempt') || 'Attempt {number}').replace('{number}', String(recallAttempt))}</span>
+                                </div> : ''}
                         </div>
                         {recallHint && (
                             <div className="mt-2 text-sm text-amber-900" role="status" aria-live="polite">
                                 💡 <span className="font-bold">{t('memory_palace.picture_this') || 'Picture this:'}</span> {recallHint}
                             </div>
                         )}
-                        {canReveal && (
-                            <button
-                                onClick={revealCurrent}
-                                className="mt-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-red-700 border border-red-300 hover:bg-red-50 transition-colors"
-                            >
-                                {t('memory_palace.recall_reveal') || 'Reveal answer (no points)'}
-                            </button>
+                        {recall.mode !== 'self' && !(recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed || recallResultsRef.current[current.id]?.selfChecked) && (
+                            <div className="mt-3 border-t border-amber-200 pt-3" data-palace-recall-help="true">
+                                <p className="text-xs leading-relaxed text-slate-700">{t('memory_palace.recall_help') || 'Stuck? Reveal the answer, study its cue, then continue when you are ready.'}</p>
+                                <button type="button" onClick={revealCurrent} className="mt-2 px-3 py-2 text-xs font-bold bg-white text-indigo-800 border border-indigo-300 hover:bg-indigo-50 transition-colors">
+                                    {t('memory_palace.recall_reveal') || 'Reveal answer (no points)'}
+                                </button>
+                            </div>
                         )}
                     </div>
                 )
@@ -7438,6 +7782,62 @@ const getElbowPath = (sourceNode, targetNode) => {
     const midY = (startY + endY) / 2;
     return `M ${startX} ${startY} L ${startX} ${midY} L ${endX} ${midY} L ${endX} ${endY}`;
   };
+
+const renderOutlineContent = (deps) => {
+  const tr = (key, fallback) => organizerReviewText(deps.t, key, fallback);
+  const resource = deps.generatedContent;
+  if (!resource?.data) return renderOutlineContentCore(deps);
+  const data = normalizeVisualOrganizerData(resource.data);
+  const type = data.structureType;
+  const remote = deps.liveOrganizer;
+  const live = !deps.isTeacherMode && remote?.activityId && String(remote.resourceId || '') === String(resource.id || '');
+  const reflectionOpen = deps.isInteractiveReflection || (deps.isReflectionPlaying && (!live || remote.type === 'reflection'));
+  const activityFlags = {
+    venn: deps.isVennPlaying || (deps.isInteractiveVenn && !deps.isTeacherMode), tchart: deps.isTChartPlaying || (deps.isInteractiveTChart && !deps.isTeacherMode),
+    cesort: deps.isCESortPlaying || (deps.isInteractiveCESort && !deps.isTeacherMode), pipeline: deps.isPipelinePlaying || (deps.isInteractivePipeline && !deps.isTeacherMode),
+    conceptmap: deps.isConceptMapSortPlaying || (deps.isInteractiveConceptMapSort && !deps.isTeacherMode),
+    outline: deps.isOutlineSortPlaying || (deps.isInteractiveOutlineSort && !deps.isTeacherMode),
+    fishbone: deps.isFishboneSortPlaying || (deps.isInteractiveFishboneSort && !deps.isTeacherMode),
+    problemsolution: deps.isProblemSolutionSortPlaying || (deps.isInteractiveProblemSolutionSort && !deps.isTeacherMode),
+    frayer: deps.isFrayerSortPlaying || (deps.isInteractiveFrayerSort && !deps.isTeacherMode),
+    seethinkwonder: deps.isSeeThinkWonderSortPlaying || (deps.isInteractiveSeeThinkWonderSort && !deps.isTeacherMode),
+    storymap: deps.isStoryMapSortPlaying || (deps.isInteractiveStoryMapSort && !deps.isTeacherMode),
+  };
+  const reflection = () => React.createElement(OrganizerReflectionBoard, {
+    resource: { ...resource, data }, learnerId: deps.organizerLearnerId, sessionCode: deps.activeSessionCode,
+    activityId: live && remote.type === 'reflection' ? remote.activityId : null,
+    isTeacherMode: deps.isTeacherMode, submissionMethod: deps.reflectionSubmissionMethod, reflectionRequest: deps.organizerReflectionRequest, onSubmit: deps.handleSubmitOrganizerReflection,
+    onClose: reflectionOpen ? deps.closeReflection : null, t: deps.t,
+  });
+  const receipt = child => {
+    const retryAt = Array.isArray(remote.retryUids) && remote.retryUids.includes(deps.organizerLearnerId) ? remote.retryAt : '';
+    const activityKey = remote.activityId + '|' + (retryAt || '');
+    return React.createElement(OrganizerMountReceipt, {
+    key: activityKey, activityKey,
+    onReady: () => deps.handleInteractiveOrganizerReady?.(remote.activityId),
+    onFailed: () => deps.handleInteractiveOrganizerFailed?.(remote.activityId),
+  }, child); };
+  if (reflectionOpen) return live && remote.type === 'reflection' ? receipt(reflection()) : reflection();
+  const diagram = renderOutlineContentCore(deps);
+  if (live && activityFlags[remote.type]) return receipt(diagram);
+  if (Object.values(activityFlags).some(Boolean)) return diagram;
+  const readiness = deps.getLiveOrganizerReadiness?.('reflection', { ...resource, data }) || { ok: true };
+  const reflectionLive = deps.isTeacherMode && deps.activeSessionCode && deps.interactiveOrganizerSync?.type === 'reflection' && deps.interactiveOrganizerSync?.status === 'live';
+  return <>
+    {diagram}
+    <section aria-label="Reflection activity controls" className="mx-auto my-4 max-w-5xl rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+      <p className="text-sm text-indigo-950">Use the diagram to explain your thinking. Written reflections allow more than one supported answer.</p>
+      <div className="mt-3 flex flex-wrap gap-3">
+        {type !== 'KWL Chart' && <button type="button" disabled={!readiness.ok} onClick={() => deps.setIsReflectionPlaying?.(true)} className="min-h-11 rounded-lg border border-indigo-700 bg-white px-4 font-bold text-indigo-800 disabled:opacity-50">{tr("practice_reflection","Practice reflection")}</button>}
+        {deps.isTeacherMode && deps.activeSessionCode && <button type="button" disabled={!readiness.ok || deps.interactiveOrganizerSync?.status === 'starting'} onClick={() => deps.broadcastInteractiveOrganizer?.('reflection')} className="min-h-11 rounded-lg bg-indigo-700 px-4 font-bold text-white disabled:opacity-50">{deps.interactiveOrganizerSync?.type === 'reflection' && deps.interactiveOrganizerSync?.status === 'starting' ? tr("starting_reflection","Starting reflection…") : tr("start_reflection","Start reflection for students")}</button>}
+        {reflectionLive && <button type="button" onClick={() => deps.broadcastInteractiveOrganizer?.(null)} className="min-h-11 rounded-lg border border-red-700 bg-white px-4 font-bold text-red-800">{tr("stop_reflection","Stop reflection for students")}</button>}
+      </div>
+      {!readiness.ok && <p role="status" className="mt-2 text-sm">{readiness.message}</p>}
+      {deps.interactiveOrganizerSync?.type === 'reflection' && <p role="status" className="mt-2 text-sm">{reflectionLive ? tr("reflection_live","Reflection is live for students.") : deps.interactiveOrganizerSync?.status === 'error' ? 'The reflection did not start. Check the session connection and try again.' : ''}</p>}
+    </section>
+    {type === 'KWL Chart' && reflection()}
+  </>;
+};
 
 const renderInteractiveMap = (deps) => {
   const { ConfettiExplosion, STYLE_TEXT_SHADOW_WHITE, VENN_ZONES, activeChallengeMode, challengeFeedback, challengeModeType, generatedContent, isChallengeActive, isCheckingChallenge, isProcessing, isTeacherMode, letterSpacing, nodeInputText, isMapLocked, connectingSourceId, conceptMapNodes, conceptMapEdges, draggedNodeId, setChallengeModeType, setConnectingSourceId, setIsInteractiveMap, setIsInteractiveVenn, setNodeInputText, mapContainerRef, addToast, handleAddManualNode, handleAutoLayout, handleCheckChallengeRouter, handleClearEdges, handleCreateChallenge, handleDeleteEdge, handleDeleteNode, handleExitChallenge, handleNodeClick, handleNodeMouseDown, handleResetLayout, handleRetryChallenge, handleSetIsConceptMapReadyToFalse, handleToggleIsMapLocked, setConceptMapNodes, t } = deps;
@@ -8008,6 +8408,7 @@ const renderInteractiveMap = (deps) => {
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.ViewRenderers = {
   normalizeVisualOrganizerData,
+  organizerReviewText, OrganizerReviewPanel, OrganizerLearnerFeedback, OrganizerReflectionBoard, OrganizerMountReceipt, organizerReflectionKey, organizerReflectionFields,
   renderFormattedText,
   renderOutlineContent,
   renderInteractiveMap,

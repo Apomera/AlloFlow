@@ -1,0 +1,78 @@
+{
+  "checkedAt": "2026-09-20T03:48:33.966Z",
+  "files": 11,
+  "tests": 122,
+  "passed": 122,
+  "failed": 0,
+  "suites": [
+    {
+      "name": "first_wave_cdn_extraction.test.js",
+      "tests": 3,
+      "passed": 3
+    },
+    {
+      "name": "homework_link_conversion.test.js",
+      "tests": 26,
+      "passed": 26
+    },
+    {
+      "name": "mailbox_config_durable.test.js",
+      "tests": 13,
+      "passed": 13
+    },
+    {
+      "name": "mailbox_connect_result.test.js",
+      "tests": 12,
+      "passed": 12
+    },
+    {
+      "name": "novak_delivery_preview.test.js",
+      "tests": 10,
+      "passed": 10
+    },
+    {
+      "name": "pending_mailbox_share_controls.test.js",
+      "tests": 7,
+      "passed": 7
+    },
+    {
+      "name": "qr_student_byok.test.js",
+      "tests": 7,
+      "passed": 7
+    },
+    {
+      "name": "qr_student_shell.test.js",
+      "tests": 20,
+      "passed": 20
+    },
+    {
+      "name": "self_contained_pack.test.js",
+      "tests": 10,
+      "passed": 10
+    },
+    {
+      "name": "shared_activity_extraction_contract.test.js",
+      "tests": 10,
+      "passed": 10
+    },
+    {
+      "name": "share_session_surfaces_a11y.test.js",
+      "tests": 4,
+      "passed": 4
+    }
+  ],
+  "browser": {
+    "scenarios": 6,
+    "passed": 6,
+    "report": "browser-results.json",
+    "limits": "Isolated generated component, local collaborators; no complete app mount, live service, native screen reader or installed desktop test."
+  },
+  "sourceIntegrity": "source-integrity.json",
+  "baselineTestRepair": {
+    "head": "da6432c090adad36ae5880e9ff29656cdb2fbb15",
+    "file": "tests/mailbox_config_durable.test.js",
+    "evidence": "Both obsolete inline assertions were false in HEAD and current shells. HEAD already contains the extracted implementations in HostHandlers; exportMailboxConfig is byte-identical HEAD/current, and the before-connect snapshot retains the persistence call.",
+    "replacement": "Execute generated connect/export handlers through canonical dependency getters; verify durable configuration, JSON backup contents/download and cleanup."
+  },
+  "deployment": "none"
+}

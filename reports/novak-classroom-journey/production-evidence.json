@@ -1,0 +1,95 @@
+{
+  "generatedAt": "2026-09-20T03:07:02.564Z",
+  "evidence": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "startLine": 38867,
+      "endLine": 38944,
+      "sha256": "912d8eb6c7189ad6f1730f83cb0491dc8b61c07a7a97668529aae84905a7407b"
+    },
+    {
+      "file": "host_handlers_source.jsx",
+      "startLine": 7922,
+      "endLine": 7943,
+      "sha256": "e227c2f0fbd00894fcfa243fe9d0de5acc7954306ca5c72cffbeb0468eb6a19d"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "startLine": 24795,
+      "endLine": 24816,
+      "sha256": "39ae17714b225ecc226bac4594e92b4a2ba1fd4e9f8ec6eb1e4e489444c0f608"
+    },
+    {
+      "file": "live_aac_source.jsx",
+      "startLine": 309,
+      "endLine": 735,
+      "sha256": "debc141bcd21fc81cf38e03b064a0af3509e073fbff8bc6a48600fe70b929a1a"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "startLine": 23165,
+      "endLine": 23282,
+      "sha256": "97423b7e5a8803541dbfd5ea501d1db0747627a73986174bed6f7e0ca30d4f5f"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "startLine": 1317,
+      "endLine": 1394,
+      "sha256": "96c9e0f04d446df32b1afedd7c55978accfa0a030ec6cb540f81029b85e67540"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "startLine": 35740,
+      "endLine": 35758,
+      "sha256": "9fdf7c77e1c78ded6df98a0607000e2b5b1c01d9846bda085085cefbd5d28366"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "startLine": 35778,
+      "endLine": 35826,
+      "sha256": "c0982e2dac896968ad16c7638710ff8eeb86b983d21924d19cdfdddb96a34ca9"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "startLine": 14384,
+      "endLine": 14430,
+      "sha256": "c3b24b3a54b630dd3ba6732dc26c4fc01c9670f85e45110a5034c85e3b4dfd6c"
+    },
+    {
+      "file": "instructional_context_module.js",
+      "sha256": "694efa8b00a865ec6264bf51a40ebd2682a07baea359d3b06b842079aa2708f7"
+    },
+    {
+      "file": "firestore_sync_module.js",
+      "sha256": "2d9f752ad8119c5d174baf27bb5258469e7f3edf727e66ec69064a158b439bed"
+    },
+    {
+      "file": "session_transport_module.js",
+      "sha256": "51e1ef84618a6f83f701493a08abcd656c4e86298d765300ae91350b2b6c065b"
+    },
+    {
+      "file": "shared_activity_module.js",
+      "sha256": "ca49be1debdcfe1156b06ef90b9fc5c2438ce768083518e596e822786a931e76"
+    },
+    {
+      "file": "generate_dispatcher_module.js",
+      "sha256": "ab522bccd3fac2cba2c77a14ffba397d9fdfaa56c1b1d26cd374d49997db58f9"
+    },
+    {
+      "file": "view_simplified_module.js",
+      "sha256": "bda9a347cdb7361a3610aaa4381943941f05f6b4dbb1a4f25e54b23ef27a801f"
+    },
+    {
+      "file": "doc_pipeline_module.js",
+      "sha256": "39f28110c6458e6027af7a1e3c3a54dd5898b28bf7b07ae4f09eec1c0f508933"
+    },
+    {
+      "file": "misc_handlers_module.js",
+      "sha256": "c8c3ac392a9701bfa08dfda30ba0af3125a40b93d6d66d6095e8003d39298dc2"
+    },
+    {
+      "file": "dompurify/3.1.7/purify.min.js",
+      "sha256": "6407576993a5aa1303eaf9fefb95e5cfc1c0c80645bd3717db671727e6b55b91"
+    }
+  ]
+}

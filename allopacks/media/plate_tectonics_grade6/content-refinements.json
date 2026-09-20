@@ -15,12 +15,12 @@
     "resourceId": "pt-reading",
     "path": "data",
     "from": "## The Man Who Was Laughed At\n\nIn 1912, a German scientist named Alfred Wegener pointed at a world map and said something that got him mocked for the rest of his life: the continents used to be joined together, and they have been drifting apart ever since.\n\nHis evidence was actually good. South America's east coast fits into Africa's west coast like puzzle pieces. Identical fossils of *Mesosaurus* show up on both continents. That reptile lived in fresh water and could never have swum an ocean. Matching rock layers and mountain ranges line up across the Atlantic. Coal sits under the ice of Antarctica, and coal forms in warm swamps. So Antarctica was not always where it is now.\n\nGeologists still rejected it, and their reason was fair: Wegener could not explain **how**. What force could shove a continent through solid ocean floor? Without a mechanism, a good pattern is only a curiosity.\n\nThe answer arrived decades later, from the sea floor. After World War II, ships mapped the ocean bottom. They found a mountain range running down the middle of the Atlantic. Along that ridge, new rock was erupting and pushing outward. Even better, magnetic stripes frozen into that rock matched in mirror image on both sides. The sea floor was spreading.\n\nContinents were not plowing through the ocean floor. They were riding on it.\n\nEarth's outer shell is broken into about fifteen major **plates**. They float on the **mantle**, the hot layer of slowly flowing rock underneath.\n\nWhere plates pull apart at a **divergent** boundary, magma rises and makes new crust. That is Iceland, sitting on the Mid-Atlantic Ridge and widening every year.\n\nWhere plates push together at a **convergent** boundary, one dives under the other or both crumple upward. That is the Himalayas, still growing as India presses into Asia.\n\nWhere plates grind past each other at a **transform** boundary, they stick, build stress, and snap. That is the San Andreas Fault. That snap is an earthquake.\n\nPlates move about as fast as your fingernails grow, a few centimeters a year. Over millions of years, that is enough to build the Andes and tear open an ocean.\n\nWegener died on an expedition in Greenland in 1930, still dismissed. About thirty years later his idea became the foundation of modern geology.\n\nBeing right early is not the same as being believed. In science, you also have to show the mechanism.",
-    "to": "## Following the Evidence\n\nIn 1912, Alfred Wegener proposed that continents had once been joined and later moved apart. He assembled several kinds of evidence. Some scientists supported continental drift; many objected, especially to his proposed forces and the idea of continents pushing through oceanic rock.\n\nThe Atlantic margins of South America and Africa have complementary shapes. Their submerged continental margins fit better than modern shorelines, which erosion and sea-level change can alter. Related fossils, matching rock sequences and mountain belts also occur across the Atlantic. The distribution of Mesosaurus, an aquatic reptile, was more readily explained by connected land than by crossing a wide ocean. Antarctic coal records former vegetation and very different environmental conditions. Coal alone does not prove continental movement; climate can change too. The strength is in several independent lines of evidence agreeing.\n\nNew ocean-floor evidence helped transform the debate in the mid-twentieth century. Mapping revealed ridge systems in detail. Oceanic rocks tend to get older away from spreading ridges, and bands recording past magnetic polarity often mirror one another on opposite sides. Together with earthquake patterns and other measurements, these findings supported seafloor spreading and the broader theory of plate tectonics.\n\nA tectonic plate is a slab of lithosphere: crust plus rigid uppermost mantle. Plates can carry both continents and ocean floor. They move over warmer, mostly solid mantle that deforms slowly over long times. They do not float on a global ocean of liquid magma. Gravity acting on sinking slabs and elevated lithosphere, together with mantle motion, contributes to plate movement; the balance varies.\n\nAt divergent boundaries, plates move apart. Along ocean ridges, rising mantle partly melts and magma forms new oceanic crust. Iceland lies on the Mid-Atlantic Ridge, and the East African Rift shows continental extension.\n\nAt convergent boundaries, plates move toward one another. Dense oceanic lithosphere can descend beneath another plate at a subduction zone, producing a trench and often a volcanic belt. The Andes are an example. Where continental lithosphere collides, crust can shorten and thicken, helping build mountains such as the Himalayas.\n\nAt transform boundaries, plates slide past. Locked fault patches store elastic stress and may suddenly slip, producing earthquakes. Other patches creep. Earthquakes also occur at other boundaries and within plates.\n\nRates vary, but a few centimeters per year is common. Small annual movements become large changes over millions of years. Wegener died in 1930, decades before plate tectonics became widely accepted in the 1960s. His proposal was an important precursor, not the complete modern theory. Science can recognize strong evidence before every mechanism is known; new tests help distinguish competing explanations."
+    "to": "## Following the Evidence\n\nIn 1912, Alfred Wegener proposed that continents had once been joined and moved apart. He collected several kinds of **evidence**. Some scientists agreed with continental drift. Many questioned his proposed **mechanism**: the process that could move the land.\n\nSouth America and Africa have matching shapes along their edges. The underwater edges fit better than today's shores, which waves and changing sea level can reshape. Matching rocks and mountain belts also lie across the Atlantic.\n\nA **fossil** is a trace or remain of past life. Mesosaurus fossils occur on both sides of the Atlantic. A past land connection explains this pattern better than a wide-ocean crossing. Coal in Antarctica shows that plants once grew there under very different conditions. Coal alone cannot prove land moved; climate can change too. Several lines of evidence make the case stronger.\n\nLater, scientists mapped the ocean floor in more detail. Rocks tend to be older farther from spreading ridges. Bands that record Earth's past magnetic field often match on the two sides. These patterns, along with earthquakes and other evidence, supported seafloor spreading and plate tectonics.\n\nA **plate** is a slab of lithosphere: **crust** plus the rigid top of the **mantle**. A plate can hold both land and ocean floor. Below it, hot rock is mostly solid but can deform slowly. Plates do not float on a worldwide sea of liquid rock. Sinking slabs, gravity and mantle motion all help drive movement.\n\nAt a **divergent** boundary, plates move apart. Near ocean ridges, some rising mantle melts. This **magma** can form new crust. Iceland sits on the Mid-Atlantic Ridge. The East African Rift shows land stretching apart.\n\nAt a **convergent** boundary, plates move together. Dense oceanic rock can sink beneath another plate. This forms a trench and often a belt of volcanoes, as near the Andes. Where continents collide, crust can thicken and build mountains such as the Himalayas.\n\nAt a **transform** boundary, plates slide past. A **fault** may lock while stress builds. Sudden slip can cause an **earthquake**. Some parts creep instead. Earthquakes also happen at other boundaries and within plates.\n\nMany plates move a few centimeters a year, though rates vary. Over millions of years, small moves add up. Wegener died in 1930. Plate tectonics became widely accepted in the 1960s. His idea helped lead to the modern theory, but did not include all of it."
   },
   {
     "resourceId": "pt-reading",
     "path": "meta",
-    "from": "6th Grade • Leveled reading • ~400 words",
+    "from": "6th Grade • Leveled reading",
     "to": "6th Grade • Evidence, boundaries and model limits"
   },
   {
@@ -109,6 +109,24 @@
   },
   {
     "resourceId": "pt-memory",
+    "path": "data.cards.0.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "pt-memory",
+    "path": "data.cards.0.aiExample",
+    "from": "C-F-R-C: Coasts Fit, Rocks Connect. Coastlines, Fossils, Rocks, Climate.",
+    "to": "C-F-R-C: Coasts Fit, Rocks Connect. Use the letters for coasts, fossils, rocks and climate."
+  },
+  {
+    "resourceId": "pt-memory",
+    "path": "data.cards.0.mapping",
+    "from": "The four letters name the four kinds of evidence, and the sentence itself describes two of them, so it works as a checklist when you argue Wegener's case.",
+    "to": "The letters help you list four kinds of evidence. No single clue settles the whole case."
+  },
+  {
+    "resourceId": "pt-memory",
     "path": "data.cards.0.reasoningPrompt",
     "from": "Explain how each letter points to one kind of evidence and what it proves.",
     "to": "Explain what each evidence type supports and what it cannot establish alone."
@@ -130,6 +148,24 @@
     "path": "data.cards.1.essentialFacts.2",
     "from": "Transform: plates grind past each other, stick, build stress, and snap in earthquakes (the San Andreas Fault).",
     "to": "Transform boundaries involve sideways motion; locked patches can store stress then slip in earthquakes, while others creep."
+  },
+  {
+    "resourceId": "pt-memory",
+    "path": "data.cards.1.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "pt-memory",
+    "path": "data.cards.1.aiExample",
+    "from": "DIVerge = DIVide (Iceland splitting). CONverge = COME together (Himalayas rising). TRANSform = TRAIN tracks sliding side by side (San Andreas).",
+    "to": "Diverge: divide, as at Iceland. Converge: come together, as in the Himalayas. Transform: slide past, as along the San Andreas Fault."
+  },
+  {
+    "resourceId": "pt-memory",
+    "path": "data.cards.1.mapping",
+    "from": "Each boundary word hides a smaller word that shows the motion: divide, come together, tracks passing. Attaching one real place to each keeps them from blurring.",
+    "to": "Link each name to a motion and a place. These word clues help recall; they are not the origins of the scientific names."
   },
   {
     "resourceId": "pt-memory",
@@ -163,15 +199,21 @@
   },
   {
     "resourceId": "pt-memory",
+    "path": "data.cards.2.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "pt-memory",
     "path": "data.cards.2.aiExample",
     "from": "Good pattern, no engine → laughed at (1912–1920s). Ships map the sea floor → a ridge erupting new rock → stripes mirror each other → the sea floor spreads → the continents ride along → plate tectonics (1960s).",
-    "to": "Continental clues → disputed drift model → seafloor ages and magnetic bands → spreading and subduction → a broader plate-tectonics theory."
+    "to": "Land clues → debate about drift → ocean-floor ages and magnetic bands → plate tectonics."
   },
   {
     "resourceId": "pt-memory",
     "path": "data.cards.2.mapping",
     "from": "The chain puts the missing piece where it belongs in time: the mechanism arrived from the ocean decades after the pattern, which is the whole point of the reading.",
-    "to": "The chain connects independent observations with a broader model; one discovery did not settle every question about driving forces."
+    "to": "The chain links new evidence to a broader theory. It does not mean one discovery answered every question."
   },
   {
     "resourceId": "pt-memory",
@@ -217,15 +259,33 @@
   },
   {
     "resourceId": "pt-quiz",
+    "path": "data.questions.1.options.0",
+    "from": "Fossils are always found on exactly one continent",
+    "to": "A fossil species can never occur on more than one continent"
+  },
+  {
+    "resourceId": "pt-quiz",
+    "path": "data.questions.1.options.1",
+    "from": "Mesosaurus was a strong ocean swimmer",
+    "to": "Mesosaurus fossils prove it could easily cross a wide ocean"
+  },
+  {
+    "resourceId": "pt-quiz",
+    "path": "data.questions.1.options.2",
+    "from": "The fossils are the same age as the Atlantic Ocean",
+    "to": "The fossils and the present Atlantic Ocean must be the same age"
+  },
+  {
+    "resourceId": "pt-quiz",
     "path": "data.questions.1.options.3",
     "from": "Mesosaurus lived in fresh water and could not have crossed an ocean",
-    "to": "Their distribution is more readily explained by a former connection than a wide-ocean crossing"
+    "to": "A past land connection explains the pattern better than an ocean crossing"
   },
   {
     "resourceId": "pt-quiz",
     "path": "data.questions.1.correctAnswer",
     "from": "Mesosaurus lived in fresh water and could not have crossed an ocean",
-    "to": "Their distribution is more readily explained by a former connection than a wide-ocean crossing"
+    "to": "A past land connection explains the pattern better than an ocean crossing"
   },
   {
     "resourceId": "pt-quiz",
@@ -292,6 +352,12 @@
     "path": "data.brief.lockedLessonFacts.1",
     "from": "Geologists rejected drift because no one could explain what force moves a continent.",
     "to": "Many scientists rejected Wegener’s proposed forces; later seafloor and earthquake evidence supported the broader plate model."
+  },
+  {
+    "resourceId": "pt-challenge",
+    "path": "data.brief.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "pt-challenge",

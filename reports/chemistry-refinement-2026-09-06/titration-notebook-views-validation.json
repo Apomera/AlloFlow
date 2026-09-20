@@ -1,0 +1,25 @@
+{
+  "date": "2026-09-19",
+  "unit": {
+    "passed": 122,
+    "files": 7
+  },
+  "browser": {
+    "checks": 7,
+    "scans": 84,
+    "errors": 0
+  },
+  "source": {
+    "syntax": true,
+    "mirrored": true,
+    "newEnglishFallbacks": 10,
+    "sha256": "5ccb320d67ed28f8389cae5ae97285cf5b69dfa69b84517cf371869dc4663cad"
+  },
+  "visualReview": [
+    "evidence-320",
+    "empty-320",
+    "forced-colors-320"
+  ],
+  "deployment": "Local changes only",
+  "localization": "10 new English strings; other translations pending"
+}

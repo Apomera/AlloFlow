@@ -69,8 +69,9 @@
   .current-step p { margin: 4px 0; }
   .support-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
   .support-fields label { display: flex; flex-direction: column; gap: 4px; }
-  .support-fields textarea, #supportSummary { width: 100%; min-height: 72px; background: var(--bg); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 8px; font: inherit; }
+  .support-fields textarea, #supportSummary, #coachObservation { width: 100%; min-height: 72px; background: var(--bg); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 8px; font: inherit; }
   #supportSummary { min-height: 180px; }
+  #coachObservation { display:block; margin:6px 0; resize:vertical; }
   input, textarea, select { max-width: 100%; }
   .row > * { min-width: 0; }
   @media (max-width: 520px) { .wrap { padding: 10px; } .support-fields { grid-template-columns: 1fr; } .row input[type="text"], .row input[type="password"] { width: 100%; min-width: 0; flex-basis: 100%; } .chat-message { max-width: 100%; } button { min-height: 44px; } }
@@ -155,8 +156,11 @@
         <label>Guidance language<select id="coachLanguage"><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="pt">Português</option></select></label>
       </div><p id="supportIssueHint" class="status">These details accompany your questions. Do not include passwords or private records.</p>
     </details>
-    <div id="currentStepCard" class="current-step" hidden><h3 style="font-size:15px;margin:0">Current step</h3><p id="currentStepText"></p><p class="status" id="currentStepExpected"></p><p class="status" id="currentStepTime"></p>
-      <div class="row"><button id="coachDoneBtn" type="button">I did this</button><button id="coachStuckBtn" type="button">Still stuck</button><button id="coachWrongBtn" type="button">Wrong highlight</button></div>
+    <div id="currentStepCard" class="current-step" hidden><h3 id="currentStepHeading" style="font-size:15px;margin:0">Current step</h3><p id="currentStepText"></p><p class="status" id="currentStepExpected"></p><p class="status" id="currentStepTime"></p>
+      <div class="row"><button id="coachDoneBtn" type="button">I did this</button><button id="coachStuckBtn" type="button">Still stuck</button><button id="coachWrongBtn" type="button">Wrong highlight</button><button id="coachResolvedBtn" type="button">This solved my problem</button></div>
+      <p id="currentStepOutcome" class="status" role="status"></p>
+      <div class="row"><button id="coachAnswerBtn" type="button" hidden>Answer in chat</button><button id="coachHandoffBtn" type="button" hidden>Prepare notes for support</button></div>
+      <details id="coachObservationPanel"><summary>Add what happened</summary><label for="coachObservation">What changed, or what error remains? Remove private information.</label><textarea id="coachObservation" maxlength="400" aria-describedby="coachObservationHelp"></textarea><p id="coachObservationHelp" class="status">Saved in this open page as you type. Included with your next question or screenshot request; cleared when you discard notes or close the page.</p><p id="coachObservationStatus" class="status" role="status"></p><button id="coachObservationSaveBtn" type="button">Save observation</button></details>
     </div>
     <details id="coachOptions"><summary>Guidance, audio, and image options</summary>
     <div class="row">
@@ -175,7 +179,7 @@
     <p class="status">Your browser may send microphone audio to its speech service, even when your AI runs locally. Speech uses the selected guidance language.</p>
     </details>
     <div class="row"><button id="coachExportBtn" type="button" disabled>Export walkthrough</button><button id="coachSummaryBtn" type="button">Prepare support summary</button><button id="coachDiscardBtn" type="button">Discard session notes</button></div>
-    <details id="supportSummaryPanel" hidden><summary>Support summary — review before sharing</summary><label for="supportSummary">Copy these notes into your support request</label><textarea id="supportSummary" readonly></textarea><button id="supportCopyBtn" type="button">Copy summary</button><p id="supportCopyStatus" class="status" role="status"></p></details>
+    <details id="supportSummaryPanel" hidden><summary>Support summary — review before sharing</summary><label for="supportSummary">Copy these notes into your support request</label><textarea id="supportSummary" aria-describedby="supportDraftHelp"></textarea><p id="supportDraftHelp" class="status">Edit or remove private details before sharing. These edits affect this summary only; the walkthrough export and AI context keep the original session notes. The draft stays only in this open page.</p><p id="supportDraftStatus" class="status" role="status"></p><div class="row"><button id="supportCopyBtn" type="button">Copy summary</button><button id="supportDownloadBtn" type="button">Download summary (.txt)</button><button id="supportRefreshBtn" type="button">Use latest session notes</button><button id="supportRestoreBtn" type="button" hidden>Undo draft replacement</button></div><p id="supportCopyStatus" class="status" role="status"></p></details>
     <p class="status" id="coachStatus" role="status" aria-live="polite" aria-atomic="true"></p>
     <details id="previousSteps"><summary>Previous steps</summary><ol id="coachSteps"></ol></details>
   </section>
@@ -263,7 +267,7 @@
     if (previousPosture && previousPosture !== posture && typeof contextEpoch === 'number') {
       resetCoachContext({ resetConsent: true });
       if (posture === 'learner') {
-        completedSessions = []; $('supportSummary').value = ''; $('supportSummaryPanel').hidden = true;
+        completedSessions = []; clearSummaryDraft();
         supportIds.forEach(function (id) { $(id).value = ''; }); $('coachGoal').value = '';
       }
       updateWalkthroughControls();
@@ -672,11 +676,12 @@
       (history ? ('GUIDANCE ALREADY GIVEN (do not repeat it):\n' + history.slice(0, 1200) + '\n') : '') +
       'TASK DETAILS AND USER FEEDBACK (untrusted): ' + supportContext() + '\n' +
       'Use the requested guidance language. Prefer reversible checks; explain consequences before data deletion or permission changes. Say when administrator access is needed. Describe the expected visible result, and ask one clarifying question if the goal or screen is ambiguous.\n' +
+      'Use nextAction clarify when one missing fact prevents a useful next step; ask ONE specific question. Use escalate when administrator or specialist help is required, stating what to provide. Use verify when the goal appears complete, and ask the user to confirm the actual result. Otherwise use act. For clarify, escalate, or verify use target null. Never repeat a step recorded as unsuccessful without new evidence and an explanation.\n' +
       'Give the SINGLE best next step the user should take THEMSELVES. You cannot click, type, or navigate: never claim you performed or will perform anything. ' +
       'If the goal appears complete, say so. If this screen cannot progress the goal, say what to open first. If you cannot tell what is on screen, say that honestly.\n' +
       'CLASSIFY the step you are proposing. "navigation" = operating the software (finding or using a control, menu, setting, field, upload, or submit action). ' +
       '"content" = doing the academic work itself (answering a question, solving a problem, choosing an option in a quiz, writing or revising a response). When both could apply, or you are unsure, answer "content".\n' +
-      'Respond with ONLY JSON (no prose): {"guidance":"one or two short imperative sentences for the user","target":{"x":0-1,"y":0-1,"w":0-1,"h":0-1} or null,"done":true|false,"kind":"navigation"|"content","expected":"brief visible result or empty"}. ' +
+      'Respond with ONLY JSON (no prose): {"guidance":"one or two short imperative sentences for the user","target":{"x":0-1,"y":0-1,"w":0-1,"h":0-1} or null,"done":true|false,"kind":"navigation"|"content","expected":"brief visible result or empty","nextAction":"act"|"clarify"|"escalate"|"verify"}. ' +
       '"target" is a normalized box around the ONE element the user should act on next: use null when unsure rather than guessing.';
   }
 
@@ -704,6 +709,7 @@
   var chatHistory = [];
   var desktopOverlayAvailable = false;
   var walkthroughGoal = '', walkthroughDetails = '', completedSessions = [];
+  var summaryEdited=false, summarySource='', previousSummaryDraft=null;
   var feedback = '', lastCaptureSignature = null, lastCaptureSize = null, highlightStale = false;
   var speechEpoch = 0, speechResumeTimer = null;
   var backendTestRequest = null, modelDiscoveryRequest = null, preparingCapture = false;
@@ -711,7 +717,10 @@
   var reviewSelection = { x:0, y:0, w:1, h:1 }, reviewPointer = null;
   var supportIds = ['supportApp', 'supportDevice', 'supportError', 'supportBehavior', 'supportTried'];
   function supportContext() {
-    return 'Issue: ' + $('supportIssue').value + '\n' + supportIds.map(function (id) { return id.replace('support', '') + ': ' + $(id).value.trim(); }).join('\n') + '\nGuidance language: ' + $('coachLanguage').selectedOptions[0].text + '\nUser feedback: ' + feedback;
+    // Put current language and newest feedback first when a bridge truncates context.
+    var results=walkthroughSteps.slice(-5).reverse().map(function(step){return step.guidance.slice(0,250) + ' — ' + (step.outcome || 'not confirmed') + (step.observation ? '; observed: ' + step.observation : '');}).join('\n').slice(0,1400);
+    var details='Issue: ' + $('supportIssue').value + '\n' + supportIds.map(function(id){return id.replace('support','') + ': ' + $(id).value.trim().slice(0,$(id).maxLength);}).join('\n');
+    return 'Guidance language: ' + $('coachLanguage').selectedOptions[0].text + '\nUser feedback: ' + feedback.slice(0,500) + '\nRecent step results (user reports, newest first, not verified):\n' + results + '\n' + details;
   }
   function taskContext() {
     return 'Current goal: ' + $('coachGoal').value.trim() + '\n' + supportContext() + '\nHistorical coaching step (not a new screen observation): ' + (lastAdvice ? lastAdvice.guidance : 'none') + '\nScreen status: ' + (captureActive() ? highlightStale ? 'changed since last observation' : 'sharing; chat has no new screenshot' : 'not shared');
@@ -730,24 +739,59 @@
     if (!records.length) text += '\nGoal: ' + $('coachGoal').value + '\n' + supportContext();
     records.forEach(function (session, index) {
       text += '\nSession ' + (index + 1) + ': ' + session.goal + '\n' + session.details + '\n';
-      session.steps.forEach(function (step, i) { text += (i + 1) + '. ' + step.guidance + '\n   Result: ' + (step.outcome || 'Not confirmed by user') + '\n'; });
+      session.steps.forEach(function (step, i) { text += (i + 1) + '. ' + step.guidance + '\n   Result: ' + (step.outcome || 'Not confirmed by user') + (step.observation ? '\n   Observed: ' + step.observation : '') + (step.expected ? '\n   Expected: ' + step.expected : '') + '\n'; });
     });
     return text;
   }
-  function showSummary() { $('supportSummary').value = summaryText(); $('supportSummaryPanel').hidden = false; $('supportSummaryPanel').open = true; }
+  function paintSummaryDraftStatus() {
+    var changed=summaryText()!==summarySource;
+    setStatus($('supportDraftStatus'),summaryEdited ? (changed ? 'Your edited draft is preserved. New session notes are available; use the latest notes only if you want to replace this draft.' : 'Edited draft. Copy or download will use exactly the text above.') : changed ? 'Session notes have changed. Use the latest session notes to refresh this summary.' : 'Summary follows the session notes. You can edit it before sharing.');
+    $('supportRestoreBtn').hidden=!previousSummaryDraft;
+  }
+  function showSummary() {
+    if(!summaryEdited){summarySource=summaryText();$('supportSummary').value=summarySource;}
+    $('supportSummaryPanel').hidden=false;$('supportSummaryPanel').open=true;paintSummaryDraftStatus();
+  }
+  function clearSummaryDraft() {
+    summaryEdited=false;summarySource='';previousSummaryDraft=null;
+    $('supportSummary').value='';$('supportSummaryPanel').hidden=true;$('supportRestoreBtn').hidden=true;
+    setStatus($('supportDraftStatus'),'');setStatus($('supportCopyStatus'),'');
+  }
+  function persistObservation(manual) {
+    if(!lastAdvice || !walkthroughSteps.length)return;
+    var observation=$('coachObservation').value.trim().slice(0,400), step=walkthroughSteps[walkthroughSteps.length-1];
+    if(manual && !observation){setStatus($('currentStepOutcome'),'Enter what happened before saving.','warn');$('coachObservation').focus();return;}
+    if((step.observation || '')!==observation){
+      contextEpoch+=1;closeScreenReview();cancelActiveRequest();cancelChatRequest();stopAuto();stopSpeaking();stopHandsFreeChat(false);stopVoiceCommands();
+      var wasStale=highlightStale;step.observation=observation;hideOverlay();clearDesktopOverlay();highlightStale=true;if(!wasStale)updateCurrentStep();
+      if(!$('supportSummaryPanel').hidden)showSummary();
+    }
+    if(manual){updateCurrentStep();setStatus($('currentStepOutcome'),'Observation saved. It will accompany your next question or screenshot request.');}
+    var message=observation ? 'Observation saved locally.' : 'Observation removed from this step.';
+    if($('coachObservationStatus').textContent!==message)setStatus($('coachObservationStatus'),message);
+  }
   function updateCurrentStep() {
     $('currentStepCard').hidden = !lastAdvice;
     if (!lastAdvice) return;
+    var step=walkthroughSteps[walkthroughSteps.length-1], resolved=step && step.outcome==='User confirms problem resolved';
+    var action=lastAdvice.nextAction || (lastAdvice.done ? 'verify' : 'act');
+    $('currentStepHeading').textContent=resolved ? 'Problem resolved — confirmed by you' : action==='clarify' ? 'One detail needed' : action==='escalate' ? 'Support help needed' : action==='verify' ? 'Check whether the problem is solved' : 'Current step';
+    $('coachAnswerBtn').hidden=action!=='clarify' || resolved;
+    $('coachHandoffBtn').hidden=resolved || (action!=='escalate' && walkthroughSteps.filter(function(s){return s.outcome==='User is still stuck';}).length<2);
+    $('coachDoneBtn').hidden=action!=='act';
+    $('coachWrongBtn').hidden=!lastAdvice.target;
+    $('currentStepOutcome').textContent=step && step.outcome ? step.outcome : 'Result not yet confirmed by you.';
     $('currentStepText').textContent = lastAdvice.guidance;
-    $('currentStepExpected').textContent = lastAdvice.expected ? 'Look for: ' + lastAdvice.expected : 'Check whether this step worked before continuing.';
-    $('currentStepTime').textContent = 'Image analyzed: ' + new Date(lastAdvice.capturedAt).toLocaleTimeString() + (highlightStale ? '. Screen changed or step reviewed; refresh before following this step.' : '. Highlights are estimates.');
+    $('currentStepExpected').textContent = resolved ? 'Your confirmation is saved in the session notes. You can export them or start a new goal.' : action==='clarify' ? 'Answer the question in chat before changing any settings.' : action==='escalate' ? 'Review your notes and share them with the appropriate support person.' : lastAdvice.expected ? 'Look for: ' + lastAdvice.expected : 'Check whether this step worked before continuing.';
+    $('currentStepTime').textContent = 'Image analyzed: ' + new Date(lastAdvice.capturedAt).toLocaleTimeString() + (highlightStale ? '. Screen changed or step reviewed; refresh before following this step.' : lastAdvice.target ? '. Highlights are estimates.' : '. No control is highlighted.');
   }
   function recordOutcome(outcome) {
     if (!lastAdvice || !walkthroughSteps.length) return;
-    cancelActiveRequest(); stopAuto(); walkthroughSteps[walkthroughSteps.length - 1].outcome = outcome;
+    contextEpoch += 1; closeScreenReview(); cancelActiveRequest(); cancelChatRequest(); stopAuto(); stopSpeaking(); stopHandsFreeChat(false); stopVoiceCommands(); walkthroughSteps[walkthroughSteps.length - 1].outcome = outcome;
     feedback = outcome + ' after: ' + lastAdvice.guidance;
     hideOverlay(); clearDesktopOverlay(); highlightStale = true; updateCurrentStep();
-    setStatus($('coachStatus'), outcome + '. Ask for a new step or explain the problem in chat.');
+    if (!$('supportSummaryPanel').hidden) showSummary();
+    setStatus($('coachStatus'), outcome==='User confirms problem resolved' ? 'You confirmed the problem is solved. Automatic guidance is paused. Your notes are ready to export.' : outcome + '. Ask for a new step or explain the problem in chat.');
   }
   function invalidateLiveHighlight() {
     if (!lastAdvice || highlightStale || !captureActive() || busy || (guidedIgnoreUntil && Date.now() < guidedIgnoreUntil)) return;
@@ -842,6 +886,7 @@
     history = [];
     walkthroughSteps = [];
     walkthroughGoal = ''; walkthroughDetails = ''; feedback = '';
+    $('coachObservation').value=''; $('coachObservationPanel').open=false;setStatus($('coachObservationStatus'),'');
     lastCaptureSignature = null; lastCaptureSize = null; highlightStale = false;
     lastAdvice = null;
     updateCurrentStep();
@@ -1155,7 +1200,7 @@
     var records = sessionRecords(); if (!records.length) return;
     var sections = records.map(function (session) {
       return '<section><h2>' + escapeHtml(session.goal || 'Support session') + '</h2><pre style="white-space:pre-wrap">' + escapeHtml(session.details) + '</pre>' + session.steps.map(function (step, index) {
-        return '<section><h3>Step ' + (index + 1) + '</h3><p>' + escapeHtml(step.guidance) + '</p><p>Result: ' + escapeHtml(step.outcome || 'Not confirmed by user') + '</p>' + (step.snapshot ? '<img alt="Analyzed screen for step ' + (index + 1) + '" src="' + step.snapshot + '">' : '') + '</section>';
+        return '<section><h3>Step ' + (index + 1) + '</h3><p>' + escapeHtml(step.guidance) + '</p><p>Result: ' + escapeHtml(step.outcome || 'Not confirmed by user') + '</p>' + (step.observation ? '<p>Observed: '+escapeHtml(step.observation)+'</p>' : '') + (step.expected ? '<p>Expected: '+escapeHtml(step.expected)+'</p>' : '') + (step.snapshot ? '<img alt="Analyzed screen for step ' + (index + 1) + '" src="' + step.snapshot + '">' : '') + '</section>';
       }).join('') + '</section>';
     }).join('');
     var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Screen Coach walkthrough</title><style>body{font:16px/1.5 system-ui;max-width:960px;margin:auto;padding:24px;color:#172033}section{border-top:1px solid #cbd5e1;padding:18px 0}img{max-width:100%;height:auto}pre{font:inherit}</style></head><body><h1>Screen Coach walkthrough</h1><p>Exported locally. Review all notes and images for private information before sharing. Steps are AI suggestions; results are user feedback, not independently verified.</p>' + sections + '</body></html>';
@@ -1667,6 +1712,7 @@
     activeRequest = null;
     setSuggestBusy(false);
 
+    if (['clarify','escalate','verify'].indexOf(resp.nextAction)!==-1) { resp.target=null; if(resp.nextAction!=='verify')resp.done=false; }
     var imageTarget = resp.target;
     if (capture.projection && ImageReview) {
       resp.target = ImageReview.mapTarget(imageTarget, capture.projection.crop, capture.projection.masks);
@@ -1692,6 +1738,12 @@
     }
 
     var normalizedGuidance = guidance.toLowerCase().replace(/\s+/g, ' ').trim();
+    var repeatedFailure=walkthroughSteps.slice(-5).some(function(step){return step.outcome==='User is still stuck' && step.guidance.toLowerCase().replace(/\s+/g,' ').trim()===normalizedGuidance;});
+    if(repeatedFailure) {
+      stopAuto(); hideOverlay(); clearDesktopOverlay(); highlightStale=true; updateCurrentStep();
+      $('coachHandoffBtn').hidden=false;
+      setStatus($('coachStatus'),'The coach repeated a step you marked unsuccessful. It was not added again. Describe what happened in chat, or prepare notes for support.','warn'); return;
+    }
     var recentSame = history.slice(-2).filter(function (item) {
       return String(item || '').toLowerCase().replace(/\s+/g, ' ').trim() === normalizedGuidance;
     }).length;
@@ -1701,6 +1753,7 @@
       return;
     }
     history.push(guidance);
+    $('coachObservation').value=''; $('coachObservationPanel').open=false;setStatus($('coachObservationStatus'),'');
     lastAdvice = Object.assign({}, resp, { guidance: guidance, capturedAt: capture.capturedAt });
     lastCaptureProjection = capture.projection || null;
     lastCaptureSignature = capture.signature; lastCaptureSize = { width: capture.width, height: capture.height }; highlightStale = false;
@@ -1711,6 +1764,8 @@
       guidance: guidance,
       target: resp.target || null,
       done: !!resp.done,
+      expected: String(resp.expected || ''),
+      nextAction: resp.nextAction || (resp.done ? 'verify' : 'act'),
       snapshot: $('coachKeepStepsChk').checked ? currentStepSnapshot : null,
       createdAt: new Date().toISOString()
     });
@@ -1723,6 +1778,7 @@
     var where = describeTarget(resp.target);
     setStatus($('coachStatus'), (resp.done ? '✅ ' : '👉 ') + guidance + (where ? ' Look at the ' + where + ' — highlighted below, and an estimate.' : ''), resp.done ? 'ok' : undefined);
     updateCurrentStep();
+    if(!$('supportSummaryPanel').hidden)showSummary();
     drawTarget(resp.target);
     publishDesktopOverlay(lastAdvice, guidance);
     speak(guidance + (where ? '. Look at the ' + where + '.' : ''));
@@ -1733,7 +1789,7 @@
     guidedBaseline = guidedIgnoreUntil ? null : screenSignature();
     guidedChangeHits = 0;
     updateWalkthroughControls();
-    if (resp.done) stopAuto();
+    if (resp.done || ['clarify','escalate','verify'].indexOf(resp.nextAction)!==-1) stopAuto();
   }
 
   $('coachSuggestBtn').addEventListener('click', function () { suggest(false); });
@@ -1792,18 +1848,40 @@
   $('coachSpeakChk').addEventListener('change', function () {
     if (!this.checked) { stopSpeaking(); resumeHandsFreeChat(); }
   });
+  $('coachResolvedBtn').addEventListener('click',function(){recordOutcome('User confirms problem resolved');});
+  $('coachAnswerBtn').addEventListener('click',function(){$('coachChatInput').focus();setStatus($('coachChatStatus'),'Answer the coach’s question here. Your reply will use the current task context.');});
+  $('coachHandoffBtn').addEventListener('click',function(){showSummary();$('supportSummary').focus();});
+  $('coachObservation').addEventListener('input',function(){persistObservation(false);});
+  $('coachObservationSaveBtn').addEventListener('click',function(){persistObservation(true);});
   $('coachDoneBtn').addEventListener('click', function () { recordOutcome('User reports step completed'); });
   $('coachStuckBtn').addEventListener('click', function () { recordOutcome('User is still stuck'); $('coachChatInput').focus(); });
   $('coachWrongBtn').addEventListener('click', function () { recordOutcome('User reports the highlight is wrong'); });
   $('coachCheckScreenBtn').addEventListener('click', function () { suggest(false); });
   $('coachSummaryBtn').addEventListener('click', function () { showSummary(); $('supportSummary').focus(); });
+  $('supportSummary').addEventListener('input',function(){summaryEdited=this.value!==summarySource;paintSummaryDraftStatus();setStatus($('supportCopyStatus'),'');});
+  $('supportRefreshBtn').addEventListener('click',function(){
+    if(summaryEdited)previousSummaryDraft={text:$('supportSummary').value,source:summarySource};
+    summaryEdited=false;showSummary();$('supportSummary').focus();
+  });
+  $('supportRestoreBtn').addEventListener('click',function(){
+    if(!previousSummaryDraft)return;
+    var current={text:$('supportSummary').value,source:summarySource}, restore=previousSummaryDraft;
+    $('supportSummary').value=restore.text;summarySource=restore.source;summaryEdited=restore.text!==restore.source;
+    previousSummaryDraft=current;paintSummaryDraftStatus();$('supportSummary').focus();
+  });
+  $('supportDownloadBtn').addEventListener('click',function(){
+    var text=$('supportSummary').value;if(!text.trim()){setStatus($('supportCopyStatus'),'The draft is empty. Add text or use the latest session notes.','warn');return;}
+    try{var url=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));downloadUrl(url,'it-support-summary.txt',true);setStatus($('supportCopyStatus'),'Downloaded the summary draft shown above.','ok');}
+    catch(_){setStatus($('supportCopyStatus'),'Download failed. You can select and copy the draft instead.','warn');}
+  });
   $('supportCopyBtn').addEventListener('click', async function () {
+    if(!$('supportSummary').value.trim()){setStatus($('supportCopyStatus'),'The draft is empty. Add text or use the latest session notes.','warn');return;}
     try { await navigator.clipboard.writeText($('supportSummary').value); setStatus($('supportCopyStatus'), 'Summary copied. Review it before sharing.', 'ok'); }
     catch (_) { $('supportSummary').focus(); $('supportSummary').select(); setStatus($('supportCopyStatus'), 'Select and copy the summary using your keyboard.', 'warn'); }
   });
   $('coachDiscardBtn').addEventListener('click', function () {
     resetCoachContext({ resetConsent: false }); completedSessions = []; walkthroughSteps = [];
-    $('supportSummary').value = ''; $('supportSummaryPanel').hidden = true;
+    clearSummaryDraft();
     updateWalkthroughControls(); setStatus($('coachStatus'), 'Session notes and retained images discarded.', 'ok');
   });
   $('coachStopSpeechBtn').addEventListener('click', function () { stopSpeaking(); resumeHandsFreeChat(); });
@@ -1881,7 +1959,7 @@
   updateWalkthroughControls();
   updateMicHelp();
   // Existing cleanup contract: window.addEventListener('pagehide', function () { try { cancelActiveRequest(); stopWatch(); }
-  window.addEventListener('pagehide', function () { try { clearInterval(freshnessTimer); cancelActiveRequest(); stopWatch(); cancelChatRequest(); stopSpeaking(); if (backendTestRequest) backendTestRequest.controller.abort(); if (modelDiscoveryRequest) modelDiscoveryRequest.controller.abort(); completedSessions = []; walkthroughSteps = []; } finally { stopHandsFreeChat(false); stopVoiceCommands(); } });
+  window.addEventListener('pagehide', function () { try { clearInterval(freshnessTimer); cancelActiveRequest(); stopWatch(); cancelChatRequest(); stopSpeaking(); if (backendTestRequest) backendTestRequest.controller.abort(); if (modelDiscoveryRequest) modelDiscoveryRequest.controller.abort(); completedSessions = []; walkthroughSteps = []; clearSummaryDraft(); } finally { stopHandsFreeChat(false); stopVoiceCommands(); } });
 })();
 </script>
 </body>

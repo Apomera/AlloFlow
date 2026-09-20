@@ -2450,7 +2450,16 @@ const formatInlineText = (text, enableGlossary = true, isDarkBg = false, deps) =
       text = text
           .replace(/&lt;br\s*\/?&gt;/gi, '\n')
           .replace(/<br\s*\/?>/gi, '\n');
-      const parts = text.split(/(\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)|\$\$[\s\S]+?\$\$|\$[^\$]+?\$|\[.*?\]\(resource:.*?\)|\[.*?\]\(.*?\)|https?:\/\/[^\s"']+(?<![.,;)])|`[^`]*`|\*\*.*?\*\*|\*.*?\*|==.*?==)/g);
+      const safeLinkHref = value => {
+          try {
+              if (typeof value !== 'string' || /[\u0000-\u001f\u007f]/.test(value)) return '';
+              const url = new URL(value);
+              return ['https:', 'http:', 'mailto:', 'tel:'].includes(url.protocol) && !url.username && !url.password ? url.href : '';
+          } catch (_) { return ''; }
+      };
+      const linkLabel = value => value.replace(/\\([\\\[\]])/g, match => match.slice(1))
+          .replace(/&(?:lt|gt|amp);/g, entity => ({ '&lt;': '<', '&gt;': '>', '&amp;': '&' })[entity]);
+      const parts = text.split(/(\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)|\$\$[\s\S]+?\$\$|\$[^\$]+?\$|\[(?:\\.|[^\]\\])*\]\((?:\\.|[^)\\])*\)|https?:\/\/[^\s"']+(?<![.,;)])|`[^`]*`|\*\*.*?\*\*|\*.*?\*|==.*?==)/g);
       return parts.map((part, pIdx) => {
           if ((part.startsWith('$') && part.endsWith('$')) || (part.startsWith('\\(') && part.endsWith('\\)')) || (part.startsWith('\\[') && part.endsWith('\\]'))) {
               return <React.Fragment key={pIdx}><MathSymbol text={part} /></React.Fragment>;
@@ -2508,22 +2517,26 @@ const formatInlineText = (text, enableGlossary = true, isDarkBg = false, deps) =
                           </button>
                       );
                   }
+                  const href = safeLinkHref(url);
+                  if (!href) return <React.Fragment key={pIdx}>{linkLabel(label)}</React.Fragment>;
                   const isCitation = match[1].startsWith('⁽') && match[1].endsWith('⁾');
                   return (
                       <a
                         key={pIdx}
-                        href={match[2]}
+                        href={href}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`text-blue-600 ${isCitation ? 'no-underline' : 'underline'} hover:text-blue-800 z-20 relative font-medium`}
-                        role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}
+                        referrerPolicy="no-referrer" onClick={(e) => e.stopPropagation()}
                       >
-                          {match[1]}
+                          {linkLabel(match[1])}
                       </a>
                   );
               }
           }
            if (part.match(/^https?:\/\//)) {
+              const href = safeLinkHref(part);
+              if (!href) return <React.Fragment key={pIdx}>{part}</React.Fragment>;
                let displayText = part;
               if (part.includes('vertexaisearch') || part.includes('grounding-api')) {
                   displayText = '[Source Ref]';
@@ -2538,11 +2551,11 @@ const formatInlineText = (text, enableGlossary = true, isDarkBg = false, deps) =
               return (
                   <a
                     key={pIdx}
-                    href={part}
+                    href={href}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 underline hover:text-blue-800 z-20 relative break-all cursor-pointer"
-                    role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}
+                    referrerPolicy="no-referrer" onClick={(e) => e.stopPropagation()}
                     title={part}
                   >
                       {displayText}

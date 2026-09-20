@@ -1,0 +1,3 @@
+const fs=require('fs');
+let file='tests/memory_aid.test.js',s=fs.readFileSync(file,'utf8');const old="expect(host.textContent).toContain('was removed in another tab and was not restored');";if(!s.includes(old))throw Error('Missing removed-attempt assertion');s=s.replace(old,"expect(host.textContent).toContain('saving will not recreate a removed attempt');");fs.writeFileSync(file,s);
+file=__dirname+'/build-pass3-browser-qa.cjs';s=fs.readFileSync(file,'utf8');s=s.replace("page.getByRole('textbox',{name:/Memory aid for Solids/}).waitFor({state:'visible'})", "page.locator('textarea[id$=\"-draft\"]:visible').waitFor({state:'visible'})");fs.writeFileSync(file,s);

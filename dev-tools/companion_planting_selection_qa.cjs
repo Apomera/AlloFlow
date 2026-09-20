@@ -101,14 +101,22 @@ const out = path.join(root, 'reports/companion-planting-enhancement');
       el._cgLocate.t0=performance.now()-150;draw(frame,false);const first=el.toDataURL();
       el._cgLocate.t0=performance.now()-500;draw(frame,false);const changes=first!==el.toDataURL();
       el._cgLocate.t0=performance.now()-900;draw(frame,false);const expires=el._cgLocate===null;
-      el._cgLocate={index:5,plantId:'beans',t0:null};draw({...frame,placementPreview:{plot:8}},false);
+      const previewGrid=frame.grid.map((cell,i)=>i===8?{...cell,plantId:null,growthDay:0}:cell);
+      el._cgLocate={index:5,plantId:'beans',t0:null};draw({...frame,phase:'plan',grid:previewGrid,placementPreview:{plot:8,plantId:'tomato'}},false);
       const previewCancels=el._cgLocate===null&&el.dataset.gardenSelectedPlot==='-1';
+      const invalidPreviewIgnored=[
+        {...frame,phase:'plan',placementPreview:{plot:8,plantId:'tomato'}},
+        {...frame,phase:'plan',grid:previewGrid,placementPreview:{plot:8}}
+      ].every(testFrame=>{
+        el._cgLocate={index:5,plantId:'beans',t0:null};draw(testFrame,false);
+        return el._cgLocate!==null&&el.dataset.gardenSelectedPlot==='5';
+      });
       el._cgLocate={index:5,plantId:'beans',t0:null};draw({...frame,grid:frame.grid.map((cell,i)=>i===5?{...cell,plantId:'basil'}:cell)},false);
       const changedCropCancels=el._cgLocate===null;
       el._cgLocate={index:5,plantId:'beans',t0:null};draw({...frame,cg:{...frame.cg,relationshipFocus:null}},false);
       const closedCancels=el._cgLocate===null;
       el._cgLocate={index:5,plantId:'beans',t0:null};draw(frame,true);
-      return {starts,changes,expires,previewCancels,changedCropCancels,closedCancels,reducedCancels:el._cgLocate===null,identity:ctx.getTransform().isIdentity,alpha:ctx.globalAlpha};
+      return {starts,changes,expires,previewCancels,invalidPreviewIgnored,changedCropCancels,closedCancels,reducedCancels:el._cgLocate===null,identity:ctx.getTransform().isIdentity,alpha:ctx.globalAlpha};
     });
     assert.ok(Object.entries(findings.locate).every(([key,value])=>key==='alpha'?value===1:value===true),JSON.stringify(findings.locate));
     await patch({relationshipFocus:15});await waitForCanvas();

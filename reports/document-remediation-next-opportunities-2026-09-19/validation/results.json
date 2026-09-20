@@ -1,0 +1,67 @@
+{
+  "capturedAt": "2026-09-20T03:49:21.659Z",
+  "scope": "Static checked-in configuration, actual Vitest/Playwright discovery, and a sparse missing-dependency preflight reproduction. No application changes, test execution, package installation, or GitHub run.",
+  "ciPrerequisiteGap": {
+    "job": "    name: Remediation preservation (source + browser + export)\n    runs-on: windows-latest\n    timeout-minutes: 20\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: '24'\n          cache: 'npm'\n      - run: npm install --no-audit --no-fund\n      - name: Install local-fixture browser\n        run: npx playwright install chromium\n      - name: Source, generated module, rendered fidelity and export regressions\n        run: npm run verify:remediation\n      - name: Retain remediation validation evidence\n        if: always()\n        uses: actions/upload-artifact@v4\n        with:\n          name: remediation-validation\n          path: test-results/remediation-validation/\n          if-no-files-found: warn\n\n",
+    "rootWorkspaces": null,
+    "rootInstallHooks": {},
+    "requiredDesktopInputs": [
+      "desktop/web-app/node_modules/react/umd/react.development.js",
+      "desktop/web-app/node_modules/react-dom/umd/react-dom.development.js"
+    ],
+    "trackedDesktopInputs": [],
+    "sparseCheckoutHashes": {
+      "desktop/web-app/node_modules/react-dom/umd/react-dom.development.js": null,
+      "desktop/web-app/node_modules/react/umd/react.development.js": null
+    },
+    "preflightError": "A required validation input is missing",
+    "runnerCalls": 0
+  },
+  "calibrationMigrationGap": {
+    "script": "vitest run tests/mcp_agent_bridge_e2e.test.js tests/mcp_agent_bridge_restart_e2e.test.js tests/mcp_agent_bridge_terminal_modes_e2e.test.js tests/mcp_keyless_workflow.test.js tests/mcp_http_transport.test.js tests/mcp_refinement_study_runner.test.js tests/mcp_refinement_study_protocol.test.js tests/mcp_refinement_study_analysis.test.js tests/mcp_refinement_expert_annotations.test.js tests/remediation_visibility_selector_recovery.test.js tests/doc_pipeline_inherited_contrast.test.js tests/doc_pipeline_placeholder_audit_payload.test.js tests/aifix_chunk_boundary_whitespace.test.js tests/doc_pipeline_focus_wrap_browser.test.js tests/static_crop_cleanup.test.js tests/generated_baseline_language.test.js tests/doc_pipeline_title_attributes.test.js tests/semantic_list_marker_coverage.test.js tests/mcp_content_coverage.test.js tests/mcp_extract_text_honesty.test.js tests/mcp_narration_languages.test.js --maxWorkers=1 --testTimeout=360000",
+    "listedUnitFilters": 21,
+    "missingNamedUnitFiles": [
+      "tests/doc_pipeline_focus_wrap_browser.test.js"
+    ],
+    "discoveryExitCode": 0,
+    "discoveredUnitFiles": [
+      "tests/aifix_chunk_boundary_whitespace.test.js",
+      "tests/doc_pipeline_inherited_contrast.test.js",
+      "tests/doc_pipeline_placeholder_audit_payload.test.js",
+      "tests/doc_pipeline_title_attributes.test.js",
+      "tests/generated_baseline_language.test.js",
+      "tests/mcp_agent_bridge_e2e.test.js",
+      "tests/mcp_agent_bridge_restart_e2e.test.js",
+      "tests/mcp_agent_bridge_terminal_modes_e2e.test.js",
+      "tests/mcp_content_coverage.test.js",
+      "tests/mcp_extract_text_honesty.test.js",
+      "tests/mcp_http_transport.test.js",
+      "tests/mcp_keyless_workflow.test.js",
+      "tests/mcp_narration_languages.test.js",
+      "tests/mcp_refinement_expert_annotations.test.js",
+      "tests/mcp_refinement_study_analysis.test.js",
+      "tests/mcp_refinement_study_protocol.test.js",
+      "tests/mcp_refinement_study_runner.test.js",
+      "tests/remediation_visibility_selector_recovery.test.js",
+      "tests/semantic_list_marker_coverage.test.js",
+      "tests/static_crop_cleanup.test.js"
+    ],
+    "replacementBrowserFiles": [
+      "tests/e2e/document_focus_wrap.spec.ts",
+      "tests/e2e/document_static_crop_cleanup.spec.ts"
+    ],
+    "replacementBrowserDiscoveryExitCode": 0,
+    "replacementBrowserDiscovery": "Listing tests:\n  [chromium] › document_focus_wrap.spec.ts:47:10 › generated keyboard focus remains visible across document surfaces › provides a solid contrasting focus band on light\n  [chromium] › document_focus_wrap.spec.ts:47:10 › generated keyboard focus remains visible across document surfaces › provides a solid contrasting focus band on image-control slate\n  [chromium] › document_focus_wrap.spec.ts:47:10 › generated keyboard focus remains visible across document surfaces › provides a solid contrasting focus band on dark\n  [chromium] › document_focus_wrap.spec.ts:47:10 › generated keyboard focus remains visible across document surfaces › provides a solid contrasting focus band on middle gray\n  [chromium] › document_focus_wrap.spec.ts:57:52 › generated keyboard focus remains visible across document surfaces › retains a visible system-color outline in forced-colors light\n  [chromium] › document_focus_wrap.spec.ts:57:52 › generated keyboard focus remains visible across document surfaces › retains a visible system-color outline in forced-colors dark\n  [chromium] › document_focus_wrap.spec.ts:65:7 › generated keyboard focus remains visible across document surfaces › upgrades the previous generated blue ring and remains idempotent\n  [chromium] › document_focus_wrap.spec.ts:79:39 › generated document footnotes reflow › wraps the source footnote URLs inside a 320px viewport\n  [chromium] › document_focus_wrap.spec.ts:79:39 › generated document footnotes reflow › wraps the source footnote URLs inside a 390px viewport\n  [chromium] › document_static_crop_cleanup.spec.ts:20:7 › Chromium static document behavior › keeps the actual raw Replace file-change behavior after removing crop\n  [chromium] › document_static_crop_cleanup.spec.ts:33:7 › Chromium static document behavior › canonical browser export has no dead picker while source controls and content remain\n  [chromium] › document_static_crop_cleanup.spec.ts:45:7 › Chromium static document behavior › current generated preview control can call its runtime before static cleanup\nTotal: 12 tests in 2 files",
+    "calibrationInvokesBrowserRunner": false
+  },
+  "sourceSha256": {
+    ".github/workflows/verify.yml": "c502822035ae80578a174d8ae5739cb174dfaf4487d79ad79bcba13d1cf24d89",
+    "package.json": "efb845da7ccb7fce854371f82f03d09e1ade2bd63e1b76f2c2dc3b83714bb897",
+    "package-lock.json": "8fde867720a10e402bf57ea0bcac4ba68121859a9b50191bfe88cb3663805e94",
+    "dev-tools/remediation_validation.cjs": "86d4337f3fa30b23bdea78662fb4e9eddc5b6207cc296ef2d55763ce1356b152",
+    "dev-tools/remediation_validation_identity.cjs": "2a2c5bf2a66ffad3c1d8946bc39d24091689e29a2f27bdf88274d78fec4b57aa",
+    "dev-tools/remediation_validation.json": "35e8f5ded11feff2b3023fd181073135b5ab2adca4c6cf6ea138746a6abbf336",
+    "tests/e2e/document_focus_wrap.spec.ts": "194c7af8cb658deaa0f840500885196a3a2dbfa0cbd5cfafa4fe6a0580696bee",
+    "tests/e2e/document_static_crop_cleanup.spec.ts": "b67d210e0793f6eefa53a93394758503bdd5e99a028e40dc0c1585c0240f7599"
+  }
+}

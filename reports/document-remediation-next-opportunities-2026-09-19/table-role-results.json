@@ -1,0 +1,573 @@
+{
+  "sourceSha256": "dfab62eb35dc56e82e18b60df006ec642dd139f6ca38a748738160fce69e8421",
+  "sourceUnchanged": true,
+  "browserVersion": "148.0.7778.96",
+  "results": [
+    {
+      "id": "data-cell-presentational",
+      "expectedAccepted": false,
+      "source": "<!doctype html><html lang=\"en\"><body><main><table><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr id=\"row\"><td>North</td><td id=\"datum\">95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><table><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr id=\"row\"><td>North</td><td id=\"datum\" role=\"presentation\">95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0220750551876379,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "shippedCandidate": true,
+      "nativeSource": {
+        "row": {
+          "role": "row",
+          "name": "",
+          "ignored": false
+        },
+        "datum": {
+          "role": "cell",
+          "name": "95",
+          "ignored": false
+        },
+        "exposedTableRoles": [
+          {
+            "role": "table",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "columnheader",
+            "name": "Group"
+          },
+          {
+            "role": "columnheader",
+            "name": "Score"
+          },
+          {
+            "role": "cell",
+            "name": "North"
+          },
+          {
+            "role": "cell",
+            "name": "95"
+          }
+        ]
+      },
+      "nativeCandidate": {
+        "row": {
+          "role": "row",
+          "name": "",
+          "ignored": false
+        },
+        "datum": {
+          "role": "none",
+          "ignored": true
+        },
+        "exposedTableRoles": [
+          {
+            "role": "table",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "columnheader",
+            "name": "Group"
+          },
+          {
+            "role": "columnheader",
+            "name": "Score"
+          },
+          {
+            "role": "cell",
+            "name": "North"
+          }
+        ]
+      }
+    },
+    {
+      "id": "data-cell-button",
+      "expectedAccepted": false,
+      "source": "<!doctype html><html lang=\"en\"><body><main><table><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr id=\"row\"><td>North</td><td id=\"datum\">95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><table><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr id=\"row\"><td>North</td><td id=\"datum\" role=\"button\">95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0154525386313467,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "shippedCandidate": true,
+      "nativeSource": {
+        "row": {
+          "role": "row",
+          "name": "",
+          "ignored": false
+        },
+        "datum": {
+          "role": "cell",
+          "name": "95",
+          "ignored": false
+        },
+        "exposedTableRoles": [
+          {
+            "role": "table",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "columnheader",
+            "name": "Group"
+          },
+          {
+            "role": "columnheader",
+            "name": "Score"
+          },
+          {
+            "role": "cell",
+            "name": "North"
+          },
+          {
+            "role": "cell",
+            "name": "95"
+          }
+        ]
+      },
+      "nativeCandidate": {
+        "row": {
+          "role": "row",
+          "name": "",
+          "ignored": false
+        },
+        "datum": {
+          "role": "button",
+          "name": "95",
+          "ignored": false
+        },
+        "exposedTableRoles": [
+          {
+            "role": "table",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "columnheader",
+            "name": "Group"
+          },
+          {
+            "role": "columnheader",
+            "name": "Score"
+          },
+          {
+            "role": "cell",
+            "name": "North"
+          }
+        ]
+      }
+    },
+    {
+      "id": "data-row-presentational",
+      "expectedAccepted": false,
+      "source": "<!doctype html><html lang=\"en\"><body><main><table><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr id=\"row\"><td>North</td><td id=\"datum\">95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><table><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr id=\"row\" role=\"presentation\"><td>North</td><td id=\"datum\">95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0220750551876379,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "shippedCandidate": true,
+      "nativeSource": {
+        "row": {
+          "role": "row",
+          "name": "",
+          "ignored": false
+        },
+        "datum": {
+          "role": "cell",
+          "name": "95",
+          "ignored": false
+        },
+        "exposedTableRoles": [
+          {
+            "role": "table",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "columnheader",
+            "name": "Group"
+          },
+          {
+            "role": "columnheader",
+            "name": "Score"
+          },
+          {
+            "role": "cell",
+            "name": "North"
+          },
+          {
+            "role": "cell",
+            "name": "95"
+          }
+        ]
+      },
+      "nativeCandidate": {
+        "row": {
+          "role": "none",
+          "ignored": true
+        },
+        "datum": {
+          "role": "generic",
+          "name": "",
+          "ignored": false
+        },
+        "exposedTableRoles": [
+          {
+            "role": "table",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "columnheader",
+            "name": "Group"
+          },
+          {
+            "role": "columnheader",
+            "name": "Score"
+          }
+        ]
+      }
+    },
+    {
+      "id": "explicit-cell-control",
+      "expectedAccepted": true,
+      "source": "<!doctype html><html lang=\"en\"><body><main><table><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr id=\"row\"><td>North</td><td id=\"datum\">95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><table><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr id=\"row\"><td>North</td><td id=\"datum\" role=\"cell\">95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0132450331125828,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "shippedCandidate": true,
+      "nativeSource": {
+        "row": {
+          "role": "row",
+          "name": "",
+          "ignored": false
+        },
+        "datum": {
+          "role": "cell",
+          "name": "95",
+          "ignored": false
+        },
+        "exposedTableRoles": [
+          {
+            "role": "table",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "columnheader",
+            "name": "Group"
+          },
+          {
+            "role": "columnheader",
+            "name": "Score"
+          },
+          {
+            "role": "cell",
+            "name": "North"
+          },
+          {
+            "role": "cell",
+            "name": "95"
+          }
+        ]
+      },
+      "nativeCandidate": {
+        "row": {
+          "role": "row",
+          "name": "",
+          "ignored": false
+        },
+        "datum": {
+          "role": "cell",
+          "name": "95",
+          "ignored": false
+        },
+        "exposedTableRoles": [
+          {
+            "role": "table",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "columnheader",
+            "name": "Group"
+          },
+          {
+            "role": "columnheader",
+            "name": "Score"
+          },
+          {
+            "role": "cell",
+            "name": "North"
+          },
+          {
+            "role": "cell",
+            "name": "95"
+          }
+        ]
+      }
+    },
+    {
+      "id": "explicit-row-control",
+      "expectedAccepted": true,
+      "source": "<!doctype html><html lang=\"en\"><body><main><table><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr id=\"row\"><td>North</td><td id=\"datum\">95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><table><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr id=\"row\" role=\"row\"><td>North</td><td id=\"datum\">95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0121412803532008,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "shippedCandidate": true,
+      "nativeSource": {
+        "row": {
+          "role": "row",
+          "name": "",
+          "ignored": false
+        },
+        "datum": {
+          "role": "cell",
+          "name": "95",
+          "ignored": false
+        },
+        "exposedTableRoles": [
+          {
+            "role": "table",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "columnheader",
+            "name": "Group"
+          },
+          {
+            "role": "columnheader",
+            "name": "Score"
+          },
+          {
+            "role": "cell",
+            "name": "North"
+          },
+          {
+            "role": "cell",
+            "name": "95"
+          }
+        ]
+      },
+      "nativeCandidate": {
+        "row": {
+          "role": "row",
+          "name": "",
+          "ignored": false
+        },
+        "datum": {
+          "role": "cell",
+          "name": "95",
+          "ignored": false
+        },
+        "exposedTableRoles": [
+          {
+            "role": "table",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "columnheader",
+            "name": "Group"
+          },
+          {
+            "role": "columnheader",
+            "name": "Score"
+          },
+          {
+            "role": "cell",
+            "name": "North"
+          },
+          {
+            "role": "cell",
+            "name": "95"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fallback-cell-control",
+      "expectedAccepted": true,
+      "source": "<!doctype html><html lang=\"en\"><body><main><table><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr id=\"row\"><td>North</td><td id=\"datum\">95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><table><tr><th scope=\"col\">Group</th><th scope=\"col\">Score</th></tr><tr id=\"row\"><td>North</td><td id=\"datum\" role=\"unrecognized cell\">95</td></tr></table><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0275938189845475,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "shippedCandidate": true,
+      "nativeSource": {
+        "row": {
+          "role": "row",
+          "name": "",
+          "ignored": false
+        },
+        "datum": {
+          "role": "cell",
+          "name": "95",
+          "ignored": false
+        },
+        "exposedTableRoles": [
+          {
+            "role": "table",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "columnheader",
+            "name": "Group"
+          },
+          {
+            "role": "columnheader",
+            "name": "Score"
+          },
+          {
+            "role": "cell",
+            "name": "North"
+          },
+          {
+            "role": "cell",
+            "name": "95"
+          }
+        ]
+      },
+      "nativeCandidate": {
+        "row": {
+          "role": "row",
+          "name": "",
+          "ignored": false
+        },
+        "datum": {
+          "role": "cell",
+          "name": "95",
+          "ignored": false
+        },
+        "exposedTableRoles": [
+          {
+            "role": "table",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "row",
+            "name": ""
+          },
+          {
+            "role": "columnheader",
+            "name": "Group"
+          },
+          {
+            "role": "columnheader",
+            "name": "Score"
+          },
+          {
+            "role": "cell",
+            "name": "North"
+          },
+          {
+            "role": "cell",
+            "name": "95"
+          }
+        ]
+      }
+    }
+  ]
+}

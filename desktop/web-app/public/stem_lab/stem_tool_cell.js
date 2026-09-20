@@ -225,12 +225,15 @@ window.StemLab = window.StemLab || {
     var drafts = raw._cmpDrafts && typeof raw._cmpDrafts === 'object' && !Array.isArray(raw._cmpDrafts) ? raw._cmpDrafts : {};
     var draft = Object.prototype.hasOwnProperty.call(drafts, pairKey) ? drafts[pairKey] : {};
     draft = draft && typeof draft === 'object' ? draft : {};
+    var evidenceKeys = fields.map(function(field) { return field[0]; }).filter(function(key) { return Array.isArray(draft.evidenceKeys) && draft.evidenceKeys.indexOf(key) >= 0; });
+    function writing(value) { return typeof value === 'string' ? value.slice(0, 3000) : ''; }
     return { aIndex: aIndex, bIndex: bIndex, a: a, b: b, pairKey: pairKey, same: aIndex === bIndex, filter: filter,
       rows: rows, visible: rows.filter(function(row) { return filter === 'all' || row.status === filter; }),
       shared: rows.filter(function(row) { return row.status === 'shared'; }).length,
       different: rows.filter(function(row) { return row.status === 'different'; }).length,
       unknown: rows.filter(function(row) { return row.status === 'unknown'; }).length,
-      draft: { claim: text(draft.claim).slice(0, 3000), evidence: text(draft.evidence).slice(0, 3000), reasoning: text(draft.reasoning).slice(0, 3000) } };
+      kept: rows.filter(function(row) { return evidenceKeys.indexOf(row.key) >= 0; }),
+      draft: { claim: writing(draft.claim), evidence: writing(draft.evidence), reasoning: writing(draft.reasoning), evidenceKeys: evidenceKeys } };
   }
   function cellComparisonReport(database, raw) {
     var model = cellComparisonModel(database, raw);
@@ -238,6 +241,10 @@ window.StemLab = window.StemLab || {
     var lines = ['CELL COMPARISON', model.a.name + ' / ' + model.b.name, '',
       'Reference descriptions, not results from an experiment. Different wording does not prove traits are mutually exclusive. Sizes are typical examples, not measurements of this specimen.', ''];
     model.rows.forEach(function(row) { lines.push(row.label + ' (' + row.status + ')', model.a.name + ': ' + row.a, model.b.name + ': ' + row.b, ''); });
+    if (model.kept.length) {
+      lines.push('KEPT REFERENCE EVIDENCE');
+      model.kept.forEach(function(row) { lines.push(row.label, model.a.name + ': ' + row.a, model.b.name + ': ' + row.b, ''); });
+    }
     lines.push('CLAIM', model.draft.claim || 'Not recorded', '', 'EVIDENCE', model.draft.evidence || 'Not recorded', '', 'REASONING', model.draft.reasoning || 'Not recorded');
     return lines.join('\n');
   }
@@ -251,12 +258,25 @@ window.StemLab = window.StemLab || {
       return !search || [item.organism.name, item.organism.kingdom, item.organism.cellType, item.organism.habitat].join(' ').toLowerCase().indexOf(search) >= 0;
     });
     var button = 'min-h-10 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-indigo-900';
+    function sideMarker(side) { return h('span', { 'data-cell-compare-marker': side, 'aria-hidden': true }, side.toUpperCase()); }
     function choose(a, b) { patch({ _cmpA: a, _cmpB: b, _cmpNotice: '' }); }
-    function write(field, value) {
+    function saveDraft(change, notice) {
       var drafts = Object.assign({}, raw._cmpDrafts || {});
-      drafts[model.pairKey] = Object.assign({}, model.draft);
-      drafts[model.pairKey][field] = value.slice(0, 3000);
-      patch({ _cmpDrafts: drafts });
+      drafts[model.pairKey] = Object.assign({}, model.draft, change);
+      patch({ _cmpDrafts: drafts, _cmpNotice: notice || '' });
+    }
+    function write(field, value) {
+      var change = {}; change[field] = value.slice(0, 3000); saveDraft(change);
+    }
+    function toggleEvidence(row) {
+      var kept = model.draft.evidenceKeys.indexOf(row.key) >= 0;
+      var keys = kept ? model.draft.evidenceKeys.filter(function(key) { return key !== row.key; }) : model.draft.evidenceKeys.concat(row.key);
+      saveDraft({ evidenceKeys: keys }, row.label + (kept ? ' removed from' : ' kept in') + ' your reference evidence.');
+    }
+    function focusEvidence(e) {
+      var lab = e.currentTarget.closest('[data-cell-comparison-lab]');
+      var heading = lab && lab.querySelector('#cell-comparison-kept-title');
+      if (heading) { heading.focus({ preventScroll: true }); heading.scrollIntoView({ block: 'center' }); }
     }
     function vocabulary(value) {
       return Object.keys(CELL_VOCAB).filter(function(key) { return value.toLowerCase().indexOf(CELL_VOCAB[key].term.toLowerCase()) >= 0; }).map(function(key) {
@@ -277,8 +297,48 @@ window.StemLab = window.StemLab || {
         patch({ _cmpNotice: 'Download could not start. Your comparison and writing are still available here.' });
       }
     }
-    return h('section', { 'data-cell-comparison-lab': true, 'aria-labelledby': 'cell-comparison-title', className: 'mt-4 rounded-2xl border border-indigo-300 bg-white p-4 text-slate-800 space-y-4', style: { minWidth: 0, width: '100%', maxWidth: 'min(100%, calc(100vw - 32px))', boxSizing: 'border-box' } },
-      h('header', { className: 'rounded-xl bg-indigo-50 p-4' }, h('p', { className: 'text-xs font-black uppercase text-indigo-700' }, 'Compare • notice • explain'),
+    return h('section', { 'data-cell-comparison-lab': true, 'aria-labelledby': 'cell-comparison-title', className: 'mt-4 rounded-2xl border border-indigo-300 bg-white p-4 text-slate-800 space-y-4', style: { minWidth: 0, width: '100%', maxWidth: 'min(100%, calc(100vw - 32px))', boxSizing: 'border-box', containerType: 'inline-size' } },
+      h('style', null,
+        '[data-cell-comparison-lab]{--compare-a:#0f6171;--compare-b:#6d3fa3;overflow-wrap:anywhere}' +
+        '[data-cell-comparison-lab] button,[data-cell-comparison-lab] select,[data-cell-comparison-lab] input{min-height:44px;max-width:100%;white-space:normal}' +
+        '[data-cell-comparison-lab] select,[data-cell-comparison-lab] input,[data-cell-comparison-lab] textarea{min-width:0;box-sizing:border-box}' +
+        '[data-cell-comparison-lab] button:focus-visible,[data-cell-comparison-lab] select:focus-visible,[data-cell-comparison-lab] input:focus-visible,[data-cell-comparison-lab] textarea:focus-visible{outline:3px solid #4338ca;outline-offset:3px}' +
+        '[data-cell-compare-header]{background:linear-gradient(120deg,#ecfeff,#f5f3ff);border:1px solid #dbe4ef}' +
+        '[data-cell-compare-pair],[data-cell-compare-values]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}' +
+        '[data-cell-compare-identity]{min-width:0;border:1px solid #cbd5e1;border-top:3px solid var(--compare-a);border-radius:14px;padding:14px;background:linear-gradient(155deg,#f0fdfa,#fff)}' +
+        '[data-cell-compare-identity=b]{border-top-color:var(--compare-b);background:linear-gradient(155deg,#faf5ff,#fff)}' +
+        '[data-cell-compare-marker]{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:28px;height:28px;border-radius:9px;background:var(--compare-a);color:#fff;font-size:12px;font-weight:800;line-height:1}' +
+        '[data-cell-compare-marker=b]{background:var(--compare-b)}' +
+        '[data-cell-compare-identity] label{display:flex;align-items:center;gap:8px;color:#334155}' +
+        '[data-cell-compare-facts]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 0}' +
+        '[data-cell-compare-facts] dt{font-size:11px;font-weight:600;color:#64748b}' +
+        '[data-cell-compare-facts] dd{margin:3px 0 0;font-size:13px;font-weight:700;color:#334155}' +
+        '[data-cell-compare-tools]{border:1px solid #e2e8f0;border-radius:14px;padding:12px;background:#f8fafc}' +
+        '[data-cell-compare-filters]{display:flex;flex-wrap:wrap;gap:8px}' +
+        '[data-cell-compare-filters] button{display:flex;align-items:center;gap:8px;justify-content:space-between;flex:1 1 150px;text-align:left;line-height:1.4}' +
+        '[data-cell-compare-filters] button[aria-pressed=true]{background:#312e81;color:#fff;border-color:#312e81}' +
+        '[data-cell-compare-filter-count]{display:inline-flex;justify-content:center;align-items:center;min-width:24px;min-height:24px;padding:0 5px;border-radius:7px;background:#e0e7ff;color:#312e81;font-variant-numeric:tabular-nums}' +
+        '[data-cell-comparison-property]{border:1px solid #dbe4ef;border-radius:14px;overflow:hidden;background:#fff}' +
+        '[data-cell-compare-property-head]{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:11px 14px;background:#f8fafc;border-bottom:1px solid #e2e8f0}' +
+        '[data-cell-compare-property-status]{display:inline-flex;align-items:center;gap:5px;border:1px solid #cbd5e1;border-radius:20px;padding:3px 8px;font-size:11px;font-weight:700;color:#475569;background:#fff}' +
+        '[data-cell-compare-property-status=shared]{border-color:#99d6c9;background:#ecfdf5;color:#065f46}' +
+        '[data-cell-compare-property-status=different]{border-color:#edcf94;background:#fffbeb;color:#854d0e}' +
+        '[data-cell-compare-row-actions]{display:flex;align-items:center;gap:8px;justify-content:flex-end;padding:8px 14px;border-top:1px solid #e2e8f0;background:#f8fafc}' +
+        '[data-cell-compare-row-actions] button[aria-pressed=true]{background:#ecfdf5;border-color:#6eaf9f;color:#065f46}' +
+        '[data-cell-compare-kept]{background:#fff;border:1px solid #a5cfda;border-radius:12px;padding:12px}' +
+        '[data-cell-compare-kept-list]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;list-style:none;padding:0;margin:12px 0 0}' +
+        '[data-cell-compare-kept-item]{min-width:0;border:1px solid #cbd5e1;border-radius:10px;padding:12px;background:#f8fafc;font-size:13px;line-height:1.6}' +
+        '[data-cell-compare-kept-item] p{margin:8px 0;overflow-wrap:anywhere}' +
+        '[data-cell-compare-kept-item] button{margin-top:4px}' +
+        '#cell-comparison-kept-title:focus-visible{outline:3px solid #4338ca;outline-offset:4px;border-radius:3px}' +
+        '[data-cell-compare-values]{gap:0}' +
+        '[data-cell-compare-value]{min-width:0;padding:14px;font-size:14px;line-height:1.65}' +
+        '[data-cell-compare-value]+[data-cell-compare-value]{border-left:1px solid #e2e8f0}' +
+        '[data-cell-compare-value-name]{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#334155;margin:0 0 8px}' +
+        '[data-cell-compare-value] [data-cell-compare-marker]{width:22px;height:22px;border-radius:7px;font-size:10px}' +
+        '@container (max-width:540px){[data-cell-compare-pair],[data-cell-compare-values],[data-cell-compare-kept-list]{grid-template-columns:minmax(0,1fr)}[data-cell-compare-value]+[data-cell-compare-value]{border-left:0;border-top:1px solid #e2e8f0}}' +
+        '@container (max-width:260px){[data-cell-compare-facts]{grid-template-columns:minmax(0,1fr)}[data-cell-compare-identity],[data-cell-compare-value],[data-cell-compare-property-head]{padding:11px}}'),
+      h('header', { 'data-cell-compare-header': true, className: 'rounded-xl p-4' }, h('p', { className: 'text-xs font-black uppercase text-indigo-700' }, 'Compare • notice • explain'),
         h('h3', { id: 'cell-comparison-title', className: 'mt-1 text-xl font-black text-indigo-950' }, 'Compare two organisms'),
         h('p', { className: 'mt-2 text-sm' }, 'Look for a shared property and a useful contrast, then support your explanation with evidence.')),
       h('div', { role: 'group', 'aria-label': 'Suggested organism comparisons', className: 'flex flex-wrap gap-2' },
@@ -289,37 +349,50 @@ window.StemLab = window.StemLab || {
       h('div', null, h('label', { htmlFor: 'cell-comparison-search', className: 'block text-sm font-bold' }, 'Find organisms'),
         h('input', { id: 'cell-comparison-search', type: 'search', value: query, maxLength: 120, placeholder: 'Search name, group, cell type, or habitat', className: 'mt-1 w-full rounded-lg border border-slate-400 p-2 text-sm', onChange: function(e) { patch({ _cmpQuery: e.target.value }); } }),
         h('p', { className: 'mt-1 text-xs', role: 'status' }, matches.length + ' matches. Current selections stay available.')),
-      h('div', { className: 'grid gap-3 sm:grid-cols-2' }, ['a', 'b'].map(function(side) {
+      h('div', { 'data-cell-compare-pair': true }, ['a', 'b'].map(function(side) {
         var selected = side === 'a' ? model.aIndex : model.bIndex;
         var options = matches.slice();
         if (!options.some(function(item) { return item.index === selected; })) options.unshift({ organism: database[selected], index: selected });
-        return h('div', { key: side, className: 'min-w-0 rounded-xl border border-indigo-200 bg-indigo-50 p-3' },
-          h('label', { htmlFor: 'cell-comparison-' + side, className: 'text-sm font-bold text-indigo-900' }, 'Organism ' + side.toUpperCase()),
+        return h('div', { key: side, 'data-cell-compare-identity': side },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, sideMarker(side), h('label', { htmlFor: 'cell-comparison-' + side, className: 'text-sm font-bold text-indigo-900' }, 'Organism ' + side.toUpperCase())),
           h('select', { id: 'cell-comparison-' + side, value: selected, className: 'mt-2 w-full rounded-lg border border-indigo-500 bg-white p-2 text-sm font-bold', onChange: function(e) { choose(side === 'a' ? Number(e.target.value) : model.aIndex, side === 'b' ? Number(e.target.value) : model.bIndex); } },
             options.map(function(item) { return h('option', { key: item.index, value: item.index }, item.organism.name); })),
-          h('p', { className: 'mt-2 text-xs text-slate-700' }, database[selected].cellType + ' • ' + database[selected].size));
+          h('dl', { 'data-cell-compare-facts': true },
+            [{ label: 'Cell organization', value: database[selected].cellType }, { label: 'Typical size', value: database[selected].size }].map(function(fact) {
+              return h('div', { key: fact.label }, h('dt', null, fact.label), h('dd', null, fact.value || 'Not recorded'));
+            })));
       })),
       h('div', { className: 'flex flex-wrap items-center gap-2' },
         h('button', { type: 'button', className: button, onClick: function() { choose(model.bIndex, model.aIndex); } }, 'Swap organisms'),
         h('span', { className: 'text-xs font-bold', 'data-cell-comparison-counts': true }, model.shared + ' matching descriptions · ' + model.different + ' differing descriptions' + (model.unknown ? ' · ' + model.unknown + ' incomplete' : ''))),
       model.same ? h('p', { role: 'status', className: 'rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm' }, 'You selected the same organism twice. Choose a different organism to investigate a contrast.') : null,
-      h('div', { role: 'group', 'aria-label': 'Comparison property filter', className: 'flex flex-wrap gap-2' },
+      h('div', { 'data-cell-compare-tools': true }, h('div', { role: 'group', 'aria-label': 'Comparison property filter', 'data-cell-compare-filters': true },
         [{ id: 'all', label: 'All properties' }, { id: 'different', label: 'Differences' }, { id: 'shared', label: 'Shared descriptions' }].map(function(filter) {
           var active = model.filter === filter.id;
-          return h('button', { key: filter.id, type: 'button', 'aria-pressed': active, className: button + (active ? ' ring-2 ring-indigo-700' : ''), onClick: function() { patch({ _cmpFilter: filter.id }); } }, filter.label);
-        })),
+          return h('button', { key: filter.id, type: 'button', 'data-cell-compare-filter': filter.id, 'aria-pressed': active, className: button + (active ? ' ring-2 ring-indigo-700' : ''), onClick: function() { patch({ _cmpFilter: filter.id }); } }, h('span', null, filter.label), h('span', { 'data-cell-compare-filter-count': true, 'aria-hidden': true }, filter.id === 'all' ? model.rows.length : filter.id === 'different' ? model.different : model.shared));
+        })), h('p', { role: 'status', 'data-cell-compare-result-status': true, className: 'mt-3 text-xs text-slate-600' }, 'Showing ' + model.visible.length + ' of ' + model.rows.length + ' properties' + (model.filter === 'all' ? '.' : model.filter === 'different' ? ' with different descriptions.' : ' with matching descriptions.')), h('button', { type: 'button', className: button + ' mt-3', onClick: focusEvidence }, 'Review kept evidence (' + model.kept.length + ')')),
       h('p', { className: 'text-xs text-slate-600' }, 'These are reference descriptions. Different wording does not prove that traits are mutually exclusive. Sizes are typical examples, not measurements of the current specimen.'),
       model.visible.length ? h('div', { className: 'space-y-3', 'data-cell-comparison-rows': true }, model.visible.map(function(row) {
-        return h('section', { key: row.key, 'data-cell-comparison-property': row.key, 'aria-labelledby': 'cell-compare-property-' + row.key, className: 'rounded-xl border p-3 ' + (row.status === 'different' ? 'border-amber-300 bg-amber-50' : 'border-slate-300 bg-slate-50') },
-          h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('h4', { id: 'cell-compare-property-' + row.key, className: 'text-sm font-black' }, row.label),
-            h('span', { className: 'text-xs font-bold' }, row.status === 'shared' ? 'Matching description' : row.status === 'different' ? 'Different descriptions' : 'Incomplete information')),
-          h('div', { className: 'mt-2 grid gap-3 sm:grid-cols-2' }, [{ name: model.a.name, value: row.a }, { name: model.b.name, value: row.b }].map(function(cell, i) {
-            return h('div', { key: i, className: 'min-w-0 text-sm leading-relaxed', style: { overflowWrap: 'anywhere' } }, h('p', { className: 'text-xs font-bold text-indigo-800' }, cell.name), h('p', null, cell.value), vocabulary(cell.value));
-          })));
-      })) : h('p', { role: 'status', className: 'rounded-lg bg-slate-50 p-3 text-sm' }, 'No properties match this filter. Choose All properties to see the complete comparison.'),
+        return h('section', { key: row.key, 'data-cell-comparison-property': row.key, 'aria-labelledby': 'cell-compare-property-' + row.key, 'data-cell-compare-row-status': row.status },
+          h('div', { 'data-cell-compare-property-head': true }, h('h4', { id: 'cell-compare-property-' + row.key, className: 'text-sm font-black' }, row.label),
+            h('span', { 'data-cell-compare-property-status': row.status }, h('span', { 'aria-hidden': true }, row.status === 'shared' ? '=' : row.status === 'different' ? '\u2260' : '?'), row.status === 'shared' ? 'Matching description' : row.status === 'different' ? 'Different descriptions' : 'Incomplete information')),
+          h('div', { 'data-cell-compare-values': true }, [{ name: model.a.name, value: row.a }, { name: model.b.name, value: row.b }].map(function(cell, i) {
+            return h('div', { key: i, 'data-cell-compare-value': i === 0 ? 'a' : 'b' }, h('p', { 'data-cell-compare-value-name': true }, sideMarker(i === 0 ? 'a' : 'b'), cell.name), h('p', { 'data-cell-compare-value-text': true }, cell.value), vocabulary(cell.value));
+          })), h('div', { 'data-cell-compare-row-actions': true }, h('button', { type: 'button', className: button, 'aria-label': 'Keep ' + row.label + ' as evidence', 'aria-pressed': model.draft.evidenceKeys.indexOf(row.key) >= 0, onClick: function() { toggleEvidence(row); } }, model.draft.evidenceKeys.indexOf(row.key) >= 0 ? '\u2713 Kept as evidence' : '+ Keep as evidence')));
+      })) : h('div', { 'data-cell-compare-empty': true, className: 'rounded-xl border border-slate-300 bg-slate-50 p-4 text-sm' }, h('p', null, 'No properties match this filter. Choose All properties to see the complete comparison.'), h('button', { type: 'button', className: button + ' mt-3', onClick: function(e) { var lab = e.currentTarget.closest('[data-cell-comparison-lab]'); patch({ _cmpFilter: 'all' }); var all = lab && lab.querySelector('[data-cell-compare-filter=all]'); if (all) all.focus(); } }, 'Show all properties')),
       h('section', { className: 'rounded-xl border border-cyan-300 bg-cyan-50 p-4 space-y-3', 'aria-labelledby': 'cell-comparison-explanation' },
         h('h4', { id: 'cell-comparison-explanation', className: 'font-black text-cyan-950' }, 'Build an evidence-based explanation'),
-        h('p', { className: 'text-xs' }, 'Writing belongs to this pair and stays when you swap columns or compare another pair during this session. Download a report to keep it.'),
+        h('p', { className: 'text-xs' }, 'Your writing and kept evidence belong to this pair and stay when you swap columns or compare another pair during this session. Download a report to keep them.'),
+        h('section', { 'data-cell-compare-kept': true, 'aria-labelledby': 'cell-comparison-kept-title' },
+          h('h5', { id: 'cell-comparison-kept-title', tabIndex: -1, className: 'text-sm font-black text-slate-800' }, 'Your reference evidence'),
+          h('p', { className: 'mt-1 text-xs text-slate-600' }, model.kept.length ? model.kept.length + ' of 7 properties kept for ' + model.a.name + ' and ' + model.b.name + '. Use these descriptions to support your own explanation.' : 'Choose Keep as evidence on a property above to collect useful reference descriptions here.'),
+          model.kept.length ? h('ul', { 'data-cell-compare-kept-list': true }, model.kept.map(function(row) {
+            return h('li', { key: row.key, 'data-cell-compare-kept-item': row.key },
+              h('h6', { className: 'font-bold text-slate-800' }, row.label),
+              h('p', null, h('strong', null, model.a.name + ': '), row.a),
+              h('p', null, h('strong', null, model.b.name + ': '), row.b),
+              h('button', { type: 'button', className: button, 'aria-label': 'Remove ' + row.label + ' from kept evidence', onClick: function(e) { focusEvidence(e); toggleEvidence(row); } }, 'Remove'));
+          })) : null),
         [{ key: 'claim', label: 'Claim', prompt: 'What important similarity or difference do you notice?' }, { key: 'evidence', label: 'Evidence', prompt: 'Name both organisms and cite a property from the comparison.' }, { key: 'reasoning', label: 'Reasoning', prompt: 'How does the evidence support your claim? What can these descriptions not tell you?' }].map(function(field) {
           return h('label', { key: field.key, className: 'block text-sm font-bold' }, field.label,
             h('textarea', { 'aria-label': 'Comparison ' + field.label.toLowerCase(), value: model.draft[field.key], maxLength: 3000, rows: 2, placeholder: field.prompt, className: 'mt-1 block w-full rounded-lg border border-slate-400 bg-white p-2 text-sm font-normal', onChange: function(e) { write(field.key, e.target.value); } }));
@@ -737,6 +810,16 @@ window.StemLab = window.StemLab || {
     return steps.length ? Object.assign({}, source, { steps: steps }) : null;
   }
   // Persist original step indices so existing study records keep the same stop.
+  function cellStructureGuides(type, key) {
+    if (!interiorHas(type, key)) return [];
+    return Object.keys(INTERIOR_GUIDES).reduce(function(result, id) {
+      var guide = cellGuideForType(id, type);
+      if (!guide) return result;
+      var index = guide.steps.findIndex(function(step) { return step.key === key; });
+      if (index >= 0) result.push({ id: id, label: guide.label, stepIndex: index, stepCount: guide.steps.length, title: guide.steps[index].title.replace(/^\d+\.\s*/, '') });
+      return result;
+    }, []);
+  }
   function cellGuideVisibleStep(guide, savedIndex) {
     if (!guide) return 0;
     var target = cellProgressInteger(savedIndex), index = guide.steps.findIndex(function(step) { return step.sourceIndex >= target; });
@@ -858,6 +941,25 @@ window.StemLab = window.StemLab || {
     var round = normalizeCellRecallRound(raw, type);
     if (round && !round.finished && round.keys[round.answers.length] === key && typeof correct === 'boolean') round.answers.push({ key: key, correct: correct });
     return round;
+  }
+  function cellStudyStatus(cell, key) {
+    if (Array.isArray(cell.interiorReview) && cell.interiorReview.indexOf(key) >= 0) return 'review';
+    if (Array.isArray(cell.interiorMastered) && cell.interiorMastered.indexOf(key) >= 0) return 'mastered';
+    return 'explored';
+  }
+  function changeCellStudyStatus(cell, type, key, status) {
+    if (!interiorHas(type, key) || ['mastered', 'review', 'explored'].indexOf(status) < 0) return cell;
+    var next = Object.assign({}, cell);
+    next.interiorMastered = cellProgressKeys(cell.interiorMastered, type).filter(function(item) { return item !== key; });
+    next.interiorReview = cellProgressKeys(cell.interiorReview, type).filter(function(item) { return item !== key; });
+    if (status === 'mastered') next.interiorMastered.push(key);
+    if (status === 'review') next.interiorReview.push(key);
+    return next;
+  }
+  function nextCellReviewKey(type, review, selected) {
+    var keys = cellProgressKeys(review, type).filter(function(key) { return key !== 'cytoplasm'; });
+    if (!keys.length || (keys.length === 1 && keys[0] === selected)) return null;
+    return keys[(keys.indexOf(selected) + 1) % keys.length];
   }
   function createCellProgressRecord(type) {
     return { type: type, seen: [], mastered: [], review: [], quizAttempts: 0, quizCorrect: 0, checkCorrect: 0, guideId: null, guideStep: 0, specialization: 'general', selected: null, adaptiveActive: false, quizKey: null, quizChoice: null, quizRevealed: false, recallRound: null };
@@ -1101,6 +1203,18 @@ window.StemLab = window.StemLab || {
     for (var i = 0; i < L.length; i++) { var o = L[i]; if (o.dot) continue; var dx = nx - o.x, dy = ny - o.y, dd = Math.sqrt(dx * dx + dy * dy); if (dd < o.r * 1.25 && dd < bd) { bd = dd; best = o.key; } }
     if (best) return best;
     var cdx = nx - 0.5, cdy = ny - 0.5;
+    // Keep a small edge tolerance, but do not turn the whole canvas exterior into a membrane target.
+    // Explicit structures are checked above so surface appendages remain selectable.
+    if (type === 'animal') {
+      if (Math.sqrt(cdx * cdx + cdy * cdy) > 0.53) return null;
+    } else {
+      var bounds = geometry || interiorGeometry(760, 440, type, zoom);
+      var cornerRadius = type === 'bacterium' ? bounds.RY : Math.max(12, Math.min(30, bounds.RY * 0.24));
+      var qx = Math.abs(cdx * 2 * bounds.RX) - (bounds.RX - cornerRadius);
+      var qy = Math.abs(cdy * 2 * bounds.RY) - (bounds.RY - cornerRadius);
+      var outsideDistance = Math.sqrt(Math.pow(Math.max(qx, 0), 2) + Math.pow(Math.max(qy, 0), 2)) + Math.min(Math.max(qx, qy), 0) - cornerRadius;
+      if (outsideDistance > 8) return null;
+    }
     var onBoundary = type === 'plant'
       ? Math.max(Math.abs(cdx), Math.abs(cdy)) > 0.42
       : type === 'bacterium'
@@ -1840,7 +1954,7 @@ window.StemLab = window.StemLab || {
   }
 
   try {
-    window.__alloCellPure = { cellGuideForType: cellGuideForType, cellGuideVisibleStep: cellGuideVisibleStep, createCellRecallRound: createCellRecallRound, normalizeCellRecallRound: normalizeCellRecallRound, recordCellRecallAnswer: recordCellRecallAnswer, layoutCellAnatomyLabels: layoutCellAnatomyLabels, wrapCellAnatomyLabel: wrapCellAnatomyLabel, interiorBoundaryPoint: interiorBoundaryPoint, interiorStructureFocus: interiorStructureFocus, drawCellStructureDetail: drawCellStructureDetail, CELL_ACTIVITY_META: CELL_ACTIVITY_META, CELL_INQUIRY_ROUTES: CELL_INQUIRY_ROUTES, cellActivitySearch: cellActivitySearch, cellInquiryState: cellInquiryState, cellInquiryReport: cellInquiryReport, cellComparisonModel: cellComparisonModel, cellComparisonReport: cellComparisonReport, renderCellComparison: renderCellComparison, osmosisNotebookPacket: osmosisNotebookPacket, parseOsmosisNotebook: parseOsmosisNotebook, osmosisNotebookReport: osmosisNotebookReport, CELL_RECALL_CLUES: CELL_RECALL_CLUES, cellRecallOptions: cellRecallOptions, osmosisModel: osmosisModel, renderOsmosisLab: renderOsmosisLab, CELL_ORGANELLES: CELL_ORGANELLES, CELL_ULTRASTRUCTURE: CELL_ULTRASTRUCTURE, INTERIOR_GUIDES: INTERIOR_GUIDES, INTERIOR_SPECIALIZATIONS: INTERIOR_SPECIALIZATIONS, INTERIOR_CHECKS: INTERIOR_CHECKS, INTERIOR_GROUPS: INTERIOR_GROUPS, CELL_PROGRESS_SCHEMA_VERSION: CELL_PROGRESS_SCHEMA_VERSION, CELL_PROGRESS_TYPES: CELL_PROGRESS_TYPES, createCellProgressRecord: createCellProgressRecord, normalizeCellProgress: normalizeCellProgress, extractCellProgress: extractCellProgress, applyCellProgressToCell: applyCellProgressToCell, createEmptyCellProgress: createEmptyCellProgress, interiorHas: interiorHas, interiorOrganelles: interiorOrganelles, interiorLayout: interiorLayout, interiorGeometry: interiorGeometry, interiorHitTest: interiorHitTest, drawCellMicrodissection: drawCellMicrodissection, drawCellInterior: drawCellInterior, normalizeCellAnatomyFtuContext: normalizeCellAnatomyFtuContext };
+    window.__alloCellPure = { cellStructureGuides: cellStructureGuides, cellStudyStatus: cellStudyStatus, changeCellStudyStatus: changeCellStudyStatus, nextCellReviewKey: nextCellReviewKey, cellGuideForType: cellGuideForType, cellGuideVisibleStep: cellGuideVisibleStep, createCellRecallRound: createCellRecallRound, normalizeCellRecallRound: normalizeCellRecallRound, recordCellRecallAnswer: recordCellRecallAnswer, layoutCellAnatomyLabels: layoutCellAnatomyLabels, wrapCellAnatomyLabel: wrapCellAnatomyLabel, interiorBoundaryPoint: interiorBoundaryPoint, interiorStructureFocus: interiorStructureFocus, drawCellStructureDetail: drawCellStructureDetail, CELL_ACTIVITY_META: CELL_ACTIVITY_META, CELL_INQUIRY_ROUTES: CELL_INQUIRY_ROUTES, cellActivitySearch: cellActivitySearch, cellInquiryState: cellInquiryState, cellInquiryReport: cellInquiryReport, cellComparisonModel: cellComparisonModel, cellComparisonReport: cellComparisonReport, renderCellComparison: renderCellComparison, osmosisNotebookPacket: osmosisNotebookPacket, parseOsmosisNotebook: parseOsmosisNotebook, osmosisNotebookReport: osmosisNotebookReport, CELL_RECALL_CLUES: CELL_RECALL_CLUES, cellRecallOptions: cellRecallOptions, osmosisModel: osmosisModel, renderOsmosisLab: renderOsmosisLab, CELL_ORGANELLES: CELL_ORGANELLES, CELL_ULTRASTRUCTURE: CELL_ULTRASTRUCTURE, INTERIOR_GUIDES: INTERIOR_GUIDES, INTERIOR_SPECIALIZATIONS: INTERIOR_SPECIALIZATIONS, INTERIOR_CHECKS: INTERIOR_CHECKS, INTERIOR_GROUPS: INTERIOR_GROUPS, CELL_PROGRESS_SCHEMA_VERSION: CELL_PROGRESS_SCHEMA_VERSION, CELL_PROGRESS_TYPES: CELL_PROGRESS_TYPES, createCellProgressRecord: createCellProgressRecord, normalizeCellProgress: normalizeCellProgress, extractCellProgress: extractCellProgress, applyCellProgressToCell: applyCellProgressToCell, createEmptyCellProgress: createEmptyCellProgress, interiorHas: interiorHas, interiorOrganelles: interiorOrganelles, interiorLayout: interiorLayout, interiorGeometry: interiorGeometry, interiorHitTest: interiorHitTest, drawCellMicrodissection: drawCellMicrodissection, drawCellInterior: drawCellInterior, normalizeCellAnatomyFtuContext: normalizeCellAnatomyFtuContext };
   } catch (e) {}
 
   window.StemLab.registerTool('cell', {
@@ -1922,6 +2036,7 @@ var d = labToolData.cell || {};
               var p = prev || {}, current = Object.assign({}, p.cell || {}), progress = normalizeCellProgress(p.cellProgress, current);
               var type = CELL_PROGRESS_TYPES.indexOf(current.interiorCellType) >= 0 ? current.interiorCellType : progress.currentType;
               var restored = applyCellProgressToCell(current, progress.byCellType[type], type);
+                  restored.interiorStudyUndo = null;
               progress.currentType = type; progress.updatedAt = new Date().toISOString();
               return Object.assign({}, p, { cell: restored, cellProgress: progress, _cellProgressHydrated: true });
             });
@@ -20602,6 +20717,7 @@ var d = labToolData.cell || {};
 
             var _labelHitRegions = [];
             var hoveredAnatomyLabel = null;
+            var keyboardAnatomyLabel = null;
 
 
 
@@ -20648,11 +20764,14 @@ var d = labToolData.cell || {};
               labelBoxes.forEach(function(box) {
                 box.selected = !!(world._tooltip && world._tooltip.org === o && world._tooltip.anatomy === box.anatomy);
                 box.hovered = !!(hoveredAnatomyLabel && hoveredAnatomyLabel.org === o && hoveredAnatomyLabel.anatomy === box.anatomy);
+                box.keyboardPreview = !!(keyboardAnatomyLabel && keyboardAnatomyLabel.org === o && keyboardAnatomyLabel.anatomy === box.anatomy);
+                box.hovered = box.hovered || box.keyboardPreview;
                 box.emphasized = box.selected || box.hovered;
               });
               // Filter after laying out every structure so the selected label never changes slots.
               if (focusSelectedLabel && !playAsOrg && canvasEl.getAttribute('data-cell-view-mode') === 'observe' && labelBoxes.some(function(box) { return box.selected; })) {
-                labelBoxes = labelBoxes.filter(function(box) { return box.selected; });
+                var hasKeyboardPreview = labelBoxes.some(function(box) { return box.keyboardPreview; });
+                labelBoxes = labelBoxes.filter(function(box) { return hasKeyboardPreview ? box.keyboardPreview : box.selected; });
               }
               var hasEmphasizedLabel = labelBoxes.some(function(box) { return box.emphasized; });
               // Draw emphasized leaders last, underneath the pills, to make their paths easy to trace.
@@ -20697,7 +20816,7 @@ var d = labToolData.cell || {};
                 box.lines.forEach(function(line, index) {
                   cctx.fillText(line, pillX + 10 * dpr, pillY + pillH / 2 + (index - (box.lines.length - 1) / 2) * lineHeight);
                 });
-                _labelHitRegions.push({ x: pillX, y: pillY, w: pillW, h: pillH, anatomy: box.anatomy, def: def, org: o, selected: box.selected, hovered: box.hovered, sx: box.sx, sy: box.sy, lines: box.lines });
+                _labelHitRegions.push({ x: pillX, y: pillY, w: pillW, h: pillH, anatomy: box.anatomy, def: def, org: o, selected: box.selected, hovered: box.hovered, keyboardPreview: box.keyboardPreview, sx: box.sx, sy: box.sy, lines: box.lines });
               });
               cctx.restore();
             }
@@ -21900,6 +22019,7 @@ var d = labToolData.cell || {};
                 world._tooltip = null;
                 world._highlightOrganelle = null;
               }
+              if (keyboardAnatomyLabel && (keyboardAnatomyLabel.org !== focalOrganism || canvasEl.getAttribute('data-cell-view-mode') !== 'observe')) keyboardAnatomyLabel = null;
               if (hoveredAnatomyLabel && hoveredAnatomyLabel.org !== focalOrganism) hoveredAnatomyLabel = null;
               world.organisms.forEach(function (o) {
                 if (o === focalOrganism) return;
@@ -22423,6 +22543,7 @@ var d = labToolData.cell || {};
             var pointerDidDrag = false, pointerTapTolerance = 5, pointerDownLabel = null;
 
             function updateHoverFromPoint(clientX, clientY) {
+              var keyboardPreviewCleared = clearKeyboardAnatomyPreview(false);
               var rect = canvasEl.getBoundingClientRect();
               var hx = (clientX - rect.left) * dpr;
               var hy = (clientY - rect.top) * dpr;
@@ -22440,7 +22561,7 @@ var d = labToolData.cell || {};
               hoveredOrg = foundHover;
               var nextCursor = dragging ? 'grabbing' : hitCellExplanationClose(hx, hy) || foundLabel || foundHover ? 'pointer' : overExplanation ? 'default' : playAsOrg ? 'crosshair' : 'grab';
               if (canvasEl.style.cursor !== nextCursor) canvasEl.style.cursor = nextCursor;
-              if ((hoverChanged || labelChanged) && canvasEl._cellSimPaused) renderStaticFrame();
+              if ((hoverChanged || labelChanged || keyboardPreviewCleared) && canvasEl._cellSimPaused) renderStaticFrame();
             }
 
             function findOrganelleLabelHit(mx, my) {
@@ -22533,6 +22654,7 @@ var d = labToolData.cell || {};
             }
 
             function onPointerDown(e) {
+              clearKeyboardAnatomyPreview(true);
               if (typeof e.button === 'number' && e.button !== 0) return;
               if (activePointerId !== null) return;
               activePointerId = e.pointerId;
@@ -22605,7 +22727,20 @@ var d = labToolData.cell || {};
             }
             function onWheel(e) {
               e.preventDefault();
-              cam.zoom = Math.max(0.5, Math.min(10, cam.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
+              if (!e.deltaY) return;
+              var previousZoom = cam.zoom;
+              cam.zoom = Math.max(0.5, Math.min(10, previousZoom * (e.deltaY > 0 ? 0.9 : 1.1)));
+              // Keep the inspected point still while magnifying a freely positioned dish.
+              // Follow and play modes continue to own their specimen-centered camera.
+              if (!playAsOrg && !observationFollowEnabled && canvasEl.getAttribute('data-cell-view-mode') === 'observe') {
+                var zoomRect = canvasEl.getBoundingClientRect();
+                if (zoomRect.width > 0 && zoomRect.height > 0) {
+                  var pointerOffsetX = ((e.clientX - zoomRect.left) / zoomRect.width - 0.5) * W / dpr;
+                  var pointerOffsetY = ((e.clientY - zoomRect.top) / zoomRect.height - 0.5) * HH / dpr;
+                  cam.x += pointerOffsetX * (1 / previousZoom - 1 / cam.zoom);
+                  cam.y += pointerOffsetY * (1 / previousZoom - 1 / cam.zoom);
+                }
+              }
               clampCamera();
               if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom);
               if (canvasEl._cellSimPaused) renderStaticFrame();
@@ -22641,7 +22776,38 @@ var d = labToolData.cell || {};
               return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable === true;
             }
 
+            function clearKeyboardAnatomyPreview(redraw) {
+              if (!keyboardAnatomyLabel) return false;
+              keyboardAnatomyLabel = null;
+              if (redraw && canvasEl._cellSimPaused) renderStaticFrame();
+              return true;
+            }
+            function onCanvasPreviewBlur() { clearKeyboardAnatomyPreview(true); }
+            function previewCellAnatomyKey(e) {
+              if (e.type !== 'keydown' || e.target !== canvasEl || playAsOrg || canvasEl.getAttribute('data-cell-view-mode') !== 'observe' || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return false;
+              if (e.key === 'Escape' && clearKeyboardAnatomyPreview(true)) { e.preventDefault(); return true; }
+              if (!selectedOrg || !observationLabelsVisible || !_labelHitRegions.length) return false;
+              if (e.key === 'Enter' && keyboardAnatomyLabel) {
+                var chosen = keyboardAnatomyLabel;
+                keyboardAnatomyLabel = null;
+                canvasEl._cellSimShowOrganelleTooltip(chosen.org.def.id, chosen.anatomy.name);
+                e.preventDefault(); return true;
+              }
+              var direction = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+              if (!direction && e.key !== 'Home' && e.key !== 'End') return false;
+              var anatomy = selectedOrg.def.anatomy.filter(function(a) { return typeof a.lx !== 'undefined'; });
+              if (!anatomy.length) return false;
+              var current = keyboardAnatomyLabel ? anatomy.indexOf(keyboardAnatomyLabel.anatomy) : world._tooltip && world._tooltip.org === selectedOrg ? anatomy.indexOf(world._tooltip.anatomy) : -1;
+              var next = e.key === 'Home' ? 0 : e.key === 'End' ? anatomy.length - 1 : current < 0 ? (direction < 0 ? anatomy.length - 1 : 0) : (current + direction + anatomy.length) % anatomy.length;
+              keyboardAnatomyLabel = { org: selectedOrg, anatomy: anatomy[next] };
+              hoveredAnatomyLabel = null;
+              if (typeof announceToSR === 'function') announceToSR('Preview ' + anatomy[next].name + ', ' + (next + 1) + ' of ' + anatomy.length + '. Press Enter to open its explanation.');
+              if (canvasEl._cellSimPaused) renderStaticFrame();
+              e.preventDefault(); return true;
+            }
+            canvasEl.addEventListener('blur', onCanvasPreviewBlur);
             function onKey(e) {
+              if (previewCellAnatomyKey(e)) return;
               if (e.type === 'keydown' && e.key === 'Escape' && e.target === canvasEl && dismissCellExplanation()) { e.preventDefault(); return; }
               if (cellKeyTargetIsFormControl(e.target)) return;
               if (!playAsOrg || !isMovementKey(e.key)) return;
@@ -22856,7 +23022,7 @@ var d = labToolData.cell || {};
             };
             canvasEl._cellSimSetObservationLabels = function (visible) {
               observationLabelsVisible = visible !== false;
-              if (!observationLabelsVisible && !playAsOrg) { world._tooltip = null; world._highlightOrganelle = null; hoveredAnatomyLabel = null; _labelHitRegions = []; }
+              if (!observationLabelsVisible && !playAsOrg) { world._tooltip = null; world._highlightOrganelle = null; hoveredAnatomyLabel = null; keyboardAnatomyLabel = null; _labelHitRegions = []; }
               if (canvasEl._cellSimPaused) renderStaticFrame();
             };
 
@@ -23110,7 +23276,7 @@ var d = labToolData.cell || {};
             canvasEl._cellSimGetAnatomyLabels = function () {
               return _labelHitRegions.map(function(region) {
                 return { name: region.anatomy.name, x: region.x / dpr, y: region.y / dpr,
-                  width: region.w / dpr, height: region.h / dpr, selected: region.selected, hovered: region.hovered,
+                  width: region.w / dpr, height: region.h / dpr, selected: region.selected, hovered: region.hovered, keyboardPreview: region.keyboardPreview,
                   anchorX: region.sx / dpr, anchorY: region.sy / dpr, lines: region.lines.slice() };
               });
             };
@@ -23153,6 +23319,7 @@ var d = labToolData.cell || {};
               canvasEl.removeEventListener('pointerleave', onPointerLeave);
 
               canvasEl.removeEventListener('wheel', onWheel);
+              canvasEl.removeEventListener('blur', onCanvasPreviewBlur);
 
               window.removeEventListener('keydown', onKey);
 
@@ -23899,6 +24066,7 @@ var d = labToolData.cell || {};
 [data-cell-label-focus-control] input{flex:none;width:18px;height:18px;margin:0;accent-color:#215e4e;cursor:pointer}
 [data-cell-label-focus-control]:focus-within{outline:3px solid #0f766e;outline-offset:3px}
 @container(max-width:400px){[data-cell-label-focus-control]{margin:0 14px 14px}}
+[data-cell-keyboard-help]{display:grid;gap:5px;margin:0;padding:12px 20px;border-top:1px solid #dbe8e1;background:#f3f8f5;color:#4b685d;font-size:11px;line-height:1.6}[data-cell-keyboard-help] strong{font-size:11px;color:#254d3e}
 [data-cell-explanation-actions]{display:flex;flex-wrap:wrap;gap:8px;padding:14px 20px;border-top:1px solid #dbe8e1;background:#f6faf8}
 [data-cell-explanation-actions] button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:9px 14px;border:1px solid #8bab9c;border-radius:10px;background:#fff;color:#215542;font-size:12px;font-weight:750;cursor:pointer}
 [data-cell-explanation-actions] button svg{flex:none;width:16px;height:16px}
@@ -24101,7 +24269,18 @@ var d = labToolData.cell || {};
 [data-cell-diagram-heading]{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:14px 16px;background:#092e36;color:#ecfeff;border-bottom:1px solid #35616a}
 [data-cell-diagram-heading] strong{font-size:15px;letter-spacing:.2px}
 [data-cell-diagram-heading] span{font-size:11px;color:#b9dedf}
-[data-cell-diagram-caption]{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:12px 16px;background:#092e36;color:#d1eeee;font-size:12px;line-height:1.5;border-top:1px solid #35616a}
+[data-cell-selection-caption]{display:flex;flex-direction:column;gap:3px;min-width:0}
+[data-cell-selection-caption]>span{font-size:10px;letter-spacing:1px;color:#9dc8ca;font-weight:700}
+[data-cell-selection-caption]>strong{font-size:16px;line-height:1.4;color:#ecfeff}
+[data-cell-selection-caption]>small{font-size:11px;color:#b9d9db}
+[data-cell-selection-actions]{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+[data-cell-selection-actions] button{min-height:44px;padding:9px 12px;border:1px solid #779fa3;border-radius:8px;font-size:12px;font-weight:700;color:#e4f6f5;background:#123b43}
+[data-cell-selection-actions] button:first-child{background:#e0f5f0;color:#184d44;border-color:#e0f5f0}
+[data-cell-inspector-navigation]{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+[data-cell-inspector-navigation] button{min-height:44px;border:1px solid #b5cbd0;border-radius:8px;padding:9px 12px;background:white;color:#24535b;font-size:12px;font-weight:700}
+[data-cell-interior-canvas]:focus-visible{outline:3px solid #a7eee3;outline-offset:-5px}
+[data-cell-selected-structure]:focus-visible{outline:3px solid #007f8a;outline-offset:3px}
+[data-cell-diagram-caption]{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:12px 16px;background:#092e36;color:#d1eeee;font-size:12px;line-height:1.5;border-top:1px solid #35616a}
 [data-cell-diagram-toolbar]{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:12px 0}
 [data-cell-diagram-toolbar] button{min-height:44px;border:1px solid #b3cbcf;border-radius:9px;background:#fff;padding:8px 12px;color:#24515a;font-size:12px;font-weight:700}
 [data-cell-diagram-toolbar] button[aria-pressed="true"]{background:#0f5962;color:#fff}
@@ -24113,11 +24292,29 @@ var d = labToolData.cell || {};
 [data-cell-selected-structure] > div:first-child > span:last-child{font-size:22px!important;line-height:1.25;color:#163c43!important;letter-spacing:-.3px}
 [data-cell-selected-structure] p,[data-cell-selected-structure] > .leading-relaxed{font-size:14px!important;line-height:1.7!important}
 [data-cell-selected-structure] [data-cell-mastery-controls]{padding:10px!important;gap:8px!important;margin:14px 0!important;align-items:center}
-[data-cell-mastery-controls] button{min-height:40px;font-size:12px!important}
+[data-cell-mastery-controls] button{min-height:44px;font-size:12px!important}
+[data-cell-related-pathways]{margin-top:16px;padding-top:14px;border-top:1px solid #dce8e9}
+[data-cell-related-pathways] h5{font-size:13px;font-weight:800;color:#425448;margin:0 0 5px}
+[data-cell-related-pathways]>p{font-size:12px!important;line-height:1.6!important;color:#5b6d66;margin:0 0 10px}
+[data-cell-related-pathways]>button{display:flex;flex-direction:column;gap:6px;width:100%;min-height:44px;text-align:left;margin-top:8px;padding:12px;border:1px solid #d6c9ad;border-radius:10px;background:linear-gradient(130deg,#fffbef,#fff);color:#594728}
+[data-cell-related-title]{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;font-size:13px;font-weight:800}
+[data-cell-related-title]>span{font-size:18px;line-height:1}
+[data-cell-related-step]{font-size:12px;line-height:1.5;color:#756446}
+[data-cell-related-action]{font-size:11px;font-weight:800;color:#6b5029;text-decoration:underline;text-underline-offset:3px}
 [data-cell-inspector-details]{padding:14px 0;border-top:1px solid #dce8e9;margin-top:14px}
 [data-cell-inspector-details] summary{cursor:pointer;font-size:13px;font-weight:750;color:#24515a;min-height:32px}
 [data-cell-inspector-details] > div{display:block!important}
 [data-cell-inspector-details] > div > div{margin-top:10px;border:0!important;padding:0!important}
+[data-cell-status-feedback]{font-size:12px;color:#47635f;margin:-5px 0 14px}
+[data-cell-status-feedback]>div{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:8px 10px;background:#f1f7f4;border:1px solid #d7e6df;border-radius:9px}
+[data-cell-status-feedback] p{font-size:12px!important;margin:0;flex:1;min-width:120px}
+[data-cell-status-feedback] button{min-height:44px;font-size:12px;font-weight:700;color:#205e52;text-decoration:underline;text-underline-offset:3px;padding:8px 4px}
+[data-cell-review-navigation]{padding:14px;border:1px solid #c7dcd6;border-radius:12px;background:linear-gradient(135deg,#f2f8f5,#fff);margin:14px 0}
+[data-cell-review-heading]{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;color:#204c40}
+[data-cell-review-heading] strong{font-size:14px}[data-cell-review-heading] span{font-size:11px;font-weight:700;border:1px solid #c6ddd1;border-radius:20px;padding:3px 8px;background:#fff}
+[data-cell-review-navigation] p{font-size:12px!important;line-height:1.6!important;color:#49645b;margin:10px 0}
+[data-cell-review-navigation] button{min-height:44px;border:1px solid #276050;background:#276050;color:white;border-radius:8px;font-size:12px;font-weight:700;padding:10px 12px;width:100%;text-align:left}
+[data-cell-review-last]{font-weight:700}
 [data-cell-picker-search]{display:flex;gap:8px;flex-wrap:wrap}
 [data-cell-picker-search] input{min-width:0;flex:1 1 200px;min-height:44px;border:1px solid #9fbfc4;border-radius:9px;padding:9px 12px;background:#fff;color:#183f48;font-size:14px}
 [data-cell-picker-search] button{min-height:44px;border:1px solid #9fbfc4;border-radius:9px;padding:9px 12px;background:#fff;color:#24515a;font-size:12px;font-weight:700}
@@ -24362,6 +24559,7 @@ var d = labToolData.cell || {};
               var guideStep = cellGuideVisibleStep(guide, d.interiorGuideStep);
               var guideItem = guide ? guide.steps[guideStep] : null;
               var availableGuides = Object.keys(INTERIOR_GUIDES).filter(function (id) { return INTERIOR_GUIDES[id].types.indexOf(ctype) >= 0; });
+              var relatedGuides = cellStructureGuides(ctype, sel);
               function markSeen(cel, key) {
                 if (CELL_ORGANELLES[key]) {
                   var nextSeen = (cel.interiorSeen || []).slice();
@@ -24373,6 +24571,10 @@ var d = labToolData.cell || {};
               var pickerInput = String(d.interiorPickerQuery || '');
               var pickerQuery = pickerInput.trim().toLowerCase();
               var pickerReviewOnly = !!d.interiorPickerReviewOnly;
+              var nextReviewKey = nextCellReviewKey(ctype, reviewKeys, sel);
+              var studyUndo = d.interiorStudyUndo;
+              var canUndoStudy = !!(studyUndo && studyUndo.type === ctype && studyUndo.key === sel && ['mastered', 'review', 'explored'].indexOf(studyUndo.previous) >= 0 && cellStudyStatus(d, sel) === studyUndo.next);
+              var studyStatusLabels = { mastered: 'Mastered', review: 'Needs review', explored: 'Explored' };
               var pickerKeys = orgKeys.filter(function(key) {
                 var item = CELL_ORGANELLES[key];
                 return (!pickerQuery || (item.name + ' ' + item.fn).toLowerCase().indexOf(pickerQuery) >= 0) && (!pickerReviewOnly || reviewKeys.indexOf(key) >= 0);
@@ -24390,19 +24592,43 @@ var d = labToolData.cell || {};
                 });
               }
               function setMasteryOnCell(cel, key, status) {
-                if (!key || !CELL_ORGANELLES[key] || ['mastered', 'review'].indexOf(status) < 0) return cel;
-                var mastered = Array.isArray(cel.interiorMastered) ? cel.interiorMastered.slice() : [];
-                var review = Array.isArray(cel.interiorReview) ? cel.interiorReview.slice() : [];
-                var list = status === 'mastered' ? mastered : review;
-                var other = status === 'mastered' ? review : mastered;
-                if (list.indexOf(key) < 0) list.push(key);
-                var otherIndex = other.indexOf(key); if (otherIndex >= 0) other.splice(otherIndex, 1);
-                cel.interiorMastered = mastered; cel.interiorReview = review;
-                return cel;
+                return changeCellStudyStatus(cel, ctype, key, status);
               }
               function markMastery(key, status) {
-                if (!key || !CELL_ORGANELLES[key] || ['mastered', 'review'].indexOf(status) < 0) return;
-                updateCellDataFunctional(function(cel) { return markSeen(setMasteryOnCell(cel, key, status), key); });
+                if (!interiorHas(ctype, key) || ['mastered', 'review', 'explored'].indexOf(status) < 0) return;
+                updateCellDataFunctional(function(cel) {
+                  var previous = cellStudyStatus(cel, key);
+                  if (previous === status) return cel;
+                  var next = markSeen(setMasteryOnCell(cel, key, status), key);
+                  next.interiorStudyUndo = { type: ctype, key: key, previous: previous, next: status };
+                  return next;
+                });
+              }
+              function undoStudyStatus() {
+                updateCellDataFunctional(function(cel) {
+                  var action = cel.interiorStudyUndo;
+                  if (!action || action.type !== ctype || action.key !== sel || cellStudyStatus(cel, action.key) !== action.next) return cel;
+                  var next = setMasteryOnCell(cel, action.key, action.previous);
+                  next.interiorStudyUndo = null;
+                  return next;
+                });
+                focusStructureInspector();
+              }
+              function focusCellDiagram() {
+                requestAnimationFrame(function() { var canvas = document.querySelector('[data-cell-interior-canvas]'); if (canvas) { canvas.focus({ preventScroll: true }); canvas.scrollIntoView({ block: 'center' }); } });
+              }
+              function clearStructureSelection() { pick(null); focusCellDiagram(); }
+              function focusStructureInspector() {
+                requestAnimationFrame(function() { var panel = document.querySelector('[data-cell-selected-structure]'); if (panel) { panel.focus({ preventScroll: true }); panel.scrollIntoView({ block: 'nearest' }); } });
+              }
+              function goToNextReview() {
+                if (!nextReviewKey) return;
+                updateCellDataFunctional(function(cel) {
+                  cel.interiorSel = nextReviewKey; cel.interiorGuide = null; cel.interiorGuideStep = 0;
+                  cel.interiorPickerQuery = ''; cel.interiorPickerReviewOnly = true;
+                  return markSeen(cel, nextReviewKey);
+                });
+                focusStructureInspector();
               }
               function focusAdaptiveCheck() {
                 requestAnimationFrame(function() {
@@ -24449,6 +24675,16 @@ var d = labToolData.cell || {};
                 });
               }
               function openReviewQueue() {
+                if (d.interiorStudyFocus) {
+                  var firstReview = cellProgressKeys(reviewKeys, ctype).filter(function(key) { return key !== 'cytoplasm'; })[0];
+                  updateCellDataFunctional(function(cel) {
+                    cel.interiorPickerQuery = ''; cel.interiorPickerReviewOnly = true;
+                    if (firstReview) { cel.interiorSel = firstReview; cel.interiorGuide = null; cel.interiorGuideStep = 0; return markSeen(cel, firstReview); }
+                    return cel;
+                  });
+                  if (firstReview) focusStructureInspector(); else browseCellStructures();
+                  return;
+                }
                 updateCellDataFunctional(function(cel) { cel.interiorDirectoryOpen = true; cel.interiorDirectoryReviewOnly = directoryReviewCount > 0; cel.interiorDirectoryUnexploredOnly = false; cel.interiorDirectoryGroup = 'all'; cel.interiorDirectoryQuery = ''; cel.interiorStudyFocus = false; return cel; });
               }
               function stopAdaptiveQuiz() {
@@ -24472,6 +24708,7 @@ var d = labToolData.cell || {};
                   var round = normalizeCellRecallRound(cel.interiorRecallRound, ctype);
                   if (!round || round.finished) round = createCellRecallRound(ctype, [adaptiveQuizKey].concat(cel.interiorReview || []), cel.interiorMastered);
                   if (!round || round.keys[round.answers.length] !== adaptiveQuizKey) return cel;
+                  cel.interiorStudyUndo = null;
                   cel.interiorRecallRound = recordCellRecallAnswer(round, ctype, adaptiveQuizKey, correct);
                   cel.interiorQuizChoice = index; cel.interiorQuizRevealed = true;
                   cel.interiorQuizAttempts = (Number(cel.interiorQuizAttempts) || 0) + 1;
@@ -24482,10 +24719,11 @@ var d = labToolData.cell || {};
               function focusGuide() {
                 requestAnimationFrame(function() { var panel = document.querySelector('[data-cell-guided-pathway]'); if (panel) { panel.focus({ preventScroll: true }); panel.scrollIntoView({ block: 'nearest' }); } });
               }
-              function startGuide(id) {
+              function startGuide(id, structureKey) {
                 var chosen = cellGuideForType(id, ctype); if (!chosen) return;
                 updateCellDataFunctional(function(cel) {
-                  var index = cel.interiorGuide === id ? cellGuideVisibleStep(chosen, cel.interiorGuideStep) : 0;
+                  var target = chosen.steps.findIndex(function(step) { return step.key === structureKey; });
+                  var index = target >= 0 ? target : (cel.interiorGuide === id ? cellGuideVisibleStep(chosen, cel.interiorGuideStep) : 0);
                   cel.interiorGuide = id; cel.interiorGuideStep = chosen.steps[index].sourceIndex; cel.interiorSel = chosen.steps[index].key;
                   cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false;
                   return markSeen(cel, cel.interiorSel);
@@ -24544,6 +24782,7 @@ var d = labToolData.cell || {};
                 setLabToolData(function(prev) {
                   var p = prev || {}, current = Object.assign({}, p.cell || {}), imported = normalizeCellProgress(candidate, {}), type = imported.currentType;
                   var restored = applyCellProgressToCell(current, imported.byCellType[type], type);
+                  restored.interiorStudyUndo = null;
                   restored.interiorProgressTransfer = ''; restored.interiorProgressNotice = 'Progress imported and restored for ' + type + ' cell.';
                   imported.updatedAt = new Date().toISOString();
                   return Object.assign({}, p, { cell: restored, cellProgress: imported, _cellProgressHydrated: true });
@@ -24585,6 +24824,7 @@ var d = labToolData.cell || {};
                   var p = prev || {}, current = Object.assign({}, p.cell || {}), type = CELL_PROGRESS_TYPES.indexOf(current.interiorCellType) >= 0 ? current.interiorCellType : 'animal', reset = createEmptyCellProgress();
                   reset.currentType = type; reset.updatedAt = new Date().toISOString();
                   var restored = applyCellProgressToCell(current, reset.byCellType[type], type);
+                  restored.interiorStudyUndo = null;
                   restored.interiorProgressNotice = 'All cell-studio learning progress was reset.'; restored.interiorProgressTransfer = '';
                   return Object.assign({}, p, { cell: restored, cellProgress: reset, _cellProgressHydrated: true });
                 });
@@ -24651,17 +24891,18 @@ var d = labToolData.cell || {};
                   h('div', { 'data-cell-diagram-heading': true }, h('strong', null, ctype === 'bacterium' ? 'Bacterial cell' : ctype === 'plant' ? 'Plant cell' : 'Animal cell'), h('span', null, ctype === 'bacterium' ? 'PROKARYOTE' : 'EUKARYOTE')),
                   h('canvas', { key: 'cell-interior-canvas', "data-cell-interior-canvas": true, width: 760, height: 440, role: 'img',
                     'aria-label': 'Cross-section of a living ' + ctype + ' cell. ' + (showLabels ? 'All study labels are visible. ' : '') + (depthMode ? ('Optical section at ' + Math.round(depthLevel) + '% depth. ') : '') + (selOrg ? ('Selected: ' + selOrg.name + '. ' + selOrg.fn) : 'Tap an organelle, or use the buttons below, to learn what each one does.'),
-                    tabIndex: 0, 'aria-keyshortcuts': 'ArrowRight ArrowLeft Enter Space',
+                    tabIndex: 0, 'aria-describedby': 'cell-interior-keyboard-help', 'aria-keyshortcuts': 'ArrowRight ArrowLeft ArrowUp ArrowDown Home End Enter Space',
                     onKeyDown: function (e) {
                       var navKeys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'];
-                      if (navKeys.indexOf(e.key) < 0 && e.key !== 'Enter' && e.key !== ' ') return;
-                      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(sel || orgKeys[0]); return; }
+                      if (navKeys.indexOf(e.key) < 0 && ['Enter', ' ', 'Home', 'End'].indexOf(e.key) < 0) return;
+                      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(sel || orgKeys[0]); focusStructureInspector(); return; }
+                      if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); pick(orgKeys[e.key === 'Home' ? 0 : orgKeys.length - 1]); return; }
                       var current = orgKeys.indexOf(sel); if (current < 0) current = e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? 0 : -1;
                       var delta = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1;
                       pick(orgKeys[(current + delta + orgKeys.length) % orgKeys.length]); e.preventDefault();
                     },
                     style: { width: '100%', height: 'auto', display: 'block', cursor: 'pointer' },
-                    onClick: function (e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); pick(interiorHitTest(ctype, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, 760, 440, zoomLevel)); },
+                    onClick: function (e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); var key = interiorHitTest(ctype, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, 760, 440, zoomLevel); if (key) pick(key); },
                     ref: function (cv) {
                       if (!cv) { try { if (window.__alloCellInteriorCleanup) window.__alloCellInteriorCleanup(); } catch (e) {} return; }
                       if (cv._cellInteriorCleanup) cv._cellInteriorCleanup();
@@ -24727,12 +24968,18 @@ var d = labToolData.cell || {};
                       drawInteriorFrame();
                       scheduleInteriorFrame();
                     } }),
-                  h('div', { 'data-cell-diagram-caption': true }, h('span', null, selOrg ? 'Inspecting: ' + selOrg.name : 'Select a structure to begin'), h('span', null, 'Schematic · not to scale'))),
+                  h('div', { 'data-cell-diagram-caption': true },
+                    h('div', { 'data-cell-selection-caption': true }, h('span', null, selOrg ? 'SELECTED STRUCTURE' : 'EXPLORE THE CELL'), h('strong', null, selOrg ? selOrg.name : 'Select a structure to begin'), h('small', null, 'Schematic · not to scale')),
+                    selOrg && h('div', { 'data-cell-selection-actions': true },
+                      h('button', { type: 'button', onClick: focusStructureInspector, 'aria-label': 'Read about ' + selOrg.name }, 'Read structure'),
+                      h('button', { type: 'button', onClick: clearStructureSelection }, 'Clear selection')
+                    )
+                  )),
                 h('div', { 'data-cell-diagram-toolbar': true, role: 'group', 'aria-label': 'Diagram display controls' },
                   h('button', { 'aria-pressed': contrastMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorHighContrast = !contrastMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (contrastMode ? 'bg-slate-900 text-yellow-200 border-slate-950' : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100') }, contrastMode ? 'Standard contrast' : 'High contrast'),
                   h('button', { 'data-cell-label-toggle': true, 'aria-pressed': showLabels ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorShowLabels = !showLabels; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (showLabels ? 'bg-cyan-700 text-white border-cyan-800' : 'bg-cyan-50 text-cyan-900 border-cyan-300 hover:bg-cyan-100') }, showLabels ? 'Hide study labels' : 'Show study labels'),
 
-                  h('span', { className: 'text-xs text-slate-600' }, 'Tap a structure or use the arrow keys.'),
+                  h('span', { id: 'cell-interior-keyboard-help', className: 'text-xs text-slate-600' }, 'Tap to select. Keyboard: arrows move, Home/End jump, Enter opens the explanation.'),
                   h('button', { type: 'button', 'aria-pressed': !!d.interiorAnnotations, onClick: function() { upd('interiorAnnotations', !d.interiorAnnotations); } }, d.interiorAnnotations ? 'Hide diagram annotations' : 'Show diagram annotations')
                 ),
                 h('div', { className: 'mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2', 'data-cell-zoom-control': true },
@@ -24772,7 +25019,10 @@ var d = labToolData.cell || {};
                     } }),
                     h('figcaption', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', padding: '8px 12px', borderTop: '1px solid #31505a', color: '#b9dedf', fontSize: '11px', lineHeight: '1.5' } }, h('span', null, 'Structure detail'), h('span', null, 'Still schematic'))
                   ),
-                  h('button', { type: 'button', 'data-cell-browse-structures': true, onClick: browseCellStructures, className: 'mb-3 min-h-10 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-teal-800' }, 'Browse structures'),
+                  h('div', { 'data-cell-inspector-navigation': true },
+                    h('button', { type: 'button', onClick: focusCellDiagram }, 'Back to diagram'),
+                    h('button', { type: 'button', 'data-cell-browse-structures': true, onClick: browseCellStructures }, 'Browse structures')
+                  ),
                   CELL_ULTRASTRUCTURE[sel] ? h('div', { className: 'mb-2 flex flex-wrap gap-1', 'aria-label': __alloT('stem.cell.a11y_ultrastructure_features_to_notice', 'Ultrastructure features to notice') },
                     CELL_ULTRASTRUCTURE[sel].split(' | ').map(function(feature) { return h('span', { key: feature, className: 'rounded-full border px-2 py-0.5 text-[0.625rem] font-black tracking-wide', style: { borderColor: selOrg.color, color: '#334155', background: '#f8fafc' } }, feature); })) : null,
                   h('div', { className: 'rounded-lg bg-slate-50 p-2.5 text-[0.8125rem] text-slate-700 leading-relaxed' },
@@ -24783,6 +25033,20 @@ var d = labToolData.cell || {};
                     h('button', { 'aria-pressed': masteredKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'mastered'); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (masteredKeys.indexOf(sel) >= 0 ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100') }, masteredKeys.indexOf(sel) >= 0 ? 'Mastered' : 'Mark mastered'),
                     h('button', { 'aria-pressed': reviewKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'review'); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (reviewKeys.indexOf(sel) >= 0 ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, reviewKeys.indexOf(sel) >= 0 ? 'In review queue' : 'Needs review'),
                   ),
+                  h('div', { 'data-cell-status-feedback': true },
+                    canUndoStudy && h('div', null,
+                      h('p', { role: 'status' }, selOrg.name + ' marked ' + studyStatusLabels[studyUndo.next].toLowerCase() + '.'),
+                      h('button', { type: 'button', onClick: undoStudyStatus, 'aria-label': 'Undo study status change for ' + selOrg.name }, 'Undo change')
+                    ),
+                    cellStudyStatus(d, sel) !== 'explored' && h('button', { type: 'button', 'data-cell-reset-study-status': true, onClick: function() { markMastery(sel, 'explored'); } }, 'Reset study status')
+                  ),
+                  (directoryReviewCount > 0 || pickerReviewOnly) && h('section', { 'data-cell-review-navigation': true, 'aria-label': 'Review list navigation' },
+                    h('div', { 'data-cell-review-heading': true }, h('strong', null, directoryReviewCount ? 'Continue your review' : 'Review list clear'), h('span', null, directoryReviewCount + ' remaining')),
+                    h('p', null, directoryReviewCount ? (reviewKeys.indexOf(sel) >= 0 ? 'Explain this structure in your own words, then choose its study status.' : 'This structure is outside your review list. Choose another item when you are ready.') : 'No structures are marked for review. Keep exploring, or practice recall from the study controls.'),
+                    nextReviewKey && h('button', { type: 'button', onClick: goToNextReview }, 'Next review: ' + CELL_ORGANELLES[nextReviewKey].name),
+                    !nextReviewKey && directoryReviewCount > 0 && h('p', { 'data-cell-review-last': true }, 'This is the last structure in your review list.'),
+                    !directoryReviewCount && h('button', { type: 'button', onClick: function() { updateCellDataFunctional(function(cel) { cel.interiorPickerQuery = ''; cel.interiorPickerReviewOnly = false; return cel; }); browseCellStructures(); } }, 'Browse all structures')
+                  ),
                   h('details', { 'data-cell-inspector-details': true }, h('summary', null, 'Structure & connections'),
 h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2.5' },
@@ -24790,7 +25054,20 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                       h('p', { className: 'text-[12.5px] leading-relaxed text-slate-700' }, selOrg.structure)),
                     h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2.5' },
                       h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Connections in the cell'),
-                      h('p', { className: 'text-[12.5px] leading-relaxed text-slate-700' }, selOrg.connections)))),
+                      h('p', { className: 'text-[12.5px] leading-relaxed text-slate-700' }, selOrg.connections))),
+                    relatedGuides.length > 0 && h('section', { 'data-cell-related-pathways': true, 'aria-label': 'Pathways involving ' + selOrg.name },
+                      h('h5', null, 'See this structure in a pathway'),
+                      h('p', null, 'Open a guided tour at this structure, then follow the surrounding steps.'),
+                      relatedGuides.map(function(item) {
+                        var active = guideId === item.id;
+                        return h('button', { key: item.id, type: 'button', onClick: function() { startGuide(item.id, sel); }, 'aria-label': (active ? 'Return to ' : 'Follow ') + item.label + ' at ' + selOrg.name },
+                          h('span', { 'data-cell-related-title': true }, item.label, h('span', { 'aria-hidden': true }, '→')),
+                          h('span', { 'data-cell-related-step': true }, 'Step ' + (item.stepIndex + 1) + ' of ' + item.stepCount + ' · ' + item.title),
+                          h('span', { 'data-cell-related-action': true }, active ? 'Return to pathway' : 'Explore from here')
+                        );
+                      })
+                    )
+                  ),
                   h('div', { className: 'flex flex-wrap gap-1 items-center mb-1' },
                     h('span', { className: 'text-[10.5px] font-bold text-slate-600 uppercase tracking-wide' }, __alloT('stem.cell.found_in', 'Found in') + ':'),
                     ['animal', 'plant', 'bacterium'].map(function (tp) {
@@ -24798,7 +25075,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                       return h('span', { key: tp, className: 'text-[10.5px] font-bold px-1.5 py-0.5 rounded-full ' + (has ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-600 line-through') }, tp);
                     })),
                   selOrg.bust ? h('div', { className: 'mt-1.5 p-2 rounded-lg text-[0.75rem] leading-snug', style: { background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', color: '#92400e' } }, '⚠ ', h('strong', null, 'Myth-bust: '), selOrg.bust) : null
-                ) : h('div', { 'data-cell-inspector-empty': true }, h('div', { className: 'text-xs font-bold uppercase tracking-wide text-teal-700' }, 'Structure inspector'), h('h4', { className: 'mt-3 text-xl font-bold text-slate-800' }, 'Every structure has a role.'), h('p', { className: 'mt-3 text-sm leading-relaxed text-slate-600' }, 'Choose a structure in the diagram or the list. Explore its function, see how it connects, and mark what you want to revisit.'), h('button', { type: 'button', onClick: function() { pick(orgKeys[0]); }, className: 'mt-4 min-h-10 rounded-lg bg-teal-800 px-4 py-2 text-sm font-bold text-white' }, 'Start with the membrane')),
+                ) : h('div', { 'data-cell-inspector-empty': true }, h('div', { className: 'text-xs font-bold uppercase tracking-wide text-teal-700' }, 'Structure inspector'), h('h4', { className: 'mt-3 text-xl font-bold text-slate-800' }, 'Every structure has a role.'), h('p', { className: 'mt-3 text-sm leading-relaxed text-slate-600' }, 'Choose a structure in the diagram or the list. Explore its function, see how it connects, and mark what you want to revisit.'), h('button', { type: 'button', onClick: function() { pick(orgKeys[0]); focusStructureInspector(); }, className: 'mt-4 min-h-10 rounded-lg bg-teal-800 px-4 py-2 text-sm font-bold text-white' }, 'Start with the membrane')),
                 h('div', { 'data-cell-picker-panel': true, role: 'region', 'aria-label': 'Explore cell structures' }, h('h5', { className: 'text-sm font-bold text-slate-700' }, 'Explore structures'),
                   h('label', { htmlFor: 'cell-structure-search', className: 'block mt-3 mb-1 text-xs font-bold text-slate-600' }, 'Find a structure or function'),
                   h('div', { 'data-cell-picker-search': true },
@@ -25235,7 +25512,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
               React.createElement("canvas", {
 
-                "data-cell-sim-canvas": "", "data-cell-view-mode": d.mode || 'observe', "data-cell-sim-state": activeMissionComplete ? "complete" : activeMissionEvidenceComplete ? "explain" : activePlayPredictionPending ? "predict" : activePlayDef ? "active" : "observe", role: "img", "aria-label": activePlayDef && activePlayTutorial && activeTargetVisual ? (activePlayPredictionPending ? "Prediction checkpoint. Choose what you expect before controlling " + activePlayDef.label + ". " : "Interactive cell biology simulation. Playing as " + activePlayDef.label + ". ") + "Mission: " + activePlayTutorial.objective + " Target key: " + activeTargetVisual.keyline + ". " + activePlayTargetStatusText + " Control models " + activePlayTutorial.movement + "." : "Interactive cell biology simulation. Click or tap organisms, or use the organism buttons below, to inspect behavior and anatomy. Press Escape to dismiss an anatomy explanation.", "aria-describedby": "cell-sim-status",
+                "data-cell-sim-canvas": "", "data-cell-view-mode": d.mode || 'observe', "data-cell-sim-state": activeMissionComplete ? "complete" : activeMissionEvidenceComplete ? "explain" : activePlayPredictionPending ? "predict" : activePlayDef ? "active" : "observe", role: "img", "aria-label": activePlayDef && activePlayTutorial && activeTargetVisual ? (activePlayPredictionPending ? "Prediction checkpoint. Choose what you expect before controlling " + activePlayDef.label + ". " : "Interactive cell biology simulation. Playing as " + activePlayDef.label + ". ") + "Mission: " + activePlayTutorial.objective + " Target key: " + activeTargetVisual.keyline + ". " + activePlayTargetStatusText + " Control models " + activePlayTutorial.movement + "." : "Interactive cell biology simulation. Click or tap organisms, or use the organism buttons below, to inspect behavior and anatomy. Press Escape to dismiss an anatomy explanation.", "aria-describedby": activeCellMode === 'observe' && selDef ? "cell-sim-status cell-anatomy-keyboard-help" : "cell-sim-status", "aria-keyshortcuts": activeCellMode === 'observe' && selDef ? "ArrowLeft ArrowRight ArrowUp ArrowDown Home End Enter Escape" : undefined,
 
                 tabIndex: 0,
                 "aria-keyshortcuts": activePlayDef && activePlayTutorial && !activePlayTutorial.stationary && !activePlayPredictionPending && !activeMissionEvidenceComplete ? "ArrowUp ArrowDown ArrowLeft ArrowRight W A S D" : undefined,
@@ -25733,6 +26010,10 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
               activeCellMode === 'observe' && cellExplanation && React.createElement('label', { 'data-cell-label-focus-control': true },
                 React.createElement('input', { type: 'checkbox', checked: !!d.focusSelectedLabel, onChange: function(e) { upd('focusSelectedLabel', e.target.checked); } }),
                 React.createElement('span', null, 'Show only selected label')
+              ),
+              activeCellMode === 'observe' && React.createElement('p', { id: 'cell-anatomy-keyboard-help', 'data-cell-keyboard-help': true },
+                React.createElement('strong', null, 'Keyboard exploration'),
+                React.createElement('span', null, 'Focus the dish, then use arrow keys to preview a structure. Enter opens it; Escape clears the preview. Home and End jump to the first and last structures.')
               ),
               React.createElement('div', { 'data-cell-explanation-actions': true, role: 'group', 'aria-label': 'Browse cell structures' },
                 React.createElement('button', { type: 'button', 'aria-label': 'Previous structure', onClick: function() { stepCellExplanation(-1); } }, cellControlIcon('previous'), 'Previous'),

@@ -8,7 +8,8 @@
     "gradeLevel": "7th Grade",
     "standards": "NGSS MS-LS1-1 (conduct an investigation to provide evidence that living things are made of cells, either one cell or many); NGSS MS-LS1-2 (develop and use a model to describe the function of a cell and its parts); CCSS.ELA-LITERACY.RST.6-8.7 (integrate quantitative or technical information expressed in words with a version expressed visually)",
     "createdAt": "2026-07-21T01:00:00.000Z",
-    "imageShotList": "allopacks/cell_structure_grade7.IMAGES.md"
+    "imageShotList": "allopacks/cell_structure_grade7.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Cell Structure and Function",
   "history": [
@@ -55,7 +56,7 @@
       "title": "The Factory You Are Made Of",
       "timestamp": "2026-07-21T01:00:01.000Z",
       "data": "## The Factory You Are Made Of\n\nIn 1665, Robert Hooke pointed a crude microscope at a thin slice of cork and saw tiny empty boxes. They reminded him of the small rooms monks lived in — *cells*. He was looking at the walls of dead plant cells, and he had no idea he had just named the basic unit of all life.\n\nEvery living thing is made of cells. Some organisms are a single cell; you are roughly 30 trillion of them. And a cell is not a bag of goo. It is a factory with departments.\n\nThe **cell membrane** is the security gate. It surrounds the cell and decides what enters and leaves — food and oxygen in, waste out. It is *selectively permeable*, which is a precise way of saying it lets some things through and blocks others.\n\nThe **nucleus** is the office where the instructions live. It holds DNA, the manual for building and running everything. Most of your cells carry a complete copy of that manual, even though a skin cell only ever reads the skin pages.\n\nThe **mitochondria** are the power plants. They take sugar and oxygen and release usable energy. Muscle cells, which need enormous energy, are packed with them.\n\nThe **cytoplasm** is the factory floor — the jelly-like fluid where the parts sit and most reactions happen. **Ribosomes** are the assembly machines that build proteins, the workhorses of the cell. The **endoplasmic reticulum** is the hallway system that moves those products around, and the **Golgi apparatus** is the shipping department: it packages proteins and labels them for delivery.\n\nPlant cells have three parts animal cells lack. A rigid **cell wall** outside the membrane gives structure — it is why celery snaps and you do not. **Chloroplasts** capture sunlight for photosynthesis. And a large central **vacuole** stores water; when it is full the plant stands firm, and when it empties the plant wilts. That wilted houseplant is a storage problem, not a broken stem.\n\nHere is what makes this worth memorizing: every one of those departments is running in you, right now, thirty trillion times over, with no supervision. Structure fits function at every level of biology, and the cell is where that pattern starts.",
-      "meta": "7th Grade • Leveled reading • ~370 words",
+      "meta": "7th Grade • Leveled reading",
       "imageSlot": "cl-img-animal-plant-cells"
     },
     {

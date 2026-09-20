@@ -1,0 +1,78 @@
+{
+  "checks": [],
+  "errors": [],
+  "scans": [
+    {
+      "state": "unmarked",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "unmarked",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "zero",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "zero",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "same-fill",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "same-fill",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "refill",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "refill",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    }
+  ]
+}

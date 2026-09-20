@@ -260,15 +260,8 @@ describe('provenance and queue freshness refinements (2026-08-23)', () => {
 });
 
 describe('reviewed-findings attestation (2026-08-23, #2)', () => {
-  it('marking reviewed persists onto the result as metadata only (no html change, no revision bump)', () => {
-    const at = view.indexOf("setPdfFixResult((prev) => prev ? { ...prev, reviewedFindings: { ...(prev.reviewedFindings || {}), [_k]: _at } } : prev);");
-    expect(at).toBeGreaterThan(-1);
-    // Reset clears BOTH layers - session state and the persisted attestations.
-    expect(view).toContain("{ setReviewDismissed({}); setPdfFixResult((prev) => prev ? { ...prev, reviewedFindings: null } : prev); }");
-    // The panel overlays session clicks on the persisted map, so restored sessions show their attestations.
-    expect(view).toContain("const _rfDismissed = { ...((pdfFixResult && pdfFixResult.reviewedFindings) || {}), ..._reviewDismissed };");
-  });
-
+  // Review updates are exercised behaviorally in remediation_review_attestations.test.js
+  // and by keyboard/ownership cases in remediation_continuity.spec.ts.
   it('provenance survives the project file: save projection + ALL THREE restore projections', () => {
     for (const [name, src] of [['App.jsx', host], ['AlloFlowANTI.txt', anti]]) {
       expect(src, name + ' save').toContain("humanEditsAdopted: Number(cur.humanEditsAdopted) || 0,");

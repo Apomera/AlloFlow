@@ -29,7 +29,7 @@ describe('Simplified View read-aloud sentence alignment', () => {
     expect(source).toContain("if (typeof splitReferencesFromBody === 'function') split = splitReferencesFromBody(fullText) || split;");
     expect(source).toContain("return '## ' + inner.trim();");
     expect(source).toContain('var simplifiedDisplayBody = simplifiedContentParts.body;');
-    expect(source).toContain('var simplifiedReadAloudText = simplifiedDisplayBody.trim();');
+    expect(source.includes('var simplifiedReadAloudText = protectedOriginal ? simplifiedDisplayBody : simplifiedDisplayBody.trim();')).toBe(true);
     expect(source).toContain('var simplifiedReferences = resolveSimplifiedReferences(simplifiedDisplayBody, simplifiedContentParts.references, simplifiedInputReferences, adaptedCitationAudit);');
     expect(source).toContain("if (!auditAllowsFallback || !simplifiedBodyHasCitationMarkers(adaptedBody)) return '';");
     expect(source).toContain("if (ownedReferences) return ownedReferences;");

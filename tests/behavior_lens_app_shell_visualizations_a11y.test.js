@@ -71,7 +71,7 @@ describe('BehaviorLens app shell and visualization accessibility', () => {
     const svgContexts = lines.flatMap((line, index) =>
       line.includes("h('svg'") ? [lines.slice(index, index + 8).join(' ')] : []
     );
-    expect(svgContexts).toHaveLength(13);
+    expect(svgContexts).toHaveLength(14);
     for (const context of svgContexts) {
       expect(context).toMatch(/role:\s*['"](?:img|group)['"]/);
       expect(context).toContain("'aria-label':");
@@ -94,7 +94,8 @@ describe('BehaviorLens app shell and visualization accessibility', () => {
 
   it('programmatically names the audited form and file controls', () => {
     expect(source).toContain("'aria-label': f.label");
-    expect(source).toContain("'aria-label': d.label");
+    expect(source).toContain("htmlFor: 'bl-definition-measure'");
+    expect(source).toContain("id: 'bl-definition-measure'");
     expect(source).toContain("'aria-label': 'Additional context'");
     expect(source).toContain("'aria-label': 'Import shared BehaviorLens workspace JSON file'");
     expect(source).toContain("'aria-label': 'Load BehaviorLens workspace JSON file'");

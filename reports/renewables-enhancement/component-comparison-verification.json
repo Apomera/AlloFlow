@@ -1,0 +1,53 @@
+{
+  "verifiedAt": "2026-09-19T21:19:59.175Z",
+  "feature": "Component baseline comparisons",
+  "testsPassed": 487,
+  "testFiles": 21,
+  "newTests": 17,
+  "testPool": "forks",
+  "retry": {
+    "reason": "The full-run terminal reported a 10000ms beforeEach hook timeout; the JSON report retains its beforeEach stack.",
+    "file": "tests/renewables_microgrid.test.js",
+    "testsPassed": 23,
+    "hookTimeoutMs": 60000
+  },
+  "accessibilityAudits": 20,
+  "componentsCompared": 27,
+  "pageErrors": 0,
+  "consoleErrors": 0,
+  "mobileWidths": [
+    390,
+    320
+  ],
+  "mobileOverflow": false,
+  "visualReview": [
+    "component-comparison-pv.png",
+    "component-comparison-320.png",
+    "component-comparison-dark.png"
+  ],
+  "sha256": "a4146132221469c190d1b7919eca5a39ced090f3403bf21645c80a1c04917c6c",
+  "sourceMirrorIdentical": true,
+  "previewMatchesSource": true,
+  "behavior": {
+    "componentsCompared": 27,
+    "baselineCapture": true,
+    "savePausesPlayback": true,
+    "saveKeepsFocus": true,
+    "baselinePreserved": true,
+    "baselinePromotion": true,
+    "notebookFocus": true,
+    "notesPreserved": true,
+    "pairedProportions": true,
+    "positiveNegativeZero": true,
+    "percentagePoints": true,
+    "batteryUnits": true,
+    "scenarioAndTimeContext": true,
+    "multipleInputs": true,
+    "longNameWrap": true,
+    "mobileOverflow": false,
+    "flowFallback": true,
+    "contextRecovery": true,
+    "singleRenderer": true
+  },
+  "validationScope": "Isolated local React and Three.js host; no deployed full-application check."
+}

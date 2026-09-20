@@ -600,7 +600,7 @@
             var meta = OPERATIONS[op], active = operation === op;
             return h('button', { key: op, onClick: function () { markOperation(op); }, 'aria-pressed': active,
               className: 'rounded-xl px-3 py-2 text-sm font-black transition focus:outline-none focus:ring-2 focus:ring-offset-2',
-              style: { background: active ? themeAccent(meta) : card, color: active ? (isContrast ? '#000000' : '#ffffff') : text, border: '2px solid ' + themeAccent(meta) } }, meta.symbol + ' ' + meta.label);
+              style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere', background: active ? themeAccent(meta) : card, color: active ? (isContrast ? '#000000' : '#ffffff') : text, border: '2px solid ' + themeAccent(meta) } }, meta.symbol + ' ' + meta.label);
           })
         );
       }
@@ -944,12 +944,21 @@
         ),
         h('nav', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-1 rounded-xl p-1', role: 'tablist', 'aria-label': t('stem.arithmetic.arithmetic_studio_sections', "Arithmetic Studio sections"), style: { background: card, border: '1px solid ' + border } }, tabs.map(function (item, index) {
           var active = tab === item.id;
-          return h('button', { key: item.id, id: 'arithmetic-studio-tab-' + item.id, type: 'button', role: 'tab', 'aria-selected': active, 'aria-controls': 'arithmetic-studio-panel', tabIndex: active ? 0 : -1, onKeyDown: function (event) { moveTab(event, index); }, onClick: function () { update({ tab: item.id }); }, className: 'rounded-lg px-2 py-2 text-xs font-bold', style: { background: active ? themeAccent(opMeta) : 'transparent', color: active ? (isContrast ? '#000000' : '#ffffff') : text } }, item.label);
+          return h('button', { key: item.id, id: 'arithmetic-studio-tab-' + item.id, type: 'button', role: 'tab', 'aria-selected': active, 'aria-controls': 'arithmetic-studio-panel', tabIndex: active ? 0 : -1, onKeyDown: function (event) { moveTab(event, index); }, onClick: function () { update({ tab: item.id }); }, className: 'rounded-lg px-2 py-2 text-xs font-bold', style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere', background: active ? themeAccent(opMeta) : 'transparent', color: active ? (isContrast ? '#000000' : '#ffffff') : text } }, item.label);
         })),
         (tab === 'learn' || tab === 'practice') && renderOperationPicker(),
-        tab === 'practice' && h('div', { className: 'flex flex-wrap items-center gap-2' },
-          h('span', { className: 'text-xs font-bold', style: { color: muted } }, t('stem.arithmetic.practice_level', "PRACTICE LEVEL:")),
-          [1, 2, 3].map(function (n) { return h('button', { key: n, type: 'button', onClick: function () { update({ level: n, practiceIndex: 0, practiceProblemId: null, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, showPracticeHint: false }); }, 'aria-pressed': level === n, className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: level === n ? themeAccent(opMeta) : card, color: level === n ? (isContrast ? '#000000' : '#ffffff') : text, border: '1px solid ' + themeAccent(opMeta) } }, n === 1 ? t('stem.arithmetic.foundations', "Foundations") : n === 2 ? t('stem.arithmetic.multi_digit', "Multi-digit") : t('stem.arithmetic.challenge', "Challenge")); })
+        tab === 'practice' && h('div', { role: 'group', 'aria-label': t('stem.arithmetic.practice_level_group', 'Practice level'), className: 'flex flex-wrap items-center gap-2' },
+          h('span', { className: 'text-xs font-bold', style: { color: muted, flexBasis: '100%' } }, t('stem.arithmetic.practice_level', "PRACTICE LEVEL:")),
+          [1, 2, 3].map(function (n) {
+            var example = PRACTICE.filter(function(p) { return p.op === operation && p.level === n; })[0];
+            var label = n === 1 ? t('stem.arithmetic.foundations', 'Foundations') : n === 2 ? t('stem.arithmetic.multi_digit', 'Multi-digit') : t('stem.arithmetic.challenge', 'Challenge');
+            return h('button', { key: n, type: 'button', 'data-arithmetic-level': n, onClick: function () {
+              if (n === level) return;
+              update({ level: n, practiceIndex: 0, practiceProblemId: null, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, showPracticeHint: false });
+            }, 'aria-pressed': level === n, className: 'rounded-xl px-3 py-2 text-xs font-bold text-left', style: { minHeight: 44, minWidth: 0, flex: '1 1 140px', whiteSpace: 'normal', overflowWrap: 'anywhere', background: level === n ? themeAccent(opMeta) : card, color: level === n ? (isContrast ? '#000000' : '#ffffff') : text, border: '1px solid ' + themeAccent(opMeta) } },
+              h('span', { className: 'block' }, label),
+              example && h('span', { className: 'block mt-1 font-normal' }, t('stem.arithmetic.level_example', 'Example: ') + example.a + ' ' + opMeta.symbol + ' ' + example.b));
+          })
         ),
         h('div', { id: 'arithmetic-studio-panel', role: 'tabpanel', 'aria-labelledby': 'arithmetic-studio-tab-' + tab, tabIndex: 0, className: 'space-y-3' }, tab === 'learn' ? renderLearn() : tab === 'practice' ? renderPractice() : tab === 'errors' ? renderErrors() : renderApply()),
         h('footer', { className: 'rounded-xl p-3 text-xs', style: { background: card, color: muted, border: '1px solid ' + border } },

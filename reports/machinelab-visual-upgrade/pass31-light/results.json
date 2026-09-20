@@ -1,0 +1,25 @@
+{
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "held-lever",
+    "held-pulley",
+    "held-windlass",
+    "held-ramp",
+    "held-wedge",
+    "held-screw",
+    "held-390",
+    "held-320"
+  ],
+  "checks": [
+    "lever: exact pose, persistent hold, focus handoff, model identity and restart timer isolation",
+    "pulley: exact pose, persistent hold, focus handoff, model identity and restart timer isolation",
+    "windlass: exact pose, persistent hold, focus handoff, model identity and restart timer isolation",
+    "ramp: exact pose, persistent hold, focus handoff, model identity and restart timer isolation",
+    "wedge: exact pose, persistent hold, focus handoff, model identity and restart timer isolation",
+    "screw: exact pose, persistent hold, focus handoff, model identity and restart timer isolation",
+    "Keyboard hold and slider focus at 390",
+    "Keyboard hold and slider focus at 320",
+    "Motion-off full pose can be held"
+  ]
+}

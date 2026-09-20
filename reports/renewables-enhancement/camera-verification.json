@@ -1,0 +1,12 @@
+{
+  "sourceSha256": "a6d2653ad45f0f062f1eae6c87ab2ac01ee9ae314bd64c638fb1e9b8bf7d7d79",
+  "mirrorMatches": true,
+  "previewMatches": true,
+  "testsPassed": 99,
+  "testFiles": 4,
+  "accessibilityAudits": 20,
+  "annotationFrames": 45,
+  "pageErrors": [],
+  "consoleErrors": [],
+  "pickingAllStandardViews": true
+}

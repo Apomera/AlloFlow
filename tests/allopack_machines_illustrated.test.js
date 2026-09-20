@@ -10,6 +10,7 @@ const glossarySource=fs.readFileSync('view_glossary_source.jsx','utf8');
 const getAlt=new Function(glossarySource.slice(0,glossarySource.indexOf('// Lazy Lucide'))+'\nreturn getGlossaryImageAlt;')();
 const slug='simple_machines_grade5',folder='allopacks/media/'+slug+'/',pack=read('allopacks/illustrated/'+slug+'.allopack.json'),original=read('allopacks/'+slug+'.allopack.json'),manifest=read(folder+'manifest.json');
 require('../dev-tools/machine_content_refinements.cjs').refine(original);
+require('../dev-tools/lib/allopack_quality_refinements_20260919.cjs').apply(original,slug,{targetEnvelope:pack.allopack});
 const get=t=>pack.history.find(r=>r.type===t),panels=pack.history.filter(r=>r.type==='image').flatMap(r=>r.data.visualPlan.panels);
 const slots=[...get('glossary').data.map(g=>({url:g.image,alt:g.imageAlt,hash:g.imageAltHash})),...get('anchor-chart').data.sections.map(s=>({url:s.iconUrl,alt:s.iconAlt,hash:s.iconAltHash})),...get('concept-sort').data.items.map(s=>({url:s.image,alt:s.imageAlt,hash:s.imageAltHash})),...panels.map(p=>({url:p.imageUrl,alt:p.alt,hash:p.altHash}))];
 describe('Simple Machines illustrated edition',()=>{
@@ -35,7 +36,7 @@ describe('Simple Machines model accuracy',()=>{
  const c=get('applied-challenge').data;
  expect(c.instructions).toContain('250 grams');expect(c.instructions).toContain('10 centimeters');
  expect(c.brief.context).toContain('newtons');expect(c.instructions).toContain('Do not lift a full');
- expect(get('quiz').data.questions[4].correctAnswer).toContain('thermal energy');
+ expect(get('quiz').data.questions[4].correctAnswer).toContain('mechanical energy becomes heat');
  expect(read(folder+'content-refinements.json').length).toBeGreaterThan(20);
  });
 });

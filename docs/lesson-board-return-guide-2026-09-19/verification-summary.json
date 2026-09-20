@@ -1,0 +1,9 @@
+{
+  "tests": 87,
+  "finalGuideTests": 18,
+  "cooperativeBrowsers": 4,
+  "cooperativeWrites": 42,
+  "accessibilityConfigurations": 38,
+  "bundleSha256": "c6633cf6a39f72891a35c8a8ee032ef3cd3e32f562a0444309eda987cc2cc7f5",
+  "notes": "Full cooperative journey preceded final wording and button-order polish; focused guide suite and 11 browser configurations reran on final build."
+}

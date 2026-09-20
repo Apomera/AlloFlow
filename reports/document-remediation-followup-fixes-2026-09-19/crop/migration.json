@@ -1,0 +1,19 @@
+{
+  "originalUnitSha256": "218b6e037e0fed436ab9be37c641f0f27755aefbe2502a6c5f2f078a4774b558",
+  "transferredBrowserCases": 3,
+  "preservedBrowserAssertions": 11,
+  "originalBrowserAssertions": [
+    "expect(await page.getByRole('button', { name: 'Adjust crop for this image' }).count()).toBe(0);",
+    "expect(await page.locator('figure img').first().getAttribute('src')).toBe('data:image/png;base64,' + replacement.toString('base64'));",
+    "expect(await page.locator('figcaption').count()).toBe(1);",
+    "expect(await page.locator('input[type=\"file\"]').count()).toBe(0);",
+    "expect(await page.getByRole('button', { name: 'Adjust crop for this image' }).count()).toBe(0);",
+    "expect(await page.locator('#source').count()).toBe(1);",
+    "expect(await page.locator('#answer').inputValue()).toBe('Preserved');",
+    "expect(await page.locator('#note').textContent()).toBe('Source note');",
+    "expect(await page.locator('figure img, figure figcaption, figure details').count()).toBe(3);",
+    "expect(await page.evaluate(() => window.cropRequested)).toBe('pdf-img-1');",
+    "expect(await page.locator('[data-alloflow-crop-control],[data-alloflow-image-replace]').count()).toBe(0);"
+  ],
+  "manualBrowserLifecycleRemoved": true
+}

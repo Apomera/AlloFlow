@@ -1,0 +1,99 @@
+{
+  "scope": "Latest complete run per suite; final merged/view and QR contract checks supersede prior failures.",
+  "files": 13,
+  "tests": 125,
+  "passed": 125,
+  "suites": [
+    {
+      "name": "homework_link_conversion.test.js",
+      "report": "conversion-results.json",
+      "tests": 9,
+      "passed": 9,
+      "failed": []
+    },
+    {
+      "name": "novak_delivery_preview.test.js",
+      "report": "merged-results.json",
+      "tests": 10,
+      "passed": 10,
+      "failed": []
+    },
+    {
+      "name": "qr_student_byok.test.js",
+      "report": "conversion-results.json",
+      "tests": 7,
+      "passed": 7,
+      "failed": []
+    },
+    {
+      "name": "self_contained_pack.test.js",
+      "report": "conversion-results.json",
+      "tests": 10,
+      "passed": 10,
+      "failed": []
+    },
+    {
+      "name": "shared_activity_extraction_contract.test.js",
+      "report": "conversion-results.json",
+      "tests": 10,
+      "passed": 10,
+      "failed": []
+    },
+    {
+      "name": "first_wave_cdn_extraction.test.js",
+      "report": "merged-results.json",
+      "tests": 3,
+      "passed": 3,
+      "failed": []
+    },
+    {
+      "name": "homework_selection_integrity.test.js",
+      "report": "merged-results.json",
+      "tests": 13,
+      "passed": 13,
+      "failed": []
+    },
+    {
+      "name": "novak_reading_curation_delivery.test.js",
+      "report": "merged-results.json",
+      "tests": 4,
+      "passed": 4,
+      "failed": []
+    },
+    {
+      "name": "novak_reading_delivery_export.test.js",
+      "report": "merged-results.json",
+      "tests": 15,
+      "passed": 15,
+      "failed": []
+    },
+    {
+      "name": "novak_selected_assignment.test.js",
+      "report": "merged-results.json",
+      "tests": 5,
+      "passed": 5,
+      "failed": []
+    },
+    {
+      "name": "qr_student_shell.test.js",
+      "report": "final-qr-results.json",
+      "tests": 20,
+      "passed": 20,
+      "failed": []
+    },
+    {
+      "name": "resource_restore_extraction.test.js",
+      "report": "merged-results.json",
+      "tests": 6,
+      "passed": 6,
+      "failed": []
+    },
+    {
+      "name": "student_assignment_restore_readiness.test.js",
+      "report": "merged-results.json",
+      "tests": 13,
+      "passed": 13,
+      "failed": []
+    }
+  ]
+}

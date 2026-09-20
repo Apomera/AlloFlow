@@ -1,0 +1,24 @@
+{
+  "unusedGettersBefore": [
+    "useOwnSources",
+    "setUseOwnSources"
+  ],
+  "unusedGettersAfter": [
+    "useOwnSources",
+    "setUseOwnSources"
+  ],
+  "resetShimExpectedPatternBefore": false,
+  "resetShimExpectedPatternAfter": false,
+  "explicitPreviewConfigBefore": false,
+  "explicitPreviewConfigAfter": false,
+  "desktopPreviewConfig": [
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "expectedLiteralPresent": false
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "expectedLiteralPresent": false
+    }
+  ]
+}

@@ -1,20 +1,22 @@
 # AlloFlow WCAG 2.2 A/AA Current Audit
 
-**Audit date:** September 12, 2026 (America/New_York)
-**Product:** AlloFlow v1.5 web release metadata; current local working tree
-**Status:** Five confirmed findings remediated and verified locally; incomplete product-wide verification.
+**Updated:** September 19, 2026 (America/New_York)
 
-See the [regression triage and isolated retest](../reports/wcag-audit-2026-09-12/regression-triage.md) for the distinction between runner errors, fixture diagnostics, and potential product defects.
+**Product:** AlloFlow v1.6 web metadata; local working tree
 
-## Current results
+**Status:** Additional keyboard and ARIA issues repaired; product-wide verification incomplete.
 
-- **6926 tests: 6826 passed, 97 failed, 3 pending** in the accessibility regression run (808 selected test files).
-- **616 source files** scanned; **49 non-exempt heuristic candidates**, not confirmed WCAG failures.
-- **All five confirmed findings corrected locally:** Video Studio contrast and preflight semantics; catalog navigation target size; Quick Start hover contrast; loaded-workspace button names. The [remediation report](../reports/wcag-audit-2026-09-12/remediation/README.md) records 38/38 targeted tests passing, nine initial-page states passing axe/reflow, and the explicit workspace checks. The broad regression totals above remain the original baseline.
-- A Create-tab ARIA reference was missing while its panel loaded, then resolved in a follow-up with the source panel ready; that loaded desktop probe had zero axe A/AA violations and retained incomplete checks.
-- AI Backend Settings passed the sampled Enter/Tab/Escape/focus-return check.
-- Initial chooser passed axe and document reflow at 1280/320px; narrow text-spacing probes also retained document width. These findings cover sampled states only.
+See the [September 19 follow-up](../reports/wcag-audit-2026-09-19/README.md) and [current VPAT](../VPAT-2.5-WCAG-AlloFlow.md).
 
-See the [full dated audit and reproducible evidence](../reports/wcag-audit-2026-09-12/README.md), [current VPAT](../VPAT-2.5-WCAG-AlloFlow.md), and [manual accessibility test plan](../docs/accessibility-manual-test-plan.md). The [July 11 audit](../docs/accessibility/archive/AlloFlow-WCAG-2026-07-11.md) is archived as historical engineering evidence; its remediation statements are not fresh September results.
+- The [History contrast/reflow follow-up](../reports/wcag-audit-2026-09-19/history-contrast/README.md) fixes placeholder, secondary-label and dark Save contrast, plus mobile new-unit and resource-title clipping. Six theme-state axe samples and six mobile bounds/spacing samples pass; 17 targeted regression assertions pass. This uses a live component fixture; icons and complete workflows remain outside scope.
+- Closed the Create-tab loading finding INV-01 in a [fresh local sidebar preview](../reports/wcag-audit-2026-09-19/sidebar-followup/README.md): stable labelled panels, complete tab-key behavior, visible translated names, History count contrast/status semantics, and menu target/focus checks. The catalog grid now prevents inner clipping at 320px and enlarged text spacing. Eight browser interaction/layout checks and five sidebar axe/reflow states pass; 34 distinct regression assertions pass across scoped runs. Gradient contrast and screen-reader checks remain open.
+- Repaired keyboard access to Architecture Studio statistics, Circuit Builder schematic and Fire Ecology wide charts. Native scrolling passes for all three regions, including sequential focus, actual arrow-key movement and Tab exit; a separate focused run passes all three search states. Full-page timeout results are retained in the report.
+- Fixed the sidebar tool-count badge contrast under enlarged text spacing; the ready workspace passes desktop and mobile probes. Eighteen sidebar accessibility/catalog assertions pass.
+- Repaired Raptor Hunt search ARIA in empty, matching and no-match states; improved decorative quick-start number contrast. Twelve distinct overview focus-profile cases pass across the targeted retests.
+- Corrected themed math fixtures to match the production host. Nine theme cases plus one light-state control pass; Number Line required no product change. The earlier Titration titrate failure also passes on current code.
+- Earlier fixes remain covered by 38 passing assertions across six files and nine current initial-page browser states with no axe A/AA violations. Incomplete rules and unloaded catalog content remain explicit limitations.
+- The prior 6,926-test run (6,826 passed, 97 failed, 3 pending) and 49 source-scan candidates are **September 12 historical evidence**, not fresh v1.6 results. Broad runs interrupted this week are not counted as passes.
 
-The current run does not establish complete WCAG 2.2 AA conformance. Screen-reader, browser-native zoom, authenticated and live processes, third-party integrations, generated exports and every tool/state still require verification. Viewport reflow is not a browser zoom test, and keyboard alternatives alone do not establish a single-pointer alternative for dragging.
+The [September 12 audit](../reports/wcag-audit-2026-09-12/README.md), [triage](../reports/wcag-audit-2026-09-12/regression-triage.md), and [archived v1.5 VPAT](../docs/accessibility/archive/AlloFlow-ACR-v1.5-2026-09-12.md) remain available.
+
+Full conformance is not established. Continue the [manual test plan](../docs/accessibility-manual-test-plan.md), including screen-reader, native browser zoom, complete live/authenticated workflows, media alternatives and generated-output checks. Other unresolved fixture/product diagnostics remain open; INV-01 is repaired in the current local source and preview.

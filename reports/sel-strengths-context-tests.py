@@ -1,0 +1,51 @@
+from pathlib import Path
+s=Path('tests/sel_friendship_rehearsal_browser.test.js').read_text(encoding='utf-8');s=s[:s.index('  const field=')]
+s=s.replace('sel_tool_friendship.js','sel_tool_strengths.js').replace('sel-friendship-rehearsal','sel-strengths-context')
+s=s.replace("source.match(/var FRIEND_SCENARIOS = (\\{[\\s\\S]*?\\n\\});/)[1]", "source.match(/var STRENGTH_CASES = (\\[[\\s\\S]*?\\n\\]);/)[1]")
+s=s.replace('Object.entries(cases).map(([id,item])=>({band,id,item}))','cases.map(item=>({band,id:item.id,item}))')
+s=s.replace("friendship: { soundEnabled: false, activeTab: 'rehearse', ...initial }", "strengths: { tab: 'scenarios', ...initial }")
+s=s.replace("toolData: data, gradeBand,", "toolData: data, setToolData: setData, gradeLevel: {elementary:'4',middle:'7',high:'11'}[gradeBand] || '7',")
+s=s.replace('window.SelHub._registry.friendship.render(ctx)','window.SelHub._registry.strengths.render(ctx)')
+s=s.replace("name: /Ways to Care/", "name: /Scenarios/").replace("'Friendship rehearsal practice'","'Strengths in context practice'")
+s=s.replace("window.coachFlags = [];", "window.speechCalls = []; window.coachFlags = [];")
+s=s.replace('onSafetyFlag: flag =>', "callTTS: text=>{window.speechCalls.push(text);return Promise.resolve(null);}, onSafetyFlag: flag =>")
+s+=r'''
+  const select=()=>map().getByLabel('Choose a strengths context',{exact:true});
+  const state=()=>page.evaluate(()=>window.depthSnapshot.strengths);
+  const open=text=>map().getByText(text,{exact:true}).click();
+  const labels=['What do I notice, and what do I still need to ask?','What support, access or boundaries matter here?','What might I try, combine, adapt or pause?','What would tell me to keep or change the plan?'];
+
+  it.each(examples)('$band / $id compares possible strengths, limits and changed circumstances without scoring',async({band,id,item})=>{
+    await mount(band);await select().selectOption(id);expect(await map().innerText()).toContain(item.setup[band]);expect(await map().innerText()).toContain(item.question);await open('Compare possible approaches');for(const option of item.options){for(const text of [option.title,option.skill,option.when,option.limit,option.words[band]])expect(await map().innerText()).toContain(text);}await open('Reconsider when something changes');expect(await map().innerText()).toContain(item.changed);expect(await map().innerText()).toContain(item.review);const saved=await state();expect(saved.scenariosDone).toBeUndefined();expect(saved.topScenarios).toBeUndefined();expect(saved.selectedStrengths).toBeUndefined();expect(await page.evaluate(()=>window.depthXP)).toEqual([]);expect(await page.evaluate(()=>window.depthCoachCalls)).toEqual([]);expect(errors).toEqual([]);
+  },120000);
+
+  it('keeps independent context and grade notes, including an own example and a scoped preview',async()=>{
+    await mount();await open('Consider my own response (optional)');for(const [i,label]of labels.entries())await map().getByLabel(label+' (optional)',{exact:true}).fill('Practice '+i+'\nAnother line'.replace('\\n','\n'));await select().selectOption('welcome');await open('Consider my own response (optional)');expect(await map().getByLabel(labels[0]+' (optional)',{exact:true}).inputValue()).toBe('');await select().selectOption('own');expect(await map().getByText('Compare possible approaches',{exact:true}).count()).toBe(0);await open('Consider my own response (optional)');await map().getByLabel(labels[0]+' (optional)',{exact:true}).fill('My own example');await page.evaluate(()=>window.depthSetBand('high'));await open('Consider my own response (optional)');await map().getByLabel(labels[0]+' (optional)',{exact:true}).fill('Other grade');await page.evaluate(()=>window.depthSetBand('middle'));expect(await select().inputValue()).toBe('own');await select().selectOption('effort');const saved=await state();await mount('middle','light',1100,saved);await open('Review my practice notes');const preview=map().getByLabel('Notes to review or copy',{exact:true});expect(await preview.getAttribute('readonly')).not.toBeNull();expect(await preview.inputValue()).toContain('Practice 3');expect(await preview.inputValue()).not.toContain('My own example');expect(await preview.inputValue()).not.toContain('Other grade');expect(errors).toEqual([]);
+  },120000);
+
+  it('preserves earlier choices, completion records, selected strengths and earned awards',async()=>{
+    const legacy={scenarioIdx:2,scenarioChoice:{idx:1,choice:{text:'An earlier response',rating:2,strength:'brave'}},scenariosDone:['sc1'],topScenarios:1,selectedStrengths:[{id:'kind',label:'Kindness',category:'character'}],badges:{firstScenario:true,firstCard:true},reflections:[{text:'Earlier note'}]};legacy.badges.firstReflection=true;
+    await mount('middle','light',1100,legacy);await open('Earlier scenario activity');expect(await map().innerText()).toContain('Earlier choice: An earlier response');await select().selectOption('harm');await open('Consider my own response (optional)');await map().getByLabel(labels[2]+' (optional)',{exact:true}).fill('Seek support');const saved=await state();for(const [key,value]of Object.entries(legacy))expect(saved[key]).toEqual(value);expect(await page.evaluate(()=>window.depthXP)).toEqual([]);expect(errors).toEqual([]);
+  },120000);
+
+  it('guards malformed new records, keeps unknown draft properties and supports keyboard navigation',async()=>{
+    await mount('middle','light',1100,{contextSelections:{middle:'__proto__'},contextDrafts:{'middle:effort':{notice:42,action:[],extra:'keep'}},scenarioChoice:{choice:{text:{bad:true}}}});expect(await select().inputValue()).toBe('effort');const summary=map().getByText('Consider my own response (optional)',{exact:true});await summary.focus();await page.keyboard.press('Enter');expect(await map().getByLabel(labels[0]+' (optional)',{exact:true}).inputValue()).toBe('');await map().getByLabel(labels[0]+' (optional)',{exact:true}).fill('A useful observation');expect((await state()).contextDrafts['middle:effort'].extra).toBe('keep');await select().focus();await page.keyboard.press('ArrowDown');await page.keyboard.press('Tab');expect(await select().inputValue()).toBe('welcome');await mount('middle','light',1100,{contextSelections:[],contextDrafts:[]});await open('Consider my own response (optional)');await map().getByLabel(labels[0]+' (optional)',{exact:true}).fill('Recovered');expect((await state()).contextDrafts['middle:effort'].notice).toBe('Recovered');expect(errors).toEqual([]);
+  },120000);
+
+  it('reads only the selected fictional scene aloud and never sends reflection notes to the coach',async()=>{
+    await mount();await select().selectOption('harm');await open('Consider my own response (optional)');await map().getByLabel(labels[0]+' (optional)',{exact:true}).fill('PRIVATE_NOTE');await map().getByRole('button',{name:'Read this strengths scenario aloud',exact:true}).click();expect(await page.evaluate(()=>window.speechCalls)).toEqual([cases.find(c=>c.id==='harm').setup.middle]);expect(await page.evaluate(()=>window.depthCoachCalls)).toEqual([]);expect(errors).toEqual([]);
+  },120000);
+
+  it.each(['light','dark','contrast'])('keeps context comparisons and notes readable at 320px in %s',async theme=>{
+    await mount('high',theme,320);await select().selectOption('harm');for(const title of ['Compare possible approaches','Reconsider when something changes','Consider my own response (optional)','Review my practice notes'])await open(title);await map().getByLabel(labels[1]+' (optional)',{exact:true}).fill('Trusted support and a way to step away.');await page.addScriptTag({path:path.join(root,'node_modules/axe-core/axe.min.js')});const violations=await map().evaluate(async node=>(await window.axe.run(node)).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.html)})));fs.writeFileSync(path.join(reports,theme+'-axe.json'),JSON.stringify(violations,null,2));expect(violations).toEqual([]);expect(await map().evaluate(n=>n.scrollWidth<=n.clientWidth)).toBe(true);expect(await map().locator('select:visible,button:visible,summary:visible,textarea:visible').evaluateAll(nodes=>nodes.every(n=>n.getBoundingClientRect().height>=44))).toBe(true);for(const [text,name]of [['Explore strengths in context','context'],['Compare possible approaches','comparison'],['Consider my own response (optional)','notes']]){await map().getByText(text,{exact:true}).evaluate(n=>n.scrollIntoView({block:'start'}));await page.screenshot({path:path.join(reports,theme+'-'+name+'-phone.png')});}expect(errors).toEqual([]);
+  },120000);
+});
+'''
+Path('tests/sel_strengths_context_browser.test.js').write_bytes(s.encode('utf-8'))
+p=Path('tests/sel_hub_review_browser.test.js');s=p.read_text(encoding='utf-8');idx=s.index('  const learningGuides =');s=s[:idx]+'''  it('strengths context notes survive the real hub return flow without changing strength selections',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="strengths"]').click();await page.getByRole('tab',{name:/Scenarios/}).click();const activity=page.getByRole('region',{name:'Strengths in context practice',exact:true});await activity.getByLabel('Choose a strengths context',{exact:true}).selectOption('leadership');await activity.getByText('Consider my own response (optional)',{exact:true}).click();await activity.getByLabel('What support, access or boundaries matter here? (optional)',{exact:true}).fill('Offer written input and time to think.');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();await support.getByRole('button',{name:'Return to activities',exact:true}).click();await page.locator('[data-sel-tool-card-id="strengths"]').click();expect(await activity.getByLabel('Choose a strengths context',{exact:true}).inputValue()).toBe('leadership');await activity.getByText('Consider my own response (optional)',{exact:true}).click();expect(await activity.getByLabel('What support, access or boundaries matter here? (optional)',{exact:true}).inputValue()).toBe('Offer written input and time to think.');expect(await page.evaluate(()=>window.__alloflowSelToolData.strengths.selectedStrengths)).toBeUndefined();expect(errors).toEqual([]);
+  },120000);
+
+'''+s[idx:];p.write_bytes(s.encode('utf-8'))
+print('Wrote strengths browser and real-hub checks')

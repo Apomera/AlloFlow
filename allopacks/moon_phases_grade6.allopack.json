@@ -8,7 +8,8 @@
     "gradeLevel": "6th Grade",
     "createdAt": "2026-09-05T13:00:00.000Z",
     "imageShotList": "allopacks/moon_phases_grade6.IMAGES.md",
-    "standards": "NGSS MS-ESS1-1 (develop and use a model of the Earth-Sun-Moon system to describe the cyclic patterns of lunar phases, eclipses of the Sun and Moon, and seasons); CCSS.ELA-LITERACY.RST.6-8.7 (integrate quantitative or technical information expressed in words with a version expressed visually)"
+    "standards": "NGSS MS-ESS1-1 (develop and use a model of the Earth-Sun-Moon system to describe the cyclic patterns of lunar phases, eclipses of the Sun and Moon, and seasons); CCSS.ELA-LITERACY.RST.6-8.7 (integrate quantitative or technical information expressed in words with a version expressed visually)",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Moon Phases and Eclipses",
   "history": [
@@ -54,7 +55,7 @@
       "type": "simplified",
       "title": "Half Lit, Always",
       "timestamp": "2026-09-05T13:01:00.000Z",
-      "meta": "6th Grade • Leveled reading • ~460 words",
+      "meta": "6th Grade • Leveled reading",
       "data": "## Half Lit, Always\n\nHere is the fact that fixes almost every misunderstanding about the Moon: **the Moon is always half lit.** Right now, whatever shape you see in the sky, exactly half of the Moon is in sunlight and half is in darkness. It has to be. The Moon is a ball, and a ball near a lamp is always lit on the side facing the lamp.\n\nSo why does it look like a thin sliver one week and a full circle two weeks later?\n\nBecause the Moon **orbits** Earth, and as it moves, we see the lit half from different angles. When the Moon is between Earth and the Sun, its lit half faces away from us and we see almost nothing. That is a **new moon**. A week later the Moon has moved a quarter of the way around, and we see half of the lit half — a **first quarter** moon, which looks like a half circle. Another week and the Moon is on the far side of Earth from the Sun. Now its whole lit half faces us: a **full moon**. Another week: **third quarter**, the other half circle. In between those four, the Moon is a thin **crescent** or a fat **gibbous**. While the lit part grows toward full we call it **waxing**; while it shrinks toward new, **waning**. The whole cycle of **phases** takes about 29.5 days.\n\nNotice what did not appear in that explanation: Earth's shadow. The phases are not shadows at all. They are just the angle from which we look at a half-lit ball. You can prove it tonight with a lamp and a ball: hold the ball at arm's length, turn slowly, and watch the phases roll across it. Earth's shadow plays no part in it.\n\nSo when does Earth's shadow matter? During a **lunar eclipse**, when the full Moon passes through Earth's shadow and turns a dim copper red for an hour or two. That happens only a few times a year, not every month, because the Moon's orbit is tilted about five degrees. Most months the full Moon passes a little above or below the shadow and misses it.\n\nA **solar eclipse** is the reverse: the new Moon passes exactly between Earth and the Sun and casts its own small shadow onto Earth. Only people standing inside that shadow, a path a few hundred kilometers wide, see the Sun blocked. The Moon is about 400 times smaller than the Sun, but it is also about 400 times closer, which is the coincidence that lets it cover the Sun so neatly.\n\nOne more thing you have probably noticed without noticing. The Moon always shows us the same face. It **rotates** once for every orbit, so the same side stays pointed at Earth. Nobody saw the far side until a spacecraft photographed it in 1959.\n\nHalf lit, always. Hold onto that sentence and the rest of the sky falls into place."
     },
     {
@@ -209,7 +210,7 @@
               "Earth's shadow never touches the Moon during ordinary phases."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "rhyme-rhythm",
             "mode": "scaffolded",
             "aiExample": "Half is always bright, half is always night; the shape you see depends on where you stand tonight.",
@@ -239,7 +240,7 @@
               "The whole cycle of phases takes about 29.5 days."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "sequence-cue",
             "mode": "scaffolded",
             "aiExample": "Four fists, four weeks. Fist closed (new), fist half open on the right (first quarter), hand fully open (full), fist half open on the left (third quarter). One week per hand shape, about a month around.",
@@ -269,7 +270,7 @@
               "Eclipses are rare because the Moon's orbit is tilted about five degrees, so most months it misses the shadow."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "keyword-association",
             "mode": "scaffolded",
             "aiExample": "LUNAR eclipse: the Moon is the one in the dark, so it must be FULL and behind Earth. SOLAR eclipse: the Sun is the one blocked, so the Moon must be NEW and in front. Lunar-full-behind; solar-new-in-front. And TILT is why it is rare.",
@@ -581,7 +582,7 @@
           ],
           "deliverable": "A labeled diagram of the model, a ten-minute demonstration script with the prediction step marked, a test log from running it once with your own class, and a one-paragraph note on what your model cannot show.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

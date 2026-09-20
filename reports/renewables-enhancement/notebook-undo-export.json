@@ -1,0 +1,802 @@
+{
+  "format": "renewables-mechanism-investigation",
+  "readingName": "From file",
+  "title": "Renewables Lab: individual energy mechanisms",
+  "modelVersion": 1,
+  "selected": "solarPv",
+  "settings": {
+    "irradiance": 800,
+    "area": 20,
+    "efficiency": 20,
+    "incidence": 20
+  },
+  "phase": 17.25,
+  "result": {
+    "version": 1,
+    "id": "solarPv",
+    "settings": {
+      "irradiance": 800,
+      "area": 20,
+      "efficiency": 20,
+      "incidence": 20
+    },
+    "power": 2.886735731054311,
+    "available": 15.035081932574535,
+    "loss": 12.148346201520223,
+    "status": "Generating",
+    "stages": [
+      {
+        "label": "Light intercepted",
+        "value": 15.035081932574535,
+        "unit": "kW"
+      },
+      {
+        "label": "DC electricity",
+        "value": 3.0070163865149073,
+        "unit": "kW"
+      },
+      {
+        "label": "AC electricity",
+        "value": 2.886735731054311,
+        "unit": "kW"
+      }
+    ],
+    "extra": {
+      "efficiency": 0.19200000000000003
+    }
+  },
+  "note": "Keep imported draft",
+  "assumptions": "Direct-beam model only: no diffuse sky light, shading, temperature effects, tracking schedule, or inverter clipping. A 90° beam contributes zero. This is not a daily yield estimate.",
+  "scenarioAssumptions": null,
+  "formula": "P_AC = irradiance × area × cos(angle) × module efficiency × 0.96 / 1,000",
+  "source": "https://www.energy.gov/cmei/systems/how-does-solar-work",
+  "operatingScenario": null,
+  "comparison": {
+    "first": {
+      "profileId": "steady",
+      "profileName": "Steady conditions",
+      "phase": 0,
+      "baseSettings": {
+        "irradiance": 800,
+        "area": 62,
+        "efficiency": 20,
+        "incidence": 20
+      },
+      "run": {
+        "version": 1,
+        "id": "solarPv",
+        "settings": {
+          "irradiance": 800,
+          "area": 62,
+          "efficiency": 20,
+          "incidence": 20
+        },
+        "power": 8.948880766268362,
+        "available": 46.60875399098106,
+        "loss": 37.6598732247127,
+        "status": "Generating",
+        "stages": [
+          {
+            "label": "Light intercepted",
+            "value": 46.60875399098106,
+            "unit": "kW"
+          },
+          {
+            "label": "DC electricity",
+            "value": 9.321750798196211,
+            "unit": "kW"
+          },
+          {
+            "label": "AC electricity",
+            "value": 8.948880766268362,
+            "unit": "kW"
+          }
+        ],
+        "extra": {
+          "efficiency": 0.19199999999999998
+        }
+      },
+      "energy": null,
+      "totals": null
+    },
+    "second": {
+      "profileId": "steady",
+      "profileName": "Steady conditions",
+      "phase": 17.25,
+      "baseSettings": {
+        "irradiance": 800,
+        "area": 20,
+        "efficiency": 20,
+        "incidence": 20
+      },
+      "run": {
+        "version": 1,
+        "id": "solarPv",
+        "settings": {
+          "irradiance": 800,
+          "area": 20,
+          "efficiency": 20,
+          "incidence": 20
+        },
+        "power": 2.886735731054311,
+        "available": 15.035081932574535,
+        "loss": 12.148346201520223,
+        "status": "Generating",
+        "stages": [
+          {
+            "label": "Light intercepted",
+            "value": 15.035081932574535,
+            "unit": "kW"
+          },
+          {
+            "label": "DC electricity",
+            "value": 3.0070163865149073,
+            "unit": "kW"
+          },
+          {
+            "label": "AC electricity",
+            "value": 2.886735731054311,
+            "unit": "kW"
+          }
+        ],
+        "extra": {
+          "efficiency": 0.19200000000000003
+        }
+      },
+      "energy": null,
+      "totals": null
+    },
+    "changes": [
+      {
+        "key": "area",
+        "label": "Panel area",
+        "before": 62,
+        "after": 20,
+        "unit": "m²"
+      }
+    ],
+    "context": [],
+    "comparable": true,
+    "controlled": true,
+    "powerDelta": -6.0621450352140505,
+    "powerPercent": -67.74193548387095,
+    "energyDelta": null
+  },
+  "experiments": [],
+  "designMaps": [],
+  "notebooks": [
+    {
+      "id": "solarPv",
+      "name": "Solar PV",
+      "readings": [
+        {
+          "name": "C comparison",
+          "note": "Observation for C comparison",
+          "profileId": "steady",
+          "phase": 0,
+          "baseSettings": {
+            "irradiance": 800,
+            "area": 62,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "result": {
+            "version": 1,
+            "id": "solarPv",
+            "settings": {
+              "irradiance": 800,
+              "area": 62,
+              "efficiency": 20,
+              "incidence": 20
+            },
+            "power": 8.948880766268362,
+            "available": 46.60875399098106,
+            "loss": 37.6598732247127,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Light intercepted",
+                "value": 46.60875399098106,
+                "unit": "kW"
+              },
+              {
+                "label": "DC electricity",
+                "value": 9.321750798196211,
+                "unit": "kW"
+              },
+              {
+                "label": "AC electricity",
+                "value": 8.948880766268362,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.19199999999999998
+            }
+          },
+          "accumulatedEnergy": null,
+          "scenarioTotals": null
+        },
+        {
+          "name": "Scenario solarPv",
+          "note": "Saved scenario and time",
+          "profileId": "clouds",
+          "phase": 5,
+          "baseSettings": {
+            "irradiance": 800,
+            "area": 24,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "result": {
+            "version": 1,
+            "id": "solarPv",
+            "settings": {
+              "irradiance": 800,
+              "area": 24,
+              "efficiency": 20,
+              "incidence": 20
+            },
+            "power": 3.4640828772651724,
+            "available": 18.04209831908944,
+            "loss": 14.578015441824268,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Light intercepted",
+                "value": 18.04209831908944,
+                "unit": "kW"
+              },
+              {
+                "label": "DC electricity",
+                "value": 3.608419663817888,
+                "unit": "kW"
+              },
+              {
+                "label": "AC electricity",
+                "value": 3.4640828772651724,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.192
+            }
+          },
+          "accumulatedEnergy": {
+            "input": 1.5035081932574534,
+            "delivered": 0.28867357310543107,
+            "remainder": 1.2148346201520224,
+            "requested": 0,
+            "unserved": 0
+          },
+          "scenarioTotals": {
+            "input": 25.86034092402814,
+            "delivered": 4.96518545741341,
+            "remainder": 20.895155466614792,
+            "requested": 0,
+            "unserved": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "wind",
+      "name": "Wind",
+      "readings": [
+        {
+          "name": "Scenario wind",
+          "note": "Saved scenario and time",
+          "profileId": "gust",
+          "phase": 5,
+          "baseSettings": {
+            "speed": 8,
+            "radius": 40,
+            "cp": 40,
+            "rating": 3000
+          },
+          "result": {
+            "version": 1,
+            "id": "wind",
+            "settings": {
+              "speed": 4.8,
+              "radius": 40,
+              "cp": 40,
+              "rating": 3000
+            },
+            "power": 128.02285423353325,
+            "available": 340.4863144508863,
+            "loss": 212.46346021735306,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Kinetic stream power",
+                "value": 340.4863144508863,
+                "unit": "kW"
+              },
+              {
+                "label": "Rotor extraction",
+                "value": 136.19452578035452,
+                "unit": "kW"
+              },
+              {
+                "label": "Electricity delivered",
+                "value": 128.02285423353325,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.376
+            }
+          },
+          "accumulatedEnergy": {
+            "input": 20.854786760116795,
+            "delivered": 7.841399821803913,
+            "remainder": 13.01338693831288,
+            "requested": 0,
+            "unserved": 0
+          },
+          "scenarioTotals": {
+            "input": 42739.96497492216,
+            "delivered": 2044.1940118156947,
+            "remainder": 40695.77096310646,
+            "requested": 0,
+            "unserved": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hydro",
+      "name": "Hydropower",
+      "readings": [
+        {
+          "name": "Scenario hydro",
+          "note": "Saved scenario and time",
+          "profileId": "dry",
+          "phase": 5,
+          "baseSettings": {
+            "head": 30,
+            "flow": 5,
+            "efficiency": 90
+          },
+          "result": {
+            "version": 1,
+            "id": "hydro",
+            "settings": {
+              "head": 30,
+              "flow": 5,
+              "efficiency": 90
+            },
+            "power": 1324.35,
+            "available": 1471.5,
+            "loss": 147.1500000000001,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Hydraulic power",
+                "value": 1471.5,
+                "unit": "kW"
+              },
+              {
+                "label": "Electricity delivered",
+                "value": 1324.35,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.8999999999999999
+            }
+          },
+          "accumulatedEnergy": {
+            "input": 122.625,
+            "delivered": 110.36249999999998,
+            "remainder": 12.262500000000006,
+            "requested": 0,
+            "unserved": 0
+          },
+          "scenarioTotals": {
+            "input": 1775.6099999999954,
+            "delivered": 1598.0490000000023,
+            "remainder": 177.56099999999995,
+            "requested": 0,
+            "unserved": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "geothermal",
+      "name": "Geothermal",
+      "readings": [
+        {
+          "name": "Scenario geothermal",
+          "note": "Saved scenario and time",
+          "profileId": "interruption",
+          "phase": 5,
+          "baseSettings": {
+            "hot": 180,
+            "returnTemp": 70,
+            "flow": 40,
+            "utilization": 40
+          },
+          "result": {
+            "version": 1,
+            "id": "geothermal",
+            "settings": {
+              "hot": 180,
+              "returnTemp": 70,
+              "flow": 40,
+              "utilization": 40
+            },
+            "power": 2516.394129979036,
+            "available": 18392,
+            "loss": 15875.605870020965,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Extracted thermal power",
+                "value": 18392,
+                "unit": "kW"
+              },
+              {
+                "label": "Gross electricity",
+                "value": 2516.394129979036,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "carnot": 0.34205009378792894,
+              "efficiency": 0.13682003751517158
+            }
+          },
+          "accumulatedEnergy": {
+            "input": 1532.6666666666667,
+            "delivered": 209.6995108315863,
+            "remainder": 1322.9671558350806,
+            "requested": 0,
+            "unserved": 0
+          },
+          "scenarioTotals": {
+            "input": 27587.999999999978,
+            "delivered": 3774.591194968548,
+            "remainder": 23813.40880503146,
+            "requested": 0,
+            "unserved": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "solarThermal",
+      "name": "Concentrating solar",
+      "readings": [
+        {
+          "name": "Scenario solarThermal",
+          "note": "Saved scenario and time",
+          "profileId": "clouds",
+          "phase": 5,
+          "baseSettings": {
+            "dni": 900,
+            "area": 10000,
+            "optical": 65,
+            "cycle": 35
+          },
+          "result": {
+            "version": 1,
+            "id": "solarThermal",
+            "settings": {
+              "dni": 900,
+              "area": 10000,
+              "optical": 65,
+              "cycle": 35
+            },
+            "power": 2047.5,
+            "available": 9000,
+            "loss": 6952.5,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Incident sunlight",
+                "value": 9000,
+                "unit": "kW"
+              },
+              {
+                "label": "Heat to power block",
+                "value": 5850,
+                "unit": "kW"
+              },
+              {
+                "label": "Gross electricity",
+                "value": 2047.5,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.2275
+            }
+          },
+          "accumulatedEnergy": {
+            "input": 750,
+            "delivered": 170.625,
+            "remainder": 579.375,
+            "requested": 0,
+            "unserved": 0
+          },
+          "scenarioTotals": {
+            "input": 12600,
+            "delivered": 2866.4999999999973,
+            "remainder": 9733.499999999998,
+            "requested": 0,
+            "unserved": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "wave",
+      "name": "Wave energy",
+      "readings": [
+        {
+          "name": "Scenario wave",
+          "note": "Saved scenario and time",
+          "profileId": "swell",
+          "phase": 5,
+          "baseSettings": {
+            "height": 2,
+            "period": 8,
+            "width": 8,
+            "efficiency": 30
+          },
+          "result": {
+            "version": 1,
+            "id": "wave",
+            "settings": {
+              "height": 1.1666666666666667,
+              "period": 8,
+              "width": 8,
+              "efficiency": 30
+            },
+            "power": 12.821145873725781,
+            "available": 42.737152912419276,
+            "loss": 29.916007038693493,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Incident wave power",
+                "value": 42.737152912419276,
+                "unit": "kW"
+              },
+              {
+                "label": "Mean electricity",
+                "value": 12.821145873725781,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "flux": 5.3421441140524095,
+              "efficiency": 0.29999999999999993
+            }
+          },
+          "accumulatedEnergy": {
+            "input": 2.982878835928039,
+            "delivered": 0.8948636507784117,
+            "remainder": 2.088015185149627,
+            "requested": 0,
+            "unserved": 0
+          },
+          "scenarioTotals": {
+            "input": 366.3475264281599,
+            "delivered": 109.90425792844798,
+            "remainder": 256.443268499712,
+            "requested": 0,
+            "unserved": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "tidal",
+      "name": "Tidal stream",
+      "readings": [
+        {
+          "name": "Scenario tidal",
+          "note": "Saved scenario and time",
+          "profileId": "reversal",
+          "phase": 5,
+          "baseSettings": {
+            "speed": 2,
+            "radius": 5,
+            "cp": 40,
+            "rating": 1000
+          },
+          "result": {
+            "version": 1,
+            "id": "tidal",
+            "settings": {
+              "speed": 0.05555555555555555,
+              "radius": 5,
+              "cp": 40,
+              "rating": 1000
+            },
+            "power": 0.0024846701156863715,
+            "available": 0.006901861432462143,
+            "loss": 0.004417191316775771,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Kinetic stream power",
+                "value": 0.006901861432462143,
+                "unit": "kW"
+              },
+              {
+                "label": "Rotor extraction",
+                "value": 0.0027607445729848573,
+                "unit": "kW"
+              },
+              {
+                "label": "Electricity delivered",
+                "value": 0.0024846701156863715,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.36
+            }
+          },
+          "accumulatedEnergy": {
+            "input": 0.00009202481909949527,
+            "delivered": 0.0000331289348758183,
+            "remainder": 0.00005889588422367697,
+            "requested": 0,
+            "unserved": 0
+          },
+          "scenarioTotals": {
+            "input": 966.069557020251,
+            "delivered": 347.7850405272899,
+            "remainder": 618.2845164929602,
+            "requested": 0,
+            "unserved": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "biomass",
+      "name": "Biomass",
+      "readings": [
+        {
+          "name": "Scenario biomass",
+          "note": "Saved scenario and time",
+          "profileId": "feed",
+          "phase": 5,
+          "baseSettings": {
+            "feed": 500,
+            "heating": 12,
+            "boiler": 80,
+            "cycle": 25
+          },
+          "result": {
+            "version": 1,
+            "id": "biomass",
+            "settings": {
+              "feed": 500,
+              "heating": 12,
+              "boiler": 80,
+              "cycle": 25
+            },
+            "power": 333.33333333333326,
+            "available": 1666.6666666666665,
+            "loss": 1333.3333333333333,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Fuel chemical power",
+                "value": 1666.6666666666665,
+                "unit": "kW"
+              },
+              {
+                "label": "Heat to steam cycle",
+                "value": 1333.333333333333,
+                "unit": "kW"
+              },
+              {
+                "label": "Gross electricity",
+                "value": 333.33333333333326,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.19999999999999998
+            }
+          },
+          "accumulatedEnergy": {
+            "input": 138.88888888888889,
+            "delivered": 27.77777777777777,
+            "remainder": 111.11111111111111,
+            "requested": 0,
+            "unserved": 0
+          },
+          "scenarioTotals": {
+            "input": 2500.0000000000027,
+            "delivered": 499.9999999999993,
+            "remainder": 1999.9999999999973,
+            "requested": 0,
+            "unserved": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "storage",
+      "name": "Battery storage",
+      "readings": [
+        {
+          "name": "Scenario storage",
+          "note": "Saved scenario and time",
+          "profileId": "evening",
+          "phase": 5,
+          "baseSettings": {
+            "capacity": 100,
+            "power": 50,
+            "roundtrip": 88,
+            "initial": 0
+          },
+          "result": {
+            "version": 1,
+            "id": "storage",
+            "settings": {
+              "capacity": 100,
+              "power": 50,
+              "roundtrip": 88,
+              "initial": 0
+            },
+            "power": 0,
+            "available": 50,
+            "loss": 0.25798686681380856,
+            "status": "Charging",
+            "stages": [
+              {
+                "label": "Charging input next minute",
+                "value": 50,
+                "unit": "kW"
+              },
+              {
+                "label": "Discharging output next minute",
+                "value": 0,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "minute": 5,
+              "initial": 0,
+              "stored": 3.9086797998528584,
+              "charge": 4.166666666666667,
+              "delivered": 0,
+              "loss": 0.25798686681380856,
+              "soc": 3.9086797998528584,
+              "eta": 0.938083151964686,
+              "charging": true,
+              "request": 50,
+              "unserved": 0,
+              "mode": "charge"
+            }
+          },
+          "accumulatedEnergy": {
+            "input": 4.166666666666667,
+            "delivered": 0,
+            "remainder": 0.25798686681380856,
+            "requested": 0,
+            "unserved": 0
+          },
+          "scenarioTotals": {
+            "input": 50.000000000000036,
+            "delivered": 44.00000000000001,
+            "remainder": 6.000000000000011,
+            "requested": 112.5,
+            "unserved": 68.50000000000001
+          }
+        }
+      ]
+    }
+  ]
+}

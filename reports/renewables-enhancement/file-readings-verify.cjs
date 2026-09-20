@@ -1,0 +1,8 @@
+const fs=require('node:fs'),crypto=require('node:crypto'),assert=require('node:assert/strict'),vm=require('node:vm');
+(async()=>{
+ const dir='reports/renewables-enhancement/',source=fs.readFileSync('stem_lab/stem_tool_renewables.js'),desktop=fs.readFileSync('desktop/web-app/public/stem_lab/stem_tool_renewables.js'),hash=crypto.createHash('sha256').update(source).digest('hex');assert.ok(source.equals(desktop));new vm.Script(source.toString());
+ const response=await fetch('http://127.0.0.1:8790/tool.js',{signal:AbortSignal.timeout(10000)});assert.equal(response.status,200);assert.ok(source.equals(Buffer.from(await response.arrayBuffer())));
+ const browser=JSON.parse(fs.readFileSync(dir+'file-readings-browser-results.json','utf8')),tests=JSON.parse(fs.readFileSync(dir+'file-readings-vitest-results.json','utf8'));
+ assert.equal(browser.sourceSha256,hash);assert.equal(new Set(browser.opened).size,9);assert.deepEqual(browser.pageErrors,[]);assert.deepEqual(browser.consoleErrors,[]);assert.ok(Object.values(browser.audits).every(a=>a.length===0));assert.equal(tests.success,true);assert.equal(tests.numPassedTests,97);assert.equal(tests.numFailedTests,0);assert.equal(tests.testResults.length,3);
+ const result={sourceSha256:hash,mirrorMatches:true,previewMatches:true,syntaxValid:true,technologies:9,testsPassed:97,testFiles:3,accessibilityAudits:Object.keys(browser.audits).length,pageErrors:[],consoleErrors:[]};fs.writeFileSync(dir+'file-readings-verification.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));
+})().catch(e=>{console.error(e);process.exitCode=1;});

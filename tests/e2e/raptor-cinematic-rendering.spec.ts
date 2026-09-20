@@ -56,6 +56,9 @@ test.describe('Raptor cinematic simulator rendering', () => {
         }
         for (let i = 0; i < 30; i++) advance(25);
       }, { phase: scene.phase, lake: scene.label.startsWith('lake') });
+      expect(errors).toEqual([]);
+      const mountedScene = await page.evaluate(() => ({ canvas: !!document.querySelector('[data-raptor-canvas]'), errors: (window as any).__events.errors, text: document.body.innerText.slice(0, 800) }));
+      expect(mountedScene.canvas, JSON.stringify(mountedScene)).toBe(true);
       const before = await page.locator('[data-raptor-canvas]').evaluate((c: any) => c._rhSnapshot());
       expect(before.cinematicSurfaces).toBe(true);
       expect(before.refinedFlightSurfaces).toBe(true);

@@ -1,0 +1,24 @@
+{
+  "date": "2026-09-19",
+  "files": 105,
+  "resources": 1247,
+  "illustratedPacks": 43,
+  "editionPairsPassed": 43,
+  "sourceOnlyResources": [],
+  "imagePlacements": 1404,
+  "missingAlt": 0,
+  "broadTestsPassed": 870,
+  "focusedTestsPassed": 51,
+  "focusedOverlap": 47,
+  "nativeActivitySmoke": {
+    "pack": "water_cycle_grade6",
+    "nativeMemoryAndChallengeRendered": true,
+    "desktopAndMobile": true,
+    "studentAndTeacherHtmlExported": true,
+    "offline": true,
+    "modelCalls": 0,
+    "pageErrors": [],
+    "scope": "Production native activity views and HTML export; not signed-in live-library publication or full app interaction."
+  },
+  "published": false
+}

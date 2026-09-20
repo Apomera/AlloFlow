@@ -79,6 +79,21 @@ window.StemLab = window.StemLab || {
       [data-galaxy-preset-label] { display: flex; justify-content: center; align-items: center; gap: 3px; min-height: 18px; }
       [data-galaxy-preset-hint] { display: block; font-size: 10px; font-weight: 500; line-height: 1.4; }
       @media (forced-colors: active) { [data-galaxy-appearance-preset][aria-pressed=true] { border: 3px solid Highlight; } }
+      [data-galaxy-view-angle][aria-pressed=true] { border-color: #6366f1; background: #eef2ff; color: #312e81; box-shadow: inset 0 0 0 1px #6366f1; }
+      @media (forced-colors: active) { [data-galaxy-view-angle][aria-pressed=true] { outline: 2px solid Highlight; outline-offset: -3px; } }
+      [data-galaxy-zoom-slider] { appearance: none; -webkit-appearance: none; background: transparent; margin: 0; padding: 0; }
+      [data-galaxy-zoom-slider]::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: linear-gradient(to right, #466798 0%, #466798 var(--galaxy-zoom-fill), #cbd5e1 var(--galaxy-zoom-fill), #cbd5e1 100%); }
+      [data-galaxy-zoom-slider]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border: 3px solid #fff; border-radius: 50%; background: #466798; box-shadow: 0 0 0 1px #466798; }
+      [data-galaxy-zoom-slider]::-moz-range-track { height: 6px; border-radius: 999px; background: #cbd5e1; }
+      [data-galaxy-zoom-slider]::-moz-range-progress { height: 6px; border-radius: 999px; background: #466798; }
+      [data-galaxy-zoom-slider]::-moz-range-thumb { width: 12px; height: 12px; border: 3px solid #fff; border-radius: 50%; background: #466798; box-shadow: 0 0 0 1px #466798; }
+      @media (forced-colors: active) {
+        [data-galaxy-zoom-slider]::-webkit-slider-runnable-track { background: Canvas; border: 1px solid CanvasText; }
+        [data-galaxy-zoom-slider]::-webkit-slider-thumb { background: Highlight; border-color: CanvasText; box-shadow: none; }
+        [data-galaxy-zoom-slider]::-moz-range-track { background: Canvas; border: 1px solid CanvasText; }
+        [data-galaxy-zoom-slider]::-moz-range-progress { background: Highlight; }
+        [data-galaxy-zoom-slider]::-moz-range-thumb { background: Highlight; border-color: CanvasText; box-shadow: none; }
+      }
       [data-galaxy-controls] input[type=range] { accent-color: #466798; }
       [data-galaxy-info] { border-inline-start: 3px solid #6386bd; background: #fff; line-height: 1.75; }
       [data-galaxy-root] button:focus-visible, [data-galaxy-root] summary:focus-visible, [data-galaxy-root] input:focus-visible, [data-galaxy-root] select:focus-visible { outline: 3px solid #3b82f6; outline-offset: 3px; }
@@ -2101,6 +2116,13 @@ if (!window._galaxyHasLoadedOnce) {
           var _galaxySceneReady = React.useState(false);
           var galaxySceneReady = _galaxySceneReady[0];
           var setGalaxySceneReady = _galaxySceneReady[1];
+          var _galaxyCameraFeedback = React.useState({ angle: 'angled', zoom: 100, zoomPosition: 0, fieldHeight: 0, regime: 'structure' });
+          var galaxyCameraFeedback = _galaxyCameraFeedback[0];
+          var setGalaxyCameraFeedback = _galaxyCameraFeedback[1];
+          var galaxyFieldHeightLabel = galaxySceneReady ? __alloT('stem.galaxy.view_scale_value', '~{value} kpc high').replace('{value}', String(galaxyCameraFeedback.fieldHeight)) : '—';
+          var galaxyScaleLabel = galaxyCameraFeedback.regime === 'close' ? __alloT('stem.galaxy.view_zoom_close', 'Close detail') : galaxyCameraFeedback.regime === 'local' ? __alloT('stem.galaxy.regime_local', 'Local structure') : galaxyCameraFeedback.regime === 'wide' ? __alloT('stem.galaxy.regime_wide', 'Wide context') : __alloT('stem.galaxy.regime_structure', 'Galactic structure');
+          var _galaxyResetUndo = React.useState(false);
+          var galaxyResetUndo = _galaxyResetUndo[0], setGalaxyResetUndo = _galaxyResetUndo[1];
           var galaxyRuntimeRef = React.useRef(null);
           galaxyRuntimeRef.current = {
             canvasNarrate: canvasNarrate,
@@ -5995,6 +6017,7 @@ if (!window._galaxyHasLoadedOnce) {
             var tourStart = Date.now(), tourLastStage = -1, tourFrames = null;
             var hudHidden = canvasEl.getAttribute('data-hud-hidden') === 'true';
             var orientationEl = null, lastOrientationLabel = '';
+            var lastCameraFeedbackKey = '';
 
             // r = 1.2 was a fixed number, and at fov 60 it put the camera 1.2 units
             // from the centre of a disk whose stars reach ~1.0 - so the near edge of
@@ -6027,7 +6050,7 @@ if (!window._galaxyHasLoadedOnce) {
             var spherical = { theta: Math.PI * 0.1, phi: Math.PI * 0.35, r: galaxyOverviewRadius };
             var cameraLookTarget = new THREE.Vector3(0, 0, 0);
             var cameraLookGoal = new THREE.Vector3(0, 0, 0);
-            var liveScaleEl = null, lastLiveScaleText = '', scaleRegimeEl = null, lastScaleRegime = '';
+
 
             // The tour used to carry one hardcoded script for every galaxy: it captioned
             // "Spiral-arm stellar nurseries" and "Dust-lane edge-on view" over an elliptical
@@ -6084,6 +6107,8 @@ if (!window._galaxyHasLoadedOnce) {
               camera.position.z = spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta);
 
               camera.lookAt(cameraLookTarget.x, cameraLookTarget.y, cameraLookTarget.z);
+              updateSelectionReticleSize();
+              updateMeasurementRulerProjection();
               if (starShaderMat && starShaderMat.uniforms && starShaderMat.uniforms.uCameraDir) starShaderMat.uniforms.uCameraDir.value.copy(camera.position).normalize();
               foregroundParallaxStars.forEach(function (foregroundStarSprite) { var foregroundData = foregroundStarSprite.userData || {}, parallax = foregroundData.parallaxFactor || 0.02; foregroundStarSprite.position.set((foregroundData.baseX || 0) - camera.position.x * parallax, (foregroundData.baseY || 0) - camera.position.y * parallax * 0.72, (foregroundData.baseZ || 0) - camera.position.z * parallax); });
               if (foregroundDepthGroup) {
@@ -6093,6 +6118,22 @@ if (!window._galaxyHasLoadedOnce) {
                 foregroundDepthGroup.rotation.y = -spherical.theta * 0.028;
               }
 
+              // Report only discrete UI changes; azimuth animation needs no React updates.
+              var viewAngle = Math.abs(spherical.phi - 0.1) < 0.015 ? 'face' : Math.abs(spherical.phi - Math.PI * 0.35) < 0.015 ? 'angled' : Math.abs(spherical.phi - Math.PI * 0.5) < 0.015 ? 'edge' : 'free';
+              var viewZoom = Math.round(100 * galaxyOverviewRadius / spherical.r);
+              var viewZoomPosition = Math.round(100 * Math.log(3 / Math.max(0.2, Math.min(3, spherical.r))) / Math.log(15));
+              // Vertical perspective span at the current look target, using the model's 15 kpc/world-unit scale.
+              var focusDistance = Math.hypot(camera.position.x - cameraLookTarget.x, camera.position.y - cameraLookTarget.y, camera.position.z - cameraLookTarget.z);
+              var fieldSpanKpc = 2 * focusDistance * Math.tan(camera.fov * Math.PI / 360) * 15;
+              var fieldPrecision = fieldSpanKpc < 10 ? 10 : 1;
+              var fieldHeight = Math.round(fieldSpanKpc * fieldPrecision) / fieldPrecision;
+              var regimeScale = spherical.r / galaxyOverviewRadius;
+              var viewRegime = regimeScale < 0.35 ? 'close' : regimeScale < 0.68 ? 'local' : regimeScale > 1.43 ? 'wide' : 'structure';
+              var cameraFeedbackKey = viewAngle + ':' + viewZoom + ':' + viewZoomPosition + ':' + fieldHeight + ':' + viewRegime;
+              if (cameraFeedbackKey !== lastCameraFeedbackKey && canvasEl._onCameraFeedback) {
+                lastCameraFeedbackKey = cameraFeedbackKey;
+                canvasEl._onCameraFeedback({ angle: viewAngle, zoom: viewZoom, zoomPosition: viewZoomPosition, fieldHeight: fieldHeight, regime: viewRegime });
+              }
               var cameraTilt = Math.abs(Math.cos(spherical.phi));
               dustBacklightAngleFactor = Math.max(0, Math.min(1, 1 - Math.abs(cameraTilt - 0.34) / 0.34));
               edgeOnFactor = Math.max(0, Math.min(1, (0.58 - cameraTilt) / 0.46));
@@ -6105,14 +6146,6 @@ if (!window._galaxyHasLoadedOnce) {
                 var tilt = cameraTilt;
                 var orientationLabel = tilt > 0.72 ? __alloT('stem.galaxy.orient_face_on', 'Face-on view') : tilt < 0.22 ? __alloT('stem.galaxy.orient_edge_on', 'Edge-on view') : __alloT('stem.galaxy.orient_angled', 'Angled view');
                 if (orientationEl && orientationLabel !== lastOrientationLabel) { orientationEl.textContent = orientationLabel; lastOrientationLabel = orientationLabel; }
-                if (!liveScaleEl || !liveScaleEl.isConnected) liveScaleEl = canvasEl.parentElement && canvasEl.parentElement.querySelector('[data-galaxy-live-scale-value]');
-                var fieldSpanKpc = 2 * spherical.r * Math.tan(camera.fov * Math.PI / 360) * 15;
-                var liveScaleText = '~' + (fieldSpanKpc < 10 ? fieldSpanKpc.toFixed(1) : Math.round(fieldSpanKpc)) + __alloT('stem.galaxy.unit_kpc_field', ' kpc field');
-                if (liveScaleEl && liveScaleText !== lastLiveScaleText) { liveScaleEl.textContent = liveScaleText; lastLiveScaleText = liveScaleText; }
-                if (!scaleRegimeEl || !scaleRegimeEl.isConnected) scaleRegimeEl = canvasEl.parentElement && canvasEl.parentElement.querySelector('[data-galaxy-scale-regime]');
-                var regimeScale = spherical.r / galaxyOverviewRadius;
-                var scaleRegime = regimeScale < 0.35 ? __alloT('stem.galaxy.regime_nuclear', 'Nuclear region') : regimeScale < 0.68 ? __alloT('stem.galaxy.regime_arm', 'Spiral-arm detail') : regimeScale > 1.43 ? __alloT('stem.galaxy.regime_halo', 'Halo context') : __alloT('stem.galaxy.regime_structure', 'Galactic structure');
-                if (scaleRegimeEl && scaleRegime !== lastScaleRegime) { scaleRegimeEl.textContent = scaleRegime; lastScaleRegime = scaleRegime; }
               }
 
             }
@@ -6205,8 +6238,8 @@ if (!window._galaxyHasLoadedOnce) {
               }
             }
             var selectionTexture = tuneGalaxyTexture(new THREE.CanvasTexture(selectionCanvas));
-            var selectionMaterial = new THREE.SpriteMaterial({ map: selectionTexture, transparent: true, opacity: 0.96, blending: THREE.NormalBlending, depthWrite: false, depthTest: false });
-            var selectionMarker = new THREE.Sprite(selectionMaterial); selectionMarker.visible = false; selectionMarker.renderOrder = 20; scene.add(selectionMarker);
+            var selectionMaterial = new THREE.SpriteMaterial({ sizeAttenuation: false, map: selectionTexture, transparent: true, opacity: 0.96, blending: THREE.NormalBlending, depthWrite: false, depthTest: false });
+            var selectionMarker = new THREE.Sprite(selectionMaterial); selectionMarker.name = 'selectionFocusReticle'; selectionMarker.visible = false; selectionMarker.renderOrder = 20; scene.add(selectionMarker);
             var depthReticleCanvas = document.createElement('canvas'); depthReticleCanvas.setAttribute('aria-hidden', 'true'); depthReticleCanvas.width = 192; depthReticleCanvas.height = 192;
             var depthReticleCtx = upscaleGalaxyCanvas(depthReticleCanvas, depthReticleCanvas.getContext('2d')); depthReticleCtx.translate(96, 96);
             depthReticleCtx.strokeStyle = 'rgba(255,255,255,0.86)'; depthReticleCtx.lineWidth = 3; depthReticleCtx.lineCap = 'round'; depthReticleCtx.shadowColor = '#a5f3fc'; depthReticleCtx.shadowBlur = 9;
@@ -6214,20 +6247,66 @@ if (!window._galaxyHasLoadedOnce) {
             for (var depthCorner = 0; depthCorner < 4; depthCorner++) { depthReticleCtx.save(); depthReticleCtx.rotate(depthCorner * Math.PI * 0.5); depthReticleCtx.beginPath(); depthReticleCtx.moveTo(34, -52); depthReticleCtx.lineTo(52, -52); depthReticleCtx.lineTo(52, -34); depthReticleCtx.stroke(); depthReticleCtx.restore(); }
             depthReticleCtx.setLineDash([5, 8]); depthReticleCtx.globalAlpha = 0.42; depthReticleCtx.beginPath(); depthReticleCtx.arc(0, 0, 66, 0, Math.PI * 2); depthReticleCtx.stroke();
             var selectionDepthTexture = tuneGalaxyTexture(new THREE.CanvasTexture(depthReticleCanvas));
-            var selectionDepthMaterial = new THREE.SpriteMaterial({ map: selectionDepthTexture, transparent: true, opacity: 0.42, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false });
+            var selectionDepthMaterial = new THREE.SpriteMaterial({ sizeAttenuation: false, map: selectionDepthTexture, transparent: true, opacity: 0.42, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false });
             var selectionHalo = new THREE.Sprite(selectionDepthMaterial); selectionHalo.name = 'selectionDepthReticle'; selectionHalo.visible = false; selectionHalo.renderOrder = 19; scene.add(selectionHalo);
+            var selectionReticleWave = 0.5;
+            function updateSelectionReticleSize(wave) {
+              if (!selectionMarker || !selectionHalo) return;
+              if (Number.isFinite(wave)) selectionReticleWave = Math.max(0, Math.min(1, wave));
+              // Non-attenuating sprites use projection units. Convert CSS pixels using the current viewport.
+              var pixelScale = 2 * Math.tan(camera.fov * Math.PI / 360) / Math.max(1, H);
+              var markerSize = (40 + 4 * selectionReticleWave) * pixelScale;
+              var haloSize = (58 + 4 * selectionReticleWave) * pixelScale;
+              selectionMarker.scale.set(markerSize, markerSize, 1);
+              selectionHalo.scale.set(haloSize, haloSize, 1);
+              if (measurementTickSprites) measurementTickSprites.forEach(function (tick) { tick.scale.set(12 * pixelScale, 12 * pixelScale, 1); });
+            }
+            updateSelectionReticleSize(0.5);
             var selectionTarget = null;
             var measurementRulerGroup = new THREE.Group(); measurementRulerGroup.name = 'galactocentricMeasurementRuler'; measurementRulerGroup.visible = false; scene.add(measurementRulerGroup);
             var measurementRulerGeometry = new THREE.BufferGeometry(); measurementRulerGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
-            var measurementRulerMaterial = new THREE.LineBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.72, depthWrite: false, blending: THREE.AdditiveBlending });
+            var measurementRulerMaterial = new THREE.LineBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.6, depthWrite: false, depthTest: false, blending: THREE.NormalBlending });
             var measurementRulerLine = new THREE.Line(measurementRulerGeometry, measurementRulerMaterial); measurementRulerLine.renderOrder = 18; measurementRulerGroup.add(measurementRulerLine);
             var measurementTickSprites = [];
-            for (var mt = 1; mt <= 3; mt++) { var tickMaterial = new THREE.SpriteMaterial({ map: selectionTexture, color: 0x67e8f9, transparent: true, opacity: 0.34, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }); var tickSprite = new THREE.Sprite(tickMaterial); tickSprite.scale.set(0.018, 0.018, 1); tickSprite.userData.fraction = mt / 4; measurementRulerGroup.add(tickSprite); measurementTickSprites.push(tickSprite); }
+            var rulerTickCanvas = document.createElement('canvas'); rulerTickCanvas.width = 64; rulerTickCanvas.height = 64;
+            var rulerTickCtx = upscaleGalaxyCanvas(rulerTickCanvas, rulerTickCanvas.getContext('2d'));
+            rulerTickCtx.lineCap = 'round';
+            for (var tickPass = 0; tickPass < 2; tickPass++) {
+              rulerTickCtx.strokeStyle = tickPass ? '#b6f2ff' : 'rgba(2,6,23,0.92)';
+              rulerTickCtx.lineWidth = tickPass ? 4 : 10;
+              rulerTickCtx.beginPath(); rulerTickCtx.moveTo(32, 12); rulerTickCtx.lineTo(32, 52); rulerTickCtx.stroke();
+            }
+            var rulerTickTexture = tuneGalaxyTexture(new THREE.CanvasTexture(rulerTickCanvas)); rulerTickTexture.name = 'galaxyMeasurementTick';
+            for (var mt = 1; mt <= 3; mt++) {
+              var tickMaterial = new THREE.SpriteMaterial({ map: rulerTickTexture, sizeAttenuation: false, transparent: true, opacity: 0.85, depthWrite: false, depthTest: false, blending: THREE.NormalBlending });
+              var tickSprite = new THREE.Sprite(tickMaterial); tickSprite.name = 'measurementQuarterTick'; tickSprite.renderOrder = 18; tickSprite.userData.fraction = mt / 4;
+              measurementRulerGroup.add(tickSprite); measurementTickSprites.push(tickSprite);
+            }
+            updateSelectionReticleSize();
+            var rulerProjectionStart = new THREE.Vector3(), rulerProjectionEnd = new THREE.Vector3(), rulerProjectionTick = new THREE.Vector3();
+            function updateMeasurementRulerProjection() {
+              if (!measurementRulerGroup || !measurementRulerGroup.visible || !rulerProjectionStart) return;
+              if (camera.updateMatrixWorld) camera.updateMatrixWorld(true);
+              var points = measurementRulerGeometry.attributes.position.array;
+              rulerProjectionStart.set(points[0], points[1], points[2]).project(camera);
+              rulerProjectionEnd.set(points[3], points[4], points[5]).project(camera);
+              var dx = (rulerProjectionEnd.x - rulerProjectionStart.x) * W * 0.5, dy = (rulerProjectionEnd.y - rulerProjectionStart.y) * H * 0.5;
+              var span = Math.hypot(dx, dy), rotation = Math.atan2(dy, dx);
+              var guideInFront = rulerProjectionStart.z >= -1 && rulerProjectionStart.z <= 1 && rulerProjectionEnd.z >= -1 && rulerProjectionEnd.z <= 1;
+              measurementTickSprites.forEach(function (tick) {
+                rulerProjectionTick.copy(tick.position).project(camera);
+                var fromStar = Math.hypot((rulerProjectionTick.x - rulerProjectionEnd.x) * W * 0.5, (rulerProjectionTick.y - rulerProjectionEnd.y) * H * 0.5);
+                var fromCenter = Math.hypot((rulerProjectionTick.x - rulerProjectionStart.x) * W * 0.5, (rulerProjectionTick.y - rulerProjectionStart.y) * H * 0.5);
+                tick.visible = guideInFront && Number.isFinite(span) && span >= 72 && fromStar >= 34 && fromCenter >= 10 && rulerProjectionTick.z >= -1 && rulerProjectionTick.z <= 1;
+                if (Number.isFinite(rotation)) tick.material.rotation = rotation;
+              });
+            }
             function updateMeasurementRuler(position) {
               if (!position || !measurementRulerGroup.visible) return;
               var rulerPosition = measurementRulerGeometry.attributes.position;
               rulerPosition.setXYZ(0, 0, position.y, 0); rulerPosition.setXYZ(1, position.x, position.y, position.z); rulerPosition.needsUpdate = true;
               measurementTickSprites.forEach(function (tick) { var fraction = tick.userData.fraction; tick.position.set(position.x * fraction, position.y, position.z * fraction); });
+              updateMeasurementRulerProjection();
             }
 
             var orbitalMechanicsGroup = new THREE.Group(); orbitalMechanicsGroup.name = 'selectedStarOrbitalMechanics'; orbitalMechanicsGroup.visible = false; scene.add(orbitalMechanicsGroup);
@@ -6303,13 +6382,13 @@ if (!window._galaxyHasLoadedOnce) {
               var focusedPosition = kind === 'star' ? getAnimatedStarVector(data) : position;
               selectionTarget = { kind: kind, data: data };
               position = focusedPosition;
-              selectionMarker.position.copy(position); selectionMarker.scale.set(0.082, 0.082, 1); selectionMarker.visible = true;
-              selectionHalo.position.copy(position); selectionHalo.scale.set(0.118, 0.118, 1); selectionHalo.visible = true;
+              selectionMarker.position.copy(position); selectionMarker.visible = true;
+              selectionHalo.position.copy(position); selectionHalo.visible = true; updateSelectionReticleSize(0.5);
               var selectionColor = kind === 'star' && data.type && data.type.color ? data.type.color : data.color || '#a5b4fc';
               if (selectionMarker.material && selectionMarker.material.color) selectionMarker.material.color.set('#ffffff');
               if (selectionHalo.material && selectionHalo.material.color) selectionHalo.material.color.set(selectionColor);
               cameraLookGoal.set(position.x * 0.55, position.y * 0.5, position.z * 0.55);
-              if (prefersReducedMotion) cameraLookTarget.copy(cameraLookGoal);
+              if (prefersReducedMotion) { cameraLookTarget.copy(cameraLookGoal); updateCamera(); }
               measurementRulerGroup.visible = kind === 'star'; orbitalMechanicsGroup.visible = kind === 'star' && isSpiralMorphology; if (measurementRulerGroup.visible) { updateMeasurementRuler(position); if (orbitalMechanicsGroup.visible) updateOrbitalMechanics(position, 0.02, 0); }
               var label = kind === 'star' ? ((data.type && data.type.label) || __alloT('stem.galaxy.status_star_generic', 'Star')) : (data.name || __alloT('stem.galaxy.status_nebula_generic', 'Nebula'));
               setCanvasStatus(__alloT('stem.galaxy.status_focused_on', 'Focused on {name} · drag to orbit around it').replace('{name}', label));
@@ -6421,6 +6500,30 @@ if (!window._galaxyHasLoadedOnce) {
               warpTween = null;
               if (tourActive) { tourActive = false; if (canvasEl._onTourStateChange) canvasEl._onTourStateChange(false); }
             }
+            // A reset remembers one camera framing, local to this scene.
+            var resetViewSnapshot = null;
+            if (canvasEl._onCameraResetUndoChange) canvasEl._onCameraResetUndoChange(false);
+            function rememberCameraBeforeReset() {
+              resetViewSnapshot = { theta: spherical.theta, phi: spherical.phi, radiusRatio: spherical.r / galaxyOverviewRadius };
+              if (canvasEl._onCameraResetUndoChange) canvasEl._onCameraResetUndoChange(true);
+            }
+            canvasEl._galaxyUndoReset = function () {
+              if (!resetViewSnapshot) return;
+              var previous = resetViewSnapshot;
+              resetViewSnapshot = null;
+              if (canvasEl._onCameraResetUndoChange) canvasEl._onCameraResetUndoChange(false);
+              cancelGalaxyCameraMotion();
+              // Preserve the relative framing if the viewport changed since the reset.
+              var radius = Math.max(0.2, Math.min(3, previous.radiusRatio * galaxyOverviewRadius));
+              if (prefersReducedMotion) { spherical.theta = previous.theta; spherical.phi = previous.phi; spherical.r = radius; updateCamera(); }
+              else {
+                var dTheta = previous.theta - spherical.theta;
+                while (dTheta > Math.PI) dTheta -= Math.PI * 2;
+                while (dTheta < -Math.PI) dTheta += Math.PI * 2;
+                warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: dTheta, dp: previous.phi - spherical.phi, dr: radius - spherical.r, start: Date.now(), dur: 720, suppressShock: true };
+              }
+              setCanvasStatus(__alloT('stem.galaxy.view_undo_status', 'Previous angle and zoom'));
+            };
             canvasEl._galaxyCancelCameraMotion = cancelGalaxyCameraMotion;
             canvasEl._galaxySetViewAngle = function (angle) {
               var views = { face: { phi: 0.1, label: __alloT('stem.galaxy.orient_face_on', 'Face-on view') }, angled: { phi: Math.PI * 0.35, label: __alloT('stem.galaxy.orient_angled', 'Angled view') }, edge: { phi: Math.PI * 0.5, label: __alloT('stem.galaxy.orient_edge_on', 'Edge-on view') } };
@@ -6434,6 +6537,7 @@ if (!window._galaxyHasLoadedOnce) {
             };
             canvasEl._galaxyOverviewRadius = galaxyOverviewRadius;
             canvasEl._galaxyResetView = function () {
+              rememberCameraBeforeReset();
               cancelGalaxyCameraMotion();
               cameraLookGoal.set(0, 0, 0);
               if (prefersReducedMotion) { cameraLookTarget.set(0, 0, 0); spherical.theta = Math.PI * 0.1; spherical.phi = Math.PI * 0.35; spherical.r = galaxyOverviewRadius; updateCamera(); setCanvasStatus(__alloT('stem.galaxy.status_overview_restored', 'Overview restored')); return; }
@@ -6442,6 +6546,22 @@ if (!window._galaxyHasLoadedOnce) {
               while (dTheta < -Math.PI) dTheta += Math.PI * 2;
               warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: dTheta, dp: Math.PI * 0.35 - spherical.phi, dr: galaxyOverviewRadius - spherical.r, start: Date.now(), dur: 720, suppressShock: true };
               cinematicMotion.aperture = 0.45; setCanvasStatus(__alloT('stem.galaxy.status_returning_overview', 'Returning to the overview'));
+            };
+            canvasEl._galaxyResetZoom = function () {
+              rememberCameraBeforeReset();
+              cancelGalaxyCameraMotion();
+              if (prefersReducedMotion) { spherical.r = galaxyOverviewRadius; updateCamera(); }
+              else warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: 0, dp: 0, dr: galaxyOverviewRadius - spherical.r, start: Date.now(), dur: 720, suppressShock: true };
+              setCanvasStatus(__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', '100'));
+            };
+            canvasEl._galaxySetZoomPosition = function (position) {
+              if (!Number.isFinite(position)) return;
+              cancelGalaxyCameraMotion();
+              // Equal slider steps change distance by the same ratio, giving fine control at every scale.
+              var progress = Math.max(0, Math.min(100, position)) / 100;
+              spherical.r = Math.max(0.2, Math.min(3, 3 * Math.pow(1 / 15, progress)));
+              updateCamera();
+              setCanvasStatus(__alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(Math.round(100 * galaxyOverviewRadius / spherical.r))));
             };
             canvasEl._galaxyZoom = function (direction) {
               cancelGalaxyCameraMotion();
@@ -7373,9 +7493,7 @@ if (!window._galaxyHasLoadedOnce) {
                   if (isSpiralMorphology) updateOrbitalMechanics(selectionMarker.position, selectedState.angularRate, elapsed);
                 }
                 var focusWave = prefersReducedMotion ? 0.5 : 0.5 + 0.5 * Math.sin(elapsed * 3.2);
-                var focusPulse = 0.078 + 0.012 * focusWave;
-                selectionMarker.scale.set(focusPulse, focusPulse, 1);
-                selectionHalo.scale.set(0.112 + focusWave * 0.014, 0.112 + focusWave * 0.014, 1);
+                updateSelectionReticleSize(focusWave);
                 if (!prefersReducedMotion) { selectionMarker.material.rotation = -elapsed * 0.42; selectionHalo.material.rotation = elapsed * 0.16; }
                 selectionMarker.material.opacity = prefersReducedMotion ? 0.9 : 0.72 + 0.25 * (0.5 + 0.5 * Math.sin(elapsed * 2.4));
                 selectionHalo.material.opacity = prefersReducedMotion ? 0.38 : 0.28 + 0.18 * (0.5 + 0.5 * Math.sin(elapsed * 1.45 + 0.7));
@@ -7496,6 +7614,8 @@ if (!window._galaxyHasLoadedOnce) {
               var nextPixelRatio = Math.min(window.devicePixelRatio || 1, pixelRatioCap);
               if (Math.abs(renderer.getPixelRatio() - nextPixelRatio) > 0.01) renderer.setPixelRatio(nextPixelRatio);
               camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H, false);
+              updateSelectionReticleSize();
+              updateMeasurementRulerProjection();
               refreshGalaxyOverviewRadius();
               canvasEl._galaxyOverviewRadius = galaxyOverviewRadius;
               if (composer) { if (composer.setPixelRatio) composer.setPixelRatio(nextPixelRatio); if (composer.setSize) composer.setSize(W, H); }
@@ -7671,6 +7791,8 @@ if (!window._galaxyHasLoadedOnce) {
               if (typeof runtime.awardStemXP === 'function') runtime.awardStemXP('galaxy_explore', 3, 'Discovered ' + neb.name);
             };
             el._onClearSelection = function () { galaxyRuntimeRef.current.patchGalaxy({ selectedNebula: null, selectedStar: null, selectedStarMeasurement: null, inspectTarget: 'galaxyType' }); };
+            el._onCameraFeedback = setGalaxyCameraFeedback;
+            el._onCameraResetUndoChange = setGalaxyResetUndo;
             el._onTourStateChange = function (active) { galaxyRuntimeRef.current.patchGalaxy({ galaxyTourActive: !!active }); };
             el._onMotionPreferenceChange = function (reduced) { if (reduced) galaxyRuntimeRef.current.patchGalaxy({ galaxyAutoRotate: false, galaxyTourActive: false }); };
             canvasRefCb(el);
@@ -9361,11 +9483,11 @@ if (!window._galaxyHasLoadedOnce) {
                   ); })
                 ),
                 !galaxyHudHidden && React.createElement("div", { "data-galaxy-orientation": "true", className: "absolute left-1/2 top-3 hidden -translate-x-1/2 rounded-full border border-cyan-200/15 bg-slate-950/75 px-3 py-2 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-md lg:block" }, __alloT('stem.galaxy.orient_angled_initial', "Angled view")),
-                !galaxyHudHidden && galaxySceneReady && React.createElement("div", { "data-galaxy-live-scale": "true", className: "pointer-events-none absolute left-1/2 top-14 z-[6] hidden -translate-x-1/2 items-center gap-2 rounded-full border border-violet-200/15 bg-slate-950/70 px-3 py-1.5 text-[11px] font-bold text-violet-100 shadow-lg backdrop-blur-md md:flex", role: "img", "aria-label": __alloT('stem.galaxy.live_scale_aria', 'Approximate field of view and current galactic scale regime') },
+                !galaxyHudHidden && galaxySceneReady && React.createElement("div", { "data-galaxy-live-scale": "true", className: "pointer-events-none absolute left-1/2 top-14 z-[6] hidden -translate-x-1/2 items-center gap-2 rounded-full border border-violet-200/15 bg-slate-950/70 px-3 py-1.5 text-[11px] font-bold text-violet-100 shadow-lg backdrop-blur-md md:flex", role: "group", "aria-label": __alloT('stem.galaxy.live_scale_aria', 'Approximate field of view and current galactic scale regime') },
                   React.createElement("span", { className: "h-px w-5 bg-gradient-to-r from-transparent to-violet-300", "aria-hidden": true }),
-                  React.createElement("span", { "data-galaxy-live-scale-value": "true" }, __alloT('stem.galaxy.scale_initial_field', "~21 kpc field")),
+                  React.createElement("span", { "data-galaxy-live-scale-value": "true" }, galaxyFieldHeightLabel),
                   React.createElement("span", { className: "text-violet-300", "aria-hidden": true }, "·"),
-                  React.createElement("span", { "data-galaxy-scale-regime": "true", className: "text-cyan-100" }, __alloT('stem.galaxy.regime_structure', "Galactic structure")),
+                  React.createElement("span", { "data-galaxy-scale-regime": "true", className: "text-cyan-100" }, galaxyScaleLabel),
                   React.createElement("span", { className: "h-px w-5 bg-gradient-to-l from-transparent to-violet-300", "aria-hidden": true })
                 ),
                 // Held back until the scene exists — announcing "drag to orbit" to a
@@ -9451,18 +9573,49 @@ if (!window._galaxyHasLoadedOnce) {
               // ── Layer toggles ──
 
               !d.webglError && React.createElement("section", { "data-galaxy-view-angles": "true", "aria-labelledby": "galaxy-view-angles-title", className: "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },
+                React.createElement("div", { className: "flex items-center justify-between gap-2" },
                 React.createElement("h4", { id: "galaxy-view-angles-title", className: "text-sm font-black text-slate-900" }, __alloT('stem.galaxy.view_angles_title', 'Viewing angle')),
+                  React.createElement("div", { className: "flex shrink-0 items-center gap-1" },
+                    React.createElement("button", { type: "button", "data-galaxy-undo-reset": "true", disabled: !galaxySceneReady || !galaxyResetUndo, title: __alloT('stem.galaxy.view_undo_hint', 'Restore the angle and zoom from before the latest reset'), "aria-label": __alloT('stem.galaxy.view_undo_hint', 'Restore the angle and zoom from before the latest reset'), onClick: function (event) { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyUndoReset) cv._galaxyUndoReset(); var resetButton = event.currentTarget.parentElement.querySelector('[data-galaxy-overview-reset]'); if (resetButton) resetButton.focus(); }, className: "min-h-[44px] rounded-lg px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:text-slate-400 disabled:hover:bg-transparent" }, __alloT('stem.galaxy.view_undo', 'Undo reset')),
+                  React.createElement("button", { type: "button", "data-galaxy-overview-reset": "true", disabled: !galaxySceneReady, onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyResetView) cv._galaxyResetView(); }, className: "min-h-[44px] rounded-lg px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-40" }, __alloT('stem.galaxy.view_overview', 'Reset view'))
+                  )
+                ),
                 React.createElement("p", { id: "galaxy-view-angles-help", className: "mt-1 text-xs leading-relaxed text-slate-600" }, __alloT('stem.galaxy.view_angles_help', 'Explore the shape from above or across its edge. Your zoom and selected object stay in place.')),
                 React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-1.5" },
                   [{ key: 'face', ry: 13, label: __alloT('stem.galaxy.orient_face_on', 'Face-on view') }, { key: 'angled', ry: 8, label: __alloT('stem.galaxy.orient_angled', 'Angled view') }, { key: 'edge', ry: 2, label: __alloT('stem.galaxy.orient_edge_on', 'Edge-on view') }].map(function (view) {
-                    return React.createElement("button", { key: view.key, type: "button", "data-galaxy-view-angle": view.key, disabled: !galaxySceneReady, "aria-describedby": "galaxy-view-angles-help", onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetViewAngle) cv._galaxySetViewAngle(view.key); }, className: "flex min-h-[44px] flex-col items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-1 py-2 text-[11px] font-bold text-slate-700 transition-colors hover:border-indigo-400 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40" },
+                    return React.createElement("button", { key: view.key, type: "button", "data-galaxy-view-angle": view.key, "aria-pressed": galaxySceneReady && galaxyCameraFeedback.angle === view.key, disabled: !galaxySceneReady, "aria-describedby": "galaxy-view-angles-help", onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetViewAngle) cv._galaxySetViewAngle(view.key); }, className: "flex min-h-[44px] flex-col items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-1 py-2 text-[11px] font-bold text-slate-700 transition-colors hover:border-indigo-400 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40" },
                       React.createElement("svg", { viewBox: "0 0 64 36", width: 64, height: 36, style: { maxWidth: '100%' }, "aria-hidden": true, focusable: "false" },
                         React.createElement("ellipse", { cx: 32, cy: 18, rx: 24, ry: view.ry, fill: '#e0e7ff', stroke: '#818cf8', strokeWidth: 1.2 }),
                         React.createElement("ellipse", { cx: 32, cy: 18, rx: 15, ry: Math.max(1, view.ry * 0.6), fill: 'none', stroke: '#6366f1', strokeWidth: 1, strokeDasharray: '3 3' }),
                         React.createElement("circle", { cx: 32, cy: 18, r: 2.5, fill: '#4338ca' })
-                      ), view.label
+                      ), React.createElement("span", { className: "flex items-center justify-center gap-1" }, galaxySceneReady && galaxyCameraFeedback.angle === view.key && React.createElement("span", { "aria-hidden": true }, '✓'), view.label)
                     );
                   })
+                ),
+                React.createElement("div", { "data-galaxy-camera-feedback": "true", "aria-live": "off", className: "mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-100 px-2.5 py-2 text-[11px] font-semibold text-slate-600" },
+                  React.createElement("span", { "data-galaxy-current-angle": "true" }, !galaxySceneReady ? '—' : galaxyCameraFeedback.angle === 'face' ? __alloT('stem.galaxy.orient_face_on', 'Face-on view') : galaxyCameraFeedback.angle === 'angled' ? __alloT('stem.galaxy.orient_angled', 'Angled view') : galaxyCameraFeedback.angle === 'edge' ? __alloT('stem.galaxy.orient_edge_on', 'Edge-on view') : __alloT('stem.galaxy.view_free_orbit', 'Free orbit')),
+                  React.createElement("span", { "data-galaxy-current-zoom": "true", className: "tabular-nums", title: __alloT('stem.galaxy.view_zoom_hint', 'Zoom relative to the overview') }, galaxySceneReady ? __alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(galaxyCameraFeedback.zoom)) : '—')
+                ),
+                React.createElement("div", { className: "mt-1" },
+                  React.createElement("input", { type: "range", id: "galaxy-camera-zoom", "data-galaxy-zoom-slider": "true", min: 0, max: 100, step: 1, value: galaxyCameraFeedback.zoomPosition, style: { "--galaxy-zoom-fill": galaxyCameraFeedback.zoomPosition + "%" }, disabled: !galaxySceneReady, "aria-label": __alloT('stem.galaxy.view_zoom_label', 'Zoom'), "aria-valuetext": __alloT('stem.galaxy.status_zoom', 'Zoom {percent}%').replace('{percent}', String(galaxyCameraFeedback.zoom)), "aria-describedby": "galaxy-camera-zoom-help", onChange: function (event) { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetZoomPosition) cv._galaxySetZoomPosition(Number(event.target.value)); }, className: "block min-h-[44px] w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-40" }),
+                  React.createElement("div", { id: "galaxy-camera-zoom-help", className: "flex items-center justify-between gap-2 text-[11px] text-slate-500" }, React.createElement("span", null, __alloT('stem.galaxy.view_zoom_wide', 'Wide field')),
+                    React.createElement("button", { type: "button", "data-galaxy-zoom-overview": "true", disabled: !galaxySceneReady, "aria-label": __alloT('stem.galaxy.view_zoom_overview_hint', 'Restore overview zoom, keeping the viewing angle and selected object'), title: __alloT('stem.galaxy.view_zoom_overview_hint', 'Restore overview zoom, keeping the viewing angle and selected object'), onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyResetZoom) cv._galaxyResetZoom(); }, className: "min-h-[44px] rounded-lg px-2 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-40" }, __alloT('stem.galaxy.view_zoom_overview', '100% · Overview')),
+                    React.createElement("span", null, __alloT('stem.galaxy.view_zoom_close', 'Close detail')))
+                ),
+                React.createElement("div", { "data-galaxy-view-scale": "true", className: "mt-2 flex items-start gap-2.5 border-t border-slate-200 pt-3", "aria-live": "off" },
+                  React.createElement("svg", { viewBox: "0 0 32 32", width: 32, height: 32, className: "shrink-0", "aria-hidden": true, focusable: "false" },
+                    React.createElement("rect", { x: 10, y: 3, width: 19, height: 26, rx: 3, fill: '#eef2ff', stroke: '#94a3b8' }),
+                    React.createElement("path", { d: 'M3 5H7M5 5V27M3 27H7M13 16H26', fill: 'none', stroke: '#6366f1', strokeWidth: 1.5 }),
+                    React.createElement("circle", { cx: 19.5, cy: 16, r: 2.5, fill: '#4338ca' })
+                  ),
+                  React.createElement("div", { className: "min-w-0 flex-1" },
+                    React.createElement("div", { className: "flex flex-wrap items-baseline justify-between gap-1" },
+                      React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, __alloT('stem.galaxy.view_scale_title', 'View scale')),
+                      React.createElement("span", { "data-galaxy-panel-field-height": "true", className: "text-xs font-bold tabular-nums text-indigo-800" }, galaxyFieldHeightLabel)
+                    ),
+                    React.createElement("p", { "data-galaxy-panel-scale-regime": "true", className: "mt-0.5 text-[11px] font-semibold text-slate-700" }, galaxySceneReady ? galaxyScaleLabel : '—'),
+                    React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-500" }, __alloT('stem.galaxy.view_scale_hint', 'Approximate field height at the center of the view.'))
+                  )
                 )
               ),
               !d.webglError && React.createElement("section", { "data-galaxy-appearance": "true", "aria-labelledby": "galaxy-appearance-title", className: "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },

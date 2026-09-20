@@ -78,7 +78,7 @@ describe('leveled-text instructional role controls', () => {
       source.indexOf('var handleInstructionalRoleChange'),
       source.indexOf('var instructionalRoleControl')
     );
-    expect(handler).toContain("if (nextRole === 'primary'");
+    expect(handler).toContain("instructionalTextProfile.form === 'adapted' && nextRole === 'primary'");
     expect(handler).toContain('window.confirm(');
     expect(handler.indexOf('window.confirm(')).toBeLessThan(handler.indexOf('updateSimplifiedInstructionalRole('));
   });
@@ -202,5 +202,27 @@ describe('source instructional-grade nudge', () => {
       sourceGrade: '5th Grade',
       instructionalGrade: '3rd Grade',
     });
+  });
+});
+
+
+describe('source analysis role presentation', () => {
+  it('offers review when an imported adapted main has no educator authorization', () => {
+    const AnalysisView = compileSourceView('view_analysis_source.jsx', 'AnalysisView');
+    const { renderToStaticMarkup } = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/server'));
+    const markup = renderToStaticMarkup(React.createElement(AnalysisView, {
+      t: key => key, isTeacherMode: true, isProcessing: false, sourceRefineInstruction: '',
+      selectedDiscrepancies: new Set(), selectedGrammarErrors: new Set(),
+      onInstructionalRoleChange: () => {}, formatInlineText: text => text, renderFormattedText: text => text,
+      splitReferencesFromBody: text => ({ body: text, references: '' }),
+      generatedContent: { id: 'analyzed-adaptation', type: 'analysis',
+        data: { originalText: 'Adapted passage analyzed for readability.', concepts: [], grammar: [], readingLevel: '5', accuracy: { rating: 'High', reason: '' } },
+        instructionalText: { form: 'adapted', role: 'primary', replacementAuthorization: { authorized: true, source: 'workflow-default' } }
+      }
+    }));
+    expect(markup).toContain('Adapted text');
+    expect(markup).toContain('needs review');
+    expect(markup).toContain('Review main-reading choice');
+    expect(markup).toContain('Use in this lesson');
   });
 });

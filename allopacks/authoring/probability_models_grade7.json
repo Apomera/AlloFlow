@@ -197,5 +197,16 @@
     "Probability is between zero and one.",
     "Equal chances for counters do not imply equal chances for colors.",
     "Returning and mixing a counter preserves the intended setup."
-  ]
+  ],
+  "frames": [
+    "Our model gives red a probability of ____ because ____.",
+    "We returned and mixed each counter so ____.",
+    "In ____ trials, red appeared ____ times. Its relative frequency was ____.",
+    "The trial results differ from the model by ____. This does not guarantee that ____."
+  ],
+  "parallelExample": {
+    "context": "A different bag has two green and two yellow counters of the same size and shape.",
+    "move": "Assuming each counter is equally likely, green has probability 2/4. Compare that model with repeated draws, replacing and mixing each counter. A set of trials need not be exactly half green.",
+    "whyItHelps": "It separates a model probability from an observed relative frequency. Use the same distinction for your three-blue, one-red bag."
+  }
 }

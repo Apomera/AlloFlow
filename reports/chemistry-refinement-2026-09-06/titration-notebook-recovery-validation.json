@@ -1,0 +1,52 @@
+{
+  "date": "2026-09-19T23:58:13.669Z",
+  "success": true,
+  "scope": "Titration notebook individual removal, evidence labels, capacity, and one-step persistent undo",
+  "source": {
+    "syntax": true,
+    "mirrored": true,
+    "scopedDiffWhitespace": true,
+    "englishFallbackOccurrences": 133,
+    "newEnglishKeys": 9,
+    "revisedEnglishKeys": 2,
+    "sha256": "6617a54cc23f7b5602babd31df982c35ad1552753d1a60d6a4bf061de0277ac0"
+  },
+  "unit": {
+    "passed": 106,
+    "files": [
+      "titration_focus_relationships.test.js",
+      "titration_immersive_bench.test.js",
+      "titration_investigation.test.js",
+      "titration_investigation_report.test.js",
+      "titration_notebook_removal.test.js"
+    ],
+    "report": "titration-notebook-removal-tests.json",
+    "command": "node node_modules/vitest/vitest.mjs run tests/titration_notebook_removal.test.js tests/titration_investigation.test.js tests/titration_investigation_report.test.js tests/titration_immersive_bench.test.js tests/titration_focus_relationships.test.js --pool=forks --no-isolate --maxWorkers=1 --testTimeout=30000"
+  },
+  "browser": {
+    "scans": 62,
+    "pageErrors": [],
+    "checks": [
+      "Notebook evidence labels, full-capacity removal, exact undo including notes and guide attribution, paused/other setups, serialized recovery, last removal only, new edits and reused IDs, clear recovery, last row, keyboard focus, plot selection, forced colors and stable 3D viewer pass.",
+      "Prediction diagrams: guide disclosure, keyboard range controls, exact scale changes, boundary and off-scale predictions, saved-state isolation, report preview and static exported diagram pass.",
+      "Report preview and real download preserve saved evidence and notes; keyboard open/close/Escape, other live setups, free exploration, long and hostile text, Unicode truncation, print control/media, invalidation and remount pass.",
+      "Actual additions and shared notebook saves drive all five steps; older notebook data is excluded, notes and practice records persist, and serialized remount restores the completed study.",
+      "Keyboard focus, optional hints, invalid predictions, setup pause/restore, free exploration, cleared/full notebooks, revisiting volume, 3D viewer identity, context-loss fallback, and forced colors pass."
+    ],
+    "report": "titration-notebook-recovery-browser-results.json",
+    "command": "node reports/chemistry-refinement-2026-09-06/titration-notebook-recovery-browser.cjs",
+    "rerunNote": "The first fixture assumed removal selects the first surviving plotted reading. The existing plot selects its most recent surviving reading. The assertion now checks that selection belongs to a surviving row; the final run passed."
+  },
+  "visualReview": [
+    "Desktop notebook evidence",
+    "320px removal and undo",
+    "320px forced-color evidence and undo"
+  ],
+  "limits": [
+    "Scoped validation, not the full repository suite.",
+    "Forced-color axe scans exclude the contrast rule; applicable rules, layout, and ARIA checks run.",
+    "Browser emulation rather than physical-device or classroom testing.",
+    "Translations for other languages pending.",
+    "Local changes only; no deployment."
+  ]
+}

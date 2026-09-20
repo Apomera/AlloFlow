@@ -8,14 +8,13 @@ const browser=await chromium.launch({headless:true});
 try{
 const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.setContent('<html><body>AlloPack import verification</body></html>');
-for(const f of ['desktop/web-app/node_modules/react/umd/react.development.js','firestore_sync_module.js','misc_handlers_module.js'])await page.addScriptTag({path:path.join(root,f)});
-const anti=fs.readFileSync(path.join(root,'AlloFlowANTI.txt'),'utf8'),start=anti.indexOf('const loadProjectFromJson ='),end=anti.indexOf('\n  // Reading Library',start);assert(start>=0&&end>start);
-await page.evaluate(bridge=>{
+for(const f of ['desktop/web-app/node_modules/react/umd/react.development.js','firestore_sync_module.js','misc_handlers_module.js','host_handlers_module.js'])await page.addScriptTag({path:path.join(root,f)});
+await page.evaluate(()=>{
 window.qa={history:[],loads:[],toasts:[]};const noop=()=>{};
 const deps=new Proxy({hydrateHistory:window.hydrateHistory,normalizeArtifactInstanceIds:undefined,setHistory:items=>window.qa.history=items,setGeneratedContent:item=>window.qa.current=item,onProjectLoadComplete:result=>window.qa.loads.push(result),projectFileInputRef:{current:{value:''}},t:k=>k,addToast:(message,type)=>window.qa.toasts.push({message,type}),warnLog:(...args)=>window.qa.toasts.push({type:'error',message:args.join(' ')})},{get:(o,k)=>k in o?o[k]:noop});
 const handleLoadProject=e=>window.AlloModules.MiscHandlers.handleLoadProject(e,deps);
-window.qa.load=new Function('handleLoadProject','addToast','t',bridge+'\nreturn loadProjectFromJson;')(handleLoadProject,deps.addToast,deps.t);
-},anti.slice(start,end));
+window.qa.load=window.AlloModules.createHostHandlers({handleLoadProject,addToast:deps.addToast,t:deps.t}).loadProjectFromJson;
+});
 await page.context().setOffline(true);
 const rows=[];
 for(const file of files){

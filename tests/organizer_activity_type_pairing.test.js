@@ -38,7 +38,7 @@ describe('visual-organizer activity/readiness pairing', () => {
   });
 
   it('every readiness call in the outline renderer goes through the normalised resource', () => {
-    const body = sliceBetween(renderers, 'const renderOutlineContent = (deps)', '\nconst ConceptSpace3DView');
+    const body = sliceBetween(renderers, 'const renderOutlineContentCore = (deps)', '\nconst ConceptSpace3DView');
     const bare = body.match(/_liveReadinessFor\(/g) || [];
     expect(bare.length).toBe(1); // only the wrapper's own call
     expect(body).toMatch(/const _readinessFor = \(activityType\) => _liveReadinessFor\(activityType, organizerResource\)/);
@@ -79,9 +79,9 @@ describe('visual-organizer activity/readiness pairing', () => {
     const table = sliceBetween(anti, 'const LIVE_ORGANIZER_STRUCTURE_TYPES = Object.freeze({', '});');
     // Deliberate: no interactive mode today. If one gains an activity, update
     // this list so the omission stays a decision rather than a silent drift.
-    const NO_ACTIVITY = new Set(['KWL Chart', 'Claim-Evidence-Reasoning']);
+    const NO_ACTIVITY = new Set();
     // These launch from their own dedicated surfaces, not the shared button.
-    const OWN_SURFACE = new Set(['Venn Diagram', '3D Concept Space', 'Memory Palace']);
+    const OWN_SURFACE = new Set(['Venn Diagram', '3D Concept Space', 'Memory Palace', 'KWL Chart']);
     for (const structure of offered) {
       if (NO_ACTIVITY.has(structure)) {
         expect(hasKey(map, structure), structure + ' unexpectedly gained a launch mapping').toBe(false);

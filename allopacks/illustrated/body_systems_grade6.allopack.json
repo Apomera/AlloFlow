@@ -29,10 +29,29 @@
       "textPolicy": "Text-free artwork; original activity text stays editable"
     },
     "contentRefinements": {
-      "count": 41,
+      "count": 0,
       "audit": "allopacks/media/body_systems_grade6/content-refinements.json",
-      "review": "Scientific wording refined; educator review pending"
-    }
+      "review": "Scientific wording refined; educator review pending",
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/body_systems_grade6/content-refinements.json",
+      "sourceOnlyResourceIds": []
+    },
+    "revisionReviewStatus": "2026-09-19: Body Systems source alignment and AI-assisted investigation revision; educator review pending",
+    "contentSources": [
+      {
+        "title": "Body Systems revision reference",
+        "url": "https://www.nhlbi.nih.gov/health/heart/heart-beats"
+      },
+      {
+        "title": "Body Systems revision reference",
+        "url": "https://www.nhlbi.nih.gov/health/heart"
+      },
+      {
+        "title": "Body Systems revision reference",
+        "url": "https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works"
+      }
+    ]
   },
   "sourceTopic": "Human Body Systems",
   "history": [
@@ -42,7 +61,7 @@
       "title": "Meet the Team Inside You",
       "timestamp": "2026-07-21T17:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nNo system in your body works alone. Take a single breath and eat a single bite, and at least four systems have to cooperate to turn them into energy for your cells. Today you learn the team, and how they pass the ball.\n\n1. Read **The Relay Race** — follow one oxygen molecule to a muscle cell.\n2. Learn the systems in the **Glossary**, then win the **Matching** game and the **Memory** game.\n3. Study the **Who Does What** chart.\n4. Sort the jobs in **Which System Handles This?**\n5. Take the quiz — the last two questions ask how systems WORK TOGETHER.\n6. Fill in the **Cornell Notes** in your own words.\n7. Lock the ideas in with **Remember the Relay Team** — study the example aid, then make one your own.\n8. Finish with **Investigation: What Changes When You Move?** — use what you learned on a real problem, and mark every guess as a guess.\n9. Trace the **The Handoff Map** map before you take notes — read it along the handoffs, not system by system.\n\nBig idea to carry: your body is not a collection of parts. It is a system of systems, and the handoffs between them are the whole point. 🫀🫁\n\nPicture panels: Breathing and gas exchange; Transport and absorption; Signals and movement; Systems working together. Text-free illustrations use editable captions and image-specific descriptions. Diagrams simplify scale, anatomy and processes; colors and tokens are explained in captions. Follow the lesson text for scientific context. Educator review is pending.",
+        "body": "**Due:** (your teacher will tell you)\n\nFollow how body systems exchange materials and signals. The relay is a model: systems work continuously and overlap.\n\n1. Read **The Relay Race** and trace oxygen from lung air sacs to a muscle cell.\n2. Use the **Glossary**, **Matching**, and **Memory** games to practice the terms.\n3. Study **Who Does What** and sort the jobs in **Which System Handles This?**. Explain how other systems can help.\n4. Use **The Handoff Map** and **Cornell Notes** to connect ideas.\n5. Complete the quiz, then review any answers you want to revise.\n6. Create a cue in **Remember the Relay Team**. Explain both its usefulness and its limits.\n7. Complete **Investigation: What Changes When You Move?** with the supplied fictional data. No exercise or personal measurements are needed.\n\nYou may write, speak, draw with explanations, or use your communication device. Use observations to support a claim and identify what remains uncertain.\n\nPicture panels: Breathing and gas exchange; Transport and absorption; Signals and movement; Systems working together. Text-free illustrations use editable captions and image-specific descriptions. Diagrams simplify scale, anatomy and processes; colors and tokens are explained in captions. Follow the lesson text for scientific context. Educator review is pending.",
         "objectives": [
           {
             "id": "bs-goal-matching",
@@ -66,7 +85,7 @@
           },
           {
             "id": "bs-goal-trace",
-            "label": "I traced how two body systems worked together during something I did today",
+            "label": "I explained how two systems work together in an imagined activity or lesson example",
             "kind": "manual"
           }
         ]
@@ -78,7 +97,7 @@
       "type": "simplified",
       "title": "The Relay Race",
       "timestamp": "2026-07-21T17:00:01.000Z",
-      "data": "## The Relay Race\n\nKeeping a muscle cell working takes several systems exchanging materials and signals. These systems work continuously and overlap; the relay is a metaphor, not a sequence where one system stops before the next starts.\n\nAir enters the respiratory system and reaches tiny lung air sacs called alveoli. Oxygen diffuses across thin walls into nearby capillary blood. Carbon dioxide moves from blood to air and is exhaled. Breathing moves air; gas exchange moves molecules across the walls.\n\nThe circulatory system carries oxygen from lungs to the left side of the heart, then through arteries toward body tissues. At tissue capillaries, materials pass between blood and cells. Blood returns through veins to the right side of the heart and is pumped to the lungs. Arteries carry blood away from the heart; veins carry it toward the heart. These names describe direction, not oxygen content. Red and blue in diagrams are conventions: all human blood is red.\n\nThe digestive system breaks food into smaller molecules. Most nutrient absorption occurs in the small intestine. Glucose and many other nutrients pass into blood; many dietary fats first enter lymph and later reach blood. Nutrients supply building materials, and some supply energy. The lungs supply oxygen, not food.\n\nInside muscle cells, aerobic cellular respiration uses oxygen to transfer chemical energy from glucose into forms cells can use, including ATP. Carbon dioxide and water are products. Muscles use ATP to contract. Cells also have pathways that supply some ATP without oxygen; this lesson follows the aerobic route.\n\nNervous-system signals help coordinate voluntary movement and automatic responses. Signaling involves electrical activity within neurons and chemical communication at many connections. A quick withdrawal reflex can be coordinated through spinal circuits before conscious awareness; signals also reach the brain. Never test this by touching a hot object.\n\nBones provide support, protect organs and form attachment sites for skeletal muscles. A typical adult has about 206 bones, with variation. Tendons connect skeletal muscles to bones, and muscle contraction pulls on those attachments. Smooth muscle moves materials through organs; cardiac muscle pumps blood.\n\nDuring activity, heart rate and breathing often increase to meet changing demands for oxygen delivery and carbon-dioxide removal. Nerves, hormones and local signals all contribute. Pacemaker cells in the heart initiate its rhythm; the nervous system adjusts it rather than starting every beat. The six systems emphasized here are part of a larger body that also includes systems such as the endocrine, lymphatic and urinary systems.",
+      "data": "## The Relay Race\n\nA body **system** is a group of parts that work together. Several systems keep a muscle cell working. We can compare their shared jobs to a relay. But the systems work at the same time, not in separate turns.\n\nThe **respiratory** system moves air into the lungs. Tiny air sacs called alveoli have thin walls. **Oxygen** passes through these walls into nearby blood. Carbon dioxide moves the other way and leaves when we breathe out. Moving air and moving gases across a wall are different jobs.\n\nThe **circulatory** system moves blood. The heart is an **organ** that pumps it. Blood goes from the lungs to the left side of the heart, then toward body cells. It returns to the right side and goes to the lungs again. A blood **vessel** is a tube. Arteries carry blood away from the heart. Veins carry it toward the heart. These names tell direction, not oxygen level. All human blood is red; blue in a diagram is a color code.\n\nThe **digestive** system breaks food into smaller parts. A **nutrient** is a substance the body needs. Most nutrients enter the body through the small intestine. Glucose enters blood; many dietary fats first enter lymph, then reach blood. Some nutrients supply energy; others help build or run the body. Lungs supply oxygen, not food.\n\nInside cells, one process uses oxygen and glucose to make ATP, which transfers energy for cell work. This process is called aerobic cellular respiration. It also makes carbon dioxide and water. Cells have other ways to make some ATP without oxygen.\n\nThe **nervous** system helps **coordinate** these jobs. Nerves send signals for movement and other tasks. Some quick reflexes use circuits in the spinal cord before we become aware of them. Do not test a reflex with a hot object.\n\nThe **skeletal** system supports the body and protects organs. A typical adult has about 206 bones, with some variation. Tendons join skeletal muscles to bones. The **muscular** system moves the body as muscles pull. Other muscles move food through organs or pump blood.\n\nDuring activity, breathing and heart rate often rise. Nerves, hormones and local signals help match supply to need. Pacemaker cells in the heart start its beat; nerves adjust the rate. These six systems are part of a larger body with other linked systems too.",
       "meta": "6th Grade • Systems, transport and coordination",
       "imageSlot": "bs-img-systems-relay"
     },
@@ -210,7 +229,7 @@
         },
         {
           "term": "Nutrient",
-          "def": "A substance needed for body function, growth or repair; some nutrients supply energy, while others do not.",
+          "def": "A substance the body needs to work, grow or repair itself. Some provide energy; others have different jobs.",
           "tier": "Academic",
           "image": "data:image/webp;base64,UklGRlouAABXRUJQVlA4WAoAAAAgAAAA5wMA5wMASUNDUMgBAAAAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADZWUDggbCwAABBwAZ0BKugD6AM+KRSIQyGhIRD81DQYAoS0t34VDPKGN/Wf6H+zP7/+l/IveP6p/TP2f/vH7S/PpWn5P/Rvyx/Rf2R/B7C5x3/mfuA+IDxn8u/vH9F/y//q/yH/////3h/2X+D/JT5K/qD/M/np9AH8K/iv9O/pP9y/6n9q/////8IPmC/nP9N/7/9t/f//8fVZ/if0r9139g/1X+S/rX9j+QD+9f5L/rdgd6BH82/uf5//DX/u/2v+DT+u/5z/0/6z9///f9hv86/vP/Y/bD////f6APQA/9fqAf//2P+pf+e/r/dN/zfyc9reMP8jFwe0v+U/fj9L65/5bvL4AX4n/PP8F+on/C4EEAP59/TP+L+s3urTKfwDUA4EygB/Jv65/4PVg7bvbX9f/+T3Ev1v/4/7Bf+j/H9/n9yf/////hP/c4F8r9+8PSDzlxeZ9uZ9uZ9uZ9uZ9uZ9uZ9uZ9uZ9uZ9tErjOzfCBe3jDeFIPOXF5n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n20iHH/UmA55sLEdL3XlOwsR0vdeU7CxHS915TreEfgUg85cXktCyhxz7YWI6XuvKdhYjpe68eKFvr2EHnLi8z1Wg8JamEHnLi8z7cyxrPcRIn5rVCOL12MEEufh2QqkXmfXU3XK9vg6tzPruyCH0+wg85cXmesMLlxeZ9uZ9uZaJhLAikmmF8cmXybHKyzrput2Lo00UJy4vJmW3nLi8z7cy0TcKQecuLzPtyZlsRyb9zBdpI+Gono6Y4NBmBB5LTRQnLi8mZbecuLzPtzLRNwpB5y4vM+3JmW3kS+Pv9mkjY6UyavM9YYXLi8z69dJ/tzPtzPto00UJy4vM+3M+vXSQ97CXPf1u3+YMfJi2CC4wpB5LTRQnLi8mZbecuLzPtzLRNwpB5G8WC4TiIEUowK0ZReZ9eufGbdVNSX+HsF/39BagM9GW42zKxMEzsLlxeZ9euk/25n25n20aaKE5bhhB9H/ZOfXBORI0nWUV0vvfnXbnK+szzcjLvvIuB5r8BC91R8+q0RxBDfT2yL735125yNC3KR9VD016WS9cvM5becuLzLRNwpB5y4vM9YYXLi8kalv57Eci1GxKLQ21nHP3LzhZYNNeJB+dcbwiVHbDBJtiDShcsobvAsCj7YLzl5kWStNgEZe3iqi285cXmfbmWibhSDzlxeZ9uTMv2tB+BQTQ4th82MzeKqLbzlxeZaJuFIPOXF5nrDC5cXmfbmfbmWibRDW63Pf1u39rqmkkZlntCACKabAIy9vFVFt5y4vM+3MtE3CkHnLi8z7cmZWlC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",
           "imageAlt": "Small gold dots move from a tan gut space through a folded boundary toward a pink blood vessel.",
@@ -342,9 +361,9 @@
           {
             "label": "THE POINT",
             "bullets": [
-              "No system works alone",
-              "Exercise speeds breathing AND heartbeat",
-              "The handoffs are the whole story"
+              "Systems exchange materials and signals",
+              "During activity, breathing and heart rate often increase",
+              "These linked responses do not follow one fixed relay order"
             ],
             "iconPrompt": "gears meshing together",
             "iconUrl": "data:image/webp;base64,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",
@@ -418,7 +437,7 @@
             "items": [
               "The heart pumps blood through lung and body circuits; arteries lead away from the heart",
               "Veins bring it back",
-              "It carries two things to the cells: oxygen from the lungs, nutrients from the gut"
+              "Blood carries oxygen and nutrients to cells, along with other materials"
             ]
           },
           {
@@ -430,7 +449,7 @@
             ]
           },
           {
-            "title": "Nervous — the coordinator",
+            "title": "Nervous — helping coordinate",
             "items": [
               "Nervous pathways use electrical activity and chemical communication",
               "Spinal circuits can coordinate rapid withdrawal reflexes",
@@ -449,11 +468,12 @@
             "title": "The handoffs — the actual point",
             "items": [
               "During activity, breathing and circulation adjust through several interacting signals",
-              "Fear: the heart races before you decide anything",
+              "Fear can change heart rate through nerve and hormone signals",
               "You can memorise every system alone and still miss this"
             ]
           }
-        ]
+        ],
+        "structureType": "Key Concept Map"
       }
     },
     {
@@ -474,7 +494,7 @@
         ],
         "authorshipMode": "scaffolded",
         "reflectionLevel": "quick",
-        "reasoningRequired": false,
+        "reasoningRequired": true,
         "sourceExcerpt": "Oxygen diffuses from alveoli into blood, which travels through the heart to tissues. Many nutrients enter blood through the small intestine; many fats enter lymph first. Nervous, hormonal and local signals coordinate responses. Muscles pull on skeletal attachments.",
         "lessonRef": {
           "resourceId": "bs-reading",
@@ -492,11 +512,11 @@
               "A typical adult has about 206 bones; skeletal muscles pull on bones through tendons."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "acronym-acrostic",
             "mode": "scaffolded",
-            "aiExample": "R-C-D-N-S-M: Runners Carry Dinner, Nerves Say 'Move!' Respiratory, Circulatory, Digestive, Nervous, Skeletal, Muscular.",
-            "mapping": "The sentence tells the story in order: air and blood (R, C) carry food (D), the nervous system gives the command (N), and bones and muscles (S, M) do the moving.",
+            "aiExample": "R-C-D-N-S-M: Runners Carry Dinner, Nerves Say Move. Use the letters to name the six systems.",
+            "mapping": "The letters are a list, not a route for food. Lungs take in oxygen. The gut takes in nutrients. Blood carries both to cells.",
             "scaffoldStarter": "R ____ C ____ D ____, N ____ S ____ M ____.",
             "scaffoldSteps": [
               "Write the six systems and circle the first letters.",
@@ -504,13 +524,22 @@
               "Check that your sentence still names all six."
             ],
             "coachPrompts": [
-              "Which of your words shows that the nervous system is the coordinator, not just one worker?"
+              "How does the nervous system help coordinate the body? Which other signals also help?"
             ],
             "studentPrompt": "Write your own six-letter sentence, or reorder the example.",
             "reasoningPrompt": "Explain how each word points to one system and its job.",
             "hookFact": {
               "text": "Microscopic capillaries form extensive networks where materials pass between blood and tissues.",
               "sourceTitle": "The Relay Race (this lesson)"
+            },
+            "factReview": {
+              "status": "pending-educator-review",
+              "sources": [
+                "https://www.nhlbi.nih.gov/health/heart/heart-beats",
+                "https://www.nhlbi.nih.gov/health/heart",
+                "https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works"
+              ],
+              "factsHash": "88f3b6670976962bb666350847ec05c720caa498cc8b3456f4a248fe2c689de0"
             }
           },
           {
@@ -522,55 +551,74 @@
               "Aerobic respiration transfers energy from glucose using oxygen, supplying ATP that supports contraction."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "sequence-cue",
             "mode": "scaffolded",
-            "aiExample": "Alveoli → blood → left heart → body capillaries and muscle cells. Oxygen crosses thin walls at the start and end; it does not travel as air bubbles.",
-            "mapping": "One motion per handoff keeps the order in your body, not just in words, and the flex at the end is the payoff: energy released in the cell.",
+            "aiExample": "Trace oxygen: lung air sacs → blood → left heart → body cells. It crosses thin walls at the start and end.",
+            "mapping": "Point, draw or say each step. Oxygen travels in blood, not as air bubbles. The cell uses it in aerobic respiration.",
             "scaffoldStarter": "____ → ____ → ____ → ____.",
             "scaffoldSteps": [
-              "Write the four places oxygen goes, in order.",
-              "Add a hand motion for each.",
-              "Run the relay out loud three times."
+              "Arrange the four places oxygen travels through in order.",
+              "Choose words, pictures, pointing, a communication device, or optional motions for your cue.",
+              "Use your cue to trace the pathway and explain where oxygen crosses a thin wall."
             ],
             "coachPrompts": [
               "Where in your sequence does the digestive system's delivery join the oxygen?"
             ],
-            "studentPrompt": "Create your own four-step relay with motions.",
+            "studentPrompt": "Create your own four-step oxygen pathway using a response format that works for you.",
             "reasoningPrompt": "How does each step of your relay match a system from the reading?",
             "hookFact": {
               "text": "The lungs are where the outside air meets the inside of your body.",
               "sourceTitle": "The Relay Race (this lesson)"
+            },
+            "factReview": {
+              "status": "pending-educator-review",
+              "sources": [
+                "https://www.nhlbi.nih.gov/health/heart/heart-beats",
+                "https://www.nhlbi.nih.gov/health/heart",
+                "https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works"
+              ],
+              "factsHash": "1ff3ee31e6b1c449d289b9b70dc03f9424c18ff218adc6a0ebd4c762bee92b12"
             }
           },
           {
             "id": "bs-ma-handoffs",
-            "target": "Why systems speed up together: the handoffs are the point",
+            "target": "How systems respond to changing activity",
             "essentialFacts": [
-              "During exercise, muscles demand more oxygen, so the respiratory and circulatory systems speed up together.",
+              "Working muscles use more energy. Breathing and blood flow often increase to support oxygen delivery and carbon-dioxide removal.",
               "Nervous pathways, hormones and local signals help coordinate changing demands; the heart has its own pacemaker.",
-              "No system works alone; the body is a system of systems."
+              "Body systems work together continuously; a relay cue does not prove a fixed order of signals."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "story-chain",
             "mode": "scaffolded",
-            "aiExample": "Activity increases → energy use changes → nervous, hormonal and local signals contribute → breathing and circulation adjust → delivery and waste removal support working muscles.",
-            "mapping": "These arrows describe coordinated responses, not a measured order or proof that one signal always comes first.",
-            "scaffoldStarter": "I ____ → my muscles ____ → my nervous system ____ → my ____ and ____ speed up.",
+            "aiExample": "Working muscles use more energy. Breathing and blood flow can change to help meet that need.",
+            "mapping": "Nerves, hormones and local signals help the systems work together. The arrows do not show a fixed order of events.",
+            "scaffoldStarter": "During ____, muscles use more ____. Breathing and blood flow may ____. Several signals help ____.",
             "scaffoldSteps": [
-              "Start with something you did today that took effort.",
-              "Add coordinating signals and the two responding systems without claiming a measured order.",
-              "End with what the muscles got."
+              "Choose an imagined example of physical activity or an example from the lesson.",
+              "Connect changing energy needs with breathing, circulation, and coordinating signals.",
+              "Explain that your story is a model, not a measurement of which signal came first."
             ],
             "coachPrompts": [
-              "Which link in your chain is the nervous system, and what would happen without it?"
+              "Where does your story show systems working together?",
+              "Which parts explain the science, and which would need separate measurements to test?"
             ],
-            "studentPrompt": "Write your own handoff chain for something you did today.",
-            "reasoningPrompt": "How does your chain show that no system works alone?",
+            "studentPrompt": "Describe or draw an imagined activity and the linked responses of body systems.",
+            "reasoningPrompt": "Explain one useful connection and one limit of your story model.",
             "hookFact": {
-              "text": "Get scared and your heart races before you decide anything, because your nervous system triggered it.",
-              "sourceTitle": "The Relay Race (this lesson)"
+              "text": "Nerves and hormones can change heart rate in response to a perceived threat.",
+              "sourceTitle": "The Relay Race (revised lesson)"
+            },
+            "factReview": {
+              "status": "pending-educator-review",
+              "sources": [
+                "https://www.nhlbi.nih.gov/health/heart/heart-beats",
+                "https://www.nhlbi.nih.gov/health/heart",
+                "https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works"
+              ],
+              "factsHash": "fc97bdfa91976adfe4532039569011a3d81cde2c33d3adc847b95b068276bf82"
             }
           }
         ]
@@ -730,14 +778,14 @@
           },
           {
             "type": "mcq",
-            "question": "The circulatory system delivers two things to your cells. What are they?",
+            "question": "Which pair correctly matches the oxygen and glucose pathways described in the lesson?",
             "options": [
-              "Oxygen from the lungs and calcium from the bones",
-              "Nerve signals from the brain and movement from the muscles",
-              "Water from the digestive system and carbon dioxide from the lungs",
-              "Oxygen from the lungs and nutrients from the digestive system"
+              "Oxygen enters through the digestive system; glucose enters through the lungs",
+              "Both oxygen and glucose enter the blood directly from inhaled air",
+              "Glucose comes from bones; oxygen is made by the heart",
+              "Oxygen crosses from lung air sacs into blood; glucose is absorbed from the small intestine into blood"
             ],
-            "correctAnswer": "Oxygen from the lungs and nutrients from the digestive system",
+            "correctAnswer": "Oxygen crosses from lung air sacs into blood; glucose is absorbed from the small intestine into blood",
             "conceptLabel": "circulatory teamwork"
           },
           {
@@ -784,8 +832,8 @@
           },
           {
             "type": "shortAnswer",
-            "question": "A person eats lunch and then goes for a run. Name two body systems that must work together for the food to power the run, and explain the handoff.",
-            "expectedAnswer": "The digestive system breaks the lunch into nutrients and passes them into the blood. The circulatory system then carries those nutrients to the muscles, where they combine with oxygen to release energy for running. The handoff is nutrients moving from the gut into the bloodstream.",
+            "question": "Explain how the digestive and circulatory systems help deliver glucose from food to a working muscle. What does the muscle cell do with it?",
+            "expectedAnswer": "Digestion breaks down carbohydrates, and glucose is absorbed from the small intestine into blood. Circulation carries it to muscles. In aerobic cellular respiration, muscle cells use glucose and oxygen to make ATP for cell work, including contraction. Many dietary fats take a different initial route through lymph before reaching blood.",
             "conceptLabel": "systems interaction"
           }
         ],
@@ -794,7 +842,7 @@
             "text": "Which body system would you most want to learn more about, and why?"
           },
           {
-            "text": "Pick something you did today. Which body systems worked together to make it happen?"
+            "text": "Choose an imagined activity or an example from the lesson. Which body systems work together?"
           }
         ]
       },
@@ -835,7 +883,7 @@
           },
           {
             "id": "cue-bs-7",
-            "text": "Why speed up together in exercise?"
+            "text": "How can breathing and circulation adjust during activity?"
           },
           {
             "id": "cue-bs-8",
@@ -895,27 +943,27 @@
       "data": [
         {
           "question": "Why are there so many tiny blood vessels?",
-          "answer": "Branching capillary networks bring blood close to tissues for exchange of oxygen, nutrients and wastes. Total-length estimates vary with body size and assumptions; the exact length is not needed to understand their job."
+          "answer": "Tiny vessels bring blood close to cells. Their thin walls let gases, nutrients and wastes pass between blood and tissues."
         },
         {
           "question": "How fast do nerve signals travel? ⚡",
-          "answer": "The fastest ones move over 250 miles per hour. That is why you pull your hand off something hot before you consciously feel the pain — the reflex signal takes a shortcut through your spinal cord."
+          "answer": "Speeds vary. A quick reflex can use a circuit in the spinal cord before you become aware of it. Signals also reach the brain. Never test this with a hot object."
         },
         {
           "question": "Why does my heart beat faster when I am scared?",
-          "answer": "Your nervous system detects a threat and triggers it automatically, releasing signals that speed the heart to rush oxygen to your muscles — getting you ready to run or react before you have decided anything."
+          "answer": "Nerves and hormones can raise heart rate when you sense a threat. This helps prepare the body to act. The response can start before you choose what to do."
         },
         {
           "question": "Do all my systems ever rest? 😴",
-          "answer": "Not fully. Even in deep sleep your heart pumps, your lungs breathe, and your nervous system keeps them coordinated. Some systems slow down, but the life-support handoffs never stop."
+          "answer": "Some jobs slow down during sleep, but they do not all stop. Your heart still pumps and your lungs still move air."
         },
         {
           "question": "How many bones do I have? 🦴",
-          "answer": "A typical adult has about 206 bones, with individual variation. Children have bones and parts that fuse as they grow, so the count depends on age and how parts are counted."
+          "answer": "A typical adult has about 206 bones. The count can vary. Some bones join as children grow, so age and how we count the parts matter."
         },
         {
           "question": "Which system is the most important?",
-          "answer": "Systems depend on one another, but people can live with differences in organs and abilities, sometimes with medical support. Studying the connections is more useful than ranking a single system as most important."
+          "answer": "The systems depend on one another. People can have different organs and abilities, sometimes with medical support. Study how the parts connect rather than ranking them."
         }
       ],
       "meta": "6 questions • reinforces interdependence"
@@ -969,73 +1017,82 @@
       "data": {
         "schemaVersion": 6,
         "title": "What Changes When You Move?",
-        "instructions": "Plan and run a safe investigation that shows two body systems responding to the same demand at the same time. Measure, do not guess, and explain the handoff with lesson facts.",
+        "instructions": "Investigate the supplied fictional observations. Compare breathing and pulse estimates, connect the pattern to lesson facts, and explain what the numbers cannot show. No exercise or personal measurements are needed.",
         "selectionMode": "manual",
         "family": "investigate",
-        "fitReason": "The reading says breathing and heartbeat speed up together because muscles need more oxygen. Students can measure both in one minute and see the handoff instead of memorizing it.",
+        "fitReason": "Comparing two measurements gives students evidence to discuss interacting systems while distinguishing an observed pattern from a causal explanation.",
         "agencyMode": "co-framed",
         "scope": "compact",
         "brief": {
           "family": "investigate",
-          "context": "Your class has stopwatches, a hallway, and permission to do one minute of gentle exercise such as marching in place or walking fast. Some students prefer not to exercise and can be the recorders and timers.",
-          "role": "Student physiologists",
-          "audience": "Your class and a health teacher who will check your method",
-          "drivingQuestion": "How do breathing and heart rates change after one minute of optional gentle activity, and what can those measurements tell us about coordinated responses?",
-          "seedDirection": "Measure both at rest first. Without the resting numbers you cannot say anything changed.",
+          "context": "Fictional classroom dataset, invented for calculation practice; these are not measurements of real people or health targets. Three cases each have counts from matched 15-second windows at rest, just after one minute of gentle activity, and two minutes after activity ended. Each pair below is breaths / pulse beats. Case A: rest 4 / 18; just after 6 / 24; two minutes after 4 / 19. Case B: rest 3 / 17; just after 5 / 22; two minutes after 4 / 18. Case C: rest 4 / 20; just after 5 / 23; two minutes after 4 / 20. Multiply each count by four to estimate a rate per minute. These examples illustrate possible patterns, not predictions for every person.",
+          "role": "Student evidence analysts",
+          "audience": "Classmates comparing observations and explanations",
+          "drivingQuestion": "What changes appear in the fictional breathing and pulse counts, and how far can those observations support an explanation about interacting systems?",
+          "seedDirection": "Label the data fictional. Convert each 15-second count to a per-minute estimate, then compare each case with its own resting values.",
           "lockedLessonFacts": [
             "The respiratory system takes in oxygen and releases carbon dioxide through the lungs.",
             "The circulatory system delivers oxygen and nutrients to cells and carries waste away.",
             "Aerobic respiration transfers energy from glucose using oxygen; muscle cells use ATP to contract.",
-            "During exercise, muscles need more oxygen, so respiratory and circulatory systems speed up together.",
+            "Working muscles use more energy. Breathing and blood flow often increase to support oxygen delivery and carbon-dioxide removal.",
             "Nervous, hormonal and local signals coordinate responses; these rate counts do not identify which signal came first."
           ],
           "openQuestions": [
-            "How do we count breaths and heartbeats accurately in 15 seconds?",
-            "How long after stopping do both rates return to resting?",
-            "Do the two rates change by the same amount, or does one change more?"
+            "How much does each estimated rate change from rest to just after activity?",
+            "At the two-minute observation, which estimates match the resting value and which remain higher?",
+            "Why can three observation times not establish the exact time of recovery or the order of coordinating signals?"
           ],
           "stakeholders": [
-            "Volunteers who exercise",
-            "Recorders and timers",
-            "Anyone with a health reason to sit out",
-            "The health teacher checking safety"
+            "Students using different response formats",
+            "Classmates checking calculations",
+            "The teacher supporting evidence-based explanations"
           ],
           "criteria": [
-            "Resting and after-exercise measurements for both rates, recorded in a table",
-            "At least three volunteers so one odd result does not decide the answer",
-            "The explanation names the demand, the coordinator, and both responding systems",
-            "Uses at least four glossary words correctly"
+            "A table of estimated breaths per minute and pulse beats per minute for all three fictional cases at all three times",
+            "A comparison of each case with its own resting values, with units shown",
+            "An explanation using respiratory and circulatory systems and their coordination, clearly separated from what was counted",
+            "One limit of the data and one follow-up question; explain relevant lesson vocabulary accurately"
           ],
           "constraints": [
-            "Teacher-approved gentle activity only; anyone may stop or choose a non-exercise role. Follow individual activity restrictions and stop if uncomfortable.",
-            "No one is required to exercise or to share their numbers",
-            "Use matched measurement windows and record delays; two observers can count pulse and breaths together. Multiply 15-second counts by four to estimate rates per minute.",
-            "Finish in one class period"
+            "Use the supplied fictional data; no exercise or personal measurements are required.",
+            "Keep breaths per minute and pulse beats per minute in separate labeled columns.",
+            "Do not use the invented values to judge anyone's health, fitness, or expected response.",
+            "Do not claim the counts measure oxygen use, prove a causal mechanism, or reveal the first coordinating signal.",
+            "Complete in one class period; respond in writing, speech, drawings with explanations, or a communication device."
           ],
-          "deliverable": "A data table (rest, right after, two minutes after) for breathing rate and heart rate for each volunteer, a short written explanation of the handoff, and one question your data raised that you could not answer.",
+          "deliverable": "A labeled results table for the three fictional cases, a short explanation linking a pattern to lesson facts, and a statement of what remains unknown.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false,
+          "factReview": {
+            "status": "pending-educator-review",
+            "sources": [
+              "https://www.nhlbi.nih.gov/health/heart/heart-beats",
+              "https://www.nhlbi.nih.gov/health/heart",
+              "https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works"
+            ],
+            "factsHash": "686fa85ec87a3357932fea8b855e12c09083a2d95660481d7f83bd8c3b03fe6e"
+          }
         },
         "supports": {
           "parallelExample": {
-            "context": "A coach wanted to know whether stair climbing or jogging made the team's hearts work harder.",
-            "move": "She had players measure resting pulse, do two minutes of each activity on different days, and measure pulse and breaths right after. Because everyone measured the same way for the same time, she could compare the two activities fairly.",
-            "whyItHelps": "Same method: rest first, same timing for everyone, two systems measured side by side, and a fair comparison because only one thing changed."
+            "context": "Fictional example: an animal model has 5 breaths counted in a 20-second window and 7 in another 20-second window.",
+            "move": "A student multiplies each count by three: estimated rates are 15 and 21 breaths per minute. The estimate increased by 6 breaths per minute. The student reports the change but does not claim that the counts alone explain its cause.",
+            "whyItHelps": "Match the conversion to the counting window, retain units, and separate a numerical pattern from a causal explanation. Our main dataset uses 15-second windows, so its multiplier is four."
           },
-          "frameStarter": "At rest, breathing was ____ and heart rate was ____. After one minute of ____, they were ____ and ____, because ____.",
+          "frameStarter": "In fictional Case ____, the estimated ____ rate changed from ____ to ____ per minute. This is consistent with ____. The counts alone cannot show ____.",
           "frameChoices": [
-            "Compare rest and after-exercise for both rates",
-            "Track how long recovery takes for each rate",
-            "Compare two gentle activities",
-            "Compare how much each rate changes as a percent"
+            "Compare each case with its own resting estimates",
+            "Compare the two-minute estimate with rest without claiming an exact recovery time",
+            "Draw two graphs with separate labels and units",
+            "Explain how a counting error of one beat or breath changes a per-minute estimate"
           ],
           "coachPrompts": [
-            "Do these counts show which signal came first, or only changes in the measured rates?",
-            "What would you expect if only the heart sped up and breathing did not?",
-            "How does a bigger heart rate change help a muscle cell?"
+            "Which part of your claim comes from the numbers, and which comes from the lesson?",
+            "Does a faster pulse directly measure the volume of blood pumped or the oxygen used?",
+            "Which questions would need different measurements or a different investigation?"
           ]
         },
-        "coachHint": "Resting numbers first, same timing for everyone, then look at the two rates side by side. The story is in how they move together.",
+        "coachHint": "Use count × 4 for each 15-second sample. Compare like units, separate evidence from explanation, and state the limits of three fictional observation times.",
         "sourceExcerpt": "Activity changes oxygen delivery and waste-removal demands. Breathing and circulation often adjust together through nervous, hormonal and local signals.",
         "lessonRef": {
           "resourceId": "bs-reading",

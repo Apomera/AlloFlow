@@ -518,20 +518,9 @@ function UDLGuideModal(props) {
                       )}
                   </div>
               )}
-              {/* No aria-label on the button below: its own visible text
-                  ("Save Actionable") is the accessible name. The old label said
-                  "Refresh", which both misdescribed the action and broke
-                  2.5.3 Label in Name against the visible words. */}
               {!msg.type && msg.role === 'model' && msg.isActionable && idx > 0 && (
-                <button
-                  type="button"
-                  data-help-key="chat_save_advice_btn" onClick={() => saveUDLAdvice(msg.text, udlMessages[idx-1]?.role === 'user' ? udlMessages[idx-1].text : 'Teacher Inquiry')}
-                  disabled={isSavingAdvice}
-                  className={`mt-1 text-[11px] flex items-center gap-1 font-medium px-2 py-1 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${chatStyles.secondaryButton}`}
-                >
-                  {isSavingAdvice ? <RefreshCw size={10} className="motion-safe:animate-spin" aria-hidden="true" /> : <Save size={10} aria-hidden="true" />}
-                  {isSavingAdvice ? t('chat_guide.save_actionable_loading') : t('chat_guide.save_actionable_btn')}
-                </button>
+                <AllobotAdviceSave text={msg.text} question={udlMessages[idx-1]?.role === 'user' ? udlMessages[idx-1].text : ''}
+                  evidence={msg.evidence} save={saveUDLAdvice} busy={isSavingAdvice} t={t} className={chatStyles.secondaryButton} />
               )}
             </div>
           ))}

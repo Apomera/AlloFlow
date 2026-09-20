@@ -1,0 +1,32 @@
+{
+  "service": "fixture",
+  "layouts": [
+    {
+      "width": 320,
+      "scroll": 320,
+      "client": 252,
+      "inner": 252
+    },
+    {
+      "width": 390,
+      "scroll": 390,
+      "client": 322,
+      "inner": 322
+    },
+    {
+      "width": 1280,
+      "scroll": 1280,
+      "client": 1212,
+      "inner": 1212
+    }
+  ],
+  "memoryCards": 8,
+  "matchingTerms": [
+    "Fruit",
+    "Flower",
+    "Stem",
+    "Seed"
+  ],
+  "emptyRecovery": true,
+  "errors": []
+}

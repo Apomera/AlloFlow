@@ -202,14 +202,14 @@ describe('Anatomy model-aware canvas toolbar', () => {
         state: { _bodyView3d: true, _body3dStyle: 'blueprint' },
         groupLabel: /Blueprint camera controls/i,
         visibleLabel: /Blueprint/i,
-        controls: ['rotate-left', 'rotate-right', 'tilt-up', 'tilt-down', 'zoom-in', 'zoom-out', 'reset'],
+        controls: ['rotate-left', 'rotate-right', 'tilt-up', 'tilt-down'],
       },
       {
         id: 'realistic',
         state: { _bodyView3d: true, _body3dStyle: 'realistic' },
         groupLabel: /Surface camera controls/i,
         visibleLabel: /Surface/i,
-        controls: ['rotate-left', 'rotate-right', 'tilt-up', 'tilt-down', 'zoom-in', 'zoom-out', 'reset'],
+        controls: ['rotate-left', 'rotate-right', 'tilt-up', 'tilt-down'],
       },
       {
         id: 'clinical',
@@ -238,6 +238,13 @@ describe('Anatomy model-aware canvas toolbar', () => {
       expect(label).toBeTruthy();
       expect(label?.textContent).toMatch(mode.visibleLabel);
       expect(buttons.map((button) => button.dataset.anatomyCanvasControl)).toEqual(mode.controls);
+      if (mode.id === 'blueprint' || mode.id === 'realistic') {
+        expect(root.querySelector('[data-anatomy-fine-adjust]')).not.toBeNull();
+        const dockActions = [...root.querySelectorAll('[data-anatomy-viewer-action]')];
+        expect(dockActions.map(button => button.dataset.anatomyViewerAction)).toEqual(['zoom-out', 'zoom-in', 'reset']);
+        dockActions.forEach(button => expect(button.getAttribute('aria-label')).toBeTruthy());
+        expect(root.querySelector('[data-anatomy-viewer-action=reset]').textContent).toBe('Reset');
+      }
       buttons.forEach((button) => {
         expect(button.type).toBe('button');
         expect(button.getAttribute('aria-label')).toBeTruthy();

@@ -3,7 +3,7 @@
     "resourceId": "cl-directions",
     "path": "data.body",
     "from": "**Due:** (your teacher will tell you)\n\nThere are about 30 trillion cells in your body, and every one of them is running a factory right now — without a manager, without instructions from you.\n\n1. Read **The Factory You Are Made Of**. Each part has a JOB — that is the whole idea.\n2. Learn the parts in the **Glossary**, then win the **Matching** game and the **Memory** game.\n3. Study the **Job Chart** — it pairs each part with what it actually does.\n4. Sort the cards in **Plant, Animal, or Both?** Careful: three of them fool people.\n5. Take the quiz. It asks WHY, not just WHAT.\n6. Fill in the **Cornell Notes** page in your own words — that page is your study sheet later.\n7. Lock the ideas in with **Remember the Factory Floor** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: Build a Cell That Could Live Somewhere Else** — use what you learned on a real problem, and mark every guess as a guess.\n9. Read the **The Factory Floor Plan** map by department before you take notes — structure fits function every time.\n\nIf you finish everything, you will be able to explain a cell without a diagram in front of you. That is the real goal. 🔬\n\nPicture panels: Cell discoveries and plant structure; Animal cells and boundaries; Energy-processing organelles; Water and support. Text-free illustrations use editable captions and image-specific descriptions. Diagrams simplify scale, anatomy and processes; colors and tokens are explained in captions. Follow the lesson text for scientific context. Educator review is pending.",
-    "to": "**Due:** (your teacher will tell you)\n\nYour body contains tens of trillions of cells with different jobs. This lesson compares typical animal and photosynthetic plant cells using a factory analogy.\n\n1. Read **The Factory You Are Made Of**. Each part has a JOB — that is the whole idea.\n2. Learn the parts in the **Glossary**, then win the **Matching** game and the **Memory** game.\n3. Study the **Job Chart** — it pairs each part with what it actually does.\n4. Sort the cards in **Plant, Animal, or Both?** Use the pictured typical cells; not every plant or animal cell has every illustrated feature.\n5. Take the quiz. It asks WHY, not just WHAT.\n6. Fill in the **Cornell Notes** page in your own words — that page is your study sheet later.\n7. Lock the ideas in with **Remember the Factory Floor** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: Build a Cell That Could Live Somewhere Else** — use what you learned on a real problem, and mark every guess as a guess.\n9. Read the **The Factory Floor Plan** map by department before you take notes — structure fits function every time.\n\nIf you finish everything, you will be able to explain a cell without a diagram in front of you. That is the real goal. 🔬\n\nPicture panels: Cell discoveries and plant structure; Animal cells and boundaries; Energy-processing organelles; Water and support. Text-free illustrations use editable captions and image-specific descriptions. Diagrams simplify scale, anatomy and processes; colors and tokens are explained in captions. Follow the lesson text for scientific context. Educator review is pending."
+    "to": "**Due:** (your teacher will tell you)\n\nYour body contains tens of trillions of cells with different jobs. This lesson compares typical animal and photosynthetic plant cells using a factory analogy.\n\n1. Read **The Factory You Are Made Of**. Each part has a JOB — that is the whole idea.\n2. Learn the parts in the **Glossary**, then win the **Matching** game and the **Memory** game.\n3. Study the **Job Chart** — it pairs each part with what it actually does.\n4. Sort the cards in **Plant, Animal, or Both?** Use the pictured typical cells; not every plant or animal cell has every illustrated feature.\n5. Take the quiz. It asks WHY, not just WHAT.\n6. Fill in the **Cornell Notes** page in your own words — that page is your study sheet later.\n7. Lock the ideas in with **Remember the Factory Floor** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: Build a Cell That Could Live Somewhere Else** — use what you learned on a real problem, and mark every guess as a guess.\n9. Read the **The Factory Floor Plan** map by department before you take notes — structure fits function every time.\n\nIf you finish everything, you will be able to explain a cell without a diagram in front of you. That is the real goal. 🔬\n\nPicture panels: Cell discoveries and plant structure; Animal cells and boundaries; Energy-processing organelles; Water and support. Text-free illustrations use editable captions and image-specific descriptions. Diagrams simplify scale, anatomy and processes; colors and tokens are explained in captions. Follow the lesson text for scientific context. Educator review is pending.\n\nSort by the two cell models in this lesson. The groups need not have equal numbers. After sorting, explain why many structures belong in BOTH and why “No cell wall” belongs in the animal-model group."
   },
   {
     "resourceId": "cl-reading",
@@ -14,7 +14,7 @@
   {
     "resourceId": "cl-reading",
     "path": "meta",
-    "from": "7th Grade • Leveled reading • ~370 words",
+    "from": "7th Grade • Leveled reading",
     "to": "7th Grade • typical plant and animal cells • model limitations included"
   },
   {
@@ -301,6 +301,12 @@
   },
   {
     "resourceId": "cl-memory",
+    "path": "data.cards.0.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "cl-memory",
     "path": "data.cards.0.aiExample",
     "from": "A cell is a factory: the membrane is the security gate, the nucleus is the front office with the blueprints, the mitochondria are the power plant, the ribosomes are the assembly line, the ER is the hallway, and the Golgi is shipping and receiving.",
     "to": "A cell is like a factory: a selective boundary, DNA library, ATP supply and protein assembly and processing areas. ER is a processing area, not just a hallway. No part thinks or chooses."
@@ -334,6 +340,12 @@
     "path": "data.cards.1.essentialFacts.2",
     "from": "Large central vacuole: stores water; when it empties the plant wilts.",
     "to": "A large central vacuole stores water; water loss can reduce turgor."
+  },
+  {
+    "resourceId": "cl-memory",
+    "path": "data.cards.1.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "cl-memory",
@@ -376,6 +388,12 @@
     "path": "data.cards.2.essentialFacts.0",
     "from": "The membrane is thin and flexible with openings, which fits letting some things through and blocking others.",
     "to": "Membrane lipids and proteins allow selective exchange; it is not a sheet with generic holes."
+  },
+  {
+    "resourceId": "cl-memory",
+    "path": "data.cards.2.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "cl-memory",
@@ -520,6 +538,12 @@
     "path": "data.brief.criteria.2",
     "from": "Nothing is invented that a real cell part could not do",
     "to": "State what evidence would be needed to test each predicted advantage; more of an organelle is not automatically better."
+  },
+  {
+    "resourceId": "cl-challenge",
+    "path": "data.brief.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "cl-challenge",

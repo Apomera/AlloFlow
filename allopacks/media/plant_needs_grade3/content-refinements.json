@@ -1,0 +1,631 @@
+[
+  {
+    "resourceId": "pl-directions",
+    "path": "data.body",
+    "from": "**Due:** (your teacher will tell you)\n\nA seed looks like a tiny dead pebble. It is not. It is alive and waiting, and if you give it four things, it will grow into a whole plant.\n\n1. Read **The Quiet Life of a Seed**.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Look at the **What a Plant Needs** chart.\n4. Sort the cards in **Need or Not?**\n5. Practise explaining with **Plant Frames**, then check yourself against the rubric.\n6. Take the quiz — say each answer out loud first.\n7. Lock the ideas in with **Remember What a Plant Needs** — study the example aid, then make one your own.\n8. Finish with **Investigation: The Windowsill Test** — use what you learned on a real problem, and mark every guess as a guess.\n\nYour goal this week: watch a real plant or seed and notice what it does. Plants are slow, but they are always working. 🌱",
+    "to": "**Due:** (your teacher will tell you)\n\nA seed may look like a pebble, but a healthy seed contains a living young plant. With suitable conditions, it can begin to grow.\n\n1. Read **The Quiet Life of a Seed**.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Look at the **What a Plant Needs** chart.\n4. Sort the cards in **Need or Not?**\n5. Practise explaining with **Plant Frames**, then check yourself against the rubric.\n6. Take the quiz — say each answer out loud first.\n7. Lock the ideas in with **Remember What a Plant Needs** — study the example aid, then make one your own.\n8. Finish with **Investigation: The Windowsill Test** — use what you learned on a real problem, and mark every guess as a guess.\n\nYour goal this week: watch a real plant or seed and notice what it does. Plants are slow, but they are always working. 🌱\n\nPicture panels: From seed to seedling; Parts, light, and water; Space, nutrients, and care; Food-making and continued growth. Use these alongside the activities."
+  },
+  {
+    "resourceId": "pl-reading",
+    "path": "data",
+    "from": "## The Quiet Life of a Seed\n\nHold a seed in your hand. It feels like a tiny stone. But a seed is alive, and inside it a baby plant is asleep, waiting.\n\nGive a seed what it needs and it wakes up. It needs four things.\n\nFirst, a seed needs **water**. Water softens the hard shell and wakes the tiny plant inside. Without water, the seed stays asleep forever.\n\nSecond, it needs **warmth**. Most seeds wait for the soil to feel warm, like spring. That is how a seed knows it is a safe time to grow and not the cold of winter.\n\nWhen a seed wakes up, it sends a tiny **root** down into the soil. The root drinks water and holds the plant in place. Then it pushes a small green **stem** up toward the light. The plant is on its way.\n\nNow the growing plant needs a third thing: **sunlight**. Leaves catch light and use it to make their own food. This is the plant's superpower. A plant does not eat the way you do. It makes its food from sunlight, water, and air, right inside its green leaves. A plant left in a dark closet will grow pale and weak and finally die, even with plenty of water, because it cannot make food in the dark.\n\nThe fourth thing is **air**. Leaves take in a gas from the air called carbon dioxide and use it to make food. Roots need air too, which is why a plant drowned in too much water can die — the roots cannot breathe.\n\nSo the four needs are water, warmth, sunlight, and air. Take away any one and the plant struggles.\n\nHere is something surprising. Plants do more than take. While a plant makes its food, it lets out a gas called **oxygen** — the very gas you need to breathe. Every tree and blade of grass is quietly cleaning the air for you. You breathe because plants breathe out.\n\nA seed is slow. It does not grow while you watch. But give it water, warmth, sunlight, and air, and come back in a few days. The quiet little pebble will have become something alive and green and reaching for the sky.",
+    "to": "## The Quiet Life of a Seed\n\nHold a bean seed. It looks still, but inside a healthy seed is a tiny living plant and stored food. The seed does not become alive when it sprouts. It was alive already!\n\nWhen conditions are suitable, a seed begins to grow. This is called germination. It needs **water**, **oxygen**, and a suitable temperature. Different kinds of seeds need different conditions. Some need light to germinate; others can start in darkness.\n\nA bean takes in water. A small **root** emerges and grows down. A shoot grows up. Thick seed leaves, called cotyledons, contain stored food that supports this early growth.\n\nRoots hold the plant in place. They absorb water and dissolved mineral nutrients. Roots also need oxygen. If soil stays soaked, water fills spaces that could hold air, making it harder for roots to get oxygen.\n\nAs green **leaves** develop, they capture light energy. They use that energy to make sugars from water and a gas in the air called carbon dioxide. This food-making process is called photosynthesis. Light supplies energy; soil is not the plant's food.\n\nGrowing green plants need enough light, water, air, mineral nutrients, room to grow, and suitable temperatures. **Sunlight** provides light outdoors and near windows. Special lamps can provide light too. More is not always better: too much water or too much heat can harm a plant.\n\nDuring photosynthesis, a plant releases **oxygen**. Plants also use oxygen to release energy from their food. This happens during the day and at night, even when they are not making new food.\n\nWatch a plant over several days. Draw its leaves, check the soil, and record what changes. If it droops, investigate before guessing why. A careful observer asks: What did I see? What conditions might explain it? What else could I check?"
+  },
+  {
+    "resourceId": "pl-reading",
+    "path": "meta",
+    "from": "3rd Grade • Leveled reading",
+    "to": "3rd Grade • Leveled reading • germination and growing plants"
+  },
+  {
+    "resourceId": "pl-glossary",
+    "path": "data.0.def",
+    "from": "A tiny living thing that can grow into a new plant.",
+    "to": "A structure containing a young plant and stored food, protected by a coat."
+  },
+  {
+    "resourceId": "pl-glossary",
+    "path": "data.1.def",
+    "from": "The part that grows down to drink water and hold the plant in place.",
+    "to": "A plant part that anchors the plant and absorbs water and dissolved nutrients."
+  },
+  {
+    "resourceId": "pl-glossary",
+    "path": "data.6.def",
+    "from": "Gentle heat that tells a seed it is time to grow.",
+    "to": "A comfortable level of heat; seeds and plants need suitable temperatures, which vary by kind."
+  },
+  {
+    "resourceId": "pl-glossary",
+    "path": "data.9.def",
+    "from": "The gas plants let out that people need to breathe.",
+    "to": "A gas used by plants and animals to release energy from food; green plants release it during photosynthesis."
+  },
+  {
+    "resourceId": "pl-anchor",
+    "path": "data.title",
+    "from": "FOUR THINGS TO GROW",
+    "to": "HELPING A PLANT GROW"
+  },
+  {
+    "resourceId": "pl-anchor",
+    "path": "data.sections",
+    "from": [
+      {
+        "label": "WATER",
+        "bullets": [
+          "Wakes the sleeping seed",
+          "Roots drink it up",
+          "Too much can drown the roots"
+        ],
+        "iconPrompt": "a watering can over a small sprout"
+      },
+      {
+        "label": "SUNLIGHT",
+        "bullets": [
+          "Leaves catch the light",
+          "Used to make food",
+          "A plant in the dark grows pale"
+        ],
+        "iconPrompt": "a sun shining on a leaf"
+      },
+      {
+        "label": "AIR",
+        "bullets": [
+          "Leaves take in carbon dioxide",
+          "Roots need air too",
+          "Plants let out oxygen for us"
+        ],
+        "iconPrompt": "leaves with little air arrows"
+      },
+      {
+        "label": "WARMTH",
+        "bullets": [
+          "Warm soil tells a seed to grow",
+          "Like spring, not winter",
+          "Then a root and stem appear"
+        ],
+        "iconPrompt": "a thermometer beside a sprouting seed"
+      }
+    ],
+    "to": [
+      {
+        "label": "WATER",
+        "bullets": [
+          "Needed for germination and growth",
+          "Roots absorb water",
+          "Too much water can limit oxygen around roots"
+        ],
+        "iconPrompt": "a watering can over a small sprout"
+      },
+      {
+        "label": "SUNLIGHT",
+        "bullets": [
+          "Leaves catch the light",
+          "Used to make food",
+          "A plant in the dark grows pale"
+        ],
+        "iconPrompt": "a sun shining on a leaf"
+      },
+      {
+        "label": "AIR",
+        "bullets": [
+          "Leaves use carbon dioxide to make food",
+          "Seeds and roots need oxygen",
+          "Plants also use oxygen day and night"
+        ],
+        "iconPrompt": "leaves with little air arrows"
+      },
+      {
+        "label": "SUITABLE TEMPERATURE",
+        "bullets": [
+          "Different plants need different temperatures",
+          "Too hot or too cold can harm growth",
+          "Warmth alone does not guarantee germination"
+        ],
+        "iconPrompt": "a thermometer beside a sprouting seed"
+      },
+      {
+        "label": "NUTRIENTS AND SPACE",
+        "bullets": [
+          "Roots absorb dissolved mineral nutrients",
+          "Roots and leaves need room to grow",
+          "Choose spacing for the kind of plant"
+        ],
+        "iconPrompt": "well-spaced young plants with branching roots"
+      }
+    ],
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "pl-anchor",
+    "path": "meta",
+    "from": "4 needs • simple picture reference",
+    "to": "5 sections • conditions for healthy growth"
+  },
+  {
+    "resourceId": "pl-memory",
+    "path": "meta",
+    "from": "3rd Grade • 2 memory aids • the four needs, root then stem",
+    "to": "3rd Grade • 2 memory aids • plant needs and early growth"
+  },
+  {
+    "resourceId": "pl-memory",
+    "path": "data.sourceExcerpt",
+    "from": "A seed needs water. It needs warmth. A growing plant needs sunlight. The fourth thing is air. When a seed wakes up, it sends a tiny root down into the soil. Then it pushes a small green stem up toward the light.",
+    "to": "Seeds need water, oxygen, and a suitable temperature. Growing green plants also need light, mineral nutrients, and room. A bean root emerges before the shoot grows upward."
+  },
+  {
+    "resourceId": "pl-memory",
+    "path": "data.cards.0.target",
+    "from": "The four things a plant needs: water, warmth, sunlight, air",
+    "to": "Conditions a growing green plant needs"
+  },
+  {
+    "resourceId": "pl-memory",
+    "path": "data.cards.0.essentialFacts",
+    "from": [
+      "Water wakes the sleeping seed and is drunk up by the roots.",
+      "Warmth tells the seed it is a safe time to grow.",
+      "Sunlight lets leaves make the plant's food.",
+      "Air gives leaves carbon dioxide, and roots need air too."
+    ],
+    "to": [
+      "Water supports germination and growth.",
+      "Seeds and plants need suitable temperatures.",
+      "Light powers food-making in green leaves.",
+      "Seeds and roots need oxygen; leaves use carbon dioxide.",
+      "Mineral nutrients and room support continued growth."
+    ]
+  },
+  {
+    "resourceId": "pl-memory",
+    "path": "data.cards.0.aiExample",
+    "from": "W-W-S-A: Wet, Warm, Sunny, Airy. A seed wants a wet, warm, sunny, airy home.",
+    "to": "Water, air, light, and a suitable place: nutrients below and room to spread."
+  },
+  {
+    "resourceId": "pl-memory",
+    "path": "data.cards.0.mapping",
+    "from": "Each word is one need turned into a describing word, so the sentence sounds like a place a seed would like to live.",
+    "to": "The words name needs. Roots need room and nutrients. The plant also needs a suitable temperature. Each kind has its own needs."
+  },
+  {
+    "resourceId": "pl-memory",
+    "path": "data.cards.0.scaffoldStarter",
+    "from": "A seed wants a ____, ____, ____, ____ home.",
+    "to": "My plant needs ____, ____, ____, and a place with ____."
+  },
+  {
+    "resourceId": "pl-memory",
+    "path": "data.cards.0.scaffoldSteps.0",
+    "from": "Say the four needs.",
+    "to": "Name several plant needs."
+  },
+  {
+    "resourceId": "pl-memory",
+    "path": "data.cards.0.scaffoldSteps.1",
+    "from": "Turn each one into a describing word.",
+    "to": "Explain what each does."
+  },
+  {
+    "resourceId": "pl-memory",
+    "path": "data.cards.0.scaffoldSteps.2",
+    "from": "Say the sentence three times.",
+    "to": "Check that your aid includes nutrients and space."
+  },
+  {
+    "resourceId": "pl-memory",
+    "path": "data.cards.0.studentPrompt",
+    "from": "Make your own four-word home for a seed.",
+    "to": "Make a reminder of the conditions your growing plant needs."
+  },
+  {
+    "resourceId": "pl-memory",
+    "path": "data.cards.1.essentialFacts.1",
+    "from": "The root drinks water and holds the plant in place.",
+    "to": "The root absorbs water and anchors the plant."
+  },
+  {
+    "resourceId": "pl-memory",
+    "path": "data.cards.1.aiExample",
+    "from": "Down, then up. Point your finger at the floor and say 'root,' then point at the ceiling and say 'stem.' Roots first, because a plant needs a drink before it needs a view.",
+    "to": "For a bean: root down, shoot up. Point down and then up to remember the directions."
+  },
+  {
+    "resourceId": "pl-sort",
+    "path": "data.items",
+    "from": [
+      {
+        "id": "pl1",
+        "content": "Water",
+        "categoryId": "pl-need"
+      },
+      {
+        "id": "pl2",
+        "content": "Sunlight",
+        "categoryId": "pl-need"
+      },
+      {
+        "id": "pl3",
+        "content": "Air",
+        "categoryId": "pl-need"
+      },
+      {
+        "id": "pl4",
+        "content": "Warmth",
+        "categoryId": "pl-need"
+      },
+      {
+        "id": "pl5",
+        "content": "Music",
+        "categoryId": "pl-notneed"
+      },
+      {
+        "id": "pl6",
+        "content": "A cozy blanket",
+        "categoryId": "pl-notneed"
+      },
+      {
+        "id": "pl7",
+        "content": "Space for its roots to spread",
+        "categoryId": "pl-need"
+      },
+      {
+        "id": "pl8",
+        "content": "Toys",
+        "categoryId": "pl-notneed"
+      },
+      {
+        "id": "pl9",
+        "content": "A name",
+        "categoryId": "pl-notneed"
+      }
+    ],
+    "to": [
+      {
+        "id": "pl1",
+        "content": "Water",
+        "categoryId": "pl-need"
+      },
+      {
+        "id": "pl2",
+        "content": "Light",
+        "categoryId": "pl-need"
+      },
+      {
+        "id": "pl3",
+        "content": "Air",
+        "categoryId": "pl-need"
+      },
+      {
+        "id": "pl4",
+        "content": "A suitable temperature",
+        "categoryId": "pl-need"
+      },
+      {
+        "id": "pl5",
+        "content": "Music",
+        "categoryId": "pl-notneed"
+      },
+      {
+        "id": "pl6",
+        "content": "A cozy blanket",
+        "categoryId": "pl-notneed"
+      },
+      {
+        "id": "pl7",
+        "content": "Space for its roots to spread",
+        "categoryId": "pl-need"
+      },
+      {
+        "id": "pl8",
+        "content": "Toys",
+        "categoryId": "pl-notneed"
+      },
+      {
+        "id": "pl9",
+        "content": "A name",
+        "categoryId": "pl-notneed"
+      },
+      {
+        "id": "pl10",
+        "content": "Mineral nutrients",
+        "categoryId": "pl-need"
+      }
+    ],
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "pl-sort",
+    "path": "meta",
+    "from": "2 buckets • 9 cards • silly ones make them think",
+    "to": "2 buckets • 10 cards • plant needs"
+  },
+  {
+    "resourceId": "pl-frames",
+    "path": "data.items.0.text",
+    "from": "A seed wakes up when it gets ____ and ____.",
+    "to": "A seed needs ____, ____, and a suitable ____ to begin growing."
+  },
+  {
+    "resourceId": "pl-frames",
+    "path": "data.items.3.text",
+    "from": "A plant takes in ____ from the air and gives back ____, which we breathe.",
+    "to": "During photosynthesis, green leaves use ____ from the air and release ____."
+  },
+  {
+    "resourceId": "pl-frames",
+    "path": "data.items.4.text",
+    "from": "My seed did not grow because it was missing ____, so next time I will ____.",
+    "to": "My seed did not grow. One possible reason is ____. I could check this by ____."
+  },
+  {
+    "resourceId": "pl-frames",
+    "path": "data.rubric",
+    "from": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Plant Scientist |\n|---|---|---|---|\n| Naming the need | Says the plant needs \"stuff\" | Names one or two of the four needs | Names all four needs and what each one does |\n| Plant words | Everyday words only | Uses 1-2 glossary words correctly | Uses 3+ glossary words correctly, including root and stem |\n| Evidence from watching | No observation | One observation from a real plant | An observation with a day count and what it shows |",
+    "to": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Plant Scientist |\n|---|---|---|---|\n| Naming the need | Says the plant needs \"stuff\" | Names one or two plant needs | Names several needs, including nutrients and suitable temperature, and explains their roles |\n| Plant words | Everyday words only | Uses 1-2 glossary words correctly | Uses 3+ glossary words correctly, including root and stem |\n| Evidence from watching | No observation | One observation from a real plant | An observation with a day count and what it shows |"
+  },
+  {
+    "resourceId": "pl-quiz",
+    "path": "data.questions.0.question",
+    "from": "What wakes a sleeping seed up so it can grow?",
+    "to": "Which of these is one thing a seed needs to begin growing?"
+  },
+  {
+    "resourceId": "pl-quiz",
+    "path": "data.questions.3.question",
+    "from": "How does a plant get its food?",
+    "to": "How does a green plant make food once its leaves develop?"
+  },
+  {
+    "resourceId": "pl-quiz",
+    "path": "data.questions.3.options.0",
+    "from": "It makes its own food using sunlight, water, and air",
+    "to": "It uses light to make sugar from water and carbon dioxide"
+  },
+  {
+    "resourceId": "pl-quiz",
+    "path": "data.questions.3.options.1",
+    "from": "It eats tiny bugs and bits from the soil",
+    "to": "It takes ready-made sugar from tiny stones in the soil"
+  },
+  {
+    "resourceId": "pl-quiz",
+    "path": "data.questions.3.options.2",
+    "from": "It drinks food through its roots like a straw",
+    "to": "It gets all its food by taking in water through roots"
+  },
+  {
+    "resourceId": "pl-quiz",
+    "path": "data.questions.3.options.3",
+    "from": "It does not need any food to stay alive",
+    "to": "It gets all its food from heat that warms its leaves"
+  },
+  {
+    "resourceId": "pl-quiz",
+    "path": "data.questions.3.correctAnswer",
+    "from": "It makes its own food using sunlight, water, and air",
+    "to": "It uses light to make sugar from water and carbon dioxide"
+  },
+  {
+    "resourceId": "pl-quiz",
+    "path": "data.questions.4.question",
+    "from": "What gas do plants let out that people need to breathe?",
+    "to": "What gas do green plants release while making food in light?"
+  },
+  {
+    "resourceId": "pl-quiz",
+    "path": "data.questions.5.question",
+    "from": "Name the four things a plant needs to grow.",
+    "to": "Name several things a growing green plant needs."
+  },
+  {
+    "resourceId": "pl-quiz",
+    "path": "data.questions.5.expectedAnswer",
+    "from": "A plant needs water, sunlight, air, and warmth.",
+    "to": "Water, light, air, suitable temperatures, mineral nutrients, and room to grow."
+  },
+  {
+    "resourceId": "pl-quiz",
+    "path": "data.questions.5.conceptLabel",
+    "from": "four plant needs",
+    "to": "conditions for plant growth"
+  },
+  {
+    "resourceId": "pl-faq",
+    "path": "data.0.answer",
+    "from": "Yes! Roots need air as well as water. If the soil stays soaking wet, the roots cannot breathe and the plant can drown. Plants like a drink, not a swim.",
+    "to": "Yes. Roots need air as well as water. Soil that stays soaked can leave too little air for roots. The plant may die. Each kind of plant needs the right amount of water."
+  },
+  {
+    "resourceId": "pl-faq",
+    "path": "data.1.answer",
+    "from": "Not like you do, but many plants do change at night. Some flowers close up, and leaves may droop a little. They cannot make food in the dark, so nighttime is a kind of rest.",
+    "to": "Plants still work at night. Some leaves and flowers move. In the dark, green plants cannot use light to make food. They still use stored food and oxygen to get energy."
+  },
+  {
+    "resourceId": "pl-faq",
+    "path": "data.2.answer",
+    "from": "Leaves are full of a green stuff called chlorophyll that catches sunlight to make food. The green color is a clue that the leaf is doing its most important job.",
+    "to": "Many leaves have a green substance called chlorophyll. It takes in light that helps the plant make food. Some leaves have other colors that hide the green."
+  },
+  {
+    "resourceId": "pl-faq",
+    "path": "data.3.answer",
+    "from": "Some can! A few plants grow with their roots in water instead of soil, as long as they still get the things they need. But most plants use soil to hold their roots and store water.",
+    "to": "Yes. Roots can grow in water with nutrients mixed in. They also need oxygen and support. This way of growing is called hydroponics. Plain water alone cannot meet all these needs for long."
+  },
+  {
+    "resourceId": "pl-faq",
+    "path": "data.4.answer",
+    "from": "From a tiny seed, just like a flower. A giant oak tree began as an acorn small enough to hold. It only needed water, warmth, sunlight, and air, plus a lot of time.",
+    "to": "An oak can start from an acorn. The seed holds a young plant and stored food. As it grows, it needs light, water, air, nutrients, room, the right warmth, and time."
+  },
+  {
+    "resourceId": "pl-faq",
+    "path": "data.5.answer",
+    "from": "They truly do. While plants make their food, they let out oxygen, the gas your body needs. Every tree and blade of grass is quietly making air for you to breathe.",
+    "to": "Yes. Plants and algae give off oxygen when they use light to make food. Many living things need that oxygen. Plants also use oxygen themselves, both day and night."
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.instructions",
+    "from": "Pick one thing a plant needs and test it with two cups of seeds: one cup gets it and one does not. Guess first, watch every day, and tell what happened.",
+    "to": "With your teacher, compare two similar young bean plants. Change one condition, predict what may happen, observe every day, and report what you actually find."
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.fitReason",
+    "from": "The lesson lists four needs. A two-cup test lets third graders see one need matter, which is the standard's ask: plan an investigation of whether plants need sunlight and water.",
+    "to": "Using established seedlings separates a test of growth in light from germination, which can begin using stored food."
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.brief.context",
+    "from": "Your class has bean seeds, paper cups, soil, water, a sunny windowsill, and a dark cupboard. Everyone gets two cups.",
+    "to": "Your class has two young bean plants, or seedlings, of the same kind and size. They grow in matching pots with holes for water to drain. Use the same soil. Find two places with similar warmth but different light."
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.brief.drivingQuestion",
+    "from": "If we take away one thing a plant needs, what will happen to the seeds in that cup compared to the cup that has everything?",
+    "to": "What happens to these young plants when one gets less light?"
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.brief.lockedLessonFacts.0",
+    "from": "A plant needs water, warmth, sunlight, and air.",
+    "to": "Seeds can begin growing using stored food."
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.brief.lockedLessonFacts.1",
+    "from": "Water wakes a seed; without it the seed stays asleep.",
+    "to": "Green leaves need light energy to make food."
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.brief.lockedLessonFacts.2",
+    "from": "A plant in the dark grows pale and weak because it cannot make food.",
+    "to": "Growing plants need water, air, nutrients, room, and suitable temperatures."
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.brief.lockedLessonFacts.3",
+    "from": "Roots need air, so a plant drowned in too much water can die.",
+    "to": "Roots need oxygen as well as water."
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.brief.openQuestions.0",
+    "from": "Which need will we take away: water, light, or air at the roots?",
+    "to": "How can we change the light but keep other things the same?"
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.brief.openQuestions.1",
+    "from": "How will we make sure the two cups are the same in every other way?",
+    "to": "What will we record besides height?"
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.brief.openQuestions.2",
+    "from": "What will we look at each day: height, color, or how many seeds sprout?",
+    "to": "Could something else cause the changes we see?"
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.brief.stakeholders.0",
+    "from": "The class next door",
+    "to": "Your team"
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.brief.stakeholders.1",
+    "from": "Your team who waters the cups",
+    "to": "The class next door"
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.brief.stakeholders.2",
+    "from": "The teacher who keeps the cupboard closed",
+    "to": "Your teacher"
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.brief.constraints",
+    "from": [
+      "Bean seeds only",
+      "One week",
+      "No plant is left to die for longer than the test needs"
+    ],
+    "to": [
+      "Use young bean plants with your teacher",
+      "Watch for one week; some changes may take longer",
+      "Check how wet the soil is in the same way; give each plant the water it needs",
+      "After the test, put both plants where they can grow well"
+    ]
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.supports.parallelExample.context",
+    "from": "A student wanted to know if seeds need warmth.",
+    "to": "A class compared two similar seedlings with different amounts of light."
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.supports.parallelExample.move",
+    "from": "She put one cup of wet seeds on the warm windowsill and one wet cup in the refrigerator, kept the water the same, and drew both cups every day. The warm cup sprouted; the cold cup slept.",
+    "to": "They used matching pots and soil, kept temperatures similar, checked moisture in the same way, and recorded height, leaf color, and leaf number each day."
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.supports.parallelExample.whyItHelps",
+    "from": "She changed only one thing, warmth, so the sprouting told her something true.",
+    "to": "They tried to vary only light and recorded several observations. Results are evidence to discuss, not a guaranteed outcome."
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.supports.frameStarter",
+    "from": "We took away ____. We think the cup without it will ____. Everything else was the ____.",
+    "to": "We changed ____. We predicted ____. We observed ____. Another possible explanation is ____."
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.supports.frameChoices",
+    "from": [
+      "Take away water from one cup",
+      "Put one cup in the dark cupboard",
+      "Keep one cup's soil soaking wet all the time",
+      "Put one cup in a cold spot"
+    ],
+    "to": [
+      "Compare brighter and dimmer light while keeping other conditions similar"
+    ]
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.supports.coachPrompts.0",
+    "from": "Are your two cups the same in every way except one?",
+    "to": "What else could differ besides light?"
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.supports.coachPrompts.1",
+    "from": "What did you see that the lesson said would happen?",
+    "to": "Did height, color, and leaf number tell the same story?"
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.supports.coachPrompts.2",
+    "from": "What surprised you?",
+    "to": "What can this short test tell us, and what remains uncertain?"
+  },
+  {
+    "resourceId": "pl-challenge",
+    "path": "data.sourceExcerpt",
+    "from": "So the four needs are water, warmth, sunlight, and air. Take away any one and the plant struggles.",
+    "to": "A seed can begin using stored food. Green leaves need light energy to make sugars from water and carbon dioxide."
+  }
+]

@@ -10,6 +10,7 @@ const glossarySource=fs.readFileSync('view_glossary_source.jsx','utf8');
 const getAlt=new Function(glossarySource.slice(0,glossarySource.indexOf('// Lazy Lucide'))+'\nreturn getGlossaryImageAlt;')();
 const slug='volume_grade5',folder='allopacks/media/'+slug+'/',pack=read('allopacks/illustrated/'+slug+'.allopack.json'),original=read('allopacks/'+slug+'.allopack.json'),manifest=read(folder+'manifest.json');
 require('../dev-tools/volume_content_refinements.cjs').refine(original);
+require('../dev-tools/lib/allopack_quality_refinements_20260919.cjs').apply(original,slug,{targetEnvelope:pack.allopack});
 const get=t=>pack.history.find(r=>r.type===t),panels=pack.history.filter(r=>r.type==='image').flatMap(r=>r.data.visualPlan.panels);
 const slots=[...get('glossary').data.map(g=>({url:g.image,alt:g.imageAlt,hash:g.imageAltHash})),...get('anchor-chart').data.sections.map(s=>({url:s.iconUrl,alt:s.iconAlt,hash:s.iconAltHash})),...get('concept-sort').data.items.map(s=>({url:s.image,alt:s.imageAlt,hash:s.imageAltHash})),...panels.map(p=>({url:p.imageUrl,alt:p.alt,hash:p.altHash}))];
 describe('Volume illustrated edition',()=>{
@@ -49,6 +50,6 @@ expect(get('applied-challenge').data.brief.constraints[0]).toContain('rotations'
 expect(get('applied-challenge').data.brief.constraints[1]).toContain('all six faces');
 const changes=read(folder+'content-refinements.json'),pristine=read('allopacks/'+slug+'.allopack.json');
 expect(changes.length).toBe(pack.allopack.contentRefinements.count);
-for(const c of changes){let old=pristine.history.find(r=>r.id===c.resourceId),now=pack.history.find(r=>r.id===c.resourceId);for(const key of c.path.split('.')){old=old[key];now=now[key];}expect(old).toEqual(c.from);expect(now).toEqual(c.to);}
+for(const c of changes){let old=pristine.history.find(r=>r.id===c.resourceId),now=pack.history.find(r=>r.id===c.resourceId);for(const key of c.path.split('.')){old=old[key];now=now[key];}if(c.stripArtwork){const clean=n=>JSON.parse(JSON.stringify(n),(k,v)=>/^(image|iconUrl|iconAlt)/.test(k)?undefined:v);old=clean(old);now=clean(now);}expect(old).toEqual(c.from);expect(now).toEqual(c.to);}
 });
 });

@@ -1,0 +1,25 @@
+{
+  "status": "review-required",
+  "validationStatus": "failed",
+  "validationError": "Validation inputs, tools or revision changed during the run",
+  "allTestsPassed": true,
+  "gitRevisionStable": false,
+  "runId": "4ccdb68b-59eb-4552-8034-c9c5730387d4",
+  "verifiedAt": "2026-09-20T00:59:00.274Z",
+  "policyVersion": "20260919-1",
+  "unit": {
+    "files": 35,
+    "passed": 679
+  },
+  "browser": {
+    "files": 18,
+    "passed": 255
+  },
+  "testsPassed": 934,
+  "newChecks": 34,
+  "gitRevisionVerified": true,
+  "inputHashesVerified": 119,
+  "originalReviewExamples": 6,
+  "shippingModulesIdentical": true,
+  "scope": "Local automated fixtures and mocked model transport; no GitHub CI, deployment or human screen-reader test in this session."
+}

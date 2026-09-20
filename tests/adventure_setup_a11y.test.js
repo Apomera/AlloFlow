@@ -43,6 +43,18 @@ describe('Shared Adventure setup semantics',()=>{
     expect(adventureSetupLimit({episodeTurnLimit:null,enableAutoClimax:false})).toBeNull();
     expect(adventureSetupLimit({episodeTurnLimit:999})).toBe(50);
   });
+  it('renders episode controls from the combined Adventure bundle without helper collisions',()=>{
+    const host={React};
+    new Function('window','React',fs.readFileSync('view_adventure_module.js','utf8'))(host,React);
+    const Episode=host.AlloModules.AdventureEpisodeSettings;
+    for(const [state,inputId,expected] of [
+      [{episodeTurnLimit:17},'combined-custom','17'],
+      [{episodeTurnLimit:null,enableAutoClimax:true,climaxMinTurns:12},'combined-earliest','12']
+    ]){
+      document.body.innerHTML=renderToStaticMarkup(React.createElement(Episode,{state,onChange:()=>{},t:key=>key,id:'combined',includeFinale:true}));
+      expect(document.getElementById(inputId).value).toBe(expected);
+    }
+  });
   it('shares the settings source across both independently loadable bundles',()=>{
     for(const name of ['view_adventure','view_sidebar_panels']){
       const built=fs.readFileSync(name+'_module.js','utf8');

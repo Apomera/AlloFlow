@@ -1,0 +1,45 @@
+const fs=require('fs'),path=require('path');
+let s=fs.readFileSync(path.join(__dirname,'pass3-browser-qa.cjs'),'utf8').replaceAll("'pass3-","'pass4-");
+s=s.replace("{viewport:{width:1280,height:900}}","{viewport:{width:1280,height:900},timezoneId:'America/New_York'}");
+const marker='  assert.equal(result.errors.length,0);';
+if(!s.includes(marker))throw Error('Missing browser marker');
+s=s.replace(marker,`  await page.goto(url+'?pass=4');
+  await page.evaluate(async()=>{
+   localStorage.clear();sessionStorage.clear();const h=window.AlloModules.MemoryAid._testing,c=window.fixture.data.cards[0];
+   const old={...c,essentialFacts:['An earlier fact no longer in this lesson.',c.essentialFacts[1]],studentDraft:'An earlier cue'};
+   const attempt={...h.createMemoryAidPracticeAttempt(old,{response:'Earlier response.'}),id:'earlier-facts-goal',factChecks:['practice','recalled'],revisionPlan:{strategy:'Link the earlier fact more clearly.',targetFactIndexes:[0]}};
+   await h.mutateMemoryAidPrivatePractice('resource:ux-review-fixture',{action:'upsert-attempt',cardId:c.id,attempt},window.fixture.data.cards,'memory-ux-review-only');
+  });
+  await page.reload();await page.setViewportSize({width:320,height:800});await page.getByRole('button',{name:'Try recall',exact:true}).first().click();
+  assert((await page.locator('body').innerText()).includes('Your saved goal refers to facts that have changed.'));
+  assert(!(await page.locator('body').innerText()).includes('your self-check marked'));await audit('changed-facts-320',true);
+  await page.getByRole('button',{name:'Make it mine',exact:true}).first().click();assert(!(await page.locator('body').innerText()).includes('Your private revision goal'));
+  await page.evaluate(async()=>{
+   localStorage.clear();sessionStorage.clear();const h=window.AlloModules.MemoryAid._testing,c=window.fixture.data.cards[0],old={...c,studentDraft:'My previous cue'};
+   const plan={...h.createMemoryAidPracticeAttempt(old,{response:'Shape and volume.'}),id:'cue-plan',factChecks:['practice','recalled'],revisionPlan:{strategy:'Make the shape link clearer.',targetFactIndexes:[0]}};
+   const follow={...h.createMemoryAidPracticeAttempt(c,{response:'The solid keeps its shape.',supportMode:'cue'}),id:'current-cue-result',factChecks:['recalled','recalled'],applicationQuestion:c.applicationQuestion,applicationResponse:'The wooden block keeps its shape.'};
+   for(const attempt of [plan,follow])await h.mutateMemoryAidPrivatePractice('resource:ux-review-fixture',{action:'upsert-attempt',cardId:c.id,attempt},window.fixture.data.cards,'memory-ux-review-only');
+  });
+  await page.reload();await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Try recall',exact:true}).first().click();
+  assert((await page.locator('body').innerText()).includes('marked 1 of 1 targeted facts as recalled. Support: With my cue.'));await audit('revision-result-390',true);
+  await page.getByRole('button',{name:'Make it mine',exact:true}).first().click();await page.locator('textarea[id$="-draft"]:visible').fill('A newly revised statue cue.');
+  await page.getByRole('button',{name:'Try recall',exact:true}).first().click();assert((await page.locator('body').innerText()).includes('Complete a recall attempt with this cue'));assert(!(await page.locator('body').innerText()).includes('marked 1 of 1 targeted facts'));await audit('revised-again-390');
+  await page.getByRole('button',{name:'Continue my application and plan',exact:true}).click();
+  await page.clock.setFixedTime(new Date('2026-11-01T03:30:00Z'));
+  await page.getByRole('button',{name:'Tomorrow',exact:true}).click();
+  assert.equal(await page.getByLabel('Review again on',{exact:true}).filter({hasNot:page.locator('button')}).inputValue(),'2026-11-01');
+  await page.getByRole('button',{name:'In one week',exact:true}).click();
+  await page.waitForFunction(()=>window.AlloModules.MemoryAid._testing.loadMemoryAidPrivatePractice('resource:ux-review-fixture',window.fixture.data.cards,'memory-ux-review-only').solid.find(a=>a.id==='current-cue-result').nextReviewDate==='2026-11-07');
+  await page.getByRole('button',{name:'No date',exact:true}).click();
+  await page.waitForFunction(()=>window.AlloModules.MemoryAid._testing.loadMemoryAidPrivatePractice('resource:ux-review-fixture',window.fixture.data.cards,'memory-ux-review-only').solid.find(a=>a.id==='current-cue-result').reviewSchedule==='off');
+  await page.setViewportSize({width:320,height:800});await audit('review-date-320',true);
+  await page.reload();await page.getByRole('button',{name:'Continue my application and plan',exact:true}).click();assert.equal(await page.locator('input[type="date"][aria-label="Review again on"]').inputValue(),'');
+  assert.equal(await page.getByRole('textbox',{name:'Your explanation',exact:true}).inputValue(),'The wooden block keeps its shape.');
+  await page.getByRole('button',{name:'Return to card',exact:true}).click();
+  await page.locator('summary:visible').filter({hasText:'All targets and practice'}).click();await audit('review-overview-320',true);
+  result.checks.push('Changed target facts are historical without false failure counts; revision comparisons use the current cue and disclose recall support.','Review shortcuts use the learner local calendar over a daylight-saving boundary; clearing a date survives reload without losing the application.');
+`+marker);
+// Use an exact input selector because the fieldset also has an accessible name.
+s=s.replace("page.getByLabel('Review again on',{exact:true}).filter({hasNot:page.locator('button')})","page.locator('input[type=\"date\"][aria-label=\"Review again on\"]')");
+fs.writeFileSync(path.join(__dirname,'pass4-browser-qa.cjs'),s);
+console.log('Created pass 4 browser QA.');

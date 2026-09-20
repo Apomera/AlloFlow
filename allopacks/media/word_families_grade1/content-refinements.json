@@ -9,67 +9,67 @@
     "resourceId": "wf-reading",
     "path": "data",
     "from": "## Learn One, Read Many\n\nSay this **word**: cat.\n\nNow keep the ending and swap the front. Hat. Bat. Mat. Sat. Rat. Pat.\n\nYou just read six new words. You did not learn six new words. You learned one **chunk**, and then you swapped the **start**.\n\nThat is a word **family**. All the words end with the same **letters** and the same **sound**.\n\nHere is another one. Hop. Mop. Top. Pop. Same ending, new front each time.\n\nSome fronts have two letters that you say fast together. That is a **blend**. Stop. Chop. Shop. Those are in the same family too.\n\nWhen words end the same way, they **rhyme**. So a family is a group of words that rhyme.\n\nEvery family has a **vowel** in it. The vowels are a, e, i, o and u. The vowel sits in the middle and gives the chunk its sound.\n\nWord families are a **pattern**. Once you spot the pattern, reading gets faster, because you stop sounding out every letter.\n\nBut here is something true and a bit annoying. Not every word that rhymes looks the same. Say some and hum. They rhyme. They do not match at all. English does that sometimes.\n\nSo use your eyes and your ears. Look for the chunk. Then listen to check.",
-    "to": "## Learn One, Read Many\n\nRead this **word** with support: cat. Match each letter to its sound and blend. Now try hat, bat, mat, sat, rat and pat.\n\nThe ending **chunk** at stays the same. The **start** changes. These words belong to a spelling **family**: they share ending **letters** and ending **sounds**.\n\nTry hop, mop, top and pop. Their shared ending is op.\n\nIn stop, st is a consonant **blend**: you hear /s/ and /t/. In flat, you hear /f/ and /l/. In shop and chop, sh and ch are different: each pair spells one consonant sound. That pair is called a digraph. Shop, chop and stop share the op ending.\n\nWords **rhyme** when their ending sounds match from the vowel onward, as in cat and hat. The **vowel** letters a, e, i, o and u can spell vowel sounds; y sometimes does too. In cat, a is in the middle, but vowel letters are not always in the middle of a written word.\n\nA spelling **pattern** is useful, but check the whole word. Some and hum rhyme in the pronunciation used here even though their endings are spelled differently. Pronunciation can vary across accents.\n\nLook at the letters, use the sound patterns you have learned and blend. Pictures help explain meanings; they do not replace reading the word. Your teacher can provide spoken models or other communication supports."
+    "to": "## Learn One, Read Many\n\nRead this **word**: cat. Look at each **letter**. Say the sounds with help. Put the **sounds** together.\n\nNow read hat, bat, mat, sat, rat and pat. The ending **chunk** at stays the same. The **start** changes. This word **family** has the same ending letters and sounds.\n\nTry hop, mop, top and pop. What stays the same? The ending is op. This shared ending is a **pattern**.\n\nTry stop. The s and t make a **blend**. You can hear both sounds. In shop, sh makes one sound. In chop, ch makes one sound too. A pair like sh is called a digraph. Shop, chop and stop all end in op.\n\nCat and hat **rhyme**. Their sounds match from the a to the end. A **vowel** letter can help spell this part. A, e, i, o and u are vowel letters. Y can do this job too.\n\nRhymes need not have the same spelling. Some and hum rhyme in the way we say them here. People may say words in different ways.\n\nCheck the whole word. A picture can show what it means. It cannot tell you how to read each letter. Ask for a model or help that works for you."
   },
   {
     "resourceId": "wf-glossary",
     "path": "data.0.def",
     "from": "Letters put together to mean something.",
-    "to": "A unit of language with meaning, which can be spoken, signed or written."
+    "to": "Something we say, sign or write that has meaning."
   },
   {
     "resourceId": "wf-glossary",
     "path": "data.1.def",
     "from": "One of the signs we use to write.",
-    "to": "A written symbol used in an alphabet."
+    "to": "A mark in the alphabet, such as a or b."
   },
   {
     "resourceId": "wf-glossary",
     "path": "data.2.def",
     "from": "What you hear when you say a letter.",
-    "to": "Here, a speech sound in a spoken word; a letter or letter group can represent it."
+    "to": "A part we hear in speech, such as /m/ in mat."
   },
   {
     "resourceId": "wf-glossary",
     "path": "data.3.def",
     "from": "A part of a word you say all at once.",
-    "to": "Here, the vowel and following sounds and letters at the end of a short word."
+    "to": "Here, the ending part, such as at in cat."
   },
   {
     "resourceId": "wf-glossary",
     "path": "data.4.def",
     "from": "The bit at the front of a word.",
-    "to": "The beginning part of a word, before the ending chunk in this lesson."
+    "to": "The first part of a word."
   },
   {
     "resourceId": "wf-glossary",
     "path": "data.5.def",
     "from": "A group of words that end the same way.",
-    "to": "Here, words with the same written ending and matching ending sounds."
+    "to": "Here, words with the same ending letters and sounds."
   },
   {
     "resourceId": "wf-glossary",
     "path": "data.6.def",
     "from": "Words that end with the same sound.",
-    "to": "Matching ending sounds from the vowel onward, as in cat and hat."
+    "to": "To sound the same from the vowel to the end, like cat and hat."
   },
   {
     "resourceId": "wf-glossary",
     "path": "data.7.def",
     "from": "One of these five: a, e, i, o, u.",
-    "to": "A vowel sound, or a letter that represents one; a, e, i, o, u and sometimes y."
+    "to": "A, e, i, o, u, and sometimes y. These letters can spell the sounds in the middle of cat and sit."
   },
   {
     "resourceId": "wf-glossary",
     "path": "data.8.def",
     "from": "Two letters said fast together, like st.",
-    "to": "Two or more consonant sounds together, each still heard, as in st in stop."
+    "to": "Two or more consonant sounds side by side. You hear each one, as in st in stop."
   },
   {
     "resourceId": "wf-glossary",
     "path": "data.9.def",
     "from": "Something that happens again and again.",
-    "to": "A repeated arrangement, such as a shared spelling ending."
+    "to": "A part that repeats, such as at in cat and hat."
   },
   {
     "resourceId": "wf-memory",
@@ -91,6 +91,12 @@
   },
   {
     "resourceId": "wf-memory",
+    "path": "data.cards.0.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "wf-memory",
     "path": "data.cards.0.studentPrompt",
     "from": "Show me a swap with your own hands.",
     "to": "Show a swap with cards, pointing, gestures or your preferred support."
@@ -103,21 +109,74 @@
   },
   {
     "resourceId": "wf-memory",
-    "path": "data.cards.1.aiExample",
-    "from": "Point to your eyes, then to your ears. Eyes first: does the end look the same? Ears second: does the end sound the same? Two checks, in that order.",
-    "to": "Compare the written endings and the modeled sounds. Ask for a spoken model or another phonological support that suits your access needs. Check whether the ending letters and sounds match."
-  },
-  {
-    "resourceId": "wf-memory",
-    "path": "data.cards.1.mapping",
-    "from": "Pointing at your eyes and then your ears puts the two checks in order and reminds you that one is not enough on its own.",
-    "to": "Spelling and sound are related but not identical. Use accessible supports for both checks."
-  },
-  {
-    "resourceId": "wf-memory",
-    "path": "data.cards.1.hookFact.text",
-    "from": "Say some and hum. They rhyme. They do not match at all.",
-    "to": "Say some and hum. They rhyme. Their endings have different spellings."
+    "path": "data.cards.1",
+    "from": {
+      "id": "wf-ma-earscheck",
+      "target": "Use your eyes, then check with your ears",
+      "essentialFacts": [
+        "Words in a family look the same at the end.",
+        "Words that rhyme sound the same at the end.",
+        "Some words rhyme without looking alike, like some and hum."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "visual-association",
+      "mode": "scaffolded",
+      "aiExample": "Point to your eyes, then to your ears. Eyes first: does the end look the same? Ears second: does the end sound the same? Two checks, in that order.",
+      "mapping": "Pointing at your eyes and then your ears puts the two checks in order and reminds you that one is not enough on its own.",
+      "scaffoldStarter": "My eyes see ____. My ears hear ____.",
+      "scaffoldSteps": [
+        "Point at your eyes and look at the ending.",
+        "Point at your ears and say it out loud.",
+        "Say if both agree."
+      ],
+      "coachPrompts": [
+        "Did your eyes and ears say the same thing?"
+      ],
+      "studentPrompt": "Make your own two-step check.",
+      "reasoningPrompt": "Why do you need your ears and not just your eyes?",
+      "hookFact": {
+        "text": "Say some and hum. They rhyme. They do not match at all.",
+        "sourceTitle": "Learn One, Read Many (this lesson)"
+      }
+    },
+    "to": {
+      "id": "wf-ma-earscheck",
+      "target": "Use your eyes, then check with your ears",
+      "essentialFacts": [
+        "Words in a family look the same at the end.",
+        "Words that rhyme sound the same at the end.",
+        "Some words rhyme without looking alike, like some and hum."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "visual-association",
+      "mode": "scaffolded",
+      "aiExample": "Compare the written endings and the modeled sounds. Ask for a spoken model or another phonological support that suits your access needs. Check whether the ending letters and sounds match.",
+      "mapping": "Spelling and sound are related but not identical. Use accessible supports for both checks.",
+      "scaffoldStarter": "My eyes see ____. My ears hear ____.",
+      "scaffoldSteps": [
+        "Point at your eyes and look at the ending.",
+        "Point at your ears and say it out loud.",
+        "Say if both agree."
+      ],
+      "coachPrompts": [
+        "Did your eyes and ears say the same thing?"
+      ],
+      "studentPrompt": "Make your own two-step check.",
+      "reasoningPrompt": "Why do you need your ears and not just your eyes?",
+      "hookFact": {
+        "text": "Say some and hum. They rhyme. Their endings have different spellings.",
+        "sourceTitle": "Learn One, Read Many (this lesson)"
+      },
+      "factReview": {
+        "status": "inherited-review-attribution",
+        "sourcePack": "allopacks/word_families_grade1.allopack.json",
+        "sourceResourceId": "wf-memory",
+        "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+        "factsHash": "8cf13c5707f374f8f828e199303fe16fb06457bc67c930f3d225ff8aeaf453ba"
+      }
+    }
   },
   {
     "resourceId": "wf-quiz",
@@ -129,25 +188,37 @@
     "resourceId": "wf-faq",
     "path": "data.0.answer",
     "from": "English came from lots of languages. The spellings came along too. So a few words look odd. You learn those by heart.",
-    "to": "English spelling reflects sound patterns and word history. Learn the parts that follow a pattern and pay special attention to an unexpected part. Ask for help with unfamiliar words."
+    "to": "Some words have a part that does not fit the pattern you know. Look at that part with your teacher. Then read the whole word."
   },
   {
     "resourceId": "wf-faq",
     "path": "data.1.answer",
     "from": "Lots. But a few dozen cover most short words. Learn those and a whole shelf of books opens up.",
-    "to": "There are many useful spelling families. Learn a few at a time alongside letter-sound patterns and practice reading whole words."
+    "to": "There are many. Learn a few at a time. Read each whole word too."
+  },
+  {
+    "resourceId": "wf-faq",
+    "path": "data.2.answer",
+    "from": "Almost. Words in a family rhyme. But some words rhyme without matching letters, like some and hum.",
+    "to": "Words in these spelling families rhyme. But some and hum rhyme here even though their endings look different."
   },
   {
     "resourceId": "wf-faq",
     "path": "data.3.answer",
     "from": "Say both words slowly, one after the other. Then say just the ends. It gets easier with practice.",
-    "to": "Ask your teacher for a clear model and support suited to how you communicate. You can compare written endings with guidance; hearing and speaking tasks may need adaptations."
+    "to": "Ask for help that works for you. Your teacher can show a model and help you compare the written endings too."
+  },
+  {
+    "resourceId": "wf-faq",
+    "path": "data.4.answer",
+    "from": "Yes! Long words are made of chunks as well. You will break those apart later. It is the same idea.",
+    "to": "Yes. Long words have parts too. Your teacher can help you find parts you know."
   },
   {
     "resourceId": "wf-faq",
     "path": "data.5.answer",
     "from": "They can. In shop, the s and h make one sound together. In chop, the c and h do the same.",
-    "to": "Yes. Sh in shop and ch in chop each spell one consonant sound; these are digraphs. St in stop is a blend because /s/ and /t/ are both heard."
+    "to": "Yes. Sh in shop makes one sound. St in stop is different: you hear /s/ and /t/."
   },
   {
     "resourceId": "wf-challenge",
@@ -166,6 +237,12 @@
     "path": "data.brief.criteria.3",
     "from": "Your partner can read every page out loud",
     "to": "Your partner can demonstrate reading each page with appropriate communication support"
+  },
+  {
+    "resourceId": "wf-challenge",
+    "path": "data.brief.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "wf-challenge",

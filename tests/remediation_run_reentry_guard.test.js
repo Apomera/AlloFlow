@@ -43,7 +43,7 @@ describe('one-click remediation re-entry guard', () => {
     const stateIndex = viewSource.indexOf('const _oneClickRemediationBusyRef = useRef(false);');
     const handlerIndex = viewSource.indexOf('data-help-key="pdf_audit_view_make_accessible_btn"');
     const claimIndex = viewSource.indexOf('_oneClickRemediationBusyRef.current = true;', handlerIndex);
-    const firstAwaitIndex = viewSource.indexOf('await runPdfAccessibilityAudit(', handlerIndex);
+    const firstAwaitIndex = viewSource.indexOf('await _awaitVisibleAuditRun(_visibleRun, runPdfAccessibilityAudit(', handlerIndex);
     const releaseIndex = viewSource.indexOf('_oneClickRemediationBusyRef.current = false;', handlerIndex);
 
     expect(stateIndex).toBeGreaterThan(0);

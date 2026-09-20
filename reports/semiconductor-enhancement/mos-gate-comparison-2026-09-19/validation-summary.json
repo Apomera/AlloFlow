@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "tests": 458,
+  "testFiles": 23,
+  "main": {
+    "passed": 422,
+    "workerStartupTimeouts": 2
+  },
+  "retry": {
+    "passed": 36,
+    "files": 2
+  },
+  "comparisonBrowser": true,
+  "existingCurveBrowser": true,
+  "automatedAccessibilityScans": 9,
+  "violations": 0,
+  "mobileWidths": [
+    390,
+    320
+  ],
+  "visuallyInspected": "Final PMOS comparison at 390 px",
+  "sourceMirrorMatch": true,
+  "sourceSHA256": "5b7bf0fe77f581d77e5797e421a3c3810c2444ce3be5ead59a4da4d673f4adb2"
+}

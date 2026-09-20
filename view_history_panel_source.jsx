@@ -30,8 +30,8 @@ const HISTORY_PANEL_THEME_CSS = `
     --rp-border-strong: #cbd5e1;
     --rp-text: #1e293b;
     --rp-text-strong: #020617;
-    --rp-muted: #64748b;
-    --rp-faint: #94a3b8;
+    --rp-muted: #475569;
+    --rp-faint: #64748b;
     --rp-accent: #4338ca;
     --rp-accent-soft: #eef2ff;
     --rp-accent-hover: #e0e7ff;
@@ -76,6 +76,7 @@ const HISTORY_PANEL_THEME_CSS = `
     --rp-accent-hover: rgba(67, 56, 202, 0.48);
     --rp-accent-border: #6366f1;
     --rp-primary: #6366f1;
+    --rp-on-primary: #000000;
     --rp-primary-hover: #818cf8;
     --rp-success: #6ee7b7;
     --rp-success-soft: rgba(6, 78, 59, 0.42);
@@ -375,7 +376,8 @@ function HistoryPanel(props) {
     let value = raw;
     try {
       const api = window.AlloModules && window.AlloModules.InstructionalContext;
-      if (raw && api && typeof api.normalizeInstructionalText === 'function') {
+      if (api && typeof api.getInstructionalText === 'function') value = api.getInstructionalText(item);
+      else if (raw && api && typeof api.normalizeInstructionalText === 'function') {
         value = api.normalizeInstructionalText(raw, { defaultForm: inferredForm });
       }
     } catch (_) { value = raw; }
@@ -448,12 +450,17 @@ function HistoryPanel(props) {
     })();
     const isTextArtifact = item && (itemType === 'analysis' || itemType === 'simplified' || profile.form === 'same-text-supported');
     if (!isTextArtifact && !profile.explicit) return null;
-    if (profile.role === 'primary') {
-      if (profile.form === 'adapted' && !profile.authorized) return { label: 'Primary designation needs review', tone: 'amber' };
-      return { label: profile.form === 'same-text-supported' ? 'Supported primary text' : 'Primary text', tone: 'blue' };
-    }
-    if (profile.role === 'supplemental') return { label: profile.form === 'adapted' ? 'Supplemental adapted text' : 'Supplemental text', tone: 'violet' };
-    return { label: 'Text role not set', tone: 'slate' };
+    const contract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
+    const formLabel = contract?.getReadingArtifactLabel?.(item)
+      || (profile.form === 'adapted' ? 'Adapted text' : profile.form === 'same-text-supported' ? 'Original with supports' : 'Source text');
+    const roleLabel = contract?.getReadingRoleLabel?.(item)
+      || (profile.role === 'primary' ? 'Main reading' : profile.role === 'supplemental' ? 'Supporting reading' : 'Not designated');
+    const needsReview = profile.role === 'primary' && profile.form === 'adapted' && !profile.authorized;
+    const unavailable = profile.form === 'same-text-supported' && !contract?.isSupportedOriginal?.(item);
+    return {
+      label: formLabel + ' · ' + roleLabel + (needsReview ? ' — needs educator confirmation' : ''),
+      tone: needsReview || unavailable ? 'amber' : profile.role === 'primary' ? 'blue' : profile.role === 'supplemental' ? 'violet' : 'slate',
+    };
   };
   const shareResourcePackToCommunity = () => {
     let visibleItemsCandidate = history;
@@ -463,6 +470,14 @@ function HistoryPanel(props) {
     const visibleItems = getSafeArraySnapshot(visibleItemsCandidate);
     if (visibleItems.length === 0) {
       addToast && addToast(t('history.empty_general') || 'No resources to share yet.', 'info');
+      return;
+    }
+    // Community publication has no complete preserved-reading contract yet.
+    // Refuse this payload instead of silently losing its source or annotations.
+    if (visibleItems.some(item => getSafeArtifactField(item, 'sourceSnapshot')
+      || getSafeArtifactField(item, 'readingSupports')
+      || getInstructionalTextProfile(item).form === 'same-text-supported')) {
+      addToast && addToast('This pack contains preserved reading sources. Community sharing does not support them yet. Use a student resource pack or document export.', 'warning');
       return;
     }
     const activeUnit = Array.isArray(units) ? units.find(u => u.id === activeUnitId) : null;
@@ -696,6 +711,97 @@ function HistoryPanel(props) {
     setResourceSearch('');
     setResourceTypeFilter('all');
   };
+  const moveMenuRef = React.useRef(null);
+  const moveTriggerRef = React.useRef(null);
+  const movePanelRef = React.useRef(null);
+  const moveMenuEdgeRef = React.useRef('first');
+  const moveFocusFrameRef = React.useRef(null);
+  const focusMoveItem = (edge = 'first') => {
+    const items = moveMenuRef.current?.querySelectorAll('[role="menuitem"]:not(:disabled)');
+    (edge === 'last' ? items?.[items.length - 1] : items?.[0])?.focus();
+  };
+  const openMoveMenu = (event, itemId, edge = 'first') => {
+    moveTriggerRef.current = event.currentTarget;
+    movePanelRef.current = event.currentTarget.closest('#tour-history-panel');
+    moveMenuEdgeRef.current = edge;
+    if (movingItemId === itemId) focusMoveItem(edge);
+    else setMovingItemId(itemId);
+  };
+  const closeMoveMenu = (restoreFocus = false) => {
+    setMovingItemId(null);
+    if (moveFocusFrameRef.current !== null) window.cancelAnimationFrame(moveFocusFrameRef.current);
+    if (restoreFocus) {
+      const trigger = moveTriggerRef.current;
+      const panel = movePanelRef.current;
+      moveFocusFrameRef.current = window.requestAnimationFrame(() => {
+        moveFocusFrameRef.current = null;
+        // A move can remove the row from the selected unit's results.
+        (trigger?.isConnected ? trigger : panel?.querySelector('[data-help-key="history_filter_unit_select"]'))?.focus();
+      });
+    }
+  };
+  const selectMoveUnit = (itemId, unitId) => {
+    handleMoveToUnit(itemId, unitId);
+    closeMoveMenu(true);
+  };
+  const handleMoveMenuKeyDown = (event) => {
+    const items = Array.from(event.currentTarget.querySelectorAll('[role="menuitem"]:not(:disabled)'));
+    const current = items.indexOf(document.activeElement);
+    let next;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      closeMoveMenu(true);
+      return;
+    }
+    if (event.key === 'Tab') {
+      // Native Tab continues from the trigger instead of traversing menu items.
+      moveTriggerRef.current?.focus();
+      closeMoveMenu(false);
+      return;
+    }
+    if (!items.length) return;
+    if (event.key === 'ArrowDown') next = (current + 1) % items.length;
+    else if (event.key === 'ArrowUp') next = (current - 1 + items.length) % items.length;
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = items.length - 1;
+    else if (event.key.length === 1 && event.key !== ' ' && !event.ctrlKey && !event.altKey && !event.metaKey) {
+      const key = event.key.toLocaleLowerCase();
+      next = items.findIndex((_, offset) => items[(current + 1 + offset) % items.length].textContent.trim().toLocaleLowerCase().startsWith(key));
+      if (next < 0) return;
+      next = (current + 1 + next) % items.length;
+    } else return;
+    event.preventDefault();
+    items[next]?.focus();
+  };
+  React.useLayoutEffect(() => {
+    const menu = moveMenuRef.current;
+    const trigger = moveTriggerRef.current;
+    if (!movingItemId || !menu || !trigger) return undefined;
+    const position = () => {
+      const rect = trigger.getBoundingClientRect();
+      const box = menu.getBoundingClientRect();
+      menu.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - box.width - 8)) + 'px';
+      menu.style.top = (rect.bottom + 4 + box.height <= window.innerHeight - 8 ? rect.bottom + 4 : Math.max(8, rect.top - box.height - 4)) + 'px';
+    };
+    position();
+    focusMoveItem(moveMenuEdgeRef.current);
+    const dismiss = (event) => {
+      if (!menu.contains(event.target) && !trigger.contains(event.target)) setMovingItemId(null);
+    };
+    document.addEventListener('pointerdown', dismiss);
+    window.addEventListener('resize', position);
+    document.addEventListener('scroll', position, true);
+    return () => {
+      document.removeEventListener('pointerdown', dismiss);
+      window.removeEventListener('resize', position);
+      document.removeEventListener('scroll', position, true);
+    };
+  }, [movingItemId]);
+  React.useEffect(() => () => {
+    if (moveFocusFrameRef.current !== null) window.cancelAnimationFrame(moveFocusFrameRef.current);
+  }, []);
+
   const focusMoreAction = (edge = 'first') => {
     window.requestAnimationFrame(() => {
       const menuItems = moreActionsMenuRef.current
@@ -767,7 +873,9 @@ function HistoryPanel(props) {
                                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-700"><History size={16}/></span>
                                 <span className="min-w-0 truncate">{isTeacherMode ? t('sidebar.resource_pack_history') : t('sidebar.my_resources')}</span>
                                 <span
-                                    className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-600"
+                                    className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700"
+                                    role="status"
+                                    aria-atomic="true"
                                     aria-live="polite"
                                     aria-label={isResourceFilterActive
                                         ? t('history.resource_count_filtered', { visible: filteredHistory.length, total: unitFilteredHistory.length })
@@ -872,7 +980,7 @@ function HistoryPanel(props) {
                                     aria-label={t('history.more_actions_aria')}
                                     aria-haspopup="menu"
                                     aria-expanded={isMoreActionsOpen}
-                                    aria-controls="history-more-actions-menu"
+                                    aria-controls={isMoreActionsOpen ? 'history-more-actions-menu' : undefined}
                                 >
                                     <span className="flex items-center gap-1.5">{t('history.more_actions')} <ChevronDown size={14} aria-hidden="true" /></span>
                                 </button>
@@ -1093,11 +1201,12 @@ function HistoryPanel(props) {
                     {isUnitModalOpen && (
                         <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-3 animate-in slide-in-from-top-2">
                             <label className="block text-xs font-bold text-slate-700 mb-1">{t('history.new_unit_label')}</label>
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
                                 <input aria-label={t('common.enter_new_unit_name')}
                                     type="text"
                                     value={newUnitName}
                                     data-help-key="history_unit_name_input"
+                                    style={{ flexBasis: '12rem', minWidth: 0 }}
                                     onChange={(e) => setNewUnitName(e.target.value)}
                                     placeholder={t('history.new_unit_placeholder')}
                                     className="min-h-11 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
@@ -1294,7 +1403,7 @@ function HistoryPanel(props) {
                             onDragEnd={handleDragEnd}
                             className={`group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] ${isCurrent ? 'border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5' : 'border-slate-200 border-l-transparent bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50/70'} ${isSyncMode ? 'cursor-not-allowed opacity-60' : 'cursor-default'}`}
                         >
-                            <div className="flex items-stretch gap-2 w-full">
+                            <div className="flex flex-wrap items-stretch gap-2 w-full">
                                 <button
                                     type="button"
                                     draggable={editingId === null && canReorderResources}
@@ -1355,13 +1464,14 @@ function HistoryPanel(props) {
                                                 }
                                                 handleRestoreView(item);
                                             }}
-                                            className={`min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? 'cursor-default bg-indigo-50/80 text-slate-900' : 'hover:bg-slate-100 text-slate-800'} aria-disabled:opacity-60`}
+                                            style={{ flexBasis: '10rem' }}
+                                            className={`min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex flex-col items-start gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? 'cursor-default bg-indigo-50/80 text-slate-900' : 'hover:bg-slate-100 text-slate-800'} aria-disabled:opacity-60`}
                                             aria-label={isCurrent ? `${itemTitle}. ${currentLabel}` : `${openLabel}: ${itemTitle}`}
                                             aria-current={isCurrent ? 'page' : undefined}
                                             aria-disabled={isSyncMode || isCurrent}
                                         >
-                                            <div className="min-w-0 flex-grow">
-                                                <div className="text-sm font-bold leading-snug line-clamp-2" title={itemTitle}>
+                                            <div className="min-w-0 w-full">
+                                                <div data-history-resource-title className="text-sm font-bold leading-snug" style={{ overflowWrap: 'anywhere' }} title={itemTitle}>
                                                     {itemTitle}
                                                 </div>
                                                 <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500">
@@ -1454,21 +1564,33 @@ function HistoryPanel(props) {
                                             aria-label={`${t('history.tooltips.move_to_unit') || 'Move to unit'}: ${itemTitle}`}
                                             aria-expanded={movingItemId === itemInstanceId}
                                             aria-haspopup="menu"
-                                            aria-controls={`history-move-menu-${itemInstanceId}`}
-                                            onClick={() => setMovingItemId(movingItemId === itemInstanceId ? null : itemInstanceId)}
+                                            id={`history-move-trigger-${itemInstanceId}`}
+                                            aria-controls={movingItemId === itemInstanceId ? `history-move-menu-${itemInstanceId}` : undefined}
+                                            onClick={(event) => movingItemId === itemInstanceId ? closeMoveMenu(true) : openMoveMenu(event, itemInstanceId)}
+                                            onKeyDown={(event) => {
+                                                if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                                                    event.preventDefault();
+                                                    openMoveMenu(event, itemInstanceId, event.key === 'ArrowUp' ? 'last' : 'first');
+                                                }
+                                            }}
                                             className={`min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 ${itemUnitId ? 'text-amber-700' : ''}`}
                                             title={t('history.tooltips.move_to_unit')}
                                         >
                                             <FolderInput size={12} aria-hidden="true" />
                                         </button>
                                         {movingItemId === itemInstanceId && (
-                                            <div id={`history-move-menu-${itemInstanceId}`} role="menu" className="rp-menu-surface absolute left-0 top-12 z-[100] w-48 origin-top-left rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15 animate-in fade-in zoom-in-95">
+                                            <div ref={moveMenuRef} id={'history-move-menu-' + itemInstanceId} role="menu"
+                                                aria-labelledby={'history-move-trigger-' + itemInstanceId}
+                                                onKeyDown={handleMoveMenuKeyDown}
+                                                style={{ position: 'fixed', maxWidth: 'calc(100vw - 16px)', maxHeight: 'calc(100vh - 16px)', overflowY: 'auto' }}
+                                                className="rp-menu-surface z-[200] w-48 rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15">
                                                 <div role="presentation" className="px-2 py-2 text-xs font-bold uppercase tracking-wider text-slate-500">{t('history.move_to_label')}</div>
                                                 <div role="presentation" className="flex flex-col gap-0.5 max-h-32 overflow-y-auto custom-scrollbar">
                                                     <button
                                                         type="button"
                                                         role="menuitem"
-                                                        onClick={() => handleMoveToUnit(itemInstanceId, 'uncategorized')}
+                                                        tabIndex={-1}
+                                                        onClick={() => selectMoveUnit(itemInstanceId, 'uncategorized')}
                                                         className={`min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${!itemUnitId ? 'bg-indigo-50 font-bold text-indigo-700' : ''}`}
                                                     >
                                                         {t('history.uncategorized')}
@@ -1478,7 +1600,8 @@ function HistoryPanel(props) {
                                                             type="button"
                                                             role="menuitem"
                                                             key={u.id}
-                                                            onClick={() => handleMoveToUnit(itemInstanceId, u.id)}
+                                                            tabIndex={-1}
+                                                            onClick={() => selectMoveUnit(itemInstanceId, u.id)}
                                                             className={`min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${itemUnitId === getSafeRowText(getSafeArtifactField(u, 'id'), '', 160) ? 'bg-indigo-50 font-bold text-indigo-700' : ''}`}
                                                         >
                                                             {u.name}
@@ -1489,9 +1612,6 @@ function HistoryPanel(props) {
                                                     )}
                                                 </div>
                                             </div>
-                                        )}
-                                        {movingItemId === itemInstanceId && (
-                                            <div aria-hidden="true" className="fixed inset-0 z-[90]" onClick={handleSetMovingItemIdToNull}></div>
                                         )}
                                     </div>
                                 </div>

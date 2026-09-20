@@ -1,0 +1,66 @@
+const connectMailbox = async () => {
+      const execUrl = __d._alloCleanMailboxUrl(__d.mbUrlInput);
+      if (!execUrl) {
+          __d.setMbStatus('That does not look like an Apps Script web app URL (it should end in /exec on script.google.com).');
+          return;
+      }
+      __d.setMbBusy(true);
+      __d.setMbStatus('Testing mailbox…');
+      try {
+          const t0 = Date.now();
+          const mbHello = await __d._alloMailboxCall(execUrl, { a: 'hello' });
+          const pasted = String(__d.mbAdminInput || '').trim();
+          let stored = '';
+          try { stored = localStorage.getItem(__d.ALLO_MB_ADMIN_KEY) || ''; } catch (_) {}
+          let admin = '';
+          let freshlyClaimed = false;
+          if (pasted) {
+              const check = await __d._alloMailboxCall(execUrl, { a: 'auth', admin: pasted });
+              if (!check.admin) {
+                  __d.setMbStatus('That admin token was not accepted by this mailbox. Double-check it, or reset it in the Apps Script editor (Project Settings → Script properties → delete "admin").');
+                  __d.setMbBusy(false);
+                  return;
+              }
+              admin = pasted;
+          } else if (stored) {
+              const check = await __d._alloMailboxCall(execUrl, { a: 'auth', admin: stored });
+              if (check.admin) admin = stored;
+          }
+          if (!admin) {
+              try {
+                  const claimed = await __d._alloMailboxCall(execUrl, { a: 'claim' });
+                  admin = String(claimed.admin || '');
+                  freshlyClaimed = true;
+              } catch (claimErr) {
+                  if (String(claimErr?.code || '').includes('claimed')) {
+                      __d.setMbStatus('This mailbox is already claimed. Paste its admin token above (shown when it was first connected), or reset it in the Apps Script editor: Project Settings → Script properties → delete "admin".');
+                      __d.setMbBusy(false);
+                      return;
+                  }
+                  throw claimErr;
+              }
+          }
+          try {
+              __d.alloPersistMailboxConfig({ url: execUrl, admin, v: Number(mbHello && mbHello.v) || 0 });
+              localStorage.setItem(__d.ALLO_MB_URL_KEY, execUrl);
+              if (admin) localStorage.setItem(__d.ALLO_MB_ADMIN_KEY, admin);
+              localStorage.setItem(__d.ALLO_MB_VERSION_KEY, String(Number(mbHello && mbHello.v) || 0));
+          } catch (_) {}
+          __d.setMbAdminInput('');
+          __d.setMbConfig({ url: execUrl, admin, v: Number(mbHello && mbHello.v) || 0, latencyMs: Date.now() - t0 });
+          __d.setMbStatus('Connected — round-trip ' + (Date.now() - t0) + 'ms.' + (freshlyClaimed ? ' SAVE YOUR ADMIN TOKEN (shown below): you will paste it to reconnect from a new device or a fresh Canvas.' : ' Ready for live sessions and hosted homework QR.'));
+          // Server-side resume: ask the mailbox for any still-open sessions
+          // this admin owns. Works in Canvas where local storage does not.
+          if (admin && !__d.mbLive) {
+              try {
+                  const mine = await __d._alloMailboxCall(execUrl, { a: 'mysessions', admin });
+                  const open = Array.isArray(mine.sessions) ? mine.sessions.filter(s => s && s.c && s.k) : [];
+                  if (open.length) __d.setMbResumable(open);
+              } catch (resumeErr) { __d.warnLog('mysessions query failed', resumeErr?.message); }
+          }
+      } catch (e) {
+          __d.warnLog('Mailbox connect failed', e);
+          __d.setMbStatus('Could not reach the mailbox (' + (e?.message || e) + '). Check the /exec URL and that the deployment access is set to "Anyone".');
+      }
+      __d.setMbBusy(false);
+  };

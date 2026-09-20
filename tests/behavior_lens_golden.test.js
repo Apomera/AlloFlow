@@ -260,9 +260,9 @@ describe('layer 6 — should-fix sweep regressions (2026-06-02 pass 2)', () => {
     expect(MODULE_SRC).toMatch(/const\s+\[includeAi,\s*setIncludeAi\]\s*=\s*useState\(false\)/);
   });
 
-  it('destructive and recording-exit actions use the accessible confirmation service (9 sites)', () => {
+  it('destructive and recording-exit actions use the accessible confirmation service (11 sites)', () => {
     const confirmations = (MODULE_SRC.match(/await askBehaviorLensConfirmation\(/g) || []).length;
-    expect(confirmations).toBe(9);
+    expect(confirmations).toBe(11);
     expect(MODULE_SRC).not.toMatch(/(?<![\w.])(?:window\.)?confirm\s*\(/);
   });
 
@@ -394,8 +394,8 @@ describe('layer 8 — pass-3 audit regressions (2026-06-03)', () => {
   it('Voice-to-ABC parse validates Array, types, and caps at 100 entries', () => {
     expect(MODULE_SRC).toMatch(/!Array\.isArray\(entries\)/);
     expect(MODULE_SRC).toMatch(/\.slice\(0,\s*100\)/);
-    // Per-entry intensity clamp must be present.
-    expect(MODULE_SRC).toMatch(/e\.intensity\s*>=\s*1\s*&&\s*e\.intensity\s*<=\s*5/);
+    // Per-entry ratings use the shared validator, which preserves missing ratings.
+    expect(MODULE_SRC).toContain('intensity: getBehaviorLensWorkspaceRuntime().normalizeIntensity(e.intensity)');
   });
 
   it('ABC table action buttons are p-2 (touch target ≥44px on iPad) with focus-visible rings', () => {

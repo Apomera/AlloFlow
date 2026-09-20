@@ -1,0 +1,10 @@
+const fs=require('fs'),path=require('path'),{chromium}=require('playwright'),{expect}=require('@playwright/test'),esbuild=require('esbuild');
+const previous=path.resolve(__dirname,'../remediation-ux-review-2026-09-19');
+const setup=fs.readFileSync(path.join(previous,'review.cjs'),'utf8').split('(async () => {')[0];
+const {mount,setResult}=new Function('require','__dirname',setup+'\nreturn {mount,setResult};')(require,previous);
+const ROOT=path.resolve(__dirname,'../..');
+const spec=fs.readFileSync(path.join(ROOT,'tests/e2e/remediation_continuity.spec.ts'),'utf8');
+const completeHelper=spec.slice(spec.indexOf('async function completeResult('),spec.indexOf("test('results lead with accurate"));
+const completeResult=new Function('setResult','require',esbuild.transformSync(completeHelper,{loader:'ts',format:'cjs'}).code+'\nreturn completeResult;')(setResult,require);
+
+(async()=>{const browser=await chromium.launch({headless:true});try{const page=await browser.newPage();await mount(page);await completeResult(page,{verificationState:'complete-for-tested-scope',verificationReasons:['static-source-audit']});await page.waitForTimeout(100);console.log(JSON.stringify(await page.evaluate(()=>{const w=window,r=w.__modalState.pdfFixResult,p=w.__modalState._docPipeline;return {text:document.querySelector('.pdf-workspace-status').textContent,card:document.querySelector('#pdf-verification-status').textContent,keys:Object.keys(p).filter(x=>/erification/.test(x)),bound:p.isLiveVerificationHtmlBound?.(r),snapshot:Object.getOwnPropertyDescriptor(r,'_verificationHtmlSnapshot'),binding:r.verificationHtmlBinding,ai:r.verificationAudit,axe:r.axeAudit,ea:r.secondEngineAudit,derived:p.deriveVerificationState?.({ai:r.verificationAudit,axe:r.axeAudit,equalAccess:r.secondEngineAudit})};}),null,2));}finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});

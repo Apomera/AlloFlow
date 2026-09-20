@@ -48,6 +48,107 @@
     "to": "For a solid built from rectangular prisms, split it into non-overlapping blocks"
   },
   {
+    "resourceId": "vl-memory",
+    "path": "data.cards.0.essentialFacts.1",
+    "from": "That is the same as the area of the base.",
+    "to": "For a layer one unit high, the cube count has the same numerical value as the base area in square units; the units differ."
+  },
+  {
+    "resourceId": "vl-memory",
+    "path": "data.cards.0.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "vl-memory",
+    "path": "data.cards.0.aiExample",
+    "from": "Picture a stack of sliced bread. One slice is the base. The number of slices is the height. Nobody multiplies bread by mystery. You count one slice, then count slices.",
+    "to": "Picture a rectangular stack of identical slices, each one unit thick. Find the volume of one slice, then multiply by the number of slices. If thickness changes, slice count alone no longer gives height in those units."
+  },
+  {
+    "resourceId": "vl-memory",
+    "path": "data.cards.0.mapping",
+    "from": "A loaf is already made of identical layers, so the picture supplies the two ideas the formula needs and nothing else.",
+    "to": "The stack is an ideal model with matching layers and no gaps. A real loaf may have differently shaped ends or uneven slices. Layer thickness must be included when finding height."
+  },
+  {
+    "resourceId": "vl-memory",
+    "path": "data.cards.0.scaffoldStarter",
+    "from": "One ____ is the base. The number of ____ is the height.",
+    "to": "One layer has volume ____. There are ____ matching layers, so total volume is ____."
+  },
+  {
+    "resourceId": "vl-memory",
+    "path": "data.cards.1",
+    "from": {
+      "id": "vl-ma-units",
+      "target": "Why volume answers carry a small three",
+      "essentialFacts": [
+        "Volume is measured by counting unit cubes.",
+        "A cube is measured in three directions, so the label is cubic.",
+        "Length is one direction, area is two, volume is three."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "keyword-association",
+      "mode": "scaffolded",
+      "aiExample": "ONE, TWO, THREE: a line, a floor, a room. A line needs one measurement. A floor needs two. A room needs three. The small number is just how many directions you had to measure.",
+      "mapping": "Counting up one, two, three ties the exponent to something physical, so the small 3 stops being decoration and becomes a count of directions.",
+      "scaffoldStarter": "A line needs ____ measurement. A floor needs ____. A room needs ____.",
+      "scaffoldSteps": [
+        "Say how many measurements a line needs.",
+        "Say how many a flat shape needs.",
+        "Say how many a solid needs."
+      ],
+      "coachPrompts": [
+        "Why does area get a small 2 and volume a small 3?"
+      ],
+      "studentPrompt": "Make your own one-two-three phrase for the units.",
+      "reasoningPrompt": "How does your phrase stop you writing cm instead of cubic cm?",
+      "hookFact": {
+        "text": "Whichever you pick, the answer comes out in cubic units, because you are counting cubes.",
+        "sourceTitle": "Filling Space (this lesson)"
+      }
+    },
+    "to": {
+      "id": "vl-ma-units",
+      "target": "Why volume answers carry a small three",
+      "essentialFacts": [
+        "Volume is measured by counting unit cubes.",
+        "A cube is measured in three directions, so the label is cubic.",
+        "Length is one direction, area is two, volume is three."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "keyword-association",
+      "mode": "scaffolded",
+      "aiExample": "ONE, TWO, THREE: a line, a floor, a room. A line needs one measurement. A floor needs two. A room needs three. The small number is just how many directions you had to measure.",
+      "mapping": "Counting up one, two, three ties the exponent to something physical, so the small 3 stops being decoration and becomes a count of directions.",
+      "scaffoldStarter": "A line needs ____ measurement. A floor needs ____. A room needs ____.",
+      "scaffoldSteps": [
+        "Say how many measurements a line needs.",
+        "Say how many a flat shape needs.",
+        "Say how many a solid needs."
+      ],
+      "coachPrompts": [
+        "Why does area get a small 2 and volume a small 3?"
+      ],
+      "studentPrompt": "Make your own one-two-three phrase for the units.",
+      "reasoningPrompt": "How does your phrase stop you writing cm instead of cubic cm?",
+      "hookFact": {
+        "text": "Whichever you pick, the answer comes out in cubic units, because you are counting cubes.",
+        "sourceTitle": "Filling Space (this lesson)"
+      },
+      "factReview": {
+        "status": "inherited-review-attribution",
+        "sourcePack": "allopacks/volume_grade5.allopack.json",
+        "sourceResourceId": "vl-memory",
+        "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+        "factsHash": "a9ff199e92b36a43fc064bf770a2068ffe9322363afc287747d2b80e0721bd42"
+      }
+    }
+  },
+  {
     "resourceId": "vl-sort",
     "path": "data.items.4.content",
     "from": "How much paint covers one wall",
@@ -64,6 +165,12 @@
     "path": "data.items.7.content",
     "from": "How much ribbon goes around the box",
     "to": "The length of one ribbon loop around the four sides of a box, without a bow"
+  },
+  {
+    "resourceId": "vl-math",
+    "path": "data.problems.1.steps.0.explanation",
+    "from": "The base area already tells you one layer holds 15 cubes. You do not need the length and width separately.",
+    "to": "The base area is 15 square inches. A slice one inch thick has volume 15 cubic inches, even when the base cannot be tiled by whole one-inch cubes."
   },
   {
     "resourceId": "vl-faq",
@@ -84,51 +191,90 @@
     "to": "Convert all lengths to the same unit before using the formula, so the result is easy to express in cubic units. Mixed units still have meaning, but need conversion: 1 cm × 1 m = 100 square cm."
   },
   {
-    "resourceId": "vl-math",
-    "path": "data.problems.1.steps.0.explanation",
-    "from": "The base area already tells you one layer holds 15 cubes. You do not need the length and width separately.",
-    "to": "The base area is 15 square inches. A slice one inch thick has volume 15 cubic inches, even when the base cannot be tiled by whole one-inch cubes."
-  },
-  {
     "resourceId": "vl-challenge",
-    "path": "data.brief.context",
-    "from": "A school club ships 48 small cubes of soap to a fundraiser. Each soap is one cubic unit. The club wants one box that fits them exactly, with no empty space, and wants to spend as little on cardboard as possible.",
-    "to": "A school club ships 48 unit cubes of soap. Compare ideal closed rectangular boxes with internal volume 48 cubic units. Use total surface area as the cardboard model, ignoring wall thickness, tabs, seams and cutting waste."
-  },
-  {
-    "resourceId": "vl-challenge",
-    "path": "data.brief.constraints.0",
-    "from": "Whole-number edge lengths only",
-    "to": "Positive whole-number edge lengths only; rotations of the same three lengths count as one box"
-  },
-  {
-    "resourceId": "vl-challenge",
-    "path": "data.brief.constraints.1",
-    "from": "Exactly 48 cubic units, no empty space",
-    "to": "Exactly 48 cubic units inside; compare all six faces of each closed box, ignoring thickness, tabs, seams and waste"
-  },
-  {
-    "resourceId": "vl-memory",
-    "path": "data.cards.0.essentialFacts.1",
-    "from": "That is the same as the area of the base.",
-    "to": "For a layer one unit high, the cube count has the same numerical value as the base area in square units; the units differ."
-  },
-  {
-    "resourceId": "vl-memory",
-    "path": "data.cards.0.aiExample",
-    "from": "Picture a stack of sliced bread. One slice is the base. The number of slices is the height. Nobody multiplies bread by mystery. You count one slice, then count slices.",
-    "to": "Picture a rectangular stack of identical slices, each one unit thick. Find the volume of one slice, then multiply by the number of slices. If thickness changes, slice count alone no longer gives height in those units."
-  },
-  {
-    "resourceId": "vl-memory",
-    "path": "data.cards.0.mapping",
-    "from": "A loaf is already made of identical layers, so the picture supplies the two ideas the formula needs and nothing else.",
-    "to": "The stack is an ideal model with matching layers and no gaps. A real loaf may have differently shaped ends or uneven slices. Layer thickness must be included when finding height."
-  },
-  {
-    "resourceId": "vl-memory",
-    "path": "data.cards.0.scaffoldStarter",
-    "from": "One ____ is the base. The number of ____ is the height.",
-    "to": "One layer has volume ____. There are ____ matching layers, so total volume is ____."
+    "path": "data.brief",
+    "from": {
+      "family": "design",
+      "context": "A school club ships 48 small cubes of soap to a fundraiser. Each soap is one cubic unit. The club wants one box that fits them exactly, with no empty space, and wants to spend as little on cardboard as possible.",
+      "role": "Packaging designers",
+      "audience": "The club treasurer, who will approve the cheapest workable box",
+      "drivingQuestion": "Of all the whole-number boxes that hold exactly 48 unit cubes, which one uses the least cardboard, and is that the box the club should actually pick?",
+      "seedDirection": "List every whole-number set of three edges that multiplies to 48 before you calculate any surface area. There are fewer than you expect.",
+      "lockedLessonFacts": [
+        "Volume is the number of unit cubes that fit inside with no gaps.",
+        "Length times width gives one layer, and height counts the layers.",
+        "Equal volume does not mean equal shape.",
+        "Every measurement must be in the same unit before you multiply."
+      ],
+      "openQuestions": [
+        "How many different whole-number boxes hold exactly 48?",
+        "Does the box with the least cardboard have any other problem?",
+        "Would your answer change if the soaps were fragile?"
+      ],
+      "stakeholders": [
+        "The club treasurer paying for cardboard",
+        "Whoever has to pack the soaps by hand",
+        "The person carrying the finished box"
+      ],
+      "criteria": [
+        "A table of every whole-number box with volume 48, with its surface area",
+        "The volume of each box is shown to be 48, not just asserted",
+        "A recommendation with a reason, naming any tradeoff",
+        "At least four glossary words used correctly"
+      ],
+      "constraints": [
+        "Whole-number edge lengths only",
+        "Exactly 48 cubic units, no empty space",
+        "One recommendation, not a list"
+      ],
+      "deliverable": "A table of every box that works with its surface area, a marked sketch of the one you recommend, and two sentences: why it wastes the least, and what you would give up by choosing it.",
+      "factLocked": true,
+      "factVerified": true
+    },
+    "to": {
+      "family": "design",
+      "context": "A school club ships 48 unit cubes of soap. Compare ideal closed rectangular boxes with internal volume 48 cubic units. Use total surface area as the cardboard model, ignoring wall thickness, tabs, seams and cutting waste.",
+      "role": "Packaging designers",
+      "audience": "The club treasurer, who will approve the cheapest workable box",
+      "drivingQuestion": "Of all the whole-number boxes that hold exactly 48 unit cubes, which one uses the least cardboard, and is that the box the club should actually pick?",
+      "seedDirection": "List every whole-number set of three edges that multiplies to 48 before you calculate any surface area. There are fewer than you expect.",
+      "lockedLessonFacts": [
+        "Volume is the number of unit cubes that fit inside with no gaps.",
+        "Length times width gives one layer, and height counts the layers.",
+        "Equal volume does not mean equal shape.",
+        "Every measurement must be in the same unit before you multiply."
+      ],
+      "openQuestions": [
+        "How many different whole-number boxes hold exactly 48?",
+        "Does the box with the least cardboard have any other problem?",
+        "Would your answer change if the soaps were fragile?"
+      ],
+      "stakeholders": [
+        "The club treasurer paying for cardboard",
+        "Whoever has to pack the soaps by hand",
+        "The person carrying the finished box"
+      ],
+      "criteria": [
+        "A table of every whole-number box with volume 48, with its surface area",
+        "The volume of each box is shown to be 48, not just asserted",
+        "A recommendation with a reason, naming any tradeoff",
+        "At least four glossary words used correctly"
+      ],
+      "constraints": [
+        "Positive whole-number edge lengths only; rotations of the same three lengths count as one box",
+        "Exactly 48 cubic units inside; compare all six faces of each closed box, ignoring thickness, tabs, seams and waste",
+        "One recommendation, not a list"
+      ],
+      "deliverable": "A table of every box that works with its surface area, a marked sketch of the one you recommend, and two sentences: why it wastes the least, and what you would give up by choosing it.",
+      "factLocked": true,
+      "factVerified": true,
+      "factReview": {
+        "status": "inherited-review-attribution",
+        "sourcePack": "allopacks/volume_grade5.allopack.json",
+        "sourceResourceId": "vl-challenge",
+        "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+        "factsHash": "720ba4159a93b7311896606208eefe15038744337e50e6950437ea4a8c7f3797"
+      }
+    }
   }
 ]

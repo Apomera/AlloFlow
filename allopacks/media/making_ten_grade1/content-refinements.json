@@ -109,6 +109,12 @@
   },
   {
     "resourceId": "mn-memory",
+    "path": "data.cards.0.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "mn-memory",
     "path": "data.cards.0.aiExample",
     "from": "Hold up ten fingers. Fold down six. Look at what is still up. That is four. Six and four are partners.",
     "to": "Fill six spaces in a ten frame. Four spaces are empty. Six and four make ten. Add one counter to each empty space to check."
@@ -166,6 +172,12 @@
     "path": "data.cards.1.essentialFacts.0",
     "from": "Look at the bigger number first.",
     "to": "For these examples, choose an addend below ten to fill to ten."
+  },
+  {
+    "resourceId": "mn-memory",
+    "path": "data.cards.1.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "mn-memory",
@@ -280,6 +292,12 @@
     "path": "data.brief.constraints.2",
     "from": "Count out loud with a partner",
     "to": "Count, point, draw or explain with a partner"
+  },
+  {
+    "resourceId": "mn-challenge",
+    "path": "data.brief.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "mn-challenge",

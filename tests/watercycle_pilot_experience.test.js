@@ -224,9 +224,9 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain("canvasEl.dataset.windVisual = showingWind ? 'advection-inland' : 'hidden';");
     expect(source).toContain("canvasEl.dataset.cloudShadow = showingCloudShadow ? 'projected' : 'hidden';");
     expect(source).toContain("cloudVeil.visible = waterView && (f === 'droplet' || f === 'cloud' || f === 'ice');");
-    expect(source).toContain('var waterGlintT = motionReduced ? 0 : t;');
+    expect(source).toContain('var waterGlintT = pilotWaterUniforms.rippleTime.value;');
     expect(source).toContain('var windPhase = motionReduced');
-    expect(source).toContain('var streamU = motionReduced');
+    expect(source).toContain('var streamU = (streamFlowSeed[sfp] + pilotStreamTime.value * 0.075) % 1;');
   });
 
   it('keeps surface location and wind context visible and available as text', () => {

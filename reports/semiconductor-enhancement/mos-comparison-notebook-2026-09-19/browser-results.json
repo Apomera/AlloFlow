@@ -1,0 +1,38 @@
+{
+  "passed": true,
+  "checks": [
+    "save leaves electrical settings unchanged",
+    "immutable NMOS and PMOS evidence",
+    "explanation survives collapse",
+    "notebook review",
+    "restore both gates from 2D and existing 3D",
+    "one-time restoration does not resurrect stale references",
+    "save status clears after changes",
+    "saved evidence matches normalized display settings",
+    "zero bias saved",
+    "390 and 320 px overflow"
+  ],
+  "scans": [
+    {
+      "name": "N-MOSFET saved comparison",
+      "violations": []
+    },
+    {
+      "name": "N-MOSFET restored comparison",
+      "violations": []
+    },
+    {
+      "name": "P-MOSFET saved comparison",
+      "violations": []
+    },
+    {
+      "name": "P-MOSFET restored comparison",
+      "violations": []
+    },
+    {
+      "name": "mobile comparison capture",
+      "violations": []
+    }
+  ],
+  "errors": []
+}

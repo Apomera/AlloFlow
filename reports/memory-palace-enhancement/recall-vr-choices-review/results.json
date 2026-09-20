@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "synchronousTargetChoices": true,
+  "stalePickIgnored": true,
+  "invalidPickIgnored": true,
+  "completedBankEmpty": true,
+  "entranceBankEmpty": true,
+  "selfCheckBankEmpty": true,
+  "realReactWebGLCallbacks": true,
+  "headsetTested": false,
+  "pageErrors": []
+}

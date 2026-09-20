@@ -1,0 +1,40 @@
+{
+  "date": "2026-09-19",
+  "offlineImport": {
+    "files": 105,
+    "resources": 1245,
+    "passed": true
+  },
+  "initialFocusedRun": {
+    "files": 5,
+    "passed": 446
+  },
+  "finalPrintRun": {
+    "passed": 8
+  },
+  "finalValidatorRun": {
+    "passed": 21
+  },
+  "mcpFocusedRun": {
+    "passed": 7,
+    "deselected": 70
+  },
+  "broaderCatalogAndExportRun": {
+    "passed": 388,
+    "failed": 2
+  },
+  "baselineRendererProbe": {
+    "failed": 2,
+    "reason": "Applied Challenge expected status text Fact check needed; reproduced with committed renderer and current dependencies"
+  },
+  "mirrors": {
+    "modules": 4,
+    "passed": true
+  },
+  "limits": [
+    "No full-suite run",
+    "No fresh visual accuracy review of every image",
+    "No signed-in live-library verification",
+    "No commit or deployment"
+  ]
+}

@@ -1,0 +1,551 @@
+[
+  {
+    "resourceId": "fm-directions",
+    "path": "data.body",
+    "from": "**Due:** (your teacher will tell you)\n\nEvery time something starts moving, stops, or turns, a push or a pull did it. Today you learn to spot the push or pull every single time.\n\n1. Read **The Invisible Push**.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Look at the **Push, Pull, Stop** chart.\n4. Sort the cards in **Balanced or Unbalanced?**\n5. Practise explaining with **Force Detective Frames**, then check yourself against the rubric.\n6. Take the quiz. Question 3 is about a ball that rolls and stops.\n7. Lock the ideas in with **Remember the Invisible Push** — study the example aid, then make one your own.\n8. Finish with **Investigation: The Ramp Race** — change one thing, and write down your guess first.\n\nThis week, catch one thing moving and say out loud what pushed or pulled it. 🛼",
+    "to": "**Due:** (your teacher will tell you)\n\nWhen something starts, stops, speeds up, slows down, or turns, look for an unbalanced push or pull. A moving object does not always need an ongoing unbalanced force.\n\n1. Read **The Invisible Push**.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Look at the **Push, Pull, Stop** chart.\n4. Sort the cards in **Balanced or Unbalanced?**\n5. Practise explaining with **Force Detective Frames**, then check yourself against the rubric.\n6. Take the quiz. Question 3 is about a ball that rolls and stops.\n7. Lock the ideas in with **Remember the Invisible Push** — study the example aid, then make one your own.\n8. Finish with **Investigation: The Ramp Race** — change one thing, and write down your guess first.\n\nThis week, observe a change in motion and explain what push or pull may have caused it. 🛼\n\nPicture panels: Pushes, pulls, and support; Models of balanced and unbalanced forces; Friction and changes in motion; Testing and predicting. Use these alongside the activities."
+  },
+  {
+    "resourceId": "fm-directions",
+    "path": "data.objectives.2.label",
+    "from": "I watched something move and named the push or pull that did it",
+    "to": "I observed a change in motion and named a push or pull that could explain it"
+  },
+  {
+    "resourceId": "fm-reading",
+    "path": "meta",
+    "from": "3rd Grade • Leveled reading",
+    "to": "3rd Grade • Leveled reading • forces, motion, and evidence"
+  },
+  {
+    "resourceId": "fm-reading",
+    "path": "data",
+    "from": "## The Invisible Push\n\nRoll a ball across the floor. It goes, and goes, and then it slows down and stops. Why did it stop? Nothing touched it. Or did something?\n\nA **force** is a push or a pull. Every time something starts to move, speeds up, slows down, or changes direction, a force did it. You cannot see a force, but you can always see what it does.\n\nWhen you kick a ball, your foot pushes it. That push makes it move. A **push** moves things away from you. A **pull** brings things toward you, like when you tug a wagon. Both are forces.\n\nNow the mystery of the rolling ball. It stopped because of a force you did not notice: **friction**. Friction is the rubbing between the ball and the floor. It pushes against the ball's motion, a tiny bit with every roll, until the ball runs out of **motion**. On a smooth gym floor there is less friction, so the ball rolls farther. On thick carpet there is more friction, so it stops sooner.\n\nHere is another invisible force. Drop a pencil. It falls down, not up, not sideways. **Gravity** is the pull that brings things toward the ground. It is always pulling on you, even right now while you sit still.\n\nWait. If gravity is pulling on you right now, why are you not falling?\n\nBecause the chair is pushing up on you exactly as hard as gravity is pulling down. Two forces, the same size, in opposite directions. They cancel out. We call that **balanced**. When forces are balanced, nothing about the motion changes: a still thing stays still, and a moving thing keeps moving the same way.\n\nWhen one force is bigger than the other, the forces are **unbalanced**, and that is when motion changes. Two kids pull a rope with the same strength: balanced, nobody moves. One kid pulls harder: unbalanced, the rope moves toward the stronger pull. A parked bike is balanced. A bike you are pedaling is unbalanced, because your push is beating friction.\n\nSo here is your detective rule. See something start, stop, speed up, or turn? Look for the unbalanced force. See something sitting still or gliding steadily? The forces are balanced.\n\nOne more thing, and it is the part scientists love. Forces follow **patterns**. Roll the same ball down the same ramp the same way and it goes about the same distance every time. Roll it from higher up and it goes farther, every time. Because forces follow patterns, you can **predict** what will happen before it happens. That is not magic. That is science, and you can do it with a ball and a ramp this week.",
+    "to": "## The Invisible Push\n\nRoll a ball across the floor. It travels, slows, and stops. Nobody touches it with a hand, but the floor is touching it all along. The air around it matters too.\n\nA **force** is a push or a pull. Forces can change motion: starting, stopping, speeding up, slowing down, or turning. A force can also act without making an object move. Press gently on a wall: you apply a push even if the wall stays still.\n\nWhen you kick a ball, your foot pushes it while they touch. After your foot leaves, the ball can keep moving. It does not carry a continuing push from your foot.\n\n**Friction** acts between touching surfaces and resists sliding between them. It can help your shoes grip the ground. Contact with the floor can also resist a ball's rolling, especially when the ball or surface bends a little. Air resistance can slow motion too. A ball often rolls farther on a firm smooth floor than on thick carpet, but compare the same ball and release to test your surfaces.\n\n**Gravity** pulls objects toward Earth. A dropped pencil falls because of that pull. Gravity also acts on a book resting on a table. The table pushes upward on the book.\n\nIf all the forces on one object cancel overall, they are **balanced**. A still book stays still. An object already moving keeps the same speed in a straight line while its forces remain balanced. Balanced does not mean no forces.\n\nIf the forces do not cancel overall, they are **unbalanced** and the object's motion changes. A toy cart can speed up, slow down, or turn. The direction it is moving is not always the direction of the overall force: a force against its motion can slow it down.\n\nA bicycle can move steadily while you pedal. On a straight, level path, the forward effect of pedaling can balance the forces resisting motion. A larger forward force makes it speed up. A turning bicycle changes direction even if its speed stays the same.\n\nCareful observations reveal **patterns**. Release the same ball from the same place on a ramp without an extra push. Repeat the test and mark where it stops. The marks may be close together rather than identical. Use that pattern to **predict** an approximate stopping place for another roll. Then test your prediction and report what you actually observe."
+  },
+  {
+    "resourceId": "fm-glossary",
+    "path": "data.0.def",
+    "from": "A push or a pull that can make something move, stop, or change direction.",
+    "to": "A push or pull. It can change motion or shape, or balance other forces."
+  },
+  {
+    "resourceId": "fm-glossary",
+    "path": "data.1.def",
+    "from": "A force that moves something away from you.",
+    "to": "A force directed away from what applies it, even if nothing moves."
+  },
+  {
+    "resourceId": "fm-glossary",
+    "path": "data.2.def",
+    "from": "A force that brings something toward you.",
+    "to": "A force directed toward what applies it, even if nothing moves."
+  },
+  {
+    "resourceId": "fm-glossary",
+    "path": "data.3.def",
+    "from": "The rubbing force that slows things down when two surfaces touch.",
+    "to": "A force that resists sliding between surfaces that touch."
+  },
+  {
+    "resourceId": "fm-glossary",
+    "path": "data.4.def",
+    "from": "The pull that brings things down toward the ground.",
+    "to": "A pull between objects with mass. Earth pulls nearby things toward its center."
+  },
+  {
+    "resourceId": "fm-glossary",
+    "path": "data.5.def",
+    "from": "Moving from one place to another.",
+    "to": "A change in position compared with something else, such as the floor."
+  },
+  {
+    "resourceId": "fm-glossary",
+    "path": "data.6.def",
+    "from": "Forces that are the same size in opposite directions, so the motion does not change.",
+    "to": "Forces on one object that cancel overall. Its speed and direction stay the same."
+  },
+  {
+    "resourceId": "fm-glossary",
+    "path": "data.7.def",
+    "from": "One force is bigger than the other, so the motion changes.",
+    "to": "Forces on one object that do not cancel. Its speed or direction changes."
+  },
+  {
+    "resourceId": "fm-glossary",
+    "path": "data.8.def",
+    "from": "Something that happens the same way again and again.",
+    "to": "A repeated link in what we observe. Results may be close, not exact."
+  },
+  {
+    "resourceId": "fm-glossary",
+    "path": "data.9.def",
+    "from": "To say what will happen before it happens, using a pattern.",
+    "to": "Use evidence to say what may happen, then check."
+  },
+  {
+    "resourceId": "fm-anchor",
+    "path": "data.title",
+    "from": "EVERY CHANGE HAS A FORCE",
+    "to": "LOOK FOR WHAT CHANGES MOTION"
+  },
+  {
+    "resourceId": "fm-anchor",
+    "path": "data.sections.0.bullets.0",
+    "from": "A push (away from you)",
+    "to": "A push or a pull"
+  },
+  {
+    "resourceId": "fm-anchor",
+    "path": "data.sections.0.bullets.1",
+    "from": "A pull (toward you)",
+    "to": "A force can act even if an object stays still"
+  },
+  {
+    "resourceId": "fm-anchor",
+    "path": "data.sections.0.bullets.2",
+    "from": "You see what it does, not the force itself",
+    "to": "Look at all the forces on one object"
+  },
+  {
+    "resourceId": "fm-anchor",
+    "path": "data.sections.1.bullets.0",
+    "from": "Friction: rubbing that slows things down",
+    "to": "Friction resists sliding between touching surfaces"
+  },
+  {
+    "resourceId": "fm-anchor",
+    "path": "data.sections.1.bullets.1",
+    "from": "Gravity: the pull toward the ground",
+    "to": "Grip from friction helps us walk"
+  },
+  {
+    "resourceId": "fm-anchor",
+    "path": "data.sections.1.bullets.2",
+    "from": "Both are working right now",
+    "to": "Gravity pulls nearby objects toward Earth"
+  },
+  {
+    "resourceId": "fm-anchor",
+    "path": "data.sections.2.bullets.0",
+    "from": "Balanced: same size, opposite ways, motion does NOT change",
+    "to": "Balanced: speed and direction stay the same"
+  },
+  {
+    "resourceId": "fm-anchor",
+    "path": "data.sections.2.bullets.1",
+    "from": "Unbalanced: one is bigger, motion CHANGES",
+    "to": "Unbalanced: speed or direction changes"
+  },
+  {
+    "resourceId": "fm-anchor",
+    "path": "data.sections.2.bullets.2",
+    "from": "Start, stop, speed up, turn = unbalanced",
+    "to": "Steady straight-line motion can have balanced forces"
+  },
+  {
+    "resourceId": "fm-anchor",
+    "path": "data.sections.3.bullets.0",
+    "from": "Same push, same result",
+    "to": "Keep the setup and release consistent"
+  },
+  {
+    "resourceId": "fm-anchor",
+    "path": "data.sections.3.bullets.1",
+    "from": "Higher ramp, farther roll",
+    "to": "Repeat measurements; results can vary"
+  },
+  {
+    "resourceId": "fm-anchor",
+    "path": "data.sections.3.bullets.2",
+    "from": "Use the pattern to guess before you test",
+    "to": "Use evidence to predict, then test"
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.sourceExcerpt",
+    "from": "Friction is the rubbing between the ball and the floor. Gravity is the pull that brings things toward the ground. When forces are balanced, nothing about the motion changes. When one force is bigger than the other, the forces are unbalanced, and that is when motion changes.",
+    "to": "Friction resists sliding between surfaces. Gravity pulls nearby objects toward Earth. Balanced forces keep speed and direction unchanged; unbalanced forces change motion."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.0.target",
+    "from": "The two invisible forces: friction slows, gravity pulls down",
+    "to": "Friction resists sliding; gravity attracts"
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.0.essentialFacts.0",
+    "from": "Friction is the rubbing between two surfaces that slows things down.",
+    "to": "Friction resists sliding between touching surfaces and helps shoes grip."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.0.essentialFacts.1",
+    "from": "More friction (carpet) stops a ball sooner; less friction (gym floor) lets it roll farther.",
+    "to": "Contact with the floor can resist rolling; compare surfaces using the same ball and release."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.0.essentialFacts.2",
+    "from": "Gravity is the pull toward the ground and is always pulling, even when you sit still.",
+    "to": "Gravity pulls nearby objects toward Earth, including objects sitting still."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.0.factVerified",
+    "from": false,
+    "to": true
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.0.aiExample",
+    "from": "FRICTION = FRRR, the sound of rubbing. GRAVITY = GROUND, the G pulls you to the ground.",
+    "to": "FRICTION: feel the grip of a shoe. GRAVITY: think of a dropped pencil going toward the ground."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.0.mapping",
+    "from": "Each hard word gets a sound or a smaller word that says what the force does: rubbing for friction, ground for gravity.",
+    "to": "The shoe reminds you that friction can provide grip as well as resist sliding. The pencil reminds you of gravity."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.0.scaffoldStarter",
+    "from": "Friction sounds like ____. Gravity has a G for ____.",
+    "to": "Friction helps ____. Gravity pulls ____."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.0.scaffoldSteps.0",
+    "from": "Say each word slowly and listen to its start.",
+    "to": "Name a touching-surface example."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.0.scaffoldSteps.1",
+    "from": "Match a sound or word to what the force does.",
+    "to": "Name a gravity example."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.0.scaffoldSteps.2",
+    "from": "Test it: which force stops the ball, and which drops the pencil?",
+    "to": "Explain what each force does."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.1.essentialFacts.0",
+    "from": "Balanced: two forces the same size in opposite directions; the motion does not change.",
+    "to": "Balanced forces on one object cancel overall."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.1.essentialFacts.1",
+    "from": "Unbalanced: one force is bigger; the motion changes.",
+    "to": "Balanced forces allow rest or constant speed in a straight line."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.1.essentialFacts.2",
+    "from": "Start, stop, speed up, or turn always means an unbalanced force.",
+    "to": "Unbalanced forces change speed or direction."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.1.factVerified",
+    "from": false,
+    "to": true
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.1.aiExample",
+    "from": "Picture a tug of war. Both teams pulling the same: the flag on the rope does not move (balanced). One team pulls harder: the flag slides toward them (unbalanced). The flag only moves when the pulls are not equal.",
+    "to": "A still book stays still when its forces balance. A moving cart keeps steady straight-line motion when its forces balance. Unequal horizontal forces change the cart motion."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.1.mapping",
+    "from": "The flag is the object, the two teams are the two forces, and 'the flag only moves when the pulls are not equal' is the rule in one picture.",
+    "to": "Watch one object. Balanced forces keep its motion the same. It may be still or moving steadily in a straight line."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.1.scaffoldStarter",
+    "from": "Picture ____. When both sides are equal, ____. When one side is bigger, ____.",
+    "to": "A still object with balanced forces ____. A moving object with balanced forces ____."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.1.scaffoldSteps.0",
+    "from": "Pick a picture with two sides pushing or pulling.",
+    "to": "Choose one object."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.1.scaffoldSteps.1",
+    "from": "Show the equal case and the unequal case.",
+    "to": "Describe its speed and direction."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.1.scaffoldSteps.2",
+    "from": "Say which one changes the motion.",
+    "to": "Explain what happens when its forces stop balancing."
+  },
+  {
+    "resourceId": "fm-memory",
+    "path": "data.cards.1.coachPrompts.0",
+    "from": "In your picture, what is the object that moves or stays still?",
+    "to": "Can your model show a moving object with balanced forces?"
+  },
+  {
+    "resourceId": "fm-sort",
+    "path": "data.items.1.content",
+    "from": "A soccer ball right after you kick it",
+    "to": "A soccer ball speeding up while a foot kicks it"
+  },
+  {
+    "resourceId": "fm-sort",
+    "path": "data.items.4.content",
+    "from": "A pencil falling off a desk",
+    "to": "A dropped pencil speeding up as it falls"
+  },
+  {
+    "resourceId": "fm-sort",
+    "path": "data.items.9.content",
+    "from": "A hockey puck gliding at a steady speed on smooth ice",
+    "to": "An ideal puck moving in a straight line at constant speed"
+  },
+  {
+    "resourceId": "fm-frames",
+    "path": "data.items.1.text",
+    "from": "The ball slowed down and stopped because of ____, the rubbing between the ____ and the ____.",
+    "to": "The rolling ball slowed down. Contact with the ____ and resistance from the ____ can explain this."
+  },
+  {
+    "resourceId": "fm-frames",
+    "path": "data.items.2.text",
+    "from": "On a smooth floor there is ____ friction, so the ball rolls ____.",
+    "to": "With the same ball and release, our ball rolled ____ on ____. I think this happened because ____."
+  },
+  {
+    "resourceId": "fm-quiz",
+    "path": "data.questions.0.question",
+    "from": "What is a force?",
+    "to": "Which answer gives the general meaning of a force?"
+  },
+  {
+    "resourceId": "fm-quiz",
+    "path": "data.questions.2.question",
+    "from": "A ball rolls across the floor and slowly stops, even though nobody touched it. Why?",
+    "to": "A ball rolls across a floor and slowly stops without another hand touching it. Which explanation fits?"
+  },
+  {
+    "resourceId": "fm-quiz",
+    "path": "data.questions.2.options.0",
+    "from": "The ball ran out of energy and got tired",
+    "to": "The ball uses up a push stored inside it"
+  },
+  {
+    "resourceId": "fm-quiz",
+    "path": "data.questions.2.options.1",
+    "from": "Gravity pulled it backward",
+    "to": "Gravity pulls the ball back along the floor"
+  },
+  {
+    "resourceId": "fm-quiz",
+    "path": "data.questions.2.options.2",
+    "from": "Friction with the floor pushed against its motion",
+    "to": "The floor and air can resist its motion"
+  },
+  {
+    "resourceId": "fm-quiz",
+    "path": "data.questions.2.options.3",
+    "from": "Balls always stop after a few seconds",
+    "to": "A ball must stop after a fixed time"
+  },
+  {
+    "resourceId": "fm-quiz",
+    "path": "data.questions.2.correctAnswer",
+    "from": "Friction with the floor pushed against its motion",
+    "to": "The floor and air can resist its motion"
+  },
+  {
+    "resourceId": "fm-quiz",
+    "path": "data.questions.3.question",
+    "from": "Two teams pull a rope with the same strength, and the rope does not move. What are the forces?",
+    "to": "Two equal opposite horizontal pulls act on a rope that remains still. How do these horizontal forces compare?"
+  },
+  {
+    "resourceId": "fm-quiz",
+    "path": "data.questions.5.question",
+    "from": "You are sitting still in a chair. Gravity is pulling you down. Explain why you are not falling, using the word balanced.",
+    "to": "A book stays still on a table. Gravity pulls it down. Explain why it does not fall, using the word balanced."
+  },
+  {
+    "resourceId": "fm-quiz",
+    "path": "data.questions.5.expectedAnswer",
+    "from": "The chair pushes up on me as hard as gravity pulls down. The two forces are the same size in opposite directions, so they are balanced and my motion does not change: I stay still.",
+    "to": "The table pushes up on the book and gravity pulls down. These forces act on the same book and balance, so its motion does not change."
+  },
+  {
+    "resourceId": "fm-quiz",
+    "path": "data.questions.6.question",
+    "from": "A ball rolls farther on the gym floor than on the carpet. Explain why, using the word friction.",
+    "to": "In our test, the same ball released the same way rolled farther on a firm floor than on carpet. Explain a possible reason using friction or resistance."
+  },
+  {
+    "resourceId": "fm-quiz",
+    "path": "data.questions.6.expectedAnswer",
+    "from": "The carpet has more friction, so it pushes against the ball's motion more and stops it sooner. The smooth gym floor has less friction, so the ball keeps rolling farther.",
+    "to": "The carpet may resist rolling more in this setup as the ball and surface deform. Contact effects, including friction, and air resistance can slow motion. Repeated controlled rolls help check the comparison."
+  },
+  {
+    "resourceId": "fm-quiz",
+    "path": "data.reflections.0.text",
+    "from": "Name one thing you saw move today. What pushed or pulled it?",
+    "to": "Name a change in motion you observed. What force might explain it?"
+  },
+  {
+    "resourceId": "fm-faq",
+    "path": "data.0.question",
+    "from": "If friction stops everything, how does a bike keep going? 🚲",
+    "to": "Can a bike keep moving while its forces are balanced?"
+  },
+  {
+    "resourceId": "fm-faq",
+    "path": "data.0.answer",
+    "from": "Because your legs keep pushing. As long as your push is bigger than friction, the forces are unbalanced. So the bike keeps moving. Stop pedaling and friction wins, slowly.",
+    "to": "Yes. A bike can move at a steady speed in a straight line. The force that drives it forward can balance the forces that resist its motion. If you stop pedaling, those forces tend to slow it down."
+  },
+  {
+    "resourceId": "fm-faq",
+    "path": "data.1.answer",
+    "from": "Ice has very little friction. Your shoes need friction to push against the ground. Without it, your push just slides away instead of moving you.",
+    "to": "Shoes need friction to grip the ground. Ice can give less grip, so the shoe slides. Friction also helps you walk. It does not just slow things down."
+  },
+  {
+    "resourceId": "fm-faq",
+    "path": "data.2.answer",
+    "from": "Yes, but the Moon's gravity is weaker than Earth's. That is why astronauts could jump higher and fell more slowly. Gravity is everywhere. It is just stronger near bigger things.",
+    "to": "Yes. The Moon pulls things toward it. Its pull at the surface is weaker than Earth’s. The pull depends on mass and distance. Size alone is not enough to tell."
+  },
+  {
+    "resourceId": "fm-faq",
+    "path": "data.3.answer",
+    "from": "Yes! Gravity pulls the pencil without touching it. A magnet can pull a paperclip across a gap. Most pushes and pulls you do use touching. Not all forces do.",
+    "to": "Yes! Gravity pulls a pencil down. A magnet can pull a paperclip across a gap. These forces can act without touch."
+  },
+  {
+    "resourceId": "fm-faq",
+    "path": "data.4.answer",
+    "from": "You did. The wall pushed back on you just as hard. The forces were balanced, so nothing moved. Balanced does not mean no forces. It means equal forces.",
+    "to": "Yes. Your hand pushes the wall. The wall pushes your hand back. These forces act on two different objects. Other forces on the wall, such as support from the building, balance your push on it."
+  },
+  {
+    "resourceId": "fm-faq",
+    "path": "data.5.answer",
+    "from": "It surprises everyone. Gravity pulls harder on heavy things. But heavy things are also harder to get moving. The two effects cancel out. Drop a big ball and a small ball together and they land together, unless air slows the light one.",
+    "to": "With no air in the way, things dropped together speed up at the same rate near Earth. In air, the air can slow their fall. Shape, size, and mass all play a part. Do not assume that all balls will land at once."
+  },
+  {
+    "resourceId": "fm-challenge",
+    "path": "data.brief.seedDirection",
+    "from": "Change only ONE thing at a time. The height of the ramp, OR the floor. Not both. Then roll three times for each setup, so one wobbly roll does not fool you.",
+    "to": "Change only the ramp height OR the floor surface. Use the same ball and ramp. Release from the same marked place without an extra push. Repeat three times for each setup and measure from the ramp bottom to the stopping place."
+  },
+  {
+    "resourceId": "fm-challenge",
+    "path": "data.brief.lockedLessonFacts.0",
+    "from": "A force is a push or a pull; you see what it does, not the force itself.",
+    "to": "A force is a push or a pull; forces can balance even when an object is moving."
+  },
+  {
+    "resourceId": "fm-challenge",
+    "path": "data.brief.lockedLessonFacts.1",
+    "from": "Friction is the rubbing between two surfaces; more friction stops a ball sooner and less friction lets it roll farther.",
+    "to": "Contact with the floor can resist rolling. Surface effects vary, so compare them with a controlled test."
+  },
+  {
+    "resourceId": "fm-challenge",
+    "path": "data.brief.lockedLessonFacts.2",
+    "from": "Gravity pulls things down, so a ball on a ramp rolls toward the bottom.",
+    "to": "Gravity pulls the ball toward Earth; on the ramp this can make it roll downhill."
+  },
+  {
+    "resourceId": "fm-challenge",
+    "path": "data.brief.lockedLessonFacts.3",
+    "from": "Forces follow patterns, so you can predict what will happen before it happens.",
+    "to": "Repeated observations can support an approximate prediction, not a guaranteed result."
+  },
+  {
+    "resourceId": "fm-challenge",
+    "path": "data.brief.openQuestions.0",
+    "from": "Which floor has the most friction, and how far will the ball go on it?",
+    "to": "Which surface produces the shortest rolling distance in our controlled setup?"
+  },
+  {
+    "resourceId": "fm-challenge",
+    "path": "data.brief.openQuestions.1",
+    "from": "How much farther does the ball go when the ramp is one book higher?",
+    "to": "How does raising the ramp affect the distances we measure?"
+  },
+  {
+    "resourceId": "fm-challenge",
+    "path": "data.brief.factVerified",
+    "from": false,
+    "to": true
+  },
+  {
+    "resourceId": "fm-challenge",
+    "path": "data.supports.parallelExample.context",
+    "from": "A second grader wanted to know if a toy car goes farther on the kitchen floor or the rug.",
+    "to": "A class compared a toy car on a firm floor and a rug."
+  },
+  {
+    "resourceId": "fm-challenge",
+    "path": "data.supports.parallelExample.move",
+    "from": "She used the same car, the same ramp, and the same push each time, rolled three times on each floor, and measured with a string. The kitchen floor won every time, so she predicted the hallway tile would also beat the rug, and it did.",
+    "to": "They used the same car and ramp, released from the same place without pushing, repeated each setup, and measured each stopping distance. They used the spread of results to predict another trial."
+  },
+  {
+    "resourceId": "fm-challenge",
+    "path": "data.supports.parallelExample.whyItHelps",
+    "from": "She changed one thing, measured instead of guessed, and then used the pattern to predict a new floor.",
+    "to": "They changed only the surface and checked how consistent their results were. A prediction can be useful without being exact."
+  },
+  {
+    "resourceId": "fm-challenge",
+    "path": "data.supports.frameChoices",
+    "from": [
+      "Change the floor: tile, carpet, rubber mat",
+      "Change the ramp height: one, two, three books",
+      "Change the ball: tennis ball versus a heavier ball",
+      "Predict the distance for a floor you have not tried"
+    ],
+    "to": [
+      "Change the floor surface while keeping the ramp fixed",
+      "Change ramp height while keeping the same floor and ball",
+      "Predict the next roll in a setup already measured"
+    ]
+  },
+  {
+    "resourceId": "fm-challenge",
+    "path": "data.supports.coachPrompts.1",
+    "from": "Which floor stopped the ball fastest? What force did that?",
+    "to": "Which surface gave the shortest distance? What other conditions might also affect the result?"
+  },
+  {
+    "resourceId": "fm-challenge",
+    "path": "data.coachHint",
+    "from": "One change, three rolls, then a guess. The pattern is only real if it keeps happening.",
+    "to": "One change, repeated measurements, then a prediction. Record variation and unexpected results too."
+  },
+  {
+    "resourceId": "fm-challenge",
+    "path": "data.sourceExcerpt",
+    "from": "Roll the same ball down the same ramp the same way and it goes about the same distance every time. Roll it from higher up and it goes farther, every time. Because forces follow patterns, you can predict what will happen before it happens.",
+    "to": "Release from the same place without an extra push. Repeat the test, compare the stopping places, and use the pattern to predict an approximate result."
+  }
+]

@@ -1,0 +1,32 @@
+{
+  "date": "2026-09-19",
+  "testsPassed": 114,
+  "testFiles": 4,
+  "requestBrowser": {
+    "manifestRetry": true,
+    "persistentInlineError": true,
+    "httpErrorNoDownload": true,
+    "invalidPackNotImported": true,
+    "duplicateClicksOneRequest": true,
+    "legacyLoaderNoFalseSuccess": true,
+    "rejectedAsyncImportReported": true,
+    "downloadJsonVerified": true,
+    "unmountCancelsFetch": true,
+    "pageErrors": [],
+    "scope": "Production catalog component with local intercepted fixtures and a recording import callback; no live user history changed."
+  },
+  "discoveryBrowser": {
+    "naturalPhraseSearch": true,
+    "combinedTitleAndTagSearch": true,
+    "gradeOneExcludesTen": true,
+    "keyboardClearFilters": true,
+    "clearReturnsFocusToSearch": true,
+    "noResultsRecovery": true,
+    "liveResultCount": true,
+    "mobileViewport": true,
+    "pageErrors": [],
+    "scope": "Production catalog component with intercepted local manifest; no live publication or resource downloads."
+  },
+  "mirrorsIdentical": true,
+  "published": false
+}

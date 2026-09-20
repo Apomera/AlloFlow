@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import vm from 'node:vm';
@@ -49,7 +49,7 @@ describe('SharedActivity extraction contract', () => {
       'AlloQuestionBoardPanel', 'SharedAssignmentActivityPanel', 'activeCredential',
       'activityUiMeta', 'assignmentCenterActivityStatus', 'buildAssignmentCenterCsv',
       'buildAssignmentCenterRows', 'buildAssignmentPackEncoded', 'credentialRoster', 'credentialSlotKey',
-      'credentialStoreWith', 'filterAssignmentCenterRows', 'nextSummaryOrder',
+      'credentialStoreWith', 'describeAssignmentDelivery', 'filterAssignmentCenterRows', 'nextSummaryOrder',
       'normalizeCredentialStore', 'normalizeRatingActivity',
     ].sort());
   });
@@ -129,6 +129,14 @@ describe('SharedActivity extraction contract', () => {
     expect(activityOnly.count).toBe(0);
     expect(JSON.parse(activityOnly.encoded).currentResourceId).toBeNull();
 
+    const explicitlyEmpty = await api.buildAssignmentPackEncoded({ includeSharedActivity: true, resourceIds: [] }, {
+      ...common,
+      sharedAssignmentActivity: { enabled: true, type: 'word_cloud', prompt: 'One word for today' },
+    });
+    expect(explicitlyEmpty.title).toBe('One word for today');
+    expect(explicitlyEmpty.count).toBe(0);
+    expect(JSON.parse(explicitlyEmpty.encoded).sharedActivities).toHaveLength(1);
+
     const empty = await api.buildAssignmentPackEncoded({}, {
       ...common,
       sharedAssignmentActivity: { enabled: false },
@@ -138,6 +146,28 @@ describe('SharedActivity extraction contract', () => {
       'Create or restore a teacher resource before making a homework link, or add a shared activity to send on its own.',
       'info',
     ]);
+  });
+
+  it.each([false, true])('refuses a missing saved selection instead of the current shared activity (includeSharedActivity=%s)', async includeSharedActivity => {
+    const { api } = runtime();
+    const selectedIds = ['deleted-reading'];
+    const dependencies = {
+      resolveAssignmentResources: vi.fn(() => []),
+      sharedAssignmentActivity: { enabled: true, type: 'word_cloud', prompt: 'Unrelated current activity' },
+      addToast: vi.fn(),
+      serializeResourceForStudentPack: vi.fn(item => item),
+      stripUndefined: value => value,
+      generateUUID: vi.fn(() => 'should-not-create'),
+      encodeAlloPack: vi.fn(async json => json),
+    };
+    const built = await api.buildAssignmentPackEncoded({ includeSharedActivity, resourceIds: selectedIds }, dependencies);
+    expect(built).toBeNull();
+    expect(dependencies.resolveAssignmentResources).toHaveBeenCalledWith(selectedIds);
+    expect(dependencies.addToast).toHaveBeenCalledWith(
+      'These selected resources are no longer available. Select the resources again in History before creating another link.', 'info');
+    expect(dependencies.serializeResourceForStudentPack).not.toHaveBeenCalled();
+    expect(dependencies.generateUUID).not.toHaveBeenCalled();
+    expect(dependencies.encodeAlloPack).not.toHaveBeenCalled();
   });
 
   it('preserves survey wire shaping and its fail-closed authoring checks', async () => {

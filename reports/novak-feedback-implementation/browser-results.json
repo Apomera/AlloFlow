@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "Change markings remain distinguishable without color",
+    "Diff on/off keeps both passage strings exact",
+    "Diff preference restored after reload",
+    "Original-pane audio receives exact source and can be stopped directly",
+    "Both view fits 390px and 320px widths",
+    "Original reader preserves exact CRLF and punctuation with additive glosses",
+    "Gloss visibility can be toggled",
+    "No browser runtime errors"
+  ],
+  "errors": [],
+  "scope": "Real reader module in isolated stateful fixture; audio and AI callbacks mocked."
+}

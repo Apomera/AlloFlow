@@ -1,0 +1,32 @@
+{
+  "viewports": [
+    {
+      "width": 1128,
+      "expandedTypes": 14,
+      "collapsedTypes": 4,
+      "overflow": false,
+      "clipped": false,
+      "visibleItems": 14,
+      "keyboardDisclosure": true
+    },
+    {
+      "width": 308,
+      "expandedTypes": 14,
+      "collapsedTypes": 4,
+      "overflow": false,
+      "clipped": false,
+      "visibleItems": 14,
+      "keyboardDisclosure": true
+    }
+  ],
+  "assertions": [
+    "Actual harvest records show exact per-type counts, points, and funds with distinct gathered produce",
+    "Four initial crop types expand to every harvested type through a keyboard-operable disclosure",
+    "Desktop and 320px cards fit with readable text and unchanged saved state",
+    "Annual beds lead to planting; full perennial beds stay in the growing loop",
+    "Missing financial details remain explicitly unrecorded, and malformed saved entries do not crash hidden history",
+    "Reduced-motion receipt, focus handoff, dismiss, and scoped accessibility pass"
+  ],
+  "errors": [],
+  "accessibility": []
+}

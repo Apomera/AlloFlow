@@ -15,6 +15,7 @@ async function main(){
   const app=`window.fixture=${JSON.stringify(fixture)};
   const params=new URLSearchParams(location.search); window.reviewTeacher=params.has('teacher');
   if(params.has('compact'))window.fixture.data.scope='compact';
+  if(params.has('plain'))window.fixture.data.plan.visualMode='none';
   if(params.has('student-framed'))window.fixture.data.agencyMode='student-framed';
   if(params.has('family'))window.fixture.data.family=params.get('family');
   if(params.has('verified'))window.fixture.data.brief.factVerified=true;

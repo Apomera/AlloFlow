@@ -1,0 +1,17 @@
+const fs=require('fs'),path=require('path'),vm=require('vm');
+let source=fs.readFileSync(path.join(__dirname,'ml_scene_shots.cjs'),'utf8');source=source.slice(0,source.indexOf('  const manifest = [];')).replace("const OUT = process.argv[2] || '.';","const OUT = path.resolve(process.argv[2] || '.');").replace('deviceScaleFactor: 2','deviceScaleFactor: 1');
+source=source.replace("const tool = read('stem_lab/stem_tool_machinelab.js');","const tool = read('stem_lab/stem_tool_machinelab.js').replace('build: buildSimpleMachineScene','build: function(THREE,S,m){buildSimpleMachineScene(THREE,S,m);window.__qaShop=S;}');");
+source+=String.raw`
+const checks=[],shots=[];let overflow=false;const theme={dark:DARK||CONTRAST,contrast:CONTRAST,band:BAND};const bay=pg.locator('.ml-shop-bay');
+async function mount(kind,extra={}){await pg.evaluate(([s,o])=>window.__mount(s,o),[S({view:'machines',bench:kind,shopStartOutline:true,shopFocusMechanism:true,shopMotionProgress:0.5,...extra}),theme]);await bay.scrollIntoViewIfNeeded();await pg.waitForFunction(()=>!!window.__qaShop.mlDemo.startLinks);}
+async function layout(kind){const state=await pg.evaluate(()=>{const h=document.querySelector('.ml-shop-hud'),b=document.querySelector('.ml-shop-bay'),r=h.getBoundingClientRect();return {width:innerWidth,clear:r.bottom+4<=b.getBoundingClientRect().top,overflow:document.documentElement.scrollWidth>innerWidth,clipped:Array.from(h.querySelectorAll('div')).filter(n=>n.scrollWidth>n.clientWidth+1).map(n=>({text:n.textContent,width:n.clientWidth,content:n.scrollWidth})),size:parseFloat(getComputedStyle(h.children[1]).fontSize),icon:h.querySelector('[data-ml-bench-preview]').getAttribute('data-ml-bench-preview')};});if(!state.clear||state.overflow||state.clipped.length||state.size<12||state.icon!==kind)errors.push('Header '+kind+': '+JSON.stringify(state));overflow=overflow||state.overflow;checks.push('Header layout '+kind+' at '+state.width);}
+try{
+ for(const width of [1150,720,600,390,320]){await pg.setViewportSize({width,height:1000});for(const kind of ['lever','pulley','windlass','ramp','wedge','screw']){
+  await mount(kind);await layout(kind);await pg.waitForFunction(()=>window.__qaShop.data.static&&window.__qaShop.data.motionProgress===0.5);
+  if(width===1150||kind==='windlass'){const name='header-'+kind+'-'+width;await pg.locator('.ml-shop-world').screenshot({path:path.join(OUT,name+'.png')});shots.push(name);}
+ }}
+ for(const width of [1150,320]){await pg.setViewportSize({width,height:1000});await mount('windlass');const full=pg.getByRole('button',{name:'Full stroke',exact:true});await full.focus();await full.press('Space');await bay.scrollIntoViewIfNeeded();await pg.waitForFunction(()=>window.__qaShop.data.static&&window.__qaShop.data.motionProgress===1);checks.push('Keyboard inspection at '+width);}
+ for(const pref of ['on','off']){await mount('windlass',{shopAnimating:true,shopDemoId:87,motionPref:pref,shopDemoDuration:6600});await layout('windlass');const text=await pg.locator('.ml-shop-hud').textContent();if(!text.includes(pref==='off'?'Still demonstration':'Watch in slow motion'))errors.push('Missing running header for motion '+pref);checks.push('Playback label with motion '+pref);}
+ fs.writeFileSync(path.join(OUT,'results.json'),JSON.stringify({errors,overflow,shots,checks},null,2));if(errors.length||overflow)process.exitCode=1;
+}finally{await b.close();}
+})();`;vm.runInThisContext('(function(require){'+source+'\n})',{filename:__filename})(require);

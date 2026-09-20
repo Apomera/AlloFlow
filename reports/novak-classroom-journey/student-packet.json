@@ -1,0 +1,444 @@
+{
+  "v": 1,
+  "kind": "assignment",
+  "title": "Macbeth — prepared adapted sample",
+  "createdAt": "2026-09-20T03:06:59.622Z",
+  "expiresAt": "2026-09-27T03:06:59.622Z",
+  "currentResourceId": "prepared-adapted-macbeth",
+  "resources": [
+    {
+      "id": "prepared-adapted-macbeth",
+      "type": "simplified",
+      "title": "Macbeth — prepared adapted sample",
+      "data": "ACT I\n\nSCENE I. Open ground.\n\n[Thunder and lightning. Three witches enter.]\n\nFIRST WITCH. When will we meet again?\n\nSECOND WITCH. When the noisy battle is over.\n\nTHIRD WITCH. Before sunset.\n\nFIRST WITCH. Where?\n\nSECOND WITCH. On the open land.\n\nTHIRD WITCH. We will meet Macbeth there.\n\nFIRST WITCH. I am coming, Graymalkin!\n\nSECOND WITCH. Paddock is calling.\n\nTHIRD WITCH. Right away.\n\nALL. Good seems bad, and bad seems good. Let us fly through the fog and dirty air.\n\n[They leave.]",
+      "dataEncoding": "text/v1",
+      "sourceSnapshot": {
+        "schemaVersion": 1,
+        "text": "ACT I\n\nSCENE I. An open Place.\n\nThunder and Lightning. Enter three Witches.\n\nFIRST WITCH.\nWhen shall we three meet again?\nIn thunder, lightning, or in rain?\n\nSECOND WITCH.\nWhen the hurlyburly’s done,\nWhen the battle’s lost and won.\n\nTHIRD WITCH. That will be ere the set of sun.\n\nFIRST WITCH. Where the place?\n\nSECOND WITCH. Upon the heath.\n\nTHIRD WITCH. There to meet with Macbeth.\n\nFIRST WITCH. I come, Graymalkin!\n\nSECOND WITCH. Paddock calls.\n\nTHIRD WITCH. Anon.\n\nALL.\nFair is foul, and foul is fair:\nHover through the fog and filthy air.\n\n[Exeunt.]",
+        "language": "English",
+        "format": "plain-text",
+        "sourceArtifactId": null,
+        "capturedAt": "2026-09-20T03:06:55.198Z",
+        "fingerprint": "source-utf16-v1-603b6f33-553",
+        "provenance": {
+          "selection": "explicit-input",
+          "origin": "selected-source",
+          "note": ""
+        }
+      },
+      "sourceFamilyId": "input-macbeth-lesson-source-utf16-v1-603b6f33-553",
+      "sourceInstructionalText": {
+        "schemaVersion": 1,
+        "role": "primary",
+        "form": "original",
+        "sourceArtifactId": null,
+        "primaryArtifactId": null,
+        "designationSource": "workflow-default",
+        "replacementAuthorization": {
+          "authorized": false,
+          "source": "none"
+        },
+        "complexity": {
+          "requestedGrade": "5th Grade",
+          "calibrationTarget": "",
+          "measuredGrade": null,
+          "method": "",
+          "status": "unavailable",
+          "contentFingerprint": "",
+          "measuredAt": "",
+          "language": "English",
+          "measurementScope": "",
+          "measurementVersion": "",
+          "extractionVersion": "",
+          "rawFleschKincaidGrade": null,
+          "displayFleschKincaidGrade": null,
+          "averageSentenceLength": null,
+          "averageSyllablesPerWord": null,
+          "bodyCounts": null,
+          "artifactCharacterCount": null,
+          "bodyCharacterCount": null,
+          "artifactFingerprint": "",
+          "bodyFingerprint": "",
+          "legacyArtifactMetrics": null
+        }
+      },
+      "unitId": "macbeth-lesson",
+      "instructionalText": {
+        "schemaVersion": 1,
+        "role": "supplemental",
+        "form": "adapted",
+        "sourceArtifactId": null,
+        "primaryArtifactId": null,
+        "designationSource": "workflow-default",
+        "replacementAuthorization": {
+          "authorized": false,
+          "source": "none"
+        },
+        "complexity": {
+          "requestedGrade": "",
+          "calibrationTarget": "",
+          "measuredGrade": null,
+          "method": "",
+          "status": "unavailable",
+          "contentFingerprint": "",
+          "measuredAt": "",
+          "language": "English",
+          "measurementScope": "",
+          "measurementVersion": "",
+          "extractionVersion": "",
+          "rawFleschKincaidGrade": null,
+          "displayFleschKincaidGrade": null,
+          "averageSentenceLength": null,
+          "averageSyllablesPerWord": null,
+          "bodyCounts": null,
+          "artifactCharacterCount": null,
+          "bodyCharacterCount": null,
+          "artifactFingerprint": "",
+          "bodyFingerprint": "",
+          "legacyArtifactMetrics": null
+        }
+      },
+      "config": {
+        "sourceSnapshot": {
+          "schemaVersion": 1,
+          "text": "ACT I\n\nSCENE I. An open Place.\n\nThunder and Lightning. Enter three Witches.\n\nFIRST WITCH.\nWhen shall we three meet again?\nIn thunder, lightning, or in rain?\n\nSECOND WITCH.\nWhen the hurlyburly’s done,\nWhen the battle’s lost and won.\n\nTHIRD WITCH. That will be ere the set of sun.\n\nFIRST WITCH. Where the place?\n\nSECOND WITCH. Upon the heath.\n\nTHIRD WITCH. There to meet with Macbeth.\n\nFIRST WITCH. I come, Graymalkin!\n\nSECOND WITCH. Paddock calls.\n\nTHIRD WITCH. Anon.\n\nALL.\nFair is foul, and foul is fair:\nHover through the fog and filthy air.\n\n[Exeunt.]",
+          "language": "English",
+          "format": "plain-text",
+          "sourceArtifactId": null,
+          "capturedAt": "2026-09-20T03:06:55.198Z",
+          "fingerprint": "source-utf16-v1-603b6f33-553",
+          "provenance": {
+            "selection": "explicit-input",
+            "origin": "selected-source",
+            "note": ""
+          }
+        },
+        "sourceArtifactId": "original-mu98jcde-nmnwxn",
+        "primaryArtifactId": "original-mu98jcde-nmnwxn",
+        "sourceInstructionalText": {
+          "schemaVersion": 1,
+          "role": "primary",
+          "form": "original",
+          "sourceArtifactId": null,
+          "primaryArtifactId": null,
+          "designationSource": "workflow-default",
+          "replacementAuthorization": {
+            "authorized": false,
+            "source": "none"
+          },
+          "complexity": {
+            "requestedGrade": "5th Grade",
+            "calibrationTarget": "",
+            "measuredGrade": null,
+            "method": "",
+            "status": "unavailable",
+            "contentFingerprint": "",
+            "measuredAt": "",
+            "language": "English",
+            "measurementScope": "",
+            "measurementVersion": "",
+            "extractionVersion": "",
+            "rawFleschKincaidGrade": null,
+            "displayFleschKincaidGrade": null,
+            "averageSentenceLength": null,
+            "averageSyllablesPerWord": null,
+            "bodyCounts": null,
+            "artifactCharacterCount": null,
+            "bodyCharacterCount": null,
+            "artifactFingerprint": "",
+            "bodyFingerprint": "",
+            "legacyArtifactMetrics": null
+          }
+        },
+        "sourceFamilyId": "input-macbeth-lesson-source-utf16-v1-603b6f33-553",
+        "unitId": "macbeth-lesson",
+        "inputArtifactId": "original-mu98jcde-nmnwxn",
+        "instructionalText": {
+          "schemaVersion": 1,
+          "role": "supplemental",
+          "form": "adapted",
+          "sourceArtifactId": null,
+          "primaryArtifactId": null,
+          "designationSource": "workflow-default",
+          "replacementAuthorization": {
+            "authorized": false,
+            "source": "none"
+          },
+          "complexity": {
+            "requestedGrade": "",
+            "calibrationTarget": "",
+            "measuredGrade": null,
+            "method": "",
+            "status": "unavailable",
+            "contentFingerprint": "",
+            "measuredAt": "",
+            "language": "English",
+            "measurementScope": "",
+            "measurementVersion": "",
+            "extractionVersion": "",
+            "rawFleschKincaidGrade": null,
+            "displayFleschKincaidGrade": null,
+            "averageSentenceLength": null,
+            "averageSyllablesPerWord": null,
+            "bodyCounts": null,
+            "artifactCharacterCount": null,
+            "bodyCharacterCount": null,
+            "artifactFingerprint": "",
+            "bodyFingerprint": "",
+            "legacyArtifactMetrics": null
+          }
+        },
+        "language": "English",
+        "grade": "5th Grade"
+      }
+    },
+    {
+      "id": "original-mu98jcde-nmnwxn",
+      "unitId": "macbeth-lesson",
+      "type": "simplified",
+      "title": "Macbeth, Act I, Scene I — Original with supports",
+      "meta": "",
+      "timestamp": "2026-09-20T03:06:55.203Z",
+      "data": "ACT I\n\nSCENE I. An open Place.\n\nThunder and Lightning. Enter three Witches.\n\nFIRST WITCH.\nWhen shall we three meet again?\nIn thunder, lightning, or in rain?\n\nSECOND WITCH.\nWhen the hurlyburly’s done,\nWhen the battle’s lost and won.\n\nTHIRD WITCH. That will be ere the set of sun.\n\nFIRST WITCH. Where the place?\n\nSECOND WITCH. Upon the heath.\n\nTHIRD WITCH. There to meet with Macbeth.\n\nFIRST WITCH. I come, Graymalkin!\n\nSECOND WITCH. Paddock calls.\n\nTHIRD WITCH. Anon.\n\nALL.\nFair is foul, and foul is fair:\nHover through the fog and filthy air.\n\n[Exeunt.]",
+      "dataEncoding": "text/v1",
+      "sourceSnapshot": {
+        "schemaVersion": 1,
+        "text": "ACT I\n\nSCENE I. An open Place.\n\nThunder and Lightning. Enter three Witches.\n\nFIRST WITCH.\nWhen shall we three meet again?\nIn thunder, lightning, or in rain?\n\nSECOND WITCH.\nWhen the hurlyburly’s done,\nWhen the battle’s lost and won.\n\nTHIRD WITCH. That will be ere the set of sun.\n\nFIRST WITCH. Where the place?\n\nSECOND WITCH. Upon the heath.\n\nTHIRD WITCH. There to meet with Macbeth.\n\nFIRST WITCH. I come, Graymalkin!\n\nSECOND WITCH. Paddock calls.\n\nTHIRD WITCH. Anon.\n\nALL.\nFair is foul, and foul is fair:\nHover through the fog and filthy air.\n\n[Exeunt.]",
+        "language": "English",
+        "format": "plain-text",
+        "sourceArtifactId": null,
+        "capturedAt": "2026-09-20T03:06:55.198Z",
+        "fingerprint": "source-utf16-v1-603b6f33-553",
+        "provenance": {
+          "selection": "explicit-input",
+          "origin": "selected-source",
+          "note": ""
+        }
+      },
+      "sourceInstructionalText": {
+        "schemaVersion": 1,
+        "role": "primary",
+        "form": "original",
+        "sourceArtifactId": null,
+        "primaryArtifactId": null,
+        "designationSource": "workflow-default",
+        "replacementAuthorization": {
+          "authorized": false,
+          "source": "none"
+        },
+        "complexity": {
+          "requestedGrade": "5th Grade",
+          "calibrationTarget": "",
+          "measuredGrade": null,
+          "method": "",
+          "status": "unavailable",
+          "contentFingerprint": "",
+          "measuredAt": "",
+          "language": "English",
+          "measurementScope": "",
+          "measurementVersion": "",
+          "extractionVersion": "",
+          "rawFleschKincaidGrade": null,
+          "displayFleschKincaidGrade": null,
+          "averageSentenceLength": null,
+          "averageSyllablesPerWord": null,
+          "bodyCounts": null,
+          "artifactCharacterCount": null,
+          "bodyCharacterCount": null,
+          "artifactFingerprint": "",
+          "bodyFingerprint": "",
+          "legacyArtifactMetrics": null
+        }
+      },
+      "sourceFamilyId": "input-macbeth-lesson-source-utf16-v1-603b6f33-553",
+      "readingSupports": {
+        "schemaVersion": 1,
+        "sourceFingerprint": "source-utf16-v1-603b6f33-553",
+        "annotations": [
+          {
+            "id": "gloss-181-193",
+            "kind": "gloss",
+            "start": 181,
+            "end": 193,
+            "quote": "hurlyburly’s",
+            "text": "the noisy confusion and turmoil of the battle",
+            "language": "English",
+            "origin": "generated",
+            "pinned": false,
+            "priority": "essential"
+          },
+          {
+            "id": "gloss-334-339",
+            "kind": "gloss",
+            "start": 334,
+            "end": 339,
+            "quote": "heath",
+            "text": "open, uncultivated land <teacher wording>",
+            "language": "English",
+            "origin": "educator",
+            "pinned": true,
+            "priority": "essential"
+          },
+          {
+            "id": "gloss-405-415",
+            "kind": "gloss",
+            "start": 405,
+            "end": 415,
+            "quote": "Graymalkin",
+            "text": "the first witch’s cat-like familiar, or spirit companion",
+            "language": "English",
+            "origin": "generated",
+            "pinned": false,
+            "priority": "essential"
+          },
+          {
+            "id": "gloss-461-465",
+            "kind": "gloss",
+            "start": 461,
+            "end": 465,
+            "quote": "Anon",
+            "text": "right away; the witch answers a call",
+            "language": "English",
+            "origin": "generated",
+            "pinned": false,
+            "priority": "essential"
+          }
+        ],
+        "suppressedAnnotations": [
+          {
+            "start": 432,
+            "end": 439,
+            "quote": "Paddock"
+          }
+        ],
+        "rejectedCount": 0,
+        "coveredRanges": [
+          {
+            "start": 0,
+            "end": 553
+          }
+        ],
+        "skippedRanges": [],
+        "status": "complete",
+        "sourceFamilyId": "input-macbeth-lesson-source-utf16-v1-603b6f33-553",
+        "unitId": "macbeth-lesson",
+        "ownerArtifactId": "original-mu98jcde-nmnwxn"
+      },
+      "config": {
+        "grade": "5th Grade",
+        "language": "English",
+        "instructionalText": {
+          "schemaVersion": 1,
+          "role": "primary",
+          "form": "same-text-supported",
+          "sourceArtifactId": null,
+          "primaryArtifactId": null,
+          "designationSource": "workflow-default",
+          "replacementAuthorization": {
+            "authorized": false,
+            "source": "none"
+          },
+          "complexity": {
+            "requestedGrade": "5th Grade",
+            "calibrationTarget": "",
+            "measuredGrade": null,
+            "method": "",
+            "status": "unavailable",
+            "contentFingerprint": "",
+            "measuredAt": "",
+            "language": "English",
+            "measurementScope": "",
+            "measurementVersion": "",
+            "extractionVersion": "",
+            "rawFleschKincaidGrade": null,
+            "displayFleschKincaidGrade": null,
+            "averageSentenceLength": null,
+            "averageSyllablesPerWord": null,
+            "bodyCounts": null,
+            "artifactCharacterCount": null,
+            "bodyCharacterCount": null,
+            "artifactFingerprint": "",
+            "bodyFingerprint": "",
+            "legacyArtifactMetrics": null
+          }
+        },
+        "sourceInstructionalText": {
+          "schemaVersion": 1,
+          "role": "primary",
+          "form": "original",
+          "sourceArtifactId": null,
+          "primaryArtifactId": null,
+          "designationSource": "workflow-default",
+          "replacementAuthorization": {
+            "authorized": false,
+            "source": "none"
+          },
+          "complexity": {
+            "requestedGrade": "5th Grade",
+            "calibrationTarget": "",
+            "measuredGrade": null,
+            "method": "",
+            "status": "unavailable",
+            "contentFingerprint": "",
+            "measuredAt": "",
+            "language": "English",
+            "measurementScope": "",
+            "measurementVersion": "",
+            "extractionVersion": "",
+            "rawFleschKincaidGrade": null,
+            "displayFleschKincaidGrade": null,
+            "averageSentenceLength": null,
+            "averageSyllablesPerWord": null,
+            "bodyCounts": null,
+            "artifactCharacterCount": null,
+            "bodyCharacterCount": null,
+            "artifactFingerprint": "",
+            "bodyFingerprint": "",
+            "legacyArtifactMetrics": null
+          }
+        }
+      },
+      "instructionalText": {
+        "schemaVersion": 1,
+        "role": "primary",
+        "form": "same-text-supported",
+        "sourceArtifactId": null,
+        "primaryArtifactId": null,
+        "designationSource": "workflow-default",
+        "replacementAuthorization": {
+          "authorized": false,
+          "source": "none"
+        },
+        "complexity": {
+          "requestedGrade": "5th Grade",
+          "calibrationTarget": "",
+          "measuredGrade": null,
+          "method": "",
+          "status": "unavailable",
+          "contentFingerprint": "",
+          "measuredAt": "",
+          "language": "English",
+          "measurementScope": "",
+          "measurementVersion": "",
+          "extractionVersion": "",
+          "rawFleschKincaidGrade": null,
+          "displayFleschKincaidGrade": null,
+          "averageSentenceLength": null,
+          "averageSyllablesPerWord": null,
+          "bodyCounts": null,
+          "artifactCharacterCount": null,
+          "bodyCharacterCount": null,
+          "artifactFingerprint": "",
+          "bodyFingerprint": "",
+          "legacyArtifactMetrics": null
+        }
+      }
+    }
+  ],
+  "aiPolicy": {
+    "studentAi": "off",
+    "defaultStudentAi": "off",
+    "teacherPrepared": true
+  },
+  "workStory": false
+}

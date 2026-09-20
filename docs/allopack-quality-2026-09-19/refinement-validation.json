@@ -1,0 +1,57 @@
+{
+  "date": "2026-09-19",
+  "status": "local-priorities-completed",
+  "packs": 105,
+  "originalEditions": 62,
+  "illustratedEditions": 43,
+  "resources": 1245,
+  "embeddedImagePlacements": 1404,
+  "missingAlt": 0,
+  "illustratedResourceImageGaps": 0,
+  "heuristicFlags": {
+    "before": 88,
+    "after": 1,
+    "remaining": "Intentional singleton animal-model category in Cell Structure; directions explain unequal groups."
+  },
+  "import": {
+    "passed": 105,
+    "failed": 0
+  },
+  "reviewProvenance": {
+    "inheritedExactMatchAttributions": 33,
+    "verifiedFlags": 193,
+    "unverifiedFlags": 160,
+    "note": "Inherited attribution preserves a source author statement; it is not a new human verification."
+  },
+  "audit": {
+    "exactSourceToIllustratedRecords": 2261,
+    "outlinesWithNativeSelector": 25
+  },
+  "tests": {
+    "fullRun": {
+      "files": 57,
+      "passed": 1146,
+      "failed": 1,
+      "log": "scratch/allopack-final-full-tests.log",
+      "failure": "Energy audit expected 11 historical records; cumulative record now has 14. Corrected to match the audited metadata while retaining minimum coverage."
+    },
+    "finalRerun": {
+      "files": 2,
+      "passed": 11,
+      "failed": 0,
+      "log": "scratch/allopack-final-rerun.log"
+    },
+    "uniquePassingTestsAcrossFinalRunAndRerun": 1151,
+    "mirroredModules": 4
+  },
+  "publication": {
+    "performed": false,
+    "publishedCatalogEntries": 43,
+    "catalogEntryChangesRequired": false
+  },
+  "remainingReview": [
+    "Educator review of revised lesson wording and source claims.",
+    "Fresh visual review and signed-in live community-library test.",
+    "Water Cycle illustrated pilot predates the source memory-aid and applied-challenge additions. Review their groundwater/infiltration wording before porting them; do not blindly copy the existing verified flags."
+  ]
+}

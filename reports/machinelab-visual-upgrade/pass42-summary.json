@@ -1,0 +1,28 @@
+{
+  "pass": 42,
+  "uiTests": 255,
+  "browserChecks": 600,
+  "themes": {
+    "light": {
+      "checks": 200,
+      "screenshots": 13,
+      "errors": [],
+      "overflow": false
+    },
+    "dark": {
+      "checks": 200,
+      "screenshots": 13,
+      "errors": [],
+      "overflow": false
+    },
+    "contrast-final": {
+      "checks": 200,
+      "screenshots": 13,
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "sourceMirrorIdentical": true,
+  "syntaxValid": true,
+  "localOnly": true
+}

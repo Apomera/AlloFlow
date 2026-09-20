@@ -1,0 +1,32 @@
+{
+  "verifiedAt": "2026-09-19T19:40:33.661Z",
+  "feature": "Mechanism studio visual refinement",
+  "testsPassed": 447,
+  "testFiles": 19,
+  "accessibilityAudits": 67,
+  "auditBreakdown": {
+    "visual": 15,
+    "mechanisms": 24,
+    "inspection": 28
+  },
+  "pageErrors": 0,
+  "consoleErrors": 0,
+  "mobileWidths": [
+    390,
+    320
+  ],
+  "mobileOverflow": false,
+  "visualReview": [
+    "mechanism-solarPv.png",
+    "visual-studio-gallery.png",
+    "visual-studio-workbench.png",
+    "visual-studio-workbench-dark.png",
+    "visual-studio-measurements.png",
+    "visual-studio-scene-320.png"
+  ],
+  "sha256": "fb8ce9d53d0dc41659e69c79c636781137dd4edd1884444fb4c9ebe3cf964841",
+  "sourceMirrorIdentical": true,
+  "previewMatchesSource": true,
+  "preview": "http://127.0.0.1:8790/",
+  "validationScope": "Isolated local React and Three.js host; no deployed full-application check."
+}

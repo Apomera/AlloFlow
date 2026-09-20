@@ -763,3 +763,101 @@ describe('the card during a run', () => {
     expect(host.querySelector('[data-testid="bp-stop-run"]')).toBeNull();
   });
 });
+
+describe('Blueprint completion guidance', () => {
+  const CFG = { resourcePlan: [
+    { tool: 'analysis', uiId: 'a' },
+    { tool: 'glossary', uiId: 'g' },
+    { tool: 'quiz', uiId: 'q' },
+  ] };
+  const completedRows = () => Object.fromEntries(CFG.resourcePlan.map(item =>
+    [item.uiId, { uiId: item.uiId, tool: item.tool, status: 'landed', resourceId: 'res-' + item.uiId }]));
+  const mountOutcome = (run, extra = {}) => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    act(() => root.render(React.createElement(Card, {
+      config: CFG, run, onUpdate: vi.fn(), onConfirm: vi.fn(), onCancel: vi.fn(), ...extra,
+    })));
+    return host;
+  };
+  const outcome = () => host.querySelector('[data-testid="bp-run-outcome"]');
+  const generate = () => host.querySelector('[data-help-key="blueprint_generate_pack_btn"]');
+
+  it('keeps initial review quiet and labels the first generation accurately', () => {
+    mountOutcome(null);
+    expect(outcome()).toBeNull();
+    expect(generate().textContent.trim()).toBe('Generate resources');
+  });
+
+  it('summarizes completion and explicitly labels another run', () => {
+    const onConfirm = vi.fn();
+    mountOutcome({ done: true, status: 'completed', rows: completedRows() }, { onConfirm });
+    expect(outcome().textContent).toContain('3 of 3 steps complete.');
+    expect(outcome().textContent).toContain('Use Preview');
+    expect(outcome().getAttribute('role')).toBe('status');
+    expect(generate().textContent.trim()).toBe('Run plan again');
+    expect(generate().getAttribute('aria-label')).toBe('Run plan again');
+    act(() => generate().dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['partial', 'failed', 'interrupted', 'stopped'])('keeps recovery guidance visible after a %s run', status => {
+    const runRows = completedRows();
+    runRows.g.status = 'failed';
+    runRows.q.status = 'interrupted';
+    mountOutcome({ done: true, status, rows: runRows });
+    expect(outcome().textContent).toContain('1 of 3 steps complete.');
+    expect(outcome().textContent).toContain('Use Rebuild');
+    expect(outcome().textContent).toContain('Finished resources are kept.');
+  });
+
+  it('does not claim complete success when a whole resource or one audience version is missing', () => {
+    const runRows = completedRows();
+    runRows.a.resourceMissing = true;
+    runRows.g.resourceIds = ['res-g', 'res-g-spanish'];
+    runRows.g.missingResourceIds = ['res-g-spanish'];
+    mountOutcome({ done: true, status: 'completed', rows: runRows });
+    expect(outcome().textContent).toContain('1 of 3 steps complete.');
+    expect(outcome().textContent).toContain('Use Rebuild');
+  });
+
+  it('does not count a partially successful audience matrix as a complete step', () => {
+    const runRows = completedRows();
+    runRows.g.variantResults = [
+      { status: 'landed', resourceId: 'res-g' },
+      { status: 'failed', failReason: 'private provider detail' },
+    ];
+    mountOutcome({ done: true, rows: runRows });
+    expect(outcome().textContent).toContain('2 of 3 steps complete.');
+    expect(outcome().textContent).not.toContain('private provider detail');
+  });
+
+  it('uses current row outcomes after a successful individual rebuild', () => {
+    mountOutcome({ done: true, status: 'partial', rows: completedRows() });
+    expect(outcome().textContent).toContain('3 of 3 steps complete.');
+    expect(outcome().textContent).toContain('Use Preview');
+    expect(outcome().textContent).not.toContain('unfinished');
+  });
+
+  it('hides the old completion summary while a rebuild is running', () => {
+    mountOutcome({ done: true, rows: completedRows() }, { isRunning: true });
+    expect(outcome()).toBeNull();
+    expect(generate().disabled).toBe(true);
+    expect(generate().textContent.trim()).toBe('Building...');
+  });
+
+  it('keeps loading recovery ahead of ordinary rerun guidance', () => {
+    mountOutcome({ done: true, status: 'waiting', retryable: true,
+      reasonCode: 'generation-matrix-unavailable', rows: completedRows() });
+    expect(outcome()).toBeNull();
+    expect(generate().textContent.trim()).toBe('Retry generation planning');
+  });
+
+  it('explains the next step when no resources are selected', () => {
+    mountOutcome(null, { config: { resourcePlan: [] } });
+    expect(host.querySelector('[data-testid="bp-empty-plan"]').textContent)
+      .toContain('Choose Edit plan, then Add step');
+    expect(generate().disabled).toBe(true);
+  });
+});

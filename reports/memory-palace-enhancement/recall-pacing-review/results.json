@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "manualQuiz": true,
+  "manualSelfCheck": true,
+  "manualFinalStop": true,
+  "keyboardToggle": true,
+  "noSceneRemount": true,
+  "preferenceRetained": true,
+  "automaticResume": true,
+  "widths": [
+    1280,
+    390,
+    320
+  ],
+  "pageErrors": []
+}

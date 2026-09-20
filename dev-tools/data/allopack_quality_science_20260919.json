@@ -1,0 +1,152 @@
+{
+  "body_systems_grade6": {
+    "reading": "## The Relay Race\n\nA body **system** is a group of parts that work together. Several systems keep a muscle cell working. We can compare their shared jobs to a relay. But the systems work at the same time, not in separate turns.\n\nThe **respiratory** system moves air into the lungs. Tiny air sacs called alveoli have thin walls. **Oxygen** passes through these walls into nearby blood. Carbon dioxide moves the other way and leaves when we breathe out. Moving air and moving gases across a wall are different jobs.\n\nThe **circulatory** system moves blood. The heart is an **organ** that pumps it. Blood goes from the lungs to the left side of the heart, then toward body cells. It returns to the right side and goes to the lungs again. A blood **vessel** is a tube. Arteries carry blood away from the heart. Veins carry it toward the heart. These names tell direction, not oxygen level. All human blood is red; blue in a diagram is a color code.\n\nThe **digestive** system breaks food into smaller parts. A **nutrient** is a substance the body needs. Most nutrients enter the body through the small intestine. Glucose enters blood; many dietary fats first enter lymph, then reach blood. Some nutrients supply energy; others help build or run the body. Lungs supply oxygen, not food.\n\nInside cells, one process uses oxygen and glucose to make ATP, which transfers energy for cell work. This process is called aerobic cellular respiration. It also makes carbon dioxide and water. Cells have other ways to make some ATP without oxygen.\n\nThe **nervous** system helps **coordinate** these jobs. Nerves send signals for movement and other tasks. Some quick reflexes use circuits in the spinal cord before we become aware of them. Do not test a reflex with a hot object.\n\nThe **skeletal** system supports the body and protects organs. A typical adult has about 206 bones, with some variation. Tendons join skeletal muscles to bones. The **muscular** system moves the body as muscles pull. Other muscles move food through organs or pump blood.\n\nDuring activity, breathing and heart rate often rise. Nerves, hormones and local signals help match supply to need. Pacemaker cells in the heart start its beat; nerves adjust the rate. These six systems are part of a larger body with other linked systems too.",
+    "glossary": {
+      "Nutrient": "A substance the body needs to work, grow or repair itself. Some provide energy; others have different jobs."
+    },
+    "faq": [
+      "Tiny vessels bring blood close to cells. Their thin walls let gases, nutrients and wastes pass between blood and tissues.",
+      "Speeds vary. A quick reflex can use a circuit in the spinal cord before you become aware of it. Signals also reach the brain. Never test this with a hot object.",
+      "Nerves and hormones can raise heart rate when you sense a threat. This helps prepare the body to act. The response can start before you choose what to do.",
+      "Some jobs slow down during sleep, but they do not all stop. Your heart still pumps and your lungs still move air.",
+      "A typical adult has about 206 bones. The count can vary. Some bones join as children grow, so age and how we count the parts matter.",
+      "The systems depend on one another. People can have different organs and abilities, sometimes with medical support. Study how the parts connect rather than ranking them."
+    ],
+    "memory": [
+      [
+        "R-C-D-N-S-M: Runners Carry Dinner, Nerves Say Move. Use the letters to name the six systems.",
+        "The letters are a list, not a route for food. Lungs take in oxygen. The gut takes in nutrients. Blood carries both to cells."
+      ],
+      [
+        "Trace oxygen: lung air sacs → blood → left heart → body cells. It crosses thin walls at the start and end.",
+        "Point, draw or say each step. Oxygen travels in blood, not as air bubbles. The cell uses it in aerobic respiration."
+      ],
+      [
+        "Working muscles use more energy. Breathing and blood flow can change to help meet that need.",
+        "Nerves, hormones and local signals help the systems work together. The arrows do not show a fixed order of events."
+      ]
+    ]
+  },
+  "chemical_reactions_grade8": {
+    "reading": "## Did Anything New Actually Form?\n\nA liquid fizzes. Did a reaction happen? Perhaps. Bubbles can also come from boiling or gas escaping from a drink. They show that gas is present, but not where it came from.\n\nA chemical **reaction** forms new substances. Atoms rearrange and bonds change. **Reactants** are used in the change; **products** form. Some reactant may be left over. Some product may already be in the starting mixture.\n\nA pure **substance** has a set chemical makeup. Its **properties**, such as density, help us study it. Conditions matter: the same material can have different density at a different temperature. A mixture can also behave differently from a pure substance.\n\nIn a **physical** change, the chemical identity stays the same. Boiling water is still water. When ordinary sugar dissolves in water, its molecules spread out but remain sugar. Getting the sugar back supports that account. Yet “can it be reversed?” is not a sure test. Some chemical reactions can go in both directions too.\n\nUseful **indicators** include bubbles, color change, a change in temperature, light, and a solid appearing. A **precipitate** is a solid that separates from a solution. A reaction can form a new solid that does not dissolve.\n\nLook for other explanations as well. Adding water can make a colored solution paler. Some physical mixing can warm or cool materials. A hot object may glow. Particles already in a liquid can settle. Crystals may appear as water leaves, without a new substance forming.\n\nUse several observations and suitable tests. Compare materials under matched conditions. Does the evidence identify a new substance? Could temperature, concentration or an impurity explain the difference instead?\n\nNow track the matter. When wood burns, it combines with oxygen from the air. Gases and ash form. We cannot compare only the wood and ash: that leaves out the oxygen that came in and gases that left.\n\nIn an ordinary chemical reaction, **atoms** of each element are **conserved**. They are not created or lost. In a closed system, no matter enters or leaves. Its mass stays the same at the precision of classroom tools. Count the same apparatus and all materials before and after. Check for leaks and measurement error if results differ.\n\nOur colored tokens model atoms. The red and blue pairs are an invented counting example, not a real reaction or a recipe. The drawn boxes mark system boundaries, not containers to seal and heat. Use the model to ask where every atom went.",
+    "glossary": {
+      "Reactant": "A substance used up in a reaction. Some may be left over.",
+      "Product": "A substance formed in a reaction. Some may already be in the mixture.",
+      "Substance": "A material with a set chemical makeup and properties we can study under known conditions.",
+      "Property": "A feature we can observe or measure. Temperature or other conditions may affect it.",
+      "Physical": "Describing a change that keeps the same chemical identity, such as a change of state.",
+      "Precipitate": "A solid that separates from a solution. In some reactions, it is a new product that does not dissolve.",
+      "Indicator": "An observation that gives us a clue to investigate. It may have more than one cause."
+    },
+    "faq": [
+      "Cooking can cause both kinds of change. Browning makes new substances. Melting changes state. Being hard to reverse does not, by itself, tell us which kind occurred.",
+      "Nuclear changes need an account of both mass and energy. The tiny mass changes linked to energy transfers in ordinary chemistry are too small for classroom tools to detect. Nuclear changes can also change one element into another.",
+      "Cutting damages cells. Oxygen, enzymes and other materials can then take part in browning reactions. Color alone would not identify a reaction in an unknown material.",
+      "Many reactions can run both ways. At equilibrium, the two directions proceed at the same rate. The amounts stay steady even though reactions continue.",
+      "It depends on the materials. Sugar molecules stay sugar when they dissolve in water. Other materials can react as they dissolve. Check what substances are present.",
+      "They made careful mass measurements while tracking matter that entered or left. A balanced equation also accounts for each kind of atom. Small measurement differences need to be checked against the limits of the tools."
+    ]
+  },
+  "natural_selection_grade8": {
+    "reading": "## How Populations Change\n\nBeetles in one habitat can have different colors. Suppose these differences are inherited and affect how many offspring they leave. Over many **generations**, the share of each color in the **population** can change. This can be evolution by natural **selection**.\n\nIndividuals can grow, learn and adjust during life. These **acquired** changes do not, by themselves, show that a population has evolved. We need to track inherited differences across generations.\n\n### Follow the process\n\n**Variation** means that individuals differ. A useful variant may already be present when conditions change. New variants can also arise later through mutation or arrive with new members. Need does not direct a useful **mutation**, which is a change in DNA.\n\nA **heritable** trait can pass from parent to offspring through genes. Many traits also depend on the surroundings. Building muscles through training does not automatically copy those muscles into a child's DNA.\n\nThe **environment** affects which traits help. Food, predators and mates all matter. Crowding is not required for selection. A trait might change success in finding a mate or the number of offspring produced.\n\n**Fitness** means success in passing genes to later generations, compared with others in that setting. Survival matters when it affects reproduction. Fitness does not mean strength, health or personal worth.\n\nA helpful inherited trait can become more common. Its **frequency** is how common it is. But this is not guaranteed. Chance can remove even a helpful variant. Changes due to chance are called genetic drift. Drift can occur in any population and often has stronger effects in small ones.\n\n### Read the pictures as models\n\nOur rows of eight beetles have two, then four, then six dark beetles. These are invented counts. They show new generations, not the same beetles changing color. A moth picture shows how a background can affect visibility. It cannot prove selection by itself. We also need evidence about inheritance and offspring.\n\nThe bacteria panel is a simple counter model. Assume two bacteria already have inherited **resistance** to one antibiotic. They survive exposure and reproduce. Their descendants can make resistance more common. In real cases, new mutations and genes passed between microbes can also matter. A survivor alone is not proof of resistance. We use counters, not live bacteria or drugs.\n\n### No planned goal\n\nA mutation can be harmful, helpful or have little effect in a given setting. A population may never gain a trait it needs. Natural selection has no plan for a perfect organism.\n\nAn **adaptation** is an inherited trait shaped by past selection. It may help in one setting and be a drawback in another. Ask what varied, what was inherited, and how success in reproduction differed. Then consider chance and other possible causes.",
+    "glossary": {
+      "Mutation": "A change in DNA. It may help, harm or have little effect in a given setting.",
+      "Fitness": "Success in passing genes to later generations compared with others in the same setting.",
+      "Selection": "Differences in survival and reproduction linked to traits. Inherited differences can change a population over time.",
+      "Acquired": "Developed during life, such as a learned skill. It is not automatically copied into inherited DNA.",
+      "Resistance": "Here, the ability of a microbe to grow despite a drug that stops microbes sensitive to it.",
+      "Adaptation": "An inherited trait shaped by past selection. Its value depends on the setting."
+    },
+    "faq": [
+      "No. A trait may help in one setting but not another. Chance can remove a helpful variant before it spreads.",
+      "No. Mutation, arriving or leaving genes, and chance also cause change. Genetic drift is change through chance. Its effects are often stronger in small groups.",
+      "Yes. For example, some human populations have inherited traits that let adults keep digesting milk sugar. Evolution concerns inherited changes across generations, and its pace varies.",
+      "It leaves out reproduction. Fitness concerns the genes passed to later generations compared with others in that setting. It is not a measure of strength or human worth.",
+      "No. Selection acts on traits that are available. A trait may have costs as well as benefits. A once-useful trait can become less helpful when conditions change.",
+      "Yes. Chance can make a variant more common even if it does not help reproduction. This is genetic drift.",
+      "Inherited resistance can help microbes leave offspring when a drug is present. New mutations and genes passed between microbes also matter. One survivor does not prove resistance; real cases need more evidence."
+    ],
+    "memory": [
+      [
+        "Ask four questions: What differs? What is inherited? What are the conditions? Who leaves more offspring? Then count the traits in later generations.",
+        "The questions connect parts of an explanation. They are not a fixed order. Include chance as another possible cause."
+      ],
+      [
+        "Use two counter colors for inherited variants. Apply the stated survival rule. Add offspring using the given inheritance rule. Count the new generation.",
+        "Colors stand for variants, not a change in the same animal. Real organisms also grow and learn; the counters leave those details out."
+      ]
+    ]
+  },
+  "photosynthesis_grade7": {
+    "reading": "## The Sugar Factory in Every Leaf\n\nA tree gains mass as it grows. Where does that new matter come from? Long ago, Jan Baptist van Helmont grew a willow and found that it gained much more mass than the soil lost. This was evidence against the idea that the tree simply ate the soil. It did not identify every source of its matter.\n\nCarbon in plant sugars and wood comes from carbon dioxide in the air. Water supplies matter too. Fresh plants contain a great deal of water, and they need mineral nutrients. Sunlight supplies **energy**. It does not turn into the atoms in wood.\n\n**Photosynthesis** uses light energy to build sugars. In plant cells, it takes place in **chloroplasts**. These structures contain **chlorophyll**, a green **pigment** that absorbs light. Leaves absorb red and blue light strongly. They absorb some green light too. Some green light bounces off or passes through, helping leaves look green. Green light is not useless.\n\nA simple equation shows carbon dioxide and water going in. They are material **reactants**. Light supplies energy, not atoms. Sugars and oxygen are **products**. **Glucose** is the sugar used in our simple equation. The real process has many steps. The released oxygen comes from water. The carbon in sugar comes from carbon dioxide.\n\n**Stomata** are tiny pores. Guard cells control their openings. Gases move through them, but water can leave too. The pattern of opening depends on the plant and its conditions. Some plants take in much of their carbon dioxide at night.\n\nPlants use sugars to grow and store material. They also use them in cellular **respiration**, day and night. One form of respiration uses oxygen and transfers energy from sugar into forms cells can use. It releases carbon dioxide and water. It is not the same as breathing.\n\nPhotosynthesis needs suitable light. A lamp can provide it as well as the Sun. In darkness, stored material can support growth and respiration for a while. Light-driven sugar production cannot continue without light.\n\nA plant releases oxygen overall when photosynthesis makes more than respiration uses. Bright light alone does not guarantee this. Water, temperature and carbon dioxide also matter.\n\nMany algae and some bacteria use photosynthesis too. It supports most familiar food webs. Some other ecosystems use energy from chemical reactions instead. Compare a bean plant, an oak and algae: what do they share, and what differs?",
+    "glossary": {
+      "Photosynthesis": "Using light energy to build organic matter. Plants use carbon dioxide and water to make sugars and release oxygen.",
+      "Pigment": "A substance that absorbs some colors of light more than others.",
+      "Reactant": "A material used in a chemical reaction. Light supplies energy rather than atoms."
+    },
+    "faq": [
+      "Plants keep respiring in darkness. They take in oxygen and release carbon dioxide. Photosynthesis needs suitable light, which may come from the Sun or a lamp.",
+      "Other pigments can make leaves look red or purple. Chlorophyll is often still present and working too.",
+      "Yes, under suitable conditions. The amount of light reaching the leaves matters as well as its color. Equal lamp power or distance does not ensure equal useful light. Green light can help too.",
+      "Yes. Algae and some bacteria in the ocean use light to make organic matter and release oxygen. These tiny organisms help support ocean food webs. They are not all plants.",
+      "The carbon in sugars and wood comes from the air. But plants also contain water and matter from water and minerals. “Made of air” leaves out those parts.",
+      "Researchers study ways to use light to make useful fuels. A leaf gives us ideas, but a machine need not copy every step. Making a useful system at large scale is a challenge."
+    ],
+    "memory": [
+      [
+        "Two materials plus light: carbon dioxide and water go in; sugars and oxygen come out.",
+        "The two materials supply matter. Light supplies energy. This is a summary of many steps."
+      ],
+      [
+        "Green light can bounce off, pass through or be absorbed. A green leaf can still use some green light.",
+        "The three paths help explain both color and light use. Do not treat all green light as wasted."
+      ],
+      [
+        "Think of a leaf as a light-powered workshop. Photosynthesis makes sugars. Respiration transfers energy from stored sugars to help run cells.",
+        "The workshop is a comparison. Photosynthesis needs suitable light, including lamp light. Respiration goes on day and night."
+      ]
+    ],
+    "brief": {
+      "context": "A garden club wants to grow lettuce under indoor lamps. Someone suggests green light because plants look green. You have seeds, trays, red, blue, green and white LED strips, light boxes, a ruler and a scale. Compare the lamp setups for two weeks.",
+      "drivingQuestion": "Under which lamp setup do the plants grow most in two weeks? What can this test tell us about light color?",
+      "seedDirection": "Predict what will happen. Leaves can use some green light. To test color alone, also match the amount of useful light reaching the leaves. Lamp power and distance are not enough to prove a match.",
+      "openQuestions": [
+        "How will we keep water, temperature, starting plants and hours of light the same?",
+        "Will we measure height, leaf count or mass? What does each measure leave out?",
+        "Can we borrow a sensor to match the useful light at leaf level? If not, how will we explain that limit?",
+        "How will we use several seedlings so one unusual plant does not decide the result?"
+      ],
+      "criteria": [
+        "Use the same water, temperature, starting plants and hours of light.",
+        "Use at least four seedlings for each setup.",
+        "Measure in the same way on the same days.",
+        "If useful light is not measured and matched, compare lamp setups, not color alone.",
+        "Compare results with your prediction and use four glossary words correctly."
+      ],
+      "deliverable": "Share a test plan, a prediction, a two-week data table and a recommendation. Explain the results and name what the test cannot show.",
+      "constraints": [
+        "Two weeks of growing time.",
+        "Use the listed tools; ask the teacher about a suitable light sensor.",
+        "Check and water trays every school day.",
+        "Height may show stretching, and fresh mass includes water. Neither directly measures how fast photosynthesis occurs."
+      ]
+    }
+  },
+  "plate_tectonics_grade6": {
+    "reading": "## Following the Evidence\n\nIn 1912, Alfred Wegener proposed that continents had once been joined and moved apart. He collected several kinds of **evidence**. Some scientists agreed with continental drift. Many questioned his proposed **mechanism**: the process that could move the land.\n\nSouth America and Africa have matching shapes along their edges. The underwater edges fit better than today's shores, which waves and changing sea level can reshape. Matching rocks and mountain belts also lie across the Atlantic.\n\nA **fossil** is a trace or remain of past life. Mesosaurus fossils occur on both sides of the Atlantic. A past land connection explains this pattern better than a wide-ocean crossing. Coal in Antarctica shows that plants once grew there under very different conditions. Coal alone cannot prove land moved; climate can change too. Several lines of evidence make the case stronger.\n\nLater, scientists mapped the ocean floor in more detail. Rocks tend to be older farther from spreading ridges. Bands that record Earth's past magnetic field often match on the two sides. These patterns, along with earthquakes and other evidence, supported seafloor spreading and plate tectonics.\n\nA **plate** is a slab of lithosphere: **crust** plus the rigid top of the **mantle**. A plate can hold both land and ocean floor. Below it, hot rock is mostly solid but can deform slowly. Plates do not float on a worldwide sea of liquid rock. Sinking slabs, gravity and mantle motion all help drive movement.\n\nAt a **divergent** boundary, plates move apart. Near ocean ridges, some rising mantle melts. This **magma** can form new crust. Iceland sits on the Mid-Atlantic Ridge. The East African Rift shows land stretching apart.\n\nAt a **convergent** boundary, plates move together. Dense oceanic rock can sink beneath another plate. This forms a trench and often a belt of volcanoes, as near the Andes. Where continents collide, crust can thicken and build mountains such as the Himalayas.\n\nAt a **transform** boundary, plates slide past. A **fault** may lock while stress builds. Sudden slip can cause an **earthquake**. Some parts creep instead. Earthquakes also happen at other boundaries and within plates.\n\nMany plates move a few centimeters a year, though rates vary. Over millions of years, small moves add up. Wegener died in 1930. Plate tectonics became widely accepted in the 1960s. His idea helped lead to the modern theory, but did not include all of it.",
+    "memory": [
+      [
+        "C-F-R-C: Coasts Fit, Rocks Connect. Use the letters for coasts, fossils, rocks and climate.",
+        "The letters help you list four kinds of evidence. No single clue settles the whole case."
+      ],
+      [
+        "Diverge: divide, as at Iceland. Converge: come together, as in the Himalayas. Transform: slide past, as along the San Andreas Fault.",
+        "Link each name to a motion and a place. These word clues help recall; they are not the origins of the scientific names."
+      ],
+      [
+        "Land clues → debate about drift → ocean-floor ages and magnetic bands → plate tectonics.",
+        "The chain links new evidence to a broader theory. It does not mean one discovery answered every question."
+      ]
+    ]
+  }
+}

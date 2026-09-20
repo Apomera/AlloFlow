@@ -1,0 +1,170 @@
+[
+  {
+    "width": 1280,
+    "state": "support-form",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "support-saved",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "report-scope",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "report-options",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "report-ai",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "counter",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "interval",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "support-form",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "support-saved",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "report-scope",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "report-options",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "report-ai",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "counter",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "interval",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "support-form",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "support-saved",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "report-scope",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "report-options",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "report-ai",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "counter",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "interval",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  }
+]

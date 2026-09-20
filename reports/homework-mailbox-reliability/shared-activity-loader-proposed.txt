@@ -1,0 +1,8 @@
+    window.__alloLazySharedActivity = function() {
+      if (window.AlloModules?.SharedActivity?.SharedAssignmentActivityPanel) return true;
+      const entry = window.__alloModuleRegistry?.SharedActivity;
+      if (entry?.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('SharedActivity');
+      loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=ca49be1d');
+      return true;
+    };
+    window.__alloLazySharedActivity();

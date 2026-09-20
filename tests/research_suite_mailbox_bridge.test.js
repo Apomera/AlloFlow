@@ -13,7 +13,7 @@
 // The ingest tests run the REAL server (same sandbox as class_mailbox_survey)
 // end to end: host a survey, answer it, fetch the admin summary, import it.
 // A hand-mocked summary would just pin my own assumptions twice.
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -40,6 +40,8 @@ beforeAll(() => {
   try { window.ReactDOM = requireCjs(path.resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom')); } catch (e) {}
   // eslint-disable-next-line no-new-func
   new Function(suiteSource)();
+  new Function(fs.readFileSync(path.join(ROOT, 'shared_activity_module.js'), 'utf8'))();
+  new Function(fs.readFileSync(path.join(ROOT, 'allo_command_context_module.js'), 'utf8'))();
   internals = window.AlloModules.StudentAnalyticsInternals;
   if (!internals || typeof internals.suiteQuestionsToWireItems !== 'function') {
     throw new Error('bridge internals did not register');
@@ -247,13 +249,48 @@ describe('host + Suite wiring pins', () => {
     expect(anti).toContain("identityMode: '',");   // the draft never picks identity for the teacher
   });
 
-  it('research meta rides the SHARE RECORD, never the respondent packet', () => {
-    expect(anti).toContain("researchMeta: (sharedAssignmentActivity && sharedAssignmentActivity._researchMeta) || null,");
-    // The packet builder has no researchMeta line — respondents must not
-    // receive study bookkeeping.
-    const packetStart = anti.indexOf('const packet = stripUndefined({');
-    const packetEnd = anti.indexOf('});', packetStart);
-    expect(anti.slice(packetStart, packetEnd)).not.toContain('researchMeta');
+  it.each([true, false])('keeps research metadata only on the teacher record (include activity: %s)', async includeSharedActivity => {
+    // Execute the shipped host callback AND packet builder. The old text slice
+    // became empty after extraction and could no longer detect a privacy leak.
+    const start = anti.indexOf('  const hostPackOnMailbox = useCallback(');
+    const end = anti.indexOf('  useEffect(() => { hostPackOnMailboxRef.current', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const researchMeta = { population: 'parent', timepoint: 'pre', studyName: 'PRIVATE_STUDY_TAG', itemKeys: ['PRIVATE_ITEM_KEY'] };
+    const activity = {
+      enabled: true, type: 'survey', prompt: 'Family check-in', identityMode: 'codename', _researchMeta: researchMeta,
+      surveyItems: [{ type: 'likert', text: 'Ready?', steps: 3, lowLabel: 'Not yet', highLabel: 'Ready', labels: ['Not yet', 'Somewhat', 'Ready'] }],
+    };
+    const uploaded = [], opened = [];
+    const env = {
+      useCallback: fn => fn, clearPendingMailboxShare: vi.fn(),
+      mbHostRequestGenerationRef: { current: 0 }, mbPendingHostRequestRef: { current: null }, setPendingMailboxShare: vi.fn(),
+      mbConfig: { url: 'https://mailbox.example.invalid', admin: 'fixture-admin', v: 24 }, sharedAssignmentActivity: activity,
+      buildAssignmentPackEncoded: options => window.AlloModules.SharedActivity.buildAssignmentPackEncoded(options, {
+        resolveAssignmentResources: () => [{ id: 'quiz-1', type: 'quiz', title: 'Family check-in resource', data: [] }],
+        sharedAssignmentActivity: activity, serializeResourceForStudentPack: item => structuredClone(item),
+        stripUndefined: value => value, generateUUID: () => 'aaaaaaaa-bbbb-cccc-dddd-123456789012',
+        encodeAlloPack: async text => text, studentAiPolicyForShare: 'off',
+      }),
+      addToast: vi.fn(), warnLog: vi.fn(), setMbBusy: vi.fn(), setMbPanelOpen: vi.fn(), setMbUrlInput: vi.fn(),
+      generateUUID: () => 'aaaaaaaa-bbbb-cccc-dddd-123456789012', _alloRandomToken: () => 'fixture-secret',
+      _alloSplitPackChunks: text => [text], _alloMailboxCall: vi.fn(async (url, payload) => { uploaded.push(payload); return { ok: true }; }),
+      _buildAlloMailboxEntryUrl: () => 'https://student.example.invalid/?allo_mbp=fixture', copyToClipboard: vi.fn(),
+      openQrShareModal: share => opened.push(share),
+    };
+    const host = new Function('env', 'with(env){' + anti.slice(start, end) + ';return hostPackOnMailbox;}')(env);
+    expect(await host(null, { includeSharedActivity })).toBe('https://student.example.invalid/?allo_mbp=fixture');
+    expect(env.warnLog).not.toHaveBeenCalled();
+    expect(uploaded).toHaveLength(1);
+    expect(opened).toHaveLength(1);
+    expect(opened[0].researchMeta).toEqual(includeSharedActivity ? researchMeta : null);
+    expect(opened[0].sharedActivityEnabled).toBe(includeSharedActivity);
+    const packet = JSON.parse(uploaded[0].data);
+    expect(packet.resources).toHaveLength(1);
+    expect(uploaded[0].activities).toHaveLength(includeSharedActivity ? 1 : 0);
+    if (includeSharedActivity) expect(uploaded[0].activities[0].type).toBe('survey');
+    expect(JSON.stringify(packet)).not.toMatch(/researchMeta|PRIVATE_STUDY_TAG|PRIVATE_ITEM_KEY/);
+    expect(JSON.stringify(uploaded)).not.toMatch(/researchMeta|PRIVATE_STUDY_TAG|PRIVATE_ITEM_KEY/);
   });
 
   it('the import button exists on survey rows and routes through the Suite internals', () => {
@@ -298,9 +335,28 @@ describe('discoverability (Plan 3)', () => {
     expect(commandsSource).toContain("opensPanel: 'recentQrShares'");
   });
 
-  it('the host exposes the setter and the mutual-exclusion closer', () => {
-    expect(anti).toContain('      setShowRecentQrShares,');
-    expect(anti).toContain('recentQrShares: () => setShowRecentQrShares(false),');
+  it('the host passes the setter and the shipped context closes competing panels', () => {
+    const start = anti.indexOf('  const _alloCmdCtx = () => {');
+    const end = anti.indexOf('\n  };\n', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const shim = anti.slice(start, end);
+    expect(shim).toContain('window.AlloModules.AlloCommandContext');
+    expect(shim.slice(shim.indexOf('return build({'))).toMatch(/\bsetShowRecentQrShares\s*[,}]/);
+    const setter = vi.fn();
+    const context = window.AlloModules.AlloCommandContext({
+      __live: {}, _contextualSuggestionRef: { current: null }, _alloCmdCtxRef: { current: null },
+      studentProjectSettings: {}, _alloStudentSafeResources: () => [], _alloVoiceInputAvailable: () => false,
+      setShowRecentQrShares: setter,
+    });
+    expect(context.setShowRecentQrShares).toBe(setter);
+    context.setShowRecentQrShares(true);
+    expect(setter).toHaveBeenLastCalledWith(true);
+    setter.mockClear();
+    context.closeOtherPanels('recentQrShares');
+    expect(setter).not.toHaveBeenCalled();
+    context.closeOtherPanels('educatorHub');
+    expect(setter).toHaveBeenCalledExactlyOnceWith(false);
   });
 
   it('the generated module and its mirror carry the command', () => {

@@ -1,0 +1,19 @@
+{
+  "hostSourcesParsed": 3,
+  "runtimeModulesParsed": 4,
+  "mirrorsMatched": [
+    "desktop\\web-app\\public\\view_renderers_module.js",
+    "desktop\\app-build\\view_renderers_module.js",
+    "desktop\\web-app\\build\\view_renderers_module.js",
+    "desktop\\web-app\\public\\host_handlers_module.js",
+    "desktop\\app-build\\host_handlers_module.js",
+    "desktop\\web-app\\build\\host_handlers_module.js",
+    "desktop\\web-app\\public\\view_outline_module.js",
+    "desktop\\app-build\\view_outline_module.js",
+    "desktop\\web-app\\build\\view_outline_module.js",
+    "desktop\\web-app\\public\\view_live_session_dock_module.js",
+    "desktop\\app-build\\view_live_session_dock_module.js",
+    "desktop\\web-app\\build\\view_live_session_dock_module.js"
+  ],
+  "firestoreRulesIdentical": true
+}

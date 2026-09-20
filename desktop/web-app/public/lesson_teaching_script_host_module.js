@@ -172,7 +172,18 @@
       const accepted = deps.updateResource(String(planId), previous => matchesExpected(previous) ? core().updateVersion(previous, versionId, steps) : previous);
       return accepted ? { ok: true } : { ok: false, error: 'These edits could not be added to the plan. Keep your draft and try again.' };
     }
-    return { generate, cancel, saveEdits, dispose() { disposed = true; [...runs.keys()].forEach(cancel); } };
+    function deleteVersion(planId, versionId, expectedVersion) {
+      const state = deps.getState(), plan = canonicalPlan(state, planId);
+      if (disposed || !allowed(state) || !plan || runs.has(String(planId))) return { ok: false, error: 'Open the saved plan in teacher mode and finish generation before deleting a version.' };
+      const actor = state.actorKey;
+      if (!core()?.removeVersion || core().removeVersion(plan, versionId, expectedVersion) === plan) return { ok: false, error: 'This version changed. Review it before deleting.' };
+      const accepted = deps.updateResource(String(planId), previous => {
+        const current = deps.getState();
+        return allowed(current) && current.actorKey === actor ? core().removeVersion(previous, versionId, expectedVersion) : previous;
+      });
+      return accepted ? { ok: true } : { ok: false, error: 'The version could not be deleted. Try again.' };
+    }
+    return { generate, cancel, saveEdits, deleteVersion, dispose() { disposed = true; [...runs.keys()].forEach(cancel); } };
   }
   const api = { availableMaterials, defaultSettings, createController };
   root.AlloModules = root.AlloModules || {};

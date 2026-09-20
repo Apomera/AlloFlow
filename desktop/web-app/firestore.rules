@@ -39,7 +39,7 @@ service cloud.firestore {
             && progress.activityId is string
             && progress.activityId.size() >= 8
             && progress.activityId.size() <= 160
-            && progress.type in ['venn', 'tchart', 'cesort', 'pipeline', 'conceptmap', 'outline', 'fishbone', 'problemsolution', 'frayer', 'seethinkwonder', 'storymap', 'strandchallenge3d', 'conceptrecall3d', 'palacerecall']
+            && progress.type in ['venn', 'tchart', 'cesort', 'pipeline', 'conceptmap', 'outline', 'fishbone', 'problemsolution', 'frayer', 'seethinkwonder', 'storymap', 'strandchallenge3d', 'conceptrecall3d', 'palacerecall', 'reflection']
             && (progress.gameType == null || progress.gameType in ['vennDiagram', 'tchartSort', 'causeEffectSort', 'pipelineBuilder', 'conceptMapSort', 'outlineSort', 'fishboneSort', 'problemSolutionSort', 'frayerSort', 'seeThinkWonderSort', 'storyMapSort', 'strandChallenge3d', 'strandChallenge3dAttempt', 'conceptRecall', 'conceptRecallAttempt', 'palaceRecall', 'palaceRecallAttempt'])
             && progress.status in ['loading', 'ready', 'failed', 'working', 'attempted', 'complete']
             && progress.score is int && progress.score >= 0 && progress.score <= 100000

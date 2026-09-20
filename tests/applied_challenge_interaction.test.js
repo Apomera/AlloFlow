@@ -191,21 +191,22 @@ describe('Applied Challenge Studio interactions', () => {
     expect(serious).toEqual([]);
   });
 
-  it('persists workspace edits, retains earlier feedback, and counts learner work', async () => {
+  it('persists workspace edits and retains earlier feedback in the active stage', async () => {
     await renderChallenge();
+    await act(async () => [...host.querySelectorAll('button')].find(button => button.getAttribute('aria-label') === '3. Build').click());
     const response = host.querySelector('#applied-workspace-response');
     await typeInto(response, 'Recommend a feasibility study before choosing a site.');
     expect(latest.data.workspace.response).toContain('feasibility study');
     expect(latest.data.coachHint).toBe('');
     expect(latest.data.feedback.strength).toBe('An earlier strength');
-    expect(host.textContent).toContain('1 of 10 sections started');
+    expect(host.textContent).toContain('Build · Step 3 of 5');
   });
 
   it('refreshes the artifact link when saved work is restored for the same resource', async () => {
     await renderChallenge();
     const updated = baseData(); updated.workspace.artifactUrl = 'https://example.org/restored-work';
     await replaceChallenge('challenge-1', updated);
-    expect(host.querySelector('input[type="url"]').value).toBe('https://example.org/restored-work');
+    expect(host.querySelector('#applied-artifact-url').value).toBe('https://example.org/restored-work');
   });
 
   it('treats a first criteria note as current before the learner chooses a rating', async () => {

@@ -1,0 +1,10 @@
+{
+  "passed": 638,
+  "failed": 0,
+  "files": 57,
+  "newChecks": 21,
+  "fullRun": true,
+  "syntax": "passed",
+  "coreSync": "passed",
+  "moduleMirrors": "byte-identical"
+}

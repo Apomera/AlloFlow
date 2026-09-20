@@ -1,0 +1,55 @@
+{
+  "pass": 37,
+  "title": "Visual motion maps in explanations",
+  "date": "2026-09-19",
+  "changes": [
+    "Each revealed Motion detective explanation now includes effort and load direction cards.",
+    "Directional arrows cover downward input, rising load, rotation, ramp travel, and splitting motion.",
+    "The ramp arrow follows the selected height/length ratio, including the vertical setting.",
+    "Cards stack on narrow phones and use system colors in forced-color mode.",
+    "Text distinguishes direction arrows from the distance scale on the front tracks."
+  ],
+  "validation": {
+    "uiTests": 228,
+    "uiReport": "pass37-ui-tests.json",
+    "browser": [
+      {
+        "theme": "light",
+        "file": "pass37-light/results.json",
+        "checks": 57,
+        "screenshots": 9,
+        "errors": [],
+        "overflow": false
+      },
+      {
+        "theme": "dark",
+        "file": "pass37-dark/results.json",
+        "checks": 57,
+        "screenshots": 9,
+        "errors": [],
+        "overflow": false
+      },
+      {
+        "theme": "contrast",
+        "file": "pass37-contrast/results.json",
+        "checks": 57,
+        "screenshots": 9,
+        "errors": [],
+        "overflow": false
+      }
+    ],
+    "totalBrowserChecks": 171,
+    "screenshots": 27,
+    "sourceMirrorIdentical": true,
+    "syntax": "passed",
+    "scopedDiffCheck": "passed; CRLF normalization warnings only",
+    "runtimeBrowser": "Chromium"
+  },
+  "reviewedScreenshots": [
+    "pass37-light/motion-map-windlass-320.png",
+    "pass37-dark/motion-map-wedge-1150.png",
+    "pass37-contrast/motion-map-forced-colors.png"
+  ],
+  "sha256": "8f5a228938c6ef6fe4658e186c39d005ed1dd322f8f011a3cfc997d6cb5df7ce",
+  "publication": "Local only; no commit, push, or deployment"
+}

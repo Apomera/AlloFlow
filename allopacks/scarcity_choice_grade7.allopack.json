@@ -8,7 +8,8 @@
     "gradeLevel": "7th Grade",
     "standards": "C3 Framework D2.Eco.1.6-8 (explain how economic decisions affect the well-being of individuals, businesses, and society); C3 Framework D2.Eco.2.6-8 (evaluate alternative approaches or solutions to current economic issues in terms of benefits and costs); CCSS.ELA-LITERACY.RH.6-8.4 (determine the meaning of words and phrases as they are used in a text, including vocabulary specific to domains related to history and social studies)",
     "createdAt": "2026-09-06T01:50:00.000Z",
-    "imageShotList": "allopacks/scarcity_choice_grade7.IMAGES.md"
+    "imageShotList": "allopacks/scarcity_choice_grade7.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Scarcity, Opportunity Cost, and Trade-offs",
   "history": [
@@ -55,7 +56,7 @@
       "title": "Everything Has a Cost",
       "timestamp": "2026-09-06T01:50:01.000Z",
       "data": "## Everything Has a Cost\n\nYou have one free hour. You can see friends, finish a project, or sleep. Whatever you pick, you did not do the other two.\n\nThat sentence is most of economics.\n\nEconomics is often described as being about money. It is really about **scarcity**: there is not enough of something to satisfy every want, so choosing is unavoidable. Time is scarce. Money is scarce. Clean water is scarce in some places and not in others. Even attention is scarce.\n\nScarcity is not the same as being rare, and it is not the same as being expensive. Something is **scarce** when people want more of it than exists. Sand is cheap and enormously common, and construction sand is genuinely scarce in some regions because demand outruns what can be dug.\n\nBecause things are scarce, every choice is a **trade-off**. You gain one thing and give up another.\n\nEconomists give the thing you gave up a name: **opportunity** cost. It is not everything you turned down. It is the single **alternative** you would have picked instead — your next best option. If you chose sleep over friends and a project, and you would have chosen friends next, then the opportunity cost of sleeping is seeing your friends. The project does not count. It was third.\n\nThat definition sounds fussy and it is the useful part. It forces you to name one specific thing rather than waving at everything.\n\nOpportunity cost also explains decisions that look strange from outside. A town that spends on a new road is not against libraries. It made a choice, and the library was what it gave up. Judging the decision means comparing the **benefit** of the road against the library, not against nothing.\n\nThere is a trap worth knowing. Money already spent and not recoverable is a **sunk** cost, and it should not affect what you do next. If you paid for a ticket to a film you now know you will hate, the money is gone whether you go or not. The real choice is only about the next two hours. People find this genuinely hard, and knowing the word does not make it easy.\n\nOne more idea. Doing a bit more of something is a **marginal** decision. The question is rarely all or nothing. It is: is one more hour of practice worth what that hour costs me?\n\nSo when you meet a decision, yours or a government's, ask two things. What is scarce here? And what exactly got given up?",
-      "meta": "7th Grade • Leveled reading • ~430 words",
+      "meta": "7th Grade • Leveled reading",
       "imageSlot": "sc-img-two-columns"
     },
     {

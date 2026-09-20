@@ -1,0 +1,19 @@
+{
+  "pass": 41,
+  "uiPassed": 255,
+  "themes": {
+    "light": {
+      "checks": 126,
+      "screenshots": 8
+    },
+    "dark": {
+      "checks": 126,
+      "screenshots": 8
+    },
+    "contrast": {
+      "checks": 126,
+      "screenshots": 8
+    }
+  },
+  "localOnly": true
+}

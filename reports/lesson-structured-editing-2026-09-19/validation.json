@@ -1,0 +1,66 @@
+{
+  "date": "2026-09-19",
+  "tests": 98,
+  "testFiles": [
+    {
+      "name": "lesson_plan_edit_persistence.test.js",
+      "passed": 6
+    },
+    {
+      "name": "lesson_plan_exports.test.js",
+      "passed": 11
+    },
+    {
+      "name": "lesson_plan_refinement.test.js",
+      "passed": 57
+    },
+    {
+      "name": "lesson_plan_structured_editing.test.js",
+      "passed": 12
+    },
+    {
+      "name": "lesson_plan_translation_labels.test.js",
+      "passed": 12
+    }
+  ],
+  "browserCases": 6,
+  "axeViolations": 0,
+  "pageErrors": 0,
+  "integration": {
+    "passed": 98,
+    "testFiles": [
+      {
+        "name": "lesson_plan_edit_persistence.test.js",
+        "passed": 6
+      },
+      {
+        "name": "lesson_plan_exports.test.js",
+        "passed": 11
+      },
+      {
+        "name": "lesson_plan_refinement.test.js",
+        "passed": 57
+      },
+      {
+        "name": "lesson_plan_structured_editing.test.js",
+        "passed": 12
+      },
+      {
+        "name": "lesson_plan_translation_labels.test.js",
+        "passed": 12
+      }
+    ],
+    "hashes": {
+      "view_lesson_plan_module.js": "b3c59212b239ff33990a7359ed7103b162d1dfa1bd923d2dadfad3ed2166ec8f",
+      "export_handlers_module.js": "82a7dc7ce3ca1c37ef6faa16e9352a8e36e30498298877a4915765a2ddf75a21"
+    },
+    "hosts": [
+      "AlloFlowANTI.txt",
+      "desktop/web-app/src/AlloFlowANTI.txt",
+      "desktop/web-app/src/App.jsx"
+    ],
+    "syntax": "passed",
+    "mirrors": "matched",
+    "whitespace": "passed"
+  }
+}

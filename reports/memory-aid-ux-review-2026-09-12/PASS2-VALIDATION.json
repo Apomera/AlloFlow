@@ -1,0 +1,97 @@
+{
+  "date": "2026-09-19",
+  "pass": 2,
+  "tests": {
+    "passed": 175,
+    "failed": 0,
+    "files": [
+      {
+        "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/memory_aid.test.js",
+        "source": "pass2-tests.json",
+        "passed": 75,
+        "failed": 0,
+        "status": "passed"
+      },
+      {
+        "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/memory_aid_export_lockstep.test.js",
+        "source": "pass2-tests.json",
+        "passed": 17,
+        "failed": 0,
+        "status": "passed"
+      },
+      {
+        "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/memory_aid_followthrough.test.js",
+        "source": "pass2-tests.json",
+        "passed": 11,
+        "failed": 0,
+        "status": "passed"
+      },
+      {
+        "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/memory_aid_refinement_20260919.test.js",
+        "source": "pass2-tests.json",
+        "passed": 20,
+        "failed": 0,
+        "status": "passed"
+      },
+      {
+        "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/memory_aid_study_flow.test.js",
+        "source": "pass2-heading-tests.json",
+        "passed": 11,
+        "failed": 0,
+        "status": "passed"
+      },
+      {
+        "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/memory_aid_teacher_review_flow.test.js",
+        "source": "pass2-tests.json",
+        "passed": 28,
+        "failed": 0,
+        "status": "passed"
+      },
+      {
+        "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/studio_response_boundary.test.js",
+        "source": "pass2-tests.json",
+        "passed": 13,
+        "failed": 0,
+        "status": "passed"
+      }
+    ]
+  },
+  "browser": {
+    "states": 11,
+    "errors": [],
+    "violations": 0,
+    "overflow": false,
+    "mobileRecall": {
+      "width": 390,
+      "before": 750,
+      "after": 599,
+      "pixelsEarlier": 151
+    },
+    "checks": [
+      "Learner connection becomes stale after cue edit and can be reconfirmed.",
+      "Unsupported recall exposes the neutral question, hides cue, facts, type and connection text.",
+      "Response-mode switches and requesting a cue retain writing; cue receives keyboard focus.",
+      "A recall that requested help is privately recorded as with a cue.",
+      "Resume automatically opens the application and puts its explanation next in keyboard order.",
+      "Draft, self-check and review date autosave without Save; same attempt resumes after reload.",
+      "Due sequence counts a new completed recall and finishes.",
+      "Print keeps neutral questions and excludes private application drafts.",
+      "Teacher recall-question field accepts edits and keyboard navigation."
+    ]
+  },
+  "mirrors": [
+    {
+      "file": "memory_aid_module.js",
+      "identical": true
+    },
+    {
+      "file": "ui_strings.js",
+      "identical": true
+    }
+  ],
+  "buildFreshness": "[MemoryAid] Source and generated modules are byte-for-byte fresh.",
+  "sourceSha256": "af01e966657a8084e12af895400415579210fae307e515feeaf96ea9dd992e43",
+  "limitations": [
+    "Authored local browser fixture with mocked AI; no live AI generation or classroom outcome study."
+  ]
+}

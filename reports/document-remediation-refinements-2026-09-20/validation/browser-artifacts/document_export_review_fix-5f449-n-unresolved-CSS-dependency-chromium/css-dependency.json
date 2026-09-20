@@ -1,0 +1,96 @@
+{
+  "checks": [
+    {
+      "id": "html.utf8-encoding",
+      "status": "passed",
+      "observed": {
+        "declaredCharsets": []
+      },
+      "expected": "valid UTF-8 with compatible declarations"
+    },
+    {
+      "id": "html.document-identity",
+      "status": "passed",
+      "observed": {
+        "title": "Export review",
+        "language": "en"
+      },
+      "expected": {
+        "title": "Export review",
+        "language": "en"
+      }
+    },
+    {
+      "id": "html.main-landmark",
+      "status": "passed",
+      "observed": 1,
+      "expected": 1
+    },
+    {
+      "id": "html.heading-navigation-semantics",
+      "status": "passed",
+      "observed": [],
+      "expected": []
+    },
+    {
+      "id": "html.reading-order",
+      "status": "passed",
+      "observed": {
+        "anchorsInOrder": true
+      },
+      "expected": []
+    },
+    {
+      "id": "html.no-positive-tabindex",
+      "status": "passed",
+      "observed": 0,
+      "expected": 0
+    },
+    {
+      "id": "html.table-count",
+      "status": "passed",
+      "observed": 0,
+      "expected": 0
+    },
+    {
+      "id": "html.no-required-network",
+      "status": "passed",
+      "observed": 0,
+      "expected": 0
+    },
+    {
+      "id": "html.inspection-coverage",
+      "status": "unavailable",
+      "observed": {
+        "reasons": [
+          "unresolved-resource-references"
+        ],
+        "resources": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 2,
+          "animations": 0
+        }
+      }
+    }
+  ],
+  "coverage": {
+    "complete": false,
+    "wholeDocument": false,
+    "reasons": [
+      "unresolved-resource-references"
+    ]
+  },
+  "resources": {
+    "blocked": 0,
+    "scripts": 0,
+    "unresolved": 2,
+    "animations": 0
+  },
+  "limitations": [
+    "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+    "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+    "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+    "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+  ]
+}

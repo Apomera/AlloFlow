@@ -98,10 +98,10 @@ describe('Machine Lab: the camera is reachable without a mouse', () => {
 
   it('uses real buttons, so they are keyboard operable for free', () => {
     const html = renderTool('machineLab', state({ view: 'build' }));
-    const idx = html.indexOf('Camera for the');
-    const strip = html.slice(idx, idx + 1600);
-    expect((strip.match(/<button/g) || []).length).toBeGreaterThanOrEqual(7);
-    expect(strip).not.toContain('role="button"');
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const group = doc.querySelector('[role="group"][aria-label^="Camera for the"]');
+    expect(group.querySelectorAll('button').length).toBeGreaterThanOrEqual(7);
+    expect(group.querySelector('[role="button"]')).toBeNull();
   });
 });
 

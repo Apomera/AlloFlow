@@ -1,0 +1,113 @@
+{
+  "baselineRef": "90b4d80eca3ba84d27eaae8757658be78220e8c3",
+  "scope": "Actual generated panels, production React, 100 parent rerenders per case, two-language synthetic caches. Counts measure unnecessary storage/parse work; no whole-app timing claims.",
+  "scenarios": [
+    {
+      "component": "SubmissionInbox",
+      "mode": "before",
+      "labelsPerLanguage": 100,
+      "renders": 100,
+      "reads": 100,
+      "parses": 100,
+      "bytesRead": 3172800,
+      "uiStable": true,
+      "cacheBytes": 31728
+    },
+    {
+      "component": "SubmissionInbox",
+      "mode": "after",
+      "labelsPerLanguage": 100,
+      "renders": 100,
+      "reads": 0,
+      "parses": 0,
+      "bytesRead": 0,
+      "uiStable": true,
+      "cacheBytes": 31728
+    },
+    {
+      "component": "SubmissionInbox",
+      "mode": "before",
+      "labelsPerLanguage": 2000,
+      "renders": 100,
+      "reads": 100,
+      "parses": 100,
+      "bytesRead": 64372800,
+      "uiStable": true,
+      "cacheBytes": 643728
+    },
+    {
+      "component": "SubmissionInbox",
+      "mode": "after",
+      "labelsPerLanguage": 2000,
+      "renders": 100,
+      "reads": 0,
+      "parses": 0,
+      "bytesRead": 0,
+      "uiStable": true,
+      "cacheBytes": 643728
+    },
+    {
+      "component": "SeatingChart",
+      "mode": "before",
+      "labelsPerLanguage": 100,
+      "renders": 100,
+      "reads": 100,
+      "parses": 100,
+      "bytesRead": 3165600,
+      "uiStable": true,
+      "cacheBytes": 31656
+    },
+    {
+      "component": "SeatingChart",
+      "mode": "after",
+      "labelsPerLanguage": 100,
+      "renders": 100,
+      "reads": 0,
+      "parses": 0,
+      "bytesRead": 0,
+      "uiStable": true,
+      "cacheBytes": 31656
+    },
+    {
+      "component": "SeatingChart",
+      "mode": "before",
+      "labelsPerLanguage": 2000,
+      "renders": 100,
+      "reads": 100,
+      "parses": 100,
+      "bytesRead": 64365600,
+      "uiStable": true,
+      "cacheBytes": 643656
+    },
+    {
+      "component": "SeatingChart",
+      "mode": "after",
+      "labelsPerLanguage": 2000,
+      "renders": 100,
+      "reads": 0,
+      "parses": 0,
+      "bytesRead": 0,
+      "uiStable": true,
+      "cacheBytes": 643656
+    }
+  ],
+  "behavior": [
+    {
+      "component": "SubmissionInbox",
+      "cachedLanguageSwitches": true,
+      "newTranslationRenderedAndPersisted": true,
+      "studentDataExcludedFromPrompts": true,
+      "remountReloadsCache": true,
+      "corruptCacheFallsBack": true
+    },
+    {
+      "component": "SeatingChart",
+      "cachedLanguageSwitches": true,
+      "newTranslationRenderedAndPersisted": true,
+      "studentDataExcludedFromPrompts": true,
+      "remountReloadsCache": true,
+      "corruptCacheFallsBack": true
+    }
+  ],
+  "errors": []
+}

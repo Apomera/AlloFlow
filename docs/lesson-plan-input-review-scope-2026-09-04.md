@@ -1,6 +1,6 @@
 # Product scope: review changed planning inputs
 Date: 2026-09-04  
-Status: generation-time records and saved-input disclosure implemented September 8, 2026; comparison and review acknowledgement remain scoped.
+Status: generation records and disclosure implemented September 8; conservative per-contribution comparisons added September 19. Reading-origin reconstruction and review acknowledgement remain scoped.
 
 ## Decision
 
@@ -157,3 +157,8 @@ Advance if most participants can complete those tasks without explanation and fi
 ## September 8 implementation update
 
 Generation-time summary/inventory records and the saved-input disclosure are implemented in both creation paths, including local-model cutoffs and Full Pack scopes. Input-change comparison and reviewed-version acknowledgement remain future work. See the [implementation and validation report](../reports/map-planning-refinements-2026-09-08/REVIEW.md).
+
+
+## September 19 implementation update
+
+Conservative per-contribution comparison is now implemented for recorded non-reading summaries and inventory entries, including local excerpt boundaries and missing/ambiguous identity handling. Reading-selection reconstruction and reviewed-version acknowledgement remain future work. See the [implementation and validation report](../reports/planning-input-comparison-2026-09-19/REVIEW.md).

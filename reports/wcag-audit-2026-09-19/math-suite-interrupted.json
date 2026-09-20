@@ -1,0 +1,6 @@
+{
+  "status": "interrupted",
+  "reason": "Stopped the audit-owned broad math process tree after severe contention and concurrent browser-launch timeouts; no full-suite result or pass claim.",
+  "at": "2026-09-19T19:35:57.105Z",
+  "replacement": "Targeted theme and representative light-state retest with one browser worker."
+}

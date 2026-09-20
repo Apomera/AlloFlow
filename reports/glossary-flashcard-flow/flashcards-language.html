@@ -1,0 +1,130 @@
+
+            <!DOCTYPE html>
+            <html lang="en" dir="ltr">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Flashcards - 9/19/2026</title>
+                <style>
+                    body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #1e293b; }
+                    @page { margin: 12mm; }
+                    * { box-sizing: border-box; }
+                    @media print {
+                        body { padding: 0; margin: 0; max-width: 100%; }
+                        .no-print { display: none; }
+                        .card-container { break-inside: avoid; }
+                        .card-container, .front { border-color: #777 !important; }
+                        .card-side * { color: #000 !important; }
+                    }
+                    
+            .card-container {
+                position: relative;
+                display: flex;
+                border: 2px dashed #cbd5e1;
+                margin-bottom: 20px;
+                page-break-inside: avoid;
+                min-height: 220px;
+                height: auto;
+                background: white;
+            }
+            .card-side {
+                flex: 1 1 0;
+                min-width: 0;
+                overflow-wrap: anywhere;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                position: static;
+                overflow: visible;
+            }
+            .card-picture { margin: 0 0 12px; max-width: 100%; }
+            .card-picture img { display: block; max-width: 100%; width: auto; max-height: 160px; margin: auto; object-fit: contain; }
+            .card-picture figcaption { margin-top: 4px; font-size: 9px; color: #475569; overflow-wrap: anywhere; }
+            .front { border-inline-end: 2px dashed #cbd5e1; }
+            .cut-guide {
+                position: absolute;
+                top: 4px; left: 50%;
+                transform: translateX(-50%);
+                font-size: 10px; color: #475569;
+                background: white; padding: 0 5px;
+                font-weight: bold;
+            }
+            .lang-label {
+                font-size: 10px;
+                text-transform: uppercase;
+                color: #475569;
+                margin-bottom: 2px;
+                font-weight: bold;
+            }
+            .primary-text { font-size: 20px; font-weight: bold; color: #1e293b; margin-bottom: 5px; }
+            .secondary-text { font-size: 16px; color: #4f46e5; font-weight: bold; margin-top: 5px; }
+            .def-text { font-size: 13px; color: #475569; line-height: 1.4; }
+            .def-trans { font-size: 13px; color: #475569; line-height: 1.4; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; width: 100%; }
+            .etym-text { font-size: 11px; color: #4338ca; font-style: italic; line-height: 1.4; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #c7d2fe; width: 100%; }
+            .etym-roots { margin-top: 6px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; width: 100%; }
+            .root-chip { font-size: 10px; background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; padding: 2px 6px; border-radius: 999px; font-style: normal; }
+            .root-chip b { font-weight: 700; }
+            .root-chip i { font-size: 9px; color: #6366f1; text-transform: uppercase; font-style: normal; letter-spacing: 0.03em; margin: 0 2px; }
+            .set-header {
+                background: #f1f5f9; color: #334155;
+                padding: 15px; margin: 40px 0 20px 0;
+                text-align: center; font-weight: bold; border-radius: 8px;
+                border: 1px solid #e2e8f0;
+                page-break-after: avoid;
+            }
+        
+                </style>
+            </head>
+            <body>
+                
+            <div class="no-print" style="background: #eef2ff; padding: 20px; border-radius: 8px; margin-bottom: 30px; text-align: center; border: 1px solid #c7d2fe;">
+                <h1 style="margin-top:0; color: #3730a3; font-family: sans-serif;">Language Study Flashcards</h1>
+                <p style="color: #4338ca; font-family: sans-serif;">Instructions: Print single-sided. Cut along the dashed borders. Fold in the middle to create double-sided cards.</p>
+                <button onclick="window.print()" style="background: #4f46e5; color: white; border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; font-family: sans-serif;">Print</button>
+            </div>
+        <h2 class="set-header">English ⟷ French Study Set</h2>
+                    <div class="card-container">
+                        <div class="card-side front"><figure class="card-picture"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22240%22%20height%3D%22240%22%20viewBox%3D%220%200%20240%20240%22%3E%3Crect%20width%3D%22240%22%20height%3D%22240%22%20fill%3D%22white%22%2F%3E%3Cpath%20d%3D%22M48%20180C18%2070%20130%2030%20206%2030C220%20136%20145%20208%2048%20180Z%22%20fill%3D%22%2315803d%22%2F%3E%3Cpath%20d%3D%22M42%20200L180%2057M83%20157L80%20100M122%20115L166%20120%22%20stroke%3D%22%23bbf7d0%22%20stroke-width%3D%228%22%20fill%3D%22none%22%2F%3E%3C%2Fsvg%3E" alt="A green leaf with branching veins."></figure>
+                        <div class="lang-label">English</div>
+                        <div class="primary-text">Photosynthesis</div>
+                        <div class="def-text">Plants capture light and use water and carbon dioxide to make sugars. Plants capture light and use water and carbon dioxide to make sugars. Plants capture light and use water and carbon dioxide to make sugars. Plants capture light and use water and carbon dioxide to make sugars. Plants capture light and use water and carbon dioxide to make sugars. </div>
+                    </div>
+                        <div class="card-side back">
+                        <div class="lang-label">French</div>
+                        <div class="primary-text">Photosynthesis</div>
+                        <div class="def-text">Les plantes utilisent la lumière pour fabriquer des sucres. Les plantes utilisent la lumière pour fabriquer des sucres. Les plantes utilisent la lumière pour fabriquer des sucres. Les plantes utilisent la lumière pour fabriquer des sucres. Les plantes utilisent la lumière pour fabriquer des sucres.</div>
+                    </div>
+                    </div>
+                
+                    <div class="card-container">
+                        <div class="card-side front"><figure class="card-picture"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22240%22%20height%3D%22240%22%20viewBox%3D%220%200%20240%20240%22%3E%3Crect%20width%3D%22240%22%20height%3D%22240%22%20fill%3D%22white%22%2F%3E%3Cpath%20d%3D%22M48%20180C18%2070%20130%2030%20206%2030C220%20136%20145%20208%2048%20180Z%22%20fill%3D%22%2315803d%22%2F%3E%3Cpath%20d%3D%22M42%20200L180%2057M83%20157L80%20100M122%20115L166%20120%22%20stroke%3D%22%23bbf7d0%22%20stroke-width%3D%228%22%20fill%3D%22none%22%2F%3E%3C%2Fsvg%3E" alt="A green leaf with branching veins."></figure>
+                        <div class="lang-label">English</div>
+                        <div class="primary-text">Root</div>
+                        <div class="def-text">Plants capture light and use water and carbon dioxide to make sugars. Plants capture light and use water and carbon dioxide to make sugars. Plants capture light and use water and carbon dioxide to make sugars. Plants capture light and use water and carbon dioxide to make sugars. Plants capture light and use water and carbon dioxide to make sugars. </div>
+                    </div>
+                        <div class="card-side back">
+                        <div class="lang-label">French</div>
+                        <div class="primary-text">Root</div>
+                        <div class="def-text">Les plantes utilisent la lumière pour fabriquer des sucres. Les plantes utilisent la lumière pour fabriquer des sucres. Les plantes utilisent la lumière pour fabriquer des sucres. Les plantes utilisent la lumière pour fabriquer des sucres. Les plantes utilisent la lumière pour fabriquer des sucres.</div>
+                    </div>
+                    </div>
+                
+                    <div class="card-container">
+                        <div class="card-side front"><figure class="card-picture"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22240%22%20height%3D%22240%22%20viewBox%3D%220%200%20240%20240%22%3E%3Crect%20width%3D%22240%22%20height%3D%22240%22%20fill%3D%22white%22%2F%3E%3Cpath%20d%3D%22M48%20180C18%2070%20130%2030%20206%2030C220%20136%20145%20208%2048%20180Z%22%20fill%3D%22%2315803d%22%2F%3E%3Cpath%20d%3D%22M42%20200L180%2057M83%20157L80%20100M122%20115L166%20120%22%20stroke%3D%22%23bbf7d0%22%20stroke-width%3D%228%22%20fill%3D%22none%22%2F%3E%3C%2Fsvg%3E" alt="A green leaf with branching veins."></figure>
+                        <div class="lang-label">English</div>
+                        <div class="primary-text">Seed</div>
+                        <div class="def-text">Plants capture light and use water and carbon dioxide to make sugars. Plants capture light and use water and carbon dioxide to make sugars. Plants capture light and use water and carbon dioxide to make sugars. Plants capture light and use water and carbon dioxide to make sugars. Plants capture light and use water and carbon dioxide to make sugars. </div>
+                    </div>
+                        <div class="card-side back">
+                        <div class="lang-label">French</div>
+                        <div class="primary-text">Seed</div>
+                        <div class="def-text">Les plantes utilisent la lumière pour fabriquer des sucres. Les plantes utilisent la lumière pour fabriquer des sucres. Les plantes utilisent la lumière pour fabriquer des sucres. Les plantes utilisent la lumière pour fabriquer des sucres. Les plantes utilisent la lumière pour fabriquer des sucres.</div>
+                    </div>
+                    </div>
+                
+            </body>
+            </html>
+        

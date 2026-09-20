@@ -1,0 +1,50 @@
+{
+  "modules": [
+    {
+      "file": "instructional_context_module.js",
+      "hash": "694efa8b",
+      "mirrored": true
+    },
+    {
+      "file": "firestore_sync_module.js",
+      "hash": "2d9f752a",
+      "mirrored": true
+    },
+    {
+      "file": "generate_dispatcher_module.js",
+      "hash": "6deb59f9",
+      "mirrored": true
+    },
+    {
+      "file": "view_simplified_module.js",
+      "hash": "222054b7",
+      "mirrored": true
+    },
+    {
+      "file": "live_aac_module.js",
+      "hash": "6974389f",
+      "mirrored": true
+    },
+    {
+      "file": "doc_pipeline_module.js",
+      "hash": "7ddf0994",
+      "mirrored": true
+    }
+  ],
+  "shells": [
+    "AlloFlowANTI.txt",
+    "desktop/web-app/src/AlloFlowANTI.txt",
+    "desktop/web-app/src/App.jsx"
+  ],
+  "sourceSyntaxChecked": 2,
+  "parity": [
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "equalApartFromLoaderMode": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "equalApartFromLoaderMode": true
+    }
+  ]
+}

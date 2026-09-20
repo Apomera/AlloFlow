@@ -1,0 +1,69 @@
+{
+  "unit": {
+    "uniqueCases": 257,
+    "passed": 257,
+    "failed": 0,
+    "finalRun": {
+      "passed": 256,
+      "failed": 1
+    },
+    "focusedRerun": {
+      "passed": 18,
+      "failed": 0,
+      "testTimeoutMs": 30000
+    },
+    "note": "One source-AST inspection exceeded the initial allowance; all 18 tests in its suite passed on the focused rerun. Counts overlap."
+  },
+  "browser": {
+    "passed": 23,
+    "failed": 0,
+    "retries": 0
+  },
+  "additionalUi": {
+    "passed": 13,
+    "checks": [
+      "Four quality sliders retained; pacing toggles with mouse and keyboard",
+      "320px light: no horizontal overflow; header/settings accessibility scan passed",
+      "390px light: no horizontal overflow; header/settings accessibility scan passed",
+      "1280px light: no horizontal overflow; header/settings accessibility scan passed",
+      "320px dark: no horizontal overflow; header/settings accessibility scan passed",
+      "390px dark: no horizontal overflow; header/settings accessibility scan passed",
+      "1280px dark: no horizontal overflow; header/settings accessibility scan passed",
+      "320px contrast: no horizontal overflow; header/settings accessibility scan passed",
+      "390px contrast: no horizontal overflow; header/settings accessibility scan passed",
+      "1280px contrast: no horizontal overflow; header/settings accessibility scan passed",
+      "Batch exposes preference and locks it during processing",
+      "Partial verification has retry action, saved pacing summary, expandable evidence and working download navigation",
+      "Diagnostics open from the reserved header toolbar"
+    ],
+    "errors": []
+  },
+  "mirrors": [
+    {
+      "file": "doc_pipeline_module.js",
+      "equal": true
+    },
+    {
+      "file": "view_pdf_audit_module.js",
+      "equal": true
+    },
+    {
+      "file": "help_strings.js",
+      "equal": true
+    }
+  ],
+  "hashes": {
+    "doc_pipeline_source.jsx": "38ee2aeb01d059e3f9a98ed4b80591ae9e6dd7af4e4772d0d547d960e6e4666f",
+    "doc_pipeline_module.js": "5b6fbfc8dafbaafefa3f483e7d702f8d9045a92f3763d342c30768fcb35e5df2",
+    "view_pdf_audit_source.jsx": "f47f3bf35afcfcf9f6a7b25ac62c05469e1411860bc3998f182fbe55e3a55308",
+    "view_pdf_audit_module.js": "1bd0411b9aa1f3c5614236670518600d9346243ab4a0f87393f981d981d7a411",
+    "remediation_workspace_component.jsx": "d59782fe6ad5f2966c8f86c449f076ec0a3eced93ae6715835ddad9018606aa3",
+    "remediation_workspace.css": "fe86f2b9caee41c2c6890cb9e8b0abf14cfc335a58d73c1c43d6b534bd4fddcc",
+    "AlloFlowANTI.txt": "d88b6419f4980dadc125f46b7a444039b9d2d9b473e1789a597acc28fbd4a5f3",
+    "desktop/web-app/src/App.jsx": "a5fbae7f02ab5d578a2e9a810f2fa7ad0093cedd721b1aaacb908950d2393e0e",
+    "desktop/web-app/src/AlloFlowANTI.txt": "a5fbae7f02ab5d578a2e9a810f2fa7ad0093cedd721b1aaacb908950d2393e0e",
+    "help_strings.js": "53c1404e36c0170d635695289902cdbd625acfad14a4de46535754d136f7363b"
+  },
+  "liveProviderCalls": false,
+  "deployed": false
+}

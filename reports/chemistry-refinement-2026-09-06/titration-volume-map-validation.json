@@ -1,0 +1,48 @@
+{
+  "date": "2026-09-19T23:21:20.899Z",
+  "success": true,
+  "scope": "Guided prediction/evidence diagram and matching report diagram",
+  "source": {
+    "syntax": true,
+    "mirrored": true,
+    "scopedDiffWhitespace": true,
+    "guideEnglishFallbacksChecked": 103,
+    "newMapEnglishKeys": 10,
+    "sha256": "b369111c9c5b2b28b864de7edf1728078d553cc112df3028b5fa181b02f2ae9d"
+  },
+  "tests": {
+    "passed": 31,
+    "files": [
+      "titration_focus_relationships.test.js",
+      "titration_investigation.test.js",
+      "titration_investigation_report.test.js",
+      "titration_investigation_volume_map.test.js"
+    ],
+    "report": "titration-volume-map-final-tests.json",
+    "command": "node node_modules/vitest/vitest.mjs run tests/titration_investigation_volume_map.test.js tests/titration_investigation_report.test.js tests/titration_investigation.test.js tests/titration_focus_relationships.test.js --pool=forks --no-isolate --maxWorkers=1 --testTimeout=30000"
+  },
+  "browser": {
+    "scans": 50,
+    "errors": [],
+    "checks": [
+      "Prediction diagrams: guide disclosure, keyboard range controls, exact scale changes, boundary and off-scale predictions, saved-state isolation, report preview and static exported diagram pass.",
+      "Report preview and real download preserve saved evidence and notes; keyboard open/close/Escape, other live setups, free exploration, long and hostile text, Unicode truncation, print control/media, invalidation and remount pass.",
+      "Actual additions and shared notebook saves drive all five steps; older notebook data is excluded, notes and practice records persist, and serialized remount restores the completed study.",
+      "Keyboard focus, optional hints, invalid predictions, setup pause/restore, free exploration, cleared/full notebooks, revisiting volume, 3D viewer identity, context-loss fallback, and forced colors pass."
+    ],
+    "report": "titration-volume-map-browser-results.json",
+    "command": "node reports/chemistry-refinement-2026-09-06/titration-volume-map-browser.cjs"
+  },
+  "visualReview": [
+    "Desktop close-up",
+    "320px close-up",
+    "Print-media report"
+  ],
+  "limits": [
+    "Scoped tests, not the full repository suite.",
+    "Forced-color axe scans exclude the contrast rule.",
+    "Physical devices, printer output, and PDF pagination not manually tested.",
+    "Other-language translations pending.",
+    "Local changes only; not deployed."
+  ]
+}

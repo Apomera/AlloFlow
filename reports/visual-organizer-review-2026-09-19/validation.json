@@ -1,0 +1,70 @@
+{
+  "passed": 357,
+  "failed": 0,
+  "suites": 81,
+  "files": [
+    {
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/concept_recall.test.js",
+      "status": "passed"
+    },
+    {
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/games_golden.test.js",
+      "status": "passed"
+    },
+    {
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/lan_live_session_identity.test.js",
+      "status": "passed"
+    },
+    {
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/live_session_connection_recovery.test.js",
+      "status": "passed"
+    },
+    {
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/memory_palace.test.js",
+      "status": "passed"
+    },
+    {
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/memory_palace_generation_runtime.test.js",
+      "status": "passed"
+    },
+    {
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/multi_bucket_game_dialog_a11y.test.js",
+      "status": "passed"
+    },
+    {
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/multi_zone_sort_shared_a11y.test.js",
+      "status": "passed"
+    },
+    {
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/organizer_3d_remote_stop.test.js",
+      "status": "passed"
+    },
+    {
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/organizer_activity_type_pairing.test.js",
+      "status": "passed"
+    },
+    {
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/organizer_integration_runtime.test.js",
+      "status": "passed"
+    },
+    {
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/organizer_item_object_render.test.js",
+      "status": "passed"
+    },
+    {
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/pipeline_builder_branching.test.js",
+      "status": "passed"
+    },
+    {
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/session_transport.test.js",
+      "status": "passed"
+    },
+    {
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/visual_organizer_hardening.test.js",
+      "status": "passed"
+    }
+  ],
+  "failures": [],
+  "liveProviderUsed": false,
+  "deployed": false
+}

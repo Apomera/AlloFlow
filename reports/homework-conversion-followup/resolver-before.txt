@@ -1,0 +1,17 @@
+  const resolveAssignmentResources = useCallback((resourceIds = null) => {
+      const fallbackCurrent = _alloStudentSafeResources([generatedContent]);
+      const resourceCandidates = _alloStudentSafeResources(history);
+      if (Array.isArray(resourceIds)) {
+          const requestedIds = new Set(resourceIds.map(id => String(id || '').trim().slice(0, 160)).filter(Boolean).slice(0, 25));
+          const selected = resourceCandidates.filter(item => requestedIds.has(String(item.id || '')));
+          // Pair after explicit selection so its matching original and curated
+          // word help travel too. Search only the student-safe lesson resources.
+          const readingContract = window.AlloModules?.InstructionalContext;
+          const paired = readingContract?.ensureReadingSourcePairs
+              ? readingContract.ensureReadingSourcePairs(selected, { history: resourceCandidates }) : selected;
+          const selectedIds = new Set(selected.map(item => String(item.id)));
+          // Keep the requested resource first for the assignment title/opening.
+          return selected.concat(paired.filter(item => !selectedIds.has(String(item.id))));
+      }
+      return resourceCandidates.length > 0 ? resourceCandidates : fallbackCurrent;
+  }, [generatedContent, history]);

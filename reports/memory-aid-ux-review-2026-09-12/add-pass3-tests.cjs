@@ -1,0 +1,1 @@
+const fs=require('fs'),file='tests/memory_aid_refinement_20260919.test.js';let s=fs.readFileSync(file,'utf8');if(s.includes('Memory Aid revision drafts and saved plans'))throw Error('Pass 3 tests already added');s+=fs.readFileSync(__dirname+'/pass3-tests.txt','utf8');fs.writeFileSync(file,s);

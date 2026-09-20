@@ -114,9 +114,10 @@ describe('anti-drift: builder crop shipped with its privacy + chrome-sweep invar
     expect(anti).toMatch(/removeAttribute\('data-allo-crop-id'\); n\.removeAttribute\('data-allo-crop'\)/);
   });
   it('the export shim sweeps live crop chrome before the module serializes the iframe', () => {
-    const shim = anti.slice(anti.indexOf('const executeExportFromPreview = async () => {'));
+    const host = readFileSync(resolve(process.cwd(), 'host_handlers_source.jsx'), 'utf8');
+    const shim = host.slice(host.indexOf('const executeExportFromPreview = async () => {'));
     const firstChunk = shim.slice(0, 300);
-    expect(firstChunk).toContain('_removeBuilderCropUi();');
+    expect(firstChunk).toContain('__d._removeBuilderCropUi();');
   });
   it('applying or resetting a crop arms the edit-loss guard (data-allo-user-edited)', () => {
     const modal = anti.slice(anti.indexOf('const _openBuilderCropModal'), anti.indexOf('const _dismissCropBtn'));

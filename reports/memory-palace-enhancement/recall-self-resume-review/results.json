@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "pendingRatingsSurviveNavigation": true,
+  "unseenAnswersStayHidden": true,
+  "entranceAndRemount": true,
+  "keyboardRating": true,
+  "retryExitContentReset": true,
+  "onlyRatingsCountAsAttempts": true,
+  "widths": [
+    1280,
+    390,
+    320
+  ],
+  "pageErrors": []
+}

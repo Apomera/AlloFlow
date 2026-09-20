@@ -1,0 +1,5217 @@
+{
+  "startedAt": "2026-09-19T22:49:10.370Z",
+  "method": "Live HistoryPanel React component using current canonical module, AppStyles, compiled Tailwind CSS, English UI strings, three theme contexts, existing two-resource fixture; icon components are stubbed, so icon contrast is outside scope.",
+  "states": [
+    {
+      "theme": "light",
+      "state": "empty",
+      "colors": [
+        {
+          "tag": "SPAN",
+          "id": "",
+          "text": "Resource Pack History",
+          "placeholder": false,
+          "foreground": "rgb(2, 6, 23)",
+          "fontSize": "16px",
+          "weight": "700",
+          "layers": [
+            {
+              "tag": "SPAN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "H3",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 19.280617407842026,
+          "maximumRatio": 20.172843484025293,
+          "backgroundSamples": 101,
+          "unsupported": []
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "text": "Autosaved 08:00 AM",
+          "placeholder": false,
+          "foreground": "rgb(4, 120, 87)",
+          "fontSize": "12px",
+          "weight": "500",
+          "layers": [
+            {
+              "tag": "SPAN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 5.241375199962334,
+          "maximumRatio": 5.483924052498799,
+          "backgroundSamples": 101,
+          "unsupported": []
+        },
+        {
+          "tag": "SELECT",
+          "id": "",
+          "key": "history_filter_unit_select",
+          "text": "All ResourcesUncategorizedUnit One",
+          "placeholder": false,
+          "foreground": "rgb(30, 41, 59)",
+          "fontSize": "12px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "SELECT",
+              "id": "",
+              "background": "rgb(255, 255, 255)",
+              "image": "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23475569%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 14.628718079350334,
+          "maximumRatio": 14.628718079350334,
+          "backgroundSamples": 101,
+          "unsupported": [
+            "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23475569%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")"
+          ]
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "text": "No resources generated yet.",
+          "placeholder": false,
+          "foreground": "rgb(100, 116, 139)",
+          "fontSize": "14px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(255, 255, 255, 0.78)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 4.712016578210922,
+          "maximumRatio": 4.758842787868666,
+          "backgroundSamples": 101,
+          "unsupported": []
+        }
+      ],
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"light\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"min-w-0 truncate\">Resource Pack History</span>",
+              "target": [
+                ".truncate"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"light\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"text-emerald-700 flex items-center gap-1\"> Autosaved 08:00 AM</span>",
+              "target": [
+                ".text-emerald-700"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+                      "target": [
+                        "select"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+              "target": [
+                "select"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-center text-sm text-slate-500\">No resources generated yet.</div>",
+                      "target": [
+                        ".border-dashed"
+                      ]
+                    },
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"light\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<div class=\"rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-center text-sm text-slate-500\">No resources generated yet.</div>",
+              "target": [
+                ".border-dashed"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "state": "populated",
+      "colors": [
+        {
+          "tag": "SPAN",
+          "id": "",
+          "text": "Resource Pack History",
+          "placeholder": false,
+          "foreground": "rgb(2, 6, 23)",
+          "fontSize": "16px",
+          "weight": "700",
+          "layers": [
+            {
+              "tag": "SPAN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "H3",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 19.280617407842026,
+          "maximumRatio": 20.172843484025293,
+          "backgroundSamples": 101,
+          "unsupported": []
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "text": "Autosaved 08:00 AM",
+          "placeholder": false,
+          "foreground": "rgb(4, 120, 87)",
+          "fontSize": "12px",
+          "weight": "500",
+          "layers": [
+            {
+              "tag": "SPAN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 5.241375199962334,
+          "maximumRatio": 5.483924052498799,
+          "backgroundSamples": 101,
+          "unsupported": []
+        },
+        {
+          "tag": "SELECT",
+          "id": "",
+          "key": "history_filter_unit_select",
+          "text": "All ResourcesUncategorizedUnit One",
+          "placeholder": false,
+          "foreground": "rgb(30, 41, 59)",
+          "fontSize": "12px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "SELECT",
+              "id": "",
+              "background": "rgb(255, 255, 255)",
+              "image": "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23475569%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 14.628718079350334,
+          "maximumRatio": 14.628718079350334,
+          "backgroundSamples": 101,
+          "unsupported": [
+            "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23475569%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")"
+          ]
+        },
+        {
+          "tag": "INPUT",
+          "id": "",
+          "text": "Search resources",
+          "placeholder": true,
+          "foreground": "rgb(148, 163, 184)",
+          "fontSize": "12px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "INPUT",
+              "id": "",
+              "background": "rgb(255, 255, 255)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(255, 255, 255)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 2.5640413904962034,
+          "maximumRatio": 2.5640413904962034,
+          "backgroundSamples": 101,
+          "unsupported": []
+        },
+        {
+          "tag": "SELECT",
+          "id": "",
+          "text": "All typesglossaryquiz",
+          "placeholder": false,
+          "foreground": "rgb(30, 41, 59)",
+          "fontSize": "12px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "SELECT",
+              "id": "",
+              "background": "rgb(255, 255, 255)",
+              "image": "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23475569%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(255, 255, 255)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 14.628718079350334,
+          "maximumRatio": 14.628718079350334,
+          "backgroundSamples": 101,
+          "unsupported": [
+            "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23475569%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")"
+          ]
+        },
+        {
+          "tag": "INPUT",
+          "id": "",
+          "key": "history_unit_name_input",
+          "text": "e.g. Civil War Unit",
+          "placeholder": true,
+          "foreground": "rgb(148, 163, 184)",
+          "fontSize": "14px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "INPUT",
+              "id": "",
+              "background": "rgb(255, 255, 255)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(238, 242, 255)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 2.5640413904962034,
+          "maximumRatio": 2.5640413904962034,
+          "backgroundSamples": 101,
+          "unsupported": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "key": "history_save_unit_btn",
+          "text": "Save",
+          "placeholder": false,
+          "foreground": "rgb(255, 255, 255)",
+          "fontSize": "12px",
+          "weight": "700",
+          "layers": [
+            {
+              "tag": "BUTTON",
+              "id": "",
+              "background": "rgb(67, 56, 202)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(238, 242, 255)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 7.9031114800249425,
+          "maximumRatio": 7.9031114800249425,
+          "backgroundSamples": 101,
+          "unsupported": []
+        }
+      ],
+      "hover": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "key": "history_save_unit_btn",
+          "text": "Save",
+          "placeholder": false,
+          "foreground": "rgb(255, 255, 255)",
+          "fontSize": "12px",
+          "weight": "700",
+          "layers": [
+            {
+              "tag": "BUTTON",
+              "id": "",
+              "background": "rgb(55, 48, 163)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(238, 242, 255)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 9.933329874512658,
+          "maximumRatio": 9.933329874512658,
+          "backgroundSamples": 101,
+          "unsupported": []
+        }
+      ],
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#64748b",
+                    "bgColor": "#eef2ff",
+                    "contrastRatio": 4.25,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"rounded-xl border border-indigo-200 bg-indigo-50 p-3 animate-in slide-in-from-top-2\">",
+                      "target": [
+                        ".animate-in"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element has insufficient color contrast of 4.25 (foreground color: #64748b, background color: #eef2ff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<button data-help-key=\"history_cancel_unit_btn\" class=\"min-h-11 rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-white\">Cancel</button>",
+              "target": [
+                ".hover\\:bg-white"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.25 (foreground color: #64748b, background color: #eef2ff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#64748b",
+                    "bgColor": "#f1f5f9",
+                    "contrastRatio": 4.34,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<span class=\"rounded-full border px-2 py-0.5 font-semibold border-slate-200 bg-slate-100 text-slate-600\">glossary</span>",
+                      "target": [
+                        ".flex-wrap.gap-1\\.5.mt-1 > .rounded-full.bg-slate-100.py-0\\.5"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element has insufficient color contrast of 4.34 (foreground color: #64748b, background color: #f1f5f9, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"rounded-full border px-2 py-0.5 font-semibold border-slate-200 bg-slate-100 text-slate-600\">glossary</span>",
+              "target": [
+                ".flex-wrap.gap-1\\.5.mt-1 > .rounded-full.bg-slate-100.py-0\\.5"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.34 (foreground color: #64748b, background color: #f1f5f9, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "impact": "critical",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "description": "Ensure all ARIA attributes have valid values",
+          "help": "ARIA attributes must conform to valid values",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/aria-valid-attr-value?application=axeAPI",
+          "nodes": [
+            {
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"history-move-menu-legacy-row-1\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-1\""
+                }
+              ],
+              "none": [],
+              "impact": "critical",
+              "html": "<button type=\"button\" data-help-key=\"history_move_to_unit...\" aria-label=\"Move to Unit Folder:...\" aria-expanded=\"false\" aria-haspopup=\"menu\" aria-controls=\"history-move-menu-le...\" class=\"min-h-11 min-w-11 gr...\" title=\"Move to Unit Folder\">",
+              "target": [
+                "button[aria-controls=\"history-move-menu-legacy-row-1\"]"
+              ],
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-1\""
+            },
+            {
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"history-move-menu-legacy-row-2\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-2\""
+                }
+              ],
+              "none": [],
+              "impact": "critical",
+              "html": "<button type=\"button\" data-help-key=\"history_move_to_unit...\" aria-label=\"Move to Unit Folder:...\" aria-expanded=\"false\" aria-haspopup=\"menu\" aria-controls=\"history-move-menu-le...\" class=\"min-h-11 min-w-11 gr...\" title=\"Move to Unit Folder\">",
+              "target": [
+                ".text-amber-700"
+              ],
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-2\""
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"light\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"min-w-0 truncate\">Resource Pack History</span>",
+              "target": [
+                "h3 > .truncate.min-w-0"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"light\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"text-emerald-700 flex items-center gap-1\"> Autosaved 08:00 AM</span>",
+              "target": [
+                ".text-emerald-700"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+                      "target": [
+                        ".outline-none"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+              "target": [
+                ".outline-none"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select aria-label=\"Filter resources by type\" class=\"min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200\">",
+                      "target": [
+                        ".min-w-\\[120px\\]"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select aria-label=\"Filter resources by type\" class=\"min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200\">",
+              "target": [
+                ".min-w-\\[120px\\]"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#94a3b8",
+                    "bgColor": "#ffffff",
+                    "contrastRatio": 2.56,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div role=\"listitem\" class=\"group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] border-slate-200 border-l-transparent bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50/70 cursor-default\">",
+                      "target": [
+                        ".border-l-transparent"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"text-[11px] font-bold\" aria-hidden=\"true\">2</span>",
+              "target": [
+                ".text-slate-400 > .text-\\[11px\\].font-bold[aria-hidden=\"true\"]"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#64748b",
+                    "bgColor": "#f1f5f9",
+                    "contrastRatio": 4.34,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"self-center p-2 rounded-lg shrink-0 bg-slate-100 text-slate-600\"><span aria-hidden=\"true\">R</span></div>",
+                      "target": [
+                        ".bg-slate-100.self-center.p-2"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span aria-hidden=\"true\">R</span>",
+              "target": [
+                ".bg-slate-100.self-center.p-2 > span[aria-hidden=\"true\"]"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "state": "empty",
+      "colors": [
+        {
+          "tag": "SPAN",
+          "id": "",
+          "text": "Resource Pack History",
+          "placeholder": false,
+          "foreground": "rgb(248, 250, 252)",
+          "fontSize": "16px",
+          "weight": "700",
+          "layers": [
+            {
+              "tag": "SPAN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "H3",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(23, 32, 51) 0%, rgb(15, 23, 42) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(11, 17, 32)",
+              "image": "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 15.54894049839323,
+          "maximumRatio": 17.062933971317335,
+          "backgroundSamples": 101,
+          "unsupported": [
+            "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)"
+          ]
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "text": "Autosaved 08:00 AM",
+          "placeholder": false,
+          "foreground": "rgb(110, 231, 183)",
+          "fontSize": "12px",
+          "weight": "500",
+          "layers": [
+            {
+              "tag": "SPAN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(23, 32, 51) 0%, rgb(15, 23, 42) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(11, 17, 32)",
+              "image": "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 10.673009557743136,
+          "maximumRatio": 11.712235787244076,
+          "backgroundSamples": 101,
+          "unsupported": [
+            "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)"
+          ]
+        },
+        {
+          "tag": "SELECT",
+          "id": "",
+          "key": "history_filter_unit_select",
+          "text": "All ResourcesUncategorizedUnit One",
+          "placeholder": false,
+          "foreground": "rgb(226, 232, 240)",
+          "fontSize": "12px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "SELECT",
+              "id": "",
+              "background": "rgb(22, 32, 50)",
+              "image": "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23e2e8f0%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(17, 24, 39)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(23, 32, 51) 0%, rgb(15, 23, 42) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(11, 17, 32)",
+              "image": "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 13.23822729261368,
+          "maximumRatio": 13.23822729261368,
+          "backgroundSamples": 101,
+          "unsupported": [
+            "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)",
+            "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23e2e8f0%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")"
+          ]
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "text": "No resources generated yet.",
+          "placeholder": false,
+          "foreground": "rgb(203, 213, 225)",
+          "fontSize": "14px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(22, 32, 50, 0.9)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(23, 32, 51) 0%, rgb(15, 23, 42) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(11, 17, 32)",
+              "image": "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 10.988575701802914,
+          "maximumRatio": 11.099841731042698,
+          "backgroundSamples": 101,
+          "unsupported": [
+            "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)"
+          ]
+        }
+      ],
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"min-w-0 truncate\">Resource Pack History</span>",
+              "target": [
+                ".truncate"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"text-emerald-700 flex items-center gap-1\"> Autosaved 08:00 AM</span>",
+              "target": [
+                ".text-emerald-700"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+                      "target": [
+                        "select"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+              "target": [
+                "select"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-center text-sm text-slate-500\">No resources generated yet.</div>",
+                      "target": [
+                        ".border-dashed"
+                      ]
+                    },
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<div class=\"rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-center text-sm text-slate-500\">No resources generated yet.</div>",
+              "target": [
+                ".border-dashed"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "state": "populated",
+      "colors": [
+        {
+          "tag": "SPAN",
+          "id": "",
+          "text": "Resource Pack History",
+          "placeholder": false,
+          "foreground": "rgb(248, 250, 252)",
+          "fontSize": "16px",
+          "weight": "700",
+          "layers": [
+            {
+              "tag": "SPAN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "H3",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(23, 32, 51) 0%, rgb(15, 23, 42) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(11, 17, 32)",
+              "image": "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 15.54894049839323,
+          "maximumRatio": 17.062933971317335,
+          "backgroundSamples": 101,
+          "unsupported": [
+            "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)"
+          ]
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "text": "Autosaved 08:00 AM",
+          "placeholder": false,
+          "foreground": "rgb(110, 231, 183)",
+          "fontSize": "12px",
+          "weight": "500",
+          "layers": [
+            {
+              "tag": "SPAN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(23, 32, 51) 0%, rgb(15, 23, 42) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(11, 17, 32)",
+              "image": "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 10.673009557743136,
+          "maximumRatio": 11.712235787244076,
+          "backgroundSamples": 101,
+          "unsupported": [
+            "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)"
+          ]
+        },
+        {
+          "tag": "SELECT",
+          "id": "",
+          "key": "history_filter_unit_select",
+          "text": "All ResourcesUncategorizedUnit One",
+          "placeholder": false,
+          "foreground": "rgb(226, 232, 240)",
+          "fontSize": "12px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "SELECT",
+              "id": "",
+              "background": "rgb(22, 32, 50)",
+              "image": "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23e2e8f0%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(17, 24, 39)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(23, 32, 51) 0%, rgb(15, 23, 42) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(11, 17, 32)",
+              "image": "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 13.23822729261368,
+          "maximumRatio": 13.23822729261368,
+          "backgroundSamples": 101,
+          "unsupported": [
+            "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)",
+            "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23e2e8f0%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")"
+          ]
+        },
+        {
+          "tag": "INPUT",
+          "id": "",
+          "text": "Search resources",
+          "placeholder": true,
+          "foreground": "rgb(148, 163, 184)",
+          "fontSize": "12px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "INPUT",
+              "id": "",
+              "background": "rgb(22, 32, 50)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(22, 32, 50)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(23, 32, 51) 0%, rgb(15, 23, 42) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(11, 17, 32)",
+              "image": "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 6.364889917694926,
+          "maximumRatio": 6.364889917694926,
+          "backgroundSamples": 101,
+          "unsupported": [
+            "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)"
+          ]
+        },
+        {
+          "tag": "SELECT",
+          "id": "",
+          "text": "All typesglossaryquiz",
+          "placeholder": false,
+          "foreground": "rgb(226, 232, 240)",
+          "fontSize": "12px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "SELECT",
+              "id": "",
+              "background": "rgb(22, 32, 50)",
+              "image": "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23e2e8f0%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(22, 32, 50)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(23, 32, 51) 0%, rgb(15, 23, 42) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(11, 17, 32)",
+              "image": "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 13.23822729261368,
+          "maximumRatio": 13.23822729261368,
+          "backgroundSamples": 101,
+          "unsupported": [
+            "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)",
+            "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23e2e8f0%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")"
+          ]
+        },
+        {
+          "tag": "INPUT",
+          "id": "",
+          "key": "history_unit_name_input",
+          "text": "e.g. Civil War Unit",
+          "placeholder": true,
+          "foreground": "rgb(148, 163, 184)",
+          "fontSize": "14px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "INPUT",
+              "id": "",
+              "background": "rgb(22, 32, 50)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(49, 46, 129, 0.38)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(23, 32, 51) 0%, rgb(15, 23, 42) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(11, 17, 32)",
+              "image": "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 6.364889917694926,
+          "maximumRatio": 6.364889917694926,
+          "backgroundSamples": 101,
+          "unsupported": [
+            "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)"
+          ]
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "key": "history_save_unit_btn",
+          "text": "Save",
+          "placeholder": false,
+          "foreground": "rgb(255, 255, 255)",
+          "fontSize": "12px",
+          "weight": "700",
+          "layers": [
+            {
+              "tag": "BUTTON",
+              "id": "",
+              "background": "rgb(99, 102, 241)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(49, 46, 129, 0.38)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(23, 32, 51) 0%, rgb(15, 23, 42) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(11, 17, 32)",
+              "image": "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 4.466894269549531,
+          "maximumRatio": 4.466894269549531,
+          "backgroundSamples": 101,
+          "unsupported": [
+            "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)"
+          ]
+        }
+      ],
+      "hover": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "key": "history_save_unit_btn",
+          "text": "Save",
+          "placeholder": false,
+          "foreground": "rgb(255, 255, 255)",
+          "fontSize": "12px",
+          "weight": "700",
+          "layers": [
+            {
+              "tag": "BUTTON",
+              "id": "",
+              "background": "rgb(129, 140, 248)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(49, 46, 129, 0.38)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "linear-gradient(rgb(23, 32, 51) 0%, rgb(15, 23, 42) 100%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(11, 17, 32)",
+              "image": "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 2.9829032774625595,
+          "maximumRatio": 2.9829032774625595,
+          "backgroundSamples": 101,
+          "unsupported": [
+            "radial-gradient(circle at 50% 0%, rgb(30, 27, 75) 0%, rgb(11, 17, 32) 60%)"
+          ]
+        }
+      ],
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#ffffff",
+                    "bgColor": "#818cf8",
+                    "contrastRatio": 2.98,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button data-help-key=\"history_save_unit_btn\" class=\"min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800\">Save</button>",
+                      "target": [
+                        ".border-indigo-700"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element has insufficient color contrast of 2.98 (foreground color: #ffffff, background color: #818cf8, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<button data-help-key=\"history_save_unit_btn\" class=\"min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800\">Save</button>",
+              "target": [
+                ".border-indigo-700"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.98 (foreground color: #ffffff, background color: #818cf8, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "impact": "critical",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "description": "Ensure all ARIA attributes have valid values",
+          "help": "ARIA attributes must conform to valid values",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/aria-valid-attr-value?application=axeAPI",
+          "nodes": [
+            {
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"history-move-menu-legacy-row-1\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-1\""
+                }
+              ],
+              "none": [],
+              "impact": "critical",
+              "html": "<button type=\"button\" data-help-key=\"history_move_to_unit...\" aria-label=\"Move to Unit Folder:...\" aria-expanded=\"false\" aria-haspopup=\"menu\" aria-controls=\"history-move-menu-le...\" class=\"min-h-11 min-w-11 gr...\" title=\"Move to Unit Folder\">",
+              "target": [
+                "button[aria-controls=\"history-move-menu-legacy-row-1\"]"
+              ],
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-1\""
+            },
+            {
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"history-move-menu-legacy-row-2\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-2\""
+                }
+              ],
+              "none": [],
+              "impact": "critical",
+              "html": "<button type=\"button\" data-help-key=\"history_move_to_unit...\" aria-label=\"Move to Unit Folder:...\" aria-expanded=\"false\" aria-haspopup=\"menu\" aria-controls=\"history-move-menu-le...\" class=\"min-h-11 min-w-11 gr...\" title=\"Move to Unit Folder\">",
+              "target": [
+                ".text-amber-700"
+              ],
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-2\""
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"min-w-0 truncate\">Resource Pack History</span>",
+              "target": [
+                "h3 > .truncate.min-w-0"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"text-emerald-700 flex items-center gap-1\"> Autosaved 08:00 AM</span>",
+              "target": [
+                ".text-emerald-700"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+                      "target": [
+                        ".outline-none"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+              "target": [
+                ".outline-none"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select aria-label=\"Filter resources by type\" class=\"min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200\">",
+                      "target": [
+                        ".min-w-\\[120px\\]"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select aria-label=\"Filter resources by type\" class=\"min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200\">",
+              "target": [
+                ".min-w-\\[120px\\]"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"rounded-xl border border-indigo-200 bg-indigo-50 p-3 animate-in slide-in-from-top-2\">",
+                      "target": [
+                        ".animate-in"
+                      ]
+                    },
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<label class=\"block text-xs font-bold text-slate-700 mb-1\">New Unit Name</label>",
+              "target": [
+                "label"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"rounded-xl border border-indigo-200 bg-indigo-50 p-3 animate-in slide-in-from-top-2\">",
+                      "target": [
+                        ".animate-in"
+                      ]
+                    },
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<button data-help-key=\"history_cancel_unit_btn\" class=\"min-h-11 rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-white\">Cancel</button>",
+              "target": [
+                ".hover\\:bg-white"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div role=\"listitem\" class=\"group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5 cursor-default\">",
+                      "target": [
+                        ".border-indigo-300"
+                      ]
+                    },
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"text-[11px] font-bold\" aria-hidden=\"true\">1</span>",
+              "target": [
+                ".text-indigo-600 > .text-\\[11px\\].font-bold[aria-hidden=\"true\"]"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"self-center p-2 rounded-lg shrink-0 bg-indigo-100 text-indigo-700\"><span aria-hidden=\"true\">R</span></div>",
+                      "target": [
+                        ".bg-indigo-100"
+                      ]
+                    },
+                    {
+                      "html": "<div role=\"listitem\" class=\"group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5 cursor-default\">",
+                      "target": [
+                        ".border-indigo-300"
+                      ]
+                    },
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span aria-hidden=\"true\">R</span>",
+              "target": [
+                ".bg-indigo-100 > span[aria-hidden=\"true\"]"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div role=\"listitem\" class=\"group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5 cursor-default\">",
+                      "target": [
+                        ".border-indigo-300"
+                      ]
+                    },
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<button aria-label=\"Delete\" class=\"min-h-11 rounded-lg px-2 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 flex items-center gap-1\" title=\"Remove from pack\" data-help-key=\"resource_delete_button\"> Remove</button>",
+              "target": [
+                ".border-indigo-300 > .mt-2.border-t.pt-2 > .text-red-700.hover\\:bg-red-50[aria-label=\"Delete\"]"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "contrast",
+      "state": "empty",
+      "colors": [
+        {
+          "tag": "SPAN",
+          "id": "",
+          "text": "Resource Pack History",
+          "placeholder": false,
+          "foreground": "rgb(255, 255, 0)",
+          "fontSize": "16px",
+          "weight": "700",
+          "layers": [
+            {
+              "tag": "SPAN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "H3",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 19.555999999999997,
+          "maximumRatio": 19.555999999999997,
+          "backgroundSamples": 1,
+          "unsupported": []
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "text": "Autosaved 08:00 AM",
+          "placeholder": false,
+          "foreground": "rgb(0, 255, 0)",
+          "fontSize": "12px",
+          "weight": "500",
+          "layers": [
+            {
+              "tag": "SPAN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 15.303999999999998,
+          "maximumRatio": 15.303999999999998,
+          "backgroundSamples": 1,
+          "unsupported": []
+        },
+        {
+          "tag": "SELECT",
+          "id": "",
+          "key": "history_filter_unit_select",
+          "text": "All ResourcesUncategorizedUnit One",
+          "placeholder": false,
+          "foreground": "rgb(255, 255, 255)",
+          "fontSize": "12px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "SELECT",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23e2e8f0%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 21,
+          "maximumRatio": 21,
+          "backgroundSamples": 1,
+          "unsupported": [
+            "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23e2e8f0%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")"
+          ]
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "text": "No resources generated yet.",
+          "placeholder": false,
+          "foreground": "rgb(255, 255, 255)",
+          "fontSize": "14px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 21,
+          "maximumRatio": 21,
+          "backgroundSamples": 1,
+          "unsupported": []
+        }
+      ],
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+                      "target": [
+                        "select"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+              "target": [
+                "select"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "contrast",
+      "state": "populated",
+      "colors": [
+        {
+          "tag": "SPAN",
+          "id": "",
+          "text": "Resource Pack History",
+          "placeholder": false,
+          "foreground": "rgb(255, 255, 0)",
+          "fontSize": "16px",
+          "weight": "700",
+          "layers": [
+            {
+              "tag": "SPAN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "H3",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 19.555999999999997,
+          "maximumRatio": 19.555999999999997,
+          "backgroundSamples": 1,
+          "unsupported": []
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "text": "Autosaved 08:00 AM",
+          "placeholder": false,
+          "foreground": "rgb(0, 255, 0)",
+          "fontSize": "12px",
+          "weight": "500",
+          "layers": [
+            {
+              "tag": "SPAN",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 15.303999999999998,
+          "maximumRatio": 15.303999999999998,
+          "backgroundSamples": 1,
+          "unsupported": []
+        },
+        {
+          "tag": "SELECT",
+          "id": "",
+          "key": "history_filter_unit_select",
+          "text": "All ResourcesUncategorizedUnit One",
+          "placeholder": false,
+          "foreground": "rgb(255, 255, 255)",
+          "fontSize": "12px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "SELECT",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23e2e8f0%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 21,
+          "maximumRatio": 21,
+          "backgroundSamples": 1,
+          "unsupported": [
+            "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23e2e8f0%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")"
+          ]
+        },
+        {
+          "tag": "INPUT",
+          "id": "",
+          "text": "Search resources",
+          "placeholder": true,
+          "foreground": "rgb(255, 255, 255)",
+          "fontSize": "12px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "INPUT",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 21,
+          "maximumRatio": 21,
+          "backgroundSamples": 1,
+          "unsupported": []
+        },
+        {
+          "tag": "SELECT",
+          "id": "",
+          "text": "All typesglossaryquiz",
+          "placeholder": false,
+          "foreground": "rgb(255, 255, 255)",
+          "fontSize": "12px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "SELECT",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23e2e8f0%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 21,
+          "maximumRatio": 21,
+          "backgroundSamples": 1,
+          "unsupported": [
+            "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23e2e8f0%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")"
+          ]
+        },
+        {
+          "tag": "INPUT",
+          "id": "",
+          "key": "history_unit_name_input",
+          "text": "e.g. Civil War Unit",
+          "placeholder": true,
+          "foreground": "rgb(255, 255, 255)",
+          "fontSize": "14px",
+          "weight": "400",
+          "layers": [
+            {
+              "tag": "INPUT",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(0, 26, 26)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 21,
+          "maximumRatio": 21,
+          "backgroundSamples": 1,
+          "unsupported": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "key": "history_save_unit_btn",
+          "text": "Save",
+          "placeholder": false,
+          "foreground": "rgb(0, 0, 0)",
+          "fontSize": "12px",
+          "weight": "700",
+          "layers": [
+            {
+              "tag": "BUTTON",
+              "id": "",
+              "background": "rgb(255, 255, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(0, 26, 26)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 19.555999999999997,
+          "maximumRatio": 19.555999999999997,
+          "backgroundSamples": 1,
+          "unsupported": []
+        }
+      ],
+      "hover": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "key": "history_save_unit_btn",
+          "text": "Save",
+          "placeholder": false,
+          "foreground": "rgb(0, 0, 0)",
+          "fontSize": "12px",
+          "weight": "700",
+          "layers": [
+            {
+              "tag": "BUTTON",
+              "id": "",
+              "background": "rgb(255, 255, 255)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgb(0, 26, 26)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "tour-history-panel",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "MAIN",
+              "id": "",
+              "background": "rgb(0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "DIV",
+              "id": "root",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "background": "rgb(248, 250, 252)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "background": "rgba(0, 0, 0, 0)",
+              "image": "none",
+              "opacity": "1",
+              "before": false,
+              "after": false
+            }
+          ],
+          "minimumRatio": 21,
+          "maximumRatio": 21,
+          "backgroundSamples": 1,
+          "unsupported": []
+        }
+      ],
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "impact": "critical",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "description": "Ensure all ARIA attributes have valid values",
+          "help": "ARIA attributes must conform to valid values",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/aria-valid-attr-value?application=axeAPI",
+          "nodes": [
+            {
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"history-move-menu-legacy-row-1\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-1\""
+                }
+              ],
+              "none": [],
+              "impact": "critical",
+              "html": "<button type=\"button\" data-help-key=\"history_move_to_unit...\" aria-label=\"Move to Unit Folder:...\" aria-expanded=\"false\" aria-haspopup=\"menu\" aria-controls=\"history-move-menu-le...\" class=\"min-h-11 min-w-11 gr...\" title=\"Move to Unit Folder\">",
+              "target": [
+                "button[aria-controls=\"history-move-menu-legacy-row-1\"]"
+              ],
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-1\""
+            },
+            {
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"history-move-menu-legacy-row-2\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-2\""
+                }
+              ],
+              "none": [],
+              "impact": "critical",
+              "html": "<button type=\"button\" data-help-key=\"history_move_to_unit...\" aria-label=\"Move to Unit Folder:...\" aria-expanded=\"false\" aria-haspopup=\"menu\" aria-controls=\"history-move-menu-le...\" class=\"min-h-11 min-w-11 gr...\" title=\"Move to Unit Folder\">",
+              "target": [
+                ".text-amber-700"
+              ],
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-2\""
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+                      "target": [
+                        ".outline-none"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+              "target": [
+                ".outline-none"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select aria-label=\"Filter resources by type\" class=\"min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200\">",
+                      "target": [
+                        ".min-w-\\[120px\\]"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select aria-label=\"Filter resources by type\" class=\"min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200\">",
+              "target": [
+                ".min-w-\\[120px\\]"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "browser": "148.0.7778.96",
+  "axe": "4.12.1"
+}

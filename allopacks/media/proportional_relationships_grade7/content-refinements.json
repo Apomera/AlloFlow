@@ -97,6 +97,12 @@
   },
   {
     "resourceId": "pr-memory",
+    "path": "data.cards.0.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "pr-memory",
     "path": "data.cards.0.aiExample",
     "from": "Divide each pair, out over in; same number every time? Proportional wins.",
     "to": "NONZERO: divide. ZERO: inspect. MATCH: a model fits. Then check whether the situation supports that model beyond the table."
@@ -121,6 +127,12 @@
   },
   {
     "resourceId": "pr-memory",
+    "path": "data.cards.1.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "pr-memory",
     "path": "data.cards.1.mapping",
     "from": "The keyword head start names the exact thing that breaks proportionality (a starting amount), and 'zero in, zero out' is the origin rule in four words.",
     "to": "A nonzero zero-input amount rules out proportionality. A zero amount passes only one necessary check, not the whole test."
@@ -136,6 +148,12 @@
     "path": "data.cards.2.essentialFacts.2",
     "from": "Graph: a straight line through the origin whose steepness is k.",
     "to": "Graph: y = kx lies on a straight nonvertical line through the origin; domain may restrict it to points or a segment."
+  },
+  {
+    "resourceId": "pr-memory",
+    "path": "data.cards.2.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "pr-math",
@@ -262,6 +280,12 @@
     "path": "data.brief.criteria.2",
     "from": "A clear verdict: proportional, not proportional, or proportional only within a range. If it breaks, name the break point.",
     "to": "State whether the model fits approximately or exactly in the measured range, with uncertainty and limits"
+  },
+  {
+    "resourceId": "pr-challenge",
+    "path": "data.brief.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "pr-challenge",

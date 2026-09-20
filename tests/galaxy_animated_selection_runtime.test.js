@@ -148,6 +148,9 @@ describe('galaxy animated selection runtime', () => {
   }
 
   it('keeps spiral selection, reticles, measurements, and evolved metadata on the rendered star', async () => {
+    const Scene = window.THREE.Scene;
+    let builtScene;
+    window.THREE.Scene = function () { builtScene = new Scene(); return builtScene; };
     const getState = await mountGalaxy({ ...LIGHT, galaxyType: 'barredSpiral' });
     const canvas = host.querySelector('[data-galaxy-canvas]');
     assertMotionFamily(canvas, 'barredSpiral');
@@ -169,6 +172,16 @@ describe('galaxy animated selection runtime', () => {
     expectPositionClose(trackedSelection.marker, trackedStar.animated, 5);
     expectPositionClose(trackedSelection.halo, trackedStar.animated, 5);
     expectPositionClose(trackedSelection.rulerEnd, trackedStar.animated, 5);
+    const ruler = builtScene.children.find((node) => node.name === 'galactocentricMeasurementRuler');
+    const ticks = ruler.children.filter((node) => node.name === 'measurementQuarterTick');
+    expect(ticks).toHaveLength(3);
+    ticks.forEach((tick, index) => {
+      const fraction = (index + 1) / 4;
+      expectPositionClose(tick.position, { x: trackedStar.animated.x * fraction, y: trackedStar.animated.y, z: trackedStar.animated.z * fraction }, 5);
+      expect(tick.material.map.name).toBe('galaxyMeasurementTick');
+      expect(tick.material.sizeAttenuation).toBe(false);
+      expect(Number.isFinite(tick.material.rotation)).toBe(true);
+    });
 
     const beforeTypes = Array.from({ length: LIGHT.starCount }, (_, index) => (
       canvas._galaxyGetStarVisualState(index).gpuTypeIndex
@@ -207,6 +220,43 @@ describe('galaxy animated selection runtime', () => {
     await mountGalaxy({ ...LIGHT, galaxyType });
     const canvas = host.querySelector('[data-galaxy-canvas]');
     assertMotionFamily(canvas, galaxyType);
+    assertClean();
+  }, SCENE_TIMEOUT);
+
+  it.each([false, true])('keeps selection markers readable across zoom with reduced motion %s', async (reduced) => {
+    window.matchMedia.mockImplementation((query) => ({ matches: reduced && query.includes('prefers-reduced-motion'), media: query, addEventListener: vi.fn(), removeEventListener: vi.fn(), addListener: vi.fn(), removeListener: vi.fn() }));
+    const Scene = window.THREE.Scene;
+    let scene;
+    window.THREE.Scene = function () { scene = new Scene(); return scene; };
+    await mountGalaxy({ ...LIGHT, galaxyType: 'barredSpiral' });
+    const canvas = host.querySelector('[data-galaxy-canvas]');
+    await React.act(async () => { canvas._galaxyCycleStar(1); });
+    const marker = scene.children.find((node) => node.name === 'selectionFocusReticle');
+    const halo = scene.children.find((node) => node.name === 'selectionDepthReticle');
+    expect(marker.material.sizeAttenuation).toBe(false);
+    expect(halo.material.sizeAttenuation).toBe(false);
+    const pixelScale = 2 * Math.tan(Math.PI / 6) / Math.max(1, canvas.offsetHeight);
+    const selectedIndex = canvas._galaxyGetSelectionVisualState().selectedIndex;
+    for (const zoom of [0, 50, 100]) {
+      await React.act(async () => { canvas._galaxySetZoomPosition(zoom); });
+      expect(marker.scale.y / pixelScale).toBeCloseTo(42, 6);
+      expect(halo.scale.y / pixelScale).toBeCloseTo(60, 6);
+      const ruler = scene.children.find((node) => node.name === 'galactocentricMeasurementRuler');
+      const ticks = ruler.children.filter((node) => node.name === 'measurementQuarterTick');
+      expect(ticks).toHaveLength(3);
+      ticks.forEach((tick) => expect(tick.scale.y / pixelScale).toBeCloseTo(12, 6));
+      expect(canvas._galaxyGetSelectionVisualState().selectedIndex).toBe(selectedIndex);
+    }
+    clockMs += 250;
+    await React.act(async () => { loopController.step(); });
+    expect(marker.scale.y / pixelScale).toBeGreaterThanOrEqual(40);
+    expect(marker.scale.y / pixelScale).toBeLessThanOrEqual(44);
+    expect(halo.scale.y / pixelScale).toBeGreaterThanOrEqual(58);
+    expect(halo.scale.y / pixelScale).toBeLessThanOrEqual(62);
+    if (reduced) expect(marker.scale.y / pixelScale).toBeCloseTo(42, 6);
+    await React.act(async () => { canvas._galaxyClearSelection(); });
+    expect(marker.visible).toBe(false);
+    expect(halo.visible).toBe(false);
     assertClean();
   }, SCENE_TIMEOUT);
 

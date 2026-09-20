@@ -1,0 +1,49 @@
+{
+  "verifiedAt": "2026-09-19T21:58:04.883Z",
+  "feature": "Scenario milestone explorer",
+  "testsPassed": 510,
+  "testFiles": 22,
+  "newTests": 23,
+  "testPool": "forks",
+  "testTimeoutMs": 60000,
+  "hookTimeoutMs": 60000,
+  "accessibilityAudits": 28,
+  "scenariosVerified": 18,
+  "milestoneJumps": 116,
+  "pageErrors": 0,
+  "consoleErrors": 0,
+  "mobileWidths": [
+    390,
+    320
+  ],
+  "mobileOverflow": false,
+  "visualReview": [
+    "milestones-wind-shutdown.png",
+    "milestones-320.png",
+    "milestones-dark.png",
+    "milestones-endpoint.png"
+  ],
+  "sha256": "f2c67c415e8f1b05ab72f2fd32edcedd38613b79af098a8518052f2c74224ff0",
+  "sourceMirrorIdentical": true,
+  "previewMatchesSource": true,
+  "behavior": {
+    "scenariosVerified": 18,
+    "milestoneJumps": 116,
+    "boundedNavigation": true,
+    "keyboardSelect": true,
+    "pauseOnJump": true,
+    "unchangedInputsAndNotes": true,
+    "preservedBaseline": true,
+    "liveRecomputation": true,
+    "accurateIntervalScope": true,
+    "proportionalTimeline": true,
+    "energyMatchesModel": true,
+    "endpointAddsNoEnergy": true,
+    "isolatedAndExplodedSelection": true,
+    "mobileOverflow": false,
+    "flowFallback": true,
+    "contextRecovery": true,
+    "singleRenderer": true
+  },
+  "validationScope": "Isolated local React and Three.js host; no deployed full-application check."
+}

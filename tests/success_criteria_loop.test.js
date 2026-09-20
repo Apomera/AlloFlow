@@ -161,7 +161,7 @@ describe('wiring pins', () => {
     it('the plan view renders criteria with mastery and Reteach through the next-lesson machinery, and re-renders on rollup', () => {
         expect(planView).toContain('data-success-criteria="plan"');
         expect(planView).toContain("window.__alloCriterionRollup");
-        expect(planView).toContain("handleLessonPlanChange('successCriteria', { ...c, statement: e.target.value }, i)");
+        expect(planView).toContain("handleLessonPlanChange('successCriteria', previous => _lessonPlanEditedCriterion(previous, text), i)");
         expect(planView).toContain("type: 'Remediation',");
         expect(planView).toContain("window.addEventListener('alloflow:criterion-rollup', onRollup);");
         expect(planView).toContain('data-criterion-mastery={c.id}');

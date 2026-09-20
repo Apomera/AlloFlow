@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'node:fs';
 const { compareRenderedHtml } = require('../../dev-tools/rendered_document_fidelity.cjs');
+const { runAcceptance } = require('../../dev-tools/document_export_at_acceptance.cjs');
 
 test.describe.configure({ mode: 'serial' });
 test.setTimeout(60000);
@@ -72,6 +73,92 @@ test('unchanged duplicate option choice survives harmless markup attributes', as
 test('selected-only contract preserves option labels as well as submitted value', async ({ browser }, testInfo) => {
   const report = await compare(browser, testInfo, select, select.replace('North', 'West'), ['selected']);
   expect(report.status).toBe('review-required');
+});
+
+const temperatureSelect = (option: string) => '<label for="p">Temperature</label><select id="p" size="2">' + option + '</select>';
+const emptyLabelChoice = temperatureSelect('<option value="temperature" label="" selected>Warm</option>');
+const selectedChoiceProperties = ['selected', 'value', 'name', 'role', 'exposed'];
+
+test('empty selected option label cannot conceal changed native choice text', async ({ browser, page }, testInfo) => {
+  const candidate = emptyLabelChoice.replace('Warm', 'Cold');
+  await page.route('**/*', route => route.abort());
+  const session = await page.context().newCDPSession(page);
+  const nativeNames: string[][] = [];
+  try {
+    for (const html of [emptyLabelChoice, candidate]) {
+      await page.setContent(html);
+      const { nodes } = await session.send('Accessibility.getFullAXTree');
+      nativeNames.push(nodes.filter((node: any) => !node.ignored && node.role?.value === 'option').map((node: any) => node.name?.value));
+    }
+  } finally { await session.detach(); }
+  fs.writeFileSync(testInfo.outputPath('native-option-names.json'), JSON.stringify({ source: nativeNames[0], candidate: nativeNames[1] }, null, 2));
+  expect(nativeNames).toEqual([['Warm'], ['Cold']]);
+  const report = await compare(browser, testInfo, emptyLabelChoice, candidate, selectedChoiceProperties);
+  expect(report.status).toBe('review-required');
+  expect(report.coverage.complete).toBe(true);
+  expect(report.checks[0].properties.find((p: any) => p.property === 'selected')).toMatchObject({
+    status: 'failed', source: [{ index: 0, value: 'temperature', label: 'Warm' }], candidate: [{ index: 0, value: 'temperature', label: 'Cold' }],
+  });
+  expect(report.checks[0].properties.filter((p: any) => p.property !== 'selected').every((p: any) => p.status === 'passed')).toBe(true);
+});
+
+for (const operation of ['add', 'remove']) test('empty option label ' + operation + ' preserves the effective selected choice', async ({ browser }, testInfo) => {
+  const ordinary = emptyLabelChoice.replace(' label=""', '');
+  const [source, candidate] = operation === 'add' ? [ordinary, emptyLabelChoice] : [emptyLabelChoice, ordinary];
+  const report = await compare(browser, testInfo, source, candidate, selectedChoiceProperties);
+  expect(report.status).toBe('passed');
+  expect(report.checks[0].properties.find((p: any) => p.property === 'selected')).toMatchObject({
+    status: 'passed', source: [{ index: 0, value: 'temperature', label: 'Warm' }], candidate: [{ index: 0, value: 'temperature', label: 'Warm' }],
+  });
+});
+
+test('empty option label fallback retains canonical accent and whitespace normalization', async ({ browser }, testInfo) => {
+  const source = emptyLabelChoice.replace('Warm', 'Caf\u00e9 au lait');
+  const candidate = emptyLabelChoice.replace('Warm', '  Cafe\u0301  au\n lait  ');
+  const report = await compare(browser, testInfo, source, candidate, ['selected']);
+  expect(report.status).toBe('passed');
+  expect(report.checks[0].properties[0]).toMatchObject({
+    source: [{ index: 0, value: 'temperature', label: 'Caf\u00e9 au lait' }], candidate: [{ index: 0, value: 'temperature', label: 'Caf\u00e9 au lait' }],
+  });
+});
+
+test('empty labels and duplicate values cannot conceal a different selected option', async ({ browser }, testInfo) => {
+  const source = temperatureSelect('<option value="temperature" label="" selected>Warm</option><option value="temperature" label="">Cold</option>');
+  const candidate = source.replace(' selected>Warm', '>Warm').replace('>Cold', ' selected>Cold');
+  const report = await compare(browser, testInfo, source, candidate, selectedChoiceProperties);
+  expect(report.status).toBe('review-required');
+  expect(report.checks[0].properties.find((p: any) => p.property === 'selected')).toMatchObject({
+    status: 'failed', source: [{ index: 0, value: 'temperature', label: 'Warm' }], candidate: [{ index: 1, value: 'temperature', label: 'Cold' }],
+  });
+});
+
+test('nonempty option label remains authoritative over unused option text', async ({ browser }, testInfo) => {
+  const source = emptyLabelChoice.replace('label=""', 'label="Comfortable"');
+  const report = await compare(browser, testInfo, source, source.replace('Warm', 'Cold'), selectedChoiceProperties);
+  expect(report.status).toBe('passed');
+  expect(report.checks[0].properties.find((p: any) => p.property === 'selected')).toMatchObject({
+    source: [{ index: 0, value: 'temperature', label: 'Comfortable' }], candidate: [{ index: 0, value: 'temperature', label: 'Comfortable' }],
+  });
+});
+
+test('post-export acceptance rejects changed selected text behind an empty option label', async ({ browser }, testInfo) => {
+  const source = testInfo.outputPath('source.html'), candidate = testInfo.outputPath('candidate.html');
+  const original = '<!doctype html><html lang="en"><head><title>Temperature</title></head><body><main><h1>Temperature</h1>' + emptyLabelChoice + '</main></body></html>';
+  fs.writeFileSync(source, original);
+  fs.writeFileSync(candidate, original.replace('Warm', 'Cold'));
+  const manifest = testInfo.outputPath('manifest.json');
+  fs.writeFileSync(manifest, JSON.stringify({ schema: 1, artifacts: [{ id: 'temperature', documentKind: 'reading', kind: 'html', path: candidate,
+    expected: { title: 'Temperature', language: 'en', headings: [{ level: 1, name: 'Temperature' }], tables: [] },
+    sourceFidelity: { sourcePath: source, checkpoints: checkpoints(selectedChoiceProperties) },
+  }] }));
+  const report = await runAcceptance(manifest, { browser });
+  fs.writeFileSync(testInfo.outputPath('export-acceptance.json'), JSON.stringify(report, null, 2));
+  expect(report.automatedStatus).toBe('failed');
+  const artifact = report.artifacts[0];
+  expect(artifact.renderedFidelity.status).toBe('review-required');
+  expect(artifact.renderedFidelity.candidate.sha256).toBe(artifact.sha256);
+  expect(artifact.checks.filter((check: any) => check.status !== 'passed').map((check: any) => check.id)).toEqual(['html.rendered-source-fidelity']);
+  expect(report.humanAcceptance.status).toBe('not-run');
 });
 
 test('relative href spelling cannot collapse through the synthetic root URL', async ({ browser }, testInfo) => {

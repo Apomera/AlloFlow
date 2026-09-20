@@ -110,6 +110,7 @@ function readSource(file) {
  * in beforeEach so dedup guards don't suppress the re-load.
  */
 export function loadTool(file, toolId) {
+  if (toolId === 'beehive' || toolId === 'butterfly') new Function(readFileSync(resolve(process.cwd(), 'stem_lab/stem_sim_meadow.js'), 'utf8'))();
   const src = readSource(file);
   // eslint-disable-next-line no-new-func
   new Function(src)();

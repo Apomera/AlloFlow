@@ -19,4 +19,6 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': mime[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-store' }); res.end(data);
   });
 });
-server.listen(0, '127.0.0.1', () => console.log(`Kitchen Studio preview: http://127.0.0.1:${server.address().port}/stem_lab/kitchen_studio/index.html`));
+const previewPort = Number(process.env.KITCHEN_PREVIEW_PORT || 0);
+if (!Number.isInteger(previewPort) || previewPort < 0 || previewPort > 65535) throw new Error('Invalid preview port');
+server.listen(previewPort, '127.0.0.1', () => console.log(`Kitchen Studio preview: http://127.0.0.1:${server.address().port}/stem_lab/kitchen_studio/index.html`));

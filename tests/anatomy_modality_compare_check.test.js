@@ -66,8 +66,8 @@ describe('Structure compare panel', () => {
     const root = render(filePath, PAIR, OLDER);
     const fnRow = root.querySelector('[data-anatomy-compare-row="function"]');
     expect(fnRow).not.toBeNull();
-    const cells = [...fnRow.querySelectorAll('td')].map((c) => c.textContent);
-    expect(cells[0]).toBe('Does');
+    const cells = [...fnRow.querySelectorAll('th,td')].map((c) => c.textContent);
+    expect(cells[0]).toBe('Function');
     expect(cells[1]).toMatch(/\S/);
     expect(cells[2]).toMatch(/\S/);
 
@@ -82,13 +82,14 @@ describe('Structure compare panel', () => {
   }, 60_000);
 
   it.each(ANATOMY_PATHS)('locks the options and contrasts both structures after an answer in %s', (filePath) => {
-    const wrongFirst = render(filePath, { ...PAIR, _compareCheck: { pair: 'femur|tibia', chosen: 'femur' } }, OLDER);
-    const wrongSecond = render(filePath, { ...PAIR, _compareCheck: { pair: 'femur|tibia', chosen: 'tibia' } }, OLDER);
+    const questionKey = render(filePath, PAIR, OLDER).querySelector('[data-anatomy-compare-check]').getAttribute('data-anatomy-compare-question');
+    const wrongFirst = render(filePath, { ...PAIR, _compareCheck: { pair: 'femur|tibia', questionKey, chosen: 'femur' } }, OLDER);
+    const wrongSecond = render(filePath, { ...PAIR, _compareCheck: { pair: 'femur|tibia', questionKey, chosen: 'tibia' } }, OLDER);
     const states = [wrongFirst, wrongSecond].map((r) => r.querySelector('[data-anatomy-compare-check]').getAttribute('data-anatomy-compare-check-state')).sort();
     expect(states).toEqual(['hit', 'miss']);
     const missed = [wrongFirst, wrongSecond].find((r) => r.querySelector('[data-anatomy-compare-check-state="miss"]'));
     const status = missed.querySelector('[data-anatomy-compare-check] [role="status"]');
-    expect(status.textContent).toMatch(/^That was the (Femur|Tibia)\. The (Femur|Tibia): \S/);
+    expect(status.textContent).toMatch(/^This function describes (Femur|Tibia)\./);
     expect(missed.querySelectorAll('button[data-anatomy-compare-option][disabled]')).toHaveLength(2);
 
     // A check answered for a different pair does not carry over.
@@ -99,9 +100,10 @@ describe('Structure compare panel', () => {
   it.each(ANATOMY_PATHS)('names the target structure’s own system when it comes from elsewhere in %s', (filePath) => {
     const root = render(filePath, { _activeTab: 'explore', system: 'circulatory', selectedStructure: 'heart', _compareStructure: 'lungs' }, OLDER);
     const rows = [...root.querySelectorAll('[data-anatomy-structure-detail] table tbody tr')];
-    const systemRow = rows.find((r) => r.querySelector('td')?.textContent === 'System');
-    const cells = [...systemRow.querySelectorAll('td')].map((c) => c.textContent);
+    const systemRow = rows.find((r) => r.getAttribute('data-anatomy-compare-row') === 'system');
+    const cells = [...systemRow.querySelectorAll('th,td')].map((c) => c.textContent);
     expect(cells[1]).toMatch(/Circulatory/);
-    expect(cells[2]).toMatch(/Organ Systems/);
+    expect(cells[2]).toMatch(/Respiratory/);
+    expect(cells[2]).not.toMatch(/Organ Systems/);
   }, 60_000);
 });

@@ -1,0 +1,13 @@
+const fs=require('fs'),path=require('path'),root=path.resolve(__dirname,'../..');
+function patch(file,before,after){const p=path.join(root,file),text=fs.readFileSync(p,'utf8');if(!text.includes(before))throw Error('Missing '+file);fs.writeFileSync(p,text.replace(before,after));}
+patch('applied_challenge_source.jsx',"onClick={() => onChange(null)}>{tx('remove'", "onClick={event => { event.currentTarget.closest('details')?.querySelector('summary')?.focus(); onChange(null); }}>{tx('remove'");
+patch('applied_challenge_source.jsx',"      setReviewOpen(false); setFocusMode(true); setHintPhase('evidence');", "      if (current.coachHint) commitField('coachHint', '');\n      setReviewOpen(false); setFocusMode(true); setHintPhase('evidence');");
+patch('studio_response_module.js',"})[studentWorkStatus] || 'Learner workspace'", "})[studentWorkStatus || 'idle'] || 'Learner workspace'");
+fs.writeFileSync(path.join(root,'desktop/web-app/public/studio_response_module.js'),fs.readFileSync(path.join(root,'studio_response_module.js'),'utf8'));
+const testPath=path.join(root,'tests/applied_challenge_pass8.test.js');let test=fs.readFileSync(testPath,'utf8');
+test=test.replace("loadAlloModule('studio_response_module.js');AC=", "loadAlloModule('studio_response_module.js');loadAlloModule('doc_pipeline_module.js');AC=");
+test=test.replace(" it('includes references in response/teacher export", ` it('retains learner references in full HTML export and the module-free fallback',()=>{const d=base();d.reasoningReferences=[{...reference(d,'check'),location:'Our conclusion, paragraph 1'}];const pipeline=window.AlloModules.createDocPipeline({callGemini:async()=>'{}',callGeminiVision:async()=>'{}',callImagen:async()=>null,addToast:()=>{},t:key=>key,isRtlLang:()=>false,updateExportPreview:()=>{},getDefaultTitle:()=>'Document',state:{}});const render=()=>pipeline.generateFullPackHTML([{id:'reference-export',type:'applied-challenge',data:d}],'Garden',true,{}, {includeTeacherKey:false,annotations:[]});expect(render()).toContain('Our conclusion, paragraph 1');expect(render()).not.toContain('PRIVATE_SOURCE');try{delete window.AlloModules.AppliedChallenge;expect(render()).toContain('Our conclusion, paragraph 1');expect(render()).toContain('Recheck against the current work');}finally{window.AlloModules.AppliedChallenge=AC;}});
+ it('includes references in response/teacher export`);
+test=test.replace("expect(latest.r1.studio.reasoningReferences).toEqual([]);});", "expect(latest.r1.studio.reasoningReferences).toEqual([]);expect(document.activeElement.tagName).toBe('SUMMARY');});");
+fs.writeFileSync(testPath,test);
+console.log('Completed removal focus, source hint invalidation and full-export regression coverage.');

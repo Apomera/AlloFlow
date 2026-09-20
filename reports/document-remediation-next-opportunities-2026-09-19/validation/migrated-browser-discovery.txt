@@ -1,0 +1,14 @@
+Listing tests:
+  [chromium] › document_focus_wrap.spec.ts:47:10 › generated keyboard focus remains visible across document surfaces › provides a solid contrasting focus band on light
+  [chromium] › document_focus_wrap.spec.ts:47:10 › generated keyboard focus remains visible across document surfaces › provides a solid contrasting focus band on image-control slate
+  [chromium] › document_focus_wrap.spec.ts:47:10 › generated keyboard focus remains visible across document surfaces › provides a solid contrasting focus band on dark
+  [chromium] › document_focus_wrap.spec.ts:47:10 › generated keyboard focus remains visible across document surfaces › provides a solid contrasting focus band on middle gray
+  [chromium] › document_focus_wrap.spec.ts:57:52 › generated keyboard focus remains visible across document surfaces › retains a visible system-color outline in forced-colors light
+  [chromium] › document_focus_wrap.spec.ts:57:52 › generated keyboard focus remains visible across document surfaces › retains a visible system-color outline in forced-colors dark
+  [chromium] › document_focus_wrap.spec.ts:65:7 › generated keyboard focus remains visible across document surfaces › upgrades the previous generated blue ring and remains idempotent
+  [chromium] › document_focus_wrap.spec.ts:79:39 › generated document footnotes reflow › wraps the source footnote URLs inside a 320px viewport
+  [chromium] › document_focus_wrap.spec.ts:79:39 › generated document footnotes reflow › wraps the source footnote URLs inside a 390px viewport
+  [chromium] › document_static_crop_cleanup.spec.ts:20:7 › Chromium static document behavior › keeps the actual raw Replace file-change behavior after removing crop
+  [chromium] › document_static_crop_cleanup.spec.ts:33:7 › Chromium static document behavior › canonical browser export has no dead picker while source controls and content remain
+  [chromium] › document_static_crop_cleanup.spec.ts:45:7 › Chromium static document behavior › current generated preview control can call its runtime before static cleanup
+Total: 12 tests in 2 files

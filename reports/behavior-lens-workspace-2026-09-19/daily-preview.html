@@ -1,0 +1,27 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Behavior Lens local audit fixture</title><link rel="stylesheet" href="preview.css"></head><body><main id="root"></main><script src="react-runtime.js"></script><script>
+  ([
+  'AlertCircle', 'AlertTriangle', 'ArrowLeft', 'BarChart2', 'BarChart3',
+  'Bell', 'Brain', 'Calendar', 'Camera', 'Check', 'CheckCircle',
+  'ChevronDown', 'ChevronLeft', 'ChevronRight', 'ChevronUp',
+  'Clipboard', 'ClipboardList', 'Clock', 'Cloud', 'CloudOff', 'Copy',
+  'Database', 'Download', 'Edit', 'Edit2', 'Edit3', 'ExternalLink',
+  'Eye', 'EyeOff', 'FileText', 'Filter', 'Flag', 'Folder', 'Gauge',
+  'Globe', 'Grid', 'Hash', 'Heart', 'Home', 'Info', 'Layers',
+  'Layout', 'Lightbulb', 'List', 'Loader', 'Lock', 'Mail',
+  'MapPin', 'MessageCircle', 'MessageSquare', 'Mic', 'MicOff', 'Minus',
+  'MoreHorizontal', 'MoreVertical', 'Music', 'PauseCircle', 'PenTool',
+  'PieChart', 'Play', 'PlayCircle', 'Plus', 'Power', 'Printer',
+  'RefreshCw', 'Repeat', 'RotateCw', 'Save', 'Search', 'Send', 'Settings',
+  'Share', 'Share2', 'Shield', 'ShieldAlert', 'ShieldCheck', 'Smile',
+  'Sparkles', 'Speaker', 'Square', 'Star', 'Sun', 'Target', 'ThumbsDown', 'ThumbsUp',
+  'Trash', 'Trash2', 'TrendingDown', 'TrendingUp', 'Trophy', 'Type',
+  'Upload', 'User', 'UserCheck', 'UserPlus', 'Users', 'Video', 'Volume2',
+  'Wifi', 'WifiOff', 'Wind', 'X', 'XCircle', 'Zap', 'ZoomIn', 'ZoomOut'
+]).forEach(name=>window[name]=props=>React.createElement('span',{'aria-hidden':'true',style:{display:'inline-block',width:(props?.size||18)+'px',height:(props?.size||18)+'px'}}, '◇'));
+  window.addToast=(...args)=>(window.auditToasts||=[]).push(args); window.warnLog=()=>{};window.debugLog=()=>{};
+  window.safeGetItem=k=>localStorage.getItem(k);window.safeSetItem=(k,v)=>localStorage.setItem(k,v);
+  window.callGemini=async()=>'';window.callGeminiVision=async()=>'';window.studentNickname='Eagle';
+  window.AlloModules={};localStorage.clear();localStorage.setItem('bl_student_roster',JSON.stringify([{id:'audit-eagle',name:'Eagle'},{id:'audit-falcon',name:'Falcon'}]));
+  localStorage.setItem('behaviorLens_workspace_audit-eagle',"{\"targetBehaviors\":[{\"id\":\"help\",\"label\":\"Requests help\",\"measurement\":\"count\",\"operationalDefinition\":\"Shows a help card or says help during independent work.\"},{\"id\":\"break\",\"label\":\"Requests a break\",\"measurement\":\"duration\",\"operationalDefinition\":\"Asks for a short break.\"}],\"abcEntries\":[],\"observationSessions\":[{\"id\":\"mixed\",\"timestamp\":\"2026-09-19T22:25:43.818Z\",\"duration\":600,\"method\":\"frequency\",\"data\":{\"count\":5,\"counters\":[{\"behaviorId\":\"help\",\"label\":\"Requests help\",\"count\":2},{\"behaviorId\":\"break\",\"label\":\"Requests a break\",\"count\":3}]}},{\"id\":\"latency\",\"timestamp\":\"2026-09-19T22:25:43.819Z\",\"duration\":20,\"method\":\"latency\",\"behaviorId\":\"help\",\"data\":{\"latencySeconds\":5}}],\"toolState\":{\"supportStrategies\":[{\"id\":\"support1\",\"targetId\":\"help\",\"strategy\":\"Offer the agreed visual prompt before independent writing.\",\"owner\":\"Classroom teacher\",\"status\":\"active\",\"reviewDate\":\"2026-09-18\"}]}}");sessionStorage.clear();sessionStorage.setItem('behaviorLens_observation_draft_v1_frequency_audit-eagle',JSON.stringify({version:1,savedAt:Date.now(),data:{elapsed:90,target:{id:'help',label:'Requests help'},counters:[{id:'c',label:'Requests help',behaviorId:'help',count:2}]}}));</script><script src="../../behavior_lens_workspace_module.js"></script><script src="../../behavior_lens_module.js"></script><script>
+  auditCreateRoot(document.getElementById('root')).render(React.createElement(AlloModules.BehaviorLens,{onClose:()=>window.auditClosed=true,callGemini,callGeminiVision,addToast,t:(key,arg)=>typeof arg==='string'?arg:undefined,studentNickname:'Eagle',dashboardData:[{studentNickname:"Eagle"},{studentNickname:"Falcon"}],isTeacherMode:true,alloBotRef:{current:null},firestore:null,firebaseAuth:null,isCanvasEnv:true}));
+  </script></body></html>

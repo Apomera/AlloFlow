@@ -502,7 +502,8 @@ describe('homework QR hardening', () => {
     //    now unconditional: word clouds publish only via explicit opt-in.
     expect(sharedActivitySource).toContain("revealPolicy === 'auto_publish' ? 'auto_publish' : 'teacher_review'");
     expect(rootSource).toContain("enabled: false,\n      type: 'word_cloud'");
-    expect(rootSource).toContain('buildAssignmentPackEncoded({ includeSharedActivity: true, resourceIds: selectedResou');
+    expect(rootSource).toContain('const includeSharedActivity = shareOptions.includeSharedActivity !== false;');
+    expect(rootSource).toContain('preparedPack || await buildAssignmentPackEncoded({ includeSharedActivity, resourceIds: selectedResourceIds, aiPolicy: shareOptions.aiPolicy })');
     expect(rootSource).toContain('activities: built.sharedActivities');
     expect(rootSource).toContain('sharedActivity: built.sharedActivities[0] || null');
     expect(rootSource).toContain('if (sharedAssignmentActivity.enabled) {\n          return hostPackOnMailbox(selectedResourceIds);');

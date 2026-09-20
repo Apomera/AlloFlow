@@ -80,7 +80,7 @@ describe('Agent Core resource-pack service', () => {
       resourcePlan: ['directions', 'glossary', 'quiz'], privacy: { confirmNoStudentPii: true, confirmSourcePermission: true }, providerPolicy: { allowMeteredUsage: true },
     }, {
       name: 'test-provider',
-      generateText: async () => JSON.stringify({ history: structuredClone(HISTORY) }),
+      generateText: async () => JSON.stringify({ history: [{id:'reading-1',type:'simplified',title:'Adapted Text',meta:'Supplemental',data:'Water changes state as it moves through a repeating cycle. Use the source to explain each change.'}, ...structuredClone(HISTORY)] }),
     });
     expect(generated.ok).toBe(true);
     expect(generated.value.provenance.provider).toBe('test-provider');

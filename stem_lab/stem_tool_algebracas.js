@@ -831,12 +831,12 @@ onSpeak: function(formats) {
         var TABS = [
           { id: 'solve', label: t('stem.algebraCAS.solve_2', '\uD83D\uDD0D Solve') },
           { id: 'practice', label: t('stem.algebraCAS.practice', '\uD83C\uDFAF Practice') },
-          { id: 'builder', label: t('stem.algebraCAS.builder', '\uD83E\uDDF1 Builder') },
-          { id: 'scale', label: t('stem.algebraCAS.scale', '\u2696 Scale') },
-          { id: 'tutor', label: t('stem.algebraCAS.tutor', '\uD83E\uDD16 Tutor') }
+          { id: 'builder', label: t('stem.algebraCAS.tab_equation_builder', 'Equation builder') },
+          { id: 'scale', label: t('stem.algebraCAS.tab_balance_equations', 'Balance equations') },
+          { id: 'tutor', label: t('stem.algebraCAS.tab_ai_tutor', 'AI tutor') }
         ];
 
-        var tabBar = h('div', { style: { display: 'flex', gap: '4px', marginBottom: '12px', flexWrap: 'wrap' }, role: 'tablist', 'aria-label': t('stem.algebraCAS.algebra_cas_sections', 'Algebra CAS sections') },
+        var tabBar = h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '4px', marginBottom: '12px' }, role: 'tablist', 'aria-label': t('stem.algebraCAS.algebra_cas_sections', 'Algebra CAS sections') },
           TABS.map(function(t, tabIndex) {
             return h('button', { key: t.id, id: 'stem-algebracas-tab-' + t.id,
               onClick: function() { upd('tab', t.id); },
@@ -855,7 +855,7 @@ onSpeak: function(formats) {
               role: 'tab', 'aria-selected': tab === t.id,
               'aria-controls': 'stem-algebracas-panel-' + t.id,
               tabIndex: tab === t.id ? 0 : -1,
-              style: btnStyle(tab === t.id)
+              style: Object.assign({}, btnStyle(tab === t.id), { minHeight: 44, whiteSpace: 'normal', overflowWrap: 'anywhere' })
             }, t.label);
           })
         );

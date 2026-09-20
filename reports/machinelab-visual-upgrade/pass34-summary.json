@@ -1,0 +1,67 @@
+{
+  "pass": 34,
+  "title": "Stable full-stroke focus framing",
+  "date": "2026-09-19",
+  "changes": [
+    "Focus mechanism centers the projected machine envelope and reserves room for the entire working stroke.",
+    "Caches occupied regions across 17 motion samples with a margin, capped at 216 fit points.",
+    "Focused desktop stage uses a compact height; mobile retains its existing responsive stage.",
+    "Leaving focus restores the original workshop target and fit points."
+  ],
+  "tests": [
+    {
+      "file": "pass34-centered-geometry-tests.json",
+      "passed": 309,
+      "total": 309
+    },
+    {
+      "file": "pass34-ui-final-tests.json",
+      "passed": 255,
+      "total": 255
+    }
+  ],
+  "totalTests": 564,
+  "newGeometryTests": 10,
+  "browser": [
+    {
+      "theme": "light",
+      "file": "pass34-light-centered/results.json",
+      "checks": 94,
+      "screenshots": 8,
+      "errors": [],
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "file": "pass34-dark-centered/results.json",
+      "checks": 94,
+      "screenshots": 8,
+      "errors": [],
+      "overflow": false
+    },
+    {
+      "theme": "contrast",
+      "file": "pass34-contrast-centered/results.json",
+      "checks": 94,
+      "screenshots": 8,
+      "errors": [],
+      "overflow": false
+    }
+  ],
+  "totalBrowserChecks": 282,
+  "screenshots": 24,
+  "reviewedScreenshots": [
+    "pass34-light-centered/focused-lever-1150.png",
+    "pass34-dark-centered/focused-screw-1150.png",
+    "pass34-contrast-centered/focused-windlass-320.png"
+  ],
+  "sourceMirrorIdentical": true,
+  "sha256": "904f8f792de60546c2c3e709e7ebea2081e34088f343fe9f3c4a4865dc821874",
+  "syntaxCheck": "passed",
+  "scopedDiffCheck": "passed; existing CRLF normalization warnings only",
+  "publication": "Local only; no commit, push, or deployment performed",
+  "limitations": [
+    "Framing checks use default zoom; deliberate manual zoom may crop the scene.",
+    "Existing Three material warnings remain in geometry test output."
+  ]
+}

@@ -8,7 +8,8 @@
     "gradeLevel": "5th Grade",
     "standards": "NGSS 5-LS2-1 (develop a model to describe the movement of matter among plants, animals, decomposers, and the environment); NGSS 5-PS3-1 (use models to describe that energy in animals' food was once energy from the sun); CCSS.ELA-LITERACY.RI.5.3 (explain relationships between concepts in a scientific text)",
     "createdAt": "2026-07-21T08:00:00.000Z",
-    "imageShotList": "allopacks/ecosystems_food_webs_grade5.IMAGES.md"
+    "imageShotList": "allopacks/ecosystems_food_webs_grade5.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Food Webs and Ecosystems",
   "history": [
@@ -55,7 +56,7 @@
       "title": "Pull One Thread",
       "timestamp": "2026-07-21T08:00:01.000Z",
       "data": "## Pull One Thread\n\nEvery living thing has to get energy from somewhere. Follow that energy far enough back and it nearly always ends in the same place: sunlight.\n\n**Producers** make their own food. Plants, algae, and some bacteria capture sunlight and build sugar. Everything else on Earth is a customer.\n\n**Consumers** eat other living things. Herbivores like deer and grasshoppers eat producers. Carnivores like hawks and wolves eat other consumers. Omnivores like bears and humans do both. Each step is a **trophic level** — a rung on the energy ladder.\n\n**Decomposers** get the least attention and do the most essential work. Fungi, bacteria, and worms break down dead plants, dead animals, and waste. That releases nutrients back into the soil, where producers can use them again.\n\nWithout decomposers, an ecosystem would bury itself in its own dead material. The nutrients would never get back into circulation, and everything would starve.\n\nA **food chain** is one straight path: grass → grasshopper → mouse → hawk. Real nature almost never works that neatly. A hawk eats mice, snakes, and rabbits. A mouse eats seeds, insects, and berries. When you draw all those connections at once, you get a **food web**, and a web behaves very differently from a chain.\n\nHere is the part worth remembering: energy leaks. Only about **ten percent** of the energy at one level makes it to the next. The rest gets spent on moving, breathing, and staying warm. Much of it escapes as heat.\n\nThat one fact explains a lot. A meadow can support thousands of grasshoppers, hundreds of mice, and only a couple of hawks. Big predators are rare because the energy math will not support more of them.\n\nNow the thread-pulling. Wolves were hunted out of Yellowstone by the 1920s. Without them, elk populations grew and grazed heavily along rivers, stripping young willows and aspens. Beavers lost their building material. Songbirds lost nesting cover. Riverbanks eroded without roots holding the soil.\n\nWolves were reintroduced in 1995, and much of that reversed. Willows recovered in places. Beavers returned. Some riverbanks stabilized.\n\nScientists still argue about how much of this the wolves caused directly. Weather and bear populations mattered too. Ecosystems are complicated, and honest scientists debate the details.\n\nBut the core lesson is not in dispute: **you cannot remove one species and change only one thing.**",
-      "meta": "5th Grade • Leveled reading • ~380 words",
+      "meta": "5th Grade • Leveled reading",
       "imageSlot": "ec-img-food-web"
     },
     {

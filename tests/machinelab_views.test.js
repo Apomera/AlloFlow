@@ -384,7 +384,7 @@ describe('Machine Lab: motion inspection controls',()=>{
     expect(slider.getAttribute('aria-valuetext')).toBe('37% of the working stroke');
     expect(doc.querySelector('label[for="ml-shop-stroke"]').textContent).toBe('Inspect the motion');
     expect(doc.getElementById(slider.getAttribute('aria-describedby')).textContent).toContain('model stays still');
-    expect(doc.querySelectorAll('.ml-shop-inspector button')).toHaveLength(3);
+    expect(doc.querySelectorAll('.ml-shop-inspector button[aria-pressed]')).toHaveLength(3);
   });
   for(const [progress,label] of [[0,'Start'],[0.5,'Halfway'],[1,'Full stroke']])it('marks the held '+label+' pose',()=>{
     const doc=new DOMParser().parseFromString(renderTool('machineLab',state({shopMotionProgress:progress})),'text/html');
@@ -446,7 +446,7 @@ it('explains equal-tension arrows only at the pulley station',()=>{
 describe('Machine Lab: traveled-distance legend',()=>{
   for(const band of BANDS)it('explains full rails and traveled bars visually and accessibly at '+band,()=>{
     const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bandOverride:band})),'text/html');
-    const text='Thin rails show the full stroke; wide bars show distance traveled.';
+    const text='Thin rails show the full stroke; wide bars show distance traveled. End caps mark the finish.';
     expect(doc.querySelector('[data-ml-distance-fill-guide]').textContent).toBe(text);
     expect(doc.querySelector('.ml-shop-bay').getAttribute('aria-label')).toContain(text);
   });
@@ -561,7 +561,7 @@ describe('Machine Lab: illustrated station navigation',()=>{
   });
   for(const band of BANDS)it('provides six decorative schematics with text labels at '+band,()=>{
     const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bandOverride:band})),'text/html');
-    const icons=[...doc.querySelectorAll('[data-ml-bench-preview]')];expect(icons.map(i=>i.getAttribute('data-ml-bench-preview'))).toEqual(['lever','pulley','windlass','ramp','wedge','screw']);
+    const icons=[...doc.querySelectorAll('.ml-bench-tabs [data-ml-bench-preview]')];expect(icons.map(i=>i.getAttribute('data-ml-bench-preview'))).toEqual(['lever','pulley','windlass','ramp','wedge','screw']);
     for(const icon of icons){expect(icon.getAttribute('aria-hidden')).toBe('true');expect(icon.getAttribute('focusable')).toBe('false');expect(icon.closest('button').textContent).toContain('Station');}
   });
 });
@@ -579,4 +579,14 @@ describe('Machine Lab: slow playback control',()=>{
 it('labels a motion-off demonstration as still',()=>{
  const doc=new DOMParser().parseFromString(renderTool('machineLab',state({shopAnimating:true,shopSlowMotion:true,shopDemoDuration:2200,motionPref:'off'})),'text/html');
  const text=doc.querySelector('.ml-shop-hud').textContent;expect(text).toContain('Still demonstration');expect(text).toContain('Inspect the mechanism');expect(text).not.toContain('Motion active');expect(text).not.toContain('Watch in slow motion');
+});
+
+
+describe('Machine Lab: hold pose control',()=>{
+  for(const band of BANDS)it('provides a named native hold control with no-WebGL fallback at '+band,()=>{
+    const doc=new DOMParser().parseFromString(withoutOrbitViewer(()=>renderTool('machineLab',state({bandOverride:band,shopAnimating:true}))),'text/html');
+    const button=[...doc.querySelectorAll('.ml-shop-inspector button')].find(b=>b.textContent==='Hold this pose');
+    expect(button).toBeTruthy();expect(button.type).toBe('button');expect(button.disabled).toBe(true);expect(button.title).toContain('current position');
+    expect(button.querySelector('svg').getAttribute('aria-hidden')).toBe('true');
+  });
 });

@@ -432,6 +432,36 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
       cleaned = window.sanitizeSessionValue(cleaned, 'resource');
     }
   } catch (_) {}
+  // Chunked packs retain only validated reading leaves after BOTH privacy
+  // sanitizers run. All other sanitized fields, including audio, stay as-is.
+  const readingContract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
+  const readingSnapshot = item.type === 'simplified' && typeof item.data === 'string' && readingContract?.getSourceSnapshot?.(item);
+  if (readingSnapshot && cleaned && typeof cleaned === 'object') {
+    cleaned.data = item.data;
+    cleaned.dataEncoding = 'text/v1';
+    cleaned.sourceSnapshot = readingSnapshot;
+    if (item.sourceInstructionalText && readingContract.normalizeSourceInstructionalText) {
+      cleaned.sourceInstructionalText = readingContract.normalizeSourceInstructionalText(item.sourceInstructionalText);
+    }
+    if (item.readingSupports && readingContract.validateReadingSupports) {
+      cleaned.readingSupports = readingContract.validateReadingSupports(readingSnapshot, item.readingSupports);
+    }
+    // A complete input can recover its normalized role after live-budget
+    // cleanup downgraded it; never upgrade an already incomplete input.
+    const inputProfile = readingContract.getInstructionalText(item);
+    if (item.syncTruncated !== true && (inputProfile.form !== 'same-text-supported' || readingContract.isSupportedOriginal(item))) {
+      cleaned.instructionalText = readingContract.normalizeInstructionalText(inputProfile, {
+        defaultForm: 'adapted'
+      });
+      if (cleaned.config && typeof cleaned.config === 'object') cleaned.config.instructionalText = {
+        ...cleaned.instructionalText
+      };
+      delete cleaned.readingSourceAvailability;
+      delete cleaned.readingPreservation;
+      delete cleaned.syncTruncated;
+      delete cleaned.syncNotice;
+    }
+  }
   // The shared Firestore sanitizer must stay conservative because session
   // documents have a strict size ceiling. Mailbox/P2P packs are already
   // chunked, so restore the instructional image fields after sanitization.

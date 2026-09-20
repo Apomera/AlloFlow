@@ -13,12 +13,12 @@ describe('Probability Lab accessibility', () => {
 
   it('names the informative probability visuals', () => {
     const text = source();
-    expect(text).toContain("role: \"img\", 'aria-label': 'd6 showing '");
+    expect(text).toContain("'aria-label': __alloFill(__alloT('stem.probability.a11y_d6_showing', 'd6 showing {value1}')");
     expect(text).toContain("role: \"img\", 'aria-label': result ? 'Spinner showing '");
     expect(text).toContain("role: \"img\", 'aria-label': 'Coin showing '");
-    expect(text).toContain("role: \"img\", 'aria-label': 'Marble bag containing '");
-    expect(text).toContain("role: \"img\", 'aria-label': 'Convergence chart: observed '");
-    expect(text).toContain("role: \"img\", 'aria-label': 'Monte Carlo pi scatter plot with '");
+    expect(text).toContain("'aria-label': __alloFill(__alloT('stem.probability.a11y_marble_bag_containing_marbles_across_colors'");
+    expect(text).toContain("'aria-label': __alloFill(__alloT('stem.probability.a11y_convergence_chart_observed_percent_expected_per'");
+    expect(text).toContain("'aria-label': __alloFill(__alloT('stem.probability.a11y_monte_carlo_pi_scatter_plot_with_of_points_insi'");
   });
 
   it('exposes a stable pressed-state control for automatic trials', () => {

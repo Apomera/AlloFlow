@@ -24,7 +24,10 @@
   // a resource must have an id and must not be a teacher-only type.
   function studentSafeResources(history, teacherOnlyTypes, projectActivity) {
     var blocked = Array.isArray(teacherOnlyTypes) ? teacherOnlyTypes : [];
-    return (Array.isArray(history) ? history : []).map(function (item) {
+    var reading = window.AlloModules && window.AlloModules.InstructionalContext;
+    var resources = reading && typeof reading.ensureReadingSourcePairs === 'function'
+      ? reading.ensureReadingSourcePairs(Array.isArray(history) ? history : []) : history;
+    return (Array.isArray(resources) ? resources : []).map(function (item) {
       if (!item || !item.id || !item.type) return null;
       if (item.type === 'brainstorm') {
         var projected = typeof projectActivity === 'function' ? projectActivity(item) : null;

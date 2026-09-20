@@ -40,8 +40,11 @@ describe('storm budget', () => {
         Math, Number, Date,
         window: { __docPipelineState: {} },
         _throttleCooldownMsTotal: 0,
+        elapsedRecoveryMs: 0,
+        _geminiRecoveryBudgetStart: 0,
         _pipeThrottleEvent: (kind, fields) => events.push({ kind, fields }),
       }, over || {});
+      sandbox._geminiSyncWait = () => ({ recoveryMs: sandbox.elapsedRecoveryMs });
       runInNewContext(helpers, sandbox);
       return { sandbox, events };
     };
@@ -61,8 +64,8 @@ describe('storm budget', () => {
     expect(sandbox._geminiStormBudgetMs()).toBe(240 * 60000);
   });
 
-  it('reports exhaustion from the deliberate cooldown total and resets on demand', () => {
-    const { sandbox, events } = build({ _throttleCooldownMsTotal: 18 * 60000 });
+  it('reports exhaustion from elapsed recovery waits and resets on demand', () => {
+    const { sandbox, events } = build({ elapsedRecoveryMs: 18 * 60000 });
     expect(sandbox._geminiStormBudget()).toMatchObject({ exhausted: true, remainingMs: 0, spentMs: 18 * 60000 });
     const after = sandbox._resetGeminiStormBudget();
     expect(after.exhausted).toBe(false);
@@ -88,8 +91,8 @@ describe('storm budget', () => {
     expect(vw).toContain('data-help-key="pdf_audit_view_storm_budget"');
     expect(vw).toContain("pdfFixResult._finalAuditIncompleteReason === 'remediation-paused-storm-budget'");
     expect(anti).toContain('const [pdfStormBudgetMinutes, setPdfStormBudgetMinutes] = useState(');
-    expect(anti).toContain('pdfTargetScore, pdfOcrLanguage, pdfStormBudgetMinutes,');
-    expect(anti).toContain('pdfOcrLanguage, setPdfOcrLanguage, pdfStormBudgetMinutes, setPdfStormBudgetMinutes, setPendingPdfBase64');
+    expect(anti).toContain('pdfTargetScore, pdfOcrLanguage, pdfExtraRequestPacing, pdfStormBudgetMinutes,');
+    expect(anti).toContain('pdfOcrLanguage, setPdfOcrLanguage, pdfStormBudgetMinutes, setPdfStormBudgetMinutes, pdfExtraRequestPacing, setPdfExtraRequestPacing, setPendingPdfBase64');
     expect(ui.pdf_audit.settings.storm_budget_hint).toBeTruthy();
     expect(ui.pdf_audit.storm_budget_paused_toast).toBeTruthy();
     expect(readFileSync(resolve(process.cwd(), 'help_strings.js'), 'utf8')).toMatch(/^\s*'pdf_audit_view_storm_budget':\s*"/m);
@@ -102,7 +105,7 @@ describe('wait-not-stop: Retry-After-aware bound and auth-wall probe', () => {
     expect(calm).toContain('while (_now() < _waitDeadline()) {'.trim().slice(0, 0) + ''); // placeholder to keep slice usage explicit
     expect(dp).toContain('while (_now() < _waitDeadline()) {');
     expect(dp).toContain("Math.max(0, _waitDeadline() - _now())");
-    expect(calm).toContain('if (!(_geminiRetryAfterUntil > base) || _geminiCooldownUntil !== _geminiRetryAfterUntil) return 0;');
+    expect(calm).toContain('if (!(_geminiRetryAfterUntil > base)) return 0;');
     expect(calm).toContain('Math.min(_GEMINI_RETRY_AFTER_CAP_MS, (_geminiRetryAfterUntil - base) + 1000)');
     // The extension helper, evaluated in isolation.
     const sandbox = { Math, _GEMINI_RETRY_AFTER_CAP_MS: 300000, _geminiRetryAfterUntil: 0, _geminiCooldownUntil: 0 };
@@ -111,8 +114,8 @@ describe('wait-not-stop: Retry-After-aware bound and auth-wall probe', () => {
     expect(sandbox._retryAfterExtensionMs()).toBe(0);
     sandbox._geminiRetryAfterUntil = 1000000 + 240000 + 50000; sandbox._geminiCooldownUntil = sandbox._geminiRetryAfterUntil;
     expect(sandbox._retryAfterExtensionMs()).toBe(51000);
-    sandbox._geminiCooldownUntil = sandbox._geminiRetryAfterUntil + 5; // a later streak brake replaced it: not a server-directed wait
-    expect(sandbox._retryAfterExtensionMs()).toBe(0);
+    sandbox._geminiCooldownUntil = sandbox._geminiRetryAfterUntil + 5; // a longer adaptive brake cannot erase the provider deadline
+    expect(sandbox._retryAfterExtensionMs()).toBe(51000);
     sandbox._geminiCooldownUntil = sandbox._geminiRetryAfterUntil = 1000000 + 240000 + 900000;
     expect(sandbox._retryAfterExtensionMs()).toBe(300000);
   });

@@ -16,7 +16,8 @@ describe('Function Grapher chart and inquiry semantics', () => {
   it('names the graph and both inquiry textareas', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     expect(source).toContain('Function graph showing the configured curve');
-    expect(source).toContain('stem.funcgrapher.hypothesis_input');
+    expect(source).toContain("htmlFor: 'wave-working-explanation'");
+    expect(source).toContain("id: 'wave-working-explanation'");
     expect(source).toContain('stem.funcgrapher.explanation_input');
   });
 

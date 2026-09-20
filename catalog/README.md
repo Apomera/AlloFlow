@@ -22,6 +22,8 @@ flagship AlloPacks are listed in `published_allopacks.json` (path plus any hand-
 overrides such as slug, credit or tags). `tests/catalog_index.test.js` fails if the committed
 index is not exactly what the generator produces, or if any entry points at a missing file.
 
+Resource capability tags (`memory-aid`, `applied-challenge`, `illustrated`, and `text-only`) are derived from the referenced pack and reconciled after curated overrides. Keep custom topical tags in the published record; do not manually maintain capability tags. An illustration tag reports an image reference, not complete or reviewed image coverage.
+
 Raw `main` is the live catalog, so a push publishes within minutes.
 
 ## Approval workflow (maintainer)

@@ -1,0 +1,104 @@
+{
+  "scope": "Latest result per suite; final recovery/contract runs supersede initial failures.",
+  "files": 12,
+  "tests": 115,
+  "passed": 115,
+  "suites": [
+    {
+      "name": "first_wave_cdn_extraction.test.js",
+      "report": "final-recovery-results.json",
+      "status": "passed",
+      "tests": 3,
+      "passed": 3,
+      "failed": []
+    },
+    {
+      "name": "novak_delivery_preview.test.js",
+      "report": "regression-results.json",
+      "status": "passed",
+      "tests": 9,
+      "passed": 9,
+      "failed": []
+    },
+    {
+      "name": "novak_reading_curation_delivery.test.js",
+      "report": "regression-results.json",
+      "status": "passed",
+      "tests": 4,
+      "passed": 4,
+      "failed": []
+    },
+    {
+      "name": "novak_reading_delivery_export.test.js",
+      "report": "regression-results.json",
+      "status": "passed",
+      "tests": 15,
+      "passed": 15,
+      "failed": []
+    },
+    {
+      "name": "novak_selected_assignment.test.js",
+      "report": "regression-results.json",
+      "status": "passed",
+      "tests": 5,
+      "passed": 5,
+      "failed": []
+    },
+    {
+      "name": "qr_student_shell.test.js",
+      "report": "final-recovery-results.json",
+      "status": "passed",
+      "tests": 20,
+      "passed": 20,
+      "failed": []
+    },
+    {
+      "name": "shared_activity_extraction_contract.test.js",
+      "report": "final-contract-results.json",
+      "status": "passed",
+      "tests": 10,
+      "passed": 10,
+      "failed": []
+    },
+    {
+      "name": "shared_activity_refinements.test.js",
+      "report": "regression-results.json",
+      "status": "passed",
+      "tests": 15,
+      "passed": 15,
+      "failed": []
+    },
+    {
+      "name": "share_session_surfaces_a11y.test.js",
+      "report": "regression-results.json",
+      "status": "passed",
+      "tests": 4,
+      "passed": 4,
+      "failed": []
+    },
+    {
+      "name": "startup_intake_reliability.test.js",
+      "report": "regression-results.json",
+      "status": "passed",
+      "tests": 14,
+      "passed": 14,
+      "failed": []
+    },
+    {
+      "name": "resource_restore_extraction.test.js",
+      "report": "final-recovery-results.json",
+      "status": "passed",
+      "tests": 5,
+      "passed": 5,
+      "failed": []
+    },
+    {
+      "name": "student_assignment_restore_readiness.test.js",
+      "report": "final-recovery-results.json",
+      "status": "passed",
+      "tests": 11,
+      "passed": 11,
+      "failed": []
+    }
+  ]
+}

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { chromium } from 'playwright';
-import { loadTool, prepareStemBrowserRender, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { React, ReactDOMServer, extractReactSsrStyles, loadTool, prepareStemBrowserRender, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 import { auditTextSpacingReflow } from './helpers/stem_wcag_browser_checks.js';
 
 const root = process.cwd();
@@ -11,6 +11,25 @@ const cssDirectory = path.join(root, 'app/static/css');
 const cssFile = fs.readdirSync(cssDirectory).find((file) => /^main\.[a-z0-9]+\.css$/i.test(file));
 if (!cssFile) throw new Error('Compiled application stylesheet was not found.');
 const appCss = fs.readFileSync(path.join(cssDirectory, cssFile), 'utf8');
+// Audit the same runtime theme and tool shell as the application. The previous
+// fixture set isContrast on the component but left its host in the light theme.
+Function('window', fs.readFileSync(path.join(root, 'app_styles_module.js'), 'utf8'))(window);
+const runtimeAppCssSheets = extractReactSsrStyles(ReactDOMServer.renderToStaticMarkup(
+  React.createElement(window.AlloModules.AppStyles.AppStyles, null),
+)).cssSheets;
+function themeFor(testCase) {
+  const options = testCase.overrides || {};
+  return options.isContrast ? 'contrast' : options.isDark ? 'dark' : 'light';
+}
+function hostMarkup(testCase, html) {
+  if (!testCase.overrides) return html;
+  const theme = themeFor(testCase);
+  const content = theme === 'dark'
+    ? '<div data-stem-tool-surface="' + testCase.id + '" style="background:#fff;color:#0f172a;color-scheme:light;padding:10px">' + html + '</div>'
+    : html;
+  return '<div data-stem-tool-shell="' + testCase.id + '" data-stem-basic-math="true" data-stem-theme="' + theme + '" style="background:var(--allo-stem-canvas);color:var(--allo-stem-text);min-height:100vh">' + content + '</div>';
+}
+
 
 const arithmeticCases = ['learn', 'practice', 'errors', 'apply'].map((tab) => ({
   name: `arithmetic ${tab}`,
@@ -149,7 +168,7 @@ function renderCase(testCase) {
   resetStemLab();
   document.head.querySelectorAll('style').forEach((style) => style.remove());
   loadTool(testCase.file, testCase.id);
-  return prepareStemBrowserRender(renderTool(testCase.id, testCase.state, testCase.overrides));
+  return prepareStemBrowserRender(renderTool(testCase.id, testCase.state, testCase.overrides ? { ...testCase.overrides, theme: themeFor(testCase) } : undefined));
 }
 
 function compactViolations(violations) {
@@ -190,9 +209,10 @@ describe('Foundational math tools WCAG regression in a real browser', () => {
       await page.setContent(
         '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>' +
           appCss +
-          '</style></head><body><main id="tool-root">' + rendered.html + '</main></body></html>',
+          '</style></head><body><main id="tool-root" class="' + (testCase.overrides ? 'theme-' + (themeFor(testCase) === 'light' ? 'default' : themeFor(testCase)) : '') + '">' + hostMarkup(testCase, rendered.html) + '</main></body></html>',
         { waitUntil: 'domcontentloaded' },
       );
+      if (testCase.overrides) for (const css of runtimeAppCssSheets) await page.addStyleTag({ content: css });
       for (const css of rendered.cssSheets) await page.addStyleTag({ content: css });
       await page.addScriptTag({ content: axeSource });
       await page.evaluate(() => {

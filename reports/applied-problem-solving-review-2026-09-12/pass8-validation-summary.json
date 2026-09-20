@@ -1,0 +1,41 @@
+{
+  "date": "2026-09-19",
+  "passed": 169,
+  "suites": 14,
+  "method": "Use each suite from the broad regression run, replacing the four rechecked suites with their final results. The final recheck adds full-export reference coverage and resolves the navigation assertion.",
+  "broad": {
+    "passed": 167,
+    "failed": 1
+  },
+  "finalRecheck": {
+    "passed": 62,
+    "failed": 0
+  },
+  "browserStates": 11,
+  "pageErrors": 0,
+  "axeViolations": 0,
+  "mirrors": [
+    {
+      "file": "applied_challenge_module.js",
+      "matches": true
+    },
+    {
+      "file": "studio_response_module.js",
+      "matches": true
+    },
+    {
+      "file": "doc_pipeline_module.js",
+      "matches": true
+    },
+    {
+      "file": "ui_strings.js",
+      "matches": true
+    }
+  ],
+  "liveAi": {
+    "ready": false,
+    "code": "missing-credential",
+    "credentialPresent": false
+  },
+  "learnerSessions": 0
+}

@@ -1,0 +1,24 @@
+{
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 1.0023980815347722,
+    "textRatio": 1,
+    "textLost": 0
+  },
+  "source": {
+    "destination": "feedback",
+    "url": "https://remediation.invalid/result?answer=Original",
+    "method": "GET"
+  },
+  "candidate": {
+    "destination": "feedback",
+    "url": "https://remediation.invalid/result?answer=Original",
+    "method": "GET"
+  },
+  "repaired": {
+    "destination": "feedback",
+    "url": "https://remediation.invalid/result?answer=Original",
+    "method": "GET"
+  }
+}

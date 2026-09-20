@@ -437,6 +437,90 @@
     return _pdCorePromise;
   }
 
+  function normalizeCatalogSearch(value) {
+    return String(value == null ? '' : value).normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  }
+
+  function catalogGradeSet(value) {
+    var raw = String(value == null ? '' : value).toLowerCase().trim()
+      .replace(/[–—]/g, '-').replace(/\bgrades?\b/g, '').replace(/\bkindergarten\b/g, 'k')
+      .replace(/\b(?:pre[ -]?k|preschool)\b/g, 'p').replace(/(\d+)(?:st|nd|rd|th)\b/g, '$1').trim();
+    if (!raw) return null;
+    var parts = raw.split(/\s*(?:,|\/|&|\band\b)\s*/), values = [];
+    for (var i = 0; i < parts.length; i++) {
+      var match = parts[i].trim().match(/^(p|k|\d{1,2})(?:\s*(?:-|to)\s*(p|k|\d{1,2}))?$/);
+      if (!match) return null;
+      var toGrade = function (token) { return token === 'p' ? -1 : token === 'k' ? 0 : Number(token); };
+      var first = toGrade(match[1]), last = match[2] ? toGrade(match[2]) : first;
+      if (first > 12 || last > 12 || first > last) return null;
+      for (var grade = first; grade <= last; grade++) if (values.indexOf(grade) === -1) values.push(grade);
+    }
+    return values;
+  }
+
+  function catalogEntryMatches(entry, filters) {
+    if (!entry || typeof entry !== 'object') return false;
+    filters = filters || {};
+    if (filters.subject && entry.subject !== filters.subject) return false;
+    var gradeQuery = String(filters.grade || '').trim();
+    if (gradeQuery) {
+      var wanted = catalogGradeSet(gradeQuery), offered = catalogGradeSet(entry.grade_level);
+      if (wanted && offered) { if (!wanted.some(function (grade) { return offered.indexOf(grade) !== -1; })) return false; }
+      else if (wanted && /^all (?:grades|ages)$/i.test(String(entry.grade_level || '').trim())) { /* General-audience resource. */ }
+      else if (wanted || !normalizeCatalogSearch(entry.grade_level).includes(normalizeCatalogSearch(gradeQuery))) return false;
+    }
+    var query = normalizeCatalogSearch(filters.search);
+    if (query) {
+      var tags = Array.isArray(entry.tags) ? entry.tags.filter(function (tag) { return typeof tag === 'string'; }) : [];
+      var hay = normalizeCatalogSearch((entry.title || '') + ' ' + tags.join(' '));
+      if (!query.split(/\s+/).every(function (term) { return hay.indexOf(term) !== -1; })) return false;
+    }
+    return true;
+  }
+
+  function parseCatalogManifest(data) {
+    if (!data || !Array.isArray(data.entries)) throw new Error('The catalog response is missing its entries.');
+    var slugs = new Set(), paths = new Set();
+    data.entries.forEach(function (entry) {
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry) || typeof entry.slug !== 'string' || !entry.slug.trim() || typeof entry.path !== 'string' || !entry.path.trim()) throw new Error('The catalog contains an entry without a valid name or file path.');
+      if (slugs.has(entry.slug) || paths.has(entry.path)) throw new Error('The catalog contains duplicate entries.');
+      slugs.add(entry.slug); paths.add(entry.path);
+      if (entry.tags !== undefined && (!Array.isArray(entry.tags) || entry.tags.some(function (tag) { return typeof tag !== 'string'; }))) throw new Error('The catalog contains invalid lesson tags.');
+      ['title', 'subject', 'credit', 'license'].forEach(function (key) { if (entry[key] != null && typeof entry[key] !== 'string') throw new Error('The catalog contains invalid lesson metadata.'); });
+      if (entry.grade_level != null && typeof entry.grade_level !== 'string' && typeof entry.grade_level !== 'number') throw new Error('The catalog contains an invalid grade level.');
+    });
+    return data.entries;
+  }
+
+  function parseCatalogLesson(fetched, entry) {
+    var wrapped = fetched && typeof fetched === 'object' && Object.prototype.hasOwnProperty.call(fetched, 'lesson_payload');
+    var lesson = wrapped ? fetched.lesson_payload : fetched;
+    if (!lesson || typeof lesson !== 'object' || Array.isArray(lesson)) throw new Error('The downloaded file is not a lesson object.');
+    var isPack = /\.allopack\.json(?:[?#]|$)/i.test(String(entry && entry.path || '')) || Object.prototype.hasOwnProperty.call(lesson, 'allopack');
+    if (isPack) {
+      if (!lesson.allopack || typeof lesson.allopack !== 'object' || Array.isArray(lesson.allopack) || !Array.isArray(lesson.history) || !lesson.history.length) throw new Error('The downloaded AlloPack is missing its metadata or resources.');
+      var ids = new Set();
+      lesson.history.forEach(function (item) {
+        if (!item || typeof item !== 'object' || typeof item.id !== 'string' || !item.id.trim() || ids.has(item.id) || typeof item.type !== 'string' || !item.type.trim() || typeof item.title !== 'string' || !item.title.trim() || item.data == null || (item.meta !== undefined && typeof item.meta !== 'string')) throw new Error('The downloaded AlloPack contains an invalid or duplicate resource.');
+        ids.add(item.id);
+      });
+    } else {
+      var checked = validateLessonJson(JSON.stringify(lesson));
+      if (!checked.ok) throw new Error(checked.error);
+    }
+    return lesson;
+  }
+
+  async function fetchCatalogLesson(entry, fetcher, signal) {
+    if (!entry || typeof entry.path !== 'string' || !entry.path.trim()) throw new Error('This catalog entry has no lesson file.');
+    var response = await fetcher(ENTRY_BASE_URL + entry.path + '?t=' + Date.now(), { signal: signal });
+    if (!response.ok) throw new Error('The lesson request failed (HTTP ' + response.status + '). Please try again.');
+    var fetched;
+    try { fetched = JSON.parse((await response.text()).replace(/^\uFEFF/, '')); }
+    catch (err) { if (signal && signal.aborted) throw err; throw new Error('The lesson response is not valid JSON. Please try again.'); }
+    return parseCatalogLesson(fetched, entry);
+  }
+
   // ----- Browse tab -----------------------------------------------------------
 
   function BrowseTab(props) {
@@ -446,9 +530,16 @@
     var state = s[0], setState = s[1];
     var f = useState({ subject: '', grade: '', search: '' });
     var filters = f[0], setFilters = f[1];
+    var searchInputRef = React.useRef(null);
+    var retryState = useState(0), retryVersion = retryState[0], setRetryVersion = retryState[1];
+    var actionState = useState(null), activeAction = actionState[0], setActiveAction = actionState[1];
+    var actionRef = React.useRef(null), mountedRef = React.useRef(true);
+    var errorState = useState(''), actionError = errorState[0], setActionError = errorState[1];
+    useEffect(function () { mountedRef.current = true; return function () { mountedRef.current = false; if (actionRef.current) actionRef.current.abort(); }; }, []);
 
     useEffect(function () {
       var cancelled = false;
+      setState({ status: 'loading', entries: [], error: null });
       fetch(MANIFEST_URL + '?t=' + Date.now())
         .then(function (r) {
           if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -456,62 +547,54 @@
         })
         .then(function (data) {
           if (cancelled) return;
-          setState({ status: 'ok', entries: Array.isArray(data.entries) ? data.entries : [], error: null });
+          setState({ status: 'ok', entries: parseCatalogManifest(data), error: null });
         })
         .catch(function (err) {
           if (cancelled) return;
           setState({ status: 'error', entries: [], error: err.message });
         });
       return function () { cancelled = true; };
-    }, []);
+    }, [retryVersion]);
 
     var filteredEntries = useMemo(function () {
-      return state.entries.filter(function (entry) {
-        if (filters.subject && entry.subject !== filters.subject) return false;
-        if (filters.grade && (!entry.grade_level || entry.grade_level.toLowerCase().indexOf(filters.grade.toLowerCase()) === -1)) return false;
-        if (filters.search) {
-          var hay = ((entry.title || '') + ' ' + (entry.tags || []).join(' ')).toLowerCase();
-          if (hay.indexOf(filters.search.toLowerCase()) === -1) return false;
-        }
-        return true;
-      });
+      return state.entries.filter(function (entry) { return catalogEntryMatches(entry, filters); });
     }, [state.entries, filters]);
 
-    // Catalog/approved files are wrapped submission records when they came in
-    // via the Worker: { schema_version, metadata, affirmations, pii_scan,
-    // lesson_payload }. The actual lesson is the lesson_payload field. If a
-    // file was placed directly in approved/ (raw lesson, no wrapper), there's
-    // no lesson_payload field and we use the object as-is.
-    function unwrapLesson(fetched) {
-      return fetched && fetched.lesson_payload ? fetched.lesson_payload : fetched;
+    var hasFilters = !!(filters.subject || filters.grade.trim() || filters.search.trim());
+    function clearFilters() {
+      setFilters({ subject: '', grade: '', search: '' });
+      if (searchInputRef.current) searchInputRef.current.focus();
     }
 
-    function handleLoadIntoApp(entry) {
-      fetch(ENTRY_BASE_URL + entry.path + '?t=' + Date.now())
-        .then(function (r) {
-          if (!r.ok) throw new Error('HTTP ' + r.status);
-          return r.json();
-        })
-        .then(function (fetched) {
-          var lesson = unwrapLesson(fetched);
-          if (loadProjectFromJson) {
-            loadProjectFromJson(lesson);
-            addToast && addToast('Loaded "' + entry.title + '" into AlloFlow.', 'success');
-          } else {
-            downloadJsonFile(lesson, entry.slug);
-            addToast && addToast('Downloaded "' + entry.title + '". Use Load Project to open it in AlloFlow.', 'info');
-          }
-        })
-        .catch(function (err) {
-          addToast && addToast('Could not fetch lesson: ' + err.message, 'error');
-        });
-    }
-
-    function handleDownload(entry) {
-      fetch(ENTRY_BASE_URL + entry.path + '?t=' + Date.now())
-        .then(function (r) { return r.json(); })
-        .then(function (fetched) { downloadJsonFile(unwrapLesson(fetched), entry.slug); })
-        .catch(function (err) { addToast && addToast('Download failed: ' + err.message, 'error'); });
+    async function runEntryAction(entry, kind) {
+      if (actionRef.current) return;
+      var controller = new AbortController();
+      actionRef.current = controller;
+      setActionError('');
+      setActiveAction({ path: entry.path, kind: kind });
+      try {
+        var lesson = await fetchCatalogLesson(entry, fetch, controller.signal);
+        if (controller.signal.aborted || !mountedRef.current) return;
+        if (kind === 'load' && typeof loadProjectFromJson === 'function') {
+          var result = await loadProjectFromJson(lesson);
+          if (result === false || (result && (result.success === false || result.ok === false))) throw new Error('AlloFlow could not open this lesson.');
+          // The current host starts a FileReader import and returns undefined.
+          // Its own completion/error notifications are authoritative.
+          if (mountedRef.current && (result === true || (result && (result.success === true || result.ok === true)))) addToast && addToast('Loaded "' + entry.title + '" into AlloFlow.', 'success');
+        } else {
+          downloadJsonFile(lesson, entry.slug);
+          addToast && addToast('Downloaded "' + entry.title + '". Use Load Project to open it in AlloFlow.', 'info');
+        }
+      } catch (err) {
+        if (!controller.signal.aborted && mountedRef.current) {
+          var message = (kind === 'download' ? 'Download failed: ' : 'Could not open lesson: ') + (err && err.message || String(err));
+          setActionError((entry.title || 'Lesson') + ': ' + message);
+          addToast && addToast(message, 'error');
+        }
+      } finally {
+        if (actionRef.current === controller) actionRef.current = null;
+        if (mountedRef.current) setActiveAction(null);
+      }
     }
 
     return e('div', { className: 'flex flex-col gap-4' },
@@ -544,6 +627,7 @@
           e('label', { className: 'block text-xs font-semibold text-slate-600 mb-1', htmlFor: 'cat-filter-search' }, 'Search title or tags'),
           e('input', {
             id: 'cat-filter-search',
+            ref: searchInputRef,
             type: 'text',
             placeholder: tr('catalog_photosynthesis_peer_teaching_2', 'photosynthesis, peer-teaching...'),
             className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white',
@@ -552,13 +636,17 @@
           })
         )
       ),
+      hasFilters && e('button', { type: 'button', onClick: clearFilters, className: 'self-start min-h-11 px-3 py-2 text-sm font-semibold text-indigo-700 border border-indigo-300 rounded-md' }, tr('catalog_clear_filters', 'Clear filters')),
       // Status / count line
-      e('div', { className: 'text-sm text-slate-600' },
+      e('div', { className: 'text-sm text-slate-600', role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
         state.status === 'loading' ? 'Loading catalog...' :
         state.status === 'error' ? e('span', { className: 'text-red-600' }, 'Could not load catalog: ' + state.error) :
         state.entries.length === 0 ? 'No published lessons yet. Be the first to contribute via the Submit tab.' :
         filteredEntries.length + ' of ' + state.entries.length + ' entries'
       ),
+      state.status === 'ok' && state.entries.length > 0 && filteredEntries.length === 0 && e('p', { className: 'rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700' }, tr('catalog_no_filter_matches', 'No lessons match these filters. Try fewer search words, a wider grade range, or clear the filters.')),
+      state.status === 'error' && e('button', { type: 'button', className: 'self-start min-h-11 px-3 py-2 text-sm font-semibold text-indigo-700 border border-indigo-300 rounded-md', onClick: function () { setRetryVersion(function (version) { return version + 1; }); if (searchInputRef.current) searchInputRef.current.focus(); } }, tr('catalog_retry_loading', 'Retry loading catalog')),
+      actionError && e('div', { role: 'alert', className: 'rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800' }, actionError),
       // Cards grid
       e('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' },
         filteredEntries.map(function (entry) {
@@ -578,13 +666,15 @@
             e('div', { className: 'text-[10px] text-slate-600 font-mono' }, 'License: ' + (entry.license || '(unspecified)')),
             e('div', { className: 'flex gap-2 mt-auto pt-2' },
               e('button', {
-                onClick: function () { handleDownload(entry); },
+                type: 'button', disabled: !!activeAction,
+                onClick: function () { runEntryAction(entry, 'download'); },
                 className: 'flex-1 px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50',
-              }, 'Download JSON'),
+              }, activeAction && activeAction.path === entry.path && activeAction.kind === 'download' ? tr('catalog_downloading', 'Downloading…') : 'Download JSON'),
               e('button', {
-                onClick: function () { handleLoadIntoApp(entry); },
+                type: 'button', disabled: !!activeAction,
+                onClick: function () { runEntryAction(entry, 'load'); },
                 className: 'flex-1 px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
-              }, loadProjectFromJson ? 'Load in AlloFlow' : 'Open')
+              }, activeAction && activeAction.path === entry.path && activeAction.kind === 'load' ? tr('catalog_opening', 'Opening…') : loadProjectFromJson ? 'Load in AlloFlow' : 'Open')
             )
           );
         })
@@ -4020,6 +4110,11 @@
     pdFacilitationMove: pdFacilitationMove,
     pdBrowseStatus: pdBrowseStatus,
   };
+  CommunityCatalog._parseCatalogManifest = parseCatalogManifest;
+  CommunityCatalog._fetchCatalogLesson = fetchCatalogLesson;
+  CommunityCatalog._parseCatalogLesson = parseCatalogLesson;
+  CommunityCatalog._catalogEntryMatches = catalogEntryMatches;
+  CommunityCatalog._catalogGradeSet = catalogGradeSet;
   CommunityCatalog.PdSubmit = PdSubmit;
   CommunityCatalog.PdGenerate = PdGenerate;
   CommunityCatalog.ReadActivity = ReadActivity;

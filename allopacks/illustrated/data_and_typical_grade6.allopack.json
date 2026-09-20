@@ -29,10 +29,15 @@
       "textPolicy": "Text-free artwork; original activity text stays editable"
     },
     "contentRefinements": {
-      "count": 42,
+      "count": 45,
       "audit": "allopacks/media/data_and_typical_grade6/content-refinements.json",
-      "review": "Mathematical wording refined; educator review pending"
-    }
+      "review": "Mathematical wording refined; educator review pending",
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/data_and_typical_grade6/content-refinements.json",
+      "sourceOnlyResourceIds": []
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Statistical Questions, Center, Spread, and What a Single Number Hides",
   "history": [
@@ -79,7 +84,7 @@
       "title": "What Counts as Typical",
       "timestamp": "2026-09-06T04:10:01.000Z",
       "data": "## What Counts as Typical\n\nA **statistical** question anticipates variation in the data used to answer it. Heights across a class or waits across bus arrivals can vary. A single specified person's height on one occasion asks for one value; studying that person's height across time is a different question.\n\nA **data** set records observations. Before calculating, ask what was measured, who or what was included, and in which units. Plots can reveal patterns, gaps and unusual values.\n\nThe **mean** is the sum of the values divided by the number of values. For 2,3,3,4,8, the total is 20 and there are five values, so the mean is 4. An equal-sharing picture divides twenty squares into five groups of four.\n\nThe **median** comes from ordered data. With five values it is the third. For 2,3,3,4,8, the median is 3. Values can equal the median, so it is not always true that exactly half are strictly above and half strictly below. With an even count, average the two middle values: 3,5,8,10 has median (5 + 8) ÷ 2 = 6.5.\n\nThe **mode** is the most frequent value. Three is the mode of 2,3,3,4,8. More than one value can tie. Under our classroom convention, a set in which every value appears once has no mode. Modes also summarize categories, such as most common book genre.\n\nNow consider 4,5,6,7,100. The mean is 24.4 and median is 6. The distant 100 is an **outlier** in this example. Changing only 100 to 1000 leaves the middle position unchanged, but increases the mean. The median is less sensitive to extreme magnitudes; adding, deleting or reordering observations can still change it.\n\nNeither summary is automatically more honest. For a value near the cluster here, median 6 is useful. For equal sharing of the total, mean 24.4 answers another legitimate question. Check the distribution and purpose; a gap between mean and median does not by itself prove an error or a single outlier.\n\n**Spread** describes variation. Two sets, 49,50,50,51 and 5,20,80,95, both have mean 50. Their **ranges**, largest minus smallest, are 2 and 90. Range uses only extremes; the plots reveal more.\n\nA **sample** is the subset observed from a wider group. More observations do not automatically remove selection bias. Report how data were chosen and handle unusual values transparently.\n\nAsk: what was measured, which summary is reported, and what does the spread show? One number cannot replace the full story.",
-      "meta": "6th Grade • Leveled reading • ~450 words",
+      "meta": "6th Grade • Leveled reading",
       "imageSlot": "dg-img-outlier"
     },
     {
@@ -337,7 +342,8 @@
               "What was the spread?"
             ]
           }
-        ]
+        ],
+        "structureType": "Key Concept Map"
       },
       "meta": "6 branches • the process, and where it can mislead"
     },
@@ -479,7 +485,7 @@
               "In 4, 5, 6, 7, 100 the median is 6 and the mean is 24.4."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "visual-association",
             "mode": "scaffolded",
             "aiExample": "Place equal-mass markers at the data values along a number line. The mean is their balance point: moving one marker farther right shifts that point. In 4,5,6,7,100, replacing only 100 with 1000 keeps the third value at 6, so this median stays unchanged.",
@@ -528,6 +534,13 @@
             "hookFact": {
               "text": "This is why a single number can mislead without anybody lying.",
               "sourceTitle": "What Counts as Typical (this lesson)"
+            },
+            "factReview": {
+              "status": "inherited-review-attribution",
+              "sourcePack": "allopacks/data_and_typical_grade6.allopack.json",
+              "sourceResourceId": "dg-memory",
+              "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+              "factsHash": "f49ddfb86f971af36b96ecdb175df75f20e352e92a313f1f3b28ca059d0a13a7"
             }
           }
         ]
@@ -986,7 +999,7 @@
           ],
           "deliverable": "A one-page report with your question, your ordered data, the mean, median and range, the centre you chose with your reason, and one sentence on what the summary hides.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

@@ -1,0 +1,236 @@
+[
+  {
+    "width": 1280,
+    "errors": [],
+    "closeBounds": {
+      "left": 1212,
+      "right": 1256,
+      "top": 16,
+      "bottom": 60
+    },
+    "viewport": 1280,
+    "bodyWidth": 1280,
+    "headings": [
+      "BehaviorLens",
+      "Eagle",
+      "Record what happened today",
+      "What are you observing?",
+      "Review and follow through"
+    ],
+    "buttons": [
+      {
+        "label": "Close BehaviorLens",
+        "text": "◇"
+      },
+      {
+        "label": "AI is off — click to enable",
+        "text": "🤖 AI: OFF"
+      },
+      {
+        "label": "Family Mode",
+        "text": "👨‍👩‍👧 Family"
+      },
+      {
+        "label": null,
+        "text": "Today"
+      },
+      {
+        "label": null,
+        "text": "All tools"
+      },
+      {
+        "label": null,
+        "text": "Student and role settings"
+      },
+      {
+        "label": null,
+        "text": "Add observation"
+      },
+      {
+        "label": null,
+        "text": "Start or resume timed observation"
+      },
+      {
+        "label": null,
+        "text": "Define a target"
+      },
+      {
+        "label": null,
+        "text": "Review observations"
+      },
+      {
+        "label": null,
+        "text": "Work on a support plan"
+      },
+      {
+        "label": null,
+        "text": "Prepare a progress review"
+      },
+      {
+        "label": null,
+        "text": "Download backup"
+      },
+      {
+        "label": null,
+        "text": "Load workspace from file"
+      }
+    ],
+    "axe": []
+  },
+  {
+    "width": 390,
+    "errors": [],
+    "closeBounds": {
+      "left": 334,
+      "right": 378,
+      "top": 12,
+      "bottom": 56
+    },
+    "viewport": 390,
+    "bodyWidth": 390,
+    "headings": [
+      "BehaviorLens",
+      "Eagle",
+      "Record what happened today",
+      "What are you observing?",
+      "Review and follow through"
+    ],
+    "buttons": [
+      {
+        "label": "Close BehaviorLens",
+        "text": "◇"
+      },
+      {
+        "label": "AI is off — click to enable",
+        "text": "🤖 AI: OFF"
+      },
+      {
+        "label": "Family Mode",
+        "text": "👨‍👩‍👧 Family"
+      },
+      {
+        "label": null,
+        "text": "Today"
+      },
+      {
+        "label": null,
+        "text": "All tools"
+      },
+      {
+        "label": null,
+        "text": "Student and role settings"
+      },
+      {
+        "label": null,
+        "text": "Add observation"
+      },
+      {
+        "label": null,
+        "text": "Start or resume timed observation"
+      },
+      {
+        "label": null,
+        "text": "Define a target"
+      },
+      {
+        "label": null,
+        "text": "Review observations"
+      },
+      {
+        "label": null,
+        "text": "Work on a support plan"
+      },
+      {
+        "label": null,
+        "text": "Prepare a progress review"
+      },
+      {
+        "label": null,
+        "text": "Download backup"
+      },
+      {
+        "label": null,
+        "text": "Load workspace from file"
+      }
+    ],
+    "axe": []
+  },
+  {
+    "width": 320,
+    "errors": [],
+    "closeBounds": {
+      "left": 264,
+      "right": 308,
+      "top": 12,
+      "bottom": 56
+    },
+    "viewport": 320,
+    "bodyWidth": 320,
+    "headings": [
+      "BehaviorLens",
+      "Eagle",
+      "Record what happened today",
+      "What are you observing?",
+      "Review and follow through"
+    ],
+    "buttons": [
+      {
+        "label": "Close BehaviorLens",
+        "text": "◇"
+      },
+      {
+        "label": "AI is off — click to enable",
+        "text": "🤖 AI: OFF"
+      },
+      {
+        "label": "Family Mode",
+        "text": "👨‍👩‍👧 Family"
+      },
+      {
+        "label": null,
+        "text": "Today"
+      },
+      {
+        "label": null,
+        "text": "All tools"
+      },
+      {
+        "label": null,
+        "text": "Student and role settings"
+      },
+      {
+        "label": null,
+        "text": "Add observation"
+      },
+      {
+        "label": null,
+        "text": "Start or resume timed observation"
+      },
+      {
+        "label": null,
+        "text": "Define a target"
+      },
+      {
+        "label": null,
+        "text": "Review observations"
+      },
+      {
+        "label": null,
+        "text": "Work on a support plan"
+      },
+      {
+        "label": null,
+        "text": "Prepare a progress review"
+      },
+      {
+        "label": null,
+        "text": "Download backup"
+      },
+      {
+        "label": null,
+        "text": "Load workspace from file"
+      }
+    ],
+    "axe": []
+  }
+]

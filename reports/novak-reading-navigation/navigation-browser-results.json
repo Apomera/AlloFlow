@@ -1,0 +1,115 @@
+{
+  "createdAt": "2026-09-19T23:23:31.214Z",
+  "checks": [
+    {
+      "name": "Older adaptation survives Original → Both despite newer companions",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "name": "Independent single-view and comparison scroll positions survive round trips",
+      "status": "passed",
+      "detail": {
+        "adaptedOnly": {
+          "outer": 580,
+          "source": null,
+          "adapted": null
+        },
+        "originalOnly": {
+          "outer": 870,
+          "source": null,
+          "adapted": null
+        },
+        "both": {
+          "outer": 170,
+          "source": 390,
+          "adapted": 230
+        },
+        "restored": {
+          "outer": 170,
+          "source": 390,
+          "adapted": 230
+        }
+      }
+    },
+    {
+      "name": "Teacher source and language choices survive an alternate-original detour",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "name": "Changing comparison source or language stops prior audio; captured source uses its own language",
+      "status": "passed",
+      "detail": {
+        "spokenLanguages": [
+          "English",
+          "English"
+        ],
+        "stopCount": 4
+      }
+    },
+    {
+      "name": "Reliable same-language passage linking highlights exact original content",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "name": "Ambiguous or unsupported links never highlight a guessed original passage",
+      "status": "passed",
+      "detail": [
+        {
+          "id": "adapted-ambiguous",
+          "statuses": [
+            "Review the source and adapted versions below.",
+            "More than one original passage has similar wording. Read the original to choose the right context."
+          ],
+          "disabled": false
+        },
+        {
+          "id": "adapted-unavailable",
+          "statuses": [
+            "Review the source and adapted versions below.",
+            "No reliable passage link was found. You can still read both complete versions."
+          ],
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Cross-language comparison never guesses related-passage highlights",
+      "status": "passed",
+      "detail": {
+        "linkDisabled": false,
+        "statuses": [
+          "Review the source and adapted versions below.",
+          "Passage links need two versions in the same known language.",
+          "These versions use different languages. Read them side by side; word change highlighting is unavailable."
+        ]
+      }
+    },
+    {
+      "name": "320px layout supports keyboard switching, pane scrolling, and reduced-motion navigation",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "name": "No runtime errors or external service requests",
+      "status": "passed",
+      "detail": null
+    }
+  ],
+  "runtimeErrors": [],
+  "blockedRequests": [],
+  "limitations": [
+    "Production compiled reader and source contract inside an isolated stateful fixture, not the complete application shell.",
+    "AI, actual speech synthesis, persistence, and host save handlers are not exercised; callbacks record local events.",
+    "Offscreen version controls use DOM click for bookmark checks, avoiding Playwright auto-scroll before the reader captures position; keyboard checks use real browser input.",
+    "Browser coverage is installed Microsoft Edge Chromium; no Safari or Firefox run."
+  ],
+  "artifacts": {
+    "sourceSha256": "3e0b7ed3a60cc73dcd14e3bd3e5aa9a9eddca4bbb23627ef31d3b588aaf2d2f9",
+    "moduleSha256": "ee7f7fd537541e5f26ff4d0fdb1ddb2d091c51290773e3c33f63e98bc59e26e7",
+    "contractSha256": "694efa8b00a865ec6264bf51a40ebd2682a07baea359d3b06b842079aa2708f7"
+  },
+  "passed": true
+}

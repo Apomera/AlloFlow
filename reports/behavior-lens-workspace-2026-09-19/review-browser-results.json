@@ -1,0 +1,98 @@
+[
+  {
+    "width": 1280,
+    "state": "summary",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "target",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "note",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "charts",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "summary",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "target",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "note",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "charts",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "summary",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "target",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "note",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "charts",
+    "errors": [],
+    "overflow": false,
+    "dialogOverflow": false,
+    "axe": []
+  }
+]

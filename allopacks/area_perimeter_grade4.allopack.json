@@ -8,7 +8,8 @@
     "gradeLevel": "3rd-4th Grade",
     "standards": "CCSS.MATH.CONTENT.3.MD.C.7 (relate area to the operations of multiplication and addition); CCSS.MATH.CONTENT.3.MD.D.8 (solve real world problems involving perimeters of polygons); CCSS.MATH.CONTENT.4.MD.A.3 (apply the area and perimeter formulas for rectangles in real world problems)",
     "createdAt": "2026-07-21T12:00:00.000Z",
-    "imageShotList": "allopacks/area_perimeter_grade4.IMAGES.md"
+    "imageShotList": "allopacks/area_perimeter_grade4.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Area and Perimeter",
   "history": [
@@ -48,7 +49,7 @@
       "title": "The Fence and the Floor",
       "timestamp": "2026-07-21T12:00:01.000Z",
       "data": "## The Fence and the Floor\n\nPicture a rectangular dog yard. You need two completely different numbers to plan it, and knowing which is which is the whole skill.\n\n**Perimeter** is the fence. It is the distance all the way around the outside. To find it, add up every side. A yard 8 feet long and 5 feet wide has a perimeter of 8 + 5 + 8 + 5 = 26 feet of fence.\n\n**Area** is the floor. It is how much space is covered inside. To find it, multiply length by width. That same yard has an area of 8 × 5 = 40 square feet of grass.\n\nOne shape, two numbers, two different jobs. Fence goes around. Floor fills in.\n\nWhy does area use multiplication? Picture covering the yard with 1-foot square tiles. Each row holds 8 tiles, and you need 5 rows. Five rows of eight tiles is 40 tiles — and multiplication is just fast repeated addition. That is also why area is measured in **square units**: you are literally counting squares.\n\nThat unit difference is not a technicality. Perimeter is measured in plain units — feet, meters, inches — because you are measuring a length. Area is measured in square feet or square meters because you are measuring covered space. Writing \"40 feet\" for an area is not a small slip; it describes a different quantity entirely.\n\nHere is the fact that surprises people most: **two rectangles can have the same perimeter and completely different areas.**\n\nTake 24 feet of fence. Build a 6 by 6 square: perimeter 24, area 36 square feet. Now build a 2 by 10 rectangle: perimeter also 24, but area only 20 square feet. Same fence, almost twice the yard in one of them. The more square-like the rectangle, the more area you get from the same perimeter — which is why farmers and builders care about shape, not just fence length.\n\nSo when you read a problem, do not hunt for numbers first. Ask what the situation actually needs. Fencing a garden, framing a picture, or putting trim around a room means perimeter. Carpeting a floor, painting a wall, or laying sod means area. Get that question right and the arithmetic is the easy part.",
-      "meta": "3rd-4th Grade • Leveled reading • ~340 words",
+      "meta": "3rd-4th Grade • Leveled reading",
       "imageSlot": "ap-img-fence-floor"
     },
     {

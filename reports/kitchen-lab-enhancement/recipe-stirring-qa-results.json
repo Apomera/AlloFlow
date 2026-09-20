@@ -1,0 +1,20 @@
+{
+  "checks": [
+    "Guarded empty pan; partial sweep cancellation; clockwise/counterclockwise circle commits; keyboard equivalent; gesture pauses shared time.",
+    "mushroom for 2 cooked end to end with real gesture/button mixing, an extra finishing splash and fold, all five criteria, independent evidence, and immutable replay.",
+    "tomato for 4 cooked end to end with real gesture/button mixing, an extra finishing splash and fold, all five criteria, independent evidence, and immutable replay.",
+    "Desktop/mobile accessibility, 320px pointer interaction, text mode, and missing-3D button control remain available."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop stirring workspace",
+      "issues": []
+    },
+    {
+      "label": "320px stirring in text mode",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

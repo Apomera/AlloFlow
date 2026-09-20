@@ -1,0 +1,127 @@
+{
+  "states": [
+    {
+      "label": "Initial 1280",
+      "width": 1280,
+      "pageWidth": 1280,
+      "height": 1343,
+      "firstField": 744,
+      "active": "",
+      "violations": []
+    },
+    {
+      "label": "Referenced review 1280",
+      "width": 1280,
+      "pageWidth": 1280,
+      "height": 1655,
+      "firstField": 1025,
+      "active": "",
+      "violations": []
+    },
+    {
+      "label": "Changed reference 1280",
+      "width": 1280,
+      "pageWidth": 1280,
+      "height": 1857,
+      "firstField": 1279,
+      "active": "aps-review-heading",
+      "violations": []
+    },
+    {
+      "label": "Initial 390",
+      "width": 390,
+      "pageWidth": 390,
+      "height": 1537,
+      "firstField": 846,
+      "active": "",
+      "violations": []
+    },
+    {
+      "label": "Referenced review 390",
+      "width": 390,
+      "pageWidth": 390,
+      "height": 2236,
+      "firstField": 1242,
+      "active": "",
+      "violations": []
+    },
+    {
+      "label": "Changed reference 390",
+      "width": 390,
+      "pageWidth": 390,
+      "height": 2450,
+      "firstField": 1548,
+      "active": "aps-review-heading",
+      "violations": []
+    },
+    {
+      "label": "Initial 320",
+      "width": 320,
+      "pageWidth": 320,
+      "height": 1589,
+      "firstField": 846,
+      "active": "",
+      "violations": []
+    },
+    {
+      "label": "Referenced review 320",
+      "width": 320,
+      "pageWidth": 320,
+      "height": 2276,
+      "firstField": 1282,
+      "active": "",
+      "violations": []
+    },
+    {
+      "label": "Changed reference 320",
+      "width": 320,
+      "pageWidth": 320,
+      "height": 2506,
+      "firstField": 1624,
+      "active": "aps-review-heading",
+      "violations": []
+    },
+    {
+      "label": "Search without organizer",
+      "width": 390,
+      "pageWidth": 390,
+      "height": 3853,
+      "firstField": 764,
+      "active": "applied-workspace-evidence",
+      "violations": []
+    },
+    {
+      "label": "Teacher setup",
+      "width": 390,
+      "pageWidth": 390,
+      "height": 951,
+      "firstField": 188,
+      "active": "",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "calls": [
+    {
+      "count": 4,
+      "leaked": false,
+      "text": "Revised reasoning. The soil is still unknown.",
+      "ai": 0,
+      "search": 0
+    },
+    {
+      "count": 4,
+      "leaked": false,
+      "text": "Revised reasoning. The soil is still unknown.",
+      "ai": 0,
+      "search": 0
+    },
+    {
+      "count": 4,
+      "leaked": false,
+      "text": "Revised reasoning. The soil is still unknown.",
+      "ai": 0,
+      "search": 0
+    }
+  ]
+}

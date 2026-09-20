@@ -47,7 +47,7 @@ test.describe('Raptor input and paused presentation',()=>{
     const card=page.getByRole('group',{name:'Paused flight controls',exact:true});
     await expect(card).toBeVisible();await expect(card).toContainText('Resume shortcut: P or Esc');
     await expect(page.getByRole('button',{name:/^Hold to dive and accelerate/})).toBeDisabled();
-    await expect(page.getByRole('button',{name:/^Strike target/})).toBeDisabled();
+    await expect(page.getByRole('button',{name:'Strike paused',exact:true})).toBeDisabled();
     const frozen=await page.evaluate(()=>(window as any).capturePaused());
     expect(frozen.prey.length).toBeGreaterThan(0);
     await page.getByRole('button',{name:'Change paused camera',exact:true}).click();

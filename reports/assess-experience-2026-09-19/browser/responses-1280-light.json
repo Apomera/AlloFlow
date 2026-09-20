@@ -1,0 +1,85 @@
+{
+  "title": "experience-browser",
+  "attemptId": "attempt-mu90h8aw-22f0uf",
+  "submittedAt": 1789860080035,
+  "delivery": {
+    "status": "pending",
+    "message": "Receipt was not confirmed. Your attempt is saved on this device. Reconnect, then retry."
+  },
+  "responses": [
+    {
+      "question": "How do roots help a plant?",
+      "type": "short-answer",
+      "response": {
+        "text": "Roots take in water.",
+        "status": "submitted"
+      }
+    },
+    {
+      "question": "Which resource supports plant growth?",
+      "type": "mcq",
+      "response": {
+        "optionIdx": 0,
+        "optionText": "Sunlight"
+      }
+    },
+    {
+      "question": "Two pairs of leaves: how many leaves?",
+      "type": "numeric-response",
+      "response": {
+        "text": "4 leaves",
+        "numericValue": 4,
+        "unit": "leaves"
+      }
+    },
+    {
+      "question": "Choose living things.",
+      "type": "multi-select",
+      "response": {
+        "selectedIndices": [],
+        "selectedOptions": []
+      }
+    },
+    {
+      "question": "Plants absorb ___ from soil.",
+      "type": "fill-blank",
+      "response": {
+        "text": "",
+        "status": "submitted"
+      }
+    },
+    {
+      "question": "Explain how light helps a plant.",
+      "type": "self-explanation",
+      "response": {
+        "text": "",
+        "status": "submitted"
+      }
+    },
+    {
+      "question": "Inspect these growth stages.",
+      "type": "sequence-sense",
+      "response": {
+        "orderAnswer": [
+          1,
+          0,
+          2
+        ]
+      }
+    },
+    {
+      "question": "Which plant part is paired incorrectly?",
+      "type": "relation-mismatch",
+      "response": {}
+    },
+    {
+      "question": "What do roots absorb, and what supports your answer?",
+      "type": "answer-evidence",
+      "response": {
+        "answerText": "",
+        "evidenceText": ""
+      }
+    }
+  ],
+  "reflections": {}
+}

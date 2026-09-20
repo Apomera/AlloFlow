@@ -698,7 +698,9 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   // ── UI localization state (drives tr() above) ──
   var _llCtx = React.useContext(LANG_CTX);
   var uiLang = (_llCtx && _llCtx.currentUiLanguage) || (typeof window !== 'undefined' && window.__alloTextLanguage) || 'English';
-  var _llCacheRef = React.useRef(llLoad());
+  var _llCacheRef = React.useRef(null);
+  // Read and parse the persisted cache only when this panel mounts.
+  if (_llCacheRef.current === null) _llCacheRef.current = llLoad();
   var _llAttemptedRef = React.useRef({});
   var _setLlTick = React.useState(0)[1];
   LL_CUR.lang = uiLang; LL_CUR.cache = _llCacheRef.current;
@@ -1025,18 +1027,32 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     frame.srcdoc = html;
   };
 
-  const gaps = layout ? anchorGaps(layout, seating.constraints) : [];
+  const gaps = React.useMemo(
+    () => layout ? anchorGaps(layout, seating.constraints) : [],
+    [layout, seating.constraints]
+  );
   const liveScore = React.useMemo(
     () => (layout ? scoreAssignment(layout, layout.assignments, seating.constraints) : { score: 0, violations: [] }),
     [layout, seating.constraints]
   );
 
-  const sortedSeats = layout ? layout.seats.slice().sort((a, b) => (a.y - b.y) || (a.x - b.x)) : [];
-  const seatNumberOf = {};
-  sortedSeats.forEach((s, i) => { seatNumberOf[s.id] = i + 1; });
-  const overlaps = (mode === 'edit' && layout) ? overlappingSeatIds(layout) : {};
+  // Selection and live-status updates do not change the room's geometry.
+  const { sortedSeats, seatNumberOf } = React.useMemo(() => {
+    const sortedSeats = layout ? layout.seats.slice().sort((a, b) => (a.y - b.y) || (a.x - b.x)) : [];
+    const seatNumberOf = {};
+    sortedSeats.forEach((s, i) => { seatNumberOf[s.id] = i + 1; });
+    return { sortedSeats, seatNumberOf };
+  }, [layout]);
+  const overlaps = React.useMemo(
+    () => (mode === 'edit' && layout) ? overlappingSeatIds(layout) : {},
+    [mode, layout]
+  );
   const overlapCount = Object.keys(overlaps).length;
-  const livePods = (live && mode === 'live') ? listPods(rosterKey) : [];
+  const hasLive = !!live;
+  const livePods = React.useMemo(
+    () => (hasLive && mode === 'live') ? listPods(rosterKey) : [],
+    [hasLive, mode, rosterKey]
+  );
 
   if (!isOpen) return null;
 

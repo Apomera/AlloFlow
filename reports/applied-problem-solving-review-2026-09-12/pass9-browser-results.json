@@ -1,0 +1,101 @@
+{
+  "states": [
+    {
+      "label": "Explore empty 1280",
+      "width": 1280,
+      "pageWidth": 1280,
+      "active": "applied-workspace-possibilities",
+      "violations": []
+    },
+    {
+      "label": "Source notebook 1280",
+      "width": 1280,
+      "pageWidth": 1280,
+      "active": "",
+      "violations": []
+    },
+    {
+      "label": "Source review 1280",
+      "width": 1280,
+      "pageWidth": 1280,
+      "active": "aps-review-heading",
+      "violations": []
+    },
+    {
+      "label": "Explore empty 390",
+      "width": 390,
+      "pageWidth": 390,
+      "active": "applied-workspace-possibilities",
+      "violations": []
+    },
+    {
+      "label": "Source notebook 390",
+      "width": 390,
+      "pageWidth": 390,
+      "active": "",
+      "violations": []
+    },
+    {
+      "label": "Source review 390",
+      "width": 390,
+      "pageWidth": 390,
+      "active": "aps-review-heading",
+      "violations": []
+    },
+    {
+      "label": "Explore empty 320",
+      "width": 320,
+      "pageWidth": 320,
+      "active": "applied-workspace-possibilities",
+      "violations": []
+    },
+    {
+      "label": "Source notebook 320",
+      "width": 320,
+      "pageWidth": 320,
+      "active": "",
+      "violations": []
+    },
+    {
+      "label": "Source review 320",
+      "width": 320,
+      "pageWidth": 320,
+      "active": "aps-review-heading",
+      "violations": []
+    },
+    {
+      "label": "Manual source without search or organizer",
+      "width": 390,
+      "pageWidth": 390,
+      "active": "aps-source-note-source-mu8un64t-1",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "roundTrips": [
+    {
+      "count": 1,
+      "note": "The source describes infiltration, but it does not measure our garden. I still need local observations.",
+      "leaked": false,
+      "exported": true,
+      "ai": 0,
+      "search": 1
+    },
+    {
+      "count": 1,
+      "note": "The source describes infiltration, but it does not measure our garden. I still need local observations.",
+      "leaked": false,
+      "exported": true,
+      "ai": 0,
+      "search": 1
+    },
+    {
+      "count": 1,
+      "note": "The source describes infiltration, but it does not measure our garden. I still need local observations.",
+      "leaked": false,
+      "exported": true,
+      "ai": 0,
+      "search": 1
+    }
+  ]
+}

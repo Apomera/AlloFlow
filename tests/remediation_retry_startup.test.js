@@ -414,3 +414,14 @@ it('resumes the quota-failed file and pending files after the daily quota clears
   expect(h.state.queue.map(item => item.status)).toEqual(['done', 'done', 'done']);
   expect(h.state.summary).toMatchObject({ status: 'complete', processed: 3, failed: 0, pending: 0 });
 });
+
+it('saved batch pacing reaches the checkpoint, audit, fixes and final summary unchanged', async () => {
+  vi.useFakeTimers();
+  const h = batchHarness();
+  const run = h.run({ resumeSettings: { pdfExtraRequestPacing: false } });
+  await vi.runAllTimersAsync(); await run;
+  expect(h.deps._saveBatchFiles.mock.calls[0][1]).toMatchObject({ pdfExtraRequestPacing: false });
+  expect(h.deps.runPdfAccessibilityAudit.mock.calls[0][1]).toMatchObject({ extraRequestPacing: false });
+  expect(h.deps.fixAndVerifyPdf.mock.calls[0][0]).toMatchObject({ extraRequestPacing: false });
+  expect(h.state.summary.settings.pdfExtraRequestPacing).toBe(false);
+});

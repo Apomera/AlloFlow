@@ -1,0 +1,100 @@
+{
+  "scope": "Four changed canonical regions only; desktop-specific loaders retained. Changed module query versions updated without touching similarly named modules.",
+  "files": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "syntax": "passed",
+      "regions": [
+        {
+          "name": "hosting",
+          "matches": true,
+          "sha256": "b0b066a3b650caa5681c5a64ff0de531763bd69241fdb0b53f1e5522d1835e92"
+        },
+        {
+          "name": "resolver",
+          "matches": true,
+          "sha256": "775673eeee4e38276f19e2b266e3085d2455f4e2b287e4d8de694554cd6e8dfc"
+        },
+        {
+          "name": "cloud_creator",
+          "matches": true,
+          "sha256": "a34b4dad6708ce15be80a68be1ba721adaa13e3efe50c9ab86967b7b04c22314"
+        },
+        {
+          "name": "restore",
+          "matches": true,
+          "sha256": "4387193b26a57fe5963d8176a757afd82917f66f295cd317f1d72a357d43773b"
+        }
+      ]
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "syntax": "passed",
+      "regions": [
+        {
+          "name": "hosting",
+          "matches": true,
+          "sha256": "b0b066a3b650caa5681c5a64ff0de531763bd69241fdb0b53f1e5522d1835e92"
+        },
+        {
+          "name": "resolver",
+          "matches": true,
+          "sha256": "775673eeee4e38276f19e2b266e3085d2455f4e2b287e4d8de694554cd6e8dfc"
+        },
+        {
+          "name": "cloud_creator",
+          "matches": true,
+          "sha256": "a34b4dad6708ce15be80a68be1ba721adaa13e3efe50c9ab86967b7b04c22314"
+        },
+        {
+          "name": "restore",
+          "matches": true,
+          "sha256": "4387193b26a57fe5963d8176a757afd82917f66f295cd317f1d72a357d43773b"
+        }
+      ]
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "syntax": "passed",
+      "regions": [
+        {
+          "name": "hosting",
+          "matches": true,
+          "sha256": "b0b066a3b650caa5681c5a64ff0de531763bd69241fdb0b53f1e5522d1835e92"
+        },
+        {
+          "name": "resolver",
+          "matches": true,
+          "sha256": "775673eeee4e38276f19e2b266e3085d2455f4e2b287e4d8de694554cd6e8dfc"
+        },
+        {
+          "name": "cloud_creator",
+          "matches": true,
+          "sha256": "a34b4dad6708ce15be80a68be1ba721adaa13e3efe50c9ab86967b7b04c22314"
+        },
+        {
+          "name": "restore",
+          "matches": true,
+          "sha256": "4387193b26a57fe5963d8176a757afd82917f66f295cd317f1d72a357d43773b"
+        }
+      ]
+    }
+  ],
+  "mirrors": [
+    {
+      "module": "shared_activity_module.js",
+      "version": "ca49be1d",
+      "publicMatches": true
+    },
+    {
+      "module": "view_share_session_surfaces_module.js",
+      "version": "b20dc026",
+      "publicMatches": true
+    },
+    {
+      "module": "misc_handlers_module.js",
+      "version": "c8c3ac39",
+      "publicMatches": true
+    }
+  ]
+}

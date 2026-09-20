@@ -1,0 +1,79 @@
+{
+  "timestamp": "2026-09-20T03:06:43.512Z",
+  "scope": "Actual generated delivery contract and dialog, local React and built CSS; controlled callbacks/icons; no full-app transport, focus-trap, QR generation, or deployment validation.",
+  "browser": "148.0.7778.96",
+  "hashes": {
+    "instructional_context_module.js": "694efa8b00a865ec6264bf51a40ebd2682a07baea359d3b06b842079aa2708f7",
+    "shared_activity_module.js": "ca49be1debdcfe1156b06ef90b9fc5c2438ce768083518e596e822786a931e76",
+    "view_share_session_surfaces_module.js": "b20dc0267d0f0927c4b4a8dbe7d6bd4b5de09bda7980d3564fe4b06c04e74aa7",
+    "main.1fb7b97e.css": "4b9a6e181169d48efc6e208af5f3987ffc9cd63ab255bc60eae40e4fa7a98761"
+  },
+  "scenarios": [
+    {
+      "name": "saved-policy-off",
+      "pass": true,
+      "phase": "after",
+      "beforeMissingPolicyAndActivityOptions": false,
+      "calls": {
+        "selfContained": [
+          [
+            "companion"
+          ]
+        ],
+        "mailbox": [
+          [
+            "companion"
+          ]
+        ],
+        "selfContainedOptions": [
+          {
+            "aiPolicy": "off"
+          }
+        ],
+        "mailboxOptions": [
+          {
+            "includeSharedActivity": false,
+            "aiPolicy": "off"
+          }
+        ],
+        "preview": 0,
+        "copied": [],
+        "closed": 0
+      }
+    },
+    {
+      "name": "saved-policy-student-byok",
+      "pass": true,
+      "phase": "after",
+      "beforeMissingPolicyAndActivityOptions": false,
+      "calls": {
+        "selfContained": [
+          [
+            "companion"
+          ]
+        ],
+        "mailbox": [
+          [
+            "companion"
+          ]
+        ],
+        "selfContainedOptions": [
+          {
+            "aiPolicy": "student-byok"
+          }
+        ],
+        "mailboxOptions": [
+          {
+            "includeSharedActivity": false,
+            "aiPolicy": "student-byok"
+          }
+        ],
+        "preview": 0,
+        "copied": [],
+        "closed": 0
+      }
+    }
+  ],
+  "externalRequests": [],
+  "pageErrors": []
+}

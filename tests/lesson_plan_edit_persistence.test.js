@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 
-const source = readFileSync('AlloFlowANTI.txt', 'utf8');
-const start = source.indexOf('  const handleLessonPlanChange =');
-const end = source.indexOf('  // Persist a 3D spatial store', start);
+const source = readFileSync('host_handlers_source.jsx', 'utf8').replace(/__d\./g, '');
+const start = source.indexOf('const handleLessonPlanChange =');
+const end = source.indexOf('const handleQuizOptionClick =', start);
 if (start < 0 || end < 0) throw new Error('Lesson edit handler missing');
 const code = source.slice(start, end);
 function editor(openPlan, savedPlan = openPlan) {

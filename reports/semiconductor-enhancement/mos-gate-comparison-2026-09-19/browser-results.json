@@ -1,0 +1,38 @@
+{
+  "passed": true,
+  "checks": [
+    "capture preserves live settings",
+    "NMOS and PMOS comparison on shared axes",
+    "signed readings at one drain bias",
+    "reference recomputes as drain changes",
+    "reference survives collapse",
+    "update and clear reference",
+    "keyboard focus after clearing",
+    "reference cleared on polarity switch",
+    "zero-current and near-threshold comparisons",
+    "390 and 320 px overflow"
+  ],
+  "scans": [
+    {
+      "name": "N-MOSFET gate comparison",
+      "violations": []
+    },
+    {
+      "name": "P-MOSFET gate comparison",
+      "violations": []
+    },
+    {
+      "name": "PMOS live cutoff",
+      "violations": []
+    },
+    {
+      "name": "PMOS cutoff reference and small current",
+      "violations": []
+    },
+    {
+      "name": "mobile gate comparison",
+      "violations": []
+    }
+  ],
+  "errors": []
+}

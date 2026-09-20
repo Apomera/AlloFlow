@@ -49,7 +49,7 @@ describe('Geometry Sandbox mode scene isolation', () => {
     expect(tool).toContain('function _geoHandleScreenAxis(handle)');
     expect(tool).toContain('setPointerCapture');
     expect(tool).toContain('var dragStep = geoSculptDragSteps(hd.travel, dx, dy, hd.sx, hd.sy, 18)');
-    expect(tool).toContain("geoSculptHandleSign = dir > 0 ? 'positive' : 'negative'");
+    expect(tool).toMatch(/geoSculptHandleSign\s*=\s*dir\s*>\s*0\s*\?\s*'positive'\s*:\s*'negative'/);
     expect(tool).toContain('isGeoSculptHandleStem');
     expect(tool).toContain('function renderSculptRepresentationDiagram(shape, rep)');
     expect(tool).toContain("role: 'img'");
@@ -61,7 +61,7 @@ describe('Geometry Sandbox mode scene isolation', () => {
     expect(tool).toContain('function renderSculptSliceProfile(profile, currentArea, unitShort)');
     expect(tool).toContain("'data-geo-sculpt-slice-profile': 'true'");
     expect(tool).toContain("'data-geo-sculpt-slice-volume': 'true'");
-    expect(tool).toContain('function focusSculptPart(index)');
+    expect(tool).toMatch(/function focusSculptPart\(index(?:, keepRotation)?\)/);
     expect(tool).toContain("window.matchMedia('(prefers-reduced-motion: reduce)')");
     expect(tool).toContain("'data-geo-sculpt-part-navigator': 'true'");
     expect(tool).toContain(`'aria-label': __alloT('stem.geosandbox.a11y_selected_sculpt_part_navigation', 'Selected sculpt part navigation')`);

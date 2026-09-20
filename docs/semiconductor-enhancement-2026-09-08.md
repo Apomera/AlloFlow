@@ -316,3 +316,73 @@ Thirteenth-pass validation:
 - The saved-overlay, notebook/learning-route and archived-review browser runners pass. The overlay run covers selecting two saved experiments, unchanged source data and live state, shared axes, partial ranges, logarithmic curves, missing outputs, changed solar conditions and incompatible quantities.
 - Six overlay WCAG A/AA variants report zero automated violations. The solar overlay and conditions/readings tables were visually inspected at 390 px; horizontal-overflow checks pass.
 - Source/desktop byte parity, JavaScript syntax and scoped patch-format checks pass. Reports and captures are in `reports/semiconductor-enhancement/`; the new runner is `dev-tools/semiconductor_sweep_overlay_qa.cjs`.
+
+## Connecting the 3D transistor to current — fourteenth pass (2026-09-19)
+
+The MOSFET cutaway now labels the gate, source and drain with their live voltages. A Reveal channel control temporarily hides the gate and oxide without changing electrical settings; selecting either hidden layer restores its visibility. Larger labels improve phone readability, and the existing pointer and keyboard camera controls remain available.
+
+A three-part reading panel connects gate control, drain drive and signed drain current. Separate labeled direction rows distinguish electrons or holes from conventional current for NMOS and PMOS. Zero drain bias and cutoff show no transport arrows, with an explanation that zero net motion does not imply that microscopic thermal motion stops. Unsupported reverse drain polarity produces an explicit outside-model explanation rather than being mistaken for zero drain bias.
+
+The channel explanation now distinguishes cutoff, threshold, zero bias, linear operation and saturation. An optional “Why this operating region?” disclosure calculates the gate margin and saturation boundary from the same square-law model as the 2D diagram. The explanation links to [MIT 6.012, Lecture 9](https://ocw.mit.edu/courses/6-012-microelectronic-devices-and-circuits-spring-2009/resources/mit6_012s09_lec09/) for the operating-region and pinch-off treatment.
+
+A contextual next-experiment button guides learners through channel formation at zero drain bias, adding a small drain bias, reaching the saturation boundary and removing gate drive. Drain experiments preserve gate voltage; removing gate drive preserves drain voltage. The sequence handles both polarities and small positive gate overdrives. Drain control resolution is now 0.01 V so those guided values remain valid slider steps.
+
+The cutaway remains a schematic geometric view of the existing long-channel electrical model. It does not simulate individual carrier trajectories, channel charge density, thermal motion or field distributions. Direction arrows do not encode speed or current magnitude. New interface prose is English; full locale translations remain separate work.
+
+Fourteenth-pass validation:
+- 424 unique tests across 21 semiconductor files pass across the main run and targeted retry, including 18 new transport checks. The main run passed 372 tests, had three render timeouts, and could not start two fork workers. All 89 tests in the four affected suites passed with a single thread worker and 60-second limits. Reports: final-tests.json, retry-tests.json, and validation-summary.json under reports/semiconductor-enhancement/mos-transport-2026-09-19/.
+- The new cutaway browser runner and the existing device browser runner both pass. Checks cover both polarity sequences, no-flow states, exact saturation boundaries, current signs, inspection without electrical changes, keyboard rotation/reset, and near-threshold slider validity. Existing solar, amplifier, diode and notebook evidence workflows remain covered.
+- Six new cutaway WCAG A/AA scans and four existing device scans report zero automated violations. The cutaway fits at 390 and 320 px; the desktop view with visible gate layers and the 390 px revealed-channel view were visually inspected. A definition-list markup issue found during browser testing was corrected before the final scans.
+- Source/desktop byte parity, JavaScript syntax and scoped patch-format checks pass. The new runner is dev-tools/semiconductor_mos_transport_qa.cjs; the existing device runner now resolves the current stylesheet filename.
+
+## Linking the cutaway to its output curve — fifteenth pass (2026-09-19)
+
+The 3D MOSFET readout now offers an expandable current–voltage curve at the present gate voltage. The solid cyan segment follows the square-law linear-region response; the dashed lavender segment shows saturation. A dotted line marks the exact saturation boundary and a white dot marks the current operating point. Cutoff shows a flat zero-current curve without a false saturation boundary. Unsupported reverse drain polarity has no plotted operating point.
+
+The plot uses positive voltage and current magnitudes for both transistor types. Its selected reading retains signed VDS and drain current, and the explanation identifies how PMOS signs relate to the graph. The vertical scale follows the current gate setting, with an explicit rescaling notice; the drain-bias axis stays at 0–10 V.
+
+A native range control changes the actual drain bias while retaining the gate voltage. The same state drives the cutaway, current-direction rows, operating-region explanation and numerical reading. Keyboard Home and End reach zero and maximum drain-bias magnitude. Gate changes immediately redraw the curve. Camera movement, hiding layers and collapsing the curve preserve electrical settings.
+
+The curve is initially collapsed and only mounts its plot and control when opened. A textual description provides the zero-bias reading, saturation boundary and plateau current. The plot is an electrical-model visualization, not a spatial field or carrier-trajectory simulation.
+
+Fifteenth-pass validation:
+- All 440 tests across 22 semiconductor files pass in one run with a single thread worker and 60-second test/hook limits. Sixteen new checks cover curve/model agreement, exact boundaries, signed readings, cutoff, invalid bias, state preservation and initial disclosure behavior.
+- The linked-curve and existing cutaway browser runners pass. Four curve scans and six cutaway scans report zero automated WCAG A/AA violations.
+- Layout checks pass at 390 and 320 px. The expanded PMOS curve was visually inspected at 390 px.
+- JavaScript syntax, scoped patch formatting and source/desktop byte parity pass. Reports and captures are in reports/semiconductor-enhancement/mos-curve-2026-09-19/; the new runner is dev-tools/semiconductor_mos_curve_qa.cjs.
+
+## Comparing gate control on shared axes — sixteenth pass (2026-09-19)
+
+The live MOSFET curve now offers Hold this gate as a reference. Capturing or updating the reference leaves the electrical settings unchanged. Learners can adjust the live gate voltage with a nearby signed VGS control and compare both curves at the same selected drain bias. The reference holds a gate setting; its current is recalculated when drain bias changes.
+
+Both curves use one current axis sized to their combined range. A reference in cutoff uses the same scale as a conducting curve, including very small currents near threshold. The reference uses an amber dash-dot line and square marker; the live curve retains its cyan/lavender segments and white circle. Matching gates receive an explicit overlap explanation.
+
+A table compares gate voltage, shared drain voltage, signed current, operating region and saturation boundary. The explanation distinguishes current magnitude increasing or decreasing from the signed current change, including negative PMOS readings. Unsupported drain polarity produces no operating-point markers or fabricated zero differences.
+
+The reference survives closing and reopening the curve panel. Switching transistor polarity or leaving the cutaway clears it. Clearing a reference returns keyboard focus to the capture button. The gate control, plot and drain control remain together, with the detailed comparison readings below the plot.
+
+The comparison uses the existing ideal electrical model and remains a temporary inspection aid. Notebook capture and archived sweep comparison retain their existing behavior. New interface prose is English; full locale translations remain separate work.
+
+Sixteenth-pass validation:
+- All 458 tests across 23 semiconductor files pass across the main run and targeted retry, including 18 new gate-comparison checks. The main run passed 422 tests; two workers did not start. Their 36 tests passed on retry. Reports: final-tests.json, retry-tests.json and validation-summary.json in reports/semiconductor-enhancement/mos-gate-comparison-2026-09-19/.
+- The gate-comparison and existing linked-curve browser workflows pass. Five comparison and four curve WCAG A/AA scans report zero automated violations. Browser checks include shared drain bias, reference recalculation, capture without electrical changes, update/clear behavior, focus recovery, persistence across collapse, reset on device/view changes and signed PMOS readings.
+- The final PMOS comparison was visually inspected at 390 px; overflow checks pass at 390 and 320 px. Visual review led to placing the graph beside its controls and moving the readings table below it.
+- Source/desktop byte parity, JavaScript syntax and scoped patch-format checks pass. The existing curve browser test now waits for the asynchronous disclosure toggle before checking plot removal. The new runner is dev-tools/semiconductor_mos_gate_comparison_qa.cjs.
+
+
+## Preserving gate comparisons in the notebook — seventeenth pass (2026-09-19)
+
+The 3D MOSFET curve now saves a held-gate comparison directly to the lab notebook. Learners can add an optional explanation prompted by the two current readings, save without changing the electrical settings, and open the notebook from the comparison panel. The draft survives closing the curve panel. The save confirmation clears when settings or the explanation change, so it cannot imply that later edits have already been saved.
+
+Each entry records transistor type, both gate voltages, the shared signed drain bias, both signed currents and operating regions, saturation boundaries, signed and magnitude current changes, and the model scope. Zero is preserved as zero; unsupported drain polarity cannot be saved as a fabricated result. The comparison uses the existing ideal model without changing the physics.
+
+Notebook review and Markdown export use the recorded values without recalculation. Restore experiment opens the 3D curve with both the live and held gate settings and the saved explanation. Restoration is consumed once, preventing old references from reappearing after leaving and returning to the cutaway. Subsequent exploration does not mutate saved evidence. Ordinary snapshots discard comparison-specific metadata and pending restore requests.
+
+New regression coverage: tests/semiconductor_mos_comparison_notebook.test.js and dev-tools/semiconductor_mos_comparison_notebook_qa.cjs. Validation reports and screenshots: reports/semiconductor-enhancement/mos-comparison-notebook-2026-09-19/.
+
+Seventeenth-pass validation:
+- All 472 tests across 24 semiconductor files pass in one complete run, including 14 new notebook-comparison checks.
+- The new notebook browser workflow and existing gate-comparison workflow pass. Ten automated WCAG A/AA scans report zero violations. Checks cover both polarities, preserved evidence, repeated restoration, draft retention across collapse, focus and ordinary reference interactions.
+- Overflow checks pass at 390 and 320 px. The 390 px PMOS capture was visually reviewed, including the explanation field and save/review controls.
+- Browser testing caught a mismatch between raw stored settings and normalized control values; the save callback now captures the exact model values shown in the cutaway. Pure capture rejects unsupported bias, while the UI continues its established range normalization.
+- Source/desktop byte parity, syntax and scoped patch-format checks pass. Reports are in the seventeenth-pass folder above.

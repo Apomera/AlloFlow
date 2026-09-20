@@ -1,0 +1,25 @@
+{
+  "date": "2026-09-19",
+  "unit": {
+    "passed": 130,
+    "files": 8
+  },
+  "browser": {
+    "workflowScans": 92,
+    "focusedHighContrastScans": 2,
+    "errors": 0
+  },
+  "source": {
+    "syntax": true,
+    "mirrored": true,
+    "newEnglishFallbacks": 7,
+    "sha256": "79a140d383d2acf126568e20310854e596f1e44897972902ae064b85f4327b5a"
+  },
+  "visualReview": [
+    "closeup-1200",
+    "closeup-320",
+    "plot-forced-colors-320"
+  ],
+  "deployment": "Local changes only",
+  "localization": "Seven new English strings; other translations pending"
+}

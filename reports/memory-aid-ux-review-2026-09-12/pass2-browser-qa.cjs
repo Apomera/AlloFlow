@@ -1,0 +1,50 @@
+const fs=require('fs'),path=require('path'),assert=require('assert'),{pathToFileURL}=require('url'),{chromium}=require('playwright');
+const out=__dirname,url=pathToFileURL(path.join(out,'current-preview.html')).href;
+(async()=>{
+ const browser=await chromium.launch({headless:true}),result={states:[],errors:[],checks:[]};
+ try{
+  const page=await browser.newPage({viewport:{width:1280,height:900}});page.setDefaultTimeout(15000);page.on('pageerror',e=>result.errors.push(e.message));
+  const audit=async(name,screenshot=false)=>{
+   await page.addScriptTag({path:require.resolve('axe-core/axe.min.js')});
+   const checks=await page.evaluate(async()=>{const root=document.getElementById('root');const a=await axe.run(root,{rules:{'color-contrast':{enabled:true}}});return {width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth,violations:a.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>n.target)}))};});
+   result.states.push({name,...checks});assert(!checks.overflow,name+' overflows');assert.equal(checks.violations.length,0,name+' accessibility: '+JSON.stringify(checks.violations));
+   if(screenshot)await page.screenshot({path:path.join(out,'pass2-'+name+'.png'),fullPage:true});
+  };
+  await page.goto(url+'?diagram');await audit('study-1280',true);
+  await page.getByRole('button',{name:'Make it mine',exact:true}).first().click();await page.locator('summary:visible').filter({hasText:'Connect my cue to the facts'}).click();
+  await page.getByRole('textbox',{name:'Cue part for fact 1',exact:true}).fill('statue');await page.getByRole('textbox',{name:'Connection explanation for fact 1',exact:true}).fill('It reminds me that the shape stays the same.');await audit('connections-1280');
+  await page.locator('textarea[id$="-draft"]:visible').fill('My rock reminds me of shape and space.');await page.getByText('Your cue changed. Recheck this connection.',{exact:true}).waitFor();await page.getByRole('button',{name:'This connection still fits',exact:true}).click();
+  assert((await page.locator('body').innerText()).includes('1 of 2 facts have a current connection from you.'));result.checks.push('Learner connection becomes stale after cue edit and can be reconfirmed.');
+  await page.setViewportSize({width:390,height:844});await audit('connections-390',true);
+  await page.getByRole('button',{name:'Try recall',exact:true}).first().click();await page.getByRole('radio',{name:'Without hints',exact:true}).check();await page.getByRole('button',{name:'Start recall practice',exact:true}).click();
+  const hidden=await page.locator('body').innerText();assert(hidden.includes('What happens to the shape and volume of a solid'));for(const answer of ['My rock','A solid keeps its shape.','Keyword','1 of 2 facts'])assert(!hidden.includes(answer),'Answer leaked: '+answer);result.checks.push('Unsupported recall exposes the neutral question, hides cue, facts, type and connection text.');
+  await audit('recall-390',true);
+  const baseline=JSON.parse(fs.readFileSync(path.join(out,'pass2-baseline.json'),'utf8'));
+  const responseTop=await page.getByRole('textbox',{name:/Recall response for/}).evaluate(el=>Math.round(el.getBoundingClientRect().top+scrollY));
+  result.mobileRecall={width:390,before:baseline.responseTop,after:responseTop,pixelsEarlier:baseline.responseTop-responseTop};assert(result.mobileRecall.pixelsEarlier>=100,'Mobile recall should remove at least 100 px of repeated heading space');await page.setViewportSize({width:320,height:800});await audit('recall-320',true);
+  await page.getByRole('textbox',{name:/Recall response for/}).fill('Keep these first thoughts.');
+  await page.getByRole('radio',{name:'Respond another way (no transcript saved)',exact:true}).check();
+  await page.getByRole('radio',{name:'Write what I remember',exact:true}).check();
+  assert.equal(await page.getByRole('textbox',{name:/Recall response for/}).inputValue(),'Keep these first thoughts.');
+  await page.getByRole('button',{name:'Show my cue',exact:true}).click();
+  assert.equal(await page.evaluate(()=>document.activeElement.getAttribute('aria-label')),'Your memory cue');
+  assert.equal(await page.getByRole('textbox',{name:/Recall response for/}).inputValue(),'Keep these first thoughts.');
+  await audit('cue-rescue-320',true);result.checks.push('Response-mode switches and requesting a cue retain writing; cue receives keyboard focus.');
+  await page.getByRole('textbox',{name:/Recall response for/}).fill('Its shape and volume stay the same.');await page.getByRole('button',{name:'Reveal the facts',exact:true}).click();for(const radio of await page.getByRole('radio',{name:/I recalled fact/}).all())await radio.check();
+  await page.getByText('Use it in a new situation',{exact:true}).click();await page.getByRole('textbox',{name:'Your explanation',exact:true}).fill('PRIVATE_BROWSER_DRAFT: the wooden block keeps its shape and volume.');await page.getByRole('button',{name:'Compare my explanation',exact:true}).click();await page.getByRole('combobox',{name:'How did your explanation connect?',exact:true}).selectOption('connected');await page.getByLabel('Review again on',{exact:true}).fill('2026-01-01');
+  await page.waitForFunction(()=>{const a=window.AlloModules.MemoryAid._testing.loadMemoryAidPrivatePractice('resource:ux-review-fixture',window.fixture.data.cards,'memory-ux-review-only').solid;return a?.[0]?.applicationResponse.includes('PRIVATE_BROWSER_DRAFT')&&a[0].nextReviewDate==='2026-01-01'&&a[0].applicationCheck==='connected';});await audit('application-320',true);
+  assert.equal(await page.evaluate(()=>window.AlloModules.MemoryAid._testing.loadMemoryAidPrivatePractice('resource:ux-review-fixture',window.fixture.data.cards,'memory-ux-review-only').solid[0].supportMode),'cue');
+  result.checks.push('A recall that requested help is privately recorded as with a cue.');
+  await page.getByRole('button',{name:'Return to card',exact:true}).click();await page.reload();await page.getByRole('button',{name:'Continue my application and plan',exact:true}).click();
+  assert(await page.locator('[data-memory-application]').evaluate(el=>el.open));
+  assert.equal(await page.evaluate(()=>document.activeElement.textContent),'Use it in a new situation');
+  await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.getAttribute('aria-label')),'Your explanation');
+  result.checks.push('Resume automatically opens the application and puts its explanation next in keyboard order.');assert((await page.getByRole('textbox',{name:'Your explanation',exact:true}).inputValue()).includes('PRIVATE_BROWSER_DRAFT'));await audit('resumed-320',true);result.checks.push('Draft, self-check and review date autosave without Save; same attempt resumes after reload.');
+  await page.getByRole('button',{name:'Return to card',exact:true}).click();await page.getByRole('button',{name:'Practice due targets',exact:true}).click();await audit('due-setup-320',true);
+  await page.getByRole('button',{name:'Start recall practice',exact:true}).click();await page.getByRole('textbox',{name:/Recall response for/}).fill('Shape and volume.');await page.getByRole('button',{name:'Reveal the facts',exact:true}).click();for(const radio of await page.getByRole('radio',{name:/I recalled fact/}).all())await radio.check();await page.getByRole('button',{name:'Next review target',exact:true}).click();await audit('due-finished-320');assert((await page.locator('body').innerText()).includes('Review finished: 1 completed, 0 skipped.'));result.checks.push('Due sequence counts a new completed recall and finishes.');
+  const print=await page.evaluate(()=>{const r=window.AlloModules.MemoryAid.exportRules,d=window.fixture.data;return {noHints:r.renderPreset(d,'no-hints'),study:r.renderPreset(d,'study'),teacher:r.renderPreset(d,'teacher')};});assert(print.noHints.includes('What happens to the shape and volume'));for(const text of ['PRIVATE_BROWSER_DRAFT','Solid statue','A solid keeps its shape.'])assert(!print.noHints.includes(text));for(const html of Object.values(print))assert(!html.includes('PRIVATE_BROWSER_DRAFT'));result.checks.push('Print keeps neutral questions and excludes private application drafts.');
+  await page.setViewportSize({width:1280,height:900});await page.goto(url+'?teacher');await page.getByRole('button',{name:'Edit resource',exact:true}).click();await page.getByRole('textbox',{name:/Recall question for Solids/}).fill('Which properties describe a solid?');await audit('teacher-question-1280',true);
+  await page.keyboard.press('Tab');result.checks.push('Teacher recall-question field accepts edits and keyboard navigation.');
+  assert.equal(result.errors.length,0);fs.writeFileSync(path.join(out,'pass2-browser-qa.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({states:result.states.length,mobileRecall:result.mobileRecall,checks:result.checks,errors:result.errors}));
+ }catch(e){result.failure=e.stack;fs.writeFileSync(path.join(out,'pass2-browser-qa.json'),JSON.stringify(result,null,2));throw e;}finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

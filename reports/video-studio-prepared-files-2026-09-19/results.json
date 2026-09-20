@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "checks": [
+    "fresh export state",
+    "caption edits mark stale",
+    "undo clears stale state",
+    "preview speed ignored",
+    "settings mark stale",
+    "one-click updated export",
+    "another-take state and return shortcut",
+    "prepared transcript and bundled VTT preserved with trimmed timings",
+    "real thumbnail rebuild and JPEG download",
+    "mobile fit"
+  ],
+  "errors": [],
+  "sourceSha256": "50f3e937a5ac5b01f642e64387b78765d72fecd6c336b66575e5f80c1097900c",
+  "mirrorsMatch": true,
+  "testsPassed": 236
+}

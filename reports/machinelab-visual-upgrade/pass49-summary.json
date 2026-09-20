@@ -1,0 +1,36 @@
+{
+  "pass": 49,
+  "change": "Live stroke ruler and percentage follow the rendered machine pose",
+  "uiTests": 228,
+  "browserChecks": 520,
+  "screenshots": 39,
+  "runs": {
+    "light": {
+      "checks": 142,
+      "screenshots": 11,
+      "errors": [],
+      "overflow": false
+    },
+    "dark": {
+      "checks": 142,
+      "screenshots": 11,
+      "errors": [],
+      "overflow": false
+    },
+    "contrast": {
+      "checks": 144,
+      "screenshots": 12,
+      "errors": [],
+      "overflow": false
+    },
+    "keyboard": {
+      "checks": 92,
+      "screenshots": 5,
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "sourceMirrorIdentical": true,
+  "syntaxValid": true,
+  "localOnly": true
+}

@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "checks": [
+    "NMOS and PMOS signed bias linked to cutaway",
+    "exact boundary marker",
+    "keyboard Home and End control actual bias",
+    "flat saturation current",
+    "gate changes curve and scale",
+    "camera and layer inspection preserve curve and state",
+    "collapse preserves settings",
+    "390 and 320 px layout"
+  ],
+  "scans": [
+    {
+      "name": "N-MOSFET linear curve",
+      "violations": []
+    },
+    {
+      "name": "P-MOSFET linear curve",
+      "violations": []
+    },
+    {
+      "name": "PMOS saturation curve",
+      "violations": []
+    },
+    {
+      "name": "mobile curve",
+      "violations": []
+    }
+  ],
+  "errors": []
+}

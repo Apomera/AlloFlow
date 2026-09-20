@@ -28,10 +28,36 @@ function AllobotContextControls({ messages, busy, setInput, clearChat, t }) {
     <p>{tx('chat_guide.context_destination', 'Included context goes to your selected AI, never to the public-topic picker. Use a district-approved connection for student information.')}</p>
     <label className="block my-2">{tx('chat_guide.public_topic', 'Public research topic')}<select aria-label={tx('chat_guide.public_topic', 'Public research topic')} value={topic} onChange={e => setTopic(e.target.value)} className="block w-full min-w-0 border border-slate-400 rounded p-2 bg-white text-slate-900"><option value="">{tx('chat_guide.choose_public_topic', 'Choose a public topic')}</option>{topics.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
     <button type="button" disabled={busy || !topic} onClick={() => { setInput(`Search for ${topic}`); setNotice(tx('chat_guide.public_topic_ready', 'Public query placed in the message box. Review it, then send.')); }} className="min-h-11 border border-slate-400 rounded px-3 my-2">{tx('chat_guide.use_public_topic', 'Replace message with public query')}</button>
-    <p className="my-2">{tx('chat_guide.chat_storage', 'Live chat stays in this session until you clear it or reload. Saving chat or advice adds a separate item to History and its configured storage or sync. Delete saved items in History; clearing here does not delete them or provider records.')}</p>
+    <p className="my-2">{tx('chat_guide.chat_storage', 'Live chat stays in this session until you clear it or reload. Saving chat or advice adds a separate item to History and its configured storage or sync. Delete saved items in History. Recovery snapshots and exported files can retain separate copies; manage those separately. Clearing here does not delete saved copies or provider records.')}</p>
     <button type="button" disabled={busy} onClick={() => { privacy.clear(); clearChat(); setNotice(tx('chat_guide.chat_cleared', 'Live conversation and pending context cleared. Saved History items are unchanged.')); }} className="min-h-11 border border-slate-400 rounded px-3">{tx('chat_guide.clear_live_chat', 'Clear live conversation')}</button>
     <p role="status" className="my-2">{notice}</p>
     </div>
     </details>
+  </section>;
+}
+
+function AllobotAdviceSave({ text, question, evidence, save, busy, t, className = '' }) {
+  const tx = (key, fallback) => { const value = typeof t === 'function' ? t(key) : ''; return value && value !== key ? value : fallback; };
+  const [includeQuestion, setIncludeQuestion] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [notice, setNotice] = React.useState('');
+  const pending = React.useRef(false);
+  React.useEffect(() => { setIncludeQuestion(false); setNotice(''); }, [text, question]);
+  const saveAdvice = async () => {
+    if (pending.current || busy) return;
+    pending.current = true; setSaving(true); setNotice('');
+    try {
+      const result = await save(text, includeQuestion ? question : '', evidence);
+      setNotice(result?.ok === false ? tx('chat_guide.save_failed', 'Advice could not be saved. Try again.') : tx('chat_guide.saved_without_ai', 'Advice copied to History without another AI request.'));
+      if (result?.ok !== false) setIncludeQuestion(false);
+    } catch (_) { setNotice(tx('chat_guide.save_failed', 'Advice could not be saved. Try again.')); }
+    finally { pending.current = false; setSaving(false); }
+  };
+  return <section className="mt-2 text-xs" aria-label={tx('chat_guide.save_advice_options', 'Save advice options')}>
+    <p>{tx('chat_guide.save_as_shown', 'Copies this answer and its source links to History as shown. No additional AI request.')}</p>
+    {question && <label className="flex items-start gap-2 my-2"><input type="checkbox" checked={includeQuestion} disabled={busy || saving} onChange={event => { setIncludeQuestion(event.target.checked); setNotice(''); }} />{tx('chat_guide.save_include_question', 'Also save my preceding question')}</label>}
+    {includeQuestion && <pre className="whitespace-pre-wrap break-words max-h-32 overflow-auto border p-2" aria-label={tx('chat_guide.save_question_preview', 'Question to be saved')}>{question}</pre>}
+    <button type="button" onClick={saveAdvice} data-help-key="chat_save_advice_btn" disabled={busy || saving} className={'min-h-11 px-3 rounded border ' + className}>{saving ? tx('chat_guide.saving_advice', 'Saving…') : tx('chat_guide.save_advice_history', 'Save advice to History')}</button>
+    <p role="status">{notice}</p>
   </section>;
 }

@@ -1,0 +1,656 @@
+{
+  "checkedAt": "2026-09-20T05:08:12.304Z",
+  "scope": "Only differing existing counterparts of staged STEM tools in desktop/web-app/build/stem_lab and desktop/app-build/stem_lab were refreshed from canonical stem_lab. No source edits, deletes, new mirror files, staging or deployment.",
+  "comparedExistingMirrors": 84,
+  "toolsRefreshed": 40,
+  "filesRefreshed": 80,
+  "changed": [
+    {
+      "tool": "stem_tool_algebracas.js",
+      "canonicalSha256": "b150e73679bb9dbc7afff1bc1334f8080c4d86df8003e620e931c9c51a25e4ee",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_algebracas.js",
+          "beforeSha256": "c2b25527bc64e27496b54f5e70eb74f735d1ab5aff02d4816365a005014cd65e",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_algebracas.js",
+          "beforeSha256": "c2b25527bc64e27496b54f5e70eb74f735d1ab5aff02d4816365a005014cd65e",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_anatomy.js",
+      "canonicalSha256": "0a62cb57fe0039ca8dc7643393ff20092fd3db57df5be185e1f8a3bf140e3256",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_anatomy.js",
+          "beforeSha256": "301cb1396880e8d15501291f6cac65e64d0d5880886f8c78a6e1a93d2d335f26",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_anatomy.js",
+          "beforeSha256": "301cb1396880e8d15501291f6cac65e64d0d5880886f8c78a6e1a93d2d335f26",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_angles.js",
+      "canonicalSha256": "ec3d2be46e768a088086183583c28322bdd028e109cd2bac4ec07911de5f8676",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_angles.js",
+          "beforeSha256": "931820cb975d71e5b1bc26fa287259e6b81de2f71c88ecc961727be8b9d3b677",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_angles.js",
+          "beforeSha256": "931820cb975d71e5b1bc26fa287259e6b81de2f71c88ecc961727be8b9d3b677",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_aquarium.js",
+      "canonicalSha256": "5bf15bd45610b7fc745e0088fa55d7d657c7c0cab3bd497a9aa3bde1ad0cd55d",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_aquarium.js",
+          "beforeSha256": "36783f9c182cd262be6635f8892c0f74a6593024b99c30de0d9e7cd3aab213c7",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_aquarium.js",
+          "beforeSha256": "36783f9c182cd262be6635f8892c0f74a6593024b99c30de0d9e7cd3aab213c7",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_arithmetic.js",
+      "canonicalSha256": "885141f9e86b53dbd8fd352625361af21731ce9778a5eaaeae73490db1571c7d",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_arithmetic.js",
+          "beforeSha256": "bd16ac3cd5bb557a1d334e284483fbf988351c957c076ec6aa8ece960e1cfa53",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_arithmetic.js",
+          "beforeSha256": "bd16ac3cd5bb557a1d334e284483fbf988351c957c076ec6aa8ece960e1cfa53",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_beehive.js",
+      "canonicalSha256": "ca1c77d5f8359c696c982a92ead45fc3d299d5864509d8a139a7522ac7d9bf75",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_beehive.js",
+          "beforeSha256": "12007989262dd0bf31a24d993b937a578e0a175aef216963e943863d49fd360e",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_beehive.js",
+          "beforeSha256": "12007989262dd0bf31a24d993b937a578e0a175aef216963e943863d49fd360e",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_calculus.js",
+      "canonicalSha256": "5e74a97b6600ef920df20ca2af16fddef1f94babcca709c58dbf60e189493aeb",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_calculus.js",
+          "beforeSha256": "137c11c75d66810e423a8ffe1bb6b32567ca623063312bc39981c8e4768cd407",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_calculus.js",
+          "beforeSha256": "137c11c75d66810e423a8ffe1bb6b32567ca623063312bc39981c8e4768cd407",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_cell.js",
+      "canonicalSha256": "5da3bc017eab47792f04dc8b53b7b87a20467119687bac65d99ebafd4b0bea07",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_cell.js",
+          "beforeSha256": "104f2c12ae0a299dc898df42685084a815141ca5472d9e170d95ec0f0314ed60",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_cell.js",
+          "beforeSha256": "104f2c12ae0a299dc898df42685084a815141ca5472d9e170d95ec0f0314ed60",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_circuit.js",
+      "canonicalSha256": "c0e7876058489387d9c6273076dbf22b884772a168184fcfad738719dfb03e26",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_circuit.js",
+          "beforeSha256": "f3dc941c24927f2785cfb1c2c1b63c0c4a1a631304e61e7dc6660779dda686d1",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_circuit.js",
+          "beforeSha256": "f3dc941c24927f2785cfb1c2c1b63c0c4a1a631304e61e7dc6660779dda686d1",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_companionplanting.js",
+      "canonicalSha256": "3b19b5aaa3295ef6da5ea783b786b1f1598231c95426a6589bf3a5364cf47c77",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_companionplanting.js",
+          "beforeSha256": "ef4aa9873636e00366840b4f58b95c235a5cb280a99650c119b493d8186d3a43",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_companionplanting.js",
+          "beforeSha256": "ef4aa9873636e00366840b4f58b95c235a5cb280a99650c119b493d8186d3a43",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_coordgrid.js",
+      "canonicalSha256": "f20a54598e13147d126f3505b847d70f5a05d1e07a7e75ef937619a7948f00c4",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_coordgrid.js",
+          "beforeSha256": "488cf89c540071fbf45cba67a8b49a5c8f5cc4242607fbd1caa42447b8a717de",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_coordgrid.js",
+          "beforeSha256": "488cf89c540071fbf45cba67a8b49a5c8f5cc4242607fbd1caa42447b8a717de",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_dataplot.js",
+      "canonicalSha256": "729a4fbfec5dc5f4eb9584faf41dca65a07af1bc1524595a70fa6dc95f0b9e12",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_dataplot.js",
+          "beforeSha256": "9553a54ea543fa33f244fdb0ca5ffae6afacbf7797ab7c269a62638bf7a02c58",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_dataplot.js",
+          "beforeSha256": "9553a54ea543fa33f244fdb0ca5ffae6afacbf7797ab7c269a62638bf7a02c58",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_datastudio.js",
+      "canonicalSha256": "a84d8d38fc30ce55e8cd2a0a2af744f6f7de46131d7a483017c9bf373a0f84c9",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_datastudio.js",
+          "beforeSha256": "ff505d5a27c75d4f105268801baaa324b56d784a4867b77e09416893a0e0e856",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_datastudio.js",
+          "beforeSha256": "ff505d5a27c75d4f105268801baaa324b56d784a4867b77e09416893a0e0e856",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_dissection.js",
+      "canonicalSha256": "e6b09db89e6798df7ad3477d04436cf8f1344d476f47a720c4c2ad82df6dcd9f",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_dissection.js",
+          "beforeSha256": "61ad06b005a2655be431999207595a087343d6415126d70bbd547d4cf5fb566a",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_dissection.js",
+          "beforeSha256": "61ad06b005a2655be431999207595a087343d6415126d70bbd547d4cf5fb566a",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_ecosystem.js",
+      "canonicalSha256": "7d2791db839c2cc1b014bc7ebb9d83ab86d4a92bee520ba461e54dbaff2a0e45",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_ecosystem.js",
+          "beforeSha256": "f5927c6659ede57bd72b3b067f7a489c74a59568899e7f548a659e6eef00ab52",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_ecosystem.js",
+          "beforeSha256": "f5927c6659ede57bd72b3b067f7a489c74a59568899e7f548a659e6eef00ab52",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_fireecology.js",
+      "canonicalSha256": "9becd3e1e583d1922baec3533f05d52d78a9f82fdd7f00ac4a43cfb7975e7ce2",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_fireecology.js",
+          "beforeSha256": "423e6c825dbe7e048ca68b0385775128ef7c146d0be00b92bf0224d790d5e448",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_fireecology.js",
+          "beforeSha256": "423e6c825dbe7e048ca68b0385775128ef7c146d0be00b92bf0224d790d5e448",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_funcgrapher.js",
+      "canonicalSha256": "cb18de1e71d9e1c9c9b35658948f7648c9950132028b71e5d769dd13faa76cf2",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_funcgrapher.js",
+          "beforeSha256": "5f3033daa2364514c869fdc20ca09d653c3699df09cbec8eef2c8375cbcd921c",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_funcgrapher.js",
+          "beforeSha256": "5f3033daa2364514c869fdc20ca09d653c3699df09cbec8eef2c8375cbcd921c",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_galaxy.js",
+      "canonicalSha256": "77479b9ad237573094e2b3013fb49e997d41776cd1ca615831caf5d9a1d6c94a",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_galaxy.js",
+          "beforeSha256": "1a3b3f2e2f1258c88868a11e34d9d28bfacb9a88790836d7b0e11912aa843fc2",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_galaxy.js",
+          "beforeSha256": "1a3b3f2e2f1258c88868a11e34d9d28bfacb9a88790836d7b0e11912aa843fc2",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_geo.js",
+      "canonicalSha256": "c122b0f3633f913730f71cdbd0e5e2893c0c7d77ed5fffccdddba6ea50588b59",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_geo.js",
+          "beforeSha256": "420dd7959caa8cdb9efa9a4343b1d768646ed2ac7a33e4210c8fde25904ca4ee",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_geo.js",
+          "beforeSha256": "420dd7959caa8cdb9efa9a4343b1d768646ed2ac7a33e4210c8fde25904ca4ee",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_geometryworld.js",
+      "canonicalSha256": "c4ec5f923289997b188f8b7af15e041a0b6bfdbfb5d24b6d3ffb5eca08306de8",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_geometryworld.js",
+          "beforeSha256": "02779783a78a70b87b4f8ab16d68a7e405d2e5eb2cbbbda2f9d0d9ac73f7251b",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_geometryworld.js",
+          "beforeSha256": "02779783a78a70b87b4f8ab16d68a7e405d2e5eb2cbbbda2f9d0d9ac73f7251b",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_geometryworld_builder.js",
+      "canonicalSha256": "e247b8a0be2fae397ff67e698a50c3a4ff1594ad56e8ce3bf60de1dd5d769924",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_geometryworld_builder.js",
+          "beforeSha256": "7382d74d907ec1450a3c6f8062f95fdf81d5eb7c4c579d5e25ef81b610dfbf53",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_geometryworld_builder.js",
+          "beforeSha256": "7382d74d907ec1450a3c6f8062f95fdf81d5eb7c4c579d5e25ef81b610dfbf53",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_geosandbox.js",
+      "canonicalSha256": "061e516dc7f6957c68635d38e3e4b918b6e634f834c070f80f39636ef0bbc228",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_geosandbox.js",
+          "beforeSha256": "7e359f255a9138c20d62c92140b0553d7180c264db308aa3bc203a15335237b7",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_geosandbox.js",
+          "beforeSha256": "7e359f255a9138c20d62c92140b0553d7180c264db308aa3bc203a15335237b7",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_graphcalc.js",
+      "canonicalSha256": "db7df9023726c5054048006f48af78a13f4c2700db4f7f4931fb00531df3451d",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_graphcalc.js",
+          "beforeSha256": "528071a25e53022560dc1b700f6870eb1a3a9691c32cdc2c92ae25baa31da0c8",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_graphcalc.js",
+          "beforeSha256": "528071a25e53022560dc1b700f6870eb1a3a9691c32cdc2c92ae25baa31da0c8",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_inequality.js",
+      "canonicalSha256": "524dc32f47165bbe2116d1666d92459d0fcb16694555630e4aef9ac2281da29c",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_inequality.js",
+          "beforeSha256": "00ce2bc9d6a6e16cd6b0077a056ae013bf21047df83f5f5e197d2c1f09e3e794",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_inequality.js",
+          "beforeSha256": "00ce2bc9d6a6e16cd6b0077a056ae013bf21047df83f5f5e197d2c1f09e3e794",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_logiclab.js",
+      "canonicalSha256": "976706ca0e50bb571221008fccf20046df5cb7db4b7253b5a203899a1178377b",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_logiclab.js",
+          "beforeSha256": "a92651267815acc4e734c7550e68e32ac3bcc957605f7972ffbd21363651f6fb",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_logiclab.js",
+          "beforeSha256": "a92651267815acc4e734c7550e68e32ac3bcc957605f7972ffbd21363651f6fb",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_machinelab.js",
+      "canonicalSha256": "ea657e38c9ab11857a5b3d94a6135075b7ff599986f2b047469c22e8b5998e75",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_machinelab.js",
+          "beforeSha256": "153b159cc7bacfafd01490131a5a3c5182dcfad8f95c6168ff8de67103a85834",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_machinelab.js",
+          "beforeSha256": "153b159cc7bacfafd01490131a5a3c5182dcfad8f95c6168ff8de67103a85834",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_openbim.js",
+      "canonicalSha256": "d285a8785451fc51e839bbefb8f4dec53944a241b6c8ef014c942441fee00ead",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_openbim.js",
+          "beforeSha256": "2e65a25e7a49f3a7e8f7367cc0581b95fee2c8a841bae98cd29942a64511e54e",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_openbim.js",
+          "beforeSha256": "2e65a25e7a49f3a7e8f7367cc0581b95fee2c8a841bae98cd29942a64511e54e",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_organismid.js",
+      "canonicalSha256": "4ed936bf3eecea87a68d01169e70f6f26f1604c07768a4f0611dd00d12e9dda3",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_organismid.js",
+          "beforeSha256": "9bb7cadbc2a708fe62d418e07b0bbce0b2d3f47914a796057d0019c15c396e12",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_organismid.js",
+          "beforeSha256": "9bb7cadbc2a708fe62d418e07b0bbce0b2d3f47914a796057d0019c15c396e12",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_probability.js",
+      "canonicalSha256": "7bef89a5d5c254a135cd8528880b2c270c6f4f8324ea4004c935056ff763e471",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_probability.js",
+          "beforeSha256": "d3641ed2b9a42c25653ad356bf55ee4204d9074fffc6467f2a74bb0fb5c51555",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_probability.js",
+          "beforeSha256": "d3641ed2b9a42c25653ad356bf55ee4204d9074fffc6467f2a74bb0fb5c51555",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_raptorhunt.js",
+      "canonicalSha256": "9eb3fc9fe71354086f7cb83947f7313db327acbe398b73fcc66c61454464d0c7",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_raptorhunt.js",
+          "beforeSha256": "a88d2958a90a2325c16a7ad611f245259dc132a834e99c083a30a96832c3acde",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_raptorhunt.js",
+          "beforeSha256": "a88d2958a90a2325c16a7ad611f245259dc132a834e99c083a30a96832c3acde",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_renewables.js",
+      "canonicalSha256": "59cdda19f7bff1ae29681aafd8411757778846c5d2afc2024d9e9d511ff20bb8",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_renewables.js",
+          "beforeSha256": "8c765499a4156f61abf3357c0f55c7d44ac3f1b2202ab3f6fabb928b100c6dff",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_renewables.js",
+          "beforeSha256": "8c765499a4156f61abf3357c0f55c7d44ac3f1b2202ab3f6fabb928b100c6dff",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_roadready.js",
+      "canonicalSha256": "8f10a6fb70c38304b1d5049929321d543a3a6debec040bd47b2a51f25c44521a",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_roadready.js",
+          "beforeSha256": "cf9d75744a367e89b11c935c90136f47e9ad31c2554282bb72d4be7ac1b2cc8b",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_roadready.js",
+          "beforeSha256": "cf9d75744a367e89b11c935c90136f47e9ad31c2554282bb72d4be7ac1b2cc8b",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_semiconductor.js",
+      "canonicalSha256": "5d43a01dbd7554c60a22d09d2213c8d399d23630416d4e8239b189b24dc1d927",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_semiconductor.js",
+          "beforeSha256": "29683c3bbe2e8703c2f17579fff9e41a69cae6194aa2fb34186641a592dac753",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_semiconductor.js",
+          "beforeSha256": "29683c3bbe2e8703c2f17579fff9e41a69cae6194aa2fb34186641a592dac753",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_solarsystem.js",
+      "canonicalSha256": "51fca6429ba501ad5aadca0b77f8f39de847b88f34fc2ac2506efce1b679e79e",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_solarsystem.js",
+          "beforeSha256": "ee9efe81b7245b4e1e97109ec5902c56dbf309df9b4c5ce7beef68674fd09a44",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_solarsystem.js",
+          "beforeSha256": "ee9efe81b7245b4e1e97109ec5902c56dbf309df9b4c5ce7beef68674fd09a44",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_statslab.js",
+      "canonicalSha256": "45bb67e0272c395a1b7a68821d89cda23a4e7d5b775d3c32e73ff09e7f31525a",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_statslab.js",
+          "beforeSha256": "3bf2e771e5e528788b1e448464ad77c8dec1a95f1697441a5c048c7b3f89a9d0",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_statslab.js",
+          "beforeSha256": "3bf2e771e5e528788b1e448464ad77c8dec1a95f1697441a5c048c7b3f89a9d0",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_timeschedule.js",
+      "canonicalSha256": "23bb2542d653b99a3369de9201b046f1b1c148a748db32cdd466f3290335e0f8",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_timeschedule.js",
+          "beforeSha256": "de533ca38bfcc7abb785e7738bdd3a1fd3bcee4bb5ed71306be1aee22bbbc154",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_timeschedule.js",
+          "beforeSha256": "de533ca38bfcc7abb785e7738bdd3a1fd3bcee4bb5ed71306be1aee22bbbc154",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_titration.js",
+      "canonicalSha256": "97bae9b91ae366594bdb42cd53eb2ad5ff7d68880ffc9fe6472e8637852b676a",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_titration.js",
+          "beforeSha256": "4bbb68a1cc9440f1441e0ac213b2584dde95d005f4a12007bbd225e33d3fd851",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_titration.js",
+          "beforeSha256": "4bbb68a1cc9440f1441e0ac213b2584dde95d005f4a12007bbd225e33d3fd851",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_volume.js",
+      "canonicalSha256": "85cbef352be5644e658561ee82b7aed8c5bdce5f80c0c8ebb47af428f5b9cd27",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_volume.js",
+          "beforeSha256": "a0e82623b85d52f31589de08cf0fecc9413e653fe86da0fc3285cb86d8b190d4",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_volume.js",
+          "beforeSha256": "a0e82623b85d52f31589de08cf0fecc9413e653fe86da0fc3285cb86d8b190d4",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_watercycle.js",
+      "canonicalSha256": "8575b605974fc58a869aa659dd28d878b78969c8f3c0865471263a48c93c51f4",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_watercycle.js",
+          "beforeSha256": "8fff4ed58bc2ef2fb9b4761f070e666239ddd54d4e7559bc48503773dfbdffb5",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_watercycle.js",
+          "beforeSha256": "8fff4ed58bc2ef2fb9b4761f070e666239ddd54d4e7559bc48503773dfbdffb5",
+          "method": "writeFileSync"
+        }
+      ]
+    },
+    {
+      "tool": "stem_tool_wave.js",
+      "canonicalSha256": "21ab2a97d285b1cc77dca02059425d79846a92529f7802cade921ed943b7ff84",
+      "mirrors": [
+        {
+          "path": "desktop/web-app/build/stem_lab/stem_tool_wave.js",
+          "beforeSha256": "b95c757ef394ea66c6ddce1727b6b7a53a8a1072f818a53b79f7f59829bd955c",
+          "method": "writeFileSync"
+        },
+        {
+          "path": "desktop/app-build/stem_lab/stem_tool_wave.js",
+          "beforeSha256": "b95c757ef394ea66c6ddce1727b6b7a53a8a1072f818a53b79f7f59829bd955c",
+          "method": "writeFileSync"
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "command": "node dev-tools/check_stem_tool_fossils.cjs --staged",
+    "exitCode": 0,
+    "stdout": "✓ check_stem_tool_fossils: no top-level tool fossils in 3 root(s); 43 tool(s) byte-identical across 4 stem_lab mirror(s).",
+    "stderr": ""
+  },
+  "limit": "Preparatory mirror sync only; deploy.sh still owns the subsequent complete build and validation."
+}

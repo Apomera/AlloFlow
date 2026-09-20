@@ -1,0 +1,45 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "columns": 4,
+      "rows": 4,
+      "minTarget": 143,
+      "overflow": false,
+      "clipped": false,
+      "tabStops": 1,
+      "keyboardRoundTrip": true
+    },
+    {
+      "width": 320,
+      "columns": 4,
+      "rows": 4,
+      "minTarget": 63,
+      "overflow": false,
+      "clipped": false,
+      "tabStops": 1,
+      "keyboardRoundTrip": true
+    }
+  ],
+  "assertions": [
+    "All 16 plot cards use actual crop stage and health while habitat and empty beds stay distinct",
+    "Readiness and care coexist without premature maturity or health recovery",
+    "Four-column spatial order, full names, 44px targets, keyboard navigation, and inspection focus survive on phones",
+    "Harvest, care, and companion lens values remain exact",
+    "A real preview spends nothing; confirmation creates the correct zero-day seed",
+    "Hover feedback respects manual and OS reduced motion; canopy artwork stays still",
+    "Larger text, forced colors, mobile containment, accessibility, and collapsed DOM cleanup pass"
+  ],
+  "errors": [],
+  "previewToSeed": true,
+  "readable": {
+    "columns": 4,
+    "rows": 4,
+    "minTarget": 63,
+    "overflow": false,
+    "clipped": false,
+    "tabStops": 1
+  },
+  "hoverLift": "matrix(1, 0, 0, 1, 0, -1.90579)",
+  "accessibility": []
+}

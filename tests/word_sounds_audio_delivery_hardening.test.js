@@ -7,6 +7,10 @@ const liveDock = readFileSync('view_live_session_dock_source.jsx', 'utf8');
 const app = readFileSync('desktop/web-app/src/App.jsx', 'utf8');
 const mailbox = readFileSync('apps_script/session_mailbox/Code.gs', 'utf8');
 const player = readFileSync('word_sounds_module.js', 'utf8');
+// Host actions now live in a dependency-injected module. Normalize only its
+// dependency receiver for the existing cross-file source contracts below;
+// separately verify that both shells delegate to this implementation.
+const hostHandlers = readFileSync('host_handlers_source.jsx', 'utf8').replace(/\b__d\./g, '');
 
 function loadCoverageHelper(source) {
   const start = source.indexOf('const getWordSoundsPortableAudioCoverage = (resource) => {');
@@ -96,7 +100,10 @@ describe('Word Sounds live audio delivery hardening', () => {
     expect(liveAac).toContain('const safePortableTtsAssets = (value) => {');
     expect(liveAac).toContain('if (safeAssets) packedWord._ttsAssets = safeAssets;');
     expect(liveAac).toContain('if (requiredKeys) packedWord._ttsRequiredKeys = requiredKeys;');
-    for (const source of [anti, app]) {
+    for (const shell of [anti, app]) {
+      expect(shell).toContain('_alloHostHandlers().requestWordSoundsAudioConfirmation(...__a)');
+      expect(shell).toContain('_alloHostHandlers().handleWordSoundsPreparedAudioRetry(...__a)');
+      const source = shell + '\n' + hostHandlers;
       expect(source).toContain("title: t('word_sounds.audio_preflight_title') || 'Some activity audio is not ready'");
       expect(source).toContain("t('word_sounds.audio_preflight_message_send'");
       expect(source).toContain("t('word_sounds.audio_preflight_detail_more'");
@@ -125,7 +132,10 @@ describe('Word Sounds live audio delivery hardening', () => {
   });
 
   it('reports last-mile audio readiness through the bounded live progress leaf', () => {
-    for (const source of [anti, app]) {
+    for (const shell of [anti, app]) {
+      expect(shell).toContain('_alloHostHandlers().requestWordSoundsAudioConfirmation(...__a)');
+      expect(shell).toContain('_alloHostHandlers().handleWordSoundsPreparedAudioRetry(...__a)');
+      const source = shell + '\n' + hostHandlers;
     expect(source).toContain("structuralAudioStatus === 'missing'");
       expect(liveDock).toContain("t('word_sounds.audio_status_requested') || 'Resend requested'");
       expect(source).toContain("handleRestoreView(resource, { suppressLiveFollow: true });");

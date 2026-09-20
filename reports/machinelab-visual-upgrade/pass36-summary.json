@@ -1,0 +1,53 @@
+{
+  "pass": 36,
+  "title": "Motion inspection ruler",
+  "date": "2026-09-19",
+  "changes": [
+    "Native range slider with a 44-pixel interaction area, 24-pixel handle, themed fill, and visible focus outline.",
+    "Aligned quarter-stroke graduations and a stronger current-position badge.",
+    "Playback disables the ruler and removes the misleading filled track.",
+    "Operating-system forced-color styling preserves effort diamonds and open load rings in distance previews."
+  ],
+  "validation": {
+    "uiTests": 228,
+    "uiReport": "pass36-ui-tests.json",
+    "browser": [
+      {
+        "theme": "light",
+        "file": "pass36-light-final/results.json",
+        "checks": 92,
+        "screenshots": 5,
+        "errors": [],
+        "overflow": false
+      },
+      {
+        "theme": "dark",
+        "file": "pass36-dark-final/results.json",
+        "checks": 92,
+        "screenshots": 5,
+        "errors": [],
+        "overflow": false
+      },
+      {
+        "theme": "contrast",
+        "file": "pass36-contrast-final/results.json",
+        "checks": 92,
+        "screenshots": 5,
+        "errors": [],
+        "overflow": false
+      }
+    ],
+    "totalBrowserChecks": 276,
+    "screenshots": 15,
+    "syntax": "passed",
+    "sourceMirrorIdentical": true,
+    "notes": "UI suite passed before final spacing and forced-color-only CSS refinements; all final browser runs cover those refinements. Browser validation used Chromium. Firefox slider rules are included but not runtime-tested."
+  },
+  "reviewedScreenshots": [
+    "pass36-light/ruler-windlass-320.png",
+    "pass36-dark-final/ruler-lever-1150.png",
+    "pass36-contrast-final/forced-colors-inspector.png"
+  ],
+  "sha256": "6d346b3e8c022d37411affe1feec00cb35c5ab79ae286dba95b3fff13d29f58f",
+  "publication": "Local only; no commit, push, or deployment"
+}

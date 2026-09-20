@@ -8,7 +8,8 @@
     "gradeLevel": "4th Grade",
     "createdAt": "2026-09-05T13:40:00.000Z",
     "imageShotList": "allopacks/point_of_view_grade4.IMAGES.md",
-    "standards": "CCSS.ELA-LITERACY.RL.4.6 (compare and contrast the point of view from which different stories are narrated, including the difference between first- and third-person narrations); CCSS.ELA-LITERACY.RL.4.3 (describe in depth a character, setting, or event, drawing on specific details in the text); CCSS.ELA-LITERACY.W.4.3 (write narratives using effective technique and descriptive details)"
+    "standards": "CCSS.ELA-LITERACY.RL.4.6 (compare and contrast the point of view from which different stories are narrated, including the difference between first- and third-person narrations); CCSS.ELA-LITERACY.RL.4.3 (describe in depth a character, setting, or event, drawing on specific details in the text); CCSS.ELA-LITERACY.W.4.3 (write narratives using effective technique and descriptive details)",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Point of View in Stories",
   "history": [
@@ -54,7 +55,7 @@
       "type": "simplified",
       "title": "The Same Puddle, Two Ways",
       "timestamp": "2026-09-05T13:41:00.000Z",
-      "meta": "4th Grade • Leveled reading • ~470 words",
+      "meta": "4th Grade • Leveled reading",
       "data": "## The Same Puddle, Two Ways\n\nRead this.\n\n> I saw the puddle too late. My new shoes went straight in, and cold water filled both socks. I heard Dev laugh behind me. I wanted to disappear.\n\nNow read this.\n\n> Maya stepped into the puddle before she saw it. Water soaked through her new shoes. Behind her, Dev laughed, then stopped, worried he had hurt her feelings. Maya did not turn around.\n\nSame puddle. Same shoes. Same laugh. But the two stories feel different, and the difference is the **narrator**: the voice telling the **scene**. The **characters** are the same; the storyteller is not.\n\nIn the first version, Maya tells it herself. She uses **I**, **my**, and **me**. That is **first person**. You are inside her head. You feel the cold socks and the wish to disappear. But notice what you do *not* get: you never learn that Dev felt bad. Maya cannot see inside Dev, so a first-person narrator cannot tell you other characters' **thoughts**. You only know what the narrator knows.\n\nIn the second version, someone outside the story tells it and calls the characters **she** and **he**. That is **third person**. This narrator can float over the whole scene. It tells you Maya's shoes got wet *and* that Dev felt worried. It knows things Maya never finds out.\n\nSo which is better? Neither. They are tools. First person makes you feel close to one character, like a best friend whispering the story. Third person lets you see the whole picture, including things the characters hide from each other.\n\nHere is the detective move. Find the **pronouns** in the first two sentences. *I, me, my, we* means first person. *He, she, they, a name* means third person. You can usually tell before the end of the first paragraph.\n\nThen ask the second question, the one that makes you a strong reader: **what does this narrator not know?** Maya does not know Dev is sorry. If you only read her version, you might decide Dev is mean. The third-person narrator knows better. Every narrator has a **perspective**, a spot they are standing in, and every spot has something behind it that the narrator cannot see.\n\nOne more twist. Two first-person narrators can tell the same event and disagree completely. Ask Dev to tell the puddle story and his **dialogue** might be, \"I laughed because I had done the exact same thing yesterday, and I wanted to tell her. But she walked away before I could.\" Same puddle, third version, new truth.\n\nWhen you read, find the narrator and **compare** what each one knows. When you write, choose one on purpose, and **retell** a scene from the other side to see the **contrast**. And when two people tell you different stories about the same puddle, you now know what to ask: what could each of them see from where they stood?"
     },
     {
@@ -199,7 +200,7 @@
               "Check the pronouns in the first two sentences to find the narrator."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "keyword-association",
             "mode": "scaffolded",
             "aiExample": "I = INSIDE. If the story says I, you are inside one character's head. She/he = SHOWN. If it says she or he, someone outside is showing you the characters.",
@@ -229,7 +230,7 @@
               "Ask: what does this narrator not know?"
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "analogy-pattern",
             "mode": "scaffolded",
             "aiExample": "A narrator is like a flashlight in a dark room. First person is one flashlight held by one character: bright on what they see, dark behind them. Third person is the room lights coming on: you can see everyone, including the kid in the corner who feels sorry.",
@@ -259,7 +260,7 @@
               "Ask what each narrator could see from where they stood."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "story-chain",
             "mode": "scaffolded",
             "aiExample": "Maya's chain: puddle → wet socks → Dev laughs → I want to disappear. Dev's chain: puddle → Maya splashes → I remember yesterday → I laugh → she walks off before I can say so. Same first link, different last link.",
@@ -565,7 +566,7 @@
           ],
           "deliverable": "A retold scene under 200 words. An author's note naming the narrator and the point of view. And a test record: one classmate reads it and writes down the new thing they learned.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

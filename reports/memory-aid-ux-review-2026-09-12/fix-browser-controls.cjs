@@ -1,0 +1,1 @@
+const fs=require('fs'),p='reports/memory-aid-ux-review-2026-09-12/refinement-browser-qa.cjs';let s=fs.readFileSync(p,'utf8');s=s.replace("getByRole('button',{name:'Make it mine',exact:true}).click()", "getByRole('button',{name:'Make it mine',exact:true}).first().click()");fs.writeFileSync(p,s);

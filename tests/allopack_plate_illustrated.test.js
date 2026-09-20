@@ -10,6 +10,7 @@ const glossarySource=fs.readFileSync('view_glossary_source.jsx','utf8');
 const getAlt=new Function(glossarySource.slice(0,glossarySource.indexOf('// Lazy Lucide'))+'\nreturn getGlossaryImageAlt;')();
 const slug='plate_tectonics_grade6',folder='allopacks/media/'+slug+'/',pack=read('allopacks/illustrated/'+slug+'.allopack.json'),original=read('allopacks/'+slug+'.allopack.json'),manifest=read(folder+'manifest.json');
 require('../dev-tools/plate_content_refinements.cjs').refine(original);
+require('../dev-tools/lib/allopack_quality_refinements_20260919.cjs').apply(original,slug,{targetEnvelope:pack.allopack});
 const get=t=>pack.history.find(r=>r.type===t),panels=pack.history.filter(r=>r.type==='image').flatMap(r=>r.data.visualPlan.panels);
 const slots=[...get('glossary').data.map(g=>({url:g.image,alt:g.imageAlt,hash:g.imageAltHash})),...get('anchor-chart').data.sections.map(s=>({url:s.iconUrl,alt:s.iconAlt,hash:s.iconAltHash})),...get('concept-sort').data.items.map(s=>({url:s.image,alt:s.imageAlt,hash:s.imageAltHash})),...panels.map(p=>({url:p.imageUrl,alt:p.alt,hash:p.altHash}))];
 describe('plate_tectonics_grade6 illustrated edition',()=>{
@@ -24,10 +25,10 @@ it('passes the production artifact envelope and keeps classroom claims bounded',
 describe('Scientific diagram and content audit',()=>{
 it('keeps directions and molecular or motion conventions consistent',()=>{
 const svg=k=>fs.readFileSync(folder+manifest.assets.find(a=>a.sourceKey===k).vectorFile,'utf8');
-for(const k of ['divergent','stripes']){expect(svg(k)).toContain('data-flow="left-out"');expect(svg(k)).toContain('data-flow="right-out"');}expect(svg('subduction')).toContain('data-flow="slab-down"');expect(svg('transform')).toContain('data-flow="left-up"');expect(svg('transform')).toContain('data-flow="right-down"');expect(get('simplified').data).toContain('mostly solid mantle');expect(get('simplified').data).toContain('Coal alone does not prove');
+for(const k of ['divergent','stripes']){expect(svg(k)).toContain('data-flow="left-out"');expect(svg(k)).toContain('data-flow="right-out"');}expect(svg('subduction')).toContain('data-flow="slab-down"');expect(svg('transform')).toContain('data-flow="left-up"');expect(svg('transform')).toContain('data-flow="right-down"');expect(get('simplified').data).toContain('hot rock is mostly solid but can deform slowly');expect(get('simplified').data).toContain('Coal alone cannot prove land moved');
 });
 it('records every changed field and retains valid answer keys',()=>{
 for(const q of get('quiz').data.questions.filter(q=>q.type==='mcq'))expect(q.options).toContain(q.correctAnswer);
 const pristine=read('allopacks/'+slug+'.allopack.json'),changes=read(folder+'content-refinements.json');expect(changes.length).toBe(pack.allopack.contentRefinements.count);
-for(const c of changes){let old=pristine.history.find(r=>r.id===c.resourceId),now=pack.history.find(r=>r.id===c.resourceId);for(const key of c.path.split('.')){old=old[key];now=now[key];}if(c.resourceId.endsWith('-directions')&&c.path==='data.body')old+='\n\nPicture panels: '+manifest.groups.join('; ')+'. '+manifest.note;expect(old).toEqual(c.from);expect(now).toEqual(c.to);}
+for(const c of changes){let old=pristine.history.find(r=>r.id===c.resourceId),now=pack.history.find(r=>r.id===c.resourceId);for(const key of c.path.split('.')){old=old[key];now=now[key];}if(c.resourceId.endsWith('-directions')&&c.path==='data.body')old+='\n\nPicture panels: '+manifest.groups.join('; ')+'. '+manifest.note;if(c.stripArtwork){const clean=n=>JSON.parse(JSON.stringify(n),(k,v)=>/^(image|iconUrl|iconAlt)/.test(k)?undefined:v);old=clean(old);now=clean(now);}expect(old).toEqual(c.from);expect(now).toEqual(c.to);}
 });});

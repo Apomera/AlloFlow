@@ -217,7 +217,9 @@ describe('Money Math classroom exchange model', () => {
     await enterText(input, '14500');
     await React.act(async () => check.click());
     expect(runtime.getState()._moneyMath.exchFeedback.ok).toBe(false);
-    expect(runtime.container.textContent).toContain('correctly rounded answer is ¥14,950 JPY');
+    expect(runtime.container.textContent).toContain('Too low.');
+    expect(runtime.container.textContent).not.toContain('¥14,950 JPY');
+    expect(runtime.container.querySelector('[data-exchange-result]')).toBeNull();
 
     await enterText(input, '14950');
     expect(runtime.getState()._moneyMath.exchFeedback).toBeNull();

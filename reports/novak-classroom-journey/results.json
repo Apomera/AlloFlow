@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-09-20T03:07:02.566Z",
+  "checks": [
+    "Production host opens exact Macbeth without AI",
+    "Actual curation/updater and production generator preserve teacher wording, pins, removals, and exact source across a mocked refresh",
+    "Production offline serializer and hydrator retain source and curation after real browser reload",
+    "Selected-assignment resolver, builder, privacy serializer and real pack codec include only the chosen adaptation and its curated original",
+    "Actual lazy readiness helper, pending restore effect, wrapper and MiscHandlers opener retain the decoded packet until delayed registration and open it exactly once",
+    "Separate student browser context displays matching original, adaptation, and teacher gloss without teacher editing controls",
+    "Student Original and lighter gloss view preserve source and pinned support at 320px",
+    "Actual common document pipeline preserves exact received source and separately escaped curated glosses",
+    "Production source regions and module hashes remained unchanged throughout this run",
+    "No browser runtime errors or external network requests"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "sourceSha256": "0888c17d013705ff9c3c32bc66146208b6939ca4e88781a2461ff6da6b2a29f5",
+  "packetEncoding": "1.",
+  "scope": "Production seams and modules in a local React host; canned gloss provider, pre-authored adaptation, and mocked audio. Separate teacher/student browser contexts. Not the entire app shell, live services, real speech, native screen readers, or live model quality."
+}

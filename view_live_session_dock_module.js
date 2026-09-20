@@ -114,6 +114,9 @@ function LiveSessionDockView(props) {
     units,
     updateLivePresenterCue
   } = props;
+  const [showOrganizerReview, setShowOrganizerReview] = React.useState(false);
+  const reviewApi = window.AlloModules?.ViewRenderers;
+  const reviewLabel = reviewApi?.organizerReviewText?.(props.t, 'review_title', 'Review organizer reflections') || 'Review organizer reflections';
   const imageApi = window.AlloModules?.LiveAac;
   const MailboxImageStatus = imageApi?.MailboxImageStatus;
   const resourcesWithImages = React.useMemo(() => new Set((history || []).filter(resource => {
@@ -194,7 +197,7 @@ function LiveSessionDockView(props) {
     // session-sync trace, one tap from the full Session log.
     try {
       const rosterCount = Object.keys(sessionData && sessionData.roster || {}).length;
-      const transportLabel = _alloMbBridgeActive() ? t('live_dock.transport_mailbox') || 'Class Mailbox' : 'Firebase';
+      const transportLabel = props.organizerReflectionRequest ? 'LAN' : _alloMbBridgeActive() ? t('live_dock.transport_mailbox') || 'Class Mailbox' : 'Firebase';
       const trace = (typeof window !== 'undefined' && window.__alloSessionSyncTrace || []).filter(ev => ev.detail?.sessionPath === 'artifacts/' + activeSessionAppId + '/public/data/sessions/' + activeSessionCode);
       let lastSync = null;
       let lastProblem = null;
@@ -244,11 +247,25 @@ function LiveSessionDockView(props) {
     } catch (e) {
       return null;
     }
-  })(), liveOrganizer && (() => {
+  })(), props.organizerReflectionRequest && /*#__PURE__*/React.createElement("section", {
+    className: "my-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-expanded": showOrganizerReview,
+    onClick: () => setShowOrganizerReview(value => !value),
+    className: "min-h-11 rounded-lg border border-indigo-600 bg-white px-4 font-bold text-indigo-800"
+  }, reviewLabel), showOrganizerReview && (reviewApi?.OrganizerReviewPanel ? React.createElement(reviewApi.OrganizerReviewPanel, {
+    key: activeSessionCode,
+    request: props.organizerReflectionRequest,
+    sessionCode: activeSessionCode,
+    t
+  }) : /*#__PURE__*/React.createElement("p", {
+    role: "status"
+  }, reviewApi?.organizerReviewText?.(t, 'loading', 'Loading reflections…') || 'Loading reflections…'))), liveOrganizer && (() => {
     const organizerResource = [generatedContent].concat(Array.isArray(history) ? history : []).concat(Array.isArray(sessionData?.resources) ? sessionData.resources : []).find(item => item && String(item.id || '') === String(liveOrganizer.resourceId || '')) || null;
     const countBadges = [{
       key: 'complete',
-      label: 'complete',
+      label: liveOrganizer.type === 'reflection' ? 'submitted' : 'complete',
       color: '#166534',
       background: '#dcfce7',
       border: '#86efac'
@@ -1692,9 +1709,13 @@ function LiveSessionDockView(props) {
       }) || 'Audio missing ' + (entry.wsProgress?.audioReady || 0) + '/' + (entry.wsProgress?.audioTotal || 0);
       const wsAudioPrimaryLabel = wsAudioStatus === 'damaged' ? t('word_sounds.audio_resend') || 'Resend audio' : wsAudioLabel;
       const activeOrganizer = sessionData?.interactiveOrganizer;
-      const organizerProgress = normalizeLiveOrganizerProgress(entry.organizerProgress);
+      const rawOrganizerProgress = normalizeLiveOrganizerProgress(entry.organizerProgress);
+      const organizerProgress = rawOrganizerProgress?.status === 'loading' && Date.now() - rawOrganizerProgress.at > 30000 ? {
+        ...rawOrganizerProgress,
+        status: 'failed'
+      } : rawOrganizerProgress;
       const organizerProgressIsCurrent = !!(activeOrganizer?.activityId && organizerProgress?.activityId === activeOrganizer.activityId);
-      const organizerProgressLabel = !organizerProgressIsCurrent ? null : organizerProgress.status === 'complete' ? `Organizer complete${organizerProgress.total ? ` ${organizerProgress.correct}/${organizerProgress.total}` : ''}` : organizerProgress.status === 'attempted' ? `Organizer attempt${organizerProgress.total ? ` ${organizerProgress.correct}/${organizerProgress.total}` : ''}` : organizerProgress.status === 'failed' ? 'Organizer failed to open' : organizerProgress.status === 'ready' ? 'Organizer ready' : organizerProgress.status === 'loading' ? 'Organizer loading' : 'Organizer working';
+      const organizerProgressLabel = !organizerProgressIsCurrent ? null : organizerProgress.status === 'complete' ? organizerProgress.type === 'reflection' ? `Reflection submitted${organizerProgress.attempts > 1 ? ` · revision ${organizerProgress.attempts}` : ''}` : `Organizer complete${organizerProgress.total ? ` ${organizerProgress.correct}/${organizerProgress.total}` : ''}` : organizerProgress.status === 'attempted' ? `Organizer attempt${organizerProgress.total ? ` ${organizerProgress.correct}/${organizerProgress.total}` : ''}` : organizerProgress.status === 'failed' ? 'Organizer failed to open' : organizerProgress.status === 'ready' ? 'Organizer ready' : organizerProgress.status === 'loading' ? 'Organizer loading' : 'Organizer working';
       return /*#__PURE__*/React.createElement("div", {
         key: uid,
         style: {

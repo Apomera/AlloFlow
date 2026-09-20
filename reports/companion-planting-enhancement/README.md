@@ -498,3 +498,371 @@ The seed-browser suite passes filtering, search, preview preservation, affordabi
 - [Plot and experiment verification](browser-placement-experiment.log)
 
 Run the focused browser checks with: node dev-tools/companion_planting_placement_scene_qa.cjs.
+
+## Distinct tending effects and precise care scope — September 19
+
+Watering now sends short streams into small soil splashes and ripples. Compost falls as varied crumbs, settles across the bed, and briefly outlines the treated soil. Weeding lifts small rooted sprigs that fade as they leave the ground. Effects move through the garden from back to front and render behind crop artwork, keeping plants, plot values, and inspection markers readable.
+
+The care actions capture the affected plots when they run. Watering and composting treat the shared soil across all 16 beds, including empty beds. Weeding animates only planted plots whose pest value actually decreased, including structures when the existing simulation changes their pest value. A zero-change weed action or fully capped compost action clears the effect instead of implying an improvement. Watering keeps the existing saturation guard. Artwork does not add simulated growth, health, spending, or time.
+
+Care effects begin on their first visible draw, so an action performed while the garden is offscreen can still be seen on returning. The existing canvas loop runs the 2.2-second sequence; no new timers or saved animation state are introduced. The effect cancels for reduced motion, a changed day, a different or cleared care receipt, a placement preview, or unmount. Weeding destinations are pruned if their crop is removed or replaced. Harvest animation retains its separate batch validation and timing.
+
+Validation: **162 tests passed across nine suites**, including two new tests for exact weed scope, unchanged health/time/funds, whole-soil treatment, nutrient and moisture caps, and zero-change actions. The focused gameplay suite passed all 71 tests. The new browser suite checks actual care actions, deferred offscreen start and expiry, day and receipt changes, preview cancellation, reduced motion, changed crops, invalid and duplicate destinations, stable reduced-motion frames, distinct artwork, cache equivalence, balanced canvas state, mobile containment, accessibility, and cleanup. Desktop and phone watering scenes and a close-up comparison of all three effects were visually reviewed.
+
+The harvest browser regression passes eligibility, produce flight, basket contents, restored saves, planning, reset cancellation, expiry, reduced motion, desktop, mobile, night, maximized layouts, and cleanup. Both final browser suites report no page errors or scoped accessibility violations. Source and desktop assets match; syntax and scoped diff-format checks pass.
+
+- [Watering the garden](garden-care-water-1280.png)
+- [Watering on a phone](garden-care-water-320.png)
+- [Weeding affected plots](garden-care-weed-1280.png)
+- [Adding compost](garden-care-compost-1280.png)
+- [Tending artwork comparison](garden-care-motion-artwork.png)
+- [Full regression results](tests-care-motion.log)
+- [Focused gameplay results](tests-care-motion-focused.log)
+- [Care animation verification](care-motion-results.json)
+- [Harvest regression verification](browser-care-motion-harvest.log)
+
+Run the focused browser checks with: node dev-tools/companion_planting_care_motion_qa.cjs.
+
+## Clear harvest readiness and a garden-to-harvest route — September 19
+
+Harvestable crops now carry gold check marks on their plot plaques, above foliage and night lighting. Healthy crops say Ready; crops with low health or high pest pressure retain their care values beside the check. Exact eligibility remains maturity at or beyond the crop's required days and health strictly above 20, excluding habitat structures. Static plot-number caching includes readiness so a newly ready or harvested bed cannot retain a duplicate or missing number.
+
+The existing Natural-view guide now shows the ready count and provides Open Harvest view beside Open Care view when needed. Keyboard activation focuses the harvest inspection action, and closing crop details restores focus below the sticky navigation. The canvas description includes the harvestable count. Placement previews retain their own controls, and inspection and view changes preserve crops, time, moisture, and funds.
+
+A fresh sequential day report can trigger a 1.5-second gold ring and small glints over plots that actually became ready. The cue uses the existing drawing loop and does not change simulated growth or health. Restored gardens, same-day reports, rewinds, skipped days, stale reports, and year resets remain quiet. Reduced motion, placement previews, other analytical views, the next day, lost readiness, crop replacement, and unmount clear or prune the cue. No animation state is saved with the garden.
+
+Validation: **164 tests passed across nine suites**, including two new tests for exact readiness boundaries, care coexistence, habitat exclusion, preview suppression, and the inspection round trip with unchanged garden state. The new browser suite checks mixed and fully ready gardens at 320px, tag collision bounds, desktop and night scenes, keyboard focus, real next-day readiness, expiry, harvest and replanting, restored-state guards, malformed report entries, stable reduced-motion frames, cache equivalence, balanced canvas state, mobile containment, accessibility, and cleanup. Desktop, dense phone, nighttime phone, guide, and newly-ready previews were visually reviewed.
+
+Existing care and harvest browser regressions also pass. All three browser suites report no page errors or scoped accessibility violations. Source and desktop assets match; syntax and scoped diff-format checks pass.
+
+- [Ready crops in the garden](garden-ready-1280.png)
+- [Phone garden](garden-ready-320.png)
+- [All 16 beds ready on a phone](garden-ready-dense-320.png)
+- [Nighttime phone garden](garden-ready-night-320.png)
+- [Phone harvest and care guide](garden-ready-controls-320.png)
+- [Newly ready crop](garden-newly-ready-1280.png)
+- [Full regression results](tests-readiness.log)
+- [Readiness browser verification](readiness-results.json)
+- [Care regression verification](browser-readiness-health.log)
+- [Harvest regression verification](browser-readiness-harvest.log)
+
+Run the focused browser checks with: node dev-tools/companion_planting_readiness_qa.cjs.
+
+## Illustrated bed navigator — September 19
+
+Replaced the text-only plot buttons with miniature botanical beds. Each uses the existing vector artwork at its actual growth stage and health condition, including seeds, sprouts, mature crops, habitat structures, and empty soil. Numbered plaques retain the four-by-four plot order. Empty beds have a quiet plus marker; harvestable crops have gold check marks, and low-health or pest values remain visible beside readiness. Harvest, Care, and Companions views keep their existing numerical values and colors.
+
+Staged plantings use the preview's own crop identity, translucent artwork, a dashed violet outline, and an explicit Preview label. They remain separate from planted crops and become zero-day seed portraits only after confirmation. Natural-view accessible names now include maturity, readiness, and local care information. Habitat structures are not presented as crops, and planting previews announce that confirmation is still needed.
+
+Added a small pointer-hover lift while keeping the miniature canopies still. Manual and operating-system reduced motion suppress the lift. Full crop names, compact larger-text styling, spacious touch targets, and improved focus outlines work at 320px without changing the four-column layout. Arrow keys, Home/End, Enter, and return focus retain their existing behavior. Collapsing the navigator removes its extra portraits and buttons from the DOM.
+
+Validation: **166 tests passed across nine suites**, including two new tests covering exact readiness and care boundaries, habitat exclusion, accessible descriptions, staged identity, unchanged funds before confirmation, and the transition to a planted seed. The focused browser suite verifies all 16 portraits, seed/sprout/leafing stages, plant condition, four-column geometry, targets larger than 44px, unclipped text, one keyboard tab stop, keyboard inspection and return, every analytical view, actual preview and confirmation, care updates, pointer movement, reduced motion, larger text, forced-color focus, mobile containment, accessibility, and collapse cleanup. Final desktop, phone, and enlarged-text previews were visually reviewed.
+
+The existing gameplay browser regression also passes, including the naturally grown first harvest, mobile crop inspection, and garden views. Both browser suites report no page errors or scoped accessibility violations. Source and desktop assets match; syntax and scoped diff-format checks pass.
+
+- [Illustrated plot navigator](garden-plot-cards-1280.png)
+- [Phone plot navigator](garden-plot-cards-320.png)
+- [Planting preview in the navigator](garden-plot-preview-320.png)
+- [Larger text on a phone](garden-plot-readable-320.png)
+- [Full regression results](tests-plot-cards.log)
+- [Focused browser verification](plot-cards-results.json)
+- [Gameplay regression verification](browser-plot-cards-gameplay.log)
+
+Run the focused browser checks with: node dev-tools/companion_planting_plot_cards_qa.cjs.
+## Produce illustrations and complete harvest summaries — September 19
+
+Harvest summaries now show gathered produce and cut bundles in the garden's existing muted botanical palette. The illustrations cover all 31 non-structure plant types, including corn ears, root vegetables, berries, leafy heads, herbs, and flowers. Rhubarb uses cut stalks and lavender uses distinct flower spikes. Artwork is decorative, with crop identity and counts available as text; the pictures do not represent a physical yield quantity.
+
+Each crop row shows its recorded harvested count, points, and funds. The first four types remain immediately visible, while a native keyboard-accessible disclosure reveals every remaining type. The layout uses two columns on desktop and one column on phones, with a wrapping summary header and clear focus outlines. An open-bed note explains the next planting opportunity and clarifies that harvested perennials remain planted for another harvest. Existing replanting, keep-growing, history, dismissal, and reduced-motion behavior is preserved.
+
+Missing values in older saved receipts explicitly say Value not recorded or Points not recorded. Invalid crop entries are filtered through the existing harvest validation helper. The same filtering fixes a hidden harvest-history crash caused by null entries. Reviewing, expanding, or dismissing a summary does not change crops, time, score, or funds.
+
+Validation: **all 168 tests passed across nine suites across the initial run and rerun**. The initial run passed 165 tests and had three 5-second timeouts; rerunning those three suites passed all 126 tests with unchanged time limits. Two new tests cover exact per-crop amounts, all harvested types, perennial guidance, unchanged garden state, missing legacy values, and malformed entries.
+
+The new browser suite verifies an actual 15-crop harvest across 14 types at desktop and 320px, exact recorded amounts, collapsed and expanded layouts, unclipped content, keyboard disclosure, reduced motion, focus handoff, annual replanting, a full perennial garden, legacy data, dismissal, and cleanup. Desktop and phone summaries and the complete artwork sheet were visually reviewed. The existing gameplay browser regression also passes, including the naturally grown first harvest on day 19, mobile crop inspection, garden views, and replanting. Both browser suites report no page errors or scoped accessibility violations.
+
+Source and desktop assets match at SHA256 `51B19CD2BFF987AA437AA8AC00816ADF40520F582EC1AE345F6A436D0F2383CB`. Syntax and scoped diff-format checks pass.
+
+- [Desktop harvest summary](harvest-receipt-1280.png)
+- [Phone harvest summary](harvest-receipt-320.png)
+- [All crop types on desktop](harvest-receipt-expanded-1280.png)
+- [All crop types on a phone](harvest-receipt-expanded-320.png)
+- [Older saved harvest on a phone](harvest-receipt-legacy-320.png)
+- [Produce illustration sheet](harvest-produce-artwork.png)
+- [Initial regression results](tests-harvest-receipt.log)
+- [Passing rerun of timeout-affected suites](tests-harvest-receipt-rerun.log)
+- [Harvest summary browser verification](harvest-receipt-results.json)
+- [Gameplay browser regression](browser-harvest-receipt-gameplay.log)
+
+Run the focused browser checks with: node dev-tools/companion_planting_harvest_receipt_qa.cjs.
+## Illustrated starter layouts with a compact garden arrival — September 19
+
+Empty gardens now offer Preview layout beside the starter selector. The expandable view shows all sixteen planned beds with botanical illustrations, numbered positions, visible empty beds, and an accessible description of the complete arrangement. Three Sisters, Pollinator Patch, Salad Garden, and Soil Builder each retain their existing recipe. A short purpose statement, separate crop and habitat counts, open-bed count, and expandable inventory make their contents easier to compare.
+
+The preview and actual planting now share the same sixteen-bed model and rounded seed-cost calculation. Each preview shows the exact purchase price and remaining funds, or the additional amount needed. Prices are $5.50, $5.30, $3.80, and $2.40 respectively. Selecting or inspecting a starter does not spend funds or advance time. Mature illustrations are explicitly identified as a layout preview; planted crops still begin at zero growth. Winter includes a growth-pause note, and custom planting and free recovery seeds remain available under their existing conditions.
+
+The preview is collapsed on arrival so the live garden stays visible in the initial desktop and phone view. Opening it focuses the preview; closing returns focus to its toggle. Planting transfers focus to Start growing below the sticky navigation. The preview uses a two-column desktop composition, a single-column phone layout, native inventory disclosure, controls at least 44px high, readable-text styling, and forced-color focus outlines. Its miniature plants stay still and add no animation loop.
+
+Validation: **170 tests passed across nine suites**, including two new tests covering every illustrated recipe against the actual planted positions, unchanged state before purchase, exact charges, zero-day seedlings, insufficient funds, winter notes, and recovery. The focused starter run passed eight tests. The new browser suite verifies all four actual purchases, keyboard selection and inventory, opening and closing focus, post-plant focus, 320px containment, exact-budget purchases, custom-preview guards, larger text, reduced motion, forced colors, accessibility, and cleanup. Final desktop arrival and desktop/phone preview artwork were visually reviewed.
+
+The existing gameplay browser regression passes its original initial-screen bounds and the natural first harvest on day 19, along with planting, care, crop inspection, harvest proceeds, replanting, and workspace continuity. Both browser suites report no page errors or scoped accessibility violations. Source and desktop assets match at SHA256 `E9DDFA7D43D2E644C7547A85667C8C1D945297360AAB046AFB004F8BC39D9F3A`; syntax and scoped diff-format checks pass.
+
+- [Desktop starter preview](garden-starter-preview-1280.png)
+- [Phone starter preview](garden-starter-preview-320.png)
+- [Expanded phone inventory](garden-starter-inventory-320.png)
+- [Larger text on a phone](garden-starter-readable-320.png)
+- [Three Sisters layout](garden-starter-sisters-1280.png)
+- [Pollinator Patch layout](garden-starter-pollinator-1280.png)
+- [Soil Builder layout](garden-starter-soil-1280.png)
+- [Compact garden arrival](gameplay-first-garden-desktop.png)
+- [Full regression results](tests-starter-preview.log)
+- [Focused starter results](tests-starter-preview-focused.log)
+- [Starter browser verification](starter-preview-results.json)
+- [Gameplay browser regression](browser-starter-preview-gameplay.log)
+
+Run the focused browser checks with: node dev-tools/companion_planting_starter_preview_qa.cjs.
+## Before-and-after portraits in the daily recap — September 19
+
+Daily crop highlights now pair Before and Day end portraits, showing the recorded plant identity, maturity, health, and explicit harvest-readiness flag. The shared botanical art reflects the recorded growth stage and health on each side. Gold ready markers use the saved readiness flag rather than inferring harvestability from a rounded maturity percentage. Existing highlight priorities, expandable evidence, inspection actions, and replanting actions remain available.
+
+Cleared annual beds visibly change from a crop to empty soil. Perennial carryover uses its actual recorded day-end stage, including the simulation's growth reset. Empty-to-planted beds begin with an empty portrait and show the recorded seed stage. A replacement crop is labeled Planting changed and uses each side's own identity instead of presenting the change as ordinary growth. Missing legacy stages use an explicit unknown-stage placeholder; missing health is labeled Health not recorded. Historical images remain unchanged after live watering, harvesting, or replacement because they read only the saved report.
+
+Comparison cards use a compact paired illustration beside the explanation on desktop and place the two portraits above the explanation on small phones. Crop names, values, and state labels accompany decorative artwork. Larger-text and forced-color styles retain readable values and keyboard focus. Historical portraits stay still; the existing bounded recap entrance continues to respect both motion preferences. No timers or saved animation state were added.
+
+Validation: **173 tests passed across nine suites**, including three new behavioral tests for actual seedling-stage changes, immutable saved portraits, annual clearing, perennial carryover, explicit empty beds, changed crop identities, missing legacy values, and readiness. The focused recap run passed eleven tests. The new browser suite verifies real daily and year-end reports, exact values, 320px containment, paired alignment, 44px controls, expandable evidence, focus handoff, tending and replacement isolation, live inspection, replanting, larger text, stationary artwork, forced colors, accessibility, and cleanup.
+
+The existing recap browser regression also passes forecast alignment, both reduced-motion preferences, year transitions, preview protection, replanting, legacy reports, and serialized restoration. Both browser suites report no page errors or scoped accessibility violations. The phone daily recap, desktop year-end comparison, and legacy phone comparison were visually reviewed. Source and desktop assets match at SHA256 `75FF35C1E92FDF3CA18DD501B3C8AC5CD30493D3F9519B38711D8FD5B4D12A5C`; syntax and scoped diff-format checks pass.
+
+- [Daily comparisons on desktop](garden-day-comparison-1280.png)
+- [Daily comparisons on a phone](garden-day-comparison-320.png)
+- [Expanded plot evidence](garden-day-comparison-expanded-320.png)
+- [Year-end comparisons](garden-day-comparison-year-1280.png)
+- [Year-end comparisons on a phone](garden-day-comparison-year-320.png)
+- [Older saved report](garden-day-comparison-legacy-320.png)
+- [Larger text on a phone](garden-day-comparison-readable-320.png)
+- [Full regression results](tests-day-comparison.log)
+- [Focused recap results](tests-day-comparison-focused.log)
+- [Comparison browser verification](day-comparison-results.json)
+- [Existing recap browser regression](browser-day-comparison-recap.log)
+
+Run the focused browser checks with: node dev-tools/companion_planting_day_comparison_qa.cjs.
+## Illustrated relationship evidence before planting — September 19
+
+Planting previews now show illustrated relationship cards in place of small text badges. Every modeled neighbor has its plot number, crop name, current botanical portrait, helpful/conflict label, signed pair effect, and existing model explanation. Portraits use the actual neighboring crop's stage and health. The heading and evidence use the crop being previewed, even when a restored save has a different seed selected.
+
+Conflicts appear first, ordered by effect magnitude and plot position; helpful pairs follow. The first two cards remain visible, and a native expandable list reveals the rest while naming any additional conflicts in its summary. A net pair effect summarizes these relationships separately from the broader growth estimate. The explanatory note identifies these values as simulation effects and acknowledges the other growth inputs. Neighbor selection, relationship values, seed pricing, and confirmation rules are unchanged.
+
+Warm cream panels and crop portraits connect the preview to the garden. Cards use two columns on desktop and one on phones, with explicit text labels as well as color. The disclosure supports keyboard interaction, visible focus, and a minimum 44px target. Larger-text and forced-color layouts remain usable. Evidence portraits stay still; no timers or saved animation state were added. Browsing the evidence does not alter the staged planting, garden, funds, or day.
+
+Validation: **175 tests passed across nine suites**, including two new behavioral tests covering conflict ordering, exact effects, current stage and health, staged crop identity, diagonal and corner neighbors, distant-bed exclusion, cancellation, and habitat previews. The new browser suite verifies all eight modeled neighbors, disclosure state, 320px containment, larger text, keyboard interaction, forced-color focus, stationary artwork, live neighbor changes, insufficient funds, and real confirmation with the exact seed charge.
+
+The existing placement browser regression also passes preview-to-garden focus handoff, first-plant navigation, seed-stage confirmation, bounded planting animation, cancellation guards, reduced motion, night and habitat scenes, caches, and cleanup. Both browser suites report no page errors or scoped accessibility violations. The collapsed phone cards, expanded desktop cards, and larger-text phone cards were visually reviewed. Source and desktop assets match at SHA256 `19BDFBBD407F60F53C96B5E8845AD3AA313F94DBE6BF2CA34A33E6272ACAFCA8`; syntax and scoped diff-format checks pass.
+
+- [Planting review on desktop](garden-planting-review-1280.png)
+- [Planting review on a phone](garden-planting-review-320.png)
+- [Expanded relationship cards on desktop](garden-preview-pairs-expanded-1280.png)
+- [Collapsed relationship cards on a phone](garden-preview-pairs-320.png)
+- [Expanded relationship cards on a phone](garden-preview-pairs-expanded-320.png)
+- [Larger-text relationship cards](garden-preview-pairs-readable-320.png)
+- [Full regression results](tests-preview-pairs.log)
+- [Relationship browser verification](preview-pairs-results.json)
+- [Existing placement browser regression](browser-preview-pairs-placement.log)
+
+Run the focused browser checks with: node dev-tools/companion_planting_preview_pairs_qa.cjs.
+## An illustrated growth journey in the crop inspector — September 19
+
+The live crop inspector now includes a compact five-stage journey: Seed, Sprout, Leaves, Develop, and Mature. A warm gold card and explicit Now marker identify the current stage, earlier milestones have check marks, and later stages use muted illustrative portraits. The current portrait reads the inspected crop's actual growth and health; the other portraits are explicitly described as illustrations rather than saved history. Switching plots immediately updates identity, stage, and guidance.
+
+The guide follows accumulated modeled growth rather than elapsed calendar days. It shows the next maturity threshold and explains winter dormancy. Maturity remains capped at 99% until the exact requirement is reached. A fully grown crop with health at or below 20 is labeled as needing health above 20 before harvest; readiness uses the shared harvest rule. Habitat structures and missing growth records do not receive a crop-stage journey. Annual harvest removes the cleared crop's inspector, while perennial harvest displays the actual saved regrowth stage.
+
+The active portrait has a single 400ms arrival animation, with no repeating artwork animation or added timers. Both the operating-system and in-app reduced-motion preferences suppress it. A five-column strip fits at 320px, including larger-text mode. Semantic ordered stages, an explicit current-step label, and forced-color outlines preserve the meaning without relying on color. Garden simulation, seed costs, care effects, and harvest rules are unchanged.
+
+Validation: **177 tests verified across nine suites**. The full run passed 176 tests; one pre-existing weed-feedback check hit its five-second timeout and passed unchanged on a focused rerun in 343ms. Two new behavioral tests cover live portraits, exact transitions, crop browsing, unchanged garden state, winter dormancy, full maturity, health-gated readiness, and habitat exclusion. The new browser suite checks the precise boundaries for all 31 crops and three structures, mobile and larger-text containment, keyboard browsing, accessibility, finite animation, both reduced-motion settings, real day progression, watering, annual harvest clearing, and perennial regrowth.
+
+The existing selection browser regression passes desktop and phone focus round trips, persistent selection, bounded locate animation, night and maximized scenes, reduced motion, preview cancellation, and cleanup. Its stale preview fixture was corrected to use a known crop on an empty bed in planning mode; new assertions also verify that occupied-bed and missing-crop previews do not suppress selection. No production selection logic changed. Both browser suites report no page errors or scoped accessibility violations.
+
+The full desktop inspector and larger-text phone journey were visually reviewed. Source and desktop assets match at SHA256 `FDC15342D5696FED7D5BED62F58EF265060F1FC3173820EDA76B191B7E934E4D`; syntax and scoped diff-format checks pass.
+
+- [Crop inspector on desktop](garden-growth-inspector-1280.png)
+- [Crop inspector on a phone](garden-growth-inspector-320.png)
+- [Growth journey on desktop](garden-growth-journey-1280.png)
+- [Growth journey on a phone](garden-growth-journey-320.png)
+- [Larger-text growth journey](garden-growth-journey-readable-320.png)
+- [Mature crop that needs care](garden-growth-mature-care-320.png)
+- [Harvest-ready crop](garden-growth-ready-320.png)
+- [Winter guidance](garden-growth-winter-320.png)
+- [Full regression results](tests-growth-journey.log)
+- [Unchanged timeout rerun](tests-growth-journey-rerun.log)
+- [Focused growth tests](tests-growth-journey-focused.log)
+- [Growth journey browser verification](growth-journey-results.json)
+- [Selection browser regression](browser-growth-journey-selection.log)
+
+Run the focused browser checks with: node dev-tools/companion_planting_growth_journey_qa.cjs.
+## Contextual care inside the crop inspector — September 19
+
+The crop inspector now includes a compact Care check with an illustrated tool, a specific recommendation, the action's garden-wide scope, and an exact before-and-after preview. Dry soil suggests watering, high plot pests suggest weeding, and low nitrogen suggests compost only for crops that consume nitrogen. After each action, the inspector updates to the next relevant need and shows the recorded garden-care result.
+
+The new buttons reuse the existing water, weed, and compost actions. Moisture changes across the garden; weeding affects every planted plot; compost changes shared nitrogen, phosphorus, potassium, and organic matter. Health, maturity, funds, selection, and the day remain unchanged. The text distinguishes these immediate condition changes from crop recovery. Wet soil receives drainage guidance, and same-day compost reuse remains disabled with an explanation.
+
+The check is available while growing and excludes habitat structures. Planning and staged previews do not expose these care actions. Nitrogen-fixing crops do not receive heavy-feeder advice, and older care receipts disappear when the day changes. Healthy crops receive a calm observation message or harvest guidance; low-health crops retain a recovery reminder with links already available below for companion and root inspection.
+
+Keyboard activation returns focus to the updated care section so the next recommendation and recorded result remain in context. The card uses a full-width action button on phones, supports larger text and forced colors, and keeps its illustrations still. The existing garden care animations continue through the shared actions; no new timers or care rules were added.
+Validation: **179 tests verified across nine suites**. The full run passed 177 tests; two existing preview/navigation checks exceeded their five-second limits. Both affected suites passed unchanged on a rerun (six tests). The two new behavior tests verify action sequencing, exact shared effects, unchanged crop health and maturity, preserved day and funds, compost reuse, planning and preview protection, habitat exclusion, drainage, and harvest guidance.
+
+The new browser suite checks real keyboard-triggered water, weed, and compost actions, focus return to the updated care check, exact recorded effects, all 31 crops' nitrogen roles, three habitat structures, care thresholds, stale receipt removal, 320px and larger-text layouts, 44px buttons, forced-color focus, stationary evidence, and cleanup. The existing tending browser regression also passes shared action previews, bounded nutrient effects, receipts, time and budget preservation, day transitions, legacy saves, keyboard interaction, and both motion preferences. Both browser suites report no page errors or scoped accessibility violations.
+
+The larger-text phone action card, full desktop inspector, and phone recovery/result state were visually reviewed. Source and desktop assets match at SHA256 `EC526B7DEEF57287F5FB6BF2CD6497360124415E11C88591CDB2DAE61F3D9389`; syntax and scoped diff-format checks pass.
+
+- [Care inside the desktop inspector](garden-crop-care-inspector-1280.png)
+- [Care inside the phone inspector](garden-crop-care-inspector-320.png)
+- [Desktop care recommendation](garden-crop-care-1280.png)
+- [Larger-text phone care card](garden-crop-care-readable-320.png)
+- [After watering](garden-crop-care-after-water-320.png)
+- [After weeding](garden-crop-care-after-weed-320.png)
+- [After composting](garden-crop-care-after-compost-320.png)
+- [Compost already used today](garden-crop-care-compost-used-320.png)
+- [Drainage guidance](garden-crop-care-drain-320.png)
+- [Full regression results](tests-crop-care.log)
+- [Unchanged timing reruns](tests-crop-care-rerun.log)
+- [Focused care tests](tests-crop-care-focused.log)
+- [Inspector care browser verification](crop-care-results.json)
+- [Existing tending browser regression](browser-crop-care-tending.log)
+
+Run the focused browser checks with: node dev-tools/companion_planting_crop_care_qa.cjs.
+## Live condition gauges behind crop care — September 19
+
+The inspector's Care check now shows shared soil moisture, pests on the selected plot, and shared soil nitrogen together. Each compact gauge includes its current numeric reading, its scope, a text status, and a shaded model care range where applicable. Multiple needs remain visible even while the card recommends one action. Watering clears only the moisture warning; weeding and compost update their own readings while leaving unrelated needs visible.
+
+Moisture uses the existing 30–90% care range, pests flag growth slowdown above 30, and nitrogen flags values below 15 only for crops with a negative nitrogen effect. Nitrogen-fixing and neutral crops receive a Not limiting this crop label without a misleading nitrogen care range. Missing, non-finite, or negative readings are explicitly Not recorded and do not create a zero-valued meter. Older numeric values above 100 remain intact, with the meter's maximum extended to contain them.
+
+Gauges preserve exact numeric values for assistive technology, with scope and thresholds in their descriptions. Visible values follow the existing one-decimal formatting. Text warnings accompany amber styling, and forced-color mode retains range outlines. Value changes use a bounded 350ms transition; both in-app and operating-system reduced-motion preferences disable transitions. The layout remains three columns at 320px, including larger text. Existing care priorities, action effects, and harvest rules are unchanged; no new timers were added. Invalid measurements cannot drive a recommendation, while other known needs can still take priority. When measurements are missing and no known condition takes priority, the recommendation explicitly acknowledges incomplete data instead of reporting no urgent care signal.
+Validation: **181 tests verified across nine suites**, including two new behavioral tests for simultaneous care needs, independent updates after real tending actions, exact boundaries, selected-crop nitrogen roles, and unknown readings. The initial full run passed five suites; 12 checks in three other suites exceeded the five-second limit, and the experiment worker failed to start. Gameplay and refinement reruns passed all 138 checks. Separate-process workers then passed all 14 persistence and experiment checks after thread-worker startup failures. These reruns used a command-only 30-second test limit; repository test settings and assertions were unchanged. Four focused care checks also passed after the final incomplete-data guard, including invalid values and preserving recommendations for other known needs.
+
+The new browser suite verifies all three readings through real keyboard-triggered water, weed, and compost actions, unchanged health/maturity/day/funds, focus return, exact thresholds, all 31 crop nitrogen roles, three habitat exclusions, unknown and legacy-high readings, planning guards, 320px and larger-text containment, forced-color range outlines, and bounded transitions under both motion preferences. The existing crop-care browser regression also passes the action sequence, exact receipts, 44px controls, compost reuse, saturated soil, habitat exclusion, stale receipt removal, and cleanup. Both suites report no page errors or scoped accessibility violations. The reduced-motion check accounts for the application's global 0.01ms duration rule while explicitly verifying transition-property is none.
+
+The full desktop inspector, larger-text phone readings, after-watering state, and final missing-pest-data state were visually reviewed. Source and desktop assets match at SHA256 `476567546AE4CB6D35DE98D90E879341C40F433E78FD07D6782AF15A9D472148`; syntax and scoped diff-format checks pass.
+
+- [Desktop inspector with live readings](garden-care-readings-inspector-1280.png)
+- [Phone inspector with live readings](garden-care-readings-inspector-320.png)
+- [Care readings on desktop](garden-care-readings-1280.png)
+- [Larger-text readings on a phone](garden-care-readings-readable-320.png)
+- [Moisture resolved; other needs remain](garden-care-readings-after-water-320.png)
+- [After weeding](garden-care-readings-after-weed-320.png)
+- [After composting](garden-care-readings-after-compost-320.png)
+- [Nitrogen-fixing crop](garden-care-readings-fixer-320.png)
+- [Explicitly unknown pest reading](garden-care-readings-unknown-320.png)
+- [Full regression results](tests-care-readings.log)
+- [Gameplay and refinement rerun](tests-care-readings-rerun.log)
+- [Persistence and experiment worker rerun](tests-care-readings-worker-rerun.log)
+- [Final focused care verification](tests-care-readings-final-focused.log)
+- [Gauge browser verification](care-readings-results.json)
+- [Existing crop-care browser regression](browser-care-readings-crop-care.log)
+
+Run the focused browser checks with: node dev-tools/companion_planting_care_readings_qa.cjs.
+
+## Choose the next bed from the harvest summary — September 19
+
+The harvest summary now includes an optional, initially collapsed map of the current 16-bed garden. Players can choose a specific open bed for their next planting while seeing the crops and habitat structures that remain in place. Current botanical portraits show regrowing perennials and the condition of standing crops. Numbered positions preserve the garden's four-column arrangement, and a count distinguishes available and planted beds.
+
+Choosing a bed opens crop selection for that exact plot, clears the prior crop selection, and moves keyboard focus to the planting dock. Preview and confirmation still happen before seed funds are spent. Reading the map leaves the entire garden state unchanged; routing preserves funds, day, crops, harvest totals, history, and recorded rewards. Occupied beds cannot be selected, and both the map and quick-replant action protect a planting preview already in progress. Gardens filled with perennial crops retain the existing Keep growing action without an unnecessary chooser.
+
+The map uses a native keyboard-operable disclosure, full crop and row/column labels for assistive technology, and controls at least 44px in both dimensions. It remains four columns at 320px with either text-size setting. Long crop labels use ellipses on narrow screens, with full names retained in hover titles and accessible labels; available beds keep a short, untruncated Open label. Focus remains visible in forced colors. A bounded 180ms hover transition gives available beds a small lift, and both operating-system and in-app reduced-motion preferences suppress it. Crop illustrations remain still. Action spacing keeps the existing quick-replant and history buttons distinct from the expanded map.
+
+Validation: **95 tests passed across the affected gameplay and preview suites**, including two new behavioral tests for the live map, exact chosen-bed routing, preserved state and rewards, occupied-bed protection, and staged-preview protection. The full-perennial test also verifies that the chooser is absent. This pass ran the affected suites with separate-process workers and a command-only 30-second test limit; it did not rerun all companion-planting suites. Repository test settings remain unchanged.
+
+The new browser suite passes an actual harvest, desktop and 320px layouts, standard and larger text, native disclosure and keyboard navigation, exact seed-cost confirmation, occupied and staged-preview guards, current occupancy changes, full perennial gardens, forced colors, both reduced-motion preferences, and cleanup. Previously seen reflection prompts are represented in the fixture so unrelated delayed prompts cannot mutate the baseline state. The existing harvest-summary browser regression also passes its receipt, history, disclosure, legacy-data, replanting, and perennial scenarios. Both browser suites report no page errors or scoped accessibility violations.
+
+The final full desktop receipt and larger-text phone map were visually reviewed. Source and desktop assets match at SHA256 `8F850C74EECD4073B753C166A31DE3B59AD9208A64067515815112D61E54FC51`; syntax and scoped diff-format checks pass.
+
+- [Full desktop harvest summary](harvest-replant-receipt-1280.png)
+- [Full phone harvest summary](harvest-replant-receipt-320.png)
+- [Desktop garden map](harvest-replant-map-1280.png)
+- [Phone garden map](harvest-replant-map-320.png)
+- [Larger-text phone map](harvest-replant-readable-320.png)
+- [Initially collapsed summary](harvest-replant-collapsed-1280.png)
+- [Planting preview protection](harvest-replant-preview-guard-320.png)
+- [Gameplay and preview test results](tests-replant-picker.log)
+- [Garden map browser verification](replant-picker-results.json)
+- [Existing harvest-summary regression](browser-replant-picker-receipt.log)
+
+Run the focused browser checks with: node dev-tools/companion_planting_replant_picker_qa.cjs.
+
+## Illustrated companion effects inside the crop inspector — September 19
+
+The crop inspector's companion section now shows each neighboring crop as a botanical portrait at its actual growth stage and health. Every relationship card includes the crop name, plot number, signed modeled growth effect, the existing explanation, a small three-by-three position marker, and an explicit Inspect crop action. The outlined center marks the selected crop; the filled square and direction label locate the neighbor. Full accessible labels include the crop, effect, explanation, direction, row, and column.
+
+A compact contribution summary separates helpful and conflicting pair counts and their exact totals, alongside the existing net effect. For example, five helpful pairs contributing +58% and three conflicting pairs contributing -45% explain a +13% net result. Contributions update from the live grid. Existing conflict-first ordering remains intact; four cards show initially, and the native disclosure identifies any additional conflicts among hidden cards. Selecting a different crop resets the disclosure. Corners do not wrap across rows, unmodeled pairs stay absent, and habitat inspectors omit this crop-only section.
+
+Cards remain two columns on desktop and one column on phones. Larger text covers explanations, plot labels, direction labels, action labels, and contribution counts. Color is supported by explicit support/conflict text and signed numbers. Keyboard focus is visible in forced colors, and all card/disclosure targets are at least 44px tall. Portraits use a bounded 180ms hover lift; operating-system and in-app reduced-motion preferences suppress it. Botanical stage animations remain disabled within these evidence cards. Inspecting a neighbor reuses the existing focus handoff and preserves plantings, funds, time, phase, and recorded harvest rewards.
+
+Validation: **97 tests passed across the affected gameplay and preview suites**, including two new behavior tests for exact mixed contributions, all eight directions, current portrait stages and health, navigation state preservation, hidden conflict counts, live occupancy changes, corner adjacency, and absent/unmodeled/habitat selections. This pass ran the affected suites with separate-process workers and a command-only 30-second test limit; the full companion-planting test set was not rerun. Repository test settings remain unchanged.
+
+The new browser suite passes desktop and 320px layouts, four/eight-card disclosure states, standard and larger text, current portraits, direction markers, exact values, keyboard inspection, return-to-crop disclosure reset, changing neighbors, all-conflict and corner gardens, empty pairs, habitat and invalid selections, forced colors, hover motion, both reduced-motion settings, and cleanup. The existing garden-selection browser regression also passes inspector return focus, selected-crop tracking, locate animation timing and cancellation, valid preview priority, phone/night/maximized views, and canvas cleanup. Both suites report no page errors or scoped accessibility violations.
+
+The desktop cards, final larger-text phone section, and expanded desktop relationships were visually reviewed. Source and desktop assets match at SHA256 `528C5570D7388A95F8D3119453E6F2026EA05919174E6B2F5F1FBD02C3CDBA89`; syntax and scoped diff-format checks pass.
+
+- [Desktop companion cards](garden-inspector-pairs-1280.png)
+- [Full desktop crop inspector](garden-inspector-companions-1280.png)
+- [Phone companion cards](garden-inspector-pairs-320.png)
+- [Larger-text phone section](garden-inspector-pairs-readable-320.png)
+- [All desktop relationships](garden-inspector-pairs-expanded-1280.png)
+- [All phone relationships](garden-inspector-pairs-expanded-320.png)
+- [Additional conflicts remain discoverable](garden-inspector-pairs-conflicts-320.png)
+- [Gameplay and preview test results](tests-inspector-pairs.log)
+- [Illustrated inspector browser verification](inspector-pairs-results.json)
+- [Existing selection browser regression](browser-inspector-pairs-selection.log)
+
+Run the focused browser checks with: node dev-tools/companion_planting_inspector_pairs_qa.cjs.
+
+## Illustrated seasonal outlook in the garden controls — September 20
+
+The main garden controls now include an initially collapsed Season outlook. Its summary names the next season and the exact number of simulated days until it starts. Opening the outlook reveals four original SVG landscapes in the living garden's palette: spring blossoms, summer sun and flowers, autumn foliage, and a bare winter tree with snow. The current season has a Now badge and an accessible current-step marker. A day-position bar connects the current day to the season's 30-day length.
+
+The outlook explains the next transition using the existing simulation rules. Summer has faster growth and moisture loss; autumn slows both; winter pauses crop growth while annual beds remain planted until the year boundary. In winter, live counts separate annual beds that clear, perennial beds that remain, and retained habitat structures. The note explains the existing reduction of up to 10 accumulated growth days for perennials at the new year. Counts describe the current grid and update when its contents change. Empty gardens omit the outlook; habitat-only gardens show accurate zero-crop counts.
+
+The disclosure is passive: opening it or reading through the seasonal information never changes garden state, spends funds, advances time, or cancels a staged planting preview. Four cards fit across desktop controls and form a two-column layout at 320px. Larger text includes seasonal descriptions, progress labels, and carryover counts. Current-season and keyboard-focus outlines remain visible in forced colors. The day-position bar transitions over 350ms, with both operating-system and in-app reduced-motion preferences suppressing the transition. Landscape art remains still, and no new animation loop or timer was added.
+
+Validation: **100 tests passed across the affected gameplay and preview suites**, including three new behavior tests for all season boundaries, exact countdowns and day positions, actual year rollover, annual/perennial/habitat counts, staged-preview preservation, and empty or habitat-only gardens. The run used separate-process workers and a command-only 30-second test limit. Repository test settings were unchanged; the full companion-planting suite set was not rerun.
+
+The new browser suite passes desktop and 320px layouts, native keyboard disclosure, unchanged saved state, all seasonal boundaries, larger text, forced colors, a 44px disclosure target, progress motion and both motion preferences, staged-preview protection, a real autumn-to-winter advance, and a real year transition with the existing perennial growth adjustment. The existing day-recap browser regression also passes immutable saved reports, forecast alignment, crop inspection, year-reset explanations, replanting from cleared beds, pending-preview protection, restored reports, and legacy missing data. Both browser suites report no page errors or scoped accessibility violations.
+
+The full desktop controls and larger-text phone outlook were visually reviewed. Source and desktop assets match at SHA256 `5581D3180DBE01E703D05883BAE825D4189E984847712D7C9CE9F1F6E70C5D03`; syntax and scoped diff-format checks pass.
+
+- [Desktop garden controls with outlook](garden-season-controls-1280.png)
+- [Desktop season outlook](garden-season-outlook-1280.png)
+- [Phone season outlook](garden-season-outlook-320.png)
+- [Larger-text phone outlook](garden-season-readable-320.png)
+- [Initially collapsed controls](garden-season-collapsed-1280.png)
+- [Spring](garden-season-spring-320.png)
+- [Summer](garden-season-summer-320.png)
+- [Autumn](garden-season-autumn-320.png)
+- [Winter before the year change](garden-season-winter-320.png)
+- [After the actual year transition](garden-season-new-year-320.png)
+- [Gameplay and preview results](tests-season-outlook.log)
+- [Season outlook browser verification](season-outlook-results.json)
+- [Existing day-recap regression](browser-season-outlook-day-recap.log)
+
+Run the focused browser checks with: node dev-tools/companion_planting_season_outlook_qa.cjs.
+## Illustrated planting life cycles — September 20
+
+All 34 planting-dock seed packets now carry a compact Annual, Perennial, or Habitat label derived from the simulation's actual harvest rules. Exact trait searches for annual, perennial, and habitat select the matching modeled group. Searching preserves the chosen plot, staged preview, funds, time, and planted garden. Shelf guidance and accessible packet names explain that the classifications describe this lab.
+
+An initially collapsed life-cycle disclosure in each planting preview illustrates the outcome before purchase. Annual crops lead to an open bed and a new paid planting; perennials stay planted, reset accumulated growth, and retain their health and pests. Habitat structures have one placement portrait and no harvest stage. The copy explains maturity and health eligibility, winter growth pauses, and the existing year-boundary rules. Selecting a different crop resets the disclosure. Static botanical portraits reuse the garden's artwork without introducing another animation loop.
+
+Validation: **104 tests passed across the affected gameplay and preview suites**, including four new tests for trait search, unchanged staged state, annual clearing, perennial regrowth, purchase costs, habitat presentation, and blocked unaffordable purchases. The full companion-planting suite set was not rerun. Syntax and scoped diff-format checks pass.
+
+The new lifecycle browser suite and existing seed-browser regression pass. Checks include all catalog classifications, desktop and 320px containment, larger text, native keyboard disclosure, forced colors, preserved state, unchanged purchase confirmation, and actual annual/perennial harvests. Both report no page errors or scoped accessibility violations. The caption contrast was improved after the audit. Lifecycle portraits remain static; the seed-browser regression also verifies both reduced-motion preferences. After screenshot capture, the lifecycle audit centers the disclosure in the viewport so the existing sticky navigation does not cover its target.
+
+The desktop perennial panel, full larger-text phone preview, desktop seed shelf, and final phone habitat panel were visually reviewed. Source and desktop assets match at SHA256 `3B19B5AAA3295EF6DA5EA783B786B1F1598231C95426A6589BF3A5364CF47C77`.
+
+- [Desktop perennial life cycle](garden-life-cycle-perennial-1280.png)
+- [Complete desktop preview](garden-life-cycle-preview-1280.png)
+- [Complete larger-text phone preview](garden-life-cycle-preview-320.png)
+- [Phone perennial regrowth](garden-life-cycle-perennial-320.png)
+- [Phone habitat structure](garden-life-cycle-habitat-320.png)
+- [Labeled seed shelf](garden-life-cycle-seeds-1280.png)
+- [Gameplay and preview tests](life-cycle-tests.log)
+- [Lifecycle browser verification](life-cycle-results.json)
+- [Existing seed-browser regression](browser-life-cycle-seeds.log)
+
+Run the focused browser checks with: node dev-tools/companion_planting_life_cycle_qa.cjs.

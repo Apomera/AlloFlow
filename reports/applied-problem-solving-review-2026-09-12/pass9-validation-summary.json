@@ -1,0 +1,31 @@
+{
+  "date": "2026-09-19",
+  "passed": 184,
+  "suites": 15,
+  "browserStates": 10,
+  "pageErrors": 0,
+  "axeViolations": 0,
+  "horizontalOverflow": 0,
+  "mirrors": [
+    {
+      "file": "applied_challenge_module.js",
+      "matches": true
+    },
+    {
+      "file": "studio_response_module.js",
+      "matches": true
+    },
+    {
+      "file": "doc_pipeline_module.js",
+      "matches": true
+    },
+    {
+      "file": "ui_strings.js",
+      "matches": true
+    }
+  ],
+  "liveAi": false,
+  "liveSearch": false,
+  "learnerSessions": 0,
+  "deployed": false
+}

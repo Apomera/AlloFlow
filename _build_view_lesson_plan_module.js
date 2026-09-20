@@ -69,6 +69,6 @@ const moduleSrc = `/**
 })();
 `;
 
-fs.writeFileSync('view_lesson_plan_module.js', moduleSrc);
-fs.writeFileSync('desktop/web-app/public/view_lesson_plan_module.js', moduleSrc);
+require('./dev-tools/write_generated_atomic.cjs')('view_lesson_plan_module.js', moduleSrc);
+require('./dev-tools/write_generated_atomic.cjs')('desktop/web-app/public/view_lesson_plan_module.js', moduleSrc);
 console.log('Wrote view_lesson_plan_module.js (' + moduleSrc.length + ' bytes)');

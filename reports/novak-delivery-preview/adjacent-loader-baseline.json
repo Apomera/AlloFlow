@@ -1,0 +1,8 @@
+{
+  "module": "view_live_session_dock_module.js",
+  "expectedPin": "view_live_session_dock_module.js?v=817d5b74",
+  "beforePin": "view_live_session_dock_module.js?v=ed7f26f4",
+  "currentPin": "view_live_session_dock_module.js?v=ed7f26f4",
+  "beforeAlreadyMismatched": true,
+  "scope": "Unchanged live-dock pin was already inconsistent before this task; not related to ShareSessionSurfaces/SharedActivity changes."
+}

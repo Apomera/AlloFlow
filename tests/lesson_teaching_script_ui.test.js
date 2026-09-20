@@ -196,7 +196,7 @@ describe('lesson-aware teaching-script UI', () => {
     expect(host.textContent).toContain('This plan changed; keep your draft.');
     expect(field('Teacher says').value).toContain('Use the number line');
     expect(JSON.stringify(p.generatedContent)).toBe(before);
-    click('Discard edits');
+    click('Discard edits'); click('Discard changes');
     expect(host.textContent).toContain('Place one half on our shared number line. Explain how the equal spaces help you choose its position.');
   });
   it('commits accepted edits through the host and selects newly attached versions', async () => {
@@ -525,15 +525,16 @@ describe('lesson-plan mounting', () => {
     expect(host.textContent).toContain('Compare fraction models');
     expect(host.textContent).not.toContain('[object Object]');
     act(() => root.render(React.createElement(PlanView, { ...p, isEditingLessonPlan: true })));
-    const material = host.querySelector('textarea[aria-label="Edit material 1"]');
+    const material = field('Material 1');
     expect(material.value).toBe('Fraction strips');
     act(() => {
       Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set.call(material, 'Paper fraction bars');
       material.dispatchEvent(new Event('input', { bubbles: true }));
     });
-    expect(update).toHaveBeenCalledWith('materialsNeeded', { en: 'Paper fraction bars', es: 'Tiras de fracciones' }, 0);
+    expect(update).toHaveBeenCalledWith('materialsNeeded', expect.any(Function), 0);
+    expect(update.mock.calls[0][1](resource.data.materialsNeeded[0])).toEqual({ en: 'Paper fraction bars', es: 'Tiras de fracciones' });
     expect(resource.data.materialsNeeded[0].en).toBe('Fraction strips');
-    expect(host.querySelector('textarea[aria-label="Edit objective 2"]').value).toBe('Compare fraction models');
+    expect(field('Objective 2').value).toBe('Compare fraction models');
   });
   it('does not show loading controls when the feature is not teacher-authorized', () => {
     window.AlloModules.LessonTeachingScriptView=null;

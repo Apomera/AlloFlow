@@ -16,7 +16,8 @@
       }
     ],
     "reviewStatus": "AI content and structural checks; educator review pending",
-    "imageStatus": "planned-not-generated"
+    "imageStatus": "planned-not-generated",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Same Digits, Different Values — Decimals",
   "history": [
@@ -220,16 +221,16 @@
         "mode": "list",
         "items": [
           {
-            "text": "I notice ____. This matters because ____."
+            "text": "I wrote ____ as ____ so the places line up."
           },
           {
-            "text": "I compared ____ with ____. They differ because ____."
+            "text": "In the ____ place, ____ is greater than ____."
           },
           {
-            "text": "My evidence is ____. It supports ____."
+            "text": "Both models use the same whole: ____."
           },
           {
-            "text": "At first I thought ____. Now I think ____ because ____."
+            "text": "More decimal digits do not always mean more because ____."
           }
         ],
         "rubric": "| Look for | Check |\n|---|---|\n| Names the idea | Uses a lesson word correctly |\n| Gives support | Points to an observation or worked example |"
@@ -361,7 +362,7 @@
               "Each place to the right has a unit one tenth as large."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "aiExample": "Say this cue: NAME THE PLACE. Then explain: One tenth is ten hundredths.",
             "mapping": "The cue connects the key idea to a specific example: Each place to the right has a unit one tenth as large.",
             "scaffoldStarter": "My cue is ____. It helps me remember ____.",
@@ -387,7 +388,7 @@
               "Trailing zeros in the fractional part do not change value."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "aiExample": "Picture this: Keep the whole and unit the same. Compare from greatest place to least. Use the picture to explain the idea.",
             "mapping": "The cue connects the key idea to a specific example: Trailing zeros in the fractional part do not change value.",
             "scaffoldStarter": "My cue is ____. It helps me remember ____.",
@@ -471,13 +472,13 @@
           ],
           "deliverable": "Give the order, explain two neighboring comparisons, and correct the claim that more decimal digits always means longer.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {
-            "context": "A classmate checks a related claim from this lesson.",
-            "move": "They use the lesson rule: Each place to the right has a unit one tenth as large. They record an example, then check whether it supports the claim.",
-            "whyItHelps": "A clear example helps another person check the reasoning instead of trusting a guess."
+            "context": "Two jugs hold 0.4 L and 0.35 L.",
+            "move": "Write 0.4 as 0.40. Compare 40 hundredths with 35 hundredths of the same liter. Explain why the extra zero did not add any liquid.",
+            "whyItHelps": "Matching units and places lets you compare values instead of counting digits. Use that method for the ribbons."
           },
           "frameStarter": "Our evidence is ____. It supports ____. A limit is ____.",
           "frameChoices": [

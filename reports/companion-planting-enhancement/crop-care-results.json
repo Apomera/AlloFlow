@@ -1,0 +1,32 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "overflow": false,
+      "clipped": false,
+      "targets": true
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "clipped": false,
+      "targets": true
+    }
+  ],
+  "assertions": [
+    "Care follows the inspected crop, with correct shared scope and exact predicted effects",
+    "Real water, weed, and compost actions preserve health, maturity, day, funds, and selection",
+    "Keyboard focus returns to the updated recommendation and reports the recorded garden effect",
+    "Wet soil, same-day compost, preview/planning, habitat, stale receipts, and nitrogen-fixing crops remain correctly guarded",
+    "All species and exact care thresholds are covered",
+    "Desktop, 320px, larger text, 44px buttons, forced-color focus, stationary evidence, accessibility, and cleanup pass"
+  ],
+  "errors": [],
+  "accessibility": [],
+  "rules": {
+    "crops": 31,
+    "structures": 3,
+    "thresholds": true,
+    "previewGuard": true
+  }
+}

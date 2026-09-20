@@ -1,0 +1,27 @@
+const fs=require('fs'),path=require('path');let s=fs.readFileSync(path.join(__dirname,'refinement-browser-qa.cjs'),'utf8');
+function replace(a,b){if(!s.includes(a))throw Error('Missing browser anchor: '+a.slice(0,80));s=s.replace(a,b);}
+s=s.replaceAll("'refinement-", "'pass2-");
+replace("await audit('recall-390',true);", `await audit('recall-390',true);
+  const baseline=JSON.parse(fs.readFileSync(path.join(out,'pass2-baseline.json'),'utf8'));
+  const responseTop=await page.getByRole('textbox',{name:/Recall response for/}).evaluate(el=>Math.round(el.getBoundingClientRect().top+scrollY));
+  result.mobileRecall={width:390,before:baseline.responseTop,after:responseTop,pixelsEarlier:baseline.responseTop-responseTop};assert(result.mobileRecall.pixelsEarlier>=100,'Mobile recall should remove at least 100 px of repeated heading space');`);
+replace("await audit('recall-320',true);", `await audit('recall-320',true);
+  await page.getByRole('textbox',{name:/Recall response for/}).fill('Keep these first thoughts.');
+  await page.getByRole('radio',{name:'Respond another way (no transcript saved)',exact:true}).check();
+  await page.getByRole('radio',{name:'Write what I remember',exact:true}).check();
+  assert.equal(await page.getByRole('textbox',{name:/Recall response for/}).inputValue(),'Keep these first thoughts.');
+  await page.getByRole('button',{name:'Show my cue',exact:true}).click();
+  assert.equal(await page.evaluate(()=>document.activeElement.getAttribute('aria-label')),'Your memory cue');
+  assert.equal(await page.getByRole('textbox',{name:/Recall response for/}).inputValue(),'Keep these first thoughts.');
+  await audit('cue-rescue-320',true);result.checks.push('Response-mode switches and requesting a cue retain writing; cue receives keyboard focus.');`);
+replace("await page.getByRole('button',{name:'Continue my application and plan',exact:true}).click();await page.getByText('Use it in a new situation',{exact:true}).click();", `await page.getByRole('button',{name:'Continue my application and plan',exact:true}).click();
+  assert(await page.locator('[data-memory-application]').evaluate(el=>el.open));
+  assert.equal(await page.evaluate(()=>document.activeElement.textContent),'Use it in a new situation');
+  await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.getAttribute('aria-label')),'Your explanation');
+  result.checks.push('Resume automatically opens the application and puts its explanation next in keyboard order.');`);
+replace("await audit('resumed-320');", "await audit('resumed-320',true);");
+replace("await audit('application-320',true);", `await audit('application-320',true);
+  assert.equal(await page.evaluate(()=>window.AlloModules.MemoryAid._testing.loadMemoryAidPrivatePractice('resource:ux-review-fixture',window.fixture.data.cards,'memory-ux-review-only').solid[0].supportMode),'cue');
+  result.checks.push('A recall that requested help is privately recorded as with a cue.');`);
+replace("{states:result.states.length,checks:result.checks,errors:result.errors}","{states:result.states.length,mobileRecall:result.mobileRecall,checks:result.checks,errors:result.errors}");
+fs.writeFileSync(path.join(__dirname,'pass2-browser-qa.cjs'),s);console.log('Created the second-pass browser interaction audit.');

@@ -1,0 +1,36 @@
+{
+  "date": "2026-09-19",
+  "passed": 120,
+  "files": [
+    {
+      "file": "instructional_text_downstream.test.js",
+      "passed": 6
+    },
+    {
+      "file": "lesson_plan_exports.test.js",
+      "passed": 11
+    },
+    {
+      "file": "map_planning_continuation.test.js",
+      "passed": 52
+    },
+    {
+      "file": "planning_context_resilience.test.js",
+      "passed": 22
+    },
+    {
+      "file": "planning_input_comparison.test.js",
+      "passed": 29
+    }
+  ],
+  "browserCases": 15,
+  "axeViolations": 0,
+  "browserErrors": 0,
+  "healthyParityCases": 11,
+  "hashes": {
+    "utils_pure_module.js": "ab0c57af0913c4b936b43143796aa8d238d8003c2ba502389e6a9577d340591f",
+    "view_lesson_plan_module.js": "856c4e73206881f4501e5d002b5f2085cf667959c2ab1abdcc884b5044a97a4d",
+    "export_handlers_module.js": "36e3ef507cc97971a735c8cffa27278367ab1d332ef9a63f6cb12fcbd51b14a3"
+  },
+  "whitespace": "passed"
+}

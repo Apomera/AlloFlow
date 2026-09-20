@@ -145,26 +145,18 @@
   },
   {
     "resourceId": "th-outline",
-    "path": "data.branches.2.items.0",
-    "from": "What changes between the beginning and the end",
-    "to": "Changes and choices"
-  },
-  {
-    "resourceId": "th-outline",
-    "path": "data.branches.2.items.1",
-    "from": "What a character chooses when the choice costs something",
-    "to": "Repeated objects or phrases"
-  },
-  {
-    "resourceId": "th-outline",
-    "path": "data.branches.2.items.2",
-    "from": "What repeats: an image, an object, a phrase",
-    "to": "Setting, dialogue and ending"
-  },
-  {
-    "resourceId": "th-outline",
-    "path": "data.branches.2.items.3",
-    "from": "What the ending withholds or refuses to resolve"
+    "path": "data.branches.2.items",
+    "from": [
+      "What changes between the beginning and the end",
+      "What a character chooses when the choice costs something",
+      "What repeats: an image, an object, a phrase",
+      "What the ending withholds or refuses to resolve"
+    ],
+    "to": [
+      "Changes and choices",
+      "Repeated objects or phrases",
+      "Setting, dialogue and ending"
+    ]
   },
   {
     "resourceId": "th-outline",
@@ -402,6 +394,12 @@
   },
   {
     "resourceId": "th-memory",
+    "path": "data.cards.0.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "th-memory",
     "path": "data.cards.0.aiExample",
     "from": "Say your statement out loud and then say \"...and I disagree.\" If that sounds absurd, you wrote a topic. Nobody can disagree with \"loyalty.\" Somebody can absolutely disagree with the claim that loyalty to a person can put you at odds with what is right.",
     "to": "Topic: belonging. Possible theme for The Key on the Table: belonging can continue while relationships change."
@@ -489,6 +487,12 @@
     "path": "data.cards.1.essentialFacts.3",
     "from": "What the ending withholds.",
     "to": "Consider what is resolved or unsettled."
+  },
+  {
+    "resourceId": "th-memory",
+    "path": "data.cards.1.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "th-memory",
@@ -650,19 +654,31 @@
     "resourceId": "th-quiz",
     "path": "data.questions.0.options.0",
     "from": "The cost of loyalty in a family under pressure",
-    "to": "The cost of loyalty in a family"
+    "to": "Loyalty to family can conflict with doing what is right"
+  },
+  {
+    "resourceId": "th-quiz",
+    "path": "data.questions.0.options.1",
+    "from": "Loyalty to a person can conflict with doing what is right",
+    "to": "The cost of family loyalty in a time of change"
   },
   {
     "resourceId": "th-quiz",
     "path": "data.questions.0.options.2",
     "from": "Loyalty, family, and the choices they force",
-    "to": "Loyalty and family"
+    "to": "The topic of family loyalty and personal choices"
   },
   {
     "resourceId": "th-quiz",
     "path": "data.questions.0.options.3",
     "from": "Always stay loyal to your family no matter what",
-    "to": "Always obey your family"
+    "to": "Always obey your family, whatever the situation"
+  },
+  {
+    "resourceId": "th-quiz",
+    "path": "data.questions.0.correctAnswer",
+    "from": "Loyalty to a person can conflict with doing what is right",
+    "to": "Loyalty to family can conflict with doing what is right"
   },
   {
     "resourceId": "th-quiz",
@@ -758,31 +774,31 @@
     "resourceId": "th-quiz",
     "path": "data.questions.3.options.0",
     "from": "The first line of the story",
-    "to": "The story has four numbered paragraphs"
+    "to": "The story is divided into four numbered paragraphs"
   },
   {
     "resourceId": "th-quiz",
     "path": "data.questions.3.options.1",
     "from": "A choice the character makes with nothing at stake",
-    "to": "Leila accepts the key but does not promise to settle every disagreement"
+    "to": "Leila keeps the key but sets limits on her role"
   },
   {
     "resourceId": "th-quiz",
     "path": "data.questions.3.options.2",
     "from": "A choice the character makes when it costs them something",
-    "to": "A suitcase can be carried"
+    "to": "The suitcase is an object that Leila can carry"
   },
   {
     "resourceId": "th-quiz",
     "path": "data.questions.3.options.3",
     "from": "The number of pages the story runs",
-    "to": "The door is open"
+    "to": "The open door is part of the setting of the visit"
   },
   {
     "resourceId": "th-quiz",
     "path": "data.questions.3.correctAnswer",
     "from": "A choice the character makes when it costs them something",
-    "to": "Leila accepts the key but does not promise to settle every disagreement"
+    "to": "Leila keeps the key but sets limits on her role"
   },
   {
     "resourceId": "th-quiz",
@@ -794,31 +810,31 @@
     "resourceId": "th-quiz",
     "path": "data.questions.4.options.0",
     "from": "That it is longer than one sentence",
-    "to": "Considering a detail that complicates it"
+    "to": "Study a detail that challenges your reading"
   },
   {
     "resourceId": "th-quiz",
     "path": "data.questions.4.options.1",
     "from": "That it rests on a single line and ignores the rest",
-    "to": "Using evidence from multiple parts"
+    "to": "Use evidence from several parts of the text"
   },
   {
     "resourceId": "th-quiz",
     "path": "data.questions.4.options.2",
     "from": "That other careful readers disagree with it",
-    "to": "Ignoring important events that conflict with the statement"
+    "to": "Ignore key events that conflict with your claim"
   },
   {
     "resourceId": "th-quiz",
     "path": "data.questions.4.options.3",
     "from": "That it is about an uncomfortable subject",
-    "to": "Revising after rereading"
+    "to": "Revise your claim after checking the text again"
   },
   {
     "resourceId": "th-quiz",
     "path": "data.questions.4.correctAnswer",
     "from": "That it rests on a single line and ignores the rest",
-    "to": "Ignoring important events that conflict with the statement"
+    "to": "Ignore key events that conflict with your claim"
   },
   {
     "resourceId": "th-quiz",
@@ -830,31 +846,31 @@
     "resourceId": "th-quiz",
     "path": "data.questions.5.options.0",
     "from": "What happens plus which part you liked best",
-    "to": "Your favorite moment and rating"
+    "to": "A brief account centered on your favorite moment and rating"
   },
   {
     "resourceId": "th-quiz",
     "path": "data.questions.5.options.1",
     "from": "Your argument about what the text means",
-    "to": "Only a theme statement"
+    "to": "A theme claim without the events that develop it"
   },
   {
     "resourceId": "th-quiz",
     "path": "data.questions.5.options.2",
     "from": "The theme statement and its evidence",
-    "to": "Every small action in the story"
+    "to": "A full list of every small action and descriptive detail"
   },
   {
     "resourceId": "th-quiz",
     "path": "data.questions.5.options.3",
     "from": "What happens, in order, in your own words",
-    "to": "A concise, accurate account of Leila’s visit, changed response and continuing connection"
+    "to": "A brief account of Leila’s visit, changed response and ongoing bond"
   },
   {
     "resourceId": "th-quiz",
     "path": "data.questions.5.correctAnswer",
     "from": "What happens, in order, in your own words",
-    "to": "A concise, accurate account of Leila’s visit, changed response and continuing connection"
+    "to": "A brief account of Leila’s visit, changed response and ongoing bond"
   },
   {
     "resourceId": "th-quiz",
@@ -969,6 +985,12 @@
     "path": "data.brief.constraints.0",
     "from": "One sentence for the theme statement, no semicolons",
     "to": "One clear sentence for the theme statement"
+  },
+  {
+    "resourceId": "th-challenge",
+    "path": "data.brief.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "th-challenge",

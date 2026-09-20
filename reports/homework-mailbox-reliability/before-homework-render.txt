@@ -1,0 +1,65 @@
+      {qrShareModal && (
+        <div className="fixed inset-0 bg-slate-950/80 z-[151] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="alloflow-homework-qr-title" aria-describedby="alloflow-homework-qr-description" onClick={() => setQrShareModal(null)}>
+          <HomeworkQrDialogView
+        __alloDisplayName="Homework QR"
+        __alloOverlay={false}
+        __alloOnClose={() => setQrShareModal(null)}
+        {...{
+        BookOpen, ClipboardList, Copy, ExternalLink, Printer, Share2, SharedAssignmentActivityPanel, Trash2,
+        X, addToast, copyToClipboard, createSelfContainedHomeworkLink, homeworkQrDialogRef, hostPackOnMailbox, mbBusy, mbConfig,
+        printQrSheet, qrShareError, qrShareModal, qrShareSvg, revokeHomeworkAssignment, setQrShareModal, t, testHomeworkAsStudent
+        }}
+      />
+        </div>
+      )}
+      {showSessionStartOptions && (
+        <div ref={sessionStartOptionsRef} className="fixed inset-0 bg-black/70 z-[152] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label={t('session.start_dialog_aria') || 'Teach live'} onClick={() => setShowSessionStartOptions(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowSessionStartOptions(false)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
+            <h2 className="text-xl font-black text-slate-900 mb-1">{t('share_collect.start_live_session') || 'Teach live'}</h2>
+            <p className="text-xs text-slate-600 mb-3">{t('share_collect.prepare_the_lesson_flow_if_you') || 'Prepare the lesson flow if you want, then choose how student devices will connect.'}</p>
+            <button onClick={() => { setShowSessionStartOptions(false); setShowLiveLessonPrep(true); }} className="w-full mb-4 text-left rounded-xl border-2 border-cyan-200 bg-cyan-50 p-3 hover:border-cyan-400 hover:bg-cyan-100 transition-colors">
+              <span className="block text-sm font-black text-cyan-950">{t('share_collect.prepare_live_run') || 'Prepare live lesson'} <span className="text-[10px] uppercase tracking-wide text-cyan-700">optional</span></span>
+              <span className="block text-xs text-cyan-800 mt-1">{t('share_collect.attach_private_presenter_cues_and_existing') || 'Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.'}</span>
+            </button>
+            <div className="space-y-3">
+              <button onClick={() => { setShowSessionStartOptions(false); startClassSession(); }} className="w-full text-left rounded-xl border-2 border-indigo-200 bg-indigo-50 p-4 hover:border-indigo-400 hover:bg-indigo-100 transition-colors">
+                <span className="block text-sm font-black text-indigo-900">{t('mailbox.standard_live_session') || 'Standard live session'}</span>
+                <span className="block text-xs text-indigo-800 mt-1">{t('mailbox.use_the_configured_firebase_district_or') || 'Use the configured Firebase, district, or local-network session backend.'}</span>
+              </button>
+              <button onClick={() => { setShowSessionStartOptions(false); setMbPanelOpen(true); }} className="w-full text-left rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4 hover:border-emerald-400 hover:bg-emerald-100 transition-colors">
+                <span className="block text-sm font-black text-emerald-900">{t('mailbox.class_mailbox_qr_session') || 'Class Mailbox QR session'}</span>
+                <span className="block text-xs text-emerald-800 mt-1">{t('mailbox.students_scan_a_qr_and_join') || 'Students scan a QR and join without accounts through your Google Apps Script mailbox.'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showLiveLessonPrep && (
+        <div ref={liveLessonPrepRef} className="fixed inset-0 bg-black/70 z-[153] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="alloflow-live-prep-title" aria-describedby="alloflow-live-prep-description" onClick={() => setShowLiveLessonPrep(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-5 max-w-lg w-full relative text-left max-h-[92vh] overflow-y-auto" onClick={event => event.stopPropagation()}>
+            <button onClick={() => setShowLiveLessonPrep(false)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
+            <h2 id="alloflow-live-prep-title" className="text-xl font-black text-slate-900 pr-10">{t('mailbox.prepare_live_run') || 'Prepare live lesson'}</h2>
+            <p id="alloflow-live-prep-description" className="text-xs text-slate-600 mt-1 mb-4">{t('mailbox.choose_a_lesson_step_then_add') || 'Choose a lesson step, then add teacher-only cues or an optional checkpoint. Preparation is stored only on this browser and students receive nothing until you launch it in a live session.'}</p>
+            {window.AlloModules && window.AlloModules.LiveLessonRun && window.AlloModules.LiveLessonRun.LiveLessonRunPanel
+              ? React.createElement(window.AlloModules.LiveLessonRun.LiveLessonRunPanel, {
+                  history: getFilteredHistory(),
+                  getStudentSafeResources: _alloStudentSafeResources,
+                  currentItemId: generatedContent && generatedContent.id,
+                  activeUnitLabel: activeUnitId === 'all'
+                    ? (t('history.all_units') || 'All resources')
+                    : activeUnitId === 'uncategorized'
+                      ? (t('history.uncategorized') || 'Uncategorized')
+                      : (((Array.isArray(units) ? units : []).find(unit => unit.id === activeUnitId) || {}).name || (t('common.unit') || 'Unit')),
+                  getTitle: item => String(item.title || item.label || getDefaultTitle(item.type)),
+                  getIcon: getIconForType,
+                  presenterCuesByResourceId: livePresenterCuesByResourceId,
+                  onChangePresenterCue: updateLivePresenterCue,
+                  preparationOnly: true,
+                  t,
+                })
+              : <p role="status" className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">{t('mailbox.loading_lesson_preparation_tools') || 'Loading lesson preparation tools...'}</p>}
+            <button onClick={() => { setShowLiveLessonPrep(false); setShowSessionStartOptions(true); }} className="w-full mt-4 rounded-xl bg-cyan-700 hover:bg-cyan-800 text-white px-4 py-3 text-sm font-black">{t('mailbox.done_choose_connection') || 'Done - choose connection'}</button>
+          </div>
+        </div>
+      )}

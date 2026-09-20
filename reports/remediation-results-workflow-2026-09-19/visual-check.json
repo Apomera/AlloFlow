@@ -1,0 +1,30 @@
+{
+  "checks": [
+    {
+      "width": 1280,
+      "theme": "light",
+      "overflow": 0,
+      "axeViolations": 0
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "overflow": 0,
+      "axeViolations": 0
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "overflow": 0,
+      "axeViolations": 0
+    },
+    {
+      "width": 320,
+      "theme": "contrast",
+      "overflow": 0,
+      "axeViolations": 0
+    }
+  ],
+  "exportViolations": 0,
+  "pageErrors": []
+}

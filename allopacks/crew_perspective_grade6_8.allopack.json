@@ -8,7 +8,8 @@
     "gradeLevel": "6th-8th Grade",
     "createdAt": "2026-09-13T18:00:00.000Z",
     "imageShotList": "allopacks/crew_perspective_grade6_8.IMAGES.md",
-    "standards": "King Middle School HOWL Respect (work cooperatively with others); CASEL Social Awareness (taking others' perspectives; recognizing situational demands); CASEL Relationship Skills (communicating effectively; resolving conflicts constructively); EL Education Crew (Crew Launch: community and belonging); Maine DOE PBIS Tier 1 (teaching perspective-taking as an expected behavior)"
+    "standards": "King Middle School HOWL Respect (work cooperatively with others); CASEL Social Awareness (taking others' perspectives; recognizing situational demands); CASEL Relationship Skills (communicating effectively; resolving conflicts constructively); EL Education Crew (Crew Launch: community and belonging); Maine DOE PBIS Tier 1 (teaching perspective-taking as an expected behavior)",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Perspective-taking before judgment",
   "history": [
@@ -48,7 +49,7 @@
       "title": "Two Sides of One Story",
       "timestamp": "2026-09-13T18:00:00.000Z",
       "data": "## Two Sides of One Story\n\n**HOWL: \"I am a respectful member of the King community.\"**\n\nHere is something that happens in every middle school every day. Someone does a small thing, and someone else decides what it meant. A classmate walks past your table without saying hi. A group chat goes quiet after you post. A partner in science takes the good beaker without asking. In each case, your brain writes a **story** in about half a second: they are mad at me, they think I am annoying, they do not care.\n\nThe story feels like a **fact**. It is not. It is a guess, made fast, with almost no information. Psychologists call the pattern an **attribution**: deciding why someone did something. The trouble is that we usually attribute other people's actions to who they are (\"she is rude\") and our own to the situation (\"I was in a hurry\"). That gap is where most **Crew** conflicts start.\n\nHere is a moment from a fictional Crew. Dev posts a photo of his science model in the Crew chat. Three people react. Priya, who usually reacts to everything, does not. By the next morning Dev has decided that Priya thinks his model is bad, and he does not sit near her. Priya has no idea why. Her phone had been taken away the night before. Two people spent a day being cold to each other over a story that one of them made up.\n\nThe fix is not to stop having stories. You cannot. The fix is to notice the story, hold it loosely, and ask. \"Hey, everything okay this morning?\" costs five seconds. It would have saved Dev a day. In the **Perspective** Lens tool this week you will practice a **viewpoint swap**: taking the same moment and telling it from the other person's side, with the details you actually have and the ones you filled in.\n\nWorking **cooperatively** is a Respect behavior in the King **HOWLs**, and it depends on this skill more than on anything else. Groups do not fall apart because people disagree. They fall apart because people decide what a disagreement meant before they check. A Crew where people ask before they decide can survive almost any **misunderstanding**.\n\nOne more thing. Sometimes you ask, and the answer is that the person really was upset with you. That is not a failure. Now you know, and you can do something about it. A story you made up cannot be fixed. A real problem can.",
-      "meta": "6th-8th Grade • Leveled reading • ~420 words"
+      "meta": "6th-8th Grade • Leveled reading"
     },
     {
       "id": "cp-glossary",
@@ -427,7 +428,7 @@
               "Ask one open question."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "sequence-cue",
             "mode": "scaffolded",
             "aiExample": "Notice, Hold, Ask: N-H-A, like \"Nah.\" When the story shows up, say \"nah\" to it in your head, then ask.",
@@ -456,7 +457,7 @@
               "We usually explain our own actions by the situation."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "keyword-association",
             "mode": "scaffolded",
             "aiExample": "THEM = trait, ME = moment. \"She is rude\" versus \"I was rushing.\" Same behavior, two different explanations.",
@@ -530,7 +531,7 @@
           ],
           "deliverable": "A half-page record with four parts: my side, their side (facts only), the question I asked, what I found out.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

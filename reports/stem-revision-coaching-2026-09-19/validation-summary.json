@@ -1,0 +1,12 @@
+{
+  "testsPassed": 66,
+  "finalRecoveryTestsPassed": 15,
+  "browserWorkflowsPassed": 6,
+  "checkedPanelAccessibilityViolations": 0,
+  "mobileWidths": [
+    375,
+    320
+  ],
+  "sourceMirrorParity": true,
+  "syntaxAndScopedDiffChecks": "passed"
+}

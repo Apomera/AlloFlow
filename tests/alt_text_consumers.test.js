@@ -167,3 +167,21 @@ describe('exports', () => {
     expect(scan(exportHtml([memoryAid], true)).highCount).toBe(0);
   });
 });
+
+describe('saved glossary alt text in exports', () => {
+  it.each(['table', 'flash-cards', 'language-cards'])('preserves descriptions and ignores stale/decorative descriptions in %s', mode => {
+    const description = 'Green leaf veins show "branching" & <connections>.';
+    const glossary = { id: 'g-described', type: 'glossary', data: [
+      { term: 'Leaf', def: 'A plant part.', image: PNG, imageAlt: description, imageAltHash: window.AlloModules.AltText.hashImage(PNG), translations: { French: 'Feuille' } },
+      { term: 'Old picture', def: 'A plant part.', image: PNG, imageAlt: 'An outdated description.', imageAltHash: 'stale-hash' },
+      { term: 'Decorative', def: 'A plant part.', image: PNG, imageAlt: 'Not announced.', imageDecorative: true },
+    ] };
+    const html = pipeline.generateFullPackHTML([glossary], 'Alt text', false, {}, { includeTeacherKey: false, annotations: [], glossaryDisplayMode: mode });
+    const images = imgs(html).filter(img => img.getAttribute('src') === PNG);
+    expect(images.map(img => img.getAttribute('alt'))).toEqual([description, '', '']);
+    expect(images[0].hasAttribute('role')).toBe(false);
+    expect(images[1].getAttribute('role')).toBe('presentation');
+    expect(images[2].getAttribute('role')).toBe('presentation');
+    expect(html).toContain(mode === 'table' ? 'gloss-img-cell' : 'alloflow-glossary-card-front');
+  });
+});

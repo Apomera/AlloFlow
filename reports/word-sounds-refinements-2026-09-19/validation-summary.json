@@ -1,0 +1,9 @@
+{
+  "uniqueTests": 617,
+  "passed": 617,
+  "files": 56,
+  "newBehaviorTests": 14,
+  "initialReproduction": "Seven new lifecycle tests failed before the fix and passed afterward.",
+  "validation": "Full run plus targeted reruns after repairing two new test assumptions and stale host-code/color expectations.",
+  "runtimeMirror": "byte-identical"
+}

@@ -1,0 +1,8 @@
+    const _hostedSubmitShare = (recentQrShares || []).filter(share => share?.type === 'assignment-pack-hosted'
+        && share.packId && share.packSecret && !share.revokedAt
+        && (!share.expiresAt || Date.parse(share.expiresAt) > Date.now()))
+        .sort((a, b) => ((Date.parse(b?.createdAt || '') || 0) - (Date.parse(a?.createdAt || '') || 0)))[0] || null;
+    const _mailboxSubmitTarget = (mbConfig?.url && _hostedSubmitShare)
+        ? { url: mbConfig.url, id: _hostedSubmitShare.packId, k: _hostedSubmitShare.packSecret,
+            ...(_hostedSubmitShare.expiresAt ? { expiresAt: _hostedSubmitShare.expiresAt } : {}) }
+        : null;

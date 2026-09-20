@@ -1,0 +1,30 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "collapsed": 2,
+      "expanded": 8,
+      "overflow": false,
+      "clipped": false,
+      "keyboardDisclosure": true
+    },
+    {
+      "width": 320,
+      "collapsed": 2,
+      "expanded": 8,
+      "overflow": false,
+      "clipped": false,
+      "keyboardDisclosure": true
+    }
+  ],
+  "assertions": [
+    "Exact modeled relationships use the staged crop identity, include diagonals, and exclude distant beds",
+    "Conflicts appear first and the disclosure names additional hidden conflicts",
+    "Each neighbor shows its current stage, health, signed effect, and model explanation",
+    "Reading or expanding pair evidence preserves the complete staged garden state",
+    "Neighbor changes, cancellation, real confirmation, insufficient funds, and empty habitat previews remain correct",
+    "Desktop, 320px, larger text, keyboard disclosure, still artwork, forced-color focus, accessibility, and cleanup pass"
+  ],
+  "errors": [],
+  "accessibility": []
+}

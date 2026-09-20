@@ -1,0 +1,32 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "columns": 4,
+      "rows": 4,
+      "targets": true,
+      "overflow": false,
+      "clipped": false,
+      "keyboardDisclosure": true
+    },
+    {
+      "width": 320,
+      "columns": 4,
+      "rows": 4,
+      "targets": true,
+      "overflow": false,
+      "clipped": false,
+      "keyboardDisclosure": true
+    }
+  ],
+  "assertions": [
+    "Real harvest maps show all 16 current beds, including regrowing perennials, habitat, and stressed standing crops",
+    "Only open beds are selectable; opening the map preserves the entire garden state",
+    "A chosen non-first bed leads to preview then exact-cost confirmation without repeated harvest rewards",
+    "Both replant routes protect an active preview and update when occupancy changes",
+    "Full perennial gardens stay in the growing loop without a bed chooser",
+    "Four-column desktop/phone maps, 44px targets, larger text, keyboard focus, forced colors, both motion preferences, accessibility, and cleanup pass"
+  ],
+  "errors": [],
+  "accessibility": []
+}

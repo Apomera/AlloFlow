@@ -1,0 +1,56 @@
+{
+  "pass": 32,
+  "title": "Illustrated workshop header",
+  "status": "complete",
+  "published": false,
+  "sourceSha256": "da279824e91e3beb3528ecc4c90b05d0159616e33a94b3ee66fb2f8f192f75c2",
+  "changes": [
+    "Move station information above the 3D view to keep the model unobstructed",
+    "Add matching machine schematic badges",
+    "Increase observation text to 12px with 1.5 line height and larger metric typography",
+    "Use theme colors and responsive two-column phone layout"
+  ],
+  "tests": {
+    "passed": 255,
+    "report": "pass32-tests.json",
+    "note": "Presentation change; existing view, camera, accessibility and translation suites run. Final responsive override verified in real browsers."
+  },
+  "browser": {
+    "layoutReports": [
+      "pass32-light-layout/results.json",
+      "pass32-dark-layout/results.json",
+      "pass32-contrast-layout/results.json"
+    ],
+    "widths": [
+      1150,
+      720,
+      600,
+      390,
+      320
+    ],
+    "allSixStationsAtEveryWidth": true,
+    "layoutChecks": 108,
+    "layoutScreenshots": 30,
+    "playbackChecks": 30,
+    "playbackReport": "pass32-playback-diagnostic/results.json",
+    "errors": 0,
+    "clipping": false,
+    "horizontalOverflow": false,
+    "visuallyReviewed": [
+      "pass32-light/held-lever.png",
+      "pass32-light/header-720.png",
+      "pass32-light-layout/header-windlass-320.png",
+      "pass32-dark-layout/header-screw-1150.png",
+      "pass32-contrast-layout/header-windlass-390.png"
+    ]
+  },
+  "verification": {
+    "mirrorIdentical": true,
+    "syntax": true
+  },
+  "resolvedIssues": [
+    "Desktop inline columns initially overrode the mobile grid; corrected the responsive override and verified all six stations at five widths in three themes.",
+    "Some broad playback attempts timed out. The complete diagnostic rerun passed on final source; no root cause was established for the earlier timeouts."
+  ],
+  "pending": null
+}

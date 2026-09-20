@@ -1,0 +1,52 @@
+{
+  "date": "2026-09-19",
+  "feature": "Guided endpoint investigation for HCl/NaOH with phenolphthalein",
+  "tests": {
+    "passed": 129,
+    "suites": 6,
+    "files": [
+      "titration_immersive_bench.test.js",
+      "titration_investigation.test.js",
+      "titration_visual_motion_v3.test.js",
+      "titration_all_tabs_named.test.js",
+      "titration_focus_relationships.test.js",
+      "titration_trace_window.test.js"
+    ],
+    "passedAcrossTargetedRuns": true,
+    "singleFullRunClean": false,
+    "reports": [
+      "titration-investigation-tests.json",
+      "titration-investigation-worker-recheck.json"
+    ],
+    "runnerNotes": "Initial concurrent run had two 30-second test timeouts. They passed on rerun. That rerun hit three worker-startup failures; all 27 tests in those three files passed with the forks pool. No unresolved assertion failures remain."
+  },
+  "browser": {
+    "scans": 37,
+    "guide": 28,
+    "existingBench": 9,
+    "automatedColorContrastScans": 35,
+    "forcedColorScans": 2,
+    "pageErrors": [],
+    "reports": [
+      "titration-investigation-browser-results.json",
+      "titration-trace-browser-results.json"
+    ]
+  },
+  "visualReview": [
+    "titration-investigation-comparison-1200.jpg",
+    "titration-investigation-complete-320.jpg",
+    "titration-investigation-forced-colors-320.jpg"
+  ],
+  "sourceChecks": {
+    "syntax": true,
+    "sourcePublicMatch": true,
+    "englishKeys": 65,
+    "fallbacksMatch": true,
+    "scopedDiffCheck": true
+  },
+  "sourceSha256": "8a2bf54d410143a54c7b90bb46971edd8abf1a914f1654b7bddeb9e9253f699f",
+  "newEnglishKeys": 65,
+  "translationsPending": true,
+  "physicalClassroomPilot": false,
+  "deployed": false
+}

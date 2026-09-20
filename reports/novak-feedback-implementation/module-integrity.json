@@ -1,0 +1,99 @@
+{
+  "modules": [
+    {
+      "file": "instructional_context_module.js",
+      "hash": "07659151",
+      "mirrored": true
+    },
+    {
+      "file": "firestore_sync_module.js",
+      "hash": "3d311dab",
+      "mirrored": true
+    },
+    {
+      "file": "generate_dispatcher_module.js",
+      "hash": "a36c4b59",
+      "mirrored": true
+    },
+    {
+      "file": "generation_helpers_module.js",
+      "hash": "5a030780",
+      "mirrored": true
+    },
+    {
+      "file": "content_engine_module.js",
+      "hash": "33b7cb35",
+      "mirrored": true
+    },
+    {
+      "file": "host_handlers_module.js",
+      "hash": "d62a4d61",
+      "mirrored": true
+    },
+    {
+      "file": "view_simplified_module.js",
+      "hash": "b73b1f53",
+      "mirrored": true
+    },
+    {
+      "file": "view_analysis_module.js",
+      "hash": "c457193f",
+      "mirrored": true
+    },
+    {
+      "file": "view_sidebar_panels_module.js",
+      "hash": "1c5e0c9a",
+      "mirrored": true
+    },
+    {
+      "file": "session_transport_module.js",
+      "hash": "51e1ef84",
+      "mirrored": true
+    },
+    {
+      "file": "view_history_panel_module.js",
+      "hash": "b42ac552",
+      "mirrored": true
+    },
+    {
+      "file": "live_aac_module.js",
+      "hash": "6974389f",
+      "mirrored": true
+    },
+    {
+      "file": "export_module.js",
+      "hash": "353f20df",
+      "mirrored": true
+    },
+    {
+      "file": "export_handlers_module.js",
+      "hash": "cebd8aa7",
+      "mirrored": true
+    },
+    {
+      "file": "view_export_preview_module.js",
+      "hash": "c0dc128a",
+      "mirrored": true
+    },
+    {
+      "file": "doc_pipeline_module.js",
+      "hash": "72896407",
+      "mirrored": true
+    }
+  ],
+  "syntaxChecked": [
+    "AlloFlowANTI.txt",
+    "desktop/web-app/src/AlloFlowANTI.txt",
+    "desktop/web-app/src/App.jsx"
+  ],
+  "parity": [
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "equalApartFromLoaderMode": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "equalApartFromLoaderMode": true
+    }
+  ]
+}

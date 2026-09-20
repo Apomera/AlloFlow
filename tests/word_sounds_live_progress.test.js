@@ -80,7 +80,7 @@ describe('Tier-1 allowlist + write-path source pins (AlloFlowANTI.txt)', () => {
   });
 
   it('student self-open honors the saved lesson-plan sequence', () => {
-    expect(anti).toMatch(/const initialActivity = sequence\[0\] \|\| 'counting';/);
+    expect(anti).toContain("initialActivity = (sequence && sequence.length > 0) ? sequence[0] : 'counting';");
     expect(anti).toMatch(/setWordSoundsActivity\(initialActivity\)/);
   });
 });

@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "fdee2c119c1e0dc50e478557fb841c17429cac246c9399112ac8ec625ac42770",
+    "bytes": 325
+  },
+  "candidate": {
+    "sha256": "fdee2c119c1e0dc50e478557fb841c17429cac246c9399112ac8ec625ac42770",
+    "bytes": 325
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 16755.99840000001,
+  "status": "unavailable",
+  "coverage": {
+    "requested": 1,
+    "inspected": 0,
+    "complete": false,
+    "wholeDocument": false,
+    "reasons": [
+      "incomplete-checkpoint"
+    ]
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "p",
+      "sourceSelector": "#p",
+      "candidateSelector": "#p",
+      "status": "unavailable",
+      "properties": [
+        {
+          "property": "href",
+          "status": "unavailable",
+          "source": null,
+          "candidate": null
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

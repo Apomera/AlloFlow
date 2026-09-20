@@ -14,7 +14,7 @@ describe('Calculus Lab main tabs accessibility', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     expect(source).toContain(`role: 'tablist', 'aria-label': __alloT('stem.calculus.a11y_calculus_tool_sections', 'Calculus Tool sections')`);
     expect(source).toContain("CALCULUS_TABS.map(function(item, tabIndex){");
-    expect(source).toContain("['derivHunt','\\u2753 Inquiry']");
+    expect(source).toContain("['derivHunt',__alloT('stem.calculus.tab_explore_derivatives','Explore derivatives')]");
     expect(source).toContain("id:'calculus-tab-'+item[0]");
     expect(source).toContain("'aria-controls':'calculus-panel-'+item[0]");
     expect(source).toContain("tabIndex:tab===item[0]?0:-1");

@@ -1,0 +1,15 @@
+{
+  "passed": 93,
+  "failed": 0,
+  "files": [
+    "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/lesson_plan_refinement.test.js",
+    "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/lesson_script_spoken_ui.test.js",
+    "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/lesson_teaching_script_recovery.test.js",
+    "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/lesson_teaching_script_ui.test.js"
+  ],
+  "browserWidths": [
+    1280,
+    320
+  ],
+  "browserErrors": 0
+}

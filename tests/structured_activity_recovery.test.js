@@ -164,3 +164,23 @@ describe('structured activity validation boundaries', () => {
     expect(fs.readFileSync('desktop/web-app/public/generate_dispatcher_module.js', 'utf8')).toBe(built);
   });
 });
+
+
+describe('Activity automatic retry ownership', () => {
+  it('marks exhausted shape repair with the actual attempts', async () => {
+    const h = recoveryHarness(['{"title":"Incomplete"}', '{"title":"Still incomplete"}']);
+    await expect(h.generate('Build discussion', normalize, '', discussionRequirements)).rejects.toMatchObject({
+      code: 'STRUCTURED_ACTIVITY_INVALID', structuredActivityAttempts: 2, automaticRecoveryExhausted: true,
+    });
+    expect(h.callGemini).toHaveBeenCalledTimes(2);
+  });
+  it('preserves a frozen provider error and its classification after recovery is exhausted', async () => {
+    const providerError = Object.freeze(Object.assign(new Error('503 service unavailable'), { status: 503, code: 'SERVICE_UNAVAILABLE' }));
+    const h = recoveryHarness([providerError, providerError]);
+    await expect(h.generate('Build discussion', normalize, '', discussionRequirements)).rejects.toMatchObject({
+      status: 503, code: 'SERVICE_UNAVAILABLE', automaticRecoveryExhausted: true, structuredActivityAttempts: 2, cause: providerError,
+    });
+    expect(providerError).not.toHaveProperty('automaticRecoveryExhausted');
+    expect(h.callGemini).toHaveBeenCalledTimes(2);
+  });
+});

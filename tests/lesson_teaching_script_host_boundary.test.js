@@ -172,3 +172,14 @@ describe('teaching-script default settings come from the saved plan',()=>{
     expect(defaults).toMatchObject({grade:'',gradeSource:'none',standard:'',language:'Spanish',languageSource:'workspace',subject:'reading'});
   });
 });
+
+describe('explicit version removal',()=>{
+ it('retains four generated versions, removes only a confirmed version and its audio, and rejects stale confirmation',async()=>{
+  const h=setup();for(let i=0;i<4;i++)expect((await h.controller.generate('p',settings())).ok).toBe(true);
+  const versions=h.get().history[0].data.teachingScripts;expect(versions).toHaveLength(4);const chosen=structuredClone(versions[0]);
+  h.set(s=>({...s,history:s.history.map(p=>p.id==='p'?{...p,lessonScriptAudio:{[versions[0].id]:{clip:'a'},[versions[1].id]:{clip:'b'}}}:p)}));
+  expect(h.controller.deleteVersion('p',chosen.id,{...chosen,title:'stale'}).ok).toBe(false);
+  expect(h.controller.deleteVersion('p',chosen.id,chosen).ok).toBe(true);expect(h.get().history[0].data.teachingScripts).toHaveLength(3);expect(h.get().history[0].lessonScriptAudio).toEqual({[versions[1].id]:{clip:'b'}});
+  h.set(s=>({...s,isParentMode:true}));expect(h.controller.deleteVersion('p',versions[1].id,versions[1]).ok).toBe(false);
+ });
+});

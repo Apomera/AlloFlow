@@ -1,0 +1,17 @@
+function _alloReadMailboxEntryParam(name) {
+    if (typeof window === 'undefined') return null;
+    try {
+        const search = new URLSearchParams(window.location.search || '');
+        let encoded = search.get(name) || '';
+        if (!encoded && window.location.hash && window.location.hash.length > 1) {
+            encoded = new URLSearchParams(window.location.hash.replace(/^#/, '')).get(name) || '';
+        }
+        if (!encoded) return null;
+        const parsed = JSON.parse(_alloBase64UrlDecode(encoded) || 'null');
+        const execUrl = _alloCleanMailboxUrl(parsed && parsed.u);
+        if (!execUrl) return null;
+        return { ...parsed, u: execUrl };
+    } catch (_) {
+        return null;
+    }
+}

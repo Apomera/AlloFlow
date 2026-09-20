@@ -261,7 +261,7 @@ describe('remediation ownership and lifecycle regressions', () => {
 
   it('retires terminal progress and stamps log/heartbeat events with ownership', () => {
     expect(pipeline).toContain("runId: _logRunId, documentEpoch: _logDocumentEpoch");
-    expect(pipeline).toContain("detail: { ts: ts, tag: 'Throttle'");
+    expect(pipeline).toContain("detail: { ts: ts, tag: recovering ? 'Throttle' : 'Queue'");
     expect(pipeline).toContain('documentEpoch: documentEpoch');
     expect(pipeline).toContain('if (_activeRemediationProgress && _activeRemediationProgress.runId === _runId) _activeRemediationProgress = null;');
     expect(pipeline).toContain('window.__alloActivePdfRemediation = null;');

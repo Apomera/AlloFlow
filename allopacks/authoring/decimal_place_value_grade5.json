@@ -198,5 +198,16 @@
     "Each place to the right has a unit one tenth as large.",
     "Trailing zeros in the fractional part do not change value.",
     "Compare numbers using the same unit and whole."
-  ]
+  ],
+  "frames": [
+    "I wrote ____ as ____ so the places line up.",
+    "In the ____ place, ____ is greater than ____.",
+    "Both models use the same whole: ____.",
+    "More decimal digits do not always mean more because ____."
+  ],
+  "parallelExample": {
+    "context": "Two jugs hold 0.4 L and 0.35 L.",
+    "move": "Write 0.4 as 0.40. Compare 40 hundredths with 35 hundredths of the same liter. Explain why the extra zero did not add any liquid.",
+    "whyItHelps": "Matching units and places lets you compare values instead of counting digits. Use that method for the ribbons."
+  }
 }

@@ -1,0 +1,123 @@
+{
+  "baselineRef": "7e6befa89b51b104862bd1534d7378592d59fa14",
+  "scope": "Actual generated Seating Chart with production React. Helper entry counters measure 100 live-prop updates and 100 real seat-selection clicks; snapshots verify geometry/roster/empty-layout refresh. Synthetic data, no live session or network provider.",
+  "scenarios": [
+    {
+      "seats": 30,
+      "before": {
+        "liveCounts": {
+          "anchorGaps": 100,
+          "listPods": 100,
+          "overlappingSeatIds": 0
+        },
+        "editCounts": {
+          "anchorGaps": 100,
+          "listPods": 0,
+          "overlappingSeatIds": 100
+        },
+        "geometryCounts": {
+          "anchorGaps": 1,
+          "listPods": 0,
+          "overlappingSeatIds": 1
+        },
+        "rosterCounts": {
+          "anchorGaps": 1,
+          "listPods": 1,
+          "overlappingSeatIds": 0
+        },
+        "initialPodCount": 1,
+        "recognitions": [
+          "u1",
+          "u0"
+        ]
+      },
+      "after": {
+        "liveCounts": {
+          "anchorGaps": 0,
+          "listPods": 0,
+          "overlappingSeatIds": 0
+        },
+        "editCounts": {
+          "anchorGaps": 0,
+          "listPods": 0,
+          "overlappingSeatIds": 0
+        },
+        "geometryCounts": {
+          "anchorGaps": 1,
+          "listPods": 0,
+          "overlappingSeatIds": 1
+        },
+        "rosterCounts": {
+          "anchorGaps": 1,
+          "listPods": 1,
+          "overlappingSeatIds": 0
+        },
+        "initialPodCount": 1,
+        "recognitions": [
+          "u1",
+          "u0"
+        ]
+      },
+      "uiAndAccessibleLabelParity": true
+    },
+    {
+      "seats": 60,
+      "before": {
+        "liveCounts": {
+          "anchorGaps": 100,
+          "listPods": 100,
+          "overlappingSeatIds": 0
+        },
+        "editCounts": {
+          "anchorGaps": 100,
+          "listPods": 0,
+          "overlappingSeatIds": 100
+        },
+        "geometryCounts": {
+          "anchorGaps": 1,
+          "listPods": 0,
+          "overlappingSeatIds": 1
+        },
+        "rosterCounts": {
+          "anchorGaps": 1,
+          "listPods": 1,
+          "overlappingSeatIds": 0
+        },
+        "initialPodCount": 1,
+        "recognitions": [
+          "u1",
+          "u0"
+        ]
+      },
+      "after": {
+        "liveCounts": {
+          "anchorGaps": 0,
+          "listPods": 0,
+          "overlappingSeatIds": 0
+        },
+        "editCounts": {
+          "anchorGaps": 0,
+          "listPods": 0,
+          "overlappingSeatIds": 0
+        },
+        "geometryCounts": {
+          "anchorGaps": 1,
+          "listPods": 0,
+          "overlappingSeatIds": 1
+        },
+        "rosterCounts": {
+          "anchorGaps": 1,
+          "listPods": 1,
+          "overlappingSeatIds": 0
+        },
+        "initialPodCount": 1,
+        "recognitions": [
+          "u1",
+          "u0"
+        ]
+      },
+      "uiAndAccessibleLabelParity": true
+    }
+  ],
+  "errors": []
+}

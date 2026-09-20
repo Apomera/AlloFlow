@@ -1,0 +1,53 @@
+{
+  "pass": 38,
+  "title": "Force and distance comparison rulers",
+  "date": "2026-09-19",
+  "changes": [
+    "Comparison charts use solid effort diamonds and open load rings, matching the 3D distance tracks.",
+    "Quarter-scale marks and larger numeric values improve comparison readability.",
+    "Endpoint markers retain the exact bar proportions, including very small values.",
+    "System high-contrast mode preserves the ruler bed, tick marks, and shape distinction."
+  ],
+  "validation": {
+    "uiTests": 228,
+    "uiReport": "pass38-ui-tests.json",
+    "browser": [
+      {
+        "theme": "light",
+        "file": "pass38-light/results.json",
+        "checks": 24,
+        "screenshots": 10,
+        "errors": [],
+        "overflow": false
+      },
+      {
+        "theme": "dark",
+        "file": "pass38-dark/results.json",
+        "checks": 24,
+        "screenshots": 10,
+        "errors": [],
+        "overflow": false
+      },
+      {
+        "theme": "contrast",
+        "file": "pass38-contrast/results.json",
+        "checks": 24,
+        "screenshots": 10,
+        "errors": [],
+        "overflow": false
+      }
+    ],
+    "totalBrowserChecks": 72,
+    "screenshots": 30,
+    "sourceMirrorIdentical": true,
+    "syntax": "passed",
+    "runtimeBrowser": "Chromium"
+  },
+  "reviewedScreenshots": [
+    "pass38-light/comparison-windlass-320.png",
+    "pass38-dark/comparison-screw-tiny.png",
+    "pass38-contrast/comparison-forced-colors.png"
+  ],
+  "sha256": "2cfe36a438c08184309632e6140627b089fdc67aea676f7e6c8755da6c1d622f",
+  "publication": "Local only; no commit, push, or deployment"
+}

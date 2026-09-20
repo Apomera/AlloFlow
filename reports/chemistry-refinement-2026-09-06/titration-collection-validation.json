@@ -1,0 +1,51 @@
+{
+  "date": "2026-09-20T00:12:38.288Z",
+  "success": true,
+  "scope": "Guided saved-observation collection tracker and direct notebook navigation",
+  "source": {
+    "syntax": true,
+    "mirrored": true,
+    "scopedDiffWhitespace": true,
+    "englishFallbacks": 148,
+    "newCollectionKeys": 15,
+    "sha256": "e097a30d4a6c6cb46f987e0def7572819dba14380fce3ceabf37293395b78a22"
+  },
+  "unit": {
+    "passed": 114,
+    "files": [
+      "titration_collection_tracker.test.js",
+      "titration_focus_relationships.test.js",
+      "titration_immersive_bench.test.js",
+      "titration_investigation.test.js",
+      "titration_investigation_report.test.js",
+      "titration_notebook_removal.test.js"
+    ],
+    "report": "titration-collection-tracker-tests.json",
+    "command": "node node_modules/vitest/vitest.mjs run tests/titration_collection_tracker.test.js tests/titration_investigation.test.js tests/titration_investigation_report.test.js tests/titration_notebook_removal.test.js tests/titration_immersive_bench.test.js tests/titration_focus_relationships.test.js --pool=forks --no-isolate --maxWorkers=1 --testTimeout=30000"
+  },
+  "browser": {
+    "scans": 72,
+    "pageErrors": [],
+    "checks": [
+      "Collection tracker distinguishes saved and live observations, excludes old readings, shows missing sides and wide/narrowing gaps, navigates to exact note fields with keyboard focus, preserves evidence during note edits and setup changes, restores after remount and undo, and keeps 3D viewer identity.",
+      "Notebook evidence labels, full-capacity removal, exact undo including notes and guide attribution, paused/other setups, serialized recovery, last removal only, new edits and reused IDs, clear recovery, last row, keyboard focus, plot selection, forced colors and stable 3D viewer pass.",
+      "Prediction diagrams: guide disclosure, keyboard range controls, exact scale changes, boundary and off-scale predictions, saved-state isolation, report preview and static exported diagram pass.",
+      "Report preview and real download preserve saved evidence and notes; keyboard open/close/Escape, other live setups, free exploration, long and hostile text, Unicode truncation, print control/media, invalidation and remount pass.",
+      "Actual additions and shared notebook saves drive all five steps; older notebook data is excluded, notes and practice records persist, and serialized remount restores the completed study.",
+      "Keyboard focus, optional hints, invalid predictions, setup pause/restore, free exploration, cleared/full notebooks, revisiting volume, 3D viewer identity, context-loss fallback, and forced colors pass."
+    ],
+    "report": "titration-collection-browser-results.json",
+    "command": "node reports/chemistry-refinement-2026-09-06/titration-collection-browser.cjs"
+  },
+  "visualReview": [
+    "Desktop wide-gap tracker",
+    "Phone missing-observation tracker"
+  ],
+  "limits": [
+    "Scoped validation rather than the full repository suite.",
+    "Forced-color axe scans exclude the contrast rule; other applicable rules and layout/ARIA checks run.",
+    "Browser emulation, not a physical-device or classroom pilot.",
+    "Other-language translations remain pending.",
+    "Changes are local and not deployed."
+  ]
+}

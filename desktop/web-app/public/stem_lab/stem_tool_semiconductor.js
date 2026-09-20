@@ -110,6 +110,9 @@ window.StemLab = window.StemLab || {
       '.semi-command-drawer,.semi-notebook-preview{border-width:2px!important}',
       '.semi-command-drawer>summary,.semi-notebook-preview>summary{min-height:44px;display:flex;align-items:center}',
       '.semi-snapshot{min-height:44px;border:1px solid rgba(207,250,254,.8)!important;box-shadow:0 10px 24px rgba(8,145,178,.24)!important}',
+      '.semi-mos-comparison{padding:12px 0;border-bottom:1px solid #475569}.semi-mos-comparison table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:13px;margin:12px 0}.semi-mos-comparison caption{text-align:left;color:#f8fafc;font-weight:700;margin-bottom:8px}.semi-mos-comparison th,.semi-mos-comparison td{text-align:left;padding:8px 5px;border-bottom:1px solid #334155;overflow-wrap:anywhere;vertical-align:top}.semi-mos-comparison th{color:#a5f3fc}.semi-mos-comparison td{color:#e2e8f0}',
+      '.semi-crystal .semi-mos-curve svg{cursor:default;max-height:300px}.semi-mos-curve-control{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#f8fafc}.semi-mos-curve-control input{width:100%;min-height:44px;accent-color:#67e8f9}.semi-mos-curve-reading{padding:10px;border-left:3px solid #fff;background:#13263d;color:#fff}.semi-mos-curve-content{padding-top:4px}',
+      '.semi-mos-readout{margin:12px 16px;padding:16px;border:1px solid #475569;border-radius:12px;background:#0b1729;color:#e2e8f0}.semi-mos-readout h5{font-size:16px;color:#f8fafc;margin:0 0 12px}.semi-mos-readout p{font-size:13px;line-height:1.6;margin:8px 0}.semi-mos-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 16px}.semi-mos-metrics>div{border-left:3px solid #67e8f9;padding-left:10px;min-width:0}.semi-mos-metrics dt{font-size:12px;color:#cbd5e1}.semi-mos-metrics dd{font-size:16px;font-weight:700;margin:4px 0;color:#f8fafc;overflow-wrap:anywhere}.semi-mos-metrics small{font-size:12px;line-height:1.5;display:block;color:#cbd5e1}.semi-mos-lane{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:9px 0;border-top:1px solid #334155;font-size:13px}.semi-mos-lane strong{color:#a5f3fc}.semi-mos-lane[data-current] strong{color:#fde68a}.semi-mos-lane b{font-size:20px;margin:0 8px}.semi-mos-readout details{border-top:1px solid #334155;margin-top:12px;padding-top:12px;font-size:13px;line-height:1.6}.semi-mos-readout summary{cursor:pointer;color:#a5f3fc;min-height:28px}.semi-mos-readout a{color:#a5f3fc;text-decoration:underline}.semi-mos-readout .semi-inspector-controls{padding:8px 0 0}.semi-mos-next{border-top:1px solid #334155;margin-top:12px;padding-top:10px}@media(max-width:480px){.semi-mos-readout{margin:10px;padding:12px}.semi-mos-metrics{grid-template-columns:1fr;gap:12px}.semi-mos-metrics dd{display:inline-block;margin-right:8px}.semi-mos-lane{align-items:flex-start;flex-direction:column}}',
       '.semi-crystal{margin:12px 0;border:1px solid #475569;border-radius:14px;background:radial-gradient(ellipse at 50% 35%,#12304a,#07111f 70%);overflow:hidden}.semi-inspector-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 18px}.semi-inspector-heading h4{font-size:20px;margin:4px 0;color:#f8fafc}.semi-eyebrow{font-size:11px;letter-spacing:.12em;color:#67e8f9;font-weight:800}.semi-model-tag{font-size:12px;border:1px solid #64748b;border-radius:20px;padding:6px 10px;color:#cbd5e1}.semi-crystal svg{width:100%;max-height:430px;display:block;cursor:grab;outline-offset:-4px}.semi-crystal svg:active{cursor:grabbing}.semi-crystal svg:focus-visible{outline:3px solid #fff}.semi-inspector-controls{display:flex;flex-wrap:wrap;gap:8px;padding:8px 16px}.semi-inspector-controls button,.semi-study button{min-height:44px;padding:8px 12px;border:1px solid #64748b;border-radius:8px;background:#13263d;color:#f8fafc;font-weight:650}.semi-inspector-controls button[aria-pressed=true],.semi-study button[aria-pressed=true]{background:#155e75;border-color:#67e8f9}.semi-inspector-controls label{display:flex;align-items:center;gap:8px;min-height:44px;color:#e2e8f0}.semi-reading{font-size:14px;line-height:1.65;color:#e2e8f0;margin:10px 16px}.semi-model-note{font-size:12px;line-height:1.6;color:#cbd5e1;margin:12px 16px;padding-top:10px;border-top:1px solid #334155}.semi-study{margin:12px 0;padding:16px;border:1px solid #475569;border-radius:12px;background:#0b1729}.semi-study h4{margin:0 0 8px;font-size:16px;color:#f8fafc}.semi-study p{font-size:14px;line-height:1.6;color:#e2e8f0}.semi-study-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px}.semi-study table{width:100%;border-collapse:collapse;font-size:13px}.semi-study td,.semi-study th{text-align:left;padding:10px 6px;border-bottom:1px solid #334155;overflow-wrap:anywhere}.semi-study th{color:#a5f3fc}.semi-study a{color:#a5f3fc;text-decoration:underline}.semi-view-switch{padding:8px 0}.semiconductor-lab .semi-workspace canvas{max-width:760px}.semi-lab-header .semi-brand-mark,.semi-live-dot{animation:none!important}@media(max-width:640px){.semi-study{padding:12px}.semi-inspector-heading{padding:12px}.semi-inspector-heading h4{font-size:17px}.semi-inspector-controls{padding:8px}.semi-reading,.semi-model-note{margin:10px}.semi-study table{font-size:12px}}',
       '@keyframes semiPulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,.55),0 0 14px rgba(74,222,128,.75)}70%{box-shadow:0 0 0 9px rgba(74,222,128,0),0 0 14px rgba(74,222,128,.75)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0),0 0 14px rgba(74,222,128,.75)}}',
       '@keyframes semiGlow{0%,100%{box-shadow:0 0 0 5px rgba(34,211,238,.09),0 0 22px rgba(34,211,238,.22)}50%{box-shadow:0 0 0 6px rgba(34,211,238,.13),0 0 32px rgba(34,211,238,.38)}}',
@@ -481,10 +484,175 @@ window.StemLab = window.StemLab || {
   }
 
 
+  // Teaching readout for the same fixed-threshold square-law model used by both device views.
+  function semiMOSTransport(m) {
+    var p=m.polarity,margin=p*m.gate-1.5,drive=p*m.drain;
+    var flowing=m.valid&&m.channel&&Math.abs(m.currentA)>0;
+    var channelText=!m.valid
+      ? 'Reverse drain polarity is outside this model. Channel formation can still be inspected, but drain current and transport direction are not predicted.'
+      : !m.channel
+        ? (margin===0?'At threshold,':'Below threshold,')+' no strong-inversion channel is shown. Subthreshold current is omitted from this model.'
+        : drive===0
+          ? 'A channel is present, but zero drain bias gives zero net drain current in this model.'
+          : m.region==='Saturation'
+            ? 'The channel reaches pinch-off near the drain, but current continues. Raising drain bias further leaves current unchanged in this ideal model.'
+            : 'An inversion channel connects source and drain. Raising drain bias increases current until the saturation boundary is reached.';
+    var next=!m.valid||!m.channel
+      ? {label:'Form a channel with zero drain bias',gateVoltage:p*3,drainVoltage:0,hint:'Set the gate to '+(p*3)+' V and the drain to 0 V. Predict whether a channel alone produces current.'}
+      : drive===0
+        ? {label:'Apply a small drain bias',gateVoltage:m.gate,drainVoltage:p*Math.min(.5,m.overdrive/2),hint:'Keep the gate fixed and add drain bias. Watch the current and the two direction arrows.'}
+        : m.region==='Linear (triode)'
+          ? {label:'Reach the saturation boundary',gateVoltage:m.gate,drainVoltage:p*m.overdrive,hint:'Keep the gate fixed and set the drain-bias magnitude equal to the gate overdrive. Does current stop at pinch-off?'}
+          : {label:'Remove the gate drive',gateVoltage:0,drainVoltage:m.drain,hint:'Keep the drain fixed and return the gate to 0 V. Predict what happens to the channel and current.'};
+    return {gateMargin:margin,drive:drive,flowing:flowing,carrier:p===1?'Electrons':'Holes',
+      carrierDirection:flowing?'Source to drain':null,
+      currentDirection:flowing?(p===1?'Drain to source':'Source to drain'):null,
+      channelText:channelText,boundary:m.valid&&m.channel?m.overdrive:null,next:next,
+      directionNote:!m.valid?'Transport is not predicted outside the supported drain polarity.'
+        : !flowing?'No net transport is shown. This does not mean that microscopic thermal motion stops.'
+        : p===1?'Electrons carry negative charge, so conventional current points opposite to electron motion.'
+          :'Holes carry positive charge, so conventional current points in the same direction as hole motion.'};
+  }
+
+  function semiMOSCurve(m, sharedMaxMilliamp) {
+    var type=m.polarity===1?'mosfet-n':'mosfet-p',peak=Math.abs(semiMOS(type,m.gate,m.polarity*10).currentA)*1000;
+    var bounds={left:90,right:530,top:48,bottom:225},yMax=typeof sharedMaxMilliamp==='number'&&isFinite(sharedMaxMilliamp)&&sharedMaxMilliamp>0?Math.max(peak*1.2,sharedMaxMilliamp):peak>0?peak*1.2:1;
+    function x(v){return bounds.left+v/10*(bounds.right-bounds.left);}
+    function y(ma){return bounds.bottom-ma/yMax*(bounds.bottom-bounds.top);}
+    var boundary=m.channel?m.overdrive:null,start={x:x(0),y:y(0)},end={x:x(boundary||0),y:y(peak)};
+    var control={x:(start.x+end.x)/2,y:end.y};
+    // A quadratic Bezier exactly represents the square-law triode branch:
+    // x varies linearly with t and current varies as 2t - t^2 up to pinch-off.
+    var linearPath=m.channel?'M '+start.x+' '+start.y+' Q '+control.x+' '+control.y+' '+end.x+' '+end.y:null;
+    var flatPath='M '+(m.channel?end.x:start.x)+' '+end.y+' L '+x(10)+' '+end.y;
+    return {bounds:bounds,peakMilliamp:peak,yMaxMilliamp:yMax,boundary:boundary,boundaryX:boundary===null?null:end.x,
+      linearPath:linearPath,flatPath:flatPath,bezier:m.channel?{start:start,control:control,end:end}:null,
+      selected:m.valid?{x:x(m.polarity*m.drain),y:y(Math.abs(m.currentA)*1000),drainVoltage:m.drain,currentA:m.currentA,region:m.region}:null};
+  }
+
+  function semiMOSGateComparison(m, reference) {
+    if(!reference||reference.polarity!==m.polarity||typeof reference.gate!=='number'||!isFinite(reference.gate)||
+      m.polarity*reference.gate<0||m.polarity*reference.gate>5)return null;
+    var refModel=semiMOS(m.polarity===1?'mosfet-n':'mosfet-p',reference.gate,m.drain);
+    var peak=Math.max(semiMOSCurve(m).peakMilliamp,semiMOSCurve(refModel).peakMilliamp),scale=peak>0?peak*1.2:1;
+    return {current:semiMOSCurve(m,scale),reference:semiMOSCurve(refModel,scale),referenceModel:refModel,
+      sameGate:m.gate===reference.gate,
+      signedChangeMilliamp:m.valid?(m.currentA-refModel.currentA)*1000:null,
+      magnitudeChangeMilliamp:m.valid?(Math.abs(m.currentA)-Math.abs(refModel.currentA))*1000:null};
+  }
+
+  function semiMOSComparisonCapture(state, reference, observation) {
+    state=Object.assign({transistorType:'mosfet-n'},state||{});
+    if(state.transistorType!=='mosfet-n'&&state.transistorType!=='mosfet-p')return null;
+    var m=semiMOS(state.transistorType,state.gateVoltage,state.drainVoltage),comparison=semiMOSGateComparison(m,reference);
+    if(!comparison||!m.valid)return null;
+    var ref=comparison.referenceModel;
+    function current(value){return semiSweepValue(value*1000)+' mA';}
+    function boundary(value){return value===null?'No strong inversion':semiSweepValue(value)+' V magnitude';}
+    var rows=[['Device',m.polarity===1?'NMOS':'PMOS'],['Shared drain VDS',m.drain.toFixed(2)+' V'],
+      ['Reference gate VGS',ref.gate.toFixed(2)+' V'],['Live gate VGS',m.gate.toFixed(2)+' V'],
+      ['Reference drain current',current(ref.currentA)],['Live drain current',current(m.currentA)],
+      ['Reference region',ref.region],['Live region',m.region],
+      ['Reference saturation starts',boundary(comparison.reference.boundary)],['Live saturation starts',boundary(comparison.current.boundary)],
+      ['Signed current change (live minus reference)',semiSweepValue(comparison.signedChangeMilliamp)+' mA'],
+      ['Current magnitude change (live minus reference)',semiSweepValue(comparison.magnitudeChangeMilliamp)+' mA'],
+      ['Model scope','Ideal MOSFET teaching model; source and body at 0 V; threshold magnitude 1.50 V. Calculated values, not measurements.']];
+    var saved=semiCapture(Object.assign({},state,{subtool:'transistor',mode:'explore',deviceView:'3d',showCMOS:false,gateVoltage:m.gate,drainVoltage:m.drain}),
+      'Gate comparison: '+(m.polarity===1?'NMOS':'PMOS')+' · '+ref.gate.toFixed(2)+' V → '+m.gate.toFixed(2)+' V · VDS '+m.drain.toFixed(2)+' V',rows);
+    saved.data.mosGateComparison={version:1,reference:{gate:ref.gate,polarity:m.polarity},observation:typeof observation==='string'?observation.trim().slice(0,1000):''};
+    return saved;
+  }
+
+  function SemiMOSCurve(props) {
+    var React=props.React,h=React.createElement,m=props.model,comparison=semiMOSGateComparison(m,props.reference),c=comparison?comparison.current:semiMOSCurve(m),b=c.bounds,referenceButton=React.useRef(null),savedNotice=React.useState('');
+    React.useEffect(function(){savedNotice[1]('');},[m.gate,m.drain,props.reference,props.observation]);
+    function fmt(n){return n===0?'0':String(Number(n.toPrecision(3)));}
+    var reading=c.selected?'Selected: VDS = '+m.drain.toFixed(2)+' V; drain current = '+semiSweepValue(m.currentA*1000)+' mA; '+m.region+'.':'The selected drain polarity is outside the model; no operating point is plotted.';
+    var description=c.boundary===null?'At this gate voltage, current is zero throughout the displayed drain-bias range in this ideal model.':
+      'Current magnitude rises from 0 mA at zero drain bias to '+semiSweepValue(c.peakMilliamp)+' mA at '+semiSweepValue(c.boundary)+' V, then stays constant in saturation.';
+    return h('div',{className:'semi-mos-curve-content'},
+      h('p',null,'Gate held at '+m.gate.toFixed(2)+' V. The graph uses voltage and current magnitudes; the selected reading below keeps the device signs. '+(comparison?'Both curves share one current scale, which fits both gates.':'The current axis rescales when the gate changes.')),
+      h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Gate comparison reference'},
+        h('button',{type:'button',ref:referenceButton,onClick:function(){props.onReference({gate:m.gate,polarity:m.polarity});}},comparison?'Update reference to this gate':'Hold this gate as a reference'),
+        comparison&&h('button',{type:'button',onClick:function(){props.onReference(null);if(referenceButton.current)referenceButton.current.focus();}},'Clear gate reference')),
+      comparison&&h('div',{className:'semi-mos-reference-control'},
+        h('p',null,'Reference gate: '+comparison.referenceModel.gate.toFixed(2)+' V. Its current is recalculated at the selected drain bias. Both curves use this transistor type and the same electrical model.'),
+        comparison.sameGate&&h('p',null,'The gates match, so the curves overlap. Change the gate voltage to compare.'),
+        h('label',{className:'semi-mos-curve-control'},'Gate VGS for comparison',
+          h('input',{type:'range',min:m.polarity===1?0:-5,max:m.polarity===1?5:0,step:.1,value:m.gate,disabled:!props.onExperiment,
+            'aria-label':'Gate VGS for curve comparison','aria-valuetext':m.gate.toFixed(2)+' volts',
+            onChange:function(e){props.onExperiment({gateVoltage:Number(e.target.value)});}}))),
+      h('svg',{viewBox:'0 0 560 300',role:'img','data-mos-curve':true,'aria-label':'MOSFET output curve at gate '+m.gate.toFixed(2)+' V. '+description+' '+reading+(comparison?' Amber reference curve: gate '+comparison.referenceModel.gate.toFixed(2)+' V; current at the same drain bias '+semiSweepValue(comparison.referenceModel.currentA===null?null:comparison.referenceModel.currentA*1000)+' mA.':'')},
+        c.boundary!==null&&h('g',null,
+          h('rect',{x:b.left,y:b.top,width:c.boundaryX-b.left,height:b.bottom-b.top,fill:'#164e63',fillOpacity:.35}),
+          h('rect',{x:c.boundaryX,y:b.top,width:b.right-c.boundaryX,height:b.bottom-b.top,fill:'#4c1d95',fillOpacity:.2})),
+        [0,.5,1].map(function(f){var y=b.bottom-f*(b.bottom-b.top);return h('g',{key:'y'+f},
+          h('line',{x1:b.left,x2:b.right,y1:y,y2:y,stroke:'#475569',strokeWidth:1}),
+          h('text',{x:b.left-10,y:y+7,textAnchor:'end',fill:'#e2e8f0',fontSize:20},fmt(c.yMaxMilliamp*f)));}),
+        [0,2,4,6,8,10].map(function(v){var x=b.left+v/10*(b.right-b.left);return h('g',{key:'x'+v},
+          h('line',{x1:x,x2:x,y1:b.bottom,y2:b.bottom+6,stroke:'#94a3b8'}),
+          h('text',{x:x,y:b.bottom+27,textAnchor:'middle',fill:'#e2e8f0',fontSize:20},v));}),
+        h('line',{x1:b.left,x2:b.left,y1:b.top,y2:b.bottom,stroke:'#94a3b8'}),
+        h('text',{x:b.left,y:24,fill:'#e2e8f0',fontSize:20},'Current magnitude (mA)'),
+        h('text',{x:(b.left+b.right)/2,y:285,textAnchor:'middle',fill:'#e2e8f0',fontSize:20},'Drain-bias magnitude (V)'),
+        c.boundary!==null&&h('line',{'data-mos-boundary':true,x1:c.boundaryX,x2:c.boundaryX,y1:b.top,y2:b.bottom,stroke:'#e2e8f0',strokeDasharray:'3 5',strokeWidth:2}),
+        c.linearPath&&h('path',{'data-mos-linear':true,d:c.linearPath,fill:'none',stroke:'#67e8f9',strokeWidth:4}),
+        h('path',{'data-mos-flat':true,d:c.flatPath,fill:'none',stroke:c.boundary===null?'#cbd5e1':'#c4b5fd',strokeDasharray:c.boundary===null?undefined:'8 5',strokeWidth:4}),
+        comparison&&h('g',{'data-mos-reference':true},
+          h('path',{d:(comparison.reference.linearPath||'')+' '+comparison.reference.flatPath,fill:'none',stroke:'#fcd34d',strokeWidth:3,strokeDasharray:'10 4 2 4'}),
+          comparison.reference.selected&&h('rect',{'data-mos-reference-point':true,x:comparison.reference.selected.x-8,y:comparison.reference.selected.y-8,width:16,height:16,fill:'#07111f',stroke:'#fcd34d',strokeWidth:2})),
+        c.selected&&h('g',null,
+          h('line',{x1:c.selected.x,x2:c.selected.x,y1:c.selected.y,y2:b.bottom,stroke:'#f8fafc',strokeDasharray:'2 5',strokeWidth:1.5}),
+          h('circle',{'data-mos-operating-point':true,cx:c.selected.x,cy:c.selected.y,r:6,fill:'#fff',stroke:'#07111f',strokeWidth:2}))),
+      h('p',null,c.boundary===null?'Gray line: cutoff. White dot: selected operating point.':
+        'Solid cyan: linear region. Dashed lavender: saturation. White dot: selected operating point. The dotted boundary is '+semiSweepValue(c.boundary)+' V.'),
+      comparison&&h('p',null,'Amber dash-dot curve and square: reference gate. The white dot and cyan/lavender curve follow the current gate. When values match, their markers overlap.'),
+      h('label',{className:'semi-mos-curve-control'},'Drain-bias magnitude',
+        h('input',{type:'range',min:0,max:10,step:.01,value:Math.max(0,m.polarity*m.drain),disabled:!props.onExperiment,
+          'aria-label':'Drain-bias magnitude on the current–voltage curve','aria-valuetext':Math.max(0,m.polarity*m.drain).toFixed(2)+' volts magnitude; VDS '+m.drain.toFixed(2)+' volts',
+          onChange:function(e){props.onExperiment({drainVoltage:m.polarity*Number(e.target.value)});}})),
+      h('p',{className:'semi-mos-curve-reading',role:'status'},reading),
+      comparison&&h('section',{className:'semi-mos-comparison','aria-label':'Gate-voltage comparison'},
+        h('table',null,h('caption',null,'Readings at the same drain bias'),
+          h('thead',null,h('tr',null,h('th',{scope:'col'},'Reading'),h('th',{scope:'col'},'Reference'),h('th',{scope:'col'},'Current gate'))),
+          h('tbody',null,[
+            ['Gate VGS',comparison.referenceModel.gate.toFixed(2)+' V',m.gate.toFixed(2)+' V'],
+            ['Drain VDS',m.drain.toFixed(2)+' V',m.drain.toFixed(2)+' V'],
+            ['Drain current',semiSweepValue(comparison.referenceModel.currentA===null?null:comparison.referenceModel.currentA*1000)+' mA',semiSweepValue(m.currentA===null?null:m.currentA*1000)+' mA'],
+            ['Region',comparison.referenceModel.region,m.region],
+            ['Saturation starts',comparison.reference.boundary===null?'No strong inversion':semiSweepValue(comparison.reference.boundary)+' V magnitude',c.boundary===null?'No strong inversion':semiSweepValue(c.boundary)+' V magnitude']
+          ].map(function(row){return h('tr',{key:row[0]},h('th',{scope:'row'},row[0]),h('td',null,row[1]),h('td',null,row[2]));}))),
+        h('p',null,comparison.signedChangeMilliamp===null?'Current changes are not predicted outside the supported drain polarity.':
+          'At the same drain bias, current magnitude '+(comparison.magnitudeChangeMilliamp===0?'is unchanged. ':(comparison.magnitudeChangeMilliamp>0?'increases':'decreases')+' by '+semiSweepValue(Math.abs(comparison.magnitudeChangeMilliamp))+' mA. ')+'Signed current change (current gate minus reference): '+semiSweepValue(comparison.signedChangeMilliamp)+' mA.'),
+        h('p',null,'Your reference stays while you adjust the gate or close this panel. Switching transistor type or leaving the cutaway clears it. Save a comparison to revisit it later.'),
+        props.onSave&&h('div',{className:'semi-mos-save'},
+          h('label',null,'Explain the comparison (optional)',h('textarea',{'aria-label':'Gate comparison explanation',rows:3,maxLength:1000,value:props.observation||'',
+            placeholder:'What changed when you adjusted the gate? Use the two current readings as evidence.',
+            style:{display:'block',width:'100%',boxSizing:'border-box',marginTop:8,padding:10,border:'1px solid #64748b',borderRadius:8,background:'#020617',color:'#f8fafc'},
+            onChange:function(e){props.onObservation(e.target.value);}})),
+          h('p',null,'Save both gate settings and readings at this drain bias. Your notebook keeps the evidence as recorded and can restore this comparison.'),
+          h('div',{className:'semi-inspector-controls'},h('button',{type:'button',disabled:!m.valid,onClick:function(){if(props.onSave(props.reference,props.observation))savedNotice[1]('Gate comparison saved to your notebook.');}},'Save gate comparison to notebook'),
+            props.onNotebook&&h('button',{type:'button',onClick:props.onNotebook},'Review saved comparisons')),
+          !m.valid&&h('p',null,'Choose a supported drain polarity before saving a comparison.'),
+          h('p',{role:'status'},savedNotice[0])) ),
+
+
+      h('p',null,description),
+      h('p',null,'Move the slider to change the actual drain bias while keeping the gate fixed. In PMOS, increasing the plotted magnitude makes VDS more negative. The curve and cutaway use the same ideal model.'));
+  }
+
   function SemiMOSInspector(props) {
-    var React=props.React,h=React.createElement,t=props.t,m=props.model;
+    var React=props.React,h=React.createElement,t=props.t,m=props.model,transport=semiMOSTransport(m);
     var camera=React.useState({yaw:-.5,pitch:.5}),v=camera[0],setCamera=camera[1];
-    var exploded=React.useState(true),layer=React.useState('channel'),drag=React.useRef(null);
+    var exploded=React.useState(true),layer=React.useState('channel'),drag=React.useRef(null),reveal=React.useState(false),curveOpen=React.useState(false),gateReference=React.useState(null),comparisonNote=React.useState('');
+    React.useEffect(function(){gateReference[1](null);comparisonNote[1]('');},[m.polarity]);
+    React.useEffect(function(){
+      if(!props.restoreComparison)return;
+      if(semiMOSGateComparison(m,props.restoreComparison.reference)){
+        gateReference[1](props.restoreComparison.reference);comparisonNote[1](props.restoreComparison.observation||'');curveOpen[1](true);
+      }
+      if(props.onExperiment)props.onExperiment({mosComparisonRestore:null});
+    },[props.restoreComparison]);
     function turn(dx,dy){setCamera(function(p){return {yaw:p.yaw+dx,pitch:Math.max(.15,Math.min(1.1,p.pitch+dy))};});}
     function project(p){
       var x=p[0]*Math.cos(v.yaw)+p[2]*Math.sin(v.yaw),z=-p[0]*Math.sin(v.yaw)+p[2]*Math.cos(v.yaw);
@@ -504,35 +672,65 @@ window.StemLab = window.StemLab || {
     box('source',-1.08,-.58,-.12,.025,-.36,.36,m.polarity===1?'#0891b2':'#be185d');
     box('drain',.58,1.08,-.12,.025,-.36,.36,m.polarity===1?'#0891b2':'#be185d');
     if(m.channel)box('channel',-.58,.58,.01,.055,-.3,.3,'#059669');
-    box('oxide',-.58,.58,.075+lift*.45,.13+lift*.45,-.33,.33,'#7c3aed');
-    box('gate',-.6,.6,.15+lift,.29+lift,-.35,.35,'#d97706');
+    if(!reveal[0]){
+      box('oxide',-.58,.58,.075+lift*.45,.13+lift*.45,-.33,.33,'#7c3aed');
+      box('gate',-.6,.6,.15+lift,.29+lift,-.35,.35,'#d97706');
+    }
     faces.sort(function(a,b){return a.body!==b.body?(a.body?-1:1):b.z-a.z;});
     var descriptions={
       gate:'The gate voltage changes the electric field. The ideal insulating oxide prevents a steady gate current.',
       oxide:'The oxide separates the gate from the semiconductor. Electric-field control does not require electrons to cross the oxide.',
-      channel:m.channel?(Math.abs(m.currentA||0)>0?'An inversion channel is present and drain bias drives current. In saturation the channel pinches off near the drain; current does not stop.':'A channel is present, but zero drain bias gives zero net drain current in this model.'):'Below threshold, no strong-inversion channel is shown. Raise the gate-to-source voltage magnitude to form one.',
+      channel:transport.channelText,
       source:m.polarity===1?'The N+ source supplies electrons. With positive drain voltage, electrons move from source to drain.':'The P+ source supplies holes. With negative drain voltage, holes move from source to drain.',
       drain:'The drain-to-source voltage drives transport along the channel. Forming a channel and driving a current are separate conditions.',
       body:m.polarity===1?'An N-channel MOSFET has a P-type body. The body and source are tied to the same reference potential here.':'A P-channel MOSFET has an N-type body. The body and source are tied to the same reference potential here.'
     };
-    function label(text,p){var a=project(p);return h('text',{key:text,x:a.x,y:a.y,fill:'#f8fafc',fontSize:12,textAnchor:'middle',paintOrder:'stroke',stroke:'#07111f',strokeWidth:4},text);}
+    function label(text,p){var a=project(p);return h('text',{key:text,x:a.x,y:a.y,fill:'#f8fafc',fontSize:20,textAnchor:'middle',paintOrder:'stroke',stroke:'#07111f',strokeWidth:4},text);}
     return h('section',{className:'semi-crystal','aria-label':'3D MOSFET cutaway'},
       h('div',{className:'semi-inspector-heading'},h('div',null,h('span',{className:'semi-eyebrow'},'DEVICE SCALE'),h('h4',null,m.polarity===1?'Inside an N-channel MOSFET':'Inside a P-channel MOSFET')),h('span',{className:'semi-model-tag'},m.region)),
-      h('svg',{viewBox:'0 0 560 350',role:'img',tabIndex:0,'aria-label':'Rotatable MOSFET cutaway: gate above insulating oxide, source and drain inside the body. '+(m.channel?'Inversion channel present.':'No strong-inversion channel.')+' '+m.region+'. Arrow keys rotate; Home resets.',
+      h('svg',{viewBox:'0 0 560 350',role:'img',tabIndex:0,'data-mos-cutaway':true,'aria-label':'Rotatable MOSFET cutaway: gate above insulating oxide, source and drain inside the body. '+(m.channel?'Inversion channel present.':'No strong-inversion channel.')+' '+m.region+'. '+(reveal[0]?'Gate and oxide hidden for inspection. ':'')+transport.directionNote+' Arrow keys rotate; Home resets.',
         style:{touchAction:'pan-y'},onKeyDown:function(e){var keys={ArrowLeft:[-.15,0],ArrowRight:[.15,0],ArrowUp:[0,.1],ArrowDown:[0,-.1]};if(keys[e.key]){e.preventDefault();turn(keys[e.key][0],keys[e.key][1]);}if(e.key==='Home'){e.preventDefault();setCamera({yaw:-.5,pitch:.5});}},
         onPointerDown:function(e){if(e.button!==0)return;drag.current={x:e.clientX,y:e.clientY};e.currentTarget.setPointerCapture(e.pointerId);},
         onPointerMove:function(e){if(!drag.current)return;var dx=e.clientX-drag.current.x,dy=e.clientY-drag.current.y;drag.current={x:e.clientX,y:e.clientY};turn(dx*.01,-dy*.01);},
         onPointerUp:function(){drag.current=null;},onPointerCancel:function(){drag.current=null;},onLostPointerCapture:function(){drag.current=null;}
-      },faces.map(function(f){return f.node;}),label('Gate',[0,.37+lift,0]),label('Source',[-1.25,.1,-.48]),label('Drain',[1.25,.1,-.48]),label('Body',[0,-.55,-.55])),
+      },faces.map(function(f){return f.node;}),!reveal[0]&&label('Gate · '+m.gate.toFixed(2)+' V',[0,.37+lift,0]),label('Source · 0 V',[-1.1,.1,-.48]),label('Drain · '+m.drain.toFixed(2)+' V',[1.1,.1,-.48]),label('Body',[0,-.55,-.55]),reveal[0]&&label(m.channel?'Channel':'No channel',[0,.12,0])),
       h('div',{className:'semi-inspector-controls',role:'group','aria-label':'MOSFET camera controls'},
         h('button',{type:'button',onClick:function(){turn(-.2,0);}},t('stem.semiconductor.rotate_left','Rotate left')),
         h('button',{type:'button',onClick:function(){turn(.2,0);}},t('stem.semiconductor.rotate_right','Rotate right')),
         h('button',{type:'button',onClick:function(){turn(0,.1);}},t('stem.semiconductor.tilt_up','Tilt up')),
         h('button',{type:'button',onClick:function(){turn(0,-.1);}},t('stem.semiconductor.tilt_down','Tilt down')),
         h('button',{type:'button',onClick:function(){setCamera({yaw:-.5,pitch:.5});}},t('stem.semiconductor.reset_view','Reset view')),
-        h('label',null,h('input',{type:'checkbox',checked:exploded[0],onChange:function(){exploded[1](!exploded[0]);}}),'Separate gate layers')),
-      h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Inspect a MOSFET layer'},['gate','oxide','channel','source','drain','body'].map(function(id){return h('button',{type:'button',key:id,'aria-pressed':layer[0]===id,onClick:function(){layer[1](id);}},id.charAt(0).toUpperCase()+id.slice(1));})),
+        h('label',null,h('input',{type:'checkbox',checked:exploded[0],onChange:function(){exploded[1](!exploded[0]);}}),'Separate gate layers'),
+        h('label',null,h('input',{type:'checkbox',checked:reveal[0],onChange:function(){reveal[1](!reveal[0]);}}),'Reveal channel (hide gate and oxide)')),
+      h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Inspect a MOSFET layer'},['gate','oxide','channel','source','drain','body'].map(function(id){return h('button',{type:'button',key:id,'aria-pressed':layer[0]===id,onClick:function(){layer[1](id);if(id==='gate'||id==='oxide')reveal[1](false);}},id.charAt(0).toUpperCase()+id.slice(1));})),
       h('p',{className:'semi-reading',role:'status'},descriptions[layer[0]]),
+      reveal[0]&&h('p',{className:'semi-reading'},'Gate and oxide hidden for inspection; they remain in the electrical model.'),
+      h('section',{className:'semi-mos-readout','aria-label':'Read the MOSFET operating point'},
+        h('h5',null,'From gate control to current'),
+        h('dl',{className:'semi-mos-metrics'},
+          h('div',null,h('dt',null,'1 · Gate control'),h('dd',null,m.channel?'Channel formed':transport.gateMargin===0?'At threshold':'Below threshold',
+            h('small',null,Math.abs(transport.gateMargin).toFixed(2)+' V '+(transport.gateMargin<0?'below':transport.gateMargin>0?'above':'from')+' threshold'))),
+          h('div',null,h('dt',null,'2 · Drain drive'),h('dd',null,m.drain.toFixed(2)+' V',
+            h('small',null,!m.valid?'Outside model':transport.drive===0?'No drain bias':m.channel?'Drives channel transport':'Gate must form a channel'))),
+          h('div',null,h('dt',null,'3 · Drain current'),h('dd',null,m.currentA===null?'Not predicted':(m.currentA*1000).toFixed(3)+' mA',
+            h('small',null,m.region)))),
+        h('div',{className:'semi-mos-lane','data-carriers':true},h('span',null,transport.carrier+' · net motion'),
+          h('strong',null,transport.flowing?h(React.Fragment,null,'Source',h('b',{'aria-hidden':true},'→'),h('span',{className:'sr-only'},' to '),'Drain'):m.valid?'No net flow':'Not predicted')),
+        h('div',{className:'semi-mos-lane','data-current':true},h('span',null,'Conventional current'),
+          h('strong',null,transport.flowing?h(React.Fragment,null,m.polarity===1?'Drain':'Source',h('b',{'aria-hidden':true},'→'),h('span',{className:'sr-only'},' to '),m.polarity===1?'Source':'Drain'):m.valid?'0 mA':'Not predicted')),
+        h('p',null,transport.directionNote),
+        h('p',null,'I_D is positive from drain to source. '+(m.polarity===-1?'A negative PMOS reading means conventional current flows from source to drain.':'A positive NMOS reading means conventional current flows from drain to source.')),
+        h('details',{className:'semi-mos-curve',open:curveOpen[0],onToggle:function(e){curveOpen[1](e.currentTarget.open);}},
+          h('summary',null,'Explore the current–voltage curve'),curveOpen[0]&&h(SemiMOSCurve,{React:React,model:m,onExperiment:props.onExperiment,reference:gateReference[0],onReference:gateReference[1],observation:comparisonNote[0],onObservation:comparisonNote[1],onSave:props.onSave,onNotebook:props.onNotebook})),
+        props.onExperiment&&h('div',{className:'semi-mos-next'},h('p',null,h('strong',null,'Try next. '),transport.next.hint),
+          h('div',{className:'semi-inspector-controls'},h('button',{type:'button',onClick:function(){layer[1]('channel');props.onExperiment({gateVoltage:transport.next.gateVoltage,drainVoltage:transport.next.drainVoltage});}},transport.next.label))),
+        h('details',null,h('summary',null,'Why this operating region?'),
+          h('p',null,'With source and body at 0 V, '+(m.polarity===1?'VGS':'VSG')+' = '+(m.polarity*m.gate).toFixed(2)+' V. Subtract the 1.50 V threshold magnitude to get the gate margin: '+transport.gateMargin.toFixed(2)+' V. A positive margin forms strong inversion in this model.'),
+          h('p',null,transport.boundary===null?(m.valid?'Without a strong-inversion channel, the drain-current model is in cutoff.':'Reverse drain polarity is not modeled.'):
+            'The saturation boundary is '+transport.boundary.toFixed(2)+' V of '+(m.polarity===1?'VDS':'VSD')+'. The present drain-bias magnitude is '+transport.drive.toFixed(2)+' V: '+(transport.drive===0?'zero net current.':transport.drive<transport.boundary?'below the boundary, in the linear region.':'at or above the boundary, in saturation.')),
+          h('p',null,'This long-channel square-law model omits subthreshold leakage, body effect, channel-length modulation and breakdown. Arrows show direction, not speed or current magnitude.'),
+          h('a',{href:'https://ocw.mit.edu/courses/6-012-microelectronic-devices-and-circuits-spring-2009/resources/mit6_012s09_lec09/',target:'_blank',rel:'noopener noreferrer'},'MIT 6.012: channel pinch-off and saturation'))),
+
       h('p',{className:'semi-model-note'},'Schematic cutaway, not to scale. Layer separation is for inspection; the real layers touch. Green marks channel formation, not its charge density or exact shape. The electrical values use the same model as the 2D diagram.')
     );
   }
@@ -694,7 +892,7 @@ window.StemLab = window.StemLab || {
     state=state||{};meta=meta||{};
     var workspace=Object.prototype.hasOwnProperty.call(SEMI_LESSONS,state.subtool)?state.subtool:'bandgap';
     var data=Object.assign({},state,{snapshotVersion:2,subtool:workspace,mode:state.mode||'explore'});
-    ['guidedSubtool','guidedObservation','guidedPrediction','guidedEvidence','guidedObservationSaved'].forEach(function(key){delete data[key];});
+    ['guidedSubtool','guidedObservation','guidedPrediction','guidedEvidence','guidedObservationSaved','mosGateComparison','mosComparisonRestore'].forEach(function(key){delete data[key];});
     data.recordedEvidence=semiEvidenceRows(evidence);
     if(typeof meta.guidedObservation==='string'){
       data.guidedSubtool=workspace;data.guidedObservation=meta.guidedObservation;data.guidedPrediction=meta.guidedPrediction||'';
@@ -709,9 +907,10 @@ window.StemLab = window.StemLab || {
       if(!entry||entry.tool!=='semiconductor')return null;
       var data=entry.data&&typeof entry.data==='object'?entry.data:{},mode=data.mode||'explore',id=data.guidedSubtool||data.subtool;
       var workspace=mode==='explore'&&Object.prototype.hasOwnProperty.call(SEMI_LESSONS,id)?id:null;
-      var observation=typeof data.guidedObservation==='string'?data.guidedObservation:'',prediction=typeof data.guidedPrediction==='string'?data.guidedPrediction:'';
+      var gateComparison=workspace==='transistor'&&data.mosGateComparison&&data.mosGateComparison.version===1?data.mosGateComparison:null;
+      var observation=gateComparison&&typeof gateComparison.observation==='string'?gateComparison.observation:typeof data.guidedObservation==='string'?data.guidedObservation:'',prediction=typeof data.guidedPrediction==='string'?data.guidedPrediction:'';
       return {key:String(entry.id||'legacy')+'@'+i,label:typeof entry.label==='string'?entry.label:'Saved Semiconductor Lab state',
-        workspace:workspace,mode:mode,observation:observation,prediction:prediction,
+        workspace:workspace,mode:mode,observation:observation,prediction:prediction,gateComparison:gateComparison,
         evidence:semiEvidenceRows(data.recordedEvidence||(data.guidedEvidence||{}).observed),
         baseline:semiEvidenceRows((data.guidedEvidence||{}).baseline),data:data,
         timestamp:typeof entry.timestamp==='number'&&isFinite(entry.timestamp)?entry.timestamp:null};
@@ -722,6 +921,15 @@ window.StemLab = window.StemLab || {
     var next=Object.assign({},current||{});
     Object.keys(next).forEach(function(key){if(semiWorkspaceField(entry.workspace,key))delete next[key];});
     Object.keys(entry.data||{}).forEach(function(key){if(semiWorkspaceField(entry.workspace,key))next[key]=semiCopy(entry.data[key]);});
+    if(entry.workspace==='transistor'){
+      next.mosComparisonRestore=null;
+      var savedComparison=entry.data&&entry.data.mosGateComparison;
+      if(savedComparison&&savedComparison.version===1&&['mosfet-n','mosfet-p'].indexOf(next.transistorType)>=0&&
+        semiMOSGateComparison(semiMOS(next.transistorType,next.gateVoltage,next.drainVoltage),savedComparison.reference)){
+        next.deviceView='3d';next.showCMOS=false;
+        next.mosComparisonRestore={reference:semiCopy(savedComparison.reference),observation:typeof savedComparison.observation==='string'?savedComparison.observation:'',request:++semiSnapshotSequence};
+      }
+    }
     next.subtool=entry.workspace;next.mode='explore';next.guidedSetupSubtool=null;next.guidedObservationSaved=null;next.aiExplain=null;
     return next;
   }
@@ -1121,7 +1329,7 @@ window.StemLab = window.StemLab || {
     moore:semiMoore, doubling:semiDoubling, milestones:SEMI_MILESTONES,
     logic:semiLogic, nandTrace:semiNandTrace, cmos:semiCMOS, logicExperiment:semiLogicExperiment,
     led:semiLed, ledSpectrum:semiLedSpectrum, ledEmitters:SEMI_LED_EMITTERS,
-    memory:semiMemory, memoryStep:semiMemoryStep, oxidation:semiOxidation, quantum:semiQuantum, series:semiSeries, mosfet:semiMOS, solar:semiSolar, amplifier:semiAmplifier, iv:semiIV,
+    memory:semiMemory, memoryStep:semiMemoryStep, oxidation:semiOxidation, quantum:semiQuantum, series:semiSeries, mosfet:semiMOS, mosTransport:semiMOSTransport, mosCurve:semiMOSCurve, mosGateComparison:semiMOSGateComparison, mosComparisonCapture:semiMOSComparisonCapture, solar:semiSolar, amplifier:semiAmplifier, iv:semiIV,
     carriers: semiCarriers, bandGap: semiBandGap, intrinsic: semiIntrinsic, junction: semiJunction, diamondCell: semiDiamondCell,
     orderOptions: orderOptions,
     formatTransistorCount: formatTransistorCount
@@ -2507,7 +2715,11 @@ window.StemLab = window.StemLab || {
           !showCMOS&&isMos&&h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Transistor view'},
             h('button',{type:'button','aria-pressed':d.deviceView!=='3d',onClick:function(){upd('deviceView','2d');}},'2D device diagram'),
             h('button',{type:'button','aria-pressed':d.deviceView==='3d',onClick:function(){upd('deviceView','3d');}},'3D device cutaway')),
-          !showCMOS&&isMos&&d.deviceView==='3d'?h(SemiMOSInspector,{React:React,t:t,model:mos}):h('canvas', {
+          !showCMOS&&isMos&&d.deviceView==='3d'?h(SemiMOSInspector,{React:React,t:t,model:mos,onExperiment:updMulti,restoreComparison:d.mosComparisonRestore,onNotebook:openNotebook,onSave:function(reference,observation){
+            var entry=semiMOSComparisonCapture(Object.assign({},d,{transistorType:type,gateVoltage:mos.gate,drainVoltage:mos.drain}),reference,observation);if(!entry)return false;
+            setToolSnapshots(function(prev){return (Array.isArray(prev)?prev:[]).concat([entry]);});
+            addToast('Gate comparison and evidence saved to your notebook.','success');return true;
+          }}):h('canvas', {
             id: 'semi-transistor-canvas', width: 440, height: showCMOS ? 200 : 220,
             className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
             role: 'img', 'aria-label': (showCMOS ? 'CMOS inverter' : type + ' transistor') + '. ' + transistorReadout
@@ -2516,7 +2728,7 @@ window.StemLab = window.StemLab || {
             upd('gateVoltage', v);
             if (isOn) tryAwardXP('trans-on', 10, 'Turned transistor ON');
           }, ' V'),
-          !showCMOS && isMos && sliderRow('Drain VDS', Vd, isP?-10:0, isP?0:10, 0.5, function(v) { upd('drainVoltage', v); }, ' V'),
+          !showCMOS && isMos && sliderRow('Drain VDS', Vd, isP?-10:0, isP?0:10, 0.01, function(v) { upd('drainVoltage', v); }, ' V'),
           // Current bar
           h('div', { className: 'mt-2 flex items-center gap-2' },
             h('span', { className: 'text-xs text-slate-400 w-20' }, showCMOS ? 'Output' : isMos?'Current':'Drive (illustrative)'),
@@ -5078,7 +5290,7 @@ window.StemLab = window.StemLab || {
           return h('li',{key:entry.key,style:{marginTop:'12px',overflowWrap:'anywhere'}},
             h('details',{'data-notebook-entry':entry.key},
               h('summary',null,entry.label),
-              h('p',null,entry.workspace?SEMI_LESSONS[entry.workspace]+' · '+(entry.observation?'Guided observation':'Snapshot'):'Saved '+entry.mode+' session · experiment restoration unavailable'),
+              h('p',null,entry.workspace?SEMI_LESSONS[entry.workspace]+' · '+(entry.gateComparison?'Gate comparison':entry.observation?'Guided observation':'Snapshot'):'Saved '+entry.mode+' session · experiment restoration unavailable'),
               entry.prediction&&h('p',null,h('strong',null,'Prediction: '),entry.prediction),
               entry.observation&&h('p',null,h('strong',null,'Observation: '),entry.observation),
               entry.evidence.length?h('table',null,h('caption',null,'Evidence recorded at save time'),
@@ -5086,6 +5298,7 @@ window.StemLab = window.StemLab || {
                 h('tbody',null,entry.evidence.map(function(row){return h('tr',{key:row[0]},h('th',{scope:'row'},row[0]),h('td',null,row[1]));})))
                 :h('p',null,'No numerical evidence was stored with this older entry.'),
               h(SemiSavedSweep,{React:React,entry:entry}),
+              entry.gateComparison&&h('p',null,'Restore experiment reopens the 3D curve with both gate settings and your explanation. Live readings use the current model; this saved evidence stays unchanged.'),
               h('div',{className:'semi-inspector-controls'},
                 h('label',null,h('input',{type:'checkbox',checked:checked,disabled:!entry.workspace||!checked&&comparisonEntries.length>=2,onChange:function(){toggleComparison(entry);},'aria-label':'Compare '+entry.label}),' Compare this entry'),
                 h('button',{type:'button',disabled:!entry.workspace,onClick:function(){restoreNotebook(entry);},'aria-label':'Restore '+entry.label},'Restore experiment'))

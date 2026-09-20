@@ -1,0 +1,41 @@
+{
+  "date": "2026-09-19",
+  "pack": "body_systems_grade6",
+  "editions": 2,
+  "resources": [
+    11,
+    15
+  ],
+  "embeddedImagePlacements": 34,
+  "artworkAndAltPreserved": true,
+  "nativeContentAligned": true,
+  "currentEditionAuditRecords": 0,
+  "tests": {
+    "passed": 511,
+    "files": 5
+  },
+  "browser": {
+    "pack": "body_systems_grade6",
+    "nativeMemoryAndChallengeRendered": true,
+    "desktopAndMobile": true,
+    "studentAndTeacherHtmlExported": true,
+    "offline": true,
+    "modelCalls": 0,
+    "pageErrors": [],
+    "scope": "Production native activity views and HTML export; not signed-in live-library publication or full app interaction."
+  },
+  "imports": {
+    "files": 105,
+    "resources": 1247,
+    "passed": true
+  },
+  "catalogRefinements": {
+    "packs": 105,
+    "exactAuditRecords": 2210,
+    "inheritedReviewAttributions": 33,
+    "sourceOnlyResources": [],
+    "passed": true
+  },
+  "educatorReview": "pending",
+  "livePublished": false
+}

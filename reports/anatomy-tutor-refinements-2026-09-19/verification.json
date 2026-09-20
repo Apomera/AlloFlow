@@ -1,0 +1,46 @@
+{
+  "date": "2026-09-19",
+  "sourceSha256": "cce1fb7fb4406481c6e3ef677bb8c19365b899e847609bb53f9ca4523193d8f1",
+  "canonical": "stem_lab/stem_tool_anatomy.js",
+  "mirror": "desktop/web-app/public/stem_lab/stem_tool_anatomy.js",
+  "identical": true,
+  "tests": {
+    "passed": 936
+  },
+  "testFiles": 47,
+  "translations": [
+    {
+      "language": "french",
+      "keys": 32,
+      "mirrorIdentical": true
+    },
+    {
+      "language": "spanish_latin_america",
+      "keys": 32,
+      "mirrorIdentical": true
+    },
+    {
+      "language": "arabic",
+      "keys": 32,
+      "mirrorIdentical": true
+    }
+  ],
+  "browser": {
+    "checks": [
+      "draft focus, explicit submit and offline sourced lesson",
+      "tutor writing appears in study sheet",
+      "stop waiting ignores late reply and restores focus",
+      "grade 1 excludes older clinical content",
+      "grade 4 excludes older clinical content",
+      "french offline lesson",
+      "spanish_latin_america offline lesson",
+      "arabic offline lesson",
+      "empty state returns to Explore"
+    ],
+    "axeScans": 10,
+    "violations": 0,
+    "incomplete": 0,
+    "errors": 0,
+    "screenshots": 7
+  }
+}

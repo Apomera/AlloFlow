@@ -1,0 +1,260 @@
+[
+  {
+    "width": 1440,
+    "saveEditReopen": true,
+    "duplicateRenameDelete": true,
+    "cancelKeepsDraft": true,
+    "learnerIsolation": true,
+    "controls": [
+      {
+        "label": "Name for saved story",
+        "width": 207,
+        "height": 44
+      },
+      {
+        "label": "Save new story to library",
+        "width": 207,
+        "height": 44
+      },
+      {
+        "label": "Saved stories (3)",
+        "width": 207,
+        "height": 44
+      },
+      {
+        "label": "Open saved story: Classroom practice",
+        "width": 58.671875,
+        "height": 44
+      },
+      {
+        "label": "Duplicate saved story: Classroom practice",
+        "width": 82.015625,
+        "height": 44
+      },
+      {
+        "label": "Rename saved story: Classroom practice",
+        "width": 74.6875,
+        "height": 44
+      },
+      {
+        "label": "Delete saved story: Classroom practice",
+        "width": 64.03125,
+        "height": 44
+      },
+      {
+        "label": "Open saved story: My revised quiet break",
+        "width": 58.671875,
+        "height": 44
+      },
+      {
+        "label": "Duplicate saved story: My revised quiet break",
+        "width": 82.015625,
+        "height": 44
+      },
+      {
+        "label": "Rename saved story: My revised quiet break",
+        "width": 74.6875,
+        "height": 44
+      },
+      {
+        "label": "Delete saved story: My revised quiet break",
+        "width": 64.03125,
+        "height": 44
+      },
+      {
+        "label": "Open saved story: My quiet break",
+        "width": 58.671875,
+        "height": 44
+      },
+      {
+        "label": "Duplicate saved story: My quiet break",
+        "width": 82.015625,
+        "height": 44
+      },
+      {
+        "label": "Rename saved story: My quiet break",
+        "width": 74.6875,
+        "height": 44
+      },
+      {
+        "label": "Delete saved story: My quiet break",
+        "width": 64.03125,
+        "height": 44
+      }
+    ],
+    "workspaceOverflow": [],
+    "errors": []
+  },
+  {
+    "width": 390,
+    "saveEditReopen": true,
+    "duplicateRenameDelete": true,
+    "cancelKeepsDraft": true,
+    "learnerIsolation": true,
+    "controls": [
+      {
+        "label": "Name for saved story",
+        "width": 358,
+        "height": 44
+      },
+      {
+        "label": "Save new story to library",
+        "width": 358,
+        "height": 44
+      },
+      {
+        "label": "Saved stories (3)",
+        "width": 358,
+        "height": 44
+      },
+      {
+        "label": "Open saved story: Classroom practice",
+        "width": 58.671875,
+        "height": 44
+      },
+      {
+        "label": "Duplicate saved story: Classroom practice",
+        "width": 82.015625,
+        "height": 44
+      },
+      {
+        "label": "Rename saved story: Classroom practice",
+        "width": 74.6875,
+        "height": 44
+      },
+      {
+        "label": "Delete saved story: Classroom practice",
+        "width": 64.03125,
+        "height": 44
+      },
+      {
+        "label": "Open saved story: My revised quiet break",
+        "width": 58.671875,
+        "height": 44
+      },
+      {
+        "label": "Duplicate saved story: My revised quiet break",
+        "width": 82.015625,
+        "height": 44
+      },
+      {
+        "label": "Rename saved story: My revised quiet break",
+        "width": 74.6875,
+        "height": 44
+      },
+      {
+        "label": "Delete saved story: My revised quiet break",
+        "width": 64.03125,
+        "height": 44
+      },
+      {
+        "label": "Open saved story: My quiet break",
+        "width": 58.671875,
+        "height": 44
+      },
+      {
+        "label": "Duplicate saved story: My quiet break",
+        "width": 82.015625,
+        "height": 44
+      },
+      {
+        "label": "Rename saved story: My quiet break",
+        "width": 74.6875,
+        "height": 44
+      },
+      {
+        "label": "Delete saved story: My quiet break",
+        "width": 64.03125,
+        "height": 44
+      }
+    ],
+    "workspaceOverflow": [],
+    "errors": []
+  },
+  {
+    "width": 320,
+    "saveEditReopen": true,
+    "duplicateRenameDelete": true,
+    "cancelKeepsDraft": true,
+    "learnerIsolation": true,
+    "controls": [
+      {
+        "label": "Name for saved story",
+        "width": 288,
+        "height": 44
+      },
+      {
+        "label": "Save new story to library",
+        "width": 288,
+        "height": 44
+      },
+      {
+        "label": "Saved stories (3)",
+        "width": 288,
+        "height": 44
+      },
+      {
+        "label": "Open saved story: Classroom practice",
+        "width": 58.671875,
+        "height": 44
+      },
+      {
+        "label": "Duplicate saved story: Classroom practice",
+        "width": 82.015625,
+        "height": 44
+      },
+      {
+        "label": "Rename saved story: Classroom practice",
+        "width": 74.6875,
+        "height": 44
+      },
+      {
+        "label": "Delete saved story: Classroom practice",
+        "width": 64.03125,
+        "height": 44
+      },
+      {
+        "label": "Open saved story: My revised quiet break",
+        "width": 58.671875,
+        "height": 44
+      },
+      {
+        "label": "Duplicate saved story: My revised quiet break",
+        "width": 82.015625,
+        "height": 44
+      },
+      {
+        "label": "Rename saved story: My revised quiet break",
+        "width": 74.6875,
+        "height": 44
+      },
+      {
+        "label": "Delete saved story: My revised quiet break",
+        "width": 64.03125,
+        "height": 44
+      },
+      {
+        "label": "Open saved story: My quiet break",
+        "width": 58.671875,
+        "height": 44
+      },
+      {
+        "label": "Duplicate saved story: My quiet break",
+        "width": 82.015625,
+        "height": 44
+      },
+      {
+        "label": "Rename saved story: My quiet break",
+        "width": 74.6875,
+        "height": 44
+      },
+      {
+        "label": "Delete saved story: My quiet break",
+        "width": 64.03125,
+        "height": 44
+      }
+    ],
+    "workspaceOverflow": [],
+    "errors": []
+  }
+]

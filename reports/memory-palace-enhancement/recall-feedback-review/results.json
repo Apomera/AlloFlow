@@ -1,5 +1,7 @@
 {
   "passed": true,
+  "accurateSelfCheckSummary": true,
+  "keyboardEntryExit": true,
   "targetedFollowUp": true,
   "firstTryExcluded": true,
   "unselectedMasteryPreserved": true,

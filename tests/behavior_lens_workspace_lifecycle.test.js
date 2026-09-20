@@ -245,6 +245,9 @@ async function mountBehaviorLens(host, student, addToast = vi.fn()) {
     })));
     await Promise.resolve();
   });
+  await React.act(async () => {
+    Array.from(host.querySelectorAll('button')).find(button => button.textContent.trim() === 'All tools').click();
+  });
   return root;
 }
 

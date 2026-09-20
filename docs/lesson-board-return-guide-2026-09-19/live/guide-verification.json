@@ -1,0 +1,54 @@
+{
+  "passed": true,
+  "scans": [
+    {
+      "label": "late-arrival-390",
+      "violations": []
+    },
+    {
+      "label": "late-arrival-320",
+      "violations": []
+    },
+    {
+      "label": "offline-320",
+      "violations": []
+    },
+    {
+      "label": "reconnected-320",
+      "violations": []
+    },
+    {
+      "label": "pending-confirmation-320",
+      "violations": []
+    },
+    {
+      "label": "paused-320",
+      "violations": []
+    },
+    {
+      "label": "pending-desktop",
+      "violations": []
+    },
+    {
+      "label": "pending-dark",
+      "violations": []
+    },
+    {
+      "label": "pending-200-percent",
+      "violations": []
+    },
+    {
+      "label": "pending-forced-colors",
+      "violations": []
+    },
+    {
+      "label": "teacher-offline",
+      "violations": []
+    }
+  ],
+  "consoleErrors": [],
+  "writes": 1,
+  "keyboardJump": true,
+  "reconnectPreservesFocus": true,
+  "bundleSha256": "c6633cf6a39f72891a35c8a8ee032ef3cd3e32f562a0444309eda987cc2cc7f5"
+}

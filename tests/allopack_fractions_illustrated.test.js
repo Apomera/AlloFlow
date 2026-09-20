@@ -10,6 +10,7 @@ const glossarySource=fs.readFileSync('view_glossary_source.jsx','utf8');
 const getAlt=new Function(glossarySource.slice(0,glossarySource.indexOf('// Lazy Lucide'))+'\nreturn getGlossaryImageAlt;')();
 const slug='fractions_number_line_grade4',folder='allopacks/media/'+slug+'/',pack=read('allopacks/illustrated/'+slug+'.allopack.json'),original=read('allopacks/'+slug+'.allopack.json'),manifest=read(folder+'manifest.json');
 require('../dev-tools/fraction_content_refinements.cjs').refine(original);
+require('../dev-tools/lib/allopack_quality_refinements_20260919.cjs').apply(original,slug,{targetEnvelope:pack.allopack});
 const get=t=>pack.history.find(r=>r.type===t),panels=pack.history.filter(r=>r.type==='image').flatMap(r=>r.data.visualPlan.panels);
 const slots=[...get('glossary').data.map(g=>({url:g.image,alt:g.imageAlt,hash:g.imageAltHash})),...get('anchor-chart').data.sections.map(s=>({url:s.iconUrl,alt:s.iconAlt,hash:s.iconAltHash})),...get('concept-sort').data.items.map(s=>({url:s.image,alt:s.imageAlt,hash:s.imageAltHash})),...panels.map(p=>({url:p.imageUrl,alt:p.alt,hash:p.altHash}))];
 describe('Fractions on the Number Line illustrated edition',()=>{
@@ -41,12 +42,12 @@ expect([...eq.matchAll(/<circle[^>]*cx="500"/g)]).toHaveLength(2);
 it('corrects mathematical overgeneralizations and records exact source changes',()=>{
 expect(get('simplified').data).toContain('farther to the right');
 expect(get('simplified').data).toContain('same whole');
-expect(get('faq').data[1].answer).toContain('terminating decimal');
+expect(get('faq').data[1].answer).toContain('decimals that keep repeating');
 expect(get('faq').data[1].answer).toContain('1/3');
 expect(get('faq').data[4].question).toContain('strictly between');
 const changes=read(folder+'content-refinements.json');
 expect(changes.length).toBe(pack.allopack.contentRefinements.count);
 const pristine=read('allopacks/'+slug+'.allopack.json');
-for(const c of changes){let old=pristine.history.find(r=>r.id===c.resourceId),now=pack.history.find(r=>r.id===c.resourceId);for(const key of c.path.split('.')){old=old[key];now=now[key];}expect(old).toEqual(c.from);expect(now).toEqual(c.to);}
+for(const c of changes){let old=pristine.history.find(r=>r.id===c.resourceId),now=pack.history.find(r=>r.id===c.resourceId);for(const key of c.path.split('.')){old=old[key];now=now[key];}if(c.stripArtwork){const clean=n=>JSON.parse(JSON.stringify(n),(k,v)=>/^(image|iconUrl|iconAlt)/.test(k)?undefined:v);old=clean(old);now=clean(now);}expect(old).toEqual(c.from);expect(now).toEqual(c.to);}
 });
 });

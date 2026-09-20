@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { loadAlloModule } from './setup.js';
 
+loadAlloModule('instructional_context_module.js');
 loadAlloModule('generation_matrix_module.js');
 loadAlloModule('generation_helpers_source.jsx');
 const GenerationMatrix = window.AlloModules.GenerationMatrix;
@@ -1606,5 +1607,89 @@ describe('Full Pack stress and soak resilience', () => {
     expect(serialized).not.toMatch(/SENTINEL_/);
     expect(calls.some(call => call.event === 'retry-recovered')).toBe(true);
     expect(calls.some(call => call.event === 'resource-finish' && call.payload.status === 'landed')).toBe(true);
+  });
+});
+
+
+describe('Full Pack reading choice and scoped roles', () => {
+  const contract = window.AlloModules.InstructionalContext;
+  function readings() {
+    const original = { id: 'source-play', unitId: 'plays', type: 'analysis', data: { originalText: 'FIRST WITCH: Fair is foul.' },
+      instructionalText: { role: 'supplemental', form: 'original' } };
+    const adapted = { id: 'adapted-main', unitId: 'plays', type: 'simplified', data: 'FIRST WITCH: Good can seem bad.',
+      sourceSnapshot: contract.createSourceSnapshot(original.data.originalText, { sourceArtifactId: original.id }),
+      sourceFamilyId: original.id, sourceInstructionalText: original.instructionalText,
+      instructionalText: { role: 'primary', form: 'adapted', sourceArtifactId: original.id, replacementAuthorization: { authorized: true, source: 'educator' } } };
+    const other = { id: 'science-main', unitId: 'science', type: 'analysis', data: { originalText: 'Cells divide.' }, instructionalText: { role: 'primary', form: 'original' } };
+    return { original, adapted, other };
+  }
+  it('uses the adapted main wording in actual activity calls and carries its separate original', async () => {
+    const { original, adapted, other } = readings();
+    const deps = makeDeps({ history: [original, adapted, other], activeUnitId: 'plays' });
+    await GenerationHelpers.handleGenerateFullPack(null, deps);
+    const quiz = deps.handleGenerate.mock.calls.find(call => call[0] === 'quiz');
+    expect(quiz[3]).toBe(adapted.data);
+    expect(quiz[4]).toMatchObject({ inputArtifactId: adapted.id, sourceArtifactId: original.id,
+      sourceSnapshot: { text: original.data.originalText }, sourceInstructionalText: { role: 'supplemental' }, unitId: 'plays' });
+  });
+  it('keeps the reviewed explicit supplemental input after another main is added', async () => {
+    const { original, adapted } = readings(); let latestRun;
+    const deps = makeDeps({ history: [original, adapted], activeUnitId: 'plays', selectedReadingSourceId: original.id,
+      setFullPackRun: value => { latestRun = typeof value === 'function' ? value(latestRun) : value; } });
+    await GenerationHelpers.handlePlanFullPack(deps);
+    expect(latestRun.preflight.readingSource.inputArtifactId).toBe(original.id);
+    const reviewed = latestRun;
+    deps.history = [...deps.history, { id: 'new-main', unitId: 'plays', type: 'analysis', data: { originalText: 'Another core text.' } }];
+    deps.selectedReadingSourceId = 'new-main';
+    await GenerationHelpers.handleApproveFullPack(reviewed, deps);
+    const quiz = deps.handleGenerate.mock.calls.find(call => call[0] === 'quiz');
+    expect(quiz[3]).toBe(original.data.originalText);
+    expect(quiz[4].inputInstructionalText.role).toBe('supplemental');
+    expect(quiz[4].primaryArtifactId).toBeNull();
+  });
+  it('stops ambiguous automatic plans before any generation or auto-configuration', async () => {
+    const { original, adapted } = readings();
+    const deps = makeDeps({ history: [{ ...original, instructionalText: { role: 'primary', form: 'original' } }, adapted], activeUnitId: 'plays' });
+    expect(await GenerationHelpers.handleGenerateFullPack(null, deps)).toBe(false);
+    expect(deps.autoConfigureSettings).not.toHaveBeenCalled();
+    expect(deps.handleGenerate).not.toHaveBeenCalled();
+    expect(deps.addToast.mock.calls[0][0]).toContain('Based on');
+  });
+  it('requires a fresh plan after a reading role changes', async () => {
+    const { original, adapted } = readings(); let latestRun;
+    const deps = makeDeps({ history: [original, adapted], activeUnitId: 'plays', selectedReadingSourceId: original.id,
+      setFullPackRun: value => { latestRun = typeof value === 'function' ? value(latestRun) : value; } });
+    await GenerationHelpers.handlePlanFullPack(deps);
+    const reviewed = latestRun;
+    deps.history = [{ ...original, instructionalText: { role: 'primary', form: 'original' } }, adapted];
+    expect(await GenerationHelpers.handleApproveFullPack(reviewed, deps)).toBe(false);
+    expect(deps.handleGenerate).not.toHaveBeenCalled();
+    expect(latestRun.reason).toContain('reading role changed');
+  });
+});
+
+
+describe('Full Pack respects activity repair ownership', () => {
+  it.each(['Structured activity response did not match the required shape.', '503 service unavailable'])('does not restart exhausted activity repair: %s', async message => {
+    vi.useFakeTimers();
+    let latestRun = null;
+    const exhausted = Object.assign(new Error(message), { automaticRecoveryExhausted: true, structuredActivityAttempts: 2 });
+    const deps = makeDeps({
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'brainstorm', directive: '' }] })),
+      handleGenerate: vi.fn(async () => { throw exhausted; }),
+    });
+    try {
+      const run = GenerationHelpers.handleGenerateFullPack(null, deps);
+      await vi.runAllTimersAsync(); await run;
+      expect(deps.handleGenerate).toHaveBeenCalledTimes(1);
+      expect(Object.values(latestRun.resources)[0]).toMatchObject({ status: 'failed', attempts: 2, retryable: true });
+      const failedRun = latestRun;
+      deps.handleGenerate.mockResolvedValue({ id: 'recovered-activity', type: 'brainstorm', data: [{ title: 'Recovered activity', description: 'Work together.' }] });
+      const retry = GenerationHelpers.handleRetryFailedFullPack(failedRun, deps);
+      await vi.runAllTimersAsync(); await retry;
+      expect(deps.handleGenerate).toHaveBeenCalledTimes(2);
+      expect(latestRun.status).toBe('completed');
+    } finally { vi.useRealTimers(); }
   });
 });

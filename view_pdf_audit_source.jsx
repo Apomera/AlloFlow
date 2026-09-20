@@ -404,6 +404,15 @@ function _viewAttachRuntimeBindingProof(target, html, bindingKey, snapshotKey, d
     return false;
   }
 }
+// Review attestations are metadata. Keep live proof only for the exact, already-bound HTML.
+function _viewWithReviewAttestations(result, reviewedFindings, pipeline) {
+  if (!result || typeof result !== 'object') return result;
+  const next = { ...result, reviewedFindings };
+  if (_viewIsLiveVerificationHtmlBound(result, result.accessibleHtml, pipeline)) {
+    _viewAttachRuntimeBindingProof(next, result.accessibleHtml, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
+  }
+  return next;
+}
 async function _viewCreateVerificationHtmlBinding(html, pipeline) {
   const shared = _viewVerificationBindingHelper(pipeline, 'createVerificationHtmlBinding');
   if (shared) { try { return await shared(String(html == null ? '' : html)); } catch (_) { return null; } }
@@ -786,18 +795,94 @@ function _viewCanonicalRemediationEvidence(result, pipeline) {
 // Small exported render primitives keep the teacher-visible evidence under a real DOM
 // regression test. These are the exact components used by PdfAuditView — the test does not
 // merely search source text or accept a write-up hidden in title/aria-label attributes.
-function _PdfAuditVerificationEngineList({ coverage, engineLabel }) {
+function _pdfVerificationReasonValues(reasons) {
+  return (Array.isArray(reasons) ? reasons : []).map(reason => String(reason == null ? '' : reason).trim()).filter(Boolean);
+}
+function _pdfVerificationFreshness(reasons) {
+  const values = _pdfVerificationReasonValues(reasons);
+  if (values.some(reason => reason === 'content-modified-pending-reverification' || reason === 'secondary-action-requires-canonical-verification')) return 'changed';
+  if (values.some(reason => /^verification-html-binding-(?:missing-or-stale|unavailable|mismatch)$/.test(reason))) return 'unconfirmed';
+  return null;
+}
+function _pdfVerificationReasonText(reason) {
+  const value = String(reason == null ? '' : reason).trim();
+  if (!value) return '';
+  let formatted = '';
+  try {
+    const policy = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.VerificationPolicy;
+    if (policy && typeof policy.formatVerificationReason === 'function') formatted = policy.formatVerificationReason(value);
+  } catch (_) {}
+  if (typeof formatted === 'string' && formatted.trim() && formatted !== 'Verification evidence needs manual review.') {
+    // These canonical buckets can have equal counts. Keep their category visible so display
+    // deduplication does not erase one of two different sets of review findings.
+    const category = /^equal-access-potential:\d+$/.test(value) ? 'Potential issues: '
+      : /^equal-access-manual:\d+$/.test(value) ? 'Manual checks: ' : '';
+    return category + formatted.trim();
+  }
+  const aiReview = value.match(/^ai-manual-review:(\d+)$/);
+  if (aiReview) return aiReview[1] + ' AI finding' + (aiReview[1] === '1' ? ' needs' : 's need') + ' human review.';
+  if (value === 'content-modified-pending-reverification') return 'The document was edited after verification. Run the checks again for the current version.';
+  if (value === 'verification-policy-module-unavailable') return 'The verification service in this workspace is unavailable.';
+  // Unknown codes remain available for diagnosis, and prose/URLs retain their punctuation.
+  return /^[a-z0-9-]+(?::\d+)?$/i.test(value) ? 'Verification detail: ' + value : value;
+}
+function _pdfVerificationContext(reasons, verificationState) {
+  const values = _pdfVerificationReasonValues(reasons);
+  const freshness = _pdfVerificationFreshness(values);
+  if (freshness) return {
+    message: freshness === 'changed' ? 'The document changed after its verification checks.' : 'Verification is not confirmed for this document version.',
+    next: 'Re-run verification to check this copy. The checks do not change the document.',
+  };
+  const incomplete = values.some(reason => /^(?:ai|axe|equal-access)-(?:unavailable|verification-incomplete|partial-audit|score-degraded|synthesized|finding-count-unknown|violation-count-unknown|failure-count-unknown|review-count-unknown)$/.test(reason));
+  if (verificationState === 'unavailable' || verificationState === 'partial' || incomplete || values.includes('verification-policy-module-unavailable')) return {
+    message: verificationState === 'unavailable' ? 'Current verification evidence is unavailable.' : 'Some checks or finding counts are incomplete.',
+    next: 'Re-run verification to finish the checks before deciding whether more repairs are needed.',
+  };
+  const counted = expression => values.some(reason => { const match = reason.match(expression); return !!match && Number(match[1]) > 0; });
+  if (counted(/^(?:ai-confirmed-issues|axe-confirmed-violations|equal-access-confirmed-failures):(\d+)$/)) return {
+    message: 'The checks found accessibility issues.',
+    next: 'Review the reported findings before choosing another repair pass.',
+  };
+  if (values.includes('document-language-needs-review')) return {
+    message: 'The document language needs confirmation.',
+    next: 'Confirm the language against the document, then run verification again.',
+  };
+  if (counted(/^(?:ai-manual-review|axe-incomplete|equal-access-(?:potential|manual|review-findings)):(\d+)$/)) return {
+    message: 'Some findings need human judgment.',
+    next: 'Review the flagged items against the document. Acknowledging them does not change verification.',
+  };
+  if (verificationState === 'complete-for-tested-scope' || values.some(reason => /static(?:[\s-]+html\/?)?[\s-]*source(?:[\s-]+audit)?|excludes live scripts|interaction behavior/i.test(reason))) return {
+    message: 'The completed checks cover the static source.',
+    next: 'Review keyboard navigation and live interactions in the published page.',
+  };
+  if (verificationState === 'complete') return { message: '', next: '' };
+  return { message: 'Review the available verification evidence.', next: 'Use the details below to decide which checks or findings need attention.' };
+}
+function _PdfAuditVerificationEngineList({ coverage, engineLabel, reasons }) {
   const value = coverage || {};
-  const label = typeof engineLabel === 'function'
-    ? engineLabel
-    : (state) => String(state || 'unavailable').replace(/-/g, ' ');
+  const names = { complete: 'complete', 'complete-with-review': 'complete with review — human judgment needed', partial: 'incomplete check', unavailable: 'unavailable' };
+  const label = typeof engineLabel === 'function' ? engineLabel : state => names[state] || 'unavailable';
+  const freshness = _pdfVerificationFreshness(reasons);
+  const qualifier = freshness === 'changed' ? 'Check predates the latest edit; run again.' : 'Not confirmed for this document version.';
   return (
     <ul data-testid="pdf-verification-engine-list" className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-1 text-[11px]">
-      <li data-engine="ai"><strong>AI:</strong> {label(value.ai)}</li>
-      <li data-engine="axe"><strong>axe-core:</strong> {label(value.axe)}</li>
-      <li data-engine="equal-access"><strong>Equal Access:</strong> {label(value.equalAccess)}</li>
+      {[
+        ['ai', 'AI', value.ai], ['axe', 'axe-core', value.axe], ['equal-access', 'Equal Access', value.equalAccess],
+      ].map(([engine, name, state]) => <li key={engine} data-engine={engine}>
+        <strong>{name}:</strong> {label(state)}
+        {freshness && ['complete', 'complete-with-review', 'partial'].includes(state) && <span data-verification-freshness={freshness} className="block mt-1 font-semibold">{qualifier}</span>}
+      </li>)}
     </ul>
   );
+}
+function _PdfAuditVerificationReasons({ reasons, verificationState }) {
+  const context = _pdfVerificationContext(reasons, verificationState);
+  const messages = Array.from(new Set(_pdfVerificationReasonValues(reasons).map(_pdfVerificationReasonText).filter(Boolean)));
+  return <div data-testid="pdf-verification-explanation" className="mt-2 text-xs">
+    {context.message && <p className="font-semibold">{context.message}</p>}
+    {context.next && <p className="mt-1">{context.next}</p>}
+    {messages.length > 0 && <details className="mt-2"><summary className="font-bold cursor-pointer">Why this status?</summary><ul className="mt-1 ml-5 list-disc space-y-1">{messages.map(message => <li key={message}>{message}</li>)}</ul></details>}
+  </div>;
 }
 
 // Per-foundation provenance. A completed engine with no matching finding can only
@@ -3727,7 +3812,7 @@ function PdfDiagnosticsLog(props) {
         onClick={() => setOpen(true)}
         /* Bottom-LEFT (2026-06-19): reading-tools FAB stack owns bottom-right; this log + the error
            badge form a bottom-left diagnostics cluster. bottom-20 keeps it clear of the badge (bottom-4). */
-        className="fixed bottom-20 left-4 z-[210] px-3 py-2 rounded-full shadow-lg bg-slate-800 text-white text-xs font-medium hover:bg-slate-700 flex items-center gap-1.5"
+        className="pdf-workspace-log-button px-3 py-2 rounded-full border text-xs font-medium flex items-center gap-1.5"
         aria-label={t('pdf_audit.diag.open_aria') || 'Open pipeline diagnostics log'}
         title={t('pdf_audit.diag.open_title') || 'Pipeline diagnostics log — view + copy the remediation log (works inside Canvas, no browser console needed)'}
       >
@@ -3836,7 +3921,7 @@ function PdfAuditView(props) {
     setPdfBatchQueue, setPdfBatchSummary, setPdfFixLoading, setPdfFixMode,
     setPdfFixResult, setPdfFixStep, setPdfMultiSession, setPdfPageRange,
     setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
-    setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, pdfStormBudgetMinutes, setPdfStormBudgetMinutes, setPendingPdfBase64,
+    setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, pdfStormBudgetMinutes, setPdfStormBudgetMinutes, pdfExtraRequestPacing, setPdfExtraRequestPacing, setPendingPdfBase64,
     setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, capturePdfDocumentIntakeEpoch, isPdfDocumentIntakeCurrent, startPipelineTour,
     pdfRunHistory, setPdfRunHistory, openRemediationBuilder, _remediationMode
   } = props;
@@ -4599,6 +4684,8 @@ function PdfAuditView(props) {
   // Assert loading synchronously before removing the chooser/result owner. This is
   // deliberately shared by Run Audit, Retry Audit, and Make Accessible.
   const _visibleAuditRunSeqRef = useRef(0);
+  const _visibleAuditControlRef = useRef(null);
+  const _auditStopFocusRef = useRef(false);
   const _beginVisibleAuditRun = (event, detail) => {
     _auditGateLog(event, detail);
     if (typeof setPdfAuditLoading === 'function') setPdfAuditLoading(true);
@@ -4614,8 +4701,37 @@ function PdfAuditView(props) {
     setPdfAuditResult((previous) => _viewAuditFallbackResult(previous, pendingPdfFile));
     // The sequence number lets the run that returns tell whether it is still the latest visible
     // run this modal started (see _settleVisibleAuditRun).
-    return ++_visibleAuditRunSeqRef.current;
+    const seq = ++_visibleAuditRunSeqRef.current;
+    const control = { seq, snapshot: pdfAuditResult, pending: true, release: null };
+    control.cancelled = new Promise(resolve => { control.release = () => resolve(null); });
+    _visibleAuditControlRef.current = control;
+    return seq;
   };
+  const _visibleAuditRunIsCurrent = (seq) => seq === _visibleAuditRunSeqRef.current;
+  const _awaitVisibleAuditRun = (seq, promise) => {
+    const control = _visibleAuditControlRef.current;
+    if (!control || control.seq !== seq) return Promise.resolve(null);
+    // Stop releases the UI even when a parser ignores abort. The audit's signal still
+    // rejects late writes, and callers check this sequence before starting remediation.
+    return Promise.race([promise, control.cancelled]).finally(() => { control.pending = false; });
+  };
+  const _stopVisibleAuditRun = () => {
+    if (!_docPipeline || typeof _docPipeline.stopPdfAccessibilityAudit !== 'function'
+      || !_docPipeline.stopPdfAccessibilityAudit(pdfDocumentEpoch)) return;
+    const control = _visibleAuditControlRef.current;
+    ++_visibleAuditRunSeqRef.current;
+    if (control) { control.pending = false; control.release(); }
+    try { pdfAutoContinueAbortRef.current = true; } catch (_) {}
+    _auditStopFocusRef.current = true;
+    _restoreVisibleAuditAfterFailure(control ? control.snapshot : pdfAuditResult);
+    addToast(_pdfWorkspaceText(t, 'audit_stopped', 'Audit stopped. Your document is still attached and ready to retry.'), 'info');
+    _auditGateLog('audit STOP requested', { docEpoch: pdfDocumentEpoch });
+  };
+  useEffect(() => {
+    if (!_auditStopFocusRef.current || pdfAuditLoading || oneClickRemediationBusy) return;
+    _auditStopFocusRef.current = false;
+    _pdfWorkspaceJump(pdfModalRef.current, '[data-help-key="pdf_audit_view_make_accessible_btn"], [data-help-key="pdf_audit_view_start_btn"], [data-help-key="pdf_workspace_fix_verify"]');
+  }, [pdfAuditLoading, oneClickRemediationBusy]);
   const _restoreVisibleAuditAfterFailure = (snapshot) => {
     if (typeof setPdfAuditLoading === 'function') setPdfAuditLoading(false);
     setPdfAuditResult(_viewAuditFallbackResult(snapshot, pendingPdfFile));
@@ -5382,6 +5498,22 @@ function PdfAuditView(props) {
   // re-emits of the same finding.
   const [_reviewFindingsLive, setReviewFindingsLive] = useState(null);
   const [_reviewDismissed, setReviewDismissed] = useState({});
+  const _reviewFocusRequest = useRef(null);
+  React.useLayoutEffect(() => {
+    const request = _reviewFocusRequest.current;
+    if (!request) return;
+    _reviewFocusRequest.current = null;
+    if (request.documentEpoch !== pdfDocumentEpoch || request.html !== (pdfFixResult?.accessibleHtml || null)
+        || !request.root?.isConnected) return;
+    // Restoring a removed control must not steal focus after the reviewer moves elsewhere.
+    const active = document.activeElement;
+    if (active && active !== document.body && active !== request.trigger) return;
+    const buttons = Array.from(request.root.querySelectorAll('[data-review-action="mark"]'));
+    const target = buttons.find(button => button.dataset.reviewKey === request.preferredKey)
+      || buttons[0] || request.root.querySelector('[data-review-completion]')
+      || request.root.querySelector('[data-review-status]');
+    if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'nearest' }); }
+  });
   // Watch-live (phase 3): a READ-ONLY srcDoc iframe of the committed document, repainted by React
   // on every round commit. Deliberately not the Preview & Edit modal — that editor syncs the FULL
   // document back from its iframe, so opening it mid-run would let one stale sync revert a whole
@@ -6486,6 +6618,15 @@ function PdfAuditView(props) {
     const iv = setInterval(() => setAuditElapsedSec((s) => s + 1), 1000);
     return () => clearInterval(iv);
   }, [pdfAuditLoading]);
+  const [auditWait, setAuditWait] = useState(null);
+  useEffect(() => {
+    setAuditWait(null);
+    if (!pdfAuditLoading || !_docPipeline || typeof _docPipeline.getPdfAuditWait !== 'function') return;
+    const refresh = () => setAuditWait(_docPipeline.getPdfAuditWait(pdfDocumentEpoch));
+    refresh();
+    const timer = setInterval(refresh, 1000);
+    return () => clearInterval(timer);
+  }, [pdfAuditLoading, pdfDocumentEpoch, _docPipeline]);
   // (2026-09-06) Which step the audit is on, from the pipeline's alloflow:audit-progress events.
   // One spinner for 15 seconds or 10 minutes made a stalled step look exactly like a slow one.
   // Accepted for this document only (a null epoch means an older pipeline that does not stamp
@@ -7888,9 +8029,10 @@ function PdfAuditView(props) {
     ? _docPipeline.distributionVerdict(pdfFixResult, { targetScore: pdfTargetScore, inProgress: _modalWorkBusy }) : null;
   const _workspaceState = _pdfWorkspaceState({ audit: pdfAuditResult, result: pdfFixResult, busy: _modalWorkBusy,
     auditLoading: pdfAuditLoading, batchMode: pdfBatchMode, batchProcessing: pdfBatchProcessing,
-    batchIngesting, batchStopping: _batchStopRequested, batchPhase: _batchRecovery?.phase, batchSummary: pdfBatchSummary, queue: pdfBatchQueue, progress: remediationProgress,
+    batchIngesting, batchStopping: _batchStopRequested, batchPhase: _batchRecovery?.phase, batchSummary: pdfBatchSummary, queue: pdfBatchQueue, progress: remediationProgress, auditWait,
     verifying: verificationRefreshBusy || veraPdfBusy || (oneClickRemediationBusy && !!pdfFixResult && !pdfFixLoading && !pdfAutoContinueRunning),
-    step: pdfFixStep, webBusy: webJobBusy, webMode: pdfWebMode, evidence: _workspaceEvidence, verdict: _workspaceVerdict, t });
+    step: pdfFixStep, webBusy: webJobBusy, webMode: pdfWebMode, evidence: _workspaceEvidence, verdict: _workspaceVerdict,
+    reviewFindingsAvailable: !!(pdfFixResult && [pdfFixResult.axeAudit?.incomplete, (pdfFixResult.secondEngineAudit || pdfFixResult.equalAccessAudit)?.potentialFindings, (pdfFixResult.secondEngineAudit || pdfFixResult.equalAccessAudit)?.manualFindings].some(items => Array.isArray(items) && items.length > 0)), t });
   const _workspaceNavigate = (selector) => {
     if (pdfFixResult && pdfAuditTab !== 'results') setPdfAuditTab('results');
     setWorkspaceDestination(selector);
@@ -7931,7 +8073,6 @@ function PdfAuditView(props) {
         >
           {/* Floating diagnostics log — fixed bottom-right, above the modal; lets the teacher see +
               copy the pipeline's warnLog/debugLog output from inside Canvas (no browser console). */}
-          <PdfDiagnosticsLog t={t} addToast={addToast} docPipeline={_docPipeline} />
           <div className="pdf-workspace-shell relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto border-2 border-indigo-200">
             {/* Persistent close button — sticky so it stays visible when the modal content scrolls.
                 Disabled while remediation is mid-flight so users don't kill a running pipeline by accident. */}
@@ -7939,6 +8080,7 @@ function PdfAuditView(props) {
               fileName={pdfBatchMode ? _pdfWorkspaceText(t, 'batch_workspace', 'Batch workspace') : (pendingPdfFile?.name || pdfAuditResult?.fileName)}
               sourceLabel={pdfBatchMode ? _pdfWorkspaceText(t, 'batch', 'Batch of files') : pdfWebMode || pdfAuditResult?._isWebAudit ? _pdfWorkspaceText(t, 'web', 'Website / HTML') : _pdfWorkspaceText(t, 'single', 'Single document')}
               hasResult={!!pdfFixResult && !pdfBatchMode && !pdfAuditLoading && !pdfAuditResult?._choosing} onNavigate={_workspaceNavigate}>
+              <PdfDiagnosticsLog t={t} addToast={addToast} docPipeline={_docPipeline} />
               <button
                 type="button"
                 onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
@@ -8355,6 +8497,11 @@ function PdfAuditView(props) {
                       </div>
                     )}
 
+                    <details className="pdf-workspace-settings" data-help-key="pdf_batch_connection_settings">
+                      <summary>Advanced AI connection settings</summary>
+                      <_PdfPacingPreference t={t} value={pdfExtraRequestPacing} onChange={setPdfExtraRequestPacing} disabled={_modalDismissBusy || pdfAuditLoading} />
+                      <p>Applies to new batches. Resuming a saved batch keeps its original pacing choice.</p>
+                    </details>
                     {/* Tier 4: Resume previous batch banner */}
                     {!pdfBatchQueue.length && !pdfBatchProcessing && !batchActionBusy && savedBatchLookupStatus !== 'ready' && savedBatchLookupStatus !== 'idle' && (
                       <div className="pdf-workspace-recovery" aria-label="Saved batch lookup">
@@ -8484,6 +8631,7 @@ function PdfAuditView(props) {
                     )}
 
                     {/* Batch Summary */}
+                    {pdfBatchSummary?.settings && <p className="pdf-workspace-wait-details">Saved batch — extra request pacing: {pdfBatchSummary.settings.pdfExtraRequestPacing === false ? 'Off' : 'On'}</p>}
                     {pdfBatchSummary && (
                       <div className={`mb-4 p-4 rounded-xl border ${_batchSummaryNeedsAttention ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
                         <h4 className={`text-sm font-black mb-2 ${_batchSummaryNeedsAttention ? 'text-amber-900' : 'text-green-800'}`}>{_batchSummaryNeedsAttention ? (_batchSummaryIncomplete ? '\u23f8' : '\u26a0') : '\u2705'} {_batchSummaryTitle}</h4>
@@ -8901,13 +9049,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // remediation never runs without baseline evidence. (Make-Accessible auto-continue fix 2026-06-15)
                     let _audit = null;
                     try {
-                      _audit = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: pdfDiagnosticFreshRun });
+                      _audit = await _awaitVisibleAuditRun(_visibleRun, runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: pdfDiagnosticFreshRun }));
                     } catch (auditErr) {
+                      if (!_visibleAuditRunIsCurrent(_visibleRun)) return;
                       if (_oneClickDropped('audit error')) return;
                       _restoreVisibleAuditAfterFailure(_auditChooserSnapshot);
                       addToast((t('toasts.audit_error_stopped') || 'The accessibility audit failed, so remediation was not started. Retry the audit and try again.') + (auditErr?.message ? ' ' + auditErr.message : ''), 'error');
                       return;
                     }
+                    if (!_visibleAuditRunIsCurrent(_visibleRun)) return;
                     if (!_audit) {
                       if (_oneClickDropped('empty audit')) return;
                       _restoreVisibleAuditAfterFailure(_auditChooserSnapshot);
@@ -9301,13 +9451,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </details>
                 </div>
 
-                <details data-help-key="pdf_audit_view_settings_panel" className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400">
-                  <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600">{_pdfWorkspaceText(t, 'advanced_settings', 'Advanced pipeline settings')}</summary>
-                  <div className="mt-2 space-y-2">
+                <details data-help-key="pdf_audit_view_settings_panel" className="pdf-workspace-settings">
+                  <summary>{_pdfWorkspaceText(t, 'advanced_settings', 'Advanced pipeline settings')}</summary>
+                  <p>Settings are kept for the current run. Saved batches resume with their original pacing choice.</p>
+                  <fieldset disabled={_modalDismissBusy || pdfAuditLoading}>
+                    <legend>Quality &amp; effort</legend>
                     <div>
                       <div className="flex justify-between text-[11px]">
                         <span className="font-bold text-slate-600">Audit Passes: {pdfAuditorCount}</span>
-                        <span className="text-slate-600">{pdfAuditorCount <= 2 ? 'Fast' : pdfAuditorCount <= 5 ? 'Balanced' : pdfAuditorCount <= 7 ? 'Thorough' : 'Research-grade'}</span>
+                        <span className="text-slate-600">{pdfAuditorCount <= 2 ? 'Fewer checks' : pdfAuditorCount <= 5 ? 'Standard effort' : 'More checks'}</span>
                       </div>
                       <input data-help-key="pdf_audit_view_audit_passes_slider" type="range" min="1" max="10" value={pdfAuditorCount} onChange={(e) => setPdfAuditorCount(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.audit_passes_aria') || 'Number of audit passes'} />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>1 (quick)</span><span>5 (default)</span><span>10 (max)</span></div>
@@ -9315,7 +9467,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     <div>
                       <div className="flex justify-between text-[11px]">
                         <span className="font-bold text-slate-600">Target Score: {pdfTargetScore}</span>
-                        <span className="text-slate-600">{pdfTargetScore >= 95 ? 'Near-perfect' : pdfTargetScore >= 90 ? 'Excellent' : pdfTargetScore >= 80 ? 'Good' : 'Minimum'}</span>
+                        <span className="text-slate-600">{'Audit target, not a conformance guarantee'}</span>
                       </div>
                       <input data-help-key="pdf_audit_view_target_score_slider" type="range" min="60" max="100" step="5" value={pdfTargetScore} onChange={(e) => setPdfTargetScore(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.target_score_aria') || 'Target accessibility score'} />
                       {/* M10 (deep dive 2026-07-09): the label said "90 (default)" for 2+ weeks after the
@@ -9330,6 +9482,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <input data-help-key="pdf_audit_view_max_fix_passes_slider" type="range" min="0" max="15" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.max_fix_passes_aria') || 'Max fix pass count'} />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>0 (off)</span><span>8 (default)</span><span>15 (max)</span></div>
                     </div>
+                    <label className="flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200">
+                      <input data-help-key="pdf_audit_view_auto_continue_toggle" type="checkbox" checked={pdfAutoContinue} onChange={(e) => setPdfAutoContinue(e.target.checked)} className="mt-0.5 rounded" aria-label={t('pdf_audit.settings.auto_continue_aria') || 'Auto-continue remediation until target score'} />
+                      <span>🔁 <b>Auto-continue</b> until score ≥ <b>{pdfTargetScore}</b> — runs up to 3 extra rounds of fixes automatically, stopping early when no more progress is possible.</span>
+                    </label>
+                    <div>
+                      <div className="flex justify-between text-[11px]">
+                        <span className="font-bold text-slate-600">Polish Passes: {pdfPolishPasses}</span>
+                        <span className="text-slate-600">{pdfPolishPasses === 0 ? 'None' : pdfPolishPasses === 1 ? 'Standard' : 'Extra polish'}</span>
+                      </div>
+                      <input data-help-key="pdf_audit_view_polish_passes_slider" type="range" min="0" max="3" value={pdfPolishPasses} onChange={(e) => setPdfPolishPasses(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.polish_passes_aria') || 'Polish pass count'} />
+                      <div className="flex justify-between text-[11px] text-slate-600"><span>0</span><span>2 (default)</span><span>3</span></div>
+                    </div>
+                  </fieldset>
+                  <fieldset disabled={_modalDismissBusy || pdfAuditLoading}>
+                    <legend>Scanned documents</legend>
                     {/* OCR language (2026-06-20): for SCANNED/image PDFs, let the teacher tell the pipeline
                         the language so Tesseract uses the right model — serves ELL handouts. '' = auto-detect. */}
                     <div>
@@ -9343,41 +9510,24 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </select>
                       <div className="text-[10px] text-slate-500 mt-0.5">{t('pdf_audit.settings.ocr_lang_hint') || 'Only affects scanned/image PDFs. Set the language so OCR reads non-English text accurately (helps ELL documents). Auto-detect works for most.'}</div>
                     </div>
+                  </fieldset>
+                  <fieldset disabled={_modalDismissBusy || pdfAuditLoading}>
+                    <legend>AI connection &amp; recovery</legend>
+                    <_PdfPacingPreference t={t} value={pdfExtraRequestPacing} onChange={setPdfExtraRequestPacing} disabled={_modalDismissBusy || pdfAuditLoading} />
                     {/* Storm budget (2026-09-02): minutes of deliberate rate-limit waiting one run may spend
                         before the AI passes pause at the last verified version. 0 = keep waiting (old behaviour). */}
                     <div>
                       <div className="flex justify-between text-[11px] mb-0.5">
-                        <span className="font-bold text-slate-600">{t('pdf_audit.settings.storm_budget') || 'Rate-limit waiting budget'}</span>
+                        <span className="font-bold text-slate-600">{_pdfWorkspaceText(t, 'recovery_budget', 'Pause after repeated AI service delays')}</span>
                         <span className="text-slate-600">{Number(pdfStormBudgetMinutes) > 0 ? (Number(pdfStormBudgetMinutes) + ' ' + (t('pdf_audit.settings.storm_budget_minutes') || 'min')) : (t('pdf_audit.settings.storm_budget_unbounded') || 'Keep waiting')}</span>
                       </div>
-                      <select data-help-key="pdf_audit_view_storm_budget" value={String(Number(pdfStormBudgetMinutes) || 0)} onChange={(e) => setPdfStormBudgetMinutes(Math.max(0, Number(e.target.value) || 0))} aria-label={t('pdf_audit.settings.storm_budget_aria') || 'Minutes of rate-limit waiting before the AI passes pause'} className="w-full text-[12px] border border-slate-300 rounded-lg px-2 py-1.5 bg-white text-slate-700">
+                      <select data-help-key="pdf_audit_view_storm_budget" value={String(Number(pdfStormBudgetMinutes) || 0)} onChange={(e) => setPdfStormBudgetMinutes(Math.max(0, Number(e.target.value) || 0))} aria-label={_pdfWorkspaceText(t, 'recovery_budget_aria', 'Recovery waiting allowance before pausing AI remediation')} className="w-full text-[12px] border border-slate-300 rounded-lg px-2 py-1.5 bg-white text-slate-700">
                         {[10, 18, 30, 45].map((m) => <option key={m} value={String(m)}>{m + ' ' + (t('pdf_audit.settings.storm_budget_minutes_long') || 'minutes') + (m === 18 ? ' (' + (t('pdf_audit.settings.storm_budget_default') || 'default') + ')' : '')}</option>)}
                         <option value="0">{t('pdf_audit.settings.storm_budget_unbounded_long') || 'Keep waiting (no budget)'}</option>
                       </select>
-                      <div className="text-[10px] text-slate-500 mt-0.5">{t('pdf_audit.settings.storm_budget_hint') || 'When Canvas rate-limits the AI, the run waits instead of failing. Once this much waiting adds up, the AI passes pause at the last verified version and you can resume later. Deterministic fixes and the audit are always kept.'}</div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">{_pdfWorkspaceText(t, 'recovery_budget_hint', 'Counts elapsed recovery waits after AI service errors. Preventive pacing and request processing do not count. When the allowance is used, AI remediation pauses; your latest version is kept for Resume.')}</div>
                     </div>
-                    <label className="flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200">
-                      <input data-help-key="pdf_audit_view_auto_continue_toggle" type="checkbox" checked={pdfAutoContinue} onChange={(e) => setPdfAutoContinue(e.target.checked)} className="mt-0.5 rounded" aria-label={t('pdf_audit.settings.auto_continue_aria') || 'Auto-continue remediation until target score'} />
-                      <span>🔁 <b>Auto-continue</b> until score ≥ <b>{pdfTargetScore}</b> — runs up to 3 extra rounds of fixes automatically, stopping early when no more progress is possible.</span>
-                    </label>
-                    <div>
-                      <div className="flex justify-between text-[11px]">
-                        <span className="font-bold text-slate-600">Polish Passes: {pdfPolishPasses}</span>
-                        <span className="text-slate-600">{pdfPolishPasses === 0 ? 'None' : pdfPolishPasses === 1 ? 'Standard' : 'Extra polish'}</span>
-                      </div>
-                      <input data-help-key="pdf_audit_view_polish_passes_slider" type="range" min="0" max="3" value={pdfPolishPasses} onChange={(e) => setPdfPolishPasses(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.polish_passes_aria') || 'Polish pass count'} />
-                      <div className="flex justify-between text-[11px] text-slate-600"><span>0</span><span>2 (default)</span><span>3</span></div>
-                    </div>
-                    {/* M10 (deep dive 2026-07-09): the settings-lock disclosure the 2026-07-02 S1 decision
-                        called for ("settings lock at run entry") but never shipped — a teacher who drags
-                        Target Score mid-run to make it finish was never told why nothing changed. Shown
-                        only while a run is active, so it never adds noise to setup. */}
-                    {(pdfFixLoading || pdfAutoContinueRunning) && (
-                      <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1">
-                        ⓘ {t('pdf_audit.settings.locked_midrun') || 'A run is in progress — changes here apply to the NEXT run; the current run keeps the settings it started with.'}
-                      </p>
-                    )}
-                  </div>
+                  </fieldset>
                 </details>
                 {/* Style & Branding for remediation output */}
                 <details data-help-key="pdf_audit_view_branding_panel" className="bg-slate-50 rounded-lg border border-slate-400 overflow-hidden mb-3">
@@ -9585,7 +9735,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const _visibleRun = _beginVisibleAuditRun('audit START clicked - loading asserted before clearing chooser', { docEpoch: _auditEpoch, freshRun: pdfDiagnosticFreshRun });
                     addToast(t('toasts.auditing_remediating_pdf'), 'info');
                     try {
-                      const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: pdfDiagnosticFreshRun });
+                      const _result = await _awaitVisibleAuditRun(_visibleRun, runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: pdfDiagnosticFreshRun }));
+                      if (!_visibleAuditRunIsCurrent(_visibleRun)) return;
                       if (!_auditCurrent()) { _auditGateLog('audit result DROPPED — document intake epoch went stale mid-audit (modal will not open this attempt)', { docEpoch: _auditEpoch }); return; }
                       if (!_result) {
                         _restoreVisibleAuditAfterFailure(_auditSnapshot);
@@ -9595,6 +9746,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         if (_result?.score === -1) addToast(t('toasts.audit_retryable_error') || 'The audit could not complete. Please retry.', 'error');
                       }
                     } catch (error) {
+                      if (!_visibleAuditRunIsCurrent(_visibleRun)) return;
                       if (!_auditCurrent()) { _auditGateLog('audit ERROR result DROPPED — document intake epoch went stale mid-audit', { docEpoch: _auditEpoch }); return; }
                       _restoreVisibleAuditAfterFailure(_auditSnapshot);
                       addToast((t('toasts.audit_retryable_error') || 'The audit failed. Please retry.') + ' ' + ((error && error.message) || error || ''), 'error');
@@ -10061,13 +10213,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   const _stall = _auditStall();
                   return (
                     <div>
-                      <p className="text-sm text-slate-600">{t('pdf_audit.loading.subtitle2') || 'Several accessibility checks are reading every page (5 AI review passes + an automated rule scan).'}</p>
+                      <p className="text-sm text-slate-600">{_pdfWorkspaceText(t, 'audit_loading_checks', 'Reading your document and running the configured accessibility checks.')}</p>
                       <p className="text-sm font-bold text-slate-700 mt-1">{(t('pdf_audit.loading.for_size') || 'For a file this size:')} {_est}</p>
-                      <p className="text-xs text-slate-500 mt-1" aria-hidden="true">{_mm > 0 ? _mm + 'm ' : ''}{_ss}s {t('pdf_audit.loading.elapsed') || 'elapsed'}{_stall ? '' : ' — ' + (t('pdf_audit.loading.safe_to_wait') || 'it’s safe to keep waiting; nothing is stuck.')}</p>
+                      <p className="text-xs text-slate-500 mt-1" aria-hidden="true">{_mm > 0 ? _mm + 'm ' : ''}{_ss}s {t('pdf_audit.loading.elapsed') || 'elapsed'}{_stall ? '' : ' — ' + (t('pdf_audit.loading.safe_to_wait_current') || 'The audit is still active. You can wait or stop and retry.')}</p>
                       {_auditStageLine()}
-                      {_stall && (
+                      <_PdfAuditWaitStatus wait={auditWait} t={t} />
+                      <_PdfWaitDetails wait={auditWait} pacing={pdfExtraRequestPacing} />
+                      <p className="text-xs text-slate-600 mt-2">{_pdfWorkspaceText(t, 'audit_estimate_scope', 'Time estimates exclude request pacing and AI service delays.')}</p>
+                      <button type="button" data-help-key="pdf_audit_stop" onClick={_stopVisibleAuditRun}
+                        disabled={!_docPipeline || typeof _docPipeline.stopPdfAccessibilityAudit !== 'function'}
+                        className="mt-3 px-4 py-2 rounded-lg border border-slate-500 bg-white text-slate-800 text-sm font-bold hover:bg-slate-100 disabled:opacity-50" style={{ minHeight: 44 }}>
+                        {_pdfWorkspaceText(t, 'stop_audit', 'Stop audit')}
+                      </button>
+                      {_stall && !auditWait?.reason && (
                         <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-3 mx-auto max-w-md" data-audit-stalled={_stall.minutes}>
-                          {t('pdf_audit.loading.stalled', { minutes: _stall.minutes }) || ('No progress for ' + _stall.minutes + ' minutes on this step. The AI service may be throttling, or a network call may have stalled. You can keep waiting, or close this window (✕) and run the audit again.')}
+                          {_pdfWorkspaceText(t, 'audit_stalled_recovery', 'This audit step is taking longer than expected. You can keep waiting, or use Stop audit and try again. Your uploaded document will stay attached.')}
                         </p>
                       )}
                     </div>
@@ -10223,7 +10383,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       addToast(t('toasts.retrying_audit'), 'info');
                       try {
                         /* Retry means RETRY: a user pressing this after a cached replay wants a fresh audit, and the content-hash cache would otherwise hand back the identical result instantly (2026-08-10). */
-                        const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: true });
+                        const _result = await _awaitVisibleAuditRun(_visibleRun, runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: true }));
+                        if (!_visibleAuditRunIsCurrent(_visibleRun)) return;
                         if (!_auditCurrent()) { _auditGateLog('audit RETRY result DROPPED — document intake epoch went stale mid-audit', { docEpoch: _auditEpoch }); return; }
                         if (!_result) {
                           _restoreVisibleAuditAfterFailure(_auditSnapshot);
@@ -10233,6 +10394,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           if (_result?.score === -1) addToast(t('toasts.audit_retryable_error') || 'The audit retry could not complete. Please try again.', 'error');
                         }
                       } catch (error) {
+                        if (!_visibleAuditRunIsCurrent(_visibleRun)) return;
                         if (!_auditCurrent()) { _auditGateLog('audit ERROR result DROPPED — document intake epoch went stale mid-audit', { docEpoch: _auditEpoch }); return; }
                         _restoreVisibleAuditAfterFailure(_auditSnapshot);
                         addToast('Audit retry failed: ' + ((error && error.message) || error), 'error');
@@ -10964,9 +11126,82 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </div>
                   )}
 
-                  {/* Action buttons — transforms after pipeline has run */}
+                  {pdfFixResult && (<>
+                    {(() => {
+                        const verification = _workspaceEvidence?.verification || {};
+                        const state = verification.verificationState || 'unavailable';
+                        const coverage = verification.verificationCoverage || {};
+                        const reasons = Array.isArray(verification.reasons) ? verification.reasons : [];
+                        const tone = state === 'complete'
+                          ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
+                          : state === 'review-required' || state === 'complete-for-tested-scope'
+                            ? 'bg-amber-50 border-amber-300 text-amber-950'
+                            : 'bg-slate-50 border-slate-400 text-slate-900';
+                        const label = state === 'complete' ? 'Complete'
+                          : state === 'complete-for-tested-scope' ? 'Complete for static source'
+                          : state === 'review-required' ? 'Human review required'
+                            : state === 'partial' ? 'Partial' : 'Unavailable';
+
+                        return (
+                          <section id="pdf-verification-status" data-help-key="pdf_audit_verification_status" aria-labelledby="pdf-verification-status-heading" className={`rounded-xl border p-3 ${tone}`}>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 id="pdf-verification-status-heading" className="text-sm font-black">WCAG verification: {label}</h3>
+                              <span className="text-[10px] font-bold rounded-full border border-current/30 px-2 py-0.5">{coverage.standard || 'WCAG 2.2 AA'}</span>
+                              {state !== 'complete' && (
+                                <button
+                                  type="button"
+                                  disabled={verificationRefreshBusy || pdfFixLoading || pdfAutoContinueRunning}
+                                  aria-describedby="pdf-verification-refresh-help"
+                                  onClick={async () => {
+                                    if (verificationRefreshBusy || !pdfFixResult.accessibleHtml) return;
+                                    setVerificationRefreshBusy(true);
+                                    setPdfFixStep('Re-running verification without changing the document...');
+                                    try {
+                                      // 2026-07-27: wait for the gate to calm first, like the sibling
+                                      // "Complete final audit" control does. These two buttons do the same
+                                      // operation but used to behave OPPOSITELY under a storm — that one
+                                      // paced politely, this one fired straight into it and came back
+                                      // "Verification could not complete" in seconds. A teacher facing two
+                                      // controls where the wrong choice silently fails is worse off than
+                                      // with one. Bounded, and wait-not-stop proceeds anyway on timeout.
+                                      if (_docPipeline && typeof _docPipeline.waitForGeminiCalm === 'function') {
+                                        try {
+                                          setPdfFixStep('Waiting for the AI service to ease before re-checking...');
+                                          await _docPipeline.waitForGeminiCalm({ maxWaitMs: 240000 });
+                                        } catch (_) {}
+                                        setPdfFixStep('Re-running verification without changing the document...');
+                                      }
+                                      const result = await _reauditAndScore(pdfFixResult.accessibleHtml, null);
+                                      if (result && result.ok) addToast('Verification refreshed: ' + result.verificationState + '.', result.verificationState === 'complete' ? 'success' : 'warning');
+                                      else addToast('Verification could not complete. The document was not changed.', 'warning');
+                                    } finally { setVerificationRefreshBusy(false); }
+                                  }}
+                                  className="ml-auto px-2.5 py-1 rounded-lg bg-white border border-current/30 text-[11px] font-bold hover:bg-black/5 disabled:opacity-50"
+                                >{verificationRefreshBusy ? 'Re-checking...' : 'Re-run verification'}</button>
+                              )}
+                            </div>
+                            {state !== 'complete' && <p id="pdf-verification-refresh-help" className="mt-1.5 text-xs">Re-runs all verification checks on the current document without changing it.</p>}
+
+                            <_PdfAuditVerificationEngineList coverage={coverage} reasons={reasons} />
+                            {pdfFixResult._finalAuditRetryAvailable && state !== 'complete' && (
+                              /* Reader for the previously write-only flag: the LAST verification audit
+                                 failed outright (throttle/transport), so a retry is genuinely likely to
+                                 improve the state — say so instead of leaving the button unexplained. */
+                              <p className="mt-1.5 text-[11px] font-semibold">The last verification audit could not finish (AI throttled or engine unavailable).</p>
+                            )}
+                            <_PdfAuditVerificationReasons reasons={reasons} verificationState={state} />
+                          </section>
+                        );
+                      })()}
+                  </>)}
+
+                  {/* Optional repair tools follow the current verification result. */}
                   <div className="flex flex-wrap gap-2 pt-2">
-                    {pdfFixResult ? (<>
+                    {pdfFixResult ? (
+                      <details id="pdf-additional-repairs" className="pdf-workspace-repairs">
+                        <summary>Additional repair tools</summary>
+                        <p>These tools can change the document and run verification again. Review the findings first to choose whether another repair pass is needed.</p>
+                        <div className="pdf-workspace-repair-actions">
                       <button onClick={async () => {
                         const _sweepOperation = _beginRemediationOperation('additional-sweep');
                         const _sweepSource = pdfFixResultRef && pdfFixResultRef.current;
@@ -11288,7 +11523,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             return <><Wrench size={16} /><span className="flex flex-col items-start leading-tight"><span>{action}</span><span className="text-[10px] font-semibold text-amber-100">{evidence.compactLabel}</span></span></>;
                           })()}
                         </button>
-                    </>) : (
+                        </div>
+                      </details>
+                    ) : (
                       <button data-help-key="pdf_workspace_fix_verify" onClick={async () => {
                         console.warn('[Fix&Verify btn] clicked — pendingPdfBase64:', !!pendingPdfBase64, 'pdfAuditResult:', !!pdfAuditResult, 'pageRange:', pdfPageRange);
                         if (!_requireRemediationReady()) return;
@@ -11330,6 +11567,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {t('pdf_audit.hidden_tab.tip') || '💡 Keep this tab visible — a minimized or covered tab runs slower (the browser pauses page rendering), though nothing is lost.'}
                           {tabHiddenNoticeMs > 60000 ? ' ' + (t('pdf_audit.hidden_tab.accrued') || 'This run was hidden ~{m} min so far.').replace('{m}', String(Math.round(tabHiddenNoticeMs / 60000))) : ''}
                         </div>
+                        <_PdfWaitDetails wait={remediationProgress?.wait} pacing={pdfExtraRequestPacing} />
                         {remediationProgress?.activity?.message && (
                           <div className={'mt-2 rounded-lg border px-2.5 py-1.5 text-[11px] ' + (remediationProgress.status === 'throttled' ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-slate-50 border-slate-200 text-slate-700')}>
                             <span className="font-bold">{remediationProgress.status === 'throttled' ? 'Waiting safely: ' : 'Current activity: '}</span>
@@ -12941,7 +13179,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // report) overlaid with this session's not-yet-persisted clicks.
                     const _rfDismissed = { ...((pdfFixResult && pdfFixResult.reviewedFindings) || {}), ..._reviewDismissed };
                     const _rfOpen = _rfAll.filter((f) => !_rfDismissed[_rfKey(f)]);
-                    const _rfDone = _rfAll.length - _rfOpen.length;
+                    const _rfReviewed = _rfAll.filter((f) => !!_rfDismissed[_rfKey(f)]);
+                    const _rfDone = _rfReviewed.length;
+                    const _rfSessionOnly = _rfReviewed.filter((f) => !pdfFixResult?.reviewedFindings?.[_rfKey(f)]).length;
                     const _rfBucketLabel = { incomplete: (t('pdf_audit.review_queue.bucket_incomplete') || 'needs review'), potential: (t('pdf_audit.review_queue.bucket_potential') || 'potential issue'), manual: (t('pdf_audit.review_queue.bucket_manual') || 'manual check') };
                     const _rfEngineLabel = { axe: 'axe-core', equalAccess: 'Equal Access' };
                     const _triage = pdfFixResult && pdfFixResult.reviewTriage;
@@ -12953,68 +13193,97 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const _canTriage = typeof (_docPipeline && _docPipeline.resolveReviewFindings) === 'function';
                     const _reviewToWorkbench = (f) => {
                       try { setExpertCommandInput('Review and fix if needed (' + (_rfEngineLabel[f.engine] || f.engine) + ' ' + (_rfBucketLabel[f.bucket] || f.bucket) + ', ' + (f.id || '') + ((f.wcagCriteria || []).length ? ', WCAG ' + f.wcagCriteria.join(', ') : '') + '): ' + (f.description || '')); } catch (_) {}
-                      try { const wb = document.getElementById('allo-sec-workbench'); if (wb) { wb.open = true; wb.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } catch (_) {}
+                      _workspaceNavigate('#allo-sec-workbench');
                       addToast(t('pdf_audit.issue.sent_workbench') || '🛠 Loaded into the Expert Workbench below — review and run it.', 'info');
                     };
+                    const _setReviewAttestation = (event, key, reviewed) => {
+                      const token = _captureAsyncHtmlToken();
+                      const at = reviewed ? Date.now() : null;
+                      const change = (value) => {
+                        if (key === null) return null;
+                        const updated = { ...(value || {}) };
+                        if (reviewed) updated[key] = at; else delete updated[key];
+                        return Object.keys(updated).length ? updated : null;
+                      };
+                      // A delayed click from an older document must not attest to the new one.
+                      if (pdfFixResult) {
+                        if (!token || token.documentEpoch !== pdfDocumentEpoch || token.html !== pdfFixResult.accessibleHtml
+                            || !_commitAsyncHtmlIfCurrent(token, prev => _viewWithReviewAttestations(prev, change(prev.reviewedFindings), _docPipeline))) {
+                          addToast('The document changed before this review was recorded. Check the current findings and try again.', 'info');
+                          return;
+                        }
+                      } else if (token?.html != null) {
+                        addToast('A result became available. Check its current findings before recording this review.', 'info');
+                        return;
+                      }
+                      const index = _rfOpen.findIndex(f => _rfKey(f) === key);
+                      const neighbor = _rfOpen[index + 1] || _rfOpen[index - 1];
+                      _reviewFocusRequest.current = {
+                        root: event.currentTarget.closest('#pdf-review-findings'), trigger: event.currentTarget,
+                        documentEpoch: pdfDocumentEpoch, html: pdfFixResult?.accessibleHtml || null,
+                        preferredKey: reviewed ? (neighbor && _rfKey(neighbor)) : (key || (_rfAll[0] && _rfKey(_rfAll[0]))),
+                      };
+                      setReviewDismissed(prev => change(prev) || {});
+                    };
                     return (
-                      <div className="mt-4 bg-white rounded-2xl border-2 border-amber-300 p-4 space-y-2" role="region" aria-label={t('pdf_audit.review_queue.aria') || 'Findings that need human judgment'}>
+                      <div id="pdf-review-findings" className="pdf-workspace-review mt-4 bg-white rounded-2xl border-2 border-amber-300 p-4 space-y-2" role="region" aria-label={t('pdf_audit.review_queue.aria') || 'Findings that need human judgment'}>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="text-sm font-black text-amber-900 flex-1">🧑‍⚖️ {t('pdf_audit.review_queue.heading') || 'Needs your judgment'} <span aria-live="polite">({_rfOpen.length})</span></h4>
+                          <h4 className="text-sm font-black text-amber-900 flex-1">{t('pdf_audit.review_queue.heading') || 'Needs your judgment'}</h4>
                           <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">{_rfSource.committed ? (t('pdf_audit.review_queue.current') || 'current result') : ((t('pdf_audit.review_queue.as_of') || 'as of pass') + ' ' + _rfSource.passNumber)}</span>
                           {_canTriage && _rfOpen.length > 0 && !_remediationInFlight && (
-                            <button onClick={() => _runReviewTriage(_rfOpen)} disabled={_triageBusy} className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60" title="Ask the AI to fix or judge each remaining finding. Fixes are gated (same words, images and links) and re-checked by the engines; nothing is marked reviewed for you.">{_triageBusy ? 'Asking AI…' : '🤖 Ask AI to resolve'}</button>
-                          )}
-                          {_rfDone > 0 && (
-                            <button onClick={() => { setReviewDismissed({}); setPdfFixResult((prev) => prev ? { ...prev, reviewedFindings: null } : prev); }} className="text-[10px] font-bold text-slate-600 underline" title={t('pdf_audit.review_queue.reset_title') || 'Bring back the findings you marked as reviewed — also clears the attestations recorded for the report'}>{_rfDone} {t('pdf_audit.review_queue.reviewed') || 'reviewed'} — {t('pdf_audit.review_queue.reset') || 'reset'}</button>
+                            <button type="button" onClick={() => _runReviewTriage(_rfOpen)} disabled={_triageBusy} className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60" title="Ask the AI to fix or judge each remaining finding. Fixes are gated (same words, images and links) and re-checked by the engines; nothing is marked reviewed for you.">{_triageBusy ? 'Asking AI…' : 'Ask AI to resolve'}</button>
                           )}
                         </div>
+                        <p data-review-status tabIndex={-1} role="status" aria-live="polite" aria-atomic="true" className="text-xs font-semibold">{_rfOpen.length} pending · {_rfDone} reviewed</p>
                         <p className="text-[11px] text-amber-900">{_remediationInFlight
                           ? (t('pdf_audit.review_queue.explainer') || 'The automated engines flagged these but cannot decide them — semantic meaning, context, and intent need a person. Work through them here while the automatic passes handle the mechanical fixes; findings a later pass resolves drop off on their own.')
                           : (t('pdf_audit.review_queue.explainer_settled') || 'The automated engines flagged these but cannot decide them — semantic meaning, context, and intent need a person. Work through them with the Workbench, or mark each reviewed once you have checked it yourself.')}</p>
+                        <p className="text-xs">Marking reviewed records your judgment. It does not repair the document, clear checker findings or change verification.</p>
+                        {_rfSessionOnly > 0 && <p className="text-xs">{_rfSessionOnly} review{_rfSessionOnly === 1 ? ' is' : 's are'} kept only in this workspace from a live pass; these marks are not yet recorded on the saved result.</p>}
                         {_triage && (
-                          <p className="text-[11px] text-amber-900" role="status">🤖 {_triage.skipped === 'over-cap'
+                          <p className="text-[11px] text-amber-900" role="status">{_triage.skipped === 'over-cap'
                             ? ('The automatic AI pass was skipped: ' + (_triage.found || '') + ' findings exceed its cap of ' + (_triage.cap || 10) + '. "Ask AI to resolve" runs it on the first ' + (_triage.cap || 10) + '.')
                             : (_triage.skipped
                               ? ('The AI pass could not run (' + _triage.skipped + ').')
                               : ('AI attempted ' + _triage.attempted + (_triage.applied ? (', applied ' + _triage.applied + ' fix' + (_triage.applied === 1 ? '' : 'es')) : ', applied no fixes')
-                                + (Number.isFinite(_triage.resolved) ? ('; ' + _triage.resolved + ' no longer flagged after re-check') : '') + '; ' + _rfOpen.length + ' need you.'))}</p>
+                                + (Number.isFinite(_triage.resolved) ? ('; ' + _triage.resolved + ' no longer flagged after re-check') : '') + '; ' + _rfOpen.length + ' need your judgment.'))}</p>
                         )}
                         {_rfOpen.length === 0 ? (
-                          <p className="text-[11px] font-bold text-emerald-700">✅ {t('pdf_audit.review_queue.all_done') || 'All current review findings handled — new ones will appear here if a later pass surfaces any.'}</p>
+                          <p data-review-completion tabIndex={-1} className="text-xs font-semibold">All current findings marked reviewed. These are recorded judgments; verification and any confirmed failures remain unchanged.</p>
                         ) : (
-                          <ul className="space-y-1.5 list-none">
+                          <ul className="pdf-workspace-review-list space-y-1.5 list-none">
                             {_rfOpen.map((f) => (
-                              <li key={_rfKey(f)} className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 text-[11px] text-amber-950">
+                              <li key={_rfKey(f)} className="pdf-workspace-review-row flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 text-[11px] text-amber-950">
                                 <span className="shrink-0 font-bold" aria-hidden="true">{f.bucket === 'incomplete' ? '⚠' : f.bucket === 'potential' ? '🔎' : '👀'}</span>
-                                <span className="flex-1 min-w-0">
+                                <div className="flex-1 min-w-0">
                                   <span className="font-mono font-bold">{f.id}</span>
                                   <span className="ml-1 px-1 py-0.5 rounded bg-white/80 border border-amber-300 text-[9px] font-bold uppercase tracking-wide">{(_rfEngineLabel[f.engine] || f.engine) + ' · ' + (_rfBucketLabel[f.bucket] || f.bucket)}</span>
                                   {f.nodes > 0 && <span className="ml-1 opacity-70">{f.nodes} {f.nodes === 1 ? (t('pdf_audit.review_queue.element') || 'element') : (t('pdf_audit.review_queue.elements') || 'elements')}</span>}
                                   {(f.wcagCriteria || []).length > 0 && <span className="ml-1 opacity-70">WCAG {f.wcagCriteria.join(', ')}</span>}
                                   {f.description && <span className="block mt-0.5 opacity-90">{f.description}</span>}
-                                  {/* The engine's own snippet of each flagged element (2026-09-13): a person can judge
-                                      "is this a quotation" only when shown the text in question. */}
                                   {(f.where || []).length > 0 && <span className="block mt-0.5 font-mono text-[10px] opacity-80">→ {f.where.map((w, wi) => <span key={wi}>{wi > 0 ? ' · ' : ''}“{w}”</span>)}</span>}
-                                  {_triageFor(f) && <span className="block mt-0.5 text-[10px] font-bold text-indigo-900">🤖 {_triageLabel(_triageFor(f))}</span>}
+                                  {_triageFor(f) && <span className="block mt-0.5 text-[10px] font-bold text-indigo-900">{_triageLabel(_triageFor(f))}</span>}
                                   {f.helpUrl && <a href={f.helpUrl} target="_blank" rel="noopener noreferrer" className="font-bold underline">{t('pdf_audit.wcag_report.guidance') || 'Guidance'}</a>}
-                                </span>
-                                <span className="shrink-0 flex gap-1">
-                                  <button onClick={() => _reviewToWorkbench(f)} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.review_queue.wb_title') || 'Send to the Expert Workbench — prefills a targeted command you review and run'}>🛠</button>
-                                  <button onClick={() => {
-                                    const _k = _rfKey(f);
-                                    const _at = Date.now();
-                                    setReviewDismissed((prev) => ({ ...prev, [_k]: _at }));
-                                    // Persist the attestation onto the result: metadata-only spread, html
-                                    // untouched, so the revision counter does not advance and the running
-                                    // loop cannot mistake this for a document edit. Rides project save and
-                                    // the exported audit report.
-                                    setPdfFixResult((prev) => prev ? { ...prev, reviewedFindings: { ...(prev.reviewedFindings || {}), [_k]: _at } } : prev);
-                                  }} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-emerald-800 hover:text-white font-bold transition-colors" title={t('pdf_audit.review_queue.done_title') || 'Mark as reviewed — I checked this myself. Recorded in the audit report as a human attestation.'} aria-label={(t('pdf_audit.review_queue.done_aria') || 'Mark reviewed') + ': ' + f.id}>✓</button>
-                                </span>
+                                </div>
+                                <div className="pdf-workspace-review-actions shrink-0 flex gap-1">
+                                  <button type="button" onClick={() => _reviewToWorkbench(f)} data-review-action="workbench" data-review-key={_rfKey(f)} aria-label={'Open Workbench for ' + (_rfEngineLabel[f.engine] || f.engine) + ' ' + f.id} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.review_queue.wb_title') || 'Send to the Expert Workbench — prefills a targeted command you review and run'}>Workbench</button>
+                                  <button type="button" onClick={event => _setReviewAttestation(event, _rfKey(f), true)} data-review-action="mark" data-review-key={_rfKey(f)} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-emerald-800 hover:text-white font-bold transition-colors" title={pdfFixResult ? (t('pdf_audit.review_queue.done_title') || 'Mark as reviewed — I checked this myself. Recorded in the audit report as a human attestation.') : 'Mark as reviewed in this workspace. No saved result is available yet.'} aria-label={'Mark reviewed: ' + (_rfEngineLabel[f.engine] || f.engine) + ' ' + f.id}>Mark reviewed</button>
+                                </div>
                               </li>
                             ))}
                           </ul>
                         )}
+                        {_rfDone > 0 && <details className="pdf-workspace-reviewed">
+                          <summary className="cursor-pointer text-xs font-semibold">Reviewed findings ({_rfDone})</summary>
+                          <p className="text-xs mt-2">Undo a mark to return that finding to the pending list. This does not change the document or verification.</p>
+                          <ul className="pdf-workspace-review-list mt-2 space-y-1.5 list-none">{_rfReviewed.map(f => (
+                            <li key={_rfKey(f)} className="pdf-workspace-review-row flex items-start gap-2 rounded-lg border border-slate-300 p-2 text-xs">
+                              <div className="flex-1 min-w-0"><strong>{(_rfEngineLabel[f.engine] || f.engine) + ' · ' + f.id}</strong>{f.description && <p>{f.description}</p>}</div>
+                              <div className="pdf-workspace-review-actions"><button type="button" data-review-action="undo" data-review-key={_rfKey(f)} onClick={event => _setReviewAttestation(event, _rfKey(f), false)} aria-label={'Undo reviewed mark: ' + (_rfEngineLabel[f.engine] || f.engine) + ' ' + f.id} className="rounded border px-2 py-1">Undo</button></div>
+                            </li>
+                          ))}</ul>
+                          <button type="button" data-review-action="reset" onClick={event => _setReviewAttestation(event, null, false)} className="mt-2 rounded border px-2 py-1 text-xs">Reset all reviewed marks</button>
+                        </details>}
                       </div>
                     );
                   })()}
@@ -13026,7 +13295,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   }} />}
                   {/* ── Fix & Verify Results Panel ── */}
                   {pdfFixResult && (
-                    <div className="mt-4 bg-gradient-to-b from-white to-emerald-50 rounded-2xl border-2 border-emerald-300 p-5 space-y-4">
+                    <div className="pdf-workspace-outcome mt-4 rounded-2xl border-2 p-5 space-y-4" data-tone={_workspaceState.tone}>
                       {/* ── R1 verdict strip (2026-07-10): the one-line answer to the teacher's actual
                           question — "Can I hand this out?" — computed by the pipeline (single source,
                           unit-tested) from the honesty signals the result already carries. VISIBLE
@@ -13079,72 +13348,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                         </section>
                       )}
-                      {(() => {
-                        const state = pdfFixResult.verificationState || 'unavailable';
-                        const coverage = pdfFixResult.verificationCoverage || {};
-                        const reasons = Array.isArray(pdfFixResult.verificationReasons) ? pdfFixResult.verificationReasons : [];
-                        const tone = state === 'complete'
-                          ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
-                          : state === 'review-required'
-                            ? 'bg-amber-50 border-amber-300 text-amber-950'
-                            : 'bg-slate-50 border-slate-400 text-slate-900';
-                        const label = state === 'complete' ? 'Complete'
-                          : state === 'review-required' ? 'Human review required'
-                            : state === 'partial' ? 'Partial' : 'Unavailable';
-                        const engineLabel = (value) => String(value || 'unavailable').replace(/-/g, ' ');
-                        return (
-                          <section data-help-key="pdf_audit_verification_status" aria-labelledby="pdf-verification-status-heading" className={`rounded-xl border p-3 ${tone}`}>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h3 id="pdf-verification-status-heading" className="text-sm font-black">WCAG verification: {label}</h3>
-                              <span className="text-[10px] font-bold rounded-full border border-current/30 px-2 py-0.5">{coverage.standard || 'WCAG 2.2 AA'}</span>
-                              {state !== 'complete' && (
-                                <button
-                                  type="button"
-                                  disabled={verificationRefreshBusy || pdfFixLoading || pdfAutoContinueRunning}
-                                  onClick={async () => {
-                                    if (verificationRefreshBusy || !pdfFixResult.accessibleHtml) return;
-                                    setVerificationRefreshBusy(true);
-                                    setPdfFixStep('Re-running verification without changing the document...');
-                                    try {
-                                      // 2026-07-27: wait for the gate to calm first, like the sibling
-                                      // "Complete final audit" control does. These two buttons do the same
-                                      // operation but used to behave OPPOSITELY under a storm — that one
-                                      // paced politely, this one fired straight into it and came back
-                                      // "Verification could not complete" in seconds. A teacher facing two
-                                      // controls where the wrong choice silently fails is worse off than
-                                      // with one. Bounded, and wait-not-stop proceeds anyway on timeout.
-                                      if (_docPipeline && typeof _docPipeline.waitForGeminiCalm === 'function') {
-                                        try {
-                                          setPdfFixStep('Waiting for the AI service to ease before re-checking...');
-                                          await _docPipeline.waitForGeminiCalm({ maxWaitMs: 240000 });
-                                        } catch (_) {}
-                                        setPdfFixStep('Re-running verification without changing the document...');
-                                      }
-                                      const result = await _reauditAndScore(pdfFixResult.accessibleHtml, null);
-                                      if (result && result.ok) addToast('Verification refreshed: ' + result.verificationState + '.', result.verificationState === 'complete' ? 'success' : 'warning');
-                                      else addToast('Verification could not complete. The document was not changed.', 'warning');
-                                    } finally { setVerificationRefreshBusy(false); }
-                                  }}
-                                  className="ml-auto px-2.5 py-1 rounded-lg bg-white border border-current/30 text-[11px] font-bold hover:bg-black/5 disabled:opacity-50"
-                                >{verificationRefreshBusy ? 'Re-checking...' : 'Re-run verification only'}</button>
-                              )}
-                            </div>
-                            <_PdfAuditVerificationEngineList coverage={coverage} engineLabel={engineLabel} />
-                            {pdfFixResult._finalAuditRetryAvailable && state !== 'complete' && (
-                              /* Reader for the previously write-only flag: the LAST verification audit
-                                 failed outright (throttle/transport), so a retry is genuinely likely to
-                                 improve the state — say so instead of leaving the button unexplained. */
-                              <p className="mt-1.5 text-[11px] font-semibold">The last verification audit could not finish (AI throttled or engine unavailable). "Re-run verification only" retries it without changing the document.</p>
-                            )}
-                            {reasons.length > 0 && <details className="mt-2 text-[11px]"><summary className="font-bold cursor-pointer">Why this status?</summary><ul className="mt-1 ml-5 list-disc space-y-0.5">{reasons.map((reason, index) => <li key={index}>{String(reason).replace(/[-:]/g, ' ')}</li>)}</ul></details>}
-                          </section>
-                        );
-                      })()}
-                      {/* ── Results dashboard bar: pinned overview + jump-links. ──
-                          NAVIGATION-ONLY by design: it moves no existing element
-                          (the 308-element inventory is the completeness contract —
-                          additions only, zero relocations). Chips scroll to section
-                          anchors; details targets auto-open on jump. */}
+                      <_PdfWaitDetails wait={pdfFixResult.pipelineStats?.elapsedWait} pacing={pdfFixResult.pipelineStats?.extraRequestPacing ?? pdfExtraRequestPacing} />
+                      {/* Detailed evidence and navigation to the preserved result tools. */}
                       {(() => {
                         const _jump = (id) => {
                           try {
@@ -13231,7 +13436,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <p className="text-[10px] text-indigo-700 mt-1">{t('pdf_audit.watch_live.note') || 'Showing the last committed version — section-by-section changes stream in the panel above. To intervene, use a section’s Reject button or the Expert Workbench; the loop adopts your change at its next pass.'}</p>
                             </div>
                           )}
-                          <div data-help-key="pdf_audit_dashboard_bar" className="sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap" role="navigation" aria-label={t('pdf_audit.dashboard.aria') || 'Remediation results overview and section navigation'}>
+                          <details data-help-key="pdf_audit_dashboard_bar" className="pdf-workspace-evidence"><summary>Detailed evidence &amp; review tools</summary><div className="pdf-workspace-evidence-grid" role="navigation" aria-label={t('pdf_audit.dashboard.aria') || 'Remediation results overview and section navigation'}>
                             <span className={'text-xs font-black whitespace-nowrap ' + (pdfFixResult._aiVerificationIncomplete ? 'text-slate-500' : 'text-emerald-800')} title={(pdfFixResult._aiVerificationIncomplete ? ((t('pdf_audit.dashboard.score_incomplete_title') || 'Structural/automated checks only — the AI semantic audit was throttled and did not finish, so this is NOT a verified content score.') + ' ') : '') + (t('pdf_audit.dashboard.score_title') || 'Content audit score (HTML reconstruction: AI rubric + axe), before → after. This is NOT PDF/UA conformance of the exported PDF — see the PDF/UA chip.')}>
                               {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {pdfFixResult._aiVerificationIncomplete ? (<span className="text-slate-500">{'—'}</span>) : (<>{(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span></>)} {pdfFixResult._aiVerificationIncomplete && Number.isFinite(pdfFixResult._estimatedMinimumScore) ? (<_AlloQualifier className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-bold uppercase tracking-wide" text={t('pdf_audit.dashboard.estimated_min_title') || 'Lower-confidence estimate: the lower of the last successful AI audit and the current automated checks. Complete the final audit for a verified score.'}>{t('pdf_audit.dashboard.estimated_min') || 'est. min'} {pdfFixResult._estimatedMinimumScore}/100</_AlloQualifier>) : null} {_govTag === (t('pdf_audit.dashboard.automated_tag') || 'automated') ? <_AlloQualifier className="font-normal text-slate-400 text-[9px] uppercase tracking-wide" text={t('pdf_audit.dashboard.automated_tag_title') || 'Headline governed by the automated layer (axe-core / IBM Equal Access) — the lower of the engines. The AI content rubric may be higher; see the breakdown below.'}>{_govTag}</_AlloQualifier> : <span className="font-normal text-slate-400 text-[9px] uppercase tracking-wide">{_govTag}</span>}{pdfFixResult.fidelityLimited ? <_AlloQualifier className="text-amber-600 font-bold" text={t('pdf_audit.dashboard.fidelity_limited_title') || 'Asterisk: content fidelity is limited on this run (reduced coverage or fidelity notes) — a high score must not be read as “all good”. See the fidelity panel below for the specifics.'}>*</_AlloQualifier> : null}
                             </span>
@@ -13372,7 +13577,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             {typeof startPipelineTour === 'function' && (
                               <button className={_chip} onClick={() => startPipelineTour('results')} data-help-ignore="true" title={t('pdf_audit.tour.results_title') || 'A 60-second guided walk through this screen — what to download, what the score means, where the reports live.'}>✨ {t('pdf_audit.tour.results_cta') || 'Tour'}</button>
                             )}
-                          </div>
+                          </div></details>
                           {_foundationDetailsOpen && _foundationMatrix && (
                             <_PdfHtmlFoundationMatrix
                               foundations={_foundationMatrix}
@@ -13399,7 +13604,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             : _workspaceState.title;
                           const _icon = _stillWorking ? '⏳' : _fidelity ? '⚠️' : '✅';
                           const _color = _stillWorking ? 'text-indigo-800' : _fidelity ? 'text-amber-800' : 'text-emerald-800';
-                          return <h4 className={'text-sm font-bold flex items-center gap-2 flex-1 ' + _color}>{_icon} {_label}</h4>;
+                          return _stillWorking ? <h4 className={'text-sm font-bold flex items-center gap-2 flex-1 ' + _color}>{_icon} {_label}</h4> : null;
                         })()}
                         {/* While the auto-continue loop is grinding (legitimately, for minutes), this
                             button used to just look dead. Make it an ACTIONABLE Stop instead — once the
@@ -13438,12 +13643,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {/* "What now?" strip (2026-06-12): 308 elements below — give
                           the first action explicitly. Additions-only. */}
                       <div data-help-key="pdf_audit_results_whatnow" className={'bg-white border rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap ' + ((pdfFixResult && pdfFixResult.fidelityLimited) ? 'border-amber-300' : 'border-emerald-200')} role="note">
-                        <span className={'font-black ' + ((pdfFixResult && pdfFixResult.fidelityLimited) ? 'text-amber-800' : 'text-emerald-800')}>{t('pdf_audit.whatnow.lead') || 'What now?'}</span>
-                        {/* Integrity-aware (2026-06-20): when content fidelity is in question (low coverage,
-                            a changed number, a dropped table/link), do NOT call the output "share-ready"
-                            or the fidelity notes "optional polish" — lead with verifying the content. */}
-                        <span>{_workspaceState.detail}</span>
-                        {_workspaceState.destination && <button type="button" onClick={() => _workspaceNavigate(_workspaceState.destination)} className="ml-auto px-2.5 py-1 bg-emerald-700 text-white rounded-full text-[11px] font-bold shrink-0">{_workspaceState.action}</button>}
+                        <span className="font-bold">Use this document</span>
                         {/* The reverse door, surfaced (2026-06-11): the Full
                             Differentiation Pipeline button existed deep in the
                             languages panel — same source, every content tool. */}
@@ -14408,10 +14608,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {/* Expert Referral Panel - reason-specific: an accessibility-barrier concern is an
                           a11y-expertise problem (Knowbility referral); a content-fidelity concern is a
                           "verify the text carried over" problem (review the Diff). They are not the same ask. */}
-                      {pdfFixResult.needsExpertReview && (() => {
+                      {(pdfFixResult.needsExpertReview || _pdfWorkspaceHasPreservationConcern(pdfFixResult)) && (() => {
                         const reason = pdfFixResult.expertReviewReason || 'accessibility';
-                        const showA11y = reason === 'accessibility' || reason === 'both';
-                        const showFidelity = reason === 'content-fidelity' || reason === 'both';
+                        const showA11y = pdfFixResult.needsExpertReview && (reason === 'accessibility' || reason === 'both');
+                        const showFidelity = _pdfWorkspaceHasPreservationConcern(pdfFixResult);
                         const cov = pdfFixResult.integrityCoverage;
                         return (
                         <div className={`border-2 rounded-xl p-4 space-y-3 ${showA11y ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-300' : 'bg-gradient-to-r from-sky-50 to-blue-50 border-sky-300'}`}>
@@ -14451,10 +14651,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                           )}
                           {showFidelity && (
-                          <div className="flex items-start gap-3">
+                          <div id="pdf-content-fidelity-review" role="region" aria-labelledby="pdf-content-fidelity-heading" className="flex items-start gap-3">
                             <span className="text-2xl shrink-0">📄</span>
                             <div>
-                              <h4 className="text-sm font-bold text-sky-900">{t('pdf_audit.fidelity_review.heading') || 'Verify Content Fidelity Before Use'}</h4>
+                              <h4 id="pdf-content-fidelity-heading" className="text-sm font-bold text-sky-900">{t('pdf_audit.fidelity_review.heading') || 'Verify Content Fidelity Before Use'}</h4>
                               {/* M21 (deep dive 2026-07-09): the lead sentence framed EVERY note kind as text
                                   loss ("some source text may not have carried over") — a doc at 100% coverage
                                   whose only notes are alt-quality/OCR-confidence flags got a banner asserting
@@ -14478,10 +14678,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   specific, actionable losses the bulk char-coverage % can miss. */}
                               {Array.isArray(pdfFixResult.fidelityNotes) && pdfFixResult.fidelityNotes.length > 0 && (
                                 <ul className="mt-2 space-y-1">
-                                  {pdfFixResult.fidelityNotes.map((n, i) => (
+                                  {pdfFixResult.fidelityNotes.filter(Boolean).map((n, i) => (
                                     <li key={i} className={'text-xs leading-snug flex items-start gap-1.5 ' + (n.kind === 'refusal' ? 'text-red-700 font-semibold' : (n.kind === 'numeric' || n.kind === 'placement') ? 'text-amber-800 font-semibold' : 'text-sky-800')}>
                                       <span aria-hidden="true">{n.kind === 'refusal' ? '🚫' : n.kind === 'numeric' ? '🔢' : n.kind === 'placement' ? '📑' : n.kind === 'tables' ? '▦' : '🔗'}</span>
-                                      <span>{n.msg}</span>
+                                      <span>{typeof n === 'string' ? n : n.msg}</span>
                                     </li>
                                   ))}
                                 </ul>
@@ -16385,16 +16585,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <summary className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-teal-700 to-cyan-700 text-white rounded-xl font-bold text-sm cursor-pointer hover:from-teal-700 hover:to-cyan-700 transition-colors list-none">
                           ⬇ {t('pdf_audit.export_menu.button') || 'Export / Download'} <span className="text-xs opacity-90 group-open:rotate-180 transition-transform">▾</span>
                         </summary>
-                        <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-600 rounded-xl p-3 space-y-1" role="menu" aria-label={t('pdf_audit.export_menu.aria') || 'Export formats'}>
+                        <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-600 rounded-xl p-3 space-y-1" role="group" aria-label={t('pdf_audit.export_menu.aria') || 'Export formats'}>
                           <p id="allo-sec-downloads" className="text-[11px] text-slate-600 mb-1">{t('pdf_audit.export_menu.intro') || 'Download the remediated document in any format — pick the one that fits how it’ll be used.'}</p>
 
                           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1 mb-0.5">{t('pdf_audit.export_menu.group_docs') || 'Documents'}</div>
                           {_inputIsPdf && (
-                            <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const b = document.getElementById('allo-tagged-pdf-btn'); if (b) b.click(); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">📄 {t('pdf_audit.export_menu.tagged_pdf') || 'Tagged PDF (PDF/UA — give to students)'}</button>
+                            <button type="button" onClick={(e) => { const b = document.getElementById('allo-tagged-pdf-btn'); if (b) b.click(); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">📄 {(t('pdf_audit.export_menu.tagged_pdf') || 'Tagged PDF').replace(/\s*[(\uFF08].*$/, '') + ' (.pdf)'}</button>
                           )}
-                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const b = document.getElementById('allo-export-docx'); if (b) b.click(); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">📝 {t('pdf_audit.export_menu.word') || 'Word (.docx — keep editing)'}</button>
-                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const b = document.getElementById('allo-export-pptx'); if (b) b.click(); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">📽 {t('pdf_audit.export_menu.pptx') || 'PowerPoint (.pptx — present it)'}</button>
-                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; let html = pdfFixResult?.accessibleHtml; if (!html) return; try { html = _viewSanitizeMarkupForExport(html, _docPipeline); } catch (error) { addToast((t('toasts.export_security_unavailable') || 'The HTML could not be exported safely. Please retry after the security module finishes loading.') + (error?.message ? ' ' + error.message : ''), 'error'); return; } const blob = new Blob([html], { type: 'text/html;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href); if (addToast) addToast(t('toasts.html_downloaded') || '🌐 HTML downloaded — opens in any browser.', 'success'); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">🌐 {t('pdf_audit.export_menu.html') || 'HTML (opens anywhere, no software)'}</button>
+                          <button type="button" onClick={(e) => { const b = document.getElementById('allo-export-docx'); if (b) b.click(); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">📝 {t('pdf_audit.export_menu.word') || 'Word (.docx — keep editing)'}</button>
+                          <button type="button" onClick={(e) => { const b = document.getElementById('allo-export-pptx'); if (b) b.click(); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">📽 {t('pdf_audit.export_menu.pptx') || 'PowerPoint (.pptx — present it)'}</button>
+                          <button type="button" onClick={(e) => { let html = pdfFixResult?.accessibleHtml; if (!html) return; try { html = _viewSanitizeMarkupForExport(html, _docPipeline); } catch (error) { addToast((t('toasts.export_security_unavailable') || 'The HTML could not be exported safely. Please retry after the security module finishes loading.') + (error?.message ? ' ' + error.message : ''), 'error'); return; } const blob = new Blob([html], { type: 'text/html;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href); if (addToast) addToast(t('toasts.html_downloaded') || '🌐 HTML downloaded — opens in any browser.', 'success'); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">🌐 {t('pdf_audit.export_menu.html') || 'HTML (opens anywhere, no software)'}</button>
 
                           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-2 mb-0.5">{t('pdf_audit.export_menu.group_access') || 'Accessible formats'}</div>
 
@@ -16480,12 +16680,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </button>
 
                           {/* DAISY 3 full-text talking book */}
-                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; _dlDaisy(); }} data-help-key="pdf_audit_alt_formats_daisy_btn" className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.daisy_title') || 'DAISY 3 (DTBook) full-text talking-book package. Open in a DAISY reader, which provides speech, braille, or large print. (For synced read-aloud audio, use Read-along below.)'}>
+                          <button type="button" onClick={(e) => { _dlDaisy(); }} data-help-key="pdf_audit_alt_formats_daisy_btn" className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.daisy_title') || 'DAISY 3 (DTBook) full-text talking-book package. Open in a DAISY reader, which provides speech, braille, or large print. (For synced read-aloud audio, use Read-along below.)'}>
                             🔊 {t('pdf_audit.export_menu.daisy') || 'DAISY talking book (full text)'}
                           </button>
 
                           {/* Read-along EPUB3 (Media Overlays) — TTS synced to text */}
-                          <button role="menuitem" disabled={!!(moExport && moExport.status === 'running')} onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; _dlEpubMO(); }} data-help-key="pdf_audit_alt_formats_readalong_btn" className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" title={t('pdf_audit.export_menu.readalong_title') || 'Read-along ebook (EPUB3 Media Overlays): generates text-to-speech for each paragraph and syncs it to the text so a reading system highlights words as they’re spoken. Makes many voice calls — can take a few minutes.'}>
+                          <button type="button" disabled={!!(moExport && moExport.status === 'running')} onClick={(e) => { _dlEpubMO(); }} data-help-key="pdf_audit_alt_formats_readalong_btn" className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" title={t('pdf_audit.export_menu.readalong_title') || 'Read-along ebook (EPUB3 Media Overlays): generates text-to-speech for each paragraph and syncs it to the text so a reading system highlights words as they’re spoken. Makes many voice calls — can take a few minutes.'}>
                             📖🔊 {(moExport && moExport.status === 'running')
                               ? ((t('pdf_audit.export_menu.readalong_progress') || 'Narrating… {done}/{total}').replace('{done}', String(moExport.done)).replace('{total}', String(moExport.total)))
                               : (t('pdf_audit.export_menu.readalong') || 'Read-along ebook (synced audio)')}
@@ -16524,15 +16724,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </button>
 
                           {/* ODT (OpenDocument) */}
-                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; _dlOdt(); }} data-help-key="pdf_audit_alt_formats_odt_btn" className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.odt_title') || 'OpenDocument Text — opens natively in LibreOffice and Google Docs (and Word).'}>
+                          <button type="button" onClick={(e) => { _dlOdt(); }} data-help-key="pdf_audit_alt_formats_odt_btn" className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.odt_title') || 'OpenDocument Text — opens natively in LibreOffice and Google Docs (and Word).'}>
                             📄 {t('pdf_audit.export_menu.odt') || 'ODT (LibreOffice / Google Docs)'}
                           </button>
 
                           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-2 mb-0.5">{t('pdf_audit.export_menu.group_audio') || 'Audio narration'}</div>
-                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const b = document.getElementById('allo-export-audio'); if (b) { b.scrollIntoView({ behavior: 'smooth', block: 'center' }); b.click(); } else if (addToast) addToast(t('toasts.audio_unavailable_now') || 'Audio is unavailable right now (a job may be running, or the voice service is off).', 'info'); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.audio_title') || 'Spoken narration of the document (MP3/WAV).'}>
+                          <button type="button" onClick={(e) => { const b = document.getElementById('allo-export-audio'); if (b) { b.scrollIntoView({ behavior: 'smooth', block: 'center' }); b.click(); } else if (addToast) addToast(t('toasts.audio_unavailable_now') || 'Audio is unavailable right now (a job may be running, or the voice service is off).', 'info'); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.audio_title') || 'Spoken narration of the document (MP3/WAV).'}>
                             🎧 {t('pdf_audit.export_menu.audio') || 'Audio narration (standard)'}
                           </button>
-                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const b = document.getElementById('allo-export-audio-sr'); if (b) { b.scrollIntoView({ behavior: 'smooth', block: 'center' }); b.click(); } else if (addToast) addToast(t('toasts.audio_unavailable_now') || 'Audio is unavailable right now (a job may be running, or the voice service is off).', 'info'); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.audio_sr_title') || 'Same voice, but announcing structure the way a screen reader would (heading levels, list counts, table rows, image alts).'}>
+                          <button type="button" onClick={(e) => { const b = document.getElementById('allo-export-audio-sr'); if (b) { b.scrollIntoView({ behavior: 'smooth', block: 'center' }); b.click(); } else if (addToast) addToast(t('toasts.audio_unavailable_now') || 'Audio is unavailable right now (a job may be running, or the voice service is off).', 'info'); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.audio_sr_title') || 'Same voice, but announcing structure the way a screen reader would (heading levels, list counts, table rows, image alts).'}>
                             🦻 {t('pdf_audit.export_menu.audio_sr') || 'Audio (screen-reader style)'}
                           </button>
                         </div>

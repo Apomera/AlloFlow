@@ -583,8 +583,9 @@ describe('Machine Lab: focus mechanism scene isolation',()=>{
     [...d.lamps,...d.beacons].forEach(x=>expect(withinRoom(x)).toBe(true));
     [d.motion,d.effortArrow,d.effortTrack,d.loadTrack,d.effortDot,d.loadDot].forEach(x=>expect(withinRoom(x)).toBe(false));
     s.data.focusMechanism=true;s.tick(4000);expect(d.room.visible).toBe(false);expect(pose()).toEqual(before);
-    expect(s.target.equals(target)).toBe(true);s.fitPts.forEach((x,i)=>expect(x.equals(fit[i])).toBe(true));
+    expect(s.target.equals(d.focusTarget)).toBe(true);expect(s.fitPts).toBe(d.focusFitPts);
     s.data.focusMechanism=false;s.tick(5000);expect(d.room.visible).toBe(true);expect(pose()).toEqual(before);
+    expect(s.target.equals(target)).toBe(true);s.fitPts.forEach((x,i)=>expect(x.equals(fit[i])).toBe(true));
     const after=[];s.model.traverse(x=>after.push(x.uuid));expect(after).toEqual(ids);
   });
   it('keeps the automatic demonstration moving when the room is hidden',()=>{
@@ -881,5 +882,155 @@ describe('Machine Lab: slow demonstration timing',()=>{
   });
   it('honors explicit motion-on when OS reduction is enabled',()=>{
     const s=scene('lever',{},true);s.data.reduced=false;s.data.demoDuration=6600;s.data.demoId=2;s.tick(3000);const start=s.mlDemo.motion.rotation.z;s.tick(4500);expect(s.mlDemo.motion.rotation.z).toBeGreaterThan(start);
+  });
+});
+
+
+describe('Machine Lab: hold the rendered pose',()=>{
+  for(const kind of ['lever','pulley','windlass','ramp','wedge','screw'])for(const reduced of [false,true])it('holds '+kind+' without a jump, reduced '+reduced,()=>{
+    const s=scene(kind,{ma:4},reduced);let frame; s.data.onPose=(progress,runId,kind)=>{frame={progress,runId,kind};};
+    s.data.demoId=17;s.data.demoDuration=6600;s.tick(3000);s.tick(4187);s.model.updateMatrixWorld(true);
+    expect(frame.kind).toBe(kind);expect(frame.runId).toBe(17);expect(frame.progress).toBeGreaterThan(0);expect(frame.progress).toBeLessThanOrEqual(1);
+    function pose(){return [s.mlDemo.motion,...s.mlDemo.startLinks.map(r=>r.load),s.mlDemo.effortDot,s.mlDemo.loadDot].map(o=>o.matrixWorld.toArray());}
+    const before=pose(),progress=frame.progress;s.data.demoId=0;s.data.motionProgress=progress;
+    for(const now of [5000,15000]){s.tick(now);s.model.updateMatrixWorld(true);expect(pose()).toEqual(before);expect(frame).toEqual({progress,runId:0,kind});}
+  });
+});
+
+
+describe('Machine Lab: distance track end caps and marker edges',()=>{
+ for(const ma of [0.05,0.25,1,2,6,3000,null])it('keeps full-stroke end caps fixed and honest at advantage '+ma,()=>{
+  const s=scene('lever',{ma}),d=s.mlDemo;s.data.demoId=0;const caps=[d.effortEndCap,d.loadEndCap],ends=[d.effortEndX,d.loadEndX];
+  const ids=caps.map(c=>c.geometry);for(const progress of [0,0.37,1]){s.data.motionProgress=progress;s.tick(5000);
+   caps.forEach((c,i)=>{expect(c.visible).toBe(ma!==null);expect(c.position.x).toBe(ends[i]);expect(c.geometry).toBe(ids[i]);expect(c.parent).toBe(s.model);});
+   if(ma!==null&&progress===1){expect(d.effortDot.position.x).toBe(caps[0].position.x);expect(d.loadDot.position.x).toBe(caps[1].position.x);}
+  }
+  if(ma!==null)expect((caps[0].position.x-d.effortStartX)/(caps[1].position.x-d.loadStartX)).toBeCloseTo(ma,6);
+ });
+ it('keeps an open load ring and attached silhouette edges while orbiting',()=>{
+  const s=scene('windlass',{ma:4}),d=s.mlDemo;s.data.demoId=0;s.data.motionProgress=0.5;s.tick(4000);const camera=new THREE.PerspectiveCamera();
+  expect(d.effortEdge.parent).toBe(d.effortDot);expect(d.loadEdge.parent).toBe(d.loadDot);expect(d.loadEdge.material.side).toBe(THREE.BackSide);
+  expect(d.loadEdge.geometry.parameters.radius-d.loadEdge.geometry.parameters.tube).toBeGreaterThan(0.05);
+  for(const yaw of [0,1.2,Math.PI]){camera.quaternion.setFromEuler(new THREE.Euler(0.4,yaw,0));d.loadDot.onBeforeRender(null,s.scene,camera);s.model.updateMatrixWorld(true);const q=new THREE.Quaternion();d.loadEdge.getWorldQuaternion(q);expect(Math.abs(q.dot(camera.quaternion))).toBeCloseTo(1,8);}
+ });
+});
+
+
+describe('Machine Lab: stable focused camera envelope',()=>{
+ for(const [kind,params] of [['lever',{}],['pulley',{segments:6}],['windlass',{}],['ramp',{length:4,height:1}],['wedge',{}],['screw',{}],['lever',{effortArm:4,loadArm:0.2}],['ramp',{length:4,height:4}],['windlass',{handleR:1,drumR:0.05}],['screw',{handleR:1,pitch:0.01}]])it('contains the complete '+kind+' stroke '+JSON.stringify(params),()=>{
+  const s=scene(kind,{ma:4,...params}),d=s.mlDemo;const bounds=new THREE.Box3().setFromPoints(d.focusFitPts),parts=[];
+  s.model.traverse(o=>{if(!o.isMesh)return;for(let p=o;p;p=p.parent)if(p===d.room)return;parts.push(o);});
+  s.data={demoId:0,focusMechanism:true};s.tick(4000);const fit=d.focusFitPts,target=d.focusTarget.clone();
+  for(const progress of [0,0.013,0.127,0.239,0.371,0.503,0.629,0.751,0.887,0.993,1]){
+   s.data.motionProgress=progress;s.tick(4000);s.model.updateMatrixWorld(true);expect(s.fitPts).toBe(fit);expect(s.target.equals(target)).toBe(true);
+   for(const part of parts){const actual=part.geometry.boundingBox.clone().applyMatrix4(part.matrixWorld);expect(bounds.containsBox(actual)).toBe(true);}
+  }
+  s.data.focusMechanism=false;s.tick(5000);expect(s.fitPts).toBe(d.roomFitPts);expect(s.target.equals(d.roomTarget)).toBe(true);
+ });
+});
+
+
+describe('Machine Lab: rendered demonstration phase', () => {
+  for (const kind of ['lever','pulley','windlass','ramp','wedge','screw']) it('distinguishes working and return motion for '+kind, () => {
+    const s=scene(kind,{ma:4});let pose;
+    s.data={demoId:81,demoDuration:6600,reduced:false,onPose:(...args)=>{pose=args;}};
+    s.tick(2000);expect(pose).toEqual([0,81,kind,'work']);
+    s.tick(3650);const outward=pose[0];expect(pose[3]).toBe('work');
+    s.tick(6950);expect(pose[3]).toBe('return');expect(pose[0]).toBeCloseTo(outward,8);
+    s.tick(8600);expect(pose[3]).toBe('return');expect(pose[0]).toBeCloseTo(0,8);
+  });
+  it('reports normal speed, motion-off, held poses and idle accurately', () => {
+    const s=scene('lever',{ma:2});let pose;
+    s.data={demoId:82,demoDuration:2200,reduced:false,onPose:(...args)=>{pose=args;}};
+    s.tick(10000);s.tick(10550);expect(pose[3]).toBe('work');
+    s.tick(11650);expect(pose[3]).toBe('return');
+    s.data.reduced=true;s.tick(12000);expect(pose[0]).toBe(1);expect(pose[3]).toBe('held');
+    s.data.demoId=0;s.data.motionProgress=0.25;s.tick(13000);expect(pose[0]).toBe(0.25);expect(pose[3]).toBe('held');
+    s.data.motionProgress=null;s.tick(14000);expect(pose[0]).toBe(0);expect(pose[3]).toBe('idle');
+  });
+});
+
+
+describe('Machine Lab: material bands along the pulley rope', () => {
+  function coordinate(d, point) {
+    let distance=0;
+    for(let i=0;i<d.supportingRopes.length;i++) {
+      const rope=d.supportingRopes[i],half=rope.geometry.parameters.height*rope.scale.y/2;
+      const top=rope.position.y+half,bottom=rope.position.y-half,moving=d.pulleyWheels[i].moving;
+      if(Math.abs(point.x-rope.position.x)<1e-7&&point.y>=bottom-1e-7&&point.y<=top+1e-7)
+        return {distance:distance+(moving?top-point.y:point.y-bottom),tangent:new THREE.Vector3(0,1,0)};
+      distance+=2*half;
+      const arc=d.ropeArcs[i],cx=arc.position.x,cy=arc.position.y+(moving?d.motion.position.y:0);
+      const radius=d.pulleyWheels[i].mesh.position.x-rope.position.x,dx=point.x-cx,dy=point.y-cy;
+      if(Math.abs(Math.hypot(dx,dy)-radius)<1e-7&&(moving?dy<=1e-7:dy>=-1e-7)) {
+        const theta=Math.atan2(dy,dx),angle=moving?(theta<0?theta+Math.PI:theta===Math.PI?0:Math.PI):Math.PI-theta;
+        return {distance:distance+angle*radius,tangent:new THREE.Vector3(-dy/radius,dx/radius,0)};
+      }
+      distance+=Math.PI*radius;
+    }
+    const half=d.freeRope.geometry.parameters.height*d.freeRope.scale.y/2;
+    if(Math.abs(point.x-d.freeRope.position.x)<1e-7&&point.y>=d.freeRope.position.y-half-1e-7&&point.y<=d.pulleyTop+1e-7)
+      return {distance:distance+d.pulleyTop-point.y,tangent:new THREE.Vector3(0,1,0)};
+    return null;
+  }
+  for(const segments of [1,2,3,4,5,6])it('keeps fixed material spacing around '+segments+' supporting strands', () => {
+    const s=scene('pulley',{segments,ma:segments}),d=s.mlDemo,bands=d.ropeBands;
+    expect(bands.length).toBeGreaterThan(3);expect(bands.length).toBeLessThanOrEqual(32);
+    const geometries=bands.map(b=>b.mesh.geometry),materials=bands.map(b=>b.mesh.material);
+    expect(new Set(geometries).size).toBe(1);expect(new Set(materials).size).toBe(1);
+    for(const progress of [0,.013,.1,.239,.5,.629,.887,.993,1,.5,0]) {
+      s.data={demoId:0,motionProgress:progress};s.tick(5000);s.model.updateMatrixWorld(true);
+      bands.forEach((band,i)=>{
+        const hit=coordinate(d,band.mesh.position);expect(hit).not.toBeNull();expect(hit.distance).toBeCloseTo(band.distance,7);
+        const axis=new THREE.Vector3(0,1,0).applyQuaternion(band.mesh.quaternion);
+        expect(Math.abs(axis.dot(hit.tangent))).toBeCloseTo(1,7);expect(band.mesh.position.z).toBe(0);
+        expect(band.mesh.geometry).toBe(geometries[i]);expect(band.mesh.material).toBe(materials[i]);
+        expect(band.mesh.scale.toArray()).toEqual([1,1,1]);expect(band.mesh.visible).toBe(true);
+        if(i)expect(band.distance-bands[i-1].distance).toBeCloseTo(d.ropeMaterialLength/bands.length,8);
+      });
+    }
+    s.data.motionProgress=0;s.tick(5000);const free=bands.filter(b=>Math.abs(b.mesh.position.x-d.freeRope.position.x)<1e-8).map(b=>({band:b,y:b.mesh.position.y}));
+    expect(free.length).toBeGreaterThan(0);s.data.motionProgress=.2;s.tick(5000);
+    for(const f of free)expect(f.band.mesh.position.y-f.y).toBeCloseTo(-segments*d.pulleyLift*.2,8);
+  });
+  it('returns the same material marks to the same place and holds with motion off', () => {
+    const s=scene('pulley',{segments:6,ma:6}),d=s.mlDemo;
+    s.data={demoId:91,demoDuration:6600,reduced:false};s.tick(10000);s.tick(11650);
+    const pose=()=>d.ropeBands.map(b=>[...b.mesh.position.toArray(),...b.mesh.quaternion.toArray()]);
+    const outward=pose();s.tick(14950);const returning=pose();outward.forEach((a,i)=>a.forEach((v,j)=>expect(returning[i][j]).toBeCloseTo(v,8)));
+    s.data.reduced=true;s.tick(15100);const still=pose();s.tick(16500);expect(pose()).toEqual(still);
+  });
+});
+
+
+describe('Machine Lab: quarter-turn handle position guides', () => {
+  for(const kind of ['windlass','screw'])for(const handleR of [.05,.5,1])it('aligns '+kind+' rotation marks with its grip at radius '+handleR, () => {
+    const s=scene(kind,{handleR,ma:4}),d=s.mlDemo,g=d.turnGuide,u=g.userData,origin=u.mlOrigin.position.clone(),geometry=u.mlCursor.geometry;
+    expect(u.mlQuarterMarks).toHaveLength(4);
+    for(let i=0;i<4;i++){
+      const a=u.mlQuarterMarks[i].position,b=u.mlQuarterMarks[(i+1)%4].position;
+      expect(a.length()).toBeCloseTo(u.mlRadius,8);expect(a.dot(b)).toBeCloseTo(0,8);
+    }
+    for(const progress of [0,.013,.125,.25,.37,.5,.75,.875,.993,1]){
+      s.data={demoId:0,motionProgress:progress};s.tick(4000);s.model.updateMatrixWorld(true);
+      const cursor=u.mlCursor.getWorldPosition(new THREE.Vector3()),grip=(kind==='screw'?d.screwGrip:d.wheelGrip).getWorldPosition(new THREE.Vector3());
+      const cr=kind==='screw'?new THREE.Vector3(cursor.x,0,cursor.z):new THREE.Vector3(cursor.x,cursor.y-d.axleY,0);
+      const hr=kind==='screw'?new THREE.Vector3(grip.x,0,grip.z):new THREE.Vector3(grip.x,grip.y-d.axleY,0);
+      expect(cr.length()).toBeCloseTo(u.mlRadius,8);expect(cr.normalize().dot(hr.normalize())).toBeCloseTo(1,8);
+      expect(u.mlOrigin.position.equals(origin)).toBe(true);expect(u.mlCursor.geometry).toBe(geometry);expect(u.mlCursor.scale.toArray()).toEqual([1,1,1]);
+      if(Number.isInteger(progress*4))expect(u.mlCursor.position.distanceTo(u.mlQuarterMarks[Math.round(progress*4)%4].position)).toBeLessThan(1e-8);
+    }
+    expect(u.mlCursor.position.distanceTo(origin)).toBeLessThan(1e-8);
+    if(kind==='windlass'){
+      // The enlarged guide and moving marker must clear the test bed at every angle.
+      s.data.motionProgress=(1.5*Math.PI-.58)/(2*Math.PI);s.tick(4000);s.model.updateMatrixWorld(true);
+      expect(new THREE.Box3().setFromObject(u.mlCursor).min.y).toBeGreaterThan(.28);
+      expect(new THREE.Box3().setFromObject(g.children[0]).min.y).toBeGreaterThan(.28);
+    }
+  });
+  for(const kind of ['windlass','screw'])it('preserves '+kind+' angle through return and motion-off playback', () => {
+    const s=scene(kind,{ma:4}),u=s.mlDemo.turnGuide.userData;
+    s.data={demoId:92,demoDuration:6600,reduced:false};s.tick(10000);s.tick(11650);const outward=u.mlCursor.position.clone();s.tick(14950);expect(u.mlCursor.position.distanceTo(outward)).toBeLessThan(1e-8);
+    s.data.reduced=true;s.tick(15100);expect(u.mlCursor.position.distanceTo(u.mlOrigin.position)).toBeLessThan(1e-8);const still=u.mlCursor.position.clone();s.tick(16500);expect(u.mlCursor.position.equals(still)).toBe(true);
   });
 });

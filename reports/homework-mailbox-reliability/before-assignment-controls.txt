@@ -1,0 +1,78 @@
+  const refreshAssignmentCenter = useCallback(async () => {
+      const epoch = assignmentCenterRefreshEpochRef.current + 1;
+      assignmentCenterRefreshEpochRef.current = epoch;
+      const hosted = recentQrShares.filter(share => share?.type === 'assignment-pack-hosted'
+          && share.sharedActivity?.activityId && share.packId && !share.revokedAt
+          && (!share.expiresAt || Date.parse(share.expiresAt) > Date.now()));
+      if (!hosted.length) {
+          setAssignmentCenterRefreshing(false);
+          return;
+      }
+      if (!mbConfig?.url || !mbConfig?.admin) {
+          setAssignmentCenterStatusByUrl(previous => {
+              const next = { ...previous };
+              hosted.forEach(share => { next[share.url] = { state: 'error' }; });
+              return next;
+          });
+          setAssignmentCenterRefreshing(false);
+          return;
+      }
+      setAssignmentCenterRefreshing(true);
+      setAssignmentCenterStatusByUrl(previous => {
+          const next = { ...previous };
+          hosted.forEach(share => { next[share.url] = { state: 'loading' }; });
+          return next;
+      });
+      const results = await Promise.all(hosted.map(async share => {
+          try {
+              const summary = await _alloMailboxCallWithRetry(mbConfig.url, {
+                  a: 'getactivityadmin', admin: mbConfig.admin, id: share.packId, aid: share.sharedActivity.activityId,
+              });
+              return [share.url, { state: 'ready', summary: _alloAssignmentCenterActivityStatus(summary) }];
+          } catch (_) {
+              return [share.url, { state: 'error' }];
+          }
+      }));
+      if (assignmentCenterRefreshEpochRef.current !== epoch) return;
+      setAssignmentCenterStatusByUrl(previous => ({ ...previous, ...Object.fromEntries(results) }));
+      setAssignmentCenterRefreshing(false);
+  }, [recentQrShares, mbConfig?.url, mbConfig?.admin]);
+  useEffect(() => {
+      if (showRecentQrShares) refreshAssignmentCenter();
+  }, [showRecentQrShares, refreshAssignmentCenter]);
+  const assignmentCenterRows = useMemo(
+      () => _alloBuildAssignmentCenterRows(recentQrShares, assignmentCenterStatusByUrl, Date.now()),
+      [recentQrShares, assignmentCenterStatusByUrl, showRecentQrShares]
+  );
+  const assignmentCenterVisibleRows = useMemo(
+      () => _alloFilterAssignmentCenterRows(assignmentCenterRows, assignmentCenterFilter),
+      [assignmentCenterRows, assignmentCenterFilter]
+  );
+  const exportAssignmentCenterCsv = useCallback((...__a) => _alloHostHandlers().exportAssignmentCenterCsv(...__a), [assignmentCenterRows, addToast]);
+  // Pull a shared survey's results into the Research Suite's response store.
+  // The Suite module owns its storage schema; this only fetches the organizer
+  // summary and hands it over with the study bookkeeping from the share.
+  const importSurveyShareToResearchSuite = useCallback(async (share) => {
+      if (!mbConfig?.url || !mbConfig?.admin) { addToast('Connect your Class Mailbox first.', 'info'); return; }
+      const activityId = String(share?.sharedActivity?.activityId || '');
+      const packId = String(share?.packId || '');
+      if (!activityId || !packId) { addToast('This link has no importable survey.', 'info'); return; }
+      try {
+          const summary = await _alloMailboxCallWithRetry(mbConfig.url, { a: 'getactivityadmin', admin: mbConfig.admin, id: packId, aid: activityId });
+          const internals = window.AlloModules && window.AlloModules.StudentAnalyticsInternals;
+          if (!internals || typeof internals.importMailboxSurveySummary !== 'function') {
+              addToast('Analytics module not loaded yet - open the Assessment Center once, then retry.', 'info');
+              return;
+          }
+          const result = internals.importMailboxSurveySummary(summary, share.researchMeta || {});
+          if (result.aggregateOnly) {
+              addToast('Anonymous surveys stay aggregate-only - read results here in Share & Collect. Use codenames or real names when you need pre/post pairing.', 'info');
+          } else {
+              addToast('Imported ' + result.imported + ' response(s) into the Research Suite' + (result.skipped ? ' (' + result.skipped + ' already there)' : '') + '.', result.imported ? 'success' : 'info');
+          }
+      } catch (error) {
+          addToast('Import failed: ' + (error?.message || 'unknown'), 'error');
+      }
+  }, [mbConfig, addToast]);
+  const extendAssignmentCenterShare = useCallback(async (...__a) => _alloHostHandlers().extendAssignmentCenterShare(...__a), [mbConfig, homeworkExpiryDays, addToast]);
+  const duplicateAssignmentCenterShare = useCallback(async (...__a) => _alloHostHandlers().duplicateAssignmentCenterShare(...__a), [mbConfig, homeworkExpiryDays, copyToClipboard, openQrShareModal, addToast]);

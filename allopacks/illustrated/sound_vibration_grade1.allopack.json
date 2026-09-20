@@ -34,6 +34,14 @@
       "pendingSortImages": 0,
       "review": "Visually reviewed; educator review pending",
       "textPolicy": "Text-free artwork; original activity text stays editable"
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending",
+    "contentRefinements": {
+      "count": 1,
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/sound_vibration_grade1/content-refinements.json",
+      "sourceOnlyResourceIds": []
     }
   },
   "sourceTopic": "Feel the Buzz — Sound and Vibration",
@@ -431,16 +439,16 @@
         "mode": "list",
         "items": [
           {
-            "text": "I notice ____. This matters because ____."
+            "text": "I saw or felt ____ when the drum was tapped."
           },
           {
-            "text": "I compared ____ with ____. They differ because ____."
+            "text": "When we stopped the drum top, ____."
           },
           {
-            "text": "My evidence is ____. It supports ____."
+            "text": "We tried again. I noticed ____."
           },
           {
-            "text": "At first I thought ____. Now I think ____ because ____."
+            "text": "My picture shows ____. I still want to check ____."
           }
         ],
         "rubric": "| Look for | Check |\n|---|---|\n| Names the idea | Uses a lesson word correctly |\n| Gives support | Points to an observation or worked example |"
@@ -572,7 +580,7 @@
               "A shaking drum top can make sound."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "aiExample": "Tap and shake. A drum top moves when we tap it. That move can make a sound.",
             "mapping": "Think of the drum top as you say the cue. The top moves back and forth.",
             "scaffoldStarter": "My cue is ____. It helps me remember ____.",
@@ -598,7 +606,7 @@
               "Stopping the shake changes the sound."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "aiExample": "Watch and feel. Touch your throat as you hum. Stop and feel what changes.",
             "mapping": "This cue helps us use more than our ears. We can feel a small shake too.",
             "scaffoldStarter": "My cue is ____. It helps me remember ____.",
@@ -722,13 +730,13 @@
           ],
           "deliverable": "Draw the drum before and after touching its top. Tell what you heard, saw, or felt.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {
-            "context": "A classmate checks a related claim from this lesson.",
-            "move": "They use the lesson rule: A shaking drum top can make sound. They record an example, then check whether it supports the claim.",
-            "whyItHelps": "A clear example helps another person check the reasoning instead of trusting a guess."
+            "context": "A teacher gently plucks the end of a ruler held on a table.",
+            "move": "Compare it while it moves and after it stops. Tell or show what you notice. Try again gently.",
+            "whyItHelps": "You compare before and after on one object. Use that idea for the drum."
           },
           "frameStarter": "Our evidence is ____. It supports ____. A limit is ____.",
           "frameChoices": [

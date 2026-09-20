@@ -231,9 +231,24 @@
       projection.materials.push({ id, type: resource.type, title: string(text(resource.title || resource.data?.title), 500) || resource.type, text: bounded });
       remaining -= bounded.length;
     });
+    projection.materialFingerprints = materialFingerprints.filter(item => projection.materials.some(material => material.id === item.id));
     projection.planFingerprint = fingerprint(fullPlan);
     projection.fingerprint = fingerprint({ schemaVersion: projection.schemaVersion, planId: projection.planId, settings: projection.settings, plan: projection.plan, planFingerprint: projection.planFingerprint, materials: projection.materials, materialFingerprints });
     return freeze(projection);
+  }
+  function getMaterialStatus(version, materials = []) {
+    const ids = array(version?.inputSnapshot?.materialIds).map(String);
+    const recorded = array(version?.inputSnapshot?.materialFingerprints);
+    const result = { changed: [], missing: [], ambiguous: [], untracked: false };
+    ids.forEach(id => {
+      const matches = array(materials).filter(item => item && String(item.id) === id);
+      if (!matches.length) { result.missing.push(id); return; }
+      if (matches.length !== 1) { result.ambiguous.push(id); return; }
+      const baseline = recorded.filter(item => item?.id === id && typeof item.fingerprint === 'string');
+      if (baseline.length !== 1) { result.untracked = true; return; }
+      if (fingerprint({ type: matches[0].type, text: teacherMaterialText(matches[0]) }) !== baseline[0].fingerprint) result.changed.push(id);
+    });
+    return result;
   }
   function getInputWarnings(snapshot) {
     const warnings = [];
@@ -366,7 +381,7 @@
     const version = {
       id: 'script-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10), createdAt: new Date().toISOString(), schemaVersion: SCHEMA_VERSION,
       title, scope: snapshot.settings.scope, planId: snapshot.planId, inputFingerprint: snapshot.fingerprint,
-      inputSnapshot: { settings: clone(snapshot.settings), materialIds: snapshot.materials.map(item => item.id), materialTitles: snapshot.materials.map(item => ({ id: item.id, title: item.title })), planFingerprint: snapshot.planFingerprint, planPhases: PHASES.filter(phase => snapshot.plan[phase]) },
+      inputSnapshot: { settings: clone(snapshot.settings), materialIds: snapshot.materials.map(item => item.id), materialFingerprints: clone(snapshot.materialFingerprints), materialTitles: snapshot.materials.map(item => ({ id: item.id, title: item.title })), planFingerprint: snapshot.planFingerprint, planPhases: PHASES.filter(phase => snapshot.plan[phase]) },
       durationMinutes: snapshot.settings.durationMinutes, steps: normalized.steps, sources: research.sources, researchStatus: research.status,
       warnings: research.warnings.concat(inputWarnings, ['Generated wording is not an evaluated intervention.'], research.status === 'retrieved' ? [] : ['Teaching wording is AI-generated. No retrieved research recommendations support this version.']),
     };
@@ -385,7 +400,14 @@
     if (resource?.type !== 'lesson-plan' || !validVersion(version, resource.id)) return resource;
     const existing = array(resource.data?.teachingScripts);
     if (existing.some(item => item?.id === version.id)) return resource;
-    return { ...resource, data: { ...resource.data, teachingScripts: existing.concat(clone(version)).slice(-3) } };
+    return { ...resource, data: { ...resource.data, teachingScripts: existing.concat(clone(version)) } };
+  }
+  function removeVersion(resource, id, expectedVersion) {
+    if (resource?.type !== 'lesson-plan') return resource;
+    const versions = array(resource.data?.teachingScripts), matches = versions.filter(version => version?.id === id);
+    if (matches.length !== 1 || !expectedVersion || JSON.stringify(matches[0]) !== JSON.stringify(expectedVersion)) return resource;
+    const audio = { ...(resource.lessonScriptAudio || {}) }; delete audio[id];
+    return { ...resource, lessonScriptAudio: audio, data: { ...resource.data, teachingScripts: versions.filter(version => version?.id !== id) } };
   }
   function updateVersion(resource, id, steps) {
     if (resource?.type !== 'lesson-plan') return resource;
@@ -427,13 +449,25 @@
   // Only these two fields are intended for student-facing speech. Legacy bracketed
   // delivery cues are omitted; mathematical bracket expressions remain intact.
   function spokenSegments(version) {
-    const clean = value => text(value).replace(/\[(?:pause|wait|allow|give students|teacher|gesture|point|show|display|write on|model silently)[^\]]*\]/gi, '').replace(/[ \t]+/g, ' ').trim();
-    const comparable = value => value.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+    // Strip only explicitly marked notes or a complete, recognized pause cue.
+    // Preserve brackets, symbols and punctuation in actual lesson content.
+    const clean = value => text(value).replace(/\[(?:teacher note:[^\]]*|(?:pause|wait)(?: for responses|(?: for)? \d+(?: seconds?| minutes?))?)\]/gi, '').replace(/[ \t]+/g, ' ').trim();
+    const comparable = value => value.toLowerCase().replace(/\s+/g, ' ').trim();
+    const repeatedQuestion = (wording, question) => {
+      const w = comparable(wording), q = comparable(question);
+      if (!q) return false;
+      let at = w.indexOf(q);
+      while (at !== -1) {
+        if ((at === 0 || !/[\p{L}\p{N}]/u.test(w[at - 1])) && (at + q.length === w.length || !/[\p{L}\p{N}]/u.test(w[at + q.length]))) return true;
+        at = w.indexOf(q, at + 1);
+      }
+      return false;
+    };
     return array(version?.steps).flatMap((step, index) => {
       if (!step || typeof step !== 'object') return [];
       const wording = clean(step.teacherSays), question = clean(step.checkQuestion);
       const base = { stepIndex: index, stepId: String(step.id || index), title: text(step.title) };
-      return [['teacherSays', wording], ['checkQuestion', question && !(' ' + comparable(wording) + ' ').includes(' ' + comparable(question) + ' ') ? question : '']]
+      return [['teacherSays', wording], ['checkQuestion', question && !repeatedQuestion(wording, question) ? question : '']]
         .filter(([, spokenText]) => spokenText).map(([field, spokenText]) => ({ ...base, field, spokenText, id: index + ':' + field }));
     });
   }
@@ -464,7 +498,7 @@
   }
   const api = {
     SCHEMA_VERSION, LEGACY_SCHEMA_VERSION, SCOPES: clone(SCOPES), PHASES: PHASES.slice(), SUBJECTS: SUBJECTS.slice(), SUBJECT_LABELS: { ...SUBJECT_LABELS }, GRADES: GRADES.slice(),
-    spokenSegments, spokenText, createAudioController, normalizeGrade, gradeBand, detectContext, captureInputs, getInputWarnings, hasTeachingMaterialText: resource => Boolean(teacherMaterialText(resource)), validateInputs, buildScriptPrompt, normalizeScript, toPlainText, appendVersion, updateVersion, scopeLabel,
+    spokenSegments, spokenText, createAudioController, normalizeGrade, gradeBand, detectContext, captureInputs, getInputWarnings, getMaterialStatus, hasTeachingMaterialText: resource => Boolean(teacherMaterialText(resource)), validateInputs, buildScriptPrompt, normalizeScript, toPlainText, appendVersion, removeVersion, updateVersion, scopeLabel,
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
   if (typeof window !== 'undefined') { window.AlloModules = window.AlloModules || {}; window.AlloModules.LessonTeachingScript = api; window.AlloModules.LessonTeachingScriptModule = true; }

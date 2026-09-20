@@ -1,0 +1,86 @@
+[
+  {
+    "id": "selected-label-change",
+    "source": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"same\" label=\"Warm\" selected>First choice</option><option value=\"same\" label=\"Cool\">Second choice</option></select>",
+    "candidate": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"same\" label=\"Cold\" selected>First choice</option><option value=\"same\" label=\"Cool\">Second choice</option></select>",
+    "accepted": false
+  },
+  {
+    "id": "unselected-label-change",
+    "source": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"same\" label=\"Warm\" selected>First choice</option><option value=\"same\" label=\"Cool\">Second choice</option></select>",
+    "candidate": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"same\" label=\"Warm\" selected>First choice</option><option value=\"same\" label=\"Hot\">Second choice</option></select>",
+    "accepted": false
+  },
+  {
+    "id": "label-removal",
+    "source": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"same\" label=\"Warm\" selected>First choice</option><option value=\"same\" label=\"Cool\">Second choice</option></select>",
+    "candidate": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"same\" selected>First choice</option><option value=\"same\" label=\"Cool\">Second choice</option></select>",
+    "accepted": false
+  },
+  {
+    "id": "new-label-override",
+    "source": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"warm\">Warm</option></select>",
+    "candidate": "<select aria-label=\"Temperature\" size=\"3\"><option label=\"Cold\" value=\"warm\">Warm</option></select>",
+    "accepted": false
+  },
+  {
+    "id": "duplicate-values-swapped-labels",
+    "source": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"same\" label=\"Warm\" selected>First choice</option><option value=\"same\" label=\"Cool\">Second choice</option></select>",
+    "candidate": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"same\" label=\"Cool\" selected>First choice</option><option value=\"same\" label=\"Warm\">Second choice</option></select>",
+    "accepted": false
+  },
+  {
+    "id": "label-unit-flattened",
+    "source": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"area\" label=\"2 m²\">Area</option></select>",
+    "candidate": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"area\" label=\"2 m2\">Area</option></select>",
+    "accepted": false
+  },
+  {
+    "id": "equivalent-label-added",
+    "source": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"warm\">Warm</option></select>",
+    "candidate": "<select aria-label=\"Temperature\" size=\"3\"><option label=\"Warm\" value=\"warm\">Warm</option></select>",
+    "accepted": true
+  },
+  {
+    "id": "equivalent-label-removed",
+    "source": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"warm\" label=\"Warm\">Warm</option></select>",
+    "candidate": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"warm\">Warm</option></select>",
+    "accepted": true
+  },
+  {
+    "id": "canonical-label",
+    "source": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"cafe\" label=\"Café\">Choice</option></select>",
+    "candidate": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"cafe\" label=\"Café\">Choice</option></select>",
+    "accepted": true
+  },
+  {
+    "id": "label-whitespace",
+    "source": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"warm\" label=\"Warm\">Choice</option></select>",
+    "candidate": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"warm\" label=\"  Warm  \">Choice</option></select>",
+    "accepted": true
+  },
+  {
+    "id": "label-cleared",
+    "source": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"warm\" label=\"Warm\">Choice</option></select>",
+    "candidate": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"warm\" label=\"\">Choice</option></select>",
+    "accepted": false
+  },
+  {
+    "id": "empty-label-removed",
+    "source": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"warm\" label=\"\">Warm</option></select>",
+    "candidate": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"warm\">Warm</option></select>",
+    "accepted": true
+  },
+  {
+    "id": "empty-label-added",
+    "source": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"warm\">Warm</option></select>",
+    "candidate": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"warm\" label=\"\">Warm</option></select>",
+    "accepted": true
+  },
+  {
+    "id": "empty-label-repaired",
+    "source": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"warm\" label=\"\">Warm</option></select>",
+    "candidate": "<select aria-label=\"Temperature\" size=\"3\"><option value=\"warm\" label=\"Warm\">Warm</option></select>",
+    "accepted": true
+  }
+]

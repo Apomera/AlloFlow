@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "tests": 440,
+  "testFiles": 22,
+  "curveBrowser": true,
+  "cutawayBrowser": true,
+  "automatedAccessibilityScans": 10,
+  "violations": 0,
+  "mobileWidths": [
+    390,
+    320
+  ],
+  "visuallyInspected": "Expanded PMOS curve at 390 px",
+  "sourceMirrorMatch": true,
+  "sourceSHA256": "d6aa510ce9bca68abbe0f2cde18c3d8fca3c7d0fbcca2cc58fbee9a5b561436b"
+}

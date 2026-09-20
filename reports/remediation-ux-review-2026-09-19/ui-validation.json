@@ -1,0 +1,19 @@
+{
+  "passed": 13,
+  "checks": [
+    "Four quality sliders retained; pacing toggles with mouse and keyboard",
+    "320px light: no horizontal overflow; header/settings accessibility scan passed",
+    "390px light: no horizontal overflow; header/settings accessibility scan passed",
+    "1280px light: no horizontal overflow; header/settings accessibility scan passed",
+    "320px dark: no horizontal overflow; header/settings accessibility scan passed",
+    "390px dark: no horizontal overflow; header/settings accessibility scan passed",
+    "1280px dark: no horizontal overflow; header/settings accessibility scan passed",
+    "320px contrast: no horizontal overflow; header/settings accessibility scan passed",
+    "390px contrast: no horizontal overflow; header/settings accessibility scan passed",
+    "1280px contrast: no horizontal overflow; header/settings accessibility scan passed",
+    "Batch exposes preference and locks it during processing",
+    "Partial verification has retry action, saved pacing summary, expandable evidence and working download navigation",
+    "Diagnostics open from the reserved header toolbar"
+  ],
+  "errors": []
+}

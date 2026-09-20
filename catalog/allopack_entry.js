@@ -28,12 +28,41 @@ function gradeFor(pack) {
   return a.length > 1 ? Math.min(...a) + '-' + Math.max(...a) : String(a[0]);
 }
 
+// These tags describe actual resources; curated topical tags cannot override them.
+const CAPABILITY_TAGS = new Set(['memory-aid', 'applied-challenge', 'illustrated', 'text-only']);
+function isImageReference(value) {
+  return typeof value === 'string' && /^(?:data:image\/|https?:\/\/|blob:)|\.(?:avif|gif|jpe?g|png|svg|webp)(?:[?#].*)?$/i.test(value.trim());
+}
+function hasResourceImages(value) {
+  if (!value || typeof value !== 'object') return false;
+  if (Array.isArray(value)) return value.some(hasResourceImages);
+  return Object.entries(value).some(([key, child]) =>
+    (['image', 'imageUrl', 'iconUrl'].includes(key) && isImageReference(child)) ||
+    (child && typeof child === 'object' && hasResourceImages(child)));
+}
+function capabilityTags(pack) {
+  const history = Array.isArray(pack.history) ? pack.history : [];
+  const types = new Set(history.filter(Boolean).map(r => r.type));
+  const tags = [];
+  if (types.has('memory-aid')) tags.push('memory-aid');
+  if (types.has('applied-challenge')) tags.push('applied-challenge');
+  tags.push(hasResourceImages(history) ? 'illustrated' : 'text-only');
+  return tags;
+}
+function reconcileCapabilityTags(pack, tags) {
+  const actual = capabilityTags(pack), valid = new Set(actual), seen = new Set(), result = [];
+  for (const value of Array.isArray(tags) ? tags : []) {
+    if (typeof value !== 'string' || !value.trim()) continue;
+    const tag = value.trim(), canonical = tag.toLowerCase();
+    if (CAPABILITY_TAGS.has(canonical) && !valid.has(canonical)) continue;
+    if (!seen.has(canonical)) { result.push(CAPABILITY_TAGS.has(canonical) ? canonical : tag); seen.add(canonical); }
+  }
+  for (const tag of actual) if (!seen.has(tag)) { result.push(tag); seen.add(tag); }
+  return result;
+}
 function tagsFor(pack, slug) {
   const words = slug.replace(/_grade\d+(_\d+)?$/, '').split('_');
   const tags = [words.join('-')];
-  const types = new Set((pack.history || []).map((r) => r.type));
-  if (types.has('memory-aid')) tags.push('memory-aid');
-  if (types.has('applied-challenge')) tags.push('applied-challenge');
   const s = String((pack.allopack && pack.allopack.standards) || '').toUpperCase();
   if (s.includes('CASEL')) tags.push('sel');
   if (s.includes('HOWL')) tags.push('howl');
@@ -41,8 +70,7 @@ function tagsFor(pack, slug) {
   if (s.includes('NGSS')) tags.push('ngss');
   if (s.includes('CCSS')) tags.push('ccss');
   if (s.includes('C3 ')) tags.push('c3');
-  tags.push('text-only');
-  return tags;
+  return reconcileCapabilityTags(pack, tags);
 }
 
 // Packs may carry a UTF-8 BOM (Windows editors); JSON.parse rejects it.
@@ -57,7 +85,7 @@ function readPack(repoRoot, rel) {
 
 // `published` is one record from catalog/published_allopacks.json: `{ path }` at minimum.
 // Any other field on it OVERRIDES the derived value, so a hand-curated slug, title, credit
-// or tag list survives regeneration byte-for-byte.
+// and topical tags survive regeneration. Resource capability tags always follow pack contents.
 function entryFromPack(repoRoot, published) {
   const rel = published.path;
   const pack = readPack(repoRoot, rel);
@@ -77,7 +105,8 @@ function entryFromPack(repoRoot, published) {
     if (key === 'path') continue;
     if (published[key] !== undefined && published[key] !== null) derived[key] = published[key];
   }
+  derived.tags = reconcileCapabilityTags(pack, derived.tags);
   return derived;
 }
 
-module.exports = { subjectFor, gradeFor, tagsFor, readPack, entryFromPack };
+module.exports = { subjectFor, gradeFor, tagsFor, capabilityTags, reconcileCapabilityTags, readPack, entryFromPack };

@@ -11,7 +11,13 @@ function LessonSpokenDirections({
   draft,
   onBack,
   createAudio,
-  t
+  t,
+  audioVoice,
+  audioSpeed,
+  audioLanguage,
+  onOpenVoiceSettings,
+  initialStepIndex = 0,
+  onStepChange
 }) {
   const tr = (key, fallback) => {
     const value = t?.('lesson_script.' + key);
@@ -19,8 +25,12 @@ function LessonSpokenDirections({
   };
   const runtime = window.AlloModules?.LessonTeachingScript;
   const segments = runtime?.spokenSegments?.(version) || [];
-  const [stepIndex, setStepIndex] = React.useState(0),
+  const [stepIndex, setStepIndex] = React.useState(() => Math.max(0, Math.min(version.steps.length - 1, Number.isInteger(initialStepIndex) ? initialStepIndex : 0))),
     [large, setLarge] = React.useState(false);
+  const [exportScope, setExportScope] = React.useState('all');
+  const exportSegments = segments.filter(segment => exportScope === 'all' || segment.stepIndex === stepIndex);
+  const downloads = React.useRef(new Map());
+  const playbackRevision = React.useRef(0);
   const [status, setStatus] = React.useState(''),
     [working, setWorking] = React.useState(''),
     [active, setActive] = React.useState('');
@@ -32,7 +42,10 @@ function LessonSpokenDirections({
     surface = React.useRef(null),
     back = React.useRef(null);
   const alive = React.useRef(true);
+  const ownsFullscreen = React.useRef(false);
+  const [fullscreen, setFullscreen] = React.useState(false);
   const stop = () => {
+    playbackRevision.current += 1;
     request.current?.abort();
     request.current = null;
     if (player.current) {
@@ -64,8 +77,20 @@ function LessonSpokenDirections({
     if (typeof surface.current?.showModal === 'function') surface.current.showModal();else surface.current?.setAttribute('open', '');
     back.current?.focus();
     refresh();
+    const changed = () => {
+      setFullscreen(!!document.fullscreenElement);
+      if (!document.fullscreenElement) ownsFullscreen.current = false;
+    };
+    document.addEventListener('fullscreenchange', changed);
     return () => {
       alive.current = false;
+      downloads.current.forEach((timer, url) => {
+        clearTimeout(timer);
+        URL.revokeObjectURL(url);
+      });
+      downloads.current.clear();
+      document.removeEventListener('fullscreenchange', changed);
+      if (ownsFullscreen.current && document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
       stop();
       audioController.current?.dispose?.();
       audioController.current = null;
@@ -94,12 +119,13 @@ function LessonSpokenDirections({
       audio.onerror = async () => {
         if (request.current === pending) {
           stop();
+          const revision = playbackRevision.current;
           try {
             await controller().quarantine(segment.id, {
               reason: 'The saved spoken clip could not be decoded or loaded.'
             });
           } catch (_) {}
-          if (alive.current) {
+          if (alive.current && playbackRevision.current === revision) {
             refresh();
             setStatus(tr('audio_play_failed', 'Audio could not play. Use Save TTS to rebuild missing audio, then try again.'));
           }
@@ -114,7 +140,7 @@ function LessonSpokenDirections({
     } catch (error) {
       if (alive.current && request.current === pending) {
         stop();
-        setStatus(error.message || tr('audio_failed', 'Audio could not be prepared. Try again.'));
+        setStatus(_ltsText(error?.message || error) || tr('audio_failed', 'Audio could not be prepared. Try again.'));
       }
     }
   };
@@ -135,7 +161,7 @@ function LessonSpokenDirections({
       if (!alive.current || request.current !== pending) return;
       setStatus(result.failed ? tr('audio_partial', 'Some audio could not be saved. Save TTS again to retry missing clips.') : tr('audio_saved', 'Spoken audio is saved with this lesson plan.'));
     } catch (error) {
-      if (alive.current && request.current === pending) setStatus(error.message || tr('audio_failed', 'Audio could not be prepared. Try again.'));
+      if (alive.current && request.current === pending) setStatus(_ltsText(error?.message || error) || tr('audio_failed', 'Audio could not be prepared. Try again.'));
     } finally {
       if (alive.current && request.current === pending) {
         request.current = null;
@@ -145,12 +171,37 @@ function LessonSpokenDirections({
     }
   };
   const exportSpeech = async kind => {
-    const content = runtime?.spokenText?.(version) || '';
-    if (!content) return;
+    if (!exportSegments.length) return;
+    const draftLabel = tr('draft_export_label', 'UNSAVED DRAFT — not validated');
+    const draftHint = tr('draft_export_hint', 'This text includes unfinished edits. It does not update the saved script.');
+    const content = (draft ? [draftLabel, draftHint, ''] : []).concat(exportSegments.map(segment => segment.spokenText)).join('\n\n');
     try {
       if (kind === 'copy') {
+        if (typeof navigator.clipboard?.writeText !== 'function') throw new Error(tr('copy_unavailable', 'Copy is unavailable here. Download the text instead.'));
         await navigator.clipboard.writeText(content);
         if (alive.current) setStatus(tr('spoken_copied', 'Spoken directions copied.'));
+        return;
+      }
+      if (kind === 'download') {
+        const url = URL.createObjectURL(new Blob([content], {
+          type: 'text/plain;charset=utf-8'
+        }));
+        const timer = setTimeout(() => {
+          URL.revokeObjectURL(url);
+          downloads.current.delete(url);
+        }, 1000);
+        downloads.current.set(url, timer);
+        const link = document.createElement('a');
+        const title = _ltsText(version.title).replace(/[^\p{L}\p{N} _-]/gu, '').slice(0, 100).trim() || 'teaching-script';
+        link.href = url;
+        link.download = title + '-spoken' + (exportScope === 'step' ? '-step-' + (stepIndex + 1) : '') + (draft ? '-draft' : '') + '.txt';
+        document.body.appendChild(link);
+        try {
+          link.click();
+        } finally {
+          link.remove();
+        }
+        setStatus(tr('downloaded', 'Script text downloaded.'));
         return;
       }
       const popup = window.open('', '_blank', 'width=800,height=700');
@@ -163,20 +214,28 @@ function LessonSpokenDirections({
         "'": '&#39;'
       })[char]);
       popup.opener = null;
-      popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>' + escape(version.title) + '</title><style>body{font:18px/1.6 system-ui;max-width:48rem;margin:2rem auto;padding:1rem}p{white-space:pre-wrap;overflow-wrap:anywhere}section{break-inside:avoid}h1{font-size:24px}h2{font-size:20px}</style></head><body><h1>' + escape(version.title) + '</h1>' + version.steps.map((step, index) => '<section><h2>' + escape(index + 1 + '. ' + step.title) + '</h2>' + segments.filter(segment => segment.stepIndex === index).map(segment => '<p dir="auto">' + escape(segment.spokenText) + '</p>').join('') + '</section>').join('') + '</body></html>');
+      const sections = version.steps.map((step, index) => {
+        const spoken = exportSegments.filter(segment => segment.stepIndex === index);
+        return spoken.length ? '<section><h2 dir="auto">' + escape(index + 1 + '. ' + step.title) + '</h2>' + spoken.map(segment => '<p dir="auto">' + escape(segment.spokenText) + '</p>').join('') + '</section>' : '';
+      }).join('');
+      popup.document.write('<!doctype html><html lang="' + escape(document.documentElement.lang || 'en') + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + escape(version.title) + '</title><style>*{box-sizing:border-box}body{font:18px/1.6 system-ui;color:#111;background:#fff;margin:0;padding:24px}main{max-width:48rem;margin:auto}p{white-space:pre-wrap;overflow-wrap:anywhere}section{break-inside:avoid}h1,h2{overflow-wrap:anywhere}h1{font-size:24px}h2{font-size:20px}@page{margin:18mm}@media print{body{padding:0}main{max-width:none}}</style></head><body><main><h1 dir="auto">' + escape(version.title) + '</h1>' + (draft ? '<p><strong>' + escape(draftLabel) + '</strong><br>' + escape(draftHint) + '</p>' : '') + sections + '</main></body></html>');
       popup.document.close();
       popup.focus();
       popup.print();
+      if (alive.current) setStatus(tr('print_opened', 'The script print view is open.'));
     } catch (error) {
-      if (alive.current) setStatus(error.message || tr('export_failed', 'The script could not be exported. Please try again.'));
+      if (alive.current) setStatus(_ltsText(error?.message || error) || tr('export_failed', 'The script could not be exported. Please try again.'));
     }
   };
   const button = 'min-h-11 rounded-lg border border-indigo-600 bg-white px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50';
   const step = version.steps[stepIndex];
   const move = next => {
+    if (!Number.isInteger(next) || next < 0 || next >= version.steps.length) return;
     stop();
     setStatus('');
     setStepIndex(next);
+    onStepChange?.(next);
+    refresh();
   };
   return /*#__PURE__*/React.createElement("dialog", {
     ref: surface,
@@ -213,26 +272,68 @@ function LessonSpokenDirections({
   }, tr('larger_text', 'Larger text')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: button,
+    "aria-pressed": fullscreen,
     onClick: async () => {
       try {
-        if (document.fullscreenElement === surface.current) await document.exitFullscreen();else if (surface.current?.requestFullscreen) await surface.current.requestFullscreen();else throw new Error(tr('fullscreen_unavailable', 'Full screen is unavailable in this browser.'));
+        if (document.fullscreenElement) await document.exitFullscreen();else if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+          if (!alive.current) {
+            await document.exitFullscreen();
+            return;
+          }
+          ownsFullscreen.current = true;
+        } else throw new Error(tr('fullscreen_unavailable', 'Full screen is unavailable in this browser.'));
       } catch (error) {
-        setStatus(error.message);
+        if (alive.current) setStatus(error.message);
       }
     }
-  }, tr('fullscreen', 'Full screen')), /*#__PURE__*/React.createElement("button", {
+  }, fullscreen ? tr('exit_fullscreen', 'Exit full screen') : tr('fullscreen', 'Full screen'))), /*#__PURE__*/React.createElement("h3", {
+    className: "break-words text-xl font-black"
+  }, version.title), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-700"
+  }, tr('spoken_hint', 'Only wording addressed to students is shown. Playback stops after each spoken block. Review older scripts for delivery notes before playing.')), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-2 text-sm text-slate-700"
+  }, /*#__PURE__*/React.createElement("span", null, tr('voice_summary', 'Voice:'), " ", audioVoice || tr('voice_default', 'App default'), " · ", tr('language', 'Script language:'), " ", audioLanguage || 'English', " · ", audioSpeed || 1, "×"), typeof onOpenVoiceSettings === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: button,
+    onClick: () => {
+      stop();
+      onBack();
+      onOpenVoiceSettings();
+    }
+  }, tr('voice_settings', 'Voice settings'))), /*#__PURE__*/React.createElement("details", {
+    className: "space-y-2"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: button + ' cursor-pointer'
+  }, tr('spoken_export_menu', 'Export directions')), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-end gap-2"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "min-w-0 text-sm font-bold"
+  }, tr('spoken_export_scope', 'Directions to export'), /*#__PURE__*/React.createElement("select", {
+    "aria-label": tr('spoken_export_scope', 'Directions to export'),
+    className: "mt-1 block min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600",
+    value: exportScope,
+    onChange: event => setExportScope(event.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "all"
+  }, tr('spoken_export_all', 'All steps')), /*#__PURE__*/React.createElement("option", {
+    value: "step"
+  }, tr('spoken_export_step', 'Current step')))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: button,
+    disabled: !exportSegments.length,
     onClick: () => exportSpeech('copy')
   }, tr('copy_spoken', 'Copy spoken directions')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: button,
+    disabled: !exportSegments.length,
+    onClick: () => exportSpeech('download')
+  }, tr('download_spoken', 'Download spoken directions')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: button,
+    disabled: !exportSegments.length,
     onClick: () => exportSpeech('print')
-  }, tr('print_spoken', 'Print spoken directions'))), /*#__PURE__*/React.createElement("h3", {
-    className: "break-words text-xl font-black"
-  }, version.title), /*#__PURE__*/React.createElement("p", {
-    className: "text-sm text-slate-700"
-  }, tr('spoken_hint', 'Only wording addressed to students is shown. Playback stops after each spoken block. Review older scripts for delivery notes before playing.')), draft && /*#__PURE__*/React.createElement("p", {
+  }, tr('print_spoken', 'Print spoken directions')))), draft && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "rounded-lg bg-amber-50 p-3 text-amber-950"
   }, tr('audio_save_edits', 'Save script edits before preparing audio.')), /*#__PURE__*/React.createElement("div", {
@@ -272,9 +373,23 @@ function LessonSpokenDirections({
     className: button,
     disabled: stepIndex >= version.steps.length - 1,
     onClick: () => move(stepIndex + 1)
-  }, tr('next_step', 'Next step'))), /*#__PURE__*/React.createElement("h4", {
+  }, tr('next_step', 'Next step'))), /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-bold"
+  }, tr('jump_step', 'Go to step'), /*#__PURE__*/React.createElement("select", {
+    "aria-label": tr('jump_step', 'Go to step'),
+    className: "mt-1 block min-h-11 w-full min-w-0 max-w-full rounded-lg border border-slate-400 bg-white p-2 text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600",
+    value: stepIndex,
+    onChange: event => move(Number(event.target.value))
+  }, version.steps.map((item, index) => /*#__PURE__*/React.createElement("option", {
+    key: item.id || index,
+    value: index
+  }, index + 1, ". ", item.title)))), /*#__PURE__*/React.createElement("h4", {
+    "aria-live": "polite",
+    "aria-atomic": "true",
     className: "break-words text-lg font-bold"
-  }, stepIndex + 1, ". ", step?.title), segments.filter(segment => segment.stepIndex === stepIndex).map(segment => /*#__PURE__*/React.createElement("div", {
+  }, stepIndex + 1, ". ", step?.title), !segments.some(segment => segment.stepIndex === stepIndex) && /*#__PURE__*/React.createElement("p", {
+    className: "rounded-lg bg-slate-100 p-3 text-slate-700"
+  }, tr('spoken_step_empty', 'This step has no spoken directions. Choose another step or edit the full script.')), segments.filter(segment => segment.stepIndex === stepIndex).map(segment => /*#__PURE__*/React.createElement("div", {
     key: segment.id,
     "data-spoken-block": segment.field,
     className: 'space-y-3 rounded-xl border-2 p-4 ' + (active === segment.id ? 'border-indigo-700 bg-indigo-100' : 'border-indigo-300 bg-indigo-50')
@@ -487,6 +602,17 @@ function LessonTeachingScriptPanel(props) {
     standard: _ltsText(defaultSettings.standard)
   };
   const [spokenOnly, setSpokenOnly] = React.useState(false);
+  const [spokenPosition, setSpokenPosition] = React.useState(null);
+  const [deleteCandidate, setDeleteCandidate] = React.useState(null);
+  const [deleting, setDeleting] = React.useState(false);
+  const [confirmDiscard, setConfirmDiscard] = React.useState(false);
+  const discardToggle = React.useRef(null);
+  const deleteToggle = React.useRef(null);
+  const versionSelect = React.useRef(null);
+  const restoreDeleteFocus = React.useRef(false);
+  const deletingRequest = React.useRef(false);
+  const editActions = React.useRef(null);
+  const focusNewDraft = React.useRef(false);
   const spokenToggle = React.useRef(null);
   const [expanded, setExpanded] = React.useState(!!restored);
   const [settingsExpanded, setSettingsExpanded] = React.useState(() => restored ? !restored.draft : versions.length === 0);
@@ -536,14 +662,20 @@ function LessonTeachingScriptPanel(props) {
   const versionRules = _ltsRules(version);
   const timings = steps.reduce((sum, step) => sum + Number(step.minutes || 0), 0);
   const invalidTiming = !!draft && (draft.some(step => !Number.isInteger(Number(step.minutes)) || Number(step.minutes) < 1 || Number(step.minutes) > versionRules.maxStepMinutes) || timings !== Number(version?.durationMinutes));
-  const invalidDraftText = !!draft && draft.some(step => _ltsText(step.title).trim().length < 2 || ['teacherSays', 'studentDoes', 'checkQuestion', 'possibleResponse', 'ifStruggling', 'ifReady'].some(key => _ltsText(step[key]).trim().length < (key === 'teacherSays' ? 60 : 12)));
+  const invalidDraftText = !!draft && draft.some(step => _ltsText(step.title).trim().length < 2 || _ltsText(step.title).trim().length > 240 || ['teacherSays', 'studentDoes', 'checkQuestion', 'possibleResponse', 'ifStruggling', 'ifReady'].some(key => _ltsText(step[key]).trim().length < (key === 'teacherSays' ? 60 : 12)));
   const invalidDraftLength = !!draft && draft.some(step => ['teacherSays', 'studentDoes', 'checkQuestion', 'possibleResponse', 'ifStruggling', 'ifReady'].some(key => _ltsText(step[key]).trim().length > 16000));
+  const draftChanged = !!draft && JSON.stringify(draft.map(step => ({
+    ...step,
+    minutes: Number(step.minutes)
+  }))) !== draftBase;
   const staleDraft = !!draft && (!canonicalVersion || String(canonicalVersion.id) !== draftVersionId || JSON.stringify(sourceSteps) !== draftBase);
   const selectedMaterials = materials.filter(item => materialIds.includes(String(item.id)) && materialAvailable(item));
   const unavailableMaterialIds = materialIds.filter(id => !selectedMaterials.some(item => String(item.id) === id));
   let inputWarnings = [],
-    planChangedSinceScript = false;
+    planChangedSinceScript = false,
+    materialStatus = null;
   try {
+    if (version && typeof runtime?.getMaterialStatus === 'function') materialStatus = runtime.getMaterialStatus(version, materials);
     if (typeof runtime?.captureInputs === 'function') {
       const preview = runtime.captureInputs(plan, {
         goal,
@@ -594,6 +726,18 @@ function LessonTeachingScriptPanel(props) {
       (editToggle.current || settingsToggle.current || panelToggle.current)?.focus();
     }
   }, [draft]);
+  React.useEffect(() => {
+    if (draft && focusNewDraft.current && !spokenOnly) {
+      focusNewDraft.current = false;
+      document.getElementById(id + '-edit-0-title')?.focus();
+    }
+  }, [!!draft, spokenOnly]);
+  React.useEffect(() => {
+    if (!deleteCandidate && !deleting && restoreDeleteFocus.current) {
+      restoreDeleteFocus.current = false;
+      (versionSelect.current || settingsToggle.current || panelToggle.current)?.focus();
+    }
+  }, [deleteCandidate, deleting]);
   const useCurrentDefaults = () => {
     setGoal(detectedDefaults.goal);
     setGrade(detectedDefaults.grade);
@@ -666,7 +810,7 @@ function LessonTeachingScriptPanel(props) {
   };
   const generate = async event => {
     event?.preventDefault();
-    if (generatingRequest.current || busy || saving || draft || !canGenerate || researchEnabled && !canResearch || !formReady) return;
+    if (generatingRequest.current || deletingRequest.current || deleting || busy || saving || draft || !canGenerate || researchEnabled && !canResearch || !formReady) return;
     const owner = ++requestOwner.current;
     generatingRequest.current = true;
     setLocalBusy(true);
@@ -705,7 +849,10 @@ function LessonTeachingScriptPanel(props) {
     (expanded ? settingsToggle.current : panelToggle.current)?.focus();
   };
   const edit = () => {
-    if (!version || busy || saving) return;
+    if (!version || busy || saving || deleting) return;
+    setConfirmDiscard(false);
+    setDeleteCandidate(null);
+    focusNewDraft.current = true;
     setDraft(JSON.parse(JSON.stringify(sourceSteps)));
     setDraftSnapshot(JSON.parse(JSON.stringify(version)));
     setDraftBase(JSON.stringify(sourceSteps));
@@ -714,14 +861,33 @@ function LessonTeachingScriptPanel(props) {
     setLocalError('');
     setNotice('');
   };
-  const updateStep = (index, key, value) => setDraft(previous => previous.map((step, offset) => offset === index ? {
-    ...step,
-    [key]: value
-  } : step));
+  const updateStep = (index, key, value) => {
+    setConfirmDiscard(false);
+    setDraft(previous => previous.map((step, offset) => offset === index ? {
+      ...step,
+      [key]: value
+    } : step));
+  };
+  const discardEdits = () => {
+    if (saving) return;
+    setConfirmDiscard(false);
+    restoreEditFocus.current = true;
+    setDraft(null);
+    setDraftSnapshot(null);
+    setDraftBase('');
+    setDraftVersionId('');
+    setShowRecoveryNotice(false);
+    setLocalError('');
+  };
+  const keepEditing = () => {
+    setConfirmDiscard(false);
+    setTimeout(() => discardToggle.current?.focus(), 0);
+  };
   const saveEdits = async () => {
     if (savingRequest.current || !draft || !version || saving || staleDraft || invalidTiming || invalidDraftText || invalidDraftLength || typeof onUpdateTeachingScript !== 'function') return;
     const owner = ++requestOwner.current;
     savingRequest.current = true;
+    setConfirmDiscard(false);
     setSaving(true);
     setLocalError('');
     setNotice('');
@@ -762,7 +928,7 @@ function LessonTeachingScriptPanel(props) {
   };
   const exportText = async kind => {
     const runtime = window.AlloModules?.LessonTeachingScript;
-    if (!version || typeof runtime?.toPlainText !== 'function') {
+    if (!version || !draft && typeof runtime?.toPlainText !== 'function') {
       setLocalError(tr('export_unavailable', 'Text export is still loading. Please try again.'));
       return;
     }
@@ -771,12 +937,28 @@ function LessonTeachingScriptPanel(props) {
       steps: draft
     } : version;
     try {
-      const text = runtime.toPlainText(exportVersion);
+      const text = draft ? draftText() : runtime.toPlainText(exportVersion);
       if (typeof text !== 'string' || !text.trim()) throw new Error(tr('export_incomplete', 'This script could not be exported because its saved data or draft is incomplete. Review the script fields and try again.'));
       if (kind === 'copy') {
         if (typeof navigator.clipboard?.writeText !== 'function') throw new Error(tr('copy_unavailable', 'Copy is unavailable here. Download the text instead.'));
         await navigator.clipboard.writeText(text);
         if (mounted.current) setNotice(tr('copied', 'Script text copied.'));
+      } else if (kind === 'print') {
+        const popup = window.open('', '_blank', 'width=850,height=800');
+        if (!popup) throw new Error(tr('print_blocked', 'Allow the print window, then try again.'));
+        const escape = value => String(value).replace(/[&<>"']/g, char => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        })[char]);
+        popup.opener = null;
+        popup.document.write('<!doctype html><html lang="' + escape(document.documentElement.lang || 'en') + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>' + escape(version.title) + '</title><style>*{box-sizing:border-box}body{font:16px/1.55 system-ui,sans-serif;color:#111;background:#fff;margin:0;padding:24px}main{max-width:50rem;margin:auto}h1{font-size:24px}pre{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}@page{margin:18mm}@media print{body{padding:0}main{max-width:none}}</style></head><body><main><h1>' + escape(tr('print_title', 'Full teaching script')) + '</h1><pre dir="auto">' + escape(text) + '</pre></main></body></html>');
+        popup.document.close();
+        popup.focus();
+        popup.print();
+        if (mounted.current) setNotice(tr('print_opened', 'The script print view is open.'));
       } else {
         const url = URL.createObjectURL(new Blob([text], {
           type: 'text/plain;charset=utf-8'
@@ -788,7 +970,7 @@ function LessonTeachingScriptPanel(props) {
         downloads.current.set(url, timer);
         const link = document.createElement('a');
         link.href = url;
-        link.download = (_ltsText(version.title) || 'teaching-script').replace(/[^\p{L}\p{N} _-]/gu, '').slice(0, 100) + '.txt';
+        link.download = (_ltsText(version.title) || 'teaching-script').replace(/[^\p{L}\p{N} _-]/gu, '').slice(0, 100) + (draft ? '-draft' : '') + '.txt';
         document.body.appendChild(link);
         try {
           link.click();
@@ -802,9 +984,99 @@ function LessonTeachingScriptPanel(props) {
       if (mounted.current) setLocalError(_ltsText(failure?.message) || tr('export_failed', 'The script could not be exported. Please try again.'));
     }
   };
+  const keepVersion = () => {
+    if (deletingRequest.current) return;
+    setDeleteCandidate(null);
+    setTimeout(() => deleteToggle.current?.focus(), 0);
+  };
+  const deleteScript = async () => {
+    if (deletingRequest.current || !deleteCandidate || deleting || draft || busy || saving || typeof props.onDeleteTeachingScript !== 'function') return;
+    deletingRequest.current = true;
+    setDeleting(true);
+    setLocalError('');
+    setNotice('');
+    try {
+      const result = await props.onDeleteTeachingScript(plan.id, deleteCandidate.id, deleteCandidate);
+      if (!mounted.current) return;
+      if (result === false || result?.ok === false) {
+        setLocalError(_ltsText(result?.error?.message || result?.error) || tr('delete_failed', 'The version could not be deleted. Try again.'));
+        return;
+      }
+      restoreDeleteFocus.current = true;
+      setDeleteCandidate(null);
+      setNotice(tr('version_deleted', 'Script version and its saved audio deleted.'));
+    } catch (error) {
+      if (mounted.current) setLocalError(_ltsText(error?.message || error) || tr('delete_failed', 'The version could not be deleted. Try again.'));
+    } finally {
+      deletingRequest.current = false;
+      if (mounted.current) setDeleting(false);
+    }
+  };
   const fieldClass = 'w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:bg-slate-100';
   const buttonClass = 'min-h-11 rounded-lg border border-indigo-600 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50';
   const stepFields = [['teacherSays', tr('teacher_says', 'Teacher says')], ['studentDoes', tr('student_does', 'Learners do')], ['checkQuestion', tr('check_question', 'Check for understanding')], ['possibleResponse', tr('possible_response', 'Possible learner response')], ['ifStruggling', tr('if_struggling', 'If learners need support (likely misconception)')], ['ifReady', tr('if_ready', 'If learners are ready to go further')]];
+  const fieldIssue = (step, key) => {
+    if (key === 'minutes') return Number.isInteger(Number(step.minutes)) && Number(step.minutes) >= 1 && Number(step.minutes) <= versionRules.maxStepMinutes ? '' : tr('field_minutes', 'Use whole minutes from 1 to {max}.').replace('{max}', String(versionRules.maxStepMinutes));
+    const length = _ltsText(step[key]).trim().length;
+    const min = key === 'title' ? 2 : key === 'teacherSays' ? 60 : 12,
+      max = key === 'title' ? 240 : 16000;
+    return length < min || length > max ? tr('field_length', 'Use {min}–{max} characters; currently {count}.').replace('{min}', String(min)).replace('{max}', String(max)).replace('{count}', String(length)) : '';
+  };
+  const editFieldProps = (step, index, key) => ({
+    id: id + '-edit-' + index + '-' + key,
+    'aria-invalid': !!fieldIssue(step, key),
+    'aria-describedby': fieldIssue(step, key) ? id + '-edit-' + index + '-' + key + '-error' : undefined
+  });
+  const editFieldError = (step, index, key) => fieldIssue(step, key) ? /*#__PURE__*/React.createElement("span", {
+    id: id + '-edit-' + index + '-' + key + '-error',
+    className: "mt-1 block text-sm font-normal text-red-900"
+  }, fieldIssue(step, key)) : null;
+  const focusEditIssue = () => {
+    const list = document.getElementById(id + '-steps');
+    (list?.querySelector('[aria-invalid="true"]') || document.getElementById(id + '-edit-0-minutes'))?.focus();
+  };
+  const jumpToStep = value => {
+    if (value === '') return;
+    const index = Number(value);
+    if (!Number.isInteger(index) || index < 0 || index >= steps.length) return;
+    const target = document.getElementById(id + '-script-step-' + index);
+    target?.scrollIntoView?.({
+      block: 'start'
+    });
+    target?.querySelector('[data-script-step-heading], input')?.focus();
+  };
+  const materialName = resourceId => {
+    const recorded = version?.inputSnapshot?.materialTitles?.find?.(item => String(item?.id) === String(resourceId));
+    const current = materials.filter(item => String(item.id) === String(resourceId));
+    return _ltsText(recorded?.title) || (current.length === 1 ? _ltsText(current[0].title || current[0].data?.title) : '') || String(resourceId);
+  };
+  const draftText = () => {
+    const snapshot = draftSnapshot || version;
+    const settings = snapshot?.inputSnapshot?.settings || {};
+    const lines = [tr('draft_export_label', 'UNSAVED DRAFT — not validated'), tr('draft_export_hint', 'This text includes unfinished edits. It does not update the saved script.'), _ltsText(snapshot?.title), scopeLabel(snapshot) + ' · ' + _ltsText(snapshot?.durationMinutes) + ' ' + tr('minutes', 'minutes')];
+    [['goal', tr('goal', 'Learning goal')], ['priorKnowledge', tr('prior', 'Relevant prior learning')], ['standard', tr('standard', 'Standard or target')], ['language', tr('language', 'Script language:').replace(/[:：]\s*$/, '')]].forEach(([key, label]) => {
+      if (_ltsText(settings[key])) lines.push(label + ': ' + _ltsText(settings[key]));
+    });
+    (draft || []).forEach((step, index) => {
+      lines.push('', index + 1 + '. ' + _ltsText(step.title) + (step.phase ? ' · ' + (phaseLabel(step.phase) || _ltsText(step.phase)) : ''), tr('step_minutes', 'Minutes') + ': ' + _ltsText(step.minutes));
+      stepFields.forEach(([key, label]) => lines.push(label + ': ' + _ltsText(step[key])));
+      if (Array.isArray(step.resourceIds) && step.resourceIds.length) lines.push(tr('step_materials', 'Lesson resources:') + ' ' + step.resourceIds.map(resourceId => {
+        const recorded = snapshot?.inputSnapshot?.materialTitles?.find?.(item => String(item?.id) === String(resourceId));
+        return _ltsText(recorded?.title) || String(resourceId);
+      }).join('; '));
+      if (Array.isArray(step.recommendationIds) && step.recommendationIds.length) lines.push(tr('draft_recommendations', 'Teaching guidance IDs:') + ' ' + step.recommendationIds.map(String).join('; '));
+    });
+    lines.push('', tr('sources', 'Teaching sources and evidence'));
+    (Array.isArray(snapshot?.sources) ? snapshot.sources : []).forEach(source => {
+      if (!source || typeof source !== 'object') return;
+      lines.push([_ltsText(source.id), _ltsText(source.title), _ltsSafeUrl(source.url), _ltsText(source.author), _ltsText(source.scope)].filter(Boolean).join(' · '));
+      (Array.isArray(source.recommendations) ? source.recommendations : []).forEach(rec => {
+        if (rec && typeof rec === 'object') lines.push([_ltsText(rec.id), _ltsText(rec.text), _ltsText(rec.locator)].filter(Boolean).join(' · '));
+      });
+    });
+    (Array.isArray(snapshot?.warnings) ? snapshot.warnings : []).forEach(warning => lines.push(_ltsText(warning)));
+    return lines.join('\n');
+  };
   const researchLabels = {
     off: tr('research_off', 'Research turned off'),
     disabled: tr('research_off', 'Research turned off'),
@@ -822,6 +1094,11 @@ function LessonTeachingScriptPanel(props) {
       ...version,
       steps
     }), !!draft, props.audioProfile, version.inputSnapshot?.settings?.language, plan.config?.language]),
+    initialStepIndex: spokenPosition?.versionId === String(version.id) ? spokenPosition.index : 0,
+    onStepChange: index => setSpokenPosition({
+      versionId: String(version.id),
+      index
+    }),
     planId: planId,
     version: {
       ...version,
@@ -830,6 +1107,10 @@ function LessonTeachingScriptPanel(props) {
     draft: !!draft,
     createAudio: props.createTeachingScriptAudio,
     t: props.t,
+    audioVoice: props.audioVoice,
+    audioSpeed: props.audioSpeed,
+    audioLanguage: version.inputSnapshot?.settings?.language || plan.config?.language || defaultSettings.language,
+    onOpenVoiceSettings: props.onOpenVoiceSettings,
     onBack: () => {
       setSpokenOnly(false);
       setTimeout(() => spokenToggle.current?.focus(), 0);
@@ -1098,12 +1379,12 @@ function LessonTeachingScriptPanel(props) {
     className: "text-sm text-indigo-900"
   }, tr('finish_edits', 'Save or discard your script edits before generating another version.')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600"
-  }, tr('retention', 'The three most recent script versions are kept. Download a version to keep a separate copy.')), /*#__PURE__*/React.createElement("div", {
+  }, tr('history_retention', 'Script versions are kept until you delete them. Deleting a version also removes its saved audio.')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "submit",
     className: buttonClass + ' bg-indigo-50',
-    disabled: !canGenerate || researchEnabled && !canResearch || busy || saving || !!draft || !formReady
+    disabled: !canGenerate || researchEnabled && !canResearch || busy || saving || deleting || !!draft || !formReady
   }, error ? tr('retry', 'Try generating again') : tr('generate', 'Generate script')))))), /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
@@ -1125,11 +1406,13 @@ function LessonTeachingScriptPanel(props) {
     htmlFor: id + '-version',
     className: "mb-1 block text-sm font-bold text-slate-900"
   }, tr('version', 'Script version')), /*#__PURE__*/React.createElement("select", {
+    ref: versionSelect,
     id: id + '-version',
     className: fieldClass,
     value: String(version.id),
-    disabled: !!draft || saving || busy,
+    disabled: !!draft || saving || busy || deleting,
     onChange: event => {
+      setDeleteCandidate(null);
       setSelectedId(event.target.value);
       setNotice('');
       setLocalError('');
@@ -1139,17 +1422,17 @@ function LessonTeachingScriptPanel(props) {
   }, tr('recovered_version', 'Recovered draft version')), versions.map((item, index) => /*#__PURE__*/React.createElement("option", {
     key: item.id,
     value: String(item.id)
-  }, tr('version_number', 'Version'), " ", index + 1, " · ", _ltsText(item.title) || tr('title', 'Teaching script'))))), !draft && typeof onUpdateTeachingScript === 'function' && /*#__PURE__*/React.createElement("button", {
+  }, [tr('version_number', 'Version') + ' ' + (index + 1), _ltsText(item.title) || tr('title', 'Teaching script'), scopeLabel(item), Number(item.durationMinutes) > 0 ? item.durationMinutes + ' ' + tr('minutes', 'minutes') : ''].filter(Boolean).join(' · '))))), !draft && typeof onUpdateTeachingScript === 'function' && /*#__PURE__*/React.createElement("button", {
     ref: editToggle,
     type: "button",
     className: buttonClass,
-    disabled: busy || saving,
+    disabled: busy || saving || deleting,
     onClick: edit
   }, tr('edit', 'Edit script')), /*#__PURE__*/React.createElement("button", {
     ref: spokenToggle,
     type: "button",
     className: buttonClass,
-    disabled: saving,
+    disabled: saving || deleting,
     onClick: () => setSpokenOnly(true)
   }, tr('spoken_view', 'Spoken directions')), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -1161,40 +1444,139 @@ function LessonTeachingScriptPanel(props) {
     className: buttonClass,
     disabled: saving,
     onClick: () => exportText('download')
-  }, tr('download', 'Download text'))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+  }, tr('download', 'Download text')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: buttonClass,
+    disabled: saving,
+    onClick: () => exportText('print')
+  }, tr('print_script', 'Print script'))), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-700"
+  }, tr('history_retention', 'Script versions are kept until you delete them. Deleting a version also removes its saved audio.')), !draft && typeof props.onDeleteTeachingScript === 'function' && /*#__PURE__*/React.createElement("div", {
+    className: "no-print space-y-2"
+  }, deleteCandidate ? /*#__PURE__*/React.createElement("div", {
+    role: "group",
+    "aria-label": tr('delete_confirm', 'Delete this script version and its saved audio?'),
+    className: "rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950",
+    onKeyDown: event => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        keepVersion();
+      }
+    }
+  }, /*#__PURE__*/React.createElement("p", null, tr('delete_confirm', 'Delete this script version and its saved audio?'), " ", _ltsText(deleteCandidate.title)), /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 flex flex-wrap gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: buttonClass,
+    disabled: deleting || busy,
+    onClick: deleteScript
+  }, tr('confirm_delete', 'Delete version and audio')), /*#__PURE__*/React.createElement("button", {
+    autoFocus: true,
+    type: "button",
+    className: buttonClass,
+    disabled: deleting,
+    onClick: keepVersion
+  }, tr('keep_version', 'Keep version')))) : /*#__PURE__*/React.createElement("button", {
+    ref: deleteToggle,
+    type: "button",
+    className: buttonClass,
+    disabled: saving || busy || deleting,
+    onClick: () => {
+      setLocalError('');
+      setNotice('');
+      setDeleteCandidate(JSON.parse(JSON.stringify(version)));
+    }
+  }, tr('delete_version', 'Delete this version'))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
     className: "text-lg font-black text-slate-900"
   }, _ltsText(version.title) || tr('title', 'Teaching script')), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
-  }, scopeLabel(version), " · ", version.durationMinutes, " ", tr('minutes', 'minutes'), version.inputSnapshot?.settings?.grade ? ' · ' + _ltsGradeLabel(version.inputSnapshot.settings.grade) : '', version.inputSnapshot?.settings?.subject ? ' · ' + subjectLabel(version.inputSnapshot.settings.subject) : '', " · ", researchLabels[version.researchStatus] || _ltsText(version.researchStatus).replace(/[-_]/g, ' ') || tr('research_unspecified', 'Research status not recorded')), version.createdAt && /*#__PURE__*/React.createElement("p", {
+  }, scopeLabel(version), " · ", version.durationMinutes, " ", tr('minutes', 'minutes'), version.inputSnapshot?.settings?.grade ? ' · ' + _ltsGradeLabel(version.inputSnapshot.settings.grade) : '', version.inputSnapshot?.settings?.subject ? ' · ' + subjectLabel(version.inputSnapshot.settings.subject) : '', " · ", researchLabels[version.researchStatus] || _ltsText(version.researchStatus).replace(/[-_]/g, ' ') || tr('research_unspecified', 'Research status not recorded')), version.editedAt && /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-600"
+  }, tr('last_edited', 'Last edited:'), " ", /*#__PURE__*/React.createElement("time", {
+    dateTime: _ltsText(version.editedAt)
+  }, _ltsText(version.editedAt).replace('T', ' ').replace(/\.\d+Z$/, ' UTC'))), version.createdAt && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600"
   }, /*#__PURE__*/React.createElement("time", {
     dateTime: _ltsText(version.createdAt)
-  }, _ltsText(version.createdAt).replace('T', ' ').replace(/\.\d+Z$/, ' UTC')))), planChangedSinceScript && /*#__PURE__*/React.createElement("p", {
+  }, _ltsText(version.createdAt).replace('T', ' ').replace(/\.\d+Z$/, ' UTC')))), materialStatus && (materialStatus.changed.length > 0 || materialStatus.missing.length > 0 || materialStatus.ambiguous.length > 0) && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    className: "space-y-2 break-words rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950",
+    "data-script-material-warning": true
+  }, /*#__PURE__*/React.createElement("p", null, tr('materials_changed', 'Materials used for this script have changed, are missing, or have duplicate IDs. Review the current resources and script before teaching, or create a new version.')), /*#__PURE__*/React.createElement("ul", {
+    className: "list-disc space-y-1 pl-5"
+  }, [['changed', tr('source_changed', 'Content changed')], ['missing', tr('source_missing', 'Not available')], ['ambiguous', tr('source_ambiguous', 'Duplicate resource ID')]].flatMap(([kind, label]) => materialStatus[kind].map(resourceId => /*#__PURE__*/React.createElement("li", {
+    key: kind + ':' + resourceId
+  }, label, ": ", materialName(resourceId)))))), materialStatus?.untracked && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-700"
+  }, tr('materials_untracked', 'This older script has no recorded content versions for some source materials. Review those resources before teaching.')), planChangedSinceScript && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"
   }, tr('plan_changed', 'The saved lesson differs from the lesson content captured for this script. Review the script against the current plan, or create a new version.')), Array.isArray(version.warnings) && version.warnings.length > 0 && /*#__PURE__*/React.createElement("ul", {
     className: "list-disc space-y-1 rounded-lg bg-amber-50 py-3 pl-7 pr-3 text-sm text-amber-950"
   }, version.warnings.map((warning, index) => /*#__PURE__*/React.createElement("li", {
     key: index
-  }, _ltsText(warning)))), /*#__PURE__*/React.createElement("ol", {
+  }, _ltsText(warning)))), draft && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2 rounded-lg border border-indigo-300 bg-indigo-50 p-3 no-print"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-bold text-indigo-950"
+  }, tr('unsaved_edits', 'Unsaved script edits')), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-700"
+  }, tr('draft_export_available', 'Copy, download or print your draft text at any point, even before all fields are complete. Exports are labeled as unsaved drafts.')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: buttonClass,
+    onClick: () => {
+      editActions.current?.scrollIntoView?.({
+        block: 'start'
+      });
+      editActions.current?.focus();
+    }
+  }, tr('review_save', 'Go to save and discard controls')), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-800"
+  }, tr('edit_timing', 'Step total:'), " ", Number.isFinite(timings) ? timings : '—', " / ", version.durationMinutes, " ", tr('minutes', 'minutes')), (invalidTiming || invalidDraftText || invalidDraftLength) && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-red-900"
+  }, tr('review_fields', 'Review the highlighted fields and step timing before saving.')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: buttonClass,
+    onClick: focusEditIssue
+  }, tr('first_issue', 'Go to first issue')))), steps.length > 1 && /*#__PURE__*/React.createElement("nav", {
+    className: "no-print",
+    "aria-label": tr('script_navigation', 'Script step navigation')
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-bold text-slate-900"
+  }, tr('jump_script_step', 'Go to script step'), /*#__PURE__*/React.createElement("select", {
+    "aria-label": tr('jump_script_step', 'Go to script step'),
+    className: fieldClass + ' mt-1 min-h-11 min-w-0 max-w-full',
+    value: "",
+    onChange: event => jumpToStep(event.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, tr('choose_step', 'Choose a step…')), steps.map((step, index) => /*#__PURE__*/React.createElement("option", {
+    key: step.id || index,
+    value: index
+  }, index + 1, ". ", _ltsText(step.title)))))), /*#__PURE__*/React.createElement("ol", {
+    id: id + '-steps',
     className: "space-y-4"
   }, steps.map((step, index) => /*#__PURE__*/React.createElement("li", {
     key: step.id || index,
     className: "min-w-0 space-y-3 break-words rounded-xl border border-slate-300 p-3 sm:p-4",
-    "data-teaching-step": step.id || index
+    "data-teaching-step": step.id || index,
+    id: id + '-script-step-' + index
   }, draft ? /*#__PURE__*/React.createElement("div", {
     className: "grid gap-3 sm:grid-cols-[1fr_8rem]"
   }, /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-bold"
-  }, tr('step_title', 'Step title'), " ", index + 1, /*#__PURE__*/React.createElement("input", {
+  }, tr('step_title', 'Step title'), " ", index + 1, /*#__PURE__*/React.createElement("input", _extends({}, editFieldProps(step, index, "title"), {
+    "aria-label": tr("step_title", "Step title") + " " + (index + 1),
     className: fieldClass + ' mt-1',
     value: step.title || '',
     maxLength: 240,
     disabled: saving,
     onChange: event => updateStep(index, 'title', event.target.value)
-  })), /*#__PURE__*/React.createElement("label", {
+  })), editFieldError(step, index, 'title')), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-bold"
-  }, tr('step_minutes', 'Minutes'), " ", index + 1, /*#__PURE__*/React.createElement("input", {
+  }, tr('step_minutes', 'Minutes'), " ", index + 1, /*#__PURE__*/React.createElement("input", _extends({}, editFieldProps(step, index, "minutes"), {
+    "aria-label": tr("step_minutes", "Minutes") + " " + (index + 1),
     className: fieldClass + ' mt-1',
     type: "number",
     min: 1,
@@ -1203,8 +1585,10 @@ function LessonTeachingScriptPanel(props) {
     value: step.minutes,
     disabled: saving,
     onChange: event => updateStep(index, 'minutes', event.target.value)
-  }))) : /*#__PURE__*/React.createElement("h5", {
-    className: "font-black text-indigo-950"
+  })), editFieldError(step, index, 'minutes'))) : /*#__PURE__*/React.createElement("h5", {
+    "data-script-step-heading": true,
+    tabIndex: -1,
+    className: "rounded font-black text-indigo-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
   }, index + 1, ". ", _ltsText(step.title), " ", /*#__PURE__*/React.createElement("span", {
     className: "font-normal"
   }, "· ", step.minutes, " ", tr('minutes', 'minutes'), phaseLabel(step.phase) ? ' · ' + phaseLabel(step.phase) : '')), /*#__PURE__*/React.createElement("div", {
@@ -1218,14 +1602,15 @@ function LessonTeachingScriptPanel(props) {
     "aria-hidden": "true"
   }, "❝ "), key === 'teacherSays' ? tr('say_aloud', 'Say aloud') : tr('ask_aloud', 'Ask aloud')), draft ? /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-bold text-slate-900"
-  }, label, " · ", index + 1, /*#__PURE__*/React.createElement("textarea", {
+  }, label, " · ", index + 1, /*#__PURE__*/React.createElement("textarea", _extends({}, editFieldProps(step, index, key), {
+    "aria-label": label + " · " + (index + 1),
     className: fieldClass + ' mt-1',
     rows: 3,
     value: step[key] || '',
     maxLength: 16000,
     disabled: saving,
     onChange: event => updateStep(index, key, event.target.value)
-  })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h6", {
+  })), editFieldError(step, index, key)) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h6", {
     className: "text-xs font-black uppercase tracking-wide text-slate-600"
   }, label), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 whitespace-pre-wrap text-sm text-slate-900"
@@ -1234,7 +1619,8 @@ function LessonTeachingScriptPanel(props) {
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold text-slate-700"
   }, tr('step_materials', 'Lesson resources:')), step.resourceIds.map(resourceId => {
-    const material = materials.find(item => String(item.id) === String(resourceId));
+    const matches = materials.filter(item => String(item.id) === String(resourceId));
+    const material = matches.length === 1 ? matches[0] : null;
     return material && typeof onOpenTeachingMaterial === 'function' ? /*#__PURE__*/React.createElement("button", {
       type: "button",
       key: resourceId,
@@ -1244,7 +1630,7 @@ function LessonTeachingScriptPanel(props) {
     }, _ltsText(material.title || material.data?.title) || _ltsText(material.type)) : /*#__PURE__*/React.createElement("span", {
       key: resourceId,
       className: "text-sm text-slate-700"
-    }, material ? _ltsText(material.title || material.data?.title) || _ltsText(material.type) : tr('missing_material', 'Resource no longer available in this lesson'));
+    }, material ? _ltsText(material.title || material.data?.title) || _ltsText(material.type) : matches.length > 1 ? tr('source_ambiguous', 'Duplicate resource ID') + ': ' + materialName(resourceId) : tr('missing_material', 'Resource no longer available in this lesson') + ': ' + materialName(resourceId));
   })), Array.isArray(step.recommendationIds) && step.recommendationIds.length > 0 && /*#__PURE__*/React.createElement("ul", {
     className: "space-y-2 rounded-lg bg-indigo-50 p-3 text-sm text-indigo-950",
     "aria-label": tr('step_evidence', 'Teaching guidance used in this step')
@@ -1265,7 +1651,11 @@ function LessonTeachingScriptPanel(props) {
       className: "font-bold underline"
     }, _ltsText(entry.source.title)) : _ltsText(entry.source.title), entry.recommendation.locator ? ' · ' + _ltsText(entry.recommendation.locator) : '', entry.recommendation.evidenceLevel ? ' · ' + _ltsText(entry.recommendation.evidenceLevel) : ''));
   }))))), draft && /*#__PURE__*/React.createElement("div", {
-    className: "space-y-3 rounded-lg border border-indigo-300 bg-indigo-50 p-3 no-print"
+    ref: editActions,
+    tabIndex: -1,
+    role: "region",
+    "aria-label": tr('edit_actions', 'Save or discard script edits'),
+    className: "space-y-3 rounded-lg border border-indigo-300 bg-indigo-50 p-3 no-print focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
   }, invalidTiming && /*#__PURE__*/React.createElement("p", {
     role: "alert",
     className: "text-sm text-red-900"
@@ -1285,20 +1675,39 @@ function LessonTeachingScriptPanel(props) {
     className: buttonClass,
     disabled: saving || invalidTiming || invalidDraftText || invalidDraftLength || staleDraft,
     onClick: saveEdits
-  }, saving ? tr('saving', 'Adding edits…') : tr('save', 'Save edits')), /*#__PURE__*/React.createElement("button", {
+  }, saving ? tr('saving', 'Adding edits…') : tr('save', 'Save edits')), !confirmDiscard && /*#__PURE__*/React.createElement("button", {
+    ref: discardToggle,
     type: "button",
     className: buttonClass,
     disabled: saving,
-    onClick: () => {
-      restoreEditFocus.current = true;
-      setDraft(null);
-      setDraftSnapshot(null);
-      setDraftBase('');
-      setDraftVersionId('');
-      setShowRecoveryNotice(false);
-      setLocalError('');
+    onClick: () => draftChanged ? setConfirmDiscard(true) : discardEdits()
+  }, tr('discard', 'Discard edits')), confirmDiscard && /*#__PURE__*/React.createElement("div", {
+    role: "group",
+    "aria-label": tr('discard_question', 'Discard your unsaved script changes?'),
+    className: "w-full space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950",
+    onKeyDown: event => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        keepEditing();
+      }
     }
-  }, tr('discard', 'Discard edits')))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm"
+  }, tr('discard_question', 'Discard your unsaved script changes?')), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    autoFocus: true,
+    type: "button",
+    className: buttonClass,
+    disabled: saving,
+    onClick: keepEditing
+  }, tr('keep_editing', 'Keep editing')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: buttonClass,
+    disabled: saving,
+    onClick: discardEdits
+  }, tr('discard_confirm', 'Discard changes')))))), /*#__PURE__*/React.createElement("div", {
     className: "space-y-3 border-t border-slate-200 pt-4"
   }, /*#__PURE__*/React.createElement("h5", {
     className: "font-black text-slate-900"

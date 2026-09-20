@@ -188,6 +188,16 @@ describe('fallacy bank and quick-fire challenges', () => {
 });
 
 describe('render and deployment', () => {
+  it('retains an explicitly cleared expression and one native draggable palette', () => {
+    const host = document.createElement('div');
+    host.innerHTML = renderTool('logicLab', { logicLab: { expression: '' } });
+    const builder = host.querySelector('[data-logic-expression-builder]');
+    expect(builder.querySelector('input').value).toBe('');
+    expect(builder.querySelectorAll('button[draggable="true"]')).toHaveLength(12);
+    expect(builder.querySelectorAll('[role="button"]')).toHaveLength(0);
+    expect(builder.querySelectorAll('button[aria-label="Clear"]')).toHaveLength(1);
+  });
+
   it('renders the default truth-table mode without crashing and shows the expression', () => {
     const html = renderTool('logicLab', { logicLab: {} });
     expect(html.length).toBeGreaterThan(2000);

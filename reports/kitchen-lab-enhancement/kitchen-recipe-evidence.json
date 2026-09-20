@@ -1,7 +1,7 @@
 {
   "title": "Kitchen Lab recipe evidence",
   "version": 1,
-  "exportedAt": "2026-09-13T02:16:54.738Z",
+  "exportedAt": "2026-09-19T22:31:19.376Z",
   "scope": "Illustrative recipe simulation; not a validated predictor of real cooking temperatures or times. Written explanations require human review.",
   "cooks": [
     {
@@ -20,7 +20,7 @@
           "met": true
         },
         {
-          "label": "Mushrooms golden, without scorching",
+          "label": "Mushrooms cut to size and golden, without scorching",
           "met": true
         },
         {
@@ -35,6 +35,32 @@
       "questionsCorrect": true,
       "corrections": 0,
       "hints": 0,
+      "cutPreparation": {
+        "widths": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "target": 5,
+        "min": 5,
+        "max": 5,
+        "even": true,
+        "onTarget": true,
+        "method": "simplified",
+        "rate": 1
+      },
+      "mixing": {
+        "count": 6,
+        "sweeps": 0,
+        "waterSinceMix": 0,
+        "lastMixedAt": 630,
+        "lastMethod": "simplified"
+      },
       "plan": "I will heat the pasta water while I prepare the sauce, then sample before draining.",
       "reflection": "I watched the sample and kept the sauce from drying out. A larger batch needed a wider pan.",
       "answers": [
@@ -68,9 +94,9 @@
             "nextPractice": "Keep using a fresh sample and allow for the time spent finishing in the pan."
           },
           {
-            "label": "Mushrooms golden, without scorching",
+            "label": "Mushrooms cut to size and golden, without scorching",
             "met": true,
-            "observation": "Golden, glossy mushrooms. Standard pan with 200 g of mushrooms.",
+            "observation": "Golden, glossy mushrooms. Prepared widths: 5–5 mm (simplified). Standard pan with 200 g of mushrooms.",
             "nextPractice": "Keep watching color as moisture escapes; lower the heat once golden."
           },
           {
@@ -90,7 +116,7 @@
           {
             "time": 90,
             "event": "Produce entered the pan",
-            "observation": "Produce added. Its moisture and mass affect the pan temperature."
+            "observation": "Produce added. Its moisture and mass affect the pan temperature. The largest 5 mm pieces determine the modeled preparation rate."
           },
           {
             "time": 120,
@@ -120,7 +146,7 @@
           {
             "time": 630,
             "event": "Sauce loosened with saved water",
-            "observation": "50 mL cooking water added. Observe how the sauce loosens."
+            "observation": "50 mL cooking water poured; 150 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
           },
           {
             "time": 630,
@@ -159,7 +185,7 @@
           "value": null,
           "time": 0,
           "accepted": true,
-          "observation": "Produce prepared in even pieces on a clean, stable board."
+          "observation": "Even 5 mm pieces prepared using the simplified control. This records a preparation choice, not knife dexterity."
         },
         {
           "action": "dry",
@@ -236,7 +262,7 @@
           "value": null,
           "time": 90,
           "accepted": true,
-          "observation": "Produce added. Its moisture and mass affect the pan temperature."
+          "observation": "Produce added. Its moisture and mass affect the pan temperature. The largest 5 mm pieces determine the modeled preparation rate."
         },
         {
           "action": "advance",
@@ -460,7 +486,7 @@
           "value": null,
           "time": 630,
           "accepted": true,
-          "observation": "50 mL cooking water added. Observe how the sauce loosens."
+          "observation": "50 mL cooking water poured; 150 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
         },
         {
           "action": "combine",
@@ -515,7 +541,7 @@
           "met": true
         },
         {
-          "label": "Mushrooms golden, without scorching",
+          "label": "Mushrooms cut to size and golden, without scorching",
           "met": true
         },
         {
@@ -530,6 +556,32 @@
       "questionsCorrect": true,
       "corrections": 0,
       "hints": 0,
+      "cutPreparation": {
+        "widths": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "target": 5,
+        "min": 5,
+        "max": 5,
+        "even": true,
+        "onTarget": true,
+        "method": "simplified",
+        "rate": 1
+      },
+      "mixing": {
+        "count": 7,
+        "sweeps": 0,
+        "waterSinceMix": 0,
+        "lastMixedAt": 720,
+        "lastMethod": "simplified"
+      },
       "plan": "I will heat the pasta water while I prepare the sauce, then sample before draining.",
       "reflection": "I watched the sample and kept the sauce from drying out. A larger batch needed a wider pan.",
       "answers": [
@@ -563,9 +615,9 @@
             "nextPractice": "Keep using a fresh sample and allow for the time spent finishing in the pan."
           },
           {
-            "label": "Mushrooms golden, without scorching",
+            "label": "Mushrooms cut to size and golden, without scorching",
             "met": true,
-            "observation": "Golden, glossy mushrooms. Wide pan with 400 g of mushrooms.",
+            "observation": "Golden, glossy mushrooms. Prepared widths: 5–5 mm (simplified). Wide pan with 400 g of mushrooms.",
             "nextPractice": "Keep watching color as moisture escapes; lower the heat once golden."
           },
           {
@@ -585,7 +637,7 @@
           {
             "time": 90,
             "event": "Produce entered the pan",
-            "observation": "Produce added. Its moisture and mass affect the pan temperature."
+            "observation": "Produce added. Its moisture and mass affect the pan temperature. The largest 5 mm pieces determine the modeled preparation rate."
           },
           {
             "time": 210,
@@ -615,7 +667,7 @@
           {
             "time": 720,
             "event": "Sauce loosened with saved water",
-            "observation": "50 mL cooking water added. Observe how the sauce loosens."
+            "observation": "50 mL cooking water poured; 350 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
           },
           {
             "time": 720,
@@ -654,7 +706,7 @@
           "value": null,
           "time": 0,
           "accepted": true,
-          "observation": "Produce prepared in even pieces on a clean, stable board."
+          "observation": "Even 5 mm pieces prepared using the simplified control. This records a preparation choice, not knife dexterity."
         },
         {
           "action": "dry",
@@ -738,7 +790,7 @@
           "value": null,
           "time": 90,
           "accepted": true,
-          "observation": "Produce added. Its moisture and mass affect the pan temperature."
+          "observation": "Produce added. Its moisture and mass affect the pan temperature. The largest 5 mm pieces determine the modeled preparation rate."
         },
         {
           "action": "advance",
@@ -990,7 +1042,7 @@
           "value": null,
           "time": 720,
           "accepted": true,
-          "observation": "50 mL cooking water added. Observe how the sauce loosens."
+          "observation": "50 mL cooking water poured; 350 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
         },
         {
           "action": "combine",
@@ -1045,7 +1097,7 @@
           "met": true
         },
         {
-          "label": "Tomatoes softened, without scorching",
+          "label": "Tomatoes cut to size and softened, without scorching",
           "met": true
         },
         {
@@ -1060,6 +1112,28 @@
       "questionsCorrect": true,
       "corrections": 0,
       "hints": 0,
+      "cutPreparation": {
+        "widths": [
+          10,
+          10,
+          10,
+          10
+        ],
+        "target": 10,
+        "min": 10,
+        "max": 10,
+        "even": true,
+        "onTarget": true,
+        "method": "simplified",
+        "rate": 1
+      },
+      "mixing": {
+        "count": 6,
+        "sweeps": 0,
+        "waterSinceMix": 0,
+        "lastMixedAt": 630,
+        "lastMethod": "simplified"
+      },
       "plan": "I will heat the pasta water while I prepare the sauce, then sample before draining.",
       "reflection": "I watched the sample and kept the sauce from drying out. A larger batch needed a wider pan.",
       "answers": [
@@ -1093,9 +1167,9 @@
             "nextPractice": "Keep using a fresh sample and allow for the time spent finishing in the pan."
           },
           {
-            "label": "Tomatoes softened, without scorching",
+            "label": "Tomatoes cut to size and softened, without scorching",
             "met": true,
-            "observation": "Soft, coating tomato sauce. Standard pan with 300 g of tomatoes.",
+            "observation": "Soft, coating tomato sauce. Prepared widths: 10–10 mm (simplified). Standard pan with 300 g of tomatoes.",
             "nextPractice": "Keep the softened tomatoes at a controlled simmer while coordinating the pot."
           },
           {
@@ -1115,7 +1189,7 @@
           {
             "time": 90,
             "event": "Produce entered the pan",
-            "observation": "Produce added. Its moisture and mass affect the pan temperature."
+            "observation": "Produce added. Its moisture and mass affect the pan temperature. The largest 10 mm pieces determine the modeled preparation rate."
           },
           {
             "time": 120,
@@ -1145,7 +1219,7 @@
           {
             "time": 630,
             "event": "Sauce loosened with saved water",
-            "observation": "50 mL cooking water added. Observe how the sauce loosens."
+            "observation": "50 mL cooking water poured; 150 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
           },
           {
             "time": 630,
@@ -1184,7 +1258,7 @@
           "value": null,
           "time": 0,
           "accepted": true,
-          "observation": "Produce prepared in even pieces on a clean, stable board."
+          "observation": "Even 10 mm pieces prepared using the simplified control. This records a preparation choice, not knife dexterity."
         },
         {
           "action": "dry",
@@ -1261,7 +1335,7 @@
           "value": null,
           "time": 90,
           "accepted": true,
-          "observation": "Produce added. Its moisture and mass affect the pan temperature."
+          "observation": "Produce added. Its moisture and mass affect the pan temperature. The largest 10 mm pieces determine the modeled preparation rate."
         },
         {
           "action": "advance",
@@ -1485,7 +1559,7 @@
           "value": null,
           "time": 630,
           "accepted": true,
-          "observation": "50 mL cooking water added. Observe how the sauce loosens."
+          "observation": "50 mL cooking water poured; 150 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
         },
         {
           "action": "combine",
@@ -1540,7 +1614,7 @@
           "met": true
         },
         {
-          "label": "Tomatoes softened, without scorching",
+          "label": "Tomatoes cut to size and softened, without scorching",
           "met": true
         },
         {
@@ -1555,6 +1629,28 @@
       "questionsCorrect": true,
       "corrections": 0,
       "hints": 0,
+      "cutPreparation": {
+        "widths": [
+          10,
+          10,
+          10,
+          10
+        ],
+        "target": 10,
+        "min": 10,
+        "max": 10,
+        "even": true,
+        "onTarget": true,
+        "method": "simplified",
+        "rate": 1
+      },
+      "mixing": {
+        "count": 7,
+        "sweeps": 0,
+        "waterSinceMix": 0,
+        "lastMixedAt": 720,
+        "lastMethod": "simplified"
+      },
       "plan": "I will heat the pasta water while I prepare the sauce, then sample before draining.",
       "reflection": "I watched the sample and kept the sauce from drying out. A larger batch needed a wider pan.",
       "answers": [
@@ -1588,9 +1684,9 @@
             "nextPractice": "Keep using a fresh sample and allow for the time spent finishing in the pan."
           },
           {
-            "label": "Tomatoes softened, without scorching",
+            "label": "Tomatoes cut to size and softened, without scorching",
             "met": true,
-            "observation": "Soft, coating tomato sauce. Wide pan with 600 g of tomatoes.",
+            "observation": "Soft, coating tomato sauce. Prepared widths: 10–10 mm (simplified). Wide pan with 600 g of tomatoes.",
             "nextPractice": "Keep the softened tomatoes at a controlled simmer while coordinating the pot."
           },
           {
@@ -1610,7 +1706,7 @@
           {
             "time": 90,
             "event": "Produce entered the pan",
-            "observation": "Produce added. Its moisture and mass affect the pan temperature."
+            "observation": "Produce added. Its moisture and mass affect the pan temperature. The largest 10 mm pieces determine the modeled preparation rate."
           },
           {
             "time": 210,
@@ -1640,7 +1736,7 @@
           {
             "time": 720,
             "event": "Sauce loosened with saved water",
-            "observation": "50 mL cooking water added. Observe how the sauce loosens."
+            "observation": "50 mL cooking water poured; 350 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
           },
           {
             "time": 720,
@@ -1679,7 +1775,7 @@
           "value": null,
           "time": 0,
           "accepted": true,
-          "observation": "Produce prepared in even pieces on a clean, stable board."
+          "observation": "Even 10 mm pieces prepared using the simplified control. This records a preparation choice, not knife dexterity."
         },
         {
           "action": "dry",
@@ -1763,7 +1859,7 @@
           "value": null,
           "time": 90,
           "accepted": true,
-          "observation": "Produce added. Its moisture and mass affect the pan temperature."
+          "observation": "Produce added. Its moisture and mass affect the pan temperature. The largest 10 mm pieces determine the modeled preparation rate."
         },
         {
           "action": "advance",
@@ -2015,7 +2111,7 @@
           "value": null,
           "time": 720,
           "accepted": true,
-          "observation": "50 mL cooking water added. Observe how the sauce loosens."
+          "observation": "50 mL cooking water poured; 350 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
         },
         {
           "action": "combine",

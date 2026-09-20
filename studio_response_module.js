@@ -1,8 +1,8 @@
 /* Shared response boundary for Memory Aid and Applied Challenge. */
 (function () {
   'use strict';
-  const memoryFields = ['studentDraft', 'studentReasoning', 'feedback', 'coachHint', 'visualPrompt', 'visualAlt', 'visualImage', 'visualSource', 'visualCheck', 'visualReview', 'visualAltSource', 'visualStatus', 'visualNeedsReview'];
-  const appliedFields = ['workspace', 'evidenceLedger', 'criteriaCheck', 'validationCycles', 'stressTest', 'feedback', 'coachHint'];
+  const memoryFields = ['studentConnections', 'studentDraft', 'studentReasoning', 'feedback', 'coachHint', 'visualPrompt', 'visualAlt', 'visualImage', 'visualSource', 'visualCheck', 'visualReview', 'visualAltSource', 'visualStatus', 'visualNeedsReview'];
+  const appliedFields = ['sourceRecords', 'reasoningReferences', 'workspace', 'evidenceLedger', 'criteriaCheck', 'validationCycles', 'stressTest', 'feedback', 'coachHint'];
   const noteFields = ['title', 'author', 'pageRange', 'cues', 'notes', 'summary', 'question', 'hypothesis', 'materials', 'procedure', 'data', 'analysis', 'conclusion', 'favoriteLine', 'thinkings', 'connection', 'entries', 'blanks', 'notesExtra', 'pairs', 'connections', 'feedback', 'feedbackCount', 'prevFeedbackScore'];
   const anchorFields = ['studentAnswers', 'feedback', 'prevFeedbackScore'];
   const supports = type => ['memory-aid', 'applied-challenge', 'note-taking', 'anchor-chart'].includes(type);
@@ -66,7 +66,7 @@
   const pick = (value, keys) => Object.fromEntries(keys.filter(key => Object.prototype.hasOwnProperty.call(value || {}, key)).map(key => [key, value[key]]));
   // Bound and allowlist text trees. Media, private practice, teacher source,
   // and unknown future fields must never enter a response submission.
-  const allowed = new Set(('coverage version workspaceFields evidenceRows validationChecks selfChecks shortenedFields id studentDraft studentReasoning visualAlt feedback coachHint strength accuracyCheck nextStep question questionAccepted artifactUrl artifactDescription factId factRevision revision needsReview previousRating resourceId gradeLevel status lessonConnectionCheck evidenceOrConstraintCheck workingQuestion stakeholders assumptions tradeoffs possibilities plan response testReflection revision transferReflection claim evidence tradeoff rating note source family draftFingerprint contextFingerprint createdAt completedAt importedChallenge challenge whyItMatters disposition dispositionReason methodId testQuestion criterion expectedFinding changeThreshold evidenceMode observation decision action reasoning revisionSummary outcome').split(' '));
+  const allowed = new Set(('reasoningReferences part rowId location referenceFingerprint transfer coverage version workspaceFields sourceRecords evidenceRows validationChecks selfChecks shortenedFields id studentDraft studentReasoning visualAlt feedback coachHint strength accuracyCheck nextStep question questionAccepted artifactUrl artifactDescription factId factRevision revision needsReview previousRating resourceId gradeLevel status lessonConnectionCheck evidenceOrConstraintCheck workingQuestion stakeholders assumptions tradeoffs possibilities plan response testReflection revision transferReflection claim evidence tradeoff rating note source family draftFingerprint contextFingerprint createdAt completedAt importedChallenge challenge whyItMatters disposition dispositionReason methodId testQuestion criterion expectedFinding changeThreshold evidenceMode observation decision action reasoning revisionSummary outcome').split(' '));
   function textTree(value, depth = 0) {
     if (depth > 8) return null;
     if (typeof value === 'string') return value.slice(0, 12000);
@@ -78,6 +78,12 @@
   function memoryCards(data) {
     const normalize = window.AlloModules?.MemoryAid?._testing?.normalizeMemoryAidCards;
     return typeof normalize === 'function' ? normalize(data?.cards, data?.authorshipMode) : (Array.isArray(data?.cards) ? data.cards.slice(0, 8) : []);
+  }
+  function memoryConnections(value) {
+    const seen = new Set(), text = (v,n) => typeof v === 'string' ? v.slice(0,n) : '';
+    return (Array.isArray(value) ? value : []).filter(row => {
+      const key=text(row?.factKey,80); if(!/^link:[a-zA-Z0-9_-]+$/.test(key)||seen.has(key)) return false; seen.add(key); return true;
+    }).slice(-20).map(row => ({factKey:text(row.factKey,80),cue:text(row.cue,200),explanation:text(row.explanation,600),cueKey:text(row.cueKey,80)}));
   }
   function responseFromData(type, data) {
     if (type === 'anchor-chart') return { schemaVersion: 1, studentAnswers: anchorAnswers(data, data.studentAnswers), feedback: data.feedback || null, prevFeedbackScore: Number(data.prevFeedbackScore) || 0 };
@@ -100,6 +106,19 @@
     }
     return { ...resource, data: { ...data, ...pick(response, appliedFields) } };
   }
+  function safeAppliedSources(value) {
+    const ids = new Set(), links = new Set(), out = [], text = (v,n) => typeof v === 'string' ? v.slice(0,n) : '';
+    for (const item of Array.isArray(value) ? value : []) {
+      if (!item || typeof item !== 'object' || out.length >= 24) continue;
+      let url; try { url = new URL(text(item.url,2000)); if (!['http:','https:'].includes(url.protocol) || url.username || url.password) continue; } catch (_) { continue; }
+      const rowId=text(item.rowId,80), link=url.href+'\n'+rowId;
+      if(links.has(link))continue; links.add(link);
+      const base=text(item.id,80).replace(/[^A-Za-z0-9_-]/g,'-')||'source-'+out.length; let id=base,n=0;
+      while(ids.has(id))id=base.slice(0,70)+'-'+(++n); ids.add(id);
+      out.push({id,url:url.href,rowId,title:typeof item.title==='string'?text(item.title,350):url.hostname,foundAt:/^\d{4}-\d{2}-\d{2}$/.test(item.foundAt)?item.foundAt:'',author:text(item.author,250),publicationDate:text(item.publicationDate,100),reviewNote:text(item.reviewNote,2000)});
+    }
+    return out;
+  }
   function toSubmission(resource, response) {
     const raw = response || responseFromData(resource.type, resource.data || {});
     if (resource.type === 'note-taking') return { id: resource.id, type: resource.type, title: String(resource.title || resource.data?.title || '').slice(0,300), data: noteSubmission(resource,raw) };
@@ -109,8 +128,8 @@
       return { id: resource.id, type: resource.type, title: String(resource.title || resource.data?.title || '').slice(0,300), data: { schemaVersion: 1, sections, studentAnswers: Object.fromEntries(sections.map(s=>[s.id,Object.fromEntries(s.bulletIds.map((id,i)=>[id,s.bullets[i]]))])), feedback: safeNoteTree(raw.feedback || null), prevFeedbackScore: Math.max(0,Math.min(120,Number(raw.prevFeedbackScore)||0)) } };
     }
     const data = resource.type === 'memory-aid'
-      ? { schemaVersion: 1, cards: (raw.cards || []).slice(0, 8).map(card => textTree(pick(card, ['id', 'studentDraft', 'studentReasoning', 'visualAlt', 'feedback', 'coachHint']))) }
-      : { schemaVersion: 1, ...Object.fromEntries(appliedFields.filter(key => key in raw).map(key => [key, textTree(raw[key])])) };
+      ? { schemaVersion: 1, cards: (Array.isArray(raw.cards) ? raw.cards : []).slice(0, 8).map(card => ({ ...textTree(pick(card, ['id', 'studentDraft', 'studentReasoning', 'visualAlt', 'feedback', 'coachHint'])), studentConnections: memoryConnections(card?.studentConnections) })) }
+      : { schemaVersion: 1, ...Object.fromEntries(appliedFields.filter(key => key in raw).map(key => [key, key === 'sourceRecords' ? safeAppliedSources(raw[key]) : textTree(raw[key])])) };
     return { id: resource.id, type: resource.type, title: String(resource.title || resource.data?.title || '').slice(0, 300), data };
   }
   function toResponseEntries(resource, response) {
@@ -131,7 +150,7 @@
       (data.evidenceLedger || []).forEach((row, index) => ['claim', 'evidence', 'tradeoff'].forEach(key => walk(row[key], 'ledger-' + index + '-' + key)));
       Object.entries(data.criteriaCheck || {}).forEach(([key, item]) => walk(item.note, 'selfcheck-' + key));
       walk(data.validationCycles, 'checks');
-    } else (data.cards || []).forEach(card => { walk(card.studentDraft, card.id + '-draft'); walk(card.studentReasoning, card.id + '-reasoning'); walk(card.visualAlt, card.id + '-visual-description'); });
+    } else (data.cards || []).forEach(card => { walk(card.studentDraft, card.id + '-draft'); walk(card.studentReasoning, card.id + '-reasoning'); walk(card.visualAlt, card.id + '-visual-description'); (card.studentConnections || []).forEach((row,index) => { walk(row.cue,card.id+'-connection-'+index+'-cue'); walk(row.explanation,card.id+'-connection-'+index+'-explanation'); }); });
     return entries;
   }
   function projectForExport(resource, response) {
@@ -147,7 +166,7 @@
       Object.entries(legacyNotes(data)).forEach(([key,value])=> { if (Array.isArray(value)) response[key] = value.map(row=>({ id:row.id, ...(key==='blanks'?{studentAnswer:''}:key==='entries'?{response:''}:{text:''}) })); else if (key==='connection') response[key]={type:'text-to-self',text:''}; else if (!['feedback','feedbackCount','prevFeedbackScore'].includes(key)) response[key]=''; });
       return response;
     }
-    return resource.type === 'memory-aid' ? { schemaVersion: 1, cards: memoryCards(resource.data).map(card => ({ id: card.id, studentDraft: '', studentReasoning: '', coachHint: '', feedback: null })) } : { schemaVersion: 1, workspace: {}, evidenceLedger: [], criteriaCheck: {}, validationCycles: [], stressTest: null, feedback: null, coachHint: '' };
+    return resource.type === 'memory-aid' ? { schemaVersion: 1, cards: memoryCards(resource.data).map(card => ({ id: card.id, studentDraft: '', studentConnections: [], studentReasoning: '', coachHint: '', feedback: null })) } : { schemaVersion: 1, workspace: {}, sourceRecords: [], reasoningReferences: [], evidenceLedger: [], criteriaCheck: {}, validationCycles: [], stressTest: null, feedback: null, coachHint: '' };
   }
   const maxBackupBytes = 2 * 1024 * 1024;
   const record = value => value && typeof value === 'object' && !Array.isArray(value);
@@ -190,7 +209,7 @@
       }
     } else {
       if (!record(raw.workspace) || Object.entries(raw.workspace).some(([key, value]) => key === 'questionAccepted' ? typeof value !== 'boolean' : typeof value !== 'string')) throw new Error('Invalid challenge workspace');
-      if (['evidenceLedger', 'validationCycles'].some(key => key in raw && (!Array.isArray(raw[key]) || raw[key].some(value => !record(value))))) throw new Error('Invalid response rows');
+      if (['sourceRecords', 'reasoningReferences', 'evidenceLedger', 'validationCycles'].some(key => key in raw && (!Array.isArray(raw[key]) || raw[key].some(value => !record(value))))) throw new Error('Invalid response rows');
       if ('criteriaCheck' in raw && (!record(raw.criteriaCheck) || Object.values(raw.criteriaCheck).some(value => !record(value)))) throw new Error('Invalid self-checks');
       if ('coachHint' in raw && typeof raw.coachHint !== 'string') throw new Error('Invalid coach hint');
       if (['feedback', 'stressTest'].some(key => key in raw && raw[key] !== null && !record(raw[key]))) throw new Error('Invalid response feedback');
@@ -269,14 +288,16 @@
       React.createElement('div', { className: 'mb-3 flex flex-wrap items-center gap-3', role: 'region', 'aria-label': tr('mode_label', 'Workspace mode'), 'aria-live': 'polite' },
         isTeacherMode && React.createElement('button', { type: 'button', className: 'min-h-11 rounded-xl border px-3 py-2 focus-visible:ring-2', 'aria-pressed': preview, onClick: () => { setPreview(!preview); setPreviewResponse(null); } }, preview ? tr('close_preview', 'Close student preview') : tr('preview', 'Preview as student')),
         preview && React.createElement('button', { type: 'button', className: 'min-h-11 rounded-xl border px-3 py-2 focus-visible:ring-2', onClick: () => setPreviewResponse(null) }, tr('reset_preview', 'Reset preview')),
-        React.createElement('span', { role: 'status' }, preview ? tr('preview_private', 'Preview work is temporary and is never submitted.') : isTeacherMode ? tr('authoring', 'Teacher authoring') : tr(studentWorkStatus || 'idle', ({ saving: 'Saving…', saved: 'Saved on this device', error: 'Could not save on this device. Keep this page open and download your work.', idle: 'Learner workspace' })[studentWorkStatus] || 'Learner workspace'))),
-      !isTeacherMode && React.createElement('div', { className: 'mb-4 flex flex-wrap items-center gap-2 studio-recovery' },
+        React.createElement('span', { role: 'status' }, preview ? tr('preview_private', 'Preview work is temporary and is never submitted.') : isTeacherMode ? tr('authoring', 'Teacher authoring') : tr(resource.type === 'applied-challenge' && ['idle','saved'].includes(studentWorkStatus || 'idle') ? (studentWorkStatus === 'saved' ? 'local_saved' : 'local_idle') : studentWorkStatus || 'idle', ({ saving: 'Saving…', saved: resource.type === 'applied-challenge' ? 'Saved on this device · Not submitted' : 'Saved on this device', error: 'Could not save on this device. Keep this page open and download your work.', idle: resource.type === 'applied-challenge' ? 'Work stays on this device · Not submitted' : 'Learner workspace' })[studentWorkStatus || 'idle'] || 'Learner workspace'))),
+      !isTeacherMode && React.createElement(resource.type === 'applied-challenge' ? 'details' : 'div', { className: 'mb-3 flex flex-wrap items-center gap-2 studio-recovery', ...(resource.type === 'applied-challenge' ? { open: studentWorkStatus === 'error' || undefined } : {}) },
+        resource.type === 'applied-challenge' && React.createElement('summary', { className: 'min-h-11 cursor-pointer rounded-xl border px-3 py-2 text-sm font-semibold' }, tr('work_menu', 'My work: backup and restore')),
         studentWorkStatus === 'error' && typeof props.onRetrySave === 'function' && React.createElement('button', { type: 'button', className: 'min-h-11 rounded-xl border border-amber-700 px-3 py-2 focus-visible:ring-2', onClick: props.onRetrySave }, tr('retry_save', 'Retry save')),
         React.createElement('button', { type: 'button', className: 'min-h-11 rounded-xl border px-3 py-2 focus-visible:ring-2', onClick: download }, tr('download_work', 'Download my work')),
         React.createElement('button', { type: 'button', className: 'min-h-11 rounded-xl border px-3 py-2 focus-visible:ring-2', onClick: () => backupInput.current?.click() }, tr('restore_work', 'Restore text backup')),
         React.createElement('input', { ref: backupInput, type: 'file', accept: '.json,application/json', hidden: true, onChange: restore, 'aria-label': tr('restore_work', 'Restore text backup') }),
         React.createElement('p', { className: 'w-full text-xs text-slate-700' }, tr('local_not_submitted', 'Saving on this device does not submit your work to your teacher.')),
         React.createElement('p', { role: 'status', className: 'w-full text-xs text-slate-700' }, backupMessage || tr('backup_note', 'Text backup: writing and feedback only. Images and recordings are not included. This does not submit your work.'))),
+      !isTeacherMode && resource.type === 'applied-challenge' && backupMessage && React.createElement('p', { className: 'mb-2 text-xs text-slate-600', role: 'status' }, backupMessage),
       React.createElement(View, { ...viewProps, key: identity, generatedContent: shown, referenceResource: resource, isTeacherMode: isTeacherMode && !preview, learnerReadOnly: isTeacherMode && !preview, previewMode: preview, activeProfileId: viewProps.activeProfileId, handleNoteUpdate }));
   }
   window.AlloModules = window.AlloModules || {};

@@ -8,7 +8,8 @@
     "gradeLevel": "1st Grade",
     "standards": "NGSS 1-ESS1-1 (use observations of the sun, moon, and stars to describe patterns that can be predicted); CCSS.ELA-LITERACY.RI.1.1 (ask and answer questions about key details in a text); CCSS.ELA-LITERACY.SL.1.1 (participate in collaborative conversations about grade 1 topics with peers and adults). NOTE: this pack covers the daily half of 1-ESS1-1. NGSS 1-ESS1-2 concerns seasonal daylight, which this pack does not teach, so it is not claimed.",
     "createdAt": "2026-09-05T21:10:00.000Z",
-    "imageShotList": "allopacks/day_night_sky_grade1.IMAGES.md"
+    "imageShotList": "allopacks/day_night_sky_grade1.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Day and Night, and Patterns in the Sky",
   "history": [
@@ -55,7 +56,7 @@
       "title": "Day Sky, Night Sky",
       "timestamp": "2026-09-05T21:10:01.000Z",
       "data": "## Day Sky, Night Sky\n\nLook up in the morning. The sky is blue and bright. Look up at bedtime. The sky is dark. Why does the sky change?\n\nHere is the secret. **Earth** is turning. Our whole planet goes around and around, like a very slow top. It makes one full **spin** every day.\n\nWhen your side of Earth faces the **Sun**, you have **day**. The sky is bright. When your side turns away, you have **night**. The sky goes dark.\n\nSo the Sun does not really walk across the sky. You are the one who is moving! Earth turns you toward the Sun at **sunrise**. Later it turns you away at **sunset**.\n\nThe Sun is a **star**. It looks big and bright because it is much closer to us than the other stars are. Those far stars do not leave in the morning. They are still up there. The bright blue sky just hides them.\n\nAt night you may see the **Moon**. The Moon does not make its own light. Light from the Sun lands on it and bounces to your eyes. That is why it glows.\n\nHere is a surprise. You can see the Moon in the daytime too! Look for a pale white curve up in the blue.\n\nDay, night, day, night. It goes in the same order every time. That is a **pattern**. A pattern lets you guess what comes next.",
-      "meta": "1st Grade • Leveled reading • ~245 words • read-aloud friendly",
+      "meta": "1st Grade • Leveled reading • read-aloud friendly",
       "imageSlot": "dn-img-earth-turning"
     },
     {

@@ -1,0 +1,19 @@
+{
+  "checks": [
+    "Empty-state guidance, paused active cooking, same-challenge filtering, duplicate-selection guard, keyboard action navigation, independent historical frames, and unchanged saved cooks.",
+    "Comparison export contains the selected evidence; watery attempts compare separately; trying again opens a fresh prediction without replacing the active cook.",
+    "The current result compares against the previous recorded attempt; reload, single-attempt guidance, mobile text view, focus return, and missing-3D access work."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop attempt comparison with both decision viewers open",
+      "issues": []
+    },
+    {
+      "label": "320px text-mode comparison",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

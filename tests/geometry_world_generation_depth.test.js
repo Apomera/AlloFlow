@@ -247,7 +247,8 @@ describe('Generation controls and legacy lesson validation', () => {
   });
 
   it('rejects oversized authored lessons as a whole instead of silently dropping math structures', () => {
-    const validation = region('      function validateLesson(lesson) {', '      function finishGeneration(lesson) {');
+    const validation = region('  function normalizeGeometryQuestion(', '  // Projection, not another lesson author:')
+      + region('      function validateLesson(lesson) {', '      function finishGeneration(lesson) {');
     const validate = new Function('MAX_BLOCKS', '__alloT', 'addToast', validation + '\nreturn validateLesson;')(1500, (_key, fallback) => fallback, vi.fn());
     const { lesson } = fixtures(2);
     Object.assign(lesson.structures[0], { x1: 0, x2: 15, y1: 1, y2: 10, z1: 10, z2: 20 });
@@ -256,7 +257,8 @@ describe('Generation controls and legacy lesson validation', () => {
   });
 
   it('preserves optional activities and existing NPC speech preferences', () => {
-    const validation = region('      function validateLesson(lesson) {', '      function finishGeneration(lesson) {');
+    const validation = region('  function normalizeGeometryQuestion(', '  // Projection, not another lesson author:')
+      + region('      function validateLesson(lesson) {', '      function finishGeneration(lesson) {');
     const validate = new Function('MAX_BLOCKS', '__alloT', 'addToast', validation + '\nreturn validateLesson;')(1500, (_key, fallback) => fallback, vi.fn());
     const { lesson } = fixtures(2);
     lesson.npcs[1].voicePreference = 'af_heart';

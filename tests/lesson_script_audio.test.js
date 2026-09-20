@@ -44,7 +44,7 @@ function hostFixture(){
  const state={current:{actorKey:'teacher-one',isTeacherMode:true,isParentMode:false,isIndependentMode:false,generatedContent:resource,history:[resource]}};
  const callTTS=vi.fn(async()=> 'blob:provider');
  const update=vi.fn((id,updater)=>{const before=state.current.history[0],next=updater(before);state.current.history=[next];state.current.generatedContent=next;return next!==before;});
- const source=readFileSync('AlloFlowANTI.txt','utf8');const start=source.indexOf('  const createTeachingScriptAudio =');const end=source.indexOf('  const _findGlossaryReadAloudSegment',start);
+ const source=readFileSync('host_handlers_source.jsx','utf8').replace(/__d\./g,'');const start=source.indexOf('const createTeachingScriptAudio =');const end=source.indexOf('const handleSavePrivatePersonaSession =',start);
  const create=new Function('window','teachingScriptStateRef','selectedVoice','voiceSpeed','_aiConfig','GEMINI_MODELS','callTTS','_encodeReadAloudBridgeAudio','onUpdateResource',source.slice(start,end)+';return createTeachingScriptAudio;')(window,state,'Kore',1,{backend:'gemini',ttsProvider:'gemini',models:{tts:'configured-tts'}},{tts:'default'},callTTS,async()=>({b64:clipB64('host'),mime:'audio/wav'}),update);
  return {state,callTTS,update,create};
 }

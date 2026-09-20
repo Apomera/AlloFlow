@@ -734,7 +734,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "garden" renders ide
 <span aria-hidden="true">🌸</span>
 <span>0</span>
 </button>
-<button aria-label="0 Mastered words" aria-pressed="false" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:2px solid transparent;background:rgba(255,255,255,0.7);font-size:11px;font-weight:600;color:#b45309;cursor:pointer">
+<button aria-label="0 Well practiced words" aria-pressed="false" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:2px solid transparent;background:rgba(255,255,255,0.7);font-size:11px;font-weight:600;color:#b45309;cursor:pointer">
 <span aria-hidden="true">🌳</span>
 <span>0</span>
 </button>
@@ -743,17 +743,20 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "garden" renders ide
 <span>44 words</span>
 </div>
 </div>
-<div style="display:flex;gap:8px;align-items:center;padding:0 16px;margin-bottom:4px">
-<input type="text" placeholder="🔍 Search..." aria-label="Search" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:12px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit;flex:1;max-width:200px" value=""/>
-<select aria-label="Sort" style="width:auto;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:11px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit">
+<div class="ss-garden-controls" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 16px;margin-bottom:4px">
+<input type="text" placeholder="🔍 Search..." aria-label="Search" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:12px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit;flex:1 1 180px;min-width:min(180px, 100%);max-width:100%;min-height:44px" value=""/>
+<select aria-label="Sort" style="width:auto;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:11px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit;flex-shrink:0;min-height:44px">
 <option value="growth" selected="">↕ Growth</option>
 <option value="alpha">↕ A→Z</option>
 <option value="contexts">↕ Contexts</option>
 <option value="recent">↕ AAC Use</option>
 </select>
-<div style="display:flex;gap:6px;align-items:center;padding:0 16px;margin-bottom:6px">
+<p style="flex-basis:100%;margin:4px 0;color:#475569;font-size:12px;line-height:1.5">Garden totals include words in your resources and Quick Board suggestions. Growth reflects resource availability and recent activity, not independent communication or mastery.</p>
+<div style="flex-basis:100%;min-width:0">
+</div>
+<div style="display:flex;flex-basis:100%;min-width:0;gap:6px;align-items:center;margin-bottom:6px">
 <span style="font-size:12px;flex-shrink:0" title="Plant a word the student tried to say but couldn&#x27;t find on any board">💫</span>
-<input type="text" placeholder="Plant a wish seed — a word the student wanted to say..." aria-label="Plant a wish seed word" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:11px;box-sizing:border-box;font-family:inherit;background:#faf5ff;color:inherit;flex:1;border-color:#c4b5fd" value=""/>
+<input type="text" placeholder="Plant a wish seed — a word the student wanted to say..." aria-label="Plant a wish seed word" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:11px;box-sizing:border-box;font-family:inherit;background:#faf5ff;color:inherit;flex:1;min-width:0;min-height:44px;border-color:#c4b5fd" value=""/>
 </div>
 </div>
 </div>
@@ -1837,7 +1840,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "schedule" renders i
 <button disabled="" aria-label="Build visual sequence from topic" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Build from Topic</button>
 </div>
 <div style="flex-shrink:0;display:flex;gap:6px;align-items:center;padding:6px 10px;background:#f0fdf4;border-radius:8px;border:1px solid #d1fae5;flex-wrap:wrap">
-<span style="font-size:10px;font-weight:600;color:#059669;white-space:nowrap">🌱 Could grow in a sequence:</span>
+<span style="font-size:10px;font-weight:600;color:#047857;white-space:nowrap">🌱 Could grow in a sequence:</span>
 <button aria-label="Add Take deep breaths to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Take deep breaths<span style="color:#9ca3af;margin-left:2px">+</span>
 </button>
 <button aria-label="Add Count to 10 to sequence input" title="Add to sequence steps" style="padding:2px 8px;background:#fff;border:1px solid #4ade80;border-radius:12px;font-size:10px;font-weight:600;color:#15803d;cursor:pointer">Count to 10<span style="color:#9ca3af;margin-left:2px">+</span>
@@ -2269,6 +2272,13 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "stories" renders id
 <div class="ss-draft-editor" style="display:contents" inert="" aria-busy="true">
 <div class="ss-stories-workspace" style="display:flex;flex:1;overflow:hidden;gap:0">
 <div class="ss-story-editor ss-no-print" style="width:240px;flex-shrink:0;border-right:1px solid #e5e7eb;padding:16px;overflow-y:auto;background:#f9fafb;display:flex;flex-direction:column;gap:10px">
+<section class="ss-story-library" aria-label="Saved story library" style="min-width:0;display:flex;flex-direction:column;gap:8px">
+<details>
+<summary style="cursor:pointer;min-height:44px;padding:12px 0;font-size:13px;font-weight:700">Saved stories (0)</summary>
+<p style="font-size:12px;color:#6b7280;margin-top:0">Stored on this device and included in full backups.</p>
+<p style="font-size:12px;color:#6b7280">Save a completed story to reuse it here.</p>
+</details>
+</section>
 <div>
 <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Student Name</label>
 <input type="text" placeholder="e.g. Marcus" aria-label="Student name for social story" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit" value="Student 1"/>
@@ -2554,9 +2564,9 @@ exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FE
 <input type="text" placeholder="e.g. hygiene routine" aria-label="Symbol context" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit" value=""/>
 </div>
 <div>
-<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Category</label>
-<select aria-label="Symbol category" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit">
-<option value="" selected="">other</option>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Topic (optional)</label>
+<select aria-label="Symbol topic" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit">
+<option value="" selected="">No topic</option>
 <option value="emotions">emotions</option>
 <option value="classroom">classroom</option>
 <option value="daily living">daily living</option>
@@ -2565,6 +2575,13 @@ exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FE
 <option value="actions">actions</option>
 <option value="places">places</option>
 <option value="objects">objects</option>
+</select>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:7px">Word type (AAC color)</label>
+<select aria-label="Symbol word type" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit">
+<option value="other" selected="">Other / not set</option>
+<option value="noun">noun</option>
+<option value="verb">verb</option>
+<option value="adjective">adjective</option>
 </select>
 </div>
 </div>
@@ -2581,6 +2598,9 @@ exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FE
 <button aria-pressed="false" aria-label="Show favorite symbols only" style="padding:3px 8px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;color:#6b7280;font-size:11px;cursor:pointer;font-weight:400;flex-shrink:0">⭐</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
+<select aria-label="Filter Symbol Bank by topic" style="min-height:36px;max-width:100%;border:1px solid #cbd5e1;border-radius:7px;padding:4px 8px;background:#fff;color:#334155">
+<option value="" selected="">All topics</option>
+</select>
 <button aria-pressed="true" aria-label="Filter by All" style="padding:2px 8px;border:1px solid #7c3aed;border-radius:10px;background:#ede9fe;color:#7c3aed;font-size:10px;cursor:pointer;font-weight:700">All</button>
 <button aria-pressed="false" aria-label="Filter by Nouns" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Nouns</button>
 <button aria-pressed="false" aria-label="Filter by Verbs" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Verbs</button>
@@ -2819,9 +2839,9 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 <input type="text" placeholder="e.g. hygiene routine" aria-label="Symbol context" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9" value=""/>
 </div>
 <div>
-<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px">Category</label>
-<select aria-label="Symbol category" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9">
-<option value="" selected="">other</option>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px">Topic (optional)</label>
+<select aria-label="Symbol topic" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9">
+<option value="" selected="">No topic</option>
 <option value="emotions">emotions</option>
 <option value="classroom">classroom</option>
 <option value="daily living">daily living</option>
@@ -2830,6 +2850,13 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 <option value="actions">actions</option>
 <option value="places">places</option>
 <option value="objects">objects</option>
+</select>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px;margin-top:7px">Word type (AAC color)</label>
+<select aria-label="Symbol word type" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9">
+<option value="other" selected="">Other / not set</option>
+<option value="noun">noun</option>
+<option value="verb">verb</option>
+<option value="adjective">adjective</option>
 </select>
 </div>
 </div>
@@ -2846,6 +2873,9 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 <button aria-pressed="false" aria-label="Show favorite symbols only" style="padding:3px 8px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;color:#6b7280;font-size:11px;cursor:pointer;font-weight:400;flex-shrink:0">⭐</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
+<select aria-label="Filter Symbol Bank by topic" style="min-height:36px;max-width:100%;border:1px solid #cbd5e1;border-radius:7px;padding:4px 8px;background:#fff;color:#334155">
+<option value="" selected="">All topics</option>
+</select>
 <button aria-pressed="true" aria-label="Filter by All" style="padding:2px 8px;border:1px solid #7c3aed;border-radius:10px;background:#ede9fe;color:#7c3aed;font-size:10px;cursor:pointer;font-weight:700">All</button>
 <button aria-pressed="false" aria-label="Filter by Nouns" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Nouns</button>
 <button aria-pressed="false" aria-label="Filter by Verbs" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Verbs</button>
@@ -3084,9 +3114,9 @@ exports[`Symbol Studio — render under each host theme (snapshot) > default (li
 <input type="text" placeholder="e.g. hygiene routine" aria-label="Symbol context" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit" value=""/>
 </div>
 <div>
-<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Category</label>
-<select aria-label="Symbol category" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit">
-<option value="" selected="">other</option>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px">Topic (optional)</label>
+<select aria-label="Symbol topic" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit">
+<option value="" selected="">No topic</option>
 <option value="emotions">emotions</option>
 <option value="classroom">classroom</option>
 <option value="daily living">daily living</option>
@@ -3095,6 +3125,13 @@ exports[`Symbol Studio — render under each host theme (snapshot) > default (li
 <option value="actions">actions</option>
 <option value="places">places</option>
 <option value="objects">objects</option>
+</select>
+<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:7px">Word type (AAC color)</label>
+<select aria-label="Symbol word type" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#fff;color:inherit">
+<option value="other" selected="">Other / not set</option>
+<option value="noun">noun</option>
+<option value="verb">verb</option>
+<option value="adjective">adjective</option>
 </select>
 </div>
 </div>
@@ -3111,6 +3148,9 @@ exports[`Symbol Studio — render under each host theme (snapshot) > default (li
 <button aria-pressed="false" aria-label="Show favorite symbols only" style="padding:3px 8px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;color:#6b7280;font-size:11px;cursor:pointer;font-weight:400;flex-shrink:0">⭐</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
+<select aria-label="Filter Symbol Bank by topic" style="min-height:36px;max-width:100%;border:1px solid #cbd5e1;border-radius:7px;padding:4px 8px;background:#fff;color:#334155">
+<option value="" selected="">All topics</option>
+</select>
 <button aria-pressed="true" aria-label="Filter by All" style="padding:2px 8px;border:1px solid #7c3aed;border-radius:10px;background:#ede9fe;color:#7c3aed;font-size:10px;cursor:pointer;font-weight:700">All</button>
 <button aria-pressed="false" aria-label="Filter by Nouns" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Nouns</button>
 <button aria-pressed="false" aria-label="Filter by Verbs" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Verbs</button>
@@ -3349,9 +3389,9 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 <input type="text" placeholder="e.g. hygiene routine" aria-label="Symbol context" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9" value=""/>
 </div>
 <div>
-<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px">Category</label>
-<select aria-label="Symbol category" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9">
-<option value="" selected="">other</option>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px">Topic (optional)</label>
+<select aria-label="Symbol topic" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9">
+<option value="" selected="">No topic</option>
 <option value="emotions">emotions</option>
 <option value="classroom">classroom</option>
 <option value="daily living">daily living</option>
@@ -3360,6 +3400,13 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 <option value="actions">actions</option>
 <option value="places">places</option>
 <option value="objects">objects</option>
+</select>
+<label style="font-size:11px;font-weight:600;color:#cbd5e1;display:block;margin-bottom:3px;margin-top:7px">Word type (AAC color)</label>
+<select aria-label="Symbol word type" style="width:100%;border:1px solid #334155;border-radius:6px;padding:7px 9px;font-size:13px;box-sizing:border-box;font-family:inherit;background:#0f172a;color:#f1f5f9">
+<option value="other" selected="">Other / not set</option>
+<option value="noun">noun</option>
+<option value="verb">verb</option>
+<option value="adjective">adjective</option>
 </select>
 </div>
 </div>
@@ -3376,6 +3423,9 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 <button aria-pressed="false" aria-label="Show favorite symbols only" style="padding:3px 8px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;color:#6b7280;font-size:11px;cursor:pointer;font-weight:400;flex-shrink:0">⭐</button>
 </div>
 <div style="display:flex;gap:4px;flex-wrap:wrap">
+<select aria-label="Filter Symbol Bank by topic" style="min-height:36px;max-width:100%;border:1px solid #cbd5e1;border-radius:7px;padding:4px 8px;background:#fff;color:#334155">
+<option value="" selected="">All topics</option>
+</select>
 <button aria-pressed="true" aria-label="Filter by All" style="padding:2px 8px;border:1px solid #7c3aed;border-radius:10px;background:#ede9fe;color:#7c3aed;font-size:10px;cursor:pointer;font-weight:700">All</button>
 <button aria-pressed="false" aria-label="Filter by Nouns" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Nouns</button>
 <button aria-pressed="false" aria-label="Filter by Verbs" style="padding:2px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;color:#6b7280;font-size:10px;cursor:pointer;font-weight:400">Verbs</button>

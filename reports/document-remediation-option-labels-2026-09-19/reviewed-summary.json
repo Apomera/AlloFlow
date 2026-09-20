@@ -1,0 +1,25 @@
+{
+  "status": "focused-checks-passed-full-validation-incomplete",
+  "policyVersion": "20260919-2",
+  "newChecksPassed": 28,
+  "focusedNativePassed": 20,
+  "unitAssertionsPassedAcrossSeparateRuns": 693,
+  "fullValidationStatus": "failed",
+  "fullValidationError": "Validation command failed: node_modules/vitest/vitest.mjs (exit 1); Validation inputs, tools or revision changed during the run",
+  "concurrentInputChanges": [
+    "utils_pure_module.js",
+    "utils_pure_source.jsx"
+  ],
+  "diagnosticRunExitCode": 1,
+  "diagnosticIdentityChanges": [],
+  "diagnosticLimitation": "All 123 assertions passed; static_crop_cleanup Chromium teardown timed out at 30 seconds.",
+  "shippingModulesIdentical": true,
+  "implementationHashes": {
+    "doc_pipeline_source.jsx": "d776f87988d0a5cd0a1be053ce4d79e6b3663175dea9136aa73f3d180813899b",
+    "doc_pipeline_module.js": "39f28110c6458e6027af7a1e3c3a54dd5898b28bf7b07ae4f09eec1c0f508933",
+    "desktop/web-app/public/doc_pipeline_module.js": "39f28110c6458e6027af7a1e3c3a54dd5898b28bf7b07ae4f09eec1c0f508933",
+    "tests/remediation_form_values.test.js": "a804a34acd8153d118ba92c20740498fef35469fa819f587c24e12f393f8863a",
+    "tests/e2e/remediation_form_values.spec.ts": "f976114739e192e081df7c9398b597fa693bb8773ada2e0e4530f9f4cdbe0fd7",
+    "tests/fixtures/remediation_option_labels.json": "14afd049931d64056ee49b19ed4cea7b45c5fbbe68968c7d9faed64ad9803698"
+  }
+}

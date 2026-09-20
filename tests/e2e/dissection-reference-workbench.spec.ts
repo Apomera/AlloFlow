@@ -55,7 +55,7 @@ test('comparison cards reflow at phone width and retain complete text', async ({
   const second = await panel.locator('article').nth(1).boundingBox();
   expect(second!.y).toBeGreaterThan(first!.y + first!.height);
   await panel.screenshot({ path: out + '/comparison-mobile.png' });
-  await panel.getByRole('button').focus();
+  await panel.getByRole('button', { name: 'Write comparison in my evidence note' }).focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('#diss-note-heart')).toBeFocused();
 });
@@ -276,4 +276,43 @@ test('pump diagrams remain readable and accessible at narrow phone width', async
   await panel.locator('[data-comparison-specimen="pig"]').screenshot({ path: out + '/pump-diagram-pig-320.png' });
   await panel.locator('[data-comparison-specimen="earthworm"]').screenshot({ path: out + '/pump-diagram-earthworm-320.png' });
   expect(await page.evaluate(() => Object.keys((window as any).__ctx.toolData.dissection.exploredOrgans))).toEqual(['frog|heart','frog|lungs']);
+});
+
+test('focused gas-exchange comparison preserves evidence and resets its scope for another group', async ({ page }) => {
+  await harness.mount(page, { dissection: { ...state, selectedOrgan:'lungs', organNotes:{'frog|lungs':'I observed a sac beside the heart.'}, organConfidence:{'frog|lungs':1} } }, undefined, { expectCanvas:false });
+  const panel=page.locator('#diss-comparison-panel');
+  const before=await page.evaluate(()=>{const d=(window as any).__ctx.toolData.dissection;return { specimen:d.specimen,layer:d.activeLayer,explored:d.exploredOrgans,notes:d.organNotes,confidence:d.organConfidence };});
+  await expect(panel.locator('[data-gas-diagram]')).toHaveCount(4);
+  await panel.getByLabel('Compare with',{exact:true}).selectOption('pig');
+  await expect(panel.locator('article')).toHaveCount(2);
+  await expect(panel.locator('[data-comparison-specimen="pig"]')).toContainText('No fetal airflow is shown');
+  await panel.screenshot({path:out+'/gas-comparison-focused-desktop.png'});
+  await panel.getByRole('button',{name:'Write comparison in my evidence note'}).click();
+  await expect(page.locator('#diss-note-lungs')).toBeFocused();
+  await expect(page.locator('#diss-note-lungs')).toHaveValue('I observed a sac beside the heart.');
+  expect(await page.evaluate(()=>{const d=(window as any).__ctx.toolData.dissection;return { specimen:d.specimen,layer:d.activeLayer,explored:d.exploredOrgans,notes:d.organNotes,confidence:d.organConfidence };})).toEqual(before);
+  await page.getByRole('button',{name:'Previous structure',exact:true}).click();
+  await expect(panel).toHaveAttribute('data-comparison-group','pumps');
+  await expect(panel.locator('article')).toHaveCount(5);
+  await expect(panel.getByLabel('Compare with',{exact:true})).toHaveValue('all');
+});
+
+test('gas-exchange diagrams and pair selector reflow with readable labels on a narrow phone', async ({ page }) => {
+  await page.setViewportSize({width:320,height:844});
+  await harness.mount(page,{dissection:{...state,selectedOrgan:'lungs'}},undefined,{expectCanvas:false});
+  await page.addStyleTag({content:'#wrap { width:100% !important; max-width:1180px; }'});
+  const panel=page.locator('#diss-comparison-panel');
+  for(const svg of await panel.locator('[data-gas-diagram] svg').all()) {
+    expect(await svg.evaluate((el:SVGSVGElement)=>[...el.querySelectorAll('text')].every(t=>{const b=t.getBBox();return b.x>=0&&b.y>=0&&b.x+b.width<=300&&b.y+b.height<=178;}))).toBe(true);
+  }
+  await panel.locator('.diss-comparison-sources summary').click();
+  await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});
+  const audit=await page.evaluate(async ()=>(window as any).axe.run({include:[['#diss-comparison-panel']]},{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}}));
+  expect(audit.violations.map((v:any)=>({id:v.id,targets:v.nodes.map((n:any)=>n.target)}))).toEqual([]);
+  expect(await panel.evaluate(el=>el.scrollWidth-el.clientWidth)).toBeLessThanOrEqual(1);
+  await panel.locator('[data-comparison-specimen="perch"]').screenshot({path:out+'/gas-perch-mobile.png'});
+  await panel.locator('[data-comparison-specimen="crayfish"]').screenshot({path:out+'/gas-crayfish-mobile.png'});
+  const select=panel.getByLabel('Compare with',{exact:true});await select.focus();await select.selectOption('pig');
+  await expect(select).toBeFocused();await expect(panel.locator('article')).toHaveCount(2);
+  await panel.screenshot({path:out+'/gas-comparison-focused-mobile.png'});
 });

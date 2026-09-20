@@ -1,0 +1,52 @@
+{
+  "unsupportedText": "Current component · authored review fixture · images intentionally absent · not a live generation\n\nMEMORY AID STUDIO\n\nRecall practice\n\nComplete or exit the active recall attempt before returning to the full resource.\n\nMEMORY TARGET 1\n\nMemory target\nKeyword\n\nRECALL PRACTICE\n\nRecall without hints\nFacts hidden\n\nThe facts, mapping, feedback, and creation supports stay hidden until you record what you remember.\n\nHow will you retrieve what the cue means?\nWrite what I remember\nRespond another way (no transcript saved)\nWhat do you remember about this target?\nHow confident do you feel before checking?\nNot sure yet\nSomewhat confident\nConfident\nReveal the facts\nExit practice\n\nWrite a recall response before revealing the facts.",
+  "unsupportedHeight": 1099,
+  "firstResponseTop": 734,
+  "beforeLeaving": false,
+  "draftRetainedAfterReload": false,
+  "returnView": "Current component · authored review fixture · images intentionally absent · not a live generation\n\nMEMORY AID STUDIO\n\nRemember states of matter\n\nStudy the connection, make the aid your own, and explain how it helps you remember.\n\nPreview student worksheet\nMemory targets\n1. Solids keep their shape\n2. Liquids take the shape of their container\n3. Gases spread to fill their container\nPrevious\nNext\n\nMEMORY TARGET 1\n\nSolids keep their shape\nKeyword\nStudy\nMake it mine\nTry recall\n\nYOUR MEMORY CUE\n\nSolid statue: it stays the same shape and takes up the same space.\n\nYour next practice is planned for 9/20/2026.\n\nAdd a picture if it helps you remember.\nHow the cue connects\nA solid keeps its shape.\nA solid has a definite volume.\n\nThe statue keeps its shape, like a solid. It takes up the same amount of space, reminding you that a solid has a definite volume.\n\nMake it mine\nTry recall\nAll targets and practice\nPrint and export options",
+  "dueReturnView": "Current component · authored review fixture · images intentionally absent · not a live generation\n\nMEMORY AID STUDIO\n\nRemember states of matter\n\nStudy the connection, make the aid your own, and explain how it helps you remember.\n\nPreview student worksheet\nMemory targets\n1. Solids keep their shape\n2. Liquids take the shape of their container\n3. Gases spread to fill their container\nPrevious\nNext\n\nMEMORY TARGET 1\n\nSolids keep their shape\nKeyword\nStudy\nMake it mine\nTry recall\n\nYOUR MEMORY CUE\n\nSolid statue: it stays the same shape and takes up the same space.\n\nReady for another practice? Try recalling this again today.\n\nAdd a picture if it helps you remember.\nHow the cue connects\nA solid keeps its shape.\nA solid has a definite volume.\n\nThe statue keeps its shape, like a solid. It takes up the same amount of space, reminding you that a solid has a definite volume.\n\nMake it mine\nTry recall\nAll targets and practice\nPrint and export options",
+  "cueRevisionReviewPlan": {
+    "before": {
+      "latest": {
+        "id": "memory-practice-mu8wf2d8-0-a2cs",
+        "responseMode": "written",
+        "supportMode": "none",
+        "nextReviewDate": "2026-09-18",
+        "reviewSchedule": "date",
+        "applicationQuestion": "",
+        "applicationResponse": "",
+        "applicationRevealed": false,
+        "applicationCheck": "",
+        "response": "Recall",
+        "confidence": "not-sure",
+        "facts": [
+          "A solid keeps its shape.",
+          "A solid has a definite volume."
+        ],
+        "factKeys": [
+          "fact:dt93jg:A%20solid%20keeps%20its%20shape.",
+          "fact:gn61j8:A%20solid%20has%20a%20definite%20volume."
+        ],
+        "factChecks": [
+          "recalled",
+          "recalled"
+        ],
+        "basisKey": "soqr44",
+        "cueKey": "1pbfaxq",
+        "cueSnapshot": "Solid statue: it stays the same shape and takes up the same space.",
+        "revisionPlan": null,
+        "createdAt": "2026-09-19T21:27:40.220Z"
+      },
+      "date": "2026-09-18",
+      "due": true,
+      "needsPractice": false
+    },
+    "after": {
+      "latest": null,
+      "date": "",
+      "due": false,
+      "needsPractice": false
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "singleAnswerUsesSelfCheck": true,
+  "noAnswerLeak": true,
+  "noFalsePerfectScore": true,
+  "selfRatedMastery": true,
+  "retryPreservesMode": true,
+  "keyboardEntryAndExit": true,
+  "liveArmFallback": true,
+  "distinctAnswersUseChoices": true,
+  "widths": [
+    1280,
+    390,
+    320
+  ],
+  "pageErrors": []
+}

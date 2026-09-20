@@ -5,7 +5,7 @@ test.beforeAll(async()=>harness.start());test.afterAll(async()=>harness.stop());
 async function setup(page:any){
   await page.setViewportSize({width:1140,height:1050});await harness.mount(page,{ecosystem:{tab:'foodweb',tutorialDismissed:true}},undefined,{expectCanvas:false});
   await page.evaluate(()=>{document.body.className='theme-default';document.getElementById('wrap')!.style.cssText='width:100%;height:auto;display:block;padding:16px;background:white';});
-  await page.evaluate(()=>{const w=window as any,p=w.THREE.WebGLRenderer.prototype,render=p.render;w.__invalidVisibility=[];p.render=function(scene:any,camera:any){const invalid:any[]=[];scene.traverse((o:any)=>{if(typeof o.visible!=='boolean')invalid.push(o.type);});w.__invalidVisibility=invalid;return render.call(this,scene,camera);};});
+  await page.evaluate(()=>{const w=window as any,p=w.THREE.Object3D.prototype,update=p.updateMatrixWorld;w.__invalidVisibility=null;p.updateMatrixWorld=function(force:any){if(this.isScene){const invalid:any[]=[];this.traverse((o:any)=>{if(typeof o.visible!=='boolean')invalid.push(o.type);});w.__invalidVisibility=invalid;}return update.call(this,force);};});
   await page.getByRole('button',{name:'Insect food shortage',exact:true}).click();await page.getByRole('button',{name:'Run food-web comparison',exact:true}).click();
   const meadow=page.locator('[data-efw-meadow]'),canvas=meadow.locator('canvas'),timeline=meadow.getByLabel('Meadow timeline',{exact:true});await meadow.getByRole('button',{name:'Inspect selected group',exact:true}).click();return {meadow,canvas,timeline,tracking:meadow.getByLabel('Animal camera tracking',{exact:true})};
 }

@@ -1,0 +1,366 @@
+{
+  "title": "Kitchen Lab recipe evidence",
+  "version": 1,
+  "exportedAt": "2026-09-19T23:16:34.545Z",
+  "scope": "Illustrative recipe simulation; not a validated predictor of real cooking temperatures or times. Written explanations require human review.",
+  "cooks": [
+    {
+      "title": "Rescue a dry sauce",
+      "servings": 2,
+      "mode": "demonstrate",
+      "simulatedSeconds": 0,
+      "status": "Rescue demonstrated independently",
+      "criteria": [
+        {
+          "label": "Sauce adjusted to coat the pasta and mixed through",
+          "met": true
+        },
+        {
+          "label": "Pasta retains a slight bite",
+          "met": true
+        },
+        {
+          "label": "Dish checked after adjustment; both burners off",
+          "met": true
+        }
+      ],
+      "questionsCorrect": true,
+      "corrections": 0,
+      "hints": 0,
+      "scope": "Prepared starting dish supplied by the challenge. Only the following rescue actions belong to the learner.",
+      "rescue": {
+        "id": "dry",
+        "brief": "Golden mushroom pasta is already combined, but the sauce looks dry. Both burners are off; the pan is still warm. You have 200 mL of saved pasta water.",
+        "prediction": "Mix without changing the liquid",
+        "startingMoisture": 8,
+        "finalMoisture": 58,
+        "startingReserve": 200,
+        "finalReserve": 150
+      },
+      "mixing": {
+        "count": 1,
+        "sweeps": 1,
+        "waterSinceMix": 0,
+        "lastMixedAt": 0,
+        "lastMethod": "button"
+      },
+      "plan": "",
+      "reflection": "The sauce started dry. I added 50 mL and folded it through; the moisture rose from 8 to 58 mL.",
+      "explanations": [
+        {
+          "question": "Which change addresses the starting problem, and why?",
+          "answer": "A measured splash adds moisture; folding distributes it through the dish."
+        }
+      ],
+      "pastaTexture": "Tender with a slight bite",
+      "sauce": "Golden, glossy mushrooms",
+      "review": {
+        "findings": [
+          {
+            "label": "Sauce adjusted to coat the pasta and mixed through",
+            "met": true,
+            "observation": "8 mL starting moisture → 58 mL at finish. Golden, glossy mushrooms. 0 mL saved water added since the last mix.",
+            "nextPractice": "Keep observing after each adjustment."
+          },
+          {
+            "label": "Pasta retains a slight bite",
+            "met": true,
+            "observation": "Provided pasta began with a slight bite. Finished texture: Tender with a slight bite.",
+            "nextPractice": "Keep watching the pasta while adjusting the sauce."
+          },
+          {
+            "label": "Dish checked after adjustment; both burners off",
+            "met": true,
+            "observation": "The dish was checked after the last adjustment.",
+            "nextPractice": "Check the dish after the last change and turn both burners off."
+          }
+        ],
+        "timeline": [
+          {
+            "time": 0,
+            "event": "Pour a measured amount of saved water",
+            "observation": "50 mL cooking water poured; 150 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
+          },
+          {
+            "time": 0,
+            "event": "Mix with a complete pan sweep",
+            "observation": "Pasta folded through the sauce. Observe the coating before deciding on another splash. Check the dish again before plating."
+          },
+          {
+            "time": 0,
+            "event": "potHeat",
+            "observation": "Pot burner off. The water temperature changes gradually."
+          },
+          {
+            "time": 0,
+            "event": "panHeat",
+            "observation": "Pan burner off. The pan retains heat after you turn it down."
+          },
+          {
+            "time": 0,
+            "event": "Check sauce consistency",
+            "observation": "Sauce check: Golden, glossy mushrooms. Pasta: Tender with a slight bite."
+          },
+          {
+            "time": 0,
+            "event": "Plate the finished dish",
+            "observation": "Dish plated. Review the texture, sauce, and choices you made."
+          }
+        ]
+      },
+      "actions": [
+        {
+          "action": "pour",
+          "value": 50,
+          "time": 0,
+          "accepted": true,
+          "observation": "50 mL cooking water poured; 150 mL remains in the jug. Observe the sauce, then decide whether it needs another splash."
+        },
+        {
+          "action": "stirSweep",
+          "value": "button",
+          "time": 0,
+          "accepted": true,
+          "observation": "Pasta folded through the sauce. Observe the coating before deciding on another splash. Check the dish again before plating."
+        },
+        {
+          "action": "potHeat",
+          "value": 0,
+          "time": 0,
+          "accepted": true,
+          "observation": "Pot burner off. The water temperature changes gradually."
+        },
+        {
+          "action": "panHeat",
+          "value": 0,
+          "time": 0,
+          "accepted": true,
+          "observation": "Pan burner off. The pan retains heat after you turn it down."
+        },
+        {
+          "action": "taste",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Sauce check: Golden, glossy mushrooms. Pasta: Tender with a slight bite."
+        },
+        {
+          "action": "plate",
+          "value": null,
+          "time": 0,
+          "accepted": true,
+          "observation": "Dish plated. Review the texture, sauce, and choices you made."
+        }
+      ]
+    },
+    {
+      "title": "Rescue a watery sauce",
+      "servings": 2,
+      "mode": "demonstrate",
+      "simulatedSeconds": 180,
+      "status": "Rescue demonstrated independently",
+      "criteria": [
+        {
+          "label": "Sauce adjusted to coat the pasta and mixed through",
+          "met": true
+        },
+        {
+          "label": "Pasta retains a slight bite",
+          "met": true
+        },
+        {
+          "label": "Dish checked after adjustment; both burners off",
+          "met": true
+        }
+      ],
+      "questionsCorrect": true,
+      "corrections": 0,
+      "hints": 0,
+      "scope": "Prepared starting dish supplied by the challenge. Only the following rescue actions belong to the learner.",
+      "rescue": {
+        "id": "watery",
+        "brief": "Soft tomato sauce and pasta are already combined, but the sauce looks loose and watery. The pan is on low; 150 mL of saved water remains. Watch the pasta while you adjust the sauce.",
+        "prediction": "Mix without changing the liquid",
+        "startingMoisture": 240,
+        "finalMoisture": 176,
+        "startingReserve": 150,
+        "finalReserve": 150
+      },
+      "mixing": {
+        "count": 0,
+        "sweeps": 0,
+        "waterSinceMix": 0,
+        "lastMixedAt": null,
+        "lastMethod": null
+      },
+      "plan": "",
+      "reflection": "The sauce began watery. After 180 seconds on low, the moisture fell and the pasta still had a slight bite.",
+      "explanations": [
+        {
+          "question": "Which change addresses the starting problem, and why?",
+          "answer": "Heating over time lets moisture escape; stirring alone does not remove water."
+        }
+      ],
+      "pastaTexture": "Tender with a slight bite",
+      "sauce": "Soft, coating tomato sauce",
+      "review": {
+        "findings": [
+          {
+            "label": "Sauce adjusted to coat the pasta and mixed through",
+            "met": true,
+            "observation": "240 mL starting moisture → 176 mL at finish. Soft, coating tomato sauce. 0 mL saved water added since the last mix.",
+            "nextPractice": "Keep observing after each adjustment."
+          },
+          {
+            "label": "Pasta retains a slight bite",
+            "met": true,
+            "observation": "Provided pasta began with a slight bite. Finished texture: Tender with a slight bite.",
+            "nextPractice": "Keep watching the pasta while adjusting the sauce."
+          },
+          {
+            "label": "Dish checked after adjustment; both burners off",
+            "met": true,
+            "observation": "The dish was checked after the last adjustment.",
+            "nextPractice": "Check the dish after the last change and turn both burners off."
+          }
+        ],
+        "timeline": [
+          {
+            "time": 180,
+            "event": "potHeat",
+            "observation": "Pot burner off. The water temperature changes gradually."
+          },
+          {
+            "time": 180,
+            "event": "panHeat",
+            "observation": "Pan burner off. The pan retains heat after you turn it down."
+          },
+          {
+            "time": 180,
+            "event": "Check sauce consistency",
+            "observation": "Sauce check: Soft, coating tomato sauce. Pasta: Tender with a slight bite."
+          },
+          {
+            "time": 180,
+            "event": "Plate the finished dish",
+            "observation": "Dish plated. Review the texture, sauce, and choices you made."
+          }
+        ]
+      },
+      "actions": [
+        {
+          "action": "advance",
+          "value": 15,
+          "time": 15,
+          "accepted": true,
+          "observation": "Both vessels advanced 15 simulated seconds. Pasta drained; Loose and watery."
+        },
+        {
+          "action": "advance",
+          "value": 15,
+          "time": 30,
+          "accepted": true,
+          "observation": "Both vessels advanced 15 simulated seconds. Pasta drained; Loose and watery."
+        },
+        {
+          "action": "advance",
+          "value": 15,
+          "time": 45,
+          "accepted": true,
+          "observation": "Both vessels advanced 15 simulated seconds. Pasta drained; Loose and watery."
+        },
+        {
+          "action": "advance",
+          "value": 15,
+          "time": 60,
+          "accepted": true,
+          "observation": "Both vessels advanced 15 simulated seconds. Pasta drained; Loose and watery."
+        },
+        {
+          "action": "advance",
+          "value": 15,
+          "time": 75,
+          "accepted": true,
+          "observation": "Both vessels advanced 15 simulated seconds. Pasta drained; Loose and watery."
+        },
+        {
+          "action": "advance",
+          "value": 15,
+          "time": 90,
+          "accepted": true,
+          "observation": "Both vessels advanced 15 simulated seconds. Pasta drained; Loose and watery."
+        },
+        {
+          "action": "advance",
+          "value": 15,
+          "time": 105,
+          "accepted": true,
+          "observation": "Both vessels advanced 15 simulated seconds. Pasta drained; Loose and watery."
+        },
+        {
+          "action": "advance",
+          "value": 15,
+          "time": 120,
+          "accepted": true,
+          "observation": "Both vessels advanced 15 simulated seconds. Pasta drained; Loose and watery."
+        },
+        {
+          "action": "advance",
+          "value": 15,
+          "time": 135,
+          "accepted": true,
+          "observation": "Both vessels advanced 15 simulated seconds. Pasta drained; Loose and watery."
+        },
+        {
+          "action": "advance",
+          "value": 15,
+          "time": 150,
+          "accepted": true,
+          "observation": "Both vessels advanced 15 simulated seconds. Pasta drained; Loose and watery."
+        },
+        {
+          "action": "advance",
+          "value": 15,
+          "time": 165,
+          "accepted": true,
+          "observation": "Both vessels advanced 15 simulated seconds. Pasta drained; Loose and watery."
+        },
+        {
+          "action": "advance",
+          "value": 15,
+          "time": 180,
+          "accepted": true,
+          "observation": "Both vessels advanced 15 simulated seconds. Pasta drained; Soft, coating tomato sauce."
+        },
+        {
+          "action": "potHeat",
+          "value": 0,
+          "time": 180,
+          "accepted": true,
+          "observation": "Pot burner off. The water temperature changes gradually."
+        },
+        {
+          "action": "panHeat",
+          "value": 0,
+          "time": 180,
+          "accepted": true,
+          "observation": "Pan burner off. The pan retains heat after you turn it down."
+        },
+        {
+          "action": "taste",
+          "value": null,
+          "time": 180,
+          "accepted": true,
+          "observation": "Sauce check: Soft, coating tomato sauce. Pasta: Tender with a slight bite."
+        },
+        {
+          "action": "plate",
+          "value": null,
+          "time": 180,
+          "accepted": true,
+          "observation": "Dish plated. Review the texture, sauce, and choices you made."
+        }
+      ]
+    }
+  ]
+}

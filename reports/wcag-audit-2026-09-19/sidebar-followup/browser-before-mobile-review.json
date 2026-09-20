@@ -1,0 +1,466 @@
+{
+  "startedAt": "2026-09-19T20:55:53.953Z",
+  "method": "Fresh esbuild development preview from generated current App.jsx with existing compiled Tailwind CSS and local canonical lazy modules; SidebarPanels network response held until explicitly released. No deployed release claim.",
+  "checks": [
+    {
+      "name": "Both tab panels exist while source module is delayed",
+      "passed": true
+    },
+    {
+      "name": "Manual activation, wraparound and Home/End preserve keyboard focus",
+      "passed": true
+    },
+    {
+      "name": "History panel remains correctly labelled after modules load",
+      "passed": true
+    },
+    {
+      "name": "History count has sufficient contrast and a named status role",
+      "passed": true
+    },
+    {
+      "name": "History menu owns a live target only when open and restores focus on Escape",
+      "passed": true
+    },
+    {
+      "name": "Mobile uses its outer workspace tab panel without dangling desktop labels",
+      "passed": true
+    }
+  ],
+  "states": [
+    {
+      "name": "loading-create",
+      "relationships": [
+        {
+          "tab": "tab-create",
+          "text": "Create",
+          "name": null,
+          "selected": "true",
+          "target": "sidebar-create-panel",
+          "role": "tabpanel",
+          "labelledby": "tab-create",
+          "hidden": false,
+          "visible": true
+        },
+        {
+          "tab": "tab-history",
+          "text": "History",
+          "name": null,
+          "selected": "false",
+          "target": "sidebar-history-panel",
+          "role": "tabpanel",
+          "labelledby": "tab-history",
+          "hidden": true,
+          "visible": false
+        }
+      ]
+    },
+    {
+      "name": "loading-create",
+      "violations": [],
+      "incomplete": [],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-deprecated-role",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-required-attr",
+        "aria-required-children",
+        "aria-required-parent",
+        "aria-roles",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "avoid-inline-spacing",
+        "button-name",
+        "color-contrast",
+        "duplicate-id-aria",
+        "nested-interactive",
+        "target-size"
+      ],
+      "width": 1280,
+      "viewport": 1280
+    },
+    {
+      "name": "history-before-source-ready",
+      "relationships": [
+        {
+          "tab": "tab-create",
+          "text": "Create",
+          "name": null,
+          "selected": "false",
+          "target": "sidebar-create-panel",
+          "role": "tabpanel",
+          "labelledby": "tab-create",
+          "hidden": true,
+          "visible": false
+        },
+        {
+          "tab": "tab-history",
+          "text": "History",
+          "name": null,
+          "selected": "true",
+          "target": "sidebar-history-panel",
+          "role": "tabpanel",
+          "labelledby": "tab-history",
+          "hidden": false,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "name": "ready-create",
+      "relationships": [
+        {
+          "tab": "tab-create",
+          "text": "Create",
+          "name": null,
+          "selected": "true",
+          "target": "sidebar-create-panel",
+          "role": "tabpanel",
+          "labelledby": "tab-create",
+          "hidden": false,
+          "visible": true
+        },
+        {
+          "tab": "tab-history",
+          "text": "History",
+          "name": null,
+          "selected": "false",
+          "target": "sidebar-history-panel",
+          "role": "tabpanel",
+          "labelledby": "tab-history",
+          "hidden": true,
+          "visible": false
+        }
+      ]
+    },
+    {
+      "name": "ready-create",
+      "violations": [],
+      "incomplete": [],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-deprecated-role",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-required-attr",
+        "aria-required-children",
+        "aria-required-parent",
+        "aria-roles",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "avoid-inline-spacing",
+        "button-name",
+        "color-contrast",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "label",
+        "nested-interactive",
+        "scrollable-region-focusable",
+        "summary-name",
+        "target-size"
+      ],
+      "width": 1280,
+      "viewport": 1280
+    },
+    {
+      "name": "ready-history",
+      "relationships": [
+        {
+          "tab": "tab-create",
+          "text": "Create",
+          "name": null,
+          "selected": "false",
+          "target": "sidebar-create-panel",
+          "role": "tabpanel",
+          "labelledby": "tab-create",
+          "hidden": true,
+          "visible": false
+        },
+        {
+          "tab": "tab-history",
+          "text": "History",
+          "name": null,
+          "selected": "true",
+          "target": "sidebar-history-panel",
+          "role": "tabpanel",
+          "labelledby": "tab-history",
+          "hidden": false,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "name": "ready-history",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"light\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"min-w-0 truncate\">Resource Pack History</span>",
+              "target": [
+                ".truncate.min-w-0"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"light\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"text-emerald-700 flex items-center gap-1\">",
+              "target": [
+                ".text-emerald-700"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+                      "target": [
+                        "select"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+              "target": [
+                "select"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-center text-sm text-slate-500\">No resources generated yet.</div>",
+                      "target": [
+                        ".border-dashed"
+                      ]
+                    },
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"light\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<div class=\"rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-center text-sm text-slate-500\">No resources generated yet.</div>",
+              "target": [
+                ".border-dashed"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            }
+          ]
+        }
+      ],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-deprecated-role",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-required-attr",
+        "aria-required-children",
+        "aria-required-parent",
+        "aria-roles",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "avoid-inline-spacing",
+        "button-name",
+        "color-contrast",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "nested-interactive",
+        "select-name",
+        "target-size"
+      ],
+      "width": 1280,
+      "viewport": 1280
+    },
+    {
+      "name": "mobile-create",
+      "violations": [],
+      "incomplete": [],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-deprecated-role",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-required-attr",
+        "aria-roles",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "avoid-inline-spacing",
+        "button-name",
+        "color-contrast",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "label",
+        "nested-interactive",
+        "scrollable-region-focusable",
+        "summary-name",
+        "target-size"
+      ],
+      "width": 320,
+      "viewport": 320
+    }
+  ],
+  "browser": "148.0.7778.96",
+  "axe": "4.12.1",
+  "historyBadge": {
+    "name": "0 resources",
+    "role": "status",
+    "color": "rgb(30, 41, 59)",
+    "background": "rgb(241, 245, 249)",
+    "ratio": 13.35325281838611
+  },
+  "menuAudit": {
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "tags": [
+          "cat.aria",
+          "wcag2a",
+          "wcag412",
+          "EN-301-549",
+          "EN-9.4.1.2",
+          "RGAAv4",
+          "RGAA-7.1.1"
+        ],
+        "description": "Ensure all ARIA attributes have valid values",
+        "help": "ARIA attributes must conform to valid values",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/aria-valid-attr-value?application=axeAPI",
+        "nodes": [
+          {
+            "any": [],
+            "all": [
+              {
+                "id": "aria-valid-attr-value",
+                "data": {
+                  "messageKey": "controlsWithinPopup",
+                  "needsReview": "aria-controls=\"history-more-actions-menu\""
+                },
+                "relatedNodes": [],
+                "impact": "critical",
+                "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-more-actions-menu\""
+              }
+            ],
+            "none": [],
+            "impact": "critical",
+            "html": "<button type=\"button\" class=\"min-h-11 rounded-lg ...\" aria-label=\"More resource pack a...\" aria-haspopup=\"menu\" aria-expanded=\"true\" aria-controls=\"history-more-actions...\">",
+            "target": [
+              ".hover\\:border-slate-400"
+            ],
+            "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-more-actions-menu\""
+          }
+        ]
+      }
+    ]
+  },
+  "delayedRequests": 1,
+  "pageErrors": [],
+  "blockedOrigins": [],
+  "finishedAt": "2026-09-19T20:56:41.536Z"
+}

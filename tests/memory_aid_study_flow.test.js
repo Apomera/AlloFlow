@@ -46,7 +46,7 @@ describe('Memory aid focused study flow',()=>{
     await click('Try recall');
     const choice=[...host.querySelectorAll('input[type=radio]')].find(i=>visible(i)&&i.parentElement.textContent==='Without hints');
     await act(async()=>choice.click());await click('Start recall practice');
-    expect([...host.querySelectorAll('h2')].filter(visible).map(h=>h.textContent)).toEqual(['Memory target']);
+    expect([...host.querySelectorAll('h2')].filter(visible).map(h=>h.textContent)).toEqual(['Memory target 1']);
     expect([...host.querySelectorAll('img')].filter(visible)).toHaveLength(0);
     expect(button('Listen to practice cue')).toBeUndefined();
     expect(host.querySelector('[aria-label="Recall response for Solid shape and volume"]')).toBeNull();

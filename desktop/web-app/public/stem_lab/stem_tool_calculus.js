@@ -2048,8 +2048,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           ['derivative','\uD83D\uDCC8 Derivative'],
           ['visualize','\uD83C\uDFAC Visualize'],
           ['challenge','\uD83C\uDFAF Challenge'],
-          ['discover','\uD83D\uDD2C Discover'],
-          ['derivHunt','\u2753 Inquiry']
+          ['discover',__alloT('stem.calculus.tab_fundamental_theorem','Fundamental theorem')],
+          ['derivHunt',__alloT('stem.calculus.tab_explore_derivatives','Explore derivatives')]
         ];
         var calcTabLabel = { integral: 'Integral', derivative: 'Derivative', visualize: 'Visualize', challenge: 'Challenge', discover: 'Discover', derivHunt: 'Inquiry' }[tab] || 'Integral';
         var methodsTried = Object.keys(d.methodsUsed || {}).length;
@@ -2128,9 +2128,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           ),
 
           // Tab bar
-          h('div', { className: 'flex flex-wrap gap-1 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': __alloT('stem.calculus.a11y_calculus_tool_sections', 'Calculus Tool sections') },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))' }, className: 'gap-1 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': __alloT('stem.calculus.a11y_calculus_tool_sections', 'Calculus Tool sections') },
             CALCULUS_TABS.map(function(item, tabIndex){
-              return h('button',{ key:item[0], id:'calculus-tab-'+item[0], 'aria-controls':'calculus-panel-'+item[0], onClick:function(){upd('tab',item[0]);}, onKeyDown:function(e){calculusTabKeyDown(e, tabIndex);}, role:'tab','aria-selected':tab===item[0], tabIndex:tab===item[0]?0:-1, className:'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-red-400 '+(tab===item[0]?'border-b-2 border-red-600 text-red-700 -mb-px':('text-slate-600 hover:text-slate-700' + onHostInk))},item[1]);
+              return h('button',{ key:item[0], id:'calculus-tab-'+item[0], 'aria-controls':'calculus-panel-'+item[0], onClick:function(){upd('tab',item[0]);}, onKeyDown:function(e){calculusTabKeyDown(e, tabIndex);}, role:'tab','aria-selected':tab===item[0], tabIndex:tab===item[0]?0:-1, style:{minHeight:44,whiteSpace:'normal',overflowWrap:'anywhere'}, className:'px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-red-400 '+(tab===item[0]?'border-b-2 border-red-600 text-red-700 -mb-px':('text-slate-600 hover:text-slate-700' + onHostInk))},item[1]);
             })
           ),
 

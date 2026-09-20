@@ -48,11 +48,11 @@ describe('Visual organizer hardening', () => {
   });
 
   it('provides writable, device-local KWL responses', () => {
-    expect(renderer).toContain('const KwlResponseBoard');
-    expect(renderer).toContain('alloflow_kwl_notes_');
+    expect(renderer).toContain('const OrganizerReflectionBoard');
+    expect(renderer).toContain('alloflow_organizer_reflection_v1:');
     expect(renderer).toContain('window.localStorage.setItem(storageKey');
-    expect(renderer).toContain("t('outline.kwl_personal_response')");
-    expect(renderer).toContain('React.createElement(KwlResponseBoard');
+    expect(renderer).toContain("What I learned or revised");
+    expect(renderer).toContain('React.createElement(OrganizerReflectionBoard');
   });
 
   it('guards organizer pulse animation for reduced motion', () => {

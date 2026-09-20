@@ -1,0 +1,16 @@
+{
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "frame": {
+    "x": 16,
+    "y": 115.6875,
+    "width": 1408,
+    "height": 727.3125,
+    "right": 1424,
+    "bottom": 843
+  },
+  "visibleHeight": 727.3125,
+  "documentWidth": 1440
+}

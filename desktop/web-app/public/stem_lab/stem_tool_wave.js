@@ -1970,7 +1970,7 @@ const d = labToolData.wave;
                 style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(34,211,238,0.5)', color: '#cffafe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
               }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
               React.createElement("canvas", {
-                role: "application", "aria-label": __alloT('stem.wave.aria_canvas', 'Wave simulator — arrow up/down adjusts amplitude, arrow left/right adjusts frequency, +/- adjusts speed, space pauses or resumes the animation'),
+                role: "application", "aria-label": __alloT('stem.wave.aria_canvas', 'Wave simulator — arrow up/down adjusts amplitude, arrow left/right adjusts frequency, +/- adjusts animation speed, space pauses or resumes the animation'),
                 // Without tabIndex the canvas cannot take focus, so the onKeyDown
                 // handler below (and the focus ring styling) never fire.
                 tabIndex: 0,
@@ -2018,9 +2018,9 @@ const d = labToolData.wave;
 
                   else if (e.key === 'ArrowLeft') { e.preventDefault(); nv = Math.max(0.5, Math.round(((d.frequency || 2) - 0.5) * 10) / 10); upd('frequency', nv); syncOsc({ freq: nv }); say('key_freq', __alloT('stem.wave.narrate_frequency', 'Frequency') + ' ' + nv + __alloT('stem.wave.narrate_hertz', ' hertz')); }
 
-                  else if (e.key === '+' || e.key === '=') { e.preventDefault(); nv = Math.min(3, Math.round(((d.speed || 1) + 0.25) * 100) / 100); upd('speed', nv); say('key_speed', __alloT('stem.wave.narrate_speed', 'Speed') + ' ' + nv + ' x'); }
+                  else if (e.key === '+' || e.key === '=') { e.preventDefault(); nv = Math.min(3, Math.round(((d.speed || 1) + 0.25) * 100) / 100); upd('speed', nv); say('key_speed', __alloT('stem.wave.animation_speed', 'Animation speed') + ' ' + nv + ' x'); }
 
-                  else if (e.key === '-') { e.preventDefault(); nv = Math.max(0.25, Math.round(((d.speed || 1) - 0.25) * 100) / 100); upd('speed', nv); say('key_speed', __alloT('stem.wave.narrate_speed', 'Speed') + ' ' + nv + ' x'); }
+                  else if (e.key === '-') { e.preventDefault(); nv = Math.max(0.25, Math.round(((d.speed || 1) - 0.25) * 100) / 100); upd('speed', nv); say('key_speed', __alloT('stem.wave.animation_speed', 'Animation speed') + ' ' + nv + ' x'); }
 
                   else if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); nv = !d.paused; upd('paused', nv); say('key_pause', nv ? __alloT('stem.wave.narrate_paused', 'Animation paused') : __alloT('stem.wave.narrate_playing', 'Animation playing')); }
 
@@ -2107,7 +2107,7 @@ const d = labToolData.wave;
                 [__alloT('stem.wave.live_frequency', 'Frequency'), displayFreq + ' Hz', 'text-indigo-700'],
                 [__alloT('stem.wave.live_period', 'Period'), displayPeriod.toFixed(2) + ' s', 'text-violet-700'],
                 [__alloT('stem.wave.live_wavelength', 'Wavelength'), displayWavelength.toFixed(1) + ' m', 'text-emerald-700'],
-                [__alloT('stem.wave.live_medium_speed', 'Medium speed'), displayMediumSpeed + ' m/s', 'text-amber-700']
+                [__alloT('stem.wave.wave_speed', 'Wave speed in medium'), displayMediumSpeed + ' m/s', 'text-amber-700']
               ].map(function (item) {
                 return React.createElement("div", { key: item[0], className: "rounded-lg border border-slate-200 bg-white px-2.5 py-2" },
                   React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-wide text-slate-500" }, item[0]),
@@ -2172,19 +2172,21 @@ const d = labToolData.wave;
 
                 { k: 'frequency', label: '\uD83C\uDFB5 ' + __alloT('stem.wave.ctrl_frequency', 'Frequency'), aria: __alloT('stem.wave.ctrl_frequency_aria', 'Frequency in hertz'), min: 0.5, max: 10, step: 0.5 },
 
-                { k: 'speed', label: '\u23E9 ' + __alloT('stem.wave.ctrl_speed', 'Speed'), aria: __alloT('stem.wave.ctrl_speed_aria', 'Animation speed multiplier'), min: 0.1, max: 5, step: 0.1 },
+                { k: 'speed', label: '\u23E9 ' + __alloT('stem.wave.animation_speed', 'Animation speed'), aria: __alloT('stem.wave.ctrl_speed_aria', 'Animation speed multiplier'), min: 0.1, max: 5, step: 0.1, help: __alloT('stem.wave.animation_speed_help', 'Changes playback pace; frequency and wavelength stay the same.') },
 
-                { k: 'waveSpeed', label: '\uD83C\uDF0D ' + __alloT('stem.wave.ctrl_medium', 'Medium v (m/s)'), aria: __alloT('stem.wave.ctrl_medium_aria', 'Medium wave speed in meters per second'), min: 50, max: 1500, step: 10 },
+                { k: 'waveSpeed', label: '\uD83C\uDF0D ' + __alloT('stem.wave.wave_speed', 'Wave speed in medium'), aria: __alloT('stem.wave.wave_speed_aria', 'Wave speed in medium, in meters per second'), min: 50, max: 1500, step: 10, help: __alloT('stem.wave.wave_speed_help', 'Changes how fast the wave travels. At the same frequency, a faster wave has a longer wavelength.') },
 
               ].map(s =>
 
-                React.createElement("div", { key: s.k, className: "bg-white rounded-lg p-3 border border-slate-200 shadow-sm" },
+                React.createElement("div", { key: s.k, "data-wave-control": s.k, className: "bg-white rounded-lg p-3 border border-slate-200 shadow-sm", style: { minWidth: 0, overflowWrap: "anywhere" } },
 
-                  React.createElement("label", { className: "text-[0.6875rem] font-black text-slate-600 block uppercase tracking-wide" }, s.label),
+                  React.createElement("label", { htmlFor: "wave-control-" + s.k, className: "text-[0.6875rem] font-black text-slate-600 block uppercase tracking-wide" }, s.label),
 
-                  React.createElement("span", { className: "mt-1 text-lg font-black text-slate-900 block" }, d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : d[s.k])),
+                  React.createElement("span", { className: "mt-1 text-lg font-black text-slate-900 block" }, (d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : d[s.k])) + (s.k === 'speed' ? ' ×' : s.k === 'waveSpeed' ? ' m/s' : s.k === 'frequency' ? ' Hz' : '')),
 
-                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : 0), 'aria-label': s.aria || s.label,
+                  s.help && React.createElement('p', { id: 'wave-control-help-' + s.k, className: 'mt-1 text-xs text-slate-600' }, s.help),
+
+                  React.createElement("input", { id: "wave-control-" + s.k, "aria-describedby": s.help ? "wave-control-help-" + s.k : undefined, style: { minHeight: 44 }, type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : 0), 'aria-label': s.aria || s.label,
                   'aria-valuetext': (function () {
                     var val = d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : 0);
                     if (s.k === 'frequency') return val + __alloT('stem.wave.vt_freq_a', ' hertz — wavelength ') + ((d.waveSpeed || 343) / val).toFixed(1) + __alloT('stem.wave.vt_freq_b', ' meters, period ') + (1 / val).toFixed(2) + __alloT('stem.wave.vt_freq_c', ' seconds');
@@ -2211,9 +2213,9 @@ const d = labToolData.wave;
 
             // Second wave (free & spectrum mode)
 
-            (waveMode === 'free' || waveMode === 'spectrum') && React.createElement("div", { className: "flex items-center gap-3 mb-3 p-2 bg-pink-50 rounded-lg border border-pink-200" },
+            (waveMode === 'free' || waveMode === 'spectrum') && React.createElement("div", { "data-wave-second-controls": true, className: "flex flex-wrap items-center gap-3 mb-3 p-3 bg-pink-50 rounded-lg border border-pink-200" },
 
-              React.createElement("label", { className: "text-xs font-bold text-pink-700 flex items-center gap-1.5 cursor-pointer" },
+              React.createElement("label", { style: { minHeight: 44, flexBasis: "100%" }, className: "text-xs font-bold text-pink-700 flex items-center gap-1.5 cursor-pointer" },
 
                 React.createElement("input", { type: "checkbox", checked: !!d.showSecond, 'aria-label': __alloT('stem.wave.aria_show_second', 'Show second wave'), onChange: e => upd('showSecond', e.target.checked), className: "accent-pink-600" }),
 
@@ -2223,33 +2225,35 @@ const d = labToolData.wave;
 
               d.showSecond && React.createElement(React.Fragment, null,
 
-                React.createElement("div", { className: "flex items-center gap-1" },
+                React.createElement("div", { style: { flex: "1 1 180px", minWidth: 0 }, className: "space-y-1" },
 
-                  React.createElement("span", { className: "text-[0.6875rem] text-pink-700 font-bold" }, "A2:"),
+                  React.createElement("label", { htmlFor: "wave-second-amplitude", className: "block text-xs text-pink-700 font-bold" }, __alloT('stem.wave.aria_second_amplitude', 'Second wave amplitude')),
 
-                  React.createElement("input", { type: "range", min: 10, max: 80, step: 1, value: d.amplitude2 || 30, 'aria-label': __alloT('stem.wave.aria_second_amplitude', 'Second wave amplitude'), onChange: e => upd('amplitude2', parseFloat(e.target.value)), className: "w-24 accent-pink-500" }),
+                  React.createElement("input", { id: "wave-second-amplitude", style: { minHeight: 44 }, type: "range", min: 10, max: 80, step: 1, value: d.amplitude2 || 30, 'aria-label': __alloT('stem.wave.aria_second_amplitude', 'Second wave amplitude'), onChange: e => upd('amplitude2', parseFloat(e.target.value)), className: "w-full accent-pink-500" }),
 
                   React.createElement("span", { className: "text-[0.6875rem] text-pink-700 font-bold" }, d.amplitude2 || 30)
 
                 ),
 
-                React.createElement("div", { className: "flex items-center gap-1" },
+                React.createElement("div", { style: { flex: "1 1 180px", minWidth: 0 }, className: "space-y-1" },
 
-                  React.createElement("span", { className: "text-[0.6875rem] text-pink-500 font-bold" }, "f2:"),
+                  React.createElement("label", { htmlFor: "wave-second-frequency", className: "block text-xs text-pink-700 font-bold" }, __alloT('stem.wave.aria_second_frequency', 'Second wave frequency')),
 
-                  React.createElement("input", { type: "range", min: 0.5, max: 10, step: 0.5, value: d.frequency2 || 3, 'aria-label': __alloT('stem.wave.aria_second_frequency', 'Second wave frequency'), onChange: e => { var v2 = parseFloat(e.target.value); upd('frequency2', v2); syncOsc({ freq2: v2 }); }, className: "w-24 accent-pink-500" }),
+                  React.createElement("input", { id: "wave-second-frequency", style: { minHeight: 44 }, type: "range", min: 0.5, max: 10, step: 0.5, value: d.frequency2 || 3, 'aria-label': __alloT('stem.wave.aria_second_frequency', 'Second wave frequency'), onChange: e => { var v2 = parseFloat(e.target.value); upd('frequency2', v2); syncOsc({ freq2: v2 }); }, className: "w-full accent-pink-500" }),
 
-                  React.createElement("span", { className: "text-[0.6875rem] text-pink-700 font-bold" }, d.frequency2 || 3)
+                  React.createElement("span", { className: "text-[0.6875rem] text-pink-700 font-bold" }, (d.frequency2 || 3) + " Hz")
 
                 ),
 
-                React.createElement("div", { className: "flex items-center gap-1" },
+                React.createElement("div", { style: { flex: "1 1 180px", minWidth: 0 }, className: "space-y-1" },
 
-                  React.createElement("span", { className: "text-[0.6875rem] text-pink-500 font-bold" }, "\u03C6\u2082:"),
+                  React.createElement("label", { htmlFor: "wave-second-phase", className: "block text-xs text-pink-700 font-bold" }, __alloT('stem.wave.aria_second_phase', 'Second wave phase')),
 
-                  React.createElement("input", { type: "range", min: 0, max: 6.28, step: 0.1, value: d.phase2 || 0, 'aria-label': __alloT('stem.wave.aria_second_phase', 'Second wave phase'), onChange: e => upd('phase2', parseFloat(e.target.value)), className: "w-24 accent-pink-500" }),
+                  React.createElement("input", { id: "wave-second-phase", "aria-describedby": "wave-second-phase-help", "aria-valuetext": ((d.phase2 || 0) / Math.PI).toFixed(1) + " pi radians", style: { minHeight: 44 }, type: "range", min: 0, max: 6.28, step: 0.1, value: d.phase2 || 0, 'aria-label': __alloT('stem.wave.aria_second_phase', 'Second wave phase'), onChange: e => upd('phase2', parseFloat(e.target.value)), className: "w-full accent-pink-500" }),
 
-                  React.createElement("span", { className: "text-[0.6875rem] text-pink-700 font-bold" }, ((d.phase2 || 0) / Math.PI).toFixed(1) + "\u03C0")
+                  React.createElement("span", { className: "text-[0.6875rem] text-pink-700 font-bold" }, ((d.phase2 || 0) / Math.PI).toFixed(1) + "\u03C0 rad"),
+
+                  React.createElement("p", { id: "wave-second-phase-help", className: "text-xs text-pink-700" }, __alloT("stem.wave.phase_offset_help", "Shifts the second wave within its cycle. 0 means no phase shift; π is half a cycle."))
 
                 )
 

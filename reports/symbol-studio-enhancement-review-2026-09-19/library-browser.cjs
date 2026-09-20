@@ -1,0 +1,62 @@
+const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('node:assert/strict');
+const {chromium}=require('playwright');
+const root=path.resolve(__dirname,'../..');
+const prior=fs.readFileSync(path.join(__dirname,'enhancement-browser.cjs'),'utf8');
+const context={require,__dirname,process,Buffer,console,URL};vm.createContext(context);
+vm.runInContext(prior.slice(0,prior.lastIndexOf('(async()=>{')).replace("'enhancement-browser'","'library-browser'")+ '\nthis.server=server;this.measure=context.measure;',context);
+const output=path.join(__dirname,'library-browser');
+(async()=>{
+  const server=context.server;await new Promise(done=>server.listen(0,'127.0.0.1',done));
+  const origin='http://127.0.0.1:'+server.address().port;
+  const browser=await chromium.launch({headless:true});const results=[];
+  try{
+    for(const width of [1440,390,320]){
+      const page=await browser.newPage({viewport:{width,height:900}});page.setDefaultTimeout(120000);
+      const errors=[];page.on('pageerror',e=>errors.push(e.message));
+      await page.route('**/*',r=>r.request().url().startsWith(origin)||r.request().url().startsWith('data:')?r.continue():r.abort());
+      await page.goto(origin);await page.locator('.ss-main-modal').waitFor();
+      const favorite=page.getByRole('button',{name:'Add Apple to favorites',exact:true});
+      await favorite.scrollIntoViewIfNeeded();await favorite.press('Space');
+      await page.getByRole('button',{name:'Remove Apple from favorites',exact:true}).waitFor();
+      assert.equal(await page.getByRole('combobox',{name:'Word type for Apple',exact:true}).count(),0);
+      assert.equal(await page.locator('.ss-symbol-card button button,.ss-symbol-card [role=button] button').count(),0);
+      await page.getByRole('button',{name:'Organize symbols',exact:true}).click();
+      await page.getByRole('combobox',{name:'Filter Symbol Bank by topic'}).selectOption('food');
+      await page.getByRole('button',{name:'Select all shown symbols',exact:true}).click();
+      await page.getByRole('combobox',{name:'Filter Symbol Bank by topic'}).selectOption('daily living');
+      await page.getByText('1 selected (1 hidden by filters)',{exact:true}).waitFor();
+      const include=page.getByRole('checkbox',{name:'Include 水 in batch',exact:true});
+      await include.scrollIntoViewIfNeeded();await include.press('Space');assert.equal(await include.isChecked(),true);
+      await page.getByRole('combobox',{name:'Batch review status'}).selectOption('approved');
+      await page.getByRole('combobox',{name:'Batch word type'}).selectOption('noun');
+      await page.getByRole('textbox',{name:'Batch topics to add'}).fill('home, food');
+      await page.getByRole('button',{name:'Apply changes to selected symbols'}).click();
+      await page.getByText('Updated 2 symbols.',{exact:true}).waitFor();
+      const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('alloSymbolGallery__ui-review')));
+      assert.deepEqual(saved.find(x=>x.id==='apple').topicTags,['food','home']);
+      assert.equal(saved.find(x=>x.id==='water').reviewStatus,'approved');
+      assert.equal(saved.find(x=>x.id==='arabic').reviewStatus,'unreviewed');
+      await page.getByRole('combobox',{name:'Filter Symbol Bank by topic'}).selectOption('');
+      await page.locator('.ss-bank-organize').scrollIntoViewIfNeeded();
+      await page.screenshot({path:path.join(output,width+'-organize.png'),animations:'disabled'});
+      const metrics=await page.evaluate('('+context.measure.toString()+')()');
+      assert.equal(metrics.workspaceOverflow.length,0);
+      const controls=await page.locator('.ss-bank-organize button,.ss-symbol-card button').evaluateAll(elements=>elements.map(el=>({name:el.getAttribute('aria-label'),rect:el.getBoundingClientRect().toJSON()})));
+      assert.ok(controls.every(c=>c.rect.height>=44));
+      await page.getByRole('button',{name:'Undo last symbol batch change'}).click();
+      await page.getByText('Undid changes to 2 symbols.',{exact:true}).waitFor();
+      const restored=await page.evaluate(()=>JSON.parse(localStorage.getItem('alloSymbolGallery__ui-review')));
+      assert.equal(restored.find(x=>x.id==='apple').category,'other');
+      assert.equal(restored.find(x=>x.id==='apple').isFavorite,true);
+      assert.deepEqual(restored.find(x=>x.id==='water').topicTags,['daily living']);
+      await page.getByRole('button',{name:'Finish organizing symbols'}).click();
+      await page.getByRole('button',{name:'Select symbol: Apple (favorite)',exact:true}).click();
+      await page.getByRole('combobox',{name:'Word type for Apple',exact:true}).waitFor();
+      await page.screenshot({path:path.join(output,width+'-preview.png'),animations:'disabled'});
+      assert.deepEqual(errors,[]);
+      results.push({width,keyboardFavorite:true,keyboardSelection:true,hiddenSelectionCount:true,bulkPersistence:true,undoPreservesUnrelatedEdits:true,previewAfterOrganizing:true,workflowOverflow:metrics.workspaceOverflow,minimumButtonHeight:44,errors});
+      fs.writeFileSync(path.join(output,'checks.json'),JSON.stringify(results,null,2));await page.close();
+    }
+  }finally{await browser.close();server.close();}
+  console.log(JSON.stringify(results,null,2));
+})().catch(error=>{console.error(error);context.server.close();process.exitCode=1;});

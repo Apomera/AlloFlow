@@ -1,0 +1,41 @@
+{
+  "studio": {
+    "body": [
+      {
+        "castShadow": true,
+        "receiveShadow": false,
+        "side": 0,
+        "vertices": 13380
+      }
+    ],
+    "stage": [
+      {
+        "receiveShadow": true
+      },
+      {
+        "color": 6583435,
+        "emissive": 0.06
+      }
+    ]
+  },
+  "blueprint": {
+    "body": [
+      {
+        "castShadow": true,
+        "receiveShadow": false,
+        "side": 0,
+        "vertices": 13380
+      }
+    ],
+    "stage": [
+      {
+        "receiveShadow": true
+      },
+      {
+        "color": 11817737,
+        "emissive": 0.34
+      }
+    ]
+  },
+  "errors": []
+}

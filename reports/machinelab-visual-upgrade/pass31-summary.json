@@ -1,0 +1,61 @@
+{
+  "pass": 31,
+  "title": "Hold the current demonstration pose",
+  "status": "complete",
+  "published": false,
+  "sourceSha256": "ec076021a5acb076c9e1fb4ee1fc5bc20bdbe13c943f8ddb1a943b28ece65c61",
+  "changes": [
+    "Hold this pose captures the last rendered travel without rounding",
+    "Keyboard focus moves to the inspection slider after holding",
+    "Run and station identity guards prevent stale pose capture",
+    "Native button and decorative pause icon fit desktop and narrow screens"
+  ],
+  "tests": {
+    "uniquePassed": 546,
+    "added": 16,
+    "geometry": 291,
+    "views": 192,
+    "camera": 27,
+    "a11y": 28,
+    "i18n": 8,
+    "reports": [
+      "pass31-tests.json",
+      "pass31-views-final-tests.json"
+    ]
+  },
+  "browser": {
+    "reports": [
+      "pass31-light/results.json",
+      "pass31-dark/results.json",
+      "pass31-contrast-final/results.json"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "widths": [
+      1150,
+      390,
+      320
+    ],
+    "screenshots": 24,
+    "checks": 27,
+    "errors": 0,
+    "horizontalOverflow": false,
+    "visuallyReviewed": [
+      "pass31-light/held-320.png",
+      "pass31-dark/held-screw.png",
+      "pass31-contrast-final/held-390.png"
+    ]
+  },
+  "verification": {
+    "mirrorIdentical": true,
+    "syntax": true
+  },
+  "resolvedIssues": [
+    "Initial view tests counted all inspector buttons as the three pose presets; selector now specifically counts pose buttons. Missing-viewer tests now explicitly remove the viewer.",
+    "First high-contrast browser attempt timed out waiting for restart. A complete unchanged-code rerun passed."
+  ],
+  "pending": null
+}

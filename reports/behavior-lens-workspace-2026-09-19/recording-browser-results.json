@@ -1,0 +1,110 @@
+[
+  {
+    "width": 1280,
+    "state": "new",
+    "errors": [],
+    "overflow": false,
+    "modalOverflow": false,
+    "overflowingDialogs": [],
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "resume-home",
+    "errors": [],
+    "overflow": false,
+    "modalOverflow": false,
+    "overflowingDialogs": [],
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "target",
+    "errors": [],
+    "overflow": false,
+    "modalOverflow": false,
+    "overflowingDialogs": [],
+    "axe": []
+  },
+  {
+    "width": 1280,
+    "state": "discard",
+    "errors": [],
+    "overflow": false,
+    "modalOverflow": false,
+    "overflowingDialogs": [],
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "new",
+    "errors": [],
+    "overflow": false,
+    "modalOverflow": false,
+    "overflowingDialogs": [],
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "resume-home",
+    "errors": [],
+    "overflow": false,
+    "modalOverflow": false,
+    "overflowingDialogs": [],
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "target",
+    "errors": [],
+    "overflow": false,
+    "modalOverflow": false,
+    "overflowingDialogs": [],
+    "axe": []
+  },
+  {
+    "width": 390,
+    "state": "discard",
+    "errors": [],
+    "overflow": false,
+    "modalOverflow": false,
+    "overflowingDialogs": [],
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "new",
+    "errors": [],
+    "overflow": false,
+    "modalOverflow": false,
+    "overflowingDialogs": [],
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "resume-home",
+    "errors": [],
+    "overflow": false,
+    "modalOverflow": false,
+    "overflowingDialogs": [],
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "target",
+    "errors": [],
+    "overflow": false,
+    "modalOverflow": false,
+    "overflowingDialogs": [],
+    "axe": []
+  },
+  {
+    "width": 320,
+    "state": "discard",
+    "errors": [],
+    "overflow": false,
+    "modalOverflow": false,
+    "overflowingDialogs": [],
+    "axe": []
+  }
+]

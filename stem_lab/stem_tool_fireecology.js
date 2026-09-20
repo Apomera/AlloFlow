@@ -2224,7 +2224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         // A chart authored at ~760 units keeps its label size on a phone by scrolling
         // rather than scaling: minWidth holds the type at the size it was drawn for.
         function wideChart(svg, minW) {
-          return h('div', { style: { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } },
+          return h('div', { tabIndex: 0, role: 'region', 'aria-label': t('stem.fireecology.scrollable_chart', 'Scrollable chart') || 'Scrollable chart', style: { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } },
             h('div', { style: { minWidth: (minW || 720) } }, svg));
         }
 

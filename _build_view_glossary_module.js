@@ -10,7 +10,7 @@
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const source = fs.readFileSync('view_glossary_source.jsx', 'utf-8');
+const source = fs.readFileSync('glossary_image_controls_source.jsx', 'utf-8') + '\n' + fs.readFileSync('view_glossary_source.jsx', 'utf-8');
 
 const result = babel.transformSync(source, {
   plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],
@@ -50,6 +50,9 @@ const moduleSrc = `/**
 })();
 `;
 
-fs.writeFileSync('view_glossary_module.js', moduleSrc);
-fs.writeFileSync('desktop/web-app/public/view_glossary_module.js', moduleSrc);
+for (const output of ['view_glossary_module.js', 'desktop/web-app/public/view_glossary_module.js']) {
+  const temporary = output + '.' + process.pid + '.tmp';
+  fs.writeFileSync(temporary, moduleSrc);
+  fs.renameSync(temporary, output);
+}
 console.log('Wrote view_glossary_module.js (' + moduleSrc.length + ' bytes)');

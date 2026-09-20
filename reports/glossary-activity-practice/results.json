@@ -1,0 +1,29 @@
+{
+  "service": "fixture",
+  "layouts": [
+    {
+      "width": 320,
+      "scroll": 320,
+      "top": 345.5,
+      "bottom": 389.5,
+      "height": 568
+    },
+    {
+      "width": 390,
+      "scroll": 390,
+      "top": 368.5,
+      "bottom": 412.5,
+      "height": 568
+    },
+    {
+      "width": 1280,
+      "scroll": 1280,
+      "top": 302.5,
+      "bottom": 346.5,
+      "height": 568
+    }
+  ],
+  "matchingPractice": true,
+  "scramblePractice": true,
+  "errors": []
+}

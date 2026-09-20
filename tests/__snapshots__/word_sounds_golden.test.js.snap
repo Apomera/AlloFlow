@@ -1177,7 +1177,7 @@ exports[`layer 1 — linguistic anchor data (window.__alloAnchor) > grapho-phone
 exports[`layer 2 — render behavior per activity > activity "blending" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -1389,7 +1389,7 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 exports[`layer 2 — render behavior per activity > activity "counting" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -1618,7 +1618,7 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 exports[`layer 2 — render behavior per activity > activity "decoding" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -1814,7 +1814,7 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 exports[`layer 2 — render behavior per activity > activity "isolation" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -2006,7 +2006,7 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 exports[`layer 2 — render behavior per activity > activity "letter_tracing" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -2234,7 +2234,7 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 exports[`layer 2 — render behavior per activity > activity "manipulation" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -2448,7 +2448,7 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 exports[`layer 2 — render behavior per activity > activity "mapping" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -2667,7 +2667,7 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 exports[`layer 2 — render behavior per activity > activity "orthography" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -2869,7 +2869,7 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 </div>
 <div class="flex flex-col items-center gap-6 animate-in fade-in duration-500 w-full max-w-4xl mx-auto">
 <div class="flex flex-col items-center gap-3 mb-2">
-<button aria-label="common.volume" class="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-indigo-500/30 transition-all active:scale-95 ring-4 ring-indigo-50" title="Hear Word Again">
+<button aria-label="common.volume" class="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-700 to-purple-700 text-white flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-indigo-500/30 transition-all active:scale-95 ring-4 ring-indigo-50" title="Hear Word Again">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
 </button>
@@ -2907,7 +2907,7 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 exports[`layer 2 — render behavior per activity > activity "read_passage" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -3104,7 +3104,7 @@ exports[`layer 2 — render behavior per activity > activity "read_passage" rend
 exports[`layer 2 — render behavior per activity > activity "read_sentence" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -3301,7 +3301,7 @@ exports[`layer 2 — render behavior per activity > activity "read_sentence" ren
 exports[`layer 2 — render behavior per activity > activity "rhyming" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -3518,7 +3518,7 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 exports[`layer 2 — render behavior per activity > activity "segmentation" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -3740,7 +3740,7 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 exports[`layer 2 — render behavior per activity > activity "sentence_match" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -3935,7 +3935,7 @@ exports[`layer 2 — render behavior per activity > activity "sentence_match" re
 exports[`layer 2 — render behavior per activity > activity "sound_sort" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -4164,7 +4164,7 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 exports[`layer 2 — render behavior per activity > activity "spelling_bee" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -4373,7 +4373,7 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 exports[`layer 2 — render behavior per activity > activity "syllable_blending" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -4594,7 +4594,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 exports[`layer 2 — render behavior per activity > activity "syllable_counting" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -4812,7 +4812,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 exports[`layer 2 — render behavior per activity > activity "word_families" renders identically (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -5058,7 +5058,7 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 exports[`layer 2 — render behavior per activity > correct-answer feedback banner (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
@@ -5271,7 +5271,7 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 exports[`layer 2 — render behavior per activity > incorrect-answer feedback banner (snapshot) 1`] = `
 "<div class="word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in" role="dialog" aria-modal="true" aria-labelledby="word-sounds-dialog-title">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
-<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-3">
 <svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">

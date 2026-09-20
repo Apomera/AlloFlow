@@ -1,0 +1,92 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "overflow": false,
+      "clipped": false,
+      "rows": 4,
+      "columns": 4,
+      "contained": true,
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "height": 44
+        },
+        {
+          "tag": "SUMMARY",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "height": 44
+        }
+      ],
+      "keyboardSelection": true,
+      "keyboardInventory": true
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "clipped": false,
+      "rows": 4,
+      "columns": 4,
+      "contained": true,
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "height": 44
+        },
+        {
+          "tag": "SUMMARY",
+          "height": 44
+        },
+        {
+          "tag": "BUTTON",
+          "height": 44
+        }
+      ],
+      "keyboardSelection": true,
+      "keyboardInventory": true
+    }
+  ],
+  "assertions": [
+    "All four layouts preview sixteen exact beds and use the actual rounded purchase price",
+    "Choosing a plan and expanding its inventory preserve funds, time, and planting",
+    "Mature illustrations become zero-day seeds only after purchase",
+    "Desktop and 320px layouts fit with 44px controls and keyboard selection",
+    "Exact-budget, insufficient-funds, custom preview, winter, and recovery routes remain playable",
+    "Readable text, reduced motion, forced-color focus, cleanup, and scoped accessibility pass"
+  ],
+  "errors": [],
+  "recipes": [
+    {
+      "id": "sisters",
+      "price": 5.5,
+      "occupied": 13,
+      "exactPlacement": true,
+      "startsAsSeeds": true
+    },
+    {
+      "id": "pollinator",
+      "price": 5.3,
+      "occupied": 14,
+      "exactPlacement": true,
+      "startsAsSeeds": true
+    },
+    {
+      "id": "salad",
+      "price": 3.8,
+      "occupied": 14,
+      "exactPlacement": true,
+      "startsAsSeeds": true
+    },
+    {
+      "id": "soil",
+      "price": 2.4,
+      "occupied": 13,
+      "exactPlacement": true,
+      "startsAsSeeds": true
+    }
+  ],
+  "accessibility": []
+}

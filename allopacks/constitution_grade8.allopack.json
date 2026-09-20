@@ -8,7 +8,8 @@
     "gradeLevel": "8th Grade",
     "standards": "C3 D2.Civ.4.6-8 (explain the powers and limits of government institutions); C3 D2.Civ.3.6-8 (examine the origins and purposes of rules, laws, and key constitutional provisions); CCSS.ELA-LITERACY.RH.6-8.2 (determine the central ideas of a primary or secondary source)",
     "createdAt": "2026-07-21T04:00:00.000Z",
-    "imageShotList": "allopacks/constitution_grade8.IMAGES.md"
+    "imageShotList": "allopacks/constitution_grade8.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "The United States Constitution",
   "history": [
@@ -55,7 +56,7 @@
       "title": "Rules for the Rule-Makers",
       "timestamp": "2026-07-21T04:00:01.000Z",
       "data": "## Rules for the Rule-Makers\n\nIn the summer of 1787, fifty-five men locked themselves in a hot Philadelphia room with the windows kept shut so nobody could overhear. They had been sent to patch up the failing Articles of Confederation. Instead they threw them out and started over.\n\nTheir problem was not how to build a government. Their problem was how to build one that would still be safe when the wrong people were running it.\n\nThe Articles had produced a government too weak to function: no power to tax, no national court, no way to enforce anything. But the framers had just fought a war against a king, and a strong government sounded like the thing they had escaped. So they invented a machine designed to work while distrusting its own operators.\n\nFirst they split power three ways. The **legislative** branch — Congress — writes laws. The **executive** branch, headed by the President, carries them out. The **judicial** branch, the courts, decides what they mean. This is **separation of powers**. Its logic is simple: no single person or group ever holds the whole thing.\n\nThen they went further and gave each branch weapons against the others — **checks and balances**. Congress passes a bill; the President can veto it; Congress can override that veto with two-thirds. The President appoints judges; the Senate must confirm them. Courts can strike down laws as unconstitutional. Congress can impeach and remove a President or a judge.\n\nThey also split power a second way, between the national government and the states — **federalism** — so that even a captured national government does not control everything.\n\nAll of this makes government slow. That is not a bug. James Madison argued in Federalist No. 51 that \"ambition must be made to counteract ambition\" — that the safest system is one where powerful people are constantly blocked by other powerful people who want something different.\n\nIt is worth naming honestly what this document did not do. It counted enslaved people as three-fifths of a person for representation while denying them any rights at all. That was a **compromise** between delegates from states with and without slavery, and it treated human beings as a bargaining chip. The document left voting rules to states that limited them to white men with property. Women could not vote. The framers built a machine for limiting power that excluded most of the people living under it. The amendment process they included is how later generations forced it open.\n\nThat is the real inheritance: not a perfect document, but a repairable one, plus the argument about how to repair it. That argument is still running, and you are now in it.",
-      "meta": "8th Grade • Leveled reading • ~440 words",
+      "meta": "8th Grade • Leveled reading",
       "imageSlot": "ct-img-three-branches"
     },
     {

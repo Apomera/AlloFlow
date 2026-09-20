@@ -1,0 +1,19 @@
+{
+  "testsPassed": 40,
+  "newSecantTests": 16,
+  "browserThemesPassed": 3,
+  "browserCases": [
+    "quadratic smooth point",
+    "changed trace point",
+    "square-root boundary",
+    "stationary cubic point",
+    "undefined rational base",
+    "absolute-value corner"
+  ],
+  "checkedPanelAccessibilityViolations": 0,
+  "mobileWidths": [
+    375,
+    320
+  ],
+  "sourceMirrorParity": true
+}

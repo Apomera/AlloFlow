@@ -21,7 +21,7 @@
     "resourceId": "le-glossary",
     "path": "data.2.def",
     "from": "Where a line crosses the y-axis, the value of y when x is zero.",
-    "to": "The y-intercept here: the output when x = 0. Other intercepts refer to other axes."
+    "to": "Where a graph meets an axis. The y-axis crossing has x = 0."
   },
   {
     "resourceId": "le-glossary",
@@ -39,13 +39,13 @@
     "resourceId": "le-glossary",
     "path": "data.8.def",
     "from": "A slope that rises to the right — the quantity is growing.",
-    "to": "For slope: y increases as x increases; y itself need not be positive."
+    "to": "Greater than zero."
   },
   {
     "resourceId": "le-glossary",
     "path": "data.9.def",
     "from": "A slope that falls to the right — the quantity is shrinking.",
-    "to": "For slope: y decreases as x increases; y itself need not be negative."
+    "to": "Less than zero."
   },
   {
     "resourceId": "le-anchor",
@@ -85,6 +85,12 @@
   },
   {
     "resourceId": "le-memory",
+    "path": "data.cards.0.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "le-memory",
     "path": "data.cards.1.essentialFacts.0",
     "from": "Positive slope rises to the right: savings growing, a plant getting taller.",
     "to": "Positive slope means y increases with x; actual plant growth is not necessarily linear."
@@ -97,9 +103,86 @@
   },
   {
     "resourceId": "le-memory",
+    "path": "data.cards.1.factVerified",
+    "from": true,
+    "to": false
+  },
+  {
+    "resourceId": "le-memory",
     "path": "data.cards.1.mapping",
     "from": "Walking left to right matches how graphs are read, and the effort in your legs maps to the sign: climbing is positive, descending is negative, flat is zero.",
     "to": "Read increasing x from left to right. The line is a graph of quantities, not necessarily a physical hill; its visible angle also depends on axis scales."
+  },
+  {
+    "resourceId": "le-memory",
+    "path": "data.cards.2",
+    "from": {
+      "id": "le-ma-special",
+      "target": "Proportional is the special case where b equals zero",
+      "essentialFacts": [
+        "A proportional relationship is y = mx + b with b = 0: no starting amount.",
+        "Zero input gives zero output, so the line passes through the origin.",
+        "Plan A (2 dollars per gigabyte, nothing else) is proportional; Plan B with its 10 dollar fee is linear but not proportional."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "analogy-pattern",
+      "mode": "scaffolded",
+      "aiExample": "Two runners on the same track at the same speed. One starts at the starting line (b = 0, proportional). The other got a head start of 10 meters (b = 10, linear but not proportional). Same speed, different start, parallel lines.",
+      "mapping": "Speed maps to m, the head start maps to b, and the runner who starts at the line is the proportional case. It also explains why lines with the same m are parallel.",
+      "scaffoldStarter": "Two ____ with the same ____. One starts at ____ (b = 0). The other has a head start of ____ (b = ____).",
+      "scaffoldSteps": [
+        "Pick two things moving at the same rate.",
+        "Give one a head start.",
+        "Write both equations and say which is proportional."
+      ],
+      "coachPrompts": [
+        "What in your analogy would make the two lines cross instead of stay parallel?"
+      ],
+      "studentPrompt": "Write your own same-rate, different-start analogy.",
+      "reasoningPrompt": "How does your analogy show why proportional is a special case of linear?",
+      "hookFact": {
+        "text": "Last year, proportional relationships gave you lines through the origin. This year lines get to start anywhere.",
+        "sourceTitle": "Slope and Start (this lesson)"
+      }
+    },
+    "to": {
+      "id": "le-ma-special",
+      "target": "Proportional is the special case where b equals zero",
+      "essentialFacts": [
+        "A proportional relationship is y = mx + b with b = 0: no starting amount.",
+        "Zero input gives zero output, so the line passes through the origin.",
+        "Plan A (2 dollars per gigabyte, nothing else) is proportional; Plan B with its 10 dollar fee is linear but not proportional."
+      ],
+      "factLocked": true,
+      "factVerified": true,
+      "type": "analogy-pattern",
+      "mode": "scaffolded",
+      "aiExample": "Two runners on the same track at the same speed. One starts at the starting line (b = 0, proportional). The other got a head start of 10 meters (b = 10, linear but not proportional). Same speed, different start, parallel lines.",
+      "mapping": "Speed maps to m, the head start maps to b, and the runner who starts at the line is the proportional case. It also explains why lines with the same m are parallel.",
+      "scaffoldStarter": "Two ____ with the same ____. One starts at ____ (b = 0). The other has a head start of ____ (b = ____).",
+      "scaffoldSteps": [
+        "Pick two things moving at the same rate.",
+        "Give one a head start.",
+        "Write both equations and say which is proportional."
+      ],
+      "coachPrompts": [
+        "What in your analogy would make the two lines cross instead of stay parallel?"
+      ],
+      "studentPrompt": "Write your own same-rate, different-start analogy.",
+      "reasoningPrompt": "How does your analogy show why proportional is a special case of linear?",
+      "hookFact": {
+        "text": "Last year, proportional relationships gave you lines through the origin. This year lines get to start anywhere.",
+        "sourceTitle": "Slope and Start (this lesson)"
+      },
+      "factReview": {
+        "status": "inherited-review-attribution",
+        "sourcePack": "allopacks/linear_equations_grade8.allopack.json",
+        "sourceResourceId": "le-memory",
+        "sourceAttribution": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+        "factsHash": "bb0637c5749f3d45f9f61537ffbfa326bd585a35165af3e0e8e005ee2bdd5b2a"
+      }
+    }
   },
   {
     "resourceId": "le-math",
@@ -214,6 +297,12 @@
     "path": "data.brief.lockedLessonFacts.2",
     "from": "b is the y-intercept, the initial value: the cost before any weeks are used.",
     "to": "b is the cost at zero weeks under the assumed billing rules."
+  },
+  {
+    "resourceId": "le-challenge",
+    "path": "data.brief.factVerified",
+    "from": true,
+    "to": false
   },
   {
     "resourceId": "le-challenge",

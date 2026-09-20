@@ -63,13 +63,13 @@
     "resourceId": "pv-memory",
     "path": "data.cards.0.aiExample",
     "from": "I = INSIDE. If the story says I, you are inside one character's head. She/he = SHOWN. If it says she or he, someone outside is showing you the characters.",
-    "to": "I = involved when I refers to the narrator outside dialogue. Third person describes characters from a voice outside their role in the story. Check the whole passage, not just one pronoun."
+    "to": "Look outside the dialogue. Does I name the voice telling the story? That can show first person. Check the whole passage."
   },
   {
     "resourceId": "pv-memory",
     "path": "data.cards.0.mapping",
     "from": "Each pronoun gets one word that says where the narrator is: inside for I, shown for she and he. Hearing the pronoun tells you the position.",
-    "to": "The reminder connects the narrator’s role to the wording. I in dialogue can appear in a third-person story; she can appear in a first-person story."
+    "to": "I inside speech does not tell you who the narrator is. A first-person narrator can also use she to talk about someone else."
   },
   {
     "resourceId": "pv-memory",
@@ -99,13 +99,13 @@
     "resourceId": "pv-memory",
     "path": "data.cards.1.aiExample",
     "from": "A narrator is like a flashlight in a dark room. First person is one flashlight held by one character: bright on what they see, dark behind them. Third person is the room lights coming on: you can see everyone, including the kid in the corner who feels sorry.",
-    "to": "A limited narrator is like a light on part of a room. A third-person narrator may keep that narrow light or reveal more than one character’s inner thoughts. Choose the light that fits this particular passage."
+    "to": "Think of a light showing part of a room. A narrator may show one person’s thoughts or reveal more than one person’s thoughts."
   },
   {
     "resourceId": "pv-memory",
     "path": "data.cards.1.mapping",
     "from": "The flashlight beam is what the narrator knows; the dark behind them is what they cannot know. Room lights are the outside narrator who can see every character at once.",
-    "to": "The light represents information revealed, not a rule that all third-person narrators know everything."
+    "to": "The light stands for what we are told. A third-person narrator need not know or tell everything."
   },
   {
     "resourceId": "pv-memory",
@@ -118,6 +118,18 @@
     "path": "data.cards.2.essentialFacts.1",
     "from": "Dev's version: he laughed because he had done the same thing yesterday and wanted to tell her.",
     "to": "One imagined Dev retelling says he remembered yesterday; that reason is an invention consistent with, but not stated in, the first two excerpts."
+  },
+  {
+    "resourceId": "pv-memory",
+    "path": "data.cards.2.aiExample",
+    "from": "Maya's chain: puddle → wet socks → Dev laughs → I want to disappear. Dev's chain: puddle → Maya splashes → I remember yesterday → I laugh → she walks off before I can say so. Same first link, different last link.",
+    "to": "Maya: puddle, wet socks, Dev laughs, I feel hurt. Dev: puddle, splash, memory of yesterday, I laugh, Maya walks off."
+  },
+  {
+    "resourceId": "pv-memory",
+    "path": "data.cards.2.mapping",
+    "from": "Laying the two chains side by side shows they start at the same event and end in different places, which is the lesson: each narrator's chain only includes what they could see.",
+    "to": "They share an event but have different thoughts and knowledge. Neither chain tells us everything. Maya’s feelings are real even if she does not know why Dev laughed."
   },
   {
     "resourceId": "pv-memory",
@@ -189,19 +201,37 @@
     "resourceId": "pv-faq",
     "path": "data.0.answer",
     "from": "Almost never. The author is the real person who wrote the book. The narrator is a voice the author made up to tell it. A grown-up author can write a narrator who is nine years old, or a dog.",
-    "to": "The author creates the text; the narrator is its storytelling voice. They may be different in fiction, while a memoir may have the author narrating their own experience."
+    "to": "The author writes the text. The narrator is the voice telling the story. In fiction they may differ. In a memoir, the author may tell their own story."
+  },
+  {
+    "resourceId": "pv-faq",
+    "path": "data.1.answer",
+    "from": "A story that calls the reader you: 'You open the door. You hear a creak.' It is rare in books but common in choose-your-own-adventure stories and video games.",
+    "to": "It uses you to tell what happens to the person addressed: You open the door. You hear a creak. Some games and choice stories use it."
   },
   {
     "resourceId": "pv-faq",
     "path": "data.2.answer",
     "from": "Yes, and good writers use that on purpose. Maya thinks Dev is mean; she is wrong, and the story is more interesting because we figure that out before she does.",
-    "to": "Yes. A narrator may misunderstand, guess or conceal information. Maya’s interpretation is incomplete in this scene. Compare what the text actually supports; being hurt does not mean her feelings are wrong."
+    "to": "Yes. A narrator can guess or misunderstand. Maya does not know all of Dev’s thoughts here. That does not mean her hurt feelings are wrong."
   },
   {
     "resourceId": "pv-faq",
     "path": "data.3.answer",
     "from": "Sure. Some books give each chapter to a different character. Watch for the switch: the pronouns and the name at the top of the chapter usually tell you.",
-    "to": "Yes. Chapters or scenes may change narrators or viewpoint. Follow names, context and narration; pronouns alone may stay the same across a switch."
+    "to": "Yes. Follow the names and what each voice knows. A new chapter may switch narrators even if it uses the same pronouns."
+  },
+  {
+    "resourceId": "pv-faq",
+    "path": "data.4.answer",
+    "from": "Because it feels close, like a friend talking to you. You know exactly one person's feelings very well, which makes it easy to care about them.",
+    "to": "First person can feel like someone speaking to you. It can show that person’s thoughts closely. But the narrator still chooses what to tell."
+  },
+  {
+    "resourceId": "pv-faq",
+    "path": "data.5.answer",
+    "from": "Not always. Some third-person narrators follow one character closely and only know what that character knows. Others can see into everyone. Ask the same question either way: what does this narrator not tell me?",
+    "to": "No. Some follow one person closely. Others reveal more people’s thoughts. Ask what this particular narrator tells you and what is left out."
   },
   {
     "resourceId": "pv-challenge",

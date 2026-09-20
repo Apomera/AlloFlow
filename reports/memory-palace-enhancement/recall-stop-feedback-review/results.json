@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "revisitedIncorrectFeedback": true,
+  "noUntouchedStopFeedback": true,
+  "firstTryAndRetryLabels": true,
+  "rememberedAndMissedLabels": true,
+  "revealLabel": true,
+  "freshReviewClears": true,
+  "scoringUnchanged": true,
+  "widths": [
+    1280,
+    390,
+    320
+  ],
+  "pageErrors": []
+}

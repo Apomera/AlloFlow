@@ -1,0 +1,133 @@
+{
+  "scope": "Six changed shell regions, saved-mailbox target memo/getters, named SharedActivity loader, and module loader pins. Desktop local loader URLs and other work preserved.",
+  "files": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "syntax": "passed",
+      "getter": true,
+      "targetMemo": true,
+      "regions": [
+        {
+          "name": "activity-wrapper",
+          "matches": true,
+          "sha256": "fa543b1bfe87eb9d68c3a5f2dfb03be2db44b5da870a60152b8a110a4c271fa5"
+        },
+        {
+          "name": "mailbox-entry",
+          "matches": true,
+          "sha256": "1b45d9532d6d2b4da8ff51c0c57b9fd96a7d23d8c9c5d867b3021b216b89d486"
+        },
+        {
+          "name": "assignment-controls",
+          "matches": true,
+          "sha256": "bfe4b2af7e6f8bd55791f178918af74d84e3adab06a8ce14ec3fdf23d6123ca8"
+        },
+        {
+          "name": "export-target",
+          "matches": true,
+          "sha256": "716520c88fafc334eb00e181ef92aa146632d1a11918c7ddb918b37f1bb6fec4"
+        },
+        {
+          "name": "homework-render",
+          "matches": true,
+          "sha256": "725879cdba2a313fdf7e90eba067af7e5819516f699eefa83e69e75b934e146e"
+        },
+        {
+          "name": "hosted-intake",
+          "matches": true,
+          "sha256": "486813e8c7a7e8c010436540ca5e5486595ebeb0d57ab753a5bdb28fcbfbe85c"
+        }
+      ]
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "syntax": "passed",
+      "getter": true,
+      "targetMemo": true,
+      "regions": [
+        {
+          "name": "activity-wrapper",
+          "matches": true,
+          "sha256": "fa543b1bfe87eb9d68c3a5f2dfb03be2db44b5da870a60152b8a110a4c271fa5"
+        },
+        {
+          "name": "mailbox-entry",
+          "matches": true,
+          "sha256": "1b45d9532d6d2b4da8ff51c0c57b9fd96a7d23d8c9c5d867b3021b216b89d486"
+        },
+        {
+          "name": "assignment-controls",
+          "matches": true,
+          "sha256": "bfe4b2af7e6f8bd55791f178918af74d84e3adab06a8ce14ec3fdf23d6123ca8"
+        },
+        {
+          "name": "export-target",
+          "matches": true,
+          "sha256": "716520c88fafc334eb00e181ef92aa146632d1a11918c7ddb918b37f1bb6fec4"
+        },
+        {
+          "name": "homework-render",
+          "matches": true,
+          "sha256": "725879cdba2a313fdf7e90eba067af7e5819516f699eefa83e69e75b934e146e"
+        },
+        {
+          "name": "hosted-intake",
+          "matches": true,
+          "sha256": "486813e8c7a7e8c010436540ca5e5486595ebeb0d57ab753a5bdb28fcbfbe85c"
+        }
+      ]
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "syntax": "passed",
+      "getter": true,
+      "targetMemo": true,
+      "regions": [
+        {
+          "name": "activity-wrapper",
+          "matches": true,
+          "sha256": "fa543b1bfe87eb9d68c3a5f2dfb03be2db44b5da870a60152b8a110a4c271fa5"
+        },
+        {
+          "name": "mailbox-entry",
+          "matches": true,
+          "sha256": "1b45d9532d6d2b4da8ff51c0c57b9fd96a7d23d8c9c5d867b3021b216b89d486"
+        },
+        {
+          "name": "assignment-controls",
+          "matches": true,
+          "sha256": "bfe4b2af7e6f8bd55791f178918af74d84e3adab06a8ce14ec3fdf23d6123ca8"
+        },
+        {
+          "name": "export-target",
+          "matches": true,
+          "sha256": "716520c88fafc334eb00e181ef92aa146632d1a11918c7ddb918b37f1bb6fec4"
+        },
+        {
+          "name": "homework-render",
+          "matches": true,
+          "sha256": "725879cdba2a313fdf7e90eba067af7e5819516f699eefa83e69e75b934e146e"
+        },
+        {
+          "name": "hosted-intake",
+          "matches": true,
+          "sha256": "486813e8c7a7e8c010436540ca5e5486595ebeb0d57ab753a5bdb28fcbfbe85c"
+        }
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "module": "host_handlers_module.js",
+      "version": "06f1bfcc",
+      "sha256": "06f1bfcc69fb2c6471ca4405defa1496c1c9ab660d4bc44a72246a5b8726bcda",
+      "publicMatches": true
+    },
+    {
+      "module": "view_share_session_surfaces_module.js",
+      "version": "4fbf452c",
+      "sha256": "4fbf452cc2a6531792efaf569f22e2fd0f5183eab76aa5541b50463ec67a9d08",
+      "publicMatches": true
+    }
+  ]
+}

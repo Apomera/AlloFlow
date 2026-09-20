@@ -2870,7 +2870,7 @@ const TOOLS = [
   {
     name: 'generate_resource_pack',
     title: 'Generate an AlloFlow resource pack (no API key)',
-    description: "Generate the same student/teacher resource-pack HTML as the normal AlloFlow app by calling its existing generateFullPackHTML pipeline export unchanged. The input JSON uses the app's native resource shape, so this is a thin adapter rather than a second renderer. Deterministic: needs NO Gemini key, account, or Worker. The JSON must contain `items` and may include `topic`, `isWorksheet`, `responses`, and `config`.",
+    description: "Generate the same student/teacher resource-pack HTML as the normal AlloFlow app by calling its existing generateFullPackHTML pipeline export unchanged. The input JSON uses the app's native resource shape, so this is a thin adapter rather than a second renderer. Deterministic: needs NO Gemini key, account, or Worker. The JSON must contain `items` and may include `topic`, `isWorksheet`, `responses`, and `config`. Each item needs a unique string id, a native resource type, a title, and native data (not prose describing the desired layout). For an existing .allopack.json, map history to items and sourceTopic to topic; do not pass its envelope as the HTML export payload.",
     inputSchema: {
       type: 'object', required: ['resource_pack_json', 'output_path'],
       properties: {
@@ -3776,7 +3776,7 @@ const TOOL_HANDLERS = {
     if (!/\.html?$/i.test(requestedOutput)) throw invalidParams('arguments.output_path must end in .html or .htm');
 
     let payload;
-    try { payload = JSON.parse(fs.readFileSync(inputPath, 'utf8')); }
+    try { payload = JSON.parse(fs.readFileSync(inputPath, 'utf8').replace(/^\uFEFF/, '')); }
     catch (e) { throw invalidParams('arguments.resource_pack_json is not readable JSON: ' + ((e && e.message) || e)); }
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw invalidParams('resource-pack JSON must be an object');
     assertAllowedKeys(payload, ['items', 'topic', 'isWorksheet', 'responses', 'config'], 'resource-pack JSON');
@@ -3786,6 +3786,17 @@ const TOOL_HANDLERS = {
     if (payload.items.some((item) => !item || typeof item !== 'object' || Array.isArray(item))) {
       throw invalidParams('every resource-pack JSON.items entry must be an object');
     }
+    const resourceIds = new Set();
+    payload.items.forEach((item, index) => {
+      const at = 'resource-pack JSON.items[' + index + ']';
+      for (const key of ['id', 'type', 'title']) {
+        if (typeof item[key] !== 'string' || !item[key].trim()) throw invalidParams(at + '.' + key + ' must be a non-empty string');
+      }
+      if (resourceIds.has(item.id)) throw invalidParams(at + '.id duplicates another resource; IDs connect headings and saved responses');
+      resourceIds.add(item.id);
+      if (item.data === undefined || item.data === null) throw invalidParams(at + '.data is required; use the native resource data shape');
+      if (item.meta !== undefined && typeof item.meta !== 'string') throw invalidParams(at + '.meta must be a display string');
+    });
     if (payload.topic !== undefined && typeof payload.topic !== 'string') throw invalidParams('resource-pack JSON.topic must be a string');
     if (payload.isWorksheet !== undefined && typeof payload.isWorksheet !== 'boolean') throw invalidParams('resource-pack JSON.isWorksheet must be a boolean');
     for (const key of ['responses', 'config']) {

@@ -1,0 +1,6760 @@
+[
+  {
+    "width": 1440,
+    "multilingualSearch": true,
+    "legacyTopics": true,
+    "symbolMetrics": {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "page": {
+        "width": 1440,
+        "height": 900
+      },
+      "root": {
+        "tag": "DIV",
+        "role": "presentation",
+        "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+        "x": 0,
+        "y": 0,
+        "w": 1440,
+        "h": 900,
+        "class": "ss-focus-visible ss-modal-root ss-theme-default"
+      },
+      "dialog": {
+        "tag": "DIV",
+        "role": "dialog",
+        "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+        "x": 170,
+        "y": 12,
+        "w": 1100,
+        "h": 876,
+        "class": "ss-main-modal"
+      },
+      "workspaceOverflow": [],
+      "overflow": [],
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Close Symbol Studio",
+          "x": 1218,
+          "y": 27,
+          "w": 34,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Add new student profile",
+          "x": 346,
+          "y": 161,
+          "w": 46,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Profile: Demo Learner",
+          "x": 197,
+          "y": 201,
+          "w": 115,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Profile: Second Learner",
+          "x": 197,
+          "y": 238,
+          "w": 119,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Art style",
+          "x": 197,
+          "y": 346,
+          "w": 195,
+          "h": 33,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Auto-clean text from images",
+          "x": 201,
+          "y": 390,
+          "w": 13,
+          "h": 13,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 197,
+          "y": 456,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 250,
+          "y": 456,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 299,
+          "y": 456,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 343,
+          "y": 456,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Reset category colors",
+          "x": 197,
+          "y": 496,
+          "w": 38,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Text-to-speech voice selection",
+          "x": 197,
+          "y": 571,
+          "w": 195,
+          "h": 33,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Preview selected voice",
+          "x": 197,
+          "y": 608,
+          "w": 78,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Open garden tab",
+          "x": 358,
+          "y": 691,
+          "w": 34,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Export all data as backup file",
+          "x": 197,
+          "y": 1046,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Import Backup",
+          "x": 197,
+          "y": 1083,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Toggle AAC usage analytics",
+          "x": 197,
+          "y": 1132,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "IEP goal type",
+          "x": 197,
+          "y": 1278,
+          "w": 89,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "IEP goal description",
+          "x": 197,
+          "y": 1316,
+          "w": 200,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "IEP goal target count",
+          "x": 197,
+          "y": 1354,
+          "w": 60,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Support required for the student to succeed on this goal",
+          "x": 197,
+          "y": 1488,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "",
+          "x": 197,
+          "y": 1539,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 197,
+          "y": 1590,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "e.g. 2/10 accuracy on probe trials (Sept 2026)",
+          "x": 197,
+          "y": 1641,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "e.g. AAC device available, visual supports, extended time",
+          "x": 197,
+          "y": 1692,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "e.g. Communication — Expressive Language",
+          "x": 197,
+          "y": 1743,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Add new IEP goal",
+          "x": 197,
+          "y": 1424,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "single generation mode",
+          "x": 439,
+          "y": 153,
+          "w": 106,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "batch generation mode",
+          "x": 548,
+          "y": 153,
+          "w": 106,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: home",
+          "x": 436,
+          "y": 213,
+          "w": 39,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: snack",
+          "x": 478,
+          "y": 213,
+          "w": 40,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: tired",
+          "x": 520,
+          "y": 213,
+          "w": 34,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: bath",
+          "x": 557,
+          "y": 213,
+          "w": 34,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: dinner",
+          "x": 593,
+          "y": 213,
+          "w": 41,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: goodnight",
+          "x": 436,
+          "y": 248,
+          "w": 56,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Symbol label",
+          "x": 436,
+          "y": 309,
+          "w": 220,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Symbol context",
+          "x": 436,
+          "y": 363,
+          "w": 220,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Symbol topic",
+          "x": 436,
+          "y": 417,
+          "w": 220,
+          "h": 33,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Symbol word type",
+          "x": 436,
+          "y": 472,
+          "w": 220,
+          "h": 33,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Generate symbol",
+          "x": 436,
+          "y": 515,
+          "w": 220,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Find a validated Mulberry symbol",
+          "x": 436,
+          "y": 557,
+          "w": 220,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Download all 3 symbols",
+          "x": 436,
+          "y": 671,
+          "w": 220,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Clear all symbols from Symbol Bank",
+          "x": 436,
+          "y": 713,
+          "w": 220,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Lock Apple to protect it from regeneration and restyling",
+          "x": 819,
+          "y": 212,
+          "w": 76,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Make Apple the preferred variant",
+          "x": 900,
+          "y": 212,
+          "w": 76,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Regenerate symbol for Apple",
+          "x": 981,
+          "y": 212,
+          "w": 84,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Remove text from Apple symbol",
+          "x": 1070,
+          "y": 212,
+          "w": 122,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Speak Apple",
+          "x": 819,
+          "y": 249,
+          "w": 83,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Download Apple as PNG",
+          "x": 907,
+          "y": 249,
+          "w": 74,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Delete Apple symbol",
+          "x": 986,
+          "y": 249,
+          "w": 44,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Refinement instruction for Apple",
+          "x": 819,
+          "y": 291,
+          "w": 266,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Apply refinement to Apple",
+          "x": 1091,
+          "y": 291,
+          "w": 60,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Save refinement as a new variant of Apple",
+          "x": 1157,
+          "y": 291,
+          "w": 82,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Approve Apple for local use",
+          "x": 819,
+          "y": 331,
+          "w": 89,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Mark Apple as needing changes",
+          "x": 913,
+          "y": 331,
+          "w": 116,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Search aliases for Apple",
+          "x": 819,
+          "y": 386,
+          "w": 420,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Word type for Apple",
+          "x": 819,
+          "y": 437,
+          "w": 420,
+          "h": 33,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Topics for Apple",
+          "x": 819,
+          "y": 485,
+          "w": 420,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Review note for Apple",
+          "x": 819,
+          "y": 535,
+          "w": 420,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Search symbols in the Symbol Bank",
+          "x": 780,
+          "y": 595,
+          "w": 435,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Show favorite symbols only",
+          "x": 1221,
+          "y": 595,
+          "w": 33,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Filter Symbol Bank by topic",
+          "x": 670,
+          "y": 633,
+          "w": 100,
+          "h": 36,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by All",
+          "x": 774,
+          "y": 633,
+          "w": 32,
+          "h": 36,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Nouns",
+          "x": 810,
+          "y": 633,
+          "w": 47,
+          "h": 36,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Verbs",
+          "x": 861,
+          "y": 633,
+          "w": 44,
+          "h": 36,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Adjectives",
+          "x": 908,
+          "y": 633,
+          "w": 64,
+          "h": 36,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Other",
+          "x": 976,
+          "y": 633,
+          "w": 45,
+          "h": 36,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by All",
+          "x": 708,
+          "y": 675,
+          "w": 32,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by Unreviewed",
+          "x": 744,
+          "y": 675,
+          "w": 71,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by Approved",
+          "x": 819,
+          "y": 675,
+          "w": 61,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by Needs changes",
+          "x": 884,
+          "y": 675,
+          "w": 88,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Add Apple to favorites",
+          "x": 744,
+          "y": 720,
+          "w": 32,
+          "h": 32,
+          "class": ""
+        }
+      ],
+      "unlabeled": [],
+      "fields": [
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Art style",
+          "x": 197,
+          "y": 346,
+          "w": 195,
+          "h": 33,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Auto-clean text from images",
+          "x": 201,
+          "y": 390,
+          "w": 13,
+          "h": 13,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 197,
+          "y": 456,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 250,
+          "y": 456,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 299,
+          "y": 456,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 343,
+          "y": 456,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Text-to-speech voice selection",
+          "x": 197,
+          "y": 571,
+          "w": 195,
+          "h": 33,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "IEP goal type",
+          "x": 197,
+          "y": 1278,
+          "w": 89,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "IEP goal description",
+          "x": 197,
+          "y": 1316,
+          "w": 200,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "IEP goal target count",
+          "x": 197,
+          "y": 1354,
+          "w": 60,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Support required for the student to succeed on this goal",
+          "x": 197,
+          "y": 1488,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "",
+          "x": 197,
+          "y": 1539,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 197,
+          "y": 1590,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "e.g. 2/10 accuracy on probe trials (Sept 2026)",
+          "x": 197,
+          "y": 1641,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "e.g. AAC device available, visual supports, extended time",
+          "x": 197,
+          "y": 1692,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "e.g. Communication — Expressive Language",
+          "x": 197,
+          "y": 1743,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Symbol label",
+          "x": 436,
+          "y": 309,
+          "w": 220,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Symbol context",
+          "x": 436,
+          "y": 363,
+          "w": 220,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Symbol topic",
+          "x": 436,
+          "y": 417,
+          "w": 220,
+          "h": 33,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Symbol word type",
+          "x": 436,
+          "y": 472,
+          "w": 220,
+          "h": 33,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Refinement instruction for Apple",
+          "x": 819,
+          "y": 291,
+          "w": 266,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Search aliases for Apple",
+          "x": 819,
+          "y": 386,
+          "w": 420,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Word type for Apple",
+          "x": 819,
+          "y": 437,
+          "w": 420,
+          "h": 33,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Topics for Apple",
+          "x": 819,
+          "y": 485,
+          "w": 420,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Review note for Apple",
+          "x": 819,
+          "y": 535,
+          "w": 420,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Search symbols in the Symbol Bank",
+          "x": 780,
+          "y": 595,
+          "w": 435,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Filter Symbol Bank by topic",
+          "x": 670,
+          "y": 633,
+          "w": 100,
+          "h": 36,
+          "class": ""
+        }
+      ],
+      "buttons": [
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Close Symbol Studio",
+          "x": 1218,
+          "y": 27,
+          "w": 34,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Bank tab",
+          "x": 191,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Board Builder tab",
+          "x": 309,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Sequences tab",
+          "x": 427,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Social Stories tab",
+          "x": 544,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Quick Boards tab",
+          "x": 662,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Visual Packs tab",
+          "x": 780,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Quest tab",
+          "x": 898,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Search tab",
+          "x": 1015,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Word Garden tab",
+          "x": 1133,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Add new student profile",
+          "x": 346,
+          "y": 161,
+          "w": 46,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Profile: Demo Learner",
+          "x": 197,
+          "y": 201,
+          "w": 115,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Profile: Second Learner",
+          "x": 197,
+          "y": 238,
+          "w": 119,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Reset category colors",
+          "x": 197,
+          "y": 496,
+          "w": 38,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Preview selected voice",
+          "x": 197,
+          "y": 608,
+          "w": 78,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Open garden tab",
+          "x": 358,
+          "y": 691,
+          "w": 34,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Export all data as backup file",
+          "x": 197,
+          "y": 1046,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Import Backup",
+          "x": 197,
+          "y": 1083,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Toggle AAC usage analytics",
+          "x": 197,
+          "y": 1132,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Add new IEP goal",
+          "x": 197,
+          "y": 1424,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "single generation mode",
+          "x": 439,
+          "y": 153,
+          "w": 106,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "batch generation mode",
+          "x": 548,
+          "y": 153,
+          "w": 106,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: home",
+          "x": 436,
+          "y": 213,
+          "w": 39,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: snack",
+          "x": 478,
+          "y": 213,
+          "w": 40,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: tired",
+          "x": 520,
+          "y": 213,
+          "w": 34,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: bath",
+          "x": 557,
+          "y": 213,
+          "w": 34,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: dinner",
+          "x": 593,
+          "y": 213,
+          "w": 41,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: goodnight",
+          "x": 436,
+          "y": 248,
+          "w": 56,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Generate symbol",
+          "x": 436,
+          "y": 515,
+          "w": 220,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Find a validated Mulberry symbol",
+          "x": 436,
+          "y": 557,
+          "w": 220,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Download all 3 symbols",
+          "x": 436,
+          "y": 671,
+          "w": 220,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Clear all symbols from Symbol Bank",
+          "x": 436,
+          "y": 713,
+          "w": 220,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Lock Apple to protect it from regeneration and restyling",
+          "x": 819,
+          "y": 212,
+          "w": 76,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Make Apple the preferred variant",
+          "x": 900,
+          "y": 212,
+          "w": 76,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Regenerate symbol for Apple",
+          "x": 981,
+          "y": 212,
+          "w": 84,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Remove text from Apple symbol",
+          "x": 1070,
+          "y": 212,
+          "w": 122,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Speak Apple",
+          "x": 819,
+          "y": 249,
+          "w": 83,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Download Apple as PNG",
+          "x": 907,
+          "y": 249,
+          "w": 74,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Delete Apple symbol",
+          "x": 986,
+          "y": 249,
+          "w": 44,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Apply refinement to Apple",
+          "x": 1091,
+          "y": 291,
+          "w": 60,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Save refinement as a new variant of Apple",
+          "x": 1157,
+          "y": 291,
+          "w": 82,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Approve Apple for local use",
+          "x": 819,
+          "y": 331,
+          "w": 89,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Mark Apple as needing changes",
+          "x": 913,
+          "y": 331,
+          "w": 116,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Show favorite symbols only",
+          "x": 1221,
+          "y": 595,
+          "w": 33,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by All",
+          "x": 774,
+          "y": 633,
+          "w": 32,
+          "h": 36,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Nouns",
+          "x": 810,
+          "y": 633,
+          "w": 47,
+          "h": 36,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Verbs",
+          "x": 861,
+          "y": 633,
+          "w": 44,
+          "h": 36,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Adjectives",
+          "x": 908,
+          "y": 633,
+          "w": 64,
+          "h": 36,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Other",
+          "x": 976,
+          "y": 633,
+          "w": 45,
+          "h": 36,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by All",
+          "x": 708,
+          "y": 675,
+          "w": 32,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by Unreviewed",
+          "x": 744,
+          "y": 675,
+          "w": 71,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by Approved",
+          "x": 819,
+          "y": 675,
+          "w": 61,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by Needs changes",
+          "x": 884,
+          "y": 675,
+          "w": 88,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Add Apple to favorites",
+          "x": 744,
+          "y": 720,
+          "w": 32,
+          "h": 32,
+          "class": ""
+        }
+      ],
+      "focus": {
+        "tag": "DIV",
+        "role": "button",
+        "name": "Select symbol: Apple",
+        "x": 670,
+        "y": 715,
+        "w": 111,
+        "h": 120,
+        "class": ""
+      },
+      "toasts": []
+    },
+    "taxonomyEditing": true,
+    "wishOwnership": true,
+    "gardenMetrics": {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "page": {
+        "width": 1440,
+        "height": 900
+      },
+      "root": {
+        "tag": "DIV",
+        "role": "presentation",
+        "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+        "x": 0,
+        "y": 0,
+        "w": 1440,
+        "h": 900,
+        "class": "ss-focus-visible ss-modal-root ss-theme-default"
+      },
+      "dialog": {
+        "tag": "DIV",
+        "role": "dialog",
+        "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+        "x": 170,
+        "y": 12,
+        "w": 1100,
+        "h": 876,
+        "class": "ss-main-modal"
+      },
+      "workspaceOverflow": [],
+      "overflow": [],
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Close Symbol Studio",
+          "x": 1218,
+          "y": 27,
+          "w": 34,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Add new student profile",
+          "x": 346,
+          "y": 161,
+          "w": 46,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Profile: Demo Learner",
+          "x": 197,
+          "y": 201,
+          "w": 115,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Profile: Second Learner",
+          "x": 197,
+          "y": 238,
+          "w": 119,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Display name - local only",
+          "x": 197,
+          "y": 304,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Codename adjective",
+          "x": 197,
+          "y": 379,
+          "w": 112,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Codename animal",
+          "x": 313,
+          "y": 379,
+          "w": 99,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Randomize codename",
+          "x": 416,
+          "y": 379,
+          "w": 32,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Avatar appearance description",
+          "x": 197,
+          "y": 432,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Generate student avatar",
+          "x": 197,
+          "y": 472,
+          "w": 100,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Upload",
+          "x": 302,
+          "y": 472,
+          "w": 88,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Delete profile Demo Learner",
+          "x": 197,
+          "y": 509,
+          "w": 38,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Art style",
+          "x": 197,
+          "y": 609,
+          "w": 195,
+          "h": 33,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Auto-clean text from images",
+          "x": 201,
+          "y": 653,
+          "w": 13,
+          "h": 13,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 197,
+          "y": 719,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 250,
+          "y": 719,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 299,
+          "y": 719,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 343,
+          "y": 719,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Reset category colors",
+          "x": 197,
+          "y": 759,
+          "w": 38,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Text-to-speech voice selection",
+          "x": 197,
+          "y": 834,
+          "w": 195,
+          "h": 33,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Preview selected voice",
+          "x": 197,
+          "y": 871,
+          "w": 78,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Open garden tab",
+          "x": 358,
+          "y": 954,
+          "w": 34,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Export all data as backup file",
+          "x": 197,
+          "y": 1309,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Import Backup",
+          "x": 197,
+          "y": 1346,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Toggle AAC usage analytics",
+          "x": 197,
+          "y": 1395,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "IEP goal type",
+          "x": 197,
+          "y": 1541,
+          "w": 89,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "IEP goal description",
+          "x": 197,
+          "y": 1579,
+          "w": 200,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "IEP goal target count",
+          "x": 197,
+          "y": 1617,
+          "w": 60,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "",
+          "x": 197,
+          "y": 1700,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Support required for the student to succeed on this goal",
+          "x": 197,
+          "y": 1751,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "",
+          "x": 197,
+          "y": 1802,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 197,
+          "y": 1853,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "e.g. 2/10 accuracy on probe trials (Sept 2026)",
+          "x": 197,
+          "y": 1904,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "e.g. AAC device available, visual supports, extended time",
+          "x": 197,
+          "y": 1955,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "e.g. Communication — Expressive Language",
+          "x": 197,
+          "y": 2006,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Add new IEP goal",
+          "x": 197,
+          "y": 1687,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Student view",
+          "x": 1028,
+          "y": 153,
+          "w": 115,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Student home language",
+          "x": 1151,
+          "y": 153,
+          "w": 103,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Behavioral function for FCT",
+          "x": 452,
+          "y": 239,
+          "w": 142,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "53 Seed words",
+          "x": 452,
+          "y": 287,
+          "w": 55,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "3 Sprout words",
+          "x": 513,
+          "y": 287,
+          "w": 49,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "0 Growing words",
+          "x": 569,
+          "y": 287,
+          "w": 49,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "0 Blooming words",
+          "x": 624,
+          "y": 287,
+          "w": 49,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "0 Well practiced words",
+          "x": 679,
+          "y": 287,
+          "w": 49,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter core vocabulary",
+          "x": 734,
+          "y": 287,
+          "w": 85,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Search",
+          "x": 452,
+          "y": 351,
+          "w": 20,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Sort",
+          "x": 480,
+          "y": 351,
+          "w": 94,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Practice weak words",
+          "x": 582,
+          "y": 351,
+          "w": 74,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Generate communication board from garden data",
+          "x": 664,
+          "y": 351,
+          "w": 59,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Plant a wish seed word",
+          "x": 1173,
+          "y": 348,
+          "w": 49,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Print practice report",
+          "x": 436,
+          "y": 1398,
+          "w": 127,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Print home note for family",
+          "x": 569,
+          "y": 1398,
+          "w": 104,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Export research CSV",
+          "x": 680,
+          "y": 1398,
+          "w": 121,
+          "h": 32,
+          "class": ""
+        }
+      ],
+      "unlabeled": [],
+      "fields": [
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Display name - local only",
+          "x": 197,
+          "y": 304,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Codename adjective",
+          "x": 197,
+          "y": 379,
+          "w": 112,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Codename animal",
+          "x": 313,
+          "y": 379,
+          "w": 99,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Avatar appearance description",
+          "x": 197,
+          "y": 432,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Art style",
+          "x": 197,
+          "y": 609,
+          "w": 195,
+          "h": 33,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Auto-clean text from images",
+          "x": 201,
+          "y": 653,
+          "w": 13,
+          "h": 13,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 197,
+          "y": 719,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 250,
+          "y": 719,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 299,
+          "y": 719,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 343,
+          "y": 719,
+          "w": 18,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Text-to-speech voice selection",
+          "x": 197,
+          "y": 834,
+          "w": 195,
+          "h": 33,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "IEP goal type",
+          "x": 197,
+          "y": 1541,
+          "w": 89,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "IEP goal description",
+          "x": 197,
+          "y": 1579,
+          "w": 200,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "IEP goal target count",
+          "x": 197,
+          "y": 1617,
+          "w": 60,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "",
+          "x": 197,
+          "y": 1700,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Support required for the student to succeed on this goal",
+          "x": 197,
+          "y": 1751,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "",
+          "x": 197,
+          "y": 1802,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "",
+          "x": 197,
+          "y": 1853,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "e.g. 2/10 accuracy on probe trials (Sept 2026)",
+          "x": 197,
+          "y": 1904,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "e.g. AAC device available, visual supports, extended time",
+          "x": 197,
+          "y": 1955,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "e.g. Communication — Expressive Language",
+          "x": 197,
+          "y": 2006,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Student home language",
+          "x": 1151,
+          "y": 153,
+          "w": 103,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Behavioral function for FCT",
+          "x": 452,
+          "y": 239,
+          "w": 142,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Search",
+          "x": 452,
+          "y": 351,
+          "w": 20,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Sort",
+          "x": 480,
+          "y": 351,
+          "w": 94,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Plant a wish seed word",
+          "x": 1173,
+          "y": 348,
+          "w": 49,
+          "h": 32,
+          "class": ""
+        }
+      ],
+      "buttons": [
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Close Symbol Studio",
+          "x": 1218,
+          "y": 27,
+          "w": 34,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Bank tab",
+          "x": 191,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Board Builder tab",
+          "x": 309,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Sequences tab",
+          "x": 427,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Social Stories tab",
+          "x": 544,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Quick Boards tab",
+          "x": 662,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Visual Packs tab",
+          "x": 780,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Quest tab",
+          "x": 898,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Search tab",
+          "x": 1015,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Word Garden tab",
+          "x": 1133,
+          "y": 75,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Add new student profile",
+          "x": 346,
+          "y": 161,
+          "w": 46,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Profile: Demo Learner",
+          "x": 197,
+          "y": 201,
+          "w": 115,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Profile: Second Learner",
+          "x": 197,
+          "y": 238,
+          "w": 119,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Randomize codename",
+          "x": 416,
+          "y": 379,
+          "w": 32,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Generate student avatar",
+          "x": 197,
+          "y": 472,
+          "w": 100,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Upload",
+          "x": 302,
+          "y": 472,
+          "w": 88,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Delete profile Demo Learner",
+          "x": 197,
+          "y": 509,
+          "w": 38,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Reset category colors",
+          "x": 197,
+          "y": 759,
+          "w": 38,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Preview selected voice",
+          "x": 197,
+          "y": 871,
+          "w": 78,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Open garden tab",
+          "x": 358,
+          "y": 954,
+          "w": 34,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Export all data as backup file",
+          "x": 197,
+          "y": 1309,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Import Backup",
+          "x": 197,
+          "y": 1346,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Toggle AAC usage analytics",
+          "x": 197,
+          "y": 1395,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Add new IEP goal",
+          "x": 197,
+          "y": 1687,
+          "w": 195,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Student view",
+          "x": 1028,
+          "y": 153,
+          "w": 115,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "53 Seed words",
+          "x": 452,
+          "y": 287,
+          "w": 55,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "3 Sprout words",
+          "x": 513,
+          "y": 287,
+          "w": 49,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "0 Growing words",
+          "x": 569,
+          "y": 287,
+          "w": 49,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "0 Blooming words",
+          "x": 624,
+          "y": 287,
+          "w": 49,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "0 Well practiced words",
+          "x": 679,
+          "y": 287,
+          "w": 49,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter core vocabulary",
+          "x": 734,
+          "y": 287,
+          "w": 85,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Practice weak words",
+          "x": 582,
+          "y": 351,
+          "w": 74,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Generate communication board from garden data",
+          "x": 664,
+          "y": 351,
+          "w": 59,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Book — Sprout",
+          "x": 436,
+          "y": 411,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Snack — Sprout",
+          "x": 554,
+          "y": 411,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Wash hands — Sprout",
+          "x": 672,
+          "y": 411,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "1 minute left — Seed",
+          "x": 790,
+          "y": 411,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "3 minutes left — Seed",
+          "x": 908,
+          "y": 411,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "5 minutes left — Seed",
+          "x": 1026,
+          "y": 411,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Almost time! — Seed",
+          "x": 1144,
+          "y": 411,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Apple — Seed",
+          "x": 436,
+          "y": 526,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Arm — Seed",
+          "x": 554,
+          "y": 526,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Ask for help — Seed",
+          "x": 672,
+          "y": 526,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Back — Seed",
+          "x": 790,
+          "y": 526,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Break — Seed",
+          "x": 908,
+          "y": 526,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Can I go? — Seed",
+          "x": 1026,
+          "y": 526,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Can I have...? — Seed",
+          "x": 1144,
+          "y": 526,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Can you help me? — Seed",
+          "x": 436,
+          "y": 641,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Clean up — Seed",
+          "x": 554,
+          "y": 641,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Count to 10 — Seed",
+          "x": 672,
+          "y": 641,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Draw or color — Seed",
+          "x": 790,
+          "y": 641,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Drink some water — Seed",
+          "x": 908,
+          "y": 641,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Ears — Seed",
+          "x": 1026,
+          "y": 641,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Eyes — Seed",
+          "x": 1144,
+          "y": 641,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Feel overwhelmed — Seed",
+          "x": 436,
+          "y": 770,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Head — Seed",
+          "x": 554,
+          "y": 770,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Help — Seed",
+          "x": 672,
+          "y": 770,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "I don't know — Seed",
+          "x": 790,
+          "y": 770,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "I don't understand — Seed",
+          "x": 908,
+          "y": 770,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "I need... — Seed",
+          "x": 1026,
+          "y": 770,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "I want to... — Seed",
+          "x": 1144,
+          "y": 770,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Leg — Seed",
+          "x": 436,
+          "y": 898,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Line up — Seed",
+          "x": 554,
+          "y": 898,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Listen to music — Seed",
+          "x": 672,
+          "y": 898,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "My wish — Seed",
+          "x": 790,
+          "y": 898,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need a break — Seed",
+          "x": 908,
+          "y": 898,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need fidget — Seed",
+          "x": 1026,
+          "y": 898,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need headphones — Seed",
+          "x": 1144,
+          "y": 898,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need quiet — Seed",
+          "x": 436,
+          "y": 1027,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need sunglasses — Seed",
+          "x": 554,
+          "y": 1027,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need to move — Seed",
+          "x": 672,
+          "y": 1027,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "New activity starts — Seed",
+          "x": 790,
+          "y": 1027,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "No — Seed",
+          "x": 908,
+          "y": 1027,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Squeeze a stress ball — Seed",
+          "x": 1026,
+          "y": 1027,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Stomach — Seed",
+          "x": 1144,
+          "y": 1027,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Take a walk — Seed",
+          "x": 436,
+          "y": 1155,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Take deep breaths — Seed",
+          "x": 554,
+          "y": 1155,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Throat — Seed",
+          "x": 672,
+          "y": 1155,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Time to stop — Seed",
+          "x": 790,
+          "y": 1155,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Too bright — Seed",
+          "x": 908,
+          "y": 1155,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Too crowded — Seed",
+          "x": 1026,
+          "y": 1155,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Too loud — Seed",
+          "x": 1144,
+          "y": 1155,
+          "w": 110,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Water — Seed",
+          "x": 436,
+          "y": 1283,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "What is...? — Seed",
+          "x": 554,
+          "y": 1283,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "When is...? — Seed",
+          "x": 672,
+          "y": 1283,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Where is...? — Seed",
+          "x": 790,
+          "y": 1283,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Yes — Seed",
+          "x": 908,
+          "y": 1283,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "ماء — Seed",
+          "x": 1026,
+          "y": 1283,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "水 — Seed",
+          "x": 1144,
+          "y": 1283,
+          "w": 110,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Print practice report",
+          "x": 436,
+          "y": 1398,
+          "w": 127,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Print home note for family",
+          "x": 569,
+          "y": 1398,
+          "w": 104,
+          "h": 32,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Export research CSV",
+          "x": 680,
+          "y": 1398,
+          "w": 121,
+          "h": 32,
+          "class": ""
+        }
+      ],
+      "focus": {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Demo Learner",
+        "x": 197,
+        "y": 201,
+        "w": 115,
+        "h": 32,
+        "class": ""
+      },
+      "toasts": []
+    },
+    "sessionAttributionAndKeyboard": true,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "multilingualSearch": true,
+    "legacyTopics": true,
+    "symbolMetrics": {
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "page": {
+        "width": 390,
+        "height": 900
+      },
+      "root": {
+        "tag": "DIV",
+        "role": "presentation",
+        "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 900,
+        "class": "ss-focus-visible ss-modal-root ss-theme-default"
+      },
+      "dialog": {
+        "tag": "DIV",
+        "role": "dialog",
+        "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 900,
+        "class": "ss-main-modal"
+      },
+      "workspaceOverflow": [],
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Visual Packs tab",
+          "x": 373,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "📚",
+          "x": 398,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Quest tab",
+          "x": 445,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "🎮",
+          "x": 470,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Search tab",
+          "x": 517,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "🔍",
+          "x": 542,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Word Garden tab",
+          "x": 589,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "🌱\n11",
+          "x": 614,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "11",
+          "x": 623,
+          "y": 75,
+          "w": 19,
+          "h": 14,
+          "class": ""
+        }
+      ],
+      "smallTargets": [],
+      "unlabeled": [],
+      "fields": [
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Symbol label",
+          "x": 12,
+          "y": 38,
+          "w": 366,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Symbol context",
+          "x": 12,
+          "y": 104,
+          "w": 366,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Symbol topic",
+          "x": 12,
+          "y": 170,
+          "w": 366,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Symbol word type",
+          "x": 12,
+          "y": 236,
+          "w": 366,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Refinement instruction for Apple",
+          "x": 161,
+          "y": 880,
+          "w": 202,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Search aliases for Apple",
+          "x": 161,
+          "y": 1148,
+          "w": 202,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Word type for Apple",
+          "x": 161,
+          "y": 1211,
+          "w": 202,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Topics for Apple",
+          "x": 161,
+          "y": 1270,
+          "w": 202,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Review note for Apple",
+          "x": 161,
+          "y": 1332,
+          "w": 202,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Search symbols in the Symbol Bank",
+          "x": 122,
+          "y": 1404,
+          "w": 206,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Filter Symbol Bank by topic",
+          "x": 12,
+          "y": 1454,
+          "w": 112,
+          "h": 44,
+          "class": ""
+        }
+      ],
+      "buttons": [
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Close Symbol Studio",
+          "x": 336,
+          "y": 13,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Bank tab",
+          "x": 13,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Board Builder tab",
+          "x": 85,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Sequences tab",
+          "x": 157,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Social Stories tab",
+          "x": 229,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Quick Boards tab",
+          "x": 301,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Visual Packs tab",
+          "x": 373,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Quest tab",
+          "x": 445,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Search tab",
+          "x": 517,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Word Garden tab",
+          "x": 589,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Profile & settings · Demo Learner\nShow",
+          "x": 0,
+          "y": -166,
+          "w": 390,
+          "h": 44,
+          "class": "ss-setup-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "single generation mode",
+          "x": 15,
+          "y": -107,
+          "w": 179,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "batch generation mode",
+          "x": 197,
+          "y": -107,
+          "w": 179,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: home",
+          "x": 12,
+          "y": -35,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: snack",
+          "x": 59,
+          "y": -35,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: tired",
+          "x": 106,
+          "y": -35,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: bath",
+          "x": 153,
+          "y": -35,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: dinner",
+          "x": 200,
+          "y": -35,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: goodnight",
+          "x": 247,
+          "y": -35,
+          "w": 56,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Generate symbol",
+          "x": 12,
+          "y": 290,
+          "w": 366,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Find a validated Mulberry symbol",
+          "x": 12,
+          "y": 344,
+          "w": 366,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Download all 3 symbols",
+          "x": 12,
+          "y": 456,
+          "w": 366,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Clear all symbols from Symbol Bank",
+          "x": 12,
+          "y": 510,
+          "w": 366,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Lock Apple to protect it from regeneration and restyling",
+          "x": 161,
+          "y": 630,
+          "w": 76,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Make Apple the preferred variant",
+          "x": 242,
+          "y": 630,
+          "w": 76,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Regenerate symbol for Apple",
+          "x": 161,
+          "y": 679,
+          "w": 84,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Remove text from Apple symbol",
+          "x": 161,
+          "y": 728,
+          "w": 122,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Speak Apple",
+          "x": 161,
+          "y": 777,
+          "w": 83,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Download Apple as PNG",
+          "x": 249,
+          "y": 777,
+          "w": 74,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Delete Apple symbol",
+          "x": 161,
+          "y": 826,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Apply refinement to Apple",
+          "x": 161,
+          "y": 930,
+          "w": 81,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Save refinement as a new variant of Apple",
+          "x": 161,
+          "y": 980,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Approve Apple for local use",
+          "x": 161,
+          "y": 1032,
+          "w": 89,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Mark Apple as needing changes",
+          "x": 161,
+          "y": 1081,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Show favorite symbols only",
+          "x": 334,
+          "y": 1404,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by All",
+          "x": 128,
+          "y": 1454,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Nouns",
+          "x": 176,
+          "y": 1454,
+          "w": 47,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Verbs",
+          "x": 227,
+          "y": 1454,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Adjectives",
+          "x": 275,
+          "y": 1454,
+          "w": 64,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Other",
+          "x": 12,
+          "y": 1502,
+          "w": 45,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by All",
+          "x": 50,
+          "y": 1552,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by Unreviewed",
+          "x": 98,
+          "y": 1552,
+          "w": 71,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by Approved",
+          "x": 173,
+          "y": 1552,
+          "w": 61,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by Needs changes",
+          "x": 238,
+          "y": 1552,
+          "w": 88,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Add Apple to favorites",
+          "x": 80,
+          "y": 1609,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        }
+      ],
+      "focus": {
+        "tag": "DIV",
+        "role": "button",
+        "name": "Select symbol: Apple",
+        "x": 12,
+        "y": 1604,
+        "w": 117,
+        "h": 120,
+        "class": ""
+      },
+      "toasts": []
+    },
+    "taxonomyEditing": true,
+    "wishOwnership": true,
+    "gardenMetrics": {
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "page": {
+        "width": 390,
+        "height": 900
+      },
+      "root": {
+        "tag": "DIV",
+        "role": "presentation",
+        "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 900,
+        "class": "ss-focus-visible ss-modal-root ss-theme-default"
+      },
+      "dialog": {
+        "tag": "DIV",
+        "role": "dialog",
+        "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 900,
+        "class": "ss-main-modal"
+      },
+      "workspaceOverflow": [],
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Bank tab",
+          "x": -269,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "🎨",
+          "x": -244,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Board Builder tab",
+          "x": -197,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "📋",
+          "x": -172,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Sequences tab",
+          "x": -125,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "📅",
+          "x": -100,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Social Stories tab",
+          "x": -53,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "📖",
+          "x": -28,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        }
+      ],
+      "smallTargets": [
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Search",
+          "x": 32,
+          "y": 569,
+          "w": 37,
+          "h": 44,
+          "class": ""
+        }
+      ],
+      "unlabeled": [],
+      "fields": [
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Student home language",
+          "x": 16,
+          "y": 259,
+          "w": 144,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Behavioral function for FCT",
+          "x": 32,
+          "y": 399,
+          "w": 206,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Search",
+          "x": 32,
+          "y": 569,
+          "w": 37,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Sort",
+          "x": 77,
+          "y": 569,
+          "w": 119,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Plant a wish seed word",
+          "x": 70,
+          "y": 763,
+          "w": 215,
+          "h": 44,
+          "class": ""
+        }
+      ],
+      "buttons": [
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Close Symbol Studio",
+          "x": 336,
+          "y": 13,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Bank tab",
+          "x": -269,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Board Builder tab",
+          "x": -197,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Sequences tab",
+          "x": -125,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Social Stories tab",
+          "x": -53,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Quick Boards tab",
+          "x": 19,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Visual Packs tab",
+          "x": 91,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Quest tab",
+          "x": 163,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Search tab",
+          "x": 235,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Word Garden tab",
+          "x": 307,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Profile & settings · Demo Learner\nShow",
+          "x": 0,
+          "y": 142,
+          "w": 390,
+          "h": 44,
+          "class": "ss-setup-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Student view",
+          "x": 259,
+          "y": 205,
+          "w": 115,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "53 Seed words",
+          "x": 32,
+          "y": 459,
+          "w": 55,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "3 Sprout words",
+          "x": 93,
+          "y": 459,
+          "w": 49,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "0 Growing words",
+          "x": 149,
+          "y": 459,
+          "w": 49,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "0 Blooming words",
+          "x": 204,
+          "y": 459,
+          "w": 49,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "0 Well practiced words",
+          "x": 259,
+          "y": 459,
+          "w": 49,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter core vocabulary",
+          "x": 32,
+          "y": 509,
+          "w": 85,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Practice weak words",
+          "x": 204,
+          "y": 569,
+          "w": 154,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Generate communication board from garden data",
+          "x": 32,
+          "y": 621,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Book — Sprout",
+          "x": 16,
+          "y": 825,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Snack — Sprout",
+          "x": 138,
+          "y": 825,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Wash hands — Sprout",
+          "x": 260,
+          "y": 825,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "1 minute left — Seed",
+          "x": 16,
+          "y": 940,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "3 minutes left — Seed",
+          "x": 138,
+          "y": 940,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "5 minutes left — Seed",
+          "x": 260,
+          "y": 940,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Almost time! — Seed",
+          "x": 16,
+          "y": 1055,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Apple — Seed",
+          "x": 138,
+          "y": 1055,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Arm — Seed",
+          "x": 260,
+          "y": 1055,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Ask for help — Seed",
+          "x": 16,
+          "y": 1171,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Back — Seed",
+          "x": 138,
+          "y": 1171,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Break — Seed",
+          "x": 260,
+          "y": 1171,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Can I go? — Seed",
+          "x": 16,
+          "y": 1286,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Can I have...? — Seed",
+          "x": 138,
+          "y": 1286,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Can you help me? — Seed",
+          "x": 260,
+          "y": 1286,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Clean up — Seed",
+          "x": 16,
+          "y": 1401,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Count to 10 — Seed",
+          "x": 138,
+          "y": 1401,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Draw or color — Seed",
+          "x": 260,
+          "y": 1401,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Drink some water — Seed",
+          "x": 16,
+          "y": 1516,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Ears — Seed",
+          "x": 138,
+          "y": 1516,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Eyes — Seed",
+          "x": 260,
+          "y": 1516,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Feel overwhelmed — Seed",
+          "x": 16,
+          "y": 1631,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Head — Seed",
+          "x": 138,
+          "y": 1631,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Help — Seed",
+          "x": 260,
+          "y": 1631,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "I don't know — Seed",
+          "x": 16,
+          "y": 1747,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "I don't understand — Seed",
+          "x": 138,
+          "y": 1747,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "I need... — Seed",
+          "x": 260,
+          "y": 1747,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "I want to... — Seed",
+          "x": 16,
+          "y": 1862,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Leg — Seed",
+          "x": 138,
+          "y": 1862,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Line up — Seed",
+          "x": 260,
+          "y": 1862,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Listen to music — Seed",
+          "x": 16,
+          "y": 1977,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "My wish — Seed",
+          "x": 138,
+          "y": 1977,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need a break — Seed",
+          "x": 260,
+          "y": 1977,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need fidget — Seed",
+          "x": 16,
+          "y": 2092,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need headphones — Seed",
+          "x": 138,
+          "y": 2092,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need quiet — Seed",
+          "x": 260,
+          "y": 2092,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need sunglasses — Seed",
+          "x": 16,
+          "y": 2207,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need to move — Seed",
+          "x": 138,
+          "y": 2207,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "New activity starts — Seed",
+          "x": 260,
+          "y": 2207,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "No — Seed",
+          "x": 16,
+          "y": 2322,
+          "w": 114,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Squeeze a stress ball — Seed",
+          "x": 138,
+          "y": 2322,
+          "w": 114,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Stomach — Seed",
+          "x": 260,
+          "y": 2322,
+          "w": 114,
+          "h": 120,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Take a walk — Seed",
+          "x": 16,
+          "y": 2451,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Take deep breaths — Seed",
+          "x": 138,
+          "y": 2451,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Throat — Seed",
+          "x": 260,
+          "y": 2451,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Time to stop — Seed",
+          "x": 16,
+          "y": 2566,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Too bright — Seed",
+          "x": 138,
+          "y": 2566,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Too crowded — Seed",
+          "x": 260,
+          "y": 2566,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Too loud — Seed",
+          "x": 16,
+          "y": 2681,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Water — Seed",
+          "x": 138,
+          "y": 2681,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "What is...? — Seed",
+          "x": 260,
+          "y": 2681,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "When is...? — Seed",
+          "x": 16,
+          "y": 2796,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Where is...? — Seed",
+          "x": 138,
+          "y": 2796,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Yes — Seed",
+          "x": 260,
+          "y": 2796,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "ماء — Seed",
+          "x": 16,
+          "y": 2912,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "水 — Seed",
+          "x": 138,
+          "y": 2912,
+          "w": 114,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Print practice report",
+          "x": 16,
+          "y": 3027,
+          "w": 127,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Print home note for family",
+          "x": 149,
+          "y": 3027,
+          "w": 104,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Export research CSV",
+          "x": 16,
+          "y": 3077,
+          "w": 121,
+          "h": 44,
+          "class": ""
+        }
+      ],
+      "focus": {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile & settings · Demo Learner\nShow",
+        "x": 0,
+        "y": 142,
+        "w": 390,
+        "h": 44,
+        "class": "ss-setup-toggle"
+      },
+      "toasts": []
+    },
+    "sessionAttributionAndKeyboard": true,
+    "errors": []
+  },
+  {
+    "width": 320,
+    "multilingualSearch": true,
+    "legacyTopics": true,
+    "symbolMetrics": {
+      "viewport": {
+        "width": 320,
+        "height": 900
+      },
+      "page": {
+        "width": 320,
+        "height": 900
+      },
+      "root": {
+        "tag": "DIV",
+        "role": "presentation",
+        "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+        "x": 0,
+        "y": 0,
+        "w": 320,
+        "h": 900,
+        "class": "ss-focus-visible ss-modal-root ss-theme-default"
+      },
+      "dialog": {
+        "tag": "DIV",
+        "role": "dialog",
+        "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+        "x": 0,
+        "y": 0,
+        "w": 320,
+        "h": 900,
+        "class": "ss-main-modal"
+      },
+      "workspaceOverflow": [],
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Quick Boards tab",
+          "x": 301,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "⚡",
+          "x": 326,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Visual Packs tab",
+          "x": 373,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "📚",
+          "x": 398,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Quest tab",
+          "x": 445,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "🎮",
+          "x": 470,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Search tab",
+          "x": 517,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "🔍",
+          "x": 542,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Word Garden tab",
+          "x": 589,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "🌱\n11",
+          "x": 614,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "11",
+          "x": 623,
+          "y": 75,
+          "w": 19,
+          "h": 14,
+          "class": ""
+        }
+      ],
+      "smallTargets": [],
+      "unlabeled": [],
+      "fields": [
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Symbol label",
+          "x": 12,
+          "y": -10,
+          "w": 296,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Symbol context",
+          "x": 12,
+          "y": 56,
+          "w": 296,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Symbol topic",
+          "x": 12,
+          "y": 122,
+          "w": 296,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Symbol word type",
+          "x": 12,
+          "y": 188,
+          "w": 296,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Refinement instruction for Apple",
+          "x": 161,
+          "y": 881,
+          "w": 132,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Search aliases for Apple",
+          "x": 161,
+          "y": 1149,
+          "w": 132,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Word type for Apple",
+          "x": 161,
+          "y": 1212,
+          "w": 132,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Topics for Apple",
+          "x": 161,
+          "y": 1283,
+          "w": 132,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Review note for Apple",
+          "x": 161,
+          "y": 1345,
+          "w": 132,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Search symbols in the Symbol Bank",
+          "x": 122,
+          "y": 1417,
+          "w": 136,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Filter Symbol Bank by topic",
+          "x": 12,
+          "y": 1467,
+          "w": 112,
+          "h": 44,
+          "class": ""
+        }
+      ],
+      "buttons": [
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Close Symbol Studio",
+          "x": 266,
+          "y": 13,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Bank tab",
+          "x": 13,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Board Builder tab",
+          "x": 85,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Sequences tab",
+          "x": 157,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Social Stories tab",
+          "x": 229,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Quick Boards tab",
+          "x": 301,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Visual Packs tab",
+          "x": 373,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Quest tab",
+          "x": 445,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Search tab",
+          "x": 517,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Word Garden tab",
+          "x": 589,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Profile & settings · Demo Learner\nShow",
+          "x": 0,
+          "y": -214,
+          "w": 320,
+          "h": 44,
+          "class": "ss-setup-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "single generation mode",
+          "x": 15,
+          "y": -155,
+          "w": 144,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "batch generation mode",
+          "x": 162,
+          "y": -155,
+          "w": 144,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: home",
+          "x": 12,
+          "y": -83,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: snack",
+          "x": 59,
+          "y": -83,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: tired",
+          "x": 106,
+          "y": -83,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: bath",
+          "x": 153,
+          "y": -83,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: dinner",
+          "x": 200,
+          "y": -83,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Quick set label: goodnight",
+          "x": 247,
+          "y": -83,
+          "w": 56,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Generate symbol",
+          "x": 12,
+          "y": 242,
+          "w": 296,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Find a validated Mulberry symbol",
+          "x": 12,
+          "y": 296,
+          "w": 296,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Download all 3 symbols",
+          "x": 12,
+          "y": 408,
+          "w": 296,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Clear all symbols from Symbol Bank",
+          "x": 12,
+          "y": 462,
+          "w": 296,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Lock Apple to protect it from regeneration and restyling",
+          "x": 161,
+          "y": 582,
+          "w": 76,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Make Apple the preferred variant",
+          "x": 161,
+          "y": 631,
+          "w": 76,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Regenerate symbol for Apple",
+          "x": 161,
+          "y": 680,
+          "w": 84,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Remove text from Apple symbol",
+          "x": 161,
+          "y": 729,
+          "w": 122,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Speak Apple",
+          "x": 161,
+          "y": 778,
+          "w": 83,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Download Apple as PNG",
+          "x": 161,
+          "y": 827,
+          "w": 74,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Delete Apple symbol",
+          "x": 240,
+          "y": 827,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Apply refinement to Apple",
+          "x": 161,
+          "y": 931,
+          "w": 81,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Save refinement as a new variant of Apple",
+          "x": 161,
+          "y": 981,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Approve Apple for local use",
+          "x": 161,
+          "y": 1033,
+          "w": 89,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Mark Apple as needing changes",
+          "x": 161,
+          "y": 1082,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Show favorite symbols only",
+          "x": 264,
+          "y": 1417,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by All",
+          "x": 128,
+          "y": 1467,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Nouns",
+          "x": 176,
+          "y": 1467,
+          "w": 47,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Verbs",
+          "x": 227,
+          "y": 1467,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Adjectives",
+          "x": 12,
+          "y": 1515,
+          "w": 64,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter by Other",
+          "x": 80,
+          "y": 1515,
+          "w": 45,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by All",
+          "x": 50,
+          "y": 1565,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by Unreviewed",
+          "x": 98,
+          "y": 1565,
+          "w": 71,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by Approved",
+          "x": 173,
+          "y": 1565,
+          "w": 61,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter Symbol Bank review status by Needs changes",
+          "x": 12,
+          "y": 1613,
+          "w": 88,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Add Apple to favorites",
+          "x": 108,
+          "y": 1670,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        }
+      ],
+      "focus": {
+        "tag": "DIV",
+        "role": "button",
+        "name": "Select symbol: Apple",
+        "x": 12,
+        "y": 1665,
+        "w": 145,
+        "h": 120,
+        "class": ""
+      },
+      "toasts": []
+    },
+    "taxonomyEditing": true,
+    "wishOwnership": true,
+    "gardenMetrics": {
+      "viewport": {
+        "width": 320,
+        "height": 900
+      },
+      "page": {
+        "width": 320,
+        "height": 900
+      },
+      "root": {
+        "tag": "DIV",
+        "role": "presentation",
+        "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+        "x": 0,
+        "y": 0,
+        "w": 320,
+        "h": 900,
+        "class": "ss-focus-visible ss-modal-root ss-theme-default"
+      },
+      "dialog": {
+        "tag": "DIV",
+        "role": "dialog",
+        "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+        "x": 0,
+        "y": 0,
+        "w": 320,
+        "h": 900,
+        "class": "ss-main-modal"
+      },
+      "workspaceOverflow": [],
+      "overflow": [
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Bank tab",
+          "x": -339,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "🎨",
+          "x": -314,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Board Builder tab",
+          "x": -267,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "📋",
+          "x": -242,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Sequences tab",
+          "x": -195,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "📅",
+          "x": -170,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Social Stories tab",
+          "x": -123,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "📖",
+          "x": -98,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Quick Boards tab",
+          "x": -51,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "SPAN",
+          "role": null,
+          "name": "⚡",
+          "x": -26,
+          "y": 79,
+          "w": 19,
+          "h": 19,
+          "class": ""
+        }
+      ],
+      "smallTargets": [],
+      "unlabeled": [],
+      "fields": [
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Student home language",
+          "x": 16,
+          "y": 259,
+          "w": 144,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Behavioral function for FCT",
+          "x": 32,
+          "y": 417,
+          "w": 206,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Search",
+          "x": 32,
+          "y": 587,
+          "w": 129,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "SELECT",
+          "role": null,
+          "name": "Sort",
+          "x": 169,
+          "y": 587,
+          "w": 119,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "INPUT",
+          "role": null,
+          "name": "Plant a wish seed word",
+          "x": 70,
+          "y": 851,
+          "w": 202,
+          "h": 44,
+          "class": ""
+        }
+      ],
+      "buttons": [
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Close Symbol Studio",
+          "x": 266,
+          "y": 13,
+          "w": 44,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Bank tab",
+          "x": -339,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Board Builder tab",
+          "x": -267,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Sequences tab",
+          "x": -195,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Social Stories tab",
+          "x": -123,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Quick Boards tab",
+          "x": -51,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Visual Packs tab",
+          "x": 21,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Quest tab",
+          "x": 93,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Symbol Search tab",
+          "x": 165,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": "tab",
+          "name": "Word Garden tab",
+          "x": 237,
+          "y": 73,
+          "w": 70,
+          "h": 56,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Profile & settings · Demo Learner\nShow",
+          "x": 0,
+          "y": 142,
+          "w": 320,
+          "h": 44,
+          "class": "ss-setup-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Student view",
+          "x": 189,
+          "y": 205,
+          "w": 115,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "53 Seed words",
+          "x": 32,
+          "y": 477,
+          "w": 55,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "3 Sprout words",
+          "x": 93,
+          "y": 477,
+          "w": 49,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "0 Growing words",
+          "x": 149,
+          "y": 477,
+          "w": 49,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "0 Blooming words",
+          "x": 204,
+          "y": 477,
+          "w": 49,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "0 Well practiced words",
+          "x": 32,
+          "y": 527,
+          "w": 49,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Filter core vocabulary",
+          "x": 87,
+          "y": 527,
+          "w": 85,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Practice weak words",
+          "x": 32,
+          "y": 639,
+          "w": 154,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Generate communication board from garden data",
+          "x": 32,
+          "y": 691,
+          "w": 116,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Book — Sprout",
+          "x": 16,
+          "y": 913,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Snack — Sprout",
+          "x": 164,
+          "y": 913,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Wash hands — Sprout",
+          "x": 16,
+          "y": 1028,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "1 minute left — Seed",
+          "x": 164,
+          "y": 1028,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "3 minutes left — Seed",
+          "x": 16,
+          "y": 1143,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "5 minutes left — Seed",
+          "x": 164,
+          "y": 1143,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Almost time! — Seed",
+          "x": 16,
+          "y": 1259,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Apple — Seed",
+          "x": 164,
+          "y": 1259,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Arm — Seed",
+          "x": 16,
+          "y": 1374,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Ask for help — Seed",
+          "x": 164,
+          "y": 1374,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Back — Seed",
+          "x": 16,
+          "y": 1489,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Break — Seed",
+          "x": 164,
+          "y": 1489,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Can I go? — Seed",
+          "x": 16,
+          "y": 1604,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Can I have...? — Seed",
+          "x": 164,
+          "y": 1604,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Can you help me? — Seed",
+          "x": 16,
+          "y": 1719,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Clean up — Seed",
+          "x": 164,
+          "y": 1719,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Count to 10 — Seed",
+          "x": 16,
+          "y": 1835,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Draw or color — Seed",
+          "x": 164,
+          "y": 1835,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Drink some water — Seed",
+          "x": 16,
+          "y": 1950,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Ears — Seed",
+          "x": 164,
+          "y": 1950,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Eyes — Seed",
+          "x": 16,
+          "y": 2065,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Feel overwhelmed — Seed",
+          "x": 164,
+          "y": 2065,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Head — Seed",
+          "x": 16,
+          "y": 2180,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Help — Seed",
+          "x": 164,
+          "y": 2180,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "I don't know — Seed",
+          "x": 16,
+          "y": 2295,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "I don't understand — Seed",
+          "x": 164,
+          "y": 2295,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "I need... — Seed",
+          "x": 16,
+          "y": 2410,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "I want to... — Seed",
+          "x": 164,
+          "y": 2410,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Leg — Seed",
+          "x": 16,
+          "y": 2526,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Line up — Seed",
+          "x": 164,
+          "y": 2526,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Listen to music — Seed",
+          "x": 16,
+          "y": 2641,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "My wish — Seed",
+          "x": 164,
+          "y": 2641,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need a break — Seed",
+          "x": 16,
+          "y": 2756,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need fidget — Seed",
+          "x": 164,
+          "y": 2756,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need headphones — Seed",
+          "x": 16,
+          "y": 2871,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need quiet — Seed",
+          "x": 164,
+          "y": 2871,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need sunglasses — Seed",
+          "x": 16,
+          "y": 2986,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Need to move — Seed",
+          "x": 164,
+          "y": 2986,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "New activity starts — Seed",
+          "x": 16,
+          "y": 3102,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "No — Seed",
+          "x": 164,
+          "y": 3102,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Squeeze a stress ball — Seed",
+          "x": 16,
+          "y": 3217,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Stomach — Seed",
+          "x": 164,
+          "y": 3217,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Take a walk — Seed",
+          "x": 16,
+          "y": 3332,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Take deep breaths — Seed",
+          "x": 164,
+          "y": 3332,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Throat — Seed",
+          "x": 16,
+          "y": 3447,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Time to stop — Seed",
+          "x": 164,
+          "y": 3447,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Too bright — Seed",
+          "x": 16,
+          "y": 3562,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Too crowded — Seed",
+          "x": 164,
+          "y": 3562,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Too loud — Seed",
+          "x": 16,
+          "y": 3678,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Water — Seed",
+          "x": 164,
+          "y": 3678,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "What is...? — Seed",
+          "x": 16,
+          "y": 3793,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "When is...? — Seed",
+          "x": 164,
+          "y": 3793,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Where is...? — Seed",
+          "x": 16,
+          "y": 3908,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Yes — Seed",
+          "x": 164,
+          "y": 3908,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "ماء — Seed",
+          "x": 16,
+          "y": 4023,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "水 — Seed",
+          "x": 164,
+          "y": 4023,
+          "w": 140,
+          "h": 107,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Print practice report",
+          "x": 16,
+          "y": 4138,
+          "w": 127,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Print home note for family",
+          "x": 149,
+          "y": 4138,
+          "w": 104,
+          "h": 44,
+          "class": ""
+        },
+        {
+          "tag": "BUTTON",
+          "role": null,
+          "name": "Export research CSV",
+          "x": 16,
+          "y": 4188,
+          "w": 121,
+          "h": 44,
+          "class": ""
+        }
+      ],
+      "focus": {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile & settings · Demo Learner\nShow",
+        "x": 0,
+        "y": 142,
+        "w": 320,
+        "h": 44,
+        "class": "ss-setup-toggle"
+      },
+      "toasts": []
+    },
+    "sessionAttributionAndKeyboard": true,
+    "errors": []
+  }
+]

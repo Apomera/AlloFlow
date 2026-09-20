@@ -186,7 +186,7 @@ function ToolCatalogControls(props) {
       <div id="tool-catalog-discovery-controls" hidden={!isExpanded}>
         <div className="mt-3 flex items-baseline justify-between gap-2">
           <label htmlFor="tool-catalog-search" className="text-xs font-bold text-slate-700">{translate('sidebar.tool_finder_search_label') || 'Search by name'}</label>
-          <span className="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600" aria-live="polite">{(translate('sidebar.tool_finder_shown') || '{n} shown').replace('{n}', String(shownCount))}</span>
+          <span className="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700" aria-live="polite">{(translate('sidebar.tool_finder_shown') || '{n} shown').replace('{n}', String(shownCount))}</span>
         </div>
         <div className="relative mt-1">
           <Search size={16} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -1317,7 +1317,7 @@ function AdventurePanel(props) {
 function SimplifiedPanel(props) {
   const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
-    expandedTools, handleGenerate, hasSourceOrAnalysis,
+    expandedTools, handleGenerate, handleReadOriginal, hasSourceOrAnalysis,
     includeCharts, isProcessing, keepCitations, leveledTextCustomInstructions,
     leveledTextLength, setIncludeCharts, setKeepCitations,
     setLeveledTextCustomInstructions, setLeveledTextLength, setTextFormat, t,
@@ -1336,6 +1336,7 @@ function SimplifiedPanel(props) {
                                 onChange={(e) => setTextFormat(e.target.value)}
                                 className={SIDEBAR_PANEL_UI.control}
                             >
+                                <option value="Keep Source Format and Tone">{t('simplified.formats.keep_source') === 'simplified.formats.keep_source' ? 'Keep source format and tone' : t('simplified.formats.keep_source')}</option>
                                 <option value="Standard Text">{t('simplified.formats.standard')}</option>
                                 <option value="Dialogue Script">{t('simplified.formats.dialogue')}</option>
                                 <option value="Mock Advertisement">{t('simplified.formats.advertisement')}</option>
@@ -1394,6 +1395,8 @@ function SimplifiedPanel(props) {
                         </div>
                         </div>
                 </div>
+                <p className="my-3 text-sm text-slate-700">Read the original with supports, or create a companion to preview ideas and build context for reading the original.</p>
+                <button type="button" data-read-original onClick={() => handleReadOriginal && handleReadOriginal()} disabled={!hasSourceOrAnalysis || isProcessing} className={SIDEBAR_PANEL_UI.primaryAction}>Read original with supports</button>
                 {!aiTextAvailable && <AiSetupNotice t={t} />}
                 <button type="button"
                     aria-label={t('common.generate')}
@@ -3530,7 +3533,7 @@ function LessonPlanPanel(props) {
 function AnalysisPanel(props) {
   const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
-    checkAccuracyWithSearch, expandedTools, handleGenerate, hasSourceOrAnalysis,
+    checkAccuracyWithSearch, expandedTools, handleGenerate, hasSourceOrAnalysis, inputText,
     isProcessing, setCheckAccuracyWithSearch, t
   } = props;
   if (!expandedTools || !expandedTools.includes('analysis')) return null;
@@ -3554,7 +3557,7 @@ function AnalysisPanel(props) {
                     <button type="button"
                         aria-label={t('common.generate')}
                         data-help-key="analysis_generate_button"
-                        onClick={() => handleGenerate('analysis')}
+                        onClick={() => handleGenerate('analysis', null, false, inputText, { selectedReadingSourceId: '__input__' })}
                         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                         className={SIDEBAR_PANEL_UI.primaryAction}
                     >
@@ -3589,6 +3592,34 @@ function UiToolWordsoundsPanel(props) {
 }
 
 // Host owns state, refs and actions; this view preserves the existing DOM structure.
+function ReadingSourceChoice(props) {
+  const api = window.AlloModules && window.AlloModules.InstructionalContext;
+  const selectedId = props.selectedReadingSourceId || '';
+  const result = React.useMemo(() => api?.resolveReadingSource ? api.resolveReadingSource({
+    items: props.history || [], sourceArtifactId: selectedId,
+    inputText: props.inputText || '', unitId: props.activeUnitId || 'all',
+    language: props.leveledTextLanguage || 'English'
+  }) : { status: 'loading', candidates: [] }, [api, props.history, selectedId, props.inputText, props.activeUnitId, props.leveledTextLanguage]);
+  const candidates = result.candidates || [];
+  const candidateItem = candidate => candidate.artifact || candidate.item || candidate;
+  const candidateId = candidate => String(candidate.inputArtifactId || candidate.id || candidateItem(candidate).id || '');
+  const roleLabel = role => role === 'primary' ? 'Main reading' : role === 'supplemental' ? 'Supporting reading' : 'Not designated';
+  const formLabel = form => form === 'adapted' ? 'Adapted text' : form === 'same-text-supported' ? 'Original with supports' : 'Original text';
+  const selected = result.artifact || result.item;
+  const title = selected?.title || result.title || (result.status === 'resolved' ? 'Current pasted text' : '');
+  const unknownSelection = selectedId && selectedId !== '__input__' && !candidates.some(candidate => candidateId(candidate) === selectedId);
+  return <section data-reading-source-choice className="rounded-2xl border border-indigo-200 bg-white p-3 shadow-sm">
+    <label htmlFor="reading-activity-source" className="block text-sm font-bold text-slate-900">Based on</label>
+    <select id="reading-activity-source" aria-describedby="reading-activity-source-help" value={selectedId} disabled={props.isProcessing || !api?.resolveReadingSource} onChange={event => props.setSelectedReadingSourceId?.(event.target.value)} className="mt-2 min-h-11 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600">
+      <option value="">{result.status === 'ambiguous' ? 'Choose a reading for this activity' : 'Automatic — follow lesson roles'}</option>
+      {!!String(props.inputText || '').trim() && <option value="__input__">Current pasted text</option>}
+      {unknownSelection && <option value={selectedId} disabled>Selected reading is no longer available in this lesson</option>}
+      {candidates.map(candidate => { const item = candidateItem(candidate); const profile = candidate.instructionalText || api?.getInstructionalText?.(item) || {}; return <option key={candidateId(candidate)} value={candidateId(candidate)} disabled={candidate.eligible === false}>{item.title || candidate.title || 'Reading'} · {formLabel(profile.form)} · {roleLabel(profile.role)}{candidate.eligible === false ? ' (needs review)' : ''}</option>; })}
+    </select>
+    <p id="reading-activity-source-help" role="status" className={'mt-2 break-words text-xs leading-relaxed ' + (result.status === 'resolved' ? 'text-slate-700' : 'text-amber-900')}>{result.status === 'resolved' ? 'Activities will use: ' + title + '. This choice does not change its lesson role.' : result.status === 'ambiguous' ? 'More than one reading could be used. Choose the passage before generating activities.' : result.status === 'loading' ? 'Reading choices are loading.' : selectedId ? 'Choose an available reading or the current pasted text.' : 'Add a passage or choose a saved reading for text-based activities.'}</p>
+  </section>;
+}
+
 function GeneratorActionsView(props) {
   const {
     AlertTriangle, ArrowDown, ArrowRight, ArrowUp, BRIDGE_MODES, BookOpen, Calculator, CheckSquare,
@@ -3684,7 +3715,7 @@ function GeneratorActionsView(props) {
     visualLayoutMode, visualStyle,
   } = props;
   return (
-<div id="tour-generator-actions" data-help-key="generator_actions" className="grid gap-4">
+<div id="tour-generator-actions" data-help-key="generator_actions" className="grid min-w-0 grid-cols-1 gap-4">
             <style>{`
               ${hiddenToolCatalogSelector ? `${hiddenToolCatalogSelector}{display:none!important;}` : ''}
               #tour-generator-actions > :where([id^="tour-tool-"],[id^="ui-tool-"]) {
@@ -3753,6 +3784,7 @@ function GeneratorActionsView(props) {
                 </section>
               );
             })()}
+            <ReadingSourceChoice {...props} />
             {/* -- UniversalSettingsPanel (CDN): cross-resource settings (grade, language, standards, interests, DoK, emoji) extracted from the Text Adaptation card 2026-07-28. Mounts ONCE above the tool accordion; per-control applicability is measured (docs/resource_setting_coverage.json). -- */}
             {window.AlloModules && window.AlloModules.UniversalSettingsPanel && React.createElement(window.AlloModules.UniversalSettingsPanel, {
           InfoTooltip, addInterest, addToast, aiStandardQuery, dokLevel,
@@ -3792,7 +3824,7 @@ function GeneratorActionsView(props) {
               </button>
               {/* ── AnalysisPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
               {expandedTools.includes('analysis') && window.AlloModules && window.AlloModules.AnalysisPanel && React.createElement(window.AlloModules.AnalysisPanel, {
-          expandedTools, checkAccuracyWithSearch, handleGenerate, hasSourceOrAnalysis, isProcessing,
+          expandedTools, checkAccuracyWithSearch, handleGenerate, hasSourceOrAnalysis, inputText, isProcessing,
           setCheckAccuracyWithSearch, t
               })}
             </div>
@@ -3838,7 +3870,7 @@ function GeneratorActionsView(props) {
           expandedTools, handleGenerate, hasSourceOrAnalysis, includeCharts,
           isProcessing, keepCitations, leveledTextCustomInstructions, leveledTextLength,
           setIncludeCharts, setKeepCitations, setLeveledTextCustomInstructions, setLeveledTextLength, setTextFormat,
-          t, textFormat
+          t, textFormat, handleReadOriginal: props.handleReadOriginal
               })}
             </div>
             <div style={{display: isGuidedToolVisible('ui-tool-wordsounds') ? undefined : 'none'}} id="tour-tool-wordsounds" data-help-key="tool_wordsounds" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden

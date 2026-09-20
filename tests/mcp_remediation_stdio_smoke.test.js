@@ -478,7 +478,7 @@ describe('remediation MCP: direct production parity for deterministic adapters',
       responses: {},
       config: { includeSimplified: true, includeTeacherKey: false },
     };
-    writeFileSync(input, JSON.stringify(payload));
+    writeFileSync(input, '\uFEFF' + JSON.stringify(payload));
 
     const res = await callTool('generate_resource_pack', { resource_pack_json: input, output_path: output });
     expect(res.isError).toBe(false);
@@ -703,6 +703,18 @@ describe('remediation MCP: validation fires BEFORE any browser/quota spend', () 
     expect(msg.error.message).toMatch(/object map/i);
   });
 
+  it.each([
+    ['missing type', [{id:'r',title:'Lesson',data:'Reading'}], '.type must'],
+    ['missing data', [{id:'r',type:'simplified',title:'Lesson',data:null}], '.data is required'],
+    ['object metadata', [{id:'r',type:'simplified',title:'Lesson',data:'Reading',meta:{label:'Reading'}}], '.meta must'],
+    ['duplicate ids', [0,1].map(()=>({id:'r',type:'simplified',title:'Lesson',data:'Reading'})), '.id duplicates'],
+  ])('generate_resource_pack rejects %s before browser work', async (label, items, message) => {
+    const input = join(tmp, 'invalid-pack-' + label.replace(/ /g,'-') + '.json');
+    writeFileSync(input, '\uFEFF' + JSON.stringify({items}));
+    const msg = await request('tools/call', {name:'generate_resource_pack',arguments:{resource_pack_json:input,output_path:join(tmp,'invalid-pack.html')}});
+    expect(msg.error.code).toBe(-32602);
+    expect(msg.error.message).toContain(message);
+  });
   it('generate_resource_pack rejects a missing JSON file before launching Chromium', async () => {
     const t0 = Date.now();
     const msg = await request('tools/call', { name: 'generate_resource_pack', arguments: { resource_pack_json: join(tmp, 'missing-pack.json'), output_path: join(tmp, 'pack.html') } });

@@ -61,3 +61,23 @@ During a story, teacher finale controls remain available in the sidebar under **
 Choose **Set-length episode** or **Open-ended** directly in Essential setup. Open-ended has no fixed decision cap; an enabled final challenge or energy depletion can still finish the story. Switching back restores the previous decision count while the setup is open.
 
 Adventure language appears when additional languages are available or a saved adventure uses another language. For English-only lessons, English stays in the setup summary. Teachers can use **Add languages in Universal Settings** to open and focus the shared language input.
+
+For a different lesson length, select **Custom length** under Episode length and enter **3–50 decisions**. Clearing the field while typing keeps the previous valid count; leaving the field restores a blank value or rounds and bounds a number. Choices per decision and the final-challenge setting are independent.
+
+Teachers can manage **Student editing** inside **Saving & permissions** in either Adventure setup panel. Individual controls cover interaction mode, language, energy and rewards, story guidance, visual settings, and cloud image storage. **Lock student settings** overrides these permissions without clearing them. Unlocking restores the selected permissions. Episode pacing, learning supports, and general story rules remain adjustable unless the setup is locked; the existing project permission still controls written responses.
+
+In Systems mode, teacher-defined resources now show guidance for an empty list and inline messages for unnamed or duplicate rows. Names are compared without case or surrounding spaces, matching the story engine. Only the first entry for a name is used. The story supports up to 24 resource rows; the setup prevents adding more and explains any extra rows already present in a saved setup. It does not remove saved rows automatically.
+
+When languages are already available, teachers can use **Manage languages in Universal Settings** from Adventure setup to edit the shared language list.
+
+Removing a teacher-defined resource offers **Undo resource removal** for the most recently removed row while the setup remains open. Undo restores that row without reverting edits to other resources. Adding, removing, and restoring rows keeps keyboard focus inside the resource editor. Undo is unavailable while settings are busy or locked.
+
+The collapsed **Visuals** section now summarizes art style, protagonist age, and enabled consistent-character or faster-visual settings.
+
+Episode-length editing is shared across the launch panel and sidebar: selecting Custom in one updates the other. Switching to Open-ended remembers the previous fixed count in the adventure settings, including when a panel is reopened. Reapplying a preset restores its standard length display, even if the numeric count was already the same.
+
+The earliest-finale field accepts a draft while typing, like the custom episode count. Blank drafts preserve the last valid value; leaving the field restores a blank draft, rounds fractional values, and bounds numeric values to 3–50.
+
+Student setup shows **Set by your teacher** beside permission-controlled fields the student cannot change. These explanations are associated with the controls for screen readers. During generation or another adventure update, a separate message explains that editing is temporarily paused.
+
+The **Change visual settings** permission covers art style, custom art guidance, protagonist age, character consistency, and faster visuals. Turning it off prevents students from changing these controls while retaining the teacher's selected values. An unset visual permission keeps the existing default behavior.

@@ -1,0 +1,19 @@
+{
+  "checks": [],
+  "scans": [
+    {
+      "width": 1200,
+      "overflow": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "missingReferences": [],
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "success": true
+}

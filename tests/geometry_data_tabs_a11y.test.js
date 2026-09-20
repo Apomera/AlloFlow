@@ -87,7 +87,7 @@ describe('Probability mode selector semantics', () => {
 
   for (const mode of ['coin', 'dice', 'spinner', 'custom', 'tree', 'pi', 'birthday', 'monty', 'galton', 'volume3d']) {
     it(`exposes ${mode} as the one pressed mode`, () => {
-      const host = parse(renderTool('probability', { probability: { mode } }));
+      const host = parse(renderTool('probability', { probability: { mode, showAllExperiments: true } }));
       const group = host.querySelector('[role="group"][aria-label="Probability experiment mode"]');
       expect(group).toBeTruthy();
       expect(group.querySelectorAll('button')).toHaveLength(13);
@@ -98,4 +98,28 @@ describe('Probability mode selector semantics', () => {
       );
     });
   }
+});
+
+
+describe('Data Plot activity navigation', () => {
+  beforeEach(() => { resetStemLab(); loadTool('stem_lab/stem_tool_dataplot.js', 'dataPlot'); });
+  for (const activeTab of ['chart', 'stats', 'quiz', 'tools', 'inquiry']) {
+    it('links the '+activeTab+' activity to its keyboard entry point', () => {
+      const host=parse(renderTool('dataPlot',{dataPlot:{activeTab}}));
+      const nav=host.querySelector('[role="tablist"][aria-label="Data Plot sections"]');
+      const active=nav.querySelector('[aria-selected="true"]');
+      expect(nav.querySelectorAll('[role="tab"][tabindex="0"]')).toHaveLength(1);
+      expect(active.id).toBe('data-plot-tab-'+activeTab);
+      const panel=host.querySelector('#'+active.getAttribute('aria-controls'));
+      expect(panel.getAttribute('role')).toBe('tabpanel');
+      expect(panel.getAttribute('aria-labelledby')).toBe(active.id);
+    });
+  }
+  it('announces the restored regression-model choice', () => {
+    const host=parse(renderTool('dataPlot',{dataPlot:{points:[{x:1,y:2},{x:2,y:4},{x:3,y:8}],regressionType:'exponential'}}));
+    const models=host.querySelector('[role="group"][aria-label="Regression model"]');
+    expect(models.querySelectorAll('button')).toHaveLength(4);
+    expect(models.querySelectorAll('[aria-pressed="true"]')).toHaveLength(1);
+    expect(models.querySelector('[aria-pressed="true"]').textContent).toBe('Exponential');
+  });
 });

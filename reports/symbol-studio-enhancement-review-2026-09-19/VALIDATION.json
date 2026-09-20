@@ -1,0 +1,19 @@
+{
+  "files": 28,
+  "testsPassed": 261,
+  "testsFailed": 0,
+  "reports": [
+    "enhancement-final-tests.json",
+    "enhancement-final-supplement.json"
+  ],
+  "qualification": "The final full runner reported 240 passing assertions but exited without results for three files. Those files were rerun directly and all 21 assertions passed. This is complete coverage across two runs, not a claim that one uninterrupted full run exited successfully.",
+  "moduleSha256": "c0a5524d8be8a1e4abb3b9931ffad6cd3bee01015686367a3b3a1834343856ae",
+  "mirrorsIdentical": true,
+  "browserWidths": [
+    1440,
+    390,
+    320
+  ],
+  "browserTaxonomyPersistence": true,
+  "browserRuntimeErrors": 0
+}

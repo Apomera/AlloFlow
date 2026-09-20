@@ -8,7 +8,8 @@
     "gradeLevel": "4th Grade",
     "standards": "C3 Framework D2.Civ.2.3-5 (explain how a democracy relies on people's responsible participation); C3 Framework D2.Civ.12.3-5 (explain how rules and laws change society and how people change rules and laws); C3 Framework D2.Civ.6.3-5 (describe ways in which people benefit from and are challenged by working together); CCSS.ELA-LITERACY.RI.4.3 (explain events, procedures, or ideas in a historical or technical text, including what happened and why)",
     "createdAt": "2026-09-06T01:30:00.000Z",
-    "imageShotList": "allopacks/local_government_grade4.IMAGES.md"
+    "imageShotList": "allopacks/local_government_grade4.IMAGES.md",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Local Government and Civic Participation",
   "history": [
@@ -55,7 +56,7 @@
       "title": "Who Decided That?",
       "timestamp": "2026-09-06T01:30:01.000Z",
       "data": "## Who Decided That?\n\nThere is a crosswalk near your school. Somebody decided to put it there. Somebody decided what time the library closes, and whether the park gets a new slide.\n\nThose were real decisions, made by real people, in a meeting you were allowed to attend.\n\n**Government** happens at three levels. The national level handles things like the army and money. The state level handles things like driver's licences and most school rules. The **local** level is your city or town, and it handles a surprising amount of what you actually touch: parks, libraries, rubbish collection, crosswalks, fire stations.\n\nMost towns are run by a **council**, a small group of people **citizens** elect. Many also elect a **mayor** to lead. The council passes an **ordinance**, which is the word for a rule made by a town rather than a state or a country.\n\nThe council also sets a **budget**, and this is where the real decisions live. A town has only so much money. Spending it on one **service** means not spending it on another. A new library roof might mean waiting another year for the skate park. Nobody is being mean. The money simply ran out, and somebody had to choose.\n\nSo how does anything change?\n\nCouncil meetings are open to the public, and most set aside time for anyone to speak. People sign a **petition**, a written request with many names on it, to show a lot of people want the same thing. And people **vote**, which is the slowest tool and the strongest one.\n\nNow the part that surprises people. Far fewer people vote in local elections than in national ones. In many places, well under half of those who could vote actually do, and in some local elections it is under a quarter.\n\nThat matters more than it sounds. It means local decisions — the ones closest to your street — are often made by a small number of people who showed up. A room with twenty people in it can change a town.\n\nWhich is the good news and the bad news at once. The people who show up decide. And you can be one of them, sooner than you think.",
-      "meta": "4th Grade • Leveled reading • ~380 words",
+      "meta": "4th Grade • Leveled reading",
       "imageSlot": "lg-img-three-levels"
     },
     {

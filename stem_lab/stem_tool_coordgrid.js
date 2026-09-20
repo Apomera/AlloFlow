@@ -1903,7 +1903,7 @@ window.StemLab = window.StemLab || {
 
       // ══════════ MAIN RENDER ══════════
       var coordinateTabs = [
-        { id: 'explore', icon: '\uD83D\uDCCD', label: t('stem.coordgrid.explore', 'Explore') },
+        { id: 'explore', icon: '\uD83D\uDCCD', label: t('stem.coordgrid.tab_plot_measure', 'Plot & measure') },
         { id: 'quadrants', icon: '\uD83D\uDDFA', label: t('stem.coordgrid.quadrant_tour', 'Quadrant Tour') },
         { id: 'maps', icon: '\uD83C\uDF10', label: t('stem.coordgrid.real_world_maps', 'Real-World Maps') },
         { id: 'quadHunt', icon: '\uD83C\uDFAF', label: t('stem.coordgrid.quadrant_hunt', 'Quadrant Hunt') }
@@ -2033,7 +2033,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // Tab bar
-        h('div', { className: 'flex gap-1 overflow-x-auto bg-cyan-50 rounded-xl p-1 border border-cyan-200', role: 'tablist', 'aria-label': t('stem.coordgrid.coordinate_grid_sections', 'Coordinate Grid sections') },
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }, className: 'gap-1 bg-cyan-50 rounded-xl p-1 border border-cyan-200', role: 'tablist', 'aria-label': t('stem.coordgrid.coordinate_grid_sections', 'Coordinate Grid sections') },
           coordinateTabs.map(function(t2, index) {
             return h('button', {
               key: 't-' + t2.id,
@@ -2044,7 +2044,7 @@ window.StemLab = window.StemLab || {
               'aria-selected': cgTab === t2.id,
               'aria-controls': 'coordinate-section-panel',
               tabIndex: cgTab === t2.id ? 0 : -1,
-              className: 'flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
+              style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }, className: 'py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
                 (cgTab === t2.id ? 'bg-white text-cyan-800 shadow-sm' : 'text-cyan-700 hover:text-cyan-900')
             }, t2.icon + ' ' + t2.label);
           })

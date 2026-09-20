@@ -8,12 +8,13 @@
     "gradeLevel": "6th-8th Grade",
     "createdAt": "2026-09-13T18:00:00.000Z",
     "imageShotList": "allopacks/crew_teamwork_grade6_8.IMAGES.md",
-    "standards": "King Middle School HOWL Perseverance (produce high quality work; advocate for learning through questions); CASEL Relationship Skills (teamwork and collaborative problem-solving; communicating effectively); CASEL Responsible Decision-Making (anticipating and evaluating consequences); EL Education Crew (Crew Launch: expedition products and learning targets); Maine DOE PBIS Tier 1 (teaching cooperative work as an expected behavior)"
+    "standards": "King Middle School HOWL Perseverance (produce high quality work; advocate for learning through questions); CASEL Relationship Skills (teamwork and collaborative problem-solving; communicating effectively); CASEL Responsible Decision-Making (anticipating and evaluating consequences); EL Education Crew (Crew Launch: expedition products and learning targets); Maine DOE PBIS Tier 1 (teaching cooperative work as an expected behavior)",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "High quality work in a group: named parts and early asks",
   "history": [
     {
-      "id": "ct-directions",
+      "id": "cteam-directions",
       "type": "directions",
       "title": "Crew Launch Week 11: Your Part of the Whole",
       "timestamp": "2026-09-13T18:00:00.000Z",
@@ -21,20 +22,20 @@
         "body": "Crew slot: 40 minutes. HOWL: Perseverance. \"I persevere to produce high quality work.\"\n\nThis week is about high quality work when the work belongs to a group: naming your part, finishing it, and asking early when it depends on someone else.\n\n1. Read **Your Part of the Whole** (10 minutes).\n2. Learn the **Glossary** words, then win the **Word Scramble**.\n3. Keep the **What, Where, By When** chart open.\n4. Sort the cards in **Named Part or Hope?**\n5. Take the quiz. Question 3 is about Lena and Omar's notebook.\n6. Open the SEL Hub and choose [Teamwork Builder](#sel-hub/teamwork?station=sel_station_crew_launch_teamwork). Look at Roles, then write a Communication Plan for a real group you are in this trimester. Then open [DEAR MAN](#sel-hub/dearMan?station=sel_station_crew_launch_teamwork) and build the ask you would send a teammate whose part you are waiting on.\n7. Use the **Sentence Frames** to write your part of the whole for one real group.\n8. Lock it in with **Remember What, Where, By When**.\n9. Finish with the **Propose Challenge: A Parts List for Our Group**.\n\nYour commitment: this week, in one real group task, say your part of the whole out loud (what, where, by when) and finish it before the deadline. 🧩\n\nClicking a tool link above also starts your Crew station for this week, so the time you spend in the tools and the self-check stay together in one place. It stays active until you exit it, so come back later in the week to mark the self-check. You can find it again under SEL Stations in the History panel. 📌",
         "objectives": [
           {
-            "id": "ct-goal-scramble",
+            "id": "cteam-goal-scramble",
             "label": "Win the Word Scramble",
             "kind": "game",
             "gameType": "wordScramble",
-            "resourceRef": "ct-glossary"
+            "resourceRef": "cteam-glossary"
           },
           {
-            "id": "ct-goal-xp",
+            "id": "cteam-goal-xp",
             "label": "Earn 20 XP",
             "kind": "xp",
             "amount": 20
           },
           {
-            "id": "ct-goal-manual",
+            "id": "cteam-goal-manual",
             "label": "I named my part of the whole out loud in one real group task this week and finished it before the deadline",
             "kind": "manual"
           }
@@ -43,15 +44,15 @@
       "meta": "6th-8th Grade • Crew slot • 3 goals"
     },
     {
-      "id": "ct-reading",
+      "id": "cteam-reading",
       "type": "simplified",
       "title": "Your Part of the Whole",
       "timestamp": "2026-09-13T18:00:00.000Z",
       "data": "## Your Part of the Whole\n\n**HOWL: \"I persevere to produce high quality work.\"**\n\nAt King, a lot of the work that matters is group work. **Expeditions** end in a product a team made together: a field guide, a documentary, a museum exhibit. High **quality** work, the Perseverance **HOWL**, is easy to picture when it is yours alone. When it belongs to four people, it gets complicated fast. Who did what? Who did nothing? Who did everything at midnight the night before and resents the other three?\n\nHere is the trap most groups fall into. The work is assigned to the group, so nobody in the group owns any **particular** piece of it. Everyone assumes someone else has the graphs. The graphs do not exist until Thursday night, when one person makes them badly because there is no time to make them well. The product is worse than any one member could have made alone, and everyone is a little angry. Researchers call part of this **social loafing**: people put in less effort when responsibility is spread across a group. It is not laziness. It is what happens when a part has no name on it.\n\nThe fix is a sentence. \"My part of the **whole** is the two data graphs, on the shared slide, by Wednesday.\" What, where, and by when. Once every part has a sentence like that, the group has a plan instead of a **hope**. Once every sentence has a name, the loafing mostly stops, because it is **visible**.\n\nHere is a moment from a fictional **Crew**. Lena's expedition group has a poster due Friday. On Monday she says her sentence out loud: the two graphs, on the slide, by Wednesday. On Tuesday she realizes the data she needs is in Omar's notebook and Omar is out sick. She could wait. Instead she uses what she learned in week 5 and asks: a text to Omar, \"Could you send a photo of the water-test page?\" The photo comes. The graphs are done Wednesday. On Friday the poster is good, and the group knows exactly whose graphs those are.\n\nPersevering in a group has two halves. The first is finishing your part, on time, at the quality you would want if your name were the only one on it. The second is asking early when your part **depends** on someone else's, instead of waiting and then blaming. Both halves are yours. Neither one requires the rest of the group to be perfect.\n\nOne more thing. Sometimes your part is done and someone else's is not, and Friday is coming. You are allowed to help. You are also allowed to say, calmly, to the group and to the teacher, which part was yours. That is not tattling. That is what \"my part of the whole\" means: the whole is shared, and the parts have names.",
-      "meta": "6th-8th Grade • Leveled reading • ~480 words"
+      "meta": "6th-8th Grade • Leveled reading"
     },
     {
-      "id": "ct-glossary",
+      "id": "cteam-glossary",
       "type": "glossary",
       "title": "Group Work Words",
       "timestamp": "2026-09-13T18:00:00.000Z",
@@ -120,7 +121,7 @@
       "meta": "6th-8th Grade • 12 terms • Tiered"
     },
     {
-      "id": "ct-anchor",
+      "id": "cteam-anchor",
       "type": "anchor-chart",
       "title": "What, Where, By When",
       "timestamp": "2026-09-13T18:00:00.000Z",
@@ -169,85 +170,85 @@
       "meta": "4 sections • Crew reference chart"
     },
     {
-      "id": "ct-sort",
+      "id": "cteam-sort",
       "type": "concept-sort",
       "title": "Named Part or Hope?",
       "timestamp": "2026-09-13T18:00:00.000Z",
       "data": {
         "categories": [
           {
-            "id": "ct-part",
+            "id": "cteam-part",
             "label": "NAMED PART (what, where, by when, whose)",
             "color": "bg-emerald-500"
           },
           {
-            "id": "ct-hope",
+            "id": "cteam-hope",
             "label": "HOPE (no name, no when)",
             "color": "bg-amber-500"
           },
           {
-            "id": "ct-ask",
+            "id": "cteam-ask",
             "label": "ASK EARLY (a part depends on someone)",
             "color": "bg-sky-500"
           }
         ],
         "items": [
           {
-            "id": "ct-i1",
+            "id": "cteam-i1",
             "content": "Lena: the two data graphs, on the shared slide, by Wednesday.",
-            "categoryId": "ct-part"
+            "categoryId": "cteam-part"
           },
           {
-            "id": "ct-i2",
+            "id": "cteam-i2",
             "content": "Someone should probably do the graphs.",
-            "categoryId": "ct-hope"
+            "categoryId": "cteam-hope"
           },
           {
-            "id": "ct-i3",
+            "id": "cteam-i3",
             "content": "\"Could you send a photo of the water-test page?\"",
-            "categoryId": "ct-ask"
+            "categoryId": "cteam-ask"
           },
           {
-            "id": "ct-i4",
+            "id": "cteam-i4",
             "content": "We will all work on the poster together.",
-            "categoryId": "ct-hope"
+            "categoryId": "cteam-hope"
           },
           {
-            "id": "ct-i5",
+            "id": "cteam-i5",
             "content": "Omar: the water-test data typed into the shared sheet, by Tuesday.",
-            "categoryId": "ct-part"
+            "categoryId": "cteam-part"
           },
           {
-            "id": "ct-i6",
+            "id": "cteam-i6",
             "content": "\"I need the photos before I can do the layout. Can you share them by Wednesday?\"",
-            "categoryId": "ct-ask"
+            "categoryId": "cteam-ask"
           },
           {
-            "id": "ct-i7",
+            "id": "cteam-i7",
             "content": "The intro paragraph will get written at some point.",
-            "categoryId": "ct-hope"
+            "categoryId": "cteam-hope"
           },
           {
-            "id": "ct-i8",
+            "id": "cteam-i8",
             "content": "Priya: the title and the three captions, on the poster file, by Thursday morning.",
-            "categoryId": "ct-part"
+            "categoryId": "cteam-part"
           },
           {
-            "id": "ct-i9",
+            "id": "cteam-i9",
             "content": "\"Which of us is doing the sources page? I can, if nobody has it.\"",
-            "categoryId": "ct-ask"
+            "categoryId": "cteam-ask"
           },
           {
-            "id": "ct-i10",
+            "id": "cteam-i10",
             "content": "It will come together Thursday night.",
-            "categoryId": "ct-hope"
+            "categoryId": "cteam-hope"
           }
         ]
       },
       "meta": "3 categories • 10 cards"
     },
     {
-      "id": "ct-quiz",
+      "id": "cteam-quiz",
       "type": "quiz",
       "title": "Parts and Wholes",
       "timestamp": "2026-09-13T18:00:00.000Z",
@@ -329,7 +330,7 @@
       "meta": "5 multiple choice + 1 short answer • 1 reflection"
     },
     {
-      "id": "ct-frames",
+      "id": "cteam-frames",
       "type": "sentence-frames",
       "title": "My Part of the Whole",
       "timestamp": "2026-09-13T18:00:00.000Z",
@@ -360,7 +361,7 @@
       "meta": "6 frames • rubric included"
     },
     {
-      "id": "ct-faq",
+      "id": "cteam-faq",
       "type": "faq",
       "title": "Group Work Questions Crews Ask",
       "timestamp": "2026-09-13T18:00:00.000Z",
@@ -397,7 +398,7 @@
       "meta": "7 questions"
     },
     {
-      "id": "ct-memory",
+      "id": "cteam-memory",
       "type": "memory-aid",
       "title": "Remember What, Where, By When",
       "timestamp": "2026-09-13T18:00:00.000Z",
@@ -415,19 +416,19 @@
         "reasoningRequired": false,
         "sourceExcerpt": "The fix is a sentence. \"My part of the whole is the two data graphs, on the shared slide, by Wednesday.\" What, where, and by when. Once every part has a sentence like that, the group has a plan instead of a hope.",
         "lessonRef": {
-          "resourceId": "ct-reading",
+          "resourceId": "cteam-reading",
           "title": "Your Part of the Whole"
         },
         "cards": [
           {
-            "id": "ct-ma-www",
+            "id": "cteam-ma-www",
             "target": "A named part says what, where, and by when",
             "essentialFacts": [
               "A part is named by what, where, and by when.",
               "Once every part has a sentence like that, the group has a plan instead of a hope."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "acronym-acrostic",
             "mode": "scaffolded",
             "aiExample": "W-W-W: What, Where, When. Three W's, like a web address for your part. If the sentence is missing a W, the part is a hope.",
@@ -449,14 +450,14 @@
             }
           },
           {
-            "id": "ct-ma-halves",
+            "id": "cteam-ma-halves",
             "target": "Persevering in a group is finishing your part and asking early",
             "essentialFacts": [
               "The first half is finishing your part, on time, at the quality you would want with only your name on it.",
               "The second half is asking early when your part depends on someone else's."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "analogy-pattern",
             "mode": "scaffolded",
             "aiExample": "A relay runner has two jobs: run your leg, and be ready with your hand out for the baton before it arrives. Waiting with your hands down is how relays get dropped.",
@@ -478,7 +479,7 @@
       "meta": "6th-8th Grade • 2 memory aids • three W, two halves"
     },
     {
-      "id": "ct-challenge",
+      "id": "cteam-challenge",
       "type": "applied-challenge",
       "title": "Propose Challenge: A Parts List for Our Group",
       "timestamp": "2026-09-13T18:00:00.000Z",
@@ -531,7 +532,7 @@
           ],
           "deliverable": "The agreed parts list (with names, places, dates, and asks) and a half-page Friday report: what landed, what did not, and what you would change.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {
@@ -553,7 +554,7 @@
         "coachHint": "If a group refuses the list, the student still names their own part and reports that. A proposal the group declined is still a proposal made.",
         "sourceExcerpt": "The fix is a sentence. What, where, and by when. Once every part has a sentence like that, the group has a plan instead of a hope. Once every sentence has a name, the loafing mostly stops, because it is visible.",
         "lessonRef": {
-          "resourceId": "ct-reading",
+          "resourceId": "cteam-reading",
           "title": "Your Part of the Whole"
         }
       },

@@ -5775,184 +5775,161 @@
   }
 
   // ── Worksheet Generator ──
-  // Creates a printable companion worksheet for any lesson
-  function generateWorksheetHTML(lesson) {
-    var npcsWithQ = (lesson.npcs || []).filter(function(n) { return n.question; });
-    var allNpcs = lesson.npcs || [];
-    var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + escapeReportHtml(lesson.title || 'Geometry World') + ' — Worksheet</title>'
-      + '<style>'
-      + 'body{font-family:Arial,sans-serif;max-width:750px;margin:0 auto;padding:24px;color:#1a1a1a;font-size:13px;line-height:1.6}'
-      + 'h1{font-size:20px;border-bottom:2px solid #7c3aed;padding-bottom:6px;color:#4c1d95}'
-      + 'h2{font-size:15px;color:#7c3aed;margin-top:20px;margin-bottom:6px}'
-      + '.header{display:flex;justify-content:space-between;border:1px solid #d1d5db;border-radius:8px;padding:10px 14px;margin-bottom:16px;background:#f9fafb}'
-      + '.header label{font-weight:700;font-size:12px;color:#6b7280}'
-      + '.header input{border:none;border-bottom:1px solid #d1d5db;font-size:13px;width:140px;padding:2px 4px;font-family:inherit}'
-      + '.formula-box{background:#ede9fe;border:1px solid #c4b5fd;border-radius:8px;padding:10px 14px;margin:10px 0;font-family:monospace;font-size:14px}'
-      + '.problem{border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin:10px 0;page-break-inside:avoid}'
-      + '.problem-title{font-weight:700;color:#1e293b;margin-bottom:6px;font-size:14px}'
-      + '.work-box{border:1px dashed #d1d5db;border-radius:6px;min-height:60px;margin:8px 0;padding:6px;background:#fafafa}'
-      + '.work-label{font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase}'
-      + '.dim-line{display:flex;gap:16px;margin:6px 0}'
-      + '.dim-line label{font-weight:600;font-size:12px}'
-      + '.dim-line .blank{border-bottom:1px solid #374151;width:50px;display:inline-block;text-align:center}'
-      + '.eq-line{font-family:monospace;font-size:14px;margin:8px 0;padding:8px;background:#f0fdf4;border-radius:6px;border:1px solid #86efac}'
-      + '.objectives{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;margin:10px 0}'
-      + '.objectives li{margin:4px 0}'
-      + '.tip{background:#fef3c7;border-left:3px solid #f59e0b;padding:8px 12px;border-radius:0 6px 6px 0;margin:10px 0;font-size:12px}'
-      + '.footer{margin-top:20px;font-size:10px;color:#6b7280;text-align:center;border-top:1px solid #e5e7eb;padding-top:8px}'
-      + '@media print{body{padding:12px}}'
-      + '</style></head><body>';
-
-    // Header
-    h += '<h1>\uD83E\uDDF1 ' + escapeReportHtml(lesson.title || 'Geometry World Worksheet') + '</h1>';
-    h += '<div class="header">';
-    h += '<div><label for="gw-ws-name">Name:</label> <input id="gw-ws-name" type="text" placeholder="" aria-label="Name"></div>';
-    h += '<div><label for="gw-ws-date">Date:</label> <input id="gw-ws-date" type="text" placeholder="" aria-label="Date"></div>';
-    h += '<div><label for="gw-ws-player">Player #:</label> <input id="gw-ws-player" type="text" placeholder="" style="width:50px" aria-label="Player number"></div>';
-    h += '</div>';
-
-    // Description
-    if (lesson.description) {
-      h += '<p><b>Introduction:</b> ' + escapeReportHtml(lesson.description) + '</p>';
+  // One question traversal serves the live dialogue and every print format.
+  // A follow-up may itself have follow-ups; keep depth-first authored order.
+  function geometryQuestionSequence(question) {
+    var result = [], seen = [];
+    function visit(q) {
+      if (!q || typeof q !== 'object' || seen.indexOf(q) >= 0) return;
+      seen.push(q);
+      if (typeof q.text === 'string' && q.text.trim() && Array.isArray(q.choices) && q.choices.length >= 2) result.push(q);
+      if (Array.isArray(q.followUp)) q.followUp.forEach(visit);
     }
+    visit(question);
+    return result;
+  }
 
-    // Formula reference
-    h += '<div class="formula-box">';
-    h += '<b>Key Formulas:</b><br>';
-    h += 'Volume = Length \u00d7 Width \u00d7 Height &nbsp;&nbsp; (V = L \u00d7 W \u00d7 H)<br>';
-    h += 'Volume = Base Area \u00d7 Height &nbsp;&nbsp; (V = A \u00d7 H)<br>';
-    h += 'L-Block Volume = V\u2081 + V\u2082';
-    h += '</div>';
+  // Validate the complete question tree at import/generation time. The live
+  // sequence and the worksheet then consume the same accepted choices and indices.
+  function normalizeGeometryQuestion(question, ancestors) {
+    ancestors = ancestors || [];
+    if (!question || typeof question !== 'object' || ancestors.indexOf(question) >= 0 || typeof question.text !== 'string' || !question.text.trim() || !Array.isArray(question.choices) || question.choices.length < 2) return null;
+    var q = Object.assign({}, question);
+    q.choices = question.choices.slice(0, 5).map(function(value) { return typeof value === 'string' || typeof value === 'number' ? String(value) : '(other)'; });
+    while (q.choices.length < 3) q.choices.push('(other)');
+    var index = Number(question.correct);
+    q.correct = Math.max(0, Math.min(q.choices.length - 1, Number.isFinite(index) ? Math.round(index) : 0));
+    if (Array.isArray(question.followUp)) {
+      q.followUp = question.followUp.map(function(fu) { return normalizeGeometryQuestion(fu, ancestors.concat([question])); }).filter(Boolean);
+      if (!q.followUp.length) delete q.followUp;
+    } else delete q.followUp;
+    return q;
+  }
 
-    // Objectives
-    if (lesson.objectives && lesson.objectives.length) {
-      h += '<div class="objectives"><b>\uD83D\uDCCB Objectives:</b><ul>';
-      lesson.objectives.forEach(function(obj) { h += '<li>\u2610 ' + escapeReportHtml(obj) + '</li>'; });
-      h += '</ul></div>';
-    }
-
-    // Detect if this is the Geometry Garden (exploration mode) or a standard lesson.
-    //
-    // This used to also treat ANY question-less lesson as the Garden. The Garden branch
-    // emits eight hardcoded stations ("The Single Cube", "the gold structures", "The
-    // Hidden Garden"), so a teacher-authored or AI-generated exploration lesson — the
-    // AI prompt explicitly allows question: null — printed a worksheet about a
-    // completely different world. The standard branch already handles question-less
-    // NPCs with a Notes / Observations box, so let those fall through to it.
-    var isGarden = !!(lesson.title && lesson.title.indexOf('Garden') >= 0);
-
-    if (isGarden) {
-      // ── Field Journal for the Geometry Garden ──
-      h += '<div class="tip" style="background:#ecfdf5;border-color:#16a34a">\uD83C\uDF3F <b>This is a Field Journal.</b> There are no right or wrong answers. Walk through the garden, observe the structures, and record what you notice. Take your time.</div>';
-
-      var stations = [
-        { name: 'Station 1: The Single Cube', prompt: 'Describe what you see. How many blocks? What are its dimensions?', sketch: true },
-        { name: 'Station 2: The Row', prompt: 'How is this different from Station 1? How many blocks long is it? What dimension did we add?', sketch: true },
-        { name: 'Station 3: The Flat Rectangle', prompt: 'Now we have two dimensions. Measure the length and width. What is the area (L \u00d7 W)?', sketch: true, measure: true },
-        { name: 'Station 4: The Rectangular Prism', prompt: 'Three dimensions! Measure all three. How does this relate to the flat rectangle at Station 3?', sketch: true, measure: true, volume: true },
-        { name: 'Station 5: Three Shapes, One Volume', prompt: 'Measure all three gold structures. What do you notice about their volumes? How can different shapes have the same volume?', sketch: true, measure: true, volume: true, wonder: 'What surprised you about these three structures?' },
-        { name: 'Station 6: The L-Block', prompt: 'This shape is made of two rectangular prisms joined together. Can you find where one ends and the other begins?', sketch: true, measure: true, volume: true },
-        { name: 'Station 7: Nested Cubes', prompt: 'The outer cube is glass (transparent). There is a smaller cube inside. What is the volume of JUST the glass shell?', sketch: true, measure: true, volume: true, wonder: 'How would you calculate the volume of a hollow shape?' },
-        { name: 'The Hidden Garden', prompt: 'Find the structure behind the wall at the end of the path. This shape is NOT a rectangular prism. Can you still figure out its volume? How?', sketch: true, wonder: 'What new questions does this shape raise for you?' }
-      ];
-
-      stations.forEach(function(st, i) {
-        h += '<div class="problem" style="border-color:#86efac">';
-        h += '<div class="problem-title" style="color:#16a34a">\uD83C\uDF3F ' + st.name + '</div>';
-        h += '<p>' + st.prompt + '</p>';
-        if (st.measure) {
-          h += '<div class="dim-line">';
-          h += '<label>Length: <span class="blank">&nbsp;</span></label>';
-          h += '<label>Width: <span class="blank">&nbsp;</span></label>';
-          h += '<label>Height: <span class="blank">&nbsp;</span></label>';
-          h += '</div>';
-        }
-        if (st.volume) {
-          h += '<div class="eq-line">Volume = ___ \u00d7 ___ \u00d7 ___ = ___ cubic units</div>';
-        }
-        if (st.sketch) {
-          h += '<div class="work-label">\u270D\uFE0F Sketch what you see (or describe it in words)</div>';
-          h += '<div class="work-box" style="min-height:70px"></div>';
-        }
-        if (st.wonder) {
-          h += '<div style="background:#fef3c7;border-radius:6px;padding:8px 10px;margin-top:6px;font-size:12px;border-left:3px solid #f59e0b">';
-          h += '<b>\uD83E\uDD14 Wonder Question:</b> ' + st.wonder;
-          h += '</div>';
-        }
-        h += '</div>';
+  // Projection, not another lesson author: no AI call or title-based templates.
+  // Activities preserve their route order; unassigned guides preserve NPC order.
+  function geometryWorksheetModel(lesson) {
+    lesson = lesson && typeof lesson === 'object' ? lesson : {};
+    function text(value) { return Array.isArray(value) ? value.map(text).filter(Boolean).join('\n') : value == null ? '' : typeof value === 'string' || typeof value === 'number' ? String(value) : ''; }
+    var npcs = Array.isArray(lesson.npcs) ? lesson.npcs.filter(function(n) { return n && typeof n === 'object'; }) : [];
+    var activities = Array.isArray(lesson.activities) ? lesson.activities.filter(function(a) { return a && typeof a === 'object'; }) : [];
+    var assigned = [], sections = [], ordinal = 0;
+    function addSection(activity, npc, sourceIndex) {
+      var section = {
+        id: activity ? text(activity.id) || 'activity-' + sourceIndex : 'guide-' + sourceIndex,
+        title: text(activity ? activity.title : npc && npc.name) || 'Explore your creation',
+        npcName: text(npc && npc.name), position: npc && Array.isArray(npc.position) ? npc.position.slice(0, 3) : [],
+        challenge: text(activity && activity.challenge), successCriteria: text(activity && activity.successCriteria),
+        reflection: text(activity && activity.reflection), hint: text(activity && activity.hint),
+        dialogue: text(npc && npc.dialogue), questions: [], structureIds: [],
+        source: activity ? 'activity' : 'guide'
+      };
+      if (activity && Array.isArray(activity.structureIds)) section.structureIds = activity.structureIds.map(text).filter(Boolean);
+      section.questions = geometryQuestionSequence(npc && npc.question).map(function(q, step) {
+        if (q.measurement && q.measurement.structureId && section.structureIds.indexOf(text(q.measurement.structureId)) < 0) section.structureIds.push(text(q.measurement.structureId));
+        var correct = Number.isInteger(q.correct) && q.correct >= 0 && q.correct < q.choices.length ? q.correct : null;
+        return { number: ++ordinal, step: step + 1, text: text(q.text), choices: q.choices.map(text), correct: correct,
+          explanation: text(q.explanation || q.feedback), hint: text(q.hint) };
       });
+      sections.push(section);
+    }
+    if (activities.length) {
+      var matched = activities.map(function(a) { return npcs.findIndex(function(n) { return n.name === a.npcName; }); });
+      // Arrival and other unassigned guides still have real teaching/task content.
+      npcs.forEach(function(n, i) { if (matched.indexOf(i) < 0) { addSection(null, n, i); assigned.push(i); } });
+      activities.forEach(function(a, i) { var index = matched[i]; addSection(a, index >= 0 && assigned.indexOf(index) < 0 ? npcs[index] : null, i); if (index >= 0) assigned.push(index); });
+    } else npcs.forEach(function(n, i) { addSection(null, n, i); });
+    if (!sections.length) addSection({ id: 'exploration', title: 'Explore your creation', challenge: 'Choose or build a structure. Sketch it, label the units, and explain a question you can investigate. Measure, calculate, and check your result.', reflection: 'What did you revise, and how did the evidence change your thinking?' }, null, 0);
+    return { title: text(lesson.title) || 'Geometry World', description: text(lesson.description),
+      objectives: Array.isArray(lesson.objectives) ? lesson.objectives.map(text).filter(Boolean) : [],
+      sections: sections, questionCount: ordinal };
+  }
 
-      // Garden reflection — deeper than standard
-      h += '<div class="problem" style="border-color:#a78bfa">';
-      h += '<div class="problem-title" style="color:#7c3aed">\uD83C\uDF1F Final Reflection</div>';
-      h += '<p><b>1.</b> Which station was most interesting to you? Why?</p>';
-      h += '<div class="work-box" style="min-height:50px"></div>';
-      h += '<p><b>2.</b> At Station 5, three shapes all had the same volume. In your own words, explain how that is possible.</p>';
-      h += '<div class="work-box" style="min-height:50px"></div>';
-      h += '<p><b>3.</b> The hidden structure at the end is not a rectangular prism. What new math would you need to find its volume?</p>';
-      h += '<div class="work-box" style="min-height:50px"></div>';
-      h += '<p><b>4.</b> If you could add one more structure to the garden, what would it be and why?</p>';
-      h += '<div class="work-box" style="min-height:50px"></div>';
-      h += '</div>';
-
-      h += '<div class="tip" style="background:#f5f3ff;border-color:#7c3aed">\uD83C\uDF31 <b>Growth Note:</b> There are no wrong answers in a field journal. Every observation you made today built new connections in your brain. The structures in the garden will still be there tomorrow \u2014 but the person looking at them will know more than they did today.</div>';
-
-    } else {
-      // ── Standard lesson worksheet ──
-      // A lesson with no NPCs at all would otherwise print nothing but the
-      // reflection box, so give it something to observe.
-      if (!allNpcs.length) {
-        h += '<div class="problem">';
-        h += '<div class="problem-title">Explore the World</div>';
-        h += '<p>Walk through the structures. Measure each one and record its dimensions.</p>';
-        h += '<div class="dim-line">';
-        h += '<label>Length: <span class="blank">&nbsp;</span> blocks</label>';
-        h += '<label>Width: <span class="blank">&nbsp;</span> blocks</label>';
-        h += '<label>Height: <span class="blank">&nbsp;</span> blocks</label>';
-        h += '</div>';
-        h += '<div class="eq-line">___ × ___ × ___ = ___ cubic units</div>';
-        h += '<div class="work-label">Notes / Observations</div>';
-        h += '<div class="work-box"></div>';
-        h += '</div>';
+  function generateWorksheetHTML(lesson, options) {
+    options = options || {};
+    var model = geometryWorksheetModel(lesson), mode = options.mode === 'teacher' ? 'teacher' : options.mode === 'record' ? 'record' : 'student';
+    var title = mode === 'teacher' ? 'Teacher key' : mode === 'record' ? 'Learning record' : 'Student worksheet';
+    var esc = escapeReportHtml, pages = [];
+    function page(heading, body, kind) {
+      pages.push('<article class="sheet-page" data-page-kind="' + (kind || 'student') + '"><header><span>GEOMETRY WORLD / ' + esc(title.toUpperCase()) + '</span><span>' + esc(model.title) + '</span></header><h1>' + esc(heading) + '</h1>' + body + '</article>');
+    }
+    function work(label, height, cls) { return '<div class="work-space ' + (cls || '') + '" style="min-height:' + height + 'px"><div class="work-label">' + esc(label) + '</div></div>'; }
+    function context(s) {
+      var position = s.position.length === 3 && s.position.every(function(n) { return typeof n === 'number' && isFinite(n); }) ? ' at world coordinates (' + s.position.join(', ') + ')' : '';
+      return '<p class="context">' + (s.npcName ? 'Guide: <b>' + esc(s.npcName) + '</b>' + esc(position) + '. ' : '')
+        + (s.structureIds.length ? 'Teaching models: ' + esc(s.structureIds.join(', ')) + '. ' : '')
+        + 'Use this sheet alongside the lesson world. Observe the named models or guide before answering; sketch and label the model so your reasoning can be understood on paper.</p>';
+    }
+    function prompt(q, key) {
+      var html = '<section class="question" data-question-number="' + q.number + '"><h2>Question ' + q.number + ' · Step ' + q.step + '</h2><p class="question-text">' + esc(q.text) + '</p>';
+      html += '<ol class="choices" type="A">' + q.choices.map(function(c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ol>';
+      if (key) {
+        html += '<p class="answer"><b>Authored answer:</b> ' + (q.correct === null ? 'No valid answer key supplied; teacher review required.' : String.fromCharCode(65 + q.correct) + '. ' + esc(q.choices[q.correct])) + '</p>';
+        if (q.explanation) html += '<p><b>Explanation:</b> ' + esc(q.explanation) + '</p>';
+        if (q.hint) html += '<p><b>Hint:</b> ' + esc(q.hint) + '</p>';
+      } else {
+        html += work('Sketch / label the model, or describe what you observe', 62, 'sketch')
+          + work('Calculations · show an equation, units, and intermediate steps', 78, 'ruled')
+          + work('Reasoning · explain your strategy and check your answer', 62, 'ruled')
+          + '<p class="answer-line">My answer (include units): __________________________________________________</p>';
       }
-      var problemNum = 1;
-      allNpcs.forEach(function(npc, idx) {
-        h += '<div class="problem">';
-        h += '<div class="problem-title">Activity #' + problemNum + ': ' + escapeReportHtml(npc.name) + '</div>';
-        h += '<p>' + escapeReportHtml(npc.dialogue) + '</p>';
-
-        if (npc.question) {
-          h += '<p><b>Question:</b> ' + escapeReportHtml(npc.question.text) + '</p>';
-          h += '<div class="dim-line">';
-          h += '<label>Length: <span class="blank">&nbsp;</span> blocks</label>';
-          h += '<label>Width: <span class="blank">&nbsp;</span> blocks</label>';
-          h += '<label>Height: <span class="blank">&nbsp;</span> blocks</label>';
-          h += '</div>';
-          h += '<div class="eq-line">___ \u00d7 ___ \u00d7 ___ = ___ cubic units</div>';
-          h += '<div class="work-label">Show Your Work</div>';
-          h += '<div class="work-box"></div>';
-          h += '<p><b>My Answer:</b> <span class="blank" style="width:120px">&nbsp;</span></p>';
-        } else {
-          h += '<div class="work-label">Notes / Observations</div>';
-          h += '<div class="work-box" style="min-height:40px"></div>';
-        }
-        h += '</div>';
-        problemNum++;
-      });
-
-      // Reflection section
-      h += '<div class="problem">';
-      h += '<div class="problem-title">\uD83C\uDF31 Reflection</div>';
-      h += '<p>What did you learn about volume today? What strategy helped you the most?</p>';
-      h += '<div class="work-box" style="min-height:80px"></div>';
-      h += '</div>';
+      return html + '</section>';
     }
-
-    h += '<div class="tip">\uD83D\uDCA1 <b>Remember:</b> Every block in Geometry World is 1 unit cube. To find the volume of a rectangular prism, count the blocks OR multiply Length \u00d7 Width \u00d7 Height!</div>';
-
-    h += '<div class="footer">AlloFlow Geometry World \u2022 Companion Worksheet \u2022 \u00a9 ' + new Date().getFullYear() + '</div>';
-    h += '</body></html>';
-    return h;
+    var intro = '<p class="identity">Name: __________________________ &nbsp; Date: ______________ &nbsp; Class: __________</p>';
+    intro += '<p class="lead">Build, observe, calculate, and explain.</p><p>Geometry World uses the familiar building and exploration of block-based 3D sandbox games to make geometric measurement visible. Count cubes in a layer, connect layers to multiplication, and compare strategies. Explaining and checking those calculations provides practice toward accurate, flexible calculation fluency.</p>';
+    if (model.description) intro += '<p>' + esc(model.description) + '</p>';
+    if (model.objectives.length) intro += '<h2>Lesson goals</h2><ol>' + model.objectives.map(function(o) { return '<li>' + esc(o) + '</li>'; }).join('') + '</ol>';
+    intro += '<h2>Your lesson route</h2><ol>' + model.sections.map(function(s) { return '<li>' + esc(s.title) + (s.questions.length ? ' · ' + s.questions.length + ' question steps' : ' · investigation') + '</li>'; }).join('') + '</ol>';
+    if (mode === 'teacher') intro += '<p class="notice">Teacher copy · contains answers and teaching notes. Keys reproduce the lesson\'s authored choices, including generated lessons; review mathematical accuracy before use. Open-ended designs and explanations require teacher judgment.</p>';
+    else intro += '<p class="notice">Print in portrait at 100% or Save as PDF. This companion follows the current lesson\'s tasks and question choices. Answer by hand; a drawing, words, or another clear representation can show your thinking. Use the world to gather observations before completing the paper independently.</p>';
+    if (mode === 'record') intro += '<p class="notice">Learning record · includes your saved concept snapshots and notes. These may contain measurements or completed calculations; use Student worksheet for a blank assessment.</p>';
+    page(model.title, intro, 'overview');
+    model.sections.forEach(function(s) {
+      var body = context(s);
+      if (mode === 'teacher') {
+        if (s.dialogue) body += '<h2>Mentor teaching</h2><p>' + esc(s.dialogue) + '</p>';
+        if (s.challenge) body += '<h2>Construction / investigation task</h2><p>' + esc(s.challenge) + '</p>';
+        if (s.successCriteria) body += '<p><b>Success criteria:</b> ' + esc(s.successCriteria) + '</p>';
+        if (s.hint) body += '<p><b>Activity hint:</b> ' + esc(s.hint) + '</p>';
+        if (s.reflection) body += '<p><b>Reflection:</b> ' + esc(s.reflection) + '</p>';
+        body += s.questions.map(function(q) { return prompt(q, true); }).join('');
+        if (!s.questions.length) body += '<p>Open response: check the student\'s observations, units, calculations, and explanation against the world and the task.</p>';
+        page(s.title, body, 'teacher');
+        return;
+      }
+      // Do not print worked mentor dialogue or solution metadata next to a quiz.
+      // Questionless guides ARE the exploration tasks, so retain their exact text.
+      if (s.source === 'activity' || s.challenge || !s.questions.length) {
+        if (s.challenge) body += '<h2>Construction / investigation task</h2><p data-lesson-task="true">' + esc(s.challenge) + '</p>';
+        if (!s.questions.length && s.dialogue) body += '<p data-guide-task="true">' + esc(s.dialogue) + '</p>';
+        // Authored success criteria may state the solution; retain them in the teacher key.
+        body += '<p><b>Self-review:</b> Check the task requirements, label units, and explain how your evidence supports your result.</p>';
+        body += work('Plan / sketch · label dimensions and units', 135, 'sketch') + work('Measure / calculate · record the quantities and the operations you choose', 115, 'ruled');
+        body += '<h2>Explain and review</h2><p>' + esc(s.reflection || 'How does your evidence support your result? Check it with a second method or describe a useful revision.') + '</p>' + work('My mathematical reasoning and revisions', 100, 'ruled');
+        page(s.title, body, 'activity');
+      }
+      for (var i = 0; i < s.questions.length; i += 2) page(s.title + ' · Questions ' + s.questions[i].number + (s.questions[i + 1] ? '–' + s.questions[i + 1].number : ''), context(s) + s.questions.slice(i, i + 2).map(function(q) { return prompt(q, false); }).join(''), 'questions');
+    });
+    if (mode !== 'teacher') {
+      page('Connect the ideas', '<p>Choose one model or problem from this lesson. Explain how its representation connects to your calculations.</p>'
+        + work('Model / diagram · show cubes, layers, dimensions, or a decomposition that fits the task', 165, 'sketch')
+        + work('First calculation strategy · show the steps and units', 105, 'ruled')
+        + work('Check with another strategy · explain why it agrees or what you revised', 105, 'ruled')
+        + work('Reflection · what became easier and what do you still want to investigate?', 85, 'ruled'), 'reflection');
+    }
+    if (mode === 'record') {
+      var snapshots = Array.isArray(options.snapshots) ? options.snapshots.slice(0, 6) : [];
+      snapshots.forEach(function(s, i) {
+        if (!s || typeof s.image !== 'string' || s.image.length > 240000 || !/^data:image\/(?:png|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/.test(s.image)) return;
+        var body = '<p>' + esc(s.activityTitle || 'Lesson observation') + (s.capturedAt ? ' · ' + esc(new Date(s.capturedAt).toLocaleString()) : '') + '</p><img class="moment" alt="Saved view of the Geometry World lesson" src="' + s.image + '">';
+        body += '<h2>Concept / observation</h2><p>' + esc(s.caption || 'No caption recorded.') + '</p><h2>Calculations and reasoning</h2><p>' + esc(s.reasoning || 'No reasoning recorded.') + '</p>';
+        body += work('Further explanation / revision', 95, 'ruled');
+        page('Concept snapshot ' + (i + 1), body, 'snapshot');
+      });
+      if (!snapshots.length) page('Concept snapshots', '<p>No concept snapshots have been saved for this lesson. Use Concept snapshots in the lesson to capture an example and explain it.</p>' + work('Concept I want to capture', 200, 'sketch'), 'snapshot-empty');
+    }
+    var css = '@page{size:letter portrait;margin:.55in}*{box-sizing:border-box}body{margin:0;background:#e8eced;color:#172a2c;font:11pt/1.42 Arial,sans-serif}.print-actions{position:sticky;top:0;background:#173c37;padding:12px;text-align:center;color:white;z-index:1}.print-actions button{padding:10px 18px;font:700 14px Arial;background:white;border:1px solid #b5c8c1;border-radius:5px;cursor:pointer}.print-actions p{margin:5px 0 0;font-size:12px}.sheet-page{width:7.4in;min-height:9.7in;margin:20px auto;padding:0;background:#fff;box-shadow:0 2px 15px #0002;break-after:page;page-break-after:always}.sheet-page:last-child{break-after:auto;page-break-after:auto}header{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid #527369;padding:8px 0;font-size:8pt;font-weight:700;letter-spacing:.04em}header span:last-child{text-align:right}h1{font-size:21pt;line-height:1.2;margin:20px 0 12px;color:#173c37}h2{font-size:12pt;line-height:1.3;margin:13px 0 5px}p{margin:7px 0;white-space:pre-line}li{margin:3px 0}ol{padding-left:25px}.lead{font-size:15pt;font-weight:bold}.identity{font-size:10pt;margin:18px 0}.notice{padding:12px;border-left:3px solid #527369;background:#f1f5f3;margin:15px 0}.context{font-size:9pt;color:#415951;line-height:1.4;margin-bottom:14px}.question{break-inside:avoid;page-break-inside:avoid;margin-bottom:16px}.question-text{font-weight:700}.choices{display:flex;flex-wrap:wrap;gap:3px 30px;padding-left:23px;margin:8px 0;font-size:10pt}.choices li{padding-left:1px;margin:0 8px 0 0}.work-space{position:relative;border:1px solid #9aa9a4;margin:8px 0;padding:7px;break-inside:avoid;page-break-inside:avoid}.work-label{font-size:8.5pt;color:#40524c}.ruled{background:repeating-linear-gradient(to bottom,transparent 0,transparent 25px,#e1e6e3 26px,transparent 27px)}.sketch{background:#fff}.answer-line{font-size:10pt;margin:10px 0}.answer{padding:7px;border-left:3px solid #56756b;background:#f2f5f3}.moment{width:100%;max-height:4.7in;object-fit:contain;border:1px solid #8da49a}footer{margin-top:18px;border-top:1px solid #bdc9c4;padding-top:7px;font-size:8pt;display:flex;justify-content:space-between}@media screen{.sheet-page{padding:25px;width:8in}}@media print{body{background:white}.print-actions{display:none}.sheet-page{width:auto;min-height:0;margin:0;box-shadow:none}h1,h2{break-after:avoid;page-break-after:avoid}p{orphans:3;widows:3}.ruled{background:none}.work-space{border-color:#89988f}a{color:inherit}}';
+    return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + esc(model.title) + ' — ' + title + '</title><style>' + css + '</style></head><body><nav class="print-actions" aria-label="Print worksheet"><button type="button" onclick="window.print()">Print / save PDF</button><p>' + esc(title) + ' · ' + pages.length + ' sections · Letter or A4 portrait</p></nav>' + pages.map(function(p, i) { return p.replace('</article>', '<footer><span>AlloFlow Geometry World · ' + esc(title) + '</span><span>' + (i + 1) + ' / ' + pages.length + '</span></footer></article>'); }).join('') + '</body></html>';
   }
 
   // ── Physical Manipulative Bridge Card ──
@@ -6334,11 +6311,12 @@
   // ══════════════════════════════════════════════════════════════
 
   window.StemLab.geometryWorldLessonChecks = {normalizeBuildGoal:normalizeGeometryBuildGoal};
+  window.StemLab.geometryWorldWorksheets = {model:geometryWorksheetModel, html:generateWorksheetHTML, questions:geometryQuestionSequence, normalizeQuestion:normalizeGeometryQuestion, presets:function(){return JSON.parse(JSON.stringify(SAMPLE_LESSONS));}};
 
   window.StemLab.registerTool('geometryWorld', {
     name: 'Geometry World',
     icon: '\uD83E\uDDF1',
-    desc: 'Explore a 3D geometry world where shape questions unlock areas, NPC conversations, and construction puzzles.',
+    desc: 'Build and explore in a block-based 3D sandbox. Connect cubes and layers to volume, practice calculation strategies, and explain your reasoning on matching worksheets.',
     category: 'math',
     aliases: ['geometry', '3D shapes', 'spatial reasoning', 'shape puzzles'],
     questHooks: [
@@ -12872,28 +12850,8 @@
           // app's TTS selection, so every existing lesson keeps working unchanged.
           n.voicePreference = typeof n.voicePreference === 'string' && n.voicePreference.trim() && n.voicePreference.trim().toLowerCase() !== 'follow-current' ? n.voicePreference.trim().slice(0, 64) : null;
           n.language = typeof n.language === 'string' && n.language.trim() ? n.language.trim().slice(0, 32) : null;
-          // Validate question structure
-          if (n.question) {
-            if (!n.question.text || !Array.isArray(n.question.choices) || n.question.choices.length < 2) {
-              n.question = null; // Drop malformed questions
-            } else {
-              // Ensure exactly 3 choices
-              while (n.question.choices.length < 3) n.question.choices.push('(other)');
-              if (n.question.choices.length > 5) n.question.choices = n.question.choices.slice(0, 5);
-              n.question.correct = Math.max(0, Math.min(n.question.choices.length - 1, Math.round(n.question.correct || 0)));
-              // Validate followUp if present
-              if (Array.isArray(n.question.followUp)) {
-                n.question.followUp = n.question.followUp.filter(function(fu) {
-                  return fu && fu.text && Array.isArray(fu.choices) && fu.choices.length >= 2;
-                }).map(function(fu) {
-                  while (fu.choices.length < 3) fu.choices.push('(other)');
-                  fu.correct = Math.max(0, Math.min(fu.choices.length - 1, Math.round(fu.correct || 0)));
-                  return fu;
-                });
-                if (n.question.followUp.length === 0) delete n.question.followUp;
-              }
-            }
-          }
+          // Validate every nested follow-up with the same rules as the base.
+          if (n.question) n.question = normalizeGeometryQuestion(n.question);
           return true;
         });
         var fixes = 0;
@@ -13041,6 +12999,24 @@
         }
         return (engine && engine._currentLesson) || SAMPLE_LESSONS.volumeExplorer;
       })();
+
+      function openGeometryWorksheet(mode) {
+        var eng = window[engineKey], options = {mode:mode};
+        var target = worldActive && eng && eng._currentLesson ? eng._currentLesson : currentLesson;
+        if (mode === 'record') {
+          var pure = window.StemLab && window.StemLab.geometryWorldBuilderPure;
+          options.snapshots = pure && pure.lessonConceptSnapshots ? pure.lessonConceptSnapshots(target, d.lessonActivityProgress || {}) : [];
+        }
+        var win = window.open('', '_blank');
+        if (!win) { if (addToast) addToast('Allow pop-ups to open the print preview, then try again.', 'info'); return false; }
+        try {
+          win.document.open(); win.document.write(generateWorksheetHTML(target, options)); win.document.close();
+          if (eng && eng.logEvent) eng.logEvent('worksheet_preview', {lesson:target.title, format:mode || 'student'});
+          if (addToast) addToast('Print preview opened. Choose Print / save PDF in the new tab.', 'success');
+          return true;
+        } catch (error) { win.close(); if (addToast) addToast('The worksheet preview could not open. Please try again.', 'error'); return false; }
+      }
+      if (engine) engine.openGeometryWorksheet = openGeometryWorksheet;
 
       // Expose current React state to the engine so the compass rAF loop reads live data
       if (engine) {
@@ -13957,19 +13933,16 @@
             title: __alloT('stem.geometryworld.capture_a_screenshot_of_your_world_sav', 'Capture a screenshot of your world (saves to downloads)'),
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#60a5fa', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCF8 Photo'),
-          // Print companion worksheet
-          el('button', {
-            onClick: function() {
-              var worksheet = generateWorksheetHTML(currentLesson);
-              var win = window.open('', '_blank');
-              if (win) { win.document.write(worksheet); win.document.close(); win.print(); }
-              if (addToast) addToast('\uD83D\uDDA8\uFE0F Worksheet ready to print!', 'success');
-              var eng = window[engineKey];
-              if (eng && eng.logEvent) eng.logEvent('worksheet_print', { lesson: currentLesson.title });
-            },
-            title: __alloT('stem.geometryworld.print_companion_worksheet_for_this_les', 'Print companion worksheet for this lesson'),
-            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#f59e0b', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
-          }, '\uD83D\uDDA8\uFE0F Worksheet'),
+          // Student, teacher and evidence exports are distinct documents.
+          ['student', 'teacher', 'record'].map(function(format) {
+            var label = format === 'teacher' ? 'Teacher key' : format === 'record' ? 'Learning record' : 'Worksheet';
+            return el('button', {key:'worksheet-'+format,type:'button',onClick:function(){openGeometryWorksheet(format);},
+              'aria-label':format === 'student' ? 'Open printable student worksheet' : 'Open printable '+label.toLowerCase(),
+              title:format === 'student' ? 'Blank questions, construction tasks, and handwritten reasoning space' : format === 'teacher' ? 'Separate authored answer key and teaching notes' : 'Worksheet with saved concept snapshots and notes',
+              style:{background:'var(--allo-stem-panel, #1e293b)',border:'1px solid var(--allo-stem-border, #334155)',borderRadius:'6px',padding:'4px 10px',color:'#f59e0b',fontSize:'11px',cursor:'pointer',fontWeight:600}
+            },label);
+          }),
+          worldActive && el('button',{type:'button',onClick:function(){var eng=window[engineKey];if(eng && eng.openConceptSnapshots)eng.openConceptSnapshots();else if(addToast)addToast('Concept snapshots are still loading. Try again in a moment.','info');},title:'Save a moment in the world with observations and mathematical reasoning',style:{background:'var(--allo-stem-panel, #1e293b)',border:'1px solid var(--allo-stem-border, #334155)',borderRadius:'6px',padding:'4px 10px',color:'#60a5fa',fontSize:'11px',cursor:'pointer',fontWeight:600}},'Concept snapshots'),
           // Creator Mode toggle
           el('button', {
             onClick: function() { upd({ creatorMode: !creatorMode, showGameSettings: false }); if (!creatorMode && addToast) addToast('\uD83C\uDFA8 Creator Mode ON \u2014 build a lesson for your classmates!', 'info'); },
@@ -15573,9 +15546,10 @@
             data.question && !isAnswered && (function() {
               // Determine current question (base or follow-up)
               var curStep = npcFollowUpStep[dialogNpcIdx] || 0;
-              var followUps = data.question.followUp || [];
-              var curQ = curStep === 0 ? data.question : (followUps[curStep - 1] || data.question);
-              var totalSteps = 1 + followUps.length;
+              var questionSteps = geometryQuestionSequence(data.question);
+              var curQ = questionSteps[curStep] || questionSteps[0];
+              var totalSteps = questionSteps.length;
+              if (!curQ) return el('p', {role:'status'}, 'This question needs teacher review before it can be answered.');
               var isLastStep = curStep >= totalSteps - 1;
 
               return el('div', null,

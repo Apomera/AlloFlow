@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom';
 
 const source = readFileSync('view_export_preview_source.jsx', 'utf8');
 const declarations = parse(source, { sourceType: 'script', plugins: ['jsx'] }).program.body;
-const names = ['_builderResourceOptions', '_builderResourceIncluded', '_builderBulkResourceUpdate', '_builderSelectedResourceItems', '_builderVisibleDocumentTitle', '_builderSaveStatusLabel'];
+const names = ['_builderReadingHistory', '_builderIsOriginalReading', '_builderResourceOptions', '_builderResourceIncluded', '_builderBulkResourceUpdate', '_builderSelectedResourceItems', '_builderVisibleDocumentTitle', '_builderSaveStatusLabel'];
 const context = vm.createContext({});
 vm.runInContext(names.map(name => {
   const declaration = declarations.find(node => node.type === 'FunctionDeclaration' && node.id.name === name);

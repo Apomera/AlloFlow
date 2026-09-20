@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "id": "macbeth-act-1-scene-1",
+  "title": "Macbeth, Act I, Scene I",
+  "source": {
+    "path": "reading_library/books/gutenberg-ebook-1533-macbeth.json",
+    "url": "https://www.gutenberg.org/ebooks/1533",
+    "license": "Public Domain in the U.S. / Project Gutenberg License",
+    "page": 2,
+    "start": 2159,
+    "end": 2712,
+    "extraction": "Exact substring, including ACT I heading, all scene lines, speaker labels, stage directions, and punctuation."
+  },
+  "text": "ACT I\n\nSCENE I. An open Place.\n\nThunder and Lightning. Enter three Witches.\n\nFIRST WITCH.\nWhen shall we three meet again?\nIn thunder, lightning, or in rain?\n\nSECOND WITCH.\nWhen the hurlyburly’s done,\nWhen the battle’s lost and won.\n\nTHIRD WITCH. That will be ere the set of sun.\n\nFIRST WITCH. Where the place?\n\nSECOND WITCH. Upon the heath.\n\nTHIRD WITCH. There to meet with Macbeth.\n\nFIRST WITCH. I come, Graymalkin!\n\nSECOND WITCH. Paddock calls.\n\nTHIRD WITCH. Anon.\n\nALL.\nFair is foul, and foul is fair:\nHover through the fog and filthy air.\n\n[Exeunt.]",
+  "sha256": "0888c17d013705ff9c3c32bc66146208b6939ca4e88781a2461ff6da6b2a29f5",
+  "terms": [
+    {
+      "id": "heath",
+      "quote": "heath",
+      "referenceGloss": "open, uncultivated land, often covered with low shrubs",
+      "meaningAllOf": [
+        "open|uncultivated|wild|moor|scrub",
+        "land|ground|area|moor"
+      ],
+      "rejectAny": [
+        "fireplace|hearth|health"
+      ]
+    },
+    {
+      "id": "hurlyburly",
+      "quote": "hurlyburly’s",
+      "referenceGloss": "the noisy confusion and turmoil of the battle",
+      "meaningAllOf": [
+        "confusion|commotion|turmoil|uproar|tumult|chaos"
+      ],
+      "rejectAny": [
+        "celebration|dance"
+      ]
+    },
+    {
+      "id": "anon",
+      "quote": "Anon",
+      "referenceGloss": "right away; the witch answers a call",
+      "meaningAllOf": [
+        "soon|right away|at once|coming|moment|shortly|immediately"
+      ],
+      "rejectAny": [
+        "anonymous|unknown author"
+      ]
+    },
+    {
+      "id": "grimalkin",
+      "quote": "Graymalkin",
+      "aliases": [
+        "Grimalkin"
+      ],
+      "referenceGloss": "the first witch’s cat-like familiar, or spirit companion",
+      "meaningAllOf": [
+        "cat|feline",
+        "witch|familiar|spirit|supernatural|companion"
+      ],
+      "rejectAny": [
+        "name of (?:the|a|one) witch|another witch"
+      ]
+    }
+  ],
+  "reviewCriteria": [
+    "Gloss the four target occurrences accurately in their dramatic context.",
+    "Retain the literal source; no reordered verse, merged speaker labels, or revised stage directions.",
+    "Allow the good/bad reversal in Fair is foul to remain a paradox; do not assert a single definitive interpretation.",
+    "Keep definitions short and age-appropriate; no invented character relationships or historical details.",
+    "Use essential for comprehension needs and helpful for enrichment; priority is a proposal, not a measure of literary quality."
+  ],
+  "variants": [
+    {
+      "id": "grimalkin-spelling-variant",
+      "title": "Explicit spelling stress test, not a second source edition",
+      "derivation": "Only Graymalkin is replaced with the alternate spelling Grimalkin; the canonical fixture remains unchanged.",
+      "text": "ACT I\n\nSCENE I. An open Place.\n\nThunder and Lightning. Enter three Witches.\n\nFIRST WITCH.\nWhen shall we three meet again?\nIn thunder, lightning, or in rain?\n\nSECOND WITCH.\nWhen the hurlyburly’s done,\nWhen the battle’s lost and won.\n\nTHIRD WITCH. That will be ere the set of sun.\n\nFIRST WITCH. Where the place?\n\nSECOND WITCH. Upon the heath.\n\nTHIRD WITCH. There to meet with Macbeth.\n\nFIRST WITCH. I come, Grimalkin!\n\nSECOND WITCH. Paddock calls.\n\nTHIRD WITCH. Anon.\n\nALL.\nFair is foul, and foul is fair:\nHover through the fog and filthy air.\n\n[Exeunt.]",
+      "sha256": "85af3b32b2d5fa2f2981dd152d1e746d6eeb4f73e667b2df518d0ed95bc52b14"
+    }
+  ]
+}

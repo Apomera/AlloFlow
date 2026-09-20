@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import vm from 'node:vm';
 
 const ROOT = path.resolve(__dirname, '..');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
@@ -95,16 +96,28 @@ describe('Assignment Control Center', () => {
     expect(assignmentCenterSource).toContain('Revoked assignments cannot be copied because their hosted data is deleted.');
   });
 
+  it('registers the lifecycle handlers and keeps their writes in the extracted host module', () => {
+    const source = fs.readFileSync(path.join(ROOT, 'host_handlers_source.jsx'), 'utf8');
+    const sandbox = { window: { React: {}, AlloModules: {} } };
+    vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'host_handlers_module.js'), 'utf8'), sandbox);
+    const handlers = sandbox.window.AlloModules.HostHandlers({});
+    for (const name of ['extendAssignmentCenterShare', 'duplicateAssignmentCenterShare', 'revokeHomeworkAssignment']) {
+      expect(handlers[name]).toBeTypeOf('function');
+    }
+    expect(source).toContain("? { ...item, revokedAt: new Date().toISOString() }");
+    expect(source).toContain("a: 'extendpack'");
+    expect(source).toContain("a: 'clonepack'");
+  });
+
   it('keeps one controller and lazy view bridge in every maintained shell', () => {
     copies.forEach(source => {
       expect(source).toContain("loadModule('AssignmentCenter'");
       expect(source).toContain('<AssignmentCenterModal');
       expect(source).toContain("a: 'getactivityadmin'");
-      expect(source).toContain("? { ...item, revokedAt: new Date().toISOString() }");
       expect(source).toContain("parsed.filter(item => item?.url).slice(0, 12)");
-      expect(source).toContain("a: 'extendpack'");
-      expect(source).toContain("a: 'clonepack'");
-      expect(source).toContain('const revokeHomeworkAssignment = useCallback');
+      for (const name of ['extendAssignmentCenterShare', 'duplicateAssignmentCenterShare', 'revokeHomeworkAssignment']) {
+        expect(source).toContain('const ' + name + ' = useCallback(async (...__a) => _alloHostHandlers().' + name + '(...__a)');
+      }
       expect(source).not.toContain('data-assignment-lifecycle={view.lifecycle}');
     });
   });

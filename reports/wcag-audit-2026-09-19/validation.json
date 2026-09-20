@@ -1,0 +1,411 @@
+{
+  "scrollAssertions": [
+    {
+      "name": "STEM scroll regions and search relationships Architecture statistics receives sequential focus and scrolls with arrow keys",
+      "status": "passed"
+    },
+    {
+      "name": "STEM scroll regions and search relationships Circuit schematic receives sequential focus and scrolls with arrow keys",
+      "status": "passed"
+    },
+    {
+      "name": "STEM scroll regions and search relationships Fire stewardship chart receives sequential focus and scrolls with arrow keys",
+      "status": "passed"
+    }
+  ],
+  "workspaceVerification": {
+    "sourceReady": true,
+    "labelInNamePassed": true,
+    "quickStartContrastPassed": true,
+    "loadedWorkspacePassed": true,
+    "backendFocusContained": true,
+    "backendFocusRestored": true
+  },
+  "checkedAt": "2026-09-19T20:13:02.404Z",
+  "errors": [],
+  "criterionCount": 55,
+  "ratings": {
+    "Partially Supports": 53,
+    "Not Applicable": 2
+  },
+  "mirrors": [
+    {
+      "file": "stem_lab/stem_tool_archstudio.js",
+      "matches": true,
+      "sha256": "721ae0b742f95b3ab1b857a01c7b7fe947007912980feb2b3ee58195978a5146"
+    },
+    {
+      "file": "stem_lab/stem_tool_circuit.js",
+      "matches": true,
+      "sha256": "c0e7876058489387d9c6273076dbf22b884772a168184fcfad738719dfb03e26"
+    },
+    {
+      "file": "stem_lab/stem_tool_fireecology.js",
+      "matches": true,
+      "sha256": "9becd3e1e583d1922baec3533f05d52d78a9f82fdd7f00ac4a43cfb7975e7ce2"
+    },
+    {
+      "file": "stem_lab/stem_tool_raptorhunt.js",
+      "matches": true,
+      "sha256": "86e8d0b6225fcd7f1c5a0507c40fc1feb748f8d5ead046c2d71f8549b98c00f9"
+    },
+    {
+      "file": "view_sidebar_panels_module.js",
+      "matches": true,
+      "sha256": "962693865fb52791c0b850fb1f0e59c42273216d12c5ba3edf6ef0bb60fd3c2b"
+    }
+  ],
+  "tests": {
+    "search-final.json": {
+      "passed": 3,
+      "failed": 0,
+      "filteredOrSkipped": 3,
+      "success": true
+    },
+    "math-theme-tests.json": {
+      "passed": 10,
+      "failed": 0,
+      "filteredOrSkipped": 120,
+      "success": true
+    },
+    "prior-fixes-regressions.json": {
+      "passed": 37,
+      "failed": 0,
+      "filteredOrSkipped": 0,
+      "success": true
+    },
+    "video-dialog-test.json": {
+      "passed": 1,
+      "failed": 0,
+      "filteredOrSkipped": 0,
+      "success": true
+    },
+    "sidebar-tests.json": {
+      "passed": 18,
+      "failed": 0,
+      "filteredOrSkipped": 0,
+      "success": true
+    }
+  },
+  "initialPageVerification": {
+    "expectedStates": 9,
+    "observedStates": 9,
+    "passed": true
+  },
+  "sourceFiles": [
+    {
+      "file": "stem_lab/stem_tool_archstudio.js",
+      "sha256": "721ae0b742f95b3ab1b857a01c7b7fe947007912980feb2b3ee58195978a5146"
+    },
+    {
+      "file": "stem_lab/stem_tool_circuit.js",
+      "sha256": "c0e7876058489387d9c6273076dbf22b884772a168184fcfad738719dfb03e26"
+    },
+    {
+      "file": "stem_lab/stem_tool_fireecology.js",
+      "sha256": "9becd3e1e583d1922baec3533f05d52d78a9f82fdd7f00ac4a43cfb7975e7ce2"
+    },
+    {
+      "file": "stem_lab/stem_tool_raptorhunt.js",
+      "sha256": "86e8d0b6225fcd7f1c5a0507c40fc1feb748f8d5ead046c2d71f8549b98c00f9"
+    },
+    {
+      "file": "view_sidebar_panels_module.js",
+      "sha256": "962693865fb52791c0b850fb1f0e59c42273216d12c5ba3edf6ef0bb60fd3c2b"
+    },
+    {
+      "file": "tests/foundational_math_wcag_browser.test.js",
+      "sha256": "e80d47f151bfc4c91fc3da46401bac41b2691226a9747486d14158f05a85a0a0"
+    },
+    {
+      "file": "tests/stem_scroll_search_wcag_browser.test.js",
+      "sha256": "62180158eb37f53aa55e973407a4826d6c3f7edd1ca2e0453413887eff0bf587"
+    },
+    {
+      "file": "app_styles_module.js",
+      "sha256": "5c91ad5d11a169a0998453a18669adfaa1a18fb7d02d09def0e2092d7ed7bbec"
+    },
+    {
+      "file": "view_sidebar_panels_source.jsx",
+      "sha256": "e2e01b0f3c84234e215ac0d247a5cc3bd0f487e498e8f781fbb9d9d16993814b"
+    },
+    {
+      "file": "release.json",
+      "sha256": "9ded439d41c19efe4c37fface3f0a6c1886282c507dc6bc97cc3d6fb00b18a3c"
+    },
+    {
+      "file": "app/static/css/main.1fb7b97e.css",
+      "sha256": "4b9a6e181169d48efc6e208af5f3987ffc9cd63ab255bc60eae40e4fa7a98761"
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "app-1280.png",
+      "sha256": "af49025af4f1490eebd8afeb563103f86e6824209104c31f55937253f1de55dd"
+    },
+    {
+      "file": "app-320-spacing.png",
+      "sha256": "c0410847fb2719b45d40ad9553d292ff6fd7ec138d59df46745bcc4652a1c762"
+    },
+    {
+      "file": "app-320.png",
+      "sha256": "b85312ad03bd27ba6633ff618d0443de4136d7101215a3b292b9cc0d87ad058c"
+    },
+    {
+      "file": "archStudio-keyboard.png",
+      "sha256": "ea43127591cd00e6fe36395163c2e87d1ef27943ab4615356c8320c3a86d9161"
+    },
+    {
+      "file": "backend-initial-1280.png",
+      "sha256": "c9b2ec9058065bc6286c6e52431c4ef245f6302fd30f9d9d60cdc3479d70f269"
+    },
+    {
+      "file": "baseline.json",
+      "sha256": "657f79fe1b228f7d584aee5ec8ba2e92eb22fcb09eb9e52f695c96b1b44efc3e"
+    },
+    {
+      "file": "baseline.log",
+      "sha256": "23dcc5740353f82b0e5d0f452eb25afa2e4432c9d7fcb168e247ae8dcaa84245"
+    },
+    {
+      "file": "browser-audit.json",
+      "sha256": "d2c237ddc84f44dc18c8dbd29800d10c9f807c867fe7dae1e121d9a354339d75"
+    },
+    {
+      "file": "browser-audit.log",
+      "sha256": "d7b32218f704b2820b264c06648112c2936f484b391acb952fbb5d3a72510c21"
+    },
+    {
+      "file": "browser-label-check.json",
+      "sha256": "d958cb09fb5dc8127b7644ddebc633c39df410cb8c7631975df78e401237b5e8"
+    },
+    {
+      "file": "browser-label-check.log",
+      "sha256": "13b89b313c137700172c938f623cfa007dc9aa059edbc12f580a3632e9ac1d9b"
+    },
+    {
+      "file": "build-report.cjs",
+      "sha256": "b3b52f2faa93f7205de10941bfc20e6a4e3acc4f02342f37edd03606c12df768"
+    },
+    {
+      "file": "catalog-1280.png",
+      "sha256": "cb230d7371b0f37f1ed02a50c906197a628e4ee56022ba1792cbec5ee6c50f7f"
+    },
+    {
+      "file": "catalog-320-spacing.png",
+      "sha256": "12003524f1a4dade459f08ff0ce46e78dc27ff36ff71c61e447906fec4d347e4"
+    },
+    {
+      "file": "catalog-320.png",
+      "sha256": "5fb00262f0d6536d9d2b1b3896468571a826673fcd97d66c0c4f4f7f054f2782"
+    },
+    {
+      "file": "circuit-keyboard.png",
+      "sha256": "f9e8e00a0662272b950f3efb05cbc71c21562684e4b4a59b2bf2af14ef8943e6"
+    },
+    {
+      "file": "final-interactions.json",
+      "sha256": "a174130e52c6f2f21c52f1bec1c7587ac31fecaf56cc185e640727f5e0711550"
+    },
+    {
+      "file": "final-interactions.log",
+      "sha256": "c9baa0ba9b0999a6b91f33f5fbb27003624cb737576d0e3c6870def6b8a54bf9"
+    },
+    {
+      "file": "final-tool-tests-interrupted.json",
+      "sha256": "f5f39717134cbb42e9a685ac30fc87f1c124db215d31955daa044201c4aa0847"
+    },
+    {
+      "file": "final-tool-tests.log",
+      "sha256": "7c3ca31831b06482b35eeef848743191edab3d97396e6002c8aa671936c9a868"
+    },
+    {
+      "file": "fireEcology-keyboard.png",
+      "sha256": "997268edcc776af90008de3414e789e447c988331e75d594c065ccbfae103252"
+    },
+    {
+      "file": "focus-theme-retest.json",
+      "sha256": "5bd6a00e1b4be4835f9f7e404aacd6eca6d9a780ee6b817e7e82bc1f079f437f"
+    },
+    {
+      "file": "focus-theme-retest.log",
+      "sha256": "320f2cdb09ec1ed2037874af227578ed482f1ec4ba8d66b2b2b62ffa1adecb85"
+    },
+    {
+      "file": "interaction-evidence.json",
+      "sha256": "850196b7aadc1d21fa069585cc2d3c58ca0e2a9fb40917f700f9f2c3f9d151ae"
+    },
+    {
+      "file": "interaction-fallback-retest.json",
+      "sha256": "a174130e52c6f2f21c52f1bec1c7587ac31fecaf56cc185e640727f5e0711550"
+    },
+    {
+      "file": "interactions.json",
+      "sha256": "d577705177955310abf0df0b5b017b392e70d4048526fd3c29ee27c3661b610e"
+    },
+    {
+      "file": "interactions.log",
+      "sha256": "705de5ec18f9f23fad83c535defce8b2a85aba0b7e6978aa22684191e082b85b"
+    },
+    {
+      "file": "math-light-control.json",
+      "sha256": "1fd8371a3e5653f147411307b27d21b6add44a3203c2a6a769b81d42f1fe9fc7"
+    },
+    {
+      "file": "math-light-control.log",
+      "sha256": "3141030cbe23e906ef16d075763878d472deea09099cdd48629abf13645ec3e0"
+    },
+    {
+      "file": "math-suite-interrupted.json",
+      "sha256": "eb60db1348c2c66ccaac17f47aa10701cdfa7e166529037ee460db9dbdebe26e"
+    },
+    {
+      "file": "math-suite.log",
+      "sha256": "18713c02db9ebada68b73edba8e84266c592db24c6a84032da1706cf56482f82"
+    },
+    {
+      "file": "math-theme-tests.json",
+      "sha256": "0bcdfa967505e7cd9112caf95475666db5a1fab90f5a81dc6ff2aa4f4242f642"
+    },
+    {
+      "file": "math-theme-tests.log",
+      "sha256": "41cb07f87523a3ef87f488e94eaa796089cc1c736a022cd108fef3756c9eac57"
+    },
+    {
+      "file": "prior-fixes-regressions.json",
+      "sha256": "713893baef8d55b2767dac39a6c1114832b425b0a928fff3bd607ef36200d109"
+    },
+    {
+      "file": "prior-fixes-regressions.log",
+      "sha256": "62319ba47217512cfde5fda6dbf2fe6c361a764e6af42e4af5be2f1fcfd38954"
+    },
+    {
+      "file": "README.md",
+      "sha256": "cc43b62fb62dc0db0a5d2a94fd80a1a2d32287adaf752680fa48c5ed67315381"
+    },
+    {
+      "file": "run-browser.cjs",
+      "sha256": "fffbf8e666d112d800150744223b69b8bcb89ec26bb2822beb972ce4173cff1e"
+    },
+    {
+      "file": "run-control-states.cjs",
+      "sha256": "29faa41a21eea1ca2c9fcff2a0891ee13dbea6288dcde68022178dfd974bff7c"
+    },
+    {
+      "file": "run-label-check.cjs",
+      "sha256": "3d42d2c4a4c8c58bff306b9062631bc9eaa2e98a6c3bd11a0907c417a28b400f"
+    },
+    {
+      "file": "scroll-fallback-evidence.json",
+      "sha256": "850196b7aadc1d21fa069585cc2d3c58ca0e2a9fb40917f700f9f2c3f9d151ae"
+    },
+    {
+      "file": "search-final.json",
+      "sha256": "394657da6c72898e4d9f751402d09d59580bded0f857f9d8aa7f1fa279df27bd"
+    },
+    {
+      "file": "search-final.log",
+      "sha256": "e15729a4afee6a543088b8a015763e6dfae86f6941eeca29998a56f877a29c70"
+    },
+    {
+      "file": "search-isolated.json",
+      "sha256": "c23505e205fe56ff143d161f4d34f4284711557c231934af7574efc455baa63d"
+    },
+    {
+      "file": "search-isolated.log",
+      "sha256": "67477cd5c8ab06477593cb01518c1cf0242755f752d22476281e0f31e2d9e31e"
+    },
+    {
+      "file": "sidebar-tests.json",
+      "sha256": "dfc7c642cecb390dcbf72c1200dcc431b7a606dfab8306863e3e32c0450f2c48"
+    },
+    {
+      "file": "sidebar-tests.log",
+      "sha256": "a0c752c30d8f3de255fd7f644cd24abd3b799099f51b1974bdd1c180ab9aad0d"
+    },
+    {
+      "file": "teacher-loaded-1280.png",
+      "sha256": "cb639824fd32bb3adee2dee4509fd6e8351fcd4480f9bb4c5f8c1b4a9432549a"
+    },
+    {
+      "file": "teacher-loaded-320-spacing.png",
+      "sha256": "9effef2691fce897f231b6a526f1fdb1686f476a6ba3b4f077a4adbe4af4536b"
+    },
+    {
+      "file": "teacher-loaded-320.png",
+      "sha256": "d9f3bac9600cf7636cfde9c76eb8975a3b499466719bbbeb5e78229032d26d34"
+    },
+    {
+      "file": "teacher-workspace-1280.png",
+      "sha256": "1e632ec102fe62798d7d932403f2950b4152403a6370275552bc61aa96634d7c"
+    },
+    {
+      "file": "teacher-workspace-320-spacing.png",
+      "sha256": "387befbb063e455cb13ff0478fca45537430bbcf7ce3434e7dc157c9992e0dad"
+    },
+    {
+      "file": "teacher-workspace-320.png",
+      "sha256": "1fa98251321ae00f2ba70100210f7119feb69df94d5c76ba52844023320f5149"
+    },
+    {
+      "file": "teacher-workspace-after-dialog.png",
+      "sha256": "5aee48d211d5fc87a2de13f7a683080fa752dfe51ad1792b2b5ef07b83a6dd71"
+    },
+    {
+      "file": "tool-retest.json",
+      "sha256": "9175437b487da30983a820a46a0b7a5afd46d7ac104aa404e28369e64e3e30df"
+    },
+    {
+      "file": "tool-retest.log",
+      "sha256": "11aae46417d260f96303eae7d5193b985eaa1bc1e2d4ba551381491f13bd5d5b"
+    },
+    {
+      "file": "update-vpat.cjs",
+      "sha256": "7d05195774888559836fd0fa58f6d76035e361a3de3bb2199b124448eeed7c6c"
+    },
+    {
+      "file": "validate.cjs",
+      "sha256": "69aebcaa9da4aa0a0109974b092c179febbf32a253b724fec61dafd843528151"
+    },
+    {
+      "file": "video-dialog-test.json",
+      "sha256": "acc9b6e414b34f32eb3315f8aefc8a1bfc5d7f49497c3613f718c173ca3f9157"
+    },
+    {
+      "file": "video-dialog-test.log",
+      "sha256": "ce23b4fcb876a9e0731c0f72bed7d415b500fab12d0e9fe86c2210322e6e89d2"
+    },
+    {
+      "file": "video-studio-1280.png",
+      "sha256": "0f89a06850c596ebedcf2ef29a68b50a238cffb743bae247e9244aab48445f03"
+    },
+    {
+      "file": "video-studio-320-spacing.png",
+      "sha256": "63ea3cc900009ba59b2a1ad534580ec410538a631047369b7d4edcf2e00f29a5"
+    },
+    {
+      "file": "video-studio-320.png",
+      "sha256": "32287a88567914a429c1a0f223e7fd9058d91bea571554bf852ab8d071e178fb"
+    },
+    {
+      "file": "workspace-before-badge-fix.json",
+      "sha256": "575832fc5f9bf66a12733a2c16a429492e0d2673f67ae6cb7955d6b75af92c40"
+    },
+    {
+      "file": "workspace-failure.png",
+      "sha256": "c5e1ab76c0601f93f364601172d2d5f23709a7290c3d656947392ffad927cf7b"
+    },
+    {
+      "file": "workspace-launch-ambiguous-selector.json",
+      "sha256": "fd3a23596e9113fcb7d06be0ce33ffe54653c7cfe4e1217d09812d354ced8a7d"
+    },
+    {
+      "file": "workspace-launch-first-attempt.json",
+      "sha256": "8e147d7a7e98b35c419a17ab0fc5f21d3b1989fc3a9d8d880afdb2400632d236"
+    },
+    {
+      "file": "workspace-launch-stale-selector.json",
+      "sha256": "e3e135222dee942ac676b24209f6354f4f56100ada9fe93f784c41c37c39d57a"
+    }
+  ]
+}

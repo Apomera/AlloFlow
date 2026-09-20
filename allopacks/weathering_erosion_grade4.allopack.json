@@ -16,7 +16,8 @@
       }
     ],
     "reviewStatus": "AI content and structural checks; educator review pending",
-    "imageStatus": "planned-not-generated"
+    "imageStatus": "planned-not-generated",
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Break, Move, Settle — Changing Land",
   "history": [
@@ -216,16 +217,16 @@
         "mode": "list",
         "items": [
           {
-            "text": "I notice ____. This matters because ____."
+            "text": "The rock changed in place when ____. That is ____."
           },
           {
-            "text": "I compared ____ with ____. They differ because ____."
+            "text": "The material moved from ____ to ____. That shows ____."
           },
           {
-            "text": "My evidence is ____. It supports ____."
+            "text": "We changed ____, but kept ____ the same."
           },
           {
-            "text": "At first I thought ____. Now I think ____ because ____."
+            "text": "Our repeated results suggest ____. Our tray cannot show ____."
           }
         ],
         "rubric": "| Look for | Check |\n|---|---|\n| Names the idea | Uses a lesson word correctly |\n| Gives support | Points to an observation or worked example |"
@@ -357,7 +358,7 @@
               "Weathering changes rock in place."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "aiExample": "Break in place. Think of a root pushing a rock crack wider.",
             "mapping": "The rock changes where it is. This cue helps keep breaking apart distinct from moving away.",
             "scaffoldStarter": "My cue is ____. It helps me remember ____.",
@@ -383,7 +384,7 @@
               "Erosion moves material and deposition leaves it behind."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "aiExample": "Move, then leave. Think of sand carried by a stream, then left on a bank.",
             "mapping": "The two parts show two processes. Moving sand is erosion. Sand left behind is deposition.",
             "scaffoldStarter": "My cue is ____. It helps me remember ____.",
@@ -467,13 +468,13 @@
           ],
           "deliverable": "Report the setup, repeated observations, a supported claim, and one reason a tray differs from a real hillside.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {
-            "context": "A classmate checks a related claim from this lesson.",
-            "move": "They use the lesson rule: Weathering changes rock in place. They record an example, then check whether it supports the claim.",
-            "whyItHelps": "A clear example helps another person check the reasoning instead of trusting a guess."
+            "context": "Another class compares how packed and loose soil affect runoff in small trays.",
+            "move": "They change how tightly the soil is packed. They keep tray slope, soil amount and water input alike. They repeat the comparison and measure sediment the same way.",
+            "whyItHelps": "The factor differs from your slope test, but the need to control other conditions and repeat measurements is the same."
           },
           "frameStarter": "Our evidence is ____. It supports ____. A limit is ____.",
           "frameChoices": [

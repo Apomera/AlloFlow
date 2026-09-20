@@ -31,8 +31,13 @@
     "contentRefinements": {
       "review": "Scientific wording refined; educator review pending",
       "audit": "allopacks/media/magnetism_grade6/content-refinements.json",
-      "count": 74
-    }
+      "count": 84,
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/magnetism_grade6/content-refinements.json",
+      "sourceOnlyResourceIds": []
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Magnetism and Electromagnetism",
   "history": [
@@ -79,7 +84,7 @@
       "title": "The Push You Can Feel Through Nothing",
       "timestamp": "2026-07-21T07:00:01.000Z",
       "data": "## The Push You Can Feel Through Nothing\n\nHold two bar magnets near one another. You can feel a push or pull before they touch. That is a force acting across a gap.\n\nA simple bar magnet has north and south **poles**. With the magnets held aligned, opposite facing poles **attract** and like facing poles **repel**. A freely turning magnet can rotate, changing which poles face each other.\n\nImagine dividing a bar magnet across its middle. Each piece becomes a smaller magnet with both poles; this does not isolate a north-only or south-only magnet. Treat this as a thought experiment, not a cutting activity.\n\nA **magnetic field** describes magnetic influence at each location. Field lines are a model of direction and relative strength, not physical threads. Iron filings can reveal a pattern because they become magnetized and align with the local field. Use a sealed field viewer for a classroom observation. Outside a bar magnet, field direction runs from north to south; inside it returns from south to north.\n\nIron, nickel and cobalt are familiar strongly magnetic materials at ordinary temperatures. Many steels are strongly attracted, but some stainless steels are not. Aluminum, copper, pure gold and ordinary plastic do not stick to a stationary classroom magnet. Their weak magnetic responses are different from the strong attraction in this test. Alloys matter: a U.S. copper-nickel five-cent coin does not behave like pure nickel. A sticking test gives evidence about a material, but cannot identify its composition by itself.\n\nElectric **current** produces a magnetic field. A current-carrying coil forms an **electromagnet**, often strengthened by a soft iron core. Changing the current changes the field. Opening the circuit stops the coil current, although the core may keep some magnetism. More turns can strengthen a coil when current and geometry are comparable; adding wire also changes resistance. Use only the teacher-approved current-limited kit described in the activity.\n\nElectromagnets help cranes lift and release steel. Release must still be tested: residual magnetism or tangled objects can keep a load attached. Permanent magnets can also be used in devices with mechanical release mechanisms. Speakers use a changing coil current interacting with a magnetic field to move a cone.\n\nEarth’s main field is sustained by motion of electrically conducting fluid in its liquid outer **core**. The inner core is solid. A **compass** aligns with the horizontal component of the local magnetic field, which usually differs from true geographic north. Near the northern magnetic region, the field enters Earth, so that region behaves like a bar magnet’s south pole. Magnetic and geographic poles are not the same locations.",
-      "meta": "6th-7th Grade • Leveled reading • ~420 words",
+      "meta": "6th-7th Grade • Leveled reading",
       "imageSlot": "mg-img-field-lines"
     },
     {
@@ -130,7 +135,7 @@
       "data": [
         {
           "term": "Magnet",
-          "def": "An object that produces a magnetic field; a simple bar magnet has north and south poles.",
+          "def": "An object that produces a field and can attract certain materials, such as iron.",
           "tier": "Domain-Specific",
           "image": "data:image/webp;base64,UklGRsYKAABXRUJQVlA4WAoAAAAgAAAA5wMA5wMASUNDUMgBAAAAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADZWUDgg2AgAADDuAJ0BKugD6AM+KRSHQ6GhCD+sDAFCWlu4XdhH8JPAj71/VdPM9APwAw5n8z/kG7/5QD+ge3/0f/mAb9t/tf8d/ZvYAADcusWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYr4WdOEjFjjv5SkYscd/KUjFjjv5SkYscd/KUjFjHVRQ8pSMWOO/lKRixx38pSMWOO/lKRixx38pSMGgvu00rrFixYsWJy60MTQspFppW5eX/u00rrFixXyNBfdppXWLFixYsTl1oYmhZSLTSty8v/dppXWLFivkaC+7TSusWLFixYnLrQxNCykWmlbl5f+7TSusWLFfI0F92mldYsWLFixOXWhiaFlItNK3Ly/92mldYsWK+RoL7tNK6xYsWLFicutDE0LKRaaVuXl/7tNK6xYsV8jQX3aaV1ixYsWLE5daGJoWUi00rcvL/3aaV1ixYr5Ggvu00rrFixYsWJy60MTQspFppW5eX/u00rrFixXyNBfdppXWLFixYsTl1oYmhZSLTSty8v/dppXWLFivkaC+7TSusWLFixYnAfrnZGLHHfylIxY47+UpGLHHfylIxY47+UpGLGMMA0kd/KUjFjjv5SkYscd/KUjFjjv5SkYscd/KSO0rrFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFixYsWLFfAAD+//e0R/jyAurb+fdMTQ+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD9/98dx+R5JX05L/+OL/INQ2b/aOdnakpRXLiWaJAUXs/Z94HF7P2feBxez9n3gcXs/Z94HF7P2feBxez9n3gcXs/Z94HF7Px8BQ/x2/1acaeHulJFjFbcH6hf+Pw9b+HHnLw3Te6HUTX6Nvjeo7726jDl/1bADY3dQTWDuBNOi6Loui4JGWTdDYECsCgG6ewUBRhQE+FAT57BQFGFAT4UBTb//tS6X/4AQv9fYVHqpz//TY0jWyEH5+JSuf9yKh38UmssKbT5STNQadNl6u6XZ8qFvWerdf/FDrh5pDy6PJmCcN0qVtgsFgsFgsFgsFgsFgsFgsFAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
           "imageAlt": "A bar has a coral left half and a teal right half.",
@@ -180,7 +185,7 @@
         },
         {
           "term": "Magnetic",
-          "def": "In this sticking test, strongly attracted to an ordinary magnet, as iron is. Materials can also have weaker magnetic responses.",
+          "def": "Related to forces and fields produced by moving charges and aligned atomic moments.",
           "tier": "Domain-Specific",
           "image": "data:image/webp;base64,UklGRuIQAABXRUJQVlA4WAoAAAAgAAAA5wMA5wMASUNDUMgBAAAAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADZWUDgg9A4AAPAIAZ0BKugD6AM+KRSHQ6GhCFRwDAFCWlu/HyZ5ev6pv1W9WOoiGbiX+j9Qv+i6efoM8xPm484B6t/rq8+9+mfWZ6rZ4+/nX4ed+H9vxwAAr7DffvlJ5z9rP/Cfj5+SHH95G/0P5gfyvne7kz/B+IB4n1AD+Sf1z/gekv/o/5v8jvbj+Zf4T/xf3b4Ef5p/Uf9d6u3UJfsKBqbt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27du3bt27ayewZXyACQXijcLGwax0fkW/dsax0Mhdxr9+/fv379+/fv379+/fv379+/fv371I73kjx7T22FszeNY6PyLfu2NY6KCV6uhQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChQoUKFChP4mwd8IYICf3dZIZG8ePHjx48ePHjAt5t+7Y1jo/It+7Y1joQMnBb92xrHR+Rb92xqlnFBLFixYsRSWbpRwFQ766cuI6CYQqR/lFzUFOzXmCMMv0NOnTp06dOnInbe3btrngubsKGkMwGzZs2bNmRtujxAIOCIL2k2bo40R6rbKxYsWLFixYsTp23t27a523t268MwGzZs2bNmRtukNiDNg4AglixYsWLFixFO29u3bXO29u3XhmA2bNmzZsyNt0hsQZsHAEEsWLFixYsWIp23t27a523t268MwGzZs2bNmRtukNiDNg4AglixYsWLFixFO29u3bXO29u3XhmA2bNmzZsyNt0hsQZsHAEEsWLFixYsWIp23t27a523t268MwGzZs2bNmRtukNiDNg4AglixYsWLFixEJZTfu2NY6PyLfu2NY6FLKb92xrHR+Rb92xqkD56GnTp06V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",
           "imageAlt": "A paperclip is separated from a bar magnet by a clear gap; an arrow above the clip points toward the magnet.",
@@ -433,7 +438,7 @@
               "In the bar-magnet thought experiment, each divided piece has both poles. Do not cut or break magnets."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "rhyme-rhythm",
             "mode": "scaffolded",
             "aiExample": "Opposites hug, twins shove; cut it in half, you get two of.",
@@ -463,7 +468,7 @@
               "A sticking test gives evidence, but does not identify the exact material."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "acronym-acrostic",
             "mode": "scaffolded",
             "aiExample": "I.N.C. — Iron, Nickel, Cobalt: three familiar strongly magnetic metals. Add: alloys can behave differently.",
@@ -494,7 +499,7 @@
               "Cranes and many devices use controllable magnetic fields; some also use permanent magnets."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "analogy-pattern",
             "mode": "scaffolded",
             "aiExample": "A permanent magnet is a light with no switch: always on. An electromagnet is the same light with a wall switch: the current is the switch, the coil is the bulb, and more current is a brighter bulb.",
@@ -707,24 +712,24 @@
             "type": "mcq",
             "question": "Why does a magnet stick strongly to a carbon-steel door panel but not to an aluminum can in an ordinary stationary test?",
             "options": [
-              "Carbon steel is strongly magnetic; aluminum is not strongly attracted in this test",
-              "The can is too smooth for the magnet to grip",
-              "Aluminum blocks magnetic fields entirely",
-              "The door is colder than the can"
+              "Carbon steel is strongly attracted; aluminum is not in this test",
+              "The can is too smooth for the magnetic force to act on it",
+              "The aluminum can stops every magnetic field from passing through",
+              "The difference in temperature alone makes the door attract it"
             ],
-            "correctAnswer": "Carbon steel is strongly magnetic; aluminum is not strongly attracted in this test",
+            "correctAnswer": "Carbon steel is strongly attracted; aluminum is not in this test",
             "conceptLabel": "magnetic materials"
           },
           {
             "type": "mcq",
             "question": "In the simple bar-magnet comparison, which polarity describes Earth’s northern magnetic region where field lines enter Earth?",
             "options": [
-              "A magnetic north pole, matching the name",
-              "South-like polarity; a compass follows the local field rather than exact geographic north",
-              "The North Star's gravity",
-              "Nothing — compasses use gravity, not magnetism"
+              "North-like polarity, because the region is named north",
+              "South-like polarity; the compass follows the local field",
+              "No polarity; the compass points only toward the North Star",
+              "No polarity; Earth’s gravity alone controls the needle"
             ],
-            "correctAnswer": "South-like polarity; a compass follows the local field rather than exact geographic north",
+            "correctAnswer": "South-like polarity; the compass follows the local field",
             "conceptLabel": "earth magnetism naming"
           },
           {
@@ -891,7 +896,7 @@
           ],
           "deliverable": "A labeled design sketch, a built prototype or a detailed build plan, a test table (item, picked up yes or no, released yes or no), and a short explanation that uses at least four glossary words.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

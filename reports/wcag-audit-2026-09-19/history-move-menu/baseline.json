@@ -1,0 +1,1164 @@
+{
+  "date": "2026-09-19T23:24:56.141Z",
+  "baseline": true,
+  "checks": [
+    {
+      "theme": "light",
+      "name": "closed ARIA relationship",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'history-move-menu-legacy-row-1'\n- null\n"
+    },
+    {
+      "theme": "light",
+      "name": "Enter, arrows, Home/End, typeahead, Escape",
+      "passed": false,
+      "error": "page.waitForFunction: Timeout 4000ms exceeded."
+    },
+    {
+      "theme": "light",
+      "name": "ArrowUp opens last; Space opens first",
+      "passed": false,
+      "error": "locator.waitFor: Timeout 4000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[id^=\"history-move-menu-\"]') to be visible\u001b[22m\n"
+    },
+    {
+      "theme": "light",
+      "name": "Tab exits forward and closes",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 0\n"
+    },
+    {
+      "theme": "light",
+      "name": "Shift+Tab exits backward and closes",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 0\n"
+    },
+    {
+      "theme": "light",
+      "name": "selection invokes callback once and restores trigger",
+      "passed": false,
+      "error": "page.waitForFunction: Timeout 4000ms exceeded."
+    },
+    {
+      "theme": "light",
+      "name": "selection removing resource restores unit filter",
+      "passed": false,
+      "error": "page.waitForFunction: Timeout 4000ms exceeded."
+    },
+    {
+      "theme": "light",
+      "name": "empty units remain keyboard operable",
+      "passed": false,
+      "error": "page.waitForFunction: Timeout 4000ms exceeded."
+    },
+    {
+      "theme": "light",
+      "name": "outside pointer dismissal",
+      "passed": false,
+      "error": "locator.click: Timeout 4000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-help-key=\"history_filter_unit_select\"]')\u001b[22m\n\u001b[2m    - locator resolved to <select aria-label=\"Filter by Unit\" data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\">…</select>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div aria-hidden=\"true\" class=\"fixed inset-0 z-[90]\"></div> from <div role=\"list\" aria-label=\"Resource Pack History\" class=\"space-y-3 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div aria-hidden=\"true\" class=\"fixed inset-0 z-[90]\"></div> from <div role=\"list\" aria-label=\"Resource Pack History\" class=\"space-y-3 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    7 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div aria-hidden=\"true\" class=\"fixed inset-0 z-[90]\"></div> from <div role=\"list\" aria-label=\"Resource Pack History\" class=\"space-y-3 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n"
+    },
+    {
+      "theme": "light",
+      "name": "320px menu focus is visible and not clipped",
+      "passed": false,
+      "error": "{\"left\":146,\"right\":328,\"top\":368.5,\"bottom\":412.5,\"visible\":true}"
+    },
+    {
+      "theme": "dark",
+      "name": "closed ARIA relationship",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'history-move-menu-legacy-row-1'\n- null\n"
+    },
+    {
+      "theme": "dark",
+      "name": "Enter, arrows, Home/End, typeahead, Escape",
+      "passed": false,
+      "error": "page.waitForFunction: Timeout 4000ms exceeded."
+    },
+    {
+      "theme": "dark",
+      "name": "ArrowUp opens last; Space opens first",
+      "passed": false,
+      "error": "locator.waitFor: Timeout 4000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[id^=\"history-move-menu-\"]') to be visible\u001b[22m\n"
+    },
+    {
+      "theme": "dark",
+      "name": "Tab exits forward and closes",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 0\n"
+    },
+    {
+      "theme": "dark",
+      "name": "Shift+Tab exits backward and closes",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 0\n"
+    },
+    {
+      "theme": "dark",
+      "name": "selection invokes callback once and restores trigger",
+      "passed": false,
+      "error": "page.waitForFunction: Timeout 4000ms exceeded."
+    },
+    {
+      "theme": "dark",
+      "name": "selection removing resource restores unit filter",
+      "passed": false,
+      "error": "page.waitForFunction: Timeout 4000ms exceeded."
+    },
+    {
+      "theme": "dark",
+      "name": "empty units remain keyboard operable",
+      "passed": false,
+      "error": "page.waitForFunction: Timeout 4000ms exceeded."
+    },
+    {
+      "theme": "dark",
+      "name": "outside pointer dismissal",
+      "passed": false,
+      "error": "locator.click: Timeout 4000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-help-key=\"history_filter_unit_select\"]')\u001b[22m\n\u001b[2m    - locator resolved to <select aria-label=\"Filter by Unit\" data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\">…</select>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div aria-hidden=\"true\" class=\"fixed inset-0 z-[90]\"></div> from <div role=\"list\" aria-label=\"Resource Pack History\" class=\"space-y-3 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div aria-hidden=\"true\" class=\"fixed inset-0 z-[90]\"></div> from <div role=\"list\" aria-label=\"Resource Pack History\" class=\"space-y-3 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    7 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div aria-hidden=\"true\" class=\"fixed inset-0 z-[90]\"></div> from <div role=\"list\" aria-label=\"Resource Pack History\" class=\"space-y-3 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n"
+    },
+    {
+      "theme": "dark",
+      "name": "320px menu focus is visible and not clipped",
+      "passed": false,
+      "error": "{\"left\":145.9812774658203,\"right\":327.29949951171875,\"top\":368.0467529296875,\"bottom\":411.88189697265625,\"visible\":true}"
+    },
+    {
+      "theme": "contrast",
+      "name": "closed ARIA relationship",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'history-move-menu-legacy-row-1'\n- null\n"
+    },
+    {
+      "theme": "contrast",
+      "name": "Enter, arrows, Home/End, typeahead, Escape",
+      "passed": false,
+      "error": "page.waitForFunction: Timeout 4000ms exceeded."
+    },
+    {
+      "theme": "contrast",
+      "name": "ArrowUp opens last; Space opens first",
+      "passed": false,
+      "error": "locator.waitFor: Timeout 4000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[id^=\"history-move-menu-\"]') to be visible\u001b[22m\n"
+    },
+    {
+      "theme": "contrast",
+      "name": "Tab exits forward and closes",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 0\n"
+    },
+    {
+      "theme": "contrast",
+      "name": "Shift+Tab exits backward and closes",
+      "passed": false,
+      "error": "Expected values to be strictly equal:\n\n1 !== 0\n"
+    },
+    {
+      "theme": "contrast",
+      "name": "selection invokes callback once and restores trigger",
+      "passed": false,
+      "error": "page.waitForFunction: Timeout 4000ms exceeded."
+    },
+    {
+      "theme": "contrast",
+      "name": "selection removing resource restores unit filter",
+      "passed": false,
+      "error": "page.waitForFunction: Timeout 4000ms exceeded."
+    },
+    {
+      "theme": "contrast",
+      "name": "empty units remain keyboard operable",
+      "passed": false,
+      "error": "page.waitForFunction: Timeout 4000ms exceeded."
+    },
+    {
+      "theme": "contrast",
+      "name": "outside pointer dismissal",
+      "passed": false,
+      "error": "locator.click: Timeout 4000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-help-key=\"history_filter_unit_select\"]')\u001b[22m\n\u001b[2m    - locator resolved to <select aria-label=\"Filter by Unit\" data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\">…</select>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div aria-hidden=\"true\" class=\"fixed inset-0 z-[90]\"></div> from <div role=\"list\" aria-label=\"Resource Pack History\" class=\"space-y-3 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div aria-hidden=\"true\" class=\"fixed inset-0 z-[90]\"></div> from <div role=\"list\" aria-label=\"Resource Pack History\" class=\"space-y-3 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    7 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div aria-hidden=\"true\" class=\"fixed inset-0 z-[90]\"></div> from <div role=\"list\" aria-label=\"Resource Pack History\" class=\"space-y-3 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n"
+    },
+    {
+      "theme": "contrast",
+      "name": "320px menu focus is visible and not clipped",
+      "passed": false,
+      "error": "{\"left\":147.92251586914062,\"right\":325.5982360839844,\"top\":354.9246520996094,\"bottom\":398.3564758300781,\"visible\":true}"
+    }
+  ],
+  "scans": [
+    {
+      "theme": "light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "impact": "critical",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "description": "Ensure all ARIA attributes have valid values",
+          "help": "ARIA attributes must conform to valid values",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/aria-valid-attr-value?application=axeAPI",
+          "nodes": [
+            {
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"history-move-menu-legacy-row-1\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-1\""
+                }
+              ],
+              "none": [],
+              "impact": "critical",
+              "html": "<button type=\"button\" data-help-key=\"history_move_to_unit...\" aria-label=\"Move to Unit Folder:...\" aria-expanded=\"true\" aria-haspopup=\"menu\" aria-controls=\"history-move-menu-le...\" class=\"min-h-11 min-w-11 gr...\" title=\"Move to Unit Folder\">",
+              "target": [
+                "button[aria-controls=\"history-move-menu-legacy-row-1\"]"
+              ],
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-1\""
+            },
+            {
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"history-move-menu-legacy-row-2\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-2\""
+                }
+              ],
+              "none": [],
+              "impact": "critical",
+              "html": "<button type=\"button\" data-help-key=\"history_move_to_unit...\" aria-label=\"Move to Unit Folder:...\" aria-expanded=\"false\" aria-haspopup=\"menu\" aria-controls=\"history-move-menu-le...\" class=\"min-h-11 min-w-11 gr...\" title=\"Move to Unit Folder\">",
+              "target": [
+                ".text-amber-700"
+              ],
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-2\""
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"light\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"min-w-0 truncate\">Resource Pack History</span>",
+              "target": [
+                "h3 > .truncate.min-w-0"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"light\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"text-emerald-700 flex items-center gap-1\"> Autosaved 08:00 AM</span>",
+              "target": [
+                ".text-emerald-700"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+                      "target": [
+                        ".outline-none"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+              "target": [
+                ".outline-none"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select aria-label=\"Filter resources by type\" class=\"min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200\">",
+                      "target": [
+                        ".min-w-\\[120px\\]"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select aria-label=\"Filter resources by type\" class=\"min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200\">",
+              "target": [
+                ".min-w-\\[120px\\]"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "impact": "critical",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "description": "Ensure all ARIA attributes have valid values",
+          "help": "ARIA attributes must conform to valid values",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/aria-valid-attr-value?application=axeAPI",
+          "nodes": [
+            {
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"history-move-menu-legacy-row-1\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-1\""
+                }
+              ],
+              "none": [],
+              "impact": "critical",
+              "html": "<button type=\"button\" data-help-key=\"history_move_to_unit...\" aria-label=\"Move to Unit Folder:...\" aria-expanded=\"true\" aria-haspopup=\"menu\" aria-controls=\"history-move-menu-le...\" class=\"min-h-11 min-w-11 gr...\" title=\"Move to Unit Folder\">",
+              "target": [
+                "button[aria-controls=\"history-move-menu-legacy-row-1\"]"
+              ],
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-1\""
+            },
+            {
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"history-move-menu-legacy-row-2\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-2\""
+                }
+              ],
+              "none": [],
+              "impact": "critical",
+              "html": "<button type=\"button\" data-help-key=\"history_move_to_unit...\" aria-label=\"Move to Unit Folder:...\" aria-expanded=\"false\" aria-haspopup=\"menu\" aria-controls=\"history-move-menu-le...\" class=\"min-h-11 min-w-11 gr...\" title=\"Move to Unit Folder\">",
+              "target": [
+                ".text-amber-700"
+              ],
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-2\""
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"min-w-0 truncate\">Resource Pack History</span>",
+              "target": [
+                "h3 > .truncate.min-w-0"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"text-emerald-700 flex items-center gap-1\"> Autosaved 08:00 AM</span>",
+              "target": [
+                ".text-emerald-700"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+                      "target": [
+                        ".outline-none"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+              "target": [
+                ".outline-none"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select aria-label=\"Filter resources by type\" class=\"min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200\">",
+                      "target": [
+                        ".min-w-\\[120px\\]"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select aria-label=\"Filter resources by type\" class=\"min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200\">",
+              "target": [
+                ".min-w-\\[120px\\]"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div role=\"listitem\" class=\"group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5 cursor-default\">",
+                      "target": [
+                        ".border-indigo-300"
+                      ]
+                    },
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span class=\"text-[11px] font-bold\" aria-hidden=\"true\">1</span>",
+              "target": [
+                ".text-indigo-600 > .text-\\[11px\\].font-bold[aria-hidden=\"true\"]"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"self-center p-2 rounded-lg shrink-0 bg-indigo-100 text-indigo-700\"><span aria-hidden=\"true\">R</span></div>",
+                      "target": [
+                        ".bg-indigo-100"
+                      ]
+                    },
+                    {
+                      "html": "<div role=\"listitem\" class=\"group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5 cursor-default\">",
+                      "target": [
+                        ".border-indigo-300"
+                      ]
+                    },
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<span aria-hidden=\"true\">R</span>",
+              "target": [
+                ".bg-indigo-100 > span[aria-hidden=\"true\"]"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"history-move-menu-legacy-row-1\" role=\"menu\" class=\"rp-menu-surface absolute left-0 top-12 z-[100] w-48 origin-top-left rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15 animate-in fade-in zoom-in-95\">",
+                      "target": [
+                        "#history-move-menu-legacy-row-1"
+                      ]
+                    },
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<div role=\"presentation\" class=\"px-2 py-2 text-xs font-bold uppercase tracking-wider text-slate-500\">Move to...</div>",
+              "target": [
+                ".uppercase"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "elmPartiallyObscured",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"history-move-menu-legacy-row-1\" role=\"menu\" class=\"rp-menu-surface absolute left-0 top-12 z-[100] w-48 origin-top-left rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15 animate-in fade-in zoom-in-95\">",
+                      "target": [
+                        "#history-move-menu-legacy-row-1"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because it's partially obscured by another element"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<button type=\"button\" role=\"menuitem\" class=\"min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 \">Physics</button>",
+              "target": [
+                ".py-2.text-left[role=\"menuitem\"]:nth-child(4)"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div role=\"listitem\" class=\"group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5 cursor-default\">",
+                      "target": [
+                        ".border-indigo-300"
+                      ]
+                    },
+                    {
+                      "html": "<div id=\"tour-history-panel\" data-help-key=\"history_panel\" data-history-theme=\"dark\" class=\"allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 flex-grow min-h-[500px]\">",
+                      "target": [
+                        "#tour-history-panel"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<button aria-label=\"Delete\" class=\"min-h-11 rounded-lg px-2 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 flex items-center gap-1\" title=\"Remove from pack\" data-help-key=\"resource_delete_button\"> Remove</button>",
+              "target": [
+                ".border-indigo-300 > .mt-2.border-t.pt-2 > .text-red-700.hover\\:bg-red-50[aria-label=\"Delete\"]"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "theme": "contrast",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#001d1d",
+                    "bgColor": "#000303",
+                    "contrastRatio": 1.17,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" role=\"menuitem\" class=\"min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 bg-indigo-50 font-bold text-indigo-700\">Uncategorized</button>",
+                      "target": [
+                        ".bg-indigo-50.py-2[role=\"menuitem\"]"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element has insufficient color contrast of 1.17 (foreground color: #001d1d, background color: #000303, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<button type=\"button\" role=\"menuitem\" class=\"min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 bg-indigo-50 font-bold text-indigo-700\">Uncategorized</button>",
+              "target": [
+                ".bg-indigo-50.py-2[role=\"menuitem\"]"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.17 (foreground color: #001d1d, background color: #000303, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#1d1d1d",
+                    "bgColor": "#000000",
+                    "contrastRatio": 1.24,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" role=\"menuitem\" class=\"min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 \">Biology</button>",
+                      "target": [
+                        ".py-2.text-left[role=\"menuitem\"]:nth-child(2)"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element has insufficient color contrast of 1.24 (foreground color: #1d1d1d, background color: #000000, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<button type=\"button\" role=\"menuitem\" class=\"min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 \">Biology</button>",
+              "target": [
+                ".py-2.text-left[role=\"menuitem\"]:nth-child(2)"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.24 (foreground color: #1d1d1d, background color: #000000, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#1d1d1d",
+                    "bgColor": "#000000",
+                    "contrastRatio": 1.24,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" role=\"menuitem\" class=\"min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 \">Chemistry</button>",
+                      "target": [
+                        ".py-2.text-left[role=\"menuitem\"]:nth-child(3)"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element has insufficient color contrast of 1.24 (foreground color: #1d1d1d, background color: #000000, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<button type=\"button\" role=\"menuitem\" class=\"min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 \">Chemistry</button>",
+              "target": [
+                ".py-2.text-left[role=\"menuitem\"]:nth-child(3)"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.24 (foreground color: #1d1d1d, background color: #000000, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#1d1d1d",
+                    "bgColor": "#000000",
+                    "contrastRatio": 1.24,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" role=\"menuitem\" class=\"min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 \">Physics</button>",
+                      "target": [
+                        ".py-2.text-left[role=\"menuitem\"]:nth-child(4)"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element has insufficient color contrast of 1.24 (foreground color: #1d1d1d, background color: #000000, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<button type=\"button\" role=\"menuitem\" class=\"min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 \">Physics</button>",
+              "target": [
+                ".py-2.text-left[role=\"menuitem\"]:nth-child(4)"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.24 (foreground color: #1d1d1d, background color: #000000, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "impact": "critical",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "description": "Ensure all ARIA attributes have valid values",
+          "help": "ARIA attributes must conform to valid values",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/aria-valid-attr-value?application=axeAPI",
+          "nodes": [
+            {
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"history-move-menu-legacy-row-1\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-1\""
+                }
+              ],
+              "none": [],
+              "impact": "critical",
+              "html": "<button type=\"button\" data-help-key=\"history_move_to_unit...\" aria-label=\"Move to Unit Folder:...\" aria-expanded=\"true\" aria-haspopup=\"menu\" aria-controls=\"history-move-menu-le...\" class=\"min-h-11 min-w-11 gr...\" title=\"Move to Unit Folder\">",
+              "target": [
+                "button[aria-controls=\"history-move-menu-legacy-row-1\"]"
+              ],
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-1\""
+            },
+            {
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"history-move-menu-legacy-row-2\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-2\""
+                }
+              ],
+              "none": [],
+              "impact": "critical",
+              "html": "<button type=\"button\" data-help-key=\"history_move_to_unit...\" aria-label=\"Move to Unit Folder:...\" aria-expanded=\"false\" aria-haspopup=\"menu\" aria-controls=\"history-move-menu-le...\" class=\"min-h-11 min-w-11 gr...\" title=\"Move to Unit Folder\">",
+              "target": [
+                ".text-amber-700"
+              ],
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"history-move-menu-legacy-row-2\""
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+          "nodes": [
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+                      "target": [
+                        ".outline-none"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select data-help-key=\"history_filter_unit_select\" class=\"min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200\" aria-label=\"Filter by Unit\">",
+              "target": [
+                ".outline-none"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgImage",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<select aria-label=\"Filter resources by type\" class=\"min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200\">",
+                      "target": [
+                        ".min-w-\\[120px\\]"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background image"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<select aria-label=\"Filter resources by type\" class=\"min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200\">",
+              "target": [
+                ".min-w-\\[120px\\]"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background image"
+            },
+            {
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "elmPartiallyObscured",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div id=\"history-move-menu-legacy-row-1\" role=\"menu\" class=\"rp-menu-surface absolute left-0 top-12 z-[100] w-48 origin-top-left rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15 animate-in fade-in zoom-in-95\">",
+                      "target": [
+                        "#history-move-menu-legacy-row-1"
+                      ]
+                    },
+                    {
+                      "html": "<div role=\"listitem\" class=\"group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] border-slate-200 border-l-transparent bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50/70 cursor-default\">",
+                      "target": [
+                        ".border-l-transparent"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because it's partially obscured by another element"
+                }
+              ],
+              "all": [],
+              "none": [],
+              "impact": "serious",
+              "html": "<div role=\"presentation\" class=\"px-2 py-2 text-xs font-bold uppercase tracking-wider text-slate-500\">Move to...</div>",
+              "target": [
+                ".uppercase"
+              ],
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "browser": "148.0.7778.96",
+  "passed": false
+}

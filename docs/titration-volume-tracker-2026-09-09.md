@@ -23,3 +23,5 @@ The browser harness uses the actual widget, React, Three.js, and application sty
 ## Evidence
 
 Run `node reports/chemistry-refinement-2026-09-06/titration-volume-tracker-browser.cjs` to repeat the browser checks. The same directory contains `titration-volume-tracker-browser-results.json`, `titration-volume-tracker-tests.json`, `titration-volume-tracker-boundary-tests.json`, and the tracker JPEG screenshots.
+
+Follow-up: [per-fill volume contributions](titration-volume-contributions-2026-09-19.md) adds an optional proportional diagram for the counted interval in each burette fill.

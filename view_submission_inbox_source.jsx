@@ -982,13 +982,74 @@ function siTrapAlloSheetReviewFocus(event, container) {
   }
 }
 
-function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSheet, onOpenInStudio }) {
-  if (!isOpen) return null;
+// Derived display data only; saved entries remain unchanged.
+function siBuildGradebookSummary(entries, groupByStudent) {
+  const averages = new Map();
+  const byStudent = new Map();
+  entries.forEach(entry => {
+    const scores = Object.values(entry.grades || {}).map(g => g.score).filter(s => typeof s === 'number');
+    averages.set(entry, scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null);
+    if (groupByStudent) {
+      const key = (entry.nickname || 'unknown').toLowerCase();
+      if (!byStudent.has(key)) byStudent.set(key, { nickname: entry.nickname, className: entry.className, entries: [] });
+      byStudent.get(key).entries.push(entry);
+    }
+  });
+  const students = Array.from(byStudent.values()).sort((a, b) => (a.nickname || '').localeCompare(b.nickname || ''));
+  students.forEach(student => {
+    const avgs = student.entries.map(entry => averages.get(entry)).filter(avg => typeof avg === 'number');
+    student.avgOfAvgs = avgs.length ? Math.round(avgs.reduce((a, b) => a + b, 0) / avgs.length) : null;
+    student.lastGraded = student.entries.map(entry => entry.gradedAt).filter(Boolean).sort().pop();
+  });
+  return { averages, students };
+}
+
+// Keep edits cheap: retain the latest references and serialize only when saving.
+function siCreateSessionAutosave() {
+  let pending = null;
+  let delayTimer = null;
+  let limitTimer = null;
+  const cancel = () => {
+    clearTimeout(delayTimer);
+    clearTimeout(limitTimer);
+    delayTimer = limitTimer = null;
+    pending = null;
+  };
+  const flush = () => {
+    const state = pending;
+    cancel();
+    if (!state) return;
+    try {
+      const { globalRubric, anchors } = state;
+      if ((globalRubric.rubric || '').trim() || (globalRubric.context || '').trim() || anchors.length > 0) {
+        localStorage.setItem('alloflow_inbox_session', JSON.stringify({ globalRubric, anchors, savedAt: new Date().toISOString() }));
+      } else {
+        localStorage.removeItem('alloflow_inbox_session');
+      }
+    } catch (e) { /* private mode / quota */ }
+  };
+  const schedule = (state) => {
+    pending = state;
+    clearTimeout(delayTimer);
+    delayTimer = setTimeout(flush, 300);
+    // Continuous typing still gets a periodic checkpoint.
+    if (limitTimer === null) limitTimer = setTimeout(flush, 2000);
+  };
+  return { schedule, flush, cancel };
+}
+
+function SubmissionInbox(props) {
+  return props.isOpen ? React.createElement(SubmissionInboxOpen, props) : null;
+}
+
+function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSheet, onOpenInStudio }) {
 
   // ── UI localization state (drives tr() above) ──
   var _llCtx = React.useContext(LANG_CTX);
   var uiLang = (_llCtx && _llCtx.currentUiLanguage) || (typeof window !== 'undefined' && window.__alloTextLanguage) || 'English';
-  var _llCacheRef = React.useRef(llLoad());
+  var _llCacheRef = React.useRef(null);
+  // Read and parse the persisted cache only when this panel mounts.
+  if (_llCacheRef.current === null) _llCacheRef.current = llLoad();
   var _llAttemptedRef = React.useRef({});
   var _setLlTick = React.useState(0)[1];
   LL_CUR.lang = uiLang; LL_CUR.cache = _llCacheRef.current; // publish snapshot for tr()
@@ -1085,6 +1146,11 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
   // sessionLoadedRef prevents the first auto-save from overwriting state
   // before the restore effect has run.
   const sessionLoadedRef = useRef(false);
+  const sessionAutosaveRef = useRef(null);
+  if (!sessionAutosaveRef.current) sessionAutosaveRef.current = siCreateSessionAutosave();
+  // Skip the initial empty render, including StrictMode effect replay, until
+  // restored data or an edit supplies new state references.
+  const sessionAutosaveStateRef = useRef({ globalRubric, anchors });
   const [savedSessionMeta, setSavedSessionMeta] = useState(null);  // { savedAt } if restored from localStorage
   // Phase 3 v2.4 (May 12 2026): named rubric presets ("Reading Response",
   // "Math Word Problem", etc.). Stored in localStorage under
@@ -1208,23 +1274,29 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
     } catch (e) { /* ignore corrupt storage */ }
   }, [isOpen]);
 
-  // Auto-save on changes to globalRubric or anchors (only after first restore
-  // has run, so we don't clobber stored state on mount).
+  React.useEffect(() => {
+    const autosave = sessionAutosaveRef.current;
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') autosave.flush();
+    };
+    window.addEventListener('pagehide', autosave.flush);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('pagehide', autosave.flush);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      autosave.flush();
+    };
+  }, []);
+
   React.useEffect(() => {
     if (!sessionLoadedRef.current) return;
-    try {
-      const payload = {
-        globalRubric: globalRubric,
-        anchors: anchors,
-        savedAt: new Date().toISOString(),
-      };
-      // Only write if there's actually something worth saving.
-      if ((globalRubric.rubric || '').trim() || (globalRubric.context || '').trim() || anchors.length > 0) {
-        localStorage.setItem('alloflow_inbox_session', JSON.stringify(payload));
-      } else {
-        localStorage.removeItem('alloflow_inbox_session');
-      }
-    } catch (e) { /* private mode / quota */ }
+    const previous = sessionAutosaveStateRef.current;
+    if (previous.globalRubric === globalRubric && previous.anchors === anchors) return;
+    const state = { globalRubric, anchors };
+    sessionAutosaveStateRef.current = state;
+    sessionAutosaveRef.current.schedule(state);
+    // An update arriving after the tab becomes hidden should also be durable.
+    if (document.visibilityState === 'hidden') sessionAutosaveRef.current.flush();
   }, [globalRubric, anchors]);
 
   // Load saved presets once when the modal first opens.
@@ -1367,6 +1439,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
   };
 
   const clearSavedSession = () => {
+    sessionAutosaveRef.current.cancel();
     try { localStorage.removeItem('alloflow_inbox_session'); } catch (e) {}
     setGlobalRubric({ rubric: '', context: '' });
     setAnchors([]);
@@ -2071,11 +2144,11 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
     setTimeout(() => { URL.revokeObjectURL(url); if (a.parentNode) a.parentNode.removeChild(a); }, 200);
     addToast && addToast('Downloaded gradebook CSV (' + (rows.length - 1) + ' row' + (rows.length - 1 === 1 ? '' : 's') + ').', 'success');
   };
-  const gradebookAvg = (entry) => {
-    const scores = Object.values(entry.grades || {}).map(g => g.score).filter(s => typeof s === 'number');
-    if (scores.length === 0) return null;
-    return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-  };
+  const gradebookSummary = React.useMemo(
+    () => gradebookOpen ? siBuildGradebookSummary(gradebookEntries, gradebookGroupBy === 'student') : null,
+    [gradebookEntries, gradebookOpen, gradebookGroupBy]
+  );
+  const gradebookAvg = entry => gradebookSummary.averages.get(entry);
   const scoreColor = (score) => {
     if (typeof score !== 'number') return { bg: '#f1f5f9', color: '#475569' };
     if (score >= 85) return { bg: '#dcfce7', color: '#166534' };
@@ -3173,23 +3246,9 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                       /*#__PURE__*/React.createElement('tbody', null,
                         gradebookGroupBy === 'student'
                           ? (() => {
-                              // Group entries by nickname
-                              const byStudent = {};
-                              gradebookEntries.forEach(e => {
-                                const key = (e.nickname || 'unknown').toLowerCase();
-                                if (!byStudent[key]) byStudent[key] = { nickname: e.nickname, className: e.className, entries: [] };
-                                byStudent[key].entries.push(e);
-                              });
-                              const students = Object.values(byStudent).sort((a, b) => (a.nickname || '').localeCompare(b.nickname || ''));
-                              return students.map((s, i) => {
-                                const avgs = s.entries.map(e => gradebookAvg(e)).filter(a => typeof a === 'number');
-                                const avgOfAvgs = avgs.length > 0 ? Math.round(avgs.reduce((a, b) => a + b, 0) / avgs.length) : null;
+                              return gradebookSummary.students.map((s, i) => {
+                                const { avgOfAvgs, lastGraded } = s;
                                 const sc = typeof avgOfAvgs === 'number' ? scoreColor(avgOfAvgs) : { bg: '#f1f5f9', color: '#475569' };
-                                const lastGraded = s.entries
-                                  .map(e => e.gradedAt)
-                                  .filter(Boolean)
-                                  .sort()
-                                  .pop();
                                 const studentKey = s.nickname + '|' + (s.className || '');
                                 const isExpanded = expandedStudent === studentKey;
                                 return /*#__PURE__*/React.createElement(React.Fragment, { key: i },

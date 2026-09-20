@@ -1,0 +1,57 @@
+{
+  "pass": 35,
+  "title": "Workshop camera control panel",
+  "date": "2026-09-19",
+  "changes": [
+    "Grouped Views, Rotate, and Zoom controls with responsive wrapping.",
+    "Minimum 40-pixel button heights and visible keyboard focus.",
+    "Side and Close presets show selected state, clearing when the angle changes.",
+    "Preserved camera, focus, fullscreen, and inspected motion behavior."
+  ],
+  "validation": {
+    "uniqueUiTests": 255,
+    "testReports": [
+      "pass35-ui-tests.json",
+      "pass35-ui-retry-tests.json",
+      "pass35-clue-retry-tests.json"
+    ],
+    "note": "Initial run had one fixed-length-markup assertion failure and three timeouts. Replaced the brittle assertion with DOM inspection. Suite retry passed 226/227; the remaining timeout passed its isolated rerun (268ms). The initial accessibility suite passed all 28 tests.",
+    "browser": [
+      {
+        "theme": "light",
+        "file": "pass35-light/results.json",
+        "checks": 90,
+        "screenshots": 4,
+        "errors": [],
+        "overflow": false
+      },
+      {
+        "theme": "dark",
+        "file": "pass35-dark/results.json",
+        "checks": 90,
+        "screenshots": 4,
+        "errors": [],
+        "overflow": false
+      },
+      {
+        "theme": "contrast",
+        "file": "pass35-contrast/results.json",
+        "checks": 90,
+        "screenshots": 4,
+        "errors": [],
+        "overflow": false
+      }
+    ],
+    "totalBrowserChecks": 270,
+    "screenshots": 12,
+    "sourceMirrorIdentical": true,
+    "syntax": "passed"
+  },
+  "reviewedScreenshots": [
+    "pass35-light/camera-windlass-320.png",
+    "pass35-dark/camera-lever-1150.png",
+    "pass35-contrast/camera-windlass-390.png"
+  ],
+  "sha256": "fc0fb842edbf71c6a1d37557e4b8bb477117958071ea70fe51c65842b0b7e8a6",
+  "publication": "Local only; no commit, push, or deployment"
+}

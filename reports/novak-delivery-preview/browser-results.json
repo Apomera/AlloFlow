@@ -1,0 +1,97 @@
+{
+  "timestamp": "2026-09-20T01:51:29.553Z",
+  "scope": "Actual generated delivery contract and dialog, local React and built CSS; controlled callbacks/icons; no full-app transport, focus-trap, QR generation, or deployment validation.",
+  "browser": "148.0.7778.96",
+  "hashes": {
+    "instructional_context_module.js": "694efa8b00a865ec6264bf51a40ebd2682a07baea359d3b06b842079aa2708f7",
+    "shared_activity_module.js": "88f539f2e474e667f8232ab9aa85197579c9b83054b927c5d9bc195139bdb14d",
+    "view_share_session_surfaces_module.js": "f9c505f4e270f58b2849ca6c41a3170f372f35e2eb8e32183cf02f74476c046d",
+    "main.1fb7b97e.css": "4b9a6e181169d48efc6e208af5f3987ffc9cd63ab255bc60eae40e4fa7a98761"
+  },
+  "scenarios": [
+    {
+      "name": "saved-selection-1280",
+      "pass": true,
+      "layout": {
+        "viewport": 1280,
+        "documentWidth": 1280,
+        "panelWidth": 448,
+        "left": 416,
+        "right": 864,
+        "panelScrollWidth": 446,
+        "panelClientWidth": 446
+      },
+      "calls": {
+        "selfContained": [
+          [
+            "companion"
+          ]
+        ],
+        "mailbox": [
+          [
+            "companion"
+          ]
+        ],
+        "preview": 1,
+        "copied": [
+          "https://school.example.invalid/homework/fixture"
+        ],
+        "closed": 1
+      },
+      "metadataExcludesReadingAndGlossBodies": true,
+      "screenshot": "saved-selection-1280.png"
+    },
+    {
+      "name": "saved-selection-320",
+      "pass": true,
+      "layout": {
+        "viewport": 320,
+        "documentWidth": 320,
+        "panelWidth": 296,
+        "left": 12,
+        "right": 308,
+        "panelScrollWidth": 294,
+        "panelClientWidth": 294
+      },
+      "calls": {
+        "selfContained": [
+          [
+            "companion"
+          ]
+        ],
+        "mailbox": [
+          [
+            "companion"
+          ]
+        ],
+        "preview": 1,
+        "copied": [
+          "https://school.example.invalid/homework/fixture"
+        ],
+        "closed": 1
+      },
+      "metadataExcludesReadingAndGlossBodies": true,
+      "screenshot": "saved-selection-320.png"
+    },
+    {
+      "name": "legacy-selection-not-reused",
+      "pass": true,
+      "calls": {
+        "selfContained": [],
+        "mailbox": [],
+        "preview": 1,
+        "copied": [
+          "https://school.example.invalid/homework/fixture"
+        ],
+        "closed": 0
+      }
+    },
+    {
+      "name": "escaped-title-and-reduced-warning",
+      "pass": true,
+      "screenshot": "escaped-reduced-320.png"
+    }
+  ],
+  "externalRequests": [],
+  "pageErrors": []
+}

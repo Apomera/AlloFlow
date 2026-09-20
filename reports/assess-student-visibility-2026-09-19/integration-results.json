@@ -1,0 +1,10 @@
+{
+  "revision": "d3fe25a193",
+  "bundleParity": true,
+  "desktopLocalLoaders": true,
+  "matchingEnglishStrings": 10,
+  "tests": 171,
+  "testFiles": 15,
+  "browserChecks": 116,
+  "accessibilitySurfaces": 24
+}

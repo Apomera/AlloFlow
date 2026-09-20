@@ -1,0 +1,55 @@
+{
+  "unicode": [
+    {
+      "label": "水",
+      "normalized": "",
+      "matchesUnrelated": true,
+      "exactMatchFound": false,
+      "aliases": []
+    },
+    {
+      "label": "ماء",
+      "normalized": "",
+      "matchesUnrelated": true,
+      "exactMatchFound": false,
+      "aliases": []
+    },
+    {
+      "label": "вода",
+      "normalized": "",
+      "matchesUnrelated": true,
+      "exactMatchFound": false,
+      "aliases": []
+    },
+    {
+      "label": "पानी",
+      "normalized": "",
+      "matchesUnrelated": true,
+      "exactMatchFound": false,
+      "aliases": []
+    },
+    {
+      "label": "café",
+      "normalized": "cafe",
+      "matchesUnrelated": false,
+      "exactMatchFound": true,
+      "aliases": [
+        "café"
+      ]
+    }
+  ],
+  "category": {
+    "all": 8,
+    "other": 0,
+    "nouns": 0
+  },
+  "foreignWishVisible": 1,
+  "gardenText": "🌱\nWord Garden\n\nTap any word to explore its growth across tools.\n\n🌱 Student View\n🌍 Home Lang\nEspañol\nFrançais\nDeutsch\nPortuguês\n中文\nالعربية\nहिन्दी\n日本語\n한국어\nTiếng Việt\nTagalog\nРусский\nKiswahili\nSoomaali\nမြန်မာ\nአማርኛ\n💬\nCore vocabulary tip: 0 of 3 core words are strong. Focus on the remaining core words — they power 80% of daily communication.\n🔗 BehaviorLens FCT...\n👀 Attention-Seeking\n🏃 Escape/Avoidance\n🎁 Tangible Access\n🌀 Sensory Regulation\n🌰\n45\n🌱\n5\n🌿\n3\n🌸\n0\n🌳\n0\n💬\n0/3 core\n📝\n53 words\n↕ Growth\n↕ A→Z\n↕ Contexts\n↕ AAC Use\n🎮 Practice Weak Words\n📋 Garden Board\n💫\n🌿\nBook\n🎨\n📋\n📅\n🌿\nSnack\n🎨\n📋\n📅\n🌿\nWash hands\n🎨\n📋\n📅\n🌱\nBreak\n🎨\n📋\n🌱\nCORE\nHelp\n🎨\n📋\n🌱\nCORE\nNo\n🎨\n📋\n🌱\nWater\n🎨\n📋\n🌱\nCORE\nYes\n🎨\n📋\n🌰\n🌰\n1 minute left\n⚡\n🌰\n🌰\n3 minutes left\n⚡\n🌰\n🌰\n5 minutes left\n⚡\n🌰\n🌰\nAlmost time!\n⚡\n🌰\n🌰\nArm\n⚡\n🌰\n🌰\nAsk for help\n⚡\n🌰\n🌰\nBack\n⚡\n🌰\n🌰\nCan I go?\n⚡\n🌰\n🌰\nCan I have...?\n⚡\n🌰\n🌰\nCan you help me?\n⚡\n🌰\n🌰\nClean up\n⚡\n🌰\n🌰\nCount to 10\n⚡\n🌰\n🌰\nDraw or color\n⚡\n🌰\n🌰\nDrink some water\n⚡\n🌰\n🌰\nEars\n⚡\n🌰\n🌰\nEyes\n⚡\n🌰\n🌰\nFeel overwhelmed\n⚡\n🌰\n🌰\nHead\n⚡\n🌰\n🌰\nI don't know\n⚡\n🌰\n🌰\nI don't understand\n⚡\n🌰\n🌰\nI need...\n⚡\n🌰\n🌰\nI want to...\n⚡\n🌰\n🌰\nLeg\n⚡\n🌰\n🌰\nLine up\n⚡\n🌰\n🌰\nListen to music\n⚡\n🌰\n🌰\nNeed a break\n⚡\n🌰\n🌰\nNeed fidget\n⚡\n🌰\n🌰\nNeed headphones\n⚡\n🌰\n🌰\nNeed quiet\n⚡\n🌰\n🌰\nNeed sunglasses\n⚡\n🌰\n🌰\nNeed to move\n⚡\n🌰\n🌰\nNew activity starts\n⚡\n🌰\n🌰\nOther learner private wish\n💫\n🌰\n🌰\nSqueeze a stress ball\n⚡\n🌰\n🌰\nStomach\n⚡\n🌰\n🌰\nTake a walk\n⚡\n🌰\n🌰\nTake deep breaths\n⚡\n🌰\n🌰\nThroat\n⚡\n🌰\n🌰\nTime to stop\n⚡\n🌰\n🌰\nToo bright\n⚡\n🌰\n🌰\nToo crowded\n⚡\n🌰\n🌰\nToo loud\n⚡\n🌰\n🌰\nWhat is...?\n⚡\n🌰\n🌰\nWhen is...?\n⚡\n🌰\n🌰\nWhere is...?\n⚡\n📊 Practice Report\n🏠 Home Note\n🔬 Research CSV",
+  "bridge": {
+    "label": "Water",
+    "category": "food",
+    "familiarityScore": 0.76,
+    "isMastered": true
+  },
+  "studioFamiliarityForSame19Taps": 0.7539999997519842
+}

@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "compositionEnterProtected": true,
+  "legacyCompositionProtected": true,
+  "whitespaceIgnored": true,
+  "enterAndButtonSubmit": true,
+  "incorrectAnswerRetainsFocus": true,
+  "nextAnswerStartsEmpty": true,
+  "attempts": 3,
+  "widths": [
+    1280,
+    390,
+    320
+  ],
+  "pageErrors": []
+}

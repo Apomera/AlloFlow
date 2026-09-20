@@ -1,0 +1,56 @@
+{
+  "date": "2026-09-19",
+  "features": [
+    "Recent 5 mL live-curve window with unchanged vertical scale",
+    "System-color graph labels and lines in forced-colors mode",
+    "Shared orbit viewer uses the latest batched visibility state"
+  ],
+  "tests": {
+    "passed": 122,
+    "suites": 6,
+    "newCurveTests": 10,
+    "newVisibilityTests": 6,
+    "windowGeometryCases": 1423,
+    "report": "titration-trace-window-tests.json"
+  },
+  "browser": {
+    "scans": 33,
+    "curveWindow": 24,
+    "existingBench": 9,
+    "interactionCheckGroups": 9,
+    "pageErrors": [],
+    "automatedColorContrastScans": 31,
+    "forcedColorsScans": 2,
+    "forcedColorsValidation": "Other axe rules, computed CanvasText/LinkText assertions, and visual review",
+    "reports": [
+      "titration-trace-window-browser-results.json",
+      "titration-trace-browser-results.json"
+    ]
+  },
+  "visibilityRegression": {
+    "reproducedInChromium": true,
+    "beforeFixFailedTests": 2,
+    "afterFixPassedTests": 6,
+    "sharedViewerSourcePublicMatch": true
+  },
+  "source": {
+    "sourceSyntax": true,
+    "sourcePublicMatch": true,
+    "traceLiteralReferences": 11,
+    "traceEnglishKeys": 9,
+    "newEnglishKeys": 4,
+    "fallbacksMatchCatalog": true,
+    "forcedColorsSystemPalette": true,
+    "translationsPending": true,
+    "sharedViewerSyntax": true,
+    "sharedViewerPublicMatch": true,
+    "scopedDiffCheck": true
+  },
+  "visualReview": [
+    "titration-trace-window-closeup-1200.jpg",
+    "titration-trace-window-forced-colors-320.jpg"
+  ],
+  "newEnglishStrings": 4,
+  "translationsPending": true,
+  "deployed": false
+}

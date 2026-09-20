@@ -1,0 +1,27 @@
+{
+  "service": "fixture",
+  "layouts": [
+    {
+      "width": 320,
+      "scroll": 320,
+      "client": 320,
+      "inner": 320
+    },
+    {
+      "width": 390,
+      "scroll": 390,
+      "client": 390,
+      "inner": 390
+    },
+    {
+      "width": 1280,
+      "scroll": 1280,
+      "client": 1280,
+      "inner": 1280
+    }
+  ],
+  "keyboardPerfect": true,
+  "print": true,
+  "modeReset": true,
+  "errors": []
+}

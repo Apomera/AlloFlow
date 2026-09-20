@@ -1,0 +1,58 @@
+{
+  "counts": {
+    "passed": 316,
+    "failed": 4
+  },
+  "reason": "failed",
+  "failures": [
+    {
+      "name": "Anatomy comparison refinements stem_lab/stem_tool_anatomy.js > explains shared anatomy instead of asking an ambiguous either-or question",
+      "state": "failed",
+      "errors": [
+        {
+          "message": "Cannot read properties of null (reading 'querySelector')",
+          "stack": [
+            "    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/anatomy_comparison_refinements.test.js:17:270"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Anatomy comparison refinements desktop/web-app/public/stem_lab/stem_tool_anatomy.js > explains shared anatomy instead of asking an ambiguous either-or question",
+      "state": "failed",
+      "errors": [
+        {
+          "message": "Cannot read properties of null (reading 'querySelector')",
+          "stack": [
+            "    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/anatomy_comparison_refinements.test.js:17:270"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Portable learning continuity > exports shared counts once and projects the latest valid rating without changing notes",
+      "state": "failed",
+      "errors": [
+        {
+          "message": "Hook timed out in 10000ms.\nIf this is a long-running hook, pass a timeout value as the last argument or configure it globally with \"hookTimeout\".",
+          "stack": [
+            "    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/anatomy_learning_continuity.test.js:15:2"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Anatomy Lab learning-flow semantics > labels detail and disclosure controls by their actual action",
+      "state": "failed",
+      "errors": [
+        {
+          "message": "expected '<div class=\"anatomy-tool-shell max-w-…' to contain 'aria-label=\"Use Skull (Cranium) as co…'",
+          "stack": [
+            "    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/anatomy_lab_science.test.js:149:21"
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

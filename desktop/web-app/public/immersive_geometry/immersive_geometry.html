@@ -598,6 +598,12 @@
     <button class="q" id="uiLessonLink" type="button" aria-describedby="instructorHelp">Copy lesson link</button>
   </div>
   <div id="instructorHelp" class="historynote" hidden>Instructor mode highlights the demo state. Copy the lesson link to share this exact geometry and presentation setup.</div>
+  <details id="sandboxTransfer"><summary>Apply to Sandbox</summary>
+    <p class="historynote">Preview your current figure, then add it as a new object in the Sandbox. Existing objects stay in place. Only the figure and its dimensions transfer; lesson progress and display settings stay here.</p>
+    <p id="sandboxTransferPreview" class="historynote" aria-live="polite"></p>
+    <div class="instructorbar"><button class="q" id="uiApplySandbox" type="button">Apply to Sandbox</button><button class="q" id="uiDownloadSandbox" type="button">Download model</button></div>
+    <p id="sandboxTransferStatus" class="historynote" role="status">Open this lab from the Sandbox to apply directly, or download a model and import it there.</p>
+  </details>
   <input id="uiLessonUrl" class="lessonurl" type="text" readonly hidden aria-label="Shareable lesson link">
 
       </div></details>
@@ -944,6 +950,10 @@ function loadLaunchState() {
     return launched;
   } catch (ignore) { return null; }
 }
+var SANDBOX_BRIDGE = null;
+try { var bridgeQuery = new URLSearchParams(window.location.search || ''), bridgeOrigin = new URL(bridgeQuery.get('parentOrigin'));
+  if (bridgeQuery.get('bridge') && /^https?:$/.test(bridgeOrigin.protocol)) SANDBOX_BRIDGE = { token:bridgeQuery.get('bridge'), origin:bridgeOrigin.origin, unit:['unit','cm','in','ft','m'].indexOf(bridgeQuery.get('bridgeUnit'))>=0?bridgeQuery.get('bridgeUnit'):'unit' };
+} catch (ignore) {}
 var LAUNCH_WORKSPACE = null;
 try { LAUNCH_WORKSPACE = normalizeChoice(new URLSearchParams(window.location.search || '').get('workspace'), WORKSPACE_MODES, null); } catch (ignore) {}
 var LAUNCH_STATE = loadLaunchState();
@@ -3833,6 +3843,31 @@ window.addEventListener('load', function () {
   document.querySelectorAll('[data-view-angle]').forEach(function(button) { button.addEventListener('click', function() { if (immersiveActive) return; presentation.viewAngle = normalizeChoice(button.getAttribute('data-view-angle'), VIEW_ANGLES, 'corner'); applyScenePreferences(false); resetView(); if (live) live.textContent = button.textContent + ' view. Geometry and measurements are unchanged.'; }); });
   [['uiSceneMinimal','explore',false,false],['uiSceneExplain','explain',true,true],['uiSceneCompare','compare',true,false]].forEach(function(preset) { document.getElementById(preset[0]).addEventListener('click', function() { showGroundGrid = preset[2]; showMeasureCard = preset[3]; applyFocusMode(preset[1], false); applyScenePreferences(true); }); });
   document.getElementById('uiResetPresentation').addEventListener('click', function() { presentation = normalizePresentation(); backdrop = 'midnight'; showGroundGrid = true; showMeasureCard = workspaceMode === 'lesson'; applyFocusMode(workspaceMode === 'lesson' ? 'explain' : 'explore', false); applyScenePreferences(true); applyViewScale(1, false); });
+  var transferPreview=document.getElementById('sandboxTransferPreview'),transferStatus=document.getElementById('sandboxTransferStatus'),applySandbox=document.getElementById('uiApplySandbox'),downloadSandbox=document.getElementById('uiDownloadSandbox');
+  var transferPending=false,transferApplied=false,transferTimer=null;
+  function currentTransferState(){var c=comp();if(!c||c.previewActive||c.showcaseActive||c.replayActive)return null;return {d:c.d,L:c.L,W:c.W,H:c.H,axis:c.axis};}
+  function updateTransferPreview(){
+    var state=currentTransferState(),unit=SANDBOX_BRIDGE?SANDBOX_BRIDGE.unit:'unit';
+    var connected=false;try{connected=!!(SANDBOX_BRIDGE&&window.opener&&!window.opener.closed);}catch(ignore){}
+    applySandbox.disabled=!state||!connected||transferPending||transferApplied;downloadSandbox.disabled=!state;
+    transferPreview.textContent=state?['Point','Segment','Rectangle','Box'][state.d]+' · '+(state.d?[state.L,state.W,state.H].slice(0,state.d).map(rState).join(' × ')+' '+unit:'0 dimensions')+' · aligned to the Sandbox axes.':'Stop playback or comparison preview before transferring your figure.';
+  }
+  document.getElementById('sandboxTransfer').addEventListener('toggle',updateTransferPreview);
+  applySandbox.addEventListener('click',function(){
+    updateTransferPreview();if(applySandbox.disabled)return;
+    transferPending=true;transferStatus.textContent='Applying to Sandbox…';updateTransferPreview();
+    try{window.opener.postMessage({type:'alloflow:geometry:apply',token:SANDBOX_BRIDGE.token,state:currentTransferState()},SANDBOX_BRIDGE.origin);
+      transferTimer=window.setTimeout(function(){transferPending=false;transferStatus.textContent='The Sandbox did not respond. Keep it open on Geometry Sandbox, or download the model and import it there.';updateTransferPreview();},5000);
+    }catch(error){transferPending=false;transferStatus.textContent='The Sandbox is unavailable. Download the model to import it there.';updateTransferPreview();}
+  });
+  window.addEventListener('message',function(event){var data=event.data;if(!SANDBOX_BRIDGE||event.source!==window.opener||event.origin!==SANDBOX_BRIDGE.origin||!data||data.type!=='alloflow:geometry:applied'||data.token!==SANDBOX_BRIDGE.token)return;
+    if(transferTimer)window.clearTimeout(transferTimer);transferPending=false;transferApplied=data.ok===true;transferStatus.textContent=String(data.message||'').slice(0,500);updateTransferPreview();
+  });
+  downloadSandbox.addEventListener('click',function(){var state=currentTransferState();if(!state)return;
+    var blob=new Blob([JSON.stringify({schema:'geometry-stretch-companion-v1',state:state,unit:SANDBOX_BRIDGE?SANDBOX_BRIDGE.unit:'unit'},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='stretch-lab-model.json';a.click();window.setTimeout(function(){URL.revokeObjectURL(url);},0);transferStatus.textContent='Model downloaded. In Sandbox, choose Dimensional Stretch → Learn → Import project or Stretch Lab model.';
+  });
+  figure.addEventListener('statechange',updateTransferPreview);
+  updateTransferPreview();
   var returnLink = document.getElementById('uiReturnSandbox');
   try { var referrer = new URL(document.referrer); if (referrer.origin === window.location.origin && !/immersive_geometry/.test(referrer.pathname)) returnLink.href = referrer.href; } catch (ignore) {}
   returnLink.addEventListener('click', function(event) { try { if (window.opener && !window.opener.closed) { window.opener.focus(); event.preventDefault(); window.close(); } } catch (ignore) {} });

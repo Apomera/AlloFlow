@@ -29,10 +29,15 @@
       "textPolicy": "Text-free artwork; original activity text stays editable"
     },
     "contentRefinements": {
-      "count": 38,
+      "count": 43,
       "audit": "allopacks/media/point_of_view_grade4/content-refinements.json",
-      "review": "Literacy content refined; educator review pending"
-    }
+      "review": "Literacy content refined; educator review pending",
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/point_of_view_grade4/content-refinements.json",
+      "sourceOnlyResourceIds": []
+    },
+    "revisionReviewStatus": "2026-09-19: AI-assisted wording and structural review; educator review of this revision pending"
   },
   "sourceTopic": "Point of View in Stories",
   "history": [
@@ -78,7 +83,7 @@
       "type": "simplified",
       "title": "The Same Puddle, Two Ways",
       "timestamp": "2026-09-05T13:41:00.000Z",
-      "meta": "4th Grade • Leveled reading • ~470 words",
+      "meta": "4th Grade • Leveled reading",
       "data": "## The Same Puddle, Two Ways\n\nRead this.\n\n> I saw the puddle too late. My new shoes went straight in, and cold water filled both socks. I heard Dev laugh behind me. I wanted to disappear.\n\nNow read this.\n\n> Maya stepped into the puddle before she saw it. Water soaked through her new shoes. Behind her, Dev laughed, then stopped, worried he had hurt her feelings. Maya did not turn around.\n\nSame puddle. Same shoes. Same laugh. But the two stories feel different, and the difference is the **narrator**: the voice telling the **scene**. The **characters** are the same; the storyteller is not.\n\nIn the first version, Maya tells it herself. She uses **I**, **my**, and **me**. That is **first person**. You are inside her head. You feel the cold socks and the wish to disappear. But notice what you do *not* get: you never learn that Dev felt bad. Maya cannot see inside Dev, so a first-person narrator does not directly access other characters' private **thoughts**. You only know what the narrator knows.\n\nIn the second version, someone outside the story tells it and calls the characters **she** and **he**. That is **third person**. This narrator can float over the whole scene. It tells you Maya's shoes got wet *and* that Dev felt worried. It reveals a feeling not supplied in Maya’s version.\n\nSo which is better? Neither. They are tools. First person makes you feel close to one character, like a best friend whispering the story. Third person may follow one character closely or reveal several characters’ thoughts. Read the passage to see how much this narrator tells you.\n\nHere is the detective move. Find how the narrator refers to themself in the narration, outside quoted **dialogue**. I or we for the narrator signals first person. In third person, the voice describes characters as he, she, they or names. Either kind can use pronouns for other people, so one isolated pronoun is not enough.\n\nThen ask the second question, the one that makes you a strong reader: **what does this narrator not know?** Maya’s version does not say whether she knows Dev is worried. If you only read her version, you might decide Dev is mean. The third-person version adds Dev’s worry. Every narrator has a **perspective**. Some narrators reveal a limited viewpoint; others are written to know much more than any one character.\n\nOne more twist. Two first-person narrators can tell the same event and disagree completely. Ask Dev to tell the puddle story and his **dialogue** might be, \"I laughed because I had done the exact same thing yesterday, and I wanted to tell her. But she walked away before I could.\" Same puddle, an imagined third version, added information.\n\nWhen you read, find the narrator and **compare** what each one knows. When you write, choose one on purpose, and **retell** a scene from the other side to see the **contrast**. And when two people tell you different stories about the same puddle, you now know what to ask: what could each of them see from where they stood?"
     },
     {
@@ -409,11 +414,11 @@
               "Check who the narrator is in the narration outside dialogue; read enough context."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "keyword-association",
             "mode": "scaffolded",
-            "aiExample": "I = involved when I refers to the narrator outside dialogue. Third person describes characters from a voice outside their role in the story. Check the whole passage, not just one pronoun.",
-            "mapping": "The reminder connects the narrator’s role to the wording. I in dialogue can appear in a third-person story; she can appear in a first-person story.",
+            "aiExample": "Look outside the dialogue. Does I name the voice telling the story? That can show first person. Check the whole passage.",
+            "mapping": "I inside speech does not tell you who the narrator is. A first-person narrator can also use she to talk about someone else.",
             "scaffoldStarter": "I means ____. She or he means ____.",
             "scaffoldSteps": [
               "Write the first-person pronouns and the third-person pronouns.",
@@ -439,11 +444,11 @@
               "Ask: what does this narrator not know?"
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "analogy-pattern",
             "mode": "scaffolded",
-            "aiExample": "A limited narrator is like a light on part of a room. A third-person narrator may keep that narrow light or reveal more than one character’s inner thoughts. Choose the light that fits this particular passage.",
-            "mapping": "The light represents information revealed, not a rule that all third-person narrators know everything.",
+            "aiExample": "Think of a light showing part of a room. A narrator may show one person’s thoughts or reveal more than one person’s thoughts.",
+            "mapping": "The light stands for what we are told. A third-person narrator need not know or tell everything.",
             "scaffoldStarter": "A first-person narrator is like ____: bright on ____, dark on ____. A third-person narrator is like ____.",
             "scaffoldSteps": [
               "Pick something that lights up only part of a place.",
@@ -469,11 +474,11 @@
               "Ask what each narrator could see from where they stood."
             ],
             "factLocked": true,
-            "factVerified": true,
+            "factVerified": false,
             "type": "story-chain",
             "mode": "scaffolded",
-            "aiExample": "Maya's chain: puddle → wet socks → Dev laughs → I want to disappear. Dev's chain: puddle → Maya splashes → I remember yesterday → I laugh → she walks off before I can say so. Same first link, different last link.",
-            "mapping": "Laying the two chains side by side shows they start at the same event and end in different places, which is the lesson: each narrator's chain only includes what they could see.",
+            "aiExample": "Maya: puddle, wet socks, Dev laughs, I feel hurt. Dev: puddle, splash, memory of yesterday, I laugh, Maya walks off.",
+            "mapping": "They share an event but have different thoughts and knowledge. Neither chain tells us everything. Maya’s feelings are real even if she does not know why Dev laughed.",
             "scaffoldStarter": "Narrator 1: ____ → ____ → ____. Narrator 2: ____ → ____ → ____.",
             "scaffoldSteps": [
               "Pick a small event two people saw.",
@@ -747,27 +752,27 @@
       "data": [
         {
           "question": "Is the narrator the same as the author? ✍️",
-          "answer": "The author creates the text; the narrator is its storytelling voice. They may be different in fiction, while a memoir may have the author narrating their own experience."
+          "answer": "The author writes the text. The narrator is the voice telling the story. In fiction they may differ. In a memoir, the author may tell their own story."
         },
         {
           "question": "What is second person?",
-          "answer": "A story that calls the reader you: 'You open the door. You hear a creak.' It is rare in books but common in choose-your-own-adventure stories and video games."
+          "answer": "It uses you to tell what happens to the person addressed: You open the door. You hear a creak. Some games and choice stories use it."
         },
         {
           "question": "Can a first-person narrator be wrong? 🤔",
-          "answer": "Yes. A narrator may misunderstand, guess or conceal information. Maya’s interpretation is incomplete in this scene. Compare what the text actually supports; being hurt does not mean her feelings are wrong."
+          "answer": "Yes. A narrator can guess or misunderstand. Maya does not know all of Dev’s thoughts here. That does not mean her hurt feelings are wrong."
         },
         {
           "question": "Can a story switch narrators?",
-          "answer": "Yes. Chapters or scenes may change narrators or viewpoint. Follow names, context and narration; pronouns alone may stay the same across a switch."
+          "answer": "Yes. Follow the names and what each voice knows. A new chapter may switch narrators even if it uses the same pronouns."
         },
         {
           "question": "Why do so many books for kids use first person?",
-          "answer": "Because it feels close, like a friend talking to you. You know exactly one person's feelings very well, which makes it easy to care about them."
+          "answer": "First person can feel like someone speaking to you. It can show that person’s thoughts closely. But the narrator still chooses what to tell."
         },
         {
           "question": "Does a third-person narrator know everything? 👁️",
-          "answer": "Not always. Some third-person narrators follow one character closely and only know what that character knows. Others can see into everyone. Ask the same question either way: what does this narrator not tell me?"
+          "answer": "No. Some follow one person closely. Others reveal more people’s thoughts. Ask what this particular narrator tells you and what is left out."
         }
       ]
     },
@@ -865,7 +870,7 @@
           ],
           "deliverable": "A retold scene under 200 words. An author's note naming the narrator and the point of view. And a test record: one classmate reads it and writes down the new thing they learned.",
           "factLocked": true,
-          "factVerified": true
+          "factVerified": false
         },
         "supports": {
           "parallelExample": {

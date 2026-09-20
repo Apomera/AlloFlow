@@ -1,0 +1,182 @@
+[
+  {
+    "body": "<input dir=\"RTL\">",
+    "property": "rtl",
+    "rtl": true,
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ],
+      [
+        "answer.dir",
+        "RTL"
+      ]
+    ]
+  },
+  {
+    "body": "<input dir=\"rtl\">",
+    "property": "rtl",
+    "rtl": true,
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ],
+      [
+        "answer.dir",
+        "rtl"
+      ]
+    ]
+  },
+  {
+    "body": "<input dir=\"invalid\">",
+    "property": "",
+    "rtl": false,
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ],
+      [
+        "answer.dir",
+        "ltr"
+      ]
+    ]
+  },
+  {
+    "body": "<input dir=\"\">",
+    "property": "",
+    "rtl": false,
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ],
+      [
+        "answer.dir",
+        "ltr"
+      ]
+    ]
+  },
+  {
+    "body": "<input dir=\"AUTO\">",
+    "property": "auto",
+    "rtl": true,
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ],
+      [
+        "answer.dir",
+        "rtl"
+      ]
+    ]
+  },
+  {
+    "body": "<input dir=\"auto\">",
+    "property": "auto",
+    "rtl": true,
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ],
+      [
+        "answer.dir",
+        "rtl"
+      ]
+    ]
+  },
+  {
+    "body": "<div dir=\"RTL\"><input></div>",
+    "property": "",
+    "rtl": true,
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ],
+      [
+        "answer.dir",
+        "RTL"
+      ]
+    ]
+  },
+  {
+    "body": "<div dir=\"RTL\"><input dir=\"auto\"></div>",
+    "property": "auto",
+    "rtl": true,
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ],
+      [
+        "answer.dir",
+        "rtl"
+      ]
+    ]
+  },
+  {
+    "body": "<div dir=\"rtl\"><input dir=\"invalid\"></div>",
+    "property": "",
+    "rtl": true,
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ],
+      [
+        "answer.dir",
+        "rtl"
+      ]
+    ]
+  },
+  {
+    "body": "<div dir=\"auto\"><input></div>",
+    "property": "",
+    "rtl": false,
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ],
+      [
+        "answer.dir",
+        "ltr"
+      ]
+    ]
+  },
+  {
+    "body": "<input style=\"direction:rtl\">",
+    "property": "",
+    "rtl": false,
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ],
+      [
+        "answer.dir",
+        "ltr"
+      ]
+    ]
+  },
+  {
+    "body": "<div dir=\"RTL\"><input type=\"tel\"></div>",
+    "property": "",
+    "rtl": false,
+    "payload": [
+      [
+        "answer",
+        "مرحبا"
+      ],
+      [
+        "answer.dir",
+        "ltr"
+      ]
+    ]
+  }
+]
