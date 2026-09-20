@@ -1019,6 +1019,13 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
   const [entry, setEntry] = React.useState(() => load(storageKey));
   const [busy, setBusy] = React.useState(false);
   const [notice, setNotice] = React.useState('');
+  // A failed submission was announced with the same politeness as a successful
+  // one: both went through one role="status" aria-live="polite" line, so a
+  // screen-reader user heard "Submission failed" exactly as softly as
+  // "Reflection submitted" and got no signal that anything was wrong. This flag
+  // lets the same line switch to the role="alert" + red treatment the rest of
+  // this component already uses for the storage failure.
+  const [noticeFailed, setNoticeFailed] = React.useState(false);
   const [storageFailed, setStorageFailed] = React.useState(false);
   const submissionOwner = storageKey + '|' + (activityId || 'local');
   const owner = React.useRef(submissionOwner); owner.current = submissionOwner;
@@ -1047,7 +1054,7 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
   }
   const signature = JSON.stringify(fields.map(([id]) => shown.values[id] || ''));
   const changed = shown.submitted && shown.submitted.signature !== signature;
-  React.useEffect(() => { setEntry(load(storageKey)); setNotice(''); setBusy(false); }, [storageKey, activityId]);
+  React.useEffect(() => { setEntry(load(storageKey)); setNotice(''); setNoticeFailed(false); setBusy(false); }, [storageKey, activityId]);
   React.useEffect(() => {
     if (entry.key !== storageKey) return;
     try { window.localStorage.setItem(storageKey, JSON.stringify({ version: 1, values: entry.values, submitted: entry.submitted })); setStorageFailed(false); }
@@ -1071,15 +1078,16 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
     const snapshot = { version: 1, resourceId: String(resource?.id || ''), structureType: type, activityId: activityId || null,
       revision: Number(shown.submitted?.revision || 0) + 1, submittedAt: Date.now(),
       fields: fields.map(([id, label]) => ({ id, label, text: String(shown.values[id] || '').trim().slice(0, 2000) })) };
-    setBusy(true); setNotice('');
+    setBusy(true); setNotice(''); setNoticeFailed(false);
     try {
       const result = isTeacherMode ? { ok: true, message: tr("preview_saved", "Preview saved on this device. It was not submitted as student work.") }
         : typeof onSubmit === 'function' ? await onSubmit(snapshot) : { ok: true, message: tr("local_no_connection", "Saved on this device. No live submission connection is available.") };
       if (owner.current !== requestOwner) return;
       if (!result?.ok) throw new Error(result?.message || tr("submit_failed", "Your reflection could not be submitted. Your draft is still here; try again."));
       setEntry(current => current.key !== key ? current : { ...current, submitted: { signature, revision: result.revision || snapshot.revision, at: snapshot.submittedAt } });
+      setNoticeFailed(false);
       setNotice(result.message || tr("submitted_ungraded", "Reflection submitted. Your words have not been automatically graded."));
-    } catch (error) { if (owner.current === requestOwner) setNotice(error.message || tr("submission_failed", "Submission failed. Your draft is still here.")); }
+    } catch (error) { if (owner.current === requestOwner) { setNoticeFailed(true); setNotice(error.message || tr("submission_failed", "Submission failed. Your draft is still here.")); } }
     finally { if (owner.current === requestOwner) setBusy(false); }
   };
   return <section data-organizer-activity-ready="true" aria-label={type + ' reflection'} className="mx-auto my-5 max-w-5xl rounded-2xl border-2 border-indigo-200 bg-white p-5 text-slate-900">
@@ -1098,7 +1106,9 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
     {storageFailed && <p role="alert" className="mt-2 text-sm text-red-800">{tr("storage_failed", "This browser could not save your draft. Keep this page open and copy your writing before leaving.")}</p>}
     {changed && <p role="status" className="mt-2 text-sm font-semibold text-amber-900">{tr("draft_changes", "You have changes that have not been submitted.")}</p>}
     <button type="button" onClick={submit} disabled={busy || !fields.some(([id]) => String(shown.values[id] || '').trim())} className="mt-4 min-h-11 rounded-lg bg-indigo-700 px-5 py-2 font-bold text-white disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2">{busy ? tr("submitting", "Submitting…") : isTeacherMode || !sessionCode ? tr("save_reflection", "Save reflection") : shown.submitted ? tr("submit_revision", "Submit revision") : tr("submit_reflection", "Submit reflection")}</button>
-    <p role="status" aria-live="polite" className="mt-3 text-sm">{notice || (shown.submitted && !changed ? tr("version_saved", "This version is saved. You can keep revising.") : '')}</p>
+    {noticeFailed && notice
+      ? <p role="alert" className="mt-3 text-sm font-semibold text-red-800">{notice}</p>
+      : <p role="status" aria-live="polite" className="mt-3 text-sm">{notice || (shown.submitted && !changed ? tr("version_saved", "This version is saved. You can keep revising.") : '')}</p>}
     {/* Only after a submission exists. Rendering this unconditionally showed a
         student who had written nothing a "Feedback on your reflections" panel
         saying "No teacher feedback yet. You can keep revising your draft." -

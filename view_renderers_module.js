@@ -883,6 +883,7 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
   const [entry, setEntry] = React.useState(() => load(storageKey));
   const [busy, setBusy] = React.useState(false);
   const [notice, setNotice] = React.useState("");
+  const [noticeFailed, setNoticeFailed] = React.useState(false);
   const [storageFailed, setStorageFailed] = React.useState(false);
   const submissionOwner = storageKey + "|" + (activityId || "local");
   const owner = React.useRef(submissionOwner);
@@ -908,6 +909,7 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
   React.useEffect(() => {
     setEntry(load(storageKey));
     setNotice("");
+    setNoticeFailed(false);
     setBusy(false);
   }, [storageKey, activityId]);
   React.useEffect(() => {
@@ -942,14 +944,19 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
     };
     setBusy(true);
     setNotice("");
+    setNoticeFailed(false);
     try {
       const result = isTeacherMode ? { ok: true, message: tr("preview_saved", "Preview saved on this device. It was not submitted as student work.") } : typeof onSubmit === "function" ? await onSubmit(snapshot) : { ok: true, message: tr("local_no_connection", "Saved on this device. No live submission connection is available.") };
       if (owner.current !== requestOwner) return;
       if (!result?.ok) throw new Error(result?.message || tr("submit_failed", "Your reflection could not be submitted. Your draft is still here; try again."));
       setEntry((current) => current.key !== key ? current : { ...current, submitted: { signature, revision: result.revision || snapshot.revision, at: snapshot.submittedAt } });
+      setNoticeFailed(false);
       setNotice(result.message || tr("submitted_ungraded", "Reflection submitted. Your words have not been automatically graded."));
     } catch (error) {
-      if (owner.current === requestOwner) setNotice(error.message || tr("submission_failed", "Submission failed. Your draft is still here."));
+      if (owner.current === requestOwner) {
+        setNoticeFailed(true);
+        setNotice(error.message || tr("submission_failed", "Submission failed. Your draft is still here."));
+      }
     } finally {
       if (owner.current === requestOwner) setBusy(false);
     }
@@ -958,7 +965,7 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
     const text = event.target.value;
     setEntry((current) => ({ ...current.key === storageKey ? current : empty(), values: { ...current.key === storageKey ? current.values : {}, [id]: text } }));
     setNotice("");
-  }, className: "w-full rounded-lg border border-slate-400 p-3 font-normal focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700" })))), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-sm" }, type === "KWL Chart" ? tr("kwl_guidance", "Submit your current thinking; you can return to Learned and submit a revision later. Blank sections are allowed.") : tr("reasoning_guidance", "Before submitting, check that you explained your choices and named supporting evidence. This is not automatically scored.")), storageFailed && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "mt-2 text-sm text-red-800" }, tr("storage_failed", "This browser could not save your draft. Keep this page open and copy your writing before leaving.")), changed && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-sm font-semibold text-amber-900" }, tr("draft_changes", "You have changes that have not been submitted.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: submit, disabled: busy || !fields.some(([id]) => String(shown.values[id] || "").trim()), className: "mt-4 min-h-11 rounded-lg bg-indigo-700 px-5 py-2 font-bold text-white disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2" }, busy ? tr("submitting", "Submitting\u2026") : isTeacherMode || !sessionCode ? tr("save_reflection", "Save reflection") : shown.submitted ? tr("submit_revision", "Submit revision") : tr("submit_reflection", "Submit reflection")), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-3 text-sm" }, notice || (shown.submitted && !changed ? tr("version_saved", "This version is saved. You can keep revising.") : "")), !isTeacherMode && reflectionRequest && shown.submitted && React.createElement(OrganizerLearnerFeedback, { key: submissionOwner, request: reflectionRequest, sessionCode, resourceId: String(resource?.id || ""), activityId, refreshKey: shown.submitted?.revision, t }));
+  }, className: "w-full rounded-lg border border-slate-400 p-3 font-normal focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700" })))), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-sm" }, type === "KWL Chart" ? tr("kwl_guidance", "Submit your current thinking; you can return to Learned and submit a revision later. Blank sections are allowed.") : tr("reasoning_guidance", "Before submitting, check that you explained your choices and named supporting evidence. This is not automatically scored.")), storageFailed && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "mt-2 text-sm text-red-800" }, tr("storage_failed", "This browser could not save your draft. Keep this page open and copy your writing before leaving.")), changed && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-sm font-semibold text-amber-900" }, tr("draft_changes", "You have changes that have not been submitted.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: submit, disabled: busy || !fields.some(([id]) => String(shown.values[id] || "").trim()), className: "mt-4 min-h-11 rounded-lg bg-indigo-700 px-5 py-2 font-bold text-white disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2" }, busy ? tr("submitting", "Submitting\u2026") : isTeacherMode || !sessionCode ? tr("save_reflection", "Save reflection") : shown.submitted ? tr("submit_revision", "Submit revision") : tr("submit_reflection", "Submit reflection")), noticeFailed && notice ? /* @__PURE__ */ React.createElement("p", { role: "alert", className: "mt-3 text-sm font-semibold text-red-800" }, notice) : /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-3 text-sm" }, notice || (shown.submitted && !changed ? tr("version_saved", "This version is saved. You can keep revising.") : "")), !isTeacherMode && reflectionRequest && shown.submitted && React.createElement(OrganizerLearnerFeedback, { key: submissionOwner, request: reflectionRequest, sessionCode, resourceId: String(resource?.id || ""), activityId, refreshKey: shown.submitted?.revision, t }));
 };
 const OrganizerMountReceipt = ({ children, activityKey, onReady, onFailed }) => {
   const [mountFailed, setMountFailed] = React.useState(false);
