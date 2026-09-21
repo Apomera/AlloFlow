@@ -4719,10 +4719,10 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                         </label>
                                     <div className="flex items-center gap-3 mt-1">
                                         <label className="flex items-center gap-1 text-[11px] font-bold text-slate-600 cursor-pointer" title={t('common.toggle_emoji_usage_for_this_group')}>
-                                            <input type="checkbox" checked={g.profile?.useEmojis || false} onChange={(e) => handleSetGroupProfile(gid, 'useEmojis', e.target.checked)} className="rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
+                                            <input type="checkbox" checked={group.profile?.useEmojis || false} onChange={(e) => handleSetGroupProfile(gid, 'useEmojis', e.target.checked)} className="rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
                                             {t('roster.emojis_label') || 'Use Emojis'}
                                         </label>
-                                        <select aria-label={t('common.text_format')} value={g.profile?.textFormat || 'Standard Text'} onChange={(e) => handleSetGroupProfile(gid, 'textFormat', e.target.value)} className="text-[11px] p-1 rounded border border-slate-400 bg-slate-50">
+                                        <select aria-label={t('common.text_format')} value={group.profile?.textFormat || 'Standard Text'} onChange={(e) => handleSetGroupProfile(gid, 'textFormat', e.target.value)} className="text-[11px] p-1 rounded border border-slate-400 bg-slate-50">
                                             <option value="Standard Text">{t('roster.format_standard') || 'Standard'}</option>
                                             <option value="Bullet Points">{t('roster.format_bullets') || 'Bullets'}</option>
                                             <option value="Outline">{t('roster.format_outline') || 'Outline'}</option>
