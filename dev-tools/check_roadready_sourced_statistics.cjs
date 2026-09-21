@@ -140,6 +140,13 @@ const CLAIMS = [
       'adult 275-day refusal suspension under §2521',
   },
   {
+    label: 'Maine failure-to-yield-to-emergency-vehicle fine (§2054)',
+    re: /emergency vehicle is a Class E crime with at least a \$(\d{3}) fine/,
+    min: 250, max: 250,
+    source: 'Maine 29-A §2054(4): Class E crime, $250 minimum for a first offense; ' +
+      'a second within 3 years carries a mandatory 30-day suspension',
+  },
+  {
     label: 'Maine texting-while-driving first-offense fine (§2119)',
     re: /First offense is at least \$(\d{3})\./,
     min: 250, max: 250,

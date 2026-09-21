@@ -13741,7 +13741,11 @@
       "a11y_alternative_90_degree_model_orientation": "Alternative 90-degree model orientation",
       "a11y_geometry_world_printer_fit_in_preflight": "Geometry World printer fit in Preflight",
       "a11y_preflight_findings": "Preflight findings",
-      "a11y_print_lab_workflow": "Print Lab workflow"
+      "a11y_print_lab_workflow": "Print Lab workflow",
+      "exit_fullscreen": "Exit fullscreen 3D preview (Escape)",
+      "enter_fullscreen": "View the 3D preview fullscreen",
+      "a11y_preview_static_description": "This preview is a still picture of the model. Use the rotate, zoom and reset buttons above it to change the view; the Preflight tab holds the full text report of dimensions and printability checks.",
+      "description_starters": "Description starters"
     },
     "tutorial": {
       "region": "Tour",
@@ -20952,7 +20956,10 @@
       "process_scope_picker": "View",
       "sculpt_actions_need_a_part": "Model and Print Lab need at least one part in this sculpture. Undo and Redo switch on once you have made a change. Add a shape below to begin.",
       "part_locked_controls_off": "This part is locked, so the move, size, spin and form controls stay off. Choose Unlock to use them again.",
-      "part_hidden_controls_off": "This part is hidden, so the move controls stay off. Choose Show to use them again."
+      "part_hidden_controls_off": "This part is hidden, so the move controls stay off. Choose Show to use them again.",
+      "my_vase_form": "My vase form",
+      "duplicate": "Duplicate",
+      "remove_part": "Remove part"
     },
     "assessment": {
       "volume_explorer": "Volume Explorer",
@@ -23097,7 +23104,12 @@
       "obs_extinction_lead": "dimmed by about",
       "obs_extinction_tail": "magnitudes at this altitude. Light from something low crosses far more air than light from overhead, so it fades and reddens. The same object looks brighter once it climbs.",
       "obs_when_best2": "Best in a dark sky around",
-      "layer_catalog_stars": "Catalogue star field"
+      "layer_catalog_stars": "Catalogue star field",
+      "enter_fullscreen": "View the observatory fullscreen",
+      "exit_fullscreen": "Exit fullscreen observatory (Escape)",
+      "ordinary_matter_5": "Ordinary matter: 5%",
+      "dark_matter_27": "Dark matter: 27%",
+      "dark_energy_68": "Dark energy: 68%"
     },
     "atctower": {
       "first_landing": "First Landing",
@@ -23261,7 +23273,8 @@
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
       "stressed_model_desc": "The teaching index classifies this setup as high modeled workload.",
       "training_model_desc": "The teaching index classifies this setup as moderate-low modeled workload.",
-      "wind_model_hint": "Higher wind adds to the modeled workload."
+      "wind_model_hint": "Higher wind adds to the modeled workload.",
+      "air_traffic_control_simulator": "Air traffic control simulator"
     },
     "autorepair": {
       "sr_now_showing": "Now showing: {value1}",
@@ -35938,7 +35951,8 @@
       "grid_visual_label": "Coordinate grid visualization",
       "hypothesis_input": "Quadrant sign hypothesis",
       "select_coordinate": "Select coordinate",
-      "toggle_coordinate": "Plot or remove point"
+      "toggle_coordinate": "Plot or remove point",
+      "coordinate_reasoning_pathway": "Coordinate reasoning pathway"
     },
     "cyberdefense": {
       "dear_user_we_detected_unusual_activity": "Dear user, we detected unusual activity on your account. Click below IMMEDIATELY or your account will be permanently deleted within 24 hours.",
@@ -36809,7 +36823,8 @@
       "ogive_img_label": "Cumulative frequency graph",
       "pie_img_label": "Pie chart of the current data set",
       "residual_img_label": "Residual plot",
-      "sampling_img_label": "Sampling distribution chart"
+      "sampling_img_label": "Sampling distribution chart",
+      "select_count_as_rows_avg_y_as_mean_y_from_da": "SELECT COUNT(*) AS rows, AVG(y) AS mean_y FROM data"
     },
     "datastudio": {
       "mode_regression_fitting": "Regression & curve fitting",
@@ -36969,7 +36984,11 @@
       "garage_desc": "Engines, rust, and reactions — a chemistry workshop.",
       "classroom_desc": "A real science classroom with beakers and experiments.",
       "outdoors_desc": "Step outside — nature is the biggest lab of all.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "enter_fullscreen": "View the decomposer scene fullscreen",
+      "exit_fullscreen": "Exit fullscreen decomposer scene (Escape)",
+      "hypothesis_which_condition_is_most_important": "Hypothesis: Which condition is most important for decomposition?",
+      "explain_how_temperature_humidity_and_oxygen": "Explain how temperature, humidity, and oxygen jointly drive decomposition."
     },
     "dinolab": {
       "sr_pop_up_blocked_allow_pop_ups_to_print_the_card": "Pop-up blocked. Allow pop-ups to print the card.",
@@ -38502,7 +38521,12 @@
       "population_mutation_chart": "Population size and mutation rate chart comparing genetic drift and selection regimes.",
       "hypothesis_input": "Evolutionary fixation hypothesis",
       "explanation_input": "Evolutionary fixation explanation",
-      "protein_chain": "Protein chain"
+      "protein_chain": "Protein chain",
+      "what_changed_what_stayed_the_same_what_evide": "What changed? What stayed the same? What evidence supports your claim?",
+      "use_because_shows_so_or_therefore_to_connect": "Use because, shows, so, or therefore to connect the evidence to your claim.",
+      "enter_fullscreen": "View the DNA model fullscreen",
+      "exit_fullscreen": "Exit fullscreen DNA model (Escape)",
+      "what_changed_between_a_and_b_and_which_codon": "What changed between A and B, and which codon or protein evidence supports your conclusion?"
     },
     "echolocation": {
       "a11y_energy": "Energy: {value1}%",
@@ -40577,7 +40601,11 @@
       "growing": "🟡 Growing",
       "r_eff_at_least_1_5": "R_eff >= 1.5: infections grow faster in this simplified model. This is not, by itself, a definition of a pandemic.",
       "r_eff_at_or_below_1": "R_eff <= 1: infections do not sustain growth in this simplified model.",
-      "r_eff_between_1_and_1_5": "1 < R_eff < 1.5: infections grow in this simplified model. Growth alone does not establish geographic spread."
+      "r_eff_between_1_and_1_5": "1 < R_eff < 1.5: infections grow in this simplified model. Growth alone does not establish geographic spread.",
+      "enter_fullscreen": "View the epidemic visualisation fullscreen",
+      "exit_fullscreen": "Exit fullscreen epidemic visualisation (Escape)",
+      "what_relationships_do_you_notice_among_the_t": "What relationships do you notice among the three inputs, R_eff, the curve shapes, and the growth band? Cite at least two logged settings as evidence.",
+      "use_one_or_more_logged_observations_as_evide": "Use one or more logged observations as evidence. What happens around R_eff = 1? What does this simplified model not tell you about real geographic spread?"
     },
     "evolab": {
       "a11y_capture_this_run_in_the_capstone_evidence_noteb": "Capture this {value1} run in the Capstone evidence notebook",
@@ -50474,7 +50502,10 @@
       "open_recipe_kitchen_tab": "Open the Recipe Kitchen in a new tab →",
       "frame_why_recipe": "The two-pot pasta bench is a separate page. Everything it teaches about water, crowding and browning is also in the Recipe Sim, which runs right here.",
       "open_studio_tab": "Open the Skills Studio in a new tab →",
-      "frame_why_studio": "The six practice stations are a separate page. If it will not open, the Safety, Knife Lab and Heat tabs here cover the same ground without 3D."
+      "frame_why_studio": "The six practice stations are a separate page. If it will not open, the Safety, Knife Lab and Heat tabs here cover the same ground without 3D.",
+      "portfolio_text": "Portfolio text",
+      "class_set_text": "Class set text",
+      "pot_burner_level": "Pot burner level"
     },
     "layers_slider": "Layers",
     "learning_lab": {
@@ -53259,7 +53290,10 @@
       "footer_privacy_honesty": "Privacy & honesty: the default (Data only) mode fires zero AI — raise the AI ceiling for gated, clearly-marked AI. Exports are FERPA-gated: the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading.",
       "export_presentation_html": "⤓ Export presentation (HTML)",
       "fullscreen": "⤢ Fullscreen",
-      "exit": "✕ Exit"
+      "exit": "✕ Exit",
+      "e_g_plant_height": "e.g. Plant height",
+      "e_g_cm": "e.g. cm",
+      "e_g_before": "e.g. before"
     },
     "manipulatives": {
       "5": "+ 5",
@@ -57474,7 +57508,9 @@
       "exchangelearn_reverse": "Check by converting back",
       "exchangelearn_reverse_matches": "After rounding back to the starting currency, this returns the starting amount.",
       "exchangelearn_reverse_differs": "Rounding to a payable amount lost some precision. Reversing the rounded amount can differ from the start; it does not mean the exchange created value.",
-      "exchangelearn_focus_hint": "Use the classroom rates to express the same value in different units. Divide to reach USD, then multiply to reach the destination currency."
+      "exchangelearn_focus_hint": "Use the classroom rates to express the same value in different units. Divide to reach USD, then multiply to reach the destination currency.",
+      "enter_fullscreen": "View the banknote model fullscreen",
+      "exit_fullscreen": "Exit fullscreen banknote model (Escape)"
     },
     "moonmission": {
       "mission_briefing": "Mission Briefing",
@@ -57969,7 +58005,8 @@
       "hide_table_answers": "Hide table answers",
       "table_answers_hidden": "Table answers hidden",
       "table_answers_visible": "Table answers visible",
-      "ai_tutor_button": "AI Tutor"
+      "ai_tutor_button": "AI Tutor",
+      "multiplication_reasoning_pathway": "Multiplication reasoning pathway"
     },
     "music": {
       "a11y_mod_ratio": "Mod Ratio",
@@ -68854,7 +68891,10 @@
       "codominant_desc": "Both alleles are fully expressed. Heterozygotes show both traits simultaneously.",
       "sexLinked_desc": "Trait is carried on the X chromosome. This models X-linked RECESSIVE inheritance (e.g. hemophilia, red-green color blindness): males (XY) need only one copy to express it; females (XX) need two.",
       "hypothesis_input": "Allele frequency hypothesis",
-      "explanation_input": "Explain allele selection and mutation"
+      "explanation_input": "Explain allele selection and mutation",
+      "ask_about_genetics_inheritance_alleles": "Ask about genetics, inheritance, alleles...",
+      "e_g_atgcgtacctga": "e.g. ATGCGTACCTGA",
+      "explain_how_selection_mutation_and_frequency": "Explain how selection, mutation, and frequency interact."
     },
     "raptorhunt": {
       "trail_finished": "Trail finished",
@@ -70748,7 +70788,18 @@
       "section_hint_strategy": "Balance stealth, speed, ambush, and persistence to discover an evolved hunting strategy.",
       "strategy_designer": "Strategy Designer",
       "topic_collection": "Topic collection",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "station_title": "Raptor Lab",
+      "station_intro": "Take flight. Follow your curiosity. Explore the physics, senses, and survival strategies of the world’s birds of prey.",
+      "topic_browse_hint": "Choose a collection to find your next experiment, field guide, or challenge.",
+      "silent_strike_mission_range": "Mission rule: glide within {range} m of prey. Flapping inside this range ends the mission.",
+      "scenic_view": "Scenic view",
+      "flight_review_details": "Flight review details",
+      "last_strike": "Last strike",
+      "trail_center_tip": "Aim inside the small circle for +2",
+      "search_threats_species_mechanisms_or_actions": "Search threats, species, mechanisms, or actions",
+      "search_results": "Search results",
+      "activities_found": "activities found"
     },
     "renewables": {
       "transition_studio": "US transition sandbox",
@@ -72244,7 +72295,7 @@
       "train_physics": "Train physics",
       "at_55_mph_a_freight_train_needs_over_1": "At 55 mph a freight train needs over 1 mile (≈ 6,000 ft) to stop. A 100-car train weighs roughly 18,000 tons — the equivalent of ~3,000 cars.",
       "the_speed_illusion": "The speed illusion",
-      "large_objects_appear_to_move_slower_th": "Large objects appear to move slower than they are. A train you judge \"distant and slow\" is usually moving 45–80 mph and covering 80+ feet per second.",
+      "large_objects_appear_to_move_slower_th": "Large objects appear to move slower than they are. A train you judge \"distant and slow\" is usually moving 45–80 mph — that is 66 to 117 feet every second, so it closes the last 1,000 feet in roughly 9 to 15 seconds.",
       "if_you_stall_on_the_tracks": "If you stall on the tracks",
       "everyone_out_run_at_a_45_angle_toward_": "Everyone OUT. Run AT A 45° ANGLE TOWARD the oncoming train. Debris from an impact launches FORWARD in the train's direction of travel — running toward the train puts you behind the debris field.",
       "flashing_red_lights_gates_down": "Flashing red lights, gates down",
@@ -79607,7 +79658,13 @@
       "step_decision": "Decision",
       "step_destination": "Destination",
       "step_power": "Power",
-      "step_review": "Review"
+      "step_review": "Review",
+      "enter_fullscreen": "View the planet approach view fullscreen",
+      "exit_fullscreen": "Exit fullscreen planet approach view (Escape)",
+      "example_i_predict_oxygen_and_hull_margins_wi": "Example: I predict oxygen and hull margins will matter more than science points until we understand the radiation belts.",
+      "the_oxygen_margin_is_falling_faster_than_pre": "The oxygen margin is falling faster than predicted, so I will prioritize life support because ...",
+      "because_the_spectrum_evidence_suggests_i_wil": "Because the spectrum/evidence suggests..., I will trade ... to protect ...",
+      "revise_your_claim_what_would_you_test_differ": "Revise your claim: What would you test differently next mission?"
     },
     "statslab": {
       "tab_sample_data": "Sample datasets",
@@ -79761,7 +79818,11 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "select_group_name_count_as_rows_avg_measure": "SELECT group_name, COUNT(*) AS rows, AVG(measure_value) AS mean_value FROM data GROUP BY group_name ORDER BY group_name",
+      "show_definitions_of_every_statistic_in_this": "Show definitions of every statistic in this result",
+      "copy_a_structured_lab_report_apa_plain_engli": "Copy a structured lab report (APA + plain-English + numeric + math + interpretation) to clipboard, ready for paste into Google Docs or Word",
+      "e_g_visualization_based_study_led_to_higher": "e.g., Visualization-based study led to higher recall than rote rehearsal. The difference was statistically significant and the effect was large, suggesting visualization is meaningfully better, not just a small statistical bump."
     },
     "stewardship": {
       "sr_opening_scenario": "Opening scenario",
@@ -80862,7 +80923,8 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "interactive_trajectory_simulation": "interactive trajectory simulation"
     },
     "titration": {
       "sr_explanation_ready": "Explanation ready.",
@@ -83428,7 +83490,9 @@
       "save_construction_confirm": "Save construction",
       "save_name_dialog_failed": "The save-name dialog could not open, so this construction was not saved.",
       "save_cancelled": "Save cancelled.",
-      "save_name_required": "Enter a name before saving this construction."
+      "save_name_required": "Enter a name before saving this construction.",
+      "the_object_s_volume_is_because_the_water_lev": "The object's volume is ... because the water level changed from ... to ...",
+      "water_displacement_lab_mode_d": "Water Displacement Lab mode (D)"
     },
     "volume_label": "Volume",
     "water_cycle": {
@@ -86826,7 +86890,10 @@
       "a11y_recorded_investigation_checkpoints": "Recorded investigation checkpoints",
       "a11y_copy_teacher_handoff_brief_to_clipboard": "Copy Teacher Handoff Brief to clipboard",
       "a11y_teacher_handoff_brief_plain_text": "Teacher Handoff Brief plain text",
-      "a11y_teacher_look_fors_reviewed": "Teacher look-fors reviewed"
+      "a11y_teacher_look_fors_reviewed": "Teacher look-fors reviewed",
+      "e_g_front_passage_warm_up": "e.g. Front passage warm-up",
+      "boston_ma_or_42_36_71_06": "Boston, MA or 42.36, -71.06",
+      "record_a_specific_student_explanation_miscon": "Record a specific student explanation, misconception, or next instructional move."
     },
     "weldlab": {
       "a11y_inspection_sample_total_defects_to_find_found_s": "Inspection sample. {value1}. Total defects to find: {value2}. Found so far: {value3}.",
