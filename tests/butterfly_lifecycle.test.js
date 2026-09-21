@@ -152,3 +152,74 @@ describe('Butterfly life cycle investigation',()=>{
    });
  });
 });
+
+describe('Butterfly evidence-based conclusion',()=>{
+ it('refuses to judge a claim before any generation has been followed',()=>{
+   const s=examined(BF.freshState(),'milkweed');
+   for(const c of BF.claims){
+     const v=BF.judgeClaim(s,c.id);
+     expect(v.tested).toBe(false);
+     expect(v.verdict).toBe('You have not tested this claim yet.');
+     // Comparing resources is not the same as testing what a caterpillar can do.
+     expect(v.why).toContain('follow a generation');
+   }
+ });
+
+ it('still withholds a verdict when only planting comparisons exist',()=>{
+   const s=BF.freshState();
+   BF.applyPlan(s,'mixed','both');examined(s,'restoration');
+   expect(s.restoration.trials).toHaveLength(1);
+   expect(BF.judgeClaim(s,'needs-both').tested).toBe(false);
+ });
+
+ it('supports the sound claim and rejects the unsound ones once tested',()=>{
+   const s=examined(BF.freshState(),'milkweed');
+   BF.layEggs(s,'milkweed','complete');runToEnd(s);BF.broodResult(s);
+   expect(BF.judgeClaim(s,'needs-both')).toMatchObject({tested:true,verdict:'Your records support that claim.'});
+   for(const id of ['nectar-enough','green-enough'])
+     expect(BF.judgeClaim(s,id).verdict).toBe('Your records do not support that claim.');
+   // Exactly one claim is the sound one, so the panel cannot affirm two.
+   expect(BF.claims.filter(c=>c.sound).map(c=>c.id)).toEqual(['needs-both']);
+ });
+
+ it('builds the evidence list only from records the learner actually made',()=>{
+   const s=BF.freshState();
+   expect(BF.evidenceFor(s).lines).toEqual([]);
+   examined(s,'bergamot');
+   const afterPatch=BF.evidenceFor(s);
+   expect(afterPatch.lines).toHaveLength(1);
+   expect(afterPatch.lines[0]).toMatchObject({kind:'patch'});
+   expect(afterPatch.lines[0].text).toContain('nectar present');
+   expect(afterPatch.lines[0].text).toContain('no milkweed leaves');
+   BF.layEggs(s,'bergamot','stalls');runToEnd(s);BF.broodResult(s);
+   const afterBrood=BF.evidenceFor(s);
+   expect(afterBrood.lines.filter(l=>l.kind==='brood')).toHaveLength(1);
+   expect(afterBrood.broodsStalled).toEqual(['Wild bergamot']);
+   expect(afterBrood.broodsComplete).toEqual([]);
+ });
+
+ it('separates generations that completed from those that stalled',()=>{
+   const s=BF.freshState();
+   examined(s,'milkweed');BF.layEggs(s,'milkweed','complete');runToEnd(s);BF.broodResult(s);
+   examined(s,'lawn');BF.layEggs(s,'lawn','stalls');runToEnd(s);BF.broodResult(s);
+   const ev=BF.evidenceFor(s);
+   expect(ev.broodsComplete).toEqual(['Common milkweed']);
+   expect(ev.broodsStalled).toEqual(['Mown lawn']);
+   expect(ev.broods).toBe(2);
+ });
+
+ it('rejects an unknown claim id instead of inventing a verdict',()=>{
+   const s=examined(BF.freshState(),'milkweed');
+   for(const id of [null,'','constructor','__proto__','toString','unknown'])
+     expect(BF.judgeClaim(s,id)).toBeNull();
+ });
+
+ it('does not mutate the session when a claim is judged',()=>{
+   const s=examined(BF.freshState(),'milkweed');
+   BF.layEggs(s,'milkweed','complete');runToEnd(s);BF.broodResult(s);
+   const before=JSON.stringify(s),saved=BF.save(s);
+   BF.claims.forEach(c=>{BF.judgeClaim(s,c.id);BF.evidenceFor(s);});
+   expect(JSON.stringify(s)).toBe(before);
+   expect(BF.save(s)).toEqual(saved);
+ });
+});

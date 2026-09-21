@@ -145,6 +145,55 @@
   }
   function broodFor(s,patchId){return s.lifecycle.broods.find(function(b){return b.patch===patchId;})||null;}
 
+  // ── Drawing a conclusion ──────────────────────────────────────────────
+  // The old panel asked one fixed question and answered it from a count of
+  // patch visits, so it stayed silent about the planting comparisons and the
+  // generations the learner had followed. This replaces it with a claim the
+  // learner picks and a response assembled from what they ACTUALLY recorded.
+  // The tool never announces a claim is true on its own authority: it reports
+  // which of the learner's own observations bear on it, and says plainly when
+  // the evidence for it has not been gathered yet.
+  var CLAIMS=Object.freeze([
+    Object.freeze({id:'nectar-enough',sound:false,
+      label:'Flowers with nectar are enough to support monarchs here',
+      verdict:'Your records do not support that claim.',
+      why:'Nectar feeds the adult stage you fly. Every generation you followed on a nectar-only patch stopped at the caterpillar stage, which needs milkweed leaves.'}),
+    Object.freeze({id:'needs-both',sound:true,
+      label:'Monarchs need nectar for adults and milkweed for caterpillars',
+      verdict:'Your records support that claim.',
+      why:'Adults refuel at any flowering patch, but only patches with milkweed leaves carried a generation through the caterpillar stage to an adult.'}),
+    Object.freeze({id:'green-enough',sound:false,
+      label:'Any green, planted patch will do',
+      verdict:'Your records do not support that claim.',
+      why:'The mown lawn and the flowering bergamot are both green and planted, and neither fed a monarch caterpillar. What matters is which species are growing, not how green the patch looks.'})
+  ]);
+  function claim(id){return CLAIMS.find(function(c){return c.id===id;})||null;}
+  // Evidence is counted, never invented. Each line names a record the learner
+  // made and what it shows; an empty list means the claim cannot be judged yet.
+  function evidenceFor(s){
+    var lines=[],nectarOnly=[],withHost=[];
+    habitats(s).forEach(function(p){
+      if(s.observations.indexOf(p.id)>=0||(p.id==='restoration'&&s.restoration.trials.length))
+        lines.push({kind:'patch',text:p.name+': '+(p.nectar?'nectar present':'no nectar')+', '+(p.host?'milkweed leaves present':'no milkweed leaves')+'.'});
+      var b=broodFor(s,p.id);
+      if(b){
+        (b.result==='complete'?withHost:nectarOnly).push(p.name);
+        lines.push({kind:'brood',text:p.name+': the generation you followed '+(b.result==='complete'?'reached the adult stage.':'stopped before becoming an adult.')});
+      }
+    });
+    return {lines:lines,broodsComplete:withHost,broodsStalled:nectarOnly,
+      patches:s.observations.length,trials:s.restoration.trials.length,broods:s.lifecycle.broods.length};
+  }
+  // A claim about what caterpillars need can only be tested by following a
+  // generation. Comparing resources alone cannot settle it, and the tool says so.
+  function judgeClaim(s,id){
+    var c=claim(id);if(!c)return null;
+    var ev=evidenceFor(s),tested=ev.broods>0;
+    return {claim:c,evidence:ev,tested:tested,
+      verdict:tested?c.verdict:'You have not tested this claim yet.',
+      why:tested?c.why:'Comparing what grows on each patch shows which resources are there. To find out what a monarch caterpillar can actually do with them, follow a generation in the investigation above.'};
+  }
+
   function clamp(n,a,b) { return Math.max(a,Math.min(b,n)); }
   function freshState(saved) {
     var seen=saved && Array.isArray(saved.observations)?saved.observations:[];
@@ -344,6 +393,8 @@
     .bf-cycle{margin-top:18px!important;border-top:4px solid #5a6f8c}.bf-cycle-head{display:flex;gap:16px;justify-content:space-between;align-items:start}.bf-cycle-head p{max-width:780px}.bf-cycle-steps{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:16px 0}.bf-cycle fieldset{border:0;margin:0;padding:0;min-width:0}.bf-cycle legend,.bf-cycle label{display:block;font-weight:750;margin-bottom:8px}.bf-cycle-choices{display:grid;gap:8px}.bf-cycle-choices button{text-align:left}.bf-cycle-choices small{display:block;font-weight:400;margin-top:3px}.bf-cycle select{display:block;width:100%;min-height:46px;margin:8px 0 12px;padding:10px;border:1px solid var(--bf-line);border-radius:9px;background:var(--bf-panel);color:var(--bf-ink);font:inherit}.bf-cycle select:focus-visible{outline:3px solid #b45b0c;outline-offset:3px}.bf-cycle-actions{display:flex;flex-wrap:wrap;gap:8px}
     .bf-track{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0;list-style:none;padding:0}.bf-track li{border:1px solid var(--bf-line);border-radius:11px;padding:11px;background:var(--bf-panel)}.bf-track b{display:block;color:var(--bf-muted);font-size:10px;letter-spacing:.07em;text-transform:uppercase}.bf-track strong{display:block;margin-top:2px}.bf-track small{display:block;color:var(--bf-muted);font-size:12px;margin-top:5px}.bf-track li[data-state="current"]{border-color:var(--bf-accent);border-width:2px;padding:10px}.bf-track li[data-state="reached"]{border-left:4px solid var(--bf-accent);padding-left:8px}.bf-track li[data-state="blocked"]{border-left:4px solid #b45b0c;padding-left:8px}.bf-track-tag{font-size:11px;font-weight:750;display:inline-block;margin-top:6px;border:1px solid var(--bf-line);border-radius:20px;padding:2px 8px}
     .bf-cycle-feedback{min-height:50px;margin-top:12px;font-size:14px}.bf-broods{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:15px;font-size:13px}.bf-broods th,.bf-broods td{border-bottom:1px solid var(--bf-line);text-align:left;padding:10px 8px;overflow-wrap:anywhere;vertical-align:top}.bf-broods caption{text-align:left;font-weight:750;font-size:15px;padding-bottom:7px}.bf-broods th:first-child{width:34%}.bf-broods td span{display:block;color:var(--bf-muted);font-size:12px}.bf-cycle-current{font-size:12px;font-weight:700;color:var(--bf-muted);border:1px solid var(--bf-line);border-radius:30px;padding:7px 12px;flex-shrink:0}
+    .bf-verdict{margin-top:14px;border:1px solid var(--bf-line);border-left:4px solid var(--bf-accent);border-radius:12px;padding:14px;background:var(--bf-panel)}.bf-verdict[data-bf-tested="false"]{border-left-color:#b45b0c}.bf-verdict strong{display:block;font-size:15px}.bf-verdict p{font-size:13px;color:var(--bf-muted)}.bf-verdict .bf-eyebrow{margin-top:12px;display:block}.bf-evidence{margin:8px 0 0;padding-left:20px;font-size:13px}.bf-evidence li{margin-top:5px}.bf-evidence li[data-evidence="brood"]{font-weight:650}
+    @media(forced-colors:active){.bf-verdict{border-left-color:CanvasText}.bf-verdict[data-bf-tested="false"]{border-left-color:CanvasText}.bf-verdict p{color:CanvasText}}
     @media(max-width:860px){.bf-track{grid-template-columns:1fr 1fr}}
     @media(max-width:580px){.bf-cycle-steps{grid-template-columns:1fr}.bf-cycle-head{display:block}.bf-cycle-current{display:inline-block;margin-top:10px}.bf-track{grid-template-columns:1fr}.bf-broods th,.bf-broods td{padding:9px 4px}}
     @media(forced-colors:active){.bf-track li[data-state="current"]{border-color:Highlight}.bf-track li[data-state="reached"],.bf-track li[data-state="blocked"]{border-left-color:CanvasText}.bf-track small,.bf-track b{color:CanvasText}}
@@ -362,6 +413,7 @@
     var viewPair=R.useState('follow'),view=viewPair[0],setView=viewPair[1],viewRef=R.useRef(view);viewRef.current=view;
     var lensPair=R.useState(null),lens=lensPair[0],setLens=lensPair[1],lensRef=R.useRef(lens);lensRef.current=lens;
     var answerPair=R.useState(''),answer=answerPair[0],setAnswer=answerPair[1];
+    var claimPair=R.useState(''),pickedClaim=claimPair[0],setPickedClaim=claimPair[1];
     var retryPair=R.useState(0),retry=retryPair[0],setRetry=retryPair[1];
     var planPair=R.useState(s.restoration.design),plan=planPair[0],setPlan=planPair[1];
     var guessPair=R.useState(s.restoration.prediction||''),guess=guessPair[0],setGuess=guessPair[1];
@@ -460,6 +512,7 @@
     var near=nearest(s),landed=patch(s.landed,s),remaining=s.observations.length,detail=fieldDetail(s,lens),recorded=evidenceRecorded(s,landed);
     var cycleSite=patch(s.lifecycle.patch,s),cycleIndex=STAGES.findIndex(function(st){return st.id===s.lifecycle.stage;});
     var canAdvance=!!(cycleSite&&s.lifecycle.stage&&cycleIndex<reachedStage(cycleSite));
+    var verdict=pickedClaim?judgeClaim(s,pickedClaim):null;
     function button(label,onClick,extra){return h('button',Object.assign({type:'button',onClick:onClick},extra||{}),label);}
     function hold(label,key){return button(label,function(){},{'aria-label':label,'data-direction':key,
       onPointerDown:function(e){if(s.paused)return;e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);keys.current[key]=true;},
@@ -526,7 +579,15 @@
               h('td',null,b?outcome(b.result).label:'Not followed',b?h('span',null,b.prediction===b.result?'Matched your prediction':'Differed from your prediction'):null));}))),
         h('p',{className:'bf-help'},'Stages are developmental steps, not a timed simulation. This activity shows whether a patch offers what each stage needs; it does not model how many eggs survive, weather, predators, or disease.')),
       h('div',{className:'bf-bottom'},h('section',{className:'bf-panel'},h('div',{className:'bf-eyebrow'},'One species · changing needs'),h('h3',null,'A life beyond the wings'),h('div',{className:'bf-life'},STAGES.map(function(st){return h('span',{key:st.id},h('b',null,st.ordinal+' · '+st.name),st.id==='egg'?'On milkweed':st.id==='caterpillar'?'Milkweed leaves':st.id==='chrysalis'?'Metamorphosis':'Flower nectar');})),h('p',{className:'bf-help'},'You play the adult stage. Follow a generation in the investigation above to see which patches can support the other three.')),
-        h('section',{className:'bf-panel bf-question','aria-label':'Habitat evidence question'},h('div',{className:'bf-eyebrow'},'Make sense of your evidence'),h('h3',null,'Would nectar flowers alone be enough?'),button('Yes, every stage uses nectar',function(){setAnswer('Look again at the caterpillar stage. Monarch caterpillars need milkweed leaves; adult feeding observations do not tell the whole story.');}),button('No, caterpillars also need milkweed',function(){setAnswer(remaining===3?'Your three observations support that explanation: adults can visit nectar flowers, while monarch caterpillars need milkweed. A habitat can serve different needs at once.':'That identifies the key difference. Visit and examine all three patches to collect the evidence behind your explanation.');}),h('div',{role:'status','aria-live':'polite'},answer))),
+        h('section',{className:'bf-panel bf-question','aria-label':'Habitat evidence question','data-bf-claim':pickedClaim||''},h('div',{className:'bf-eyebrow'},'Make sense of your evidence'),h('h3',null,'Which claim does your evidence support?'),
+          h('p',{className:'bf-help'},'Choose a claim. The lab does not tell you which is right on its own authority — it shows you which of your own records bear on it.'),
+          CLAIMS.map(function(c){return button(c.label,function(){setPickedClaim(c.id);setAnswer('');},{key:c.id,'aria-pressed':pickedClaim===c.id});}),
+          verdict?h('div',{className:'bf-verdict','data-bf-tested':String(verdict.tested)},
+            h('strong',null,verdict.verdict),h('p',null,verdict.why),
+            verdict.evidence.lines.length?h(R.Fragment,null,h('p',{className:'bf-eyebrow'},'From your records'),
+              h('ul',{className:'bf-evidence'},verdict.evidence.lines.map(function(line,i){return h('li',{key:i,'data-evidence':line.kind},line.text);}))
+            ):h('p',{className:'bf-help'},'You have not recorded anything yet. Examine a patch to begin.')):null,
+          h('div',{role:'status','aria-live':'polite'},answer||(verdict?verdict.verdict+' '+verdict.why:'')))),
       h('details',{className:'bf-sources'},h('summary',null,'Science notes & sources'),h('p',null,'Species: monarch (Danaus plexippus). This summer scene represents a Mid-Atlantic habitat investigation. Plants and wing patterns are illustrative and enlarged. Guided routes, flight speed, distances, and energy are teaching choices, not field measurements. Other butterfly species can have different host plants.'),h('ul',null,
         h('li',null,h('a',{href:'https://www.xerces.org/publications/plant-lists/monarch-nectar-plants-mid-atlantic',target:'_blank',rel:'noopener noreferrer'},'Xerces Society · Regional nectar plants and milkweed hosts')),
         h('li',null,h('a',{href:'https://monarchjointventure.org/monarch-biology/life-cycle',target:'_blank',rel:'noopener noreferrer'},'Monarch Joint Venture · Life cycle')),
@@ -539,5 +600,6 @@
   window.StemLab.registerTool('butterfly',{label:'Butterfly Habitat Lab',icon:'🦋',desc:'Explore a summer meadow as a monarch, compare nectar and host plants, and build a field journal.',category:'science',color:'orange',gradeRange:'4-12',aliases:['monarch','butterflies','milkweed','pollinator','habitat'],render:function(ctx){return ctx.React.createElement(ButterflyLab,{ctx:ctx});}});
   if(window.__RR_TEST_EXPORTS__)window.__RR_TEST_EXPORTS__.butterfly={plants:PLANTS,freshState:freshState,nearest:nearest,step:step,advanceFrame:advanceFrame,land:land,observe:observe,save:save,buildWorld:buildWorld,designs:DESIGNS,habitats:habitats,applyPlan:applyPlan,cleanRestoration:cleanRestoration,fieldDetail:fieldDetail,evidenceRecorded:evidenceRecorded,
     stages:STAGES,outcomes:OUTCOMES,layEggs:layEggs,advanceStage:advanceStage,broodResult:broodResult,broodFor:broodFor,
-    cleanLifecycle:cleanLifecycle,reachedStage:reachedStage,stageStatus:stageStatus,expectedOutcome:expectedOutcome};
+    cleanLifecycle:cleanLifecycle,reachedStage:reachedStage,stageStatus:stageStatus,expectedOutcome:expectedOutcome,
+    claims:CLAIMS,judgeClaim:judgeClaim,evidenceFor:evidenceFor};
 })();
