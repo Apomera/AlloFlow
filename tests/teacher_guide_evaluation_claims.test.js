@@ -81,7 +81,16 @@ describe('tool catalog launch links', () => {
 describe('promotional site link integrity', () => {
   const REDIRECTS = read('_redirects');
   const slugs = new Set([...REDIRECTS.matchAll(/^\/([a-z0-9-]+) \/app\/\?tool=/gm)].map((m) => m[1]));
-  const pages = fs.readdirSync(ROOT).filter((f) => f.endsWith('.html'));
+  // Only the promotional site's own pages. The generated STEM tool help pages
+  // (--help-*.html, --tool-*.html) also sit at the repo root, and they embed
+  // teaching examples of good and bad markup — an accessibility lesson quotes
+  // <a href="/article/123">Read full article</a>, and similarly transcript.html,
+  // sprite.svg#icon, font.woff2 and /policies. Those hrefs are sample text
+  // inside a lesson, never navigation, and were never meant to resolve. They
+  // produced thirteen failures that said nothing about the promotional site,
+  // and a gate that noisy stops being read.
+  const pages = fs.readdirSync(ROOT)
+    .filter((f) => f.endsWith('.html') && !f.startsWith('--'));
 
   it('never links a tool by bare slug, which only resolves on Cloudflare', () => {
     // GitHub Pages ignores _redirects entirely, so href="water-cycle" is a 404
