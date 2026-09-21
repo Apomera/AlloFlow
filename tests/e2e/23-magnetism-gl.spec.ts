@@ -299,6 +299,64 @@ test.describe('magnetism — 3D visual pass', () => {
     expect(toolSetEnvironment, 'no tool scene ever had scene.environment set').toBe(true);
   });
 
+  test('the auroral oval widens as the solar wind rises', async ({ page }) => {
+    // The Shield Watch prediction this tab GRADES asks whether the auroral oval
+    // shifts equatorward — but the 3D view never drew an oval, so the one
+    // structure students are asked to predict was the one they could not see.
+    //
+    // The oval sits at magnetic latitude L on a sphere of radius R, giving ring
+    // radius R*cos(L). The model runs 69deg (quiet) to 60deg (storm), so the
+    // ring should WIDEN by ~40% across that range. Assert the real torus radii
+    // off the constructed geometry rather than trusting a screenshot.
+    const radiiFor = async (wind: number) => {
+      await page.goto(`${harness.url}/__harness`);
+      await page.waitForFunction(
+        () => !!(window as any).StemLab?._registry?.magnetism, null, { timeout: 30000 });
+      await page.evaluate(() => {
+        const T = (window as any).THREE, w = window as any;
+        w.__toruses = [];
+        const Torus = T.TorusGeometry;
+        T.TorusGeometry = function (...a: any[]) {
+          w.__toruses.push(a[0]);
+          return new Torus(...a);
+        };
+        T.TorusGeometry.prototype = Torus.prototype;
+      });
+      await page.evaluate((v) => (window as any).__mount({
+        magnetism: { tab: 'earth', earthView: '3d', earthSolarWind: v },
+      }), wind);
+      await page.waitForSelector('#wrap canvas', { timeout: 30000 });
+      await page.waitForTimeout(1100);
+      return page.evaluate(() => (window as any).__toruses as number[]);
+    };
+
+    // Quiet: oval radius ~0.3745. Storm: ~0.5225. Both are distinctive values
+    // that no other torus in this scene uses (pole rings are 0.18, the
+    // radiation belts 1.65 and 2.3).
+    const quiet = await radiiFor(1);
+    await page.evaluate(() => { (window as any).__destroy(); });
+    const storm = await radiiFor(10);
+
+    const near = (list: number[], want: number) =>
+      list.some((r) => Math.abs(r - want) < 0.02);
+
+    expect(quiet.length, 'no TorusGeometry built in the magnetosphere').toBeGreaterThan(0);
+    expect(near(quiet, 0.3745), `quiet oval radius ~0.3745 not found in ${JSON.stringify(quiet)}`).toBe(true);
+    expect(near(storm, 0.5225), `storm oval radius ~0.5225 not found in ${JSON.stringify(storm)}`).toBe(true);
+    // And it must genuinely be a WIDENING, not two unrelated numbers. Compare
+    // the AURORA radii specifically: `max(r < 1)` would pick up whichever
+    // small torus happens to be largest (the old static oval was 0.56 and beat
+    // the quiet aurora at 0.3745, which is how this assertion first failed).
+    const auroraOf = (list: number[]) =>
+      list.filter((r) => r > 0.3 && r < 0.6).sort((a, b) => b - a)[0];
+    const quietOval = auroraOf(quiet);
+    const stormOval = auroraOf(storm);
+    expect(quietOval, 'no quiet-state aurora radius in range').toBeDefined();
+    expect(stormOval, 'no storm-state aurora radius in range').toBeDefined();
+    expect(stormOval, 'the storm oval is not wider than the quiet one')
+      .toBeGreaterThan(quietOval);
+  });
+
   test('releases its GL context on unmount', async ({ page }) => {
     await harness.mount(page, FIELD_3D);
     await page.evaluate(() => (window as any).__magProbe());

@@ -7103,12 +7103,34 @@
             }
             function buildScene(state) {
               clearDynamic();
-              var chamberEdges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(6.4, 6.8, 6.4)), new THREE.LineBasicMaterial({ color: 0x64748b, transparent: true, opacity: 0.22 })); dynamicGroup.add(chamberEdges);
+              // The chamber was edges only at 0.22 opacity, which gave almost no
+              // sense of a VOLUME the particle is confined inside — the helix
+              // looked like it floated in open space. Faint back-face walls sit
+              // behind everything and read as glass: BackSide so the near walls
+              // never occlude the trajectory, depthWrite off so the additive
+              // comet and glow shells still composite correctly through them.
+              var chamberBox = new THREE.BoxGeometry(6.4, 6.8, 6.4);
+              var chamberShell = new THREE.Mesh(chamberBox, new THREE.MeshBasicMaterial({
+                color: 0x1e293b, transparent: true, opacity: 0.16,
+                side: THREE.BackSide, depthWrite: false
+              }));
+              chamberShell.renderOrder = -1;
+              dynamicGroup.add(chamberShell);
+              var chamberEdges = new THREE.LineSegments(new THREE.EdgesGeometry(chamberBox), new THREE.LineBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.34 })); dynamicGroup.add(chamberEdges);
               if (state.fieldModel === 'mirror') {
                 [-2.75, 2.75].forEach(function (coilY) {
                   for (var coilIndex = 0; coilIndex < 3; coilIndex++) {
                     var coil = new THREE.Mesh(new THREE.TorusGeometry(2.15 + coilIndex * 0.13, 0.055, 8, 48), new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0x78350f, emissiveIntensity: 0.28, metalness: 0.55, roughness: 0.35 }));
                     coil.rotation.x = Math.PI / 2; coil.position.y = coilY + (coilIndex - 1) * 0.11; dynamicGroup.add(coil);
+                    // These coils MAKE the magnetic bottle the tool teaches, so
+                    // under bloom they should read as energised hardware rather
+                    // than brown rings. One additive companion per coil, at the
+                    // same radius, tracing the same circle.
+                    var coilGlow = new THREE.Mesh(new THREE.TorusGeometry(2.15 + coilIndex * 0.13, 0.115, 6, 40), new THREE.MeshBasicMaterial({
+                      color: 0xfbbf24, transparent: true, opacity: 0.20,
+                      blending: THREE.AdditiveBlending, depthWrite: false
+                    }));
+                    coilGlow.rotation.copy(coil.rotation); coilGlow.position.copy(coil.position); dynamicGroup.add(coilGlow);
                   }
                 });
                 [-2.7, -1.35, 0, 1.35, 2.7].forEach(function (yy) {
@@ -8276,6 +8298,29 @@
             var rimLight = new THREE.PointLight(0xf59e0b, 1.25, 20); rimLight.position.set(-4, 2, 5); scene.add(rimLight);
             var grid = new THREE.GridHelper(9, 18, 0x64748b, 0x334155); grid.material.transparent = true; grid.material.opacity = 0.3; scene.add(grid);
             var axes = new THREE.AxesHelper(3.8); axes.material.transparent = true; axes.material.opacity = 0.45; scene.add(axes);
+            // Grounding shadow. Everything in this scene straddles y=0 — the
+            // magnet is CENTRED there and 0.62 tall, the coil is centred there
+            // with a user-driven radius (0.7-1.8 from the slider) — and the bulb
+            // hangs at y=-1.7. So the catcher goes below the lowest reachable
+            // point of all three rather than on the grid plane, which would cut
+            // through the coil and the magnet and draw a hard edge under both.
+            try {
+              renderer.shadowMap.enabled = true;
+              renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+              keyLight.castShadow = true;
+              var indShadowSide = magLowPower() ? 512 : 1024;
+              keyLight.shadow.mapSize.width = indShadowSide;
+              keyLight.shadow.mapSize.height = indShadowSide;
+              keyLight.shadow.camera.near = 1; keyLight.shadow.camera.far = 26;
+              keyLight.shadow.camera.left = -6; keyLight.shadow.camera.right = 6;
+              keyLight.shadow.camera.top = 6; keyLight.shadow.camera.bottom = -6;
+              keyLight.shadow.bias = -0.0012; keyLight.shadow.radius = 2;
+              var indCatcher = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.ShadowMaterial({ opacity: 0.3 }));
+              indCatcher.rotation.x = -Math.PI / 2;
+              indCatcher.position.y = -2.1;
+              indCatcher.receiveShadow = true;
+              scene.add(indCatcher);
+            } catch (shadowError) {}
             var dynamicGroup = new THREE.Group(); scene.add(dynamicGroup);
             var liveState = cv._induction3dState || currentInduction3DState();
             var raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(), dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -8339,6 +8384,7 @@
               var south = new THREE.Mesh(new THREE.BoxGeometry(1, 0.62, 0.62), new THREE.MeshStandardMaterial({ color: southColor, roughness: 0.35, metalness: 0.4, emissive: southColor, emissiveIntensity: 0.12 }));
               north.position.x = 0.5; south.position.x = -0.5;
               north.userData.inductionMagnet = true; south.userData.inductionMagnet = true;
+              north.castShadow = true; south.castShadow = true;
               magnetGroup.add(north); magnetGroup.add(south);
               var northSide = magnet.polarity < 0 ? -1 : 1;
               var stripeMaterial = new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.94 });
@@ -8371,7 +8417,7 @@
               for (var turn = 0; turn < visibleTurns; turn++) {
                 var offset = (turn - (visibleTurns - 1) / 2) * 0.055;
                 var ring = new THREE.Mesh(new THREE.TorusGeometry(coil.radius, 0.034, 10, 52), new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xf59e0b, emissiveIntensity: 0.18, roughness: 0.4, metalness: 0.55 }));
-                ring.quaternion.copy(quaternion); ring.position.copy(center).add(normal.clone().multiplyScalar(offset)); dynamicGroup.add(ring);
+                ring.quaternion.copy(quaternion); ring.position.copy(center).add(normal.clone().multiplyScalar(offset)); ring.castShadow = true; dynamicGroup.add(ring);
               }
               var fluxStrength = Math.min(1, Math.abs(state.flux) / 8);
               var fluxColor = Math.abs(state.flux) < 0.01 ? 0x64748b : state.flux > 0 ? 0xfb7185 : 0x38bdf8;
@@ -10023,7 +10069,46 @@
                   var particle = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), new THREE.MeshBasicMaterial({ color: p % 2 ? 0xf472b6 : 0xa78bfa })); particle.position.set(orbitRadius * Math.cos(angle), 0, orbitRadius * Math.sin(angle)); dipoleGroup.add(particle);
                   animatedParticles.push({ mesh: particle, radius: orbitRadius, baseAngle: angle, speed: p % 2 ? 0.28 : 0.43 });
                 }
-                [-0.84, 0.84].forEach(function (yy) { var oval = new THREE.Mesh(new THREE.TorusGeometry(0.56, 0.035, 8, 42), new THREE.MeshBasicMaterial({ color: 0x34d399, transparent: true, opacity: 0.9 })); oval.rotation.x = Math.PI / 2; oval.position.y = yy; dipoleGroup.add(oval); });
+                // ── Auroral ovals ────────────────────────────────────────
+                // These were hardcoded at radius 0.56, y = ±0.84 and did NOT
+                // move. Two problems with that: the implied magnetic latitude
+                // is 56.3°, which is outside the model's own 69° (quiet) to
+                // 60° (storm) range; and the Shield Watch prediction this tab
+                // GRADES asks whether the oval shifts equatorward, so the one
+                // structure students predict was the one that never responded.
+                //
+                // Now derived from state.auroralLatitude, which the teaching
+                // model already computes. An oval at magnetic latitude L on a
+                // sphere of radius R has ring radius R·cos(L) and height
+                // ±R·sin(L); across the model's range that widens the ring by
+                // ~40%, so the shift is legible without exaggerating it.
+                // R = 1.045 puts it above the surface (1.0) and inside the
+                // atmosphere shell (1.06) — the old one floated outside it.
+                var auroraLat = Number(state.auroralLatitude);
+                if (!isFinite(auroraLat)) auroraLat = 65;
+                var auroraR = 1.045;
+                var auroraRad = auroraLat * Math.PI / 180;
+                var ovalRadius = Math.max(0.05, auroraR * Math.cos(auroraRad));
+                var ovalHeight = auroraR * Math.sin(auroraRad);
+                // Brightness follows the same pressure the rest of the scene
+                // responds to. (Parenthesise the default BEFORE subtracting:
+                // `x || 5 - 1` parses as `x || 4` and silently pins this.)
+                var auroraPressure = Number(state.pressure);
+                if (!isFinite(auroraPressure)) auroraPressure = 5;
+                var auroraFraction = Math.max(0, Math.min(1, (auroraPressure - 1) / 9));
+                [1, -1].forEach(function (hemisphere) {
+                  // Two concentric bands: an auroral oval is a zone, not a wire.
+                  [{ t: 0.035, o: 0.9 }, { t: 0.085, o: 0.22 + auroraFraction * 0.3 }].forEach(function (band, bandIndex) {
+                    var oval = new THREE.Mesh(
+                      new THREE.TorusGeometry(ovalRadius, band.t, 8, 42),
+                      new THREE.MeshBasicMaterial(bandIndex === 0
+                        ? { color: 0x34d399, transparent: true, opacity: band.o }
+                        : { color: 0x6ee7b7, transparent: true, opacity: band.o, blending: THREE.AdditiveBlending, depthWrite: false }));
+                    oval.rotation.x = Math.PI / 2;
+                    oval.position.y = hemisphere * ovalHeight;
+                    dipoleGroup.add(oval);
+                  });
+                });
               }
               if (state.boundary) {
                 var nose = 2.2 + (state.daysideRadiusRE - 5.6) * 0.38;
