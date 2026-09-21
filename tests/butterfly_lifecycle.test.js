@@ -94,6 +94,30 @@ describe('Butterfly life cycle investigation',()=>{
    expect(s.lifecycle.patch).toBe('milkweed');expect(s.lifecycle.stage).toBe('caterpillar');
  });
 
+ it('lets the learner abandon a running generation without recording evidence',()=>{
+   const s=examined(BF.freshState(),'milkweed');
+   expect(BF.abandonBrood(s).ok).toBe(false);
+   BF.layEggs(s,'milkweed','complete');BF.advanceStage(s);
+   const result=BF.abandonBrood(s);
+   expect(result.ok).toBe(true);expect(result.message).toContain('Nothing was recorded');
+   // An unfinished generation says nothing about the habitat, so no row appears.
+   expect(s.lifecycle.broods).toEqual([]);
+   expect(s.lifecycle.stage).toBeNull();expect(s.lifecycle.prediction).toBeNull();
+   expect(s.lifecycle.patch).toBeNull();
+   // The choosers are usable again, so the learner is not stuck.
+   expect(BF.layEggs(s,'milkweed','stalls').ok).toBe(true);
+ });
+
+ it('keeps an earlier recorded result visible after abandoning a rerun',()=>{
+   const s=examined(BF.freshState(),'milkweed');
+   BF.layEggs(s,'milkweed','complete');runToEnd(s);BF.broodResult(s);
+   BF.layEggs(s,'milkweed','stalls');BF.advanceStage(s);
+   BF.abandonBrood(s);
+   // The finished record stands; only the abandoned rerun is discarded.
+   expect(s.lifecycle.broods).toEqual([{patch:'milkweed',prediction:'complete',result:'complete'}]);
+   expect(s.lifecycle.patch).toBe('milkweed');
+ });
+
  it('does not fly, spend energy, or grant patch evidence while a generation runs',()=>{
    const s=examined(BF.freshState(),'milkweed');
    Object.assign(s,{energy:44,clock:9,paused:true});
@@ -112,7 +136,7 @@ describe('Butterfly life cycle investigation',()=>{
    expect(s.lifecycle.broods).toHaveLength(1);
    expect(BF.broodFor(s,'milkweed').prediction).toBe('complete');
    const saved=BF.save(s),restored=BF.freshState(saved);
-   expect(saved.version).toBe(3);
+   expect(saved.version).toBe(4);
    expect(restored.lifecycle).toEqual(s.lifecycle);
    saved.lifecycle.broods[0].result='stalls';
    expect(s.lifecycle.broods[0].result).toBe('complete');
@@ -138,6 +162,32 @@ describe('Butterfly life cycle investigation',()=>{
    expect(BF.freshState().lifecycle).toEqual({patch:null,prediction:null,stage:null,broods:[]});
  });
 
+ it('clamps a restored stage to what that patch can actually support',()=>{
+   // A tampered save, or a plot replanted by an older build, could name a
+   // stage the patch refuses to advance to. The track would then sit at a
+   // stage the same patch will not move past.
+   const impossible=BF.freshState({observations:['lawn'],
+     lifecycle:{patch:'lawn',prediction:'complete',stage:'adult',broods:[]}});
+   expect(impossible.lifecycle.stage).toBe('caterpillar');
+   expect(impossible.lifecycle.patch).toBe('lawn');
+   // The restoration plot is judged against its CURRENT planting.
+   const bare=BF.freshState({restoration:{design:'lawn',prediction:null,trials:[{design:'lawn',prediction:'neither'}]},
+     lifecycle:{patch:'restoration',prediction:'complete',stage:'adult',broods:[]}});
+   expect(bare.lifecycle.stage).toBe('caterpillar');
+   const planted=BF.freshState({restoration:{design:'mixed',prediction:null,trials:[{design:'mixed',prediction:'both'}]},
+     lifecycle:{patch:'restoration',prediction:'complete',stage:'adult',broods:[]}});
+   expect(planted.lifecycle.stage).toBe('adult');
+ });
+
+ it('leaves every legal restored stage untouched',()=>{
+   for(const [patch,stage] of [['lawn','egg'],['lawn','caterpillar'],['bergamot','caterpillar'],
+     ['milkweed','egg'],['milkweed','chrysalis'],['milkweed','adult']]){
+     const s=BF.freshState({observations:['lawn','bergamot','milkweed'],
+       lifecycle:{patch,prediction:'complete',stage,broods:[]}});
+     expect(s.lifecycle.stage).toBe(stage);
+   }
+ });
+
  it('agrees with the stage track the panel renders',()=>{
    const milkweed=BF.habitats(BF.freshState()).find(p=>p.id==='milkweed');
    const bergamot=BF.habitats(BF.freshState()).find(p=>p.id==='bergamot');
@@ -160,8 +210,11 @@ describe('Butterfly evidence-based conclusion',()=>{
      const v=BF.judgeClaim(s,c.id);
      expect(v.tested).toBe(false);
      expect(v.verdict).toBe('You have not tested this claim yet.');
-     // Comparing resources is not the same as testing what a caterpillar can do.
-     expect(v.why).toContain('follow a generation');
+     // An untested claim must point at the investigation that WOULD test it.
+     // A timing claim needs a matched pair of seasons, not a followed
+     // generation, so the two kinds of claim send the learner to different
+     // places. Both must still name a concrete next step.
+     expect(v.why).toContain(c.needs==='season'?'run the SAME patch twice':'follow a generation');
    }
  });
 
@@ -206,6 +259,15 @@ describe('Butterfly evidence-based conclusion',()=>{
    expect(ev.broodsComplete).toEqual(['Common milkweed']);
    expect(ev.broodsStalled).toEqual(['Mown lawn']);
    expect(ev.broods).toBe(2);
+ });
+
+ it('reports what the patch makes possible, not how many would survive',()=>{
+   const s=examined(BF.freshState(),'milkweed');
+   BF.layEggs(s,'milkweed','complete');runToEnd(s);
+   const msg=BF.broodResult(s).message;
+   // "carried a generation all the way to an adult" read as a survival claim.
+   expect(msg).toContain('not a count of how many would survive');
+   expect(msg).not.toContain('all the way to an adult');
  });
 
  it('rejects an unknown claim id instead of inventing a verdict',()=>{

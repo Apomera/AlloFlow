@@ -30,21 +30,21 @@
   // learner observes, not something the tool asserts in a caption.
   // Stages are labelled developmental steps, not timed or measured rates.
   var STAGES=Object.freeze([
-    Object.freeze({id:'egg',ordinal:'01',name:'Egg',needs:'host',
+    Object.freeze({id:'egg',ordinal:'01',name:'Egg',
       caption:'A monarch egg is laid on a leaf. It does not feed yet; what matters is the plant it sits on.',
       thriving:'The egg rests on a milkweed leaf. When it hatches, the caterpillar will emerge onto its food plant.',
       failing:'The egg is on a plant with no milkweed leaves. It can still hatch, but no monarch caterpillar food is growing here.'}),
-    Object.freeze({id:'caterpillar',ordinal:'02',name:'Caterpillar',needs:'host',
+    Object.freeze({id:'caterpillar',ordinal:'02',name:'Caterpillar',
       caption:'The caterpillar feeds and grows. This is the stage that depends on milkweed leaves.',
       thriving:'The caterpillar is feeding on milkweed leaves and growing through its larval stage.',
       failing:'The caterpillar hatched with no milkweed leaves within reach. Nectar flowers are adult food and do not feed this stage; the generation does not continue here.'}),
-    Object.freeze({id:'chrysalis',ordinal:'03',name:'Chrysalis',needs:'host',
+    Object.freeze({id:'chrysalis',ordinal:'03',name:'Chrysalis',
       caption:'The caterpillar forms a chrysalis and reorganises into an adult.',
       thriving:'A caterpillar that fed well forms its chrysalis, where metamorphosis takes place.',
       failing:'No caterpillar completed feeding at this patch, so no chrysalis forms.'}),
-    Object.freeze({id:'adult',ordinal:'04',name:'Adult',needs:'nectar',
+    Object.freeze({id:'adult',ordinal:'04',name:'Adult',
       caption:'The adult emerges and feeds on flower nectar — the stage you fly.',
-      thriving:'An adult emerges. It feeds on flower nectar, the resource you have been using in flight.',
+      thriving:'An adult emerges. From here it can fly to nectar flowers — in this patch or any other — the way you do.',
       failing:'No adult emerges from this patch this generation.'})
   ]);
   var OUTCOMES=Object.freeze([
@@ -134,16 +134,113 @@
     if(index<reachedStage(p))return {ok:false,message:'Keep following this generation before recording what happened.'};
     var record={patch:lc.patch,prediction:lc.prediction,result:expectedOutcome(p)};
     lc.broods=lc.broods.filter(function(b){return b.patch!==record.patch;}).concat([record]);
+    // The stage clears (the generation is over) but the patch stays, so the
+    // track keeps showing HOW FAR it got instead of blanking at the moment the
+    // learner most wants to read it. `stage` null is what gates re-laying eggs.
     lc.prediction=null;lc.stage=null;
     return {ok:true,message:broodFeedback(record,p)};
   }
   function broodFeedback(record,p){
     var matched=record.prediction===record.result;
     return (matched?'Prediction matched. ':'Different from your prediction. ')+(record.result==='complete'
-      ?p.name+' carried a generation all the way to an adult, because monarch caterpillars had milkweed leaves to eat here.'
+      ?p.name+' offered what every stage needs, so a generation could run its whole cycle here — monarch caterpillars had milkweed leaves to eat. That is what this patch makes possible, not a count of how many would survive.'
       :p.name+' did not carry a generation to an adult. The caterpillar stage had no milkweed leaves, and adult nectar cannot substitute for it.');
   }
   function broodFor(s,patchId){return s.lifecycle.broods.find(function(b){return b.patch===patchId;})||null;}
+  // Both choosers lock while a generation runs, so without this a learner who
+  // laid eggs on the wrong patch has no way back. Abandoning records nothing:
+  // an unfinished generation is not evidence about the habitat.
+  function abandonBrood(s){
+    var lc=s.lifecycle;
+    if(!lc.stage)return {ok:false,message:'No generation is running.'};
+    var p=patch(lc.patch,s);
+    lc.stage=null;lc.prediction=null;lc.patch=broodFor(s,lc.patch)?lc.patch:null;
+    return {ok:true,message:'Stopped following the generation at '+(p?p.name:'that patch')+'. Nothing was recorded. You can lay eggs again.'};
+  }
+
+  // ── Mowing and timing ─────────────────────────────────────
+  // Resources can be present and still be unusable if they are cut down before
+  // the stage that needs them gets there. Sources describe habitat as needing
+  // protection from "untimely mowing"; they publish no plant counts or survival
+  // rates, so this models PRESENCE and TIMING only -- never density or numbers.
+  // Weeks are an ordering device for one generation, not a measured calendar.
+  var STAGE_WEEK=Object.freeze({egg:1,caterpillar:3,chrysalis:6,adult:8});
+  var MOWINGS=Object.freeze([
+    Object.freeze({id:'never',week:null,label:'Leave it uncut this summer',short:'No cut',
+      note:'Nothing is cut, so whatever grows here stays standing for the whole generation.'}),
+    Object.freeze({id:'early',week:2,label:'Cut in early summer',short:'Cut week 2',
+      note:'An early cut removes the milkweed leaves a caterpillar would have fed on.'}),
+    Object.freeze({id:'mid',week:5,label:'Cut in midsummer',short:'Cut week 5',
+      note:'A midsummer cut takes away the standing stems a chrysalis hangs from.'}),
+    Object.freeze({id:'late',week:9,label:'Cut after the generation',short:'Cut week 9',
+      note:'By this point the adult has emerged and can leave, so this cut does not interrupt the generation.'})
+  ]);
+  function mowing(id){return MOWINGS.find(function(m){return m.id===id;})||null;}
+  // A stage clears only if the plot is still standing in the week it needs it.
+  // Egg and caterpillar need milkweed; a chrysalis needs something left to hang
+  // on; an adult needs nectar somewhere in this patch to refuel before leaving.
+  // Matches what the life cycle activity already tells the learner: an egg laid
+  // on the wrong plant can still hatch, so the generation fails at the
+  // CATERPILLAR stage -- the first one that actually eats -- not at the egg.
+  function stageNeedMet(p,stage){
+    return stage==='egg'?(!!p.host||!!p.nectar):stage==='caterpillar'?!!p.host
+      :stage==='chrysalis'?(!!p.host||!!p.nectar):!!p.nectar;
+  }
+  function seasonOutcome(p,mowId){
+    var mow=mowing(mowId);if(!p||!mow)return null;
+    var steps=STAGES.map(function(st){
+      var standing=mow.week===null||STAGE_WEEK[st.id]<mow.week;
+      return {id:st.id,name:st.name,week:STAGE_WEEK[st.id],standing:standing,
+        resource:stageNeedMet(p,st.id),cleared:standing&&stageNeedMet(p,st.id)};
+    });
+    var blocked=steps.filter(function(x){return !x.cleared;})[0]||null;
+    var cutShort=!!(blocked&&blocked.resource&&!blocked.standing);
+    return {steps:steps,completes:!blocked,blocked:blocked?blocked.id:null,cutShort:cutShort,
+      // Naming WHY it stopped is the point: same patch, same plants, different
+      // timing. "Cut short" is the case the resource table alone cannot show.
+      reason:!blocked?'Every stage found what it needed, and the plot was still standing when it needed it.'
+        :cutShort?'The '+blocked.name.toLowerCase()+' stage had what it needed growing here, but the plot was cut in week '+mow.week+', before week '+blocked.week+'.'
+        :'The '+blocked.name.toLowerCase()+' stage had nothing here to use, whether or not the plot was cut.'};
+  }
+  function cleanSeason(value){
+    var v=value&&typeof value==='object'?value:{},records=Array.isArray(v.runs)?v.runs.slice(-12):[];
+    var runs=[];records.forEach(function(r){
+      if(!r||!mowing(r.mowing)||!knownPatchId(r.patch))return;
+      if(r.prediction!=='complete'&&r.prediction!=='stop')return;
+      if(r.result!=='complete'&&r.result!=='stop')return;
+      runs=runs.filter(function(x){return !(x.patch===r.patch&&x.mowing===r.mowing);});
+      runs.push({patch:r.patch,mowing:r.mowing,prediction:r.prediction,result:r.result});
+    });
+    return {mowing:mowing(v.mowing)?v.mowing:'never',prediction:v.prediction==='complete'||v.prediction==='stop'?v.prediction:null,runs:runs};
+  }
+  // Running a season is evidence only where the learner has already examined the
+  // patch -- the same bar the life cycle sets for laying eggs.
+  function runSeason(s,patchId,mowId,guess){
+    var p=patch(patchId,s),mow=mowing(mowId);
+    if(!p||!mow)return {ok:false,message:'Choose a patch and a mowing plan first.'};
+    if(guess!=='complete'&&guess!=='stop')return {ok:false,message:'Predict what happens to the generation before running the season.'};
+    if(!evidenceRecorded(s,p))return {ok:false,message:'Examine '+p.name+' first, so you know what is growing there.'};
+    var outcome=seasonOutcome(p,mowId),result=outcome.completes?'complete':'stop';
+    var sn=s.season;
+    sn.runs=sn.runs.filter(function(x){return !(x.patch===patchId&&x.mowing===mowId);})
+      .concat([{patch:patchId,mowing:mowId,prediction:guess,result:result}]);
+    sn.prediction=null;
+    return {ok:true,outcome:outcome,result:result,matched:guess===result,
+      message:(guess===result?'Prediction matched. ':'Different from your prediction. ')+outcome.reason+' '+mow.note};
+  }
+  function seasonRunFor(s,patchId,mowId){return s.season.runs.find(function(r){return r.patch===patchId&&r.mowing===mowId;})||null;}
+  // Two runs on the SAME patch that differ only in mowing are what isolates
+  // timing as the cause. Until the learner has such a pair, the timing claim is
+  // untested no matter how many single runs they have done.
+  function timingPairs(s){
+    return s.season.runs.filter(function(r){return r.result==='complete';}).map(function(win){
+      var lost=s.season.runs.filter(function(r){return r.patch===win.patch&&r.result==='stop';})
+        .map(function(r){return seasonOutcome(patch(r.patch,s),r.mowing);})
+        .filter(function(o){return o&&o.cutShort;});
+      return lost.length?{patch:win.patch,kept:win.mowing,cut:s.season.runs.filter(function(r){
+        return r.patch===win.patch&&r.result==='stop'&&seasonOutcome(patch(r.patch,s),r.mowing).cutShort;})[0].mowing}:null;
+    }).filter(Boolean);
+  }
 
   // ── Drawing a conclusion ──────────────────────────────────────────────
   // The old panel asked one fixed question and answered it from a count of
@@ -162,6 +259,10 @@
       label:'Monarchs need nectar for adults and milkweed for caterpillars',
       verdict:'Your records support that claim.',
       why:'Adults refuel at any flowering patch, but only patches with milkweed leaves carried a generation through the caterpillar stage to an adult.'}),
+    Object.freeze({id:'timing-irrelevant',sound:false,needs:'season',
+      label:'If the right plants are there, when the patch is mown does not matter',
+      verdict:'Your records do not support that claim.',
+      why:'You ran the same patch, with the same plants, under two mowing plans and got two different outcomes. A cut that lands before a stage needs the plant removes it just as surely as never planting it.'}),
     Object.freeze({id:'green-enough',sound:false,
       label:'Any green, planted patch will do',
       verdict:'Your records do not support that claim.',
@@ -181,25 +282,57 @@
         lines.push({kind:'brood',text:p.name+': the generation you followed '+(b.result==='complete'?'reached the adult stage.':'stopped before becoming an adult.')});
       }
     });
+    var pairs=timingPairs(s);
+    s.season.runs.forEach(function(r){
+      var p=patch(r.patch,s);if(!p)return;
+      lines.push({kind:'season',text:p.name+', '+mowing(r.mowing).short.toLowerCase()+': the generation '+(r.result==='complete'?'ran its whole cycle.':'stopped before an adult emerged.')});
+    });
+    pairs.forEach(function(pair){
+      var p=patch(pair.patch,s);if(!p)return;
+      lines.push({kind:'timing',text:p.name+' ran both ways: '+mowing(pair.kept).short.toLowerCase()+' completed, '+mowing(pair.cut).short.toLowerCase()+' did not. Same plants, different timing.'});
+    });
     return {lines:lines,broodsComplete:withHost,broodsStalled:nectarOnly,
-      patches:s.observations.length,trials:s.restoration.trials.length,broods:s.lifecycle.broods.length};
+      patches:s.observations.length,trials:s.restoration.trials.length,broods:s.lifecycle.broods.length,
+      seasons:s.season.runs.length,timingPairs:pairs};
   }
   // A claim about what caterpillars need can only be tested by following a
   // generation. Comparing resources alone cannot settle it, and the tool says so.
   function judgeClaim(s,id){
     var c=claim(id);if(!c)return null;
-    var ev=evidenceFor(s),tested=ev.broods>0;
+    var ev=evidenceFor(s);
+    // A claim about TIMING needs a matched pair on one patch; a claim about
+    // resources needs a followed generation. Neither stands in for the other.
+    var tested=c.needs==='season'?ev.timingPairs.length>0:ev.broods>0;
+    var untestedWhy=c.needs==='season'
+      ?'Running one season shows what happened that time. To tell whether the timing of a cut is what changed the outcome, run the SAME patch twice under different mowing plans and compare.'
+      :'Comparing what grows on each patch shows which resources are there. To find out what a monarch caterpillar can actually do with them, follow a generation in the investigation above.';
     return {claim:c,evidence:ev,tested:tested,
       verdict:tested?c.verdict:'You have not tested this claim yet.',
-      why:tested?c.why:'Comparing what grows on each patch shows which resources are there. To find out what a monarch caterpillar can actually do with them, follow a generation in the investigation above.'};
+      why:tested?c.why:untestedWhy};
   }
 
   function clamp(n,a,b) { return Math.max(a,Math.min(b,n)); }
   function freshState(saved) {
     var seen=saved && Array.isArray(saved.observations)?saved.observations:[];
-    return {x:0,y:6,z:52,yaw:0,clock:0,energy:100,paused:true,landed:null,target:null,
+    var state={x:0,y:6,z:52,yaw:0,clock:0,energy:100,paused:true,landed:null,target:null,
       observations:PLANTS.filter(function(p){return seen.indexOf(p.id)!==-1;}).map(function(p){return p.id;}),restoration:cleanRestoration(saved&&saved.restoration),
-      lifecycle:cleanLifecycle(saved&&saved.lifecycle)};
+      lifecycle:cleanLifecycle(saved&&saved.lifecycle),season:cleanSeason(saved&&saved.season)};
+    clampStage(state);
+    return state;
+  }
+  // cleanLifecycle checks the stage id is real, but cannot check it is
+  // REACHABLE: which resources the restoration plot offers depends on the
+  // planting, which is only known once both parts of the state exist. A save
+  // naming a stage this patch cannot support (a chrysalis on mown lawn, from
+  // tampering or from a plot replanted in an older build) would otherwise put
+  // the track at a stage the same patch refuses to advance to.
+  function clampStage(state){
+    var lc=state.lifecycle,p=lc.stage?patch(lc.patch,state):null;
+    if(!lc.stage)return state;
+    if(!p){lc.stage=null;lc.prediction=null;return state;}
+    var index=STAGES.findIndex(function(st){return st.id===lc.stage;}),limit=reachedStage(p);
+    if(index>limit)lc.stage=STAGES[limit].id;
+    return state;
   }
   function nearest(s) {
     return habitats(s).map(function(p){return {plant:p,distance:Math.hypot(s.x-p.x,s.z-p.z)};})
@@ -247,7 +380,7 @@
     if(s.observations.indexOf(p.id)<0)s.observations.push(p.id);
     return {ok:true,message:p.note};
   }
-  function save(s) { return {version:3,observations:s.observations.slice(),restoration:cleanRestoration(s.restoration),lifecycle:cleanLifecycle(s.lifecycle)}; }
+  function save(s) { return {version:4,observations:s.observations.slice(),restoration:cleanRestoration(s.restoration),lifecycle:cleanLifecycle(s.lifecycle),season:cleanSeason(s.season)}; }
 
   // The lens targets the same stems used to build the scene, including mixed plots.
   function stemPose(p,pi,index,count,offset){
@@ -391,12 +524,14 @@
     @media(max-width:1000px){.bf-layout{grid-template-columns:1fr}.bf-aside{display:grid;grid-template-columns:1fr 1fr;gap:14px}.bf-panel+.bf-panel{margin-top:0}.bf-stage{height:480px}}
     @media(max-width:580px){.bfl{padding:12px;border-radius:12px}.bf-header{gap:8px}.bf-mark{display:none}.bf-aside,.bf-bottom{grid-template-columns:1fr}.bf-stage{height:390px}.bf-overlay{padding:10px}.bf-toolbar{gap:6px}.bf-toolbar button{flex:1;padding:9px}.bf-toolbar .bf-spacer{display:none}.bf-scene-badge{font-size:11px}.bf-bottom{gap:14px}.bf-life span{min-width:100px}}
     .bf-cycle{margin-top:18px!important;border-top:4px solid #5a6f8c}.bf-cycle-head{display:flex;gap:16px;justify-content:space-between;align-items:start}.bf-cycle-head p{max-width:780px}.bf-cycle-steps{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:16px 0}.bf-cycle fieldset{border:0;margin:0;padding:0;min-width:0}.bf-cycle legend,.bf-cycle label{display:block;font-weight:750;margin-bottom:8px}.bf-cycle-choices{display:grid;gap:8px}.bf-cycle-choices button{text-align:left}.bf-cycle-choices small{display:block;font-weight:400;margin-top:3px}.bf-cycle select{display:block;width:100%;min-height:46px;margin:8px 0 12px;padding:10px;border:1px solid var(--bf-line);border-radius:9px;background:var(--bf-panel);color:var(--bf-ink);font:inherit}.bf-cycle select:focus-visible{outline:3px solid #b45b0c;outline-offset:3px}.bf-cycle-actions{display:flex;flex-wrap:wrap;gap:8px}
+    .bf-season{margin-top:18px!important;border-top:4px solid #7a5c2e}.bf-season-head{display:flex;gap:16px;justify-content:space-between;align-items:start}.bf-season-head p{max-width:780px}.bf-season-steps{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:16px 0}.bf-season label{display:block;font-weight:750;margin-bottom:8px}.bf-season select{display:block;width:100%;min-height:46px;margin:8px 0 12px;padding:10px;border:1px solid var(--bf-line);border-radius:9px;background:var(--bf-panel);color:var(--bf-ink);font:inherit}.bf-season select:focus-visible{outline:3px solid #b45b0c;outline-offset:3px}.bf-season-actions{display:flex;flex-wrap:wrap;gap:8px}.bf-season-current{font-size:12px;font-weight:700;color:var(--bf-muted);border:1px solid var(--bf-line);border-radius:30px;padding:7px 12px;flex-shrink:0}
+    .bf-weeks{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0;list-style:none;padding:0}.bf-weeks li{border:1px solid var(--bf-line);border-radius:11px;padding:11px;background:var(--bf-panel)}.bf-weeks b{display:block;color:var(--bf-muted);font-size:10px;letter-spacing:.07em;text-transform:uppercase}.bf-weeks strong{display:block;margin-top:2px}.bf-weeks small{display:block;color:var(--bf-muted);font-size:12px;margin-top:5px}.bf-weeks li[data-state="cleared"]{border-left:4px solid var(--bf-accent);padding-left:8px}.bf-weeks li[data-state="cut"]{border-left:4px solid #b45b0c;padding-left:8px}.bf-weeks li[data-state="missing"]{border-left:4px solid #8a8f7a;padding-left:8px}.bf-season-feedback{min-height:50px;margin-top:12px;font-size:14px}.bf-seasons{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:15px;font-size:13px}.bf-seasons th,.bf-seasons td{border-bottom:1px solid var(--bf-line);text-align:left;padding:10px 8px;overflow-wrap:anywhere;vertical-align:top}.bf-seasons caption{text-align:left;font-weight:750;font-size:15px;padding-bottom:7px}.bf-seasons td span{display:block;color:var(--bf-muted);font-size:12px}
     .bf-track{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0;list-style:none;padding:0}.bf-track li{border:1px solid var(--bf-line);border-radius:11px;padding:11px;background:var(--bf-panel)}.bf-track b{display:block;color:var(--bf-muted);font-size:10px;letter-spacing:.07em;text-transform:uppercase}.bf-track strong{display:block;margin-top:2px}.bf-track small{display:block;color:var(--bf-muted);font-size:12px;margin-top:5px}.bf-track li[data-state="current"]{border-color:var(--bf-accent);border-width:2px;padding:10px}.bf-track li[data-state="reached"]{border-left:4px solid var(--bf-accent);padding-left:8px}.bf-track li[data-state="blocked"]{border-left:4px solid #b45b0c;padding-left:8px}.bf-track-tag{font-size:11px;font-weight:750;display:inline-block;margin-top:6px;border:1px solid var(--bf-line);border-radius:20px;padding:2px 8px}
     .bf-cycle-feedback{min-height:50px;margin-top:12px;font-size:14px}.bf-broods{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:15px;font-size:13px}.bf-broods th,.bf-broods td{border-bottom:1px solid var(--bf-line);text-align:left;padding:10px 8px;overflow-wrap:anywhere;vertical-align:top}.bf-broods caption{text-align:left;font-weight:750;font-size:15px;padding-bottom:7px}.bf-broods th:first-child{width:34%}.bf-broods td span{display:block;color:var(--bf-muted);font-size:12px}.bf-cycle-current{font-size:12px;font-weight:700;color:var(--bf-muted);border:1px solid var(--bf-line);border-radius:30px;padding:7px 12px;flex-shrink:0}
     .bf-verdict{margin-top:14px;border:1px solid var(--bf-line);border-left:4px solid var(--bf-accent);border-radius:12px;padding:14px;background:var(--bf-panel)}.bf-verdict[data-bf-tested="false"]{border-left-color:#b45b0c}.bf-verdict strong{display:block;font-size:15px}.bf-verdict p{font-size:13px;color:var(--bf-muted)}.bf-verdict .bf-eyebrow{margin-top:12px;display:block}.bf-evidence{margin:8px 0 0;padding-left:20px;font-size:13px}.bf-evidence li{margin-top:5px}.bf-evidence li[data-evidence="brood"]{font-weight:650}
     @media(forced-colors:active){.bf-verdict{border-left-color:CanvasText}.bf-verdict[data-bf-tested="false"]{border-left-color:CanvasText}.bf-verdict p{color:CanvasText}}
-    @media(max-width:860px){.bf-track{grid-template-columns:1fr 1fr}}
-    @media(max-width:580px){.bf-cycle-steps{grid-template-columns:1fr}.bf-cycle-head{display:block}.bf-cycle-current{display:inline-block;margin-top:10px}.bf-track{grid-template-columns:1fr}.bf-broods th,.bf-broods td{padding:9px 4px}}
+    @media(max-width:860px){.bf-track{grid-template-columns:1fr 1fr}.bf-weeks{grid-template-columns:1fr 1fr}}
+    @media(max-width:580px){.bf-cycle-steps{grid-template-columns:1fr}.bf-cycle-head{display:block}.bf-cycle-current{display:inline-block;margin-top:10px}.bf-track{grid-template-columns:1fr}.bf-broods th,.bf-broods td{padding:9px 4px}.bf-season-steps{grid-template-columns:1fr}.bf-season-head{display:block}.bf-season-current{display:inline-block;margin-top:10px}.bf-weeks{grid-template-columns:1fr}.bf-seasons th,.bf-seasons td{padding:9px 4px}}
     @media(forced-colors:active){.bf-track li[data-state="current"]{border-color:Highlight}.bf-track li[data-state="reached"],.bf-track li[data-state="blocked"]{border-left-color:CanvasText}.bf-track small,.bf-track b{color:CanvasText}}
     @media(prefers-reduced-motion:reduce){.bfl *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
     @media(forced-colors:active){.bfl{--bf-bg:Canvas;--bf-panel:Canvas;--bf-ink:CanvasText;--bf-muted:CanvasText;--bf-line:CanvasText;--bf-accent:LinkText}.bf-scene-badge,.bf-scene-bottom{background:Canvas;color:CanvasText;border-color:CanvasText}.bfl button[aria-pressed="true"],.bfl .bf-primary{background:Highlight;color:HighlightText;border-color:Highlight}.bf-scene-bottom small{color:CanvasText}}
@@ -421,10 +556,21 @@
     var sitePair=R.useState(s.lifecycle.patch||''),eggSite=sitePair[0],setEggSite=sitePair[1];
     var broodPair=R.useState(s.lifecycle.prediction||''),broodGuess=broodPair[0],setBroodGuess=broodPair[1];
     var cyclePair=R.useState(''),cycleFeedback=cyclePair[0],setCycleFeedback=cyclePair[1];
+    var seasonSitePair=R.useState(''),seasonSite=seasonSitePair[0],setSeasonSite=seasonSitePair[1];
+    var mowPair=R.useState(s.season.mowing),mowPlan=mowPair[0],setMowPlan=mowPair[1];
+    var seasonGuessPair=R.useState(s.season.prediction||''),seasonGuess=seasonGuessPair[0],setSeasonGuess=seasonGuessPair[1];
+    var seasonFeedbackPair=R.useState(''),seasonFeedback=seasonFeedbackPair[0],setSeasonFeedback=seasonFeedbackPair[1];
     function applyDesign(){var result=applyPlan(s,plan,guess);if(result.ok){closeLens();keys.current={};persist();setCycleFeedback('');}setDesignFeedback(result.message);announce(result.message);}
     function startBrood(){var result=layEggs(s,eggSite,broodGuess);if(result.ok)persist();setCycleFeedback(result.message);announce(result.message);}
     function nextStage(){var result=advanceStage(s);if(result.ok)persist();setCycleFeedback(result.message);announce(result.message);}
     function recordBrood(){var result=broodResult(s);if(result.ok){persist();setBroodGuess('');}setCycleFeedback(result.message);announce(result.message);}
+    function dropBrood(){var result=abandonBrood(s);if(result.ok){persist();setBroodGuess('');setEggSite('');}setCycleFeedback(result.message);announce(result.message);}
+    function startSeason(){
+      s.season.mowing=mowPlan;s.season.prediction=seasonGuess||null;
+      var result=runSeason(s,seasonSite,mowPlan,seasonGuess);
+      if(result.ok){persist();setSeasonGuess('');}
+      setSeasonFeedback(result.message);announce(result.message);
+    }
 
     function update(){refresh(function(n){return n+1;});if(api.current)api.current.draw();}
     function announce(text){setMessage(text);update();}
@@ -510,6 +656,8 @@
       return function(){alive=false;cancelAnimationFrame(raf);observer.disconnect();window.removeEventListener('blur',pauseForFocus);document.removeEventListener('visibilitychange',hidden);node.removeEventListener('keydown',keydown);window.removeEventListener('keyup',keyup);reduced.removeEventListener('change',draw);disposeWorld();api.current=null;keys.current={};s.paused=true;};
     },[retry]);
     var near=nearest(s),landed=patch(s.landed,s),remaining=s.observations.length,detail=fieldDetail(s,lens),recorded=evidenceRecorded(s,landed);
+    var seasonPatch=seasonSite?patch(seasonSite,s):null;
+    var seasonView=seasonPatch?seasonOutcome(seasonPatch,mowPlan):null;
     var cycleSite=patch(s.lifecycle.patch,s),cycleIndex=STAGES.findIndex(function(st){return st.id===s.lifecycle.stage;});
     var canAdvance=!!(cycleSite&&s.lifecycle.stage&&cycleIndex<reachedStage(cycleSite));
     var verdict=pickedClaim?judgeClaim(s,pickedClaim):null;
@@ -547,7 +695,7 @@
         h('p',{className:'bf-help'},'Each row keeps your latest examined plan. Resource availability is one part of habitat quality; this comparison does not estimate butterfly numbers or survival.')),
       h('section',{className:'bf-panel bf-cycle','aria-label':'Life cycle investigation','data-bf-cycle-patch':s.lifecycle.patch||'','data-bf-cycle-stage':s.lifecycle.stage||''},
         h('div',{className:'bf-cycle-head'},h('div',null,h('div',{className:'bf-eyebrow'},'Follow a generation · Predict → Lay → Observe'),h('h3',null,'What happens to the next generation here?'),h('p',{className:'bf-help'},'You fly the adult. Place eggs on a patch you have already examined, then follow the generation one stage at a time and see how far it gets.')),
-          h('span',{className:'bf-cycle-current'},cycleSite?'Generation at: '+cycleSite.name:'No generation started')),
+          h('span',{className:'bf-cycle-current'},!cycleSite?'No generation started':s.lifecycle.stage?'Generation at: '+cycleSite.name:'Last followed: '+cycleSite.name)),
         h('div',{className:'bf-cycle-steps'},
           h('div',null,h('label',{htmlFor:'bf-egg-site'},'1. Choose where to lay eggs'),
             h('select',{id:'bf-egg-site',value:eggSite,onChange:function(e){setEggSite(e.target.value);},disabled:!!s.lifecycle.stage},
@@ -561,11 +709,17 @@
             h('div',{className:'bf-cycle-actions'},
               button('Lay eggs here',startBrood,{className:'bf-primary',disabled:!eggSite||!broodGuess||!!s.lifecycle.stage}),
               button('Next stage',nextStage,{disabled:!s.lifecycle.stage||!canAdvance}),
-              button('Record result',recordBrood,{disabled:!s.lifecycle.stage||canAdvance})),
+              button('Record result',recordBrood,{disabled:!s.lifecycle.stage||canAdvance}),
+              button('Start over',dropBrood,{disabled:!s.lifecycle.stage})),
             h('p',{className:'bf-help'},s.lifecycle.stage?'Follow the generation to the end, then record what happened.':'Laying eggs does not change the plants. What the generation can do depends on what is already growing there.'))),
         h('ol',{className:'bf-track'},STAGES.map(function(st,i){
-          var reached=cycleSite&&i<=STAGES.findIndex(function(x){return x.id===s.lifecycle.stage;});
-          var state=!cycleSite||!s.lifecycle.stage?'idle':st.id===s.lifecycle.stage?'current':reached?stageStatus(cycleSite,i)==='thriving'?'reached':'blocked':'idle';
+          // While a generation runs the track follows its current stage. Once the
+          // result is recorded the stage clears, so the track shows the finished
+          // outcome instead of blanking just as the learner reads it.
+          var done=!s.lifecycle.stage&&cycleSite&&broodFor(s,cycleSite.id);
+          var edge=done?reachedStage(cycleSite):STAGES.findIndex(function(x){return x.id===s.lifecycle.stage;});
+          var reached=!!cycleSite&&i<=edge;
+          var state=!cycleSite||(!s.lifecycle.stage&&!done)?'idle':st.id===s.lifecycle.stage?'current':reached?stageStatus(cycleSite,i)==='thriving'?'reached':'blocked':'idle';
           return h('li',{key:st.id,'data-state':state,'data-stage':st.id},h('b',null,st.ordinal+' · '+st.name),
             h('small',null,cycleSite&&reached?(stageStatus(cycleSite,i)==='thriving'?st.thriving:st.failing):st.caption),
             state==='current'?h('span',{className:'bf-track-tag'},'Now'):null);
@@ -578,6 +732,44 @@
               h('td',null,b?outcome(b.prediction).label:'Not followed'),
               h('td',null,b?outcome(b.result).label:'Not followed',b?h('span',null,b.prediction===b.result?'Matched your prediction':'Differed from your prediction'):null));}))),
         h('p',{className:'bf-help'},'Stages are developmental steps, not a timed simulation. This activity shows whether a patch offers what each stage needs; it does not model how many eggs survive, weather, predators, or disease.')),
+      h('section',{className:'bf-panel bf-season','aria-label':'Mowing and timing investigation','data-bf-season-patch':seasonSite||'','data-bf-season-mowing':mowPlan},
+        h('div',{className:'bf-season-head'},h('div',null,h('div',{className:'bf-eyebrow'},'Time the mowing · Predict → Run → Compare'),h('h3',null,'Does it matter WHEN the patch is cut?'),
+          h('p',{className:'bf-help'},'A patch can hold the right plants and still lose the generation, if it is cut before a stage gets to use them. Run one patch under different mowing plans and compare.')),
+          h('span',{className:'bf-season-current'},'Plan: '+mowing(mowPlan).short)),
+        h('div',{className:'bf-season-steps'},
+          h('div',null,h('label',{htmlFor:'bf-season-site'},'1. Choose a patch you have examined'),
+            h('select',{id:'bf-season-site',value:seasonSite,onChange:function(e){setSeasonSite(e.target.value);setSeasonFeedback('');}},
+              h('option',{value:''},'Choose a patch'),
+              habitats(s).filter(function(p){return evidenceRecorded(s,p);}).map(function(p){return h('option',{key:p.id,value:p.id},p.name);})),
+            h('label',{htmlFor:'bf-season-mow'},'2. Choose when it gets mown'),
+            h('select',{id:'bf-season-mow',value:mowPlan,onChange:function(e){setMowPlan(e.target.value);setSeasonFeedback('');}},
+              MOWINGS.map(function(m){return h('option',{key:m.id,value:m.id},m.label);}))),
+          h('div',null,h('label',{htmlFor:'bf-season-guess'},'3. Predict what happens to the generation'),
+            h('select',{id:'bf-season-guess',value:seasonGuess,onChange:function(e){setSeasonGuess(e.target.value);}},
+              h('option',{value:''},'Choose your prediction'),
+              h('option',{value:'complete'},'It runs the whole cycle'),
+              h('option',{value:'stop'},'It stops before an adult')),
+            h('div',{className:'bf-season-actions'},
+              button('Run the season',startSeason,{className:'bf-primary',disabled:!seasonSite||!seasonGuess})),
+            h('p',{className:'bf-help'},seasonSite?'Running a season does not change the plants. It only asks whether the plot is still standing when each stage needs it.':'Examine a patch in the meadow first. You can only run a season where you know what is growing.'))),
+        seasonView?h('ol',{className:'bf-weeks','aria-label':'Stage by stage through the season'},seasonView.steps.map(function(x){
+          var state=x.cleared?'cleared':!x.standing?'cut':'missing';
+          return h('li',{key:x.id,'data-state':state,'data-stage':x.id},
+            h('b',null,'Week '+x.week),h('strong',null,x.name),
+            h('small',null,x.cleared?'What this stage needs is here and still standing.':!x.standing?'The plot was already cut by this week.':'Nothing here for this stage to use.'));
+        })):null,
+        h('p',{className:'bf-season-feedback',role:'status','aria-live':'polite'},seasonFeedback),
+        h('table',{className:'bf-seasons'},h('caption',null,'Seasons you have run · '+s.season.runs.length+' recorded'),
+          h('thead',null,h('tr',null,h('th',{scope:'col'},'Patch'),h('th',{scope:'col'},'Mowing'),h('th',{scope:'col'},'You predicted'),h('th',{scope:'col'},'What happened'))),
+          h('tbody',null,s.season.runs.length?s.season.runs.map(function(r){var rp=patch(r.patch,s);
+            return h('tr',{key:r.patch+'-'+r.mowing,'data-season-record':r.patch+'-'+r.mowing},
+              h('th',{scope:'row'},rp?rp.name:r.patch),h('td',null,mowing(r.mowing).short),
+              h('td',null,r.prediction==='complete'?'Whole cycle':'Stops early'),
+              h('td',null,r.result==='complete'?'Ran the whole cycle':'Stopped early',
+                h('span',null,r.prediction===r.result?'Matched your prediction':'Differed from your prediction')));})
+            :h('tr',null,h('td',{colSpan:4},'No seasons run yet.')))),
+        timingPairs(s).length?h('p',{className:'bf-help','data-bf-timing-pair':'1'},'You have run the same patch under two mowing plans and got two different results. That comparison is what shows timing mattered, not the plants alone.'):null,
+        h('p',{className:'bf-help'},'Weeks order the stages for one generation; they are not a measured calendar, and real mowing dates vary by region and species. This activity models whether plants are present and still standing — not how many monarchs survive.')),
       h('div',{className:'bf-bottom'},h('section',{className:'bf-panel'},h('div',{className:'bf-eyebrow'},'One species · changing needs'),h('h3',null,'A life beyond the wings'),h('div',{className:'bf-life'},STAGES.map(function(st){return h('span',{key:st.id},h('b',null,st.ordinal+' · '+st.name),st.id==='egg'?'On milkweed':st.id==='caterpillar'?'Milkweed leaves':st.id==='chrysalis'?'Metamorphosis':'Flower nectar');})),h('p',{className:'bf-help'},'You play the adult stage. Follow a generation in the investigation above to see which patches can support the other three.')),
         h('section',{className:'bf-panel bf-question','aria-label':'Habitat evidence question','data-bf-claim':pickedClaim||''},h('div',{className:'bf-eyebrow'},'Make sense of your evidence'),h('h3',null,'Which claim does your evidence support?'),
           h('p',{className:'bf-help'},'Choose a claim. The lab does not tell you which is right on its own authority — it shows you which of your own records bear on it.'),
@@ -588,7 +780,7 @@
               h('ul',{className:'bf-evidence'},verdict.evidence.lines.map(function(line,i){return h('li',{key:i,'data-evidence':line.kind},line.text);}))
             ):h('p',{className:'bf-help'},'You have not recorded anything yet. Examine a patch to begin.')):null,
           h('div',{role:'status','aria-live':'polite'},answer||(verdict?verdict.verdict+' '+verdict.why:'')))),
-      h('details',{className:'bf-sources'},h('summary',null,'Science notes & sources'),h('p',null,'Species: monarch (Danaus plexippus). This summer scene represents a Mid-Atlantic habitat investigation. Plants and wing patterns are illustrative and enlarged. Guided routes, flight speed, distances, and energy are teaching choices, not field measurements. Other butterfly species can have different host plants.'),h('ul',null,
+      h('details',{className:'bf-sources'},h('summary',null,'Science notes & sources'),h('p',null,'Species: monarch (Danaus plexippus). This summer scene represents a Mid-Atlantic habitat investigation. Plants and wing patterns are illustrative and enlarged. Guided routes, flight speed, distances, and energy are teaching choices, not field measurements. The generation you follow is a teaching model of one outcome, not a population simulation: it turns on whether milkweed is present, and it deliberately leaves out weather, predators, parasites, disease, how many eggs are laid, and how many survive — all of which matter in a real meadow, where most eggs do not reach adulthood even on good milkweed. Real development also takes weeks and depends on temperature; the stages here advance when you choose, in a fixed order. Other butterfly species can have different host plants.'),h('ul',null,
         h('li',null,h('a',{href:'https://www.xerces.org/publications/plant-lists/monarch-nectar-plants-mid-atlantic',target:'_blank',rel:'noopener noreferrer'},'Xerces Society · Regional nectar plants and milkweed hosts')),
         h('li',null,h('a',{href:'https://monarchjointventure.org/monarch-biology/life-cycle',target:'_blank',rel:'noopener noreferrer'},'Monarch Joint Venture · Life cycle')),
         h('li',null,h('a',{href:'https://www.nrcs.usda.gov/programs-initiatives/monarch-butterflies',target:'_blank',rel:'noopener noreferrer'},'USDA NRCS · Monarch habitat and feeding needs')),
@@ -598,8 +790,8 @@
     );
   }
   window.StemLab.registerTool('butterfly',{label:'Butterfly Habitat Lab',icon:'🦋',desc:'Explore a summer meadow as a monarch, compare nectar and host plants, and build a field journal.',category:'science',color:'orange',gradeRange:'4-12',aliases:['monarch','butterflies','milkweed','pollinator','habitat'],render:function(ctx){return ctx.React.createElement(ButterflyLab,{ctx:ctx});}});
-  if(window.__RR_TEST_EXPORTS__)window.__RR_TEST_EXPORTS__.butterfly={plants:PLANTS,freshState:freshState,nearest:nearest,step:step,advanceFrame:advanceFrame,land:land,observe:observe,save:save,buildWorld:buildWorld,designs:DESIGNS,habitats:habitats,applyPlan:applyPlan,cleanRestoration:cleanRestoration,fieldDetail:fieldDetail,evidenceRecorded:evidenceRecorded,
+  if(window.__RR_TEST_EXPORTS__)window.__RR_TEST_EXPORTS__.butterfly={plants:PLANTS,freshState:freshState,nearest:nearest,step:step,advanceFrame:advanceFrame,land:land,observe:observe,save:save,buildWorld:buildWorld,designs:DESIGNS,habitats:habitats,applyPlan:applyPlan,cleanRestoration:cleanRestoration,fieldDetail:fieldDetail,evidenceRecorded:evidenceRecorded,mowings:MOWINGS,stageWeek:STAGE_WEEK,seasonOutcome:seasonOutcome,cleanSeason:cleanSeason,runSeason:runSeason,seasonRunFor:seasonRunFor,timingPairs:timingPairs,mowing:mowing,
     stages:STAGES,outcomes:OUTCOMES,layEggs:layEggs,advanceStage:advanceStage,broodResult:broodResult,broodFor:broodFor,
-    cleanLifecycle:cleanLifecycle,reachedStage:reachedStage,stageStatus:stageStatus,expectedOutcome:expectedOutcome,
+    cleanLifecycle:cleanLifecycle,clampStage:clampStage,abandonBrood:abandonBrood,reachedStage:reachedStage,stageStatus:stageStatus,expectedOutcome:expectedOutcome,
     claims:CLAIMS,judgeClaim:judgeClaim,evidenceFor:evidenceFor};
 })();

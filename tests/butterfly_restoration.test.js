@@ -38,7 +38,7 @@ describe('Butterfly restoration investigation',()=>{
  it('round-trips pending predictions and historical results without aliasing saves',()=>{
    const s=BF.freshState({version:1,observations:['milkweed']});expect(s.restoration).toEqual({design:'lawn',prediction:null,trials:[]});
    BF.applyPlan(s,'lawn','nectar');visit(s);BF.applyPlan(s,'mixed','both');const saved=BF.save(s),restored=BF.freshState(saved);
-   expect(saved.version).toBe(3);expect(restored.restoration).toEqual(s.restoration);expect(restored.paused).toBe(true);expect(restored.landed).toBeNull();
+   expect(saved.version).toBe(4);expect(restored.restoration).toEqual(s.restoration);expect(restored.paused).toBe(true);expect(restored.landed).toBeNull();
    saved.restoration.trials[0].prediction='both';expect(s.restoration.trials[0].prediction).toBe('nectar');expect(restored.restoration.trials[0].prediction).toBe('nectar');
  });
  it('rejects unknown saved designs, predictions and record fields, and bounds history',()=>{
