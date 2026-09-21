@@ -68,6 +68,22 @@ window.StemLab = window.StemLab || {
       [data-galaxy-workspace][data-galaxy-focus=true] { grid-template-columns: minmax(0, 1fr) !important; gap: 0 !important; padding: 0 !important; overflow: hidden !important; }
       [data-galaxy-workspace][data-galaxy-focus=true] > :not([data-galaxy-stage]) { display: none !important; }
       [data-galaxy-workspace][data-galaxy-focus=true] > [data-galaxy-stage] { height: 100% !important; top: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+      /* Fullscreen used to leave this grid at minmax(0,1fr) 360px, so the browser
+         handed the workspace the whole screen and the workspace promptly spent 360px
+         of it on the settings column plus the gap and padding — the scene rendered
+         into ~69% of the width, inset from the corner, which read as "fullscreen shows
+         no visuals". The stage also kept xl:sticky xl:top-4 and its clamped height,
+         so it floated rather than filling. Focus view already solves exactly this; the
+         fullscreen state now reuses that collapse instead of having its own rules.
+         Keyed on the sidebar being COLLAPSED (see below) so a learner who wants the
+         controls in fullscreen still gets them. */
+      [data-galaxy-workspace][data-galaxy-fullscreen=true][data-galaxy-sidebar=hidden] { grid-template-columns: minmax(0, 1fr) !important; gap: 0 !important; padding: 0 !important; overflow: hidden !important; }
+      [data-galaxy-workspace][data-galaxy-fullscreen=true][data-galaxy-sidebar=hidden] > :not([data-galaxy-stage]) { display: none !important; }
+      [data-galaxy-workspace][data-galaxy-fullscreen=true] > [data-galaxy-stage] { height: 100% !important; top: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+      /* With the sidebar kept, the stage must still fill the height it is given: the
+         clamped 58vw cap is what left a 774px-tall stage in an 800px viewport. */
+      [data-galaxy-workspace][data-galaxy-fullscreen=true] { height: 100% !important; align-items: stretch !important; }
+      [data-galaxy-workspace][data-galaxy-fullscreen=true] > [data-galaxy-controls] { overflow-y: auto !important; max-height: 100% !important; }
       [data-galaxy-workspace][data-galaxy-focus=true] > [data-galaxy-stage] > :not(canvas):not([data-galaxy-focus-exit]):not(.sr-only) { display: none !important; }
       [data-galaxy-workspace][data-galaxy-focus=true] [data-galaxy-focus-exit] { display: flex; position: absolute; top: 16px; right: 16px; z-index: 30; align-items: center; min-height: 44px; padding: 10px 16px; border: 1px solid #ffffff40; border-radius: 999px; color: #f1f5f9; background: #020617bd; font: 600 12px/1.3 system-ui, sans-serif; cursor: pointer; opacity: 1; transition: opacity .18s; }
       [data-galaxy-workspace][data-galaxy-focus-idle=true] [data-galaxy-focus-exit] { opacity: 0; }
@@ -6818,6 +6834,48 @@ if (!window._galaxyHasLoadedOnce) {
               return document.fullscreenElement || document.webkitFullscreenElement || null;
             }
 
+            // The workspace grid is the element that actually goes fullscreen. Marking
+            // it is what lets the stylesheet collapse the 360px settings column and
+            // unpin the stage's clamped height — without this the scene renders into a
+            // fraction of the screen, inset from the corner. Native fullscreen and the
+            // CSS fallback both route through here so they cannot drift apart.
+            // The sidebar preference is honoured in both, so "fullscreen" does not have
+            // to mean "lose the controls".
+            var galaxyFsSidebarHidden = true;
+            function galaxyFsMark(active) {
+              var workspace = galaxyFocusFrame;
+              if (!workspace) return;
+              if (active) {
+                workspace.setAttribute('data-galaxy-fullscreen', 'true');
+                workspace.setAttribute('data-galaxy-sidebar', galaxyFsSidebarHidden ? 'hidden' : 'shown');
+              } else {
+                workspace.removeAttribute('data-galaxy-fullscreen');
+                workspace.removeAttribute('data-galaxy-sidebar');
+              }
+              // The stage's CSS box changed, so the drawing buffer has to follow. The
+              // ResizeObserver does this, but only after a layout pass; nudging it here
+              // avoids a frame of stretched or letterboxed scene on the way in.
+              requestAnimationFrame(function () { if (canvasEl.isConnected) galaxyFsSyncRenderer(); });
+            }
+            function galaxyFsSyncRenderer() {
+              if (!renderer || !canvasEl.isConnected) return;
+              var w = canvasEl.offsetWidth, h = canvasEl.offsetHeight;
+              if (w < 1 || h < 1) return;
+              W = w; H = h;
+              camera.aspect = W / H; camera.updateProjectionMatrix();
+              renderer.setSize(W, H, false);
+              if (composer && composer.setSize) composer.setSize(W, H);
+              canvasEl.setAttribute('data-render-resolution', Math.round(W * renderer.getPixelRatio()) + 'x' + Math.round(H * renderer.getPixelRatio()));
+            }
+            // Let the learner keep the controls in fullscreen, and remember the choice.
+            canvasEl._galaxySetFullscreenSidebar = function (hidden) {
+              galaxyFsSidebarHidden = hidden !== false;
+              if (galaxyCssFullscreen || galaxyFsElement()) galaxyFsMark(true);
+              return galaxyFsSidebarHidden;
+            };
+            canvasEl._galaxyFullscreenSidebarHidden = function () { return galaxyFsSidebarHidden; };
+            canvasEl._galaxyIsFullscreen = function () { return !!(galaxyCssFullscreen || galaxyFsElement()); };
+
             function galaxyFsEnterStyles(immersive) {
               var canvasFrame = canvasEl.parentElement;
               var frame = canvasFrame && canvasFrame.parentElement ? canvasFrame.parentElement : canvasFrame;
@@ -6837,9 +6895,16 @@ if (!window._galaxyHasLoadedOnce) {
               // as the floor and mobile URL bars stop clipping the scene where dvh works.
               frame.style.height = '100dvh';
               frame.style.overflow = 'auto';
-              frame.style.padding = '12px';
+              // No padding: the workspace grid IS the fullscreen box, and a 12px frame
+              // plus the stage's own 24px deduction is what left the scene inset in the
+              // corner instead of filling the screen. The stage draws its own edge.
+              frame.style.padding = '0';
               frame.style.background = '#020617';
-              if (canvasFrame) canvasFrame.style.height = 'calc(100vh - 24px)';
+              // Leave the stage's inline clamp ALONE. The stylesheet overrides it with
+              // height:100% !important while the fullscreen attribute is set, and
+              // keeping the inline value means the restore path has something to put
+              // back — clearing it here collapsed the workspace to 0px for the frame
+              // between exiting fullscreen and the restore, a visible flash.
               if (immersive) {
                 // Inline styles rather than new Tailwind classes: an arbitrary utility
                 // used nowhere else is not in the compiled bundle and would do nothing.
@@ -6876,10 +6941,14 @@ if (!window._galaxyHasLoadedOnce) {
             }
 
             function galaxyFsOnChange() {
-              if (galaxyFsElement()) return;
+              // Entering fires this too. Mark the workspace so the grid collapses for
+              // NATIVE fullscreen, not only for the CSS fallback — the native path was
+              // the one Aaron saw, and it was the only one with no collapse at all.
+              if (galaxyFsElement()) { galaxyFsMark(true); return; }
               if (galaxyFocusActive) canvasEl._galaxySetFocusView(false);
               document.removeEventListener('fullscreenchange', galaxyFsOnChange);
               document.removeEventListener('webkitfullscreenchange', galaxyFsOnChange);
+              galaxyFsMark(false);
               galaxyFsRestoreStyles();
               setCanvasStatus(__alloT('stem.galaxy.status_fullscreen_closed', 'Fullscreen closed'));
             }
@@ -6935,7 +7004,9 @@ if (!window._galaxyHasLoadedOnce) {
               var vh = window.innerHeight || rect.height;
               if (Math.abs(rect.width - vw) > 1) frame.style.width = vw + 'px';
               frame.style.height = vh + 'px';
-              if (galaxyFsSaved.canvasFrame) galaxyFsSaved.canvasFrame.style.height = Math.max(200, vh - 24) + 'px';
+              // The stage fills the grid row via CSS now that the frame has no padding;
+              // re-imposing a pixel height here would reintroduce the inset scene.
+              if (galaxyFsSaved.canvasFrame) galaxyFsSaved.canvasFrame.style.height = '';
             }
 
             function galaxyFsEnterCss() {
@@ -6944,6 +7015,7 @@ if (!window._galaxyHasLoadedOnce) {
               if (!galaxyFsSaved) return;
               galaxyCssFullscreen = true;
               canvasEl.setAttribute('data-galaxy-immersive', 'true');
+              galaxyFsMark(true);
               document.addEventListener('keydown', galaxyFsOnKey, true);
               window.addEventListener('resize', galaxyFsFitViewport);
               galaxyFsFitViewport();
@@ -6959,6 +7031,7 @@ if (!window._galaxyHasLoadedOnce) {
               window.removeEventListener('resize', galaxyFsFitViewport);
               galaxyFsHideExitPill();
               canvasEl.removeAttribute('data-galaxy-immersive');
+              galaxyFsMark(false);
               galaxyFsRestoreStyles();
               setCanvasStatus(__alloT('stem.galaxy.status_immersive_off', 'Immersive view off'));
               if (canvasEl.isConnected && canvasEl.focus) canvasEl.focus();
@@ -7004,6 +7077,9 @@ if (!window._galaxyHasLoadedOnce) {
               canvasEl._galaxyFullscreenRestore = null;
               galaxyCssFullscreen = false;
               galaxyFsHideExitPill();
+              // Leaving the tool while fullscreen was open would otherwise strand the
+              // collapsed grid and the hidden settings column on the way back in.
+              galaxyFsMark(false);
               galaxyFsRestoreStyles();
             };
 
