@@ -15,16 +15,19 @@
  * This is the "prose number vs its own table" failure: the data was right and
  * the sentence about the data was wrong, and every test checked the data.
  *
- * WHAT IT CHECKS. For each `explain:` string that spells out a thin-lens
- * computation, it re-derives d_i (and m, where stated) from the f and d_o the
- * prose itself names, using the SHIPPED solver extracted from the tool — not a
- * reimplementation, which would only prove two copies of the same mistake
- * agree.
+ * WHAT IT CHECKS. Two bodies of worked physics, both re-derived with the
+ * SHIPPED solver extracted from the tool — not a reimplementation, which
+ * would only prove two copies of the same mistake agree.
+ *   1. Quiz explanations: d_i and m, from the f and d_o the prose names.
+ *   2. Sleuth cases: the same numbers AND the image CLASS the case is graded
+ *      against. A wrong class is worse than a wrong number, because the
+ *      student is marked wrong for being right.
  *
- * WHAT IT DOES NOT CHECK. Only claims written in the "(f·d_o)/(d_o−f)" shape
- * are re-derived; prose that states a result without showing the substitution
- * is out of scope, and the count below is printed so a silent drop to zero is
- * visible rather than reading as success.
+ * WHAT IT DOES NOT CHECK. Among quiz explanations, only claims written in the
+ * "(f·d_o)/(d_o−f)" shape are re-derived; prose that states a result without
+ * showing the substitution is out of scope. The counts are printed on success
+ * so a silent drop to zero is visible rather than reading as a pass — the
+ * first draft of this gate matched 1 of 6 claims and looked just as green.
  *
  * DETECTION ONLY — writes nothing.
  *
@@ -47,16 +50,23 @@ if (!fs.existsSync(TOOL)) {
 let src = fs.readFileSync(TOOL, 'utf8');
 
 if (SELFTEST) {
-  // Plant a wrong result in the one item whose arithmetic is fully spelled
-  // out. A gate that cannot fail is worse than no gate.
-  const canaryFrom = 'd_i = (12·20)/(20−12) = 30 cm';
-  const canaryTo = 'd_i = (12·20)/(20−12) = 35 cm';
-  if (src.indexOf(canaryFrom) === -1) {
-    console.error('✗ --selftest: the canary line is no longer in the quiz bank, so this run proves nothing.');
-    console.error('  Point the canary at another fully worked explain line.');
-    process.exit(2);
+  // One canary per body of content. A gate that cannot fail is worse than no
+  // gate, and a gate whose SECOND arm cannot fail is a gate that quietly
+  // covers half of what its name claims.
+  const canaries = [
+    ['quiz d_i', 'd_i = (12·20)/(20−12) = 30 cm', 'd_i = (12·20)/(20−12) = 35 cm'],
+    ['sleuth image class',
+      "setup: 'Diverging lens, f = -8 cm. Object placed at 12 cm from the lens.', correct: 'virtUprRed'",
+      "setup: 'Diverging lens, f = -8 cm. Object placed at 12 cm from the lens.', correct: 'realInvMag'"],
+  ];
+  for (const [what, from, to] of canaries) {
+    if (src.indexOf(from) === -1) {
+      console.error('✗ --selftest: the ' + what + ' canary line is gone, so this run proves nothing.');
+      console.error('  Point that canary at another fully worked line.');
+      process.exit(2);
+    }
+    src = src.replace(from, to);
   }
-  src = src.replace(canaryFrom, canaryTo);
 }
 
 // Use the SHIPPED solver, so the gate cannot pass by agreeing with its own
@@ -129,14 +139,86 @@ for (const ex of explains) {
   }
 }
 
-const checked = checkedDi + checkedM;
-if (JSON_OUT) console.log(JSON.stringify({ explains: explains.length, checkedDi, checkedM, findings }, null, 2));
+// ── Sleuth cases ────────────────────────────────────────────────────────
+// The Sleuth tab is a second body of worked physics, and a richer one: each
+// case names f and d_o in its setup, states d_i and the magnification in its
+// `why`, AND commits to an image CLASS that the student is graded against.
+// A wrong class is worse than a wrong number — the student is marked wrong
+// for being right. All three are re-derived from the shipped solver.
+let checkedSleuth = 0;
+const CLASS_OF = (r) => (r.isReal ? 'real' : 'virt') + (r.isUpright ? 'Upr' : 'Inv') + (Math.abs(r.m) > 1 ? 'Mag' : 'Red');
+const sleuthRe = /\{ id: (\d+), setup: '((?:\\.|[^'\\])*)', correct: '(\w+)',\s*\n\s*why: '((?:\\.|[^'\\])*)'/g;
+let sc;
+while ((sc = sleuthRe.exec(src)) !== null) {
+  const id = +sc[1];
+  const setup = sc[2];
+  const correct = sc[3];
+  const why = sc[4];
+  const fM = setup.match(/f\s*=\s*([\u2212\u2013-]?[\d.]+)\s*cm/);
+  if (!fM) continue;
+  // "placed at 30 cm", "placed 6 cm", "exactly at 40 cm", and the hallway
+  // case's "You stand 100 cm away" — a distance is a distance however phrased.
+  const doM = setup.match(/(?:at|placed|stand)\s+(?:exactly\s+)?(?:at\s+)?([\d.]+)\s*cm/)
+    || setup.match(/([\d.]+)\s*cm\s*away/);
+  const infinite = /infinit|very far|distant star/i.test(setup);
+  if (!doM && !infinite) continue;
+  const f = num(fM[1]);
+  const dO = infinite ? 1e7 : num(doM[1]);
+  const r = solve(dO, f);
+  if (!r || r.error) { findings.push({ quantity: 'sleuth#' + id, f: f, d_o: dO, stated: correct, solver: 'solver error', explain: setup.slice(0, 160) }); continue; }
+
+  checkedSleuth++;
+  const cls = CLASS_OF(r);
+  if (cls.toLowerCase() !== correct.toLowerCase()) {
+    findings.push({ quantity: 'sleuth#' + id + ' image class', f: f, d_o: dO, stated: correct, solver: cls + ' (m=' + r.m.toFixed(3) + ')', explain: setup.slice(0, 160) });
+  }
+  const diM = why.match(/d_i\s*=\s*([\u2212\u2013-]?[\d.]+)\s*cm/);
+  if (diM && !infinite) {
+    const stated = num(diM[1]);
+    checkedSleuth++;
+    // The bank rounds a few of these to whole cm (-33 for -33.33), so allow
+    // slightly more slack here than in the fully worked quiz lines.
+    if (Math.abs(r.d_i - stated) > 0.6) {
+      findings.push({ quantity: 'sleuth#' + id + ' d_i', f: f, d_o: dO, stated: stated, solver: +r.d_i.toFixed(3), explain: why.slice(0, 160) });
+    }
+  }
+  // Take the LAST "= <number>" in the magnification sentence, not the first:
+  // "Magnification = -d_i/d_o = -15/30 = -0.5" states the substitution before
+  // the result, and grabbing -15 out of the fraction reports a false finding.
+  // The sentence runs to the end of the number, not to the first "." \u2014 a
+  // decimal result like "-0.5" contains one. Take the LAST "= <number>",
+  // because "Magnification = -d_i/d_o = -15/30 = -0.5" states the
+  // substitution before the result, and the operands are not the claim.
+  // The number must not be followed by "/", which is what distinguishes the
+  // result from a numerator.
+  const mgSentence = why.match(/[Mm]agnification\s*=[^;]*/);
+  let mgM = null;
+  if (mgSentence) {
+    const eqs = [...mgSentence[0].matchAll(/=\s*([+\u2212\u2013-]?\d+(?:\.\d+)?)(?!\s*[\/\d])/g)];
+    if (eqs.length) mgM = [null, eqs[eqs.length - 1][1]];
+  }
+  if (mgM) {
+    const stated = num(mgM[1]);
+    checkedSleuth++;
+    if (Math.abs(r.m - stated) > 0.03) {
+      findings.push({ quantity: 'sleuth#' + id + ' magnification', f: f, d_o: dO, stated: stated, solver: +r.m.toFixed(3), explain: why.slice(0, 160) });
+    }
+  }
+}
+
+const checked = checkedDi + checkedM + checkedSleuth;
+if (JSON_OUT) console.log(JSON.stringify({ explains: explains.length, checkedDi, checkedM, checkedSleuth, findings }, null, 2));
 
 if (SELFTEST) {
-  const caught = findings.some((f) => f.quantity === 'd_i' && f.stated === 35);
-  console.log('SELFTEST: planted a wrong d_i (30 -> 35).');
-  console.log('SELFTEST: canary ' + (caught ? 'CAUGHT ✓' : 'MISSED ✗ — the gate is blind'));
-  process.exit(caught ? 0 : 1);
+  // Two canaries, one per body of content: a quiz number and a Sleuth image
+  // class. Either arm going blind must fail the run, so both are required.
+  const quizCaught = findings.some((f) => f.quantity === 'd_i' && f.stated === 35);
+  const sleuthCaught = findings.some((f) => /^sleuth#4 image class$/.test(f.quantity));
+  console.log('SELFTEST: planted a wrong quiz d_i (30 -> 35) and a wrong Sleuth class (virtUprRed -> realInvMag).');
+  console.log('SELFTEST: quiz canary   ' + (quizCaught ? 'CAUGHT ✓' : 'MISSED ✗'));
+  console.log('SELFTEST: sleuth canary ' + (sleuthCaught ? 'CAUGHT ✓' : 'MISSED ✗'));
+  if (!quizCaught || !sleuthCaught) { console.log('  — the gate is blind on that arm.'); process.exit(1); }
+  process.exit(0);
 }
 
 // Checking nothing is not the same as finding nothing.
@@ -148,7 +230,8 @@ if (checked === 0) {
 
 if (findings.length === 0) {
   console.log('✓ check_optics_worked_arithmetic: ' + checked + ' worked number(s) across ' +
-    explains.length + ' explanations agree with the shipped solver (' + checkedDi + ' d_i, ' + checkedM + ' m).');
+    explains.length + ' explanations and the Sleuth bank agree with the shipped solver (' +
+    checkedDi + ' quiz d_i, ' + checkedM + ' quiz m, ' + checkedSleuth + ' sleuth class/d_i/m).');
   process.exit(0);
 }
 
