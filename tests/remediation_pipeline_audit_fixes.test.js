@@ -1342,7 +1342,13 @@ describe('M17 — one recovery file per document, not per attempt', () => {
 
   it('the latch releases on success and on a new document', () => {
     // Otherwise a LATER genuine failure on the same document would bank nothing.
-    expect((anti.match(/window\.__alloLastIncompleteSaveKey = null;/g) || []).length).toBe(2);
+    // The two releases no longer live in one file: the ANTI extraction moved the
+    // new-document reset into host_handlers while the on-success release stayed in
+    // ANTI. Count across both, so the pin follows the code instead of the file.
+    const hostHandlers = readFileSync(resolve(process.cwd(), 'host_handlers_source.jsx'), 'utf8');
+    const releases = /window\.__alloLastIncompleteSaveKey = null;/g;
+    expect((anti.match(releases) || []).length).toBe(1);           // on success
+    expect((hostHandlers.match(releases) || []).length).toBe(1);   // on a new document
   });
 });
 
@@ -1366,7 +1372,12 @@ describe('L10/L11 — batch continuation and hands-off retry accounting', () => 
   it('L10: otherwise the file is marked failed and the batch continues', () => {
     const block = dp.slice(dp.indexOf("err.code === 'ALLO_BATCH_REMEDIATION_DRAIN_TIMEOUT'"));
     const arm = block.slice(0, block.indexOf('// Quota circuit-breaker'));
-    expect(arm).toContain('continue;');
+    // The arm moved into the _handleBatchFileFailure helper, which signals the caller by
+    // RETURN VALUE rather than a bare `continue;`. Same contract — the file is marked
+    // failed and the batch proceeds — so assert the signal the helper actually emits, and
+    // that the genuine-lock case is still the only one that stops.
+    expect(arm).toContain("return 'continue-immediately';");
+    expect(arm).toContain("return 'stop';");
     expect(arm).toContain('the batch continued');
   });
 
