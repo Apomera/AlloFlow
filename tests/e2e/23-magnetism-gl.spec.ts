@@ -128,6 +128,79 @@ test.describe('magnetism — 3D visual pass', () => {
     expect(p.lost, 'context lost at mount').toBe(false);
   });
 
+  test('commutator lights the half that is carrying current, and swaps at 180', async ({ page }) => {
+    // The commutator flip is the mechanism this tab teaches. Both halves used
+    // to look identical, so the flip was readable only in the prose. Now the
+    // energised half glows. Assert the glow EXISTS, that exactly one half is
+    // lit at a time, and that it SWAPS across the 180 landmark.
+    //
+    // Read it off the live material rather than the source: the glow is applied
+    // in updatePose (which runs on every angle change), not at build time, so a
+    // source grep would not prove it ever actually runs.
+    const readHalves = async () => page.evaluate(() => {
+      const w = window as any;
+      const out: number[] = [];
+      (w.__commutatorProbe || []).forEach((m: any) => out.push(m.emissiveIntensity));
+      return out;
+    });
+
+    // Capture the half-ring materials as they are created.
+    await page.goto(`${harness.url}/__harness`);
+    await page.waitForFunction(
+      () => !!(window as any).StemLab?._registry?.magnetism, null, { timeout: 30000 });
+    await page.evaluate(() => {
+      const T = (window as any).THREE, w = window as any;
+      w.__commutatorProbe = [];
+      const Torus = T.TorusGeometry;
+      const Std = T.MeshStandardMaterial;
+      // The commutator halves are the only half-tori (thetaLength === PI).
+      let pendingHalf = false;
+      // TorusGeometry is (radius, tube, radialSegments, tubularSegments, arc)
+      // — the arc is args[4]. It is args[5] on TorusKnotGeometry, and reading
+      // the wrong index here silently captures NOTHING and the test fails
+      // claiming the feature is missing.
+      T.TorusGeometry = function (...a: any[]) {
+        pendingHalf = Math.abs((a[4] ?? Math.PI * 2) - Math.PI) < 1e-6 && Math.abs(a[0] - 0.40) < 1e-6;
+        return new Torus(...a);
+      };
+      T.TorusGeometry.prototype = Torus.prototype;
+      T.MeshStandardMaterial = function (params: any) {
+        const m = new Std(params);
+        if (pendingHalf) { w.__commutatorProbe.push(m); pendingHalf = false; }
+        return m;
+      };
+      T.MeshStandardMaterial.prototype = Std.prototype;
+    });
+
+    const mountAt = async (angle: number) => {
+      await page.evaluate((deg) => (window as any).__mount({
+        // motorMode 'forces' is the default, but state it explicitly: the 3D
+        // torque lab is gated on tab+motorMode+motorView, and a test that
+        // leans on a default silently stops testing if the default moves.
+        magnetism: { tab: 'motor', motorMode: 'forces', motorView: '3d', motorAngle: deg, motorCurrent: 4, motorField: 6 },
+      }), angle);
+      await page.waitForSelector('#wrap canvas', { timeout: 30000 });
+      await page.waitForTimeout(900);
+    };
+
+    await mountAt(90);
+    const at90 = await readHalves();
+    expect(at90.length, 'commutator half-ring materials not found').toBe(2);
+    const lit90 = at90.filter((v) => v > 0).length;
+    expect(lit90, 'exactly one commutator half should be lit at 90deg').toBe(1);
+
+    await page.evaluate(() => { (window as any).__destroy(); });
+    await mountAt(270);
+    const at270 = await readHalves();
+    const lit270 = at270.slice(-2).filter((v) => v > 0).length;
+    expect(lit270, 'exactly one commutator half should be lit at 270deg').toBe(1);
+
+    // Across the 180 landmark the LIT INDEX must change.
+    const idx90 = at90.findIndex((v) => v > 0);
+    const idx270 = at270.slice(-2).findIndex((v) => v > 0);
+    expect(idx270, 'the glow did not swap halves across the 180 commutator flip').not.toBe(idx90);
+  });
+
   test('releases its GL context on unmount', async ({ page }) => {
     await harness.mount(page, FIELD_3D);
     await page.evaluate(() => (window as any).__magProbe());

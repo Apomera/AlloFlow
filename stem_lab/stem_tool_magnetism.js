@@ -3108,8 +3108,8 @@
       hiddenMetricCount: Math.max(0, liveMetrics.length - metrics.length),
       trialCount: trials.length, comparableCount: comparableCount, changedCount: changedCount,
       status: status, statusLabel: statusLabel, hint: hint,
-      predictionReady: !!(source.notebookPrediction || '').trim(),
-      canRecord: source.learningMode !== 'challenge' || !!(source.notebookPrediction || '').trim()
+      predictionReady: !!(typeof source.notebookPrediction === 'string' ? source.notebookPrediction : '').trim(),
+      canRecord: source.learningMode !== 'challenge' || !!(typeof source.notebookPrediction === 'string' ? source.notebookPrediction : '').trim()
     };
   }
 
@@ -3176,7 +3176,7 @@
     var passport = stationPassportState(payload, activeTab || source.tab || 'field');
     var station = passport.activeStation;
     var trials = Array.isArray(source.notebookTrials) ? source.notebookTrials.slice() : [];
-    var prediction = String(source.notebookPrediction || '');
+    var prediction = String(typeof source.notebookPrediction === 'string' ? source.notebookPrediction : '');
     var claim = String(source.notebookClaim || '');
     var predictionDone = !!prediction.trim();
     var captureDone = trials.length > 0;
@@ -6620,7 +6620,7 @@
           station: 'Motor-generator design mission',
           setup: 'load ' + trial.loadOhms + ' Ω, generator ' + trial.turns + ' turns × field ' + trial.field + ', motor I ' + trial.current + ' × B ' + trial.motorField,
           result: Math.round(trial.rpm) + ' RPM, ' + trial.voltage.toFixed(1) + ' V, ' + trial.power.toFixed(1) + ' W, peak ' + trial.temperature.toFixed(1) + ' °C, ' + (trial.pass ? 'mission passed' : 'revise design'),
-          prediction: (state.notebookPrediction || '').trim() || 'No prediction recorded'
+          prediction: (typeof state.notebookPrediction === 'string' ? state.notebookPrediction : '').trim() || 'No prediction recorded'
         };
         var notebookTrials = (state.notebookTrials || []).concat([evidence]);
         if (notebookTrials.length > 8) notebookTrials = notebookTrials.slice(notebookTrials.length - 8);
@@ -6984,8 +6984,9 @@
             var liveState = cv._charge3dState || currentCharge3DState();
             var resizeObserver = null, disposed = false, liveSignature = '';
             var particleGroup = null, velocityArrow = null, forceArrow = null, trailLine = null, trailGeometry = null, referenceLine = null, particleLightRef = particleLight;
+            var cometGeometry = null, cometLine = null, particleGlow = null;
             function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
-            function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } particleGroup = null; velocityArrow = null; forceArrow = null; trailLine = null; trailGeometry = null; referenceLine = null; }
+            function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } particleGroup = null; velocityArrow = null; forceArrow = null; trailLine = null; trailGeometry = null; referenceLine = null; cometGeometry = null; cometLine = null; particleGlow = null; }
             function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); magResizeComposer(chargePack, width, height); }
             var chargePack = { renderer: renderer, scene: scene, camera: camera, composer: null, disposed: false };
             function renderScene() {
@@ -7034,8 +7035,36 @@
               }
               trailGeometry = new THREE.BufferGeometry().setFromPoints(vectors); trailGeometry.setDrawRange(0, 1);
               trailLine = new THREE.Line(trailGeometry, new THREE.LineBasicMaterial({ color: 0xfb7185, transparent: true, opacity: state.trail ? 0.95 : 0 })); dynamicGroup.add(trailLine);
+              // A brighter COMET SEGMENT riding the last stretch of the trail.
+              // The trail reveals itself with setDrawRange, which a tube cannot
+              // do cheaply, so the trail stays a Line and this second Line draws
+              // only the most recent COMET_TAIL points in a hot additive colour.
+              // Effect: the leading edge reads as "where the particle is NOW"
+              // instead of the whole path looking equally current — which is the
+              // thing a student scrubbing the progress slider needs to see.
+              cometGeometry = new THREE.BufferGeometry().setFromPoints(vectors);
+              cometGeometry.setDrawRange(0, 0);
+              cometLine = new THREE.Line(cometGeometry, new THREE.LineBasicMaterial({
+                color: 0xfff1f2, transparent: true, opacity: state.trail ? 0.95 : 0,
+                blending: THREE.AdditiveBlending, depthWrite: false
+              }));
+              cometLine.renderOrder = 3;
+              dynamicGroup.add(cometLine);
               particleGroup = new THREE.Group(); dynamicGroup.add(particleGroup);
               var sphere = new THREE.Mesh(new THREE.SphereGeometry(0.18, 22, 16), new THREE.MeshStandardMaterial({ color: state.chargeSign > 0 ? 0xfb7185 : 0x38bdf8, emissive: state.chargeSign > 0 ? 0xf43f5e : 0x0284c7, emissiveIntensity: 0.32, roughness: 0.32 })); particleGroup.add(sphere);
+              // Two additive shells so the particle blooms as a point of light
+              // rather than a shaded ball. Charge sign keeps its existing colour
+              // coding (warm = positive, cool = negative) — the glow follows the
+              // tool's own convention rather than introducing a new one.
+              particleGlow = new THREE.Group();
+              [{ r: 0.30, o: 0.30 }, { r: 0.46, o: 0.14 }].forEach(function (shell) {
+                particleGlow.add(new THREE.Mesh(new THREE.SphereGeometry(shell.r, 14, 10), new THREE.MeshBasicMaterial({
+                  color: state.chargeSign > 0 ? 0xf43f5e : 0x38bdf8,
+                  transparent: true, opacity: shell.o,
+                  blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.BackSide
+                })));
+              });
+              particleGroup.add(particleGlow);
               var ringCount = state.chargeSign > 0 ? 1 : 2;
               for (var ringIndex = 0; ringIndex < ringCount; ringIndex++) {
                 var ring = new THREE.Mesh(new THREE.TorusGeometry(0.25 + ringIndex * 0.08, 0.025, 7, 24), new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.92 })); ring.rotation.x = Math.PI / 2; particleGroup.add(ring);
@@ -7057,6 +7086,16 @@
               if (force.lengthSq() < 1e-8) forceArrow.visible = false;
               else { forceArrow.visible = true; forceArrow.setDirection(force.normalize()); forceArrow.setLength(0.55 + Math.min(1.0, state.force * 0.035), 0.22, 0.12); }
               if (trailGeometry) trailGeometry.setDrawRange(0, state.trail ? index + 1 : 0);
+              // The comet segment covers the last COMET_TAIL points of whatever
+              // the trail has revealed. setDrawRange takes (start, count), so the
+              // start walks forward with the particle and the count is clamped so
+              // it never runs past the beginning of the path.
+              if (cometGeometry) {
+                var COMET_TAIL = 26;
+                var revealed = state.trail ? index + 1 : 0;
+                var cometStart = Math.max(0, revealed - COMET_TAIL);
+                cometGeometry.setDrawRange(cometStart, Math.max(0, revealed - cometStart));
+              }
             }
             function rebuild(state) {
               if (disposed) return;
@@ -7426,7 +7465,7 @@
           leverage > 0.92 ? 'The opposite wire forces have their strongest turning leverage.' :
           'Opposite forces create a turning pair; the commutator keeps the rotation going.';
         var liveTorque = Math.abs(motorTorqueFactor(d.motorCurrent, d.motorField, angle, d.motorCurrentDir, d.motorFieldDir) / 12);
-        var motorEvidence = (d.notebookTrials || []).filter(function (trial) {
+        var motorEvidence = (Array.isArray(d.notebookTrials) ? d.notebookTrials : []).filter(function (trial) {
           return Array.isArray(trial.metrics) && trial.metrics.some(function (metric) { return metric.key === 'torque_rel'; });
         }).slice(-1)[0] || null;
         var recordedTorqueMetric = motorEvidence && motorEvidence.metrics ? motorEvidence.metrics.filter(function (metric) { return metric.key === 'torque_rel'; })[0] : null;
@@ -7615,9 +7654,10 @@
             var liveState = cv._motor3dState || currentMotor3DState();
             var resizeObserver = null, disposed = false, liveSignature = '';
             var rotorGroup = null, forceArrows = [], currentArrows = [], momentArrow = null, torqueArrow = null;
+            var commutatorHalves = [];
             var yAxis = new THREE.Vector3(0, 1, 0);
             function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
-            function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } rotorGroup = null; forceArrows = []; currentArrows = []; momentArrow = null; torqueArrow = null; }
+            function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } rotorGroup = null; forceArrows = []; currentArrows = []; momentArrow = null; torqueArrow = null; commutatorHalves = []; }
             function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); magResizeComposer(motorPack, width, height); }
             var motorPack = { renderer: renderer, scene: scene, camera: camera, composer: null, disposed: false };
             function renderScene() {
@@ -7655,9 +7695,16 @@
               var loopCurve = new THREE.CatmullRomCurve3(loopPoints, true, 'catmullrom', 0.05);
               var loop = new THREE.Mesh(new THREE.TubeGeometry(loopCurve, 72, 0.065, 10, true), new THREE.MeshStandardMaterial({ color: state.current > 0 ? 0xf59e0b : 0x64748b, emissive: 0xf59e0b, emissiveIntensity: state.current > 0 ? 0.18 : 0, roughness: 0.38, metalness: 0.62 })); loop.castShadow = true; rotorGroup.add(loop);
               var shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 4.7, 18), new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.28, metalness: 0.82 })); rotorGroup.add(shaft);
+              // The two commutator halves get their OWN materials (not a shared
+              // one) so updatePose can light whichever half the brushes are
+              // feeding without the change bleeding into its neighbour.
+              commutatorHalves = [];
               [0, Math.PI].forEach(function (rotation, index) {
-                var halfRing = new THREE.Mesh(new THREE.TorusGeometry(0.40, 0.11, 9, 24, Math.PI), new THREE.MeshStandardMaterial({ color: index ? 0xb45309 : 0xf59e0b, roughness: 0.32, metalness: 0.72 }));
-                halfRing.rotation.x = Math.PI / 2; halfRing.rotation.z = rotation; halfRing.position.y = -1.72; rotorGroup.add(halfRing);
+                var halfRing = new THREE.Mesh(new THREE.TorusGeometry(0.40, 0.11, 9, 24, Math.PI), new THREE.MeshStandardMaterial({ color: index ? 0xb45309 : 0xf59e0b, emissive: 0xf59e0b, emissiveIntensity: 0, roughness: 0.32, metalness: 0.72 }));
+                halfRing.rotation.x = Math.PI / 2; halfRing.rotation.z = rotation; halfRing.position.y = -1.72;
+                halfRing.userData.commutatorIndex = index;
+                rotorGroup.add(halfRing);
+                commutatorHalves.push(halfRing);
               });
               [-0.62, 0.62].forEach(function (x) { var brush = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.28, 0.48), new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.72 })); brush.position.set(x, -1.72, 0); dynamicGroup.add(brush); });
               if (state.showCurrent && state.current > 0) {
@@ -7695,6 +7742,25 @@
               if (momentArrow) {
                 var normal = new THREE.Vector3(1, 0, 0).applyAxisAngle(yAxis, angleRad).multiplyScalar(state.segmentDirection);
                 momentArrow.setDirection(normal.normalize()); momentArrow.setLength(1.35, 0.25, 0.14);
+              }
+              // THE COMMUTATOR FLIP, made visible. The tool teaches that the
+              // commutator reverses the current every half turn so torque never
+              // reverses — but in 3D both halves looked identical and static, so
+              // the flip was something the student read about rather than saw.
+              // The half that is currently carrying current now glows, and the
+              // glow swaps at exactly the same instant the model's own
+              // segmentDirection flips (there is a '180° commutator flip'
+              // landmark button and a dedicated commutator camera view, so this
+              // is the moment the UI already points at). No current, no glow.
+              if (commutatorHalves.length === 2) {
+                var liveHalf = state.segmentDirection > 0 ? 0 : 1;
+                var energised = state.current > 0;
+                commutatorHalves.forEach(function (half, index) {
+                  var mat = half.material;
+                  if (!mat) return;
+                  mat.emissiveIntensity = energised && index === liveHalf ? 0.95 : 0;
+                  mat.needsUpdate = true;
+                });
               }
               if (torqueArrow) {
                 torqueArrow.position.set(0, state.torqueDirection > 0 ? -0.9 : 0.9, 0);
@@ -7802,10 +7868,10 @@
         // time-step, so speed of dragging maps to ΔΦ per step — drag fast,
         // induce more. Held still (no change events) → EMF decays to 0.
         var emf = induceEMF(d.induceTurns, d.induceX, nx, 1, 40) * 4; // display-scaled volts
-        var peak = Math.max(d.peakEMF || 0, Math.abs(emf));
+        var peak = Math.max(Number.isFinite(Number(d.peakEMF)) ? Number(d.peakEMF) : 0, Math.abs(emf));
         // Rolling scope trace: wiggle the magnet back and forth and the trace
         // you draw IS an AC waveform — that discovery belongs to the student.
-        var trace = (d.emfTrace || []).concat([emf]);
+        var trace = (Array.isArray(d.emfTrace) ? d.emfTrace : []).concat([emf]);
         if (trace.length > 72) trace = trace.slice(trace.length - 72);
         upd({ inducePrevX: d.induceX, induceX: nx, lastEMF: emf, peakEMF: peak, emfTrace: trace });
       }
@@ -7813,7 +7879,7 @@
       function runInductionTrial(kind) {
         var speedTrials = Object.assign({}, d.induceSpeedTrials || {});
         if (kind === 'still') {
-          var stillTrace = (d.emfTrace || []).concat([0]);
+          var stillTrace = (Array.isArray(d.emfTrace) ? d.emfTrace : []).concat([0]);
           if (stillTrace.length > 72) stillTrace = stillTrace.slice(stillTrace.length - 72);
           speedTrials.still = { kind: 'still', duration: 0, voltage: 0, turns: d.induceTurns, start: d.induceX, finish: d.induceX };
           upd({ inducePrevX: d.induceX, lastEMF: 0, emfTrace: stillTrace, induceSpeedTrials: speedTrials, induceTrialMsg: 'Held still: ΔΦ = 0, so the induced voltage is exactly 0.00 V.' });
@@ -7824,9 +7890,9 @@
         // This isolates the rate term in Faraday's law for a genuine fair test.
         var dt = kind === 'fast' ? 0.25 : 1;
         var emf = induceEMF(d.induceTurns, -60, -20, dt, 40) * 0.04;
-        var trialTrace = (d.emfTrace || []).concat([0, emf, 0]);
+        var trialTrace = (Array.isArray(d.emfTrace) ? d.emfTrace : []).concat([0, emf, 0]);
         if (trialTrace.length > 72) trialTrace = trialTrace.slice(trialTrace.length - 72);
-        var trialPeak = Math.max(d.peakEMF || 0, Math.abs(emf));
+        var trialPeak = Math.max(Number.isFinite(Number(d.peakEMF)) ? Number(d.peakEMF) : 0, Math.abs(emf));
         var label = kind === 'fast' ? 'Fast' : 'Slow';
         speedTrials[kind] = { kind: kind, duration: dt, voltage: Math.abs(emf), turns: d.induceTurns, start: -60, finish: -20 };
         upd({ inducePrevX: -60, induceX: -20, lastEMF: emf, peakEMF: trialPeak, emfTrace: trialTrace,
@@ -7903,7 +7969,7 @@
         var trace = appendInduction3DTrace(d.ind3dTrace, { flux: nextFlux, emf: emf, x: next.x });
         commitInduction3D({
           ind3dMagnet: next, ind3dFlux: nextFlux, ind3dEMF: emf, ind3dTrace: trace,
-          peakEMF: Math.max(d.peakEMF || 0, Math.abs(emf)), ind3dTrialMsg: ''
+          peakEMF: Math.max(Number.isFinite(Number(d.peakEMF)) ? Number(d.peakEMF) : 0, Math.abs(emf)), ind3dTrialMsg: ''
         }, message);
       }
 
@@ -7945,7 +8011,7 @@
           ind3dMagnet: Object.assign({}, magnet, { x: samples[samples.length - 1].x }),
           ind3dFlux: samples[samples.length - 1].flux, ind3dEMF: 0, ind3dTrace: samples,
           ind3dRunning: false, ind3dUsed: true, genSpeedSeen: true, genPhaseSeen: true,
-          peakEMF: Math.max(d.peakEMF || 0, peak),
+          peakEMF: Math.max(Number.isFinite(Number(d.peakEMF)) ? Number(d.peakEMF) : 0, peak),
           ind3dTrialMsg: label + ' reached ' + peak.toFixed(2) + ' relative volts. The voltage changed sign as the flux rose and then fell.'
         };
         if (_prefersReducedMotion || typeof window.requestAnimationFrame !== 'function') {
@@ -7963,7 +8029,7 @@
           upd({
             ind3dMagnet: Object.assign({}, magnet, { x: sample.x }), ind3dFlux: sample.flux, ind3dEMF: sample.emf,
             ind3dTrace: samples.slice(0, index + 1), ind3dRunning: true, ind3dUsed: true,
-            peakEMF: Math.max(d.peakEMF || 0, peak)
+            peakEMF: Math.max(Number.isFinite(Number(d.peakEMF)) ? Number(d.peakEMF) : 0, peak)
           });
           if (fraction >= 1) {
             _induction3DRAF = null;
@@ -8228,6 +8294,25 @@
               var glow = Math.min(1, Math.abs(state.emf) / 3);
               var bulb = new THREE.Mesh(new THREE.SphereGeometry(0.23, 20, 14), new THREE.MeshStandardMaterial({ color: glow > 0.03 ? 0xfbbf24 : 0x475569, emissive: 0xfbbf24, emissiveIntensity: glow * 3.5, transparent: true, opacity: 0.65 + glow * 0.35 }));
               bulb.position.set(0, -1.7, 2.55); dynamicGroup.add(bulb);
+              // The bulb's emissive already tracks |EMF|, but an emissive sphere
+              // alone does not read as a LIGHT — it reads as a yellow ball. Two
+              // additive halo shells and a real point light make the bulb throw
+              // light onto the coil and leads, so "drag faster -> brighter" is
+              // visible in the whole scene and not just in one sphere.
+              // Everything scales from the SAME `glow` the bulb uses, so nothing
+              // here claims more output than the EMF model already states; at
+              // zero EMF the halos are fully transparent and the light is dark.
+              if (glow > 0.02) {
+                [{ r: 0.38, o: 0.34 }, { r: 0.60, o: 0.16 }].forEach(function (shell) {
+                  var halo = new THREE.Mesh(new THREE.SphereGeometry(shell.r, 16, 12), new THREE.MeshBasicMaterial({
+                    color: 0xfde68a, transparent: true, opacity: shell.o * glow,
+                    blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.BackSide
+                  }));
+                  halo.position.copy(bulb.position); dynamicGroup.add(halo);
+                });
+                var bulbLight = new THREE.PointLight(0xfbbf24, glow * 1.6, 4.2);
+                bulbLight.position.copy(bulb.position); dynamicGroup.add(bulbLight);
+              }
             }
             function rebuild(state) {
               if (disposed) return;
@@ -8269,7 +8354,7 @@
               if (!dragMagnet) return;
               dragMagnet = false; controls.enabled = true;
               try { cv.releasePointerCapture(event.pointerId); } catch (e) {}
-              var peak = dragTrace.reduce(function (value, sample) { return Math.max(value, Math.abs(sample.emf)); }, d.peakEMF || 0);
+              var peak = dragTrace.reduce(function (value, sample) { return Math.max(value, Math.abs(sample.emf)); }, Number.isFinite(Number(d.peakEMF)) ? Number(d.peakEMF) : 0);
               if (cv._induction3dCommit) cv._induction3dCommit({ ind3dMagnet: liveState.magnet, ind3dFlux: liveState.flux, ind3dEMF: liveState.emf, ind3dTrace: dragTrace, peakEMF: peak }, 'Moved the magnet through the 3D coil field.');
             }
             function onContextLost(event) { event.preventDefault(); upd({ ind3dStatus: 'error', ind3dRunning: false }); announceToSR(__alloT('stem.magnetism.sr_the_3d_induction_graphics_context_was_lost_other', 'The 3D induction graphics context was lost. Other generator modes remain available.')); }
@@ -8423,8 +8508,8 @@
                 h('div', { style: { color: SOFT, fontSize: 10.5 } }, emfAbs < 0.01 ? 'still magnet = zero volts' : 'induced by the change')),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)' } },
                 h('div', { style: { color: SOFT, fontSize: 11 } }, 'Best flash so far'),
-                h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, (d.peakEMF || 0).toFixed(2) + ' V'),
-                h('div', { style: { color: SOFT, fontSize: 10.5 } }, (d.peakEMF || 0) >= 0.5 ? '✓ generator quest earned' : 'target: 0.50 V'))),
+                h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, (Number.isFinite(Number(d.peakEMF)) ? Number(d.peakEMF) : 0).toFixed(2) + ' V'),
+                h('div', { style: { color: SOFT, fontSize: 10.5 } }, (Number.isFinite(Number(d.peakEMF)) ? Number(d.peakEMF) : 0) >= 0.5 ? '✓ generator quest earned' : 'target: 0.50 V'))),
             h('div', { style: { color: SOFT, fontSize: 12, lineHeight: 1.5 } },
               h('b', { style: { color: TEXT } }, 'Lenz’s law: '), 'the induced current flows ', lenz, ' — nature resists the change, which is why generators take real effort to crank.')
           ), '#fbbf24') : null,
@@ -8563,7 +8648,7 @@
 
       // ── Oscilloscope: the EMF history the student drew ────────────────
       function scopeCard() {
-        var trace = d.emfTrace || [];
+        var trace = Array.isArray(d.emfTrace) ? d.emfTrace : [];
         var W = 320, HH = 90, mid = HH / 2;
         var maxV = 2; // display clamp
         var pts = trace.map(function (v, i) {
@@ -9051,7 +9136,7 @@
         var itemId = (d.craneItems || {})[ns];
         var movedEvidence = craneEvidenceState(d.cranePredictions, d.craneTests, d.craneDeposited);
         var itemEvidence = movedEvidence.items.find(function (entry) { return entry.id === itemId; });
-        if (d.craneHolding) patch.craneMsg = 'Carrying the ' + itemById(d.craneHolding).name.toLowerCase() + ' — keep moving toward the recycling bin.';
+        if (d.craneHolding) patch.craneMsg = 'Carrying the ' + ((itemById(d.craneHolding) || {}).name || 'object').toLowerCase() + ' — keep moving toward the recycling bin.';
         else if (itemEvidence && !itemEvidence.tested && itemEvidence.predicted === null) patch.craneMsg = 'Now over ' + itemEvidence.name.toLowerCase() + '. Predict first, then energize the magnet.';
         else if (itemEvidence && !itemEvidence.tested) patch.craneMsg = 'Prediction ready for ' + itemEvidence.name.toLowerCase() + '. Switch power on to test it.';
         else if (itemEvidence) patch.craneMsg = itemEvidence.name + ' already has evidence: ' + (itemEvidence.lifted ? 'lifted' : 'no pull') + '. Repeat the test or inspect another object.';
@@ -9161,8 +9246,8 @@
           });
         }
         // held item rides under the magnet
-        if (d.craneHolding) {
-          var held = itemById(d.craneHolding);
+        var held = d.craneHolding ? itemById(d.craneHolding) : null;
+        if (held) {
           kids.push(h('text', { key: 'held', x: cx, y: 92, fontSize: 18, textAnchor: 'middle' }, held.emoji));
         }
         // ground + items
@@ -9256,7 +9341,7 @@
               h('button', { type: 'button', disabled: d.craneDone || d.craneSlot <= 0 || moveLocked, 'aria-label': __alloT('stem.magnetism.a11y_move_crane_left', 'Move crane left'), onClick: function () { craneMove(-1); }, style: btn() }, '◀ Move'),
               h('button', { type: 'button', disabled: d.craneDone || predictionNeeded, 'aria-describedby': predictionNeeded ? 'mag-crane-evidence-title' : undefined, 'aria-pressed': d.cranePower ? 'true' : 'false', onClick: craneTogglePower, style: btn(d.cranePower) }, d.cranePower ? '⚡ Power OFF' : '⚡ Power ON'),
               h('button', { type: 'button', disabled: d.craneDone || d.craneSlot >= BIN_SLOT || moveLocked, 'aria-label': __alloT('stem.magnetism.a11y_move_crane_right', 'Move crane right'), onClick: function () { craneMove(1); }, style: btn() }, 'Move ▶')),
-            h('div', { role: 'status', 'aria-live': 'polite', style: { minHeight: 34, textAlign: 'center', color: d.craneDone ? '#34d399' : TEXT, fontSize: 13, fontWeight: 600, padding: '4px 8px' } }, d.craneMsg || 'Move over an object, predict, then test it with the field.'),
+            h('div', { role: 'status', 'aria-live': 'polite', style: { minHeight: 34, textAlign: 'center', color: d.craneDone ? '#34d399' : TEXT, fontSize: 13, fontWeight: 600, padding: '4px 8px' } }, (typeof d.craneMsg === 'string' ? d.craneMsg : '') || 'Move over an object, predict, then test it with the field.'),
             d.craneDone ? h('div', { style: { textAlign: 'center' } },
               h('button', { onClick: function () {
                   upd({ craneSlot: 0, cranePower: false, craneHolding: null, craneMsg: '',
@@ -9270,7 +9355,7 @@
       }
 
       // ── Field Walk: find the hidden magnet by compass alone ───────────
-      function mazeRoundDef() { return MAZE_ROUNDS[(d.mazeRound || 0) % MAZE_ROUNDS.length]; }
+      function mazeRoundDef() { return MAZE_ROUNDS[(Math.max(0, Math.floor(Number.isFinite(Number(d.mazeRound)) ? Number(d.mazeRound) : 0))) % MAZE_ROUNDS.length]; }
       function mazeMagnet() { var r = mazeRoundDef(); return { x: r.x, y: r.y, angle: r.angle, polarity: r.polarity }; }
       function mazeBearingAt(gx, gy) {
         var fp = mazeCellToField(gx, gy);
@@ -9291,7 +9376,7 @@
         var nx = Math.max(0, Math.min(MAZE_COLS - 1, d.mazePx + dx));
         var ny = Math.max(0, Math.min(MAZE_ROWS - 1, d.mazePy + dy));
         if (nx === d.mazePx && ny === d.mazePy) return;
-        var trail = (d.mazeTrail || []).concat([nx + ',' + ny]);
+        var trail = (Array.isArray(d.mazeTrail) ? d.mazeTrail : []).concat([nx + ',' + ny]);
         if (trail.length > 200) trail = trail.slice(trail.length - 200);
         var patch = { mazePx: nx, mazePy: ny, mazeSteps: (d.mazeSteps || 0) + 1, mazeTrail: trail };
         var f = mazeCellToField(nx, ny);
@@ -9300,7 +9385,7 @@
         var nextStrength = Math.hypot(nextField.x, nextField.y);
         var signalChange = nextStrength > priorStrength * 1.08 ? 'the signal rose' : nextStrength < priorStrength * 0.92 ? 'the signal fell' : 'the signal stayed nearly level';
         var moveEvidence = followedField ? 'Your step followed the red tip and ' : 'Your step crossed the red-tip direction and ';
-        var poles = mazePoles(d.mazeRound || 0);
+        var poles = mazePoles(Math.max(0, Math.floor(Number.isFinite(Number(d.mazeRound)) ? Number(d.mazeRound) : 0)));
         var dS = Math.hypot(f.x - poles.s.x, f.y - poles.s.y);
         var dN = Math.hypot(f.x - poles.n.x, f.y - poles.n.y);
         if (dS < MAZE_CELL * 1.2) {
@@ -9330,7 +9415,7 @@
         // Connect breadcrumb samples so the curved evidence path is visible as
         // a trajectory, not just a collection of unrelated dots.
         var roundStart = mazeRoundDef().start;
-        var trailCells = [roundStart[0] + ',' + roundStart[1]].concat(d.mazeTrail || []);
+        var trailCells = [roundStart[0] + ',' + roundStart[1]].concat(Array.isArray(d.mazeTrail) ? d.mazeTrail : []);
         var trailPoints = trailCells.map(function (c) {
           var pp = c.split(',');
           return px(+pp[0]) + ',' + py(+pp[1]);
@@ -9366,7 +9451,7 @@
       }
 
       function mazeNextRound() {
-        var nr = ((d.mazeRound || 0) + 1) % MAZE_ROUNDS.length;
+        var nr = ((Math.max(0, Math.floor(Number.isFinite(Number(d.mazeRound)) ? Number(d.mazeRound) : 0))) + 1) % MAZE_ROUNDS.length;
         var st = MAZE_ROUNDS[nr].start;
         upd({ mazeRound: nr, mazePx: st[0], mazePy: st[1], mazeSteps: 0, mazeWon: false, mazeTrail: [] });
         announceToSR(__alloT('stem.magnetism.sr_new_round_the_magnet_is_hidden_somewhere_new', 'New round — the magnet is hidden somewhere new.'));
@@ -10906,7 +10991,7 @@
       }
 
       function investigationNotebook() {
-        var trials = d.notebookTrials || [];
+        var trials = Array.isArray(d.notebookTrials) ? d.notebookTrials : [];
         if (!d.notebookOpen) {
           var pulse = liveEvidencePulseState(d, 3);
           var trendIcon = { baseline: '●', up: '↗', down: '↘', same: '—' };
@@ -10943,7 +11028,7 @@
         var studio = evidenceStudioState(d, d.tab);
         var needsPrediction = !studio.canRecord;
         function recordCurrentTrial() {
-          var entry = { station: snap.station, setup: snap.setup, result: snap.result, prediction: (d.notebookPrediction || '').trim() || 'No prediction recorded', metrics: notebookMetricSnapshot(d) };
+          var entry = { station: snap.station, setup: snap.setup, result: snap.result, prediction: (typeof d.notebookPrediction === 'string' ? d.notebookPrediction : '').trim() || 'No prediction recorded', metrics: notebookMetricSnapshot(d) };
           var nextTrials = trials.concat([entry]);
           if (nextTrials.length > 8) nextTrials = nextTrials.slice(nextTrials.length - 8);
           upd({ notebookTrials: nextTrials, notebookUsed: true, notebookPrediction: '' });
