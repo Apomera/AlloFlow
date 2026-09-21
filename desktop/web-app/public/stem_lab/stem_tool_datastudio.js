@@ -724,19 +724,19 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
 
 
-            React.createElement("div", { className: "rounded-xl p-3 flex flex-wrap items-center gap-2", role: "region", "aria-label": "Chart Coach recommendation", style: { background: _card, border: '1px solid ' + _border } },
+            React.createElement("div", { className: "rounded-xl p-3 flex flex-wrap items-center gap-2", role: "region", "aria-label": t('stem.datastudio.chart_coach_recommendation','Chart Coach recommendation'), style: { background: _card, border: '1px solid ' + _border } },
               React.createElement("div", { className: "min-w-0 flex-1" },
                 React.createElement("div", { className: "text-xs font-bold", style: { color: _accent } }, "Chart Coach suggests " + ((CHART_TYPES.find(function(type) { return type.id === recommendedChart; }) || { label: recommendedChart }).label)),
                 React.createElement("p", { className: "text-[0.6875rem]", style: { color: _muted } }, recommendationReason)
               ),
               React.createElement("button", { onClick: applyChartRecommendation, disabled: chartType === recommendedChart, className: "px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-50",
                 style: { background: chartType === recommendedChart ? _card : _btnBg, color: chartType === recommendedChart ? _muted : '#fff', border: '1px solid ' + _border },
-                "aria-label": "Apply Chart Coach recommendation" }, chartType === recommendedChart ? "Using suggestion" : "Use this chart")
+                "aria-label": t('stem.datastudio.apply_chart_coach_recommendation','Apply Chart Coach recommendation') }, chartType === recommendedChart ? "Using suggestion" : "Use this chart")
             ),
 
             // Chart type selector
 
-            React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2", role: "group", "aria-label": "Chart type" },
+            React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2", role: "group", "aria-label": t('stem.datastudio.chart_type','Chart type') },
 
               CHART_TYPES.map(function (ct) {
 
@@ -773,7 +773,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               onChange: function (e) { updDS('chartTitle', e.target.value); },
 
-              placeholder: t('stem.datastudio.chart_title', "Chart title..."), "aria-label": "Chart title",
+              placeholder: t('stem.datastudio.chart_title', "Chart title..."), "aria-label": t('stem.datastudio.chart_title',"Chart title"),
 
               className: "w-full px-3 py-2 rounded-xl text-sm font-bold text-center",
 
@@ -795,9 +795,9 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   React.createElement("input", { value: yAxisLabel, onChange: function(e) { updDS('yAxisLabel', e.target.value); }, className: "block w-full mt-1 px-2 py-1.5 rounded-lg text-xs", style: { background: _svgBg, border: '1px solid ' + _border, color: _text } }))
               ),
               React.createElement("label", { className: "block mt-2 text-[0.6875rem] font-bold" }, "Data source",
-                React.createElement("input", { value: dataSource, onChange: function(e) { updDS('dataSource', e.target.value); }, placeholder: "Source, URL, experiment, or citation",
+                React.createElement("input", { value: dataSource, onChange: function(e) { updDS('dataSource', e.target.value); }, placeholder: t('stem.datastudio.source_url_experiment_or_citation','Source, URL, experiment, or citation'),
                   className: "block w-full mt-1 px-2 py-1.5 rounded-lg text-xs", style: { background: _svgBg, border: '1px solid ' + _border, color: _text } })),
-              React.createElement("div", { className: "mt-2", role: "group", "aria-label": "Chart color palette" },
+              React.createElement("div", { className: "mt-2", role: "group", "aria-label": t('stem.datastudio.chart_color_palette','Chart color palette') },
                 React.createElement("span", { className: "text-[0.6875rem] font-bold mr-2" }, "Palette:"),
                 ['accessible', 'vibrant', 'monochrome'].map(function(option) {
                   return React.createElement("button", { key: option, onClick: function() { updDS('palette', option); }, "aria-pressed": palette === option,
@@ -812,7 +812,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   React.createElement("input", { type: "checkbox", checked: showGridlines, onChange: function(e) { updDS('showGridlines', e.target.checked); } }), "Gridlines")
               ),
               chartType === 'histogram' && React.createElement("label", { className: "block mt-2 text-[0.6875rem] font-bold" }, "Histogram bins: " + (histogramBins || 'Auto'),
-                React.createElement("input", { type: "range", min: 0, max: 12, step: 1, value: histogramBins, onChange: function(e) { updDS('histogramBins', Number(e.target.value)); }, className: "block w-full mt-1", "aria-label": "Histogram bins; zero uses automatic binning" }))
+                React.createElement("input", { type: "range", min: 0, max: 12, step: 1, value: histogramBins, onChange: function(e) { updDS('histogramBins', Number(e.target.value)); }, className: "block w-full mt-1", "aria-label": t('stem.datastudio.histogram_bins_zero_uses_automatic_binning','Histogram bins; zero uses automatic binning') }))
             ),
 
             React.createElement("div", { className: "rounded-2xl overflow-hidden", style: { border: '1px solid ' + _border } },
@@ -1217,7 +1217,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   }))
                 )
               ),
-              tablePageCount > 1 && React.createElement("div", { className: "flex items-center justify-between gap-2 mt-2", role: "group", "aria-label": "Data table pagination" },
+              tablePageCount > 1 && React.createElement("div", { className: "flex items-center justify-between gap-2 mt-2", role: "group", "aria-label": t('stem.datastudio.data_table_pagination','Data table pagination') },
                 React.createElement("button", { disabled: tablePage === 0, onClick: function() { updDS('tablePage', Math.max(0, tablePage - 1)); }, className: "px-2 py-1 rounded font-bold disabled:opacity-40", style: { background: _btnBg, color: '#fff' } }, "Previous"),
                 React.createElement("span", { className: "font-semibold" }, "Table page " + (tablePage + 1) + " of " + tablePageCount),
                 React.createElement("button", { disabled: tablePage >= tablePageCount - 1, onClick: function() { updDS('tablePage', Math.min(tablePageCount - 1, tablePage + 1)); }, className: "px-2 py-1 rounded font-bold disabled:opacity-40", style: { background: _btnBg, color: '#fff' } }, "Next")
@@ -1256,13 +1256,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               React.createElement("span", { className: "text-[0.6875rem] font-bold ml-2", style: { color: _muted } }, "FILTER:"),
 
-              React.createElement("input", { type: "search", placeholder: "Label contains?", value: labelFilter, "aria-label": "Filter rows by label",
+              React.createElement("input", { type: "search", placeholder: t('stem.datastudio.label_contains','Label contains?'), value: labelFilter, "aria-label": t('stem.datastudio.filter_rows_by_label','Filter rows by label'),
                 onChange: function(e) { updDSMany({ labelFilter: e.target.value, tablePage: 0 }); }, className: "w-28 px-1.5 py-1 rounded-lg text-[0.6875rem]",
                 style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' } }),
 
               React.createElement("input", {
 
-                type: "number", placeholder: "Min", value: filterMin, "aria-label": "Minimum value filter",
+                type: "number", placeholder: "Min", value: filterMin, "aria-label": t('stem.datastudio.minimum_value_filter','Minimum value filter'),
 
                 onChange: function (e) { updDS('filterMin', e.target.value === '' ? '' : parseFloat(e.target.value)); },
 
@@ -1277,7 +1277,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               React.createElement("input", {
 
-                type: "number", placeholder: "Max", value: filterMax, "aria-label": "Maximum value filter",
+                type: "number", placeholder: "Max", value: filterMax, "aria-label": t('stem.datastudio.maximum_value_filter','Maximum value filter'),
 
                 onChange: function (e) { updDS('filterMax', e.target.value === '' ? '' : parseFloat(e.target.value)); },
 
@@ -1401,7 +1401,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                 style: { background: _card, border: '1px solid ' + _border, color: _accent }
 
               }, t('stem.datastudio.export_csv_2', "💾 Export CSV")),
-              React.createElement("button", { "aria-label": "Export chart as SVG", onClick: function() {
+              React.createElement("button", { "aria-label": t('stem.datastudio.export_chart_as_svg','Export chart as SVG'), onClick: function() {
                   var el = document.querySelector('[data-datastudio-chart="true"]');
                   if (!el || typeof XMLSerializer === 'undefined') { if (addToast) addToast('Chart export is not available.', 'warning'); return; }
                   var clone = el.cloneNode(true); clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -1412,7 +1412,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   if (addToast) addToast('Chart exported as SVG.', 'success');
                 }, className: "px-3 py-2 rounded-xl text-xs font-bold transition-all", style: { background: _card, border: '1px solid ' + _border, color: _accent }
               }, "Export SVG"),
-              React.createElement("button", { "aria-label": "Export analysis as JSON", onClick: function() {
+              React.createElement("button", { "aria-label": t('stem.datastudio.export_analysis_as_json','Export analysis as JSON'), onClick: function() {
                   var report = {
                     schema: 'alloflow-data-studio-report-v1', title: chartTitle, chartType: chartType,
                     axes: { x: xAxisLabel, y: yAxisLabel }, source: dataSource, rows: dataRows,
@@ -1469,7 +1469,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   kernelRecipes.map(function(recipe) { return React.createElement("option", { key: recipe.id, value: recipe.id }, recipe.label); })
                 )
               ),
-              React.createElement("textarea", { value: kernelSQL, onChange: function(e) { updDSMany({ kernelSQL: e.target.value, kernelRecipeId: '' }); }, rows: 2, spellCheck: false, "aria-label": "Local analytical SQL query", className: "w-full px-2 py-1.5 rounded-lg text-[0.6875rem] font-mono", placeholder: "SELECT COUNT(*) AS row_count FROM data", style: { background: _svgBg, border: '1px solid ' + _border, color: _text, resize: 'vertical' } }),
+              React.createElement("textarea", { value: kernelSQL, onChange: function(e) { updDSMany({ kernelSQL: e.target.value, kernelRecipeId: '' }); }, rows: 2, spellCheck: false, "aria-label": t('stem.datastudio.local_analytical_sql_query','Local analytical SQL query'), className: "w-full px-2 py-1.5 rounded-lg text-[0.6875rem] font-mono", placeholder: t('stem.datastudio.select_count_as_row_count_from_data','SELECT COUNT(*) AS row_count FROM data'), style: { background: _svgBg, border: '1px solid ' + _border, color: _text, resize: 'vertical' } }),
               React.createElement("div", { className: "flex items-center gap-2 mt-2 flex-wrap" },
                 React.createElement("button", { onClick: runKernelQuery, disabled: kernelBusy || !dataRows.length, className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold disabled:opacity-40", style: { background: _btnBg, color: '#fff' } }, kernelBusy ? "⏳ Loading local engine…" : "▶ Run local query"),
                 !dataRows.length && React.createElement("span", { className: "text-[0.625rem]", style: { color: _muted } }, "Add data first.")
@@ -1491,10 +1491,10 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("div", { className: "text-xs font-bold", style: { color: _accent } }, "Data (" + dataRows.length + " items" + (displayRows.length !== dataRows.length ? ', ' + displayRows.length + ' shown' : '') + ")"),
-                React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Data change history" },
-                  React.createElement("button", { onClick: undoDataChange, disabled: !undoStack.length, "aria-label": "Undo last structural data change",
-                    title: "Undo imports, presets, additions, removals, or clears", className: "px-2 py-1 rounded text-[0.6875rem] font-bold disabled:opacity-40", style: { border: '1px solid ' + _border, color: _accent } }, "Undo"),
-                  React.createElement("button", { onClick: redoDataChange, disabled: !redoStack.length, "aria-label": "Redo structural data change",
+                React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": t('stem.datastudio.data_change_history','Data change history') },
+                  React.createElement("button", { onClick: undoDataChange, disabled: !undoStack.length, "aria-label": t('stem.datastudio.undo_last_structural_data_change','Undo last structural data change'),
+                    title: t('stem.datastudio.undo_imports_presets_additions_removals_or_c','Undo imports, presets, additions, removals, or clears'), className: "px-2 py-1 rounded text-[0.6875rem] font-bold disabled:opacity-40", style: { border: '1px solid ' + _border, color: _accent } }, "Undo"),
+                  React.createElement("button", { onClick: redoDataChange, disabled: !redoStack.length, "aria-label": t('stem.datastudio.redo_structural_data_change','Redo structural data change'),
                     className: "px-2 py-1 rounded text-[0.6875rem] font-bold disabled:opacity-40", style: { border: '1px solid ' + _border, color: _accent } }, "Redo")
                 )
               ),
@@ -1528,7 +1528,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   onChange: function(e) { updDS('editRow', { label: editRow.label, x: e.target.value, value: editRow.value }); },
                   className: "w-20 px-2 py-1.5 rounded-lg text-xs font-mono",
                   style: { width: '100%', minHeight: 44, minWidth: 0, background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' },
-                  "aria-label": "New point X value"
+                  "aria-label": t('stem.datastudio.new_point_x_value','New point X value')
                 })),
 
                 React.createElement("label", { style: { display: "flex", flexDirection: "column", gap: 4, flex: "1 1 96px", minWidth: 0, color: _text }, className: "text-xs font-bold" },
@@ -1615,7 +1615,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                 })
 
               ),
-              editorPageCount > 1 && React.createElement("div", { className: "flex items-center justify-between gap-2 mt-2", role: "group", "aria-label": "Data editor pagination" },
+              editorPageCount > 1 && React.createElement("div", { className: "flex items-center justify-between gap-2 mt-2", role: "group", "aria-label": t('stem.datastudio.data_editor_pagination','Data editor pagination') },
                 React.createElement("button", { disabled: editorPage === 0, onClick: function() { updDS('editorPage', Math.max(0, editorPage - 1)); }, className: "px-2 py-1 rounded text-[0.6875rem] font-bold disabled:opacity-40", style: { background: _btnBg, color: '#fff' } }, "Previous"),
                 React.createElement("span", { className: "text-[0.6875rem] font-semibold" }, "Page " + (editorPage + 1) + " of " + editorPageCount),
                 React.createElement("button", { disabled: editorPage >= editorPageCount - 1, onClick: function() { updDS('editorPage', Math.min(editorPageCount - 1, editorPage + 1)); }, className: "px-2 py-1 rounded text-[0.6875rem] font-bold disabled:opacity-40", style: { background: _btnBg, color: '#fff' } }, "Next")
@@ -1641,10 +1641,10 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             workspaceTab === 'analyze' && dataRows.length > 0 && React.createElement(React.Fragment, null,
 
-            React.createElement("div", { className: "rounded-xl p-3", role: "region", "aria-label": "Data Preparation", style: { background: _card, border: '1px solid ' + _border } },
+            React.createElement("div", { className: "rounded-xl p-3", role: "region", "aria-label": t('stem.datastudio.data_preparation','Data Preparation'), style: { background: _card, border: '1px solid ' + _border } },
               React.createElement("div", { className: "text-xs font-bold mb-1", style: { color: _accent } }, "Data Preparation"),
               React.createElement("p", { className: "text-[0.6875rem] mb-2", style: { color: _muted } }, duplicateLabelCount ? duplicateLabelCount + " repeated label group" + (duplicateLabelCount === 1 ? " is" : "s are") + " ready to combine. Labels match without regard to capitalization." : "No repeated label groups detected."),
-              React.createElement("div", { className: "flex flex-wrap items-center gap-2", role: "group", "aria-label": "Combine duplicate labels" },
+              React.createElement("div", { className: "flex flex-wrap items-center gap-2", role: "group", "aria-label": t('stem.datastudio.combine_duplicate_labels','Combine duplicate labels') },
                 React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: _muted } }, "COMBINE BY:"),
                 ['sum', 'mean', 'count'].map(function(method) {
                   return React.createElement("button", { key: method, disabled: !duplicateLabelCount, onClick: function() { aggregateDuplicateLabels(method); },
@@ -1653,7 +1653,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
               )
             ),
 
-            React.createElement("div", { className: "rounded-xl p-3", role: "region", "aria-label": "Transform Lab", style: { background: _card, border: '1px solid ' + _border } },
+            React.createElement("div", { className: "rounded-xl p-3", role: "region", "aria-label": t('stem.datastudio.transform_lab','Transform Lab'), style: { background: _card, border: '1px solid ' + _border } },
               React.createElement("div", { className: "text-xs font-bold mb-1", style: { color: _accent } }, "Transform Lab"),
               React.createElement("p", { className: "text-[0.6875rem] mb-2", style: { color: _muted } }, "Transform every row. Each action is undoable."),
               React.createElement("div", { className: "flex flex-wrap gap-2" },
@@ -1663,7 +1663,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
               )
             ),
 
-            showStats && React.createElement("div", { className: "flex flex-wrap items-center gap-2", role: "group", "aria-label": "Standard deviation method" },
+            showStats && React.createElement("div", { className: "flex flex-wrap items-center gap-2", role: "group", "aria-label": t('stem.datastudio.standard_deviation_method','Standard deviation method') },
               React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: _muted } }, "STD DEV:"),
               ['population', 'sample'].map(function(mode) {
                 var active = stdDevMode === mode;
@@ -1673,7 +1673,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
               })
             ),
 
-            showStats && React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2", "aria-label": "Descriptive statistics" },
+            showStats && React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2", "aria-label": t('stem.datastudio.descriptive_statistics','Descriptive statistics') },
 
               [
 
@@ -1713,11 +1713,11 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             // ?? AI Data Story Panel (reading-level aware) ?? ──
 
-            showStats && React.createElement("div", { className: "rounded-xl p-3 text-xs", role: "region", "aria-label": "Data quality report", style: { background: _card, border: '1px solid ' + _border } },
+            showStats && React.createElement("div", { className: "rounded-xl p-3 text-xs", role: "region", "aria-label": t('stem.datastudio.data_quality_report','Data quality report'), style: { background: _card, border: '1px solid ' + _border } },
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "font-bold", style: { color: _accent } }, "Data quality"),
                 typeof callTTS === 'function' && React.createElement("button", { className: "ml-auto px-2 py-1 rounded-lg text-[0.6875rem] font-bold", style: { border: '1px solid ' + _border, color: _accent },
-                  onClick: function() { callTTS("Data summary. " + displayRows.length + " rows shown. Mean " + mean.toFixed(1) + ". Median " + median.toFixed(1) + ". Trend " + trendDirection + "." + (chartType === 'scatter' && pearsonR !== null ? " Pearson correlation " + pearsonR.toFixed(3) + "." : "")); }, "aria-label": "Read data summary aloud" }, "Read aloud")
+                  onClick: function() { callTTS("Data summary. " + displayRows.length + " rows shown. Mean " + mean.toFixed(1) + ". Median " + median.toFixed(1) + ". Trend " + trendDirection + "." + (chartType === 'scatter' && pearsonR !== null ? " Pearson correlation " + pearsonR.toFixed(3) + "." : "")); }, "aria-label": t('stem.datastudio.read_data_summary_aloud','Read data summary aloud') }, "Read aloud")
               ),
               React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
                 [
