@@ -584,7 +584,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // ── Fuel efficiency ──
     { q: 'Which driving habit WASTES the most fuel?', a: ['Using cruise control on a flat highway', 'Coasting to stoplights', 'Jackrabbit starts and hard braking', 'Drafting behind trucks'], correct: 2, exp: 'Rapid acceleration and hard braking can lower MPG by 15-40%. Every time you brake hard, you turn kinetic energy into heat — wasted fuel.', category: 'general' },
     { q: 'Aerodynamic drag increases with speed:', a: ['Linearly (double speed = double drag)', 'Squared (double speed = 4× drag)', 'Not at all', 'Only above 100 mph'], correct: 1, exp: 'Drag force ∝ v². Double your speed and aerodynamic drag quadruples. That is why highway MPG drops sharply above 60 mph.', category: 'general' },
-    { q: 'At what approximate speed does aerodynamic drag begin to dominate over rolling resistance for most cars?', a: ['15-20 mph', '35-50 mph', '80 mph', 'Never'], correct: 1, exp: 'Below ~40 mph rolling resistance dominates. Above it, aerodynamic drag takes over. Peak MPG is usually 45-55 mph for gasoline cars.', category: 'general' },
+    { q: 'At what approximate speed does aerodynamic drag begin to dominate over rolling resistance for most cars?', a: ['15-20 mph', '35-50 mph', '80 mph', 'Never'], correct: 1, exp: 'Below ~40 mph rolling resistance dominates. Above it, aerodynamic drag takes over. Peak MPG for a gasoline car usually falls in a broad 30-55 mph plateau, often near 40 mph. Crawling is not better: an idling engine burns fuel per SECOND, so very low speeds cost more per mile.', category: 'general' },
     { q: 'Why do hybrid cars often get BETTER city MPG than highway MPG?', a: ['They use more gas on highways', 'Regenerative braking recaptures energy in stop-and-go', 'City roads are smoother', 'The battery only works at low speed, so the engine rests in town'], correct: 1, exp: 'Regen braking recovers energy that gas cars waste as brake heat. The more you stop, the more a hybrid wins. Opposite of gas cars.', category: 'general' },
     { q: 'Which of these is the LEAST effective way to save fuel?', a: ['Keeping tires properly inflated', 'Removing a roof rack you are not using from the car', 'Idling with the AC off to "warm up" for 5 minutes', 'Combining errands into one trip'], correct: 2, exp: 'Idling to warm up wastes fuel and does almost nothing for modern engines. 30 seconds is enough. Cold engines warm up faster while DRIVING gently.', category: 'general' },
 
@@ -1220,7 +1220,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     drag: {
       title: 'Aerodynamic Drag: Why Highway MPG Drops',
       icon: '💨',
-      content: "Every car pushes air out of the way as it moves. The force it takes to do that is DRAG. The key insight: drag grows with the square of speed. Double your speed and drag becomes 4× stronger. At 30 mph, drag is small. At 70 mph, it is the dominant force working against you. This is why most cars get their best MPG around 45-55 mph and lose efficiency sharply above that. Engineers spend huge effort shrinking 'Cd × A' — the drag coefficient times frontal area. A sleek EV might have Cd × A ≈ 0.53 m². A boxy pickup is ≈ 1.35 m² — almost three times more drag at the same speed.",
+      content: "Every car pushes air out of the way as it moves. The force it takes to do that is DRAG. The key insight: drag grows with the square of speed. Double your speed and drag becomes 4× stronger. At 30 mph, drag is small. At 70 mph, it is the dominant force working against you. This is why most cars have a broad fuel-economy sweet spot in the 30-55 mph range, with the peak often around 40 mph, and lose efficiency sharply above it: by 75 mph a typical sedan has given up roughly a quarter of its best MPG. Engineers spend huge effort shrinking 'Cd × A' — the drag coefficient times frontal area. A sleek EV might have Cd × A ≈ 0.53 m². A boxy pickup is ≈ 1.35 m² — almost three times more drag at the same speed.",
       formula: 'F_drag = ½ · ρ · v² · Cd · A',
       variables: 'ρ = air density (1.225 kg/m³ at sea level), v = speed in m/s, Cd = drag coefficient, A = frontal area in m²',
       practice: 'Try the simulator: drive a sedan at 55 mph then 75 mph. Watch the MPG readout drop sharply. That drop is almost entirely drag.'
@@ -1252,7 +1252,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     mpg: {
       title: 'MPG Math: What Your Fuel Gauge Is Really Telling You',
       icon: '⛽',
-      content: "Miles per gallon (MPG) is a ratio — distance divided by fuel used. Higher = better. But MPG hides something important: the relationship is NON-LINEAR. Going from 15 to 20 MPG saves more fuel than going from 35 to 40 MPG, even though both are a 5 MPG improvement. That is why gallons-per-100-miles (GPM) is sometimes a better metric. Europe uses L/100km for exactly this reason. The things that move your MPG up or down are: speed (sweet spot 45-55 mph), aggression (jackrabbit starts = -15 to -40%), tire pressure (low = -3 to -10%), AC use (-5 to -10% at low speed, negligible at highway), roof racks (-10 to -25%), cargo weight (-1% per 100 lbs), and engine condition.",
+      content: "Miles per gallon (MPG) is a ratio — distance divided by fuel used. Higher = better. But MPG hides something important: the relationship is NON-LINEAR. Going from 15 to 20 MPG saves more fuel than going from 35 to 40 MPG, even though both are a 5 MPG improvement. That is why gallons-per-100-miles (GPM) is sometimes a better metric. Europe uses L/100km for exactly this reason. The things that move your MPG up or down are: speed (sweet spot is a broad 30-55 mph plateau, peaking near 40), aggression (jackrabbit starts = -15 to -40%), tire pressure (low = -3 to -10%), AC use (-5 to -10% at low speed, negligible at highway), roof racks (-10 to -25%), cargo weight (-1% per 100 lbs), and engine condition.",
       formula: 'MPG = distance / fuel_used  |  GPM = 100 / MPG',
       variables: 'GPM = gallons per 100 miles. Lower GPM = better. The metric engineers actually prefer.',
       practice: 'In Hypermiling Challenge mode, the sim tracks your actual MPG vs the EPA rating. Try to beat the sticker through smooth driving.'
@@ -1284,7 +1284,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     night: {
       title: 'Night Driving: Why Speed Must Drop',
       icon: '🌙',
-      content: "At night your headlights illuminate about 350 feet with low beams, ~500 feet with high beams. Your braking distance at 60 mph is ~240 ft. Add reaction distance — you are already using your ENTIRE headlight range just to stop in time. At 75 mph, you physically cannot stop within your headlight range with low beams. This is called 'overdriving your headlights' and it is how single-vehicle-at-night crashes happen. Rule: drive slow enough that you could stop within the distance you can see. Use high beams only when clear; Maine §2067 requires dimming within 500 ft of oncoming traffic and within 300 ft when following another vehicle.",
+      content: "At night your headlights illuminate about 350 feet with low beams, ~500 feet with high beams. On dry pavement your braking distance at 60 mph is about 170 ft, and at night you should budget a 2-second reaction (slower than the 1.5 s daytime figure, because an unlit hazard has to resolve out of darkness before you even recognize it) — that is another ~176 ft, so roughly 345 ft total. You are already using your ENTIRE low-beam range just to stop in time, on a dry road with good tires. At 75 mph, you physically cannot stop within your headlight range with low beams. This is called 'overdriving your headlights' and it is how single-vehicle-at-night crashes happen. Rule: drive slow enough that you could stop within the distance you can see. Use high beams only when clear; Maine §2067 requires dimming within 500 ft of oncoming traffic and within 300 ft when following another vehicle.",
       formula: 'safe_night_speed: where d_stop(v) ≤ headlight_range',
       variables: 'headlight_range ≈ 350 ft (low) / 500 ft (high), d_stop(60 mph) ≈ 240 ft on dry',
       practice: 'Switch the sim to Night scenario. Feel how much shorter your "world" becomes. Try high vs low beams.'
@@ -1373,7 +1373,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var habitDone = true;
     if (mission.habit === 'laneChanges') habitDone = laneChanges >= mission.habitTarget && unsignaled === 0;
     else if (mission.habit === 'stops') habitDone = (Number(stats.stops) || 0) >= mission.habitTarget;
-    else if (mission.habit === 'speed') habitDone = (Number(stats.secondsOverLimit) || 0) <= 2;
+    // A 'speed' habit means the mission asks for a TIGHTER speed standard than
+    // the generic `speed` criterion below, which allows 2 seconds over. Honour
+    // the authored habitTarget as that allowance in seconds.
+    //
+    // This branch used to hardcode `<= 2`, making it byte-identical to the
+    // generic criterion — so school_zone and construction each carried a
+    // "habit" check that duplicated a check they already had, and their
+    // authored `habitTarget: 1` was dead configuration (changing it to 99
+    // altered nothing). The labels promise more than that: "Hold the active
+    // 15 mph limit" and "Stay at or below the work-zone limit" are exactly the
+    // places where a 2-second overspeed should not pass.
+    else if (mission.habit === 'speed') {
+      var speedAllowanceSec = Number(mission.habitTarget);
+      if (!isFinite(speedAllowanceSec) || speedAllowanceSec < 0) speedAllowanceSec = 2;
+      habitDone = (Number(stats.secondsOverLimit) || 0) <= speedAllowanceSec;
+    }
     else if (mission.habit === 'smooth') {
       habitDone = (Number(stats.skidSeconds) || 0) < 2 &&
         (Number(stats.hydroplaneSeconds) || 0) < 1 &&
@@ -1498,6 +1513,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // All speeds internal in m/s, displayed in mph. 1 mph = 0.44704 m/s.
 
   var MPH_TO_MS = 0.44704;
+  // Speed (m/s) at which steering authority has fallen to half. Also fixes the
+  // lateral-acceleration asymptote of the bicycle model — see the comment in
+  // drivingSteeringGeometry. Must stay low enough that a sustained turn does
+  // not demand more grip than the tyres have on dry pavement.
+  var RR_STEER_RATIO_KNEE = 6.0;
   var MS_TO_MPH = 2.23694;
   var FT_PER_M = 3.28084;
   var METERS_PER_MILE = 1609.344; // 1 statute mile (NIST exact)
@@ -1604,7 +1624,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // Wheelbases are class approximations, not manufacturer specifications.
   function drivingSteeringGeometry(speed, steering, vehicleId) {
     var wheelbase = Math.max(2.4, Math.min(6.5, vehicleFootprint(vehicleId || 'sedan').length * 0.6));
-    var ratio = 0.8 / (1 + Math.pow(Math.abs(speed) / 8.5, 2));
+    // Steering authority falls with speed. The knee (RR_STEER_RATIO_KNEE) sets
+    // how fast it falls, and it also fixes the lateral-acceleration ASYMPTOTE:
+    // as v grows, lateral a -> knee^2 * steer * 0.8 / wheelbase.
+    //
+    // At the old knee of 8.5 that asymptote was 1.31 g for a sedan at the
+    // maximum real input (keyboard/gamepad steering is scaled by 0.6). Dry
+    // grip here is mu 0.72, so simply holding a turn demanded roughly twice
+    // the grip a street tyre can give: the friction circle flagged a SKID at
+    // every speed at or above ~30 mph on DRY pavement, and the car sat in a
+    // permanent skid state through any sustained highway curve.
+    //
+    // A knee of 6.0 caps the asymptote at ~0.65 g — just under the dry ceiling,
+    // so a steady turn holds on dry pavement and still breaks away on snow and
+    // ice, which is the lesson. Low-speed authority is preserved: the sedan's
+    // turning radius at 3 m/s with full input stays ~6.7 m (the handling test
+    // pins it between 4 m and 9 m), so parking manoeuvres are unaffected.
+    var ratio = 0.8 / (1 + Math.pow(Math.abs(speed) / RR_STEER_RATIO_KNEE, 2));
     var wheelAngle = Math.max(-0.7, Math.min(0.7, steering)) * ratio;
     var yawRate = speed * Math.tan(wheelAngle) / wheelbase;
     return { wheelbase: wheelbase, wheelAngle: wheelAngle, yawRate: yawRate,
@@ -2347,7 +2383,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     if (opts.coldStart) engineEff *= (vehicle.type === 'electric' ? 0.97 : 0.85);
     // Winter penalty: dense air, ethanol, accessory load. ~5% across powertrains.
     if (opts.winter) engineEff *= 0.95;
-    var fuelPowerW = powerW / engineEff;
+    // Idle burn. An engine spends fuel just staying running, and that cost is
+    // per SECOND, not per mile — which is exactly why crawling is inefficient
+    // per mile and why MPG peaks at a moderate cruise instead of climbing
+    // forever as speed falls.
+    //
+    // instantMPG omitted this even though idleGph() already existed and was
+    // used for idling stops. Without it the curve was monotonic: the sedan read
+    // 86.5 MPG at 25 mph and just kept improving as it slowed, with no peak at
+    // all — while the tool states in three places that "peak MPG is usually
+    // 45-55 mph" and that cars "lose efficiency sharply above that". The lesson
+    // and the model disagreed, and the Hypermiling Lab rewarded crawling.
+    //
+    // Folding it in puts the gas peak in a believable band and brings highway
+    // cruise into the EPA range (sedan 60 mph: 42.6 -> 31.5 MPG against a real
+    // 32-38). EVs have idleGph 0 and so still do best at low speed, which is
+    // correct for an electric drivetrain.
+    var idlePowerW = idleGph(vehicle) * 33700;
+    var fuelPowerW = powerW / engineEff + idlePowerW;
     // Energy density: gasoline ≈ 33.7 kWh/gallon gas-equivalent (EPA's MPGe basis).
     // A gallon delivers 33,700 W for one hour, so gal/h = watts / 33,700 directly.
     // (A previous version divided by 33700*1000*... with a Wh→J factor of 1000
@@ -2791,6 +2844,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // curb but not actually crossing. Bounds the courtesy yield so a curbside walker
   // can never hold a lane indefinitely. Active crossings are never timed out.
   var RR_CURB_YIELD_HOLD_MAX = 4;
+  // Fraction of the tyre friction budget usable for FORWARD thrust at launch.
+  // Thrust is capped at mass * mu * g * this, which is the grip limit — a car
+  // cannot push harder than its tyres hold.
+  //
+  // This was 0.4, and that number quietly cancelled the whole vehicle model:
+  // the cap scales with mass, so a = mu * g * 0.4 = 2.83 m/s^2 for EVERY
+  // vehicle regardless of mass or power. The cap bound below ~60 mph for the
+  // sedan and ~94 mph for the EV, so it governed the entire 0-60 run and every
+  // passenger vehicle accelerated identically (~10.1-10.5 s). The 220 kW
+  // electric sedan launched exactly like the 90 kW hybrid, and powerKW was
+  // very nearly decorative.
+  //
+  // 0.6 gives a_max = 0.43 g, which is a realistic launch for a street tyre
+  // (real cars manage roughly 0.3-0.5 g), and lets power separate the
+  // vehicles again: sedan ~7.2 s, SUV ~6.8 s, truck ~6.8 s, EV ~6.6 s,
+  // hybrid ~8.3 s, school bus ~27 s — an ordering that matches real 0-60
+  // figures. Shared by the driving sim and the Live Force Diagram so the two
+  // cannot disagree.
+  var RR_LAUNCH_TRACTION_FRACTION = 0.6;
   var RR_INTERSECTION_STOP_LINE_GAP = 1.3;
   function intersectionStopLineCoordinate(intersectionCenter, travelSign) {
     var direction = Number(travelSign) < 0 ? -1 : 1;
@@ -11386,7 +11458,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (absSpeed < 2) maxThrust = veh.powerKW * 500;
           // In reverse, cap thrust to 30% (reverse is slow)
           if (reverseMode) maxThrust *= 0.3;
-          var thrust = throttleInput * Math.min(maxThrust, veh.mass * mu * 9.81 * 0.4);
+          var thrust = throttleInput * Math.min(
+            maxThrust, veh.mass * mu * 9.81 * RR_LAUNCH_TRACTION_FRACTION);
           // Apply thrust in the correct direction
           if (reverseMode) thrust = -thrust;
           var Fd = dragForce(absSpeed, veh.cd, veh.area);
@@ -11420,7 +11493,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var aheadDirG = playerMainRoadTravelSign;
             var hAhead = sp.heightAt(gradeStation + aheadDirG);
             var slope = (hAhead - hHere); // rise per 1 cell IN FORWARD DIRECTION
-            gradeForce = veh.mass * 9.81 * slope * 0.18;
+            // 1 world unit = 1 metre (METERS_PER_WORLD_UNIT), so `slope` is
+            // already rise-over-run — a true dimensionless grade. The force is
+            // therefore m * g * slope with no scaling factor.
+            //
+            // This carried an extra * 0.18, which cut gravity to 18% and made
+            // hills imperceptible. The terrain is already gentle (the steepest
+            // rural hill is 2.83%, against a 6% interstate maximum), and 0.18
+            // took that to an effective 0.51% — below flat-road noise. On the
+            // steepest hill in the game the grade contributed less than HALF of
+            // rolling resistance, and coasting changed speed by about 1 mph
+            // over ten seconds. Meanwhile the tool teaches "use engine braking
+            // (lower gear) on long descents", a lesson the simulation could
+            // never demonstrate.
+            //
+            // At true gravity the steepest hill is 2.4x rolling resistance
+            // (~6 mph over ten seconds of coasting), and holding 55 mph up it
+            // needs only ~13% of the thrust budget — noticeable, not punishing.
+            gradeForce = veh.mass * 9.81 * slope;
           }
           var netForce = longitudinalNetForce(
             thrust, Fd + Fr + brakeForce, car.speed, gradeForce);
@@ -12047,12 +12137,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             statsRef.current.jackrabbits++;
             statsRef.current.efficiencyScore -= 3;
           }
-          // Hard brake detection (with startup grace)
-          if (brakeInput > 0 && accel < -5 && lastStateRef.current.accel >= -5 && timeRef.current > 5) {
+          // Hard brake detection (with startup grace).
+          //
+          // The threshold scales with the SURFACE, because "braking hard" means
+          // using most of the grip you actually have — not hitting a fixed
+          // deceleration a low-grip surface can never produce.
+          //
+          // Fixed thresholds of -5 and -7 meant:
+          //   • dry  (ceiling 6.50 m/s^2): hard brakes registered, but the
+          //     severity-3 tier at -7 was UNREACHABLE even with drag included
+          //     (max total decel ~6.91), so no hard brake was ever severe;
+          //   • rain (ceiling 3.79): NOTHING registered — a panic stop on wet
+          //     pavement, which is exactly what this should flag, counted as
+          //     ordinary braking;
+          //   • snow (1.99) and ice (0.90): nothing registered either, so the
+          //     winter lesson about threshold braking had no feedback at all.
+          //
+          // Expressed as a fraction of the surface ceiling, a panic stop reads
+          // as a panic stop on every surface, which is what the lessons teach.
+          var brakeCeiling = tireDynamics.brakingMu > 0
+            ? Math.max(0.5, frictionCoef(scn.weather) * 0.92 * 9.81)
+            : 5;
+          var hardBrakeAt = -brakeCeiling * 0.80;
+          var severeBrakeAt = -brakeCeiling * 0.92;
+          if (brakeInput > 0 && accel < hardBrakeAt &&
+              lastStateRef.current.accel >= hardBrakeAt && timeRef.current > 5) {
             statsRef.current.hardBrakes++;
             statsRef.current.efficiencyScore -= 2;
             statsRef.current.safetyScore -= 1;
-            pushDriveEvent(statsRef, 'hardBrake', Math.abs(car.speed) * MS_TO_MPH, frictionCoef(scn.weather), scn.speedLimit, accel < -7 ? 3 : 2);
+            pushDriveEvent(statsRef, 'hardBrake', Math.abs(car.speed) * MS_TO_MPH, frictionCoef(scn.weather), scn.speedLimit, accel < severeBrakeAt ? 3 : 2);
           }
           // Speed violation — only in Drive, with 5-second grace period, +8 mph threshold.
           // speedViolations counts discrete incidents (one per entry into the over-limit state)
@@ -31083,8 +31196,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
               __alloT('stem.roadready.dry_road_friction_0_72_snow_0_22_ice_0', 'Dry road friction μ ≈ 0.72. Snow ≈ 0.22. Ice ≈ 0.10. '),
               __alloT('stem.roadready.that_means_your_braking_distance_on_ic', 'That means your braking distance on ice is '), h('b', null, __alloT('stem.roadready.7_longer', '7× longer')), __alloT('stem.roadready.than_on_dry_pavement', ' than on dry pavement. '),
-              __alloT('stem.roadready.at_40_mph_on_ice_stopping_distance_600', 'At 40 mph on ice: stopping distance ≈ 600+ feet (two football fields). '),
-              __alloT('stem.roadready.at_40_mph_on_dry_100_feet', 'At 40 mph on dry: ≈ 100 feet. '),
+              __alloT('stem.roadready.at_40_mph_on_ice_stopping_distance_600', 'At 40 mph on ice: braking alone ≈ 535 feet — nearly two football fields, and that is before you add the 88 ft you travel while reacting. '),
+              __alloT('stem.roadready.at_40_mph_on_dry_100_feet', 'At 40 mph on dry: ≈ 74 feet of braking. '),
               __alloT('stem.roadready.this_is_not_opinion_it_is_v_2_g', 'This is not opinion — it is v²/(2μg).')
             )
           )
@@ -32049,12 +32162,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ══════════════════════════════════════════════════════════
       if (view === 'mooseSafety') {
         var MOOSE_FACTS = [
-          { icon: '📊', title: __alloT('stem.roadready.by_the_numbers', 'By the numbers'), body: __alloT('stem.roadready.maine_has_roughly_500_700_reported_moo', 'Maine has roughly 500–700 reported moose–vehicle collisions per year. The state averages 3–5 fatal moose crashes annually.') },
-          { icon: '🕒', title: __alloT('stem.roadready.worst_times', 'Worst times'),     body: __alloT('stem.roadready.dawn_and_dusk_low_light_plus_late_may_', 'Dawn and dusk (low light) plus late May through June (calves) and September–November (the rut). Overnight hours are dangerous too — moose are dark and blend into the road.') },
+          { icon: '📊', title: __alloT('stem.roadready.by_the_numbers', 'By the numbers'), body: __alloT('stem.roadready.maine_has_roughly_500_700_reported_moo', 'Maine now reports roughly 220–290 moose–vehicle collisions per year (MaineDOT counted 217 in 2024), down more than half from the ~650 a year seen in the mid-2000s. Fatalities are rarer than the crash count suggests: three people died in moose crashes across all of 2020–2024 — but that still exceeded the deaths from every other animal crash in Maine combined, and about 15.7% of moose crashes injure someone.') },
+          { icon: '🕒', title: __alloT('stem.roadready.worst_times', 'Worst times'),     body: __alloT('stem.roadready.dawn_and_dusk_low_light_plus_late_may_', 'Night, overwhelmingly: MaineDOT finds 74% of moose crashes happen after dark, clustering 8–11 p.m. and again 4–5 a.m. By season, more than 35% fall in May–June, when moose shed their winter coats and look even darker; the September–November rut is the second peak. A moose is tall, dark, and has no eye-shine at headlight height — your high beams pass UNDER its body and light nothing back.') },
           { icon: '📏', title: __alloT('stem.roadready.why_swerving_fails', 'Why swerving fails'), body: __alloT('stem.roadready.a_full_grown_moose_weighs_800_1_400_lb', 'A full-grown moose weighs 800–1,400 lb. Its mass sits on long legs — your bumper takes the legs out and the body comes through the windshield. Roof-crush is the usual cause of death, not the impact itself.') },
           { icon: '🛣️', title: __alloT('stem.roadready.maine_zones', 'Maine zones'),     body: __alloT('stem.roadready.route_201_route_2_route_6_route_11_nor', 'Route 201, Route 2, Route 6, Route 11 north of Bangor, and the entire Moosehead Lake region are the highest-risk corridors. Yellow moose-warning signs mark known crossings — slow down and scan.') },
           { icon: '💡', title: __alloT('stem.roadready.high_beams_2', 'High beams'),      body: __alloT('stem.roadready.in_moose_country_and_zero_oncoming_tra', 'In moose country and zero oncoming traffic, use high beams. A moose\'s eyes don\'t always reflect like a deer\'s, but its body outline appears sooner. Dim for oncoming cars, then pop them back on.') },
-          { icon: '\uD83D\uDE97', title: __alloT('stem.roadready.if_impact_is_unavoidable', 'If impact is unavoidable'), body: __alloT('stem.roadready.brake_hard_let_up_just_before_impact_h', 'Brake hard, let up just before impact (helps the hood absorb force), duck your head low toward the wheel. This moves your skull below the predicted windshield-crush line.') }
+          { icon: '\uD83D\uDE97', title: __alloT('stem.roadready.if_impact_is_unavoidable', 'If impact is unavoidable'), body: __alloT('stem.roadready.brake_hard_let_up_just_before_impact_h', 'Brake hard and steer STRAIGHT — do not swerve. Let up on the brake just before impact: the nose rises, which can keep the body from riding up the hood. Aim for where the moose has been, not where it is. Then duck low and toward your DOOR — the door frame is far stronger than the middle of the roof, which is what collapses when a moose comes through.') }
         ];
         var MOOSE_SCENARIOS = [
           {
@@ -32230,7 +32343,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (view === 'emergencyVehicle') {
         var EMG_FACTS = [
           { icon: '📜', title: __alloT('stem.roadready.maine_law', 'Maine law'), body: __alloT('stem.roadready.title_29_a_2054_when_an_emergency_vehi', 'Title 29-A §2054: when an emergency vehicle with lights and siren approaches, pull as far right as practicable, clear of intersections, and stop until it passes. Failing to yield is a Class E crime with a minimum fine.') },
-          { icon: '🛣️', title: __alloT('stem.roadready.move_over_law', 'Move Over law'), body: __alloT('stem.roadready.maine_2054_a_when_passing_a_stopped_em', 'Maine §2070(8): when passing a stationary disabled or flashing-light vehicle, move to a non-adjacent lane if possible. If not, pass at a careful and prudent speed reasonable for safety.') },
+          { icon: '🛣️', title: __alloT('stem.roadready.move_over_law', 'Move Over law'), body: __alloT('stem.roadready.maine_2054_a_when_passing_a_stopped_em', 'Maine §2070(8): when passing a stationary disabled or flashing-light vehicle, move to a non-adjacent lane if possible. If not, pass at a careful and prudent speed reasonable for safety. Violating it carries a minimum $275 fine.') },
           { icon: '🚧', title: __alloT('stem.roadready.why_it_matters', 'Why it matters'), body: __alloT('stem.roadready.every_year_roadside_workers_and_respon', 'Every year roadside workers and responders die on Maine shoulders because drivers don\'t move over. The law exists because "rubbernecking at 65 mph" kills people.') },
           { icon: '🛑', title: __alloT('stem.roadready.don_t_stop_mid_intersection', 'Don\'t stop mid-intersection'), body: __alloT('stem.roadready.if_you_re_inside_an_intersection_when_', 'If you\'re inside an intersection when you hear a siren, CLEAR the intersection first, then pull right. Stopping in the intersection blocks the emergency vehicle\'s path.') }
         ];
@@ -32768,7 +32881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               '1 car length per 10 mph'
             ],
             correct: 2,
-            exp: '8–10 seconds minimum on snow and ice. Your stopping distance can be 4× longer than dry pavement. The "car length per 10 mph" rule is a 1950s formula and not remotely safe. Count from when the car ahead passes a fixed object until you pass it: one-one-thousand, two-one-thousand…'
+            exp: '8–10 seconds minimum on snow and ice. Braking distance on packed snow runs about 3× dry pavement, and on ice about 7× — the friction drops from μ 0.72 to 0.22 to 0.10, and braking distance is inversely proportional to μ. The "car length per 10 mph" rule is a 1950s formula and not remotely safe. Count from when the car ahead passes a fixed object until you pass it: one-one-thousand, two-one-thousand…'
           },
           {
             id: 'oversteer',
@@ -33261,9 +33374,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               { label: __alloT('stem.roadready.combined_mass_both_cars', 'Combined mass (both cars)'), val: '~3,000 kg' },
               { label: __alloT('stem.roadready.kinetic_energy_at_impact', 'Kinetic energy at impact'), val: '½ × 3000 × 15.6² = 365,000 J' },
               { label: __alloT('stem.roadready.tnt_equivalent', 'TNT equivalent'), val: '≈ 87 grams — that\'s a stick of dynamite' },
-              { label: __alloT('stem.roadready.stopping_gap_needed', 'Stopping gap needed'), val: 'At 35 mph, dry: 110 ft. Distracted driver gap: 0 ft.' }
+              { label: __alloT('stem.roadready.stopping_gap_needed', 'Stopping gap needed'), val: 'At 35 mph, dry: 134 ft (77 ft reacting + 57 ft braking). Distracted driver gap: 0 ft.' }
             ],
-            prevention: 'The distracted driver needed 1.5 sec reaction + 2 sec braking = 3.5 sec. Looking at their phone for 3 seconds at 35 mph = 154 ft traveled blind. That\'s why phone use while driving = 4x crash risk.'
+            prevention: 'The distracted driver needed 1.5 sec reaction + 2.2 sec braking = 3.7 sec. Looking at their phone for 3 seconds at 35 mph = 154 ft traveled blind — they are already past the stopping distance before they look up. That\'s why phone use while driving = 4x crash risk.'
           },
           { id: 'tbone', icon: '✖️', title: __alloT('stem.roadready.t_bone_side_impact', 'T-Bone (Side Impact)'), desc: __alloT('stem.roadready.intersection_crash_driver_a_runs_a_red', 'Intersection crash. Driver A runs a red at 45 mph. Driver B has green, enters legally.'),
             physics: [
@@ -35524,8 +35637,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var distFt = Math.round(dlSpeed * 1.467 * dlGlance);
         // Reference markers
         var refs = [
-          { ft: 60, label: __alloT('stem.roadready.a_car_length_10_ft_6', 'A car length (10 ft) × 6') },
-          { ft: 120, label: __alloT('stem.roadready.half_a_football_field', 'Half a football field') },
+          { ft: 60, label: __alloT('stem.roadready.a_car_length_10_ft_6', 'About 4 car lengths (a sedan is ~15 ft)') },
+          { ft: 120, label: __alloT('stem.roadready.half_a_football_field', '40 yards — 8 car lengths') },
           { ft: 300, label: __alloT('stem.roadready.a_full_football_field', 'A full football field') },
           { ft: 528, label: __alloT('stem.roadready.1_10_of_a_mile', '1/10 of a mile') }
         ];
@@ -35625,7 +35738,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' } },
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
               h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.nhtsa_data', '⚠️ NHTSA data')),
-              h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } }, __alloT('stem.roadready.texting_while_driving', 'Texting while driving: '), h('b', null, __alloT('stem.roadready.6_crash_risk', '5 seconds eyes-off')), __alloT('stem.roadready.3_142_distracted_driving_deaths_in_the', '. At 55 mph, NHTSA compares that to driving a football-field length blind. NHTSA also reports 3,208 distracted-driving deaths and 315,167 injuries in 2024.'))
+              h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } }, __alloT('stem.roadready.texting_while_driving', 'Texting while driving: '), h('b', null, __alloT('stem.roadready.6_crash_risk', '5 seconds eyes-off')), __alloT('stem.roadready.3_142_distracted_driving_deaths_in_the', '. At 55 mph, NHTSA compares that to driving a football-field length blind. Talking on a handheld phone roughly quadruples your crash risk — but TEXTING is in a different category again: the Virginia Tech naturalistic driving studies put it near 23×, because it takes your eyes, hands, and attention at the same time. NHTSA also reports 3,208 distracted-driving deaths and 315,167 injuries in 2024.'))
             ),
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
               h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.maine_law_2', '⚖️ Maine law')),
@@ -36181,9 +36294,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── STOPPING DISTANCE LAB ──
       if (view === 'stoppingLab') {
-        var labSpeed = d.labSpeed != null ? d.labSpeed : 55;
+        var labSpeed = (typeof d.labSpeed === 'number' && isFinite(d.labSpeed)) ? d.labSpeed : 55;
         var labWeather = d.labWeather || 'dry';
-        var labReaction = d.labReaction != null ? d.labReaction : 1.5;
+        var labReaction = (typeof d.labReaction === 'number' && isFinite(d.labReaction)) ? d.labReaction : 1.5;
         var labTires = d.labTires || 'good';
         // Map 'dry' to 'clear' for friction lookup
         var fw = normalizeWeather(labWeather);
@@ -37468,7 +37581,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var Fd = dragForce(v_ms, fdVeh.cd, fdVeh.area);
         var Fr = rollingForce(fdVeh.mass, rollingCoef(fwfd, true));
         var maxThrust = fdVeh.powerKW * 1000 / Math.max(1, v_ms);
-        var thrust = fdThrottle * Math.min(maxThrust, fdVeh.mass * frictionCoef(fwfd) * 9.81 * 0.4);
+        var thrust = fdThrottle * Math.min(
+          maxThrust, fdVeh.mass * frictionCoef(fwfd) * 9.81 * RR_LAUNCH_TRACTION_FRACTION);
         var netF = thrust - Fd - Fr;
         var accel = netF / fdVeh.mass;
         var maxF = Math.max(thrust, Fd + Fr, 1);
@@ -38086,12 +38200,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var nvBeams = d.nvBeams || 'low';
         var headlightRange = nvBeams === 'high' ? 500 : 350;
         var fwNv = 'clear';
-        var nvSD = stoppingDistance(nvSpeed, fwNv, 1.5);
+        // Night reaction time, not the 1.5 s daytime figure. At night the hazard
+        // is DETECTION, not grip: an unlit obstacle is not recognizable the
+        // instant it enters beam range — it has to resolve out of darkness
+        // first. Driver-ed and human-factors sources put night perception-
+        // reaction at roughly 2 s or more, versus ~1.5 s in daylight.
+        //
+        // This screen used 1.5 s, which told students 66 mph was a "max safe
+        // speed" on low beams — printed in green, beside a real statute. It
+        // also contradicted this tool's OWN night lesson, which states braking
+        // at 60 mph is "~240 ft" (that figure implies mu ~= 0.50, not the
+        // 0.72 ideal-dry value the shared model uses) and that 75 mph already
+        // overdrives low beams. Same screen, two different physics.
+        //
+        // The shared stoppingDistance model is correct and feeds 15 call
+        // sites, so it is left alone; only the night-specific inputs change.
+        var NIGHT_REACTION_SEC = 2.0;
+        var nvSD = stoppingDistance(nvSpeed, fwNv, NIGHT_REACTION_SEC);
         var overdriving = nvSD.total_ft > headlightRange;
-        // Find max safe speed (where stopping distance = headlight range)
-        var maxSafeSpeed = nvSpeed;
+        // Find max safe speed (where stopping distance = headlight range).
+        // Step DOWN from the top so the first fit is the highest safe speed.
+        var maxSafeSpeed = 10;
         for (var testSpd = 80; testSpd > 10; testSpd--) {
-          if (stoppingDistance(testSpd, fwNv, 1.5).total_ft <= headlightRange) { maxSafeSpeed = testSpd; break; }
+          if (stoppingDistance(testSpd, fwNv, NIGHT_REACTION_SEC).total_ft <= headlightRange) {
+            maxSafeSpeed = testSpd; break;
+          }
         }
 
         return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
@@ -38144,7 +38277,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
             h('div', { style: { fontWeight: 700, color: 'var(--rr-violet, #a78bfa)', marginBottom: '4px' } }, __alloT('stem.roadready.the_rule', '🔬 The Rule')),
-            h('div', null, '• Max safe speed with ' + nvBeams + ' beams: ', h('b', { style: { color: '#4ade80' } }, maxSafeSpeed + ' mph')),
+            // This is the PHYSICS ceiling on ideal dry pavement, not a
+            // recommendation. Real night guidance sits well below it, because
+            // an unlit hazard is not recognizable the moment it enters the
+            // beam. Labelling the bare number "max safe speed" in green read
+            // as advice to drive that fast; name what it is instead.
+            h('div', null, '• Physics ceiling on dry pavement with ' + nvBeams + ' beams: ',
+              h('b', { style: { color: '#fbbf24' } }, maxSafeSpeed + ' mph'),
+              h('span', { style: { color: '#94a3b8' } },
+                ' — the speed where stopping distance exactly equals what you can see.')),
+            h('div', { style: { color: '#fca5a5' } },
+              '• Drive well BELOW that. It assumes dry pavement, good tires, and that you',
+              ' recognize the hazard the instant it enters the beam. Wet, worn, or tired',
+              ' moves the real number down sharply.'),
             h('div', null, __alloT('stem.roadready.low_beams_illuminate_350_ft_high_beams', '• Low beams illuminate ~350 ft. High beams ~500 ft.')),
             h('div', null, __alloT('stem.roadready.rule_never_drive_faster_than_you_can_s', '• Rule: NEVER drive faster than you can stop within your headlight range.')),
             h('div', null, __alloT('stem.roadready.dim_high_beams_within_500_ft_of_oncomi', '• Maine §2067: dim high beams within 500 ft of oncoming traffic or 300 ft when following another vehicle.')),
