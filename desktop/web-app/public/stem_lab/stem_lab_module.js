@@ -664,7 +664,20 @@
         _stemFsNotify(el, true);
         var s = el.style;
         Object.keys(_stemFsProps).forEach(function(p) { el.__alloFsSaved[p] = s.getPropertyValue(p); s.setProperty(p, _stemFsProps[p], 'important'); });
-        el.__alloFsEsc = function(ev) { if (ev && ev.key === 'Escape') _stemFsExit(el); };
+        // The Escape handler is removed by _stemFsExit, but a tool can unmount
+        // while still in CSS fullscreen (the hub's "all tools" button does not
+        // exit first), and then nothing removes it: the handler stays on the
+        // document referencing a detached node, and every later Escape fires a
+        // spurious window resize that makes every live canvas re-measure.
+        // Drop it as soon as the stage is no longer in the document.
+        el.__alloFsEsc = function(ev) {
+          if (!el.isConnected && el.isConnected !== undefined) {
+            try { document.removeEventListener('keydown', el.__alloFsEsc); } catch (e) {}
+            el.__alloFsOn = false;
+            return;
+          }
+          if (ev && ev.key === 'Escape') _stemFsExit(el);
+        };
         try { document.addEventListener('keydown', el.__alloFsEsc); } catch (e) {}
         try { window.dispatchEvent(new Event('resize')); } catch (e) {}
       };
@@ -715,11 +728,44 @@
           var glyph = btn.firstElementChild;
           if (glyph) glyph.textContent = on ? '✕' : '⛶';
         };
+        // Release the observer and the two document listeners when the stage
+        // leaves the page.
+        //
+        // 56 tools bind a fullscreen button, and a React remount hands over a
+        // fresh button and a fresh stage every time, so the same-pair guard
+        // above never fires across tool switches. Ten tool opens used to leave
+        // ten live MutationObservers watching detached stages and twenty
+        // document listeners, each still running `sync` on every
+        // fullscreenchange to write attributes onto buttons nobody can see.
         try {
           var mo = new MutationObserver(sync);
           mo.observe(stage, { attributes: true, attributeFilter: ['data-allo-fullscreen-active'] });
           document.addEventListener('fullscreenchange', sync);
           document.addEventListener('webkitfullscreenchange', sync);
+          var release = function () {
+            try { mo.disconnect(); } catch (e) {}
+            try { document.removeEventListener('fullscreenchange', sync); } catch (e) {}
+            try { document.removeEventListener('webkitfullscreenchange', sync); } catch (e) {}
+            try { if (btn.__alloFsBound === stage) btn.__alloFsBound = null; } catch (e) {}
+          };
+          btn.__alloFsRelease = release;
+          window.__alloStemFsBindings = window.__alloStemFsBindings || [];
+          window.__alloStemFsBindings.push({ stage: stage, release: release });
+          // Sweep bindings whose stage has left the document. Cheap, and it
+          // runs only when a new binding is made, so an idle session does no
+          // work. isConnected is the one reliable signal here: the hub cannot
+          // know when a plugin's own subtree unmounts.
+          if (window.__alloStemFsBindings.length > 1) {
+            // Only a stage the DOM reports as detached is released. The stage
+            // being bound right now is connected by definition, so it needs no
+            // special case; and an environment where isConnected is undefined
+            // keeps everything, which is the safe direction.
+            window.__alloStemFsBindings = window.__alloStemFsBindings.filter(function (b) {
+              var gone = b.stage && b.stage.isConnected === false;
+              if (gone) { try { b.release(); } catch (e) {} }
+              return !gone;
+            });
+          }
         } catch (e) {}
         btn.addEventListener('click', function (ev) {
           ev.preventDefault();
