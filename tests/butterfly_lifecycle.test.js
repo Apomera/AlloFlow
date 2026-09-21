@@ -232,6 +232,15 @@ describe('Butterfly evidence-based conclusion',()=>{
    expect(ev.broods).toBe(2);
  });
 
+ it('reports what the patch makes possible, not how many would survive',()=>{
+   const s=examined(BF.freshState(),'milkweed');
+   BF.layEggs(s,'milkweed','complete');runToEnd(s);
+   const msg=BF.broodResult(s).message;
+   // "carried a generation all the way to an adult" read as a survival claim.
+   expect(msg).toContain('not a count of how many would survive');
+   expect(msg).not.toContain('all the way to an adult');
+ });
+
  it('rejects an unknown claim id instead of inventing a verdict',()=>{
    const s=examined(BF.freshState(),'milkweed');
    for(const id of [null,'','constructor','__proto__','toString','unknown'])

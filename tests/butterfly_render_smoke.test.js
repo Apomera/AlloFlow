@@ -1,7 +1,7 @@
 import {beforeAll,describe,it,expect} from 'vitest';
 import {loadTool,resetStemLab,React,ReactDOMServer} from './helpers/stem_widgets_smoke_harness.js';
-let tool;
-beforeAll(()=>{resetStemLab();window.__RR_TEST_EXPORTS__={};tool=loadTool('stem_lab/stem_tool_butterfly.js','butterfly');});
+let tool,BF_STAGES;
+beforeAll(()=>{resetStemLab();window.__RR_TEST_EXPORTS__={};tool=loadTool('stem_lab/stem_tool_butterfly.js','butterfly');BF_STAGES=window.__RR_TEST_EXPORTS__.butterfly.stages;});
 
 // The pure-model tests never touch the JSX. This renders the real component so
 // a ReferenceError or a bad element in the new panels cannot ship green.
@@ -36,6 +36,20 @@ describe('Butterfly panels render',()=>{
    expect(html).toContain('Last followed: Wild bergamot');
    expect(html).toContain('data-state="blocked"');
    expect(html).not.toContain('No generation started');
+ });
+ it('discloses the limits of the life cycle model in the science notes',()=>{
+   const html=render();
+   // A model that decides a generation's fate must say what it leaves out,
+   // or a learner reads "reached the adult stage" as a survival prediction.
+   for(const disclosure of ['teaching model','not a population simulation',
+     'predators','disease','most eggs do not reach adulthood','temperature'])
+     expect(html).toContain(disclosure);
+ });
+ it('does not carry a per-stage resource field that nothing reads',()=>{
+   // `needs` was dead data and two of its four values were wrong: a chrysalis
+   // feeds on nothing, and an emerged adult can fly elsewhere for nectar.
+   BF_STAGES.forEach(st=>expect(st).not.toHaveProperty('needs'));
+   expect(BF_STAGES.find(st=>st.id==='adult').thriving).toContain('or any other');
  });
  it('renders every claim without throwing on an empty record set',()=>{
    for(const saved of [undefined,{butterfly:{version:3,observations:[],restoration:{},lifecycle:{}}}])

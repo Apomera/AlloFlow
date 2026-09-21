@@ -30,21 +30,21 @@
   // learner observes, not something the tool asserts in a caption.
   // Stages are labelled developmental steps, not timed or measured rates.
   var STAGES=Object.freeze([
-    Object.freeze({id:'egg',ordinal:'01',name:'Egg',needs:'host',
+    Object.freeze({id:'egg',ordinal:'01',name:'Egg',
       caption:'A monarch egg is laid on a leaf. It does not feed yet; what matters is the plant it sits on.',
       thriving:'The egg rests on a milkweed leaf. When it hatches, the caterpillar will emerge onto its food plant.',
       failing:'The egg is on a plant with no milkweed leaves. It can still hatch, but no monarch caterpillar food is growing here.'}),
-    Object.freeze({id:'caterpillar',ordinal:'02',name:'Caterpillar',needs:'host',
+    Object.freeze({id:'caterpillar',ordinal:'02',name:'Caterpillar',
       caption:'The caterpillar feeds and grows. This is the stage that depends on milkweed leaves.',
       thriving:'The caterpillar is feeding on milkweed leaves and growing through its larval stage.',
       failing:'The caterpillar hatched with no milkweed leaves within reach. Nectar flowers are adult food and do not feed this stage; the generation does not continue here.'}),
-    Object.freeze({id:'chrysalis',ordinal:'03',name:'Chrysalis',needs:'host',
+    Object.freeze({id:'chrysalis',ordinal:'03',name:'Chrysalis',
       caption:'The caterpillar forms a chrysalis and reorganises into an adult.',
       thriving:'A caterpillar that fed well forms its chrysalis, where metamorphosis takes place.',
       failing:'No caterpillar completed feeding at this patch, so no chrysalis forms.'}),
-    Object.freeze({id:'adult',ordinal:'04',name:'Adult',needs:'nectar',
+    Object.freeze({id:'adult',ordinal:'04',name:'Adult',
       caption:'The adult emerges and feeds on flower nectar — the stage you fly.',
-      thriving:'An adult emerges. It feeds on flower nectar, the resource you have been using in flight.',
+      thriving:'An adult emerges. From here it can fly to nectar flowers — in this patch or any other — the way you do.',
       failing:'No adult emerges from this patch this generation.'})
   ]);
   var OUTCOMES=Object.freeze([
@@ -143,7 +143,7 @@
   function broodFeedback(record,p){
     var matched=record.prediction===record.result;
     return (matched?'Prediction matched. ':'Different from your prediction. ')+(record.result==='complete'
-      ?p.name+' carried a generation all the way to an adult, because monarch caterpillars had milkweed leaves to eat here.'
+      ?p.name+' offered what every stage needs, so a generation could run its whole cycle here — monarch caterpillars had milkweed leaves to eat. That is what this patch makes possible, not a count of how many would survive.'
       :p.name+' did not carry a generation to an adult. The caterpillar stage had no milkweed leaves, and adult nectar cannot substitute for it.');
   }
   function broodFor(s,patchId){return s.lifecycle.broods.find(function(b){return b.patch===patchId;})||null;}
@@ -608,7 +608,7 @@
               h('ul',{className:'bf-evidence'},verdict.evidence.lines.map(function(line,i){return h('li',{key:i,'data-evidence':line.kind},line.text);}))
             ):h('p',{className:'bf-help'},'You have not recorded anything yet. Examine a patch to begin.')):null,
           h('div',{role:'status','aria-live':'polite'},answer||(verdict?verdict.verdict+' '+verdict.why:'')))),
-      h('details',{className:'bf-sources'},h('summary',null,'Science notes & sources'),h('p',null,'Species: monarch (Danaus plexippus). This summer scene represents a Mid-Atlantic habitat investigation. Plants and wing patterns are illustrative and enlarged. Guided routes, flight speed, distances, and energy are teaching choices, not field measurements. Other butterfly species can have different host plants.'),h('ul',null,
+      h('details',{className:'bf-sources'},h('summary',null,'Science notes & sources'),h('p',null,'Species: monarch (Danaus plexippus). This summer scene represents a Mid-Atlantic habitat investigation. Plants and wing patterns are illustrative and enlarged. Guided routes, flight speed, distances, and energy are teaching choices, not field measurements. The generation you follow is a teaching model of one outcome, not a population simulation: it turns on whether milkweed is present, and it deliberately leaves out weather, predators, parasites, disease, how many eggs are laid, and how many survive — all of which matter in a real meadow, where most eggs do not reach adulthood even on good milkweed. Real development also takes weeks and depends on temperature; the stages here advance when you choose, in a fixed order. Other butterfly species can have different host plants.'),h('ul',null,
         h('li',null,h('a',{href:'https://www.xerces.org/publications/plant-lists/monarch-nectar-plants-mid-atlantic',target:'_blank',rel:'noopener noreferrer'},'Xerces Society · Regional nectar plants and milkweed hosts')),
         h('li',null,h('a',{href:'https://monarchjointventure.org/monarch-biology/life-cycle',target:'_blank',rel:'noopener noreferrer'},'Monarch Joint Venture · Life cycle')),
         h('li',null,h('a',{href:'https://www.nrcs.usda.gov/programs-initiatives/monarch-butterflies',target:'_blank',rel:'noopener noreferrer'},'USDA NRCS · Monarch habitat and feeding needs')),
