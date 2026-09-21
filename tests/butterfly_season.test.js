@@ -143,6 +143,71 @@ describe('Butterfly mowing and timing',()=>{
    expect(html).toContain('Stopped early');
  });
 
+ it('stops counting a restoration run once the plot has been replanted',()=>{
+   const s=BF.freshState();
+   // Plant it, examine it, and establish a timing pair on THAT planting.
+   BF.applyPlan(s,'mixed','both');Object.assign(s,{x:-42,z:38});BF.land(s);BF.observe(s);
+   BF.runSeason(s,'restoration','never','complete');
+   BF.runSeason(s,'restoration','early','stop');
+   expect(BF.timingPairs(s)).toHaveLength(1);
+   expect(BF.judgeClaim(s,'timing-irrelevant').tested).toBe(true);
+   // Replant the same plot as bare lawn. The old rows describe plants that are
+   // no longer there, so they must stop counting as evidence about the plot.
+   BF.applyPlan(s,'lawn','neither');Object.assign(s,{x:-42,z:38});BF.land(s);BF.observe(s);
+   expect(s.season.runs).toHaveLength(2);        // kept as a record
+   expect(BF.currentSeasonRuns(s)).toHaveLength(0); // but not counted
+   expect(BF.timingPairs(s)).toEqual([]);
+   expect(BF.judgeClaim(s,'timing-irrelevant').tested).toBe(false);
+   const ev=BF.judgeClaim(s,'timing-irrelevant').evidence;
+   expect(ev.lines.filter(l=>l.kind==='season')).toHaveLength(0);
+   expect(ev.seasons).toBe(0);
+   // Replanting it back makes those runs describe the ground again.
+   BF.applyPlan(s,'mixed','both');Object.assign(s,{x:-42,z:38});BF.land(s);BF.observe(s);
+   expect(BF.currentSeasonRuns(s)).toHaveLength(2);
+   expect(BF.judgeClaim(s,'timing-irrelevant').tested).toBe(true);
+ });
+
+ it('keeps one row per planting, so the two plantings do not overwrite each other',()=>{
+   const s=BF.freshState();
+   BF.applyPlan(s,'mixed','both');Object.assign(s,{x:-42,z:38});BF.land(s);BF.observe(s);
+   BF.runSeason(s,'restoration','never','complete');
+   BF.applyPlan(s,'flowers','nectar');Object.assign(s,{x:-42,z:38});BF.land(s);BF.observe(s);
+   BF.runSeason(s,'restoration','never','complete');
+   // Same patch, same mowing, different planting: both rows survive.
+   expect(s.season.runs).toHaveLength(2);
+   expect(s.season.runs.map(r=>r.plan)).toEqual(['mixed','flowers']);
+   expect(BF.currentSeasonRuns(s)).toHaveLength(1);
+   // The bergamot-only planting cannot carry a caterpillar, so it stops early.
+   expect(BF.currentSeasonRuns(s)[0].result).toBe('stop');
+   // Re-running the SAME planting replaces its own row rather than adding one.
+   BF.runSeason(s,'restoration','never','stop');
+   expect(s.season.runs).toHaveLength(2);
+ });
+
+ it('drops a restoration row that arrives with no planting recorded',()=>{
+   // A row with no plan cannot be matched to a planting, so it can never be
+   // shown truthfully. Fixed patches are unaffected.
+   const s=BF.freshState({season:{mowing:'never',prediction:null,runs:[
+     {patch:'restoration',mowing:'never',prediction:'complete',result:'complete'},
+     {patch:'restoration',mowing:'early',prediction:'stop',result:'stop',plan:'nope'},
+     {patch:'restoration',mowing:'mid',prediction:'stop',result:'stop',plan:'mixed'},
+     {patch:'milkweed',mowing:'never',prediction:'complete',result:'complete'}]}});
+   expect(s.season.runs).toEqual([
+     {patch:'restoration',mowing:'mid',prediction:'stop',result:'stop',plan:'mixed'},
+     {patch:'milkweed',mowing:'never',prediction:'complete',result:'complete'}]);
+ });
+
+ it('marks a replanted row in the table instead of letting it vanish',()=>{
+   const html=render({butterfly:{version:4,observations:[],
+     restoration:{design:'lawn',prediction:null,trials:[{design:'lawn',prediction:'neither'}]},
+     lifecycle:{patch:null,prediction:null,stage:null,broods:[]},
+     season:{mowing:'never',prediction:null,runs:[
+       {patch:'restoration',mowing:'never',prediction:'complete',result:'complete',plan:'mixed'}]}}});
+   expect(html).toContain('replanted since');
+   expect(html).toContain('data-season-current="false"');
+   expect(html).toContain('no longer describe what is growing there');
+ });
+
  it('never states a survival rate or a number of butterflies',()=>{
    const s=examined(BF.freshState(),'milkweed');
    BF.runSeason(s,'milkweed','never','complete');

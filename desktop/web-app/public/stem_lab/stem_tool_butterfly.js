@@ -208,8 +208,14 @@
       if(!r||!mowing(r.mowing)||!knownPatchId(r.patch))return;
       if(r.prediction!=='complete'&&r.prediction!=='stop')return;
       if(r.result!=='complete'&&r.result!=='stop')return;
-      runs=runs.filter(function(x){return !(x.patch===r.patch&&x.mowing===r.mowing);});
-      runs.push({patch:r.patch,mowing:r.mowing,prediction:r.prediction,result:r.result});
+      // A restoration run is only about the planting it was run under, so it
+      // carries that design. Rows for the fixed patches never need one.
+      var plan=r.patch==='restoration'&&design(r.plan)?r.plan:null;
+      if(r.patch==='restoration'&&!plan)return;
+      runs=runs.filter(function(x){return !(x.patch===r.patch&&x.mowing===r.mowing&&x.plan===plan);});
+      var row={patch:r.patch,mowing:r.mowing,prediction:r.prediction,result:r.result};
+      if(plan)row.plan=plan;
+      runs.push(row);
     });
     return {mowing:mowing(v.mowing)?v.mowing:'never',prediction:v.prediction==='complete'||v.prediction==='stop'?v.prediction:null,runs:runs};
   }
@@ -221,25 +227,40 @@
     if(guess!=='complete'&&guess!=='stop')return {ok:false,message:'Predict what happens to the generation before running the season.'};
     if(!evidenceRecorded(s,p))return {ok:false,message:'Examine '+p.name+' first, so you know what is growing there.'};
     var outcome=seasonOutcome(p,mowId),result=outcome.completes?'complete':'stop';
-    var sn=s.season;
-    sn.runs=sn.runs.filter(function(x){return !(x.patch===patchId&&x.mowing===mowId);})
-      .concat([{patch:patchId,mowing:mowId,prediction:guess,result:result}]);
+    var sn=s.season,plan=patchId==='restoration'?s.restoration.design:null;
+    var row={patch:patchId,mowing:mowId,prediction:guess,result:result};
+    if(plan)row.plan=plan;
+    sn.runs=sn.runs.filter(function(x){return !(x.patch===patchId&&x.mowing===mowId&&(x.plan||null)===plan);})
+      .concat([row]);
     sn.prediction=null;
     return {ok:true,outcome:outcome,result:result,matched:guess===result,
       message:(guess===result?'Prediction matched. ':'Different from your prediction. ')+outcome.reason+' '+mow.note};
   }
-  function seasonRunFor(s,patchId,mowId){return s.season.runs.find(function(r){return r.patch===patchId&&r.mowing===mowId;})||null;}
-  // Two runs on the SAME patch that differ only in mowing are what isolates
-  // timing as the cause. Until the learner has such a pair, the timing claim is
-  // untested no matter how many single runs they have done.
+  // A run describes the plot AS IT WAS PLANTED then. Once the restoration plot
+  // is replanted, its earlier rows no longer describe anything on the ground,
+  // so they stop counting as current evidence -- the same rule the life cycle
+  // applies when a replant ends a running generation.
+  function seasonRunIsCurrent(s,r){return r.patch!=='restoration'||r.plan===s.restoration.design;}
+  function currentSeasonRuns(s){return s.season.runs.filter(function(r){return seasonRunIsCurrent(s,r);});}
+  function seasonRunFor(s,patchId,mowId){
+    var plan=patchId==='restoration'?s.restoration.design:null;
+    return s.season.runs.find(function(r){return r.patch===patchId&&r.mowing===mowId&&(r.plan||null)===plan;})||null;
+  }
+  // Two runs on the SAME patch, under the same planting, differing only in
+  // mowing are what isolates timing as the cause. Until the learner has such a
+  // pair, the timing claim is untested however many single runs they have done.
   function timingPairs(s){
-    return s.season.runs.filter(function(r){return r.result==='complete';}).map(function(win){
-      var lost=s.season.runs.filter(function(r){return r.patch===win.patch&&r.result==='stop';})
-        .map(function(r){return seasonOutcome(patch(r.patch,s),r.mowing);})
-        .filter(function(o){return o&&o.cutShort;});
-      return lost.length?{patch:win.patch,kept:win.mowing,cut:s.season.runs.filter(function(r){
-        return r.patch===win.patch&&r.result==='stop'&&seasonOutcome(patch(r.patch,s),r.mowing).cutShort;})[0].mowing}:null;
-    }).filter(Boolean);
+    var runs=currentSeasonRuns(s),pairs=[];
+    runs.forEach(function(win){
+      if(win.result!=='complete')return;
+      var cut=runs.filter(function(r){
+        if(r.patch!==win.patch||r.result!=='stop')return false;
+        var o=seasonOutcome(patch(r.patch,s),r.mowing);
+        return !!(o&&o.cutShort);
+      })[0];
+      if(cut)pairs.push({patch:win.patch,kept:win.mowing,cut:cut.mowing});
+    });
+    return pairs;
   }
 
   // ── Drawing a conclusion ──────────────────────────────────────────────
@@ -283,7 +304,7 @@
       }
     });
     var pairs=timingPairs(s);
-    s.season.runs.forEach(function(r){
+    currentSeasonRuns(s).forEach(function(r){
       var p=patch(r.patch,s);if(!p)return;
       lines.push({kind:'season',text:p.name+', '+mowing(r.mowing).short.toLowerCase()+': the generation '+(r.result==='complete'?'ran its whole cycle.':'stopped before an adult emerged.')});
     });
@@ -293,7 +314,7 @@
     });
     return {lines:lines,broodsComplete:withHost,broodsStalled:nectarOnly,
       patches:s.observations.length,trials:s.restoration.trials.length,broods:s.lifecycle.broods.length,
-      seasons:s.season.runs.length,timingPairs:pairs};
+      seasons:currentSeasonRuns(s).length,timingPairs:pairs};
   }
   // A claim about what caterpillars need can only be tested by following a
   // generation. Comparing resources alone cannot settle it, and the tool says so.
@@ -762,12 +783,15 @@
         h('table',{className:'bf-seasons'},h('caption',null,'Seasons you have run · '+s.season.runs.length+' recorded'),
           h('thead',null,h('tr',null,h('th',{scope:'col'},'Patch'),h('th',{scope:'col'},'Mowing'),h('th',{scope:'col'},'You predicted'),h('th',{scope:'col'},'What happened'))),
           h('tbody',null,s.season.runs.length?s.season.runs.map(function(r){var rp=patch(r.patch,s);
-            return h('tr',{key:r.patch+'-'+r.mowing,'data-season-record':r.patch+'-'+r.mowing},
-              h('th',{scope:'row'},rp?rp.name:r.patch),h('td',null,mowing(r.mowing).short),
+            var current=seasonRunIsCurrent(s,r);
+            return h('tr',{key:r.patch+'-'+r.mowing+'-'+(r.plan||''),'data-season-record':r.patch+'-'+r.mowing,'data-season-current':String(current)},
+              h('th',{scope:'row'},rp?rp.name:r.patch,r.plan?h('span',null,design(r.plan).short+(current?'':' · replanted since')):null),
+              h('td',null,mowing(r.mowing).short),
               h('td',null,r.prediction==='complete'?'Whole cycle':'Stops early'),
               h('td',null,r.result==='complete'?'Ran the whole cycle':'Stopped early',
                 h('span',null,r.prediction===r.result?'Matched your prediction':'Differed from your prediction')));})
             :h('tr',null,h('td',{colSpan:4},'No seasons run yet.')))),
+        s.season.runs.some(function(r){return !seasonRunIsCurrent(s,r);})?h('p',{className:'bf-help','data-bf-season-stale':'1'},'Rows marked “replanted since” were run on an earlier planting of the restoration plot. They stay here as a record, but they no longer describe what is growing there, so they are not counted as evidence about the plot as it stands now.'):null,
         timingPairs(s).length?h('p',{className:'bf-help','data-bf-timing-pair':'1'},'You have run the same patch under two mowing plans and got two different results. That comparison is what shows timing mattered, not the plants alone.'):null,
         h('p',{className:'bf-help'},'Weeks order the stages for one generation; they are not a measured calendar, and real mowing dates vary by region and species. This activity models whether plants are present and still standing — not how many monarchs survive.')),
       h('div',{className:'bf-bottom'},h('section',{className:'bf-panel'},h('div',{className:'bf-eyebrow'},'One species · changing needs'),h('h3',null,'A life beyond the wings'),h('div',{className:'bf-life'},STAGES.map(function(st){return h('span',{key:st.id},h('b',null,st.ordinal+' · '+st.name),st.id==='egg'?'On milkweed':st.id==='caterpillar'?'Milkweed leaves':st.id==='chrysalis'?'Metamorphosis':'Flower nectar');})),h('p',{className:'bf-help'},'You play the adult stage. Follow a generation in the investigation above to see which patches can support the other three.')),
@@ -790,7 +814,7 @@
     );
   }
   window.StemLab.registerTool('butterfly',{label:'Butterfly Habitat Lab',icon:'🦋',desc:'Explore a summer meadow as a monarch, compare nectar and host plants, and build a field journal.',category:'science',color:'orange',gradeRange:'4-12',aliases:['monarch','butterflies','milkweed','pollinator','habitat'],render:function(ctx){return ctx.React.createElement(ButterflyLab,{ctx:ctx});}});
-  if(window.__RR_TEST_EXPORTS__)window.__RR_TEST_EXPORTS__.butterfly={plants:PLANTS,freshState:freshState,nearest:nearest,step:step,advanceFrame:advanceFrame,land:land,observe:observe,save:save,buildWorld:buildWorld,designs:DESIGNS,habitats:habitats,applyPlan:applyPlan,cleanRestoration:cleanRestoration,fieldDetail:fieldDetail,evidenceRecorded:evidenceRecorded,mowings:MOWINGS,stageWeek:STAGE_WEEK,seasonOutcome:seasonOutcome,cleanSeason:cleanSeason,runSeason:runSeason,seasonRunFor:seasonRunFor,timingPairs:timingPairs,mowing:mowing,
+  if(window.__RR_TEST_EXPORTS__)window.__RR_TEST_EXPORTS__.butterfly={plants:PLANTS,freshState:freshState,nearest:nearest,step:step,advanceFrame:advanceFrame,land:land,observe:observe,save:save,buildWorld:buildWorld,designs:DESIGNS,habitats:habitats,applyPlan:applyPlan,cleanRestoration:cleanRestoration,fieldDetail:fieldDetail,evidenceRecorded:evidenceRecorded,mowings:MOWINGS,stageWeek:STAGE_WEEK,seasonOutcome:seasonOutcome,cleanSeason:cleanSeason,runSeason:runSeason,seasonRunFor:seasonRunFor,timingPairs:timingPairs,currentSeasonRuns:currentSeasonRuns,seasonRunIsCurrent:seasonRunIsCurrent,mowing:mowing,
     stages:STAGES,outcomes:OUTCOMES,layEggs:layEggs,advanceStage:advanceStage,broodResult:broodResult,broodFor:broodFor,
     cleanLifecycle:cleanLifecycle,clampStage:clampStage,abandonBrood:abandonBrood,reachedStage:reachedStage,stageStatus:stageStatus,expectedOutcome:expectedOutcome,
     claims:CLAIMS,judgeClaim:judgeClaim,evidenceFor:evidenceFor};
