@@ -215,7 +215,7 @@ window.StemLab = window.StemLab || {
     ]},
     { title: '\uD83D\uDCB3 Credit Card Agreement', text: 'APR: 24.99% variable. Minimum payment: greater of $25 or 1% of balance + interest. Balance transfer: 3% fee, 0% intro APR for 12 months then 26.99%. Cash advance: 29.99% APR, no grace period, 5% fee ($10 min). Late payment: $40 fee + penalty APR 29.99% for 6 months. Annual fee: $0 first year, $95 after.', traps: [
       { id: 'apr', hint: 'Variable APR', explain: '24.99% VARIABLE means it rises with market rates. Could become 30%+.' },
-      { id: 'minimum', hint: 'Minimum payment trap', explain: 'Paying minimum on $5,000 at 24.99% takes 30+ YEARS and costs $12,000+ in interest!' },
+      { id: 'minimum', hint: 'Minimum payment trap', explain: 'Paying only this minimum on $5,000 at 24.99% takes about 20 YEARS and costs about $9,300 in interest - nearly twice what you borrowed.' },
       { id: 'transfer', hint: 'Balance transfer bait', explain: '0% intro rate expires after 12 months, then jumps to 26.99%. Plus 3% fee upfront.' },
       { id: 'annual', hint: 'Hidden annual fee', explain: '$0 first year hooks you in, then $95/year forever. They bet you won\'t cancel.' }
     ]},
@@ -226,6 +226,43 @@ window.StemLab = window.StemLab || {
       { id: 'total', hint: 'True cost of borrowing', explain: '$27K borrowed but $35K+ repaid. That\'s $8K+ in interest \u2014 a 30% markup on your education.' }
     ]}
   ];
+
+  // Grading a typed answer.
+  //
+  // The old test was `normalise(typed).indexOf(normalise(key)) >= 0`, which FAILS
+  // OPEN: the key only had to appear somewhere in the text. Measured on this bank,
+  // 16 numeric keys are substrings of other numeric keys, so "2000" scored on a
+  // key of "2"; and "not 165" scored on "165" - an explicit negation marked right.
+  //
+  // Now: if both sides read as numbers, compare them as numbers (so "$600.00" and
+  // "600" agree, but "22" and "2" do not). Otherwise require the key to appear as a
+  // whole word-run, so "a resume" still matches "resume".
+  function normalizeAnswerText(s) {
+    return String(s == null ? '' : s).toLowerCase()
+      .replace(/[^a-z0-9%\/\.\-]+/g, ' ')
+      .replace(/(^|\s)[.\-]+|[.\-]+(?=\s|$)/g, '$1')
+      .replace(/\s+/g, ' ').trim();
+  }
+  function answerMatches(typed, key) {
+    var t = normalizeAnswerText(typed);
+    var k = normalizeAnswerText(key);
+    if (!t || !k) return false;
+    // An explicit negation must not score. Only the unambiguous leading forms are
+    // caught: "not 165", "isn't 165". Hedges like "about 165" or "165, I think"
+    // are still accepted, because a student who hedges a right answer is right.
+    var NEG = /^(not|no|never|neither|none|isnt|dont|doesnt)\b/;
+    if (NEG.test(t) && !NEG.test(k)) return false;
+    var tNum = parseFloat(t.replace(/[^0-9.\-]/g, ''));
+    var kNum = parseFloat(k.replace(/[^0-9.\-]/g, ''));
+    // Numeric key: the typed answer must BE that number, not merely contain it.
+    if (/^[\-0-9.]+$/.test(k) && isFinite(kNum)) {
+      if (!/[0-9]/.test(t)) return false;
+      return isFinite(tNum) && Math.abs(tNum - kNum) < 0.005;
+    }
+    // Text key: match on whole tokens so "resume" is found in "a resume" but a
+    // key of "no" is not found inside "nothing".
+    return (' ' + t + ' ').indexOf(' ' + k + ' ') >= 0;
+  }
 
   // ── Challenge Questions (3 tiers × 8 = 24+) ──
   var CHALLENGE_QS = [
@@ -247,7 +284,7 @@ window.StemLab = window.StemLab || {
     { tier: 2, q: 'What MERV rating is "hospital grade"?', a: '13', h: 'Catches bacteria and sneeze droplets.' },
     { tier: 2, q: 'What does CCA stand for on a car battery?', a: 'cold cranking amps', h: 'Battery power at cold temperatures.' },
 
-    { tier: 3, q: 'If tax brackets are 10% on first $11,600 and 12% on next $35,550, what is tax on $40,000?', a: '4564', h: '$11,600\u00D70.10 + $28,400\u00D70.12.' },
+    { tier: 3, q: 'If tax brackets are 10% on first $11,600 and 12% on next $35,550, what is tax on $40,000?', a: '4568', h: '$11,600\u00D70.10 + $28,400\u00D70.12.' },
     { tier: 3, q: 'A phone plan says $45/mo but actual cost with device, taxes, fees is $90/mo. What is the true 24-month cost?', a: '2160', h: '$90 \u00D7 24 months.' },
     { tier: 3, q: 'Gay-Lussac\'s Law: P1/T1 = P2/T2. If tire at 35 PSI/70\u00B0F, what PSI at 20\u00B0F? (convert to Kelvin)', a: '32', h: 'Convert F to K: (F-32)\u00D75/9+273.15, then solve.' },
     { tier: 3, q: 'Heat loss Q = Area \u00D7 \u0394T / R. If 200sqft wall, 50\u00B0F difference, R-13, what is Q in BTU/hr?', a: '769', h: '200 \u00D7 50 / 13.' },
@@ -314,7 +351,7 @@ window.StemLab = window.StemLab || {
     { tier: 3, q: 'What repair step means recognizing your part and saying what you will do differently?', a: 'apology', h: 'A useful apology includes responsibility and a next step.' },
     { tier: 3, q: 'If a task takes 25 minutes and you add a 10-minute buffer, how many minutes should you block?', a: '35', h: 'Task time plus buffer time.' },
     { tier: 3, q: 'Why can too much laundry detergent make clothes feel stiff or itchy?', a: 'residue', h: 'Extra detergent can stay in fabric when the rinse cannot remove it all.' },
-    { tier: 3, q: 'Paying minimum ($25) on $5,000 at 24.99% APR \u2014 roughly how many years to pay off?', a: '30', h: 'Minimum payments are designed to maximize interest.' }
+    { tier: 3, q: 'A $5,000 balance at 24.99% APR charges about $104 of interest a month. If you pay a flat $25 a month, when is it paid off?', a: 'never', h: 'Compare the monthly interest to the payment. If the payment is smaller, the balance grows every month.' }
   ];
 
   // ── Battle Questions ──
@@ -3529,18 +3566,21 @@ window.StemLab = window.StemLab || {
         if (correct) checkBadge('foodPlanner');
       }
 
-      var chalTier = d.chalTier || 1;
+      // `|| 1` accepted any truthy value, so a persisted chalTier of 99 left
+      // tierQs empty, made `chalIdx % 0` NaN and rendered a BLANK question with a
+      // live Check button that then threw on chalQ.a. Allow-list the real tiers.
+      var chalTier = (d.chalTier === 1 || d.chalTier === 2 || d.chalTier === 3) ? d.chalTier : 1;
       var chalIdx = (typeof d.chalIdx === 'number' && isFinite(d.chalIdx)) ? d.chalIdx : 0;
       var chalAnswer = d.chalAnswer || '';
       var chalFeedback = d.chalFeedback || '';
       var chalStreak = d.chalStreak || 0;
       var chalScore = d.chalScore || 0;
       var tierQs = CHALLENGE_QS.filter(function(q) { return q.tier === chalTier; });
-      var chalQ = tierQs[chalIdx % tierQs.length];
+      var chalQ = tierQs.length ? tierQs[Math.abs(Math.trunc(chalIdx)) % tierQs.length] : null;
 
       function chalCheck() {
-        if (!chalAnswer.trim()) return;
-        var correct = chalAnswer.trim().toLowerCase().replace(/[^a-z0-9%\/\.\-]/g, '').indexOf(chalQ.a.toLowerCase().replace(/[^a-z0-9%\/\.\-]/g, '')) >= 0;
+        if (!chalAnswer.trim() || !chalQ) return;
+        var correct = answerMatches(chalAnswer, chalQ.a);
         var newStreak = correct ? chalStreak + 1 : 0;
         var bonus = correct ? (newStreak >= 5 ? 3 : newStreak >= 3 ? 2 : 1) : 0;
         stemBeep(correct);
@@ -3589,7 +3629,7 @@ window.StemLab = window.StemLab || {
       function battleAttack() {
         var q = getCurrentBattleQ();
         if (!q || !battleAnswer.trim()) return;
-        var correct = battleAnswer.trim().toLowerCase().replace(/[^a-z0-9%\/\.\-]/g, '').indexOf(q.a.toLowerCase().replace(/[^a-z0-9%\/\.\-]/g, '')) >= 0;
+        var correct = answerMatches(battleAnswer, q.a);
         var dmg = correct ? 20 + Math.floor(Math.random() * 10) : 0;
         var enemyDmg = correct ? 0 : 15 + Math.floor(Math.random() * 10);
         var newEHP = Math.max(0, battleEnemyHP - dmg);
