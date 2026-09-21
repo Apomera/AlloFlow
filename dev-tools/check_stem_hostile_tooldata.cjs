@@ -363,6 +363,17 @@ if (exercised === 0) {
   if (skipped.length) console.log(`  ${skipped.length} view(s) failed their clean control; the tool may be broken independently of hostile input.`);
   process.exit(2);
 }
+if (crashes.length === 0 && truncated.length) {
+  // The PARTIAL COVERAGE block above is printed, but a plain green tick under
+  // it still reads as "clean" — that is how a 29-tools-fixed sweep got
+  // reported as a clear board while --deep was hiding 78 crashes (lifeSkills
+  // 69, opticsLab 8, solarSystem 1). Say NOT PROVEN, and keep the exit code
+  // distinct from both a pass (0) and a real crash (1) so CI cannot read a
+  // capped run as either.
+  console.log(`~ check_stem_hostile_tooldata${scope}: no crashes in what was swept, but ${truncated.length} tool(s) were only PARTLY swept — NOT PROVEN clean.`);
+  console.log('  Those tools are UNMEASURED, not clean. Re-run with --deep before calling them done.');
+  process.exit(3);
+}
 if (crashes.length === 0) {
   console.log(`✓ check_stem_hostile_tooldata${scope}: no STEM tool crashes on a malformed save file (${exercised} tools exercised).`);
 } else {
