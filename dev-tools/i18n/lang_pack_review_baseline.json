@@ -1,5 +1,45 @@
 {
   "acholi": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "fb9c23193ec7"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "7237beae75de"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "8ffed60f5df7"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "c2b1c28e3d81"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "4899cc7aa0d2"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "971355619793"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "85def67c6d28"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "9694903e0c4b"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -67,6 +107,46 @@
     }
   },
   "amharic": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "9e1ca9b9cfb8"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "3dbbcf8ea25f"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "91c1f14164f4"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "8ba34eb164c0"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "eb37aee75bf6"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "61f8ff3ee1ac"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "8eb76ad0f435"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "0c5d195e5c6e"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -182,6 +262,46 @@
     }
   },
   "bengali": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "b146fb7f962a"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "d64f38bd59fa"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "b6edeb7aa5e8"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "1d0683c6a429"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "a9c4c1615616"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "879ee92830f0"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "20ed9fae0bce"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "d54c7c92ce62"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -237,6 +357,46 @@
     }
   },
   "burmese": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "abc5997d1a23"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "b7b02e5eb6b1"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "3582def20cc1"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "f337cd474fe5"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "1baa16fbc4ea"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "a120a24a5b85"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "9998703a6158"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "1ab2140e4fa0"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -282,6 +442,46 @@
     }
   },
   "chin_falam": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "e3634d23225f"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "6d277b8a76fe"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "e1c882a68f89"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "bb89094a989c"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "854d9ec50e94"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "467d1fe761fe"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "003e0316a917"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "03ec027d5a54"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -349,6 +549,46 @@
     }
   },
   "chin_hakha": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "e3634d23225f"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "6d277b8a76fe"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "e1c882a68f89"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "bb89094a989c"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "854d9ec50e94"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "467d1fe761fe"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "003e0316a917"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "03ec027d5a54"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -556,6 +796,46 @@
     }
   },
   "dari": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "42d687e557d1"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "436df718ce01"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "800962e6ba1a"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "423133fe1581"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "62221b601601"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "c01b1157a3ab"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "7e2a55a17113"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "7873168dad18"
+    },
     "escape_room.end_game_confirm": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "a042149703b6",
@@ -565,6 +845,11 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "073b0c003085",
       "translationHash": "0df2ed5f66f0"
+    },
+    "escape_room.generating_hint": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "fae5ecec5ab2",
+      "translationHash": "9d786cea2628"
     },
     "escape_room.launch_live_tooltip": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
@@ -576,6 +861,16 @@
       "sourceHash": "989d394fb536",
       "translationHash": "08e087d16a83"
     },
+    "escape_room.reset": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "ab75a7f9b47b"
+    },
+    "escape_room.settings_btn": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "561c458e6dad",
+      "translationHash": "ca10b1e811fe"
+    },
     "escape_room.start": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "a04eff25c5f1",
@@ -585,6 +880,16 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "0a6d8041d473",
       "translationHash": "68b658394907"
+    },
+    "escape_room.subtitle": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "e40af152968f",
+      "translationHash": "dd21ad1054d9"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "4fef84f072a7"
     },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
@@ -601,6 +906,46 @@
     }
   },
   "dutch": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "11505046ea02"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "8f6b0f91bbe1"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "323baced5bd2"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "53480732dabb",
+      "translationHash": "fcc256e86b02"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "21c3cd120a6e"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "80119b37a2a3"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "4869b06ef3d3"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "365ab100916a",
+      "translationHash": "06fa7f2bbe72"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -799,6 +1144,76 @@
     }
   },
   "farsi": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "42d687e557d1"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "436df718ce01"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "800962e6ba1a"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "423133fe1581"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "62221b601601"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "c01b1157a3ab"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "7e2a55a17113"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "7873168dad18"
+    },
+    "escape_room.generating_hint": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "fae5ecec5ab2",
+      "translationHash": "9d786cea2628"
+    },
+    "escape_room.reset": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "ab75a7f9b47b"
+    },
+    "escape_room.settings_btn": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "561c458e6dad",
+      "translationHash": "ca10b1e811fe"
+    },
+    "escape_room.start": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "900eb932122b"
+    },
+    "escape_room.subtitle": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "e40af152968f",
+      "translationHash": "dd21ad1054d9"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "4fef84f072a7"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "01fc20ac6cb7"
@@ -954,6 +1369,46 @@
     }
   },
   "german": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "d3d88bb7f635"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "fa705e315fdd"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "bca7ac097455"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "53480732dabb",
+      "translationHash": "34f0a65f9f0e"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "aba3df3fa428"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "8aa110093d15"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "873ea2c9932a"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "365ab100916a",
+      "translationHash": "00f3a0f4ec73"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -1084,6 +1539,51 @@
     }
   },
   "greek": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "258be021da44"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "fd44f01fd849"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "849da0771609"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "53480732dabb",
+      "translationHash": "e5a69d947a79"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "33b50ef85cae"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "713fb68322a7"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "7f74c9de9f6f"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "365ab100916a",
+      "translationHash": "b45e05198424"
+    },
+    "escape_room.generating_hint": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "fae5ecec5ab2",
+      "translationHash": "e6ae382f3b2e"
+    },
     "escape_room.loaded_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "292f49162e60",
@@ -1093,6 +1593,31 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "da8b9dc5783a",
       "translationHash": "e46fb9ef328c"
+    },
+    "escape_room.reset": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "a69cf0c29a9e"
+    },
+    "escape_room.settings_btn": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "561c458e6dad",
+      "translationHash": "166ffdb13955"
+    },
+    "escape_room.start": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "310fd74df138"
+    },
+    "escape_room.subtitle": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "e40af152968f",
+      "translationHash": "c37f8a0ed3e5"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "dfc445b8cbc0"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -1198,6 +1723,46 @@
     }
   },
   "hausa": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "d4557e30ab59"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "57629a40f0a9"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "a048119c2c7f"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "54b3f23ff9f4"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "565bcfabddfe"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "d346bb67e0c8"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "440d8bd4d4fd"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "14ef56a63f11"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -1313,10 +1878,80 @@
     }
   },
   "hindi": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "735222b0cd8b"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "de5fb95c70c8"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "1e35cf44610f"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "7051932cf4e8"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "e5a28933687e"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "8f399275200b"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "ca1deaec1f09"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "837fac641d61"
+    },
+    "escape_room.generating_hint": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "fae5ecec5ab2",
+      "translationHash": "624e8d626d7d"
+    },
     "escape_room.loaded_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "292f49162e60",
       "translationHash": "0a97f87c9c19"
+    },
+    "escape_room.reset": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "16202df1346e"
+    },
+    "escape_room.settings_btn": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "561c458e6dad",
+      "translationHash": "7eb6dc3bcc78"
+    },
+    "escape_room.start": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "59bd2eba0ec0"
+    },
+    "escape_room.subtitle": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "e40af152968f",
+      "translationHash": "04a8da87a696"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "bcec65f5a03e"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -1388,6 +2023,46 @@
     }
   },
   "hmong": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "db4871bdd504"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "8b11345ed44d"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "605cd51c5de7"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "2253d31fc627"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "08a300b0a5a4"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "891be0841d7f"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "9dc629b8e30a"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "2974e89b9f13"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -1433,6 +2108,46 @@
     }
   },
   "igbo": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "0cff26f77570"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "824d4d42f8f4"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "db02cc316e1f"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "25ee3571a83e"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "7f2e96657dbf"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "97ea688717c4"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "ebdd1f1f58f8"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "075f139dc400"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -1478,6 +2193,46 @@
     }
   },
   "indonesian": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "6c1eaa1e1d23"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "6f51e97eef04"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "ac0e02c89817"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "53480732dabb",
+      "translationHash": "8ab6224f9c5f"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "014cb289fa6c"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "a3bee7f318c9"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "e00dd0340d4a"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "365ab100916a",
+      "translationHash": "25e1bec5cd85"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -1608,6 +2363,46 @@
     }
   },
   "italian": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "a45722838680"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "bb4cda96cc23"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "eefb90266cb4"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "53480732dabb",
+      "translationHash": "d13669f0d19c"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "5a074f512787"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "84215e48e65f"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "284620173175"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "365ab100916a",
+      "translationHash": "24f54c7917b4"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -1822,6 +2617,46 @@
     }
   },
   "karen": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "6de8584a25a1"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "c68c3f3fa412"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "057d2d37e8a4"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "fe2964aa4bf9"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "770902f4c93d"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "2c773299b144"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "287ddb0e0eeb"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "3af52213aab4"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -1889,6 +2724,46 @@
     }
   },
   "khmer": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "200f8060952d"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "8001da503870"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "90ec9642a3ee"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "5f08bfc65811"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "33fb4c8e1001"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "df9b3227bf20"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "5ea71f65da12"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "7cdbaeb65af6"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -1949,6 +2824,46 @@
     }
   },
   "kirundi": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "14ec2325a18e"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "859b6f0d9fc7"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "146b4c44303d"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "b1a81eb7d6a5"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "9a71cd859bb2"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "a43521447a3c"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "965a0f16f521"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "279748d1a1a4"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -1994,6 +2909,76 @@
     }
   },
   "korean": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "4c0abb6d8961"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "ed3c80629907"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "bb3589c1874f"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "139db38a1a74"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "4cc15df33a26"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "8172bdbe1415"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "e6a8d5b4ff9c"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "4ccc7c6ffa51"
+    },
+    "escape_room.generating_hint": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "fae5ecec5ab2",
+      "translationHash": "1caf9548a699"
+    },
+    "escape_room.reset": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "8af04513414d"
+    },
+    "escape_room.settings_btn": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "561c458e6dad",
+      "translationHash": "7921c2cd8a92"
+    },
+    "escape_room.start": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "4cc15df33a26"
+    },
+    "escape_room.subtitle": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "e40af152968f",
+      "translationHash": "d2e8433fe103"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "b37cb3634b89"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -2064,6 +3049,46 @@
     }
   },
   "lao": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "1e040e2daa74"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "6f0ed3134087"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "d0cc9d5770e4"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "a365c3696ea1"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "ef7c4c677def"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "dc460d779524"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "b8e0615285e6"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "80f0de8bf192"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -2134,6 +3159,46 @@
     }
   },
   "latin": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "11ff94dacb2f"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "1c24609198bb"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "abda015187a7"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "53480732dabb",
+      "translationHash": "a6d41b45bdc2"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "c4c40c64b040"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "640dcbaae379"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "d2752047937e"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "365ab100916a",
+      "translationHash": "c191398bd846"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -2264,6 +3329,46 @@
     }
   },
   "lingala": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "60037ee9cf35"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "0785d2f0ae18"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "faef54e51530"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "8164135ad8d5"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "b24bd1e79ff0"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "d3700dfc1ea9"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "1fe4e423eae6"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "e684d2ae74a0"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -2345,6 +3450,46 @@
     }
   },
   "marathi": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "6e3a2672d67b"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "b1794e460d61"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "7960cd297d31"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "d4a50c6b5147"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "9de6e1eb5ba0"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "1262e552010a"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "1c919dc24eee"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "1973252b1727"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -2359,6 +3504,11 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "073b0c003085",
       "translationHash": "23307a53c9c6"
+    },
+    "escape_room.generating_hint": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "fae5ecec5ab2",
+      "translationHash": "6a20d5db363c"
     },
     "escape_room.launch_live_tooltip": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
@@ -2380,6 +3530,16 @@
       "sourceHash": "da8b9dc5783a",
       "translationHash": "4f0603deb17b"
     },
+    "escape_room.reset": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "7508519b9a1a"
+    },
+    "escape_room.settings_btn": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "561c458e6dad",
+      "translationHash": "39ce39a381a7"
+    },
     "escape_room.start": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "a04eff25c5f1",
@@ -2389,6 +3549,16 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "0a6d8041d473",
       "translationHash": "4ea77a8f19f5"
+    },
+    "escape_room.subtitle": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "e40af152968f",
+      "translationHash": "2e51701e7c8c"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "75d59d117351"
     },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
@@ -2404,6 +3574,46 @@
     }
   },
   "marshallese": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "dcea6df8b8a2"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "9815ce6bcbd7"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "388c8c28b08e"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "0082de482832"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "93cc155c4842"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "0eb67bf07bef"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "5f33dccd385d"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "17af009bcfc4"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -2471,6 +3681,46 @@
     }
   },
   "nepali": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "cc54f0a0f673"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "58cbc84bd626"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "3280454ff05f"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "6bf779fd7ac8"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "61cd9568e1b6"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "7579fb86d4a7"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "118ba5cda344"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "e14b3cd4759c"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -2516,6 +3766,46 @@
     }
   },
   "pashto": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "2f511f74f3ac"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "7bf6b5caaeb7"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "dd8fa3c53573"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "ab33fb3adad5"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "7fc4b860f049"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "86d18c6e8029"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "892f7a596b8f"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "f5feb8c475c3"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -2586,6 +3876,46 @@
     }
   },
   "polish": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "715b1baddf33"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "171df4eb2a89"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "3809252dc7f2"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "53480732dabb",
+      "translationHash": "bf56353ed386"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "3a179f8de7c0"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "f5de1ad33e67"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "b0a0e265aa20"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "365ab100916a",
+      "translationHash": "662efcd14557"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -2926,6 +4256,46 @@
     }
   },
   "punjabi": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "0de05d0a3e0c"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "b3ac038d54ad"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "75a14711a8c1"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "2c5625df8354"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "dc8b30ed85ba"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "c6b6aa151806"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "a6ea8595afba"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "c7f5761f27c7"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -2971,6 +4341,46 @@
     }
   },
   "romanian": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "57f8dd37604b"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "d355e651fbd4"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "57f2f9bfcb0a"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "53480732dabb",
+      "translationHash": "3bc7a1ce38f0"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "49ff45ce6d83"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "efabc3198992"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "4f630eb2b51b"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "365ab100916a",
+      "translationHash": "41c09ddc256f"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -3101,6 +4511,46 @@
     }
   },
   "russian": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "674e9003d5fa"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "287e9c37510c"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "866ee58552a7"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "53480732dabb",
+      "translationHash": "019b2cf3551a"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "784e347a2188"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "79596f82b4db"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "ed90b93f38a0"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "365ab100916a",
+      "translationHash": "8f750562ecac"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -3385,6 +4835,46 @@
     }
   },
   "swahili": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "ce2155f01337"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "6538cc05c9a1"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "6256da8b0b5a"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "53480732dabb",
+      "translationHash": "2bd3736115d3"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "33a43eb66974"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "eb39040f716f"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "fe9b7944e9de"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "365ab100916a",
+      "translationHash": "1502ab9cb18e"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -3435,6 +4925,46 @@
     }
   },
   "tagalog": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "5f474c3d1677"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "c0a9b37bbfac"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "319a002aec5b"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "53480732dabb",
+      "translationHash": "62c45b1f1d98"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "fee3c635ace7"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "36f8c1a7e98f"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "a79675ae905b"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "365ab100916a",
+      "translationHash": "9361a530258a"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -3565,6 +5095,46 @@
     }
   },
   "tamil": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "562dcab65f57"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "e03324132a9b"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "90035d85fd31"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "d8de0a854248"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "cdbf36665a52"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "38028b15d926"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "ac52efc3ace5"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "95568c06fc36"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -3610,6 +5180,46 @@
     }
   },
   "telugu": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "4eb348d399a1"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "2ce3675f797e"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "7ffd940476d0"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "dd2e12614ea6"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "fa959dedd9df"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "a9659de0d8b7"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "0398b45d2ce3"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "7d0370820008"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -3655,6 +5265,46 @@
     }
   },
   "thai": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "ab42758d92d7"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "b45e82a4490c"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "ec12749c1139"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "c28ed659c52d"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "5a85e7e50b99"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "85f17af6ac94"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "a4f2e805925a"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "f30732bc4261"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -3725,6 +5375,46 @@
     }
   },
   "tigrinya": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "a7ed5c2adcef"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "44c2cc738fa8"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "a8193f4efdbb"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "aaa2c6a4571e"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "efc6120d67eb"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "ee39b1c9dab6"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "f5e11ebe25ed"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "f0615900ed39"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -3839,6 +5529,46 @@
     }
   },
   "ukrainian": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "674e9003d5fa"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "8bddf570a2be"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "5944705b625b"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "53480732dabb",
+      "translationHash": "09b702374146"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "0901f42f98d2"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "8905655fb1ba"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "e08c8e40f7a7"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "365ab100916a",
+      "translationHash": "9bc6f414d920"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -3969,6 +5699,46 @@
     }
   },
   "urdu": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "72919f7b9e9e"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "d85b0af30d5c"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "6e1811d91415"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "5c308e7608c1"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "68f4ea3809a1"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "8f2d10cbffe2"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "4cbe8b755633"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "89198ddd7caa"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -4109,6 +5879,46 @@
     }
   },
   "yoruba": {
+    "class_analytics.escape_completion": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "cedccaa4c25c"
+    },
+    "common.adjust_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "27fcd6c2a04e"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "5986ff42554c",
+      "translationHash": "48bb14616c87"
+    },
+    "common.enter_escape_room_state": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "53480732dabb",
+      "translationHash": "cb0bfb041529"
+    },
+    "common.launch_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "7ff3be762718",
+      "translationHash": "92e50a0480b2"
+    },
+    "common.load_saved_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "17ec913fc437"
+    },
+    "common.reset_escape_room": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "b05867f935f7",
+      "translationHash": "70fc445a4bce"
+    },
+    "common.save_escape_room_configuration": {
+      "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
+      "sourceHash": "365ab100916a",
+      "translationHash": "44794373f56f"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
