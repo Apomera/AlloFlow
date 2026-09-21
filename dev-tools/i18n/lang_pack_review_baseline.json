@@ -27,6 +27,61 @@
     }
   },
   "arabic": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "48aa67597d0f"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "8d9632e7c8ff"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "479143fadb2a"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "515e5aac7c30"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "0253dc191298"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "0dd563c4549e"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "05d6befb55ff"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "3055e1f6bba1"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "47010e46a211"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "1edddfcc2729"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "10a91caf18de"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "28af81c12669"
@@ -96,6 +151,61 @@
     }
   },
   "chinese_simplified": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "f22a15900462"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "3813009ec141"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "dee8e252a5c3"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "a7c8da43bbc3"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "a7ad4b7f6fee"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "ff5bae11329e"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "86bfc37e5633"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "fa1905354d73"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "185dff5b48d5"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "8baf851a9869"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "6fb5f0e7964d"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "3d19b685b8c3"
@@ -111,6 +221,61 @@
     }
   },
   "chinese_traditional": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "1d27404e2482"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "050a13f0e8af"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "56236c6ccc97"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "183ea0475185"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "cb1d8433de51"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "28854e72dd2a"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "85b500140a45"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "64ff6410c155"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "4d670f9c1a5b"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "9e4b6ab91f55"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "41a79d4776f5"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "98c544412d51"
@@ -141,6 +306,61 @@
     }
   },
   "dutch": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "58e00c246aa0"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "522f879ff0d0"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "3490a95f2f07"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "959937d92625"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "c48c640eff80"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "9c3f864a0892"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "a04184d8e5d4"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "f8c9d888f6ab"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "852c44b0ec4f"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "f018eb642d3d"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "c91ee432059f"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "39d2edd58314"
@@ -155,6 +375,61 @@
     }
   },
   "esperanto": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "299e610e60a6"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "026043497498"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "83ed86703400"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "be1ba1154098"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "9c134280521d"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "a4078e6176d4"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "e892c1737630"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "bdccbf356ecd"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "0ebcfff61e14"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "0c1e431938e2"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "2ea9af8b469b"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "accc94734847"
@@ -184,6 +459,61 @@
     }
   },
   "french": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "c9cc1b13ed22"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "ca21a550559d"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "3dca018f0c0f"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "3220a871ca57"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "fb5bc38325a9"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "f60ce9c0161a"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "218fde094f87"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "826dcc4e7482"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "67a1e4771774"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "ab3a0ba6419e"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "696d7bbf673d"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "26416137e628"
@@ -199,6 +529,61 @@
     }
   },
   "french_canadian": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "c9cc1b13ed22"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "d21a74cb9158"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "3dca018f0c0f"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "3220a871ca57"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "fb5bc38325a9"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "f60ce9c0161a"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "218fde094f87"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "826dcc4e7482"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "67a1e4771774"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "ab3a0ba6419e"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "696d7bbf673d"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "958682f07867"
@@ -214,6 +599,61 @@
     }
   },
   "german": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "2dc618fd1e58"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "098bd056ed8e"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "47f5b720a91e"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "862705d5e7a6"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "93934c68d042"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "8f6999ffcf6e"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "c1dd2817afba"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "a6ab08089848"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "e90a5bf2bd0c"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "05c24e552226"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "c31071b748d7"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "2df1567eacc9"
@@ -229,6 +669,61 @@
     }
   },
   "greek": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "c705e8edae4f"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "58b91166b2e4"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "f19705ca8574"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "ced39156aa8b"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "4094104ded54"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "4c11aa471177"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "400f388481b4"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "861524f5422e"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "adc7dd594cd5"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "9c98eb62bb2d"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "78a9d5a40da7"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "c0e06059ed1e"
@@ -288,6 +783,61 @@
     }
   },
   "hebrew": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "11a06c090d80"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "9d46e4b0b5db"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "9e78930b4fda"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "e6e56fe2b3a4"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "26fa573ff395"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "35d3959281ee"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "6276404282b7"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "7d0b329c5582"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "761a5ff48a34"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "d62453986327"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "e5a7556fdc81"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "91c38e1c4037"
@@ -303,6 +853,61 @@
     }
   },
   "hindi": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "1f88b22f6756"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "3743b07c8a3a"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "5a28dce65fd3"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "e3c10a9547c3"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "976460e07de8"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "d9356454dee5"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "d3dba4fe0034"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "651e63952b16"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "92d94f589173"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "4129014b08ef"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "24229d6797e4"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "b2e519ccb280"
@@ -348,6 +953,61 @@
     }
   },
   "indonesian": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "a308e17be9d9"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "4695a128e940"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "e717883206ce"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "582bbab3d6b5"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "84d77c1f91ed"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "af15f9c85ef1"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "39142f1bc536"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "03e87e81ee76"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "8d073d8132a5"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "648ddce4cbd4"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "b2ec0d2e7859"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "3994a6827597"
@@ -363,6 +1023,61 @@
     }
   },
   "italian": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "942cd9a7f7e8"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "bd3c19f7ce5c"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "23d300c269e3"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "7ddabcf5f67b"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "11bda9470807"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "6650d5a35f74"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "2feac285d0b5"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "0d8de72c1e12"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "55022243b678"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "449a66be51a5"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "536a2e756e47"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "94e6f7d25eef"
@@ -378,6 +1093,61 @@
     }
   },
   "japanese": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "548d08dda007"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "c71cf19822c1"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "27403dcb9166"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "5c0aa9113e23"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "6e0fbefb423e"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "888d30595ed8"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "cb92d21ba5c9"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "182cba0c5690"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "e13da3cddc1d"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "2de0cfe71729"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "078e9f3359e9"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "1115a43a5edb"
@@ -464,6 +1234,61 @@
     }
   },
   "korean": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "a0e6c4cbc847"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "9ba977bc9a81"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "57a97ff2e19d"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "7ea96b5ee7bf"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "62dd5f19b6b6"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "616e6f979165"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "fd7e7a67e71d"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "603f3e9b4f0d"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "bf5ecb9b870f"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "4fc007270722"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "af6098397809"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "6e90d20fae53"
@@ -494,6 +1319,61 @@
     }
   },
   "latin": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "3574789a6c6a"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "25931875ff36"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "fa215b371b74"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "80af6795477b"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "26fc189d5078"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "278e242550b4"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "122c8f3a7250"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "5f233b72c121"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "3b02b7b76c70"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "3075ca2a018a"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "44bb1eea823e"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "99ed2c2acf93"
@@ -591,6 +1471,61 @@
     }
   },
   "polish": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "30824cd7e3b2"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "a2da025b3242"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "2b4b6ea85084"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "a1f3830cfed7"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "71ed2e8b35eb"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "76678012a7dc"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "754fb51ce111"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "c953021a2e17"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "d70bae56649f"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "99a64ce24a99"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "b8f5030c672c"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "65c790bf0b85"
@@ -606,6 +1541,61 @@
     }
   },
   "portuguese_angola": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "94fd9981f011"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "a9bcaf64a23f"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "0697f77d7bd9"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "f2cf4f20824f"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "0e99bd0ec711"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "508bb2db2a89"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "f7854f2e28c9"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "40d990663cc9"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "2e4235eaafd3"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "694e27983dc3"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "00117b027b03"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "4ab26be90a6e"
@@ -621,6 +1611,61 @@
     }
   },
   "portuguese_brazil": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "02aaf17c2297"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "943e19d53c5d"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "cd4d417be71a"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "0072a6500224"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "7287f6adeaa9"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "a58a9cfb47e0"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "58630b242458"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "4005c2e1a003"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "9b1502d02ef2"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "3c12d8203489"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "9d3ece90d3b7"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "6d5ce993da62"
@@ -636,6 +1681,61 @@
     }
   },
   "portuguese_portugal": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "94fd9981f011"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "a9bcaf64a23f"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "0697f77d7bd9"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "f2cf4f20824f"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "0e99bd0ec711"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "508bb2db2a89"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "f7854f2e28c9"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "40d990663cc9"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "2e4235eaafd3"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "694e27983dc3"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "00117b027b03"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "4ab26be90a6e"
@@ -666,6 +1766,61 @@
     }
   },
   "romanian": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "73a89e96fb5a"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "218666a0f5b4"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "ebd5dda95282"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "62ab34abffe4"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "19242acd13b6"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "00fe5023c9db"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "eef68a0c9b66"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "6858b7e91954"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "03e975916fa5"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "68ab66c5d864"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "9870228cbc1d"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "c62d05eebf6b"
@@ -681,6 +1836,61 @@
     }
   },
   "russian": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "7bb8311439a9"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "a35794c6837a"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "d18410af1592"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "6eaf6bae9a5d"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "cc7e6540c53a"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "30be4723117c"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "0ca15d6809e4"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "8fb94857a8a8"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "af65acd017e3"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "57ad84c7fc68"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "b9dabbd7c25e"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "75667f64ed21"
@@ -711,6 +1921,61 @@
     }
   },
   "spanish_castilian": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "503842c8253d"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "4de2c867a3e3"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "026bf9728e45"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "62167a878b70"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "7ca13740eb45"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "738a19d0a97c"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "5d12177fc572"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "3c68c733a2be"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "58934d4ebc9f"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "5f53c7962282"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "9918bd2992b3"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "f1f29a051502"
@@ -726,6 +1991,61 @@
     }
   },
   "spanish_latin_america": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "503842c8253d"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "7d5900730f6f"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "026bf9728e45"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "62167a878b70"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "0252a7588dc9"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "15db1e21e499"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "5d12177fc572"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "3c68c733a2be"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "58934d4ebc9f"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "5f53c7962282"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "9918bd2992b3"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "867470ad8f4b"
@@ -755,6 +2075,61 @@
     }
   },
   "tagalog": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "ea0b2d9f4dc8"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "67147e9ae83e"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "3f3a344ba1a9"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "33e4683d0468"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "37e2e475065f"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "1929b2f24b51"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "ddc1b16211d3"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "bbab630c0635"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "8e91c98b4af4"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "67fe4b7cf53a"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "8155cb86029d"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "372bc6989d9f"
@@ -830,6 +2205,61 @@
     }
   },
   "turkish": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "e28272ee55ad"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "a7011f6cd0ae"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "c2a2ab0682e7"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "24df38679815"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "5f6c6de2ae77"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "400bb177c7e4"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "a81e20661095"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "f92641eb3076"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "ed5cc237caad"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "c3492814b291"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "aeed5b425ced"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "12a7f0e3a9eb"
@@ -844,6 +2274,61 @@
     }
   },
   "ukrainian": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "d620412af7fb"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "a1d3b4bd8ce5"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "e525710c846a"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "a804cd592690"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "13d3181796cd"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "c3dd5000bb4e"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "a86d8ef4fe38"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "a31e133e5241"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "82761f4cfdf9"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "7dfd8d2850ee"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "f3ad5b853269"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "4a3c555fa17a"
@@ -874,6 +2359,61 @@
     }
   },
   "vietnamese": {
+    "stem.migration.distances_are_approximate_annual_migra": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "f72bcde64f09",
+      "translationHash": "159e1958546b"
+    },
+    "stem.migration.high_altitude_jet_streams_are_narrow_b": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "2a47ad74b7be",
+      "translationHash": "3686004e0701"
+    },
+    "stem.migration.high_altitude_migrants_like_bar_headed": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "0cf23de24262",
+      "translationHash": "c29a125c9c38"
+    },
+    "stem.migration.how_does_a_hummingbird_4_g_1500_km_gul": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5c19ab98d9ff",
+      "translationHash": "95ff156526ef"
+    },
+    "stem.migration.inquiry_widget_no_score_no_reveal_no_a": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "cf5375acf842",
+      "translationHash": "c768e9214199"
+    },
+    "stem.migration.some_birds_migrate_at_extreme_altitude": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "1b27988e83c9",
+      "translationHash": "1700e84d3d2f"
+    },
+    "stem.migration.start_the_navigate_your_flock_challeng": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "5b4809070801",
+      "translationHash": "a48a63acf8b7"
+    },
+    "stem.migration.trailing_birds_catch_the_upwash_from_t": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "9ec1701fa62c",
+      "translationHash": "56e877a48233"
+    },
+    "stem.migration.wing_shape_aspect_ratio_camber_tunes_l": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "e2695e0905b0",
+      "translationHash": "ff55a5154819"
+    },
+    "stem.optics.set_n_n_incidence_angle_and_wavelength": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "694bb9d47263",
+      "translationHash": "61b79847fe29"
+    },
+    "stem.semiconductor.adjust_dopant_concentration_temperatur": {
+      "reviewReason": "hand-translated-2026-09-20-fact-correction",
+      "sourceHash": "274e901eaded",
+      "translationHash": "dc29c5a969a5"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "586f599a4e26"

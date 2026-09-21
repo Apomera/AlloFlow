@@ -11499,7 +11499,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           if (focus) requestAnimationFrame(function () { var input = document.getElementById('ar-activity-search'); if (input) input.focus({ preventScroll: true }); });
         }
         function activityFinder() {
-          return h('form', { role: 'search', 'aria-label': 'Find an auto mechanic activity', 'data-ar-activity-finder': true,
+          return h('form', { role: 'search', 'aria-label': __alloT('stem.autorepair.find_an_auto_mechanic_activity','Find an auto mechanic activity'), 'data-ar-activity-finder': true,
             onSubmit: function (event) {
               event.preventDefault();
               if (activitySearching) upd('menuSearchCollapsed', {});
@@ -11508,13 +11508,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             h('label', { htmlFor: 'ar-activity-search', style: { display: 'block', fontWeight: 800, marginBottom: 8, color: T.text } }, 'Find an activity'),
             h('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
               h('input', { id: 'ar-activity-search', type: 'search', value: activityQuery, maxLength: 120, autoComplete: 'off',
-                placeholder: 'Try oil change, battery, 3D, or costs', 'aria-controls': 'ar-menu-categories', 'aria-describedby': 'ar-activity-search-help ar-activity-search-status',
+                placeholder: __alloT('stem.autorepair.try_oil_change_battery_3d_or_costs','Try oil change, battery, 3D, or costs'), 'aria-controls': 'ar-menu-categories', 'aria-describedby': 'ar-activity-search-help ar-activity-search-status',
                 onChange: function (event) { setActivityQuery(event.target.value, false); },
                 onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); setActivityQuery('', true); } },
                 style: { flex: 1, minWidth: 0, width: '100%', minHeight: 44, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 16 } }),
               activityQuery && h('button', { type: 'button', 'data-ar-search-clear': true, onClick: function () { setActivityQuery('', true); }, style: btnSecondary({ minHeight: 44 }) }, 'Clear')),
             h('p', { id: 'ar-activity-search-help', style: { margin: '8px 0', fontSize: 12, color: T.muted } }, 'Search topics, tools, or activity names. Press Enter to reach the first result; Escape clears the search.'),
-            h('div', { role: 'group', 'aria-label': 'Suggested activity searches', style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+            h('div', { role: 'group', 'aria-label': __alloT('stem.autorepair.suggested_activity_searches','Suggested activity searches'), style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
               ['Oil change', 'Battery', '3D', 'Repair costs', 'Career'].map(function (topic) {
                 return h('button', { key: topic, type: 'button', 'data-ar-search-topic': topic, 'aria-pressed': arActivitySearchText(activityQuery) === arActivitySearchText(topic),
                   onClick: function () { setActivityQuery(topic, true); }, style: btnSecondary({ minHeight: 44, fontSize: 12, border: (arActivitySearchText(activityQuery) === arActivitySearchText(topic) ? '2px solid ' + T.accentHi : '1px solid ' + T.border) }) }, topic);
@@ -18570,7 +18570,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   h('input', { type: 'text', 'data-ar-focusable': true, required: true, maxLength: 120, list: 'log-quick-services',
                     'aria-label': __alloT('stem.autorepair.a11y_service_description', 'Service description'), 'aria-invalid': formErrors.service ? 'true' : 'false',
                     'aria-describedby': formErrors.service ? 'autorepair-log-error-service' : undefined,
-                    placeholder: 'Oil + filter change', value: draft.service,
+                    placeholder: __alloT('stem.autorepair.oil_filter_change','Oil + filter change'), value: draft.service,
                     onChange: function(event) { updateDraft('service', event.target.value); },
                     style: { padding: 9, borderRadius: 7, background: T.bg, color: T.text, border: '1px solid ' + (formErrors.service ? T.bad : T.border), fontSize: 13 } }),
                   h('datalist', { id: 'log-quick-services' }, quickServices.map(function(service, index) { return h('option', { key: index, value: service }); })),
@@ -18590,7 +18590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   h('textarea', { 'data-ar-focusable': true, rows: 4, maxLength: 500,
                     'aria-label': __alloT('stem.autorepair.a11y_service_notes', 'Service notes'), 'aria-invalid': formErrors.notes ? 'true' : 'false',
                     'aria-describedby': formErrors.notes ? 'autorepair-log-error-notes' : undefined,
-                    placeholder: 'Synthetic 0W-20, OEM filter, receipt saved', value: draft.notes,
+                    placeholder: __alloT('stem.autorepair.synthetic_0w_20_oem_filter_receipt_saved','Synthetic 0W-20, OEM filter, receipt saved'), value: draft.notes,
                     onChange: function(event) { updateDraft('notes', event.target.value); },
                     style: { padding: 9, borderRadius: 7, background: T.bg, color: T.text, border: '1px solid ' + (formErrors.notes ? T.bad : T.border), fontSize: 13, resize: 'vertical' } }),
                   fieldError('notes')
@@ -20704,7 +20704,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var cards = arShopPracticeBoard(shop, d.shopRecords), open = !!d.shopPracticeBoard;
           var complete = cards.filter(function (card) { return card.status === 'complete'; }).length;
           var labels = { complete: 'Completed', 'in-progress': 'In progress', 'not-started': 'Not started', review: 'Review saved record' };
-          return h('section', { 'data-ar-practice-board': open ? 'open' : 'closed', 'aria-label': 'Workshop practice board',
+          return h('section', { 'data-ar-practice-board': open ? 'open' : 'closed', 'aria-label': __alloT('stem.autorepair.workshop_practice_board','Workshop practice board'),
             style: { padding: 12, marginBottom: 14, border: '1px solid ' + T.border, borderRadius: 8, background: T.cardAlt } },
             h('h3', { style: { fontSize: 15, margin: '0 0 6px' } }, 'Your workshop practice'),
             h('p', { 'data-ar-practice-completed': complete, style: { fontSize: 12, lineHeight: 1.5 } }, complete + '/4 training work orders completed. Choose a skill to practice or resume saved work.'),
@@ -20752,7 +20752,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function workshopResponsePanel() {
           var guide = arShopInstrumentGuide(shop);
           var held = (SHOP_TOOLS.filter(function (tool) { return tool[0] === shop.tool; })[0] || ['', 'No listed tool'])[1];
-          return h('section', { 'data-ar-workshop-response': true, 'aria-label': 'Workshop response',
+          return h('section', { 'data-ar-workshop-response': true, 'aria-label': __alloT('stem.autorepair.workshop_response','Workshop response'),
             style: { margin: '10px 0', padding: 12, border: '1px solid ' + T.border, borderLeft: '4px solid ' + T.accentHi, borderRadius: 8, background: T.card, color: T.text, overflowWrap: 'anywhere' } },
             h('h3', { style: { fontSize: 14, margin: '0 0 6px' } }, 'Workshop response'),
             h('p', { 'data-ar-response-feedback': true, style: { fontSize: 13, lineHeight: 1.5, margin: '6px 0' } }, shop.feedback || (d.shopInteraction === 'inspect' ? 'Inspect a control to learn what it does before using it.' : 'Choose a 3D control or use the labeled work panels. Its result appears here.')),
@@ -20767,9 +20767,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function controlInspector() {
           var inspecting = d.shopInteraction === 'inspect', info = arShopCurrentPreview(shop, d.shopInspectPick);
           var view = info ? arShopControlView(shop, info.id) : null, effect = info ? arShopControlEffect(shop, info.id) : null;
-          return h('section', { 'data-ar-control-inspector': inspecting ? 'inspect' : 'operate', 'aria-label': '3D click mode',
+          return h('section', { 'data-ar-control-inspector': inspecting ? 'inspect' : 'operate', 'aria-label': __alloT('stem.autorepair.3d_click_mode','3D click mode'),
             style: { margin: '8px 0', padding: 10, border: '1px solid #64748b', borderRadius: 8, background: '#102033', color: '#e2e8f0' } },
-            h('div', { className: 'ar-shop-actions', role: 'group', 'aria-label': '3D click mode' }, ['operate', 'inspect'].map(function (mode) {
+            h('div', { className: 'ar-shop-actions', role: 'group', 'aria-label': __alloT('stem.autorepair.3d_click_mode_2','3D click mode') }, ['operate', 'inspect'].map(function (mode) {
               return control(mode === 'operate' ? 'Operate 3D controls' : 'Inspect 3D controls', function () { updMulti({ shopInteraction: mode, shopInspectPick: null }); },
                 { key: mode, 'data-ar-shop-interaction': mode, 'aria-pressed': (inspecting ? 'inspect' : 'operate') === mode });
             })),
@@ -20797,7 +20797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 view.blocked || ('Camera destination: ' + view.label + '. This changes the view only; equipment appears when its task setup is ready.')),
               info && arShopInspectionTarget(shop, d.shopInteraction, d.shopInspectPick) && h('p', { 'data-ar-control-outline-legend': true, style: { fontSize: 12, lineHeight: 1.5 } },
                 (isContrast ? 'Yellow' : 'Cyan') + ' outline: the inspected control, when present in the 3D scene. Use View area in 3D to locate it. The outline does not operate the control.'),
-              info && h('div', { className: 'ar-shop-actions', role: 'group', 'aria-label': 'Selected control actions' },
+              info && h('div', { className: 'ar-shop-actions', role: 'group', 'aria-label': __alloT('stem.autorepair.selected_control_actions','Selected control actions') },
               view && control('View area in 3D', function () {
                 var current = arShopCurrentPreview(shop, d.shopInspectPick), destination = current && arShopControlView(shop, current.id);
                 if (!destination || destination.blocked || !SHOP3D.focus || SHOP3D.status() === 'failed') return;
@@ -20879,7 +20879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             });
           }
           return h('details', { id: 'ar-shop-setup-checks', 'data-ar-setup-checks': ready === checks.length ? 'ready' : 'needed', tabIndex: -1, open: ready !== checks.length,
-            'aria-label': 'Vehicle setup for the current task', style: { margin: '12px 0', padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.cardAlt } },
+            'aria-label': __alloT('stem.autorepair.vehicle_setup_for_the_current_task','Vehicle setup for the current task'), style: { margin: '12px 0', padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.cardAlt } },
             h('summary', { style: { minHeight: 44, cursor: 'pointer', fontWeight: 700, fontSize: 13, lineHeight: 1.6 } }, 'Vehicle setup · ' + ready + '/' + checks.length + ' conditions ready'),
             h('p', null, 'Compare the current simulation state with this task’s requirements. Reviewing a step does not perform it or create a missing record.'),
             h('ul', { style: { listStyle: 'none', margin: 0, padding: 0 } }, checks.map(function (item) {
@@ -20898,11 +20898,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           return h('div', { style: { margin: '10px 0' } },
             control(open ? 'Hide task route' : 'Show task route', function () { upd('shopTaskRoute', !open); },
               { 'data-ar-route-toggle': true, 'aria-expanded': open, 'aria-controls': 'ar-task-route' }),
-            open && h('section', { id: 'ar-task-route', 'data-ar-task-route': job.id, 'aria-label': 'Work order task route',
+            open && h('section', { id: 'ar-task-route', 'data-ar-task-route': job.id, 'aria-label': __alloT('stem.autorepair.work_order_task_route','Work order task route'),
               style: { marginTop: 10, padding: 12, background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10 } },
               h('h3', { style: { margin: '0 0 8px', fontSize: 15 } }, 'From intake to handoff'),
               h('p', { 'data-ar-route-recorded': recorded, style: { fontSize: 12, lineHeight: 1.6 } }, recorded + ' of ' + route.length + ' tasks have saved records. Open a row to review its station, equipment and recorded evidence.'),
-              h('div', { role: 'region', tabIndex: 0, 'aria-label': 'Scrollable task sequence', 'data-ar-route-sequence': true,
+              h('div', { role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.autorepair.scrollable_task_sequence','Scrollable task sequence'), 'data-ar-route-sequence': true,
                 style: { maxHeight: 360, overflowY: 'auto', overscrollBehavior: 'contain', border: '1px solid ' + T.border, borderRadius: 8 } },
                 h('ol', { style: { listStyle: 'none', margin: 0, padding: 8 } }, route.map(function (item) {
                   var current = item.status === 'current';
@@ -20933,7 +20933,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           target.scrollIntoView({ block: 'start', behavior: 'auto' });
         }
         function workshopShortcuts() {
-          return h('nav', { 'data-ar-workshop-shortcuts': true, 'aria-label': 'Workshop section shortcuts', className: 'ar-shop-shortcuts',
+          return h('nav', { 'data-ar-workshop-shortcuts': true, 'aria-label': __alloT('stem.autorepair.workshop_section_shortcuts','Workshop section shortcuts'), className: 'ar-shop-shortcuts',
             style: { background: T.panel, border: '1px solid ' + T.border, boxShadow: isContrast ? 'none' : '0 3px 12px rgba(0,0,0,.16)' } },
             [['bay', '3D bay'], ['equipment', 'Equipment'], ['order', 'Work order'], ['notes', 'Handoff']].map(function (item) {
               return control(item[1], function () { workshopJump(item[0]); }, { key: item[0], 'data-ar-workshop-jump': item[0],
@@ -20980,7 +20980,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             pick('brakes'); stationCamera('brakes'); SHOP3D.reset(); SHOP3D.nudge(-0.45, -0.15);
             SHOP3D.focus('brakes', { distance: 2.6, target: { x: -1.80, y: 2.13, z: 1.35 }, immediate: true });
           }
-          return h('section', { 'data-ar-brake-explorer': true, 'aria-label': 'Brake parts explorer', style: { marginTop: 12, padding: 12, border: '1px solid #67e8f9', borderRadius: 8 } },
+          return h('section', { 'data-ar-brake-explorer': true, 'aria-label': __alloT('stem.autorepair.brake_parts_explorer','Brake parts explorer'), style: { marginTop: 12, padding: 12, border: '1px solid #67e8f9', borderRadius: 8 } },
             h('h4', { style: { margin: '0 0 6px', fontSize: 15 } }, 'Brake parts explorer'),
             h('p', { style: { fontSize: 12 } }, 'Spread the exposed rotor, pad and caliper to see their relationship. Spacing is a visual aid, not a disassembly procedure. The gauge and work order still determine service evidence.'),
             h('div', { className: 'ar-shop-actions' }, control('Focus brake explorer', focus, { 'data-ar-brake-focus': true }),
@@ -21026,7 +21026,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 h('rect', { x: 92, y: 29, width: 21, height: 8, rx: 2, fill: T.accentHi }),
                 h('rect', { x: 187, y: 29, width: 21, height: 8, rx: 2, fill: T.accentHi })));
           }
-          return h('section', { 'data-ar-lift-support': status.state, 'aria-label': 'Live lift support state', style: { marginTop: 12, padding: 12, color: T.text, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } },
+          return h('section', { 'data-ar-lift-support': status.state, 'aria-label': __alloT('stem.autorepair.live_lift_support_state','Live lift support state'), style: { marginTop: 12, padding: 12, color: T.text, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } },
             h('h4', { style: { margin: '0 0 8px', fontSize: 14 } }, 'Height and support are different checks'),
             h('p', { 'data-ar-lift-support-label': true, style: { fontSize: 13, fontWeight: 700 } }, 'Current: ' + status.label),
             picture(status.state),
@@ -21045,7 +21045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function instrumentCoachPanel() {
           var coach = arShopInstrumentGuide(shop);
           if (!coach) return null;
-          return h('section', { 'data-ar-instrument-coach': coach.kind, 'data-ar-coach-status': coach.status, 'aria-label': 'Instrument status',
+          return h('section', { 'data-ar-instrument-coach': coach.kind, 'data-ar-coach-status': coach.status, 'aria-label': __alloT('stem.autorepair.instrument_status','Instrument status'),
             style: { margin: '10px 0', padding: 12, border: '1px solid #64748b', borderRadius: 8, background: '#1e3346' } },
             h('strong', { style: { fontSize: 14 } }, coach.title),
             coach.kind === 'meter' && shop.hood && task && shop.tool === task.tool && h('div', { style: { marginTop: 8 } },
@@ -21084,7 +21084,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             arAnnounce(instruction);
           }
           var passed = readiness.checks.filter(function (item) { return item.ready; }).length;
-          return h('section', { 'data-ar-task-guide': target, 'aria-label': 'Live task guide',
+          return h('section', { 'data-ar-task-guide': target, 'aria-label': __alloT('stem.autorepair.live_task_guide','Live task guide'),
             style: { padding: 12, margin: '10px 0', border: '1px solid #67e8f9', borderRadius: 8, background: '#172f43' } },
             h('strong', { style: { display: 'block', fontSize: 14 } }, readiness.complete ? 'Work order complete' : readiness.review ? 'Review saved record' : 'Task ' + (shop.step + 1) + '/' + job.tasks.length + ' · ' + task.label),
             h('p', { 'data-ar-task-guide-status': true, role: 'status', 'aria-atomic': 'true', style: { fontSize: 12, margin: '8px 0', color: '#a5f3fc' } },
@@ -21099,7 +21099,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
         function sceneControlPanel() {
           function use(id) { pick(arShop3DToken(shop, id)); }
-          return h('section', { 'data-ar-scene-controls': true, 'aria-label': 'Direct workshop controls', style: { marginTop: 12, padding: 12, border: '1px solid #475569', borderRadius: 10, background: '#102033', color: '#e2e8f0' } },
+          return h('section', { 'data-ar-scene-controls': true, 'aria-label': __alloT('stem.autorepair.direct_workshop_controls','Direct workshop controls'), style: { marginTop: 12, padding: 12, border: '1px solid #475569', borderRadius: 10, background: '#102033', color: '#e2e8f0' } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15 } }, 'Work directly in the 3D shop'),
             taskGuidePanel(),
             instrumentCoachPanel(),
@@ -21119,10 +21119,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                     style: btnSecondary({ minHeight: 44, fontSize: 12, border: '1px solid ' + (action.id === 'lift-stop' ? '#f87171' : '#64748b') }) });
                 }))),
             h('p', { style: { fontSize: 12 } }, 'In hand: ' + (SHOP_TOOLS.filter(function (tool) { return tool[0] === shop.tool; })[0] || ['', 'No listed tool'])[1]),
-            h('div', { className: 'ar-shop-actions', 'aria-label': 'Current tool tray' }, arShop3DTools(shop).map(function (tool) {
+            h('div', { className: 'ar-shop-actions', 'aria-label': __alloT('stem.autorepair.current_tool_tray','Current tool tray') }, arShop3DTools(shop).map(function (tool) {
               return control(tool[1], function () { use('equip-' + tool[0]); }, { key: tool[0], 'data-ar-scene-tool': tool[0], 'aria-pressed': shop.tool === tool[0] });
             })),
-            h('div', { className: 'ar-shop-actions', 'aria-label': 'Physical control actions' }, arShop3DActions(shop).filter(function (action) { return action.id.indexOf('lift-') !== 0 && !action.explore; }).map(function (action) {
+            h('div', { className: 'ar-shop-actions', 'aria-label': __alloT('stem.autorepair.physical_control_actions','Physical control actions') }, arShop3DActions(shop).filter(function (action) { return action.id.indexOf('lift-') !== 0 && !action.explore; }).map(function (action) {
               return control(action.label, function () { use(action.id); }, { key: action.id, 'data-ar-scene-action': action.id,
                 'aria-pressed': action.id === 'meter-posts' ? shop.instrument.contact === 'posts' : action.id === 'meter-joint' ? shop.instrument.contact === 'joint' : undefined });
             })),
@@ -21146,7 +21146,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             ['total', 'Total toe', toe.totalInSpec, signed(toe.left) + ' + (' + signed(toe.right) + ') = ' + signed(toe.total), '+0.18° to +0.22°'],
             ['balance', 'Left/right difference', toe.balanced, '|' + signed(toe.left) + ' − (' + signed(toe.right) + ')| = ' + difference.toFixed(2) + '°', 'No more than 0.02°']
           ];
-          return h('section', { 'data-ar-toe-diagram': true, 'aria-label': 'Live toe geometry', style: { margin: '12px 0', padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.card } },
+          return h('section', { 'data-ar-toe-diagram': true, 'aria-label': __alloT('stem.autorepair.live_toe_geometry','Live toe geometry'), style: { margin: '12px 0', padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.card } },
             h('h5', { style: { fontSize: 14, margin: '0 0 8px' } }, 'See the two angles together'),
             h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, 'Top view · vehicle front points up. Inward-pointing wheel fronts mean positive toe. Solid wheels follow your live adjustments.'),
             control(targets ? 'Hide target overlay' : 'Show target overlay', function () { upd('shopToeTargets', !targets); }, { 'data-ar-toe-overlay': true, 'aria-pressed': targets }),
@@ -21187,7 +21187,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('strong', { style: { display: 'block', fontFamily: 'ui-monospace, monospace', fontSize: 24, color: pass ? T.good : T.accentHi } }, signed(value)),
               h('span', { style: { fontSize: 11 } }, pass ? 'In training range' : 'Adjustment needed'));
           }
-          return h('div', { 'data-ar-alignment-panel': true, tabIndex: -1, 'aria-label': 'Alignment setup and adjustment controls' },
+          return h('div', { 'data-ar-alignment-panel': true, tabIndex: -1, 'aria-label': __alloT('stem.autorepair.alignment_setup_and_adjustment_controls','Alignment setup and adjustment controls') },
             h('p', null, 'Positive = toe-in. Negative = toe-out. Total toe is the sum of left and right. Wheel angles and guide lines are shown at 24× for visibility; all readouts show actual model angles.'),
             setup ? h('div', null, [['tyres', 'Inspect tyres and steering joints', 'The authored inspection passes tyre pressures, wear, joint play, rear thrust, camber and caster.'],
               ['targets', 'Prepare plates and fit alignment targets', 'The simulated bay is level, tyres carry the vehicle weight, slip/turn plates are free and targets are compensated.'],
@@ -21196,12 +21196,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 control((shop.alignment[check[0]] ? '✓ ' : '') + check[1], function () { operate({ type: 'alignment-check', check: check[0] }); },
                   { 'data-ar-alignment-check': check[0], 'aria-pressed': shop.alignment[check[0]], style: btnSecondary({ minHeight: 44, width: '100%', textAlign: 'left' }) }), h('p', null, check[2]));
             })) : h('div', null,
-              h('div', { 'aria-label': 'Live alignment angles', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } },
+              h('div', { 'aria-label': __alloT('stem.autorepair.live_alignment_angles','Live alignment angles'), style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } },
                 gauge('Left front', toe.left, shop.alignment.left >= 8 && shop.alignment.left <= 12), gauge('Right front', toe.right, shop.alignment.right >= 8 && shop.alignment.right <= 12)),
               h('p', { 'data-ar-alignment-total': toe.total }, h('strong', null, 'Total: ' + signed(toe.total)), ' · ' + (toe.totalInSpec ? 'Total in range' : 'Total outside range')),
               h('p', { 'data-ar-alignment-balance': toe.balanced ? 'pass' : 'adjust' }, toe.balanced ? '✓ Left/right balance in range' : '↺ Left/right difference exceeds 0.02°. A correct total alone will not pass.'),
               task.id === 'service' && h('div', null,
-                h('div', { className: 'ar-shop-actions', role: 'group', 'aria-label': 'Tie rod to adjust' }, ['left', 'right'].map(function (side) {
+                h('div', { className: 'ar-shop-actions', role: 'group', 'aria-label': __alloT('stem.autorepair.tie_rod_to_adjust','Tie rod to adjust') }, ['left', 'right'].map(function (side) {
                   return control(side === 'left' ? 'Left front' : 'Right front', function () { operate({ type: 'alignment-select', side: side }); }, { key: side, 'data-ar-alignment-side': side, 'aria-pressed': shop.alignment.selected === side });
                 })),
                 h('p', null, 'Selected: ' + shop.alignment.selected + ' tie rod. Each click represents an angular change, not a number of wrench turns.'),
@@ -21215,10 +21215,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var ml = shop.instrument.jugMl, gap = 4600 - ml, units = d.shopJugUnits === 'mL' ? 'mL' : 'L';
           var currentY = 250 - ml / 25, targetY = 66;
           function quantity(value) { return units === 'mL' ? value + ' mL' : (value / 1000).toFixed(1) + ' L'; }
-          return h('section', { 'data-ar-jug-lesson': gap === 0 ? 'ready' : gap > 0 ? 'under' : 'over', 'aria-label': 'Read the graduated jug', style: { marginTop: 12, padding: 12, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } },
+          return h('section', { 'data-ar-jug-lesson': gap === 0 ? 'ready' : gap > 0 ? 'under' : 'over', 'aria-label': __alloT('stem.autorepair.read_the_graduated_jug','Read the graduated jug'), style: { marginTop: 12, padding: 12, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } },
             h('h5', { style: { fontSize: 14, margin: '0 0 8px' } }, 'Read the graduated jug'),
             h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, 'Same amount, two units: 1 L = 1000 mL. Change the scale labels to compare them.'),
-            h('div', { role: 'group', 'aria-label': 'Jug scale units', className: 'ar-shop-actions' }, ['L', 'mL'].map(function (unit) {
+            h('div', { role: 'group', 'aria-label': __alloT('stem.autorepair.jug_scale_units','Jug scale units'), className: 'ar-shop-actions' }, ['L', 'mL'].map(function (unit) {
               return control(unit === 'L' ? 'Litres (L)' : 'Millilitres (mL)', function () { upd('shopJugUnits', unit); }, { key: unit, 'data-ar-jug-units': unit, 'aria-pressed': units === unit });
             })),
             h('svg', { viewBox: '0 0 360 290', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', width: '100%', maxWidth: 420, margin: '8px auto' } },
@@ -21254,10 +21254,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             : reading.value === 3 ? 'The captured lining is at this job’s 3 mm limit. Compare with the work order before making a service decision.'
             : 'The captured lining is above this job’s 3 mm limit. Thickness alone does not verify the complete brake repair.';
           var maximum = valid ? Math.max(10, reading.value) : 10;
-          return h('section', { 'data-ar-brake-measurement': !reading ? 'pending' : valid ? 'lining' : 'wrong-layer', 'aria-label': 'Brake pad measurement lesson', style: { marginTop: 12, padding: 12, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } },
+          return h('section', { 'data-ar-brake-measurement': !reading ? 'pending' : valid ? 'lining' : 'wrong-layer', 'aria-label': __alloT('stem.autorepair.brake_pad_measurement_lesson','Brake pad measurement lesson'), style: { marginTop: 12, padding: 12, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } },
             h('h5', { style: { margin: '0 0 8px', fontSize: 14 } }, 'Which thickness counts?'),
             h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, 'The steel plate supports the friction lining. Measure the lining separately to judge wear against this job’s service sheet.'),
-            h('div', { role: 'group', 'aria-label': 'Place gauge on a pad layer', className: 'ar-shop-actions' }, [['backing', 'Steel backing'], ['lining', 'Friction lining']].map(function (layer) {
+            h('div', { role: 'group', 'aria-label': __alloT('stem.autorepair.place_gauge_on_a_pad_layer','Place gauge on a pad layer'), className: 'ar-shop-actions' }, [['backing', 'Steel backing'], ['lining', 'Friction lining']].map(function (layer) {
               return control(layer[1], function () { pick(arShop3DToken(shop, 'gauge-' + layer[0])); }, { key: layer[0], 'data-ar-gauge-layer': layer[0], 'aria-pressed': surface === layer[0] });
             })),
             h('svg', { viewBox: '0 0 340 195', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', width: '100%', maxWidth: 440, margin: '10px auto' } },
@@ -21292,7 +21292,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           return h('div', { style: { marginTop: 10 } },
             control(open ? 'Hide probe connection map' : 'Trace probe connections', function () { upd('shopMeterTrace', !open); },
               { 'data-ar-meter-trace-toggle': true, 'aria-expanded': open, 'aria-controls': 'ar-meter-trace' }),
-            open && h('section', { id: 'ar-meter-trace', 'data-ar-meter-trace': setup.contact, 'aria-label': 'Live probe connection map',
+            open && h('section', { id: 'ar-meter-trace', 'data-ar-meter-trace': setup.contact, 'aria-label': __alloT('stem.autorepair.live_probe_connection_map','Live probe connection map'),
               style: { marginTop: 10, padding: 12, borderRadius: 8, border: '1px solid ' + T.border, background: T.card } },
               h('h5', { style: { margin: '0 0 8px', fontSize: 14 } }, joint ? 'Across one connection' : 'Across the battery'),
               h('svg', { viewBox: '0 0 320 212', 'aria-hidden': 'true', focusable: 'false', style: { width: '100%', maxWidth: 440, display: 'block', margin: '8px auto' } },
@@ -21310,7 +21310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                     h('text', { x: point[0], y: 202, textAnchor: 'middle', fill: T.text, fontSize: 14 }, point[3]));
                 })),
               h('p', { style: { fontSize: 12, lineHeight: 1.6 } }, 'Solid lead: red probe stays on the positive post. Dashed lead: black probe is on the ' + (joint ? 'positive cable clamp.' : 'negative post.') + ' Contact spacing is schematic.'),
-              h('div', { role: 'group', 'aria-label': 'Place black probe', className: 'ar-shop-actions' }, [['posts', 'Black → negative post'], ['joint', 'Black → positive clamp']].map(function (contact) {
+              h('div', { role: 'group', 'aria-label': __alloT('stem.autorepair.place_black_probe','Place black probe'), className: 'ar-shop-actions' }, [['posts', 'Black → negative post'], ['joint', 'Black → positive clamp']].map(function (contact) {
                 return control(contact[1], function () { pick(arShop3DToken(shop, 'meter-' + contact[0])); }, { key: contact[0], 'data-ar-meter-trace-contact': contact[0], 'aria-pressed': setup.contact === contact[0] });
               })),
               h('p', { 'data-ar-meter-trace-load': setup.load, style: { fontSize: 12, fontWeight: 700 } }, setup.load === 'starter' ? 'Simulated starter load: applied' : 'Simulated starter load: off'),
@@ -21351,7 +21351,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             kind === 'torque' ? h('div', null,
               h('p', null, 'Seat the wheel and start all fasteners by hand. This training diagram checks the cross-hub order 1 → 3 → 5 → 2 → 4. Each click represents a torque check against the vehicle service sheet; it does not simulate applied force.'),
               !shop.wheelSeated && control('Seat wheel and start fasteners', function () { operate({ type: 'seat-wheel' }); }, { 'data-ar-shop-seat-wheel': true }),
-              h('div', { 'data-ar-wheel-diagram': true, style: { position: 'relative', width: 230, maxWidth: '100%', aspectRatio: '1', margin: '12px auto' }, role: 'group', 'aria-label': 'Five wheel fasteners, numbered clockwise from the top' },
+              h('div', { 'data-ar-wheel-diagram': true, style: { position: 'relative', width: 230, maxWidth: '100%', aspectRatio: '1', margin: '12px auto' }, role: 'group', 'aria-label': __alloT('stem.autorepair.five_wheel_fasteners_numbered_clockwise_from','Five wheel fasteners, numbered clockwise from the top') },
                 h('svg', { viewBox: '0 0 230 230', width: '100%', height: '100%', style: { position: 'absolute', inset: 0 }, 'aria-hidden': true },
                   h('circle', { cx: 115, cy: 115, r: 92, fill: T.card, stroke: T.border, strokeWidth: 8 }),
                   h('defs', null, h('marker', { id: 'ar-wheel-path-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' }, h('path', { d: 'M0 0 L10 5 L0 10 Z', fill: T.link }))),
@@ -21371,14 +21371,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                       { 'data-ar-shop-lug': i, 'aria-label': 'Check fastener ' + (i + 1) + (checked ? ', already checked' : ''), 'aria-pressed': checked, 'aria-current': shop.wheelSeated && TIRE_LUG_PATTERN[shop.lugs.length] === i ? 'step' : undefined, disabled: !shop.wheelSeated,
                         style: btnSecondary({ minHeight: 44, minWidth: 44, padding: 5, borderRadius: '50%', border: '2px solid ' + (checked ? T.good : T.border), background: T.card, fontSize: 12 }) }));
                 })),
-              h('ol', { 'data-ar-wheel-sequence': true, 'aria-label': 'Cross-hub check sequence', style: { display: 'flex', flexWrap: 'wrap', gap: 6, listStyle: 'none', padding: 0, margin: '12px 0' } }, wheelSequence.steps.map(function (item) {
+              h('ol', { 'data-ar-wheel-sequence': true, 'aria-label': __alloT('stem.autorepair.cross_hub_check_sequence','Cross-hub check sequence'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, listStyle: 'none', padding: 0, margin: '12px 0' } }, wheelSequence.steps.map(function (item) {
                 return h('li', { key: item.index, 'data-ar-wheel-step': item.index, 'aria-current': item.status === 'next' ? 'step' : undefined, style: { border: '1px solid ' + (item.status === 'next' ? T.link : T.border), borderRadius: 6, padding: '7px 9px', background: T.cardAlt, fontSize: 12 } },
                   (item.index + 1) + ' · ' + (item.status === 'checked' ? 'Checked' : item.status === 'next' ? 'Next' : 'Waiting'));
               })),
               h('p', { 'data-ar-wheel-move': true, style: { fontSize: 12, lineHeight: 1.6 } }, !wheelSequence.valid ? 'The saved fastener order does not match this training sequence. Review the work order before continuing.' : !wheelSequence.seated ? 'Seat the wheel before starting the sequence.' : wheelSequence.next === null ? 'All five checks are recorded. Complete the reassembly task to continue.' : wheelSequence.last === null ? 'Begin at fastener 1 at the top of the wheel.' : 'Move across the hub: ' + (wheelSequence.last + 1) + ' → ' + (wheelSequence.next + 1) + '. The dashed arrow shows the next move; solid lines show completed moves.'),
               h('p', { role: 'status', 'data-ar-shop-lugs-checked': shop.lugs.length }, shop.lugs.length + ' / 5 fasteners checked. ' + (shop.wheelSeated && shop.lugs.length < 5 ? 'Next: fastener ' + (TIRE_LUG_PATTERN[shop.lugs.length] + 1) + '. ' : '') + 'In 3D, select a numbered fastener or click the wrench handle to check its current fastener. The wrench moves to the next position after each accepted check.'))
               : (kind === 'alignment' && task.id === 'alignment-setup') ? null : h('div', null,
-                h('output', { 'data-ar-shop-reading': reading ? String(reading.value) : '', 'aria-label': 'Captured instrument reading',
+                h('output', { 'data-ar-shop-reading': reading ? String(reading.value) : '', 'aria-label': __alloT('stem.autorepair.captured_instrument_reading','Captured instrument reading'),
                   style: { display: 'block', marginTop: 12, padding: 14, borderRadius: 8, background: isContrast ? '#000' : '#10262c', color: '#e3fff2', fontFamily: 'ui-monospace, Consolas, monospace', fontSize: 27, fontWeight: 700 } },
                   reading ? reading.value + ' ' + reading.unit : '— —'),
                 reading && h('p', { 'data-ar-shop-reading-valid': String(reading.valid) }, (reading.valid ? '✓ ' : '↺ ') + reading.detail),
@@ -21395,7 +21395,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             style: { marginTop: 16, padding: 14, border: '1px solid ' + T.border, borderRadius: 12, background: T.cardAlt } },
             h('h3', { id: 'ar-voltage-evidence-title', style: { margin: '0 0 8px', fontSize: 18 } }, 'What changed after the repair?'),
             h('p', { style: { margin: '0 0 12px', fontSize: 12, lineHeight: 1.55, color: T.muted } }, 'Compare the same test: DC volts across the positive post-to-clamp joint, with the starter load on.'),
-            h('ol', { 'aria-label': 'Evidence sequence', style: { listStyle: 'none', display: 'flex', flexWrap: 'wrap', gap: 6, padding: 0, margin: '0 0 12px' } }, stages.map(function (stage, i) {
+            h('ol', { 'aria-label': __alloT('stem.autorepair.evidence_sequence','Evidence sequence'), style: { listStyle: 'none', display: 'flex', flexWrap: 'wrap', gap: 6, padding: 0, margin: '0 0 12px' } }, stages.map(function (stage, i) {
               return h('li', { key: stage.label, style: { flex: '1 1 75px', border: '1px solid ' + (stage.done ? T.good : T.border), borderRadius: 8, padding: 7, fontSize: 11 } },
                 h('strong', { style: { display: 'block', marginBottom: 3 } }, (stage.done ? '✓ ' : (i + 1) + '. ') + stage.label), stage.done ? 'Recorded' : 'Pending');
             })),
@@ -21434,7 +21434,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function openActivity(viewId) { updMulti({ view: viewId, shopFrom: true }); }
         function handoffGuidePanel() {
           var groups = arShopHandoffGuide(shop), open = !!d.shopHandoffHelp;
-          return h('section', { 'data-ar-handoff-guide': open ? 'open' : 'closed', 'aria-label': 'Customer handoff writing support', style: { margin: '14px 0', padding: 12, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } },
+          return h('section', { 'data-ar-handoff-guide': open ? 'open' : 'closed', 'aria-label': __alloT('stem.autorepair.customer_handoff_writing_support','Customer handoff writing support'), style: { margin: '14px 0', padding: 12, background: T.card, border: '1px solid ' + T.border, borderRadius: 8 } },
             h('h4', { style: { margin: '0 0 8px', fontSize: 15 } }, 'Explain the work to your customer'),
             h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, 'Connect the finding, the service and the verification in your own words. Use completed records to support your explanation.'),
             control(open ? 'Hide handoff support' : 'Show records and writing prompts', function () { upd('shopHandoffHelp', !open); }, { 'data-ar-handoff-toggle': true, 'aria-expanded': open, 'aria-controls': 'ar-handoff-support' }),
@@ -21473,7 +21473,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var link = document.createElement('a'); link.href = url; link.download = 'auto-workshop-' + job.id + '.txt'; link.click();
           setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
         }
-        return h('div', { role: 'main', 'aria-label': 'Full mechanic workshop', 'data-ar-workshop': true,
+        return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.full_mechanic_workshop','Full mechanic workshop'), 'data-ar-workshop': true,
           style: { fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif', padding: 'clamp(12px,2.5vw,24px)', maxWidth: 1360, margin: '0 auto', background: T.bg, color: T.text, borderRadius: 16 } },
           h('style', null,
             '.ar-shop-shortcuts{position:sticky;top:8px;z-index:20;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:8px;margin:0 0 14px;border-radius:10px}' +
@@ -21492,14 +21492,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           backBar('Full mechanic workshop / 3D'),
           h('p', { style: { margin: '4px 0 14px', lineHeight: 1.6, fontSize: 14, color: T.muted } },
             'A whole vehicle. A real sequence of decisions. Move between the service desk, lift and work stations to complete a training work order.'),
-          h('div', { className: 'ar-shop-metrics', 'aria-label': 'Workshop status' },
+          h('div', { className: 'ar-shop-metrics', 'aria-label': __alloT('stem.autorepair.workshop_status','Workshop status') },
             h('span', { 'data-ar-shop-lift': shop.lift, style: { color: shop.lift === 'locked' ? T.good : T.accentHi } }, liftLabels[shop.lift]),
             h('span', null, shop.wheelRemoved ? (shop.wheelSeated ? 'Wheel seated — torque pending' : 'Front wheel on rack') : 'Wheels fitted'),
             h('span', null, completion.complete ? 'Work order completed' : completion.review ? 'Review saved record' : 'Task ' + Math.min(shop.step + 1, job.tasks.length) + ' of ' + job.tasks.length)),
           workshopShortcuts(),
           h('div', { className: 'ar-shop-layout', style: { '--shop-border': T.border, '--shop-card': T.card, '--shop-input': T.cardAlt } },
-            h('section', { 'aria-label': 'Workshop scene and stations', style: { minWidth: 0 } },
-              h('div', { id: 'ar-shop-bay', tabIndex: -1, role: 'region', 'aria-label': '3D workshop bay and camera controls', className: 'ar-bay-viewer-frame ar-shop-viewport' },
+            h('section', { 'aria-label': __alloT('stem.autorepair.workshop_scene_and_stations','Workshop scene and stations'), style: { minWidth: 0 } },
+              h('div', { id: 'ar-shop-bay', tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.autorepair.3d_workshop_bay_and_camera_controls','3D workshop bay and camera controls'), className: 'ar-bay-viewer-frame ar-shop-viewport' },
                 bayViewport({ viewer: SHOP3D, height: 470, selected: shop.station, selectedLabel: station.label,
                   label: 'Full vehicle in a mechanic workshop', failText: '3D view unavailable. Use the station buttons and work order below; all tasks and findings remain available.', loadText: 'Loading the full mechanic workshop…' }),
                 workshopResponsePanel(),
@@ -21513,7 +21513,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   control(d.shopLabels ? 'Hide station labels' : 'Show station labels', function () { upd('shopLabels', !d.shopLabels); }, { 'aria-pressed': !!d.shopLabels })),
                 h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, marginBottom: 0 } }, 'Drag to orbit · scroll to zoom · arrow keys rotate · + / − zoom · 0 resets. Select a station below for the same content.')),
               sceneControlPanel(),
-              h('nav', { className: 'ar-shop-stations', 'aria-label': 'Workshop stations' }, SHOP_STATIONS.map(function (p) {
+              h('nav', { className: 'ar-shop-stations', 'aria-label': __alloT('stem.autorepair.workshop_stations','Workshop stations') }, SHOP_STATIONS.map(function (p) {
                 return control(p.label, function () { pick(p.id); }, { key: p.id, 'data-ar-shop-station': p.id, 'aria-pressed': p.id === shop.station,
                   style: btnSecondary({ minHeight: 48, textAlign: 'left', fontSize: 12, borderLeft: '4px solid ' + (isContrast ? T.accent : p.color), background: p.id === shop.station ? T.cardAlt : T.card, fontWeight: p.id === shop.station ? 800 : 500 }) });
               })),
@@ -21530,14 +21530,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   control('Detailed engine bay', function () { openActivity('underhood'); }),
                   control('Diagnostic cases', function () { openActivity('repairbay'); }),
                   control('Tire-change practice', function () { openActivity('tyre'); })))),
-            h('section', { id: 'ar-shop-work-order', tabIndex: -1, className: 'ar-shop-card', 'aria-label': 'Training work order' },
+            h('section', { id: 'ar-shop-work-order', tabIndex: -1, className: 'ar-shop-card', 'aria-label': __alloT('stem.autorepair.training_work_order','Training work order') },
               h('h2', { style: { fontSize: 19 } }, 'Your work order'),
               practiceBoardPanel(),
               h('label', { htmlFor: 'ar-shop-job' }, 'Choose a service job'),
               h('select', { id: 'ar-shop-job', value: job.id, onChange: function (e) { selectJob(e.target.value, false); } }, SHOP_JOBS.map(function (j) { return h('option', { key: j.id, value: j.id }, j.title); })),
               h('p', null, job.concern),
               h('details', { open: true }, h('summary', { style: { cursor: 'pointer', fontWeight: 700 } }, 'Vehicle service sheet — simulation values'), h('p', null, job.spec)),
-              h('progress', { value: shop.step, max: job.tasks.length, 'aria-label': 'Work order progress', style: { width: '100%', height: 12, accentColor: T.accent } }),
+              h('progress', { value: shop.step, max: job.tasks.length, 'aria-label': __alloT('stem.autorepair.work_order_progress','Work order progress'), style: { width: '100%', height: 12, accentColor: T.accent } }),
               taskRoutePanel(),
               setupChecksPanel(),
               task ? h('div', { id: 'ar-shop-current-task', tabIndex: -1, 'data-ar-shop-task': task.id },
@@ -21558,7 +21558,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               handoffGuidePanel(),
               handoffWritingPrompt(),
               h('label', { htmlFor: 'ar-shop-notes' }, 'Customer handoff — finding, service and verification'),
-              h('textarea', { id: 'ar-shop-notes', 'aria-describedby': d.shopHandoffHelp ? 'ar-handoff-writing-prompt' : undefined, rows: 4, maxLength: 2000, value: shop.notes, placeholder: 'What did you find? What changed? How did you verify it?',
+              h('textarea', { id: 'ar-shop-notes', 'aria-describedby': d.shopHandoffHelp ? 'ar-handoff-writing-prompt' : undefined, rows: 4, maxLength: 2000, value: shop.notes, placeholder: __alloT('stem.autorepair.what_did_you_find_what_changed_how_did_you_v','What did you find? What changed? How did you verify it?'),
                 onChange: function (e) { change({ notes: e.target.value }); } }),
               voltageEvidencePanel(),
               h('details', { 'data-ar-service-record': true, style: { marginTop: 12 } },
@@ -21569,7 +21569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('details', { 'data-ar-report-preview': true, style: { marginTop: 12 } },
                 h('summary', { style: { cursor: 'pointer', fontWeight: 700, minHeight: 44 } }, 'Preview downloadable work order'),
                 h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, 'This is the text included in your download. Missing records stay visible; your handoff remains your own wording.'),
-                h('pre', { 'data-ar-report-text': true, tabIndex: 0, role: 'region', 'aria-label': 'Downloadable training work order',
+                h('pre', { 'data-ar-report-text': true, tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.autorepair.downloadable_training_work_order','Downloadable training work order'),
                   style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: 360, overflow: 'auto', padding: 12, fontSize: 12, lineHeight: 1.6, border: '1px solid ' + T.border, borderRadius: 8, color: T.text, background: T.cardAlt } }, arShopReport(shop))),
               h('div', { className: 'ar-shop-actions' }, control('Download work order', downloadReport),
                 control('Restart this job', function () { requestAttempt('restart'); }, { 'data-ar-attempt-open': 'restart' })),
