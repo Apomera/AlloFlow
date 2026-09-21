@@ -121,13 +121,18 @@ nonshareabletest.txt
 Lesson JSONs/
 
 # Agent-generated temp/debug files (one-off scripts, logs, diffs, backups)
-fix_*.py
-fix_*.js
-find_*.py
-find_*.js
-patch_*.py
-replace_*.py
-restore_*.py
+# Anchored to the repo ROOT: these patterns exist for throwaway scripts dropped
+# beside the source, and unanchored they match at EVERY depth. `find_*.js` was
+# silently swallowing tests/find_vacuous_pins_tool.test.js — a real suite that
+# git never reported as untracked, so it looked committed and was not. A test
+# that git cannot see is a test that does not run in CI.
+/fix_*.py
+/fix_*.js
+/find_*.py
+/find_*.js
+/patch_*.py
+/replace_*.py
+/restore_*.py
 compare_*.py
 search_*.py
 investigate*.js
