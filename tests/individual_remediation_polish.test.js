@@ -122,7 +122,10 @@ describe('R1 — distribution verdict (BEHAVIORAL, the real fn)', () => {
     expect(running.headline).toMatch(/still improving/i);
     expect(running.cautions[0]).toMatch(/still running/i);
     // The single derivation, and its three consumers.
-    expect(view).toContain('const _remediationInFlight = _remediationBusy || pdfAutoContinueRunning;');
+    // The derivation gained oneClickRemediationBusy as a third term, so the one-click
+    // lane counts as in-flight too. Still ONE derivation feeding every surface, which is
+    // what this test is about; assert the shape rather than the exact term list.
+    expect(view).toMatch(/const _remediationInFlight = (?:\w+ \|\| )*_remediationBusy \|\| pdfAutoContinueRunning;/);
     expect(view).toContain('const _stillWorking = _remediationInFlight;');
     expect(view).toContain('{_remediationInFlight && (');
     // ...and no surface re-deriving it locally.

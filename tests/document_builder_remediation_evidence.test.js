@@ -12,6 +12,7 @@ const auditMod = readFileSync(resolve(process.cwd(), 'view_pdf_audit_module.js')
 const auditDeploy = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/view_pdf_audit_module.js'), 'utf8');
 const golden = JSON.parse(readFileSync(resolve(process.cwd(), 'tests/fixtures/remediation_evidence_dossier.golden.json'), 'utf8'));
 const hostSrc = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+const hostHandlersSrc = readFileSync(resolve(process.cwd(), 'host_handlers_source.jsx'), 'utf8');
 
 const auditArtifacts = [
   ['source', auditSrc],
@@ -21,11 +22,14 @@ const auditArtifacts = [
 
 describe('Document Builder remediation edit evidence invalidation', () => {
   it('keeps the host fallback field-for-field fail-closed with ReviewDocumentSession', () => {
-    const start = hostSrc.indexOf('const _invalidateBuilderRemediationVerification = (updated) => {');
-    const end = hostSrc.indexOf('const _syncBuilderEditsToRemediation = () => {', start);
+    // The ANTI extraction moved this fallback into host_handlers_source.jsx;
+    // _syncBuilderEditsToRemediation stayed behind in ANTI, so it is no longer the
+    // function that follows. Slice to the next declaration in the new home.
+    const start = hostHandlersSrc.indexOf('const _invalidateBuilderRemediationVerification = (updated) => {');
+    const end = hostHandlersSrc.indexOf('const _restoreBuilderDraftFromProject = async (', start);
     expect(start).toBeGreaterThanOrEqual(0);
     expect(end).toBeGreaterThan(start);
-    const fallback = hostSrc.slice(start, end);
+    const fallback = hostHandlersSrc.slice(start, end);
 
     [
       'verificationHtmlBinding: null', 'verificationAudit: null', 'axeAudit: null',

@@ -195,10 +195,13 @@ describe('remediation deep-dive hardening', () => {
     expect(host).toContain("const remediationModuleNames = [...auditModuleNames, 'VerificationPolicy', 'DocBuilderRenderer', 'MiscHandlersModule'];");
     expect(host).toContain('auditReady, auditDependencyState, remediationReady, remediationDependencyState, retryRemediationDependencies');
     expect(view).toContain('Remediation engine not ready');
-    const makeAccessible = view.slice(
-      view.indexOf('data-help-key="pdf_audit_view_make_accessible_btn"'),
-      view.indexOf('</button>', view.indexOf('data-help-key="pdf_audit_view_make_accessible_btn"')),
-    );
+    // Anchor on the BUTTON, not the first mention of its help key: the key is also
+    // named elsewhere in the file (a help-registry reference), and slicing from that
+    // first hit landed in the diagnostics panel, where the assertion below could only
+    // ever fail. Take the occurrence that opens a <button> tag.
+    const makeAccessibleAt = view.indexOf('<button data-help-key="pdf_audit_view_make_accessible_btn"');
+    expect(makeAccessibleAt).toBeGreaterThan(-1);
+    const makeAccessible = view.slice(makeAccessibleAt, view.indexOf('</button>', makeAccessibleAt));
     const fixVerify = view.slice(
       view.indexOf("console.warn('[Fix&Verify btn] clicked"),
       view.indexOf('</button>', view.indexOf("console.warn('[Fix&Verify btn] clicked")),
