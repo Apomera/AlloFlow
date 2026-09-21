@@ -26893,7 +26893,16 @@ const d = labToolData.waterCycle || {};
               if (!estuaryLabelSprite3d) return;
               delete processLabels3d[estuaryLabelSpec3d.key];
               estuaryLabelSprite3d.userData.salinityZone = estuaryLabelSpec3d.zone;
-              estuaryLabelSprite3d.scale.set(1.55, 0.39, 1);
+              // Route the narrowing through wcSetLabelWidth3d, NOT scale.set.
+              // The helper exists because shrinking a label sprite shrinks its
+              // baked TEXT with it: it re-renders the plate at a larger font so
+              // a narrower label still reads at the same size. A direct
+              // scale.set skips that, and these three estuary labels were
+              // drawing at 1.55 / 2.8 = 55% of every sibling label's text size
+              // — "Ocean water", "River water" and "Brackish mix" were
+              // illegible in the runoff view while "Surface runoff" beside them
+              // was crisp. Same values, same footprint; only the font is fixed.
+              wcSetLabelWidth3d(estuaryLabelSprite3d, 1.55, 0.39);
               estuaryLabelSprite3d.visible = true;
               estuarySalinityLabels3d.push(estuaryLabelSprite3d);
               estuarySalinityLabelGroup3d.add(estuaryLabelSprite3d);
