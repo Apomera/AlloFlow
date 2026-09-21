@@ -8689,6 +8689,16 @@
   // asks for a fresh prediction rather than letting one note unlock every
   // configuration for the rest of the session. Sorted, so key order cannot
   // make two identical setups look different.
+  // Eight search boxes across the reference tabs read their query as
+  // `(d.xQuery || '').toLowerCase()`. `||` only replaces a FALSY value, so a
+  // saved project carrying a NUMBER (or an object, or an array) sails through
+  // and .toLowerCase() throws — and because the shell's error boundary is
+  // unkeyed, that blanks the whole lab, not just the tab. The default sweep
+  // never reached these: they sit past the 60-key cap in a 356-key tool.
+  // Guard on TYPE, not truthiness.
+  function _opticsQuery(value) {
+    return (typeof value === 'string' ? value : '').toLowerCase().trim();
+  }
   function _opticsSetupKey(tab, state) {
     var captured = _captureOpticsTopicState(tab, state);
     return Object.keys(captured).sort().map(function (k) { return k + '=' + captured[k]; }).join('|');
@@ -14318,7 +14328,7 @@
   }
 
   function _renderPhenomenaDb(d, upd, h) {
-    var query = (d.phDbQuery || '').toLowerCase().trim();
+    var query = _opticsQuery(d.phDbQuery);
     var cat = d.phDbCategory || 'all';
     var openId = d.phDbOpenId || null;
 
@@ -15003,7 +15013,7 @@
   function _renderScientistsPanel(d, upd, h) {
     var openId = d.scientistOpenId || null;
     var eraFilter = d.scientistEra || 'all';
-    var query = (d.scientistQuery || '').toLowerCase().trim();
+    var query = _opticsQuery(d.scientistQuery);
 
     var eras = [
       { id: 'all', label: 'All eras' },
@@ -15218,7 +15228,7 @@
   // HISTORY PANEL RENDERER
   // ---
   function _renderHistoryPanel(d, upd, h) {
-    var query = (d.histQuery || '').toLowerCase().trim();
+    var query = _opticsQuery(d.histQuery);
     var filtered = OPTICS_HISTORY.filter(function(e) {
       if (!query) return true;
       return (e.event + ' ' + e.year + ' ' + e.region + ' ' + e.sig).toLowerCase().indexOf(query) !== -1;
@@ -15507,7 +15517,7 @@
   // INSTRUMENTS PANEL RENDERER
   // ---
   function _renderInstrumentsPanel(d, upd, h) {
-    var query = (d.instQuery || '').toLowerCase().trim();
+    var query = _opticsQuery(d.instQuery);
     var catFilter = d.instCategory || 'all';
     var openId = d.instOpenId || null;
     var cats = [
@@ -15775,7 +15785,7 @@
   // LAB KITS PANEL RENDERER
   // ---
   function _renderLabKitsPanel(d, upd, h) {
-    var query = (d.kitQuery || '').toLowerCase().trim();
+    var query = _opticsQuery(d.kitQuery);
     var openId = d.kitOpenId || null;
     var filtered = OPTICS_LAB_KITS.filter(function(k) {
       if (!query) return true;
@@ -16089,7 +16099,7 @@
   // CAREERS PANEL RENDERER
   // ---
   function _renderCareersPanel(d, upd, h) {
-    var query = (d.careerQuery || '').toLowerCase().trim();
+    var query = _opticsQuery(d.careerQuery);
     var catFilter = d.careerCategory || 'all';
     var openId = d.careerOpenId || null;
     var cats = [
@@ -16457,7 +16467,7 @@
   // WORKED PROBLEMS PANEL RENDERER
   // ---
   function _renderWorkedProblemsPanel(d, upd, h) {
-    var query = (d.wpQuery || '').toLowerCase().trim();
+    var query = _opticsQuery(d.wpQuery);
     var topicFilter = d.wpTopic || 'all';
     var openId = d.wpOpenId || null;
     var topics = [
@@ -17647,7 +17657,7 @@
   // GLOSSARY EXPANDED PANEL RENDERER
   // ---
   function _renderGlossaryExpandedPanel(d, upd, h) {
-    var query = (d.glossExpQuery || '').toLowerCase().trim();
+    var query = _opticsQuery(d.glossExpQuery);
     var filtered = GLOSSARY_EXPANDED.filter(function(g) {
       if (!query) return true;
       return (g.term + ' ' + (g.def || '') + ' ' + (g.example || '') + ' ' + (g.related || '')).toLowerCase().indexOf(query) !== -1;
