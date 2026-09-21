@@ -5044,6 +5044,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   // glance on a crowded frame, both WHICH bee is the queen and HOW OLD she is.
   var BH_QUEEN_MARK_COLORS = ['#3b82f6', '#f8fafc', '#facc15', '#ef4444', '#22c55e'];
   var BH_QUEEN_MARK_NAMES = ['blue', 'white', 'yellow', 'red', 'green'];
+  // Shape channel for the same five-year cycle, so the mark still carries a
+  // year in contrast mode (every colour there is forced to white) and for a
+  // learner who cannot separate the red and green of the code. Segment counts
+  // are deliberately far apart: a triangle, a square and a pentagon read as
+  // different silhouettes at this size, where 12 vs 14 sides would not.
+  var BH_QUEEN_MARK_SIDES = [3, 4, 5, 6, 20];
+  var BH_QUEEN_MARK_SHAPES = ['triangular', 'square', 'pentagonal', 'hexagonal', 'round'];
   function bhQueenMarkIndex(year) {
     var y = typeof year === 'number' && isFinite(year) ? Math.floor(year) : 2026;
     return ((y % 10) % 5 + 5) % 5;
@@ -5378,7 +5385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     queenMarkRing.position.set(0, 0.019, -0.018);
     queenMarkRing.rotation.x = -Math.PI / 2;
     queenGroup.add(queenMarkRing);
-    var queenMark = new THREE.Mesh(new THREE.CircleGeometry(0.0115, 14), mat('queen', { color: contrast ? '#ffffff' : BH_QUEEN_MARK_COLORS[bhQueenMarkIndex(2026)], shininess: 40 }));
+    var queenMark = new THREE.Mesh(new THREE.CircleGeometry(0.0115, BH_QUEEN_MARK_SIDES[bhQueenMarkIndex(2026)]), mat('queen', { color: contrast ? '#ffffff' : BH_QUEEN_MARK_COLORS[bhQueenMarkIndex(2026)], shininess: 40 }));
     queenMark.position.set(0, 0.022, -0.018);
     queenMark.rotation.x = -Math.PI / 2;
     queenGroup.add(queenMark);
@@ -29072,7 +29079,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   if (next === 'queen') b.hive3dFoundQueen = true;
                 });
                 announceBee(next
-                  ? 'Front frame drawn out. The queen is the long bee with the ' + BH_QUEEN_MARK_NAMES[bhQueenMarkIndex(2026)] + ' mark on her thorax, ringed by nurses facing inward.'
+                  ? 'Front frame drawn out. The queen is the long bee with the ' + BH_QUEEN_MARK_SHAPES[bhQueenMarkIndex(2026)] + ' ' + BH_QUEEN_MARK_NAMES[bhQueenMarkIndex(2026)] + ' mark on her thorax, ringed by nurses facing inward.'
                   : 'Queen deselected. The frame slides back into the brood box.', false);
               },
               'aria-pressed': season === 3 ? undefined : (hive3dPart === 'queen' ? 'true' : 'false'),
