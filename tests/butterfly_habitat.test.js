@@ -30,7 +30,7 @@ describe('Butterfly habitat exploration',()=>{
  });
  it('persists only known unique observations and starts restored sessions safely paused',()=>{
    const s=BF.freshState({observations:['milkweed','constructor','milkweed','bergamot'],paused:false,x:Infinity});expect(s.observations).toEqual(['milkweed','bergamot']);expect(s.paused).toBe(true);expect(s.x).toBe(0);
-   const saved=BF.save(s);saved.observations.push('lawn');expect(s.observations).toHaveLength(2);expect(Object.keys(saved).sort()).toEqual(['observations','restoration','version']);
+   const saved=BF.save(s);saved.observations.push('lawn');expect(s.observations).toHaveLength(2);expect(Object.keys(saved).sort()).toEqual(['lifecycle','observations','restoration','version']);
  });
 });
 describe('Shared meadow extraction',()=>{

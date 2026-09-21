@@ -1,0 +1,154 @@
+import {beforeAll,describe,it,expect} from 'vitest';
+import {loadTool,resetStemLab} from './helpers/stem_widgets_smoke_harness.js';
+let BF;
+beforeAll(()=>{resetStemLab();window.__RR_TEST_EXPORTS__={};loadTool('stem_lab/stem_tool_butterfly.js','butterfly');BF=window.__RR_TEST_EXPORTS__.butterfly;});
+
+// Land on a patch and record the evidence the lifecycle activity requires.
+function examined(s,id){const p=BF.habitats(s).find(p=>p.id===id);Object.assign(s,{x:p.x,z:p.z});BF.land(s);BF.observe(s);return s;}
+function runToEnd(s){for(let i=0;i<10&&BF.advanceStage(s).ok;i++);return s;}
+
+describe('Butterfly life cycle investigation',()=>{
+ it('refuses eggs without a prediction, a real patch, or recorded evidence',()=>{
+   const s=BF.freshState(),before=JSON.stringify(s);
+   for(const [id,guess] of [['milkweed',''],['milkweed','constructor'],['constructor','complete'],[null,'complete'],['__proto__','stalls']])
+     expect(BF.layEggs(s,id,guess).ok).toBe(false);
+   // A valid patch and prediction still fail while the patch is unexamined.
+   expect(BF.layEggs(s,'milkweed','complete').ok).toBe(false);
+   expect(JSON.stringify(s)).toBe(before);
+   examined(s,'milkweed');expect(BF.layEggs(s,'milkweed','complete').ok).toBe(true);
+ });
+
+ it('carries a generation to the adult stage only where milkweed leaves grow',()=>{
+   const s=examined(BF.freshState(),'milkweed');
+   BF.layEggs(s,'milkweed','complete');
+   expect(s.lifecycle.stage).toBe('egg');
+   runToEnd(s);
+   expect(s.lifecycle.stage).toBe('adult');
+   const result=BF.broodResult(s);
+   expect(result.ok).toBe(true);expect(result.message).toContain('Prediction matched.');
+   expect(s.lifecycle.broods).toEqual([{patch:'milkweed',prediction:'complete',result:'complete'}]);
+   expect(s.lifecycle.stage).toBeNull();expect(s.lifecycle.prediction).toBeNull();
+ });
+
+ it('stops a generation at the caterpillar stage on a nectar-only patch',()=>{
+   const s=examined(BF.freshState(),'bergamot');
+   BF.layEggs(s,'bergamot','complete');
+   runToEnd(s);
+   // Nectar feeds the adult the learner flies; it does not feed the caterpillar.
+   expect(s.lifecycle.stage).toBe('caterpillar');
+   expect(BF.advanceStage(s).ok).toBe(false);
+   const result=BF.broodResult(s);
+   expect(result.message).toContain('Different from your prediction.');
+   expect(result.message).toContain('adult nectar cannot substitute');
+   expect(s.lifecycle.broods).toEqual([{patch:'bergamot',prediction:'complete',result:'stalls'}]);
+ });
+
+ it('stops on bare lawn just as it does on flowers, for the same reason',()=>{
+   const s=examined(BF.freshState(),'lawn');
+   BF.layEggs(s,'lawn','stalls');
+   runToEnd(s);
+   expect(s.lifecycle.stage).toBe('caterpillar');
+   expect(BF.broodResult(s).message).toContain('Prediction matched.');
+   expect(BF.broodFor(s,'lawn').result).toBe('stalls');
+ });
+
+ it('will not record a result before the generation has gone as far as it can',()=>{
+   const s=examined(BF.freshState(),'milkweed');
+   BF.layEggs(s,'milkweed','complete');
+   expect(BF.broodResult(s).ok).toBe(false);
+   BF.advanceStage(s);
+   expect(BF.broodResult(s).ok).toBe(false);
+   expect(s.lifecycle.broods).toEqual([]);
+ });
+
+ it('reflects the restoration plot as it is currently planted',()=>{
+   const s=BF.freshState();
+   BF.applyPlan(s,'flowers','nectar');examined(s,'restoration');
+   BF.layEggs(s,'restoration','complete');runToEnd(s);
+   expect(s.lifecycle.stage).toBe('caterpillar');
+   BF.broodResult(s);
+   expect(BF.broodFor(s,'restoration').result).toBe('stalls');
+   // Replant with milkweed and the same plot now carries a generation through.
+   BF.applyPlan(s,'mixed','both');examined(s,'restoration');
+   BF.layEggs(s,'restoration','complete');runToEnd(s);
+   BF.broodResult(s);
+   expect(s.lifecycle.broods).toHaveLength(1);
+   expect(BF.broodFor(s,'restoration').result).toBe('complete');
+ });
+
+ it('abandons a running generation when the plot it lives on is replanted',()=>{
+   const s=BF.freshState();
+   BF.applyPlan(s,'mixed','both');examined(s,'restoration');
+   BF.layEggs(s,'restoration','complete');BF.advanceStage(s);
+   expect(s.lifecycle.stage).toBe('caterpillar');
+   BF.applyPlan(s,'lawn','neither');
+   // The habitat it depended on is gone, so it cannot be recorded as a result.
+   expect(s.lifecycle.stage).toBeNull();expect(s.lifecycle.patch).toBeNull();
+   expect(s.lifecycle.broods).toEqual([]);expect(BF.broodResult(s).ok).toBe(false);
+ });
+
+ it('leaves a generation on a reference patch untouched when the plot is replanted',()=>{
+   const s=examined(BF.freshState(),'milkweed');
+   BF.layEggs(s,'milkweed','complete');BF.advanceStage(s);
+   BF.applyPlan(s,'mixed','both');
+   expect(s.lifecycle.patch).toBe('milkweed');expect(s.lifecycle.stage).toBe('caterpillar');
+ });
+
+ it('does not fly, spend energy, or grant patch evidence while a generation runs',()=>{
+   const s=examined(BF.freshState(),'milkweed');
+   Object.assign(s,{energy:44,clock:9,paused:true});
+   const observations=JSON.stringify(s.observations);
+   BF.layEggs(s,'milkweed','complete');runToEnd(s);BF.broodResult(s);
+   expect(s.energy).toBe(44);expect(s.clock).toBe(9);expect(s.paused).toBe(true);
+   expect(JSON.stringify(s.observations)).toBe(observations);
+ });
+
+ it('keeps one record per patch and round-trips saves without aliasing',()=>{
+   const s=examined(BF.freshState(),'milkweed');
+   BF.layEggs(s,'milkweed','stalls');runToEnd(s);BF.broodResult(s);
+   expect(BF.broodFor(s,'milkweed').prediction).toBe('stalls');
+   // Following the same patch again replaces that row rather than appending.
+   BF.layEggs(s,'milkweed','complete');runToEnd(s);BF.broodResult(s);
+   expect(s.lifecycle.broods).toHaveLength(1);
+   expect(BF.broodFor(s,'milkweed').prediction).toBe('complete');
+   const saved=BF.save(s),restored=BF.freshState(saved);
+   expect(saved.version).toBe(3);
+   expect(restored.lifecycle).toEqual(s.lifecycle);
+   saved.lifecycle.broods[0].result='stalls';
+   expect(s.lifecycle.broods[0].result).toBe('complete');
+   expect(restored.lifecycle.broods[0].result).toBe('complete');
+ });
+
+ it('rejects tampered saved lifecycle values and bounds the history',()=>{
+   const s=BF.freshState({lifecycle:{patch:'constructor',prediction:'toString',stage:'__proto__',
+     broods:[null,'bad',{patch:'milkweed',result:'complete'},{patch:'nowhere',prediction:'complete',result:'complete'},
+       {patch:'lawn',prediction:'stalls',result:'stalls',extra:'unsafe'},
+       ...Array(20).fill({patch:'bergamot',prediction:'complete',result:'stalls'})]}});
+   expect(s.lifecycle.patch).toBeNull();expect(s.lifecycle.prediction).toBeNull();expect(s.lifecycle.stage).toBeNull();
+   // Only the last 12 entries are considered, so the leading records fall off;
+   // what survives is stripped of unknown fields and deduplicated by patch.
+   expect(s.lifecycle.broods).toEqual([{patch:'bergamot',prediction:'complete',result:'stalls'}]);
+   // A short tampered history keeps its valid rows and drops the invalid ones.
+   expect(BF.freshState({lifecycle:{broods:[null,'bad',{patch:'milkweed',result:'complete'},
+     {patch:'nowhere',prediction:'complete',result:'complete'},
+     {patch:'lawn',prediction:'stalls',result:'stalls',extra:'unsafe'}]}}).lifecycle.broods)
+     .toEqual([{patch:'lawn',prediction:'stalls',result:'stalls'}]);
+   expect(BF.freshState({lifecycle:{broods:'invalid'}}).lifecycle.broods).toEqual([]);
+   expect(BF.freshState({lifecycle:'invalid'}).lifecycle.broods).toEqual([]);
+   expect(BF.freshState().lifecycle).toEqual({patch:null,prediction:null,stage:null,broods:[]});
+ });
+
+ it('agrees with the stage track the panel renders',()=>{
+   const milkweed=BF.habitats(BF.freshState()).find(p=>p.id==='milkweed');
+   const bergamot=BF.habitats(BF.freshState()).find(p=>p.id==='bergamot');
+   expect(BF.reachedStage(milkweed)).toBe(BF.stages.length-1);
+   expect(BF.reachedStage(bergamot)).toBe(1);
+   expect(BF.expectedOutcome(milkweed)).toBe('complete');
+   expect(BF.expectedOutcome(bergamot)).toBe('stalls');
+   // Every stage reads as thriving on milkweed and failing where there is none.
+   BF.stages.forEach((st,i)=>{
+     expect(BF.stageStatus(milkweed,i)).toBe('thriving');
+     expect(BF.stageStatus(bergamot,i)).toBe('failing');
+   });
+ });
+});
