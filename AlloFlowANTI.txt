@@ -14534,6 +14534,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=994aa53a6');
     loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=994aa53a6');
     loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=994aa53a6');
+    // The teacher's own imported documents, shared by the source generator,
+    // its toggle, the Quick Start toggle and the import control. No
+    // dependencies of its own: it reaches Lumen lazily, loading those STEM
+    // plugins on demand when a teacher first imports outside STEM Lab.
+    loadModule('OwnSources', 'https://alloflow-cdn.pages.dev/own_sources_module.js?v=994aa53a6');
     loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=994aa53a6');
     loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=994aa53a6');
     window.__alloLazySharedActivity = function() {
@@ -14992,6 +14997,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer
+        // Backs 69 tools' About views + the hub alignment panel. It was in
+        // build.js but never in this manifest, so it was never fetched and
+        // every one of those sections rendered empty. Support file: stays eager.
+        'sel_hub/sel_standards_alignment.js',
         'sel_hub/sel_tool_zones.js',
         'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_emotions.js',
         'sel_hub/sel_tool_mindfulness.js', 'sel_hub/sel_tool_somaticreset.js', 'sel_hub/sel_tool_social.js',
@@ -15022,6 +15031,50 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'sel_hub/sel_tool_selfadvocacy.js',
         'sel_hub/sel_tool_execfunction.js',
         'sel_hub/sel_tool_digitalwellbeing.js',
+        // 2026-09-20: these 39 had a card + registerTool but were missing here,
+        // so the browser never fetched them: the card rendered and every click
+        // fell through to "<Tool> is loading..." forever. SEL harnesses load
+        // sel_hub/ from disk, so the suite stayed green. Gate:
+        // dev-tools/check_sel_tool_manifest.cjs
+        'sel_hub/sel_tool_anxietytoolkit.js',
+        'sel_hub/sel_tool_behavioralactivation.js',
+        'sel_hub/sel_tool_bigfeelings.js',
+        'sel_hub/sel_tool_bodystory.js',
+        'sel_hub/sel_tool_careconstellations.js',
+        'sel_hub/sel_tool_careercompass.js',
+        'sel_hub/sel_tool_circlesofsupport.js',
+        'sel_hub/sel_tool_conflicttheater.js',
+        'sel_hub/sel_tool_costbenefit.js',
+        'sel_hub/sel_tool_crewprotocols.js',
+        'sel_hub/sel_tool_dearman.js',
+        'sel_hub/sel_tool_disabilityvoices.js',
+        'sel_hub/sel_tool_ecomap.js',
+        'sel_hub/sel_tool_genogram.js',
+        'sel_hub/sel_tool_griefloss.js',
+        'sel_hub/sel_tool_healthyrelationships.js',
+        'sel_hub/sel_tool_howl.js',
+        'sel_hub/sel_tool_identitysupport.js',
+        'sel_hub/sel_tool_landplace.js',
+        'sel_hub/sel_tool_maps.js',
+        'sel_hub/sel_tool_motivationalinterviewing.js',
+        'sel_hub/sel_tool_onepageprofile.js',
+        'sel_hub/sel_tool_orientations.js',
+        'sel_hub/sel_tool_path.js',
+        'sel_hub/sel_tool_perma.js',
+        'sel_hub/sel_tool_quietquestions.js',
+        'sel_hub/sel_tool_sensoryregulation.js',
+        'sel_hub/sel_tool_sfbt.js',
+        'sel_hub/sel_tool_sleep.js',
+        'sel_hub/sel_tool_sourcesofstrength.js',
+        'sel_hub/sel_tool_stressbucket.js',
+        'sel_hub/sel_tool_substancepsychoed.js',
+        'sel_hub/sel_tool_thoughtrecord.js',
+        'sel_hub/sel_tool_tipp.js',
+        'sel_hub/sel_tool_traumapsychoed.js',
+        'sel_hub/sel_tool_valuescommittedaction.js',
+        'sel_hub/sel_tool_viastrengths.js',
+        'sel_hub/sel_tool_wheeloflife.js',
+        'sel_hub/sel_tool_windowoftolerance.js',
       ];
       var arcadeModes = [
         // AlloHaven Arcade plugins (Phase 3a) -- self-register via
@@ -15125,15 +15178,24 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           return String(value || '')
             .replace(/^.*\//, '')
             .replace(/^stem_tool_/, '')
+            .replace(/^sel_tool_/, '')
             .replace(/\.js(?:[?#].*)?$/, '')
             .replace(/[^a-z0-9]/gi, '')
             .toLowerCase();
         }
 
+        // SEL ids are the camelCase of their filename suffix, so 70 of 71 resolve
+        // by convention once sel_tool_ is stripped. howlTracker is the exception
+        // (its file is sel_tool_howl.js) and would silently fail to load.
+        var selRegistrationModuleAliases = {
+          howlTracker: 'sel_hub/sel_tool_howl.js'
+        };
+
         function resolveModule(toolOrModule) {
           if (!toolOrModule) return null;
           if (manifest.indexOf(toolOrModule) !== -1) return toolOrModule;
-          var aliasedModule = label === 'Stem' ? stemRegistrationModuleAliases[toolOrModule] : null;
+          var aliasedModule = label === 'Stem' ? stemRegistrationModuleAliases[toolOrModule]
+            : label === 'Sel' ? selRegistrationModuleAliases[toolOrModule] : null;
           if (aliasedModule && manifest.indexOf(aliasedModule) !== -1) return aliasedModule;
           var wanted = normalizedToolKey(toolOrModule);
           for (var i = 0; i < manifest.length; i++) {
@@ -15395,15 +15457,77 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           };
         }
 
+        // SEL gets the same per-tool surface STEM has. Until 2026-09-20 the hub
+        // fetched all 73 modules in one batch on first open -- 16.4 MB before a
+        // student could touch anything, and if one file failed there was no
+        // error, no retry and no diagnostic: the tool simply never appeared.
+        // SEL has no inter-tool script prerequisites (sel_safety_layer and
+        // sel_standards_alignment are the shared ones and load with the hub), so
+        // no dependency graph is needed -- loadOne is the whole story here.
+        if (label === 'Sel') {
+          window.__alloEnsureSelPluginLoaded = function(toolOrModule) {
+            var mod = resolveModule(toolOrModule);
+            if (!mod) return false;
+            loadOne(mod, false);
+            return true;
+          };
+          window.__alloGetSelPluginState = function(toolOrModule) {
+            var mod = resolveModule(toolOrModule);
+            return publicState(mod ? states[mod] : null);
+          };
+          window.__alloSelPluginStates = states;
+          window.__alloRetrySelPlugin = function(toolOrModule) {
+            var mod = resolveModule(toolOrModule);
+            if (!mod) return false;
+            loadOne(mod, true);
+            return true;
+          };
+          // The card grid renders from the catalog in sel_hub_module.js, which is
+          // independent of these files, so a tool's tile is visible before its
+          // module exists. That is what makes lazy loading safe here.
+          window.__alloSelPluginManifest = manifest.slice();
+        }
+
         return function() {
           if (started) return;
           started = true;
           // STEM keeps catalog metadata eager but loads each substantial lab only
-          // when selected (or prefetched on tile intent). SEL and Arcade retain
-          // their existing batch behavior.
+          // when selected (or prefetched on tile intent). Arcade retains its
+          // batch behavior.
           if (label === 'Stem') {
             syncLoadingFlag();
             fireProgress(null);
+            return;
+          }
+          // SEL, 2026-09-20: same treatment, one difference. The hub used to
+          // fetch every tool on first open -- 16.4 MB, ~9s on school wifi and
+          // ~33s on a weak connection, paid by a student who wanted one tool.
+          // The card grid renders from the catalog inside sel_hub_module.js, so
+          // tiles do not need their modules present; openSelToolById() requests
+          // the one tool that was clicked.
+          //
+          // The shared support files are NOT deferred: sel_safety_layer must be
+          // in place before any tool can hook it, and sel_standards_alignment
+          // backs 69 About views. Both are small and every tool may need them.
+          if (label === 'Sel') {
+            window.__alloSelPluginsLoading = true;
+            var selSupport = manifest.filter(function(mod) { return mod.indexOf('sel_tool_') === -1; });
+            var waitForSelRegistry = function(cb) {
+              if (registryProbe()) { cb(); return; }
+              var attempts = 0;
+              var interval = setInterval(function() {
+                attempts++;
+                if (registryProbe()) { clearInterval(interval); cb(); }
+                else if (attempts > 50) { clearInterval(interval); console.warn('[Sel Plugins] registry not found after 5s -- loading anyway'); cb(); }
+              }, 100);
+            };
+            waitForSelRegistry(function() {
+              selSupport.forEach(function(mod) { loadOne(mod, false); });
+              syncLoadingFlag();
+              // Tells the hub the batch is gone, so a tool that has not
+              // registered means "not requested yet", not "still streaming in".
+              fireProgress(null);
+            });
             return;
           }
           window['__allo' + label + 'PluginsLoading'] = true;
@@ -20686,11 +20810,23 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       organizerLaunchTimerRef.current = { key: launchKey, poll: null,
         timeout: setTimeout(() => handleInteractiveOrganizerFailed(remote.activityId), 16000) };
     }
-    if (remote.resourceId && String(generatedContent?.id || '') !== String(remote.resourceId)) return;
+    // These four guards mean "this arm is not for the resource currently open" —
+    // an ordinary state while delivery lags the arm, but the PERMANENT state for
+    // a student who has navigated elsewhere. The deadline above is the stall
+    // watch; leaving it running on the way out reported a `failed` activity to
+    // the teacher's roster for a student who was simply reading something else.
+    // Releasing launchKey too means a later snapshot that DOES match re-arms the
+    // watch normally, so a genuine delivery stall is still caught.
+    const _stallWatchOff = () => {
+      _clearOrganizerLaunchTimer();
+      if (lastOrganizerProgressWriteRef.launchKey === launchKey) lastOrganizerProgressWriteRef.launchKey = null;
+      return true;
+    };
+    if (remote.resourceId && String(generatedContent?.id || '') !== String(remote.resourceId) && _stallWatchOff()) return;
     const renderedStructureType = window.AlloModules?.ViewRenderers?.normalizeVisualOrganizerData?.(generatedContent?.data)?.structureType || generatedContent?.data?.structureType;
-    if (remote.structureType && String(renderedStructureType || '') !== String(remote.structureType)) return;
-    if (remote.resourceRevision && getLiveOrganizerResourceRevision(generatedContent) !== String(remote.resourceRevision)) return;
-    if (!getLiveOrganizerReadiness(remote.type, generatedContent).ok) return;
+    if (remote.structureType && String(renderedStructureType || '') !== String(remote.structureType) && _stallWatchOff()) return;
+    if (remote.resourceRevision && getLiveOrganizerResourceRevision(generatedContent) !== String(remote.resourceRevision) && _stallWatchOff()) return;
+    if (!getLiveOrganizerReadiness(remote.type, generatedContent).ok && _stallWatchOff()) return;
     let syncedGameData = null;
     if (remote.type === 'venn') {
       syncedGameData = normalizeInteractiveVennGameData(remote.gameData);

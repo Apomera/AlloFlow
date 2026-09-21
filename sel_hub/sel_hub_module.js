@@ -2587,6 +2587,16 @@
         } catch (e) { return null; }
       });
       var recoverableDraft = _recoverableDraft[0], setRecoverableDraft = _recoverableDraft[1];
+      // ★The Custom Stations panel used `open={builderOpen || recoverableDraft
+      // || savedStations.length > 0}` with no onToggle. `open` is CONTROLLED in
+      // React, so once a teacher with no saved stations opened the builder and
+      // cancelled, all three went false, the panel was forced shut, and the
+      // "+ Build a Custom Station" button inside it became unreachable — a
+      // click on the summary opened the DOM element but the next render slammed
+      // it closed again. This records the teacher's own toggle so their choice
+      // survives a re-render; the three signals below still FORCE it open.
+      var _stationsPanelOpen = React.useState(false);
+      var stationsPanelOpen = _stationsPanelOpen[0], setStationsPanelOpen = _stationsPanelOpen[1];
       var _builderUndo = React.useState([]);
       var builderUndo = _builderUndo[0], setBuilderUndo = _builderUndo[1];
       var _removedStations = React.useState([]);
@@ -2605,6 +2615,10 @@
         draftRemovalPending.current = !writeLocalSel('alloflow_sel_builder_draft', null, true);
         if (!draftRemovalPending.current) setRecoverableDraft(null);
         setBuilderOpen(false); setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]); setBuilderUndo([]);
+        // Cancelling returns to the panel the builder was opened FROM, so keep
+        // it expanded. Without this a teacher with no saved stations cancels
+        // into a collapsed panel and cannot find "Build a Custom Station".
+        setStationsPanelOpen(true);
       }
       function restoreBuilderDraft() {
         if (!recoverableDraft) return;
@@ -2797,8 +2811,37 @@
               return n;
             });
           }
-        } else if (typeof addToast === 'function') {
-          addToast((label || 'This SEL tool') + ' is loading...', 'info');
+        } else {
+          // The tool's module is fetched on demand (2026-09-20), so an
+          // unregistered tool usually means "not requested yet", not "broken".
+          // Ask for it; the pending-tool watcher opens it once it registers.
+          // Without this request the card was a dead end: the old code toasted
+          // "is loading..." at a file nothing had asked for, on every click.
+          var requested = false;
+          try {
+            if (typeof window.__alloEnsureSelPluginLoaded === 'function') {
+              requested = window.__alloEnsureSelPluginLoaded(toolId);
+            }
+          } catch (e) { requested = false; }
+          if (requested) {
+            // Write the pending record directly rather than via toolLinks.open():
+            // that helper also dispatches the open event and calls the host
+            // opener, which would re-enter the hub we are already inside.
+            try {
+              window.__alloSelHubPendingTool = {
+                toolId: toolId, label: label || '', stationId: '', at: Date.now()
+              };
+            } catch (e) {}
+          }
+          if (typeof addToast === 'function') {
+            // Only promise a load we actually started. If the loader is absent
+            // (an older host, or a tool with no module), saying "loading" is a
+            // lie the student waits on.
+            addToast(requested
+              ? (label || 'This SEL tool') + ' is opening...'
+              : (label || 'This SEL tool') + ' could not be opened. Try again, or pick another tool.',
+              requested ? 'info' : 'error');
+          }
         }
       }
 
@@ -3456,6 +3499,27 @@
         return _allSelTools.find(function(t) { return t.id === toolId && !t.category; }) || null;
       }
 
+      // Can this tool be OPENED? Not the same question as "is it loaded".
+      //
+      // Tool modules load on demand (2026-09-20). Under the old batch load every
+      // tool was registered seconds after the hub opened, so `isRegistered(id)`
+      // read as a brief "still streaming in" and any control gated on it came
+      // alive by itself. Lazily, a tool is registered only once someone has
+      // already opened it, so those same gates never resolve: cards sat at half
+      // opacity, pathway buttons stayed disabled, and the crisis-search route
+      // into Crisis Companion did not render at all.
+      //
+      // A tool is openable when the hub has a card for it (the catalog is
+      // independent of the module) and a loader exists to fetch it. Registered
+      // tools stay openable even if the loader is missing, so an older host that
+      // still batch-loads behaves exactly as before.
+      function _selToolIsOpenable(toolId) {
+        if (!toolId) return false;
+        if (window.SelHub && window.SelHub.isRegistered(toolId)) return true;
+        if (typeof window.__alloEnsureSelPluginLoaded !== 'function') return false;
+        return !!_selToolById(toolId);
+      }
+
       function _teacherToolCue(toolId) {
         return (SEL_TEACHER_TOOL_META && SEL_TEACHER_TOOL_META[toolId]) || null;
       }
@@ -3474,9 +3538,13 @@
         });
       }
 
+      // "Pending" means a tool this hub cannot open at all — not one whose
+      // module has simply not been fetched yet. Gating on isRegistered here
+      // would disable every teacher plan on a fresh hub open, since tools load
+      // on demand and a teacher has opened none of them.
       function _teacherPlanPendingLabels(plan) {
         return _teacherPlanCatalogTools(plan).filter(function(toolId) {
-          return !(window.SelHub && window.SelHub.isRegistered(toolId));
+          return !_selToolIsOpenable(toolId);
         }).map(function(toolId) {
           var tool = _selToolById(toolId);
           return tool ? tool.label : toolId;
@@ -4672,7 +4740,7 @@
               h('strong', null, tool ? tool.label : item.tool),
               h('p', null, 'Why this option: ' + needLabels[item.need].toLowerCase() + ', with a suggested ' + item.min + '-minute first step and ' + (item.mode === 'write' ? 'a short written response.' : 'a way to practice without typing.')),
               h('p', null, item.first),
-              h('button', { type: 'button', disabled: !window.SelHub.isRegistered(item.tool), onClick: function () { openSelToolById(item.tool, tool ? tool.label : item.tool); }, style: Object.assign({}, control, { cursor: 'pointer', fontWeight: 700 }) }, 'Open ' + (tool ? tool.label : item.tool))
+              h('button', { type: 'button', disabled: !_selToolIsOpenable(item.tool), onClick: function () { openSelToolById(item.tool, tool ? tool.label : item.tool); }, style: Object.assign({}, control, { cursor: 'pointer', fontWeight: 700 }) }, 'Open ' + (tool ? tool.label : item.tool))
             );
           }))
         );
@@ -4684,8 +4752,8 @@
         var opened = activePathway.tools.filter(function(id) { return !!pathwayProgress[id]; }).length;
         var currentIndex = activePathway.tools.indexOf(selHubTool);
         var nextId = currentIndex >= 0
-          ? activePathway.tools.slice(currentIndex + 1).find(function(id) { return window.SelHub.isRegistered(id); })
-          : activePathway.tools.find(function(id) { return !pathwayProgress[id] && window.SelHub.isRegistered(id); });
+          ? activePathway.tools.slice(currentIndex + 1).find(function(id) { return _selToolIsOpenable(id); })
+          : activePathway.tools.find(function(id) { return !pathwayProgress[id] && _selToolIsOpenable(id); });
         var nextTool = _allSelTools.find(function(tool) { return tool.id === nextId; });
         var buttonStyle = { minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgCard, color: _t.text, fontSize: 13, fontWeight: 700, cursor: 'pointer' };
         return h('section', {
@@ -4760,11 +4828,15 @@
         var stationNav = h('nav', { 'aria-label': 'Station activities', style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 } },
           (activeStation.tools || []).map(function(id, index) {
             var tool = _selToolById(id);
-            var available = window.SelHub && window.SelHub.isRegistered(id);
+            // "(loading)" described the old batch, where an unregistered tool was
+            // a file already on its way. A tool that loads on demand is not
+            // loading until someone asks for it, so the chip is simply open-able
+            // and the suffix belongs only to a tool this hub genuinely lacks.
+            var available = _selToolIsOpenable(id);
             return h('button', { key: id, type: 'button', 'aria-current': selHubTool === id ? 'step' : undefined, 'aria-disabled': !available,
               style: Object.assign({}, buttonStyle, selHubTool === id ? { background: _t.accent, color: _t.accentText, borderColor: _t.accent } : {}),
               onClick: function() { openSelToolById(id, tool ? tool.label : id); }
-            }, (index + 1) + '. ' + (tool ? tool.label : id) + (!available ? ' (loading)' : ''));
+            }, (index + 1) + '. ' + (tool ? tool.label : id) + (!available ? ' (not available)' : ''));
           })
         );
         return h('section', { id: 'sel-active-station-guide', tabIndex: -1, role: 'region', 'aria-label': 'Active SEL Station: ' + activeStation.name,
@@ -5229,7 +5301,7 @@
               }
             },
               _recentWorkItems.map(function(item) {
-                var canOpen = item.toolId && window.SelHub && window.SelHub.isRegistered(item.toolId);
+                var canOpen = !!item.toolId && _selToolIsOpenable(item.toolId);
                 var when = _selRelativeTime(item.ts);
                 return h('button', {
                   key: item.key,
@@ -5237,7 +5309,7 @@
                   onClick: function() {
                     if (canOpen) openSelToolById(item.toolId, item.title);
                   },
-                  'aria-label': item.kind + ' SEL work: ' + item.title + (when ? ', ' + when : '') + '. ' + (canOpen ? 'Open related tool.' : 'Related tool is still loading.'),
+                  'aria-label': item.kind + ' SEL work: ' + item.title + (when ? ', ' + when : '') + '. ' + (canOpen ? 'Open related tool.' : 'Related tool is not available in this SEL Hub.'),
                   title: item.detail || item.title,
                   style: {
                     minHeight: 72,
@@ -5339,7 +5411,7 @@
                 + 'Please tell a trusted adult now — a school counselor, a teacher, a parent, or another adult you trust. '
                 + 'Searching here does not tell anyone; a person only knows if you tell them.'),
             _selCrisisBandLines(),
-            window.SelHub && window.SelHub.isRegistered('crisiscompanion') && h('button', {
+            _selToolIsOpenable('crisiscompanion') && h('button', {
               type: 'button',
               onClick: function() { openSelToolById('crisiscompanion', 'Crisis Companion'); },
               style: {
@@ -5468,7 +5540,8 @@
           ),
           // Custom SEL Stations — teacher-authored bundles (parallel to STEM Lab Stations)
           !activeStation && !activePathway && h('details', {
-            open: builderOpen || !!recoverableDraft || savedStations.length > 0,
+            open: builderOpen || !!recoverableDraft || savedStations.length > 0 || stationsPanelOpen,
+            onToggle: function (e) { setStationsPanelOpen(!!(e.target && e.target.open)); },
             style: { marginBottom: 16, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden' }
           },
             h('summary', {
@@ -5821,7 +5894,11 @@
               }
 
               // Tool card
-              var isRegistered = window.SelHub && window.SelHub.isRegistered(tool.id);
+              // Openable, not loaded: with on-demand loading a card whose module
+              // has not been fetched is still perfectly clickable, and greying
+              // every card on a fresh hub open would make the whole grid look
+              // broken.
+              var isRegistered = _selToolIsOpenable(tool.id);
               var colorMap = {
                 emerald: '#10b981', blue: '#3b82f6', amber: '#f59e0b', teal: '#14b8a6',
                 purple: '#8b5cf6', indigo: '#6366f1', rose: '#f43f5e', cyan: '#06b6d4',
