@@ -1,4 +1,20 @@
 (function () {
+  // Accessibility text a screen reader speaks, written as a bare English
+  // literal, has no key -- so no translator is ever shown it and it ships
+  // English in all 63 packs. This module is rendered without a `t` prop, and
+  // `t` is already used here as an ordinary local (a title, map callbacks), so
+  // the global translator is read directly: window.__alloT is set by the host
+  // for exactly this case ("without needing to receive it through a prop
+  // chain"). Returns the English fallback whenever a key does not resolve.
+  var __alloT = function (key, fallback) {
+    if (typeof window !== 'undefined' && typeof window.__alloT === 'function') {
+      try {
+        var v = window.__alloT(key);
+        if (typeof v === 'string' && v !== '' && v !== key) return v;
+      } catch (e) {}
+    }
+    return fallback != null ? fallback : key;
+  };
   (function ensureStudentArtifactStore() {
     if (typeof window === 'undefined') return;
     window.AlloModules = window.AlloModules || {};
@@ -4806,7 +4822,7 @@
     return h('div', {
       role: 'dialog',
       'aria-modal': 'true',
-      'aria-label': 'Write a reflection',
+      'aria-label': __alloT('allohaven.write_a_reflection','Write a reflection'),
       onClick: function(e) {
         if (e.target === e.currentTarget) p.onClose();
       },
@@ -4840,7 +4856,7 @@
           h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } }, '📝 Reflection'),
           h('button', {
             onClick: p.onClose,
-            'aria-label': 'Close reflection',
+            'aria-label': __alloT('allohaven.close_reflection','Close reflection'),
             style: {
               background: 'transparent',
               border: '1px solid ' + palette.border,
@@ -4961,8 +4977,8 @@
           h('textarea', {
             value: draft,
             onChange: function(e) { setDraft(e.target.value); },
-            placeholder: 'Take your time. Anything goes. Tip: wrap a {word} in braces to make it a fill-in-the-blank for self-quiz later.',
-            'aria-label': 'Reflection text',
+            placeholder: __alloT('allohaven.take_your_time_anything_goes_tip_wrap_a_word','Take your time. Anything goes. Tip: wrap a {word} in braces to make it a fill-in-the-blank for self-quiz later.'),
+            'aria-label': __alloT('allohaven.reflection_text','Reflection text'),
             disabled: isPolishing,
             rows: 6,
             style: {
@@ -5189,9 +5205,9 @@
       editing ? h('textarea', {
         value: draft,
         onChange: function(e) { setDraft(e.target.value); },
-        'aria-label': 'Edit journal entry',
+        'aria-label': __alloT('allohaven.edit_journal_entry','Edit journal entry'),
         rows: 4,
-        placeholder: 'Tip: wrap a {word} in curly braces to make it a fill-in-blank for self-quiz.',
+        placeholder: __alloT('allohaven.tip_wrap_a_word_in_curly_braces_to_make_it_a','Tip: wrap a {word} in curly braces to make it a fill-in-blank for self-quiz.'),
         style: {
           width: '100%',
           padding: '8px 10px',
@@ -5383,7 +5399,7 @@
             key: 'quiz',
             onClick: startQuiz,
             'aria-label': 'Quiz yourself on this entry · ' + clozeAnswers.length + ' blanks',
-            title: 'Fill in the {braced} words from memory',
+            title: __alloT('allohaven.fill_in_the_braced_words_from_memory','Fill in the {braced} words from memory'),
             style: {
               background: 'transparent',
               color: palette.accent,
@@ -5400,7 +5416,7 @@
           h('button', {
             key: 'edit',
             onClick: function() { setEditing(true); setDraft(entry.text || ''); },
-            'aria-label': 'Edit this entry',
+            'aria-label': __alloT('allohaven.edit_this_entry','Edit this entry'),
             style: {
               background: 'transparent',
               color: palette.textDim,
@@ -5416,7 +5432,7 @@
           h('button', {
             key: 'delete',
             onClick: p.onDelete,
-            'aria-label': 'Delete this entry',
+            'aria-label': __alloT('allohaven.delete_this_entry','Delete this entry'),
             style: {
               background: 'transparent',
               color: palette.textMute,
@@ -6176,7 +6192,7 @@
         },
           h('canvas', {
             ref: drawCanvasRef,
-            'aria-label': 'Drawing canvas. Use a mouse, finger, or stylus to draw.',
+            'aria-label': __alloT('allohaven.drawing_canvas_use_a_mouse_finger_or_stylus','Drawing canvas. Use a mouse, finger, or stylus to draw.'),
             role: 'img',
             onPointerDown: handleDrawDown,
             onPointerMove: handleDrawMove,
@@ -6374,7 +6390,7 @@
               if (f) handleFileChosen(f);
             },
             style: { display: 'none' },
-            'aria-label': 'Choose an image to upload'
+            'aria-label': __alloT('allohaven.choose_an_image_to_upload','Choose an image to upload')
           })
         ) : null,
         // Preview when data ready
@@ -6382,7 +6398,7 @@
           h('div', { style: { padding: '14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '10px', textAlign: 'center', marginBottom: '14px' } },
             h('img', {
               src: uploadData.base64,
-              alt: 'Uploaded image preview',
+              alt: __alloT('allohaven.uploaded_image_preview','Uploaded image preview'),
               style: { maxWidth: '100%', maxHeight: '240px', borderRadius: '6px' }
             }),
             h('div', { style: { fontSize: '11px', color: palette.textMute, marginTop: '8px' } },
@@ -6495,8 +6511,8 @@
         h('textarea', {
           value: reflectionDraft,
           onChange: function(e) { setReflectionDraft(e.target.value); },
-          placeholder: 'What does this mean to you? Why this one?',
-          'aria-label': 'Optional reflection on this decoration',
+          placeholder: __alloT('allohaven.what_does_this_mean_to_you_why_this_one','What does this mean to you? Why this one?'),
+          'aria-label': __alloT('allohaven.optional_reflection_on_this_decoration','Optional reflection on this decoration'),
           rows: 3,
           style: {
             width: '100%',
@@ -6542,7 +6558,7 @@
     return h('div', {
       role: 'dialog',
       'aria-modal': 'true',
-      'aria-label': 'Add a decoration',
+      'aria-label': __alloT('allohaven.add_a_decoration','Add a decoration'),
       onClick: function(e) {
         if (e.target === e.currentTarget && step !== 'generating') handleClose();
       },
@@ -6878,7 +6894,7 @@
       if (existing.type !== 'notes' || notesQuizzable) tabs.push({ id: 'quiz', label: 'Quiz' });
       return h('div', {
         role: 'tablist',
-        'aria-label': 'Memory content view',
+        'aria-label': __alloT('allohaven.memory_content_view','Memory content view'),
         style: {
           display: 'flex',
           gap: '4px',
@@ -7404,7 +7420,7 @@
               onClick: function() { setImportPanelOpen(!importPanelOpen); },
               'aria-pressed': importPanelOpen ? 'true' : 'false',
               'aria-label': importPanelOpen ? 'Close bulk import panel' : 'Bulk import from text',
-              title: 'Paste a list of term-definition pairs to import many cards at once',
+              title: __alloT('allohaven.paste_a_list_of_term_definition_pairs_to_imp','Paste a list of term-definition pairs to import many cards at once'),
               style: {
                 background: importPanelOpen ? palette.accent : 'transparent',
                 color: importPanelOpen ? palette.onAccent : palette.textDim,
@@ -7419,8 +7435,8 @@
             }, '📥 Import'),
             cards.length > 1 ? h('button', {
               onClick: clearAllCards,
-              'aria-label': 'Remove all cards',
-              title: 'Clear all cards (mastery stats are lost)',
+              'aria-label': __alloT('allohaven.remove_all_cards','Remove all cards'),
+              title: __alloT('allohaven.clear_all_cards_mastery_stats_are_lost','Clear all cards (mastery stats are lost)'),
               style: {
                 background: 'transparent',
                 color: '#dc2626',
@@ -7438,7 +7454,7 @@
         // Import panel
         importPanelOpen ? h('div', {
           role: 'region',
-          'aria-label': 'Bulk import flashcards',
+          'aria-label': __alloT('allohaven.bulk_import_flashcards','Bulk import flashcards'),
           style: { padding: '12px 14px', background: palette.surface, border: '1px dashed ' + palette.accent, borderRadius: '8px', marginBottom: '12px' }
         },
           h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '8px', lineHeight: '1.5' } },
@@ -7453,7 +7469,7 @@
             value: importText,
             onChange: function(e) { setImportText(e.target.value); },
             placeholder: 'mitochondria: powerhouse of the cell\nphotosynthesis: how plants make energy from sunlight\n# you can comment lines like this',
-            'aria-label': 'Bulk import text',
+            'aria-label': __alloT('allohaven.bulk_import_text','Bulk import text'),
             rows: 6,
             style: {
               width: '100%',
@@ -7564,7 +7580,7 @@
                 type: 'text',
                 value: card.front,
                 onChange: function(e) { updateCard(card.id, 'front', e.target.value); },
-                placeholder: 'Front (question or term)',
+                placeholder: __alloT('allohaven.front_question_or_term','Front (question or term)'),
                 'aria-label': 'Card ' + (idx + 1) + ' front',
                 style: {
                   width: '100%',
@@ -7583,7 +7599,7 @@
                 type: 'text',
                 value: card.back,
                 onChange: function(e) { updateCard(card.id, 'back', e.target.value); },
-                placeholder: 'Back (answer or definition)',
+                placeholder: __alloT('allohaven.back_answer_or_definition','Back (answer or definition)'),
                 'aria-label': 'Card ' + (idx + 1) + ' back',
                 style: {
                   width: '100%',
@@ -7648,8 +7664,8 @@
           type: 'text',
           value: letters,
           onChange: function(e) { updateLetters(e.target.value); },
-          placeholder: 'e.g. PEMDAS or ROY G BIV',
-          'aria-label': 'Acronym letters',
+          placeholder: __alloT('allohaven.e_g_pemdas_or_roy_g_biv','e.g. PEMDAS or ROY G BIV'),
+          'aria-label': __alloT('allohaven.acronym_letters','Acronym letters'),
           style: {
             width: '100%',
             padding: '8px 10px',
@@ -7670,8 +7686,8 @@
           type: 'text',
           value: ctx,
           onChange: function(e) { updateContext(e.target.value); },
-          placeholder: 'e.g. order of operations',
-          'aria-label': 'Acronym context',
+          placeholder: __alloT('allohaven.e_g_order_of_operations','e.g. order of operations'),
+          'aria-label': __alloT('allohaven.acronym_context','Acronym context'),
           style: {
             width: '100%',
             padding: '6px 10px',
@@ -7763,8 +7779,8 @@
         h('textarea', {
           value: text,
           onChange: function(e) { updateText(e.target.value); },
-          placeholder: 'Write your notes here. Use {braces} for fill-in-the-blank quiz mode.',
-          'aria-label': 'Free notes',
+          placeholder: __alloT('allohaven.write_your_notes_here_use_braces_for_fill_in','Write your notes here. Use {braces} for fill-in-the-blank quiz mode.'),
+          'aria-label': __alloT('allohaven.free_notes','Free notes'),
           rows: 10,
           style: {
             width: '100%',
@@ -7915,8 +7931,8 @@
         h('textarea', {
           value: assoc,
           onChange: function(e) { updateAssoc(e.target.value); },
-          placeholder: 'e.g. "the dragon = mitosis (both split apart and grow stronger)"',
-          'aria-label': 'Image-link association',
+          placeholder: __alloT('allohaven.e_g_the_dragon_mitosis_both_split_apart_and','e.g. "the dragon = mitosis (both split apart and grow stronger)"'),
+          'aria-label': __alloT('allohaven.image_link_association','Image-link association'),
           rows: 3,
           style: {
             width: '100%',
@@ -8439,7 +8455,7 @@
               value: guess,
               onChange: function(e) { updateGuess(e.target.value); },
               placeholder: 'Type what this reminds you of…',
-              'aria-label': 'Your recall of the association',
+              'aria-label': __alloT('allohaven.your_recall_of_the_association','Your recall of the association'),
               autoFocus: true,
               onKeyDown: function(e) {
                 if (e.key === 'Enter') { e.preventDefault(); reveal(); }
@@ -8809,7 +8825,7 @@
         // Realm zones
         realmRows.length > 0 ? h('ul', {
           role: 'list',
-          'aria-label': 'Realm zones containing this card',
+          'aria-label': __alloT('allohaven.realm_zones_containing_this_card','Realm zones containing this card'),
           style: { display: 'flex', flexDirection: 'column', gap: '4px', listStyle: 'none', padding: 0, margin: '0 0 6px 0' }
         },
           realmRows.map(function (z) {
@@ -8846,7 +8862,7 @@
           return h('div', { style: { marginBottom: '6px' } },
             h('ul', {
               role: 'list',
-              'aria-label': 'Atlas edges containing this card',
+              'aria-label': __alloT('allohaven.atlas_edges_containing_this_card','Atlas edges containing this card'),
               style: { display: 'flex', flexDirection: 'column', gap: '4px', listStyle: 'none', padding: 0, margin: 0 }
             },
               atlasRows.map(function (e) {
@@ -8883,7 +8899,7 @@
           onClick: function () {
             if (typeof p.onOpenPastEncounters === 'function') p.onOpenPastEncounters();
           },
-          'aria-label': 'Open past boss encounters',
+          'aria-label': __alloT('allohaven.open_past_boss_encounters','Open past boss encounters'),
           style: {
             display: 'flex', alignItems: 'center', gap: '6px',
             width: '100%', textAlign: 'left',
@@ -9013,7 +9029,7 @@
       if (!voicePanelOpen) return null;
       return h('div', {
         role: 'region',
-        'aria-label': 'Voice note',
+        'aria-label': __alloT('allohaven.voice_note','Voice note'),
         style: {
           marginTop: '12px',
           marginBottom: '12px',
@@ -9028,7 +9044,7 @@
             '🎤 Voice note'),
           h('button', {
             onClick: function() { setVoicePanelOpen(false); },
-            'aria-label': 'Close voice note panel',
+            'aria-label': __alloT('allohaven.close_voice_note_panel','Close voice note panel'),
             style: { background: 'transparent', border: 'none', color: palette.textMute, fontSize: '11px', cursor: 'pointer' }
           }, '✕')
         ),
@@ -9101,8 +9117,8 @@
                 '“' + savedCaption + '”'),
               h('button', {
                 onClick: function() { setCaptionDraft(savedCaption); },
-                'aria-label': 'Edit caption',
-                title: 'Edit caption',
+                'aria-label': __alloT('allohaven.edit_caption','Edit caption'),
+                title: __alloT('allohaven.edit_caption_2','Edit caption'),
                 style: { background: 'transparent', border: 'none', color: palette.textDim, fontSize: '12px', cursor: 'pointer', padding: '0 4px', fontFamily: 'inherit' }
               }, '✎')
             ) : h('button', {
@@ -9262,8 +9278,8 @@
             // Make similar (Phase 2p.14) — re-roll with same template+slots
             typeof p.onMakeSimilar === 'function' && !decoration.isStarter ? h('button', {
               onClick: p.onMakeSimilar,
-              'aria-label': 'Make a similar decoration with the same template',
-              title: 'Generate a new decoration with the same template + slots (3 tokens)',
+              'aria-label': __alloT('allohaven.make_a_similar_decoration_with_the_same_temp','Make a similar decoration with the same template'),
+              title: __alloT('allohaven.generate_a_new_decoration_with_the_same_temp','Generate a new decoration with the same template + slots (3 tokens)'),
               style: {
                 background: 'transparent',
                 border: '1px solid ' + palette.border,
@@ -9279,8 +9295,8 @@
             // Print this card (Phase 2p.17) — single-decoration printable
             typeof p.onPrintCard === 'function' && !decoration.isStarter ? h('button', {
               onClick: p.onPrintCard,
-              'aria-label': 'Print this decoration as a single-page card',
-              title: 'Print one-page card with image + reflection + memory content',
+              'aria-label': __alloT('allohaven.print_this_decoration_as_a_single_page_card','Print this decoration as a single-page card'),
+              title: __alloT('allohaven.print_one_page_card_with_image_reflection_me','Print one-page card with image + reflection + memory content'),
               style: {
                 background: 'transparent',
                 border: '1px solid ' + palette.border,
@@ -9296,8 +9312,8 @@
             // Save as image (Phase 2p.33) — downloads PNG share card
             typeof p.onExportCard === 'function' && !decoration.isStarter && decoration.imageBase64 ? h('button', {
               onClick: p.onExportCard,
-              'aria-label': 'Save this decoration as a PNG image',
-              title: 'Save as a PNG share card (image + reflection + mood)',
+              'aria-label': __alloT('allohaven.save_this_decoration_as_a_png_image','Save this decoration as a PNG image'),
+              title: __alloT('allohaven.save_as_a_png_share_card_image_reflection_mo','Save as a PNG share card (image + reflection + mood)'),
               style: {
                 background: 'transparent',
                 border: '1px solid ' + palette.border,
@@ -9314,7 +9330,7 @@
             // others → plain text. Only shown when linkedContent exists.
             typeof p.onExportDeck === 'function' && decoration.linkedContent ? h('button', {
               onClick: p.onExportDeck,
-              'aria-label': 'Export this deck as a file',
+              'aria-label': __alloT('allohaven.export_this_deck_as_a_file','Export this deck as a file'),
               title: decoration.linkedContent.type === 'flashcards'
                 ? 'Export as Anki-compatible CSV (also imports into Quizlet, Sheets, etc.)'
                 : 'Export as plain text — printable, shareable, paste anywhere',
@@ -9350,7 +9366,7 @@
             }, '🎤' + (decoration.voiceNote ? ' ▶' : '')) : null,
             h('button', {
               onClick: p.onClose,
-              'aria-label': 'Close memory modal',
+              'aria-label': __alloT('allohaven.close_memory_modal','Close memory modal'),
               style: {
                 background: 'transparent',
                 border: '1px solid ' + palette.border,
@@ -9538,7 +9554,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Pick a decoration for this step',
+        'aria-label': __alloT('allohaven.pick_a_decoration_for_this_step','Pick a decoration for this step'),
         onClick: function(e) {
           if (e.target === e.currentTarget) setPickerFor(null);
         },
@@ -9562,7 +9578,7 @@
               'Pick a decoration · step ' + (typeof pickerFor === 'number' ? pickerFor + 1 : draft.steps.length + 1)),
             h('button', {
               onClick: function() { setPickerFor(null); },
-              'aria-label': 'Cancel decoration picker',
+              'aria-label': __alloT('allohaven.cancel_decoration_picker','Cancel decoration picker'),
               style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '6px', padding: '4px 10px', fontSize: '12px', cursor: 'pointer' }
             }, '✕')
           ),
@@ -9634,7 +9650,7 @@
           h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
             '📜 ' + (p.story && p.story.title ? 'Edit story' : 'Build a story')),
           h('button', {
-            onClick: p.onCancel, 'aria-label': 'Close story builder',
+            onClick: p.onCancel, 'aria-label': __alloT('allohaven.close_story_builder','Close story builder'),
             style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '4px 10px', fontSize: '13px', cursor: 'pointer' }
           }, '✕')
         ),
@@ -9645,8 +9661,8 @@
         h('input', {
           type: 'text', value: draft.title,
           onChange: function(e) { setTitle(e.target.value); },
-          placeholder: 'e.g. "The water cycle journey"',
-          'aria-label': 'Story title',
+          placeholder: __alloT('allohaven.e_g_the_water_cycle_journey','e.g. "The water cycle journey"'),
+          'aria-label': __alloT('allohaven.story_title','Story title'),
           style: {
             width: '100%', padding: '8px 10px',
             background: palette.surface, border: '1px solid ' + palette.border,
@@ -9873,7 +9889,7 @@
         h('h3', { style: { margin: 0, fontSize: '17px', color: palette.text, fontWeight: 700 } },
           '📜 ' + (story.title || 'Untitled story')),
         h('button', {
-          onClick: p.onClose, 'aria-label': 'Close story walk',
+          onClick: p.onClose, 'aria-label': __alloT('allohaven.close_story_walk','Close story walk'),
           style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '6px 12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }
         }, '✕')
       ),
@@ -10004,7 +10020,7 @@
         h('button', {
           onClick: function() { if (idx > 0) setIdx(idx - 1); },
           disabled: idx === 0,
-          'aria-label': 'Previous step',
+          'aria-label': __alloT('allohaven.previous_step','Previous step'),
           style: {
             background: 'transparent', color: idx === 0 ? palette.textMute : palette.textDim,
             border: '1px solid ' + palette.border, borderRadius: '8px',
@@ -10031,7 +10047,7 @@
         ),
         atEnd ? h('button', {
           onClick: function() { p.onFinish(); },
-          'aria-label': 'Finish story walk',
+          'aria-label': __alloT('allohaven.finish_story_walk','Finish story walk'),
           style: {
             background: palette.accent, color: palette.onAccent,
             border: 'none', borderRadius: '8px',
@@ -10040,7 +10056,7 @@
           }
         }, '✓ Finish walk') : h('button', {
           onClick: function() { setIdx(idx + 1); },
-          'aria-label': 'Next step',
+          'aria-label': __alloT('allohaven.next_step','Next step'),
           style: {
             background: palette.accent, color: palette.onAccent,
             border: 'none', borderRadius: '8px',
@@ -10193,7 +10209,7 @@
     return h('div', {
       role: 'dialog',
       'aria-modal': 'true',
-      'aria-label': 'Search across your decks, stories, and reflections',
+      'aria-label': __alloT('allohaven.search_across_your_decks_stories_and_reflect','Search across your decks, stories, and reflections'),
       onClick: function(e) {
         if (e.target === e.currentTarget) p.onClose();
       },
@@ -10217,7 +10233,7 @@
             '🔍 Search'),
           h('button', {
             onClick: p.onClose,
-            'aria-label': 'Close search',
+            'aria-label': __alloT('allohaven.close_search','Close search'),
             style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '4px 10px', fontSize: '13px', cursor: 'pointer' }
           }, '✕')
         ),
@@ -10226,7 +10242,7 @@
           value: query,
           onChange: function(e) { setQuery(e.target.value); },
           placeholder: 'Search decks, stories, reflections…',
-          'aria-label': 'Search query',
+          'aria-label': __alloT('allohaven.search_query','Search query'),
           autoFocus: true,
           style: {
             width: '100%',
@@ -10488,7 +10504,7 @@
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center' } },
           h('button', {
             onClick: skip,
-            'aria-label': 'Skip the tour',
+            'aria-label': __alloT('allohaven.skip_the_tour','Skip the tour'),
             style: { background: 'transparent', color: palette.textMute, border: 'none', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }
           }, 'Skip'),
           h('div', { style: { display: 'flex', gap: '8px' } },
@@ -10662,7 +10678,7 @@
               onChange: function(e) { setField('name', e.target.value); },
               placeholder: 'Type a name…',
               maxLength: 24,
-              'aria-label': 'Companion name',
+              'aria-label': __alloT('allohaven.companion_name','Companion name'),
               style: {
                 width: '100%',
                 padding: '10px 12px',
@@ -10704,7 +10720,7 @@
           if (!hasAny && !p.showLockedTeasers) return null;
           return h('div', {
             role: 'region',
-            'aria-label': 'Accessory picker',
+            'aria-label': __alloT('allohaven.accessory_picker','Accessory picker'),
             style: { padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px' }
           },
             h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.text, marginBottom: '8px' } },
@@ -10714,7 +10730,7 @@
               h('button', {
                 onClick: function() { setField('accessory', null); },
                 'aria-pressed': !draft.accessory ? 'true' : 'false',
-                'aria-label': 'No accessory',
+                'aria-label': __alloT('allohaven.no_accessory','No accessory'),
                 style: {
                   background: !draft.accessory ? palette.accent : palette.bg,
                   color: !draft.accessory ? palette.onAccent : palette.textDim,
@@ -10788,7 +10804,7 @@
           h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
             (existing ? 'Edit companion' : 'New companion') + ' · step ' + step + ' of 3'),
           h('button', {
-            onClick: p.onCancel, 'aria-label': 'Close companion setup',
+            onClick: p.onCancel, 'aria-label': __alloT('allohaven.close_companion_setup','Close companion setup'),
             style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '4px 10px', fontSize: '13px', cursor: 'pointer' }
           }, '✕')
         ),
@@ -10955,7 +10971,7 @@
           h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
             '🎯 ' + (p.goal && p.goal.title ? 'Edit goal' : 'Set a goal')),
           h('button', {
-            onClick: p.onCancel, 'aria-label': 'Close goal builder',
+            onClick: p.onCancel, 'aria-label': __alloT('allohaven.close_goal_builder','Close goal builder'),
             style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '4px 10px', fontSize: '13px', cursor: 'pointer' }
           }, '✕')
         ),
@@ -10983,8 +10999,8 @@
         h('input', {
           type: 'text', value: draft.title,
           onChange: function(e) { setField('title', e.target.value); },
-          placeholder: 'e.g. "5 Pomodoros this week" or "Master the spelling deck"',
-          'aria-label': 'Goal title',
+          placeholder: __alloT('allohaven.e_g_5_pomodoros_this_week_or_master_the_spel','e.g. "5 Pomodoros this week" or "Master the spelling deck"'),
+          'aria-label': __alloT('allohaven.goal_title','Goal title'),
           style: {
             width: '100%', padding: '8px 10px',
             background: palette.surface, border: '1px solid ' + palette.border,
@@ -11023,7 +11039,7 @@
           min: 1, max: 999,
           value: draft.targetCount,
           onChange: function(e) { setField('targetCount', parseInt(e.target.value, 10) || 1); },
-          'aria-label': 'Target count',
+          'aria-label': __alloT('allohaven.target_count','Target count'),
           style: {
             width: '100%', padding: '8px 10px',
             background: palette.surface, border: '1px solid ' + palette.border,
@@ -11040,7 +11056,7 @@
               type: 'date',
               value: isoToDateInput(draft.startDate),
               onChange: function(e) { setField('startDate', dateInputToIso(e.target.value, false)); },
-              'aria-label': 'Start date',
+              'aria-label': __alloT('allohaven.start_date','Start date'),
               style: {
                 width: '100%', padding: '8px 10px',
                 background: palette.surface, border: '1px solid ' + palette.border,
@@ -11055,7 +11071,7 @@
               type: 'date',
               value: isoToDateInput(draft.endDate),
               onChange: function(e) { setField('endDate', dateInputToIso(e.target.value, true)); },
-              'aria-label': 'End date',
+              'aria-label': __alloT('allohaven.end_date','End date'),
               style: {
                 width: '100%', padding: '8px 10px',
                 background: palette.surface, border: '1px solid ' + palette.border,
@@ -11070,8 +11086,8 @@
         h('textarea', {
           value: draft.notes,
           onChange: function(e) { setField('notes', e.target.value); },
-          placeholder: 'Why this goal? Anything to remember about it?',
-          'aria-label': 'Goal notes',
+          placeholder: __alloT('allohaven.why_this_goal_anything_to_remember_about_it','Why this goal? Anything to remember about it?'),
+          'aria-label': __alloT('allohaven.goal_notes','Goal notes'),
           rows: 2,
           style: {
             width: '100%', padding: '8px 10px',
@@ -16543,8 +16559,8 @@
         h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '2px', marginBottom: '8px' } },
           h('button', {
             onClick: function() { openHavenWalk3D(state); },
-            'aria-label': 'Walk your haven in 3D',
-            title: 'See every room, decoration, and portfolio artifact as one walkable 3D palace',
+            'aria-label': __alloT('allohaven.walk_your_haven_in_3d','Walk your haven in 3D'),
+            title: __alloT('allohaven.see_every_room_decoration_and_portfolio_arti','See every room, decoration, and portfolio artifact as one walkable 3D palace'),
             style: {
               display: 'inline-flex', alignItems: 'center', gap: '6px',
               padding: '6px 14px',
@@ -16663,7 +16679,7 @@
         // opens the setup wizard; "Keep Pip" dismisses.
         (state.companion && state.companion.mascotReselectPrompt) ? h('div', {
           role: 'region',
-          'aria-label': 'Pick your buddy\'s new look',
+          'aria-label': __alloT('allohaven.pick_your_buddy_s_new_look','Pick your buddy\'s new look'),
           style: {
             margin: '12px auto 0',
             maxWidth: '560px',
@@ -16694,7 +16710,7 @@
           }, 'Pick'),
           h('button', {
             onClick: function() { saveCompanion({ mascotReselectPrompt: false }); },
-            'aria-label': 'Keep Pip',
+            'aria-label': __alloT('allohaven.keep_pip','Keep Pip'),
             style: {
               background: 'transparent', border: '1px solid ' + palette.border,
               color: palette.textMute, padding: '5px 10px', borderRadius: '8px',
@@ -16719,7 +16735,7 @@
           var name = c.name || (getCompanionSpecies(c.species) || {}).label || 'Buddy';
           return h('div', {
             role: 'region',
-            'aria-label': 'Today\'s career update',
+            'aria-label': __alloT('allohaven.today_s_career_update','Today\'s career update'),
             style: {
               margin: '12px auto 0',
               maxWidth: '560px',
@@ -16777,7 +16793,7 @@
                   }
                 }, '✓ Claimed +2 🪙') : h('button', {
                   onClick: claimDailyVignette,
-                  'aria-label': 'Claim today\'s career income',
+                  'aria-label': __alloT('allohaven.claim_today_s_career_income','Claim today\'s career income'),
                   style: {
                     padding: '4px 12px',
                     background: palette.accent,
@@ -16790,8 +16806,8 @@
                 }, 'Claim +2 🪙'),
                 h('button', {
                   onClick: function() { generateDailyVignette(true); },
-                  title: 'Regenerate today\'s update',
-                  'aria-label': 'Regenerate today\'s update',
+                  title: __alloT('allohaven.regenerate_today_s_update','Regenerate today\'s update'),
+                  'aria-label': __alloT('allohaven.regenerate_today_s_update_2','Regenerate today\'s update'),
                   style: {
                     padding: '4px 8px',
                     background: 'transparent',
@@ -16817,7 +16833,7 @@
           if (!Array.isArray(c.peers) || c.peers.length === 0) return null;
           return h('div', {
             role: 'region',
-            'aria-label': 'Peer dorms',
+            'aria-label': __alloT('allohaven.peer_dorms','Peer dorms'),
             style: {
               margin: '12px auto 0',
               maxWidth: '720px',
@@ -16951,7 +16967,7 @@
               atGraduation ? h('button', {
                 onClick: openCareerPickerModal,
                 'aria-label': 'Choose a career for ' + (state.companion.name || 'your buddy'),
-                title: 'It\'s graduation day! Pick a career path.',
+                title: __alloT('allohaven.it_s_graduation_day_pick_a_career_path','It\'s graduation day! Pick a career path.'),
                 style: Object.assign({}, primaryBtnStyle(palette), {
                   animation: 'ah-token-tick 700ms ease'
                 })
@@ -16959,7 +16975,7 @@
               h('button', {
                 onClick: openFeedStoryModal,
                 'aria-label': 'Feed a story to ' + (state.companion.name || 'your buddy'),
-                title: 'Tell your buddy a short story with vocabulary or concepts',
+                title: __alloT('allohaven.tell_your_buddy_a_short_story_with_vocabular','Tell your buddy a short story with vocabulary or concepts'),
                 style: secondaryBtnStyle(palette)
               }, stage.badge + ' Feed story' + (fed > 0 ? ' · ' + fed : '')),
               // Phase L5 — Life Story button. Visible once the buddy
@@ -16967,7 +16983,7 @@
               (Array.isArray(state.companion.lifeMoments) && state.companion.lifeMoments.length > 0) ? h('button', {
                 onClick: function() { setStateField('activeModal', 'life-story'); },
                 'aria-label': 'Open ' + (state.companion.name || 'your buddy') + '\'s Life Story',
-                title: 'View the scrapbook of major life moments',
+                title: __alloT('allohaven.view_the_scrapbook_of_major_life_moments','View the scrapbook of major life moments'),
                 style: secondaryBtnStyle(palette)
               }, '📔 Life Story · ' + state.companion.lifeMoments.length) : null
             );
@@ -16985,26 +17001,26 @@
             return h('button', {
               onClick: function() { setStateField('activeModal', 'student-progress'); },
               'aria-label': 'Open my saved progress summary' + (total > 0 ? ', ' + total + ' activities' : ''),
-              title: 'My saved progress',
+              title: __alloT('allohaven.my_saved_progress','My saved progress'),
               style: secondaryBtnStyle(palette)
             }, 'Progress' + (total > 0 ? ' - ' + total : selCount > 0 ? ' - SEL ' + selCount : ''));
           })() : null,
           h('button', {
             onClick: function() { setStateField('activeModal', 'student-portfolio'); },
             'aria-label': 'Open my portfolio, ' + (Array.isArray(state.studentArtifacts) && state.studentArtifacts.length > 0 ? state.studentArtifacts.length + ' saved product' + (state.studentArtifacts.length === 1 ? '' : 's') : 'no saved products yet'),
-            title: 'My saved products',
+            title: __alloT('allohaven.my_saved_products','My saved products'),
             style: secondaryBtnStyle(palette)
           }, 'Portfolio' + (Array.isArray(state.studentArtifacts) && state.studentArtifacts.length > 0 ? ' - ' + state.studentArtifacts.length : '')),
           h('button', {
             onClick: function() { setStateField('activeModal', 'breathe'); },
-            'aria-label': 'Open breathing pacer for self-care',
+            'aria-label': __alloT('allohaven.open_breathing_pacer_for_self_care','Open breathing pacer for self-care'),
             style: secondaryBtnStyle(palette)
           }, '🫁 Breathe'),
           // Grounding (Phase 2p.31) — sibling self-care affordance.
           // 5-4-3-2-1 sensory anchoring. Same opt-in posture.
           h('button', {
             onClick: function() { setStateField('activeModal', 'grounding'); },
-            'aria-label': 'Open 5-4-3-2-1 sensory grounding exercise',
+            'aria-label': __alloT('allohaven.open_5_4_3_2_1_sensory_grounding_exercise','Open 5-4-3-2-1 sensory grounding exercise'),
             style: secondaryBtnStyle(palette)
           }, '🧷 Grounding'),
           // Arcade hub (Phase 3a) — token-time-gated launcher for plugin
@@ -17012,7 +17028,7 @@
           h('button', {
             onClick: function() { setStateField('activeModal', 'arcade'); },
             'aria-label': 'Open arcade — spend tokens on game time',
-            title: 'Token-time gated games (Sage, future TCG, etc.)',
+            title: __alloT('allohaven.token_time_gated_games_sage_future_tcg_etc','Token-time gated games (Sage, future TCG, etc.)'),
             style: secondaryBtnStyle(palette)
           }, '🎮 Arcade'),
           (function() {
@@ -17063,7 +17079,7 @@
               className: 'ah-score-pop',
               onClick: function() { startReviewQueue(); },
               'aria-label': 'Start a daily review session — ' + dueCount + ' deck' + (dueCount === 1 ? '' : 's') + ' due, about ' + estMin + ' minute' + (estMin === 1 ? '' : 's'),
-              title: 'Press play and follow the prompts.',
+              title: __alloT('allohaven.press_play_and_follow_the_prompts','Press play and follow the prompts.'),
               style: Object.assign({}, secondaryBtnStyle(palette), {
                 background: (palette.accent || '#60a5fa') + '22',
                 borderColor: palette.accent,
@@ -17318,8 +17334,8 @@
           // Custom-upload badge (Phase 2p.19) — distinguishes student-
           // uploaded images from AI-generated ones. Bottom-center, soft.
           decoration.isCustomUpload ? h('span', {
-            'aria-label': 'Custom uploaded image',
-            title: 'Your image',
+            'aria-label': __alloT('allohaven.custom_uploaded_image','Custom uploaded image'),
+            title: __alloT('allohaven.your_image','Your image'),
             style: {
               position: 'absolute',
               bottom: '2px',
@@ -17335,8 +17351,8 @@
           // Custom-drawing badge (Phase 2p.26) — distinguishes student-
           // drawn-on-canvas decorations from AI/upload.
           decoration.isCustomDrawing ? h('span', {
-            'aria-label': 'Hand-drawn',
-            title: 'Your drawing',
+            'aria-label': __alloT('allohaven.hand_drawn','Hand-drawn'),
+            title: __alloT('allohaven.your_drawing','Your drawing'),
             style: {
               position: 'absolute',
               bottom: '2px',
@@ -17352,8 +17368,8 @@
           // Favorite ⭐ overlay (Phase 2p.14) — small star top-right
           // (above the hover-revealed delete ✕). Stays visible always.
           decoration.isFavorite ? h('span', {
-            'aria-label': 'Favorite',
-            title: 'Favorite',
+            'aria-label': __alloT('allohaven.favorite','Favorite'),
+            title: __alloT('allohaven.favorite_2','Favorite'),
             style: {
               position: 'absolute',
               top: '2px',
@@ -17372,7 +17388,7 @@
           // decoration to open the memory modal where the full Card History
           // section shows which realms.
           usedInRealm ? h('span', {
-            'aria-label': 'Used in a realm',
+            'aria-label': __alloT('allohaven.used_in_a_realm','Used in a realm'),
             title: 'This card lives in one of your realms — open it to see where',
             style: {
               position: 'absolute',
@@ -17391,7 +17407,7 @@
           // badge when both are present; positioning shifts based on
           // favorite + realm combinations.
           usedInAtlas ? h('span', {
-            'aria-label': 'Used in an atlas',
+            'aria-label': __alloT('allohaven.used_in_an_atlas','Used in an atlas'),
             title: 'This card has a relation in one of your atlases — open it to see where',
             style: {
               position: 'absolute',
@@ -17416,7 +17432,7 @@
           // Phase R — tooltip points to the new Voice Notes index for
           // one-tap playback without opening the memory modal first.
           decoration.voiceNote ? h('span', {
-            'aria-label': 'Voice note attached',
+            'aria-label': __alloT('allohaven.voice_note_attached','Voice note attached'),
             title: 'Voice note attached · open Memory → 🎤 Voice notes to play',
             style: {
               position: 'absolute',
@@ -17484,7 +17500,7 @@
             },
             'aria-label': 'Delete this ' + label,
             className: 'ah-decoration-delete',
-            title: 'Remove this decoration',
+            title: __alloT('allohaven.remove_this_decoration','Remove this decoration'),
             style: {
               position: 'absolute',
               top: '4px',
@@ -17588,7 +17604,7 @@
           h('button', {
             onClick: function() { setStateField('activeModal', 'search'); },
             'aria-label': 'Search',
-            title: 'Search across decks, stories, and reflections',
+            title: __alloT('allohaven.search_across_decks_stories_and_reflections','Search across decks, stories, and reflections'),
             style: {
               display: 'inline-flex', alignItems: 'center',
               padding: '6px 10px',
@@ -17649,7 +17665,7 @@
           ),
           onCloseCb ? h('button', {
             onClick: onCloseCb,
-            'aria-label': 'Close AlloHaven',
+            'aria-label': __alloT('allohaven.close_allohaven','Close AlloHaven'),
             style: {
               background: 'transparent',
               border: '1px solid ' + palette.border,
@@ -17917,8 +17933,8 @@
       if (!companion || !companion.species) {
         return h('button', {
           onClick: function() { setStateField('activeModal', 'companion-setup'); },
-          'aria-label': 'Add a study buddy companion',
-          title: 'Pick a critter that lives in your room',
+          'aria-label': __alloT('allohaven.add_a_study_buddy_companion','Add a study buddy companion'),
+          title: __alloT('allohaven.pick_a_critter_that_lives_in_your_room','Pick a critter that lives in your room'),
           style: {
             position: 'absolute',
             bottom: '8px',
@@ -18102,7 +18118,7 @@
             h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'flex-end' } },
               h('button', {
                 onClick: function() { dismissQuizPrompt(); },
-                'aria-label': 'Skip the quiz offer for now',
+                'aria-label': __alloT('allohaven.skip_the_quiz_offer_for_now','Skip the quiz offer for now'),
                 style: {
                   background: 'transparent', color: palette.textMute,
                   border: '1px solid ' + palette.border, borderRadius: '6px',
@@ -18112,7 +18128,7 @@
               }, 'Later'),
               h('button', {
                 onClick: function() { acceptQuizPrompt(dueDec); },
-                'aria-label': 'Start the quiz now',
+                'aria-label': __alloT('allohaven.start_the_quiz_now','Start the quiz now'),
                 style: {
                   background: palette.accent, color: palette.onAccent,
                   border: 'none', borderRadius: '6px',
@@ -18168,7 +18184,7 @@
               className: 'ah-companion-bubble ah-companion-curiosity',
               onClick: function () { setStateField('activeModal', 'curious-companion'); },
               'aria-label': displayName + ' has a question for you. Tap to chat.',
-              title: 'Tap to chat',
+              title: __alloT('allohaven.tap_to_chat','Tap to chat'),
               style: bubbleStyle
             },
               h('span', { style: { display: 'block' } }, inviteText),
@@ -18211,7 +18227,7 @@
               className: 'ah-companion-bubble',
               onClick: function () { openMemoryModal(targetId, false); },
               'aria-label': 'Open ' + bubbleText + ' (tap to review)',
-              title: 'Tap to open this deck',
+              title: __alloT('allohaven.tap_to_open_this_deck','Tap to open this deck'),
               style: Object.assign({}, bubbleStyle, { cursor: 'pointer' })
             },
               h('span', { style: { display: 'block' } }, bubbleText),
@@ -18378,8 +18394,8 @@
             // Only when NOT sleeping (Live mode) AND a due deck exists
             // AND the prompt cooldown hasn\'t locked us out.
             (!sleeping && shouldOfferQuizPrompt()) ? h('span', {
-              'aria-label': 'A deck is due for review',
-              title: 'Your buddy has a question for you',
+              'aria-label': __alloT('allohaven.a_deck_is_due_for_review','A deck is due for review'),
+              title: __alloT('allohaven.your_buddy_has_a_question_for_you','Your buddy has a question for you'),
               style: {
                 position: 'absolute',
                 top: '-4px',
@@ -18404,7 +18420,7 @@
             // in/out as happiness rises/falls. Suppressed in sleep pose.
             (!sleeping && (companion.happiness || 0) >= 5) ? h('span', {
               'aria-label': 'Companion happiness: ' + companion.happiness + ' of 10',
-              title: 'Happy buddy (long-press to pet again)',
+              title: __alloT('allohaven.happy_buddy_long_press_to_pet_again','Happy buddy (long-press to pet again)'),
               style: {
                 position: 'absolute',
                 bottom: '-4px',
@@ -18465,7 +18481,7 @@
           h('button', {
             onClick: function() { setStateField('activeModal', 'companion-setup'); },
             'aria-label': 'Edit ' + displayName,
-            title: 'Change species, color, or name',
+            title: __alloT('allohaven.change_species_color_or_name','Change species, color, or name'),
             style: {
               background: 'transparent', border: 'none',
               color: palette.textMute, fontSize: '10px',
@@ -18490,7 +18506,7 @@
       if (!hasAny) return null;
       return h('div', {
         role: 'region',
-        'aria-label': 'Skill levels',
+        'aria-label': __alloT('allohaven.skill_levels','Skill levels'),
         style: {
           marginTop: '14px',
           padding: '12px 14px',
@@ -18571,7 +18587,7 @@
       var progressPct = Math.max(0, Math.min(100, Math.round((card.tokens / card.cost) * 100)));
       return h('section', {
         role: 'region',
-        'aria-label': 'Private classroom recognition creative reward',
+        'aria-label': __alloT('allohaven.private_classroom_recognition_creative_rewar','Private classroom recognition creative reward'),
         style: {
           display: 'flex',
           flexDirection: 'column',
@@ -18595,8 +18611,8 @@
           h('button', {
             type: 'button',
             onClick: dismissCard,
-            'aria-label': 'Dismiss this classroom recognition card',
-            title: 'Not now',
+            'aria-label': __alloT('allohaven.dismiss_this_classroom_recognition_card','Dismiss this classroom recognition card'),
+            title: __alloT('allohaven.not_now','Not now'),
             style: {
               flexShrink: 0, border: '1px solid ' + palette.border,
               borderRadius: '999px', background: 'transparent', color: palette.textDim,
@@ -18612,7 +18628,7 @@
         ),
         h('div', {
           role: 'progressbar',
-          'aria-label': 'Creative reward token progress',
+          'aria-label': __alloT('allohaven.creative_reward_token_progress','Creative reward token progress'),
           'aria-valuemin': 0,
           'aria-valuemax': card.cost,
           'aria-valuenow': Math.min(card.tokens, card.cost),
@@ -18638,7 +18654,7 @@
           h('button', {
             type: 'button',
             onClick: function() { setStateField('activeModal', 'classroom-recognition-history'); },
-            'aria-label': 'View recent private classroom recognition',
+            'aria-label': __alloT('allohaven.view_recent_private_classroom_recognition','View recent private classroom recognition'),
             style: Object.assign({}, secondaryBtnStyle(palette), {
               padding: '7px 14px', borderRadius: '999px', fontSize: '12px'
             })
@@ -18654,7 +18670,7 @@
       if (!history.length || getClassroomRewardCardState(state, DECORATION_COST)) return null;
       return h('section', {
         role: 'region',
-        'aria-label': 'Private classroom recognition history',
+        'aria-label': __alloT('allohaven.private_classroom_recognition_history','Private classroom recognition history'),
         style: {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           flexWrap: 'wrap', gap: '8px', padding: '8px 12px', margin: '8px 0',
@@ -18667,7 +18683,7 @@
         h('button', {
           type: 'button',
           onClick: function() { setStateField('activeModal', 'classroom-recognition-history'); },
-          'aria-label': 'View recent private classroom recognition',
+          'aria-label': __alloT('allohaven.view_recent_private_classroom_recognitio_2','View recent private classroom recognition'),
           style: Object.assign({}, secondaryBtnStyle(palette), {
             padding: '6px 12px', borderRadius: '999px', fontSize: '11px'
           })
@@ -18708,7 +18724,7 @@
             ),
             h('button', {
               type: 'button', onClick: closeHistory,
-              'aria-label': 'Close classroom recognition history',
+              'aria-label': __alloT('allohaven.close_classroom_recognition_history','Close classroom recognition history'),
               style: {
                 width: '32px', height: '32px', flexShrink: 0, borderRadius: '999px',
                 border: '1px solid ' + palette.border, background: palette.surface,
@@ -18719,7 +18735,7 @@
           h('p', { style: { margin: '10px 0 14px', color: palette.textDim, fontSize: '13px', lineHeight: 1.5 } },
             'These recognitions are visible only in your AlloHaven. They show the selected reason and tokens—never teacher notes or a public score.'),
           history.length ? h('ol', {
-            'aria-label': 'Recent classroom recognition events',
+            'aria-label': __alloT('allohaven.recent_classroom_recognition_events','Recent classroom recognition events'),
             style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }
           }, history.map(function(item) {
             var dateLabel = item.timestamp
@@ -18858,7 +18874,7 @@
       var topGoal = snap.topGoal;
       return h('div', {
         role: 'region',
-        'aria-label': 'Today plan',
+        'aria-label': __alloT('allohaven.today_plan','Today plan'),
         style: {
           display: 'flex',
           flexDirection: 'column',
@@ -19006,7 +19022,7 @@
         questViews,
         canClaim ? h('button', {
           onClick: claimQuestTrifecta,
-          'aria-label': 'Claim daily trifecta bonus of 5 tokens',
+          'aria-label': __alloT('allohaven.claim_daily_trifecta_bonus_of_5_tokens','Claim daily trifecta bonus of 5 tokens'),
           style: {
             marginLeft: 'auto',
             padding: '6px 14px',
@@ -19030,7 +19046,7 @@
       if (state.onboardingSeen) return null;
       return h('div', {
         role: 'dialog',
-        'aria-label': 'Welcome to AlloHaven',
+        'aria-label': __alloT('allohaven.welcome_to_allohaven','Welcome to AlloHaven'),
         'aria-modal': 'true',
         className: 'ah-welcome ah-tour-step',
         style: {
@@ -19256,12 +19272,12 @@
             (phase === 'short-break' || phase === 'long-break') ? h('button', {
               onClick: function() { setStateField('activeModal', 'breathe'); },
               style: Object.assign({}, secondaryBtnStyle(palette), { borderColor: palette.accent, color: palette.accent }),
-              'aria-label': 'Open breathing pacer'
+              'aria-label': __alloT('allohaven.open_breathing_pacer','Open breathing pacer')
             }, '🫁 Breathe') : null,
             (phase === 'short-break' || phase === 'long-break') ? h('button', {
               onClick: function() { setStateField('activeModal', 'grounding'); },
               style: Object.assign({}, secondaryBtnStyle(palette), { borderColor: palette.accent, color: palette.accent }),
-              'aria-label': 'Open grounding exercise'
+              'aria-label': __alloT('allohaven.open_grounding_exercise','Open grounding exercise')
             }, '🧷 Grounding') : null,
             h('button', {
               onClick: cancelPomodoro,
@@ -19269,7 +19285,7 @@
                 borderColor: palette.textMute,
                 color: palette.textMute
               }),
-              'aria-label': 'Cancel Pomodoro and return to room'
+              'aria-label': __alloT('allohaven.cancel_pomodoro_and_return_to_room','Cancel Pomodoro and return to room')
             }, 'Cancel')
           ),
           h('div', {
@@ -19501,7 +19517,7 @@
               value: feedStoryDraft,
               onChange: function(e) { setFeedStoryDraft(e.target.value); },
               disabled: feedStoryBusy,
-              placeholder: 'Today I learned that octopuses have three hearts and blue blood. Two hearts pump blood through their gills and one pumps blood through the rest of their body...',
+              placeholder: __alloT('allohaven.today_i_learned_that_octopuses_have_three_he','Today I learned that octopuses have three hearts and blue blood. Two hearts pump blood through their gills and one pumps blood through the rest of their body...'),
               rows: 6,
               style: {
                 width: '100%', padding: '10px 12px',
@@ -19620,7 +19636,7 @@
                 setCareerPickVocation(null);
                 setStateField('activeModal', null);
               },
-              'aria-label': 'Decide later',
+              'aria-label': __alloT('allohaven.decide_later','Decide later'),
               style: {
                 background: 'transparent', border: 'none',
                 color: palette.textMute, fontSize: '18px',
@@ -19877,7 +19893,7 @@
             ),
             h('button', {
               onClick: closePeerVisit,
-              'aria-label': 'Leave dorm',
+              'aria-label': __alloT('allohaven.leave_dorm','Leave dorm'),
               style: {
                 background: 'transparent', border: 'none',
                 color: palette.textMute, fontSize: '18px',
@@ -19932,7 +19948,7 @@
             h('button', {
               onClick: function() { giftPeer(peer.id); },
               disabled: !canGift || peerGreetingBusy,
-              'aria-label': 'Leave a small gift (3 tokens)',
+              'aria-label': __alloT('allohaven.leave_a_small_gift_3_tokens','Leave a small gift (3 tokens)'),
               title: canGift ? 'Leave a small gift (-3 🪙)' : 'Need 3 🪙 to gift',
               style: {
                 padding: '8px 14px',
@@ -19956,7 +19972,7 @@
                   setPeerGreetingBusy(false);
                 });
               },
-              'aria-label': 'Ask another question',
+              'aria-label': __alloT('allohaven.ask_another_question','Ask another question'),
               disabled: peerGreetingBusy,
               style: {
                 padding: '8px 14px',
@@ -20181,7 +20197,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Breathing pacer',
+        'aria-label': __alloT('allohaven.breathing_pacer','Breathing pacer'),
         onClick: function(e) {
           if (e.target === e.currentTarget) setStateField('activeModal', null);
         },
@@ -20297,7 +20313,7 @@
             }, voiceOn ? '🔊 Voice' : '🔇 Voice'),
             h('button', {
               onClick: function() { setStateField('activeModal', null); },
-              'aria-label': 'Close breathing pacer',
+              'aria-label': __alloT('allohaven.close_breathing_pacer','Close breathing pacer'),
               style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
             }, 'Done')
           )
@@ -20600,7 +20616,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'AlloHaven arcade',
+        'aria-label': __alloT('allohaven.allohaven_arcade','AlloHaven arcade'),
         onClick: function(e) { if (e.target === e.currentTarget) close(); },
         style: {
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -20623,7 +20639,7 @@
               '🎮 Arcade'),
             h('button', {
               onClick: close,
-              'aria-label': 'Close arcade',
+              'aria-label': __alloT('allohaven.close_arcade','Close arcade'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
             }, '✕')
           ),
@@ -20698,7 +20714,7 @@
             onClick: function() {
               setStateMulti({ activeModal: 'past-encounters', generateContext: null });
             },
-            'aria-label': 'View past Boss Encounters',
+            'aria-label': __alloT('allohaven.view_past_boss_encounters','View past Boss Encounters'),
             style: {
               display: 'flex', alignItems: 'center', gap: '8px',
               width: '100%',
@@ -20946,7 +20962,7 @@
         return h('div', {
           role: 'dialog',
           'aria-modal': 'true',
-          'aria-label': 'Past encounter detail',
+          'aria-label': __alloT('allohaven.past_encounter_detail','Past encounter detail'),
           onClick: function (e) { if (e.target === e.currentTarget) close(); },
           style: {
             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -21076,7 +21092,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Past Boss Encounters',
+        'aria-label': __alloT('allohaven.past_boss_encounters','Past Boss Encounters'),
         onClick: function (e) { if (e.target === e.currentTarget) close(); },
         style: {
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -21213,7 +21229,7 @@
         className: 'ah-preview-scrim',
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Print preview',
+        'aria-label': __alloT('allohaven.print_preview','Print preview'),
         tabIndex: -1,
         onClick: function(e) { if (e.target === e.currentTarget) close(); },
         onKeyDown: function(e) { if (e.key === 'Escape') { e.stopPropagation(); close(); } }
@@ -21226,7 +21242,7 @@
           }, '🖨 Print now'),
           h('button', {
             onClick: close,
-            'aria-label': 'Close preview',
+            'aria-label': __alloT('allohaven.close_preview','Close preview'),
             style: { background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '999px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }
           }, '✕ Close')
         ),
@@ -21361,7 +21377,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Print options',
+        'aria-label': __alloT('allohaven.print_options','Print options'),
         onClick: function(e) {
           if (e.target === e.currentTarget) {
             setStateMulti({ activeModal: returnTo, generateContext: null });
@@ -21978,7 +21994,7 @@
                   ),
                   h('button', {
                     onClick: function() { forgetPhrase(i); },
-                    'aria-label': 'Forget this phrase',
+                    'aria-label': __alloT('allohaven.forget_this_phrase','Forget this phrase'),
                     title: 'Forget',
                     style: {
                       background: 'transparent', border: 'none', color: palette.textMute,
@@ -22005,7 +22021,7 @@
               placeholder: 'Anything you want — an inside joke, a reminder, a little wisdom...',
               maxLength: COMPANION_PHRASE_LIMIT,
               rows: 2,
-              'aria-label': 'New phrase to teach your buddy',
+              'aria-label': __alloT('allohaven.new_phrase_to_teach_your_buddy','New phrase to teach your buddy'),
               style: {
                 width: '100%', padding: '10px 12px',
                 background: palette.surface, border: '1px solid ' + palette.border,
@@ -22076,7 +22092,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Sensory grounding exercise',
+        'aria-label': __alloT('allohaven.sensory_grounding_exercise','Sensory grounding exercise'),
         onClick: function(e) { if (e.target === e.currentTarget) close(); },
         style: {
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -22107,7 +22123,7 @@
             }, '🧷 Grounding · 5·4·3·2·1'),
             h('button', {
               onClick: close,
-              'aria-label': 'Close grounding exercise',
+              'aria-label': __alloT('allohaven.close_grounding_exercise','Close grounding exercise'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
             }, '✕')
           ),
@@ -22210,7 +22226,7 @@
             !done ? h('button', {
               onClick: goBack,
               disabled: idx === 0,
-              'aria-label': 'Go back one step',
+              'aria-label': __alloT('allohaven.go_back_one_step','Go back one step'),
               style: Object.assign({}, secondaryBtnStyle(palette), {
                 padding: '8px 14px', fontSize: '12px',
                 opacity: idx === 0 ? 0.4 : 1,
@@ -22905,7 +22921,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Memory palace overview',
+        'aria-label': __alloT('allohaven.memory_palace_overview','Memory palace overview'),
         onClick: function(e) {
           if (e.target === e.currentTarget) setStateField('activeModal', null);
         },
@@ -22941,7 +22957,7 @@
             h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
               h('button', {
                 onClick: function() { setStateField('activeModal', 'weekly-summary'); },
-                'aria-label': 'Show last 7 days summary',
+                'aria-label': __alloT('allohaven.show_last_7_days_summary','Show last 7 days summary'),
                 title: 'Quick 7-day snapshot — what you did, how you felt, what you unlocked',
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
               }, '🗓️ Last 7 days'),
@@ -22954,14 +22970,14 @@
                 return h('button', {
                   onClick: function() { setStateField('activeModal', 'voice-notes'); },
                   'aria-label': 'Open voice notes index — ' + vCount + ' note' + (vCount === 1 ? '' : 's'),
-                  title: 'Listen to every voice note you\'ve recorded',
+                  title: __alloT('allohaven.listen_to_every_voice_note_you_ve_recorded','Listen to every voice note you\'ve recorded'),
                   style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
                 }, '🎤 Voice notes · ' + vCount);
               })(),
               (totalDecks > 0 || allStories.length > 0) ? h('button', {
                 onClick: function() { setStateField('activeModal', 'clinical-review'); },
-                'aria-label': 'Review packet on screen',
-                title: 'Show all decks, stories, and reflections in a single scrollable view (for review with a parent, teacher, or clinician)',
+                'aria-label': __alloT('allohaven.review_packet_on_screen','Review packet on screen'),
+                title: __alloT('allohaven.show_all_decks_stories_and_reflections_in_a','Show all decks, stories, and reflections in a single scrollable view (for review with a parent, teacher, or clinician)'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
               }, '📋 Review packet') : null,
               (totalDecks > 0 || allStories.length > 0) ? h('button', {
@@ -22974,13 +22990,13 @@
                     generateContext: { returnTo: 'memory-overview' }
                   });
                 },
-                'aria-label': 'Print study packet (pick sections)',
-                title: 'Pick which sections to include, then print',
+                'aria-label': __alloT('allohaven.print_study_packet_pick_sections','Print study packet (pick sections)'),
+                title: __alloT('allohaven.pick_which_sections_to_include_then_print','Pick which sections to include, then print'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
               }, '🖨 Print') : null,
               h('button', {
                 onClick: function() { setStateField('activeModal', null); },
-                'aria-label': 'Close memory overview',
+                'aria-label': __alloT('allohaven.close_memory_overview','Close memory overview'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
               }, '✕')
             )
@@ -23024,7 +23040,7 @@
                     });
                     setStateField('generateContext', nextCtx);
                   },
-                  'aria-label': 'Clear all filters',
+                  'aria-label': __alloT('allohaven.clear_all_filters','Clear all filters'),
                   style: Object.assign({}, primaryBtnStyle(palette), { padding: '6px 14px', fontSize: '12px' })
                 }, 'Show all decks')
               );
@@ -23078,7 +23094,7 @@
           // any subject tagged. Click to filter; click selected to clear.
           Object.keys(subjectsPresent).length > 0 ? h('div', {
             role: 'region',
-            'aria-label': 'Filter decks by subject',
+            'aria-label': __alloT('allohaven.filter_decks_by_subject','Filter decks by subject'),
             style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px', alignItems: 'center' }
           },
             h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } },
@@ -23104,7 +23120,7 @@
             }),
             activeFilter ? h('button', {
               onClick: function() { setSubjectFilter(activeFilter); }, // toggle clears
-              'aria-label': 'Clear subject filter',
+              'aria-label': __alloT('allohaven.clear_subject_filter','Clear subject filter'),
               style: {
                 background: 'transparent',
                 color: palette.textMute,
@@ -23124,7 +23140,7 @@
           // quickly view all "struggle"-tagged decks (or any other mood).
           Object.keys(moodsPresent).length > 0 ? h('div', {
             role: 'region',
-            'aria-label': 'Filter decks by mood',
+            'aria-label': __alloT('allohaven.filter_decks_by_mood','Filter decks by mood'),
             style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px', alignItems: 'center' }
           },
             h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } },
@@ -23150,7 +23166,7 @@
             }),
             activeMoodFilter ? h('button', {
               onClick: function() { setMoodFilter(activeMoodFilter); },
-              'aria-label': 'Clear mood filter',
+              'aria-label': __alloT('allohaven.clear_mood_filter','Clear mood filter'),
               style: {
                 background: 'transparent',
                 color: palette.textMute,
@@ -23181,7 +23197,7 @@
               due.length >= 2 ? h('button', {
                 onClick: function() { startReviewQueue(); },
                 'aria-label': 'Review all ' + due.length + ' due decks in sequence',
-                title: 'Sequential quiz through every due deck. Stop any time.',
+                title: __alloT('allohaven.sequential_quiz_through_every_due_deck_stop','Sequential quiz through every due deck. Stop any time.'),
                 style: {
                   background: palette.accent,
                   color: palette.onAccent,
@@ -23295,7 +23311,7 @@
                   'Build a realm in the Arcade to see it here. Each realm holds your card placements, justifications, and an evolving canvas.')
               ) : h('ul', {
                 role: 'list',
-                'aria-label': 'My Realms',
+                'aria-label': __alloT('allohaven.my_realms','My Realms'),
                 style: { display: 'flex', flexDirection: 'column', gap: '8px', listStyle: 'none', padding: 0, margin: 0 }
               },
                 realmsList.slice().sort(function(a, b) {
@@ -23331,7 +23347,7 @@
                   'Map a topic in Concept Atlas (Arcade) to see it here. Each atlas is a graph of how concepts relate.')
               ) : h('ul', {
                 role: 'list',
-                'aria-label': 'My Atlases',
+                'aria-label': __alloT('allohaven.my_atlases','My Atlases'),
                 style: { display: 'flex', flexDirection: 'column', gap: '8px', listStyle: 'none', padding: 0, margin: 0 }
               },
                 atlasesList.slice().sort(function(a, b) {
@@ -23441,7 +23457,7 @@
           h('button', {
             onClick: printThisAtlas,
             'aria-label': 'Print ' + (atlas.name || atlas.topic || 'atlas'),
-            title: 'Print just this atlas (single packet for IEP / parent meeting)',
+            title: __alloT('allohaven.print_just_this_atlas_single_packet_for_iep','Print just this atlas (single packet for IEP / parent meeting)'),
             style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
           }, '🖨'),
           h('button', {
@@ -23533,7 +23549,7 @@
           h('button', {
             onClick: printThisRealm,
             'aria-label': 'Print ' + (realm.name || realm.topic || 'realm'),
-            title: 'Print just this realm (single packet for IEP / parent meeting)',
+            title: __alloT('allohaven.print_just_this_realm_single_packet_for_iep','Print just this realm (single packet for IEP / parent meeting)'),
             style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
           }, '🖨'),
           h('button', {
@@ -24044,7 +24060,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Voice notes index',
+        'aria-label': __alloT('allohaven.voice_notes_index','Voice notes index'),
         onClick: function(e) {
           if (e.target === e.currentTarget) setStateField('activeModal', null);
         },
@@ -24079,7 +24095,7 @@
               '🎤 Voice notes · ' + voiced.length),
             h('button', {
               onClick: function() { setStateField('activeModal', null); },
-              'aria-label': 'Close voice notes index',
+              'aria-label': __alloT('allohaven.close_voice_notes_index','Close voice notes index'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
             }, '✕')
           ),
@@ -24231,7 +24247,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Reflection insights',
+        'aria-label': __alloT('allohaven.reflection_insights','Reflection insights'),
         onClick: function(e) {
           if (e.target === e.currentTarget) setStateField('activeModal', 'journal');
         },
@@ -24281,14 +24297,14 @@
             h('div', { style: { display: 'flex', gap: '6px' } },
               h('button', {
                 onClick: function() { runInsightsAnalysis(); },
-                'aria-label': 'Refresh insights',
+                'aria-label': __alloT('allohaven.refresh_insights','Refresh insights'),
                 disabled: ins.loading,
                 title: ins.loading ? 'Analyzing…' : 'Run a fresh analysis',
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '12px', opacity: ins.loading ? 0.6 : 1 })
               }, ins.loading ? '…' : '↻ Refresh'),
               h('button', {
                 onClick: function() { setStateField('activeModal', 'journal'); },
-                'aria-label': 'Back to journal',
+                'aria-label': __alloT('allohaven.back_to_journal','Back to journal'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
               }, '← Back')
             )
@@ -24469,7 +24485,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Your journal',
+        'aria-label': __alloT('allohaven.your_journal','Your journal'),
         onClick: function(e) {
           if (e.target === e.currentTarget) setStateField('activeModal', null);
         },
@@ -24511,13 +24527,13 @@
                 onClick: function() {
                   setStateMulti({ activeModal: 'insights', insightsState: { loading: false, summary: null, error: null, generatedAt: null } });
                 },
-                'aria-label': 'View reflection insights',
-                title: 'Analyze recent entries for mood themes and recurring topics',
+                'aria-label': __alloT('allohaven.view_reflection_insights','View reflection insights'),
+                title: __alloT('allohaven.analyze_recent_entries_for_mood_themes_and_r','Analyze recent entries for mood themes and recurring topics'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '12px' })
               }, '📊 Insights') : null,
               h('button', {
                 onClick: function() { setStateField('activeModal', null); },
-                'aria-label': 'Close journal',
+                'aria-label': __alloT('allohaven.close_journal','Close journal'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
               }, '✕')
             )
@@ -24534,7 +24550,7 @@
           ) : null,
           h('ul', {
             role: 'list',
-            'aria-label': 'Journal entries',
+            'aria-label': __alloT('allohaven.journal_entries','Journal entries'),
             style: { display: 'flex', flexDirection: 'column', gap: '10px', listStyle: 'none', padding: 0, margin: 0 }
           },
             entries.map(function(entry) {
@@ -24586,7 +24602,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Confirm delete',
+        'aria-label': __alloT('allohaven.confirm_delete','Confirm delete'),
         onClick: function(e) {
           if (e.target === e.currentTarget) setStateMulti({ activeModal: null, generateContext: null });
         },
@@ -24736,7 +24752,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Achievements',
+        'aria-label': __alloT('allohaven.achievements','Achievements'),
         onClick: function(e) {
           if (e.target === e.currentTarget) setStateField('activeModal', null);
         },
@@ -24763,13 +24779,13 @@
               // so the modal stays the celebration surface.
               h('button', {
                 onClick: function() { setStateField('activeModal', 'tenure-recap'); },
-                'aria-label': 'See your AlloHaven journey recap',
-                title: 'Your AlloHaven journey',
+                'aria-label': __alloT('allohaven.see_your_allohaven_journey_recap','See your AlloHaven journey recap'),
+                title: __alloT('allohaven.your_allohaven_journey','Your AlloHaven journey'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 12px', fontSize: '12px', borderColor: palette.accent, color: palette.accent })
               }, '🌱 Journey'),
               h('button', {
                 onClick: function() { setStateField('activeModal', null); },
-                'aria-label': 'Close achievements',
+                'aria-label': __alloT('allohaven.close_achievements','Close achievements'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
               }, '✕')
             )
@@ -24783,7 +24799,7 @@
               '✓ Unlocked · ' + unlockedItems.length),
             h('ul', {
               role: 'list',
-              'aria-label': 'Unlocked achievements',
+              'aria-label': __alloT('allohaven.unlocked_achievements','Unlocked achievements'),
               style: { display: 'flex', flexDirection: 'column', gap: '8px', listStyle: 'none', padding: 0, margin: 0 }
             },
               unlockedItems.map(function(a) {
@@ -24797,7 +24813,7 @@
               '○ Still ahead · ' + lockedItems.length),
             h('ul', {
               role: 'list',
-              'aria-label': 'Locked achievements',
+              'aria-label': __alloT('allohaven.locked_achievements','Locked achievements'),
               style: { display: 'flex', flexDirection: 'column', gap: '8px', listStyle: 'none', padding: 0, margin: 0 }
             },
               lockedItems.map(function(a) {
@@ -25119,7 +25135,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'My portfolio',
+        'aria-label': __alloT('allohaven.my_portfolio','My portfolio'),
         onClick: function(e) {
           if (e.target === e.currentTarget) setStateField('activeModal', null);
         },
@@ -25158,13 +25174,13 @@
             ),
             h('button', {
               onClick: function() { setStateField('activeModal', null); },
-              'aria-label': 'Close portfolio',
+              'aria-label': __alloT('allohaven.close_portfolio','Close portfolio'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
             }, 'x')
           ),
           artifacts.length ? h('div', {
             role: 'group',
-            'aria-label': 'Filter portfolio products by source',
+            'aria-label': __alloT('allohaven.filter_portfolio_products_by_source','Filter portfolio products by source'),
             style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }
           },
             [{ id: 'all', label: 'All', count: artifacts.length }].concat(sourceFilters.map(function(key) {
@@ -25200,8 +25216,8 @@
                 type: 'search',
                 value: portfolioSearch,
                 onChange: function(e) { setStateField('portfolioSearch', e.target.value); },
-                placeholder: 'Search title, source, or preview text',
-                'aria-label': 'Search portfolio products',
+                placeholder: __alloT('allohaven.search_title_source_or_preview_text','Search title, source, or preview text'),
+                'aria-label': __alloT('allohaven.search_portfolio_products','Search portfolio products'),
                 style: {
                   minHeight: '36px',
                   borderRadius: '8px',
@@ -25219,7 +25235,7 @@
               h('select', {
                 value: portfolioSort,
                 onChange: function(e) { setStateField('portfolioSort', e.target.value); },
-                'aria-label': 'Sort portfolio products',
+                'aria-label': __alloT('allohaven.sort_portfolio_products','Sort portfolio products'),
                 style: {
                   minHeight: '36px',
                   borderRadius: '8px',
@@ -25454,7 +25470,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'My progress summary',
+        'aria-label': __alloT('allohaven.my_progress_summary','My progress summary'),
         onClick: function(e) {
           if (e.target === e.currentTarget) setStateField('activeModal', null);
         },
@@ -25493,7 +25509,7 @@
             ),
             h('button', {
               onClick: function() { setStateField('activeModal', null); },
-              'aria-label': 'Close progress summary',
+              'aria-label': __alloT('allohaven.close_progress_summary','Close progress summary'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
             }, 'x')
           ),
@@ -25527,14 +25543,14 @@
                 marginBottom: '16px'
               }
             },
-              h('section', { 'aria-label': 'Learning practice', style: { background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '14px' } },
+              h('section', { 'aria-label': __alloT('allohaven.learning_practice','Learning practice'), style: { background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '14px' } },
                 h('h4', { style: { margin: '0 0 8px 0', color: palette.text, fontSize: '13px', fontWeight: 800 } }, 'Learning Practice'),
                 row('Fluency', fmt(academic.fluencyWCPM) + ' WCPM'),
                 row('Fluency reads', fmt(academic.fluencyAssessments)),
                 row('Games played', fmt(gameplay.gamesPlayed)),
                 row('Label challenge', gameplay.labelChallengeAverage ? gameplay.labelChallengeAverage + '%' : '0%')
               ),
-              h('section', { 'aria-label': 'SEL and reflection', style: { background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '14px' } },
+              h('section', { 'aria-label': __alloT('allohaven.sel_and_reflection','SEL and reflection'), style: { background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '14px' } },
                 h('h4', { style: { margin: '0 0 8px 0', color: palette.text, fontSize: '13px', fontWeight: 800 } }, 'SEL And Reflection'),
                 row('SEL tools used', fmt(sel.toolsUsed)),
                 row('Reflection snapshots', fmt(sel.reflectionSnapshots)),
@@ -25705,7 +25721,7 @@
               h('span', null, 'Your AlloHaven journey')),
             h('button', {
               onClick: function() { setStateField('activeModal', 'achievements'); },
-              'aria-label': 'Close recap',
+              'aria-label': __alloT('allohaven.close_recap','Close recap'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
             }, '✕')
           ),
@@ -25722,7 +25738,7 @@
             var res = nar.result || null;
             return h('div', {
               role: 'region',
-              'aria-label': 'AI journey narrative',
+              'aria-label': __alloT('allohaven.ai_journey_narrative','AI journey narrative'),
               style: {
                 padding: '16px 18px',
                 marginBottom: '18px',
@@ -25740,7 +25756,7 @@
                 }, '✨ Your story so far'),
                 h('button', {
                   onClick: function() { runTenureNarrativeAnalysis(); },
-                  'aria-label': 'Regenerate the narrative',
+                  'aria-label': __alloT('allohaven.regenerate_the_narrative','Regenerate the narrative'),
                   disabled: nar.loading,
                   title: nar.loading ? 'Writing…' : 'Run a fresh analysis',
                   style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '11px', opacity: nar.loading ? 0.6 : 1 })
@@ -26012,8 +26028,8 @@
           h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'flex-end' } },
             status === 'active' && !prog.isDone ? h('button', {
               onClick: function() { markGoalCompleted(g.id); },
-              'aria-label': 'Mark this goal complete manually',
-              title: 'Mark complete (in case progress tracked outside the app)',
+              'aria-label': __alloT('allohaven.mark_this_goal_complete_manually','Mark this goal complete manually'),
+              title: __alloT('allohaven.mark_complete_in_case_progress_tracked_outsi','Mark complete (in case progress tracked outside the app)'),
               style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
             }, 'Mark done') : null,
             h('button', {
@@ -26054,7 +26070,7 @@
               '🎯 Goals · ' + goals.length),
             h('button', {
               onClick: function() { setStateField('activeModal', null); },
-              'aria-label': 'Close goals list',
+              'aria-label': __alloT('allohaven.close_goals_list','Close goals list'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
             }, '✕')
           ),
@@ -26075,7 +26091,7 @@
             }, '⚡ Quick start'),
             h('div', {
               role: 'list',
-              'aria-label': 'Goal templates',
+              'aria-label': __alloT('allohaven.goal_templates','Goal templates'),
               style: {
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
@@ -26315,7 +26331,7 @@
               '📜 Stories · ' + stories.length),
             h('button', {
               onClick: function() { setStateField('activeModal', null); },
-              'aria-label': 'Close stories list',
+              'aria-label': __alloT('allohaven.close_stories_list','Close stories list'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
             }, '✕')
           ),
@@ -26480,7 +26496,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Settings',
+        'aria-label': __alloT('allohaven.settings','Settings'),
         onClick: function(e) {
           if (e.target === e.currentTarget) setStateField('activeModal', null);
         },
@@ -26514,7 +26530,7 @@
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } }, '⚙️ Settings'),
             h('button', {
               onClick: function() { setStateField('activeModal', null); },
-              'aria-label': 'Close settings',
+              'aria-label': __alloT('allohaven.close_settings','Close settings'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
             }, '✕')
           ),
@@ -26879,7 +26895,7 @@
                 type: 'range',
                 min: 1, max: 30, step: 1,
                 value: mpt,
-                'aria-label': 'Minutes per token',
+                'aria-label': __alloT('allohaven.minutes_per_token','Minutes per token'),
                 onChange: function(e) {
                   var n = parseInt(e.target.value, 10);
                   if (!isNaN(n)) setStateField('arcade', Object.assign({}, state.arcade, { minutesPerToken: n }));
@@ -26989,7 +27005,7 @@
           },
             h('button', {
               onClick: function() { setStateMulti({ activeModal: 'tour' }); },
-              'aria-label': 'Replay the welcome tour',
+              'aria-label': __alloT('allohaven.replay_the_welcome_tour','Replay the welcome tour'),
               style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '6px 14px' })
             }, '🎬 Replay tour')
           ),
@@ -27012,7 +27028,7 @@
                 }
               },
               'aria-pressed': state.pomodoroChimeEnabled !== false ? 'true' : 'false',
-              'aria-label': 'Toggle Pomodoro completion chime',
+              'aria-label': __alloT('allohaven.toggle_pomodoro_completion_chime','Toggle Pomodoro completion chime'),
               style: {
                 background: state.pomodoroChimeEnabled !== false ? palette.accent : palette.surface,
                 color: state.pomodoroChimeEnabled !== false ? palette.onAccent : palette.textDim,
@@ -27137,7 +27153,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Weekly summary',
+        'aria-label': __alloT('allohaven.weekly_summary','Weekly summary'),
         onClick: function(e) {
           if (e.target === e.currentTarget) setStateField('activeModal', null);
         },
@@ -27161,7 +27177,7 @@
               '🗓️ Last 7 days'),
             h('button', {
               onClick: function() { setStateField('activeModal', null); },
-              'aria-label': 'Close weekly summary',
+              'aria-label': __alloT('allohaven.close_weekly_summary','Close weekly summary'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
             }, '✕')
           ),
@@ -27190,7 +27206,7 @@
           // Companion reflection
           companion && companion.species ? h('div', {
             role: 'region',
-            'aria-label': 'Companion reflection on the week',
+            'aria-label': __alloT('allohaven.companion_reflection_on_the_week','Companion reflection on the week'),
             style: { display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '12px 14px', background: palette.surface, border: '1.5px solid ' + palette.accent, borderRadius: '10px', marginBottom: '14px' }
           },
             h('div', { style: { width: '50px', height: '50px', flexShrink: 0 } },
@@ -27218,7 +27234,7 @@
             }
             return h('div', {
               role: 'region',
-              'aria-label': 'Letter from your buddy',
+              'aria-label': __alloT('allohaven.letter_from_your_buddy','Letter from your buddy'),
               style: { padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '10px', marginBottom: '14px' }
             },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px', flexWrap: 'wrap', gap: '6px' } },
@@ -27227,7 +27243,7 @@
                 letter ? h('button', {
                   onClick: function() { handleGenerate(true); },
                   disabled: loading,
-                  'aria-label': 'Regenerate the letter',
+                  'aria-label': __alloT('allohaven.regenerate_the_letter','Regenerate the letter'),
                   title: 'Refresh — generates a new letter for this week',
                   style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '11px', opacity: loading ? 0.6 : 1 })
                 }, loading ? '…' : '↻ Refresh') : null
@@ -27294,7 +27310,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Review queue summary',
+        'aria-label': __alloT('allohaven.review_queue_summary','Review queue summary'),
         onClick: function(e) {
           if (e.target === e.currentTarget) setStateMulti({ activeModal: null, generateContext: null });
         },
@@ -27368,7 +27384,7 @@
           // Per-deck breakdown
           h('ul', {
             role: 'list',
-            'aria-label': 'Per-deck results',
+            'aria-label': __alloT('allohaven.per_deck_results','Per-deck results'),
             style: { listStyle: 'none', padding: 0, margin: '0 0 20px 0', textAlign: 'left' }
           },
             q.results.map(function(r, i) {
@@ -27566,7 +27582,7 @@
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-label': 'Clinical review packet',
+        'aria-label': __alloT('allohaven.clinical_review_packet','Clinical review packet'),
         onClick: function(e) {
           if (e.target === e.currentTarget) setStateField('activeModal', 'memory-overview');
         },
@@ -27597,13 +27613,13 @@
                     generateContext: { returnTo: 'clinical-review' }
                   });
                 },
-                'aria-label': 'Print this packet (pick sections)',
-                title: 'Pick which sections to include, then print',
+                'aria-label': __alloT('allohaven.print_this_packet_pick_sections','Print this packet (pick sections)'),
+                title: __alloT('allohaven.pick_which_sections_to_include_then_prin_2','Pick which sections to include, then print'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
               }, '🖨 Print'),
               h('button', {
                 onClick: function() { setStateField('activeModal', 'memory-overview'); },
-                'aria-label': 'Back to overview',
+                'aria-label': __alloT('allohaven.back_to_overview','Back to overview'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
               }, '✕')
             )
@@ -28550,7 +28566,7 @@
           return h('div', { style: { marginBottom: '20px', padding: '10px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px' } },
             h('div', { style: { fontWeight: 700, marginBottom: '6px', fontSize: '11px', color: '#000' } },
               '🎭 Mood timeline · last 13 weeks · ' + taggedDecs.length + ' tagged decoration' + (taggedDecs.length === 1 ? '' : 's')),
-            h('svg', { role: 'img', 'aria-label': 'Mood timeline bar chart for the last 13 weeks', viewBox: '0 0 ' + W + ' ' + (padT + maxBarH + padB), width: '100%', height: padT + maxBarH + padB },
+            h('svg', { role: 'img', 'aria-label': __alloT('allohaven.mood_timeline_bar_chart_for_the_last_13_week','Mood timeline bar chart for the last 13 weeks'), viewBox: '0 0 ' + W + ' ' + (padT + maxBarH + padB), width: '100%', height: padT + maxBarH + padB },
               h('line', { x1: padL, x2: W - padR, y1: padT + maxBarH, y2: padT + maxBarH, stroke: '#000', strokeWidth: 0.4 }),
               bars,
               h('text', { x: padL, y: padT + maxBarH + padB - 2, fontSize: '8', fill: '#444' }, '13w ago'),
@@ -29175,7 +29191,7 @@
     return h('div', {
       role: 'dialog',
       'aria-modal': 'true',
-      'aria-label': 'AlloHaven',
+      'aria-label': __alloT('allohaven.allohaven','AlloHaven'),
       className: 'ah-root',
       style: {
         position: 'fixed',
@@ -29742,7 +29758,7 @@
               )
             ) : h('div', null,
               h('div', {
-                'aria-label': 'Three emoji prompts',
+                'aria-label': __alloT('allohaven.three_emoji_prompts','Three emoji prompts'),
                 style: {
                   padding: '14px',
                   background: palette.surface || '#22223a',
@@ -29756,7 +29772,7 @@
               h('textarea', {
                 value: draft,
                 onChange: function(e) { setDraft(e.target.value); },
-                'aria-label': 'Sentence using all three emoji prompts',
+                'aria-label': __alloT('allohaven.sentence_using_all_three_emoji_prompts','Sentence using all three emoji prompts'),
                 disabled: busy,
                 placeholder: 'Write one sentence using all three…',
                 rows: 4,

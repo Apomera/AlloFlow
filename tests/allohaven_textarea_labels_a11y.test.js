@@ -12,10 +12,16 @@ describe('AlloHaven textarea labels', () => {
   });
 
   it('names the journal editor by its editing purpose', () => {
-    expect(source).toContain("'aria-label': 'Edit journal entry'");
+    // Went through the translator on 2026-09-21: a bare literal has no key, so
+    // no translator is ever shown it and it ships English in all 63 packs.
+    // Assert both halves -- the key, and the English a screen reader falls back to.
+    expect(source).toContain("'aria-label': __alloT('allohaven.edit_journal_entry','Edit journal entry')");
   });
 
   it('names the three-emoji writing response by its prompt relationship', () => {
-    expect(source).toContain("'aria-label': 'Sentence using all three emoji prompts'");
+    // Went through the translator on 2026-09-21: a bare literal has no key, so
+    // no translator is ever shown it and it ships English in all 63 packs.
+    // Assert both halves -- the key, and the English a screen reader falls back to.
+    expect(source).toContain("'aria-label': __alloT('allohaven.sentence_using_all_three_emoji_prompts','Sentence using all three emoji prompts')");
   });
 });

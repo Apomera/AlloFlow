@@ -175,7 +175,10 @@ describe('live-session reward transport source contract', () => {
 
   it('offers an accessible optional path into all three creative reward choices', () => {
     const card = haven.slice(haven.indexOf('function renderClassroomRewardCard'), haven.indexOf('function renderTodayCard'));
-    expect(card).toContain("'aria-label': 'Private classroom recognition creative reward'");
+    // Went through the translator on 2026-09-21: a bare literal has no key, so
+    // no translator is ever shown it and it ships English in all 63 packs.
+    // Assert both halves -- the key, and the English a screen reader falls back to.
+    expect(card).toContain("'aria-label': __alloT('allohaven.private_classroom_recognition_creative_rewar','Private classroom recognition creative reward')");
     expect(card).toContain("role: 'progressbar'");
     expect(card).toContain('AI-generated decoration');
     expect(card).toContain('make your own drawing');
@@ -191,10 +194,13 @@ describe('live-session reward transport source contract', () => {
       haven.indexOf('function renderClassroomRecognitionHistoryLink'),
       haven.indexOf('function renderTodayCard'),
     );
-    expect(historyUi).toContain("'aria-label': 'Private classroom recognition history'");
+    // Went through the translator on 2026-09-21: a bare literal has no key, so
+    // no translator is ever shown it and it ships English in all 63 packs.
+    // Assert both halves -- the key, and the English a screen reader falls back to.
+    expect(historyUi).toContain("'aria-label': __alloT('allohaven.private_classroom_recognition_history','Private classroom recognition history')");
     expect(historyUi).toContain("state.activeModal !== 'classroom-recognition-history'");
     expect(historyUi).toContain("'aria-labelledby': 'ah-classroom-recognition-history-title'");
-    expect(historyUi).toContain("'aria-label': 'Recent classroom recognition events'");
+    expect(historyUi).toContain("'aria-label': __alloT('allohaven.recent_classroom_recognition_events','Recent classroom recognition events')");
     expect(historyUi).toContain('visible only in your AlloHaven');
     expect(historyUi).toContain('never teacher notes or a public score');
     expect(historyUi).toContain('Showing up to 8 recent events.');
