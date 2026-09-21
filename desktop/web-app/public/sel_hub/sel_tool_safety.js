@@ -615,6 +615,43 @@ window.SelHub = window.SelHub || {
     color: 'red',
     category: 'responsible-decision-making',
     render: function(ctx) {
+      // ── i18n ──────────────────────────────────────────────────────────────
+      // Shim must live HERE, not at module scope: CRISIS_RESOURCES and the
+      // other four tables are built at LOAD, so a module-scoped version would
+      // both be out of scope for ctx and freeze the language at first paint.
+      // Carries the English literal because the SEL shell's own fallback
+      // ECHOES THE KEY (sel_hub_module.js:2114).
+      var __alloT = function (key, fallback) {
+        var fn = (ctx && typeof ctx.t === 'function') ? ctx.t : null;
+        var value = null;
+        if (fn) { try { value = fn(key, fallback); } catch (e) { value = null; } }
+        return (value == null) ? (fallback != null ? fallback : key) : value;
+      };
+      // Translate a data row at READ time. `contact` and `name` are never
+      // touched: a student dials the number and searches the organisation by
+      // its real name.
+      var _safeSlug = function (s) {
+        return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40);
+      };
+      var _safeL10n = function (table, row) {
+        if (!row || typeof row !== 'object') return row;
+        var id = row.id || _safeSlug(row.name || row.title);
+        var out = {};
+        for (var k in row) {
+          if (!Object.prototype.hasOwnProperty.call(row, k)) continue;
+          var v = row[k];
+          if (typeof v === 'string' && k !== 'contact' && k !== 'name' && k !== 'icon' && k !== 'id' && v.length > 3) {
+            out[k] = __alloT('sel.safety.' + table + '_' + id + '_' + k, v);
+          } else {
+            out[k] = v;
+          }
+        }
+        return out;
+      };
+      var _safeRows = function (table, rows) {
+        return (rows || []).map(function (r) { return _safeL10n(table, r); });
+      };
+
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _safT = (ctx && ctx.theme) || {};
       var _safHC = !!_safT.isContrast, _safL = !_safHC && !_safT.isDark;
@@ -1050,7 +1087,7 @@ window.SelHub = window.SelHub || {
             style: { margin: '12px 16px', padding: '14px 16px', borderRadius: 12, background: _safBg('#7f1d1d'), border: '1px solid #dc2626' }
           },
             h('div', { style: { fontWeight: 700, color: _safFg('#fca5a5'), fontSize: 13, marginBottom: 6 } }, '\uD83D\uDCDE If you need help RIGHT NOW:'),
-            CRISIS_RESOURCES.map(function(cr, i) {
+            _safeRows('crisis', CRISIS_RESOURCES).map(function(cr, i) {
               return h('div', { key: i, style: { padding: '4px 0', fontSize: 12, color: _safFg('#fde2e2') } },
           h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
                 h('span', { style: { fontWeight: 600 } }, cr.icon + ' ' + cr.name + ': '),
@@ -1115,7 +1152,7 @@ window.SelHub = window.SelHub || {
                   : 'Understanding different types of boundaries helps you protect yourself in all areas of your life.'
               )
             ),
-            BOUNDARY_TYPES.map(function(bt) {
+            _safeRows('boundary', BOUNDARY_TYPES).map(function(bt) {
               var isExpanded = expandedBoundary === bt.id;
               var isViewed = !!viewedBoundaryTypes[bt.id];
               return h('div', {                 key: bt.id,
@@ -1183,7 +1220,7 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         var digitalContent = null;
         if (activeTab === 'digital') {
-          var dsCards = DIGITAL_SAFETY_CARDS;
+          var dsCards = _safeRows('digital', DIGITAL_SAFETY_CARDS);
           var dsViewedCount = Object.keys(dsViewed).length;
 
           var dsBanner = h('div', {
@@ -1315,7 +1352,7 @@ window.SelHub = window.SelHub || {
           var crisisSection = h('div', {             style: { margin: '0 16px 14px', padding: '14px 16px', borderRadius: 12, background: _safBg('#7f1d1d'), border: '1px solid #dc2626' }
           },
             h('div', { style: { fontWeight: 700, color: _safFg('#fca5a5'), fontSize: 13, marginBottom: 8 } }, '\uD83D\uDCDE Crisis Resources \u2014 Always Available'),
-            CRISIS_RESOURCES.map(function(cr, i) {
+            _safeRows('crisis', CRISIS_RESOURCES).map(function(cr, i) {
               return h('div', { key: i, style: { padding: '6px 0', borderBottom: i < CRISIS_RESOURCES.length - 1 ? '1px solid #991b1b' : 'none' } },
                 h('div', { style: { fontWeight: 600, fontSize: 13, color: _safFg('#fde2e2') } }, cr.icon + ' ' + cr.name),
                 h('div', { style: { fontSize: 12, color: _safFg('#fca5a5') } }, cr.contact),
@@ -1388,7 +1425,7 @@ window.SelHub = window.SelHub || {
               // Pre-filled hotlines
               return h('div', { key: cat, style: { margin: '0 16px 10px' } },
                 h('div', { style: { fontWeight: 600, color: _safFg('#94a3b8'), fontSize: 12, marginBottom: 6 } }, catLabels[cat]),
-                CRISIS_RESOURCES.map(function(cr, i) {
+                _safeRows('crisis', CRISIS_RESOURCES).map(function(cr, i) {
                   return h('div', { key: i, style: { padding: '8px 12px', borderRadius: 8, background: _safBg('#0f172a'), marginBottom: 4, fontSize: 12, color: _safFg('#cbd5e1') } },
                     cr.icon + ' ' + cr.name + ' \u2014 ' + cr.contact
                   );
@@ -2047,7 +2084,7 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         var emergencyContent = null;
         if (activeTab === 'emergency') {
-          var emTopics = EMERGENCY_TOPICS;
+          var emTopics = _safeRows('emergency', EMERGENCY_TOPICS);
           var emViewedCount = Object.keys(emViewed).length;
 
           var emHeader = h('div', {
