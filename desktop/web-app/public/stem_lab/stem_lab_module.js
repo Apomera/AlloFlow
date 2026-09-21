@@ -3681,14 +3681,36 @@
 
 
       // Quest type definitions
+      // minVal/maxVal bound what the quest builder will accept.
+      //
+      // The number input carried `min: 1`, which the browser only applies to
+      // its spinner and to form validation this form never runs \u2014 a typed
+      // value went straight through. Two ends were broken:
+      //   * a NEGATIVE target completed the quest instantly, because
+      //     `earned >= threshold` is true at 0 XP, and a target of 0 made the
+      //     HUD progress bar compute 0/0 -> NaN, emitting width:"NaN%".
+      //   * xpThreshold above 100 was PERMANENTLY unreachable: XP is capped at
+      //     100 per activity, so "Earn 500 XP" can never complete however long
+      //     the student works.
+      // The ceilings below are the real limits of each measure, not arbitrary.
       var QUEST_TYPES = [
-        { id: 'xpThreshold', label: t('stem.tools_menu.earn_xp') || 'Earn XP', icon: '\u2B50', paramLabel: 'XP Target', defaultVal: 50, unit: 'XP' },
-        { id: 'timeSpent', label: t('stem.tools_menu.spend_time') || 'Spend Time', icon: '\u23F1', paramLabel: 'Minutes', defaultVal: 5, unit: 'min' },
-        { id: 'discoveryCount', label: t('stem.tools_menu.discover_items') || 'Discover Items', icon: '\uD83D\uDD2D', paramLabel: 'Item Count', defaultVal: 5, unit: 'items' },
-        { id: 'quizScore', label: t('stem.tools_menu.quiz_score') || 'Quiz Score', icon: '\uD83C\uDFAF', paramLabel: 'Min Score', defaultVal: 5, unit: 'pts' },
-        { id: 'freeResponse', label: t('stem.tools_menu.written_response') || 'Written Response', icon: '\u270D\uFE0F', paramLabel: 'Min Characters', defaultVal: 30, unit: 'chars' },
+        { id: 'xpThreshold', label: t('stem.tools_menu.earn_xp') || 'Earn XP', icon: '\u2B50', paramLabel: 'XP Target', defaultVal: 50, unit: 'XP', minVal: 1, maxVal: 100 },
+        { id: 'timeSpent', label: t('stem.tools_menu.spend_time') || 'Spend Time', icon: '\u23F1', paramLabel: 'Minutes', defaultVal: 5, unit: 'min', minVal: 1, maxVal: 120 },
+        { id: 'discoveryCount', label: t('stem.tools_menu.discover_items') || 'Discover Items', icon: '\uD83D\uDD2D', paramLabel: 'Item Count', defaultVal: 5, unit: 'items', minVal: 1, maxVal: 100 },
+        { id: 'quizScore', label: t('stem.tools_menu.quiz_score') || 'Quiz Score', icon: '\uD83C\uDFAF', paramLabel: 'Min Score', defaultVal: 5, unit: 'pts', minVal: 1, maxVal: 100 },
+        { id: 'freeResponse', label: t('stem.tools_menu.written_response') || 'Written Response', icon: '\u270D\uFE0F', paramLabel: 'Min Characters', defaultVal: 30, unit: 'chars', minVal: 1, maxVal: 2000 },
         { id: 'toolQuest', label: t('stem.tools_menu.tool_specific') || 'Tool-Specific', icon: '\uD83C\uDFC6', paramLabel: 'Quest', defaultVal: '', unit: '' }
       ];
+      // Clamp a builder parameter into its type's range. Used by the input, the
+      // live preview and the Add handler so all three agree.
+      function _clampQuestParam(value, qtDef) {
+        var def = (qtDef && qtDef.defaultVal) || 5;
+        var n = parseInt(value, 10);
+        if (!isFinite(n)) return def;
+        var lo = (qtDef && qtDef.minVal) || 1;
+        var hi = (qtDef && qtDef.maxVal) || 100;
+        return Math.min(hi, Math.max(lo, n));
+      }
 
       // Get available tool-specific quests for a given tool ID
       function _getToolQuestHooks(toolId) {
@@ -3835,6 +3857,28 @@
         return progress;
       }
 
+      // A progress percentage that is always a renderable 0-100 number.
+      //
+      // Every bar below divides by a target that comes from saved station
+      // JSON. A target of 0 yields NaN (0/0), which reaches the DOM as
+      // style width:"NaN%", an invalid declaration the browser drops, so the
+      // bar silently renders at full width. A negative target yields a
+      // negative width. Stations saved before the builder clamped its input
+      // can still hold either, so the guard belongs here as well.
+      // The two guards below overlap on purpose: the early return states the
+      // precondition (a target must be a positive number), and the isFinite
+      // check after the division would also catch NaN/Infinity on its own.
+      // Either alone is sufficient for the OUTPUT, so a test cannot tell them
+      // apart. Keep both: the first documents the contract and the
+      // second is what holds if the contract is ever loosened.
+      function _questPct(current, target) {
+        var c = Number(current), t = Number(target);
+        if (!isFinite(c) || !isFinite(t) || t <= 0) return 0;
+        var pct = c / t * 100;
+        if (!isFinite(pct)) return 0;
+        return Math.min(100, Math.max(0, pct));
+      }
+
       // Get display info for a quest's progress
       function _getQuestDisplay(quest, toolData, progress, stationId) {
         var qp = ((progress[stationId] || {})[quest.qid]) || {};
@@ -3845,29 +3889,29 @@
             xpData = (toolData._stemXP || {})[quest.toolId];
             var earned = xpData ? (typeof xpData === 'number' ? xpData : (xpData.earned || 0)) : 0;
             var thr = quest.params.threshold || 50;
-            return { done: false, text: earned + '/' + thr + ' XP', pct: Math.min(100, earned / thr * 100) };
+            return { done: false, text: earned + '/' + thr + ' XP', pct: _questPct(earned, thr) };
           case 'timeSpent':
             ms = qp.timeAccumMs || 0;
             targetMs = (quest.params.minutes || 5) * 60000;
-            return { done: false, text: Math.floor(ms / 60000) + '/' + (quest.params.minutes || 5) + ' min', pct: Math.min(100, ms / targetMs * 100) };
+            return { done: false, text: Math.floor(ms / 60000) + '/' + (quest.params.minutes || 5) + ' min', pct: _questPct(ms, targetMs) };
           case 'discoveryCount':
             toolState = toolData['_' + quest.toolId] || toolData[quest.toolId] || {};
             field = quest.params.field || 'discoveries';
             val = field.indexOf('.') !== -1 ? field.split('.').reduce(function(o, k) { return (o || {})[k]; }, toolState) : toolState[field];
             var c = Array.isArray(val) ? val.length : (typeof val === 'number' ? val : 0);
             var target = quest.params.count || 5;
-            return { done: false, text: c + '/' + target, pct: Math.min(100, c / target * 100) };
+            return { done: false, text: c + '/' + target, pct: _questPct(c, target) };
           case 'quizScore':
             toolState = toolData['_' + quest.toolId] || toolData[quest.toolId] || {};
             field = quest.params.field || 'quizScore';
             val = field.indexOf('.') !== -1 ? field.split('.').reduce(function(o, k) { return (o || {})[k]; }, toolState) : toolState[field];
             var sv = typeof val === 'number' ? val : 0;
             var minS = quest.params.minScore || 5;
-            return { done: false, text: sv + '/' + minS, pct: Math.min(100, sv / minS * 100) };
+            return { done: false, text: sv + '/' + minS, pct: _questPct(sv, minS) };
           case 'freeResponse':
             var len = (qp.response || '').length;
             var minL = quest.params.minLength || 30;
-            return { done: false, text: len + '/' + minL + ' chars', pct: Math.min(100, len / minL * 100) };
+            return { done: false, text: len + '/' + minL + ' chars', pct: _questPct(len, minL) };
           case 'toolQuest':
             var hooks2 = _getToolQuestHooks(quest.toolId);
             var hook2 = hooks2.find(function(h2) { return h2 && h2.id === quest.params.hookId; });
@@ -7769,12 +7813,21 @@
                         React.createElement("input", {
                           type: "number",
                           value: d._questBuilderParam || qtDef.defaultVal,
-                          onChange: function(e) { upd('_questBuilderParam', parseInt(e.target.value) || qtDef.defaultVal); },
-                          min: 1,
-                          'aria-label': qtDef.paramLabel + ' for quest',
+                          // Clamp on the way in. `min`/`max` below are the
+                          // browser's spinner hints only; this form never runs
+                          // HTML validation, so a typed value reached the quest
+                          // unchecked.
+                          onChange: function(e) { upd('_questBuilderParam', _clampQuestParam(e.target.value, qtDef)); },
+                          min: qtDef.minVal || 1,
+                          max: qtDef.maxVal || 100,
+                          'aria-label': qtDef.paramLabel + ' for quest, ' + (qtDef.minVal || 1) + ' to ' + (qtDef.maxVal || 100) + ' ' + (qtDef.unit || ''),
                           className: "w-20 px-2 py-1.5 text-xs border border-amber-200 rounded-lg"
                         }),
-                        React.createElement("span", { className: "text-[10px] text-slate-400 ml-1.5" }, qtDef.unit)
+                        React.createElement("span", { className: "text-[10px] text-slate-400 ml-1.5" }, qtDef.unit),
+                        // Say what the range is, so a clamped value does not
+                        // look like the field ignoring what was typed.
+                        React.createElement("span", { className: "text-[10px] text-slate-400 ml-1.5" },
+                          '(' + (qtDef.minVal || 1) + '\u2013' + (qtDef.maxVal || 100) + ')')
                       );
                     })()
                   ),
@@ -7786,7 +7839,10 @@
                         d._questBuilderTool || null,
                         (function() {
                           var qT = d._questBuilderType || 'xpThreshold';
-                          var p = d._questBuilderParam || QUEST_TYPES.find(function(x) { return x.id === qT; })?.defaultVal || 5;
+                          var qtDefP = QUEST_TYPES.find(function(x) { return x.id === qT; });
+                          // The preview must show the value that will actually
+                          // be saved, not the raw one.
+                          var p = _clampQuestParam(d._questBuilderParam || (qtDefP && qtDefP.defaultVal) || 5, qtDefP);
                           if (qT === 'xpThreshold') return { threshold: p };
                           if (qT === 'timeSpent') return { minutes: p };
                           if (qT === 'discoveryCount') return { count: p };
@@ -7801,7 +7857,11 @@
                       disabled: (d._questBuilderType || 'xpThreshold') !== 'freeResponse' && !d._questBuilderTool,
                       onClick: function() {
                         var qT2 = d._questBuilderType || 'xpThreshold';
-                        var p2 = d._questBuilderParam || QUEST_TYPES.find(function(x) { return x.id === qT2; })?.defaultVal || 5;
+                        var qtDef2 = QUEST_TYPES.find(function(x) { return x.id === qT2; });
+                        // Clamp again here: the stored value may predate the
+                        // bounds, and this is the last point before it becomes
+                        // a quest a student is graded against.
+                        var p2 = _clampQuestParam(d._questBuilderParam || (qtDef2 && qtDef2.defaultVal) || 5, qtDef2);
                         var params2;
                         if (qT2 === 'xpThreshold') params2 = { threshold: p2 };
                         else if (qT2 === 'timeSpent') params2 = { minutes: p2 };
