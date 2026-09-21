@@ -487,7 +487,7 @@ window.StemLab.registerTool('artStudio', {
       var toolSnapshots = ctx.toolSnapshots;
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
-      var t = ctx.t;
+      // `var t = ctx.t` removed 2026-09-21: declared, never called. This tool already uses the __alloT wrapper; the bare alias drops the English fallback, so leaving it invites a future edit to ship raw keys.
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       // Learning copy uses the shared translator with safe English fallbacks.
       function formatArtStudioLearningText(template, values) {
@@ -8118,7 +8118,7 @@ const d = labToolData.artStudio || {};
                   if (typeof addToast === 'function') addToast('Add at least one part before continuing in Print Lab.', 'error');
                   return;
                 }
-                window.__alloPrintLabPendingHandoff = {
+                var handoffPayload = {
                   schema: 'alloflow-print-source/1',
                   id: 'as-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
                   sourceTool: 'artStudio', format: 'RECIPE',
@@ -8129,9 +8129,23 @@ const d = labToolData.artStudio || {};
                   aiUse: d.sculptPrintContext && d.sculptPrintContext.aiUse || 'NONE',
                   aiDisclosure: d.sculptPrintContext && d.sculptPrintContext.aiDisclosure || ''
                 };
+                window.__alloPrintLabPendingHandoff = handoffPayload;
                 if (ctx && typeof ctx.setStemLabTool === 'function') {
                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_sculpture_handed_to_print_lab', 'Sculpture handed to Print Lab as an editable recipe. Opening Print Lab.'));
                   ctx.setStemLabTool('printLab');
+                  // ctx.setStemLabTool exists in every host, but the loader substitutes a
+                  // silent no-op when the surrounding app supplied no real setter, so
+                  // `typeof === 'function'` is not evidence the switch happened. Print Lab
+                  // deletes the handoff as it mounts; if it is still the object we just
+                  // wrote, nothing opened and the student was told otherwise.
+                  if (typeof window !== 'undefined' && typeof window.setTimeout === 'function') {
+                    window.setTimeout(function () {
+                      if (window.__alloPrintLabPendingHandoff !== handoffPayload) return;
+                      delete window.__alloPrintLabPendingHandoff;
+                      if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.print_lab_did_not_open', 'Print Lab did not open here. Export the model JSON and load it in Print Lab instead.'), 'info');
+                      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_print_lab_did_not_open', 'Print Lab did not open. Export the model JSON and load it in Print Lab instead.'));
+                    }, 1200);
+                  }
                 } else {
                   delete window.__alloPrintLabPendingHandoff;
                   if (typeof addToast === 'function') addToast('Print Lab is not available here. Export the model JSON and load it in Print Lab instead.', 'info');
