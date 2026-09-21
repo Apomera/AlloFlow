@@ -2416,6 +2416,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return instantMPG(v_mph, 0, vehicle, weather, tireOk, options);
   }
 
+  // Speeding thresholds, as an allowance ABOVE the posted limit in mph.
+  //
+  // These scale with the limit because a flat margin is a very different
+  // offence at different speeds. A flat +8 is 16% over on a 50 mph road but
+  // 53% over in a 15 mph school zone — and the school zone was the scenario
+  // the old flat tolerance forgave most, despite Maine §2074 setting 15 mph
+  // precisely because children are present.
+  //
+  //   cue       advisory only, no points ("ease off the gas")
+  //   violation scored: secondsOverLimit, safetyScore, a debrief event
+  //   severe    the debrief event is raised to severity 3
+  //
+  // Clamped so highway behaviour is unchanged (45-50 mph still allow ~8) and
+  // so speedometer noise at low speed does not nag.
+  function speedingThresholds(speedLimitMph) {
+    var limit = Math.max(0, Number(speedLimitMph) || 0);
+    var violation = Math.max(3, Math.min(8, limit * 0.20));
+    return {
+      cue: Math.max(1.5, violation * 0.4),
+      violation: violation,
+      severe: Math.max(6, Math.min(15, limit * 0.40))
+    };
+  }
+
   // Safe following distance in feet, 3-second rule plus weather bonus.
   function safeFollowingFeet(v_mph, weather) {
     var sec = 3;
@@ -12172,11 +12196,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // so the AI/coach see "3 violations" not "180" when the player sustains an overage.
           // secondsOverLimit accumulates total time over limit for the debrief copy.
           var speedMph = Math.abs(car.speed) * MS_TO_MPH;
-          var overLimitNow = (gear === 'D' && timeRef.current > 5 && speedMph > scn.speedLimit + 8);
-          // Give the learner a correction window before the scored +8 mph
-          // violation threshold. This is guidance only: it does not deduct
-          // points or create a debrief event until the actual threshold fires.
-          var speedCueNow = (gear === 'D' && timeRef.current > 5 && speedMph > scn.speedLimit + 3 && !overLimitNow);
+          // Thresholds scale with the posted limit — see speedingThresholds().
+          // A flat +8 was 53% over in the 15 mph school zone, so a learner
+          // could run the whole school-zone mission at 22 mph and trip nothing.
+          var speedBands = speedingThresholds(scn.speedLimit);
+          var overLimitNow = (gear === 'D' && timeRef.current > 5 &&
+            speedMph > scn.speedLimit + speedBands.violation);
+          // Guidance only: no points and no debrief event until the scored
+          // threshold above actually fires.
+          var speedCueNow = (gear === 'D' && timeRef.current > 5 &&
+            speedMph > scn.speedLimit + speedBands.cue && !overLimitNow);
           if (speedCueNow && timeRef.current - (statsRef.current._lastSpeedCueAt || 0) > 10) {
             var speedCueToast = eventToastRef.current;
             if (!speedCueToast || timeRef.current >= speedCueToast.until) {
@@ -12190,7 +12219,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (!statsRef.current._wasOverLimit) {
               statsRef.current.speedViolations += 1;
               statsRef.current._wasOverLimit = true;
-              pushDriveEvent(statsRef, 'speedViolation', speedMph, frictionCoef(scn.weather), scn.speedLimit, speedMph > scn.speedLimit + 15 ? 3 : 2);
+              // Severity also scales: a flat +15 meant DOUBLING the 15 mph
+              // school-zone limit before the event counted as severe.
+              pushDriveEvent(statsRef, 'speedViolation', speedMph, frictionCoef(scn.weather), scn.speedLimit,
+                speedMph > scn.speedLimit + speedBands.severe ? 3 : 2);
               // Live student-facing toast — previously this whole branch was
               // silent (stats incremented, no UI feedback). Free Explore had
               // no debrief at all so students never learned they were over.
@@ -12201,9 +12233,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 addToast('🚨 Slow down — limit is ' + scn.speedLimit + ' mph (you\'re at ' + Math.round(speedMph) + ').', 'error');
               }
             }
-          } else if (statsRef.current._wasOverLimit && speedMph < scn.speedLimit + 3) {
-            // Hysteresis: only "exit" the violation state once you're 3 mph under the +8 trigger,
-            // so brief dips at the threshold don't manufacture extra incident counts.
+          } else if (statsRef.current._wasOverLimit &&
+              speedMph < scn.speedLimit + speedBands.violation - 3) {
+            // Hysteresis: only "exit" the violation state once you are 3 mph
+            // BELOW the trigger, so brief dips at the threshold don't
+            // manufacture extra incident counts.
+            //
+            // This was an absolute `+ 3`, which worked only while the trigger
+            // was a flat +8. With thresholds scaled to the limit the gap would
+            // have collapsed to zero at 10 and 15 mph — where the trigger is
+            // itself +3 — and hovering at the threshold would have counted a
+            // fresh violation every frame. Keeping it relative to the trigger
+            // preserves the intended 3 mph band at every limit.
             statsRef.current._wasOverLimit = false;
           }
           // NOTE for readers in updateTraffic: this is written at the END of
@@ -38623,6 +38664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       rrRuleCueFor: rrRuleCueFor,
       rrScenarioMission: rrScenarioMission,
       rrScenarioMissionStatus: rrScenarioMissionStatus,
+      speedingThresholds: speedingThresholds,
       rrSessionEvidence: rrSessionEvidence,
       rrDriveOutcome: rrDriveOutcome,
       rrDriveAchievementIds: rrDriveAchievementIds,

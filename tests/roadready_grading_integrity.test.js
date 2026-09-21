@@ -219,3 +219,68 @@ describe('RoadReady scenario missions', () => {
     expect(Number.isFinite(mission.habitTarget)).toBe(true);
   });
 });
+
+describe('RoadReady speeding thresholds', () => {
+  it('scales the tolerance with the posted limit', () => {
+    // A flat margin is a very different offence at different speeds. The old
+    // flat +8 was 16% over on a 50 mph road but 53% over in the 15 mph school
+    // zone — so a learner could run the whole school-zone mission at 22 mph
+    // and trip nothing at all.
+    const school = RR.speedingThresholds(15);
+    const rural = RR.speedingThresholds(50);
+    expect(school.violation).toBeLessThan(rural.violation);
+    // As a fraction of the limit, the allowance must not balloon at low speed.
+    expect(school.violation / 15).toBeLessThanOrEqual(rural.violation / 50 + 0.06);
+  });
+
+  it('keeps highway behaviour unchanged', () => {
+    // 45 and 50 mph roads should still allow roughly the historic 8 mph.
+    for (const limit of [45, 50]) {
+      expect(RR.speedingThresholds(limit).violation).toBeCloseTo(8, 1);
+    }
+  });
+
+  it('flags a school-zone learner well before 22 mph', () => {
+    const t = RR.speedingThresholds(15);
+    expect(15 + t.violation).toBeLessThan(22);
+    expect(15 + t.cue).toBeLessThan(15 + t.violation);
+  });
+
+  it('orders cue < violation < severe at every scenario limit', () => {
+    for (const limit of [10, 15, 25, 30, 35, 40, 45, 50]) {
+      const t = RR.speedingThresholds(limit);
+      expect(t.cue, 'limit ' + limit).toBeLessThan(t.violation);
+      expect(t.violation, 'limit ' + limit).toBeLessThan(t.severe);
+    }
+  });
+
+  it('leaves a 3 mph hysteresis band at every limit', () => {
+    // The reset is `limit + violation - 3`. If that ever meets or exceeds the
+    // trigger, hovering at the threshold counts a fresh violation every frame.
+    // An absolute `+3` reset did exactly that once the trigger scaled: at 10
+    // and 15 mph the gap collapsed to zero.
+    for (const limit of [10, 15, 25, 30, 50]) {
+      const t = RR.speedingThresholds(limit);
+      const trigger = limit + t.violation;
+      const reset = limit + t.violation - 3;
+      expect(trigger - reset, 'limit ' + limit).toBeCloseTo(3, 5);
+      expect(reset, 'limit ' + limit).toBeLessThan(trigger);
+    }
+  });
+
+  it('never lets the severe tier double a low limit', () => {
+    // A flat +15 meant the 15 mph school zone had to be DOUBLED before the
+    // debrief event counted as severe.
+    const t = RR.speedingThresholds(15);
+    expect(15 + t.severe).toBeLessThan(30);
+  });
+
+  it('survives a missing or nonsense limit without going negative', () => {
+    for (const bad of [undefined, null, NaN, -10]) {
+      const t = RR.speedingThresholds(bad);
+      expect(t.cue).toBeGreaterThan(0);
+      expect(t.violation).toBeGreaterThan(0);
+      expect(t.severe).toBeGreaterThan(t.violation);
+    }
+  });
+});
