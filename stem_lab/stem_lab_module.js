@@ -791,6 +791,117 @@
     // reported "The 3D engine could not load". A shim is recognised by what it
     // lacks; its registry is re-registered through the real registerTool below so
     // the entries pick up the same defaults and lesson-plan rows as the rest.
+    // ── Shared post-processing for makeOrbitViewer ───────────────────────
+    // Five tools share that viewer (bridgeLab, cityLab, fireEcology,
+    // machineLab, titration), so BOTH of these are opt-in per viewer via
+    // cfg.bloom / cfg.env. Nothing changes for a tool that does not ask.
+    var _ORBIT_FX_URLS = [
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+    ];
+    var _orbitFxPromise = null;
+    function _orbitFxReady() {
+      return !!(window.THREE && window.THREE.EffectComposer && window.THREE.RenderPass && window.THREE.UnrealBloomPass);
+    }
+    // The r128 example addons depend on each other in order, so they load one
+    // at a time; the shared promise means several viewers never double-load.
+    function _loadOrbitFx() {
+      if (_orbitFxReady()) return Promise.resolve(true);
+      if (_orbitFxPromise) return _orbitFxPromise;
+      _orbitFxPromise = new Promise(function (resolve) {
+        var i = 0;
+        (function next() {
+          if (i >= _ORBIT_FX_URLS.length) { resolve(_orbitFxReady()); return; }
+          try {
+            var sc = document.createElement('script');
+            sc.src = _ORBIT_FX_URLS[i]; sc.async = false;
+            sc.onload = function () { i++; next(); };
+            sc.onerror = function () { i++; next(); };
+            document.head.appendChild(sc);
+          } catch (e) { resolve(false); }
+        })();
+      });
+      return _orbitFxPromise;
+    }
+    function _orbitLowPower() {
+      try {
+        var rm = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        return rm || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+      } catch (e) { return false; }
+    }
+    // opts: true for defaults, or { strength, radius, threshold }.
+    function _attachOrbitBloom(THREE, renderer, scene, camera, S, opts) {
+      if (window.AlloPostFXEnabled === false) return;
+      var o = (opts && typeof opts === 'object') ? opts : {};
+      _loadOrbitFx().then(function (ok) {
+        // S is captured, but the viewer may have been torn down while the
+        // addons were in flight — never build into a dead renderer.
+        if (!ok || !S || S.disposing || S.failed || S.contextLost || S.renderer !== renderer) return;
+        try {
+          var T = window.THREE, lp = _orbitLowPower(), rs = lp ? 0.5 : 1;
+          var size = new T.Vector2(); renderer.getSize(size);
+          var cc = new T.EffectComposer(renderer);
+          cc.addPass(new T.RenderPass(scene, camera));
+          cc.addPass(new T.UnrealBloomPass(
+            new T.Vector2(Math.max(1, Math.round(size.x * rs)), Math.max(1, Math.round(size.y * rs))),
+            (o.strength || 0.62) * (lp ? 0.7 : 1), o.radius || 0.38, o.threshold || 0.82));
+          S.composer = cc;
+          S.dirty = true;   // these viewers render on demand; ask for one more frame
+        } catch (e) { S.composer = null; }
+      });
+    }
+    // A PMREM environment belongs to the GL CONTEXT THAT BUILT IT — sharing one
+    // across renderers throws nothing and renders as NO environment at all. So
+    // it is cached on the renderer and dies with it.
+    function _attachOrbitEnv(THREE, renderer, scene) {
+      try {
+        if (renderer._alloEnvTried) {
+          if (renderer._alloEnvTexture) scene.environment = renderer._alloEnvTexture;
+          return;
+        }
+        renderer._alloEnvTried = true;
+        renderer._alloEnvTexture = null;
+        if (!THREE.PMREMGenerator || typeof THREE.PMREMGenerator.prototype.fromScene !== 'function') return;
+        var envScene = new THREE.Scene();
+        var geo = new THREE.BoxGeometry(12, 12, 12);
+        var pos = geo.attributes.position, cols = new Float32Array(pos.count * 3);
+        var sky = new THREE.Color(0x9ec5fe), ground = new THREE.Color(0x3a2f26), mix = new THREE.Color();
+        for (var i = 0; i < pos.count; i++) {
+          var t = Math.max(0, Math.min(1, (pos.getY(i) / 6 + 1) / 2));
+          mix.copy(ground).lerp(sky, t);
+          cols[i * 3] = mix.r; cols[i * 3 + 1] = mix.g; cols[i * 3 + 2] = mix.b;
+        }
+        geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+        var box = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide }));
+        envScene.add(box);
+        var pm = new THREE.PMREMGenerator(renderer);
+        pm.compileEquirectangularShader();
+        var target = pm.fromScene(envScene);
+        renderer._alloEnvTarget = target || null;
+        renderer._alloEnvTexture = target ? target.texture : null;
+        pm.dispose(); geo.dispose(); box.material.dispose();
+        if (renderer._alloEnvTexture) scene.environment = renderer._alloEnvTexture;
+      } catch (e) { renderer._alloEnvTexture = null; }
+    }
+    function _disposeOrbitFx(S) {
+      if (!S) return;
+      try {
+        if (S.composer) {
+          (S.composer.passes || []).forEach(function (pss) { if (pss && pss.dispose) pss.dispose(); });
+          if (S.composer.dispose) S.composer.dispose();
+        }
+      } catch (e) {}
+      S.composer = null;
+      try {
+        var r = S.renderer;
+        if (r && r._alloEnvTarget && r._alloEnvTarget.dispose) r._alloEnvTarget.dispose();
+        if (r) { r._alloEnvTarget = null; r._alloEnvTexture = null; r._alloEnvTried = false; }
+      } catch (e) {}
+    }
     var __alloStemLabShim = (window.StemLab && typeof window.StemLab.ensureThree !== 'function') ? window.StemLab : null;
     if (!window.StemLab || __alloStemLabShim) {
       window.StemLab = {
@@ -2077,7 +2188,17 @@
               contextLost: !!(S && S.contextLost),
               canvas: S && S.renderer
                 ? { w: S.renderer.domElement.width, h: S.renderer.domElement.height }
-                : null
+                : null,
+              // Post-processing state, so a test can assert the FX are really
+              // wired rather than inferring it from a screenshot. `envLit` is
+              // the one that matters: a cross-context PMREM texture is still
+              // "present" but renders as no environment at all.
+              fx: S ? {
+                bloom: !!S.composer,
+                envTried: !!(S.renderer && S.renderer._alloEnvTried),
+                envTexture: !!(S.renderer && S.renderer._alloEnvTexture),
+                sceneEnv: !!(S.scene && S.scene.environment)
+              } : null
             };
             if (S && cfg.debug) {
               try {
@@ -2141,6 +2262,10 @@
               S.lastW = w; S.lastH = hgt;
               S.renderer.setSize(w, hgt, false);
               S.camera.aspect = w / Math.max(1, hgt);
+              // A composer keeps its own render targets; without this the bloom
+              // pass keeps sampling at the OLD size and the glow drifts out of
+              // register with the scene after any resize.
+              if (S.composer) { try { S.composer.setSize(w, hgt); } catch (e) {} }
               S.dirty = true;
             }
             if (isStatic && !hadPending && !sizeChanged && !S.dirty) return;
@@ -2197,7 +2322,17 @@
             S.camera.far = dist * 8 + 200;
             S.camera.updateProjectionMatrix();
             S.camera.lookAt(tgt);
-            try { S.renderer.render(S.scene, S.camera); S.dirty = false; }
+            try {
+              // Composer first when the addons arrived; a composer that throws
+              // is dropped and the plain path takes over from then on.
+              if (S.composer) {
+                try { S.composer.render(); }
+                catch (ce) { S.composer = null; S.renderer.render(S.scene, S.camera); }
+              } else {
+                S.renderer.render(S.scene, S.camera);
+              }
+              S.dirty = false;
+            }
             catch (e) { failRuntime(e, 'render'); return; }
             if (!isStatic) ensureFrame();
           }
@@ -2241,6 +2376,18 @@
             };
             if (cfg.lights) { try { cfg.lights(THREE, scene, S); } catch (e) {} }
 
+            // ── Guarded bloom + environment, OPT-IN per viewer ────────────
+            // makeOrbitViewer is shared by five tools, so neither of these is
+            // switched on globally: a tool asks for it with cfg.bloom / cfg.env
+            // and everything else keeps exactly the look it has today.
+            //
+            // Both follow the house pattern: plain render until the r128 addons
+            // CDN-load, every GPU-facing call try/caught with a fallback to
+            // renderer.render, kill-switch window.AlloPostFXEnabled === false,
+            // and half-res + gentler strength on reduced-motion or <=4 cores.
+            if (cfg.bloom) { try { _attachOrbitBloom(THREE, renderer, scene, camera, S, cfg.bloom); } catch (e) {} }
+            if (cfg.env) { try { _attachOrbitEnv(THREE, renderer, scene); } catch (e) {} }
+
             var localS = S;
             localS.onContextLost = function (ev) {
               ev.preventDefault();
@@ -2248,6 +2395,11 @@
               localS.contextLost = true;
               if (localS.raf) cancelAnimationFrame(localS.raf);
               localS.raf = 0;
+              // A lost context invalidates the composer's render targets and
+              // the PMREM texture. Drop both so a restore renders plainly
+              // rather than sampling dead GPU resources; the env is rebuilt
+              // below because _alloEnvTried is cleared with it.
+              _disposeOrbitFx(localS);
               setStatus('failed');
             };
             localS.onContextRestored = function () {
@@ -2257,6 +2409,9 @@
               localS.failed = false;
               localS.dirty = true;
               sig = '';
+              // Rebuild the FX the loss tore down, on the NEW context.
+              if (cfg.env) { try { _attachOrbitEnv(localS.THREE, localS.renderer, localS.scene); } catch (e) {} }
+              if (cfg.bloom) { try { _attachOrbitBloom(localS.THREE, localS.renderer, localS.scene, localS.camera, localS, cfg.bloom); } catch (e) {} }
               setStatus('ready');
               ensureFrame();
             };
@@ -2324,6 +2479,10 @@
                 if (retiring.onContextRestored) canvas.removeEventListener('webglcontextrestored', retiring.onContextRestored);
               }
               disposeGroup(retiring.model);
+              // Composer render targets and the PMREM environment are renderer-
+              // owned GPU allocations; forceContextLoss/dispose below do not
+              // free them on their own. Release BEFORE the context goes.
+              _disposeOrbitFx(retiring);
               if (retiring.renderer) {
                 try { retiring.renderer.forceContextLoss(); } catch (e) {}
                 try { retiring.renderer.dispose(); } catch (e) {}
@@ -2334,6 +2493,18 @@
             }
             S = null; node = null; pending = null; sig = ''; restoreAttempts = 0;
             status = 'idle';
+          }
+          // Every viewer registers itself so diagnostics and tests can reach
+          // one without each tool having to export its module-scoped handle.
+          // Weak intent: this is a debug surface, not an API tools should
+          // drive — nothing here mutates viewer state.
+          function _registerOrbitViewer(v) {
+            try {
+              if (typeof window === 'undefined') return;
+              window.StemLab = window.StemLab || {};
+              if (!window.StemLab._orbitViewers) window.StemLab._orbitViewers = [];
+              if (window.StemLab._orbitViewers.indexOf(v) === -1) window.StemLab._orbitViewers.push(v);
+            } catch (e) {}
           }
           var api = {
             /** Stable ref callback target. Host div, or null on unmount. */
@@ -2379,6 +2550,7 @@
               teardown(false);
             }
           };
+          _registerOrbitViewer(api);
           return api;
         },
 

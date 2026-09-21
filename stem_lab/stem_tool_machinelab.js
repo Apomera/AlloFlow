@@ -3516,6 +3516,14 @@ window.StemLab = window.StemLab || {
     ? window.StemLab.makeOrbitViewer({
         attr: 'data-machinelab-shop-gl', clearColor: 0x07111f, fov: 42,
         fitSlack: 1.12, rot: { y: 28, x: 16 },
+        // The workshop has a lit torch flame (emissive 0xff5a00 at intensity
+        // 1.1) and a fire that grows with the sim. Threshold 0.72 catches
+        // those while the 0.45-luma slate machinery and the white callout
+        // labels stay out of the glow — the readable surfaces must not bloom.
+        // env gives the metalness-0.55 parts something to reflect; without it
+        // PBR metal loses its diffuse and just goes dark.
+        bloom: { strength: 0.6, radius: 0.38, threshold: 0.72 },
+        env: true,
         failMessage: '3D workshop unavailable. The live diagram and number panels carry the same mechanics.',
         lights: function (THREE, scene, S) {
           if (S && S.renderer && S.renderer.shadowMap) {
@@ -3561,6 +3569,13 @@ window.StemLab = window.StemLab || {
         fov: 44,
         fitSlack: 1.22,
         rot: { y: 22, x: 12 },
+        // Yard lights here already pulse with the machine's state (armed,
+        // loaded, released) but top out near emissiveIntensity 0.68, so this
+        // needs a lower threshold than the workshop's torch flame to catch
+        // them. Gentle strength: the point is to make the state signal read
+        // across a classroom, not to flare the frame.
+        bloom: { strength: 0.52, radius: 0.4, threshold: 0.6 },
+        env: true,
         failMessage: '3D view unavailable. The energy ledger and the trajectory graph below carry the same numbers.',
         lights: function (THREE, scene, S) {
           if (S && S.renderer && S.renderer.shadowMap) {
