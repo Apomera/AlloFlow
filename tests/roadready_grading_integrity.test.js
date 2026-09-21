@@ -333,3 +333,47 @@ describe('RoadReady speedometer easing', () => {
     expect(perFrame).toBeCloseTo(0.14, 2);
   });
 });
+
+describe('RoadReady hypermiler badge', () => {
+  const QUAL = 180;
+  const ctx = (over) => Object.assign({
+    elapsedSec: QUAL,
+    scenarioId: 'suburban',
+    time: 'day',
+    avgMPG: 30,
+    cityMPG: 32,
+  }, over || {});
+
+  const badges = (statsOver, ctxOver) =>
+    RR.rrDriveAchievementIds(baseStats(statsOver), ctx(ctxOver));
+
+  it('compares against steady cruise, not the EPA city rating', () => {
+    // The EPA city figure includes stop-and-go; a sim drive is mostly cruise,
+    // so cruising beat it almost automatically. Measured across the line-up
+    // the badge fired at 6-9 of 10 cruise speeds. cruiseRefMPG is the same
+    // model, vehicle and weather, so beating it means something.
+    const justUnder = badges({}, { avgMPG: 34, cruiseRefMPG: 36 });
+    const justOver = badges({}, { avgMPG: 38, cruiseRefMPG: 36 });
+    expect(justUnder).not.toContain('hypermiler');
+    expect(justOver).toContain('hypermiler');
+  });
+
+  it('ignores the EPA city rating when a cruise reference is present', () => {
+    // avgMPG comfortably beats cityMPG but loses to steady cruise: under the
+    // old rule this earned the badge, which is exactly the bug.
+    const ids = badges({}, { avgMPG: 40, cityMPG: 32, cruiseRefMPG: 45 });
+    expect(ids).not.toContain('hypermiler');
+  });
+
+  it('falls back to the city rating when no reference is available', () => {
+    // Defensive: an older saved context has no cruiseRefMPG. The badge must
+    // still be reachable rather than silently impossible.
+    const ids = badges({}, { avgMPG: 40, cityMPG: 32, cruiseRefMPG: undefined });
+    expect(ids).toContain('hypermiler');
+  });
+
+  it('still requires the drive to pass', () => {
+    const ids = badges({ wrongSideViolations: 1 }, { avgMPG: 99, cruiseRefMPG: 30 });
+    expect(ids).not.toContain('hypermiler');
+  });
+});

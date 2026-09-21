@@ -1490,7 +1490,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     if (outcome.grade === 'A+' && outcome.passed) ids.push('a_plus');
     if (context.time === 'night' && safety >= 80 && outcome.passed) ids.push('night_owl');
     if (context.scenarioId === 'snow' && safety >= 70 && outcome.passed) ids.push('winter_warrior');
-    if ((Number(context.avgMPG) || 0) > (Number(context.cityMPG) || Infinity) && outcome.passed) ids.push('hypermiler');
+    // Hypermiler: beat STEADY CRUISE at the posted limit in this same vehicle.
+    //
+    // This used to compare the drive's avgMPG against the vehicle's EPA CITY
+    // rating, which are not commensurable: the EPA city figure includes
+    // stop-and-go, while a sim drive is mostly cruise, so cruising beats it
+    // almost automatically. Measured across the line-up, the badge fired at 6
+    // to 9 of 10 cruise speeds — the EV earned it at every speed up to 65 mph,
+    // because EPA MPGe and steady-cruise MPGe are further apart still. A badge
+    // earned for driving at all teaches nothing.
+    //
+    // Swapping to the HIGHWAY rating does not fix it either: that makes the
+    // sedan's badge unearnable while the EV still earns it everywhere. The
+    // spec table and the physics model are simply not calibrated to each
+    // other, so no threshold drawn from the spec table works for every vehicle.
+    //
+    // cruiseRefMPG is the same model, same vehicle, same weather, at the
+    // posted limit — so beating it means the learner genuinely drove more
+    // efficiently than steady cruise, on any vehicle. Falls back to the old
+    // comparison if the reference is unavailable.
+    var hyperRef = Number(context.cruiseRefMPG);
+    if (!isFinite(hyperRef) || hyperRef <= 0) hyperRef = Number(context.cityMPG) || Infinity;
+    if ((Number(context.avgMPG) || 0) > hyperRef && outcome.passed) ids.push('hypermiler');
     if ((Number(stats.stops) || 0) >= 3 && outcome.passed) ids.push('full_stop');
     if ((Number(stats.laneChanges) || 0) >= 2 && (Number(stats.unsignaledLaneChanges) || 0) === 0 && outcome.passed) ids.push('signal_perfect');
     if ((Number(stats.speedViolations) || 0) === 0 && (Number(stats.secondsOverLimit) || 0) <= 0.5 && outcome.passed) ids.push('speed_discipline');
@@ -5479,7 +5500,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { id: 'permit_pass', icon: '📝', name: 'Test Ready', desc: 'Pass the permit test (80%+).' },
     { id: 'night_owl', icon: '🦉', name: 'Night Owl', desc: 'Complete a night drive with safety 80+.' },
     { id: 'winter_warrior', icon: '❄️', name: 'Winter Warrior', desc: 'Complete the Snow scenario with safety 70+.' },
-    { id: 'hypermiler', icon: '⛽', name: 'Hypermiler', desc: 'Beat the EPA city MPG rating in a drive.' },
+    { id: 'hypermiler', icon: '⛽', name: 'Hypermiler', desc: 'Beat steady cruise at the posted limit — in the same car, same weather.' },
     { id: 'full_stop', icon: '🛑', name: 'Full Stop', desc: 'Make 3+ full stops at stop signs in one drive.' },
     { id: 'signal_perfect', icon: '◄►', name: 'Signal Perfect', desc: 'Complete 2+ lane changes in a qualifying drive and signal every one.' },
     { id: 'park_master', icon: '🅿️', name: 'Park Master', desc: 'Parallel park with score 80+.' },
@@ -9846,7 +9867,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           scenarioId: exitScenario.id,
           time: exitScenario.time,
           avgMPG: avgMPG,
-          cityMPG: exitVehicle.cityMPG
+          cityMPG: exitVehicle.cityMPG,
+          // Steady-cruise MPG for THIS vehicle at the posted limit, in this
+          // weather. The hypermiler badge compares the drive against this
+          // rather than against the EPA city rating — see rrDriveAchievementIds.
+          cruiseRefMPG: cruiseMPG(exitScenario.speedLimit, exitVehicle,
+            normalizeWeather(exitScenario.weather), true)
         }).forEach(function(id) { newBadges[id] = true; });
         // Badge intent ("Encounter a moose and NOT hit it") requires the player
         // to have actually encountered wildlife and avoided striking any of it.
