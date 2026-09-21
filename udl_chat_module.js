@@ -784,7 +784,7 @@ Current question:
 // Blueprint revision is also chat-owned: the host contributes only its AI and
 // JSON helpers, while this module owns normalization and prompt semantics.
 const _modifyBlueprintWithAI = async (currentConfig, userInstruction, deps = {}) => {
-  const { callGemini, cleanJson, warnLog } = deps;
+  const { callGemini, cleanJson, warnLog, isParentMode, isIndependentMode } = deps;
   const normalizeBlueprintPlan = (config) => {
     if (!config || typeof config !== 'object') return currentConfig;
     const currentPlan = Array.isArray(currentConfig?.resourcePlan) && currentConfig.resourcePlan.length > 0
@@ -853,11 +853,21 @@ const _modifyBlueprintWithAI = async (currentConfig, userInstruction, deps = {})
         - lesson-plan — Teacher synthesis. ALWAYS place LAST.
         - gemini-bridge — Interactive sim/app generator.
         - alignment-report — Post-hoc audit (only if explicit standards + audit requested).`;
+  // Parity with autoConfigureSettings (phase_k_helpers_source.jsx): the same
+  // blueprint can be edited by a teacher, a parent or a self-study adult, so
+  // the author framing must match who is actually typing. Wording tracks the
+  // chat layer's Family Tutor / Study Coach / UDL specialist system prompts.
+  const blueprintAuthorRole = isIndependentMode
+    ? { designer: 'Study Coach adjusting a self-study plan', speaker: 'Learner', audience: 'ONE self-directed adult learner working alone - no class, no teacher. Avoid group protocols, whole-class discussion kits and exit tickets.' }
+    : (isParentMode
+      ? { designer: 'Family Tutor adjusting a home learning plan', speaker: 'Parent', audience: 'ONE child at home with a parent or caregiver. Favour short, warm one-on-one activities a caregiver can run without prep. Avoid group protocols, whole-class discussion kits and exit tickets.' }
+      : { designer: 'Curriculum Designer adjusting a lesson plan blueprint', speaker: 'Teacher', audience: 'a class of students taught by an educator.' });
   const prompt = `
-      You are a Curriculum Designer adjusting a lesson plan blueprint based on teacher feedback.
+      You are a ${blueprintAuthorRole.designer} based on ${blueprintAuthorRole.speaker.toLowerCase()} feedback.
+      Plan for: ${blueprintAuthorRole.audience}
       Current Blueprint JSON:
       ${JSON.stringify(currentConfig)}
-      Teacher Instruction: "${userInstruction}",
+      ${blueprintAuthorRole.speaker} Instruction: "${userInstruction}",
       Task:
       1. Interpret the request (e.g., "Add a quiz", "Remove glossary", "Focus on vocabulary", "Change grade to 5th", "Add note-taking templates", "Make an anchor chart").
       2. Modify the JSON:
@@ -976,6 +986,8 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
       callGemini,
       cleanJson,
       warnLog,
+      isParentMode,
+      isIndependentMode,
     });
   // Phase E hotfix: surface real errors to console so we can debug missing deps
   // instead of silently degrading to "Sorry, something went wrong".

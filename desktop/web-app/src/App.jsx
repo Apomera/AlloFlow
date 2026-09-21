@@ -13865,7 +13865,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '1789999779069';
+    var pluginCdnVersion = '1790001881752';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -23753,7 +23753,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       fidelityLog,
       flashcardEngagement,
       interventionLogs,
-      isIndependentMode,
+      isIndependentMode, isParentMode,
       phonemeMastery,
       pointHistory,
       probeHistory,

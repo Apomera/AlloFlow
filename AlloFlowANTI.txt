@@ -23753,7 +23753,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       fidelityLog,
       flashcardEngagement,
       interventionLogs,
-      isIndependentMode,
+      isIndependentMode, isParentMode,
       phonemeMastery,
       pointHistory,
       probeHistory,
