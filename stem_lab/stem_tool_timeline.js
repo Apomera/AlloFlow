@@ -91,6 +91,14 @@
     color: 'rose',
     category: 'history',
     aliases: ['timeline', 'TimelineJS', 'history', 'dated events'],
+    // bumpSlice() writes the quest counters to toolData._timeline, but the host
+    // reads quest state from toolData[toolId] || toolData['_' + toolId]
+    // (_getToolQuestState in stem_lab_module.js). '_timeline' is neither
+    // 'timelineStudio' nor '_timelineStudio', so every check() below received
+    // {} and all three quests could never complete, however much a student did.
+    // Naming the key the tool actually writes is the fix that preserves any
+    // counters already saved; renaming the writes would orphan them.
+    questDataKey: '_timeline',
     questHooks: [
       { id: 'tl_open', label: 'Open a timeline', icon: '🕰️',
         check: function (d) { return !!(d && d.opened); } },
