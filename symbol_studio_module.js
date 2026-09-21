@@ -2588,20 +2588,20 @@
       var owner = profiles.find(function (profile) { return profile.id === activeProfileId; });
       var savedPack = eligible.find(function (pack) { return pack.id === selectionPack.savedId; });
       return e('div', { style: { margin: '0 0 10px' } },
-        e('button', { type: 'button', 'aria-label': 'Add selected symbols to a Visual Pack', 'aria-expanded': selectionPack.open, 'aria-controls': 'ss-selection-pack', disabled: !ids.length, onClick: function () { updateSelectionPack({ open: !selectionPack.open }); }, style: Object.assign({}, S.btn('#dbeafe', '#1d4ed8', !ids.length), { minHeight: '44px' }) }, 'Add selection to Visual Pack'),
+        e('button', { type: 'button', 'aria-label': t('symbol_studio.add_selected_symbols_to_a_visual_pack','Add selected symbols to a Visual Pack'), 'aria-expanded': selectionPack.open, 'aria-controls': 'ss-selection-pack', disabled: !ids.length, onClick: function () { updateSelectionPack({ open: !selectionPack.open }); }, style: Object.assign({}, S.btn('#dbeafe', '#1d4ed8', !ids.length), { minHeight: '44px' }) }, 'Add selection to Visual Pack'),
         selectionPack.open && e('form', { id: 'ss-selection-pack', onSubmit: function (event) { event.preventDefault(); addSelectionToPack(); }, style: { marginTop: '8px', padding: '10px', border: '1px solid #93c5fd', borderRadius: '8px', background: '#fff', minWidth: 0 } },
           e('p', { style: { margin: '0 0 8px', fontSize: '12px', lineHeight: 1.5 } }, 'For ' + (owner ? owner.name || owner.codename || 'this learner' : 'the current library') + ': ' + ids.length + ' selected symbols, including hidden selections. New symbols are appended in selection order.'),
-          e('label', { style: S.lbl }, 'Destination', e('select', { value: selectionPack.target, 'aria-label': 'Destination Visual Pack', onChange: function (event) { updateSelectionPack({ target: event.target.value, message: '', error: false, savedId: null }); }, style: Object.assign({}, S.input, { minHeight: '44px', marginTop: '4px', maxWidth: '100%' }) },
+          e('label', { style: S.lbl }, 'Destination', e('select', { value: selectionPack.target, 'aria-label': t('symbol_studio.destination_visual_pack','Destination Visual Pack'), onChange: function (event) { updateSelectionPack({ target: event.target.value, message: '', error: false, savedId: null }); }, style: Object.assign({}, S.input, { minHeight: '44px', marginTop: '4px', maxWidth: '100%' }) },
             e('option', { value: '' }, 'Choose a pack…'), e('option', { value: 'new' }, 'Create a new Visual Pack'),
             eligible.map(function (pack) { return e('option', { key: pack.id, value: 'pack:' + pack.id }, pack.title); }))),
-          selectionPack.target === 'new' && e('label', { style: Object.assign({}, S.lbl, { display: 'block', marginTop: '8px' }) }, 'New pack name', e('input', { value: selectionPack.title, maxLength: 120, 'aria-label': 'Name for selected-symbol Visual Pack', onChange: function (event) { updateSelectionPack({ title: event.target.value }); }, style: Object.assign({}, S.input, { minHeight: '44px', marginTop: '4px' }) })),
+          selectionPack.target === 'new' && e('label', { style: Object.assign({}, S.lbl, { display: 'block', marginTop: '8px' }) }, 'New pack name', e('input', { value: selectionPack.title, maxLength: 120, 'aria-label': t('symbol_studio.name_for_selected_symbol_visual_pack','Name for selected-symbol Visual Pack'), onChange: function (event) { updateSelectionPack({ title: event.target.value }); }, style: Object.assign({}, S.input, { minHeight: '44px', marginTop: '4px' }) })),
           (target || selectionPack.target === 'new') && e('p', { role: 'status', style: { fontSize: '12px', lineHeight: 1.5, margin: '8px 0' } }, additions + ' to add · ' + (ids.length - additions) + ' already included' + (target ? ' · existing boards and sequences are kept' : '')),
           symbolSaveError && e('p', { role: 'alert', style: { color: '#92400e', fontSize: '12px', lineHeight: 1.5 } }, 'Save your Symbol Bank changes first using Retry save.'),
           e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' } },
-            e('button', { type: 'submit', disabled: !ready, 'aria-label': 'Save selected symbols to Visual Pack', style: Object.assign({}, S.btn(PURPLE, '#fff', !ready), { minHeight: '44px' }) }, selectionPack.target === 'new' ? 'Create pack with selection' : 'Add selected symbols'),
-            e('button', { type: 'button', onClick: function () { updateSelectionPack({ open: false }); }, 'aria-label': 'Close selected-symbol pack options', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { minHeight: '44px' }) }, 'Close')),
+            e('button', { type: 'submit', disabled: !ready, 'aria-label': t('symbol_studio.save_selected_symbols_to_visual_pack','Save selected symbols to Visual Pack'), style: Object.assign({}, S.btn(PURPLE, '#fff', !ready), { minHeight: '44px' }) }, selectionPack.target === 'new' ? 'Create pack with selection' : 'Add selected symbols'),
+            e('button', { type: 'button', onClick: function () { updateSelectionPack({ open: false }); }, 'aria-label': t('symbol_studio.close_selected_symbol_pack_options','Close selected-symbol pack options'), style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { minHeight: '44px' }) }, 'Close')),
           selectionPack.message && e('p', { role: selectionPack.error ? 'alert' : 'status', style: { fontSize: '12px', lineHeight: 1.5, overflowWrap: 'anywhere', color: selectionPack.error ? '#b91c1c' : '#065f46', margin: '8px 0 0' } }, selectionPack.message),
-          savedPack && e('button', { type: 'button', onClick: function () { setActiveBookId(savedPack.id); setTab('books'); }, 'aria-label': 'Open updated Visual Pack', style: Object.assign({}, S.btn('#dcfce7', '#166534', false), { minHeight: '44px', marginTop: '8px', maxWidth: '100%', whiteSpace: 'normal', overflowWrap: 'anywhere' }) }, 'Open "' + savedPack.title + '"')));
+          savedPack && e('button', { type: 'button', onClick: function () { setActiveBookId(savedPack.id); setTab('books'); }, 'aria-label': t('symbol_studio.open_updated_visual_pack','Open updated Visual Pack'), style: Object.assign({}, S.btn('#dcfce7', '#166534', false), { minHeight: '44px', marginTop: '8px', maxWidth: '100%', whiteSpace: 'normal', overflowWrap: 'anywhere' }) }, 'Open "' + savedPack.title + '"')));
     }
     var _symShowFavs = useState(false); var symShowFavs = _symShowFavs[0]; var setSymShowFavs = _symShowFavs[1];
     // Mulberry validated-symbol picker (Global Symbols API)
@@ -3332,13 +3332,13 @@
       return e('div', { className: 'ss-draft-status ss-no-print', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', padding: '9px 12px', borderRadius: '9px', background: draftStatus === 'error' || draftStatus === 'recovery' ? '#fffbeb' : '#f1f5f9', color: '#334155', flexShrink: 0 } },
         e('span', { role: 'status', 'aria-live': 'polite', style: { flex: '1 1 180px', fontSize: '12px' } }, tab === 'stories' && storyTextEdit ? 'Page text has unsaved changes. Use Save text to include them in the draft.' : messages[draftStatus] || messages.ready),
         draftStatus === 'error' && e('button', { type: 'button', onClick: retryStudioDraft, 'aria-label': record && record.loadFailed ? 'Retry draft recovery' : 'Retry saving draft', style: buttonStyle }, 'Retry'),
-        draftStatus === 'error' && record && record.loadFailed && record.dirty && e('button', { type: 'button', onClick: replaceUnreadableStudioDraft, 'aria-label': 'Save current draft instead', style: buttonStyle }, 'Save current instead'),
+        draftStatus === 'error' && record && record.loadFailed && record.dirty && e('button', { type: 'button', onClick: replaceUnreadableStudioDraft, 'aria-label': t('symbol_studio.save_current_draft_instead','Save current draft instead'), style: buttonStyle }, 'Save current instead'),
         draftRecovery && e('button', { type: 'button', onClick: function () {
           var pending = draftRecovery; var rec = draftLifeRef.current.records[activeProfileId]; if (!rec) return;
           completeStudioDraftRecovery(activeProfileId, pending, true);
-        }, 'aria-label': 'Restore saved draft', style: buttonStyle }, 'Restore saved'),
-        draftRecovery && e('button', { type: 'button', onClick: keepCurrentStudioDraft, 'aria-label': 'Keep current draft', style: buttonStyle }, 'Keep current'),
-        draftHydratedProfile === activeProfileId && !draftRecovery && e('button', { type: 'button', onClick: clearCurrentStudioDraft, 'aria-label': 'Clear current draft', style: buttonStyle }, 'Clear this draft')
+        }, 'aria-label': t('symbol_studio.restore_saved_draft','Restore saved draft'), style: buttonStyle }, 'Restore saved'),
+        draftRecovery && e('button', { type: 'button', onClick: keepCurrentStudioDraft, 'aria-label': t('symbol_studio.keep_current_draft','Keep current draft'), style: buttonStyle }, 'Keep current'),
+        draftHydratedProfile === activeProfileId && !draftRecovery && e('button', { type: 'button', onClick: clearCurrentStudioDraft, 'aria-label': t('symbol_studio.clear_current_draft','Clear current draft'), style: buttonStyle }, 'Clear this draft')
       );
     }
 
@@ -8162,7 +8162,7 @@
           // Reset progress
           questTotal > 0 && e('button', {
             onClick: function () { setQuestScore(0); setQuestBoardPos(0); setQuestTotal(0); setQuestCorrectCount(0); setQuestBest(0); },
-            'aria-label': 'Reset progress', style: { fontSize: '10px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
+            'aria-label': t('symbol_studio.reset_progress','Reset progress'), style: { fontSize: '10px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
           }, '↻ Reset progress')
         );
       }
@@ -8183,7 +8183,7 @@
           e('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' } }, backBtn, scoreBar),
           e('h4', { style: { fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 } }, '🖼️ What symbol is this?'),
           questTarget && e('div', { style: { width: '140px', height: '140px', borderRadius: '16px', overflow: 'hidden', border: '3px solid ' + PURPLE, boxShadow: '0 4px 20px rgba(124,58,237,0.2)' } },
-            e('img', { src: questTarget.image, alt: 'symbol to identify', style: { width: '100%', height: '100%', objectFit: 'contain', background: '#fff' } })
+            e('img', { src: questTarget.image, alt: t('symbol_studio.symbol_to_identify','symbol to identify'), style: { width: '100%', height: '100%', objectFit: 'contain', background: '#fff' } })
           ),
           feedbackBar,
           e('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%', maxWidth: '340px' } },
@@ -8288,7 +8288,7 @@
           e('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' } }, backBtn, scoreBar),
           e('h4', { style: { fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 } }, '✏️ Spell this symbol:'),
           questTarget && e('div', { style: { width: '120px', height: '120px', borderRadius: '14px', overflow: 'hidden', border: '3px solid ' + PURPLE } },
-            e('img', { src: questTarget.image, alt: 'symbol to identify', style: { width: '100%', height: '100%', objectFit: 'contain', background: '#fff' } })
+            e('img', { src: questTarget.image, alt: t('symbol_studio.symbol_to_identify_2','symbol to identify'), style: { width: '100%', height: '100%', objectFit: 'contain', background: '#fff' } })
           ),
           questTarget && e('div', { style: { fontSize: '11px', color: '#6b7280' } }, questTarget.label.length + ' letters'),
           feedbackBar,
@@ -8297,8 +8297,8 @@
               type: 'text', value: questInput, autoFocus: true,
               onChange: function (ev) { setQuestInput(ev.target.value); },
               onKeyDown: function (ev) { if (ev.key === 'Enter') checkSpelling(); },
-              placeholder: 'Type the label...',
-              'aria-label': 'Spell the symbol label',
+              placeholder: t('symbol_studio.type_the_label','Type the label...'),
+              'aria-label': t('symbol_studio.spell_the_symbol_label','Spell the symbol label'),
               disabled: !!questFeedback,
               style: Object.assign({}, S.input, { flex: 1, textAlign: 'center', fontSize: '16px', fontWeight: 700, textTransform: 'lowercase' })
             }),
@@ -8337,7 +8337,7 @@
             ? e('div', { style: { textAlign: 'center', padding: '20px' } },
                 e('div', { style: { fontSize: '48px', marginBottom: '10px' } }, '🏆'),
                 e('div', { style: { fontSize: '16px', fontWeight: 700, color: '#047857' } }, 'All matched in ' + memMoves + ' moves!'),
-                e('button', { onClick: function () { initializeMemory(pool); }, 'aria-label': 'Play Again', style: Object.assign({}, S.btn(PURPLE, '#fff', false), { marginTop: '12px' }) }, '🔄 Play Again')
+                e('button', { onClick: function () { initializeMemory(pool); }, 'aria-label': t('symbol_studio.play_again','Play Again'), style: Object.assign({}, S.btn(PURPLE, '#fff', false), { marginTop: '12px' }) }, '🔄 Play Again')
               )
             : e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%', maxWidth: '400px' } },
                 memCards.map(function (card, idx) {
@@ -8733,7 +8733,7 @@
           },
             e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
               e('div', { style: { fontWeight: 800, fontSize: '14px', color: '#166534' } }, '🎯 Session complete'),
-              e('button', { onClick: function () { setSrchShowSummary(false); }, 'aria-label': 'Dismiss session summary', style: { background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '14px', padding: '0 4px' } }, '✕')
+              e('button', { onClick: function () { setSrchShowSummary(false); }, 'aria-label': t('symbol_studio.dismiss_session_summary','Dismiss session summary'), style: { background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '14px', padding: '0 4px' } }, '✕')
             ),
             e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '12px' } },
               e('div', { style: { textAlign: 'center' } },
@@ -8758,7 +8758,7 @@
                     srchSummaryData.missedLabels.map(function (lbl, li) {
                       return e('span', {
                         key: li,
-                        title: 'Tap to hear',
+                        title: t('symbol_studio.tap_to_hear','Tap to hear'),
                         onClick: function () { srchSpeakWord(lbl); },
                         style: { cursor: 'pointer', background: '#fef3c7', border: '1px solid #fcd34d', color: '#92400e', padding: '2px 8px', borderRadius: '999px', fontSize: '11px', fontWeight: 600 }
                       }, lbl);
@@ -8769,12 +8769,12 @@
             e('div', { style: { display: 'flex', gap: '8px' } },
               e('button', {
                 onClick: function () { setSrchShowSummary(false); srchStartSession(srchSummaryData.mode); },
-                'aria-label': 'Play another session',
+                'aria-label': t('symbol_studio.play_another_session','Play another session'),
                 style: Object.assign({}, S.btn(PURPLE, '#fff', false), { flex: 1 })
               }, '▶ Play again'),
               e('button', {
                 onClick: function () { setSrchShowSummary(false); },
-                'aria-label': 'Dismiss summary',
+                'aria-label': t('symbol_studio.dismiss_summary','Dismiss summary'),
                 style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { flex: 1 })
               }, 'Close')
             )
@@ -8844,7 +8844,7 @@
               type: 'checkbox',
               checked: srchErrorless,
               onChange: function (ev) { setSrchErrorless(ev.target.checked); },
-              'aria-label': 'Toggle errorless learning mode'
+              'aria-label': t('symbol_studio.toggle_errorless_learning_mode','Toggle errorless learning mode')
             }),
             e('span', { style: { fontWeight: 600 } }, '💛 Errorless mode'),
             e('span', { style: { fontSize: '10px', color: '#6b7280' } }, '(beginner — wrong picks retry same target)')
@@ -8928,7 +8928,7 @@
       }
 
       // Active session — controls bar
-      var backBtn = e('button', { onClick: function () { srchEndSession(); }, 'aria-label': 'Back to menu', style: S.btn('#f3f4f6', '#374151', false) }, '← Back');
+      var backBtn = e('button', { onClick: function () { srchEndSession(); }, 'aria-label': t('symbol_studio.back_to_menu','Back to menu'), style: S.btn('#f3f4f6', '#374151', false) }, '← Back');
       var pctAcc = srchTotal > 0 ? Math.round((srchCorrect / srchTotal) * 100) : 0;
       // Round counter gives students/SLPs a sense of session length. Starts at 1 once the first
       // round loads so there isn't a confusing "Round 0".
@@ -8954,7 +8954,7 @@
               e('button', {
                 onClick: function () { if (srchTarget) srchSpeakWord(srchTarget.label); },
                 disabled: srchSpeaking,
-                'aria-label': 'Play word audio',
+                'aria-label': t('symbol_studio.play_word_audio','Play word audio'),
                 style: {
                   padding: '14px 28px', fontSize: '24px', background: srchSpeaking ? '#e5e7eb' : PURPLE, color: '#fff',
                   border: 'none', borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
@@ -8965,8 +8965,8 @@
               e('button', {
                 onClick: function () { if (srchTarget) srchSpeakWord(srchTarget.label, 0.7); },
                 disabled: srchSpeaking,
-                'aria-label': 'Play word audio at slow speed',
-                title: 'Slow replay (0.7× speed)',
+                'aria-label': t('symbol_studio.play_word_audio_at_slow_speed','Play word audio at slow speed'),
+                title: t('symbol_studio.slow_replay_0_7_speed','Slow replay (0.7× speed)'),
                 style: {
                   padding: '8px', fontSize: '16px', background: srchSpeaking ? '#e5e7eb' : '#fff', color: PURPLE,
                   border: '2px solid ' + (srchSpeaking ? '#e5e7eb' : '#c4b5fd'),
@@ -9012,7 +9012,7 @@
           !srchFeedback && !srchRevealed && e('div', { style: { textAlign: 'center' } },
             e('button', {
               onClick: function () { setSrchRevealed(true); },
-              'aria-label': 'Show hint',
+              'aria-label': t('symbol_studio.show_hint','Show hint'),
               style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer' }
             }, '💡 Show word hint')
           )
@@ -9032,7 +9032,7 @@
               e('button', {
                 onClick: function () { srchSpeakWord(phraseText); },
                 disabled: srchSpeaking,
-                'aria-label': 'Replay phrase',
+                'aria-label': t('symbol_studio.replay_phrase','Replay phrase'),
                 style: {
                   padding: '12px 24px', fontSize: '20px', background: srchSpeaking ? '#e5e7eb' : PURPLE, color: '#fff',
                   border: 'none', borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
@@ -9043,8 +9043,8 @@
               e('button', {
                 onClick: function () { srchSpeakWord(phraseText, 0.7); },
                 disabled: srchSpeaking,
-                'aria-label': 'Replay phrase at slow speed',
-                title: 'Slow replay (0.7× speed)',
+                'aria-label': t('symbol_studio.replay_phrase_at_slow_speed','Replay phrase at slow speed'),
+                title: t('symbol_studio.slow_replay_0_7_speed_2','Slow replay (0.7× speed)'),
                 style: {
                   padding: '8px', fontSize: '14px', background: srchSpeaking ? '#e5e7eb' : '#fff', color: PURPLE,
                   border: '2px solid ' + (srchSpeaking ? '#e5e7eb' : '#c4b5fd'),
@@ -9107,7 +9107,7 @@
           e('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px' } },
             !srchRevealed && e('button', {
               onClick: function () { setSrchRevealed(true); },
-              'aria-label': 'Show phrase hint',
+              'aria-label': t('symbol_studio.show_phrase_hint','Show phrase hint'),
               style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer' }
             }, '💡 Show phrase'),
             e('button', {
@@ -9116,7 +9116,7 @@
                 setSrchFeedback(null);
                 srchSpeakWord(phraseText);
               },
-              'aria-label': 'Reset phrase',
+              'aria-label': t('symbol_studio.reset_phrase','Reset phrase'),
               style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '5px 14px', cursor: 'pointer' }
             }, '↻ Reset')
           )
@@ -9177,14 +9177,14 @@
                   w.image ? e('img', { src: w.image, alt: w.displayLabel, style: { width: '56px', height: '56px', objectFit: 'contain', borderRadius: '10px' } })
                     : e('div', { style: { width: '56px', height: '56px', borderRadius: '10px', background: gl.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px' } }, gl.icon),
                   e('div', { style: { fontSize: '13px', fontWeight: 700, color: '#1f2937', textAlign: 'center', lineHeight: 1.2 } },
-                    w.displayLabel, w.hasVoice && e('span', { style: { marginLeft: '3px', fontSize: '10px' }, title: 'Has a loved one\'s voice' }, '❤️')),
+                    w.displayLabel, w.hasVoice && e('span', { style: { marginLeft: '3px', fontSize: '10px' }, title: t('symbol_studio.has_a_loved_one_s_voice','Has a loved one\'s voice') }, '❤️')),
                   gardenHomeLang && getTranslation(w.displayLabel, gardenHomeLang) && e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#6366f1', textAlign: 'center', lineHeight: 1.1, fontStyle: 'italic' } }, getTranslation(w.displayLabel, gardenHomeLang)));
               })));
         };
         return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'linear-gradient(180deg,#e0f2fe 0%,#f0fdf4 40%,#fefce8 80%,#fef3c7 100%)' } },
           e('div', { style: { padding: '20px 20px 10px', textAlign: 'center', flexShrink: 0 } },
             e('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' } },
-              e('button', { onClick: function () { setGardenStudentView(false); }, 'aria-label': 'Teacher view', style: { fontSize: '10px', color: '#6b7280', background: 'rgba(255,255,255,0.7)', border: '1px solid #d1d5db', borderRadius: '6px', padding: '3px 10px', cursor: 'pointer' } }, '👩‍🏫 Teacher View')),
+              e('button', { onClick: function () { setGardenStudentView(false); }, 'aria-label': t('symbol_studio.teacher_view','Teacher view'), style: { fontSize: '10px', color: '#6b7280', background: 'rgba(255,255,255,0.7)', border: '1px solid #d1d5db', borderRadius: '6px', padding: '3px 10px', cursor: 'pointer' } }, '👩‍🏫 Teacher View')),
             e('div', { style: { fontSize: '36px', marginBottom: '4px' } }, '🌱'),
             e('h2', { style: { fontSize: '22px', fontWeight: 800, color: '#1f2937', margin: '0 0 4px' } }, sName + '\'s Word Garden'),
             e('p', { style: { fontSize: '16px', fontWeight: 600, color: '#047857', margin: 0 } }, total + ' words growing!'),
@@ -9219,20 +9219,20 @@
                 };
                 speakNext();
               },
-              'aria-label': 'Hear well-practiced words spoken aloud',
+              'aria-label': t('symbol_studio.hear_well_practiced_words_spoken_aloud','Hear well-practiced words spoken aloud'),
               style: { marginTop: '10px', padding: '8px 20px', background: 'linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)', color: '#fff', border: 'none', borderRadius: '24px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(124,58,237,0.3)', letterSpacing: '0.3px' }
             }, '🔊 Hear My Words'),
             // "My Garden Story" — AI-generated fairy tale about the student's vocabulary
             total >= 3 && onCallGemini && e('button', {
               onClick: function () { generateGardenStory(bank, sName); },
               disabled: gardenStoryLoading,
-              'aria-label': 'Generate a story about your word garden',
+              'aria-label': t('symbol_studio.generate_a_story_about_your_word_garden','Generate a story about your word garden'),
               style: { marginTop: '6px', padding: '8px 20px', background: gardenStoryLoading ? '#d1d5db' : 'linear-gradient(135deg, #059669 0%, #0d9488 100%)', color: '#fff', border: 'none', borderRadius: '24px', fontSize: '14px', fontWeight: 700, cursor: gardenStoryLoading ? 'wait' : 'pointer', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }
             }, gardenStoryLoading ? '✨ Growing a story...' : '📖 My Garden Story'),
             // "Print My Garden" — printable poster for the student's desk
             total >= 3 && e('button', {
               onClick: function () { printGardenPoster(bank, grouped, sName, total, counts); },
-              'aria-label': 'Print garden poster',
+              'aria-label': t('symbol_studio.print_garden_poster','Print garden poster'),
               style: { marginTop: '6px', padding: '8px 20px', background: 'linear-gradient(135deg, #b45309 0%, #d97706 100%)', color: '#fff', border: 'none', borderRadius: '24px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(180,83,9,0.3)' }
             }, '🖨️ Print My Garden')),
           // Story display
@@ -9245,7 +9245,7 @@
                   if (url) { var a = new Audio(url); a.play().catch(function () {}); }
                 }).catch(function () {});
               },
-              'aria-label': 'Read the garden story aloud',
+              'aria-label': t('symbol_studio.read_the_garden_story_aloud','Read the garden story aloud'),
               style: { padding: '5px 14px', background: '#d1fae5', border: '1px solid #34d399', borderRadius: '16px', fontSize: '12px', fontWeight: 600, color: '#047857', cursor: 'pointer' }
             }, '🔊 Read Aloud')),
           renderGrowthCelebrations(),
@@ -9371,7 +9371,7 @@
               suggestions.map(function (s, i) { return e(s.action ? 'button' : 'div', { key: i, onClick: s.action || undefined, style: { display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '8px 12px', background: s.action ? '#fef9c3' : '#fffbeb', borderRadius: '8px', border: '1px solid ' + (s.action ? '#facc15' : '#fef3c7'), fontSize: '12px', color: '#78350f', lineHeight: 1.5, cursor: s.action ? 'pointer' : 'default', textAlign: 'left', fontFamily: 'inherit', width: '100%' } }, e('span', { style: { flexShrink: 0 } }, s.icon), e('span', null, s.text + (s.action ? ' →' : ''))); }))),
           // Actions
           e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', paddingTop: '8px' } },
-            w.image && e('button', { onClick: function () { setTab('quest'); setQuestMode('imgToLabel'); questPickRound('imgToLabel', gallery.filter(function (g) { return g.image; })); }, 'aria-label': 'Practice in Quest', style: S.btn(PURPLE, '#fff', false) }, '🎮 Practice in Quest'),
+            w.image && e('button', { onClick: function () { setTab('quest'); setQuestMode('imgToLabel'); questPickRound('imgToLabel', gallery.filter(function (g) { return g.image; })); }, 'aria-label': t('symbol_studio.practice_in_quest','Practice in Quest'), style: S.btn(PURPLE, '#fff', false) }, '🎮 Practice in Quest'),
             e('button', { onClick: function () { setTab('board'); }, style: S.btn('#f3f4f6', '#374151', false) }, '📋 Board Builder'),
             e('button', { onClick: function () { setTab('stories'); }, style: S.btn('#f3f4f6', '#374151', false) }, '📖 Create Story')));
       }
@@ -9384,7 +9384,7 @@
           var coreMastered = bank.filter(function (w) { return w.isCore && (w.growth === 'mastered' || w.growth === 'blooming'); }).length;
           if (coreInBank === 0) return null;
           var isActive = gardenFilter === 'core';
-          return e('button', { onClick: function () { setGardenFilter(gardenFilter === 'core' ? 'all' : 'core'); }, 'aria-label': 'Filter core vocabulary', style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', border: '2px solid ' + (isActive ? '#3b82f6' : 'transparent'), background: isActive ? '#dbeafe' : 'rgba(255,255,255,0.7)', fontSize: '11px', fontWeight: 600, color: '#1d4ed8', cursor: 'pointer' } },
+          return e('button', { onClick: function () { setGardenFilter(gardenFilter === 'core' ? 'all' : 'core'); }, 'aria-label': t('symbol_studio.filter_core_vocabulary','Filter core vocabulary'), style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', border: '2px solid ' + (isActive ? '#3b82f6' : 'transparent'), background: isActive ? '#dbeafe' : 'rgba(255,255,255,0.7)', fontSize: '11px', fontWeight: 600, color: '#1d4ed8', cursor: 'pointer' } },
             e('span', null, '💬'), e('span', null, coreMastered + '/' + coreInBank + ' core'));
         })(),
         e('div', { style: { marginLeft: 'auto', fontSize: '11px', fontWeight: 700, color: '#6b7280', display: 'flex', alignItems: 'center', gap: '4px' } }, e('span', null, '📝'), e('span', null, total + ' words')));
@@ -9393,7 +9393,7 @@
         e('select', { value: gardenSort, onChange: function (ev) { setGardenSort(ev.target.value); }, 'aria-label': 'Sort', style: Object.assign({}, S.input, { width: 'auto', flexShrink: 0, minHeight: '44px', fontSize: '11px' }) },
           e('option', { value: 'growth' }, '↕ Growth'), e('option', { value: 'alpha' }, '↕ A→Z'), e('option', { value: 'contexts' }, '↕ Contexts'), e('option', { value: 'recent' }, '↕ AAC Use')),
         (function () { var wk = bank.filter(function (w) { return (w.growth === 'sprout' || w.growth === 'growing') && w.image; }); if (wk.length < 3) return null;
-          return e('button', { onClick: function () { setTab('quest'); setQuestMode('imgToLabel'); questPickRound('imgToLabel', wk.map(function (w) { return { id: w.key, label: w.displayLabel, image: w.image }; })); addToast && addToast(t('toasts.practicing') + wk.length + ' growing words!', 'info'); }, 'aria-label': 'Practice weak words', style: Object.assign({}, S.btn(PURPLE, '#fff', false), { flexShrink: 0, minHeight: '44px', fontSize: '11px', padding: '6px 12px' }) }, '🎮 Practice Weak Words'); })(),
+          return e('button', { onClick: function () { setTab('quest'); setQuestMode('imgToLabel'); questPickRound('imgToLabel', wk.map(function (w) { return { id: w.key, label: w.displayLabel, image: w.image }; })); addToast && addToast(t('toasts.practicing') + wk.length + ' growing words!', 'info'); }, 'aria-label': t('symbol_studio.practice_weak_words','Practice weak words'), style: Object.assign({}, S.btn(PURPLE, '#fff', false), { flexShrink: 0, minHeight: '44px', fontSize: '11px', padding: '6px 12px' }) }, '🎮 Practice Weak Words'); })(),
         // Generate a board from garden data — mastered core + growing words
         (function () {
           var withImages = bank.filter(function (w) { return w.image; });
@@ -9416,7 +9416,7 @@
             setBoardCols(Math.min(4, Math.ceil(Math.sqrt(newWords.length))));
             setTab('board');
             addToast && addToast(t('toasts.garden_board_created_with') + newWords.length + ' words!' + bankReuseReviewNotice(reusedAssets), 'success');
-          }, 'aria-label': 'Generate communication board from garden data', style: Object.assign({}, S.btn('#059669', '#fff', false), { flexShrink: 0, minHeight: '44px', fontSize: '11px', padding: '6px 12px' }) }, '📋 Garden Board');
+          }, 'aria-label': t('symbol_studio.generate_communication_board_from_garden_dat','Generate communication board from garden data'), style: Object.assign({}, S.btn('#059669', '#fff', false), { flexShrink: 0, minHeight: '44px', fontSize: '11px', padding: '6px 12px' }) }, '📋 Garden Board');
         })(),
         // Phonics Lesson from Garden — bridges to Word Sounds
         (function () {
@@ -9438,13 +9438,13 @@
               window.AlloModules.GardenBridge._lastPhonicsLesson = wordList;
             }
             addToast && addToast(t('toasts.phonics_lesson_ready_open_word') + wordList.length + ' garden words loaded: ' + wordList.slice(0, 4).join(', ') + (wordList.length > 4 ? '...' : ''), 'success');
-          }, 'aria-label': 'Build phonics lesson from garden vocabulary', style: Object.assign({}, S.btn('#2563eb', '#fff', false), { flexShrink: 0, minHeight: '44px', fontSize: '11px', padding: '6px 12px' }) }, '📖 Phonics Lesson');
+          }, 'aria-label': t('symbol_studio.build_phonics_lesson_from_garden_vocabulary','Build phonics lesson from garden vocabulary'), style: Object.assign({}, S.btn('#2563eb', '#fff', false), { flexShrink: 0, minHeight: '44px', fontSize: '11px', padding: '6px 12px' }) }, '📖 Phonics Lesson');
         })(),
         e('p', { style: { flexBasis: '100%', margin: '4px 0', color: '#475569', fontSize: '12px', lineHeight: 1.5 } }, 'Garden totals include words in your resources and Quick Board suggestions. Growth reflects resource availability and recent activity, not independent communication or mastery.'),
         e('div', { style: { flexBasis: '100%', minWidth: 0 } }, renderUnassignedWishes()),
         // Wish Seed input — plant a word the student wanted but couldn't find
         e('div', { style: { display: 'flex', flexBasis: '100%', minWidth: 0, gap: '6px', alignItems: 'center', marginBottom: '6px' } },
-          e('span', { style: { fontSize: '12px', flexShrink: 0 }, title: 'Plant a word the student tried to say but couldn\'t find on any board' }, '💫'),
+          e('span', { style: { fontSize: '12px', flexShrink: 0 }, title: t('symbol_studio.plant_a_word_the_student_tried_to_say_but_co','Plant a word the student tried to say but couldn\'t find on any board') }, '💫'),
           e('input', { type: 'text', value: wishInput, onChange: function (ev) { setWishInput(ev.target.value); },
             onKeyDown: function (ev) {
               if (ev.key === 'Enter' && wishInput.trim()) {
@@ -9457,7 +9457,7 @@
               }
             },
             placeholder: 'Plant a wish seed — a word the student wanted to say...',
-            'aria-label': 'Plant a wish seed word',
+            'aria-label': t('symbol_studio.plant_a_wish_seed_word','Plant a wish seed word'),
             style: Object.assign({}, S.input, { flex: 1, minWidth: 0, minHeight: '44px', fontSize: '11px', borderColor: '#c4b5fd', background: '#faf5ff' }) }),
           wishInput.trim() && e('button', { onClick: function () {
             var label = wishInput.trim();
@@ -9466,7 +9466,7 @@
             setWishSeeds(updated); store(STORAGE_WISHES, updated);
             setWishInput('');
             addToast && addToast('💫 "' + label + '" planted as a wish seed!', 'success');
-          }, 'aria-label': 'Plant wish seed', style: Object.assign({}, S.btn('#7c3aed', '#fff', false), { fontSize: '11px', padding: '5px 10px' }) }, '🌱 Plant')));
+          }, 'aria-label': t('symbol_studio.plant_wish_seed','Plant wish seed'), style: Object.assign({}, S.btn('#7c3aed', '#fff', false), { fontSize: '11px', padding: '5px 10px' }) }, '🌱 Plant')));
       var gridItems = filtered.map(function (w) { var g2 = GROWTH_LEVELS[w.growth];
         return e('button', { key: w.key, onClick: function () { setGardenSelectedWord(w.key); }, 'aria-label': w.displayLabel + ' — ' + g2.label,
           style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 6px', background: '#fff', border: '2px solid ' + g2.border, borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', position: 'relative', overflow: 'hidden' },
@@ -9474,7 +9474,7 @@
           onMouseOut: function (ev) { ev.currentTarget.style.transform = 'translateY(0)'; ev.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'; } },
           e('div', { style: { position: 'absolute', top: '3px', right: '5px', fontSize: '14px' } }, g2.icon),
           w.isCore && e('div', { style: { position: 'absolute', top: '3px', left: '5px', fontSize: '7px', background: '#dbeafe', color: '#1d4ed8', padding: '1px 4px', borderRadius: '4px', fontWeight: 700 } }, 'CORE'),
-          w.hasVoice && e('div', { style: { position: 'absolute', bottom: '3px', right: '5px', fontSize: '10px' }, title: 'This word has a parent\'s recorded voice' }, '❤️'),
+          w.hasVoice && e('div', { style: { position: 'absolute', bottom: '3px', right: '5px', fontSize: '10px' }, title: t('symbol_studio.this_word_has_a_parent_s_recorded_voice','This word has a parent\'s recorded voice') }, '❤️'),
           w.image ? e('img', { src: w.image, alt: '', style: { width: '48px', height: '48px', objectFit: 'contain', borderRadius: '8px' } }) : e('div', { style: { width: '48px', height: '48px', borderRadius: '8px', background: g2.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' } }, g2.icon),
           e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#1f2937', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.2 } }, w.displayLabel),
           gardenHomeLang && getTranslation(w.displayLabel, gardenHomeLang) && e('div', { style: { fontSize: '9px', fontWeight: 600, color: '#6366f1', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.1, fontStyle: 'italic' } }, getTranslation(w.displayLabel, gardenHomeLang)),
@@ -9484,13 +9484,13 @@
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } },
             e('span', { style: { fontSize: '22px' } }, '🌱'),
             e('div', { style: { flex: 1 } }, e('h3', { style: { fontWeight: 800, fontSize: '16px', color: '#1f2937', margin: 0 } }, 'Word Garden'), e('p', { style: { fontSize: '11px', color: '#6b7280', margin: '2px 0 0' } }, 'Tap any word to explore its growth across tools.')),
-            e('button', { onClick: function () { setGardenStudentView(true); }, 'aria-label': 'Student view', style: { padding: '5px 12px', background: '#dcfce7', border: '2px solid #4ade80', borderRadius: '8px', fontSize: '11px', fontWeight: 600, color: '#15803d', cursor: 'pointer', whiteSpace: 'nowrap' } }, '🌱 Student View'),
+            e('button', { onClick: function () { setGardenStudentView(true); }, 'aria-label': t('symbol_studio.student_view','Student view'), style: { padding: '5px 12px', background: '#dcfce7', border: '2px solid #4ade80', borderRadius: '8px', fontSize: '11px', fontWeight: 600, color: '#15803d', cursor: 'pointer', whiteSpace: 'nowrap' } }, '🌱 Student View'),
             // Home language selector for bilingual garden
             e('select', { value: gardenHomeLang, onChange: function (ev) {
               var code = ev.target.value;
               setGardenHomeLang(code); store(STORAGE_HOME_LANG, code);
               if (code && code !== 'en') translateGardenWords(computeWordBank(), code);
-            }, 'aria-label': 'Student home language', style: { padding: '3px 6px', fontSize: '10px', borderRadius: '6px', border: '1px solid #d1d5db', color: '#374151', cursor: 'pointer' } },
+            }, 'aria-label': t('symbol_studio.student_home_language','Student home language'), style: { padding: '3px 6px', fontSize: '10px', borderRadius: '6px', border: '1px solid #d1d5db', color: '#374151', cursor: 'pointer' } },
               e('option', { value: '' }, '🌍 Home Lang'),
               LANG_OPTIONS.filter(function (l) { return l.code !== 'en'; }).map(function (l) { return e('option', { key: l.code, value: l.code }, l.label); }))),
           // Weekly pulse
@@ -9542,7 +9542,7 @@
             var fnCounts = {}; var fnTotal = 0;
             bank.forEach(function (w) { if (w.commFn) { fnCounts[w.commFn] = (fnCounts[w.commFn] || 0) + 1; fnTotal++; } });
             if (fnTotal < 3) return null;
-            return e('div', { role: 'group', 'aria-label': 'Communication function distribution', style: { display: 'flex', gap: '4px', padding: '6px 12px', background: '#faf5ff', borderRadius: '8px', marginBottom: '4px', border: '1px solid #e9d5ff', alignItems: 'center', flexWrap: 'wrap' } },
+            return e('div', { role: 'group', 'aria-label': t('symbol_studio.communication_function_distribution','Communication function distribution'), style: { display: 'flex', gap: '4px', padding: '6px 12px', background: '#faf5ff', borderRadius: '8px', marginBottom: '4px', border: '1px solid #e9d5ff', alignItems: 'center', flexWrap: 'wrap' } },
               e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#7c3aed', whiteSpace: 'nowrap', marginRight: '2px' } }, '🗣️ Functions:'),
               COMM_FN_ORDER.map(function (fn) {
                 var ct = fnCounts[fn] || 0; if (ct === 0) return null;
@@ -9559,7 +9559,7 @@
           })(),
           // FCT Bridge — Functional Communication Training link to BehaviorLens
           e('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', padding: '0 16px', marginBottom: '4px' } },
-            e('select', { value: gardenBehaviorFn, onChange: function (ev) { setGardenBehaviorFn(ev.target.value); }, 'aria-label': 'Behavioral function for FCT', style: Object.assign({}, S.input, { width: 'auto', fontSize: '10px', padding: '3px 6px' }) },
+            e('select', { value: gardenBehaviorFn, onChange: function (ev) { setGardenBehaviorFn(ev.target.value); }, 'aria-label': t('symbol_studio.behavioral_function_for_fct','Behavioral function for FCT'), style: Object.assign({}, S.input, { width: 'auto', fontSize: '10px', padding: '3px 6px' }) },
               e('option', { value: '' }, '🔗 BehaviorLens FCT...'),
               FCT_FUNCTIONS.map(function (fn) { return e('option', { key: fn, value: fn }, FCT_MAP[fn].icon + ' ' + FCT_MAP[fn].label); }))),
           gardenBehaviorFn && (function () {
@@ -9590,9 +9590,9 @@
           filtered.length === 0 ? e('div', { style: { textAlign: 'center', padding: '30px', color: '#6b7280' } }, e('div', { style: { fontSize: '32px', marginBottom: '8px' } }, '🔍'), e('p', { style: { fontSize: '13px' } }, gardenSearch ? 'No words match "' + gardenSearch + '"' : 'No words at this growth level yet'))
             : e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px' } }, gridItems),
           total > 0 && e('div', { style: { display: 'flex', gap: '6px', margin: '8px 0', flexWrap: 'wrap' } },
-            e('button', { onClick: function () { printGardenReport(bank, counts, total); }, 'aria-label': 'Print practice report', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { fontSize: '11px' }) }, '📊 Practice Report'),
-            e('button', { onClick: function () { printGardenHomeNote(bank, counts, total); }, 'aria-label': 'Print home note for family', style: Object.assign({}, S.btn('#dcfce7', '#15803d', false), { fontSize: '11px' }) }, '🏠 Home Note'),
-            e('button', { onClick: function () { exportGardenCSV(bank, counts, total); }, 'aria-label': 'Export research CSV', style: Object.assign({}, S.btn('#dbeafe', '#1d4ed8', false), { fontSize: '11px' }) }, '🔬 Research CSV'))));
+            e('button', { onClick: function () { printGardenReport(bank, counts, total); }, 'aria-label': t('symbol_studio.print_practice_report','Print practice report'), style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { fontSize: '11px' }) }, '📊 Practice Report'),
+            e('button', { onClick: function () { printGardenHomeNote(bank, counts, total); }, 'aria-label': t('symbol_studio.print_home_note_for_family','Print home note for family'), style: Object.assign({}, S.btn('#dcfce7', '#15803d', false), { fontSize: '11px' }) }, '🏠 Home Note'),
+            e('button', { onClick: function () { exportGardenCSV(bank, counts, total); }, 'aria-label': t('symbol_studio.export_research_csv','Export research CSV'), style: Object.assign({}, S.btn('#dbeafe', '#1d4ed8', false), { fontSize: '11px' }) }, '🔬 Research CSV'))));
     }
 
     function printGardenReport(bank, counts, total) {
@@ -10086,11 +10086,11 @@
           e('div', { className: 'ss-no-print', style: { display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'flex-end' } },
             e('div', null,
               e('label', { style: S.lbl }, 'Working for...'),
-              e('input', { type: 'text', value: tokenLabel, onChange: function (ev) { setTokenLabel(ev.target.value); }, placeholder: 'e.g. Stay in seat', 'aria-label': 'Token board behavior label', style: Object.assign({}, S.input, { width: 140 }) })
+              e('input', { type: 'text', value: tokenLabel, onChange: function (ev) { setTokenLabel(ev.target.value); }, placeholder: t('symbol_studio.e_g_stay_in_seat','e.g. Stay in seat'), 'aria-label': t('symbol_studio.token_board_behavior_label','Token board behavior label'), style: Object.assign({}, S.input, { width: 140 }) })
             ),
             e('div', null,
               e('label', { style: S.lbl }, 'Tokens needed'),
-              e('select', { value: tokenTotal, onChange: function (ev) { setTokenTotal(Number(ev.target.value)); setTokenEarned(0); }, 'aria-label': 'Number of tokens required', style: Object.assign({}, S.input, { width: 70 }) },
+              e('select', { value: tokenTotal, onChange: function (ev) { setTokenTotal(Number(ev.target.value)); setTokenEarned(0); }, 'aria-label': t('symbol_studio.number_of_tokens_required','Number of tokens required'), style: Object.assign({}, S.input, { width: 70 }) },
                 [2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (n) { return e('option', { key: n, value: n }, n); })
               )
             ),
@@ -10126,9 +10126,9 @@
               ),
               e('div', { style: { fontWeight: 700, fontSize: '14px', color: '#16a34a', textAlign: 'center' } }, tokenRewardLabel || '\u00a0'),
               e('div', { className: 'ss-no-print', style: { display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' } },
-                e('input', { type: 'text', value: tokenRewardLabel, onChange: function (ev) { setTokenRewardLabel(ev.target.value); }, placeholder: 'e.g. iPad time', 'aria-label': 'Token board reward', style: Object.assign({}, S.input, { fontSize: '11px' }) }),
+                e('input', { type: 'text', value: tokenRewardLabel, onChange: function (ev) { setTokenRewardLabel(ev.target.value); }, placeholder: t('symbol_studio.e_g_ipad_time','e.g. iPad time'), 'aria-label': t('symbol_studio.token_board_reward','Token board reward'), style: Object.assign({}, S.input, { fontSize: '11px' }) }),
                 e('div', { style: { display: 'flex', gap: '4px' } },
-                  e('button', { onClick: genTokenReward, disabled: tokenRewardLoading || !tokenRewardLabel.trim() || !onCallImagen, 'aria-label': 'Generate token board reward image', style: S.btn(PURPLE, '#fff', tokenRewardLoading || !tokenRewardLabel.trim() || !onCallImagen) }, '✨'),
+                  e('button', { onClick: genTokenReward, disabled: tokenRewardLoading || !tokenRewardLabel.trim() || !onCallImagen, 'aria-label': t('symbol_studio.generate_token_board_reward_image','Generate token board reward image'), style: S.btn(PURPLE, '#fff', tokenRewardLoading || !tokenRewardLabel.trim() || !onCallImagen) }, '✨'),
                   qbUploadBtn({ type: 'token' }, 'Upload token board reward image')
                 )
               )
@@ -10148,7 +10148,7 @@
             e('button', {
               onClick: genAllCmItems,
               disabled: !onCallImagen || cmLoadingAny,
-              'aria-label': 'Generate all calming strategy images',
+              'aria-label': t('symbol_studio.generate_all_calming_strategy_images','Generate all calming strategy images'),
               style: Object.assign({}, S.btn(TEAL, '#fff', !onCallImagen || cmLoadingAny), { marginLeft: 'auto' })
             }, cmLoadingAny ? '⏳ Generating...' : '✨ Generate All Images')
           ),
@@ -10176,12 +10176,12 @@
                   type: 'text', value: item.label,
                   onClick: function (ev) { ev.stopPropagation(); },
                   onChange: function (ev) { var v = ev.target.value; setCmItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); },
-                  style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#064e3b', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 }, 'aria-label': 'Calming item label'
+                  style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#064e3b', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 }, 'aria-label': t('symbol_studio.calming_item_label','Calming item label')
                 }),
                 // Action buttons
                 e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px' } },
-                  e('button', { title: 'Generate image', 'aria-label': 'Generate image', onClick: function (ev) { ev.stopPropagation(); genCmItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '✨'),
-                  e('button', { title: 'Upload image', 'aria-label': 'Upload image', onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'cm', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '📷')
+                  e('button', { title: t('symbol_studio.generate_image','Generate image'), 'aria-label': t('symbol_studio.generate_image_2','Generate image'), onClick: function (ev) { ev.stopPropagation(); genCmItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '✨'),
+                  e('button', { title: t('symbol_studio.upload_image','Upload image'), 'aria-label': t('symbol_studio.upload_image_2','Upload image'), onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'cm', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '📷')
                 )
               );
             })
@@ -10201,7 +10201,7 @@
             e('button', {
               onClick: genAllSnItems,
               disabled: !onCallImagen || snLoadingAny,
-              'aria-label': 'Generate all sensory strategy images',
+              'aria-label': t('symbol_studio.generate_all_sensory_strategy_images','Generate all sensory strategy images'),
               style: Object.assign({}, S.btn(AMBER, '#fff', !onCallImagen || snLoadingAny), { marginLeft: 'auto' })
             }, snLoadingAny ? '⏳ Generating...' : '✨ Generate All Images')
           ),
@@ -10229,12 +10229,12 @@
                   type: 'text', value: item.label,
                   onClick: function (ev) { ev.stopPropagation(); },
                   onChange: function (ev) { var v = ev.target.value; setSnItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); },
-                  style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#78350f', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 }, 'aria-label': 'Sensory item label'
+                  style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#78350f', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 }, 'aria-label': t('symbol_studio.sensory_item_label','Sensory item label')
                 }),
                 // Action buttons
                 e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px' } },
-                  e('button', { title: 'Generate image', 'aria-label': 'Generate image', onClick: function (ev) { ev.stopPropagation(); genSnItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '✨'),
-                  e('button', { title: 'Upload image', 'aria-label': 'Upload image', onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'sn', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '📷')
+                  e('button', { title: t('symbol_studio.generate_image_3','Generate image'), 'aria-label': t('symbol_studio.generate_image_4','Generate image'), onClick: function (ev) { ev.stopPropagation(); genSnItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '✨'),
+                  e('button', { title: t('symbol_studio.upload_image_3','Upload image'), 'aria-label': t('symbol_studio.upload_image_4','Upload image'), onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'sn', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '📷')
                 )
               );
             })
@@ -10251,7 +10251,7 @@
         return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
           e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
             e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Questions a student can initiate \u2014 tap any card to speak it aloud'),
-            e('button', { onClick: genAllAmItems, disabled: !onCallImagen || amLoadingAny, 'aria-label': 'Generate all ask me item images', style: Object.assign({}, S.btn(BLUE, '#fff', !onCallImagen || amLoadingAny), { marginLeft: 'auto' }) }, amLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate All Images')
+            e('button', { onClick: genAllAmItems, disabled: !onCallImagen || amLoadingAny, 'aria-label': t('symbol_studio.generate_all_ask_me_item_images','Generate all ask me item images'), style: Object.assign({}, S.btn(BLUE, '#fff', !onCallImagen || amLoadingAny), { marginLeft: 'auto' }) }, amLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate All Images')
           ),
           e('div', { id: 'ss-pq-askme', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))', gap: '12px', overflowY: 'auto', flex: 1 } },
             amItems.map(function (item) {
@@ -10268,10 +10268,10 @@
                 e('div', { style: { width: 90, height: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '10px', background: '#fff', border: '1px solid ' + BLUE_BORDER, overflow: 'hidden', flexShrink: 0 } },
                   isLoading ? spinner(28) : item.image ? e('img', { src: item.image, alt: item.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '6px' } }) : e('div', { style: { fontSize: '34px' } }, '\uD83D\uDE4B')
                 ),
-                e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setAmItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, 'aria-label': 'Activity label', style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#1e3a8a', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 } }),
+                e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setAmItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, 'aria-label': t('symbol_studio.activity_label','Activity label'), style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '12px', color: '#1e3a8a', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 } }),
                 e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px' } },
-                  e('button', { title: 'Generate image', 'aria-label': 'Generate image', onClick: function (ev) { ev.stopPropagation(); genAmItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
-                  e('button', { title: 'Upload image', 'aria-label': 'Upload image', onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'am', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
+                  e('button', { title: t('symbol_studio.generate_image_5','Generate image'), 'aria-label': t('symbol_studio.generate_image_6','Generate image'), onClick: function (ev) { ev.stopPropagation(); genAmItem(item.id); }, disabled: isLoading || !onCallImagen, style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
+                  e('button', { title: t('symbol_studio.upload_image_5','Upload image'), 'aria-label': t('symbol_studio.upload_image_6','Upload image'), onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'am', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
                 )
               );
             })
@@ -10289,7 +10289,7 @@
         return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
           e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
             e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Help students communicate pain level and location without words'),
-            e('button', { onClick: genAllBcItems, disabled: !onCallImagen || bcLoadingAny, 'aria-label': 'Generate all body part images', style: Object.assign({}, S.btn(ROSE, '#fff', !onCallImagen || bcLoadingAny), { marginLeft: 'auto' }) }, bcLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate Body Parts')
+            e('button', { onClick: genAllBcItems, disabled: !onCallImagen || bcLoadingAny, 'aria-label': t('symbol_studio.generate_all_body_part_images','Generate all body part images'), style: Object.assign({}, S.btn(ROSE, '#fff', !onCallImagen || bcLoadingAny), { marginLeft: 'auto' }) }, bcLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate Body Parts')
           ),
           // Pain scale
           e('div', { id: 'ss-pq-bodycheck', style: { overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' } },
@@ -10331,10 +10331,10 @@
                     e('div', { style: { width: 80, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', background: '#fff', border: '1px solid ' + ROSE_BORDER, overflow: 'hidden' } },
                       isLoading ? spinner(24) : item.image ? e('img', { src: item.image, alt: item.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '5px' } }) : e('div', { style: { fontSize: '30px' } }, '\uD83E\uDDB4')
                     ),
-                    e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setBcItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, 'aria-label': 'Behavior chart item label', style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '11px', color: '#9f1239', textAlign: 'center', width: '100%', cursor: 'text' } }),
+                    e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setBcItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, 'aria-label': t('symbol_studio.behavior_chart_item_label','Behavior chart item label'), style: { border: 'none', background: 'transparent', fontWeight: 700, fontSize: '11px', color: '#9f1239', textAlign: 'center', width: '100%', cursor: 'text' } }),
                     e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '3px' } },
                       e('button', { onClick: function (ev) { ev.stopPropagation(); genBcItem(item.id); }, disabled: isLoading || !onCallImagen, 'aria-label': 'u2728', style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
-                      e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'bc', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, 'aria-label': 'Upload photo', style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
+                      e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'bc', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, 'aria-label': t('symbol_studio.upload_photo','Upload photo'), style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
                     )
                   );
                 })
@@ -10352,7 +10352,7 @@
         return e('div', { style: { display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', flex: 1, overflow: 'hidden' } },
           e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
             e('p', { style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, 'Show one step at a time \u2014 use arrows to advance through the transition sequence'),
-            e('button', { onClick: genAllTwItems, disabled: !onCallImagen || twLoadingAny, 'aria-label': 'Generate all time and wait images', style: Object.assign({}, S.btn(INDIGO, '#fff', !onCallImagen || twLoadingAny), { marginLeft: 'auto' }) }, twLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate All Images')
+            e('button', { onClick: genAllTwItems, disabled: !onCallImagen || twLoadingAny, 'aria-label': t('symbol_studio.generate_all_time_and_wait_images','Generate all time and wait images'), style: Object.assign({}, S.btn(INDIGO, '#fff', !onCallImagen || twLoadingAny), { marginLeft: 'auto' }) }, twLoadingAny ? '\u29d7 Generating...' : '\u2728 Generate All Images')
           ),
           // Live presentation step
           e('div', { id: 'ss-pq-transition', style: { overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' } },
@@ -10364,9 +10364,9 @@
               ),
               e('div', { style: { fontWeight: 800, fontSize: '20px', color: '#312e81', textAlign: 'center' } }, currentItem.label),
               e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '10px', marginTop: '4px' } },
-                e('button', { onClick: function () { setTwStep(function (s) { return Math.max(0, s - 1); }); }, disabled: twStep === 0, 'aria-label': 'Previous transition step', style: S.btn('#e0e7ff', INDIGO, twStep === 0) }, '\u2190 Prev'),
-                e('button', { onClick: function () { speakCell(currentItem.label); }, 'aria-label': 'Speak aloud', style: S.btn(INDIGO, '#fff', false) }, '\uD83D\uDD0A Speak'),
-                e('button', { onClick: function () { setTwStep(function (s) { return Math.min(twItems.length - 1, s + 1); }); }, disabled: twStep === twItems.length - 1, 'aria-label': 'Next transition step', style: S.btn('#e0e7ff', INDIGO, twStep === twItems.length - 1) }, 'Next \u2192')
+                e('button', { onClick: function () { setTwStep(function (s) { return Math.max(0, s - 1); }); }, disabled: twStep === 0, 'aria-label': t('symbol_studio.previous_transition_step','Previous transition step'), style: S.btn('#e0e7ff', INDIGO, twStep === 0) }, '\u2190 Prev'),
+                e('button', { onClick: function () { speakCell(currentItem.label); }, 'aria-label': t('symbol_studio.speak_aloud','Speak aloud'), style: S.btn(INDIGO, '#fff', false) }, '\uD83D\uDD0A Speak'),
+                e('button', { onClick: function () { setTwStep(function (s) { return Math.min(twItems.length - 1, s + 1); }); }, disabled: twStep === twItems.length - 1, 'aria-label': t('symbol_studio.next_transition_step','Next transition step'), style: S.btn('#e0e7ff', INDIGO, twStep === twItems.length - 1) }, 'Next \u2192')
               )
             ),
             // All steps grid
@@ -10385,10 +10385,10 @@
                   e('div', { style: { width: 70, height: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', background: '#f9fafb', border: '1px solid #e5e7eb', overflow: 'hidden' } },
                     isLoading ? spinner(20) : item.image ? e('img', { src: item.image, alt: item.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '4px' } }) : e('div', { style: { fontSize: '24px' } }, '\u23F0')
                   ),
-                  e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setTwItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, style: { border: 'none', background: 'transparent', fontWeight: 600, fontSize: '10px', color: isCurrent ? '#312e81' : '#374151', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 }, 'aria-label': 'Task walk step label' }),
+                  e('input', { type: 'text', value: item.label, onClick: function (ev) { ev.stopPropagation(); }, onChange: function (ev) { var v = ev.target.value; setTwItems(function (prev) { return prev.map(function (it) { return it.id === item.id ? Object.assign({}, it, { label: v }) : it; }); }); }, style: { border: 'none', background: 'transparent', fontWeight: 600, fontSize: '10px', color: isCurrent ? '#312e81' : '#374151', textAlign: 'center', width: '100%', cursor: 'text', lineHeight: 1.4 }, 'aria-label': t('symbol_studio.task_walk_step_label','Task walk step label') }),
                   e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '3px' } },
                     e('button', { onClick: function (ev) { ev.stopPropagation(); genTwItem(item.id); }, disabled: isLoading || !onCallImagen, 'aria-label': 'Generate image for transition step ' + (idx + 1), style: S.btn(LIGHT_PURPLE, PURPLE, isLoading || !onCallImagen) }, '\u2728'),
-                    e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'tw', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, 'aria-label': 'Upload photo', style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
+                    e('button', { onClick: function (ev) { ev.stopPropagation(); setQbUploadTarget({ type: 'tw', id: item.id }); qbUploadRef.current && qbUploadRef.current.click(); }, 'aria-label': t('symbol_studio.upload_photo_2','Upload photo'), style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDCF7')
                   )
                 );
               })
@@ -10432,8 +10432,8 @@
         ),
         // Path toggle
         e('div', { style: { display: 'flex', gap: '6px', marginTop: '10px', marginBottom: '10px' } },
-          e('button', { onClick: function () { setCbPath('fct'); }, 'aria-label': 'Guided FCT mode', 'aria-pressed': cbPath === 'fct', style: fctChipStyle(cbPath === 'fct') }, '🎯 Guided (FCT)'),
-          e('button', { onClick: function () { setCbPath('goal'); }, 'aria-label': 'Free-text goal mode', 'aria-pressed': cbPath === 'goal', style: fctChipStyle(cbPath === 'goal') }, '✍️ Free-text goal')
+          e('button', { onClick: function () { setCbPath('fct'); }, 'aria-label': t('symbol_studio.guided_fct_mode','Guided FCT mode'), 'aria-pressed': cbPath === 'fct', style: fctChipStyle(cbPath === 'fct') }, '🎯 Guided (FCT)'),
+          e('button', { onClick: function () { setCbPath('goal'); }, 'aria-label': t('symbol_studio.free_text_goal_mode','Free-text goal mode'), 'aria-pressed': cbPath === 'goal', style: fctChipStyle(cbPath === 'goal') }, '✍️ Free-text goal')
         ),
         // Guided (FCT) path
         cbPath === 'fct' && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
@@ -10475,7 +10475,7 @@
             e('button', {
               onClick: async function () { if (await confirmReplaceBoard()) applyFctTemplate(cbFunction, cbPhase); },
               disabled: !fctPhasePreview.length,
-              'aria-label': 'Build board from FCT template',
+              'aria-label': t('symbol_studio.build_board_from_fct_template','Build board from FCT template'),
               style: Object.assign({}, S.btn(activeFctMeta.color || PURPLE, '#fff', !fctPhasePreview.length), { whiteSpace: 'nowrap' })
             }, 'Build board →')
           ),
@@ -10491,9 +10491,9 @@
             value: cbGoalText,
             onChange: function (ev) { setCbGoalText(ev.target.value); },
             onKeyDown: async function (ev) { if (ev.key === 'Enter' && cbGoalText.trim() && !cbGoalBusy) { ev.preventDefault(); if (!(await confirmReplaceBoard())) return; setCbGoalBusy(true); buildBoardFromGoal(cbGoalText).finally(function () { setCbGoalBusy(false); }); } },
-            placeholder: 'e.g. request a break at recess, ask a peer to play, tell me you need help',
+            placeholder: t('symbol_studio.e_g_request_a_break_at_recess_ask_a_peer_to','e.g. request a break at recess, ask a peer to play, tell me you need help'),
             style: Object.assign({}, S.input, { margin: 0, fontSize: '13px' }),
-            'aria-label': 'Communication goal'
+            'aria-label': t('symbol_studio.communication_goal','Communication goal')
           }),
           // Example starters — one-tap populate the goal input
           e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'center' } },
@@ -10516,7 +10516,7 @@
             e('button', {
               onClick: async function () { if (!(await confirmReplaceBoard())) return; setCbGoalBusy(true); buildBoardFromGoal(cbGoalText).finally(function () { setCbGoalBusy(false); }); },
               disabled: !cbGoalText.trim() || cbGoalBusy,
-              'aria-label': 'Build board from goal',
+              'aria-label': t('symbol_studio.build_board_from_goal','Build board from goal'),
               style: S.btn(PURPLE, '#fff', !cbGoalText.trim() || cbGoalBusy)
             }, cbGoalBusy ? '⏳ Thinking…' : 'Build board →'),
             !onCallGemini && e('span', { style: { fontSize: '10px', color: '#92400e', background: '#fef3c7', padding: '3px 8px', borderRadius: '6px', border: '1px solid #fde68a' } }, 'AI offline — will create a blank scaffold.'),
@@ -10549,8 +10549,8 @@
         ),
         // Print & export bar
         e('div', { className: 'ss-no-print', style: { padding: '10px 14px', borderTop: '1px solid #e5e7eb', background: '#f9fafb', display: 'flex', justifyContent: 'flex-end', gap: '8px' } },
-          qbMode === 'firstthen' && (ftFirstImage || ftThenImage) && e('button', { onClick: function () { exportQuickBoardHTML('firstthen'); }, 'aria-label': 'Export First-Then board as accessible HTML', style: S.btn('#fef9c3', '#92400e', false) }, '\uD83C\uDF10 Export HTML'),
-          e('button', { onClick: function () { window.print(); }, 'aria-label': 'Print board', style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDDA8\uFE0F Print Board')
+          qbMode === 'firstthen' && (ftFirstImage || ftThenImage) && e('button', { onClick: function () { exportQuickBoardHTML('firstthen'); }, 'aria-label': t('symbol_studio.export_first_then_board_as_accessible_html','Export First-Then board as accessible HTML'), style: S.btn('#fef9c3', '#92400e', false) }, '\uD83C\uDF10 Export HTML'),
+          e('button', { onClick: function () { window.print(); }, 'aria-label': t('symbol_studio.print_board','Print board'), style: S.btn('#f3f4f6', '#374151', false) }, '\uD83D\uDDA8\uFE0F Print Board')
         ),
         e('input', { type: 'file', accept: 'image/*', ref: qbUploadRef, style: { display: 'none' }, onChange: handleQbUpload })
       );
@@ -10565,7 +10565,7 @@
             sectionLabel('Student Profiles'),
             profiles.length < MAX_PROFILES && e('button', {
               onClick: addProfile,
-              'aria-label': 'Add new student profile', style: { padding: '2px 8px', border: '1px dashed #6b7280', borderRadius: '12px', background: 'transparent', color: '#6b7280', fontSize: '11px', cursor: 'pointer', lineHeight: 1.4 }
+              'aria-label': t('symbol_studio.add_new_student_profile','Add new student profile'), style: { padding: '2px 8px', border: '1px dashed #6b7280', borderRadius: '12px', background: 'transparent', color: '#6b7280', fontSize: '11px', cursor: 'pointer', lineHeight: 1.4 }
             }, '+ Add')
           ),
           // Profile chips row
@@ -10593,7 +10593,7 @@
               var val = ev.target.value; setAvatarName(val);
               var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { name: val }) : p; });
               setProfiles(upd); store(STORAGE_PROFILES, upd);
-            }, placeholder: 'e.g. Marcus (never leaves this device)', 'aria-label': 'Display name - local only', style: Object.assign({}, S.input, { marginBottom: '2px' }) }),
+            }, placeholder: t('symbol_studio.e_g_marcus_never_leaves_this_device','e.g. Marcus (never leaves this device)'), 'aria-label': t('symbol_studio.display_name_local_only','Display name - local only'), style: Object.assign({}, S.input, { marginBottom: '2px' }) }),
             e('p', { style: { fontSize: '9px', color: '#9ca3af', margin: '0 0 6px' } }, 'Used in Social Stories and prints. Included in manual backups; not cloud sync.'),
             e('label', { style: S.lbl }, 'Codename (used for tracking)'),
             e('div', { style: { display: 'flex', gap: '4px', marginBottom: '6px', alignItems: 'center' } },
@@ -10605,7 +10605,7 @@
                   var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { codename: cn }) : p; });
                   setProfiles(upd); store(STORAGE_PROFILES, upd);
                 },
-                'aria-label': 'Codename adjective',
+                'aria-label': t('symbol_studio.codename_adjective','Codename adjective'),
                 style: { flex: 1, fontSize: '11px', fontWeight: 600, color: PURPLE, padding: '4px 6px', background: LIGHT_PURPLE, borderRadius: '6px', border: '1px solid #c4b5fd', cursor: 'pointer' }
               },
                 e('option', { value: '' }, '— Adjective —'),
@@ -10619,7 +10619,7 @@
                   var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { codename: cn }) : p; });
                   setProfiles(upd); store(STORAGE_PROFILES, upd);
                 },
-                'aria-label': 'Codename animal',
+                'aria-label': t('symbol_studio.codename_animal','Codename animal'),
                 style: { flex: 1, fontSize: '11px', fontWeight: 600, color: PURPLE, padding: '4px 6px', background: LIGHT_PURPLE, borderRadius: '6px', border: '1px solid #c4b5fd', cursor: 'pointer' }
               },
                 e('option', { value: '' }, '— Animal —'),
@@ -10629,18 +10629,18 @@
                 var cn = generateCodename();
                 var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { codename: cn }) : p; });
                 setProfiles(upd); store(STORAGE_PROFILES, upd);
-              }, 'aria-label': 'Randomize codename', title: 'Generate a new random codename', style: { padding: '3px 8px', background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' } }, '🎲')),
+              }, 'aria-label': t('symbol_studio.randomize_codename','Randomize codename'), title: t('symbol_studio.generate_a_new_random_codename','Generate a new random codename'), style: { padding: '3px 8px', background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' } }, '🎲')),
             e('label', { style: S.lbl }, 'Appearance'),
             e('input', { type: 'text', value: avatarDesc, onChange: function (ev) {
               var val = ev.target.value; setAvatarDesc(val);
               var upd = profiles.map(function (p) { return p.id === activeProfileId ? Object.assign({}, p, { description: val }) : p; });
               setProfiles(upd); store(STORAGE_PROFILES, upd);
-            }, placeholder: 'e.g. 8-year-old boy with curly hair', 'aria-label': 'Avatar appearance description', style: Object.assign({}, S.input, { marginBottom: '8px' }) }),
+            }, placeholder: t('symbol_studio.e_g_8_year_old_boy_with_curly_hair','e.g. 8-year-old boy with curly hair'), 'aria-label': t('symbol_studio.avatar_appearance_description','Avatar appearance description'), style: Object.assign({}, S.input, { marginBottom: '8px' }) }),
             e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap' } },
-              e('button', { onClick: generateAvatar, disabled: avatarGenerating || !avatarDesc.trim(), 'aria-label': 'Generate student avatar', style: S.btn(PURPLE, '#fff', avatarGenerating || !avatarDesc.trim()) }, avatarGenerating ? '⏳' : '✨ Generate'),
+              e('button', { onClick: generateAvatar, disabled: avatarGenerating || !avatarDesc.trim(), 'aria-label': t('symbol_studio.generate_student_avatar','Generate student avatar'), style: S.btn(PURPLE, '#fff', avatarGenerating || !avatarDesc.trim()) }, avatarGenerating ? '⏳' : '✨ Generate'),
               e('button', { onClick: function () { fileInputRef.current && fileInputRef.current.click(); }, 'aria-label': 'Upload', style: S.btn('#f3f4f6', '#374151', false) }, '📷 Upload'),
-              activeProfile.image && e('button', { onClick: clearAvatar, title: 'Clear avatar image', 'aria-label': 'Clear avatar image', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️'),
-              profiles.length > 1 && e('button', { onClick: function () { deleteProfile(activeProfileId); }, title: 'Delete this profile', 'aria-label': 'Delete profile ' + (activeProfile.name || 'student'), style: S.btn('#fee2e2', '#dc2626', false) }, '✕')
+              activeProfile.image && e('button', { onClick: clearAvatar, title: t('symbol_studio.clear_avatar_image','Clear avatar image'), 'aria-label': t('symbol_studio.clear_avatar_image_2','Clear avatar image'), style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️'),
+              profiles.length > 1 && e('button', { onClick: function () { deleteProfile(activeProfileId); }, title: t('symbol_studio.delete_this_profile','Delete this profile'), 'aria-label': 'Delete profile ' + (activeProfile.name || 'student'), style: S.btn('#fee2e2', '#dc2626', false) }, '✕')
             ),
             e('input', { type: 'file', accept: 'image/*', ref: fileInputRef, style: { display: 'none' }, onChange: uploadAvatarFile })
           )
@@ -10649,18 +10649,18 @@
         e('div', { style: S.card },
           sectionLabel('Global Settings'),
           e('label', { style: S.lbl }, 'Art Style'),
-          e('select', { value: globalStyleSel, onChange: function (ev) { setGlobalStyle(ev.target.value); }, 'aria-label': 'Art style', style: Object.assign({}, S.input, { marginBottom: globalStyleSel === '__custom__' ? '4px' : '8px' }) },
+          e('select', { value: globalStyleSel, onChange: function (ev) { setGlobalStyle(ev.target.value); }, 'aria-label': t('symbol_studio.art_style','Art style'), style: Object.assign({}, S.input, { marginBottom: globalStyleSel === '__custom__' ? '4px' : '8px' }) },
             STYLE_OPTIONS.map(function (o) { return e('option', { key: o.value, value: o.value }, o.label); })
           ),
           globalStyleSel === '__custom__' && e('input', {
             type: 'text', value: customStyle,
             onChange: function (ev) { setCustomStyle(ev.target.value); },
-            placeholder: 'e.g. pastel crayon, realistic pencil sketch, pixel art...',
-            'aria-label': 'Custom art style description',
+            placeholder: t('symbol_studio.e_g_pastel_crayon_realistic_pencil_sketch_pi','e.g. pastel crayon, realistic pencil sketch, pixel art...'),
+            'aria-label': t('symbol_studio.custom_art_style_description','Custom art style description'),
             style: Object.assign({}, S.input, { marginBottom: '8px', fontSize: '11px' })
           }),
           e('label', { style: { display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', fontSize: '12px', color: '#374151' } },
-            e('input', { type: 'checkbox', checked: autoClean, onChange: function (ev) { setAutoClean(ev.target.checked); }, 'aria-label': 'Auto-clean text from images' }),
+            e('input', { type: 'checkbox', checked: autoClean, onChange: function (ev) { setAutoClean(ev.target.checked); }, 'aria-label': t('symbol_studio.auto_clean_text_from_images','Auto-clean text from images') }),
             e('span', null, 'Auto-clean text from images')
           ),
           e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '3px 0 0' } }, 'Runs a second AI pass to strip any embedded labels'),
@@ -10678,7 +10678,7 @@
             }),
             e('button', {
               onClick: function () { setCatFill(CAT_COLORS); setCatBorder(CAT_BORDER); store(STORAGE_CAT_COLORS + '_fill', CAT_COLORS); store(STORAGE_CAT_COLORS + '_border', CAT_BORDER); },
-              'aria-label': 'Reset category colors', style: { fontSize: '10px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
+              'aria-label': t('symbol_studio.reset_category_colors','Reset category colors'), style: { fontSize: '10px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }
             }, 'Reset')
           ),
           e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '0' } }, 'Colors apply to boards and symbol cards'),
@@ -10686,7 +10686,7 @@
           e('select', {
               value: currentVoice,
               onChange: function (ev) { if (onSetVoice) onSetVoice(ev.target.value); },
-              'aria-label': 'Text-to-speech voice selection',
+              'aria-label': t('symbol_studio.text_to_speech_voice_selection','Text-to-speech voice selection'),
               style: Object.assign({}, S.input, { marginBottom: '4px' })
             },
             isCanvasEnv ? [
@@ -10711,7 +10711,7 @@
                 if (url) { var a = new Audio(url); a.play().catch(function () {}); }
               }).catch(function () {});
             },
-            'aria-label': 'Preview selected voice',
+            'aria-label': t('symbol_studio.preview_selected_voice','Preview selected voice'),
             style: Object.assign({}, { fontSize: '10px', color: PURPLE, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, marginBottom: '4px' })
           }, '🔊 Preview voice'),
           e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '0' } },
@@ -10727,7 +10727,7 @@
           return e('div', { style: Object.assign({}, S.card, { background: 'linear-gradient(135deg, #fefce8 0%, #f0fdf4 100%)', border: '1px solid #d1fae5' }) },
             e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' } },
               sectionLabel('🌱 Word Garden'),
-              e('button', { onClick: function () { setTab('garden'); }, 'aria-label': 'Open garden tab', style: { fontSize: '9px', color: PURPLE, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 } }, 'Open →')),
+              e('button', { onClick: function () { setTab('garden'); }, 'aria-label': t('symbol_studio.open_garden_tab','Open garden tab'), style: { fontSize: '9px', color: PURPLE, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 } }, 'Open →')),
             e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
               GROWTH_ORDER.map(function (lv) {
                 var g = GROWTH_LEVELS[lv]; var ct = gc[lv] || 0; if (ct === 0) return null;
@@ -10790,8 +10790,8 @@
             savedSchedules.length + ' schedule' + (savedSchedules.length !== 1 ? 's' : '')
           ),
           e('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px' } },
-            e('button', { onClick: exportData, 'aria-label': 'Export all data as backup file', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { textAlign: 'left' }) }, '⬇️ Export Backup'),
-            e('button', { onClick: function () { importFileRef.current && importFileRef.current.click(); }, 'aria-label': 'Import Backup', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { textAlign: 'left' }) }, '📂 Import Backup')
+            e('button', { onClick: exportData, 'aria-label': t('symbol_studio.export_all_data_as_backup_file','Export all data as backup file'), style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { textAlign: 'left' }) }, '⬇️ Export Backup'),
+            e('button', { onClick: function () { importFileRef.current && importFileRef.current.click(); }, 'aria-label': t('symbol_studio.import_backup','Import Backup'), style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { textAlign: 'left' }) }, '📂 Import Backup')
           ),
           e('input', { type: 'file', accept: '.json', ref: importFileRef, style: { display: 'none' }, onChange: importData }),
           // ── Analytics card (inside Backup panel) ──
@@ -10817,7 +10817,7 @@
             return e('div', { style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #f3f4f6' } },
               e('button', {
                 onClick: function () { setShowAnalytics(function (v) { return !v; }); },
-                'aria-label': 'Toggle AAC usage analytics',
+                'aria-label': t('symbol_studio.toggle_aac_usage_analytics','Toggle AAC usage analytics'),
                 style: { background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', width: '100%', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: '#374151', marginBottom: showAnalytics ? '8px' : 0 }
               }, '📊 AAC Usage Analytics ', e('span', { style: { color: '#6b7280', fontWeight: 400, marginLeft: 'auto', fontSize: '10px' } }, showAnalytics ? '▲ hide' : '▼ show')),
               showAnalytics && allSessions.length === 0 && e('p', { style: { fontSize: '10px', color: '#6b7280', margin: 0 } }, 'No sessions recorded yet. Use a board in Use mode to start tracking.'),
@@ -10910,7 +10910,7 @@
                     store(scopedKey(STORAGE_USAGE),updated);
                     setUsageLog(updated);
                   },
-                  'aria-label': 'Clear AAC usage analytics data', style: Object.assign({}, S.btn('#fee2e2', '#dc2626', false), { fontSize: '10px', padding: '3px 8px', marginTop: '6px' })
+                  'aria-label': t('symbol_studio.clear_aac_usage_analytics_data','Clear AAC usage analytics data'), style: Object.assign({}, S.btn('#fee2e2', '#dc2626', false), { fontSize: '10px', padding: '3px 8px', marginTop: '6px' })
                 }, '🗑️ Clear Analytics')
               )
             );
@@ -10923,8 +10923,8 @@
               lastSynced && e('span', { style: { fontSize: '9px', color: '#6b7280', marginLeft: 'auto' } }, new Date(lastSynced).toLocaleDateString())
             ),
             e('div', { style: { display: 'flex', gap: '4px' } },
-              e('button', { onClick: syncToCloud, disabled: syncStatus === 'syncing', 'aria-label': 'Save data to cloud', style: Object.assign({}, S.btn(PURPLE, '#fff', syncStatus === 'syncing'), { flex: 1, fontSize: '11px' }) }, '☁️ Sync Now'),
-              e('button', { onClick: loadFromCloud, disabled: syncStatus === 'syncing', 'aria-label': 'Load data from cloud', style: Object.assign({}, S.btn('#f3f4f6', '#374151', syncStatus === 'syncing'), { flex: 1, fontSize: '11px' }) }, '📥 Load')
+              e('button', { onClick: syncToCloud, disabled: syncStatus === 'syncing', 'aria-label': t('symbol_studio.save_data_to_cloud','Save data to cloud'), style: Object.assign({}, S.btn(PURPLE, '#fff', syncStatus === 'syncing'), { flex: 1, fontSize: '11px' }) }, '☁️ Sync Now'),
+              e('button', { onClick: loadFromCloud, disabled: syncStatus === 'syncing', 'aria-label': t('symbol_studio.load_data_from_cloud','Load data from cloud'), style: Object.assign({}, S.btn('#f3f4f6', '#374151', syncStatus === 'syncing'), { flex: 1, fontSize: '11px' }) }, '📥 Load')
             )
           )
         ),
@@ -10964,13 +10964,13 @@
                 ),
                 // Meta row: cue level, data method, and IEP section — collapses if none are set.
                 (g.cueLevel || g.dataMethod || g.linkedIepSection) && e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '5px', fontSize: '9px', color: '#6b7280' } },
-                  g.cueLevel && g.cueLevel !== 'independent' && e('span', { style: { background: '#ede9fe', color: '#5b21b6', padding: '1px 6px', borderRadius: '999px', fontWeight: 600 }, title: 'Cue level currently required' }, '🫳 ' + g.cueLevel + ' cue'),
+                  g.cueLevel && g.cueLevel !== 'independent' && e('span', { style: { background: '#ede9fe', color: '#5b21b6', padding: '1px 6px', borderRadius: '999px', fontWeight: 600 }, title: t('symbol_studio.cue_level_currently_required','Cue level currently required') }, '🫳 ' + g.cueLevel + ' cue'),
                   g.cueLevel === 'independent' && e('span', { style: { background: '#dcfce7', color: '#166534', padding: '1px 6px', borderRadius: '999px', fontWeight: 600 }, title: 'Independent — no cue needed' }, '⭐ independent'),
-                  g.dataMethod && e('span', { style: { background: '#f1f5f9', color: '#334155', padding: '1px 6px', borderRadius: '999px' }, title: 'Data collection method' }, '📊 ' + g.dataMethod),
-                  g.linkedIepSection && e('span', { style: { background: '#fff7ed', color: '#9a3412', padding: '1px 6px', borderRadius: '999px', fontStyle: 'italic' }, title: 'Linked IEP section' }, '📎 ' + g.linkedIepSection)
+                  g.dataMethod && e('span', { style: { background: '#f1f5f9', color: '#334155', padding: '1px 6px', borderRadius: '999px' }, title: t('symbol_studio.data_collection_method','Data collection method') }, '📊 ' + g.dataMethod),
+                  g.linkedIepSection && e('span', { style: { background: '#fff7ed', color: '#9a3412', padding: '1px 6px', borderRadius: '999px', fontStyle: 'italic' }, title: t('symbol_studio.linked_iep_section','Linked IEP section') }, '📎 ' + g.linkedIepSection)
                 ),
-                g.baseline && e('div', { style: { fontSize: '9px', color: '#6b7280', marginBottom: '4px', fontStyle: 'italic' }, title: 'Starting performance' }, 'Baseline: ' + g.baseline),
-                g.accommodations && e('div', { style: { fontSize: '9px', color: '#6b7280', marginBottom: '4px', fontStyle: 'italic' }, title: 'Required supports' }, 'Accommodations: ' + g.accommodations),
+                g.baseline && e('div', { style: { fontSize: '9px', color: '#6b7280', marginBottom: '4px', fontStyle: 'italic' }, title: t('symbol_studio.starting_performance','Starting performance') }, 'Baseline: ' + g.baseline),
+                g.accommodations && e('div', { style: { fontSize: '9px', color: '#6b7280', marginBottom: '4px', fontStyle: 'italic' }, title: t('symbol_studio.required_supports','Required supports') }, 'Accommodations: ' + g.accommodations),
                 // Progress bar
                 e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
                   e('div', { style: { flex: 1, height: '8px', background: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' } },
@@ -11006,11 +11006,11 @@
                 e('div', { style: { display: 'flex', gap: '4px', marginTop: '6px' } },
                   e('button', {
                     onClick: function () { recordIepTrial(g.id, true, 'manual', true); },
-                    'aria-label': 'Record successful IEP trial', style: { fontSize: '10px', background: '#dcfce7', color: '#166534', border: '1px solid #86efac', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
+                    'aria-label': t('symbol_studio.record_successful_iep_trial','Record successful IEP trial'), style: { fontSize: '10px', background: '#dcfce7', color: '#166534', border: '1px solid #86efac', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
                   }, '✓ Success'),
                   e('button', {
                     onClick: function () { recordIepTrial(g.id, false, 'manual', true); },
-                    'aria-label': 'Record unsuccessful IEP trial', style: { fontSize: '10px', background: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
+                    'aria-label': t('symbol_studio.record_unsuccessful_iep_trial','Record unsuccessful IEP trial'), style: { fontSize: '10px', background: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
                   }, '✗ No response')
                 )
               );
@@ -11022,7 +11022,7 @@
             e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
               e('select', {
                 id: 'iep-goal-type',
-                'aria-label': 'IEP goal type',
+                'aria-label': t('symbol_studio.iep_goal_type','IEP goal type'),
                 style: { fontSize: '11px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '4px 6px', background: '#fff' }
               },
                 e('option', { value: 'expressive' }, 'Expressive'),
@@ -11034,15 +11034,15 @@
               e('input', {
                 id: 'iep-goal-text',
                 type: 'text',
-                placeholder: 'e.g. Request items using 2-word phrases',
-                'aria-label': 'IEP goal description',
+                placeholder: t('symbol_studio.e_g_request_items_using_2_word_phrases','e.g. Request items using 2-word phrases'),
+                'aria-label': t('symbol_studio.iep_goal_description','IEP goal description'),
                 style: Object.assign({}, S.input, { flex: 1, margin: 0, fontSize: '11px', minWidth: '200px' })
               }),
               e('input', {
                 id: 'iep-goal-target',
                 type: 'number', min: 1, max: 200,
                 placeholder: '# target',
-                'aria-label': 'IEP goal target count',
+                'aria-label': t('symbol_studio.iep_goal_target_count','IEP goal target count'),
                 style: { width: '60px', fontSize: '11px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '4px 6px', textAlign: 'center' }
               })
             ),
@@ -11061,7 +11061,7 @@
                 ),
                 e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px' } },
                   e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Cue level'),
-                  e('select', { id: 'iep-goal-cue', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' }, title: 'Support required for the student to succeed on this goal' },
+                  e('select', { id: 'iep-goal-cue', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' }, title: t('symbol_studio.support_required_for_the_student_to_succeed','Support required for the student to succeed on this goal') },
                     e('option', { value: 'independent' }, 'Independent'),
                     e('option', { value: 'visual' }, 'Visual cue'),
                     e('option', { value: 'verbal' }, 'Verbal cue'),
@@ -11084,11 +11084,11 @@
                 ),
                 e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px', gridColumn: '1 / -1' } },
                   e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Baseline'),
-                  e('input', { id: 'iep-goal-baseline', type: 'text', placeholder: 'e.g. 2/10 accuracy on probe trials (Sept 2026)', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
+                  e('input', { id: 'iep-goal-baseline', type: 'text', placeholder: t('symbol_studio.e_g_2_10_accuracy_on_probe_trials_sept_2026','e.g. 2/10 accuracy on probe trials (Sept 2026)'), style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
                 ),
                 e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px', gridColumn: '1 / -1' } },
                   e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Accommodations'),
-                  e('input', { id: 'iep-goal-accom', type: 'text', placeholder: 'e.g. AAC device available, visual supports, extended time', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
+                  e('input', { id: 'iep-goal-accom', type: 'text', placeholder: t('symbol_studio.e_g_aac_device_available_visual_supports_ext','e.g. AAC device available, visual supports, extended time'), style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
                 ),
                 e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px', gridColumn: '1 / -1' } },
                   e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Linked IEP section (optional)'),
@@ -11124,7 +11124,7 @@
                   var el = document.getElementById(id); if (el) el.value = '';
                 });
               },
-              'aria-label': 'Add new IEP goal',
+              'aria-label': t('symbol_studio.add_new_iep_goal','Add new IEP goal'),
               style: S.btn(PURPLE, '#fff', false)
             }, '+ Add Goal')
           )
@@ -11139,7 +11139,7 @@
     function renderMulberryPicker() {
       return e('div', {
         ref: mulberryDialogRef, tabIndex: -1,
-        role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Find a validated Mulberry symbol',
+        role: 'dialog', 'aria-modal': 'true', 'aria-label': t('symbol_studio.find_a_validated_mulberry_symbol','Find a validated Mulberry symbol'),
         onKeyDown: function (ev) {
           if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); setMulberryOpen(false); return; }
           if (ev.key !== 'Tab') return;
@@ -11171,7 +11171,7 @@
               type: 'text', value: mulberryQuery, autoFocus: true,
               onChange: function (ev) { setMulberryQuery(ev.target.value); },
               onKeyDown: function (ev) { if (ev.key === 'Enter') runMulberrySearch(); },
-              placeholder: 'Search a word, e.g. happy, bathroom, more', 'aria-label': 'Search Mulberry symbols',
+              placeholder: t('symbol_studio.search_a_word_e_g_happy_bathroom_more','Search a word, e.g. happy, bathroom, more'), 'aria-label': t('symbol_studio.search_mulberry_symbols','Search Mulberry symbols'),
               style: Object.assign({}, S.input, { flex: 1 })
             }),
             e('button', { onClick: function () { runMulberrySearch(); }, disabled: !mulberryQuery.trim() || mulberryLoading, 'aria-label': 'Search', style: S.btn('#0e7490', '#fff', !mulberryQuery.trim() || mulberryLoading) }, mulberryLoading ? '…' : 'Search')
@@ -11227,8 +11227,8 @@
       return e('div', { className: 'ss-symbols-workspace', style: { display: 'flex', gap: '14px', padding: '16px', flex: 1, overflow: 'hidden' } },
         // Input panel
         e('div', { className: 'ss-symbol-creator', style: { width: '220px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '10px' } },
-          symbolSaveError && e('div', { role: 'alert', style: { padding: '10px', border: '1px solid #b45309', borderRadius: '8px', background: '#fffbeb', color: '#78350f', fontSize: '12px', lineHeight: 1.5 } }, 'Changes are only available in this session. Device storage may be full. Retry saving. Download a backup before closing if saving still fails.', e('button', { type: 'button', onClick: retrySymbolBankSave, 'aria-label': 'Retry saving Symbol Bank', style: Object.assign({}, S.btn('#fff', '#78350f', false), { minHeight: '44px', marginTop: '8px' }) }, 'Retry save')),
-          symbolRemoval && e('div', { role: 'status', style: { padding: '10px', background: '#eff6ff', borderRadius: '8px', fontSize: '12px', lineHeight: 1.5 } }, symbolRemoval.length + ' symbol' + (symbolRemoval.length === 1 ? '' : 's') + ' removed. Undo is available until another removal, switching learners, or closing Studio.', e('button', { type: 'button', onClick: undoSymbolRemoval, 'aria-label': 'Undo last symbol removal', style: Object.assign({}, S.btn('#fff', '#1d4ed8', false), { minHeight: '44px', marginTop: '8px' }) }, 'Undo removal')),
+          symbolSaveError && e('div', { role: 'alert', style: { padding: '10px', border: '1px solid #b45309', borderRadius: '8px', background: '#fffbeb', color: '#78350f', fontSize: '12px', lineHeight: 1.5 } }, 'Changes are only available in this session. Device storage may be full. Retry saving. Download a backup before closing if saving still fails.', e('button', { type: 'button', onClick: retrySymbolBankSave, 'aria-label': t('symbol_studio.retry_saving_symbol_bank','Retry saving Symbol Bank'), style: Object.assign({}, S.btn('#fff', '#78350f', false), { minHeight: '44px', marginTop: '8px' }) }, 'Retry save')),
+          symbolRemoval && e('div', { role: 'status', style: { padding: '10px', background: '#eff6ff', borderRadius: '8px', fontSize: '12px', lineHeight: 1.5 } }, symbolRemoval.length + ' symbol' + (symbolRemoval.length === 1 ? '' : 's') + ' removed. Undo is available until another removal, switching learners, or closing Studio.', e('button', { type: 'button', onClick: undoSymbolRemoval, 'aria-label': t('symbol_studio.undo_last_symbol_removal','Undo last symbol removal'), style: Object.assign({}, S.btn('#fff', '#1d4ed8', false), { minHeight: '44px', marginTop: '8px' }) }, 'Undo removal')),
           // Mode toggle
           e('div', { style: { display: 'flex', gap: '3px', background: '#f3f4f6', borderRadius: '8px', padding: '3px' } },
             ['single', 'batch'].map(function (m) {
@@ -11257,23 +11257,23 @@
           })(),
           symMode === 'single'
             ? e('div', { style: { display: 'flex', flexDirection: 'column', gap: '7px' } },
-                e('div', null, e('label', { style: S.lbl }, 'Label'), e('input', { type: 'text', value: symLabel, onChange: function (ev) { setSymLabel(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') genSingle(); }, placeholder: 'e.g. wash hands', 'aria-label': 'Symbol label', style: S.input, autoFocus: true })),
-                e('div', null, e('label', { style: S.lbl }, 'Context (optional)'), e('input', { type: 'text', value: symDesc, onChange: function (ev) { setSymDesc(ev.target.value); }, placeholder: 'e.g. hygiene routine', 'aria-label': 'Symbol context', style: S.input })),
+                e('div', null, e('label', { style: S.lbl }, 'Label'), e('input', { type: 'text', value: symLabel, onChange: function (ev) { setSymLabel(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') genSingle(); }, placeholder: t('symbol_studio.e_g_wash_hands','e.g. wash hands'), 'aria-label': t('symbol_studio.symbol_label','Symbol label'), style: S.input, autoFocus: true })),
+                e('div', null, e('label', { style: S.lbl }, 'Context (optional)'), e('input', { type: 'text', value: symDesc, onChange: function (ev) { setSymDesc(ev.target.value); }, placeholder: t('symbol_studio.e_g_hygiene_routine','e.g. hygiene routine'), 'aria-label': t('symbol_studio.symbol_context','Symbol context'), style: S.input })),
                 e('div', null,
                   e('label', { style: S.lbl }, 'Topic (optional)'),
-                  e('select', { value: symCategory, onChange: function (ev) { setSymCategory(ev.target.value); }, 'aria-label': 'Symbol topic', style: S.input },
+                  e('select', { value: symCategory, onChange: function (ev) { setSymCategory(ev.target.value); }, 'aria-label': t('symbol_studio.symbol_topic','Symbol topic'), style: S.input },
                     e('option', { value: '' }, 'No topic'),
                     ['emotions', 'classroom', 'daily living', 'food', 'social', 'actions', 'places', 'objects'].map(function (c) { return e('option', { key: c, value: c }, c); })
                   ),
                   e('label', { style: Object.assign({}, S.lbl, { marginTop: '7px' }) }, 'Word type (AAC color)'),
-                  e('select', { value: symWordType, onChange: function (ev) { setSymWordType(ev.target.value); }, 'aria-label': 'Symbol word type', style: S.input },
+                  e('select', { value: symWordType, onChange: function (ev) { setSymWordType(ev.target.value); }, 'aria-label': t('symbol_studio.symbol_word_type','Symbol word type'), style: S.input },
                     ['other', 'noun', 'verb', 'adjective'].map(function (type) { return e('option', { key: type, value: type }, type === 'other' ? 'Other / not set' : type); })
                   )
                 )
               )
             : e('div', null,
                 e('label', { style: S.lbl }, 'One label per line'),
-                e('textarea', { value: symBatch, onChange: function (ev) { setSymBatch(ev.target.value); }, placeholder: 'brush teeth\nget dressed\neat breakfast', 'aria-label': 'Batch symbol labels, one per line', style: Object.assign({}, S.textarea, { height: '70px' }) }),
+                e('textarea', { value: symBatch, onChange: function (ev) { setSymBatch(ev.target.value); }, placeholder: 'brush teeth\nget dressed\neat breakfast', 'aria-label': t('symbol_studio.batch_symbol_labels_one_per_line','Batch symbol labels, one per line'), style: Object.assign({}, S.textarea, { height: '70px' }) }),
                 e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '2px 0 0' } }, symBatch.split('\n').filter(function (l) { return l.trim(); }).length + ' queued'),
                 e('div', { style: { marginTop: '6px' } },
                   e('div', { style: { fontSize: '10px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, 'Quick Sets'),
@@ -11291,10 +11291,10 @@
           ),
           // Validated alternative to AI generation: search the Mulberry set (a
           // hand-designed, CC BY-SA AAC symbol library) for the current label.
-          e('button', { onClick: openMulberryPicker, disabled: symMode === 'single' && !symLabel.trim(), 'aria-label': 'Find a validated Mulberry symbol', title: 'Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)', style: S.btn('#ecfeff', '#0e7490', symMode === 'single' && !symLabel.trim()) }, '🔎 Find validated symbol'),
+          e('button', { onClick: openMulberryPicker, disabled: symMode === 'single' && !symLabel.trim(), 'aria-label': t('symbol_studio.find_a_validated_mulberry_symbol_2','Find a validated Mulberry symbol'), title: 'Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)', style: S.btn('#ecfeff', '#0e7490', symMode === 'single' && !symLabel.trim()) }, '🔎 Find validated symbol'),
           e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '6px 0 0', lineHeight: 1.4 } }, 'AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use ', e('b', { style: { color: '#0e7490' } }, 'Find validated symbol'), ' for hand-designed Mulberry symbols.'),
           gallery.length > 0 && e('button', { onClick: downloadAll, 'aria-label': 'Download all ' + gallery.length + ' symbols', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️ Download All (' + gallery.length + ')'),
-          gallery.length > 0 && e('button', { onClick: clearGallery, 'aria-label': 'Clear all symbols from Symbol Bank', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️ Clear All')
+          gallery.length > 0 && e('button', { onClick: clearGallery, 'aria-label': t('symbol_studio.clear_all_symbols_from_symbol_bank','Clear all symbols from Symbol Bank'), style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️ Clear All')
         ),
         // Preview + gallery
         e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', gap: '10px' } },
@@ -11331,7 +11331,7 @@
               ),
               e('label', { style: Object.assign({}, S.lbl, { display: 'block', marginBottom: '7px' }) },
                 'Search aliases',
-                e('input', { type: 'text', key: selectedItem.id, value: Object.prototype.hasOwnProperty.call(symAliasDraft, selectedItem.id) ? symAliasDraft[selectedItem.id] : (selectedItem.aliases || []).join(', '), onChange: function (ev) { var value = ev.target.value; setSymAliasDraft(function (prev) { var next = Object.assign({}, prev); next[selectedItem.id] = value; return next; }); }, onBlur: function (ev) { setSymbolAliases(selectedItem.id, ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); ev.currentTarget.blur(); } }, placeholder: 'restroom, toilet, washroom', 'aria-label': 'Search aliases for ' + selectedItem.label, style: Object.assign({}, S.input, { marginTop: '3px' }) })
+                e('input', { type: 'text', key: selectedItem.id, value: Object.prototype.hasOwnProperty.call(symAliasDraft, selectedItem.id) ? symAliasDraft[selectedItem.id] : (selectedItem.aliases || []).join(', '), onChange: function (ev) { var value = ev.target.value; setSymAliasDraft(function (prev) { var next = Object.assign({}, prev); next[selectedItem.id] = value; return next; }); }, onBlur: function (ev) { setSymbolAliases(selectedItem.id, ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); ev.currentTarget.blur(); } }, placeholder: t('symbol_studio.restroom_toilet_washroom','restroom, toilet, washroom'), 'aria-label': 'Search aliases for ' + selectedItem.label, style: Object.assign({}, S.input, { marginTop: '3px' }) })
               ),
               e('label', { style: Object.assign({}, S.lbl, { display: 'block' }) },
                 'Word type (AAC color)',
@@ -11353,7 +11353,7 @@
               ),
               e('label', { style: Object.assign({}, S.lbl, { display: 'block' }) },
                 'Review note',
-                e('input', { type: 'text', value: selectedItem.reviewNote || '', onChange: function (ev) { setSymbolReviewNote(selectedItem.id, ev.target.value); }, placeholder: 'Context or change needed', 'aria-label': 'Review note for ' + selectedItem.label, style: Object.assign({}, S.input, { marginTop: '3px' }) })
+                e('input', { type: 'text', value: selectedItem.reviewNote || '', onChange: function (ev) { setSymbolReviewNote(selectedItem.id, ev.target.value); }, placeholder: t('symbol_studio.context_or_change_needed','Context or change needed'), 'aria-label': 'Review note for ' + selectedItem.label, style: Object.assign({}, S.input, { marginTop: '3px' }) })
               ),
               selectedVariants.length > 1 && e('div', { style: { marginTop: '8px', display: 'flex', gap: '5px', alignItems: 'center', flexWrap: 'wrap' } },
                 e('span', { style: { fontSize: '10px', fontWeight: 700, color: '#6b7280' } }, 'Variants:'),
@@ -11369,34 +11369,34 @@
               e('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' } },
                 e('button', { type: 'button', 'aria-label': symBulk.open ? 'Finish organizing symbols' : 'Organize symbols', 'aria-expanded': symBulk.open, onClick: function () { updateSymbolBatch(symBulk.open ? { open: false, ids: [], category: '', review: '', topics: '' } : { open: true }); }, style: Object.assign({}, S.btn(LIGHT_PURPLE, PURPLE, false), { minHeight: '44px' }) }, symBulk.open ? 'Done' : 'Organize symbols'),
                 symBulk.open && e('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: '12px', fontWeight: 700 } }, selectedBatchCount + ' selected' + (selectedBatchCount > shownBatchCount ? ' (' + (selectedBatchCount - shownBatchCount) + ' hidden by filters)' : '')),
-                symBulk.undo.length > 0 && e('button', { type: 'button', 'aria-label': 'Undo last symbol batch change', onClick: undoSymbolBatch, style: Object.assign({}, S.btn('#fff', '#374151', false), { minHeight: '44px' }) }, 'Undo last batch')
+                symBulk.undo.length > 0 && e('button', { type: 'button', 'aria-label': t('symbol_studio.undo_last_symbol_batch_change','Undo last symbol batch change'), onClick: undoSymbolBatch, style: Object.assign({}, S.btn('#fff', '#374151', false), { minHeight: '44px' }) }, 'Undo last batch')
               ),
               symBulk.open && e(React.Fragment, null,
                 renderSelectionPack(),
-                e('button', { type: 'button', 'aria-label': 'Create board from selected symbols', disabled: !selectedBatchCount || draftHydratedProfile !== activeProfileId || !!draftRecovery, onClick: createBoardFromSelection, style: Object.assign({}, S.btn('#059669', '#fff', !selectedBatchCount), { minHeight: '44px', marginBottom: '8px' }) }, 'Create board from selection (' + selectedBatchCount + ')'),
+                e('button', { type: 'button', 'aria-label': t('symbol_studio.create_board_from_selected_symbols','Create board from selected symbols'), disabled: !selectedBatchCount || draftHydratedProfile !== activeProfileId || !!draftRecovery, onClick: createBoardFromSelection, style: Object.assign({}, S.btn('#059669', '#fff', !selectedBatchCount), { minHeight: '44px', marginBottom: '8px' }) }, 'Create board from selection (' + selectedBatchCount + ')'),
                 e('p', { style: { fontSize: '12px', lineHeight: 1.5, margin: '0 0 8px' } }, 'Includes selected symbols hidden by filters, in selection order. Apply any pending metadata changes before creating the board.'),
                 e('p', { style: { fontSize: '12px', lineHeight: 1.5, margin: '8px 0' } }, 'Select symbols below, then choose changes to apply together. Topics are added to existing topics.'),
                 e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' } },
-                  e('button', { type: 'button', 'aria-label': 'Select all shown symbols', disabled: !filtered.length, onClick: function () { updateSymbolBatch({ ids: Array.from(new Set(symBulk.ids.concat(filtered.map(function (asset) { return asset.id; })))) }); }, style: Object.assign({}, S.btn('#fff', '#374151', !filtered.length), { minHeight: '44px' }) }, 'Select all shown (' + filtered.length + ')'),
-                  e('button', { type: 'button', 'aria-label': 'Clear symbol selection', disabled: !selectedBatchCount, onClick: function () { updateSymbolBatch({ ids: [] }); }, style: Object.assign({}, S.btn('#fff', '#374151', !selectedBatchCount), { minHeight: '44px' }) }, 'Clear selection')
+                  e('button', { type: 'button', 'aria-label': t('symbol_studio.select_all_shown_symbols','Select all shown symbols'), disabled: !filtered.length, onClick: function () { updateSymbolBatch({ ids: Array.from(new Set(symBulk.ids.concat(filtered.map(function (asset) { return asset.id; })))) }); }, style: Object.assign({}, S.btn('#fff', '#374151', !filtered.length), { minHeight: '44px' }) }, 'Select all shown (' + filtered.length + ')'),
+                  e('button', { type: 'button', 'aria-label': t('symbol_studio.clear_symbol_selection','Clear symbol selection'), disabled: !selectedBatchCount, onClick: function () { updateSymbolBatch({ ids: [] }); }, style: Object.assign({}, S.btn('#fff', '#374151', !selectedBatchCount), { minHeight: '44px' }) }, 'Clear selection')
                 ),
                 e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px' } },
-                  e('label', { style: S.lbl }, 'Review status', e('select', { value: symBulk.review, 'aria-label': 'Batch review status', onChange: function (event) { updateSymbolBatch({ review: event.target.value }); }, style: Object.assign({}, S.input, { minHeight: '44px' }) }, e('option', { value: '' }, 'Keep current'), [['approved', 'Approved for local use'], ['needs_changes', 'Needs changes'], ['unreviewed', 'Unreviewed']].map(function (pair) { return e('option', { key: pair[0], value: pair[0] }, pair[1]); }))),
-                  e('label', { style: S.lbl }, 'Word type', e('select', { value: symBulk.category, 'aria-label': 'Batch word type', onChange: function (event) { updateSymbolBatch({ category: event.target.value }); }, style: Object.assign({}, S.input, { minHeight: '44px' }) }, e('option', { value: '' }, 'Keep current'), ['noun', 'verb', 'adjective', 'other'].map(function (category) { return e('option', { key: category, value: category }, category === 'other' ? 'Other / not set' : category); }))),
-                  e('label', { style: S.lbl }, 'Add topics (comma-separated)', e('input', { value: symBulk.topics, 'aria-label': 'Batch topics to add', placeholder: 'school, home', onChange: function (event) { updateSymbolBatch({ topics: event.target.value }); }, style: Object.assign({}, S.input, { minHeight: '44px' }) }))
+                  e('label', { style: S.lbl }, 'Review status', e('select', { value: symBulk.review, 'aria-label': t('symbol_studio.batch_review_status','Batch review status'), onChange: function (event) { updateSymbolBatch({ review: event.target.value }); }, style: Object.assign({}, S.input, { minHeight: '44px' }) }, e('option', { value: '' }, 'Keep current'), [['approved', 'Approved for local use'], ['needs_changes', 'Needs changes'], ['unreviewed', 'Unreviewed']].map(function (pair) { return e('option', { key: pair[0], value: pair[0] }, pair[1]); }))),
+                  e('label', { style: S.lbl }, 'Word type', e('select', { value: symBulk.category, 'aria-label': t('symbol_studio.batch_word_type','Batch word type'), onChange: function (event) { updateSymbolBatch({ category: event.target.value }); }, style: Object.assign({}, S.input, { minHeight: '44px' }) }, e('option', { value: '' }, 'Keep current'), ['noun', 'verb', 'adjective', 'other'].map(function (category) { return e('option', { key: category, value: category }, category === 'other' ? 'Other / not set' : category); }))),
+                  e('label', { style: S.lbl }, 'Add topics (comma-separated)', e('input', { value: symBulk.topics, 'aria-label': t('symbol_studio.batch_topics_to_add','Batch topics to add'), placeholder: t('symbol_studio.school_home','school, home'), onChange: function (event) { updateSymbolBatch({ topics: event.target.value }); }, style: Object.assign({}, S.input, { minHeight: '44px' }) }))
                 ),
-                e('button', { type: 'button', 'aria-label': 'Apply changes to selected symbols', disabled: !selectedBatchCount || (!symBulk.review && !symBulk.category && !symBulk.topics.trim()), onClick: applySymbolBatch, style: Object.assign({}, S.btn(PURPLE, '#fff', !selectedBatchCount || (!symBulk.review && !symBulk.category && !symBulk.topics.trim())), { minHeight: '44px', marginTop: '10px' }) }, 'Apply to ' + selectedBatchCount + ' selected symbol' + (selectedBatchCount === 1 ? '' : 's'))
+                e('button', { type: 'button', 'aria-label': t('symbol_studio.apply_changes_to_selected_symbols','Apply changes to selected symbols'), disabled: !selectedBatchCount || (!symBulk.review && !symBulk.category && !symBulk.topics.trim()), onClick: applySymbolBatch, style: Object.assign({}, S.btn(PURPLE, '#fff', !selectedBatchCount || (!symBulk.review && !symBulk.category && !symBulk.topics.trim())), { minHeight: '44px', marginTop: '10px' }) }, 'Apply to ' + selectedBatchCount + ' selected symbol' + (selectedBatchCount === 1 ? '' : 's'))
               ),
               symBulk.message && e('p', { role: 'status', 'aria-live': 'polite', style: { fontSize: '12px', lineHeight: 1.5, margin: '8px 0 0' } }, symBulk.message)
             ),
             e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' } },
               e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
                 e('span', { role: 'status', 'aria-live': 'polite', style: { fontWeight: 600, fontSize: '12px', color: '#374151' } }, 'Symbol Bank (' + filtered.length + (filtered.length !== gallery.length ? '/' + gallery.length : '') + ')'),
-                e('input', { type: 'text', value: symFilter, onChange: function (ev) { setSymFilter(ev.target.value); }, placeholder: '🔍 Search symbols…', 'aria-label': 'Search symbols in the Symbol Bank', style: { border: '1px solid #e5e7eb', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', flex: 1 } }),
+                e('input', { type: 'text', value: symFilter, onChange: function (ev) { setSymFilter(ev.target.value); }, placeholder: '🔍 Search symbols…', 'aria-label': t('symbol_studio.search_symbols_in_the_symbol_bank','Search symbols in the Symbol Bank'), style: { border: '1px solid #e5e7eb', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', flex: 1 } }),
                 e('button', { onClick: function () { setSymShowFavs(!symShowFavs); }, 'aria-pressed': symShowFavs, 'aria-label': symShowFavs ? 'Show all symbols' : 'Show favorite symbols only', style: { padding: '3px 8px', border: '1px solid ' + (symShowFavs ? PURPLE : '#e5e7eb'), borderRadius: '12px', background: symShowFavs ? LIGHT_PURPLE : '#fff', color: symShowFavs ? PURPLE : '#6b7280', fontSize: '11px', cursor: 'pointer', fontWeight: symShowFavs ? 700 : 400, flexShrink: 0 } }, '⭐')
               ),
               e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
-                e('select', { value: symTopicFilter, 'aria-label': 'Filter Symbol Bank by topic', onChange: function (event) { setSymTopicFilter(event.target.value); }, style: { minHeight: '36px', maxWidth: '100%', border: '1px solid #cbd5e1', borderRadius: '7px', padding: '4px 8px', background: '#fff', color: '#334155' } },
+                e('select', { value: symTopicFilter, 'aria-label': t('symbol_studio.filter_symbol_bank_by_topic','Filter Symbol Bank by topic'), onChange: function (event) { setSymTopicFilter(event.target.value); }, style: { minHeight: '36px', maxWidth: '100%', border: '1px solid #cbd5e1', borderRadius: '7px', padding: '4px 8px', background: '#fff', color: '#334155' } },
                   e('option', { value: '' }, 'All topics'),
                   Array.from(new Set(gallery.reduce(function (tags, asset) { return tags.concat(asset.topicTags || []); }, []))).sort().map(function (topic) { return e('option', { key: topic, value: topic }, topic); })),
                 [['', 'All'], ['noun', 'Nouns'], ['verb', 'Verbs'], ['adjective', 'Adjectives'], ['other', 'Other']].map(function (pair) {
@@ -11441,7 +11441,7 @@
                           e('input', { type: 'checkbox', checked: included, 'aria-label': 'Include ' + item.label + ' in batch', onChange: function () { setSymBulk(function (previous) { var ids = previous.ids.indexOf(item.id) >= 0 ? previous.ids.filter(function (id) { return id !== item.id; }) : previous.ids.concat([item.id]); return Object.assign({}, previous, { ids: ids }); }); }, style: { width: '22px', height: '22px', accentColor: PURPLE } }), content)
                         : e('button', { type: 'button', onClick: function () { setSelectedId(item.id); }, 'aria-label': 'Select symbol: ' + item.label + (item.isFavorite ? ' (favorite)' : '') + (item.locked ? ' (locked)' : ''), 'aria-pressed': item.id === selectedId, style: Object.assign({}, cardControl, { minHeight: '44px' }) }, content),
                       e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' } },
-                        item.locked ? e('span', { role: 'img', 'aria-label': 'Protected from regeneration', style: { fontSize: '12px' } }, '🔒') : e('span', null),
+                        item.locked ? e('span', { role: 'img', 'aria-label': t('symbol_studio.protected_from_regeneration','Protected from regeneration'), style: { fontSize: '12px' } }, '🔒') : e('span', null),
                         e('button', { type: 'button', onClick: function () { toggleFavorite(item.id); }, 'aria-pressed': !!item.isFavorite, 'aria-label': (item.isFavorite ? 'Remove ' : 'Add ') + item.label + (item.isFavorite ? ' from favorites' : ' to favorites'), style: { minWidth: '44px', minHeight: '44px', border: '1px solid #e5e7eb', borderRadius: '8px', background: item.isFavorite ? '#fef3c7' : '#fff', color: '#475569', cursor: 'pointer', fontSize: '18px' } }, item.isFavorite ? '★' : '☆')
                       )
                     );
@@ -11564,16 +11564,16 @@
         e('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap', flexShrink: 0 } },
           e('div', { className: 'ss-board-topic', style: { flex: 1, minWidth: '200px' } },
             e('label', { style: S.lbl }, 'Topic'),
-            e('input', { type: 'text', value: boardTopic, onChange: function (ev) { setBoardTopic(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') generateBoardFromTopic(); }, placeholder: 'e.g. morning routine, feelings, playground', 'aria-label': 'Board topic', style: S.input, autoFocus: true })
+            e('input', { type: 'text', value: boardTopic, onChange: function (ev) { setBoardTopic(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') generateBoardFromTopic(); }, placeholder: t('symbol_studio.e_g_morning_routine_feelings_playground','e.g. morning routine, feelings, playground'), 'aria-label': t('symbol_studio.board_topic','Board topic'), style: S.input, autoFocus: true })
           ),
-          e('button', { onClick: generateBoardFromTopic, disabled: !boardTopic.trim() || boardGenerating, 'aria-label': 'Generate word list', style: S.btn(PURPLE, '#fff', !boardTopic.trim() || boardGenerating) }, boardGenerating ? '⏳ Writing...' : '📝 Generate Word List'),
-          boardWords.length > 0 && e('button', { onClick: generateBoardImages, disabled: isLoading, 'aria-label': 'Generate images', style: S.btn('#059669', '#fff', isLoading) }, isLoading ? '⏳ Generating...' : '✨ Generate Images'),
+          e('button', { onClick: generateBoardFromTopic, disabled: !boardTopic.trim() || boardGenerating, 'aria-label': t('symbol_studio.generate_word_list','Generate word list'), style: S.btn(PURPLE, '#fff', !boardTopic.trim() || boardGenerating) }, boardGenerating ? '⏳ Writing...' : '📝 Generate Word List'),
+          boardWords.length > 0 && e('button', { onClick: generateBoardImages, disabled: isLoading, 'aria-label': t('symbol_studio.generate_images','Generate images'), style: S.btn('#059669', '#fff', isLoading) }, isLoading ? '⏳ Generating...' : '✨ Generate Images'),
           boardWords.length > 0 && e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
             e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Cols:'),
-            e('input', { type: 'number', min: 2, max: 8, value: boardCols, onChange: function (ev) { setBoardCols(Number(ev.target.value)); }, 'aria-label': 'Board columns', style: { width: '52px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '6px 8px', fontSize: '13px' } })
+            e('input', { type: 'number', min: 2, max: 8, value: boardCols, onChange: function (ev) { setBoardCols(Number(ev.target.value)); }, 'aria-label': t('symbol_studio.board_columns','Board columns'), style: { width: '52px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '6px 8px', fontSize: '13px' } })
           ),
           boardWords.length > 0 && e('label', { style: { display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', cursor: 'pointer', color: '#374151' } },
-            e('input', { type: 'checkbox', checked: boardColor, onChange: function (ev) { setBoardColor(ev.target.checked); }, 'aria-label': 'Enable color coding' }),
+            e('input', { type: 'checkbox', checked: boardColor, onChange: function (ev) { setBoardColor(ev.target.checked); }, 'aria-label': t('symbol_studio.enable_color_coding','Enable color coding') }),
             'Color coding'
           ),
           // Theme selector
@@ -11604,15 +11604,15 @@
                   setBoardWords(function (prev) { return prev.map(function (w) { return w.originalLabel ? Object.assign({}, w, { label: w.originalLabel, translatedLabel: undefined, originalLabel: undefined }) : w; }); });
                 }
               },
-              'aria-label': 'Board language',
+              'aria-label': t('symbol_studio.board_language','Board language'),
               style: { fontSize: '11px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '3px 6px', background: '#fff', cursor: 'pointer' }
             },
               LANG_OPTIONS.map(function (l) { return e('option', { key: l.code, value: l.code }, l.label); })
             ),
-            translating && e('span', { role: 'status', 'aria-label': 'Translating board labels', style: { fontSize: '10px', color: PURPLE } }, '⏳')
+            translating && e('span', { role: 'status', 'aria-label': t('symbol_studio.translating_board_labels','Translating board labels'), style: { fontSize: '10px', color: PURPLE } }, '⏳')
           ),
-          e('button', { onClick: function () { setShowSentencePanel(!showSentencePanel); if (!showSentencePanel) { setSentenceMapping([]); setSentenceInput(''); } }, 'aria-label': 'From Sentence', style: S.btn(showSentencePanel ? LIGHT_PURPLE : '#f3f4f6', showSentencePanel ? PURPLE : '#374151', false), title: 'Type a sentence and let AI map each word to an AAC symbol' }, '🔤 From Sentence'),
-          e('button', { onClick: function () { setShowGalleryPicker(!showGalleryPicker); }, 'aria-label': 'From Symbol Bank', style: S.btn(showGalleryPicker ? LIGHT_PURPLE : '#f3f4f6', showGalleryPicker ? PURPLE : '#374151', false), title: 'Add a symbol from the Symbol Bank directly to the board' }, '🖼️ From Symbol Bank'),
+          e('button', { onClick: function () { setShowSentencePanel(!showSentencePanel); if (!showSentencePanel) { setSentenceMapping([]); setSentenceInput(''); } }, 'aria-label': t('symbol_studio.from_sentence','From Sentence'), style: S.btn(showSentencePanel ? LIGHT_PURPLE : '#f3f4f6', showSentencePanel ? PURPLE : '#374151', false), title: t('symbol_studio.type_a_sentence_and_let_ai_map_each_word_to','Type a sentence and let AI map each word to an AAC symbol') }, '🔤 From Sentence'),
+          e('button', { onClick: function () { setShowGalleryPicker(!showGalleryPicker); }, 'aria-label': t('symbol_studio.from_symbol_bank','From Symbol Bank'), style: S.btn(showGalleryPicker ? LIGHT_PURPLE : '#f3f4f6', showGalleryPicker ? PURPLE : '#374151', false), title: t('symbol_studio.add_a_symbol_from_the_symbol_bank_directly_t','Add a symbol from the Symbol Bank directly to the board') }, '🖼️ From Symbol Bank'),
           boardWords.length > 0 && !boardPages && e('button', {
             onClick: enablePages,
             title: 'Enable multi-page mode — add linked pages to this board', 'aria-label': 'Enable multi-page mode — add linked pages to this board',
@@ -11646,29 +11646,29 @@
                 'aria-describedby': 'ss-page-reorder-help',
                 'aria-label': (pg.title || ('Page ' + (pi + 1))) + ' board page, position ' + (pi + 1) + ' of ' + boardPages.length,
                 style: { padding: '5px 9px', minHeight: '32px', border: '2px solid ' + (active ? '#92400e' : '#fde68a'), borderRadius: '6px', background: active ? '#92400e' : 'transparent', color: active ? '#fff' : '#92400e', fontSize: '10px', fontWeight: active ? 700 : 400, cursor: 'grab', transition: 'border-color 0.15s' },
-                title: 'Drag or press Alt+Left/Right Arrow to reorder pages'
+                title: t('symbol_studio.drag_or_press_alt_left_right_arrow_to_reorde','Drag or press Alt+Left/Right Arrow to reorder pages')
               }, pg.title || ('Page ' + (pi + 1)));
             }),
-            e('button', { type: 'button', onClick: addPage, title: 'Add a new page', 'aria-label': 'Add a new page', style: { background: 'none', border: '1px dashed #92400e', borderRadius: '6px', width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', padding: 0, color: '#92400e', fontSize: '15px', fontWeight: 700, cursor: 'pointer' } }, '+'),
-            boardPages.length > 1 && e('button', { type: 'button', onClick: function () { deletePage(activePageIdx); }, title: 'Delete current page', 'aria-label': 'Delete current board page', style: { background: 'none', border: '1px solid transparent', borderRadius: '6px', width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', color: '#b91c1c', fontSize: '14px', cursor: 'pointer', padding: 0 } }, '✕')
+            e('button', { type: 'button', onClick: addPage, title: t('symbol_studio.add_a_new_page','Add a new page'), 'aria-label': t('symbol_studio.add_a_new_page_2','Add a new page'), style: { background: 'none', border: '1px dashed #92400e', borderRadius: '6px', width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', padding: 0, color: '#92400e', fontSize: '15px', fontWeight: 700, cursor: 'pointer' } }, '+'),
+            boardPages.length > 1 && e('button', { type: 'button', onClick: function () { deletePage(activePageIdx); }, title: t('symbol_studio.delete_current_page','Delete current page'), 'aria-label': t('symbol_studio.delete_current_board_page','Delete current board page'), style: { background: 'none', border: '1px solid transparent', borderRadius: '6px', width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', color: '#b91c1c', fontSize: '14px', cursor: 'pointer', padding: 0 } }, '✕')
           ),
           hasBoardContent && e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
             e('button', { onClick: saveBoard, 'aria-label': 'Save', style: S.btn('#f3f4f6', '#374151', false) }, editingBoardId ? '💾 Save changes' : '💾 Save'),
-            editingBoardId && e('button', { onClick: function () { saveBoard(true); }, 'aria-label': 'Save board as a copy', style: S.btn('#f3f4f6', '#374151', false) }, 'Save a copy'),
+            editingBoardId && e('button', { onClick: function () { saveBoard(true); }, 'aria-label': t('symbol_studio.save_board_as_a_copy','Save board as a copy'), style: S.btn('#f3f4f6', '#374151', false) }, 'Save a copy'),
             e('button', { onClick: function () { setShowPrintSettings(!showPrintSettings); }, 'aria-label': 'Print…', style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print\u2026')
           ),
-          savedBoards.length > 0 && e('button', { onClick: function () { setShowBoardGallery(!showBoardGallery); }, 'aria-label': 'Toggle saved boards gallery', style: S.btn(showBoardGallery ? LIGHT_PURPLE : '#f3f4f6', showBoardGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedBoards.length + ')'),
-          e('button', { onClick: function () { importBoardRef.current && importBoardRef.current.click(); }, 'aria-label': 'Import Board', style: S.btn('#f3f4f6', '#374151', false), title: 'Import a board from a .json, .obf, or .obz (Cboard / Open Board Format) file' }, '📥 Import Board'),
+          savedBoards.length > 0 && e('button', { onClick: function () { setShowBoardGallery(!showBoardGallery); }, 'aria-label': t('symbol_studio.toggle_saved_boards_gallery','Toggle saved boards gallery'), style: S.btn(showBoardGallery ? LIGHT_PURPLE : '#f3f4f6', showBoardGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedBoards.length + ')'),
+          e('button', { onClick: function () { importBoardRef.current && importBoardRef.current.click(); }, 'aria-label': t('symbol_studio.import_board','Import Board'), style: S.btn('#f3f4f6', '#374151', false), title: t('symbol_studio.import_a_board_from_a_json_obf_or_obz_cboard','Import a board from a .json, .obf, or .obz (Cboard / Open Board Format) file') }, '📥 Import Board'),
           e('input', { type: 'file', accept: '.json,.obf,.obz', ref: importBoardRef, style: { display: 'none' }, onChange: importBoardFile })
         ),
-        deletedBoardPage && deletedBoardPage.profileId === activeProfileId && deletedBoardPage.epoch === boardDraftEpochRef.current && e('div', { role: 'status', style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', padding: '8px 12px', background: '#fffbeb', color: '#78350f', borderRadius: '8px' } }, 'Page removed: ' + deletedBoardPage.page.title, e('button', { type: 'button', onClick: undoDeletedBoardPage, 'aria-label': 'Undo page deletion', style: S.btn('#fef3c7', '#78350f', false) }, 'Undo')),
+        deletedBoardPage && deletedBoardPage.profileId === activeProfileId && deletedBoardPage.epoch === boardDraftEpochRef.current && e('div', { role: 'status', style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', padding: '8px 12px', background: '#fffbeb', color: '#78350f', borderRadius: '8px' } }, 'Page removed: ' + deletedBoardPage.page.title, e('button', { type: 'button', onClick: undoDeletedBoardPage, 'aria-label': t('symbol_studio.undo_page_deletion','Undo page deletion'), style: S.btn('#fef3c7', '#78350f', false) }, 'Undo')),
         // Saved boards panel
         showBoardGallery && e('div', { style: { flexShrink: 0, borderBottom: '1px solid #e5e7eb', paddingBottom: '10px', paddingTop: '6px' } },
           // Profile filter chips
           profiles.length > 1 && e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', padding: '0 0 8px', borderBottom: '1px solid #f3f4f6', marginBottom: '8px' } },
             e('button', {
               onClick: function () { setBoardProfileFilter(''); },
-              'aria-label': 'All students', style: Object.assign({}, S.chip(boardProfileFilter === '' ? PURPLE : '#f3f4f6', boardProfileFilter === '' ? '#fff' : '#6b7280'), { border: 'none' })
+              'aria-label': t('symbol_studio.all_students','All students'), style: Object.assign({}, S.chip(boardProfileFilter === '' ? PURPLE : '#f3f4f6', boardProfileFilter === '' ? '#fff' : '#6b7280'), { border: 'none' })
             }, 'All students'),
             profiles.map(function (prof) {
               var active = boardProfileFilter === prof.id;
@@ -11699,7 +11699,7 @@
                     value: b.profileId || '',
                     onChange: function (ev) { tagBoardProfile(b.id, ev.target.value || null); },
                     style: { fontSize: '10px', border: '1px solid #e5e7eb', borderRadius: '5px', padding: '2px 4px', color: b.profileId ? PURPLE : '#6b7280', background: b.profileId ? LIGHT_PURPLE : '#f9fafb', cursor: 'pointer', width: '100%' },
-                    title: 'Assign board to a student', 'aria-label': 'Assign board to student'
+                    title: t('symbol_studio.assign_board_to_a_student','Assign board to a student'), 'aria-label': t('symbol_studio.assign_board_to_student','Assign board to student')
                   },
                     e('option', { value: '' }, '— No student —'),
                     profiles.map(function (p) { return e('option', { key: p.id, value: p.id }, (p.name || 'Student')); })
@@ -11709,40 +11709,40 @@
                     e('button', { onClick: function () { loadBoard(b); }, 'aria-label': 'Load', style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
                     collectBoardSpeechCells(b).length > 0 && e('button', {
                       onClick: function (ev) { ensureBoardSpeechEntry(b); useOpenerRef.current = ev.currentTarget; predEpochRef.current += 1; setUseBoardId(b.id); setStrip([]); setCommLog([]); setStripSpeaking(false); setShowCommLog(false); setUsePageIdx(0); setPredictions([]); },
-                      title: 'Use this board: tap symbols to speak and build messages', 'aria-label': 'Use board in AAC mode',
+                      title: t('symbol_studio.use_this_board_tap_symbols_to_speak_and_buil','Use this board: tap symbols to speak and build messages'), 'aria-label': t('symbol_studio.use_board_in_aac_mode','Use board in AAC mode'),
                       style: S.btn('#eff6ff', '#1d4ed8', false)
                     }, '\u25b6 Use'),
                     collectBoardSpeechCells(b).length > 0 && e('button', {
                       onClick: function () { prepareBoardSpeech(b); },
                       disabled: speechPreparing,
-                      title: 'Generate and save missing cell speech on this device',
+                      title: t('symbol_studio.generate_and_save_missing_cell_speech_on_thi','Generate and save missing cell speech on this device'),
                       'aria-label': 'Prepare saved speech for ' + (b.title || 'this board'),
                       style: S.btn('#e0f2fe', '#0369a1', speechPreparing)
                     }, speechPreparing ? 'Saving...' : '🔊 Prepare'),
                     collectBoardSpeechCells(b).length > 0 && e('button', {
                       onClick: function () { ensureBoardSpeechEntry(b); scanOpenerRef.current = b.id; setScanBoardId(b.id); setScanIndex(0); setScanPaused(false); },
                       'data-scan-board-id': b.id,
-                      title: 'Partner-assisted single-switch scanning mode', 'aria-label': 'Start scanning mode',
+                      title: t('symbol_studio.partner_assisted_single_switch_scanning_mode','Partner-assisted single-switch scanning mode'), 'aria-label': t('symbol_studio.start_scanning_mode','Start scanning mode'),
                       style: S.btn('#ecfdf5', '#065f46', false)
                     }, '\u267f Scan'),
-                    e('button', { onClick: function () { exportBoard(b); }, title: 'Export this board as a .json file', 'aria-label': 'Export ' + (b.title || 'saved board') + ' as JSON', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️'),
-                    ((b.words && b.words.length) || (b.pages && b.pages.some(function (page) { return page && page.words && page.words.length; }))) && e('button', { onClick: function () { exportBoardHTML(b); }, title: 'Export a standalone HTML board that opens without AlloFlow', 'aria-label': 'Export ' + (b.title || 'saved board') + ' as standalone HTML', style: S.btn('#fef9c3', '#92400e', false) }, '🌐'),
+                    e('button', { onClick: function () { exportBoard(b); }, title: t('symbol_studio.export_this_board_as_a_json_file','Export this board as a .json file'), 'aria-label': 'Export ' + (b.title || 'saved board') + ' as JSON', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️'),
+                    ((b.words && b.words.length) || (b.pages && b.pages.some(function (page) { return page && page.words && page.words.length; }))) && e('button', { onClick: function () { exportBoardHTML(b); }, title: t('symbol_studio.export_a_standalone_html_board_that_opens_wi','Export a standalone HTML board that opens without AlloFlow'), 'aria-label': 'Export ' + (b.title || 'saved board') + ' as standalone HTML', style: S.btn('#fef9c3', '#92400e', false) }, '🌐'),
                     onSaveAACResource && e('button', {
                       onClick: function () { sendPortableAACResource(onSaveAACResource, b, 'Board sent to the lesson.', 'The board could not be saved to the lesson.'); },
-                      title: 'Save this portable board to a lesson',
+                      title: t('symbol_studio.save_this_portable_board_to_a_lesson','Save this portable board to a lesson'),
                       'aria-label': 'Save ' + (b.title || 'saved board') + ' to a lesson',
                       style: S.btn('#ecfeff', '#155e75', false)
                     }, 'Lesson'),
                     onShareAACResource && e('button', {
                       onClick: function () { sharePortableAACResource(b); },
-                      title: 'Share this portable board with a QR code',
+                      title: t('symbol_studio.share_this_portable_board_with_a_qr_code','Share this portable board with a QR code'),
                       'aria-label': 'Share ' + (b.title || 'saved board') + ' with a QR code',
                       style: S.btn('#f0fdf4', '#166534', false)
                     }, 'Share QR'),
-                    b.words && b.words.length > 0 && e('button', { onClick: function () { exportBoardOBF(b); }, title: 'Export as Open Board Format (.obf) — single board; import into Cboard or another AAC app', 'aria-label': 'Export as Open Board Format for Cboard', style: S.btn('#ede9fe', '#5b21b6', false) }, '💬 OBF'),
-                    b.pages && b.pages.length > 1 && e('button', { onClick: function () { exportBoardOBZ(b); }, title: 'Export all pages as an Open Board Format set (.obz) — import into Cboard or another AAC app', 'aria-label': 'Export all pages as Open Board Format set for Cboard', style: S.btn('#ede9fe', '#5b21b6', false) }, '💬 OBZ'),
+                    b.words && b.words.length > 0 && e('button', { onClick: function () { exportBoardOBF(b); }, title: 'Export as Open Board Format (.obf) — single board; import into Cboard or another AAC app', 'aria-label': t('symbol_studio.export_as_open_board_format_for_cboard','Export as Open Board Format for Cboard'), style: S.btn('#ede9fe', '#5b21b6', false) }, '💬 OBF'),
+                    b.pages && b.pages.length > 1 && e('button', { onClick: function () { exportBoardOBZ(b); }, title: 'Export all pages as an Open Board Format set (.obz) — import into Cboard or another AAC app', 'aria-label': t('symbol_studio.export_all_pages_as_open_board_format_set_fo','Export all pages as Open Board Format set for Cboard'), style: S.btn('#ede9fe', '#5b21b6', false) }, '💬 OBZ'),
                     liveSession && liveSession.active && e('button', {
-                      title: 'Push board to student screens', 'aria-label': 'Push board to student screens',
+                      title: t('symbol_studio.push_board_to_student_screens','Push board to student screens'), 'aria-label': t('symbol_studio.push_board_to_student_screens_2','Push board to student screens'),
                       onClick: function () {
                         liveSession.push(buildPortableAACPackage(b))
                           .then(function () { addToast(t('toasts.board_pushed_students'), 'success'); })
@@ -11760,7 +11760,7 @@
         showGalleryPicker && gallery.length > 0 && e('div', { style: { flexShrink: 0, background: '#faf5ff', border: '1px solid #ede9fe', borderRadius: '10px', padding: '10px', maxHeight: '160px', overflowY: 'auto' } },
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } },
             e('span', { style: { fontSize: '11px', fontWeight: 600, color: PURPLE } }, 'Symbol Bank: click any symbol to add it to the board'),
-            e('input', { type: 'text', value: gpFilter, onChange: function (ev) { setGpFilter(ev.target.value); }, placeholder: 'Filter\u2026', 'aria-label': 'Filter Symbol Bank', style: { border: '1px solid #d8b4fe', borderRadius: '5px', padding: '3px 7px', fontSize: '11px', marginLeft: 'auto', width: '80px' } })
+            e('input', { type: 'text', value: gpFilter, onChange: function (ev) { setGpFilter(ev.target.value); }, placeholder: 'Filter\u2026', 'aria-label': t('symbol_studio.filter_symbol_bank','Filter Symbol Bank'), style: { border: '1px solid #d8b4fe', borderRadius: '5px', padding: '3px 7px', fontSize: '11px', marginLeft: 'auto', width: '80px' } })
           ),
           e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))', gap: '6px' } },
             gallery
@@ -11789,11 +11789,11 @@
               value: sentenceInput,
               onChange: function (ev) { setSentenceInput(ev.target.value); },
               onKeyDown: function (ev) { if (ev.key === 'Enter') parseTextToSymbols(); },
-              placeholder: 'e.g. I want to go to the park today',
-              'aria-label': 'Sentence to map to symbols',
+              placeholder: t('symbol_studio.e_g_i_want_to_go_to_the_park_today','e.g. I want to go to the park today'),
+              'aria-label': t('symbol_studio.sentence_to_map_to_symbols','Sentence to map to symbols'),
               style: Object.assign({}, S.input, { flex: 1, borderColor: '#86efac' })
             }),
-            e('button', { onClick: parseTextToSymbols, disabled: !sentenceInput.trim() || sentenceParsing || !onCallGemini, 'aria-label': 'Parse sentence into symbols', style: S.btn('#059669', '#fff', !sentenceInput.trim() || sentenceParsing || !onCallGemini) },
+            e('button', { onClick: parseTextToSymbols, disabled: !sentenceInput.trim() || sentenceParsing || !onCallGemini, 'aria-label': t('symbol_studio.parse_sentence_into_symbols','Parse sentence into symbols'), style: S.btn('#059669', '#fff', !sentenceInput.trim() || sentenceParsing || !onCallGemini) },
               sentenceParsing ? '⏳ Mapping…' : '🤖 Map Symbols'
             )
           ),
@@ -11832,7 +11832,7 @@
               e('button', {
                 onClick: applySentenceMapping,
                 disabled: !sentenceMapping.some(function (m) { return m.selected && !m.skip; }),
-                'aria-label': 'Add to Board', style: S.btn('#059669', '#fff', !sentenceMapping.some(function (m) { return m.selected && !m.skip; }))
+                'aria-label': t('symbol_studio.add_to_board','Add to Board'), style: S.btn('#059669', '#fff', !sentenceMapping.some(function (m) { return m.selected && !m.skip; }))
               }, '✅ Add to Board (' + sentenceMapping.filter(function (m) { return m.selected && !m.skip; }).length + ')'),
               e('button', { onClick: function () { setSentenceMapping([]); setSentenceInput(''); }, 'aria-label': 'Reset', style: S.btn('#f3f4f6', '#374151', false) }, '↩ Reset')
             )
@@ -11843,7 +11843,7 @@
           e('span', { style: { fontSize: '12px', fontWeight: 600, color: '#1e40af' } }, 'Print Settings'),
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
             e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Cell size:'),
-            e('select', { value: boardCellSz, onChange: function (ev) { setBoardCellSz(ev.target.value); }, 'aria-label': 'Cell size', style: { border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 8px', fontSize: '12px' } },
+            e('select', { value: boardCellSz, onChange: function (ev) { setBoardCellSz(ev.target.value); }, 'aria-label': t('symbol_studio.cell_size','Cell size'), style: { border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 8px', fontSize: '12px' } },
               e('option', { value: 'small' }, 'Small (1.5\u2033)'),
               e('option', { value: 'medium' }, 'Medium (2\u2033)'),
               e('option', { value: 'large' }, 'Large (2.5\u2033)')
@@ -11851,7 +11851,7 @@
           ),
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
             e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Label:'),
-            e('select', { value: boardTextPos, onChange: function (ev) { setBoardTextPos(ev.target.value); }, 'aria-label': 'Label position', style: { border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 8px', fontSize: '12px' } },
+            e('select', { value: boardTextPos, onChange: function (ev) { setBoardTextPos(ev.target.value); }, 'aria-label': t('symbol_studio.label_position','Label position'), style: { border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 8px', fontSize: '12px' } },
               e('option', { value: 'below' }, 'Below image'),
               e('option', { value: 'above' }, 'Above image'),
               e('option', { value: 'none' }, 'Hidden (image only)')
@@ -11859,12 +11859,12 @@
           ),
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
             e('label', { style: Object.assign({}, S.lbl, { margin: 0 }) }, 'Text size:'),
-            e('input', { type: 'number', min: 8, max: 18, value: boardTextSize, onChange: function (ev) { setBoardTextSize(Number(ev.target.value)); }, 'aria-label': 'Text size', style: { width: '50px', border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 7px', fontSize: '12px' } })
+            e('input', { type: 'number', min: 8, max: 18, value: boardTextSize, onChange: function (ev) { setBoardTextSize(Number(ev.target.value)); }, 'aria-label': t('symbol_studio.text_size','Text size'), style: { width: '50px', border: '1px solid #93c5fd', borderRadius: '5px', padding: '4px 7px', fontSize: '12px' } })
           ),
-          e('button', { onClick: printBoardSized, 'aria-label': 'Print board', style: S.btn('#1e40af', '#fff', false) }, '\uD83D\uDDB6 Print Now')
+          e('button', { onClick: printBoardSized, 'aria-label': t('symbol_studio.print_board_2','Print board'), style: S.btn('#1e40af', '#fff', false) }, '\uD83D\uDDB6 Print Now')
         ),
         // Board title
-        boardWords.length > 0 && e('input', { type: 'text', value: boardTitle, onChange: function (ev) { setBoardTitle(ev.target.value); }, placeholder: 'Board title (optional)', 'aria-label': 'Board title', style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '15px', maxWidth: '400px' }) }),
+        boardWords.length > 0 && e('input', { type: 'text', value: boardTitle, onChange: function (ev) { setBoardTitle(ev.target.value); }, placeholder: t('symbol_studio.board_title_optional','Board title (optional)'), 'aria-label': t('symbol_studio.board_title','Board title'), style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '15px', maxWidth: '400px' }) }),
         // Board grid (also serves as print area)
         boardWords.length > 0
           ? e('div', { id: 'ss-pb', style: { flex: 1, overflowY: 'auto', background: theme.gridBg, padding: '8px', borderRadius: '8px', transition: 'background 0.2s' } },
@@ -11989,7 +11989,7 @@
                 }),
                 e('button', {
                   onClick: function () { setCatFill(CAT_COLORS); setCatBorder(CAT_BORDER); store(STORAGE_CAT_COLORS + '_fill', CAT_COLORS); store(STORAGE_CAT_COLORS + '_border', CAT_BORDER); },
-                  'aria-label': 'Reset category colors', style: { fontSize: '10px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }
+                  'aria-label': t('symbol_studio.reset_category_colors_2','Reset category colors'), style: { fontSize: '10px', color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }
                 }, 'Reset')
               )
             )
@@ -12016,14 +12016,14 @@
               type: 'text', value: schedTopic,
               onChange: function (ev) { setSchedTopic(ev.target.value); },
               onKeyDown: function (ev) { if (ev.key === 'Enter') generateSequenceFromTopic(); },
-              placeholder: 'e.g. getting ready for school, planting a seed, beginning-middle-end',
-              'aria-label': 'Sequence topic or task', style: S.input
+              placeholder: t('symbol_studio.e_g_getting_ready_for_school_planting_a_seed','e.g. getting ready for school, planting a seed, beginning-middle-end'),
+              'aria-label': t('symbol_studio.sequence_topic_or_task','Sequence topic or task'), style: S.input
             })
           ),
           e('button', {
             onClick: generateSequenceFromTopic,
             disabled: !schedTopic.trim() || sequenceBusy || !onCallGemini,
-            'aria-label': 'Build visual sequence from topic',
+            'aria-label': t('symbol_studio.build_visual_sequence_from_topic','Build visual sequence from topic'),
             style: S.btn(PURPLE, '#fff', !schedTopic.trim() || sequenceBusy || !onCallGemini)
           }, schedPlanning ? '⏳ Planning...' : (schedGenerating ? '⏳ Building...' : '✨ Build from Topic'))
         ),
@@ -12039,7 +12039,7 @@
             needsSched.map(function (w) {
               return e('button', { key: w.key, onClick: function () {
                 setSchedInput(function (prev) { return prev ? prev + '\n' + w.displayLabel : w.displayLabel; });
-              }, 'aria-label': 'Add ' + w.displayLabel + ' to sequence input', title: 'Add to sequence steps',
+              }, 'aria-label': 'Add ' + w.displayLabel + ' to sequence input', title: t('symbol_studio.add_to_sequence_steps','Add to sequence steps'),
                 style: { padding: '2px 8px', background: '#fff', border: '1px solid #4ade80', borderRadius: '12px', fontSize: '10px', fontWeight: 600, color: '#15803d', cursor: 'pointer' } },
                 w.displayLabel, e('span', { style: { color: '#9ca3af', marginLeft: '2px' } }, '+'));
             }));
@@ -12048,25 +12048,25 @@
         e('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap', flexShrink: 0 } },
           e('div', { style: { flex: 1 } },
             e('label', { style: S.lbl }, 'Steps (one per line)'),
-            e('textarea', { value: schedInput, onChange: function (ev) { setSchedInput(ev.target.value); }, placeholder: 'brush teeth\nget dressed\neat breakfast\nboard the bus\narrive at school', 'aria-label': 'Sequence steps, one per line', style: Object.assign({}, S.textarea, { height: '70px' }) })
+            e('textarea', { value: schedInput, onChange: function (ev) { setSchedInput(ev.target.value); }, placeholder: 'brush teeth\nget dressed\neat breakfast\nboard the bus\narrive at school', 'aria-label': t('symbol_studio.sequence_steps_one_per_line','Sequence steps, one per line'), style: Object.assign({}, S.textarea, { height: '70px' }) })
           ),
           e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
             e('div', null,
               e('label', { style: S.lbl }, 'Layout'),
-              e('select', { value: schedOrientation, onChange: function (ev) { setSchedOrientation(ev.target.value); }, 'aria-label': 'Sequence layout', style: Object.assign({}, S.input, { width: 'auto' }) },
+              e('select', { value: schedOrientation, onChange: function (ev) { setSchedOrientation(ev.target.value); }, 'aria-label': t('symbol_studio.sequence_layout','Sequence layout'), style: Object.assign({}, S.input, { width: 'auto' }) },
                 e('option', { value: 'horizontal' }, 'Horizontal Strip'),
                 e('option', { value: 'vertical' }, 'Vertical List')
               )
             ),
-            e('button', { onClick: generateSchedule, disabled: !schedInput.trim() || sequenceBusy || !onCallImagen, 'aria-label': 'Generate visual sequence', style: S.btn(PURPLE, '#fff', !schedInput.trim() || sequenceBusy || !onCallImagen) }, schedGenerating ? '⏳ Generating...' : '✨ Generate Sequence')
+            e('button', { onClick: generateSchedule, disabled: !schedInput.trim() || sequenceBusy || !onCallImagen, 'aria-label': t('symbol_studio.generate_visual_sequence','Generate visual sequence'), style: S.btn(PURPLE, '#fff', !schedInput.trim() || sequenceBusy || !onCallImagen) }, schedGenerating ? '⏳ Generating...' : '✨ Generate Sequence')
           ),
           schedItems.length > 0 && e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
             e('button', { onClick: resetSchedule, 'aria-label': 'Reset', style: S.btn('#f3f4f6', '#374151', false) }, '🔄 Reset'),
             e('button', { onClick: saveSchedule, 'aria-label': 'Save', style: S.btn('#f3f4f6', '#374151', false) }, editingScheduleId ? '💾 Save changes' : '💾 Save'),
-            editingScheduleId && e('button', { onClick: function () { saveSchedule(true); }, 'aria-label': 'Save sequence as a copy', style: S.btn('#f3f4f6', '#374151', false) }, 'Save a copy'),
+            editingScheduleId && e('button', { onClick: function () { saveSchedule(true); }, 'aria-label': t('symbol_studio.save_sequence_as_a_copy','Save sequence as a copy'), style: S.btn('#f3f4f6', '#374151', false) }, 'Save a copy'),
             e('button', { onClick: function () { window.print(); }, 'aria-label': 'Print', style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print')
           ),
-          savedSchedules.length > 0 && e('button', { onClick: function () { setShowSchedGallery(!showSchedGallery); }, 'aria-label': 'Toggle saved sequences', style: S.btn(showSchedGallery ? LIGHT_PURPLE : '#f3f4f6', showSchedGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedSchedules.length + ')')
+          savedSchedules.length > 0 && e('button', { onClick: function () { setShowSchedGallery(!showSchedGallery); }, 'aria-label': t('symbol_studio.toggle_saved_sequences','Toggle saved sequences'), style: S.btn(showSchedGallery ? LIGHT_PURPLE : '#f3f4f6', showSchedGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedSchedules.length + ')')
         ),
         // Saved schedules panel
         showSchedGallery && e('div', { style: { flexShrink: 0, borderBottom: '1px solid #e5e7eb', paddingBottom: '10px' } },
@@ -12079,7 +12079,7 @@
                 ),
                 e('button', { onClick: function () { loadSchedule(s); }, 'aria-label': 'Load', style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
                 liveSession && liveSession.active && e('button', {
-                  title: 'Push to student screens (images excluded)', 'aria-label': 'Push sequence to student screens',
+                  title: t('symbol_studio.push_to_student_screens_images_excluded','Push to student screens (images excluded)'), 'aria-label': t('symbol_studio.push_sequence_to_student_screens','Push sequence to student screens'),
                   onClick: function () {
                     var stripped = s.items.map(function (item) { return { label: item.label }; });
                     liveSession.push({ type: 'schedule', title: s.title, items: stripped, nowIndex: 0 })
@@ -12094,7 +12094,7 @@
           )
         ),
         // Schedule title
-        schedItems.length > 0 && e('input', { type: 'text', value: schedTitle, onChange: function (ev) { setSchedTitle(ev.target.value); }, placeholder: 'Sequence title, e.g. Marcus\'s Morning Routine', 'aria-label': 'Sequence title', style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '14px', maxWidth: '400px' }) }),
+        schedItems.length > 0 && e('input', { type: 'text', value: schedTitle, onChange: function (ev) { setSchedTitle(ev.target.value); }, placeholder: t('symbol_studio.sequence_title_e_g_marcus_s_morning_routine','Sequence title, e.g. Marcus\'s Morning Routine'), 'aria-label': t('symbol_studio.sequence_title','Sequence title'), style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '14px', maxWidth: '400px' }) }),
         // Schedule strip
         schedItems.length > 0
           ? e('div', { id: 'ss-ps', style: { flex: 1, overflowY: 'auto', overflowX: schedOrientation === 'horizontal' ? 'auto' : 'hidden' } },
@@ -12165,11 +12165,11 @@
       var busy = storyGenerating || Object.keys(storyIllustrating).length > 0;
       var cannotSave = !savedStoryTitle.trim() || busy || !!storyTextEdit || draftHydratedProfile !== activeProfileId || !!draftRecovery;
       var buttonStyle = Object.assign({}, S.btn('#f3f4f6', '#374151', false), { minHeight: '44px', minWidth: '44px', whiteSpace: 'normal' });
-      return e('section', { className: 'ss-story-library', 'aria-label': 'Saved story library', style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: '8px' } },
+      return e('section', { className: 'ss-story-library', 'aria-label': t('symbol_studio.saved_story_library','Saved story library'), style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: '8px' } },
         storyPages.length > 0 && e('form', { onSubmit: function (ev) { ev.preventDefault(); saveStoryToLibrary(); }, style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
           e('label', { htmlFor: 'ss-saved-story-title', style: S.lbl }, 'Save completed story'),
-          e('input', { id: 'ss-saved-story-title', 'aria-label': 'Name for saved story', value: savedStoryTitle, maxLength: 120, placeholder: 'e.g. Taking a quiet break', onChange: function (ev) { savedStoryTitleRef.current = ev.target.value; setSavedStoryTitle(ev.target.value); }, style: Object.assign({}, S.input, { minHeight: '44px', width: '100%', minWidth: 0 }), 'aria-describedby': 'ss-story-library-help' }),
-          e('button', { type: 'submit', 'aria-label': 'Save new story to library', disabled: cannotSave, style: Object.assign({}, S.btn(PURPLE, '#fff', cannotSave), { minHeight: '44px', whiteSpace: 'normal' }) }, 'Save a new copy'),
+          e('input', { id: 'ss-saved-story-title', 'aria-label': t('symbol_studio.name_for_saved_story','Name for saved story'), value: savedStoryTitle, maxLength: 120, placeholder: t('symbol_studio.e_g_taking_a_quiet_break','e.g. Taking a quiet break'), onChange: function (ev) { savedStoryTitleRef.current = ev.target.value; setSavedStoryTitle(ev.target.value); }, style: Object.assign({}, S.input, { minHeight: '44px', width: '100%', minWidth: 0 }), 'aria-describedby': 'ss-story-library-help' }),
+          e('button', { type: 'submit', 'aria-label': t('symbol_studio.save_new_story_to_library','Save new story to library'), disabled: cannotSave, style: Object.assign({}, S.btn(PURPLE, '#fff', cannotSave), { minHeight: '44px', whiteSpace: 'normal' }) }, 'Save a new copy'),
           e('p', { id: 'ss-story-library-help', style: { fontSize: '12px', color: '#6b7280', margin: 0 } }, storyTextEdit ? 'Save or cancel the page text edit first.' : busy ? 'Wait for story generation and illustrations to finish.' : 'Keeps the page text and illustrations as an independent copy for this learner.')
         ),
         storyLibraryNotice && e('div', { role: storyLibraryNotice.error ? 'alert' : 'status', style: { fontSize: '12px', color: storyLibraryNotice.error ? '#b91c1c' : '#374151', overflowWrap: 'anywhere' } }, storyLibraryNotice.text),
@@ -12204,14 +12204,14 @@
           renderStoryLibrary(),
           e('div', null,
             e('label', { style: S.lbl }, 'Student Name'),
-            e('input', { type: 'text', value: storyStudentName, onChange: function (ev) { setStoryStudentName(ev.target.value); }, placeholder: 'e.g. Marcus', 'aria-label': 'Student name for social story', style: S.input })
+            e('input', { type: 'text', value: storyStudentName, onChange: function (ev) { setStoryStudentName(ev.target.value); }, placeholder: t('symbol_studio.e_g_marcus','e.g. Marcus'), 'aria-label': t('symbol_studio.student_name_for_social_story','Student name for social story'), style: S.input })
           ),
           e('div', null,
             e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' } },
               e('label', { style: S.lbl }, 'Situation / Goal'),
               e('span', { style: { fontSize: '10px', color: '#6b7280' } }, 'or pick a template ↓')
             ),
-            e('textarea', { value: storySituation, onChange: function (ev) { setStorySituation(ev.target.value); }, placeholder: 'e.g. Marcus is learning to wait his turn during group time', 'aria-label': 'Social story situation or goal', style: Object.assign({}, S.textarea, { height: '65px' }) }),
+            e('textarea', { value: storySituation, onChange: function (ev) { setStorySituation(ev.target.value); }, placeholder: t('symbol_studio.e_g_marcus_is_learning_to_wait_his_turn_duri','e.g. Marcus is learning to wait his turn during group time'), 'aria-label': t('symbol_studio.social_story_situation_or_goal','Social story situation or goal'), style: Object.assign({}, S.textarea, { height: '65px' }) }),
             e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '5px' } },
               STORY_TEMPLATES.concat(customTemplates).map(function (t, i) {
                 var isCustom = i >= STORY_TEMPLATES.length;
@@ -12235,21 +12235,21 @@
                   setCustomTemplates(updated); store(STORAGE_CUSTOM_TEMPLATES, updated);
                   if (addToast) addToast(t('toasts.template') + lbl + '" saved!', 'success');
                 },
-                'aria-label': 'Save current story as reusable template', style: { padding: '3px 8px', background: '#dcfce7', border: '1px solid #16a34a', borderRadius: '12px', fontSize: '10px', cursor: 'pointer', color: '#166534', whiteSpace: 'nowrap', fontWeight: 700 }
+                'aria-label': t('symbol_studio.save_current_story_as_reusable_template','Save current story as reusable template'), style: { padding: '3px 8px', background: '#dcfce7', border: '1px solid #16a34a', borderRadius: '12px', fontSize: '10px', cursor: 'pointer', color: '#166534', whiteSpace: 'nowrap', fontWeight: 700 }
               }, '💾 Save as Template')
             )
           ),
           e('div', null,
             e('label', { style: S.lbl }, 'Additional context (optional)'),
-            e('textarea', { value: storyDetails, onChange: function (ev) { setStoryDetails(ev.target.value); }, placeholder: 'e.g. likes trains, gets nervous at drop-off (avoid real names / diagnoses)', 'aria-label': 'Additional context for social story', style: Object.assign({}, S.textarea, { height: '55px' }) }),
+            e('textarea', { value: storyDetails, onChange: function (ev) { setStoryDetails(ev.target.value); }, placeholder: t('symbol_studio.e_g_likes_trains_gets_nervous_at_drop_off_av','e.g. likes trains, gets nervous at drop-off (avoid real names / diagnoses)'), 'aria-label': t('symbol_studio.additional_context_for_social_story','Additional context for social story'), style: Object.assign({}, S.textarea, { height: '55px' }) }),
             e('p', { style: { fontSize: '10px', color: '#92400e', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '6px', padding: '4px 8px', margin: '4px 0 0' } }, 'Story and image prompts are sent to a cloud AI (Google Gemini / Imagen). Do not enter real student names, diagnoses, or other identifying details (FERPA).')
           ),
-          e('button', { onClick: generateStory, disabled: !storySituation.trim() || storyGenerating || isIllustrating, 'aria-label': 'Generate social story', style: S.btn(PURPLE, '#fff', !storySituation.trim() || storyGenerating || isIllustrating) }, storyGenerating ? '⏳ Writing story...' : (isIllustrating ? '🎨 Illustrating...' : '✨ Create Social Story')),
+          e('button', { onClick: generateStory, disabled: !storySituation.trim() || storyGenerating || isIllustrating, 'aria-label': t('symbol_studio.generate_social_story','Generate social story'), style: S.btn(PURPLE, '#fff', !storySituation.trim() || storyGenerating || isIllustrating) }, storyGenerating ? '⏳ Writing story...' : (isIllustrating ? '🎨 Illustrating...' : '✨ Create Social Story')),
           storyError && e('div', { role: 'alert', style: { fontSize: '12px', padding: '10px', border: '1px solid #fecaca', borderRadius: '8px', background: '#fff1f2', color: '#991b1b' } }, storyError),
           storyGenerating && e('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: '12px', color: '#5b21b6' } }, storyProgress.total ? ('Illustrations ' + storyProgress.ready + ' of ' + storyProgress.total) : 'Writing your story...'),
           e('p', { style: { fontSize: '10px', color: '#6b7280' } }, 'Carol Gray-informed draft (descriptive, perspective, and directive sentences) — review and edit for fidelity before use. Illustrations auto-generate for each page.'),
           hasStory && e('div', { style: { borderTop: '1px solid #e5e7eb', paddingTop: '10px' } },
-            e('button', { onClick: function () { window.print(); }, 'aria-label': 'Print Story', style: Object.assign({}, S.btn('#dbeafe', '#1e40af', false), { width: '100%' }) }, '🖨️ Print Story')
+            e('button', { onClick: function () { window.print(); }, 'aria-label': t('symbol_studio.print_story','Print Story'), style: Object.assign({}, S.btn('#dbeafe', '#1e40af', false), { width: '100%' }) }, '🖨️ Print Story')
           )
         ),
         // Right: story viewer
@@ -12257,12 +12257,12 @@
           ? e('div', { id: 'ss-py', className: 'ss-story-viewer', style: { flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column' } },
               // Page navigation
               e('div', { className: 'ss-no-print', style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' } },
-                e('button', { onClick: function () { setStoryCurrent(function (p) { return Math.max(0, p - 1); }); }, 'aria-label': 'Previous story page', disabled: storyCurrent === 0, style: S.btn('#f3f4f6', '#374151', storyCurrent === 0) }, '← Prev'),
+                e('button', { onClick: function () { setStoryCurrent(function (p) { return Math.max(0, p - 1); }); }, 'aria-label': t('symbol_studio.previous_story_page','Previous story page'), disabled: storyCurrent === 0, style: S.btn('#f3f4f6', '#374151', storyCurrent === 0) }, '← Prev'),
                 e('span', { style: { fontWeight: 600, fontSize: '13px', color: '#374151' } }, 'Page ' + (storyCurrent + 1) + ' of ' + storyPages.length),
-                e('button', { onClick: function () { setStoryCurrent(function (p) { return Math.min(storyPages.length - 1, p + 1); }); }, disabled: storyCurrent === storyPages.length - 1, 'aria-label': 'Next story page', style: S.btn('#f3f4f6', '#374151', storyCurrent === storyPages.length - 1) }, 'Next →'),
+                e('button', { onClick: function () { setStoryCurrent(function (p) { return Math.min(storyPages.length - 1, p + 1); }); }, disabled: storyCurrent === storyPages.length - 1, 'aria-label': t('symbol_studio.next_story_page','Next story page'), style: S.btn('#f3f4f6', '#374151', storyCurrent === storyPages.length - 1) }, 'Next →'),
                 currentPage && e('button', { onClick: function () { speakPage(currentPage.text); }, disabled: editingCurrentPage, 'aria-label': storySpeaking ? 'Stop reading aloud' : 'Read this page aloud', style: S.btn('#dcfce7', '#166534', editingCurrentPage) }, storySpeaking ? '⏹ Stop' : '🔊 Read Aloud'),
                 currentPage && !editingCurrentPage && e('button', { type: 'button', ref: storyTextEditButtonRef, onClick: function () { beginStoryTextEdit(currentPage); }, 'aria-label': 'Edit text for story page ' + (storyCurrent + 1), style: S.btn(LIGHT_PURPLE, PURPLE, false) }, '✏️ Edit text'),
-                currentPage && e('button', { onClick: function () { regenPageIllustration(currentPage.id); }, disabled: !!storyIllustrating[currentPage.id], 'aria-label': 'Regenerate illustration for this page', style: S.btn(LIGHT_PURPLE, PURPLE, !!storyIllustrating[currentPage.id]) }, storyIllustrating[currentPage.id] ? '⏳' : '🔄 Regen Image'),
+                currentPage && e('button', { onClick: function () { regenPageIllustration(currentPage.id); }, disabled: !!storyIllustrating[currentPage.id], 'aria-label': t('symbol_studio.regenerate_illustration_for_this_page','Regenerate illustration for this page'), style: S.btn(LIGHT_PURPLE, PURPLE, !!storyIllustrating[currentPage.id]) }, storyIllustrating[currentPage.id] ? '⏳' : '🔄 Regen Image'),
               ),
               // All pages for print, single page for screen
               e('div', { className: 'ss-no-print' },
@@ -12276,12 +12276,12 @@
                     editingCurrentPage
                       ? e('form', { onSubmit: function (ev) { ev.preventDefault(); saveStoryPageText(); }, style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
                           e('label', { htmlFor: 'ss-story-page-text', style: S.lbl }, 'Text for page ' + (storyCurrent + 1)),
-                          e('textarea', { id: 'ss-story-page-text', value: storyTextEdit.text, autoFocus: true, maxLength: 2000, rows: 7, 'aria-label': 'Story page text', 'aria-invalid': !!storyTextEditError, 'aria-describedby': 'ss-story-page-text-help' + (storyTextEditError ? ' ss-story-page-text-error' : ''), onChange: function (ev) { var text = ev.target.value.slice(0, 2000); setStoryTextEdit(function (edit) { return edit ? Object.assign({}, edit, { text: text }) : null; }); setStoryTextEditError(''); }, style: Object.assign({}, S.textarea, { width: '100%', fontSize: '16px', lineHeight: 1.6, minHeight: '160px' }) }),
+                          e('textarea', { id: 'ss-story-page-text', value: storyTextEdit.text, autoFocus: true, maxLength: 2000, rows: 7, 'aria-label': t('symbol_studio.story_page_text','Story page text'), 'aria-invalid': !!storyTextEditError, 'aria-describedby': 'ss-story-page-text-help' + (storyTextEditError ? ' ss-story-page-text-error' : ''), onChange: function (ev) { var text = ev.target.value.slice(0, 2000); setStoryTextEdit(function (edit) { return edit ? Object.assign({}, edit, { text: text }) : null; }); setStoryTextEditError(''); }, style: Object.assign({}, S.textarea, { width: '100%', fontSize: '16px', lineHeight: 1.6, minHeight: '160px' }) }),
                           e('div', { id: 'ss-story-page-text-help', style: { fontSize: '12px', color: '#6b7280' } }, storyTextEdit.text.length + ' / 2000 characters. Changes apply when you save.'),
                           storyTextEditError && e('div', { id: 'ss-story-page-text-error', role: 'alert', style: { fontSize: '13px', color: '#b91c1c' } }, storyTextEditError),
                           e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-                            e('button', { type: 'submit', 'aria-label': 'Save story page text', style: S.btn(PURPLE, '#fff', false) }, 'Save text'),
-                            e('button', { type: 'button', onClick: cancelStoryTextEdit, 'aria-label': 'Cancel story text edit', style: S.btn('#f3f4f6', '#374151', false) }, 'Cancel')
+                            e('button', { type: 'submit', 'aria-label': t('symbol_studio.save_story_page_text','Save story page text'), style: S.btn(PURPLE, '#fff', false) }, 'Save text'),
+                            e('button', { type: 'button', onClick: cancelStoryTextEdit, 'aria-label': t('symbol_studio.cancel_story_text_edit','Cancel story text edit'), style: S.btn('#f3f4f6', '#374151', false) }, 'Cancel')
                           )
                         )
                       : e('p', { style: { fontSize: '18px', lineHeight: 1.7, color: '#1f2937', fontFamily: 'Georgia, serif', margin: 0, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, currentPage.text)
@@ -12372,8 +12372,8 @@
               value: newBookTitle,
               onChange: function (event) { setNewBookTitle(event.target.value); },
               onKeyDown: function (event) { if (event.key === 'Enter') createBook(); },
-              placeholder: 'e.g. School Day Communication Supports',
-              'aria-label': 'New Visual Pack name',
+              placeholder: t('symbol_studio.e_g_school_day_communication_supports','e.g. School Day Communication Supports'),
+              'aria-label': t('symbol_studio.new_visual_pack_name','New Visual Pack name'),
               style: S.input
             })
           ),
@@ -12438,8 +12438,8 @@
                             event.target.value = activeBook.description || '';
                           }
                         },
-                        placeholder: 'What this pack supports and when to use it',
-                        'aria-label': 'Visual Pack description',
+                        placeholder: t('symbol_studio.what_this_pack_supports_and_when_to_use_it','What this pack supports and when to use it'),
+                        'aria-label': t('symbol_studio.visual_pack_description','Visual Pack description'),
                         style: Object.assign({}, S.textarea, { minHeight: '60px', marginBottom: '8px' })
                       }),
                       e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' } },
@@ -12468,7 +12468,7 @@
                   )
                 ),
 
-                e('section', { 'aria-label': 'Boards in this Visual Pack', style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px' } },
+                e('section', { 'aria-label': t('symbol_studio.boards_in_this_visual_pack','Boards in this Visual Pack'), style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px' } },
                   packSectionTitle('Communication Boards', selectedBoards.length, 'Launch boards in interactive AAC mode, prepare reusable speech on this device, or open them for editing.'),
                   selectedBoards.length === 0
                     ? e('p', { style: { color: '#6b7280', fontSize: '12px' } }, 'No boards in this pack yet.')
@@ -12510,7 +12510,7 @@
                   )
                 ),
 
-                e('section', { 'aria-label': 'Sequences in this Visual Pack', style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px' } },
+                e('section', { 'aria-label': t('symbol_studio.sequences_in_this_visual_pack','Sequences in this Visual Pack'), style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px' } },
                   packSectionTitle('Sequences', selectedSchedules.length, 'Bundle visual routines and step-by-step supports with the communication boards that use them.'),
                   selectedSchedules.length === 0
                     ? e('p', { style: { color: '#6b7280', fontSize: '12px' } }, 'No sequences in this pack yet.')
@@ -12538,7 +12538,7 @@
                   )
                 ),
 
-                e('section', { 'aria-label': 'Symbol Bank assets in this Visual Pack', style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px' } },
+                e('section', { 'aria-label': t('symbol_studio.symbol_bank_assets_in_this_visual_pack','Symbol Bank assets in this Visual Pack'), style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px' } },
                   packSectionTitle('Symbol Bank Assets', selectedAssets.length, 'Include reusable symbols, variants, review status, and attribution with the pack.'),
                   selectedAssets.length === 0
                     ? e('p', { style: { color: '#6b7280', fontSize: '12px' } }, 'No standalone bank assets in this pack yet. Assets used by selected boards and sequences are included automatically when exported.')
@@ -12561,8 +12561,8 @@
                       type: 'search',
                       value: packAssetFilter,
                       onChange: function (event) { setPackAssetFilter(event.target.value); },
-                      placeholder: 'Search labels, aliases, categories, or sources',
-                      'aria-label': 'Search Symbol Bank assets for this Visual Pack',
+                      placeholder: t('symbol_studio.search_labels_aliases_categories_or_sources','Search labels, aliases, categories, or sources'),
+                      'aria-label': t('symbol_studio.search_symbol_bank_assets_for_this_visual_pa','Search Symbol Bank assets for this Visual Pack'),
                       style: Object.assign({}, S.input, { marginBottom: '8px' })
                     }),
                     availableAssets.length === 0
@@ -12632,7 +12632,7 @@
             e('div', { style: { fontSize: '11px', color: '#6b7280' } }, db.wishLabels.join(', ') + ' — you noticed what they were reaching for')),
           e('p', { style: { fontSize: '12px', color: '#047857', fontWeight: 600, fontStyle: 'italic', margin: 0 } }, db.wishCount > 0 ? 'The reaching is how the growing starts. 💫' : 'Every word waters the garden. 🌱'),
           e('p', { id: 'ss-session-summary-description', style: { fontSize: '12px', color: '#475569', marginTop: '12px', lineHeight: 1.5 } }, 'This summary describes activity in this session. It does not measure independent communication.'),
-          e('button', { type: 'button', onClick: function () { setSessionDebrief(null); }, 'aria-label': 'Close session summary', style: Object.assign({}, S.btn(PURPLE, '#fff', false), { minHeight: '44px', marginTop: '8px' }) }, 'Back to Studio')));
+          e('button', { type: 'button', onClick: function () { setSessionDebrief(null); }, 'aria-label': t('symbol_studio.close_session_summary','Close session summary'), style: Object.assign({}, S.btn(PURPLE, '#fff', false), { minHeight: '44px', marginTop: '8px' }) }, 'Back to Studio')));
     }
     if (useBoardId) {
       var useBoard = savedBoards.find(function (b) { return b.id === useBoardId; });
@@ -12819,14 +12819,14 @@
                     }
                     if (ev.key === 'Escape') { setBoardWishOpen(false); setBoardWishInput(''); }
                   },
-                  placeholder: 'What word were they reaching for?',
-                  'aria-label': 'Wish seed word',
+                  placeholder: t('symbol_studio.what_word_were_they_reaching_for','What word were they reaching for?'),
+                  'aria-label': t('symbol_studio.wish_seed_word','Wish seed word'),
                   style: { width: '180px', padding: '4px 8px', borderRadius: '6px', border: '1px solid #7c3aed', background: '#1e1b4b', color: '#e0e7ff', fontSize: '12px', fontFamily: 'inherit' } }),
                 e('button', { onClick: function () { setBoardWishOpen(false); setBoardWishInput(''); }, style: { background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '14px' } }, '×'))
             : e('button', {
                 onClick: function () { setBoardWishOpen(true); },
                 'aria-label': 'Plant a wish seed — record a word the student wanted',
-                title: 'The student is reaching for a word that isn\'t here. Capture it.',
+                title: t('symbol_studio.the_student_is_reaching_for_a_word_that_isn','The student is reaching for a word that isn\'t here. Capture it.'),
                 style: { background: '#1e1b4b', color: '#c4b5fd', border: '1px solid #4c1d95', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
               }, '💫'),
           e('label', { style: { color: '#cbd5e1', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' } },
@@ -12834,7 +12834,7 @@
             e('select', {
               value: tapBehavior,
               onChange: function (ev) { var value = ev.target.value; setTapBehavior(value); store('alloAACTapBehavior', value); },
-              'aria-label': 'Choose what happens when a communication cell is tapped',
+              'aria-label': t('symbol_studio.choose_what_happens_when_a_communication_cel','Choose what happens when a communication cell is tapped'),
               style: { background: '#334155', color: '#fff', border: '1px solid #475569', borderRadius: '6px', padding: '5px 7px', fontSize: '11px' }
             },
               e('option', { value: 'speak-compose' }, 'Speak + compose'),
@@ -12857,12 +12857,12 @@
           }, aiPredict ? '🤖 AI On' : '🤖 AI Off'),
           e('button', {
             onClick: function () { setShowCommLog(function (v) { return !v; }); },
-            'aria-label': 'Toggle communication log', style: { background: showCommLog ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+            'aria-label': t('symbol_studio.toggle_communication_log','Toggle communication log'), style: { background: showCommLog ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
           }, '📋 Log (' + commLog.filter(function (c) { return c.label !== '__UTTERANCE__'; }).length + ')'),
-          e('button', { onClick: exitUse, 'aria-label': 'Exit AAC mode', style: { background: '#b91c1c', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '✕ Exit')
+          e('button', { onClick: exitUse, 'aria-label': t('symbol_studio.exit_aac_mode','Exit AAC mode'), style: { background: '#b91c1c', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '✕ Exit')
         ),
         // ── Page tabs (multi-page boards) ──
-        usePages && e('div', { role: 'tablist', 'aria-label': 'Communication board pages', style: { background: '#0f172a', borderBottom: '1px solid #1e293b', padding: '6px 16px', display: 'flex', gap: '6px', flexShrink: 0, overflowX: 'auto' } },
+        usePages && e('div', { role: 'tablist', 'aria-label': t('symbol_studio.communication_board_pages','Communication board pages'), style: { background: '#0f172a', borderBottom: '1px solid #1e293b', padding: '6px 16px', display: 'flex', gap: '6px', flexShrink: 0, overflowX: 'auto' } },
           usePages.map(function (pg, pi) {
             var active = pi === safeUsePageIdx;
             return e('button', {
@@ -12897,22 +12897,22 @@
             strip.length > 0 && e('button', {
               onClick: function () { speakPhraseFn(strip); },
               disabled: stripSpeaking,
-              'aria-label': 'Speak constructed sentence',
+              'aria-label': t('symbol_studio.speak_constructed_sentence','Speak constructed sentence'),
               style: { background: stripSpeaking ? '#6b7280' : '#4f46e5', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
             }, stripSpeaking ? '\u2026' : '\uD83D\uDD0A Speak'),
             strip.length > 0 && e('button', {
               onClick: function () { predEpochRef.current += 1; if (predTimerRef.current) clearTimeout(predTimerRef.current); setPredictions([]); setStrip(function (s) { return s.slice(0, -1); }); },
-              'aria-label': 'Delete last word from sentence strip',
+              'aria-label': t('symbol_studio.delete_last_word_from_sentence_strip','Delete last word from sentence strip'),
               style: { background: '#374151', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
             }, '\u2190 Del'),
             strip.length > 0 && e('button', {
               onClick: function () { predEpochRef.current += 1; if (predTimerRef.current) clearTimeout(predTimerRef.current); setPredictions([]); setStrip([]); },
-              'aria-label': 'Clear sentence strip', style: { background: '#374151', color: '#cbd5e1', border: 'none', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontSize: '13px' }
+              'aria-label': t('symbol_studio.clear_sentence_strip','Clear sentence strip'), style: { background: '#374151', color: '#cbd5e1', border: 'none', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontSize: '13px' }
             }, '\uD83D\uDDD1')
           )
         ),
         // ── Word prediction chips ──
-        (predictions.length > 0 || predLoading) && e('div', { 'aria-live': 'polite', 'aria-label': 'Word predictions', style: { background: '#0f172a', borderBottom: '1px solid #1e293b', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
+        (predictions.length > 0 || predLoading) && e('div', { 'aria-live': 'polite', 'aria-label': t('symbol_studio.word_predictions','Word predictions'), style: { background: '#0f172a', borderBottom: '1px solid #1e293b', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
           e('span', { style: { color: '#64748b', fontSize: '11px', fontWeight: 600, flexShrink: 0 } }, predLoading ? '🤖 Predicting…' : '💡 Next:'),
           predictions.map(function (pred, pi) {
             var matchCell = useCells.find(function (c) { return c.label.toLowerCase() === pred.toLowerCase(); });
@@ -12932,7 +12932,7 @@
         // ── Body: cells + optional log panel ──
         e('div', { style: { flex: 1, display: 'flex', overflow: 'hidden' } },
           // Cell grid
-          e('div', { role: 'grid', 'aria-label': 'Communication board symbols', style: { flex: 1, display: 'grid', gridTemplateColumns: 'repeat(' + useCols + ', 1fr)', gap: '14px', padding: '18px', overflowY: 'auto', alignContent: 'start' } },
+          e('div', { role: 'grid', 'aria-label': t('symbol_studio.communication_board_symbols','Communication board symbols'), style: { flex: 1, display: 'grid', gridTemplateColumns: 'repeat(' + useCols + ', 1fr)', gap: '14px', padding: '18px', overflowY: 'auto', alignContent: 'start' } },
             useCells.length === 0
               ? e('p', { style: { color: '#94a3b8', gridColumn: '1/-1', textAlign: 'center', paddingTop: '40px' } }, 'This board has no words yet. Add words in Board Builder to begin communicating.')
               : useCells.map(function (cell, idx) {
@@ -12992,8 +12992,8 @@
             e('div', { style: { padding: '12px 16px', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
               e('span', { style: { color: '#a78bfa', fontWeight: 800, fontSize: '13px' } }, '\uD83D\uDCCB Session Log'),
               e('div', { style: { display: 'flex', gap: '6px' } },
-                commLog.length > 0 && e('button', { onClick: exportLog, 'aria-label': 'Export communication log', style: { background: '#1e293b', color: '#94a3b8', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDCBE CSV'),
-                commLog.length > 0 && e('button', { onClick: function () { setCommLog([]); }, 'aria-label': 'Clear communication log', style: { background: '#1e293b', color: '#f87171', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDDD1 Clear')
+                commLog.length > 0 && e('button', { onClick: exportLog, 'aria-label': t('symbol_studio.export_communication_log','Export communication log'), style: { background: '#1e293b', color: '#94a3b8', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDCBE CSV'),
+                commLog.length > 0 && e('button', { onClick: function () { setCommLog([]); }, 'aria-label': t('symbol_studio.clear_communication_log','Clear communication log'), style: { background: '#1e293b', color: '#f87171', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDDD1 Clear')
               )
             ),
             e('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
@@ -13082,13 +13082,13 @@
             style: { background: scanManual ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 12px', cursor: 'pointer', fontWeight: 700, fontSize: '12px' }
           }, scanManual ? '2-Switch' : '1-Switch'),
           e('span', { id: 'ss-scan-help', style: { color: '#cbd5e1', fontSize: '12px', marginRight: 'auto' } }, scanManual ? 'Use Right or Down Arrow to advance; Space or Enter to select.' : 'Use Space or Enter to speak the highlighted cell.'),
-          scanManual && e('button', { onClick: advanceScan, 'aria-label': 'Advance to next cell', style: { background: '#1e40af', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '→ Next'),
+          scanManual && e('button', { onClick: advanceScan, 'aria-label': t('symbol_studio.advance_to_next_cell','Advance to next cell'), style: { background: '#1e40af', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '→ Next'),
           e('label', { style: { color: '#94a3b8', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' } },
             'Speed:',
             e('select', {
               value: scanSpeed,
               onChange: function (ev) { setScanSpeed(Number(ev.target.value)); setScanIndex(0); },
-              'aria-label': 'Scanning speed',
+              'aria-label': t('symbol_studio.scanning_speed','Scanning speed'),
               style: { fontSize: '12px', background: '#334155', color: '#fff', border: '1px solid #64748b', borderRadius: '5px', padding: '2px 6px', minHeight: '24px', cursor: 'pointer' }
             },
               e('option', { value: 1000 }, '1 s'),
@@ -13103,7 +13103,7 @@
           }, scanPaused ? '▶ Resume' : '⏸ Pause'),
           e('button', {
             onClick: exitScan,
-            'aria-label': 'Exit scanning mode', style: { background: '#b91c1c', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+            'aria-label': t('symbol_studio.exit_scanning_mode','Exit scanning mode'), style: { background: '#b91c1c', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
           }, '✕ Exit')
         ),
         // Cell grid
@@ -13207,10 +13207,10 @@
                 e('p', { id: 'ss-dialog-description', style: { color: 'rgba(255,255,255,0.9)', fontSize: '11px', margin: '2px 0 0' } }, 'AI-powered symbol bank • boards • sequences • social stories')
               )
             ),
-            e('button', { onClick: onClose, style: { color: '#fff', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', padding: '5px 11px', cursor: 'pointer', fontSize: '20px', lineHeight: 1 }, 'aria-label': 'Close Symbol Studio' }, '×')
+            e('button', { onClick: onClose, style: { color: '#fff', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', padding: '5px 11px', cursor: 'pointer', fontSize: '20px', lineHeight: 1 }, 'aria-label': t('symbol_studio.close_symbol_studio','Close Symbol Studio') }, '×')
           ),
           // Tab bar
-          e('div', { className: 'ss-tabs', style: S.tabBar, role: 'tablist', 'aria-label': 'Studio sections' }, TABS.map(tabBtn))
+          e('div', { className: 'ss-tabs', style: S.tabBar, role: 'tablist', 'aria-label': t('symbol_studio.studio_sections','Studio sections') }, TABS.map(tabBtn))
         ),
         // Body
         e('div', { className: 'ss-body', style: S.body, role: 'tabpanel', id: 'ss-studio-panel', 'aria-labelledby': 'ss-tab-' + tab },

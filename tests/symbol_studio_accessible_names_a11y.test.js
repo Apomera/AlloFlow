@@ -12,7 +12,9 @@ describe('Symbol Studio accessible control names', () => {
   });
 
   it('leaves Reset progress only on the control that visibly resets progress', () => {
-    expect(source.match(/'aria-label': 'Reset progress'/g)).toHaveLength(1);
+    // The aria-label went through the translator on 2026-09-21; the visible label
+    // below is not a spoken attribute and is unchanged. Still exactly one of each.
+    expect(source.match(/'aria-label': t\('symbol_studio\.reset_progress','Reset progress'\)/g)).toHaveLength(1);
     expect(source).toContain("}, '↻ Reset progress')");
   });
 
@@ -25,7 +27,10 @@ describe('Symbol Studio accessible control names', () => {
     expect(source).toContain("function qbUploadBtn(target, accessibleName)");
     expect(source).toContain("'Generate image for ' + (which === 'first'");
     expect(source).toContain("'Upload image for choice ' + (idx + 1)");
-    expect(source).toContain("'Generate token board reward image'");
+    // Went through the translator on 2026-09-21: a bare literal has no key, so no
+    // translator is ever shown it and it ships English in all 63 packs. Assert both
+    // halves — the key, and the English a screen reader falls back to.
+    expect(source).toContain("t('symbol_studio.generate_token_board_reward_image','Generate token board reward image')");
   });
 
   it('exposes choice count as a named pressed-state control', () => {
@@ -47,6 +52,6 @@ describe('Symbol Studio accessible control names', () => {
     expect(source).toContain("'Print all boards in ' + (activeBook.title || 'Visual Pack')");
     expect(source).toContain("'Export shareable Visual Pack ' + (activeBook.title || 'Untitled')");
     expect(source).toContain("'Delete Visual Pack ' + (activeBook.title || 'Untitled')");
-    expect(source).toContain("'Exit scanning mode'");
+    expect(source).toContain("t('symbol_studio.exit_scanning_mode','Exit scanning mode')");
   });
 });

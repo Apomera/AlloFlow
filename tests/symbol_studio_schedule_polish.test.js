@@ -56,8 +56,11 @@ describe('Symbol Studio visual schedule polish', () => {
     expect(source).toContain('await generateSequenceItems(steps)');
     expect(source).toContain('var cached = findExactBankAsset(gallery, label)');
     expect(source).toContain('assetId: cached ? cached.id : null');
-    expect(schedule).toContain("'aria-label': 'Sequence topic or task'");
-    expect(schedule).toContain("'aria-label': 'Build visual sequence from topic'");
+    // Went through the translator on 2026-09-21: a bare literal has no key, so no
+    // translator is ever shown it and it ships English in all 63 packs. Assert both
+    // halves — the key, and the English a screen reader falls back to.
+    expect(schedule).toContain("'aria-label': t('symbol_studio.sequence_topic_or_task','Sequence topic or task')");
+    expect(schedule).toContain("'aria-label': t('symbol_studio.build_visual_sequence_from_topic','Build visual sequence from topic')");
   });
 
   it('normalizes loaded schedules and reports storage failures truthfully', () => {

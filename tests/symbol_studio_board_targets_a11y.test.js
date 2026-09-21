@@ -12,8 +12,13 @@ describe('Symbol Studio Board Builder target and action accessibility', () => {
   const board = source.slice(start, end);
 
   it('gives page add/delete controls explicit behavior, names, and 32px targets', () => {
-    expect(board).toContain("'aria-label': 'Add a new page'");
-    expect(board).toContain("'aria-label': 'Delete current board page'");
+    // Went through the translator on 2026-09-21: a bare literal has no key, so no
+    // translator is ever shown it and it ships English in all 63 packs. Assert both
+    // halves — the key, and the English a screen reader falls back to.
+    // The title on the same button carries the identical English, so the converter
+    // gave each site its own key; the aria-label is the _2 variant.
+    expect(board).toContain("'aria-label': t('symbol_studio.add_a_new_page_2','Add a new page')");
+    expect(board).toContain("'aria-label': t('symbol_studio.delete_current_board_page','Delete current board page')");
     expect(board).toContain("width: '32px', height: '32px'");
     expect(board).not.toContain("'aria-label': '✕'");
   });
