@@ -19,7 +19,7 @@ const discovery = makeRoom(); discovery.nodes[5].requires.push('wall-found');
    window.root = ReactDOM.createRoot(document.getElementById('root')); root.render(React.createElement(AlloModules.ConnectedEscapeRoomSetup, { inputText: source, language: 'English', appId: 'flow-browser', user: { uid: 'teacher' }, allowLive: false, onClose: () => {}, t: key => key, callGemini: async prompt => { flowCalls.push(prompt); return JSON.stringify(replies.shift()); } }));
   }, { source, serial, room: makeRoom(), discovery });
   const button = name => page.getByRole('button', { name, exact: true });
-  await button('Generate connected room').click();
+  await button('Generate escape room').click();
   const flow = page.locator('[data-room-flow]');
   await expect(flow.locator('summary').first()).toContainText('2 independent puzzle paths'); expect(await page.evaluate(() => flowCalls.length)).toBe(2);
   await expect(flow).not.toHaveAttribute('open', '');

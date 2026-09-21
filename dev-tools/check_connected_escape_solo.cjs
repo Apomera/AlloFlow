@@ -26,7 +26,7 @@ const out=process.env.CONNECTED_ESCAPE_QA_DIR||'docs/connected-escape-room-pendi
  async function selectIndex(locator,index){await tabTo(locator);await page.keyboard.press('Home');for(let i=0;i<index;i++)await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');}
  await page.keyboard.press('Tab');await expect(page.locator('#outside')).toBeFocused();await page.keyboard.press('Enter');await expect(btn('Close')).toBeFocused();
  expect(await page.locator('#background').evaluate(el=>el.inert)).toBe(true);
- await keyButton(btn('Generate connected room'));await expect(btn('Play solo')).toBeVisible();await expect(page.locator('[data-launch-connected]')).toHaveCount(0);
+ await keyButton(btn('Generate escape room'));await expect(btn('Play solo')).toBeVisible();await expect(page.locator('[data-launch-connected]')).toHaveCount(0);
  await keyButton(btn('Check playability with AI'));await expect(page.locator('[data-playability-review]')).toContainText('independently matched every device');expect(await page.evaluate(()=>aiCalls.length)).toBe(4);
  await page.screenshot({path:out+'/review-desktop.png',fullPage:true});
  await keyButton(btn('Play solo'));await expect(btn('Back to room setup')).toBeFocused();await submit('lens');await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuenow','1');await expect(page.locator('.cer-panel h3').first()).toBeFocused();
