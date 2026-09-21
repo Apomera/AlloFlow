@@ -5199,7 +5199,7 @@ if (!safetyChecked) {
 
       // ── Progress Stepper ──
       React.createElement("div", {
-        className: "flex items-center justify-start sm:justify-center gap-1 px-4 py-3 overflow-x-auto", role: "navigation", "aria-label": "Safety briefing progress",
+        className: "flex items-center justify-start sm:justify-center gap-1 px-4 py-3 overflow-x-auto", role: "navigation", "aria-label": __alloT('stem.titration.safety_briefing_progress','Safety briefing progress'),
         style: { background:'rgba(0,0,0,0.25)' }
       },
         stationDefs.map(function(st, i) {
@@ -5242,7 +5242,7 @@ if (!safetyChecked) {
       // STATION 1: SUIT UP (PPE)
       // ══════════════════════════════════════
       safetyStation === 1 && React.createElement("div", {
-        id: "titration-safety-station-1", role: "region", tabIndex: -1, "aria-label": "Safety station 1 of 4",
+        id: "titration-safety-station-1", role: "region", tabIndex: -1, "aria-label": __alloT('stem.titration.safety_station_1_of_4','Safety station 1 of 4'),
         className: "p-5 space-y-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300",
         style: { animation: 'safetyStationEnter 0.4s ease' }
       },
@@ -5252,7 +5252,7 @@ if (!safetyChecked) {
         ),
 
         // PPE readiness gauge
-        React.createElement("div", { role: "progressbar", "aria-label": "PPE readiness", "aria-valuemin": 0, "aria-valuemax": ppeItems.length, "aria-valuenow": ppeCount, "aria-valuetext": ppeCount + " of " + ppeItems.length + " items equipped", style: { position:'relative', height:'12px', borderRadius:'6px', background:'rgba(0,0,0,0.4)', border:'1px solid rgba(251,191,36,0.35)', overflow:'hidden' } },
+        React.createElement("div", { role: "progressbar", "aria-label": __alloT('stem.titration.ppe_readiness','PPE readiness'), "aria-valuemin": 0, "aria-valuemax": ppeItems.length, "aria-valuenow": ppeCount, "aria-valuetext": ppeCount + " of " + ppeItems.length + " items equipped", style: { position:'relative', height:'12px', borderRadius:'6px', background:'rgba(0,0,0,0.4)', border:'1px solid rgba(251,191,36,0.35)', overflow:'hidden' } },
           React.createElement("div", {
             style: { height:'100%', borderRadius:'4px', transition:'width 0.5s ease',
               width: (ppeCount / ppeItems.length * 100) + '%',
@@ -5340,7 +5340,7 @@ if (!safetyChecked) {
       // STATION 2: LAB SCAN (Emergency Equipment)
       // ══════════════════════════════════════
       safetyStation === 2 && React.createElement("div", {
-        id: "titration-safety-station-2", role: "region", tabIndex: -1, "aria-label": "Safety station 2 of 4",
+        id: "titration-safety-station-2", role: "region", tabIndex: -1, "aria-label": __alloT('stem.titration.safety_station_2_of_4','Safety station 2 of 4'),
         className: "p-5 space-y-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300",
         style: { animation: 'safetyStationEnter 0.4s ease' }
       },
@@ -5586,7 +5586,7 @@ if (!safetyChecked) {
       // STATION 3: CHEMICAL HAZARD BRIEFING
       // ══════════════════════════════════════
       safetyStation === 3 && React.createElement("div", {
-        id: "titration-safety-station-3", role: "region", tabIndex: -1, "aria-label": "Safety station 3 of 4",
+        id: "titration-safety-station-3", role: "region", tabIndex: -1, "aria-label": __alloT('stem.titration.safety_station_3_of_4','Safety station 3 of 4'),
         className: "p-5 space-y-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300",
         style: { animation: 'safetyStationEnter 0.4s ease' }
       },
@@ -5648,7 +5648,7 @@ if (!safetyChecked) {
       // STATION 4: TIMED SAFETY DRILL
       // ══════════════════════════════════════
       safetyStation === 4 && React.createElement("div", {
-        id: "titration-safety-station-4", role: "region", tabIndex: -1, "aria-label": "Safety station 4 of 4",
+        id: "titration-safety-station-4", role: "region", tabIndex: -1, "aria-label": __alloT('stem.titration.safety_station_4_of_4','Safety station 4 of 4'),
         className: "p-5 space-y-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300",
         style: { animation: drillResult === 'wrong' ? 'safetyShake 0.5s ease, safetyConsequence 1.5s ease' : 'safetyStationEnter 0.4s ease' }
       },
@@ -5664,7 +5664,7 @@ if (!safetyChecked) {
         // Countdown timer (circular SVG)
         drillActive && !drillResult && React.createElement("div", { style: { display:'flex', justifyContent:'center' } },
           React.createElement("div", {
-            role: "group", "aria-label": "Safety drill timer",
+            role: "group", "aria-label": __alloT('stem.titration.safety_drill_timer','Safety drill timer'),
             style: { position:'relative', width:'80px', height:'80px' }
           },
             React.createElement("svg", {
@@ -5951,7 +5951,7 @@ return React.createElement("div", {
 
   // ── Safety Reference Panel (toggled) ──
   showSafetyRef && React.createElement("div", {
-    id: "titration-safety-reference", role: "region", "aria-label": "Quick safety reference",
+    id: "titration-safety-reference", role: "region", "aria-label": __alloT('stem.titration.quick_safety_reference',"Quick safety reference"),
     className: "rounded-xl p-4 border space-y-2 animate-in slide-in-from-top duration-200",
     style: Object.assign({}, glass, { background: 'rgba(120,53,15,0.3)', borderColor: 'rgba(251,191,36,0.2)' })
   },
@@ -5969,7 +5969,7 @@ return React.createElement("div", {
 
   // ── Chemical Hazards Panel (toggled) ──
   showHazards && React.createElement("div", {
-    id: "titration-hazards-panel", role: "region", "aria-label": "Chemical hazard information",
+    id: "titration-hazards-panel", role: "region", "aria-label": __alloT('stem.titration.chemical_hazard_information',"Chemical hazard information"),
     className: "rounded-xl p-4 border space-y-3 animate-in slide-in-from-top duration-200",
     style: Object.assign({}, glass, { background: 'rgba(127,29,29,0.15)', borderColor: 'rgba(248,113,113,0.2)' })
   },
@@ -6048,7 +6048,7 @@ return React.createElement("div", {
         React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-[0.15em] text-cyan-300" }, "Experiment command"),
         React.createElement("h2", { id: "titration-command-title", className: "mt-2 text-xl sm:text-2xl font-black text-white" }, volumeAdded === 0 ? "Prepare a controlled first addition" : pastEquivalence ? "Equivalence passed — evaluate endpoint bias" : atEquivalence ? "At equivalence — compare the indicator signal" : Math.abs(volumeAdded - Veq) <= 2 ? "Approach equivalence drop by drop" : "Build the titration curve"),
         React.createElement("p", { className: "mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed" }, volumeAdded === 0 ? (isPotentiometric ? "Confirm the preset, then add titrant while watching both the colour and the electrode potential." : "Confirm the preset and indicator, then add titrant while watching both color and pH.") : pastEquivalence ? "Compare the observed endpoint with the stoichiometric equivalence volume before resetting." : atEquivalence ? "This is the stoichiometric point; check whether the selected indicator has already changed, is changing, or has not changed yet." : Math.abs(volumeAdded - Veq) <= 2 ? "The curve is steep here. Use the smallest additions and swirl after every drop." : "Add measured volumes, observe the response, and predict where the sharp change will occur."),
-        React.createElement("div", { className: "mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4", "aria-label": "Live titration metrics" },
+        React.createElement("div", { className: "mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4", "aria-label": __alloT('stem.titration.live_titration_metrics','Live titration metrics') },
           [[volumeAdded.toFixed(1) + ' mL', 'Titrant'], [yAxis.readout(currentY) + yAxis.unit, isPotentiometric ? 'Cell potential' : 'Current pH'], [Veq.toFixed(1) + ' mL', 'Equivalence'], [indicatorStatus, isPotentiometric ? 'MnO₄⁻ colour' : 'Indicator', true]].map(function(metric) {
             // metric[2] marks a value that is a PHRASE rather than a number. Numbers are
             // short and truncating them is safe; "Before endpoint" is not, and it clipped
@@ -6068,9 +6068,9 @@ return React.createElement("div", {
       // complementary content anyway — it is the progress readout for the activity
       // right beside it. A bare labelled <div> would have its aria-label dropped, so
       // the role has to stay.
-      React.createElement("div", { role: "group", className: "rounded-xl border border-cyan-500/20 bg-black/20 p-4", "aria-label": "Equivalence progress" },
+      React.createElement("div", { role: "group", className: "rounded-xl border border-cyan-500/20 bg-black/20 p-4", "aria-label": __alloT('stem.titration.equivalence_progress','Equivalence progress') },
         React.createElement("div", { className: "flex items-center justify-between gap-3" }, React.createElement("span", { className: "text-[0.625rem] font-black uppercase tracking-wide text-cyan-300" }, "Equivalence progress"), React.createElement("span", { className: "text-lg font-black text-white" }, Math.min(100, Math.round(volumeAdded / Math.max(0.1, Veq) * 100)) + "%")),
-        React.createElement("div", { className: "mt-3 h-2 overflow-hidden rounded-full bg-slate-800", role: "progressbar", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": Math.min(100, Math.round(volumeAdded / Math.max(0.1, Veq) * 100)), "aria-label": "Progress toward equivalence volume" }, React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500 transition-all", style: { width: Math.min(100, volumeAdded / Math.max(0.1, Veq) * 100) + '%' } })),
+        React.createElement("div", { className: "mt-3 h-2 overflow-hidden rounded-full bg-slate-800", role: "progressbar", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": Math.min(100, Math.round(volumeAdded / Math.max(0.1, Veq) * 100)), "aria-label": __alloT('stem.titration.progress_toward_equivalence_volume','Progress toward equivalence volume') }, React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500 transition-all", style: { width: Math.min(100, volumeAdded / Math.max(0.1, Veq) * 100) + '%' } })),
         React.createElement("ol", { className: "mt-4 space-y-2 text-[0.6875rem] text-slate-300" }, ["Measure volume precisely", isPotentiometric ? "Track colour and potential together" : "Track color and pH together", "Distinguish endpoint from equivalence"].map(function(step, i) {
           return React.createElement("li", { key: step, className: "flex gap-2" }, React.createElement("span", { className: "font-black text-cyan-400" }, (i + 1) + "."), React.createElement("span", null, step));
         }))
@@ -6078,7 +6078,7 @@ return React.createElement("div", {
     )
   ),
 
-  React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 border-b border-slate-700 pb-2", role: "tablist", "aria-label": "Titration Lab sections" },
+  React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 border-b border-slate-700 pb-2", role: "tablist", "aria-label": __alloT('stem.titration.titration_lab_sections','Titration Lab sections') },
     [
       { id: 'titrate', label: __alloT('stem.titration.titrate', '\uD83E\uDDEA Titrate'), color: '#38bdf8' },
       { id: 'challenge', label: __alloT('stem.titration.challenge', '\uD83C\uDFC6 Challenge'), color: '#f59e0b' },
@@ -6584,7 +6584,7 @@ return React.createElement("div", {
     React.createElement("div", {
 
       className: "rounded-2xl p-4 border overflow-x-auto " + (experimentReady ? "lg:col-span-3" : "lg:col-span-2"),
-      role: "region", "aria-label": "Scrollable titration curve plot", tabIndex: 0,
+      role: "region", "aria-label": __alloT('stem.titration.scrollable_titration_curve_plot','Scrollable titration curve plot'), tabIndex: 0,
       style: Object.assign({}, glass, { background: 'rgba(3,25,40,0.85)', borderColor: 'rgba(100,116,139,0.3)' })
 
     },
@@ -6838,7 +6838,7 @@ return React.createElement("div", {
 
       ),
 
-      React.createElement("div", { className: "mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-200", "aria-label": "Titration curve legend" },
+      React.createElement("div", { className: "mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-200", "aria-label": __alloT('stem.titration.titration_curve_legend','Titration curve legend') },
         React.createElement("span", { className: "inline-flex items-center gap-2" }, React.createElement("span", { "aria-hidden": true, className: "inline-block h-1 w-8 rounded bg-cyan-400" }), "Observed curve"),
         React.createElement("span", { className: "inline-flex items-center gap-2" }, React.createElement("span", { "aria-hidden": true, className: "inline-block w-8 border-t-2 border-dashed border-cyan-200" }), "Dashed full-curve preview"),
         React.createElement("span", { className: "inline-flex items-center gap-2" }, React.createElement("span", { "aria-hidden": true, className: "inline-block w-8 border-t-2 border-dashed border-red-400" }), "Equivalence volume"),
@@ -7600,7 +7600,7 @@ return React.createElement("div", {
           gTrials.length === 0
             ? React.createElement("p", { className: "text-xs text-slate-300" },
                 'No trials recorded yet. Record an initial burette reading, titrate to the endpoint, record the final reading, and save the titre. A rough run can be retained but excluded from the mean.')
-            : React.createElement("div", { className: "overflow-x-auto", role: "region", "aria-label": "Recorded trial readings", tabIndex: 0 }, React.createElement("table", { className: "w-full min-w-[42rem] text-xs" },
+            : React.createElement("div", { className: "overflow-x-auto", role: "region", "aria-label": __alloT('stem.titration.recorded_trial_readings','Recorded trial readings'), tabIndex: 0 }, React.createElement("table", { className: "w-full min-w-[42rem] text-xs" },
                 React.createElement("caption", { className: "sr-only" }, "Recorded trial readings"),
                 // The last column holds the discard buttons. It still needs a header
                 // with real text — an empty <th> gives screen-reader users an unnamed
@@ -7702,7 +7702,7 @@ return React.createElement("div", {
           good: ['#a3e635', 'Good \u2014 just outside the activity target'],
           fair: ['#fbbf24', 'Fair \u2014 a visible technique error'],
           poor: ['#f87171', 'Poor \u2014 check your endpoint and your eye line'] }[r.band];
-        return React.createElement("div", { id: "titration-graded-result", tabIndex: -1, role: "region", "aria-label": "Graded titration result", className: "rounded-xl p-4 border space-y-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300",
+        return React.createElement("div", { id: "titration-graded-result", tabIndex: -1, role: "region", "aria-label": __alloT('stem.titration.graded_titration_result','Graded titration result'), className: "rounded-xl p-4 border space-y-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300",
           style: { borderColor: bandMeta[0] + '88', background: 'rgba(15,23,42,0.7)' } },
           React.createElement("div", { className: "text-sm font-black", style: { color: bandMeta[0] } }, bandMeta[1]),
           React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2" },
@@ -7771,7 +7771,7 @@ return React.createElement("div", {
       gLog.length > 0 && React.createElement("details", { className: "rounded-xl border border-slate-700/50 overflow-hidden" },
         React.createElement("summary", { className: "px-3 py-2 cursor-pointer text-[0.75rem] font-bold text-slate-300" },
           __alloT('stem.titration.run_log', 'Run log') + ' (' + gLog.length + ')'),
-        React.createElement("div", { className: "overflow-x-auto", role: "region", "aria-label": "Completed unknown runs", tabIndex: 0 }, React.createElement("table", { className: "w-full min-w-[34rem] text-xs" },
+        React.createElement("div", { className: "overflow-x-auto", role: "region", "aria-label": __alloT('stem.titration.completed_unknown_runs','Completed unknown runs'), tabIndex: 0 }, React.createElement("table", { className: "w-full min-w-[34rem] text-xs" },
           React.createElement("caption", { className: "sr-only" }, "Completed unknown runs"),
           React.createElement("thead", null, React.createElement("tr", { className: "text-slate-400" },
             ['Run', 'Unknown', '\u0394V (mL)', '\u0394 conc', 'Time'].map(function (hh) {
@@ -8119,7 +8119,7 @@ return React.createElement("div", {
             }, g.label);
           })
         ),
-        React.createElement("div", { className: "overflow-x-auto", role: "region", "aria-label": "Glassware comparison", tabIndex: 0 }, React.createElement("table", { className: "w-full min-w-[36rem] text-xs" },
+        React.createElement("div", { className: "overflow-x-auto", role: "region", "aria-label": __alloT('stem.titration.glassware_comparison','Glassware comparison'), tabIndex: 0 }, React.createElement("table", { className: "w-full min-w-[36rem] text-xs" },
           React.createElement("caption", { className: "sr-only" }, "Glassware comparison"),
           React.createElement("thead", null, React.createElement("tr", { className: "text-slate-400" },
             ['Vessel', 'Bore', '1 mL stands', 'Tolerance', 'as % of capacity'].map(function (hh) {
@@ -8389,7 +8389,7 @@ return React.createElement("div", {
           'data-titration-anim': 'true',
           'data-titration-paused': titrationAnimPaused ? 'true' : 'false',
           role: 'img',
-          'aria-label': 'Animated reference curve showing pH versus titrant volume for a strong acid titrated by a strong base.',
+          'aria-label': __alloT('stem.titration.animated_reference_curve_showing_ph_versus_t','Animated reference curve showing pH versus titrant volume for a strong acid titrated by a strong base.'),
           'aria-describedby': 'titration-animation-caption',
           ref: titrAnimCanvasRef,
           style: { width: '100%', height: '100%', display: 'block' }
@@ -8517,7 +8517,7 @@ return React.createElement("div", {
         (bf.log || []).length > 0 && React.createElement('span', { className: 'text-[0.625rem] text-slate-400 italic' }, (bf.log || []).length + ' observations logged')
       ),
       (bf.log || []).length > 0 && React.createElement('div', { className: 'mb-3 overflow-x-auto' },
-        React.createElement('table', { className: 'text-xs w-full min-w-[520px] border-collapse text-slate-300', 'aria-label': 'Buffer observations' },
+        React.createElement('table', { className: 'text-xs w-full min-w-[520px] border-collapse text-slate-300', 'aria-label': __alloT('stem.titration.buffer_observations','Buffer observations') },
           React.createElement('caption', { className: 'sr-only' }, 'Logged buffer observations'),
           React.createElement('thead', null, React.createElement('tr', { className: 'bg-slate-800' },
             ['pKa', '[A⁻]/[HA]', 'starting pH', 'pH shift', 'outcome'].map(function(c, i) {

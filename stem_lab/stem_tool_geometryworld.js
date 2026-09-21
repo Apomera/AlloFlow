@@ -13148,7 +13148,7 @@
           el('div', { className: 'gw-brand-lockup' },
             el('span', { className: 'gw-brand-mark', 'aria-hidden': 'true' }, renderShapeSwatch(el, 'cube')),
             el('div', { className: 'gw-brand-copy' },
-              el('h2', { id: 'gw-title', className: 'gw-title' }, window.StemLab.geometryWorldBuilderPure ? el('button',{type:'button',className:'gw-home-brand-button','aria-label':'Geometry World home','aria-haspopup':'dialog',onClick:openGeometryHome},'Geometry World') : 'Geometry World'),
+              el('h2', { id: 'gw-title', className: 'gw-title' }, window.StemLab.geometryWorldBuilderPure ? el('button',{type:'button',className:'gw-home-brand-button','aria-label':__alloT('stem.geometryworld.geometry_world_home','Geometry World home'),'aria-haspopup':'dialog',onClick:openGeometryHome},'Geometry World') : 'Geometry World'),
               el('span', { className: 'gw-lesson-title' }, currentLesson.title || 'Choose a lesson to begin')
             )
           ),
@@ -13184,7 +13184,7 @@
             }, el('span', { 'aria-hidden': 'true' }, '\u2699\uFE0F'), el('span', { className: 'gw-compact-action-label' }, 'Menu')),
             el('button', {
               type: 'button', className: 'gw-compact-action gw-toolbar-collapse gw-focusable',
-              'aria-label': __alloT('stem.geometryworld.a11y_hide_the_geometry_world_game_bar', 'Hide the Geometry World game bar'), title: 'Hide game bar',
+              'aria-label': __alloT('stem.geometryworld.a11y_hide_the_geometry_world_game_bar', 'Hide the Geometry World game bar'), title: __alloT('stem.geometryworld.hide_game_bar','Hide game bar'),
               onClick: function() { var saved = saveGeometryHudPreferences({ toolbarCollapsed: true }); upd('toolbarCollapsed', true); announceToSR('Game bar hidden; use the Show game bar button to restore it.' + (saved ? ' Preference saved on this device.' : ' Preference applies for this session.')); }
             }, '\u25B2')
           )
@@ -13197,7 +13197,7 @@
         }, el('span', { 'aria-hidden': 'true' }, '\u25BC'), ' Show game bar'),
 
         el('div', { className: 'gw-fullscreen-quickbar', role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_fullscreen_game_tools', 'Fullscreen game tools') },
-          window.StemLab.geometryWorldBuilderPure && el('button',{type:'button',className:'gw-compact-action gw-focusable','aria-label':'Geometry World home','aria-haspopup':'dialog',onClick:openGeometryHome},'Home'),
+          window.StemLab.geometryWorldBuilderPure && el('button',{type:'button',className:'gw-compact-action gw-focusable','aria-label':__alloT('stem.geometryworld.geometry_world_home_2','Geometry World home'),'aria-haspopup':'dialog',onClick:openGeometryHome},'Home'),
           worldActive && el('button', {
             type: 'button', className: 'gw-compact-action gw-focusable',
             'aria-expanded': showPredictionPanel, 'aria-controls': 'gw-prediction-panel',
@@ -13245,7 +13245,7 @@
               id: 'gw-volume-prediction',
               type: 'text', inputMode: 'decimal', value: volumePrediction, disabled: !!volumeEstimateCommitment,
               onChange: function(ev) { upd({ volumePrediction: ev.target.value, volumeEstimateCommitError: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' }); },
-              placeholder: 'e.g. 24',
+              placeholder: __alloT('stem.geometryworld.e_g_24','e.g. 24'),
               'aria-label': __alloT('stem.geometryworld.a11y_estimated_volume_in_cubic_units', 'Estimated volume in cubic units'),
               'aria-invalid': String(volumePrediction || '').trim() && !volumeEstimateDraftValid ? 'true' : 'false',
               'aria-describedby': 'gw-volume-estimate-status',
@@ -13320,12 +13320,12 @@
           measureResult && el('div', { role: 'region', className: 'gw-measure-card', 'data-measurement-compact': isMobile ? 'true' : 'false', 'data-details-open': !isMobile || measurementDetailsOpen ? 'true' : 'false', 'aria-label': __alloT('stem.geometryworld.a11y_measurement_inspector', 'Measurement inspector'), style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
             el('div', { className: 'gw-measure-heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' } },
               el('div', { role: 'status', 'aria-live': 'polite', style: { fontWeight: 800, color: '#cffafe' } }, '\uD83D\uDCCF ' + (measureResult.isComplete === false ? 'Large structure - incomplete measurement' : measureResult.isSolidPrism ? 'Solid rectangular prism' : 'Composite structure')),
-              el('button', { type: 'button', className: 'gw-measure-close', 'aria-label': __alloT('stem.geometryworld.a11y_close_measurement_inspector', 'Close measurement inspector'), title: 'Close measurement inspector', onClick: function() { var eng = window[engineKey]; if (eng && eng.clearLayerFocus) eng.clearLayerFocus(); setLayerFocus(0); setMeasurementDetailsOpen(false); upd('measureResult', null); } }, '\u00D7')
+              el('button', { type: 'button', className: 'gw-measure-close', 'aria-label': __alloT('stem.geometryworld.a11y_close_measurement_inspector', 'Close measurement inspector'), title: __alloT('stem.geometryworld.close_measurement_inspector','Close measurement inspector'), onClick: function() { var eng = window[engineKey]; if (eng && eng.clearLayerFocus) eng.clearLayerFocus(); setLayerFocus(0); setMeasurementDetailsOpen(false); upd('measureResult', null); } }, '\u00D7')
             ),
             measureResult.isComplete === false && el('div', { role: 'alert', 'data-geometry-measurement-incomplete': 'true',
               style: { margin: '2px 0', padding: '4px 6px', borderRadius: '4px', background: '#7f1d1d', color: '#fecaca', fontWeight: 700 } },
               'Measurement limit reached. At least ' + measureResult.count + ' connected blocks were found; volume, dimensions, and surface area below are partial and not exact.'),
-            measureResult.isComplete !== false && el('div', { className: 'gw-measure-dimensions', 'aria-label': 'Principal dimensions in units' },
+            measureResult.isComplete !== false && el('div', { className: 'gw-measure-dimensions', 'aria-label': __alloT('stem.geometryworld.principal_dimensions_in_units','Principal dimensions in units') },
               [['Length', measureResult.L], ['Width', measureResult.W], ['Height', measureResult.H]].map(function(dimension) {
                 return el('div', { className: 'gw-measure-dimension', key: dimension[0] }, el('span', null, dimension[0]), el('strong', null, dimension[1]));
               })
@@ -13388,13 +13388,13 @@
                 el('input', {
                   id: 'gw-prediction-revision', type: 'text', inputMode: 'decimal', value: predictionRevision,
                   onChange: function(ev) { upd({ predictionRevision: ev.target.value, predictionRevisionResult: null }); },
-                  placeholder: 'new V', 'aria-label': __alloT('stem.geometryworld.a11y_revised_volume_estimate_after_evidence', 'Revised volume estimate after evidence'),
+                  placeholder: __alloT('stem.geometryworld.new_v','new V'), 'aria-label': __alloT('stem.geometryworld.a11y_revised_volume_estimate_after_evidence', 'Revised volume estimate after evidence'),
                   style: { width: '52px', background: '#0f172a', border: '1px solid #a78bfa', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '9px' }
                 }),
                 el('input', {
                   type: 'text', value: predictionReflection,
                   onChange: function(ev) { upd('predictionReflection', ev.target.value); },
-                  placeholder: 'What changed in your thinking?', 'aria-label': __alloT('stem.geometryworld.a11y_explain_what_changed_in_your_reasoning', 'Explain what changed in your reasoning'),
+                  placeholder: __alloT('stem.geometryworld.what_changed_in_your_thinking','What changed in your thinking?'), 'aria-label': __alloT('stem.geometryworld.a11y_explain_what_changed_in_your_reasoning', 'Explain what changed in your reasoning'),
                   style: { width: '160px', background: '#0f172a', border: '1px solid #64748b', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '9px' }
                 }),
                 el('button', {
@@ -13946,7 +13946,7 @@
               style:{background:'var(--allo-stem-panel, #1e293b)',border:'1px solid var(--allo-stem-border, #334155)',borderRadius:'6px',padding:'4px 10px',color:'#f59e0b',fontSize:'11px',cursor:'pointer',fontWeight:600}
             },label);
           }),
-          worldActive && el('button',{type:'button',onClick:function(){var eng=window[engineKey];if(eng && eng.openConceptSnapshots)eng.openConceptSnapshots();else if(addToast)addToast('Concept snapshots are still loading. Try again in a moment.','info');},title:'Save a moment in the world with observations and mathematical reasoning',style:{background:'var(--allo-stem-panel, #1e293b)',border:'1px solid var(--allo-stem-border, #334155)',borderRadius:'6px',padding:'4px 10px',color:'#60a5fa',fontSize:'11px',cursor:'pointer',fontWeight:600}},'Concept snapshots'),
+          worldActive && el('button',{type:'button',onClick:function(){var eng=window[engineKey];if(eng && eng.openConceptSnapshots)eng.openConceptSnapshots();else if(addToast)addToast('Concept snapshots are still loading. Try again in a moment.','info');},title:__alloT('stem.geometryworld.save_a_moment_in_the_world_with_observations','Save a moment in the world with observations and mathematical reasoning'),style:{background:'var(--allo-stem-panel, #1e293b)',border:'1px solid var(--allo-stem-border, #334155)',borderRadius:'6px',padding:'4px 10px',color:'#60a5fa',fontSize:'11px',cursor:'pointer',fontWeight:600}},'Concept snapshots'),
           // Creator Mode toggle
           el('button', {
             onClick: function() { upd({ creatorMode: !creatorMode, showGameSettings: false }); if (!creatorMode && addToast) addToast('\uD83C\uDFA8 Creator Mode ON \u2014 build a lesson for your classmates!', 'info'); },
@@ -14115,7 +14115,7 @@
             el('div', { style: { flexBasis: '100%', padding: '10px 0', display: 'grid', gap: '6px' } },
               el('label', { htmlFor: 'gw-lesson-depth', style: { fontSize: '12px', fontWeight: 700 } }, 'Lesson depth · ' + aiDepthProfile.label + ' · ' + aiDepthProfile.minutes),
               el('input', { id: 'gw-lesson-depth', type: 'range', min: 1, max: 3, step: 1, value: aiLessonDepth, disabled: aiGenerating,
-                'aria-label': 'Lesson depth and estimated length', 'aria-valuetext': aiDepthProfile.label + ', ' + aiDepthProfile.minutes + ', ' + aiDepthProfile.activities + ' activities',
+                'aria-label': __alloT('stem.geometryworld.lesson_depth_and_estimated_length','Lesson depth and estimated length'), 'aria-valuetext': aiDepthProfile.label + ', ' + aiDepthProfile.minutes + ', ' + aiDepthProfile.activities + ' activities',
                 'aria-describedby': 'gw-lesson-depth-help', onChange: function(ev) { upd('aiLessonDepth', Number(ev.target.value)); },
                 style: { width: '100%', minHeight: '44px', accentColor: '#a78bfa', margin: 0 } }),
               el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
@@ -14129,7 +14129,7 @@
               style: { background: aiGenerating ? '#334155' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 12px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, minHeight: '44px' }
             }, aiGenerating ? 'Creating lesson…' : 'Generate ' + aiDepthProfile.label.toLowerCase() + ' lesson'),
             aiGenerating && el('button', { type: 'button', onClick: cancelWorldGeneration,
-              title: 'Keep your current world. A request already sent may finish, but its result will not be applied.',
+              title: __alloT('stem.geometryworld.keep_your_current_world_a_request_already_se','Keep your current world. A request already sent may finish, but its result will not be applied.'),
               style: { minHeight: '44px', padding: '8px 12px', borderRadius: '6px', border: '1px solid #64748b', color: 'var(--allo-stem-text, #e2e8f0)', background: 'var(--allo-stem-panel, #1e293b)', cursor: 'pointer' }
             }, 'Cancel generation'),
             d.aiGenerationStatus && el('p', { role: 'status', 'aria-live': 'polite', style: { flexBasis: '100%', fontSize: '11px', margin: '2px 0 6px', lineHeight: 1.5 } }, d.aiGenerationStatus),
@@ -14615,7 +14615,7 @@
               if (eng) eng._predictionState = { input: '', strategy: '', reason: '', commitment: null, observedTargetKeys: [], history: [] };
               upd({ score: 0, answeredNpcs: {}, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
             },
-            title: 'Reset lesson progress and reload the world'
+            title: __alloT('stem.geometryworld.reset_lesson_progress_and_reload_the_world','Reset lesson progress and reload the world')
           }, '\u21BB Reset World')
         ),
         // ── Minimap — top-down view showing player + NPC positions ──
@@ -14749,7 +14749,7 @@
           // to cycle shapes. Every shape stays directly clickable below.
           el('button', { type: 'button', className: 'gw-shape-heading gw-focusable', 'aria-keyshortcuts': 'Q',
             'aria-label': __alloT('stem.geometryworld.a11y_next_shape_q', 'Next shape. Shortcut Q'),
-            title: 'Click or press Q to cycle shapes',
+            title: __alloT('stem.geometryworld.click_or_press_q_to_cycle_shapes','Click or press Q to cycle shapes'),
             onClick: function() { setBuildShape('cycle'); } },
             el('span', { className: 'gw-shape-heading-text' }, 'Shape'), el('kbd', { className: 'gw-key-badge', 'aria-hidden': 'true' }, 'Q')),
           // Rotation badge. Always present so R is discoverable; inert for the
@@ -14877,10 +14877,10 @@
           style: { position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', width: 'max-content', maxWidth: 'calc(100% - 24px)', zIndex: 20, display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', justifyContent: 'center' }
         },
           el('button', {
-            type:'button',className:'gw-focusable','aria-label':'Match aimed block','aria-keyshortcuts':'I','data-gw-utility':'match',
+            type:'button',className:'gw-focusable','aria-label':__alloT('stem.geometryworld.match_aimed_block','Match aimed block'),'aria-keyshortcuts':'I','data-gw-utility':'match',
             disabled:openModals.length>0 || !worldActive || !!d.showcaseActive || !!engine._destroyed,
             onClick:function(){var liveEngine=window[engineKey];if(liveEngine && liveEngine.matchAimedBlock)liveEngine.matchAimedBlock();},
-            title:'Match material, shape and rotation (I or middle-click)',
+            title:__alloT('stem.geometryworld.match_material_shape_and_rotation_i_or_middl','Match material, shape and rotation (I or middle-click)'),
             style:{background:'rgba(30,41,59,0.6)',border:'1px solid rgba(100,116,139,0.2)',borderRadius:'6px',padding:'2px 8px',fontSize:'9px',color:'#d4e8ca',fontWeight:600,cursor:'pointer',backdropFilter:'blur(4px)'}
           },renderWorkspaceAction(el,'match','Match')),
           // Fly mode toggle (always visible)
@@ -14993,42 +14993,42 @@
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(99,102,241,0.4)', border: '2px solid rgba(99,102,241,0.6)', color: '#fff', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, renderTouchAction(el,'up',engine.flyMode ? 'Up' : 'Jump')),
             engine.flyMode && el('button', {
-              type:'button',className:'gw-focusable','aria-label':__alloT('stem.geometryworld.a11y_fly_down','Fly down'),title:'Hold to fly down','data-gw-touch-action':'down',
+              type:'button',className:'gw-focusable','aria-label':__alloT('stem.geometryworld.a11y_fly_down','Fly down'),title:__alloT('stem.geometryworld.hold_to_fly_down','Hold to fly down'),'data-gw-touch-action':'down',
               onTouchStart:function(ev){runMobileButtonAction('down',beginMobileDescent,ev);},
               onTouchEnd:stopMobileDescent,onTouchCancel:stopMobileDescent,onBlur:stopMobileDescent,
               onClick:function(ev){runMobileButtonAction('down',activateMobileDescent,ev);}
             },renderTouchAction(el,'down','Down')),
             // Place block button
             el('button', {
-              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_place_block', 'Place block'), title: 'Place block', 'data-gw-touch-action':'place',
+              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_place_block', 'Place block'), title: __alloT('stem.geometryworld.place_block','Place block'), 'data-gw-touch-action':'place',
               onTouchStart: function(ev) { runMobileButtonAction('place', placeMobileBlock, ev); },
               onClick: function(ev) { runMobileButtonAction('place', placeMobileBlock, ev); },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(34,197,94,0.4)', border: '2px solid rgba(34,197,94,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, renderTouchAction(el,'place','Place')),
             // Break block button
             el('button', {
-              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_break_block', 'Break block'), title: 'Break block', 'data-gw-touch-action':'break',
+              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_break_block', 'Break block'), title: __alloT('stem.geometryworld.break_block','Break block'), 'data-gw-touch-action':'break',
               onTouchStart: function(ev) { runMobileButtonAction('break', breakMobileBlock, ev); },
               onClick: function(ev) { runMobileButtonAction('break', breakMobileBlock, ev); },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(239,68,68,0.4)', border: '2px solid rgba(239,68,68,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, renderTouchAction(el,'break','Break')),
             // Measure button
             el('button', {
-              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_measure_structure', 'Measure structure'), title: 'Measure structure',
+              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_measure_structure', 'Measure structure'), title: __alloT('stem.geometryworld.measure_structure','Measure structure'),
               onTouchStart: function(ev) { runMobileButtonAction('measure', measureMobileStructure, ev); },
               onClick: function(ev) { runMobileButtonAction('measure', measureMobileStructure, ev); },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(251,191,36,0.4)', border: '2px solid rgba(251,191,36,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, renderTouchAction(el,'measure','Measure')),
             // Talk is available in worlds with characters.
             engine.npcs && engine.npcs.length > 0 && el('button', {
-              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_talk_to_nearby_character', 'Talk to nearby character'), title: 'Talk to nearby character',
+              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_talk_to_nearby_character', 'Talk to nearby character'), title: __alloT('stem.geometryworld.talk_to_nearby_character','Talk to nearby character'),
               onTouchStart: function(ev) { runMobileButtonAction('talk', talkToNearbyNpc, ev); },
               onClick: function(ev) { runMobileButtonAction('talk', talkToNearbyNpc, ev); },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(124,58,237,0.4)', border: '2px solid rgba(124,58,237,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, renderTouchAction(el,'talk','Talk')),
             // Keep the action column stable while Undo becomes available.
             el('button', { disabled:!engine._undoStack || engine._undoStack.length === 0,
-              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_undo_last_block_action', 'Undo last block action'), title: 'Undo last block action',
+              type: 'button', className: 'gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_undo_last_block_action', 'Undo last block action'), title: __alloT('stem.geometryworld.undo_last_block_action','Undo last block action'),
               onTouchStart: function(ev) { runMobileButtonAction('undo', undoMobileBlockAction, ev); },
               onClick: function(ev) { runMobileButtonAction('undo', undoMobileBlockAction, ev); },
               style: { width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(251,191,36,0.3)', border: '2px solid rgba(251,191,36,0.5)', color: '#fff', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
@@ -15301,7 +15301,7 @@
               el('button', { type: 'button', className: 'gw-intro-secondary gw-focusable',
                 'aria-label': __alloT('stem.geometryworld.a11y_start_lesson_without_the_guided_tutorial', 'Start lesson without the guided tutorial'),
                 onClick: function() { loadLessonByKey(activeLesson, 0, true); },
-                title: 'For returning students'
+                title: __alloT('stem.geometryworld.for_returning_students','For returning students')
               }, 'Skip guided tour')
             )
           )
@@ -15328,7 +15328,7 @@
             id: 'gw-reflection-text', className: 'gw-reflection-textarea gw-focusable', value: reflectionText,
             maxLength: 600, 'aria-describedby': 'gw-reflection-prompt gw-reflection-count',
             onChange: function(ev) { upd('reflectionText', ev.target.value); },
-            placeholder: 'Describe what you noticed, tried, or would change next time.'
+            placeholder: __alloT('stem.geometryworld.describe_what_you_noticed_tried_or_would_cha','Describe what you noticed, tried, or would change next time.')
           }),
           el('div', { className: 'gw-reflection-footer' },
             el('span', { className: 'gw-reflection-readiness', 'data-ready': reflectionText.trim() ? 'true' : 'false' }, reflectionText.trim() ? 'Ready to save' : 'Optional response'),
@@ -16181,8 +16181,8 @@
                   el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rot, s: iq.scale, sh: iq.shear, st: state }]).slice(-8) }); }, style: { padding: '2px 6px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '📋'),
                   el('button', { onClick: function() { setIQ({ rot: 0, scale: 1, shear: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '2px 6px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '↺')
                   */
-                  el('button', { type: 'button', className: 'gw-transform-action gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_add_current_transform_to_observation_log', 'Add current transform to observation log'), title: 'Add to observation log', onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rot, s: iq.scale, sh: iq.shear, st: state }]).slice(-8) }); } }, '\uD83D\uDCCB Add to log'),
-                  el('button', { type: 'button', className: 'gw-transform-action gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_reset_transform_discovery', 'Reset transform discovery'), title: 'Reset transform', onClick: function() { setIQ({ rot: 0, scale: 1, shear: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); } }, '\u21BA Reset')
+                  el('button', { type: 'button', className: 'gw-transform-action gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_add_current_transform_to_observation_log', 'Add current transform to observation log'), title: __alloT('stem.geometryworld.add_to_observation_log','Add to observation log'), onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rot, s: iq.scale, sh: iq.shear, st: state }]).slice(-8) }); } }, '\uD83D\uDCCB Add to log'),
+                  el('button', { type: 'button', className: 'gw-transform-action gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_reset_transform_discovery', 'Reset transform discovery'), title: __alloT('stem.geometryworld.reset_transform','Reset transform'), onClick: function() { setIQ({ rot: 0, scale: 1, shear: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); } }, '\u21BA Reset')
                 ),
                 el('div', { style: { marginTop: 8, color: '#a8b3c7', fontSize: 9, lineHeight: 1.45 } }, 'Adjust one property at a time and observe what changes.')
               );

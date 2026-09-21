@@ -137,7 +137,8 @@ window.StemLab = window.StemLab || {
     );
   }
 
-  function renderOsmosisLab(h, raw, patch) {
+  function renderOsmosisLab(h, raw, patch, t) {
+    if (typeof t !== 'function') t = function(k, fb){ return fb != null ? fb : k; };
     var iq = raw && typeof raw === 'object' ? raw : {}, model = osmosisModel(iq), log = Array.isArray(iq.log) ? iq.log.slice(-8).map(function(row) { return row && row.direction ? osmosisNotebookRow(row) : row && typeof row === 'object' ? { i: typeof row.i === 'number' ? row.i : null, o: typeof row.o === 'number' ? row.o : null, p: typeof row.p === 'number' ? row.p : null } : null; }) : [];
     var button = 'min-h-10 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800';
     var label = { inward: 'Net water movement into cell', outward: 'Net water movement out of cell', balanced: 'Balanced exchange', blocked: 'Water movement blocked' };
@@ -149,7 +150,7 @@ window.StemLab = window.StemLab || {
     return h('section', { 'data-cell-osmosis-lab': true, style: { minWidth: 0, width: '100%', maxWidth: 'min(100%, calc(100vw - 32px))', boxSizing: 'border-box' }, 'aria-labelledby': 'cell-osmosis-title', className: 'mt-4 rounded-2xl border border-cyan-300 bg-white p-4 space-y-4 text-slate-800' },
       h('div', null, h('h3', { id: 'cell-osmosis-title', className: 'text-lg font-black text-cyan-800' }, 'Osmosis Lab'),
         h('p', { className: 'text-sm mt-1' }, 'Predict, change one variable, and compare evidence. How do concentration and permeability affect water movement?')),
-      h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': 'Cell model' }, ['animal', 'plant'].map(function(type) {
+      h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.cell.cell_model','Cell model') }, ['animal', 'plant'].map(function(type) {
         return h('button', { key: type, type: 'button', className: button + (model.cellType === type ? ' ring-2 ring-cyan-700 bg-cyan-50' : ''), 'aria-pressed': model.cellType === type, onClick: function() { patch({ cellType: type }); } }, type === 'plant' ? 'Plant cell' : 'Animal cell');
       })),
       h('div', { className: 'grid gap-4 sm:grid-cols-2' },
@@ -174,24 +175,24 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-sm font-bold', 'data-osmosis-tonicity': model.tonicity }, model.tonicity + ' external solution'),
           h('p', { className: 'text-sm' }, model.response),
           h('p', { className: 'text-xs' }, 'Relative initial flow index: ' + Math.abs(model.flow).toFixed(1) + ' (arbitrary units). Permeability changes flow, not tonicity.'))),
-      h('div', { role: 'group', 'aria-label': 'Experiment presets', className: 'flex flex-wrap gap-2' },
+      h('div', { role: 'group', 'aria-label': t('stem.cell.experiment_presets','Experiment presets'), className: 'flex flex-wrap gap-2' },
         [{ label: 'Equal concentrations', inside: 100, outside: 100, perm: 50 }, { label: 'Water enters', inside: 100, outside: 50, perm: 50 }, { label: 'Water leaves', inside: 50, outside: 100, perm: 50 }, { label: 'Blocked membrane', inside: 50, outside: 100, perm: 0 }].map(function(preset) {
           return h('button', { key: preset.label, type: 'button', className: button, onClick: function() { patch({ inside: preset.inside, outside: preset.outside, perm: preset.perm }); } }, preset.label);
         })),
-      h('label', { className: 'block text-sm font-bold' }, 'Prediction before your next change', h('textarea', { 'aria-label': 'Osmosis prediction', value: osmosisNotebookTextValue(iq.prediction), rows: 2, maxLength: 2000, className: 'block w-full rounded-lg border border-slate-400 p-2 mt-1 text-sm', placeholder: 'If I change… then water will… because…', onChange: function(e) { patch({ prediction: e.target.value }); } })),
-      h('label', { className: 'block text-sm font-bold' }, 'Observation for this trial', h('textarea', { 'aria-label': 'Osmosis observation', value: osmosisNotebookTextValue(iq.observation), rows: 2, maxLength: 4000, className: 'block w-full rounded-lg border border-slate-400 p-2 mt-1 text-sm', placeholder: 'What changed in the model? Record direction and flow index.', onChange: function(e) { patch({ observation: e.target.value }); } })),
+      h('label', { className: 'block text-sm font-bold' }, 'Prediction before your next change', h('textarea', { 'aria-label': t('stem.cell.osmosis_prediction','Osmosis prediction'), value: osmosisNotebookTextValue(iq.prediction), rows: 2, maxLength: 2000, className: 'block w-full rounded-lg border border-slate-400 p-2 mt-1 text-sm', placeholder: 'If I change… then water will… because…', onChange: function(e) { patch({ prediction: e.target.value }); } })),
+      h('label', { className: 'block text-sm font-bold' }, 'Observation for this trial', h('textarea', { 'aria-label': t('stem.cell.osmosis_observation','Osmosis observation'), value: osmosisNotebookTextValue(iq.observation), rows: 2, maxLength: 4000, className: 'block w-full rounded-lg border border-slate-400 p-2 mt-1 text-sm', placeholder: t('stem.cell.what_changed_in_the_model_record_direction_a','What changed in the model? Record direction and flow index.'), onChange: function(e) { patch({ observation: e.target.value }); } })),
       previous && previous.direction ? h('p', { 'data-osmosis-comparison': true, className: 'text-sm rounded-lg bg-cyan-50 p-3' }, changes.length === 0 ? 'Same settings as your last trial. Change one variable to investigate a cause.' : changes.length === 1 ? 'One variable changed: ' + changes[0] + '. Compare net direction and flow index with your last trial.' : changes.length + ' variables changed. Change only one to isolate its effect.') : null,
       h('div', { className: 'flex flex-wrap gap-2' }, h('button', { type: 'button', className: button, onClick: record }, 'Record trial'),
         h('button', { type: 'button', className: button, onClick: function() { patch({ inside: 50, outside: 50, perm: 50, cellType: 'animal', notice: 'Controls reset. Your notebook and writing are retained.' }); } }, 'Reset controls')),
       h('p', { role: 'status', className: 'text-xs' }, osmosisNotebookTextValue(iq.notice)),
-      log.length ? h('div', { className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-label': 'Osmosis trial notebook' }, h('table', { style: { minWidth: '680px' }, className: 'w-full text-xs border-collapse' },
+      log.length ? h('div', { className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-label': t('stem.cell.osmosis_trial_notebook','Osmosis trial notebook') }, h('table', { style: { minWidth: '680px' }, className: 'w-full text-xs border-collapse' },
         h('caption', { className: 'text-left font-bold p-2' }, 'Observation notebook — latest 8 trials'),
         h('thead', null, h('tr', null, ['Trial', 'Cell', 'Inside', 'Outside', 'Permeability', 'Evidence', 'Prediction', 'Observation'].map(function(title) { return h('th', { key: title, scope: 'col', className: 'p-2 text-left border-b border-slate-300' }, title); }))),
         h('tbody', null, log.map(function(entry, index) {
           var valid = entry && entry.direction;
           return h('tr', { key: index }, [index + 1, valid ? entry.cellType : 'Legacy', valid ? entry.inside : entry && entry.i, valid ? entry.outside : entry && entry.o, (valid ? entry.perm : entry && entry.p) + '%', valid ? entry.tonicity + '; ' + label[entry.direction] + '; index ' + Math.abs(entry.flow).toFixed(1) : 'Older trial: record again with the corrected model.', valid ? entry.prediction : '', valid ? entry.observation : ''].map(function(value, col) { return h('td', { key: col, className: 'p-2 border-b border-slate-200', style: { overflowWrap: 'anywhere', maxWidth: '240px' } }, value); }));
         })))) : null,
-      h('label', { className: 'block text-sm font-bold' }, 'Evidence-based explanation', h('textarea', { 'aria-label': 'Osmosis explanation', value: osmosisNotebookTextValue(typeof iq.explanation === 'string' ? iq.explanation : iq.hypothesis), rows: 3, maxLength: 4000, className: 'block w-full rounded-lg border border-slate-400 p-2 mt-1 text-sm', placeholder: 'Compare two trials. What stayed the same, what changed, and what does the evidence support?', onChange: function(e) { patch({ explanation: e.target.value }); } })),
+      h('label', { className: 'block text-sm font-bold' }, 'Evidence-based explanation', h('textarea', { 'aria-label': t('stem.cell.osmosis_explanation','Osmosis explanation'), value: osmosisNotebookTextValue(typeof iq.explanation === 'string' ? iq.explanation : iq.hypothesis), rows: 3, maxLength: 4000, className: 'block w-full rounded-lg border border-slate-400 p-2 mt-1 text-sm', placeholder: t('stem.cell.compare_two_trials_what_stayed_the_same_what','Compare two trials. What stayed the same, what changed, and what does the evidence support?'), onChange: function(e) { patch({ explanation: e.target.value }); } })),
       renderOsmosisNotebookTools(h, iq, patch),
       h('details', { className: 'text-sm rounded-lg bg-slate-50 p-3' }, h('summary', { className: 'font-bold cursor-pointer' }, 'Investigation prompts and model limits'),
         h('p', { className: 'mt-2' }, 'Keep concentrations fixed and halve permeability. Does direction change? Try zero permeability with unequal concentrations. Switch cell type without changing the solution.'),
@@ -248,7 +249,8 @@ window.StemLab = window.StemLab || {
     lines.push('CLAIM', model.draft.claim || 'Not recorded', '', 'EVIDENCE', model.draft.evidence || 'Not recorded', '', 'REASONING', model.draft.reasoning || 'Not recorded');
     return lines.join('\n');
   }
-  function renderCellComparison(h, database, raw, patch) {
+  function renderCellComparison(h, database, raw, patch, t) {
+    if (typeof t !== 'function') t = function(k, fb){ return fb != null ? fb : k; };
     raw = raw || {};
     var model = cellComparisonModel(database, raw);
     if (!model.a || !model.b) return h('p', { role: 'status' }, 'No organisms available for comparison.');
@@ -341,13 +343,13 @@ window.StemLab = window.StemLab || {
       h('header', { 'data-cell-compare-header': true, className: 'rounded-xl p-4' }, h('p', { className: 'text-xs font-black uppercase text-indigo-700' }, 'Compare • notice • explain'),
         h('h3', { id: 'cell-comparison-title', className: 'mt-1 text-xl font-black text-indigo-950' }, 'Compare two organisms'),
         h('p', { className: 'mt-2 text-sm' }, 'Look for a shared property and a useful contrast, then support your explanation with evidence.')),
-      h('div', { role: 'group', 'aria-label': 'Suggested organism comparisons', className: 'flex flex-wrap gap-2' },
+      h('div', { role: 'group', 'aria-label': t('stem.cell.suggested_organism_comparisons','Suggested organism comparisons'), className: 'flex flex-wrap gap-2' },
         [{ names: ['Amoeba', 'Paramecium'], label: 'Compare movement' }, { names: ['E. coli', 'Amoeba'], label: 'Compare cell organization' }, { names: ['Euglena', 'Plant Cell (Elodea)'], label: 'Compare nutrition' }].map(function(preset) {
           var a = database.findIndex(function(o) { return o.name === preset.names[0]; }), b = database.findIndex(function(o) { return o.name === preset.names[1]; });
           return a < 0 || b < 0 ? null : h('button', { key: preset.label, type: 'button', className: button, onClick: function() { choose(a, b); patch({ _cmpQuery: '', _cmpFilter: 'all' }); } }, preset.label);
         })),
       h('div', null, h('label', { htmlFor: 'cell-comparison-search', className: 'block text-sm font-bold' }, 'Find organisms'),
-        h('input', { id: 'cell-comparison-search', type: 'search', value: query, maxLength: 120, placeholder: 'Search name, group, cell type, or habitat', className: 'mt-1 w-full rounded-lg border border-slate-400 p-2 text-sm', onChange: function(e) { patch({ _cmpQuery: e.target.value }); } }),
+        h('input', { id: 'cell-comparison-search', type: 'search', value: query, maxLength: 120, placeholder: t('stem.cell.search_name_group_cell_type_or_habitat','Search name, group, cell type, or habitat'), className: 'mt-1 w-full rounded-lg border border-slate-400 p-2 text-sm', onChange: function(e) { patch({ _cmpQuery: e.target.value }); } }),
         h('p', { className: 'mt-1 text-xs', role: 'status' }, matches.length + ' matches. Current selections stay available.')),
       h('div', { 'data-cell-compare-pair': true }, ['a', 'b'].map(function(side) {
         var selected = side === 'a' ? model.aIndex : model.bIndex;
@@ -366,7 +368,7 @@ window.StemLab = window.StemLab || {
         h('button', { type: 'button', className: button, onClick: function() { choose(model.bIndex, model.aIndex); } }, 'Swap organisms'),
         h('span', { className: 'text-xs font-bold', 'data-cell-comparison-counts': true }, model.shared + ' matching descriptions · ' + model.different + ' differing descriptions' + (model.unknown ? ' · ' + model.unknown + ' incomplete' : ''))),
       model.same ? h('p', { role: 'status', className: 'rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm' }, 'You selected the same organism twice. Choose a different organism to investigate a contrast.') : null,
-      h('div', { 'data-cell-compare-tools': true }, h('div', { role: 'group', 'aria-label': 'Comparison property filter', 'data-cell-compare-filters': true },
+      h('div', { 'data-cell-compare-tools': true }, h('div', { role: 'group', 'aria-label': t('stem.cell.comparison_property_filter','Comparison property filter'), 'data-cell-compare-filters': true },
         [{ id: 'all', label: 'All properties' }, { id: 'different', label: 'Differences' }, { id: 'shared', label: 'Shared descriptions' }].map(function(filter) {
           var active = model.filter === filter.id;
           return h('button', { key: filter.id, type: 'button', 'data-cell-compare-filter': filter.id, 'aria-pressed': active, className: button + (active ? ' ring-2 ring-indigo-700' : ''), onClick: function() { patch({ _cmpFilter: filter.id }); } }, h('span', null, filter.label), h('span', { 'data-cell-compare-filter-count': true, 'aria-hidden': true }, filter.id === 'all' ? model.rows.length : filter.id === 'different' ? model.different : model.shared));
@@ -475,7 +477,8 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'cell-inquiry-card-action' }, state.count ? 'Return to route · ' + state.count + '/3 observations recorded' : 'Start inquiry →'));
       })));
   }
-  function renderCellInquiryGuide(h, raw, actions) {
+  function renderCellInquiryGuide(h, raw, actions, t) {
+    if (typeof t !== 'function') t = function(k, fb){ return fb != null ? fb : k; };
     var state = cellInquiryState(raw, raw._cellInquiryId);
     if (!state) return null;
     var route = state.route, step = route.steps[state.step], inActivity = (raw.mode || 'observe') === step.mode;
@@ -499,7 +502,7 @@ window.StemLab = window.StemLab || {
     return h('section', { 'data-cell-inquiry-guide': route.id, tabIndex: -1, 'aria-labelledby': 'cell-inquiry-title', className: 'cell-inquiry-guide', style: { '--inquiry-accent': route.color, '--inquiry-soft': route.soft, order: 1 } },
       h('div', { className: 'cell-inquiry-guide-heading' }, h('div', null, h('span', { className: 'cell-inquiry-eyebrow' }, 'Guided inquiry'), h('h4', { id: 'cell-inquiry-title' }, route.title)), h('button', { type: 'button', onClick: actions.pause }, 'Pause route')),
       h('p', { className: 'cell-inquiry-progress', role: 'status' }, state.count + '/3 observations recorded' + (state.finished ? ' · Ready to reflect' : ' · Step ' + (state.step + 1) + ': ' + step.label)),
-      h('nav', { 'aria-label': 'Inquiry steps', className: 'cell-inquiry-step-nav' }, route.steps.map(function(item, i) {
+      h('nav', { 'aria-label': t('stem.cell.inquiry_steps','Inquiry steps'), className: 'cell-inquiry-step-nav' }, route.steps.map(function(item, i) {
         return h('button', { key: item.label, type: 'button', 'aria-current': state.step === i ? 'step' : undefined, onClick: function() { save({ step: i }); actions.open(item); } }, h('span', { 'aria-hidden': true }, state.recorded[i] ? '✓' : String(i + 1)), item.label);
       })),
       state.finished ? h('details', { className: 'cell-inquiry-reflection' }, h('summary', null, 'Review your three observations'), route.steps.map(function(item, i) { return h('div', { key: item.label }, h('strong', null, item.label), h('p', null, state.observations[i])); }), h('p', null, 'Do your observations support one explanation? Which idea would you test next? These are your notes, not a graded result.')) : null,
@@ -508,7 +511,7 @@ window.StemLab = window.StemLab || {
       h('details', { key: route.id + '-' + state.step, className: 'cell-inquiry-observation' },
         h('summary', null, state.finished ? 'Edit this step’s observation' : 'Record an observation'),
         h('label', { htmlFor: 'cell-inquiry-response' }, 'What did you observe?',
-          h('textarea', { id: 'cell-inquiry-response', 'aria-label': 'What did you observe?', 'aria-describedby': 'cell-inquiry-prompt', maxLength: 3000, rows: 2, value: state.observations[state.step], placeholder: 'Name the structure, organism, or settings, and describe the evidence you noticed.', onChange: function(e) {
+          h('textarea', { id: 'cell-inquiry-response', 'aria-label': t('stem.cell.what_did_you_observe','What did you observe?'), 'aria-describedby': 'cell-inquiry-prompt', maxLength: 3000, rows: 2, value: state.observations[state.step], placeholder: t('stem.cell.name_the_structure_organism_or_settings_and','Name the structure, organism, or settings, and describe the evidence you noticed.'), onChange: function(e) {
             var values = state.observations.slice(), flags = state.recorded.slice(); values[state.step] = e.target.value; flags[state.step] = false; save({ observations: values, recorded: flags });
           } })),
         h('div', { className: 'cell-inquiry-guide-actions' }, h('button', { type: 'button', disabled: !inActivity || !state.observations[state.step].trim(), onClick: record }, state.step === route.steps.length - 1 ? 'Record observation' : 'Save observation & continue'), h('span', null, 'Records your evidence; does not mark an answer correct.'))),
@@ -24411,7 +24414,7 @@ var d = labToolData.cell || {};
                   activeCat && !atHub && React.createElement('span', { className: 'px-2 py-1 rounded-lg text-xs font-bold bg-slate-50 text-green-700 border border-green-200' }, activeCat.icon + ' ' + activeCat.label),
                   React.createElement('input', {
                     type: 'text',
-                    placeholder: 'Search activities or ideas...',
+                    placeholder: __alloT('stem.cell.search_activities_or_ideas','Search activities or ideas...'),
                     // Named by hand: what precedes this field is the breadcrumb
                     // trail ("Hub" / category), not a caption for it.
                     'aria-label': __alloT('stem.cell.a11y_search_modes', 'Search modes'),
@@ -24490,7 +24493,7 @@ var d = labToolData.cell || {};
               },
               pause: function() { upd('_cellInquiryId', null); upd('_cellInquiryNotice', ''); },
               notice: function(message) { upd('_cellInquiryNotice', message); }
-            }),
+            }, __alloT),
 
             d.mode === 'interior' && (function() {
               var h = React.createElement;
@@ -24850,7 +24853,7 @@ var d = labToolData.cell || {};
                 });
               }              return h('div', { className: 'mt-4 rounded-xl border border-emerald-200 bg-white p-4 shadow-sm', "data-cell-interior-workspace": true, "data-cell-recall-pending": recallPending ? 'true' : undefined },
                 h('p', { className: 'text-[0.8125rem] text-slate-700 mb-2 leading-relaxed' }, '🔬 ', h('strong', null, 'You are inside a single cell.'), ' This is the textbook cross-section — but alive: organelles drift in the cytoplasm, mitochondria pulse, vesicles shuttle cargo. Switch the cell type to see what changes, and tap any organelle.'),
-                h('div', { 'data-cell-study-nav': true, 'data-cell-study-surface': true, tabIndex: -1, className: 'mb-3 rounded-xl border border-cyan-300 bg-cyan-50 p-3', role: 'region', 'aria-label': 'Focused cell study' },
+                h('div', { 'data-cell-study-nav': true, 'data-cell-study-surface': true, tabIndex: -1, className: 'mb-3 rounded-xl border border-cyan-300 bg-cyan-50 p-3', role: 'region', 'aria-label': __alloT('stem.cell.focused_cell_study','Focused cell study') },
                   h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                     h('div', null, h('h4', { className: 'text-base font-black text-cyan-950' }, 'Structure study'), h('p', { className: 'text-xs text-cyan-900' }, ctype + ' cell · ' + directoryExploredCount + '/' + orgKeys.length + ' explored · ' + directoryReviewCount + ' to review')),
                     h('button', { type: 'button', disabled: reducedMo, 'aria-pressed': interiorPaused, onClick: function() { upd('interiorPaused', !d.interiorPaused); }, className: 'rounded-lg border border-cyan-700 bg-white px-3 py-2 text-xs font-bold text-cyan-900' }, interiorPaused ? 'Resume cell animation' : 'Pause cell animation'),
@@ -24978,7 +24981,7 @@ var d = labToolData.cell || {};
                       h('button', { type: 'button', onClick: clearStructureSelection }, 'Clear selection')
                     )
                   )),
-                h('div', { 'data-cell-diagram-toolbar': true, role: 'group', 'aria-label': 'Diagram display controls' },
+                h('div', { 'data-cell-diagram-toolbar': true, role: 'group', 'aria-label': __alloT('stem.cell.diagram_display_controls','Diagram display controls') },
                   h('button', { 'aria-pressed': contrastMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorHighContrast = !contrastMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (contrastMode ? 'bg-slate-900 text-yellow-200 border-slate-950' : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100') }, contrastMode ? 'Standard contrast' : 'High contrast'),
                   h('button', { 'data-cell-label-toggle': true, 'aria-pressed': showLabels ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorShowLabels = !showLabels; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (showLabels ? 'bg-cyan-700 text-white border-cyan-800' : 'bg-cyan-50 text-cyan-900 border-cyan-300 hover:bg-cyan-100') }, showLabels ? 'Hide study labels' : 'Show study labels'),
 
@@ -25043,7 +25046,7 @@ var d = labToolData.cell || {};
                     ),
                     cellStudyStatus(d, sel) !== 'explored' && h('button', { type: 'button', 'data-cell-reset-study-status': true, onClick: function() { markMastery(sel, 'explored'); } }, 'Reset study status')
                   ),
-                  (directoryReviewCount > 0 || pickerReviewOnly) && h('section', { 'data-cell-review-navigation': true, 'aria-label': 'Review list navigation' },
+                  (directoryReviewCount > 0 || pickerReviewOnly) && h('section', { 'data-cell-review-navigation': true, 'aria-label': __alloT('stem.cell.review_list_navigation','Review list navigation') },
                     h('div', { 'data-cell-review-heading': true }, h('strong', null, directoryReviewCount ? 'Continue your review' : 'Review list clear'), h('span', null, directoryReviewCount + ' remaining')),
                     h('p', null, directoryReviewCount ? (reviewKeys.indexOf(sel) >= 0 ? 'Explain this structure in your own words, then choose its study status.' : 'This structure is outside your review list. Choose another item when you are ready.') : 'No structures are marked for review. Keep exploring, or practice recall from the study controls.'),
                     nextReviewKey && h('button', { type: 'button', onClick: goToNextReview }, 'Next review: ' + CELL_ORGANELLES[nextReviewKey].name),
@@ -25079,10 +25082,10 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     })),
                   selOrg.bust ? h('div', { className: 'mt-1.5 p-2 rounded-lg text-[0.75rem] leading-snug', style: { background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', color: '#92400e' } }, '⚠ ', h('strong', null, 'Myth-bust: '), selOrg.bust) : null
                 ) : h('div', { 'data-cell-inspector-empty': true }, h('div', { className: 'text-xs font-bold uppercase tracking-wide text-teal-700' }, 'Structure inspector'), h('h4', { className: 'mt-3 text-xl font-bold text-slate-800' }, 'Every structure has a role.'), h('p', { className: 'mt-3 text-sm leading-relaxed text-slate-600' }, 'Choose a structure in the diagram or the list. Explore its function, see how it connects, and mark what you want to revisit.'), h('button', { type: 'button', onClick: function() { pick(orgKeys[0]); focusStructureInspector(); }, className: 'mt-4 min-h-10 rounded-lg bg-teal-800 px-4 py-2 text-sm font-bold text-white' }, 'Start with the membrane')),
-                h('div', { 'data-cell-picker-panel': true, role: 'region', 'aria-label': 'Explore cell structures' }, h('h5', { className: 'text-sm font-bold text-slate-700' }, 'Explore structures'),
+                h('div', { 'data-cell-picker-panel': true, role: 'region', 'aria-label': __alloT('stem.cell.explore_cell_structures','Explore cell structures') }, h('h5', { className: 'text-sm font-bold text-slate-700' }, 'Explore structures'),
                   h('label', { htmlFor: 'cell-structure-search', className: 'block mt-3 mb-1 text-xs font-bold text-slate-600' }, 'Find a structure or function'),
                   h('div', { 'data-cell-picker-search': true },
-                    h('input', { id: 'cell-structure-search', type: 'search', value: pickerInput, placeholder: 'Try nucleus, energy, or transport', onChange: function(e) { upd('interiorPickerQuery', e.target.value); }, 'aria-controls': 'cell-structure-choices' }),
+                    h('input', { id: 'cell-structure-search', type: 'search', value: pickerInput, placeholder: __alloT('stem.cell.try_nucleus_energy_or_transport','Try nucleus, energy, or transport'), onChange: function(e) { upd('interiorPickerQuery', e.target.value); }, 'aria-controls': 'cell-structure-choices' }),
                     h('button', { type: 'button', 'aria-pressed': pickerReviewOnly, onClick: function() { upd('interiorPickerReviewOnly', !pickerReviewOnly); } }, 'Needs review (' + directoryReviewCount + ')')
                   ),
                   h('p', { role: 'status', className: 'mt-2 text-xs text-slate-600' }, pickerKeys.length + ' of ' + orgKeys.length + ' structures shown'),
@@ -25159,7 +25162,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                   directoryOpen && h('div', { className: 'mt-2 rounded-lg border border-violet-200 bg-violet-50 p-3', role: 'region', 'aria-label': __alloT('stem.cell.a11y_structure_directory', 'Structure directory') },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-violet-900' }, 'Explored ' + directoryExploredCount + ' / ' + orgKeys.length), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-violet-800' }, directoryVisibleKeys.length + ' shown'), h('span', { className: 'text-[0.625rem] font-bold text-violet-800' }, 'Mastered ' + directoryMasteredCount + ' • Review ' + directoryReviewCount)),
                     h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
-                      h('input', { type: 'search', value: directoryInput, placeholder: 'Search organelles, functions, or mechanisms', onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDirectoryQuery = e.target.value; return cel; }); }, className: 'min-w-[220px] flex-1 rounded-md border border-violet-500 bg-white px-2.5 py-1.5 text-[0.6875rem] text-slate-800', 'aria-label': __alloT('stem.cell.a11y_search_structure_directory', 'Search structure directory') }),
+                      h('input', { type: 'search', value: directoryInput, placeholder: __alloT('stem.cell.search_organelles_functions_or_mechanisms','Search organelles, functions, or mechanisms'), onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDirectoryQuery = e.target.value; return cel; }); }, className: 'min-w-[220px] flex-1 rounded-md border border-violet-500 bg-white px-2.5 py-1.5 text-[0.6875rem] text-slate-800', 'aria-label': __alloT('stem.cell.a11y_search_structure_directory', 'Search structure directory') }),
                       h('button', { 'aria-pressed': directoryUnexploredOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryUnexploredOnly = !directoryUnexploredOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[0.6875rem] font-bold ' + (directoryUnexploredOnly ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryUnexploredOnly ? 'Show all structures' : 'Unexplored only'),
                       h('button', { 'data-cell-review-filter': true, 'aria-pressed': directoryReviewOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryReviewOnly = !directoryReviewOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[0.6875rem] font-bold ' + (directoryReviewOnly ? 'border-amber-700 bg-amber-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryReviewOnly ? 'Show all statuses' : 'Review queue')
                     ),
@@ -25207,7 +25210,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-900' }, 'Adaptive review check'), h('p', { className: 'text-[0.625rem] font-bold text-fuchsia-800' }, recallRound ? 'Question ' + Math.min(recallRound.keys.length, recallRound.answers.length + (adaptiveQuizRevealed ? 0 : 1)) + ' of ' + recallRound.keys.length + ' · Review structures first' : 'Review structures first')),
                     h('button', { onClick: stopAdaptiveQuiz, className: 'rounded-md border border-fuchsia-300 bg-white px-2 py-1 text-[0.6875rem] font-bold text-fuchsia-900 hover:bg-fuchsia-100' }, 'End check')
                   ),
-                  recallRound && h('div', { 'data-cell-round-progress': true, role: 'progressbar', 'aria-label': 'Round questions answered', 'aria-valuemin': 0, 'aria-valuemax': recallRound.keys.length, 'aria-valuenow': recallRound.answers.length }, recallRound.keys.map(function(key, index) { return h('span', { key: key, 'data-answered': index < recallRound.answers.length ? 'true' : 'false', 'aria-hidden': true }); })),
+                  recallRound && h('div', { 'data-cell-round-progress': true, role: 'progressbar', 'aria-label': __alloT('stem.cell.round_questions_answered','Round questions answered'), 'aria-valuemin': 0, 'aria-valuemax': recallRound.keys.length, 'aria-valuenow': recallRound.answers.length }, recallRound.keys.map(function(key, index) { return h('span', { key: key, 'data-answered': index < recallRound.answers.length ? 'true' : 'false', 'aria-hidden': true }); })),
                   h('p', { className: 'mt-2 text-[0.75rem] font-black text-fuchsia-950' }, 'Which structure best matches this clue?'),
                   h('p', { className: 'mt-1 rounded-md border border-fuchsia-200 bg-white px-2.5 py-2 text-[0.75rem] leading-relaxed text-fuchsia-950' }, CELL_RECALL_CLUES[adaptiveQuizKey] || adaptiveQuizItem.structure),
                   h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.cell.a11y_adaptive_check_answers', 'Adaptive check answers') }, adaptiveOptions.map(function (key, index) {
@@ -25219,7 +25222,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                   adaptiveQuizRevealed && h('div', { className: 'mt-2 rounded-md border border-fuchsia-200 bg-white px-2.5 py-2 text-[0.75rem] leading-relaxed text-fuchsia-950', role: 'status', 'aria-live': 'polite' }, (adaptiveQuizChoice === adaptiveAnswer ? 'Correct. ' : 'Not quite. ') + adaptiveQuizItem.name + '. ' + adaptiveQuizItem.structure + ' Connections: ' + adaptiveQuizItem.connections),
                   adaptiveQuizRevealed && h('button', { onClick: nextAdaptiveQuiz, className: 'mt-2 rounded-md border border-fuchsia-800 bg-fuchsia-700 px-2.5 py-1.5 text-[0.6875rem] font-bold text-white hover:bg-fuchsia-800' }, recallRound && recallRound.answers.length === recallRound.keys.length ? 'See round results' : 'Next review item')
                 ),
-                !adaptiveQuizActive && recallRound && recallRound.finished && h('section', { 'data-cell-round-summary': true, 'data-cell-study-surface': true, tabIndex: -1, 'aria-label': 'Recall round results' },
+                !adaptiveQuizActive && recallRound && recallRound.finished && h('section', { 'data-cell-round-summary': true, 'data-cell-study-surface': true, tabIndex: -1, 'aria-label': __alloT('stem.cell.recall_round_results','Recall round results') },
                   h('div', { 'data-cell-round-heading': true },
                     h('div', null, h('p', { 'data-cell-round-eyebrow': true }, 'RECALL ROUND COMPLETE'), h('h4', null, roundMissed.length ? 'Your next step is ready' : 'Every structure recalled')),
                     h('div', { 'data-cell-round-score': true }, h('strong', null, roundCorrect + '/' + recallRound.keys.length), h('span', null, 'correct this round'))
@@ -25250,7 +25253,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     h('div', null, h('p', null, 'GUIDED PATHWAY'), h('h4', null, guide.label)),
                     h('button', { type: 'button', onClick: stopGuide }, 'Back to exploring')
                   ),
-                  h('ol', { 'data-cell-pathway-steps': true, 'aria-label': 'Pathway stops' }, guide.steps.map(function(step, index) {
+                  h('ol', { 'data-cell-pathway-steps': true, 'aria-label': __alloT('stem.cell.pathway_stops','Pathway stops') }, guide.steps.map(function(step, index) {
                     return h('li', { key: step.key }, h('button', { type: 'button', 'aria-current': index === guideStep ? 'step' : undefined, 'aria-label': 'Step ' + (index + 1) + ': ' + CELL_ORGANELLES[step.key].name, onClick: function() { selectGuideStep(index); } }, h('span', { 'aria-hidden': true }, String(index + 1)), h('strong', null, CELL_ORGANELLES[step.key].name)));
                   })),
                   h('div', { 'data-cell-pathway-explanation': true, role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
@@ -25496,7 +25499,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     React.createElement("strong", null, selDef.label),
                     React.createElement("span", null, "Selected specimen")
                   ),
-                  React.createElement("div", { "data-cell-observation-actions": true, role: "group", "aria-label": "Inspect selected specimen" },
+                  React.createElement("div", { "data-cell-observation-actions": true, role: "group", "aria-label": __alloT('stem.cell.inspect_selected_specimen','Inspect selected specimen') },
                     React.createElement("button", { type: "button", "data-cell-observation-labels": true, "aria-pressed": d.observationLabels !== false, "aria-label": d.observationLabels === false ? "Show labels" : "Hide labels", onClick: function() {
                       var visible = d.observationLabels === false;
                       upd('observationLabels', visible);
@@ -25504,11 +25507,11 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                       if (cv && cv._cellSimSetObservationLabels) cv._cellSimSetObservationLabels(visible);
                     } }, React.createElement('span', { 'data-cell-mobile-tool-icon': true, 'aria-hidden': true }, cellControlIcon('labels')), React.createElement('span', { 'data-cell-tool-full-label': true }, d.observationLabels === false ? "Show labels" : "Hide labels"), React.createElement('span', { 'data-cell-tool-short-label': true }, 'Labels')),
                     React.createElement("button", { type: "button", "data-cell-observation-center": true, onClick: returnToCellDish }, cellControlIcon('locate'), "Center"),
-                    d.mode === 'observe' && React.createElement("button", { type: "button", "data-cell-observation-follow": true, "aria-pressed": !!d.followSpecimen, "aria-label": "Follow selected specimen", title: "Keep the selected specimen in view. Drag the dish to stop following.", onClick: function() {
+                    d.mode === 'observe' && React.createElement("button", { type: "button", "data-cell-observation-follow": true, "aria-pressed": !!d.followSpecimen, "aria-label": __alloT('stem.cell.follow_selected_specimen','Follow selected specimen'), title: __alloT('stem.cell.keep_the_selected_specimen_in_view_drag_the','Keep the selected specimen in view. Drag the dish to stop following.'), onClick: function() {
                       var cv = document.querySelector('[data-cell-sim-canvas]');
                       if (cv && cv._cellSimSetFollowSpecimen) cv._cellSimSetFollowSpecimen(!d.followSpecimen);
                     } }, React.createElement('span', { 'data-cell-mobile-tool-icon': true, 'aria-hidden': true }, cellControlIcon('follow')), d.followSpecimen ? "Following" : "Follow"),
-                    React.createElement("button", { type: "button", "data-cell-observation-notes": true, "aria-label": "Specimen notes", onClick: function() { focusCellOrganismDetail(selDef.id); } }, React.createElement('span', { 'data-cell-mobile-tool-icon': true, 'aria-hidden': true }, cellControlIcon('notes')), React.createElement('span', { 'data-cell-tool-full-label': true }, 'Specimen notes'), React.createElement('span', { 'data-cell-tool-short-label': true }, 'Notes'))
+                    React.createElement("button", { type: "button", "data-cell-observation-notes": true, "aria-label": __alloT('stem.cell.specimen_notes','Specimen notes'), onClick: function() { focusCellOrganismDetail(selDef.id); } }, React.createElement('span', { 'data-cell-mobile-tool-icon': true, 'aria-hidden': true }, cellControlIcon('notes')), React.createElement('span', { 'data-cell-tool-full-label': true }, 'Specimen notes'), React.createElement('span', { 'data-cell-tool-short-label': true }, 'Notes'))
                   )
                 )
               ),
@@ -25693,11 +25696,11 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
                 }),
 
-                React.createElement("output", { "data-cell-control-value": "zoom", "aria-label": "Current magnification" }, Math.round(40 * (d.zoom || 1)) + "×"),
+                React.createElement("output", { "data-cell-control-value": "zoom", "aria-label": __alloT('stem.cell.current_magnification','Current magnification') }, Math.round(40 * (d.zoom || 1)) + "×"),
 
                 React.createElement("button", {
                   type: "button",
-                  "aria-label": __alloT('stem.cell.a11y_reset_microscope_view', 'Reset microscope view'), title: "Reset microscope view",
+                  "aria-label": __alloT('stem.cell.a11y_reset_microscope_view', 'Reset microscope view'), title: __alloT('stem.cell.reset_microscope_view','Reset microscope view'),
                   onClick: function () { var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimResetView) cv._cellSimResetView(); else upd("zoom", 1); cellSound('select'); },
                   className: "rounded bg-slate-100 px-1.5 py-0.5 text-[0.6875rem] font-black text-slate-700 hover:bg-white active:scale-[0.97]"
                 }, cellControlIcon("reset"))
@@ -25720,7 +25723,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
                 }),
 
-                React.createElement("output", { "data-cell-control-value": "speed", "aria-label": "Current simulation speed" }, (d.simSpeed || 1) + "×"),
+                React.createElement("output", { "data-cell-control-value": "speed", "aria-label": __alloT('stem.cell.current_simulation_speed','Current simulation speed') }, (d.simSpeed || 1) + "×"),
 
                 React.createElement("button", { type: "button", title: effectiveCellPaused ? "Play simulation" : "Pause simulation", "aria-label": effectiveCellPaused ? "Play simulation" : "Pause simulation", "aria-pressed": !effectiveCellPaused, onClick: function () { var p = !effectiveCellPaused; upd("paused", p); if (p) { stopCellAmbient(); } else { startCellAmbient(); } var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (effectiveCellPaused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, cellControlIcon(effectiveCellPaused ? "play" : "pause"))
 
@@ -25973,7 +25976,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
             ),
             (activePlayDef || selDef) && React.createElement('section', {
-              'data-cell-explanation-panel': true, 'aria-label': 'Structure explorer',
+              'data-cell-explanation-panel': true, 'aria-label': __alloT('stem.cell.structure_explorer','Structure explorer'),
               onKeyDown: function(e) { if (e.key === 'Escape' && cellExplanation && e.target.tagName !== 'SELECT') { e.preventDefault(); e.stopPropagation(); closeCellExplanationPanel(); } }
             },
               React.createElement('div', { 'data-cell-explanation-header': true },
@@ -25984,7 +25987,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                 ),
                 React.createElement('label', { 'data-cell-explanation-picker': true },
                   React.createElement('span', null, 'Jump to structure'),
-                  React.createElement('select', { 'aria-label': 'Jump to structure', value: cellExplanation && cellExplanation.organismId === (activePlayDef || selDef).id ? cellExplanation.name : '', onChange: function(e) { chooseCellExplanation(e.target.value); } },
+                  React.createElement('select', { 'aria-label': __alloT('stem.cell.jump_to_structure','Jump to structure'), value: cellExplanation && cellExplanation.organismId === (activePlayDef || selDef).id ? cellExplanation.name : '', onChange: function(e) { chooseCellExplanation(e.target.value); } },
                     React.createElement('option', { value: '', disabled: true }, 'Choose a structure'),
                     (activePlayDef || selDef).anatomy.map(function(a) { return React.createElement('option', { key: a.name, value: a.name }, a.name); })
                   )
@@ -26018,11 +26021,11 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                 React.createElement('strong', null, 'Keyboard exploration'),
                 React.createElement('span', null, 'Focus the dish, then use arrow keys to preview a structure. Enter opens it; Escape clears the preview. Home and End jump to the first and last structures.')
               ),
-              React.createElement('div', { 'data-cell-explanation-actions': true, role: 'group', 'aria-label': 'Browse cell structures' },
-                React.createElement('button', { type: 'button', 'aria-label': 'Previous structure', onClick: function() { stepCellExplanation(-1); } }, cellControlIcon('previous'), 'Previous'),
-                React.createElement('button', { type: 'button', 'data-cell-explanation-next': true, 'aria-label': 'Next structure', onClick: function() { stepCellExplanation(1); } }, 'Next', cellControlIcon('next')),
-                cellExplanation && React.createElement('button', { type: 'button', 'data-cell-explanation-return': true, 'aria-label': 'Back to microscope', onClick: function() { focusCellPlayRegion('[data-cell-stage]', '[data-cell-sim-canvas]'); } }, cellControlIcon('up'), 'Back to dish'),
-                cellExplanation && React.createElement('button', { type: 'button', 'data-cell-explanation-close': true, 'aria-label': 'Close structure explanation', onClick: closeCellExplanationPanel }, cellControlIcon('close'), 'Close')
+              React.createElement('div', { 'data-cell-explanation-actions': true, role: 'group', 'aria-label': __alloT('stem.cell.browse_cell_structures','Browse cell structures') },
+                React.createElement('button', { type: 'button', 'aria-label': __alloT('stem.cell.previous_structure','Previous structure'), onClick: function() { stepCellExplanation(-1); } }, cellControlIcon('previous'), 'Previous'),
+                React.createElement('button', { type: 'button', 'data-cell-explanation-next': true, 'aria-label': __alloT('stem.cell.next_structure','Next structure'), onClick: function() { stepCellExplanation(1); } }, 'Next', cellControlIcon('next')),
+                cellExplanation && React.createElement('button', { type: 'button', 'data-cell-explanation-return': true, 'aria-label': __alloT('stem.cell.back_to_microscope','Back to microscope'), onClick: function() { focusCellPlayRegion('[data-cell-stage]', '[data-cell-sim-canvas]'); } }, cellControlIcon('up'), 'Back to dish'),
+                cellExplanation && React.createElement('button', { type: 'button', 'data-cell-explanation-close': true, 'aria-label': __alloT('stem.cell.close_structure_explanation','Close structure explanation'), onClick: closeCellExplanationPanel }, cellControlIcon('close'), 'Close')
               )
             ),
               )
@@ -26469,7 +26472,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                   }, React.createElement("span", { "aria-hidden": true }, "\u2190"), "All organisms"),
                   React.createElement("button", {
                     type: "button", "data-cell-return-to-dish": true,
-                    "aria-label": "Return to live dish", onClick: returnToCellDish,
+                    "aria-label": __alloT('stem.cell.return_to_live_dish','Return to live dish'), onClick: returnToCellDish,
                     className: "inline-flex items-center gap-2 rounded-lg border border-teal-700 bg-teal-50 text-teal-900 font-bold"
                   }, cellControlIcon('locate'), "Live dish"),
                   d.mode === 'play' && React.createElement("button", {
@@ -26908,7 +26911,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
               ),
               React.createElement("div", { className: "flex gap-2" },
                 React.createElement("input", {
-                  type: "text", placeholder: "Ask about cells, organisms...", value: d._cellAIQ || '',
+                  type: "text", placeholder: __alloT('stem.cell.ask_about_cells_organisms','Ask about cells, organisms...'), value: d._cellAIQ || '',
                   'aria-label': __alloT('stem.cell.a11y_ask_the_cell_biology_ai_tutor', 'Ask the cell biology AI tutor'),
                   onChange: function (e) { upd('_cellAIQ', e.target.value); },
                   onKeyDown: function (e) { if (e.key === 'Enter') askAI(d._cellAIQ); },
@@ -27814,7 +27817,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                   React.createElement('h3', { className: 'text-base font-bold text-green-700 flex items-center gap-1.5' }, '📚 Organism Encyclopedia'),
                   React.createElement('span', { className: 'text-xs text-slate-600 font-mono bg-slate-100 px-2 py-0.5 rounded-full' }, filtered.length + ' organisms')
                 ),
-                React.createElement('input', { type: 'text', 'aria-label': __alloT('stem.cell.a11y_search_organism_encyclopedia', 'Search organism encyclopedia'), placeholder: 'Search organisms...', value: search, onChange: function(e) { upd('_encyclopediaSearch', e.target.value); upd('_encyclopediaIdx', 0); }, className: 'w-full px-2 py-1 text-xs border-2 border-green-200 rounded focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-500' }),
+                React.createElement('input', { type: 'text', 'aria-label': __alloT('stem.cell.a11y_search_organism_encyclopedia', 'Search organism encyclopedia'), placeholder: __alloT('stem.cell.search_organisms','Search organisms...'), value: search, onChange: function(e) { upd('_encyclopediaSearch', e.target.value); upd('_encyclopediaIdx', 0); }, className: 'w-full px-2 py-1 text-xs border-2 border-green-200 rounded focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-500' }),
                 React.createElement('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': __alloT('stem.cell.a11y_filter_organisms_by_group', 'Filter organisms by group') },
                   kingdoms.map(function(k) {
                     var sel = filterK === k;
@@ -27964,7 +27967,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
             // ═══════════════════════════════════════════════════════════
             d.mode === 'compare' && renderCellComparison(React.createElement, ORGANISM_DB, d, function(patch) {
               updateCellDataFunctional(function(cel) { return Object.assign(cel, patch); });
-            }),
+            }, __alloT),
 
             // ═══════════════════════════════════════════════════════════
             // HISTORY MODE
@@ -28065,7 +28068,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
               var filtered = search ? CELL_GLOSSARY.filter(function(g) { return g.term.toLowerCase().indexOf(search.toLowerCase()) !== -1 || g.definition.toLowerCase().indexOf(search.toLowerCase()) !== -1; }) : CELL_GLOSSARY;
               return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-indigo-300 p-4' },
                 React.createElement('h3', { className: 'text-base font-bold text-indigo-700 mb-3' }, 'Cell Biology Glossary'),
-                React.createElement('input', { 'aria-label': __alloT('stem.cell.a11y_search_glossary_terms', 'Search glossary terms'), type: 'text', placeholder: 'Search terms...', value: search, onChange: function(e) { upd('_glossSearch', e.target.value); }, className: 'w-full px-2 py-1 text-xs border-2 border-indigo-200 rounded mb-3' }),
+                React.createElement('input', { 'aria-label': __alloT('stem.cell.a11y_search_glossary_terms', 'Search glossary terms'), type: 'text', placeholder: __alloT('stem.cell.search_terms','Search terms...'), value: search, onChange: function(e) { upd('_glossSearch', e.target.value); }, className: 'w-full px-2 py-1 text-xs border-2 border-indigo-200 rounded mb-3' }),
                 React.createElement('div', { className: 'grid md:grid-cols-2 gap-1' },
                   filtered.map(function(g) {
                     return React.createElement('div', { key: g.id, className: 'bg-indigo-50 border border-indigo-200 rounded p-2 text-xs' },
@@ -28229,7 +28232,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
               updateCellDataFunctional(function(current) {
                 return Object.assign({}, current, { _osmoHunt: Object.assign({}, current._osmoHunt || {}, patch) });
               });
-            }),
+            }, __alloT),
 
             // ── Vocabulary Concept Flashcard Overlay (Modal) ──
             (function() {
