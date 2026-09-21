@@ -17974,6 +17974,16 @@ var EMOTION_JOURNAL_TEMPLATES = [
     color: 'blue',
     category: 'self-awareness',
     render: function(ctx) {
+      // ── i18n ──────────────────────────────────────────────────────────────
+      // Carries the English literal because the SEL shell's own `t` ECHOES THE
+      // KEY when a pack lacks the entry (sel_hub_module.js:2114) — without the
+      // fallback a student would read `sel.emotions.something`.
+      var __alloT = function (key, fallback) {
+        var fn = (ctx && typeof ctx.t === 'function') ? ctx.t : null;
+        var value = null;
+        if (fn) { try { value = fn(key, fallback); } catch (e) { value = null; } }
+        return (value == null) ? (fallback != null ? fallback : key) : value;
+      };
       var React = ctx.React;
       var h = React.createElement;
       var Sparkles = ctx.icons.Sparkles;
@@ -20437,14 +20447,14 @@ var weatherContent = null;
 if (activeTab === 'weather') {
   var wxEmotion = d.wxEmotion || 'happy';
   var WEATHER_SCENES = [
-    { id: 'happy',   label: 'Happy = Sunshine',        bg: '#fef3c7', accent: '#f59e0b', kind: 'sun',       desc: 'Bright, warming, expansive. Wants to be seen.' },
-    { id: 'calm',    label: 'Calm = Light cloud drift',bg: '#e0f2fe', accent: '#bae6fd', kind: 'cloud',     desc: 'Soft, unhurried, spacious. Nothing demanding action.' },
-    { id: 'sad',     label: 'Sad = Steady rain',       bg: P.card, accent: '#60a5fa', kind: 'rain',      desc: 'Heavy, gray, slow. Needs to fall before it can clear.' },
-    { id: 'angry',   label: 'Angry = Thunderstorm',    bg: '#1f1d2e', accent: '#f87171', kind: 'lightning', desc: 'Charged, sudden, loud. Energy looking for release.' },
-    { id: 'fear',    label: 'Fear = Dense fog',        bg: '#374151', accent: '#9ca3af', kind: 'fog',       desc: 'Limits visibility — you can\'t see what\'s ahead. Move slowly.' },
-    { id: 'excited', label: 'Excited = Wind gusts',    bg: '#fef3c7', accent: '#fbbf24', kind: 'wind',      desc: 'Restless motion. Can\'t sit still. Hard to focus.' },
-    { id: 'grief',   label: 'Grief = Cold snow',       bg: P.card, accent: P.text3, kind: 'snow',      desc: 'Heavy, quiet, slow. The world muffled. Will pass — at its own pace.' },
-    { id: 'mixed',   label: 'Mixed = Rainbow after rain', bg: P.card, accent: '#22d3ee', kind: 'rainbow', desc: 'Two true things at once. Beauty AND sadness can share the sky.' }
+    { id: 'happy',   label: __alloT('sel.emotions.weather_happy_label', 'Happy = Sunshine'),        bg: '#fef3c7', accent: '#f59e0b', kind: 'sun',       desc: __alloT('sel.emotions.weather_happy_desc', 'Bright, warming, expansive. Wants to be seen.') },
+    { id: 'calm',    label: __alloT('sel.emotions.weather_calm_label', 'Calm = Light cloud drift'),bg: '#e0f2fe', accent: '#bae6fd', kind: 'cloud',     desc: __alloT('sel.emotions.weather_calm_desc', 'Soft, unhurried, spacious. Nothing demanding action.') },
+    { id: 'sad',     label: __alloT('sel.emotions.weather_sad_label', 'Sad = Steady rain'),       bg: P.card, accent: '#60a5fa', kind: 'rain',      desc: __alloT('sel.emotions.weather_sad_desc', 'Heavy, gray, slow. Needs to fall before it can clear.') },
+    { id: 'angry',   label: __alloT('sel.emotions.weather_angry_label', 'Angry = Thunderstorm'),    bg: '#1f1d2e', accent: '#f87171', kind: 'lightning', desc: __alloT('sel.emotions.weather_angry_desc', 'Charged, sudden, loud. Energy looking for release.') },
+    { id: 'fear',    label: __alloT('sel.emotions.weather_fear_label', 'Fear = Dense fog'),        bg: '#374151', accent: '#9ca3af', kind: 'fog',       desc: __alloT('sel.emotions.weather_fear_desc', 'Limits visibility — you can\'t see what\'s ahead. Move slowly.') },
+    { id: 'excited', label: __alloT('sel.emotions.weather_excited_label', 'Excited = Wind gusts'),    bg: '#fef3c7', accent: '#fbbf24', kind: 'wind',      desc: __alloT('sel.emotions.weather_excited_desc', 'Restless motion. Can\'t sit still. Hard to focus.') },
+    { id: 'grief',   label: __alloT('sel.emotions.weather_grief_label', 'Grief = Cold snow'),       bg: P.card, accent: P.text3, kind: 'snow',      desc: __alloT('sel.emotions.weather_grief_desc', 'Heavy, quiet, slow. The world muffled. Will pass — at its own pace.') },
+    { id: 'mixed',   label: __alloT('sel.emotions.weather_mixed_label', 'Mixed = Rainbow after rain'), bg: P.card, accent: '#22d3ee', kind: 'rainbow', desc: __alloT('sel.emotions.weather_mixed_desc', 'Two true things at once. Beauty AND sadness can share the sky.') }
   ];
   var scene = WEATHER_SCENES.find(function(s) { return s.id === wxEmotion; }) || WEATHER_SCENES[0];
   // SVG-based weather animation. The sel-emo-* classes below had NO keyframes
@@ -20670,12 +20680,12 @@ if (activeTab === 'volcano') {
   var vcLevel = d.vcLevel != null ? d.vcLevel : 3;
   var vcSteam = d.vcSteam != null ? d.vcSteam : false;
   var VOLCANO_STAGES = [
-    { range: [0, 1], color: '#22c55e', label: 'Calm',           bodyCue: 'Easy breathing, soft jaw',                     thoughtCue: 'I\'m okay. Things are fine.',                          actionCue: 'Normal activities. No action needed.' },
-    { range: [2, 3], color: '#86efac', label: 'A little bothered', bodyCue: 'Slight tension in jaw or shoulders',         thoughtCue: 'Hmm, that wasn\'t great. Moving on.',                  actionCue: 'Take a breath. Maybe name it: "I felt annoyed there."' },
-    { range: [4, 5], color: '#fde047', label: 'Frustrated',     bodyCue: 'Tight chest, faster heart, jaw clenched',     thoughtCue: 'This is unfair. Why is this happening?',               actionCue: 'PAUSE. Walk away for 5 minutes. Box breathe.' },
-    { range: [6, 7], color: '#fb923c', label: 'Angry',           bodyCue: 'Heat in face, fists clenched, shaky',          thoughtCue: 'I want to yell / hit / break something.',              actionCue: 'CRITICAL pause. Remove yourself. Cold water. Physical discharge that\'s safe (run, punch pillow, scream into pillow).' },
-    { range: [8, 9], color: '#ef4444', label: 'About to erupt',  bodyCue: 'Vision tunneling, breath shallow, body shaking',thoughtCue: 'I\'m going to say or do something I\'ll regret.',     actionCue: 'EVACUATE the situation. Find a safe space. Call a person you trust. The eruption protects you from regret.' },
-    { range: [10, 10], color: '#7f1d1d', label: 'Erupted',       bodyCue: 'Body in full fight response',                  thoughtCue: 'No longer choosing — reacting from primal brain.',     actionCue: 'AFTER: rest. Hydrate. Apologize ONLY when calm. Reflect: what was the early warning sign I missed?' }
+    { range: [0, 1], color: '#22c55e', label: __alloT('sel.emotions.volcano_calm_label', 'Calm'),           bodyCue: __alloT('sel.emotions.volcano_calm_bodyCue', 'Easy breathing, soft jaw'),                     thoughtCue: __alloT('sel.emotions.volcano_calm_thoughtCue', 'I\'m okay. Things are fine.'),                          actionCue: __alloT('sel.emotions.volcano_calm_actionCue', 'Normal activities. No action needed.') },
+    { range: [2, 3], color: '#86efac', label: __alloT('sel.emotions.volcano_a_little_bothered_label', 'A little bothered'), bodyCue: __alloT('sel.emotions.volcano_a_little_bothered_bodyCue', 'Slight tension in jaw or shoulders'),         thoughtCue: __alloT('sel.emotions.volcano_a_little_bothered_thoughtCue', 'Hmm, that wasn\'t great. Moving on.'),                  actionCue: __alloT('sel.emotions.volcano_a_little_bothered_actionCue', 'Take a breath. Maybe name it: "I felt annoyed there."') },
+    { range: [4, 5], color: '#fde047', label: __alloT('sel.emotions.volcano_frustrated_label', 'Frustrated'),     bodyCue: __alloT('sel.emotions.volcano_frustrated_bodyCue', 'Tight chest, faster heart, jaw clenched'),     thoughtCue: __alloT('sel.emotions.volcano_frustrated_thoughtCue', 'This is unfair. Why is this happening?'),               actionCue: __alloT('sel.emotions.volcano_frustrated_actionCue', 'PAUSE. Walk away for 5 minutes. Box breathe.') },
+    { range: [6, 7], color: '#fb923c', label: __alloT('sel.emotions.volcano_angry_label', 'Angry'),           bodyCue: __alloT('sel.emotions.volcano_angry_bodyCue', 'Heat in face, fists clenched, shaky'),          thoughtCue: __alloT('sel.emotions.volcano_angry_thoughtCue', 'I want to yell / hit / break something.'),              actionCue: __alloT('sel.emotions.volcano_angry_actionCue', 'CRITICAL pause. Remove yourself. Cold water. Physical discharge that\'s safe (run, punch pillow, scream into pillow).') },
+    { range: [8, 9], color: '#ef4444', label: __alloT('sel.emotions.volcano_about_to_erupt_label', 'About to erupt'),  bodyCue: __alloT('sel.emotions.volcano_about_to_erupt_bodyCue', 'Vision tunneling, breath shallow, body shaking'),thoughtCue: __alloT('sel.emotions.volcano_about_to_erupt_thoughtCue', 'I\'m going to say or do something I\'ll regret.'),     actionCue: __alloT('sel.emotions.volcano_about_to_erupt_actionCue', 'EVACUATE the situation. Find a safe space. Call a person you trust. The eruption protects you from regret.') },
+    { range: [10, 10], color: '#7f1d1d', label: __alloT('sel.emotions.volcano_erupted_label', 'Erupted'),       bodyCue: __alloT('sel.emotions.volcano_erupted_bodyCue', 'Body in full fight response'),                  thoughtCue: __alloT('sel.emotions.volcano_erupted_thoughtCue', 'No longer choosing — reacting from primal brain.'),     actionCue: __alloT('sel.emotions.volcano_erupted_actionCue', 'AFTER: rest. Hydrate. Apologize ONLY when calm. Reflect: what was the early warning sign I missed?') }
   ];
   var stage = VOLCANO_STAGES.find(function(s) { return vcLevel >= s.range[0] && vcLevel <= s.range[1]; }) || VOLCANO_STAGES[0];
   // SVG volcano with lava height proportional to vcLevel
@@ -21666,16 +21676,16 @@ if (activeTab === 'color') {
   // Emotion-color associations (Palmer/Schloss + cross-cultural studies)
   // Each entry: hue range, name, why
   var COLOR_EMOTIONS = [
-    { hMin:   0, hMax:  15, names: ['anger','passion','urgency'], reason: 'Red activates the sympathetic nervous system; saturated red signals threat and arousal in nearly every studied culture.' },
-    { hMin:  15, hMax:  35, names: ['warmth','excitement','optimism'], reason: 'Orange combines red\'s activation with yellow\'s glow — culturally associated with energy and play.' },
-    { hMin:  35, hMax:  60, names: ['happiness','cheer','optimism','anxiety (at high saturation)'], reason: 'Yellow correlates with happiness in most cultures, but very high-saturation yellow can read as anxious or unstable (caution signs use it for a reason).' },
-    { hMin:  60, hMax: 120, names: ['calm','nature','renewal','envy (in specific contexts)'], reason: 'Green correlates with restoration, growth, balance — and (idiomatically in English) jealousy/envy.' },
-    { hMin: 120, hMax: 180, names: ['serenity','cool','trust'], reason: 'Teal/cyan blends green\'s calm with blue\'s trust — broadly soothing across cultures.' },
-    { hMin: 180, hMax: 220, names: ['trust','peace','sadness'], reason: 'Sky and water blue is calming and trustworthy — but English idioms ("feeling blue") link it to mild sadness too.' },
-    { hMin: 220, hMax: 260, names: ['depth','introspection','melancholy'], reason: 'Deep blue and indigo evoke introspection, mystery, and at times sorrow.' },
-    { hMin: 260, hMax: 290, names: ['creativity','mystery','royalty'], reason: 'Purple is historically rare in nature, so cultures tend to read it as special — creative, mystical, regal.' },
-    { hMin: 290, hMax: 330, names: ['playfulness','love','romance'], reason: 'Magenta and pink read as warmth + youth + affection in most cultures.' },
-    { hMin: 330, hMax: 360, names: ['anger','passion','urgency'], reason: 'Returning to red. The wheel closes back where it started.' }
+    { hMin:   0, hMax:  15, names: ['anger','passion','urgency'], reason: __alloT('sel.emotions.color_red_activates_the_sympathetic_nerv_reason', 'Red activates the sympathetic nervous system; saturated red signals threat and arousal in nearly every studied culture.') },
+    { hMin:  15, hMax:  35, names: ['warmth','excitement','optimism'], reason: __alloT('sel.emotions.color_orange_combines_red_s_activation_w_reason', 'Orange combines red\'s activation with yellow\'s glow — culturally associated with energy and play.') },
+    { hMin:  35, hMax:  60, names: ['happiness','cheer','optimism','anxiety (at high saturation)'], reason: __alloT('sel.emotions.color_yellow_correlates_with_happiness_i_reason', 'Yellow correlates with happiness in most cultures, but very high-saturation yellow can read as anxious or unstable (caution signs use it for a reason).') },
+    { hMin:  60, hMax: 120, names: ['calm','nature','renewal','envy (in specific contexts)'], reason: __alloT('sel.emotions.color_green_correlates_with_restoration__reason', 'Green correlates with restoration, growth, balance — and (idiomatically in English) jealousy/envy.') },
+    { hMin: 120, hMax: 180, names: ['serenity','cool','trust'], reason: __alloT('sel.emotions.color_teal_cyan_blends_green_s_calm_with_reason', 'Teal/cyan blends green\'s calm with blue\'s trust — broadly soothing across cultures.') },
+    { hMin: 180, hMax: 220, names: ['trust','peace','sadness'], reason: __alloT('sel.emotions.color_sky_and_water_blue_is_calming_and__reason', 'Sky and water blue is calming and trustworthy — but English idioms ("feeling blue") link it to mild sadness too.') },
+    { hMin: 220, hMax: 260, names: ['depth','introspection','melancholy'], reason: __alloT('sel.emotions.color_deep_blue_and_indigo_evoke_introsp_reason', 'Deep blue and indigo evoke introspection, mystery, and at times sorrow.') },
+    { hMin: 260, hMax: 290, names: ['creativity','mystery','royalty'], reason: __alloT('sel.emotions.color_purple_is_historically_rare_in_nat_reason', 'Purple is historically rare in nature, so cultures tend to read it as special — creative, mystical, regal.') },
+    { hMin: 290, hMax: 330, names: ['playfulness','love','romance'], reason: __alloT('sel.emotions.color_magenta_and_pink_read_as_warmth_yo_reason', 'Magenta and pink read as warmth + youth + affection in most cultures.') },
+    { hMin: 330, hMax: 360, names: ['anger','passion','urgency'], reason: __alloT('sel.emotions.color_returning_to_red_the_wheel_closes__reason', 'Returning to red. The wheel closes back where it started.') }
   ];
   var pickedEntry = COLOR_EMOTIONS.find(function(e) { return cpHue >= e.hMin && cpHue < e.hMax; }) || COLOR_EMOTIONS[0];
   // Saturation/lightness modulators
