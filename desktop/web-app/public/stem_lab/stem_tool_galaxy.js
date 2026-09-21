@@ -12590,7 +12590,7 @@ if (!window._galaxyHasLoadedOnce) {
                       key: st.id,
                       type: "button",
                       "aria-pressed": isMatch ? "true" : "false",
-                      "aria-label": __alloT('stem.galaxy.aria_set_mass', "Set mass to ") + st.id + __alloT('stem.galaxy.aria_set_mass_join', "-type star, ") + st.mass + ", " + st.lifetime + " lifetime",
+                      "aria-label": __alloT('stem.galaxy.aria_set_mass', "Set mass to ") + st.id + __alloT('stem.galaxy.aria_set_mass_join', "-type star, ") + st.mass + ", " + st.lifetime + __alloT('stem.galaxy.aria_lifetime_suffix', ' lifetime'),
 
                       className: "text-center p-2 rounded-xl border-2 bg-transparent transition-all cursor-pointer  " +
 

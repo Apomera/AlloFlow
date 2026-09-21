@@ -7391,7 +7391,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   kids.push(h('text', { key: 'inB' + i, x: x + 8, y: rowY + 14, fontSize: 10, fill: '#cbd5e1' }, row[1]));
                 });
                 return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'data-fe-regime-diagram': state, 'data-fe-regime-index': risk.toFixed(2),
-                  'aria-label': 'Classroom risk index: fuel ' + iq.fuel + ' times drought ' + iq.drought + ' divided by return interval ' + iq.interval + ' equals ' + risk.toFixed(2) + '. Below 1.2 is lower concern, 1.2 to 2.5 is dangerous buildup, above 2.5 is megafire risk; an interval under five years raises the very-short-interval flag.',
+                  'aria-label': __alloT('stem.fireecology.aria_risk_index_lead', 'Classroom risk index: fuel ') + iq.fuel + __alloT('stem.fireecology.aria_risk_index_times_drought', ' times drought ') + iq.drought + __alloT('stem.fireecology.aria_risk_index_div_interval', ' divided by return interval ') + iq.interval + __alloT('stem.fireecology.aria_risk_index_equals', ' equals ') + risk.toFixed(2) + __alloT('stem.fireecology.aria_risk_index_bands', '. Below 1.2 is lower concern, 1.2 to 2.5 is dangerous buildup, above 2.5 is megafire risk; an interval under five years raises the very-short-interval flag.'),
                   className: 'rounded-lg border border-orange-200', style: { background: '#0f172a' } }, kids);
               })(),
               h('div', { className: 'grid grid-cols-3 gap-3' },

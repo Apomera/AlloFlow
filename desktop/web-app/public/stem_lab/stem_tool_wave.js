@@ -2262,7 +2262,7 @@ const d = labToolData.wave;
 
                   React.createElement("label", { htmlFor: "wave-second-phase", className: "block text-xs text-pink-700 font-bold" }, __alloT('stem.wave.aria_second_phase', 'Second wave phase')),
 
-                  React.createElement("input", { id: "wave-second-phase", "aria-describedby": "wave-second-phase-help", "aria-valuetext": ((d.phase2 || 0) / Math.PI).toFixed(1) + " pi radians", style: { minHeight: 44 }, type: "range", min: 0, max: 6.28, step: 0.1, value: d.phase2 || 0, 'aria-label': __alloT('stem.wave.aria_second_phase', 'Second wave phase'), onChange: e => upd('phase2', parseFloat(e.target.value)), className: "w-full accent-pink-500" }),
+                  React.createElement("input", { id: "wave-second-phase", "aria-describedby": "wave-second-phase-help", "aria-valuetext": ((d.phase2 || 0) / Math.PI).toFixed(1) + __alloT('stem.wave.aria_pi_radians', ' pi radians'), style: { minHeight: 44 }, type: "range", min: 0, max: 6.28, step: 0.1, value: d.phase2 || 0, 'aria-label': __alloT('stem.wave.aria_second_phase', 'Second wave phase'), onChange: e => upd('phase2', parseFloat(e.target.value)), className: "w-full accent-pink-500" }),
 
                   React.createElement("span", { className: "text-[0.6875rem] text-pink-700 font-bold" }, ((d.phase2 || 0) / Math.PI).toFixed(1) + "\u03C0 rad"),
 
@@ -2801,7 +2801,7 @@ const d = labToolData.wave;
                   React.createElement("button", {
                     onClick: explain,
                     disabled: aiLoading,
-                    "aria-label": __alloT('stem.wave.aria_generate_at', 'Generate AI explanation at ') + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + __alloT('stem.wave.aria_level_suffix', ' level'),
+                    "aria-label": __alloT('stem.wave.aria_generate_at', 'Generate AI explanation at ') + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || __alloT('stem.wave.ai_level_grade5', 'Grade 5')) + __alloT('stem.wave.aria_level_suffix', ' level'),
                     className: "transition-colors px-3 py-1 rounded-lg text-[0.6875rem] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 active:scale-[0.97]"
                   }, aiLoading ? '\u23F3 ' + __alloT('stem.wave.ai_thinking', 'Thinking...') : (aiText ? '\uD83D\uDD04 ' + __alloT('stem.wave.ai_reexplain', 'Re-explain') : '\uD83E\uDDE0 ' + __alloT('stem.wave.ai_explain', 'Explain')))
                 ),
