@@ -91887,7 +91887,11 @@
       "tools": "Tools",
       "typeface": "Switch typeface",
       "verbatim": "Verbatim text as published",
-      "verbatim_live": "Verbatim text, fetched live from eCFR"
+      "verbatim_live": "Verbatim text, fetched live from eCFR",
+      "doc_err_title": "This text could not be loaded.",
+      "doc_err_body": "Nothing is shown here rather than text recalled from memory. Check your connection and try again, or read it at the official source.",
+      "doc_err_retry": "Try again",
+      "open_official": "Open the official source ↗"
     },
     "machinelab": {
       "a_bit_easier": "A bit easier",
