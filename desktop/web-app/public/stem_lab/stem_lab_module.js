@@ -6998,6 +6998,40 @@
               if (!state) return 0;
               try { return getCount(state) || 0; } catch (e) { return 0; }
             };
+            // Count the keys of a nested mastery map, and ONLY when it really
+            // is a map.
+            //
+            // Several entries read `(s.field || s)` and then Object.keys() it.
+            // When the tool has saved state but not that field yet - settings,
+            // a seen-tutorial flag, a last-open tab - the fallback counted the
+            // WHOLE state object, so a learner who had mastered nothing saw
+            // "4 / 15" from four unrelated settings keys. An array or a string
+            // in that slot counted its indices or characters the same way.
+            var _atlasMapCount = function (holder, field) {
+              if (!holder || typeof holder !== 'object' || Array.isArray(holder)) return 0;
+              var map;
+              if (field) {
+                // When a field is named it must actually be there. Falling
+                // back to the holder is precisely what counted settings keys
+                // as mastered items.
+                if (!Object.prototype.hasOwnProperty.call(holder, field)) return 0;
+                map = holder[field];
+              } else {
+                map = holder;
+              }
+              if (!map || typeof map !== 'object' || Array.isArray(map)) return 0;
+              return Object.keys(map).length;
+            };
+            // A tile's count must stay inside the total it is shown against:
+            // the bar is `width: pct + '%'` and the label reads "N / total",
+            // so an unbounded count rendered a bar past its track and text
+            // like "200 / 15". Persisted state is user-writable and outlives
+            // any single release, so the clamp belongs at read time.
+            var _atlasClamp = function (n, total) {
+              var v = Number(n);
+              if (!isFinite(v) || v <= 0) return 0;
+              return Math.min(Math.floor(v), Math.max(0, Number(total) || 0));
+            };
             var _countPetsDecoderMastery = function (state) {
               if (!state || typeof state !== 'object') return 0;
               if (state.decoderCanonicalCount != null && state.decoderCanonicalCount !== '' && isFinite(Number(state.decoderCanonicalCount))) {
@@ -7022,55 +7056,55 @@
               { id: 'birdLab', icon: '🪶', label: t('stem.tools_menu.birdlab_life_list') || 'BirdLab Life List',
                 color: '#10b981', accent: 'rgba(16,185,129,0.15)',
                 slot: '__alloflowBirdLab', lsKey: 'birdLab.lifeList.v1', total: 15,
-                count: function () { var s = _readSlot('__alloflowBirdLab', 'birdLab.lifeList.v1'); if (!s) return 0; var ll = (s.lifeList || s); return Object.keys(ll || {}).length; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowBirdLab', 'birdLab.lifeList.v1'), 'lifeList'), 15); } },
               { id: 'petsLab', icon: '🐾', label: t('stem.tools_menu.petslab_decoder') || 'PetsLab Decoder',
                 color: '#f59e0b', accent: 'rgba(245,158,11,0.15)',
                 slot: '__alloflowPetsLab', lsKey: 'petsLab.state.v1', total: 27,
-                count: function () { return _countPetsDecoderMastery(_readSlot('__alloflowPetsLab', 'petsLab.state.v1')); } },
+                count: function () { return _atlasClamp(_countPetsDecoderMastery(_readSlot('__alloflowPetsLab', 'petsLab.state.v1')), 27); } },
               { id: 'opticsLab', icon: '🔆', label: t('stem.tools_menu.opticslab_ap') || 'OpticsLab AP',
                 color: '#0ea5e9', accent: 'rgba(14,165,233,0.15)',
                 slot: '__alloflowOpticsLab', lsKey: 'opticsLab.state.v1', total: 30,
-                count: function () { var s = _readSlot('__alloflowOpticsLab', 'opticsLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowOpticsLab', 'opticsLab.state.v1'), 'quizMastery'), 30); } },
               { id: 'statsLab', icon: '📊', label: t('stem.tools_menu.statslab_ap') || 'StatsLab AP',
                 color: '#a855f7', accent: 'rgba(168,85,247,0.15)',
                 slot: '__alloflowStatsLab', lsKey: 'statsLab.state.v1', total: 25,
-                count: function () { var s = _readSlot('__alloflowStatsLab', 'statsLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowStatsLab', 'statsLab.state.v1'), 'quizMastery'), 25); } },
               { id: 'weldLab', icon: '🔥', label: "Welder's Catalog",
                 color: '#dc2626', accent: 'rgba(220,38,38,0.15)',
                 slot: '__alloflowWeldLab', lsKey: 'weldLab.defectCatalog.v1', total: 6,
-                count: function () { var s = _readSlot('__alloflowWeldLab', 'weldLab.defectCatalog.v1'); if (!s) return 0; var cat = (s.defectCatalog || s); return Object.keys(cat || {}).length; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowWeldLab', 'weldLab.defectCatalog.v1'), 'defectCatalog'), 6); } },
               { id: 'renewablesLab', icon: '☀️', label: t('stem.renewables.energy_mastery') || 'Energy Mastery',
                 color: '#22c55e', accent: 'rgba(34,197,94,0.15)',
                 slot: '__alloflowRenewablesLab', lsKey: 'renewablesLab.state.v1', total: 18,
-                count: function () { var s = _readSlot('__alloflowRenewablesLab', 'renewablesLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowRenewablesLab', 'renewablesLab.state.v1'), 'quizMastery'), 18); } },
               { id: 'firstResponse', icon: '🚑', label: t('stem.firstresponse.responder_mastery') || 'Responder Mastery',
                 color: '#ef4444', accent: 'rgba(239,68,68,0.15)',
                 slot: '__alloflowFirstResponse', lsKey: 'firstResponse.state.v1', total: 10,
-                count: function () { var s = _readSlot('__alloflowFirstResponse', 'firstResponse.state.v1'); return s && s.faMastery ? Object.keys(s.faMastery).length : 0; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowFirstResponse', 'firstResponse.state.v1'), 'faMastery'), 10); } },
               { id: 'throwlab', icon: '⚾', label: t('stem.throwlab.pitch_locker') || 'Pitch Locker',
                 color: '#7c3aed', accent: 'rgba(124,58,237,0.15)',
                 slot: '__alloflowThrowLab', lsKey: 'throwlab.state.v1', total: 6,
-                count: function () { var s = _readSlot('__alloflowThrowLab', 'throwlab.state.v1'); return s && s.pitchLocker ? Object.keys(s.pitchLocker).length : 0; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowThrowLab', 'throwlab.state.v1'), 'pitchLocker'), 6); } },
               { id: 'playlab', icon: '🏈', label: t('stem.playlab.play_catalog') || 'Play Catalog',
                 color: '#fb923c', accent: 'rgba(251,146,60,0.15)',
                 slot: '__alloflowPlayLab', lsKey: 'playlab.state.v1', total: 13,
-                count: function () { var s = _readSlot('__alloflowPlayLab', 'playlab.state.v1'); return s && s.playCatalog ? Object.keys(s.playCatalog).length : 0; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowPlayLab', 'playlab.state.v1'), 'playCatalog'), 13); } },
               { id: 'roadReady', icon: '🚗', label: t('stem.roadready.permit_mastery') || 'Permit Mastery',
                 color: '#fbbf24', accent: 'rgba(251,191,36,0.15)',
                 slot: '__alloflowRoadReady', lsKey: 'roadReady.permitMastery.v1', total: 185,
-                count: function () { var s = _readSlot('__alloflowRoadReady', 'roadReady.permitMastery.v1'); if (!s) return 0; var pm = (s.permitMastery || s); return Object.keys(pm || {}).length; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowRoadReady', 'roadReady.permitMastery.v1'), 'permitMastery'), 185); } },
               { id: 'assessmentLiteracy', icon: '🔍', label: t('stem.tools_menu.junk_science') || 'Junk-Science',
                 color: '#c026d3', accent: 'rgba(192,38,211,0.15)',
                 slot: '__alloflowAssessmentLiteracy', lsKey: 'assessmentLiteracy.state.v1', total: 15,
-                count: function () { var s = _readSlot('__alloflowAssessmentLiteracy', 'assessmentLiteracy.state.v1'); return s && s.junkMastery ? Object.keys(s.junkMastery).length : 0; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowAssessmentLiteracy', 'assessmentLiteracy.state.v1'), 'junkMastery'), 15); } },
               { id: 'fisherLab', icon: '🎣', label: t('stem.tools_menu.fisher_life_log') || 'Fisher Life Log',
                 color: '#0ea5e9', accent: 'rgba(14,165,233,0.15)',
                 slot: '__alloflowFisherLab', lsKey: 'fisherLab.state.v1', total: 8,
-                count: function () { var s = _readSlot('__alloflowFisherLab', 'fisherLab.state.v1'); if (!s) return 0; var caught = s.speciesCaught || {}; return Object.keys(caught).length; } },
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowFisherLab', 'fisherLab.state.v1'), 'speciesCaught'), 8); } },
               { id: 'aquacultureLab', icon: '🦪', label: t('stem.tools_menu.farm_log') || 'Farm Log',
                 color: '#14b8a6', accent: 'rgba(20,184,166,0.15)',
                 slot: '__alloflowAquacultureLab', lsKey: 'aquacultureLab.state.v1', total: 5,
-                count: function () { var s = _readSlot('__alloflowAquacultureLab', 'aquacultureLab.state.v1'); return s && typeof s.droppersDeployed === 'number' ? s.droppersDeployed : 0; } }
+                count: function () { var s = _readSlot('__alloflowAquacultureLab', 'aquacultureLab.state.v1'); return _atlasClamp(s && typeof s.droppersDeployed === 'number' ? s.droppersDeployed : 0, 5); } }
             ];
             var _atlasActive = _atlasEntries.map(function (e) { return Object.assign({}, e, { current: e.count() }); }).filter(function (e) { return e.current > 0; });
             var _atlasTotal = _atlasActive.reduce(function (s, e) { return s + e.current; }, 0);
