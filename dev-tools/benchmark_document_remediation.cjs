@@ -102,6 +102,36 @@ function validateRunOptions(options, corpus) {
   if (mode === 'live' && (corpus.cases.some(item => item.backend !== 'mcp-headless') || trials * corpus.cases.length > 6)) throw new Error('Live mode permits only mcp-headless cases and at most 6 trials');
   return { mode, trials, timeoutMs, budgetMs };
 }
+// The report used to state `provider: 'Gemini via local MCP'` unconditionally, so a run against
+// Ollama, LM Studio, Claude or OpenAI was FILED AS GEMINI. That is the one thing a per-provider
+// benchmark exists to distinguish, and the mislabel would have survived into the evidence. Ask the
+// driver what it would actually resolve, using the same resolver the driver itself uses, so the
+// answer cannot drift from the transport.
+function modelConfiguration(environment = process.env) {
+  const note = 'Configured identifiers, not proof of which fallback served an individual call; per-call provider versions are not exposed.';
+  let resolved = null;
+  try {
+    resolved = require(path.join(ROOT, 'desktop', 'mcp', 'remediation_headless_driver.cjs'))
+      .resolveModelTransportConfig(environment);
+  } catch (_) {
+    resolved = null; // fail soft: an unreadable driver must not break a plan-mode run
+  }
+  const backend = (resolved && resolved.backend) || 'gemini';
+  if (backend === 'gemini') {
+    return { provider: 'Gemini via local MCP', backend: 'gemini',
+      model: environment.ALLOFLOW_MCP_GEMINI_MODEL || 'gemini-3-flash-preview',
+      fallbackModel: environment.ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash-lite',
+      visionModel: null, baseUrl: null, keySource: null, cloud: true, note };
+  }
+  return { provider: backend + ' via local MCP', backend,
+    model: resolved.model || null, fallbackModel: null,
+    visionModel: resolved.visionModel || null,
+    baseUrl: resolved.baseUrl || null,
+    // Never the key itself — only where it came from, which is what a reader needs to reproduce.
+    keySource: resolved.keySource || 'none',
+    cloud: Boolean(resolved.cloud), note };
+}
+
 function versions(environment = process.env) {
   const files = Object.fromEntries(VERSION_FILES.filter(filename => fs.existsSync(path.join(ROOT, filename))).map(filename => [filename, fileHash(path.join(ROOT, filename))]));
   const git = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8', windowsHide: true, timeout: 5000 });
@@ -109,9 +139,7 @@ function versions(environment = process.env) {
     gitCommit: git.status === 0 ? git.stdout.trim() : null, files,
     promptBundleSha256: files['doc_pipeline_source.jsx'] || null,
     implementationSha256: sha(stableStringify(files)),
-    modelConfiguration: { provider: 'Gemini via local MCP', model: environment.ALLOFLOW_MCP_GEMINI_MODEL || 'gemini-3-flash-preview',
-      fallbackModel: environment.ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash-lite',
-      note: 'Configured identifiers, not proof of which fallback served an individual call; per-call provider versions are not exposed.' } };
+    modelConfiguration: modelConfiguration(environment) };
 }
 function childEnvironment(mode, stateDirectory, timeoutMs, base = process.env) {
   const env = { ...base, PYTHONIOENCODING: 'utf-8', ALLOFLOW_MCP_STATE_DIR: stateDirectory,
@@ -241,7 +269,16 @@ function buildReport(plan, trials, completedAt, interruption = null, interruptio
 }
 function markdownReport(report) {
   const rows = report.aggregates.map(item => '| ' + item.caseId + ' | ' + item.passed + '/' + item.trials + ' | ' + (item.allTiming.medianMs ?? 'n/a') + ' | ' + (item.allTiming.p95Ms ?? 'n/a') + ' | ' + Object.keys(item.readiness).join(', ') + ' |');
+  // Name the provider in the prose. Comparing two of these reports IS the per-provider
+  // benchmark, and a reader cannot tell them apart from the table alone.
+  const mc = report.versions && report.versions.modelConfiguration;
+  const providerLine = mc
+    ? 'Provider: ' + mc.provider + (mc.model ? ' (' + mc.model + ')' : '')
+      + (mc.visionModel && mc.visionModel !== mc.model ? ', vision ' + mc.visionModel : '')
+      + (mc.cloud === false ? ' — local, no external request' : '') + '.\n\n'
+    : '';
   return '# Document remediation benchmark\n\n' + report.mode + ' mode; ' + report.summary.completedTrials + '/' + report.summary.plannedTrials + ' trials; ' + report.summary.passed + ' passed.\n\n'
+    + providerLine
     + (report.interruption ? 'Interrupted: ' + report.interruption + (report.interruptionDetails ? ' (' + report.interruptionDetails.caseId + ', trial ' + report.interruptionDetails.trial + ')' : '') + '\n\n' : '')
     + '| Case | Passed | Median ms | p95 ms | Readiness |\n| --- | ---: | ---: | ---: | --- |\n' + rows.join('\n')
     + '\n\nRaw evidence:\n\n' + report.trials.map(item => '- ' + item.caseId + ' trial ' + item.trial + ': [result](' + item.evidence.result + '), [execution](' + item.evidence.execution + '), [log](' + item.evidence.stderr + ')').join('\n')
@@ -362,4 +399,4 @@ if (require.main === module) {
     return runBenchmark(options).then(report => { process.stdout.write(JSON.stringify(report, null, 2) + '\n'); if (report.summary && (report.summary.failed || report.interruption || report.summary.completedTrials !== report.summary.plannedTrials)) process.exitCode = 1; });
   }).catch(error => { process.stderr.write(String(error.stack || error) + '\n'); process.exitCode = 1; });
 }
-module.exports = { loadManifest, validateRunOptions, childEnvironment, timing, aggregate, summarizeTrial, buildReport, markdownReport, stableStringify, runBounded, runBenchmark, parseArguments };
+module.exports = { loadManifest, validateRunOptions, childEnvironment, modelConfiguration, timing, aggregate, summarizeTrial, buildReport, markdownReport, stableStringify, runBounded, runBenchmark, parseArguments };

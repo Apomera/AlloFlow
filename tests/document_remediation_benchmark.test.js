@@ -142,6 +142,31 @@ describe('repeatable document remediation benchmark', () => {
     expect(readFileSync(join(outDir, 'benchmark-report.md'), 'utf8')).toContain('Interrupted: source_or_plan_unavailable (second, trial 1)');
     expect(existsSync(join(outDir, report.trials[0].evidence.result))).toBe(true);
   }, 20000);
+  it('records the provider that will actually answer, not a hardcoded Gemini label', () => {
+    // The report used to state provider: 'Gemini via local MCP' unconditionally, so a run against
+    // any other backend was filed as Gemini — destroying the one distinction a per-provider
+    // benchmark exists to make. It resolves through the driver's own resolver now.
+    expect(benchmark.modelConfiguration({}).backend).toBe('gemini');
+    expect(benchmark.modelConfiguration({}).provider).toBe('Gemini via local MCP');
+
+    const ollama = benchmark.modelConfiguration({
+      ALLOFLOW_MCP_MODEL_BACKEND: 'ollama', ALLOFLOW_MCP_MODEL_NAME: 'minicpm-v',
+      ALLOFLOW_MCP_MODEL_BASE: 'http://127.0.0.1:11434',
+    });
+    expect(ollama.backend).toBe('ollama');
+    expect(ollama.provider).not.toMatch(/Gemini/);
+    expect(ollama.model).toBe('minicpm-v');
+    expect(ollama.cloud).toBe(false);
+
+    // A key must never reach the evidence file; only where it came from.
+    const claude = benchmark.modelConfiguration({
+      ALLOFLOW_MCP_MODEL_BACKEND: 'claude', ANTHROPIC_API_KEY: 'sk-do-not-record-me',
+    });
+    expect(claude.backend).toBe('claude');
+    expect(claude.keySource).toBe('env:ANTHROPIC_API_KEY');
+    expect(JSON.stringify(claude)).not.toContain('sk-do-not-record-me');
+  });
+
   it('actually stops a stalled subprocess at its deadline', async () => {
     const result = await benchmark.runBounded(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { env: process.env, timeoutMs: 300 });
     expect(result.timedOut).toBe(true); expect(result.error).toBe('trial_deadline_exceeded');
