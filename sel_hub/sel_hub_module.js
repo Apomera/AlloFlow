@@ -3045,18 +3045,37 @@
         if (el) { el.textContent = msg; }
       }
 
-      // Sound helper
-      var _selAudioCtx = null;
+      // Sound helper.
+      //
+      // Use the ONE shared context, not a local of this component.
+      //
+      // `var _selAudioCtx = null;` lived inside SelHubModal, so it was
+      // re-declared on every RENDER of the hub - not merely every mount - and
+      // the next beep constructed a fresh AudioContext that nothing ever
+      // closed. WebKit refuses a fifth live context and Chromium a seventh;
+      // past that the constructor throws, the bare catch below swallows it,
+      // and the hub's chimes are silent for the rest of the session with
+      // nothing reported. The identical bug in the STEM hub was fixed at
+      // 7b536c8e5; this is the same code, in the sibling hub.
+      //
+      // window.StemLab.audioContext() is the host getter the 2026-09-14 tool
+      // sweep introduced: one context, resumed when suspended, with close()
+      // neutered so no caller can silence the others. It lives on StemLab
+      // only because that is where the sweep put it, and both hubs are loaded
+      // eagerly at boot (AlloFlowANTI.txt), so it is always present here. The
+      // fallback keeps stub harnesses that define no getter working.
       function selBeep(freq, dur, vol) {
         try {
-          if (!_selAudioCtx) _selAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-          var osc = _selAudioCtx.createOscillator();
-          var gain = _selAudioCtx.createGain();
-          osc.connect(gain); gain.connect(_selAudioCtx.destination);
+          var ctx = (window.StemLab && typeof window.StemLab.audioContext === 'function')
+            ? window.StemLab.audioContext()
+            : new (window.AudioContext || window.webkitAudioContext)();
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
           osc.frequency.value = freq; osc.type = 'sine';
           gain.gain.value = vol || 0.12;
-          gain.gain.exponentialRampToValueAtTime(0.001, _selAudioCtx.currentTime + (dur || 0.15));
-          osc.start(); osc.stop(_selAudioCtx.currentTime + (dur || 0.15));
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (dur || 0.15));
+          osc.start(); osc.stop(ctx.currentTime + (dur || 0.15));
         } catch (e) { }
       }
       function selCelebrate() {
