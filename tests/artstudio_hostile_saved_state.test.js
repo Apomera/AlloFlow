@@ -64,6 +64,31 @@ describe('Art Studio hostile saved state', () => {
     }
   });
 
+  it('normalises the watercolour swatch colour instead of trusting truthiness', () => {
+    // `(d.watercolorColor || '#2f6fb0').toLowerCase()` let a NUMBER through the
+    // guard and then threw, blanking the Watercolor lab. Found by the deep
+    // hostile sweep, which reaches keys the default 60-key pass does not.
+    expect(source, 'a raw colour read must not call toLowerCase directly')
+      .not.toContain("(d.watercolorColor || '#2f6fb0').toLowerCase()");
+    expect(source).toContain('const artStudioHexColor = function (raw, fallback)');
+  });
+
+  it('the colour normaliser only accepts real hex and still lowercases it', () => {
+    const start = source.indexOf('const artStudioHexColor = function (raw, fallback)');
+    expect(start, 'colour normaliser should exist').toBeGreaterThan(-1);
+    const body = source.slice(source.indexOf('{', start), source.indexOf('\n          };', start) + 12);
+    // eslint-disable-next-line no-new-func
+    const hex = new Function('return function (raw, fallback) ' + body + ';')();
+
+    // Valid input is preserved, and case is normalised so a swatch still matches.
+    expect(hex('#2F6FB0', '#2f6fb0')).toBe('#2f6fb0');
+    expect(hex('#abc', '#2f6fb0')).toBe('#abc');
+    // Everything a corrupted save can hold falls back to something usable.
+    for (const bad of [9999, {}, [], null, undefined, true, 'notacolor', '#zzz', NaN]) {
+      expect(hex(bad, '#2f6fb0'), JSON.stringify(bad)).toBe('#2f6fb0');
+    }
+  });
+
   it('validates the string-art frame shape against the known set', () => {
     expect(source, 'strShape must be checked against the known shapes, not just truthiness')
       .toContain("['circle', 'square', 'triangle', 'star'].indexOf(d.strShape) === -1");
