@@ -1552,11 +1552,20 @@ window.StemLab = window.StemLab || {
   }
 
   // ── Federal Tax Calculator ──
-  function calcFedTax(grossAnnual, filing) {
+  // Every figure below is for ONE tax year. Pinning the year in a named constant
+  // keeps the label the student reads and the numbers the tool computes from
+  // drifting apart — change the year and the brackets together or not at all.
+  var TAX_YEAR = 2024;
+  var STD_DEDUCTION = { single: 14600, married: 29200 };
+  var SS_WAGE_CAP = 168600;
+
+  // `taxableIncome` is income AFTER the standard deduction, not gross pay. The
+  // caller is responsible for subtracting it — see calcTaxableIncome.
+  function calcFedTax(taxableIncome, filing) {
     var brackets = filing === 'single' ?
       [{ limit: 11600, rate: 0.10 }, { limit: 47150, rate: 0.12 }, { limit: 100525, rate: 0.22 }, { limit: 191950, rate: 0.24 }, { limit: 243725, rate: 0.32 }, { limit: 609350, rate: 0.35 }, { limit: Infinity, rate: 0.37 }] :
       [{ limit: 23200, rate: 0.10 }, { limit: 94300, rate: 0.12 }, { limit: 201050, rate: 0.22 }, { limit: 383900, rate: 0.24 }, { limit: 487450, rate: 0.32 }, { limit: 731200, rate: 0.35 }, { limit: Infinity, rate: 0.37 }];
-    var tax = 0, remaining = grossAnnual, prev = 0, breakdown = [];
+    var tax = 0, remaining = Math.max(0, taxableIncome), prev = 0, breakdown = [];
     for (var i = 0; i < brackets.length && remaining > 0; i++) {
       var taxable = Math.min(remaining, brackets[i].limit - prev);
       var t = taxable * brackets[i].rate;
@@ -1566,6 +1575,17 @@ window.StemLab = window.StemLab || {
       prev = brackets[i].limit;
     }
     return { tax: tax, breakdown: breakdown };
+  }
+
+  // Income the federal brackets actually apply to. The first STD_DEDUCTION dollars
+  // are not taxed at all, which is why a part-time minimum-wage job usually owes
+  // $0 federal income tax — the single most useful thing this tab can tell a
+  // student, and it was missing: tax was computed on GROSS pay, overstating it by
+  // $1,131 (on $0 actually owed) at minimum wage and by 108%% at $30,000.
+  function calcTaxableIncome(grossAnnual, filing) {
+    var ded = STD_DEDUCTION[filing] || STD_DEDUCTION.single;
+    return { taxable: Math.max(0, grossAnnual - ded), deduction: ded,
+             shielded: Math.min(grossAnnual, ded) };
   }
 
   // ── Compound Interest Calculator ──
@@ -2099,8 +2119,12 @@ window.StemLab = window.StemLab || {
       var freqMult = { weekly: 52, biweekly: 26, monthly: 12 }[payFreq] || 26;
       var grossPer = payRate * payHours * (payFreq === 'biweekly' ? 2 : payFreq === 'monthly' ? (52 / 12) : 1);
       var grossAnnual = payRate * payHours * 52;
-      var fedResult = calcFedTax(grossAnnual, payFiling);
-      var ssTax = Math.min(grossAnnual, 168600) * 0.062;
+      var payTaxable = calcTaxableIncome(grossAnnual, payFiling);
+      var fedResult = calcFedTax(payTaxable.taxable, payFiling);
+      // FICA is different from income tax on purpose: it applies from the FIRST
+      // dollar, with no standard deduction. That is why a low earner can owe $0
+      // federal income tax and still see money withheld.
+      var ssTax = Math.min(grossAnnual, SS_WAGE_CAP) * 0.062;
       var medicareTax = grossAnnual * 0.0145;
       var ficaTotal = ssTax + medicareTax;
       var stateTaxRates = { none: 0, CA: 0.055, NY: 0.055, TX: 0, FL: 0, WA: 0, IL: 0.0495, PA: 0.0307, OH: 0.035, MA: 0.05, NJ: 0.04 };
@@ -3914,14 +3938,27 @@ window.StemLab = window.StemLab || {
           ),
           // Bracket table
           (gradeBand === '6-8' || gradeBand === '9-12') && h('div', { className: glassCard },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 mb-1' }, __alloT('stem.lifeskills.federal_tax_brackets', '\uD83D\uDCCA Federal Tax Brackets:')),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 mb-1' },
+              __alloT('stem.lifeskills.federal_tax_brackets', '\uD83D\uDCCA Federal Tax Brackets:') + ' ' + TAX_YEAR),
+            // The untaxed first chunk, stated plainly. Without this the bracket
+            // table looks like it starts at dollar one, which is the whole
+            // misconception a paycheck tool exists to clear up.
+            h('p', { className: 'text-[11px] text-slate-700 mb-2 p-2 rounded-lg bg-emerald-50 border border-emerald-300' },
+              'The standard deduction shields the first ' + fmtMoney(payTaxable.deduction) +
+              ' of ' + (payFiling === 'married' ? 'married' : 'single') + ' income. You are taxed on ' +
+              fmtMoney(payTaxable.taxable) + ', not ' + fmtMoney(grossAnnual) + '.' +
+              (payTaxable.taxable === 0 ? ' At this income you owe $0 federal income tax \u2014 but FICA still comes out.' : '')),
             h('table', { className: 'w-full text-[11px]' },
               h('caption', { className: 'sr-only' }, __alloT('stem.lifeskills.lifeskills_data_table', 'lifeskills data table')), h('thead', null, h('tr', { className: 'border-b border-slate-200' }, h('th', { scope: 'col', className: 'px-2 py-1 text-left' }, __alloT('stem.lifeskills.rate', 'Rate')), h('th', { scope: 'col', className: 'px-2 py-1 text-right' }, __alloT('stem.lifeskills.taxable', 'Taxable')), h('th', { scope: 'col', className: 'px-2 py-1 text-right text-red-700' }, 'Tax'))),
               h('tbody', null,
+                h('tr', { className: 'bg-emerald-50 border-b' },
+                  h('td', { className: 'px-2 py-1 font-bold text-emerald-800' }, __alloT('stem.lifeskills.std_deduction_row', '0% (deduction)')),
+                  h('td', { className: 'px-2 py-1 text-right text-emerald-800' }, fmtMoney(payTaxable.shielded)),
+                  h('td', { className: 'px-2 py-1 text-right font-bold text-emerald-800' }, fmtMoney(0))),
                 fedResult.breakdown.map(function(b, i) {
                   return h('tr', { key: i, className: i % 2 === 0 ? '' : 'bg-slate-50' }, h('td', { className: 'px-2 py-1 font-bold' }, b.rate + '%'), h('td', { className: 'px-2 py-1 text-right' }, fmtMoney(b.amount)), h('td', { className: 'px-2 py-1 text-right font-bold text-red-700' }, fmtMoney(b.tax)));
                 }),
-                h('tr', { className: 'bg-orange-50 border-t' }, h('td', { className: 'px-2 py-1 font-bold text-orange-800', colSpan: 2 }, __alloT('stem.lifeskills.fica_ss_6_2_medicare_1_45', 'FICA (SS 6.2% + Medicare 1.45%)')), h('td', { className: 'px-2 py-1 text-right font-bold text-orange-800' }, fmtMoney(ficaTotal)))
+                h('tr', { className: 'bg-orange-50 border-t' }, h('td', { className: 'px-2 py-1 font-bold text-orange-800', colSpan: 2 }, __alloT('stem.lifeskills.fica_ss_6_2_medicare_1_45', 'FICA (SS 6.2% + Medicare 1.45%)') + ' \u2014 from dollar one, no deduction'), h('td', { className: 'px-2 py-1 text-right font-bold text-orange-800' }, fmtMoney(ficaTotal)))
               )
             )
           )
