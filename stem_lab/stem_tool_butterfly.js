@@ -70,8 +70,15 @@
       if(!r||typeof r!=='object')return;
       var id=r.patch,note=knownPatchId(id);
       if(!note||!outcome(r.prediction)||!outcome(r.result))return;
-      broods=broods.filter(function(b){return b.patch!==id;});
-      broods.push({patch:id,prediction:r.prediction,result:r.result});
+      // A generation followed on the restoration plot describes the planting it
+      // ran under. Without that tag the row cannot be shown truthfully once the
+      // plot is replanted, so drop it.
+      var plan=id==='restoration'&&design(r.plan)?r.plan:null;
+      if(id==='restoration'&&!plan)return;
+      broods=broods.filter(function(b){return b.patch!==id||(b.plan||null)!==plan;});
+      var row={patch:id,prediction:r.prediction,result:r.result};
+      if(plan)row.plan=plan;
+      broods.push(row);
     });
     return {patch:knownPatchId(v.patch)?v.patch:null,prediction:outcome(v.prediction)?v.prediction:null,
       stage:stage(v.stage)?v.stage:null,broods:broods};
@@ -132,8 +139,10 @@
     if(!p||!lc.stage)return {ok:false,message:'Lay eggs at a patch you have examined to begin a generation.'};
     var index=STAGES.findIndex(function(st){return st.id===lc.stage;});
     if(index<reachedStage(p))return {ok:false,message:'Keep following this generation before recording what happened.'};
+    var plan=lc.patch==='restoration'?s.restoration.design:null;
     var record={patch:lc.patch,prediction:lc.prediction,result:expectedOutcome(p)};
-    lc.broods=lc.broods.filter(function(b){return b.patch!==record.patch;}).concat([record]);
+    if(plan)record.plan=plan;
+    lc.broods=lc.broods.filter(function(b){return b.patch!==record.patch||(b.plan||null)!==plan;}).concat([record]);
     // The stage clears (the generation is over) but the patch stays, so the
     // track keeps showing HOW FAR it got instead of blanking at the moment the
     // learner most wants to read it. `stage` null is what gates re-laying eggs.
@@ -146,7 +155,16 @@
       ?p.name+' offered what every stage needs, so a generation could run its whole cycle here — monarch caterpillars had milkweed leaves to eat. That is what this patch makes possible, not a count of how many would survive.'
       :p.name+' did not carry a generation to an adult. The caterpillar stage had no milkweed leaves, and adult nectar cannot substitute for it.');
   }
-  function broodFor(s,patchId){return s.lifecycle.broods.find(function(b){return b.patch===patchId;})||null;}
+  // A brood row describes the plot AS PLANTED when it ran, so the restoration
+  // plot only shows the row matching what is growing there now. Rows from an
+  // earlier planting are kept (broodRowsFor) but never counted as evidence
+  // about the plot as it stands -- the same rule season runs follow.
+  function broodIsCurrent(s,b){return b.patch!=='restoration'||b.plan===s.restoration.design;}
+  function broodFor(s,patchId){
+    var plan=patchId==='restoration'?s.restoration.design:null;
+    return s.lifecycle.broods.find(function(b){return b.patch===patchId&&(b.plan||null)===plan;})||null;
+  }
+  function broodRowsFor(s,patchId){return s.lifecycle.broods.filter(function(b){return b.patch===patchId;});}
   // Both choosers lock while a generation runs, so without this a learner who
   // laid eggs on the wrong patch has no way back. Abandoning records nothing:
   // an unfinished generation is not evidence about the habitat.
@@ -212,7 +230,7 @@
       // carries that design. Rows for the fixed patches never need one.
       var plan=r.patch==='restoration'&&design(r.plan)?r.plan:null;
       if(r.patch==='restoration'&&!plan)return;
-      runs=runs.filter(function(x){return !(x.patch===r.patch&&x.mowing===r.mowing&&x.plan===plan);});
+      runs=runs.filter(function(x){return !(x.patch===r.patch&&x.mowing===r.mowing&&(x.plan||null)===plan);});
       var row={patch:r.patch,mowing:r.mowing,prediction:r.prediction,result:r.result};
       if(plan)row.plan=plan;
       runs.push(row);
@@ -313,7 +331,10 @@
       lines.push({kind:'timing',text:p.name+' ran both ways: '+mowing(pair.kept).short.toLowerCase()+' completed, '+mowing(pair.cut).short.toLowerCase()+' did not. Same plants, different timing.'});
     });
     return {lines:lines,broodsComplete:withHost,broodsStalled:nectarOnly,
-      patches:s.observations.length,trials:s.restoration.trials.length,broods:s.lifecycle.broods.length,
+      // Counted the same way the lines are: a brood from an earlier planting of
+      // the restoration plot is kept as a record but is not current evidence.
+      patches:s.observations.length,trials:s.restoration.trials.length,
+      broods:s.lifecycle.broods.filter(function(b){return broodIsCurrent(s,b);}).length,
       seasons:currentSeasonRuns(s).length,timingPairs:pairs};
   }
   // A claim about what caterpillars need can only be tested by following a
@@ -749,7 +770,11 @@
         h('table',{className:'bf-broods'},h('caption',null,'Generations you have followed · '+s.lifecycle.broods.length+' recorded'),
           h('thead',null,h('tr',null,h('th',{scope:'col'},'Patch'),h('th',{scope:'col'},'You predicted'),h('th',{scope:'col'},'What happened'))),
           h('tbody',null,habitats(s).map(function(p){var b=broodFor(s,p.id);
-            return h('tr',{key:p.id,'data-brood-record':p.id},h('th',{scope:'row'},p.name),
+            // A row from an earlier planting is named rather than dropped, so a
+            // learner who replanted can see their earlier work was not lost.
+            var stale=!b&&p.id==='restoration'?broodRowsFor(s,p.id)[0]:null;
+            return h('tr',{key:p.id,'data-brood-record':p.id,'data-brood-current':String(!stale)},
+              h('th',{scope:'row'},p.name,stale?h('span',null,design(stale.plan).short+' · replanted since'):null),
               h('td',null,b?outcome(b.prediction).label:'Not followed'),
               h('td',null,b?outcome(b.result).label:'Not followed',b?h('span',null,b.prediction===b.result?'Matched your prediction':'Differed from your prediction'):null));}))),
         h('p',{className:'bf-help'},'Stages are developmental steps, not a timed simulation. This activity shows whether a patch offers what each stage needs; it does not model how many eggs survive, weather, predators, or disease.')),
@@ -814,7 +839,7 @@
     );
   }
   window.StemLab.registerTool('butterfly',{label:'Butterfly Habitat Lab',icon:'🦋',desc:'Explore a summer meadow as a monarch, compare nectar and host plants, and build a field journal.',category:'science',color:'orange',gradeRange:'4-12',aliases:['monarch','butterflies','milkweed','pollinator','habitat'],render:function(ctx){return ctx.React.createElement(ButterflyLab,{ctx:ctx});}});
-  if(window.__RR_TEST_EXPORTS__)window.__RR_TEST_EXPORTS__.butterfly={plants:PLANTS,freshState:freshState,nearest:nearest,step:step,advanceFrame:advanceFrame,land:land,observe:observe,save:save,buildWorld:buildWorld,designs:DESIGNS,habitats:habitats,applyPlan:applyPlan,cleanRestoration:cleanRestoration,fieldDetail:fieldDetail,evidenceRecorded:evidenceRecorded,mowings:MOWINGS,stageWeek:STAGE_WEEK,seasonOutcome:seasonOutcome,cleanSeason:cleanSeason,runSeason:runSeason,seasonRunFor:seasonRunFor,timingPairs:timingPairs,currentSeasonRuns:currentSeasonRuns,seasonRunIsCurrent:seasonRunIsCurrent,mowing:mowing,
+  if(window.__RR_TEST_EXPORTS__)window.__RR_TEST_EXPORTS__.butterfly={plants:PLANTS,freshState:freshState,nearest:nearest,step:step,advanceFrame:advanceFrame,land:land,observe:observe,save:save,buildWorld:buildWorld,designs:DESIGNS,habitats:habitats,applyPlan:applyPlan,cleanRestoration:cleanRestoration,fieldDetail:fieldDetail,evidenceRecorded:evidenceRecorded,broodIsCurrent:broodIsCurrent,broodRowsFor:broodRowsFor,mowings:MOWINGS,stageWeek:STAGE_WEEK,seasonOutcome:seasonOutcome,cleanSeason:cleanSeason,runSeason:runSeason,seasonRunFor:seasonRunFor,timingPairs:timingPairs,currentSeasonRuns:currentSeasonRuns,seasonRunIsCurrent:seasonRunIsCurrent,mowing:mowing,
     stages:STAGES,outcomes:OUTCOMES,layEggs:layEggs,advanceStage:advanceStage,broodResult:broodResult,broodFor:broodFor,
     cleanLifecycle:cleanLifecycle,clampStage:clampStage,abandonBrood:abandonBrood,reachedStage:reachedStage,stageStatus:stageStatus,expectedOutcome:expectedOutcome,
     claims:CLAIMS,judgeClaim:judgeClaim,evidenceFor:evidenceFor};

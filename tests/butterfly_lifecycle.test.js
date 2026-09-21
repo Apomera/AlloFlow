@@ -72,8 +72,12 @@ describe('Butterfly life cycle investigation',()=>{
    BF.applyPlan(s,'mixed','both');examined(s,'restoration');
    BF.layEggs(s,'restoration','complete');runToEnd(s);
    BF.broodResult(s);
-   expect(s.lifecycle.broods).toHaveLength(1);
+   // One row PER PLANTING: the bergamot-only result is kept as a record of what
+   // that planting did, but only the current planting is reported for the plot.
+   expect(s.lifecycle.broods).toHaveLength(2);
+   expect(s.lifecycle.broods.map(b=>b.plan)).toEqual(['flowers','mixed']);
    expect(BF.broodFor(s,'restoration').result).toBe('complete');
+   expect(BF.broodRowsFor(s,'restoration')).toHaveLength(2);
  });
 
  it('abandons a running generation when the plot it lives on is replanted',()=>{

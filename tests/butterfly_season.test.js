@@ -208,6 +208,52 @@ describe('Butterfly mowing and timing',()=>{
    expect(html).toContain('no longer describe what is growing there');
  });
 
+ it('stops counting a FOLLOWED GENERATION once its plot has been replanted',()=>{
+   const s=BF.freshState();
+   BF.applyPlan(s,'mixed','both');Object.assign(s,{x:-42,z:38});BF.land(s);BF.observe(s);
+   BF.layEggs(s,'restoration','complete');while(BF.advanceStage(s).ok);BF.broodResult(s);
+   expect(BF.judgeClaim(s,'needs-both').tested).toBe(true);
+   expect(BF.judgeClaim(s,'needs-both').evidence.broods).toBe(1);
+   // Replant to bare lawn. Without this rule the evidence list carried two
+   // contradictory lines: "no milkweed leaves" AND "reached the adult stage"
+   // -- which is the exact misconception this tool exists to correct.
+   BF.applyPlan(s,'lawn','neither');Object.assign(s,{x:-42,z:38});BF.land(s);BF.observe(s);
+   expect(s.lifecycle.broods).toHaveLength(1);      // kept as a record
+   expect(BF.broodFor(s,'restoration')).toBeNull(); // but not current
+   const ev=BF.judgeClaim(s,'needs-both').evidence;
+   expect(ev.broods).toBe(0);
+   expect(ev.lines.filter(l=>l.kind==='brood')).toHaveLength(0);
+   expect(BF.judgeClaim(s,'needs-both').tested).toBe(false);
+   // Replanting back makes it describe the ground again.
+   BF.applyPlan(s,'mixed','both');Object.assign(s,{x:-42,z:38});BF.land(s);BF.observe(s);
+   expect(BF.broodFor(s,'restoration')).toMatchObject({result:'complete',plan:'mixed'});
+   expect(BF.judgeClaim(s,'needs-both').tested).toBe(true);
+ });
+
+ it('leaves broods on the fixed patches alone, and drops an untagged restoration brood',()=>{
+   const s=BF.freshState();s.observations.push('milkweed');
+   BF.layEggs(s,'milkweed','complete');while(BF.advanceStage(s).ok);BF.broodResult(s);
+   // A fixed patch cannot be replanted, so its row needs no tag and never goes stale.
+   expect(BF.broodFor(s,'milkweed')).toEqual({patch:'milkweed',prediction:'complete',result:'complete'});
+   const restored=BF.freshState({lifecycle:{patch:null,prediction:null,stage:null,broods:[
+     {patch:'restoration',prediction:'complete',result:'complete'},
+     {patch:'restoration',prediction:'complete',result:'complete',plan:'mixed'},
+     {patch:'milkweed',prediction:'complete',result:'complete'}]}});
+   expect(restored.lifecycle.broods).toEqual([
+     {patch:'restoration',prediction:'complete',result:'complete',plan:'mixed'},
+     {patch:'milkweed',prediction:'complete',result:'complete'}]);
+ });
+
+ it('names a replanted generation in the table instead of blanking the row',()=>{
+   const html=render({butterfly:{version:4,observations:[],
+     restoration:{design:'lawn',prediction:null,trials:[{design:'lawn',prediction:'neither'}]},
+     lifecycle:{patch:null,prediction:null,stage:null,
+       broods:[{patch:'restoration',prediction:'complete',result:'complete',plan:'mixed'}]},
+     season:{mowing:'never',prediction:null,runs:[]}}});
+   expect(html).toContain('data-brood-current="false"');
+   expect(html).toContain('Milkweed + bergamot · replanted since');
+ });
+
  it('never states a survival rate or a number of butterflies',()=>{
    const s=examined(BF.freshState(),'milkweed');
    BF.runSeason(s,'milkweed','never','complete');
