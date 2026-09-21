@@ -1591,14 +1591,37 @@ window.StemLab = window.StemLab || {
   }
 
   // ── Insurance Calculator ──
+  // You never pay MORE than you were billed. The old model added the full
+  // deductible whether or not the bills reached it, so at low usage Plan A
+  // charged $1,560 out-of-pocket on $800 of care — impossible in a real plan,
+  // and the exact concept this tab exists to teach.
+  //
+  // Real order of operations: office visits are covered by a flat copay and do
+  // not touch the deductible. Other medical bills are paid by YOU up to the
+  // deductible; only the part above it is shared, at the coinsurance rate. The
+  // out-of-pocket maximum caps the whole thing.
   function calcPlanCost(plan, scene) {
     var annualPremium = plan.premium * 12;
-    var totalBills = scene.bills + scene.visits * 150;
-    var afterDeductible = Math.max(0, totalBills - plan.deductible);
-    var yourCoinsurance = afterDeductible * (plan.coinsurance / 100);
     var copays = scene.visits * plan.copay;
-    var outOfPocket = Math.min(plan.oop, plan.deductible + yourCoinsurance + copays);
-    return { annualPremium: annualPremium, outOfPocket: outOfPocket, total: annualPremium + outOfPocket };
+    var billed = scene.bills;
+    // You pay these in full — but only what you actually incurred.
+    var towardDeductible = Math.min(billed, plan.deductible);
+    var afterDeductible = Math.max(0, billed - plan.deductible);
+    var yourCoinsurance = afterDeductible * (plan.coinsurance / 100);
+    var beforeCap = towardDeductible + yourCoinsurance + copays;
+    var outOfPocket = Math.min(plan.oop, beforeCap);
+    return {
+      annualPremium: annualPremium,
+      outOfPocket: outOfPocket,
+      total: annualPremium + outOfPocket,
+      // Shown to the student so the total is never a number out of nowhere.
+      billed: billed,
+      towardDeductible: towardDeductible,
+      deductibleLeft: Math.max(0, plan.deductible - billed),
+      coinsurance: yourCoinsurance,
+      copays: copays,
+      cappedByOop: beforeCap > plan.oop
+    };
   }
 
   // ═══════════════════════════════════════════════════════
@@ -2132,6 +2155,30 @@ window.StemLab = window.StemLab || {
       var hiScene = usageScenarios[hiUsage];
       var hiCostA = calcPlanCost(hiPlanA, hiScene);
       var hiCostB = calcPlanCost(hiPlanB, hiScene);
+      // The whole point of the tab is that NEITHER plan wins everywhere. Compute
+      // all three scenarios so the crossover is visible instead of something the
+      // student has to find by clicking around and remembering numbers.
+      var hiAllScenes = ['low', 'medium', 'high'].map(function(u) {
+        var sc = usageScenarios[u];
+        var a = calcPlanCost(hiPlanA, sc);
+        var b = calcPlanCost(hiPlanB, sc);
+        return { usage: u, scene: sc, a: a, b: b, winner: a.total <= b.total ? 'A' : 'B' };
+      });
+      // A crossover exists only if the winner is not the same in every scenario.
+      var hiWinners = hiAllScenes.map(function(x) { return x.winner; });
+      var hiHasCrossover = hiWinners.indexOf('A') !== -1 && hiWinners.indexOf('B') !== -1;
+      // Break-even: the bill level where the two plans cost the same. Premiums are
+      // fixed, so scan bill levels and find where the cheaper plan changes hands.
+      var hiBreakEven = (function() {
+        var visits = hiScene.visits, prev = null;
+        for (var bills = 0; bills <= 60000; bills += 100) {
+          var sc = { visits: visits, bills: bills };
+          var w = calcPlanCost(hiPlanA, sc).total <= calcPlanCost(hiPlanB, sc).total ? 'A' : 'B';
+          if (prev !== null && w !== prev) return { bills: bills, from: prev, to: w };
+          prev = w;
+        }
+        return null;
+      })();
 
       // ══════════════════════════════════════════
       // APPLIED SCIENCE STATE
@@ -5568,34 +5615,101 @@ window.StemLab = window.StemLab || {
         tab === 'insurance' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.health_insurance_comparison', '\uD83C\uDFE5 Health Insurance Comparison')),
-            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.compare_two_plans_at_different_usage_l', 'Compare two plans at different usage levels.'))
+            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.insurance_intro', 'A low premium is not the same as a low cost. Change how much care you need and watch which plan wins.'))
           ),
+
+          // ── Usage picker ──
           h('div', { className: glassCard + ' space-y-2' },
-            h('div', { className: 'flex gap-2' },
+            h('div', { className: 'flex gap-2 flex-wrap', role: 'group', 'aria-label': __alloT('stem.lifeskills.a11y_usage_level', 'How much health care you need this year') },
               ['low', 'medium', 'high'].map(function(u) {
-                return h('button', { key: u, onClick: function() { upd('hiUsage', u); checkBadge('insured'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold ' + (hiUsage === u ? 'bg-teal-700 text-white' : 'bg-white border border-slate-400') }, u.charAt(0).toUpperCase() + u.slice(1) + ' Usage');
+                var sc = usageScenarios[u];
+                var label = u.charAt(0).toUpperCase() + u.slice(1);
+                return h('button', {
+                  key: u,
+                  'aria-pressed': hiUsage === u ? 'true' : 'false',
+                  onClick: function() {
+                    upd('hiUsage', u);
+                    checkBadge('insured');
+                    announceToSR(label + ' usage: ' + sc.visits + ' visits and ' + fmtMoney(sc.bills) + ' in bills.');
+                  },
+                  className: 'px-3 py-1.5 rounded-xl text-xs font-bold ' + (hiUsage === u ? 'bg-teal-700 text-white' : 'bg-white border border-slate-400')
+                }, label + ' Usage');
               })
             ),
-            h('p', { className: 'text-[11px] text-slate-600' }, 'Scenario: ' + hiScene.visits + ' doctor visits + ' + fmtMoney(hiScene.bills) + ' in medical bills')
+            h('p', { className: 'text-[11px] text-slate-600' }, 'Scenario: ' + hiScene.visits + ' doctor visits + ' + fmtMoney(hiScene.bills) + ' in other medical bills')
           ),
+
+          // ── The two plans, with the total BROKEN DOWN ──
           h('div', { className: 'grid grid-cols-2 gap-3' },
-            [{ label: __alloT('stem.lifeskills.plan_a', 'Plan A'), cost: hiCostA, plan: hiPlanA, color: '#3b82f6' }, { label: __alloT('stem.lifeskills.plan_b', 'Plan B'), cost: hiCostB, plan: hiPlanB, color: '#8b5cf6' }].map(function(p) {
-              var isBetter = (p.label === 'Plan A' ? hiCostA.total <= hiCostB.total : hiCostB.total < hiCostA.total);
+            [{ label: __alloT('stem.lifeskills.plan_a', 'Plan A'), cost: hiCostA, plan: hiPlanA },
+             { label: __alloT('stem.lifeskills.plan_b', 'Plan B'), cost: hiCostB, plan: hiPlanB }].map(function(p) {
+              var isBetter = (p.cost.total === Math.min(hiCostA.total, hiCostB.total));
               return h('div', { key: p.label, className: glassCard + (isBetter ? ' ring-2 ring-emerald-300' : '') },
-                h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, p.label + (isBetter ? ' \u2705 Better' : '')),
-                h('div', { className: 'space-y-1 text-[11px]' },
+                h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, p.label + (isBetter ? ' \u2705 Cheaper here' : '')),
+                h('div', { className: 'space-y-1 text-[11px] text-slate-700' },
                   h('p', null, 'Premium: ' + fmtMoney(p.plan.premium) + '/mo'),
                   h('p', null, 'Deductible: ' + fmtMoney(p.plan.deductible)),
-                  h('p', null, 'Copay: ' + fmtMoney(p.plan.copay)),
+                  h('p', null, 'Copay: ' + fmtMoney(p.plan.copay) + '/visit'),
                   h('p', null, 'Coinsurance: ' + p.plan.coinsurance + '%'),
-                  h('p', null, 'OOP Max: ' + fmtMoney(p.plan.oop)),
-                  h('hr'),
-                  h('p', { className: 'font-bold' }, 'Annual Premiums: ' + fmtMoney(p.cost.annualPremium)),
-                  h('p', { className: 'font-bold' }, 'Out-of-Pocket: ' + fmtMoney(p.cost.outOfPocket)),
+                  h('p', null, 'Out-of-pocket max: ' + fmtMoney(p.plan.oop))
+                ),
+                // Where the money actually goes — the total is never a number out of nowhere.
+                h('div', { className: 'mt-2 pt-2 border-t border-slate-200 space-y-1 text-[11px]' },
+                  h('p', { className: 'font-bold text-slate-600 uppercase text-[10px]' }, __alloT('stem.lifeskills.what_you_pay', 'What you pay')),
+                  h('p', null, 'Premiums (12 \u00D7 ' + fmtMoney(p.plan.premium) + '): ' + fmtMoney(p.cost.annualPremium)),
+                  h('p', null, 'Toward deductible: ' + fmtMoney(p.cost.towardDeductible) +
+                    (p.cost.deductibleLeft > 0 ? ' \u2014 ' + fmtMoney(p.cost.deductibleLeft) + ' of it never used' : '')),
+                  h('p', null, 'Coinsurance (' + p.plan.coinsurance + '% of the rest): ' + fmtMoney(p.cost.coinsurance)),
+                  h('p', null, 'Copays (' + hiScene.visits + ' \u00D7 ' + fmtMoney(p.plan.copay) + '): ' + fmtMoney(p.cost.copays)),
+                  p.cost.cappedByOop && h('p', { className: 'font-bold text-amber-700' }, '\u26A0 Capped by the out-of-pocket max \u2014 the plan pays the rest.'),
+                  h('p', { className: 'font-bold' }, 'Out-of-pocket: ' + fmtMoney(p.cost.outOfPocket)),
                   h('p', { className: 'text-sm font-bold', style: { color: isBetter ? '#047857' : '#b91c1c' } }, 'TOTAL: ' + fmtMoney(p.cost.total))
                 )
               );
             })
+          ),
+
+          // ── All three scenarios at once: the crossover made visible ──
+          h('div', { className: glassCard },
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.all_three_scenarios', '\uD83D\uDCCA All three scenarios')),
+            h('table', { className: 'w-full text-[11px]' },
+              h('caption', { className: 'sr-only' }, __alloT('stem.lifeskills.a11y_scenario_table', 'Total yearly cost of each plan at low, medium and high usage')),
+              h('thead', null, h('tr', { className: 'border-b border-slate-200' },
+                h('th', { scope: 'col', className: 'px-2 py-1 text-left' }, __alloT('stem.lifeskills.usage', 'Usage')),
+                h('th', { scope: 'col', className: 'px-2 py-1 text-right' }, __alloT('stem.lifeskills.plan_a', 'Plan A')),
+                h('th', { scope: 'col', className: 'px-2 py-1 text-right' }, __alloT('stem.lifeskills.plan_b', 'Plan B')),
+                h('th', { scope: 'col', className: 'px-2 py-1 text-left' }, __alloT('stem.lifeskills.cheaper', 'Cheaper'))
+              )),
+              h('tbody', null, hiAllScenes.map(function(row) {
+                var isNow = row.usage === hiUsage;
+                return h('tr', { key: row.usage, className: isNow ? 'bg-teal-50 font-bold' : '' },
+                  h('th', { scope: 'row', className: 'px-2 py-1 text-left font-bold' },
+                    row.usage.charAt(0).toUpperCase() + row.usage.slice(1) + (isNow ? ' \u2190' : '')),
+                  h('td', { className: 'px-2 py-1 text-right font-mono' }, fmtMoney(row.a.total)),
+                  h('td', { className: 'px-2 py-1 text-right font-mono' }, fmtMoney(row.b.total)),
+                  h('td', { className: 'px-2 py-1' }, 'Plan ' + row.winner)
+                );
+              }))
+            ),
+            hiHasCrossover
+              ? h('p', { className: 'text-[11px] text-slate-700 mt-2 p-2 rounded-lg bg-amber-50 border border-amber-300' },
+                  __alloT('stem.lifeskills.crossover_note', '\uD83D\uDCA1 Neither plan wins everywhere. The cheap-premium plan is better while you stay healthy; the expensive one pays off once bills get large. That switch is the whole decision.'))
+              : h('p', { className: 'text-[11px] text-slate-700 mt-2 p-2 rounded-lg bg-slate-50 border border-slate-300' },
+                  __alloT('stem.lifeskills.no_crossover_note', 'With these numbers one plan wins at every usage level \u2014 so the choice does not depend on how much care you need.')),
+            hiBreakEven && h('p', { className: 'text-[11px] text-slate-700 mt-2' },
+              'At ' + hiScene.visits + ' visits, the plans cost the same at about ' + fmtMoney(hiBreakEven.bills) +
+              ' in bills. Below that, Plan ' + hiBreakEven.from + ' is cheaper; above it, Plan ' + hiBreakEven.to + '.')
+          ),
+
+          // ── Why a deductible you never reach still costs you ──
+          h('div', { className: glassCard },
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.read_the_fine_print', '\uD83D\uDD0E Read the fine print')),
+            h('ul', { className: 'text-[11px] text-slate-700 space-y-1 list-disc ml-4' },
+              h('li', null, __alloT('stem.lifeskills.fine_print_premium', 'The premium is due every month whether or not you see a doctor. It is the one cost you cannot avoid.')),
+              h('li', null, __alloT('stem.lifeskills.fine_print_deductible', 'You only pay a deductible on care you actually get. A $1,500 deductible costs you nothing if your bills are $0 \u2014 but it also means the plan pays nothing until you have spent that much.')),
+              h('li', null, __alloT('stem.lifeskills.fine_print_coinsurance', 'Coinsurance starts after the deductible: you keep paying a percentage, not nothing.')),
+              h('li', null, __alloT('stem.lifeskills.fine_print_oop', 'The out-of-pocket maximum is your worst case. Past it, the plan pays everything \u2014 which is what you are really buying with a high premium.'))
+            )
           )
         ),
 

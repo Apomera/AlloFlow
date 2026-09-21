@@ -45,7 +45,12 @@ describe('Life Skills Lab visibility', () => {
       const source = read(moduleFile);
 
       expect(source).toContain("id: 'lifeSkills'");
-      expect(source).toContain("label: 'Life Skills Lab'");
+      // The i18n pass wrapped the label as t('stem.tools_menu.life_skills_lab')
+      // with the English string as the fallback, so a pin on the bare literal
+      // went red on a change that kept the behaviour. Pin the KEY and the
+      // fallback, which is what actually has to survive.
+      expect(source).toContain('stem.tools_menu.life_skills_lab');
+      expect(source).toContain("'Life Skills Lab'");
       expect(source).toContain('lifeSkills: true');
       expect(source).toContain('/* lifeSkills: removed -- see stem_tool_lifeskills.js */');
     }
