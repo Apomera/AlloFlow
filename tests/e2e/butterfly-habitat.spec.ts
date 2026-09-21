@@ -18,7 +18,12 @@ test('3D flight responds to keyboard, pauses exactly, and changes camera without
 test('all three guided visits create distinct evidence and survive paused WebGL loss',async({page})=>{
  await mount(page);await visit(page,'Common milkweed');await visit(page,'Wild bergamot');await visit(page,'Mown lawn');
  await expect(page.getByRole('heading',{name:'3 of 3 patches investigated'})).toBeVisible();expect(await page.evaluate(()=>(window as any).__toolData.butterfly.observations)).toEqual(['milkweed','bergamot','lawn']);
- await page.getByRole('button',{name:'No, caterpillars also need milkweed'}).click();await expect(page.locator('.bf-question [role="status"]')).toContainText('Your three observations');
+ // Resource comparisons alone must not be reported as a tested claim: the
+ // panel withholds a verdict until a generation has actually been followed.
+ await page.getByRole('button',{name:'Monarchs need nectar for adults and milkweed for caterpillars'}).click();
+ await expect(page.locator('.bf-verdict')).toHaveAttribute('data-bf-tested','false');
+ await expect(page.locator('.bf-question [role="status"]')).toContainText('You have not tested this claim yet.');
+ await expect(page.locator('.bf-evidence li[data-evidence="patch"]')).toHaveCount(3);
  await page.locator('.bf-gl').evaluate((cv:HTMLCanvasElement)=>cv.dispatchEvent(new Event('webglcontextlost',{cancelable:true})));await expect(page.locator('.bf-stage')).toHaveAttribute('data-bf-renderer','map');await expect(page.locator('.bf-stage')).toHaveAttribute('data-bf-paused','true');await expect(page.getByRole('heading',{name:'3 of 3 patches investigated'})).toBeVisible();await expect(page.locator('.bf-map')).toBeVisible();await audit(page);
 });
 test('mobile fallback retains learning, touch control, saved evidence, and readable layouts',async({page})=>{
