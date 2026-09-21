@@ -1,8 +1,9 @@
 {
- "wiredCount": 2,
+ "wiredCount": 3,
  "wired": [
   "crisiscompanion",
+  "emotions",
   "safety"
  ],
- "registered": 108
+ "registered": 158
 }
