@@ -153,7 +153,7 @@
             const { imageUrl, ...rest } = item.data;
             return { ...item, data: { ...rest, imageUrl: null } };
         }
-        if (false) {
+        if (item.type === 'adventure' && item.data) {
              const { sceneImage, ...rest } = item.data;
              let cleanInventory = rest.inventory;
              if (Array.isArray(cleanInventory)) {

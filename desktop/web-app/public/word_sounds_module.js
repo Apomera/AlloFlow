@@ -875,7 +875,7 @@ const WS_CORE = createWordSoundsCore();
               type: "button",
               onClick: handleModeToggle,
               "aria-label": ts("word_sounds.anchor_expand") || "Expand anchor",
-              className: "p-1.5 rounded-full hover:bg-amber-100 text-amber-600 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400",
+              className: "p-1.5 rounded-full hover:bg-amber-100 text-amber-700 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400",
             },
             "⇲",
           ),
