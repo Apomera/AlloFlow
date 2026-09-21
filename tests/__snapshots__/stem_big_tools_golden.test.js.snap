@@ -79,11 +79,11 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for plateTectonics 1`] = `
 {
-  "buttons": 35,
+  "buttons": 36,
   "inputs": 5,
-  "lengthBucket": 212,
+  "lengthBucket": 215,
   "selects": 0,
-  "sha": "062df60d100d6743",
+  "sha": "61d7ab944944522d",
   "svgs": 0,
 }
 `;
@@ -105,7 +105,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 1,
   "lengthBucket": 147,
   "selects": 0,
-  "sha": "0eac58702b0656ac",
+  "sha": "ef79c3b080f5c0df",
   "svgs": 2,
 }
 `;

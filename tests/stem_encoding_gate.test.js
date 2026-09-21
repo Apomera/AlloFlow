@@ -133,11 +133,12 @@ function skipFile(dir, name) {
 // cannot grow silently.
 const KNOWN_UNRECOVERABLE = { 'stem_tool_dissection.js': 15 };
 
-// DEFERRED, not exempt: other sessions were mid-feature in these when the sweep ran (a
-// ~561-line shared 3D viewer shell; ~793 lines of probability work), and repairing a file
-// someone is actively rewriting entangles a mechanical fix with their work. When those
-// lanes land, repair these and delete the entry.
-const DEFERRED = { 'stem_lab_module.js': 12, 'stem_tool_probability.js': 28 };
+// DEFERRED, not exempt: a file someone is actively rewriting should not have a mechanical
+// encoding fix entangled with their work, so it waits here until that lane lands.
+// Both original entries are now repaired and gone (stem_lab_module.js by its owning lane,
+// stem_tool_probability.js on 2026-09-20 — 26 box-drawing runs and 2 em dashes, all in
+// comments). Empty is the correct steady state: add an entry only while a lane is in flight.
+const DEFERRED = {};
 
 const SCAN_CACHE = new Map();
 function scan(dir) {

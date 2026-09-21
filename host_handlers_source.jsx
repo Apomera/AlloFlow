@@ -6947,7 +6947,7 @@ const broadcastInteractiveOrganizer = async (type, activityConfig = null) => {
     const launchRevision = type ? __d.getLiveOrganizerResourceRevision(launchResource) : '';
     const previousType = __d.activeInteractiveOrganizerTypeRef.current || __d.sessionData?.interactiveOrganizer?.type || null;
     __d.setInteractiveOrganizerSync({ status: type ? 'starting' : 'stopping', type: type || previousType, activityId: null, error: null });
-    __d.addToast(type ? 'Starting the student activityâ€¦' : 'Stopping the student activityâ€¦', 'info');
+    __d.addToast(type ? 'Starting the student activity…' : 'Stopping the student activity…', 'info');
     const previousWrite = __d.interactiveOrganizerWriteQueueRef.current;
     let releaseWrite;
     __d.interactiveOrganizerWriteQueueRef.current = new Promise(resolve => { releaseWrite = resolve; });

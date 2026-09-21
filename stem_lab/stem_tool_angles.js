@@ -180,8 +180,9 @@ window.StemLab = window.StemLab || {
       var activeTab = d.activeTab || 'explore'; // explore, challenges, reference, tools
       var showBisector = d.showBisector || false;
       var showSecondRay = d.showSecondRay || false;
-      var secondAngle = d.secondAngle != null ? d.secondAngle : 120;
-      var anglePins = d.anglePins || []; // saved angle markers on protractor
+      var secondAngle = (typeof d.secondAngle === 'number' && isFinite(d.secondAngle)) ? d.secondAngle : 120;
+      // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
+      var anglePins = Array.isArray(d.anglePins) ? d.anglePins : []; // saved angle markers on protractor
       var snapEnabled = d.snapEnabled != null ? d.snapEnabled : false; // snap to 15° increments
 
       // AI Tutor state
@@ -191,13 +192,13 @@ window.StemLab = window.StemLab || {
       // Speed Round state
       var speedActive = d.speedActive || false;
       var speedScore = d.speedScore || 0;
-      var speedTimeLeft = d.speedTimeLeft != null ? d.speedTimeLeft : 30;
+      var speedTimeLeft = (typeof d.speedTimeLeft === 'number' && isFinite(d.speedTimeLeft)) ? d.speedTimeLeft : 30;
       var speedPaused = !!d.speedPaused;
       var speedTarget = d.speedTarget || null;
 
       // Estimate Mode state
       var estimateActive = d.estimateActive || false;
-      var estimateTarget = d.estimateTarget != null ? d.estimateTarget : 0;
+      var estimateTarget = (typeof d.estimateTarget === 'number' && isFinite(d.estimateTarget)) ? d.estimateTarget : 0;
       var estimateGuess = d.estimateGuess || '';
       var estimateResult = d.estimateResult || null;
       var estimateCount = d.estimateCount || 0; // count of close estimates
@@ -214,16 +215,16 @@ window.StemLab = window.StemLab || {
       var angleHistory = d.angleHistory || [];
 
       // Polygon explorer
-      var selectedPolygon = d.selectedPolygon != null ? d.selectedPolygon : 3;
+      var selectedPolygon = (typeof d.selectedPolygon === 'number' && isFinite(d.selectedPolygon)) ? d.selectedPolygon : 3;
       var polygonsExplored = d.polygonsExplored || {};
 
       // Clock calculator
-      var clockHour = d.clockHour != null ? d.clockHour : 3;
-      var clockMinute = d.clockMinute != null ? d.clockMinute : 0;
+      var clockHour = (typeof d.clockHour === 'number' && isFinite(d.clockHour)) ? d.clockHour : 3;
+      var clockMinute = (typeof d.clockMinute === 'number' && isFinite(d.clockMinute)) ? d.clockMinute : 0;
 
       // Triangle angle sum
-      var triAngle1 = d.triAngle1 != null ? d.triAngle1 : 60;
-      var triAngle2 = d.triAngle2 != null ? d.triAngle2 : 60;
+      var triAngle1 = (typeof d.triAngle1 === 'number' && isFinite(d.triAngle1)) ? d.triAngle1 : 60;
+      var triAngle2 = (typeof d.triAngle2 === 'number' && isFinite(d.triAngle2)) ? d.triAngle2 : 60;
 
       // Angle relationships
       var showRelationships = d.showRelationships || false;
@@ -240,7 +241,7 @@ window.StemLab = window.StemLab || {
       var classifyAngle = function(a) {
         if (a === 0) return 'Zero';
         if (a < 90) return 'Acute';
-        if (a === 90) return t('stem.calculus.right') || 'Right';
+        if (a === 90) return t('stem.angles.right') || 'Right';
         if (a < 180) return 'Obtuse';
         if (a === 180) return 'Straight';
         if (a < 360) return 'Reflex';
@@ -252,7 +253,7 @@ window.StemLab = window.StemLab || {
       var classColors = {};
       classColors['Zero'] = { text: 'text-gray-700', bg: 'bg-gray-50', border: 'border-gray-200' };
       classColors['Acute'] = { text: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200' };
-      classColors[t('stem.calculus.right') || 'Right'] = { text: 'text-green-700', bg: 'bg-green-50', border: 'border-green-200' };
+      classColors[t('stem.angles.right') || 'Right'] = { text: 'text-green-700', bg: 'bg-green-50', border: 'border-green-200' };
       classColors['Obtuse'] = { text: 'text-orange-700', bg: 'bg-orange-50', border: 'border-orange-200' };
       classColors['Straight'] = { text: 'text-rose-700', bg: 'bg-rose-50', border: 'border-rose-200' };
       classColors['Reflex'] = { text: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200' };
@@ -425,7 +426,7 @@ window.StemLab = window.StemLab || {
         check('streak_10', curStreak >= 10);
         check('speed_demon', curSpeedScore >= 10);
         check('estimator', curEstCount >= 3);
-        check('all_types', (curTypesSeen['Acute'] || 0) >= 1 && ((curTypesSeen[t('stem.calculus.right') || 'Right'] || 0) >= 1 || (curTypesSeen['Right'] || 0) >= 1) && (curTypesSeen['Obtuse'] || 0) >= 1 && (curTypesSeen['Straight'] || 0) >= 1 && (curTypesSeen['Reflex'] || 0) >= 1);
+        check('all_types', (curTypesSeen['Acute'] || 0) >= 1 && ((curTypesSeen[t('stem.angles.right') || 'Right'] || 0) >= 1 || (curTypesSeen['Right'] || 0) >= 1) && (curTypesSeen['Obtuse'] || 0) >= 1 && (curTypesSeen['Straight'] || 0) >= 1 && (curTypesSeen['Reflex'] || 0) >= 1);
         check('polygon_pro', Object.keys(curPolygons).length >= 5);
         check('century', curTotal >= 100);
 
@@ -1071,7 +1072,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-xs text-red-500' }, t('stem.angles.what_type_of_angle_is_this', 'What type of angle is this?'))
               ),
               h('div', { className: 'flex gap-2 flex-wrap justify-center' },
-                ['Acute', t('stem.calculus.right') || 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
+                ['Acute', t('stem.angles.right') || 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
                   return h('button', { 'aria-label': t('stem.angles.answer_speed', 'Answer Speed'), key: cls, onClick: function() { answerSpeed(cls); },
                     className: 'px-4 py-2 rounded-lg text-sm font-bold bg-white border-2 border-red-600 text-red-700 hover:bg-red-100 hover:border-red-400 transition-all cursor-pointer'
                   }, cls);
@@ -1114,7 +1115,7 @@ window.StemLab = window.StemLab || {
               h('button', { 'aria-label': t('stem.angles.check_3', 'Check'), onClick: checkAngle, disabled: !!(angleFeedback && angleFeedback.correct), className: 'ml-auto px-4 py-1.5 bg-purple-700 text-white font-bold rounded-lg text-sm hover:bg-purple-600 transition-all disabled:opacity-50' }, t('stem.angles.check_4', '\u2714 Check'))
             ),
             angleChallenge.type === 'classify' && h('div', { className: 'flex gap-2 flex-wrap' },
-              ['Acute', t('stem.calculus.right') || 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
+              ['Acute', t('stem.angles.right') || 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
                 return h('button', { key: cls,
                   onClick: function() {
                     if (angleSubmissionPending || angleFeedback) return;
@@ -1389,7 +1390,7 @@ window.StemLab = window.StemLab || {
             : streak >= 5 ? '\u26A1 ' + streak + ' in a row! Keep the streak alive!'
             : exploreScore.total === 0 ? '\uD83D\uDCD0 Welcome! Drag the purple ray to explore angles, or try a Challenge!'
             : exploreScore.correct > 0 && exploreScore.correct === exploreScore.total ? '\u2B50 Perfect score! Try the Speed Round for an extra challenge!'
-            : angleClass === (t('stem.calculus.right') || 'Right') ? '\uD83D\uDC4D A right angle (90\u00B0) is everywhere \u2014 corners of books, screens, and buildings!'
+            : angleClass === (t('stem.angles.right') || 'Right') ? '\uD83D\uDC4D A right angle (90\u00B0) is everywhere \u2014 corners of books, screens, and buildings!'
             : angleClass === 'Obtuse' ? '\uD83E\uDD14 Obtuse angles are wider than 90\u00B0. A clock at 4:00 shows \u2248120\u00B0!'
             : angleClass === 'Reflex' ? '\uD83D\uDD04 Reflex angles go past 180\u00B0 \u2014 they wrap more than halfway around!'
             : '\uD83D\uDCA1 Tip: Architects use precise angles to design buildings. The Eiffel Tower has a 54\u00B0 incline!'

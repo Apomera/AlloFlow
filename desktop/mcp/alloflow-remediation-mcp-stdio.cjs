@@ -498,6 +498,30 @@ function jsonSha256(value) {
   return sha256Bytes(Buffer.from(JSON.stringify(value), 'utf8'));
 }
 
+// The document identity the PIPELINE stamps into an extraction snapshot: sha256
+// of the normalised base64 of the file, not of its raw bytes (doc_pipeline
+// `_documentDigest`). Used to bind a checkpoint to the document it came from.
+function documentDigestForFile(file) {
+  return new Promise((resolve, reject) => {
+    const hash = crypto.createHash('sha256');
+    const stream = fs.createReadStream(file, { highWaterMark: 3 * 1024 * 1024 });
+    let carry = Buffer.alloc(0);
+    stream.on('error', reject);
+    stream.on('data', (chunk) => {
+      const buf = carry.length ? Buffer.concat([carry, chunk]) : chunk;
+      // base64 encodes 3 bytes -> 4 chars; only whole triples may be hashed
+      // incrementally or the encoding would be padded mid-stream.
+      const whole = buf.length - (buf.length % 3);
+      if (whole > 0) hash.update(buf.subarray(0, whole).toString('base64'));
+      carry = buf.subarray(whole);
+    });
+    stream.on('end', () => {
+      if (carry.length) hash.update(carry.toString('base64'));
+      resolve('sha256:' + hash.digest('hex'));
+    });
+  });
+}
+
 function isPlainObject(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const proto = Object.getPrototypeOf(value);
@@ -661,7 +685,21 @@ function checkpointAudit(value) {
   return value;
 }
 
-function checkpointExtraction(value, inputSha256) {
+// The extraction snapshot's documentDigest is produced by the PIPELINE, which
+// hashes the normalised base64 of the document (doc_pipeline `_documentDigest`);
+// `inputSha256` is the sha256 of the RAW file bytes. Both identify the same
+// document and they are never equal: for the e2e fixture the raw bytes hash to
+// 529ae53a… while its base64 hashes to 2cdd3010…. The old equality check could
+// therefore only ever fail, so every checkpoint save threw
+// `checkpoint_snapshot_invalid` and, in the batch path, every file failed
+// remediation with zero successes.
+//
+// The binding this check exists to provide — a checkpoint must not be restored
+// onto a different document — is kept, by comparing against the base64 digest of
+// the same file. `expectedDocumentDigest` is supplied by the caller that already
+// holds the bytes; when it is absent the digest is only shape-checked, which is
+// what a resume with no file in hand can honestly assert.
+function checkpointExtraction(value, inputSha256, expectedDocumentDigest) {
   if (!hasExactKeys(value, [
     'fileName', 'documentDigest', 'text', 'groundTruthCharCount', 'groundTruthMethod',
     'groundTruthPages', 'ocrMethod', 'ocrTesseractText', 'ocrVisionText',
@@ -670,7 +708,8 @@ function checkpointExtraction(value, inputSha256) {
   ])) return null;
   if (
     typeof value.fileName !== 'string' || value.fileName.length === 0 || value.fileName.length > 255 ||
-    value.documentDigest !== 'sha256:' + inputSha256 ||
+    !(typeof value.documentDigest === 'string' && /^sha256:[a-f0-9]{64}$/.test(value.documentDigest)) ||
+    (expectedDocumentDigest && value.documentDigest !== expectedDocumentDigest) ||
     typeof value.text !== 'string' || value.text.length === 0 ||
     !Number.isSafeInteger(value.groundTruthCharCount) || value.groundTruthCharCount < 0 ||
     !(value.groundTruthMethod === null || (typeof value.groundTruthMethod === 'string'
@@ -783,7 +822,7 @@ function validateCheckpointEnvelope(value, expected = {}) {
     value.snapshot.schema === CHECKPOINT_SCHEMA &&
     value.snapshot.stage === 'extraction' &&
     checkpointAudit(value.snapshot.audit) &&
-    checkpointExtraction(value.snapshot.extraction, value.inputSha256)
+    checkpointExtraction(value.snapshot.extraction, value.inputSha256, expected.documentDigest)
   ) snapshot = value.snapshot;
   else if (value.stage === 'primary' || value.stage === 'round') {
     snapshot = checkpointRemediationSnapshot(value.snapshot);
@@ -2662,6 +2701,14 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
       optionsSha256: checkpointOptionsDigest(opts),
       engineSha256: checkpointEngineDigest(),
     };
+  // The checkpoint's document binding compares against the pipeline's own digest
+  // (base64-derived), which the caller cannot know; compute it from the file we
+  // are about to remediate so a checkpoint can never be restored onto a
+  // different document. Batch callers share one compatibility object per file,
+  // so this is set per call rather than baked into it upstream.
+  if (compatibility && !compatibility.documentDigest) {
+    try { compatibility.documentDigest = await documentDigestForFile(filePath); } catch (_) {}
+  }
   const job = durability && durability.job;
   const driverOptions = Object.assign({ filePath, onLog, signal }, opts);
   if (job) {

@@ -664,7 +664,7 @@ window.StemLab = window.StemLab || {
     ],
     render: function(ctx) {
       __alloProbCtx = ctx;
-      // Aliases â€” maps ctx properties to original variable names
+      // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -799,7 +799,7 @@ var d = (labToolData.probability) || {};
 
 
 
-          // â”€â”€ Sports Scenarios â”€â”€
+          // ── Sports Scenarios ──
 
           var SPORTS = [
 
@@ -823,7 +823,7 @@ var d = (labToolData.probability) || {};
 
 
 
-          // â”€â”€ Custom mode outcomes â”€â”€
+          // ── Custom mode outcomes ──
 
           var customDefaults = [{ label: 'Red', prob: 0.5, color: '#ef4444', numerator: 1, denominator: 2, count: 5 }, { label: t('stem.probability.blue', 'Blue'), prob: 0.5, color: '#3b82f6', numerator: 1, denominator: 2, count: 5 }];
           var rawCustomOutcomes = d.customOutcomes || customDefaults;
@@ -1200,7 +1200,7 @@ var d = (labToolData.probability) || {};
 
 
 
-          // â”€â”€ Compute expected & counts â”€â”€
+          // ── Compute expected & counts ──
 
           const counts = {};
 
@@ -1622,7 +1622,7 @@ var d = (labToolData.probability) || {};
 
 
 
-          // â”€â”€ Dark mode / high-contrast theme variables â”€â”€
+          // ── Dark mode / high-contrast theme variables ──
 
           var _bg = isDark || isContrast ? '#1e1b4b' : '#fff';
 
@@ -1888,7 +1888,7 @@ var d = (labToolData.probability) || {};
 
 
 
-            // â”€â”€ Marble Bag mode config â”€â”€
+            // ── Marble Bag mode config ──
 
             // ── Dice-type selector (d4 / d6 / d8 / d10 / d12 / d20) ──
             // Appears in single-die or two-dice-sum modes. Each die-type gets its
@@ -2028,7 +2028,7 @@ var d = (labToolData.probability) || {};
 
               customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_color', "+ Add Color"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: ['Green', 'Yellow', 'Purple', 'Orange', 'Pink', 'Teal'][Math.min(customOutcomes.length - 2, 5)] || String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0, count: 3, color: ['#22c55e', '#eab308', '#8b5cf6', '#f97316', '#ec4899', '#06b6d4', '#14b8a6', '#f43f5e'][customOutcomes.length % 8] }]); setProbabilityOutcomes(co); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:scale-105", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.2)' : '#ede9fe', color: isDark || isContrast ? '#c4b5fd' : '#7c3aed' } }, t('stem.probability.add_color_2', "+ Add Color")),
 
-              // â”€â”€ SVG Bag Visualization â”€â”€
+              // ── SVG Bag Visualization ──
 
               !customModel.valid && React.createElement("div", { role: "alert", className: "mt-3 px-3 py-2 rounded-lg text-xs font-bold", style: { background: isDark || isContrast ? 'rgba(239,68,68,0.12)' : '#fef2f2', color: isDark || isContrast ? '#fecaca' : '#b91c1c', border: '1px solid rgba(239,68,68,0.35)' } }, "Marble model not ready: " + customModel.reason),
 
@@ -2108,7 +2108,7 @@ var d = (labToolData.probability) || {};
 
 
 
-            // â”€â”€ Sports scenario selector â”€â”€
+            // ── Sports scenario selector ──
 
             d.mode === 'sports' && React.createElement("div", { className: "mb-4 rounded-xl p-3", style: { background: isDark || isContrast ? 'rgba(34,197,94,0.06)' : 'linear-gradient(to right, #ecfdf5, #f0f9ff)', border: '1px solid ' + (isDark || isContrast ? 'rgba(34,197,94,0.2)' : '#a7f3d0') } },
 
@@ -2138,7 +2138,7 @@ var d = (labToolData.probability) || {};
 
 
 
-            // â”€â”€ Custom mode config â”€â”€ (3 sub-modes: Fraction, Marble Bag, Slider)
+            // ── Custom mode config ── (3 sub-modes: Fraction, Marble Bag, Slider)
 
             d.mode === 'custom' && React.createElement("div", { className: "mb-4 rounded-xl p-3", style: { background: isDark || isContrast ? 'rgba(245,158,11,0.06)' : 'linear-gradient(to right, #fffbeb, #fff7ed)', border: '1px solid ' + (isDark || isContrast ? 'rgba(245,158,11,0.2)' : '#fcd34d') } },
 
@@ -2150,7 +2150,7 @@ var d = (labToolData.probability) || {};
 
 
 
-              // â”€â”€ FRACTION SUB-MODE â”€â”€
+              // ── FRACTION SUB-MODE ──
 
               customSubMode === 'fraction' && React.createElement("div", null,
 
@@ -2190,7 +2190,7 @@ var d = (labToolData.probability) || {};
 
 
 
-              // â”€â”€ MARBLE BAG SUB-MODE â”€â”€
+              // ── MARBLE BAG SUB-MODE ──
 
               customSubMode === 'marbleBag' && React.createElement("div", null,
 
@@ -2248,7 +2248,7 @@ var d = (labToolData.probability) || {};
 
 
 
-              // â”€â”€ SLIDER SUB-MODE (original) â”€â”€
+              // ── SLIDER SUB-MODE (original) ──
 
               customSubMode === 'slider' && React.createElement("div", null,
 
@@ -3902,7 +3902,7 @@ var d = (labToolData.probability) || {};
 
             ),
 
-            // â”€â”€ Did You Know? â€” Pedagogical Insights â”€â”€
+            // ── Did You Know? — Pedagogical Insights ──
 
             d.trials >= 10 && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: isDark || isContrast ? 'rgba(251,191,36,0.06)' : '#fffbeb', border: '1px solid ' + (isDark || isContrast ? 'rgba(251,191,36,0.2)' : '#fde68a') } },
 
@@ -3945,7 +3945,7 @@ var d = (labToolData.probability) || {};
 
             ),
 
-            // â”€â”€ Marble Bag: Theoretical vs Observed Comparison Histogram â”€â”€
+            // ── Marble Bag: Theoretical vs Observed Comparison Histogram ──
 
             ['coin', 'dice', 'dice2', 'spinner', 'sports', 'custom', 'marbleBag'].indexOf(d.mode) >= 0 && d.trials >= 5 && React.createElement("div", { className: "rounded-xl p-4 mb-3", style: { background: _cardBg, border: '1px solid ' + _border } },
 
