@@ -12492,15 +12492,23 @@ var evidenceRoute = [
         var dugBones = revealed.filter(function (i) { return boneCells[i]; }).length;
         var totalBones = Object.keys(boneCells).length;
         var clueList = [
-          { at: 2, text: 'Period: ' + periodName(chosen.period) + ' (' + chosen.epoch + ').' },
-          { at: 4, text: 'Diet: ' + cap(chosen.diet) + ' ' + (DIET_ICON[chosen.diet] || '') + '.' },
-          { at: 6, text: 'Group: ' + (GROUP_LABEL[chosen.group] || cap(chosen.group)) + '.' },
-          { at: 9, text: 'Length: about ' + fmtLength(chosen.lengthM) + '.' },
-          { at: 12, text: 'Found in: ' + chosen.region + '.' },
-          { at: 15, text: 'Trait: ' + (chosen.traits[0] || 'distinctive build') + '.' }
+          { at: 1, text: 'Period: ' + periodName(chosen.period) + ' (' + chosen.epoch + ').' },
+          { at: 2, text: 'Diet: ' + cap(chosen.diet) + ' ' + (DIET_ICON[chosen.diet] || '') + '.' },
+          { at: 3, text: 'Group: ' + (GROUP_LABEL[chosen.group] || cap(chosen.group)) + '.' },
+          { at: 4, text: 'Length: about ' + fmtLength(chosen.lengthM) + '.' },
+          { at: 6, text: 'Found in: ' + chosen.region + '.' },
+          { at: 8, text: 'Trait: ' + (chosen.traits[0] || 'distinctive build') + '.' }
         ];
-        var clues = clueList.filter(function (c) { return revealed.length >= c.at; });
-        var digStatusText = 'Site #' + seed + ' | bones found: ' + dugBones + '/' + totalBones + ' | cells dug: ' + revealed.length + '/' + CELLS;
+        // Clues are bought with BONES, not with clicks. The grid already placed
+        // 8-12 bones and counted them, then used the count for nothing: every
+        // clue unlocked on revealed.length, so a left-to-right sweep earned the
+        // same six clues as a real search and finding a bone had no consequence.
+        // The top threshold is 8 because the sparsest site holds exactly 8
+        // bones (checked across 40 seeds), so every site stays fully solvable.
+        var clues = clueList.filter(function (c) { return dugBones >= c.at; });
+        var nextClue = clueList.filter(function (c) { return dugBones < c.at; })[0] || null;
+        var digStatusText = 'Site #' + seed + ' | bones found: ' + dugBones + '/' + totalBones + ' | cells dug: ' + revealed.length + '/' + CELLS
+          + (nextClue ? ' | next clue at ' + nextClue.at + ' bones' : ' | all clues found');
         var digGridDesc = 'Dig grid with ' + ROWS + ' rows and ' + COLS + ' columns. Revealed cells stay focusable so bone and rock results can be reviewed.';
         function dig(i) { if (revealed.indexOf(i) !== -1) return; upd('digRevealed', revealed.concat([i])); announceToSR(boneCells[i] ? 'Bone found' : 'Just rock'); }
         function newDig() { upd({ digSeed: seed + 1, digRevealed: [], digGuess: null, digSolvedFor: null }); announceToSR(__alloT('stem.dinolab.sr_new_dig_site_loaded', 'New dig site loaded')); }
@@ -12512,7 +12520,7 @@ var evidenceRoute = [
             var row = Math.floor(cellIdx / COLS) + 1, col = (cellIdx % COLS) + 1;
             var cellState = isDug ? (hasBone ? 'bone fragment uncovered' : 'empty rock uncovered') : 'unopened rock';
             var cellLabel = 'Cell ' + (cellIdx + 1) + ', row ' + row + ', column ' + col + ', ' + cellState + (isDug ? '.' : '. Press to dig.');
-            gridCells.push(el('button', { key: 'cell' + cellIdx, onClick: function () { dig(cellIdx); }, 'aria-label': cellLabel, 'aria-disabled': isDug ? 'true' : 'false', style: { aspectRatio: '1 / 1', borderRadius: 8, cursor: isDug ? 'default' : 'pointer', border: '1px solid ' + T.border, background: isDug ? (hasBone ? 'rgba(245,158,11,0.25)' : T.deeper) : '#7c5e3b', color: T.text, fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, isDug ? (hasBone ? '\uD83E\uDDB4' : '\u00b7') : ''));
+            gridCells.push(el('button', { key: 'cell' + cellIdx, onClick: function () { dig(cellIdx); }, 'aria-label': cellLabel, 'aria-disabled': isDug ? 'true' : 'false', style: { aspectRatio: '1 / 1', borderRadius: 8, cursor: isDug ? 'default' : 'pointer', border: '1px solid ' + T.border, background: isDug ? (hasBone ? 'rgba(245,158,11,0.55)' : 'rgba(120,113,108,0.30)') : '#7c5e3b', color: T.text, fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, isDug ? (hasBone ? '\uD83E\uDDB4' : '\u00b7') : ''));
           })(c);
         }
         var guessGrid = pool.slice().sort(function (x, y) { return x.common < y.common ? -1 : 1; }).map(function (dn) {
