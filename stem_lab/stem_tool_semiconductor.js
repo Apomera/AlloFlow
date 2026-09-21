@@ -468,7 +468,7 @@ window.StemLab = window.StemLab || {
       },h('ellipse',{cx:280,cy:322,rx:145,ry:17,fill:'#0e7490',opacity:.15}),
         g.map(function(a){return a.node;}),
         h('text',{x:20,y:28,fill:'#cbd5e1',fontSize:12},t('stem.semiconductor.bond_angle','Four neighbors · 109.5° bond angle'))),
-      h('div',{className:'semi-inspector-controls',role:'group','aria-label':'3D camera controls'},
+      h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.3d_camera_controls','3D camera controls')},
         control('rotate_left','Rotate left',function(){turn(-.2,0);}),control('rotate_right','Rotate right',function(){turn(.2,0);}),
         control('tilt_up','Tilt up',function(){turn(0,-.2);}),control('tilt_down','Tilt down',function(){turn(0,.2);}),
         control('zoom_in','Zoom in',function(){zoom(.1);}),control('zoom_out','Zoom out',function(){zoom(-.1);}),control('reset_view','Reset view',reset)),
@@ -565,6 +565,7 @@ window.StemLab = window.StemLab || {
 
   function SemiMOSCurve(props) {
     var React=props.React,h=React.createElement,m=props.model,comparison=semiMOSGateComparison(m,props.reference),c=comparison?comparison.current:semiMOSCurve(m),b=c.bounds,referenceButton=React.useRef(null),savedNotice=React.useState('');
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     React.useEffect(function(){savedNotice[1]('');},[m.gate,m.drain,props.reference,props.observation]);
     function fmt(n){return n===0?'0':String(Number(n.toPrecision(3)));}
     var reading=c.selected?'Selected: VDS = '+m.drain.toFixed(2)+' V; drain current = '+semiSweepValue(m.currentA*1000)+' mA; '+m.region+'.':'The selected drain polarity is outside the model; no operating point is plotted.';
@@ -572,7 +573,7 @@ window.StemLab = window.StemLab || {
       'Current magnitude rises from 0 mA at zero drain bias to '+semiSweepValue(c.peakMilliamp)+' mA at '+semiSweepValue(c.boundary)+' V, then stays constant in saturation.';
     return h('div',{className:'semi-mos-curve-content'},
       h('p',null,'Gate held at '+m.gate.toFixed(2)+' V. The graph uses voltage and current magnitudes; the selected reading below keeps the device signs. '+(comparison?'Both curves share one current scale, which fits both gates.':'The current axis rescales when the gate changes.')),
-      h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Gate comparison reference'},
+      h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.gate_comparison_reference','Gate comparison reference')},
         h('button',{type:'button',ref:referenceButton,onClick:function(){props.onReference({gate:m.gate,polarity:m.polarity});}},comparison?'Update reference to this gate':'Hold this gate as a reference'),
         comparison&&h('button',{type:'button',onClick:function(){props.onReference(null);if(referenceButton.current)referenceButton.current.focus();}},'Clear gate reference')),
       comparison&&h('div',{className:'semi-mos-reference-control'},
@@ -580,7 +581,7 @@ window.StemLab = window.StemLab || {
         comparison.sameGate&&h('p',null,'The gates match, so the curves overlap. Change the gate voltage to compare.'),
         h('label',{className:'semi-mos-curve-control'},'Gate VGS for comparison',
           h('input',{type:'range',min:m.polarity===1?0:-5,max:m.polarity===1?5:0,step:.1,value:m.gate,disabled:!props.onExperiment,
-            'aria-label':'Gate VGS for curve comparison','aria-valuetext':m.gate.toFixed(2)+' volts',
+            'aria-label':t('stem.semiconductor.gate_vgs_for_curve_comparison','Gate VGS for curve comparison'),'aria-valuetext':m.gate.toFixed(2)+' volts',
             onChange:function(e){props.onExperiment({gateVoltage:Number(e.target.value)});}}))),
       h('svg',{viewBox:'0 0 560 300',role:'img','data-mos-curve':true,'aria-label':'MOSFET output curve at gate '+m.gate.toFixed(2)+' V. '+description+' '+reading+(comparison?' Amber reference curve: gate '+comparison.referenceModel.gate.toFixed(2)+' V; current at the same drain bias '+semiSweepValue(comparison.referenceModel.currentA===null?null:comparison.referenceModel.currentA*1000)+' mA.':'')},
         c.boundary!==null&&h('g',null,
@@ -612,7 +613,7 @@ window.StemLab = window.StemLab || {
           'aria-label':'Drain-bias magnitude on the current–voltage curve','aria-valuetext':Math.max(0,m.polarity*m.drain).toFixed(2)+' volts magnitude; VDS '+m.drain.toFixed(2)+' volts',
           onChange:function(e){props.onExperiment({drainVoltage:m.polarity*Number(e.target.value)});}})),
       h('p',{className:'semi-mos-curve-reading',role:'status'},reading),
-      comparison&&h('section',{className:'semi-mos-comparison','aria-label':'Gate-voltage comparison'},
+      comparison&&h('section',{className:'semi-mos-comparison','aria-label':t('stem.semiconductor.gate_voltage_comparison','Gate-voltage comparison')},
         h('table',null,h('caption',null,'Readings at the same drain bias'),
           h('thead',null,h('tr',null,h('th',{scope:'col'},'Reading'),h('th',{scope:'col'},'Reference'),h('th',{scope:'col'},'Current gate'))),
           h('tbody',null,[
@@ -626,8 +627,8 @@ window.StemLab = window.StemLab || {
           'At the same drain bias, current magnitude '+(comparison.magnitudeChangeMilliamp===0?'is unchanged. ':(comparison.magnitudeChangeMilliamp>0?'increases':'decreases')+' by '+semiSweepValue(Math.abs(comparison.magnitudeChangeMilliamp))+' mA. ')+'Signed current change (current gate minus reference): '+semiSweepValue(comparison.signedChangeMilliamp)+' mA.'),
         h('p',null,'Your reference stays while you adjust the gate or close this panel. Switching transistor type or leaving the cutaway clears it. Save a comparison to revisit it later.'),
         props.onSave&&h('div',{className:'semi-mos-save'},
-          h('label',null,'Explain the comparison (optional)',h('textarea',{'aria-label':'Gate comparison explanation',rows:3,maxLength:1000,value:props.observation||'',
-            placeholder:'What changed when you adjusted the gate? Use the two current readings as evidence.',
+          h('label',null,'Explain the comparison (optional)',h('textarea',{'aria-label':t('stem.semiconductor.gate_comparison_explanation','Gate comparison explanation'),rows:3,maxLength:1000,value:props.observation||'',
+            placeholder:t('stem.semiconductor.what_changed_when_you_adjusted_the_gate_use','What changed when you adjusted the gate? Use the two current readings as evidence.'),
             style:{display:'block',width:'100%',boxSizing:'border-box',marginTop:8,padding:10,border:'1px solid #64748b',borderRadius:8,background:'#020617',color:'#f8fafc'},
             onChange:function(e){props.onObservation(e.target.value);}})),
           h('p',null,'Save both gate settings and readings at this drain bias. Your notebook keeps the evidence as recorded and can restore this comparison.'),
@@ -686,7 +687,7 @@ window.StemLab = window.StemLab || {
       body:m.polarity===1?'An N-channel MOSFET has a P-type body. The body and source are tied to the same reference potential here.':'A P-channel MOSFET has an N-type body. The body and source are tied to the same reference potential here.'
     };
     function label(text,p){var a=project(p);return h('text',{key:text,x:a.x,y:a.y,fill:'#f8fafc',fontSize:20,textAnchor:'middle',paintOrder:'stroke',stroke:'#07111f',strokeWidth:4},text);}
-    return h('section',{className:'semi-crystal','aria-label':'3D MOSFET cutaway'},
+    return h('section',{className:'semi-crystal','aria-label':t('stem.semiconductor.3d_mosfet_cutaway','3D MOSFET cutaway')},
       h('div',{className:'semi-inspector-heading'},h('div',null,h('span',{className:'semi-eyebrow'},'DEVICE SCALE'),h('h4',null,m.polarity===1?'Inside an N-channel MOSFET':'Inside a P-channel MOSFET')),h('span',{className:'semi-model-tag'},m.region)),
       h('svg',{viewBox:'0 0 560 350',role:'img',tabIndex:0,'data-mos-cutaway':true,'aria-label':'Rotatable MOSFET cutaway: gate above insulating oxide, source and drain inside the body. '+(m.channel?'Inversion channel present.':'No strong-inversion channel.')+' '+m.region+'. '+(reveal[0]?'Gate and oxide hidden for inspection. ':'')+transport.directionNote+' Arrow keys rotate; Home resets.',
         style:{touchAction:'pan-y'},onKeyDown:function(e){var keys={ArrowLeft:[-.15,0],ArrowRight:[.15,0],ArrowUp:[0,.1],ArrowDown:[0,-.1]};if(keys[e.key]){e.preventDefault();turn(keys[e.key][0],keys[e.key][1]);}if(e.key==='Home'){e.preventDefault();setCamera({yaw:-.5,pitch:.5});}},
@@ -694,7 +695,7 @@ window.StemLab = window.StemLab || {
         onPointerMove:function(e){if(!drag.current)return;var dx=e.clientX-drag.current.x,dy=e.clientY-drag.current.y;drag.current={x:e.clientX,y:e.clientY};turn(dx*.01,-dy*.01);},
         onPointerUp:function(){drag.current=null;},onPointerCancel:function(){drag.current=null;},onLostPointerCapture:function(){drag.current=null;}
       },faces.map(function(f){return f.node;}),!reveal[0]&&label('Gate · '+m.gate.toFixed(2)+' V',[0,.37+lift,0]),label('Source · 0 V',[-1.1,.1,-.48]),label('Drain · '+m.drain.toFixed(2)+' V',[1.1,.1,-.48]),label('Body',[0,-.55,-.55]),reveal[0]&&label(m.channel?'Channel':'No channel',[0,.12,0])),
-      h('div',{className:'semi-inspector-controls',role:'group','aria-label':'MOSFET camera controls'},
+      h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.mosfet_camera_controls','MOSFET camera controls')},
         h('button',{type:'button',onClick:function(){turn(-.2,0);}},t('stem.semiconductor.rotate_left','Rotate left')),
         h('button',{type:'button',onClick:function(){turn(.2,0);}},t('stem.semiconductor.rotate_right','Rotate right')),
         h('button',{type:'button',onClick:function(){turn(0,.1);}},t('stem.semiconductor.tilt_up','Tilt up')),
@@ -702,10 +703,10 @@ window.StemLab = window.StemLab || {
         h('button',{type:'button',onClick:function(){setCamera({yaw:-.5,pitch:.5});}},t('stem.semiconductor.reset_view','Reset view')),
         h('label',null,h('input',{type:'checkbox',checked:exploded[0],onChange:function(){exploded[1](!exploded[0]);}}),'Separate gate layers'),
         h('label',null,h('input',{type:'checkbox',checked:reveal[0],onChange:function(){reveal[1](!reveal[0]);}}),'Reveal channel (hide gate and oxide)')),
-      h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Inspect a MOSFET layer'},['gate','oxide','channel','source','drain','body'].map(function(id){return h('button',{type:'button',key:id,'aria-pressed':layer[0]===id,onClick:function(){layer[1](id);if(id==='gate'||id==='oxide')reveal[1](false);}},id.charAt(0).toUpperCase()+id.slice(1));})),
+      h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.inspect_a_mosfet_layer','Inspect a MOSFET layer')},['gate','oxide','channel','source','drain','body'].map(function(id){return h('button',{type:'button',key:id,'aria-pressed':layer[0]===id,onClick:function(){layer[1](id);if(id==='gate'||id==='oxide')reveal[1](false);}},id.charAt(0).toUpperCase()+id.slice(1));})),
       h('p',{className:'semi-reading',role:'status'},descriptions[layer[0]]),
       reveal[0]&&h('p',{className:'semi-reading'},'Gate and oxide hidden for inspection; they remain in the electrical model.'),
-      h('section',{className:'semi-mos-readout','aria-label':'Read the MOSFET operating point'},
+      h('section',{className:'semi-mos-readout','aria-label':t('stem.semiconductor.read_the_mosfet_operating_point','Read the MOSFET operating point')},
         h('h5',null,'From gate control to current'),
         h('dl',{className:'semi-mos-metrics'},
           h('div',null,h('dt',null,'1 · Gate control'),h('dd',null,m.channel?'Channel formed':transport.gateMargin===0?'At threshold':'Below threshold',
@@ -721,7 +722,7 @@ window.StemLab = window.StemLab || {
         h('p',null,transport.directionNote),
         h('p',null,'I_D is positive from drain to source. '+(m.polarity===-1?'A negative PMOS reading means conventional current flows from source to drain.':'A positive NMOS reading means conventional current flows from drain to source.')),
         h('details',{className:'semi-mos-curve',open:curveOpen[0],onToggle:function(e){curveOpen[1](e.currentTarget.open);}},
-          h('summary',null,'Explore the current–voltage curve'),curveOpen[0]&&h(SemiMOSCurve,{React:React,model:m,onExperiment:props.onExperiment,reference:gateReference[0],onReference:gateReference[1],observation:comparisonNote[0],onObservation:comparisonNote[1],onSave:props.onSave,onNotebook:props.onNotebook})),
+          h('summary',null,'Explore the current–voltage curve'),curveOpen[0]&&h(SemiMOSCurve,{React:React,model:m,onExperiment:props.onExperiment,reference:gateReference[0],onReference:gateReference[1],observation:comparisonNote[0],onObservation:comparisonNote[1],onSave:props.onSave,onNotebook:props.onNotebook, t: t})),
         props.onExperiment&&h('div',{className:'semi-mos-next'},h('p',null,h('strong',null,'Try next. '),transport.next.hint),
           h('div',{className:'semi-inspector-controls'},h('button',{type:'button',onClick:function(){layer[1]('channel');props.onExperiment({gateVoltage:transport.next.gateVoltage,drainVoltage:transport.next.drainVoltage});}},transport.next.label))),
         h('details',null,h('summary',null,'Why this operating region?'),
@@ -1099,11 +1100,12 @@ window.StemLab = window.StemLab || {
   }
   function SemiSweepComparison(props) {
     var h=props.React.createElement,run=props.run,box=props.box,update=props.update;
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     var ai=Number.isInteger(box.compareA)?box.compareA:0,bi=Number.isInteger(box.compareB)?box.compareB:run.points.length-1;
     var comparison=semiSweepCompare(run,ai,bi);
     function select(label,value,key){return h('label',null,label,h('select',{'aria-label':label,value:value,style:{display:'block',width:'100%',minHeight:44,padding:8,marginTop:6,background:'#020617',color:'#f8fafc',border:'1px solid #64748b',borderRadius:8},onChange:function(e){var patch={saved:false};patch[key]=Number(e.target.value);update(patch);}},
       run.points.map(function(p,i){return h('option',{key:i,value:i},'Sample '+(i+1)+' · '+semiSweepValue(p.x)+' '+run.xUnit);}))); }
-    return h('section',{'aria-label':'Compare sweep samples','data-sweep-comparison':true,style:{margin:'16px 0',padding:12,border:'1px solid #475569',borderRadius:10}},
+    return h('section',{'aria-label':t('stem.semiconductor.compare_sweep_samples','Compare sweep samples'),'data-sweep-comparison':true,style:{margin:'16px 0',padding:12,border:'1px solid #475569',borderRadius:10}},
       h('button',{type:'button','aria-expanded':!!box.comparisonOpen,onClick:function(){update({comparisonOpen:!box.comparisonOpen,saved:false});}},box.comparisonOpen?'Hide sample comparison':'Compare two samples'),
       box.comparisonOpen&&h('div',null,
         h('p',null,'Choose A as your reference and B as your comparison. This reads the saved run and does not change the simulation.'),
@@ -1142,6 +1144,7 @@ window.StemLab = window.StemLab || {
   }
   function SemiSavedSweep(props) {
     var h=props.React.createElement,parsed=semiSavedSweep(props.entry),run=parsed.run;
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     var selection=props.React.useState(0),index=selection[0],setIndex=selection[1];
     if(parsed.error)return h('p',null,parsed.error);
     if(!run)return null;
@@ -1163,7 +1166,7 @@ window.StemLab = window.StemLab || {
         g.baseline.y!==null&&h('path',{d:'M'+g.baseline.x+' '+(g.baseline.y-7)+' l7 7 l-7 7 l-7 -7 Z',fill:'#fbbf24',stroke:'#07111f',strokeWidth:2})),
       h('p',null,'Cyan: recorded samples. White dot: selected sample. Amber diamond: saved baseline. '+(run.reference?'Dashed lavender: '+run.reference.label+'. ':'')+'Lines connect the stored samples as a guide; no new simulation is run.'),
       h('p',null,'Saved baseline: '+semiSweepValue(run.baseline.x)+' '+run.xUnit+' → '+semiSweepValue(run.baseline.y)+' '+run.output.unit+(run.reference?'; available maximum '+semiSweepValue(run.baseline.reference)+' '+run.reference.unit:'')+'.'),
-      h('label',null,'Review sample',h('select',{'aria-label':'Review sample',value:index,onChange:function(e){setIndex(Number(e.target.value));},style:{display:'block',width:'100%',minHeight:44,margin:'8px 0',padding:8,background:'#020617',color:'#f8fafc',border:'1px solid #64748b',borderRadius:8}},
+      h('label',null,'Review sample',h('select',{'aria-label':t('stem.semiconductor.review_sample','Review sample'),value:index,onChange:function(e){setIndex(Number(e.target.value));},style:{display:'block',width:'100%',minHeight:44,margin:'8px 0',padding:8,background:'#020617',color:'#f8fafc',border:'1px solid #64748b',borderRadius:8}},
         run.points.map(function(point,i){return h('option',{key:i,value:i},'Sample '+(i+1)+' · '+semiSweepValue(point.x)+' '+run.xUnit);}))),
       h('div',{role:'status'},h('p',null,'Sample '+(index+1)+': '+semiSweepValue(p.x)+' '+run.xUnit+' → '+semiSweepValue(p.y)+(p.y===null?'':' '+run.output.unit)+'. '+(p.status||'')),
         run.reference&&h('p',null,run.reference.label+': '+semiSweepValue(p.reference)+' '+run.reference.unit)),
@@ -1205,6 +1208,7 @@ window.StemLab = window.StemLab || {
   }
   function SemiSweepOverlay(props) {
     var h=props.React.createElement,overlay=semiSweepOverlay(props.a,props.b);
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     if(!props.a||!props.b)return null;
     if(!props.a.data.parameterSweep&&!props.b.data.parameterSweep)return null;
     if(overlay.error)return h('p',{'data-sweep-overlay-message':true},overlay.error);
@@ -1244,6 +1248,7 @@ window.StemLab = window.StemLab || {
 
   function SemiSweepPanel(props) {
     var h=props.React.createElement,d=props.data,id=d.subtool||'bandgap',box=(d.experimentSweeps||{})[id]||{};
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     var spec=semiSweepSpec(d,props.materials,props.solarMaterials,box.variable);
     if(!spec)return null;
     var run=box.run&&box.run.version===1?box.run:null;
@@ -1268,19 +1273,19 @@ window.StemLab = window.StemLab || {
       h('p',null,'Predict → run 11 evenly spaced samples → inspect → explain. Running a sweep keeps the live simulation unchanged.'),
       spec.unavailable?h('p',null,spec.unavailable):h('div',null,
         h('h4',null,'1. Set up a fair comparison'),
-        spec.variables&&h('label',null,'Variable to sweep',h('select',{'aria-label':'Variable to sweep',value:spec.variable,style:control,onChange:function(e){update({variable:e.target.value,start:null,end:null});}},
+        spec.variables&&h('label',null,'Variable to sweep',h('select',{'aria-label':t('stem.semiconductor.variable_to_sweep','Variable to sweep'),value:spec.variable,style:control,onChange:function(e){update({variable:e.target.value,start:null,end:null});}},
           spec.variables.map(function(v){return h('option',{key:v.id,value:v.id},v.label);}))),
         h('p',null,'Change: '+spec.xLabel+'. Hold constant: '+spec.held+'.'),
         h('div',{className:'semi-study-grid'},
           h('label',null,'Sweep start ('+spec.xUnit+')',h('input',{type:'number',step:'any',min:spec.min,max:spec.max,value:box.start==null?spec.start:box.start,onChange:function(e){update({start:e.target.value});},style:control})),
           h('label',null,'Sweep end ('+spec.xUnit+')',h('input',{type:'number',step:'any',min:spec.min,max:spec.max,value:box.end==null?spec.end:box.end,onChange:function(e){update({end:e.target.value});},style:control}))),
-        h('label',null,'Plot quantity',h('select',{'aria-label':'Plot quantity',value:box.output||spec.outputs[0].id,onChange:function(e){update({output:e.target.value});},style:control},
+        h('label',null,'Plot quantity',h('select',{'aria-label':t('stem.semiconductor.plot_quantity','Plot quantity'),value:box.output||spec.outputs[0].id,onChange:function(e){update({output:e.target.value});},style:control},
           spec.outputs.map(function(o){return h('option',{key:o.id,value:o.id},o.label+' ('+o.unit+')');}))),
         h('p',null,spec.question),
-        h('label',null,'Your sweep prediction (optional)',h('textarea',{'aria-label':'Your sweep prediction (optional)',rows:2,maxLength:500,value:box.prediction||'',onChange:function(e){update({prediction:e.target.value});},style:control})),
+        h('label',null,'Your sweep prediction (optional)',h('textarea',{'aria-label':t('stem.semiconductor.your_sweep_prediction_optional','Your sweep prediction (optional)'),rows:2,maxLength:500,value:box.prediction||'',onChange:function(e){update({prediction:e.target.value});},style:control})),
         candidate.error&&h('p',{role:'status'},candidate.error),
         h('button',{type:'button',disabled:!!candidate.error,onClick:function(){update({run:candidate,selected:null,note:'',saved:false,comparisonOpen:false,compareA:0,compareB:10,notice:'Sweep complete. Select a sample to inspect it in the simulation.'});}},'Run sweep')),
-      run&&h('section',{'aria-label':'Sweep results'},
+      run&&h('section',{'aria-label':t('stem.semiconductor.sweep_results','Sweep results')},
         h('h4',{style:{marginTop:20}},'2. Inspect the recorded curve'),
         h('p',null,run.output.label+' ('+run.output.unit+') versus '+run.xLabel+' ('+run.xUnit+'). '+(run.output.scale==='log'?'Logarithmic y-axis.':'Linear y-axis.')),
         h('p',null,'This run holds constant: '+run.held+'.'),
@@ -1312,10 +1317,10 @@ window.StemLab = window.StemLab || {
           h('table',null,h('caption',null,'Sweep readings · '+run.output.label+' ('+run.output.unit+')'),
             h('thead',null,h('tr',null,h('th',{scope:'col'},run.xLabel+' ('+run.xUnit+')'),h('th',{scope:'col'},run.output.label+' ('+run.output.unit+')'),h('th',{scope:'col'},'Inspect'))),
             h('tbody',null,run.points.map(function(p,i){return h('tr',{key:i},h('th',{scope:'row'},semiSweepValue(p.x)),h('td',null,run.reference?'Delivered: '+semiSweepValue(p.y):semiSweepValue(p.y),run.reference&&h('div',null,'Available: '+semiSweepValue(p.reference)),h('div',null,p.status)),h('td',null,h('button',{type:'button','aria-label':'Apply sample '+(i+1)+': '+semiSweepValue(p.x)+' '+run.xUnit,'aria-pressed':box.selected===i,onClick:function(){apply(i);}},'Apply '+(i+1))));})))),
-        h(SemiSweepComparison,{React:props.React,run:run,box:box,update:update}),
+        h(SemiSweepComparison,{React:props.React,run:run,box:box,update:update, t: t}),
         h('h4',{style:{marginTop:20}},'3. Explain the pattern'),
         h('p',null,'Compare two readings. What changed, what stayed fixed, and did the result support your prediction? Use the curve’s model limits in your explanation.'),
-        h('label',null,'Sweep explanation',h('textarea',{'aria-label':'Sweep explanation',rows:3,maxLength:1500,value:box.note||'',onChange:function(e){update({note:e.target.value,saved:false});},style:control})),
+        h('label',null,'Sweep explanation',h('textarea',{'aria-label':t('stem.semiconductor.sweep_explanation','Sweep explanation'),rows:3,maxLength:1500,value:box.note||'',onChange:function(e){update({note:e.target.value,saved:false});},style:control})),
         h('button',{type:'button',disabled:!props.setSnapshots||(box.note||'').trim().length<12||!!box.saved,onClick:save},box.saved?'Sweep saved':'Save sweep to notebook'),
         h('p',null,'Write at least 12 characters to save your explanation with all 11 readings and the baseline.'),
         box.notice&&h('p',{role:'status'},box.notice)));
@@ -2058,7 +2063,7 @@ window.StemLab = window.StemLab || {
             statBadge('Mobility at 300 K', mat.mobility + ' cm\u00B2/Vs'),
             intrinsicN != null && statBadge('Intrinsic carriers at ' + tempK + ' K', intrinsicN.toExponential(2) + ' /cm\u00B3')
           ),
-          h('div', { className: 'semi-study', 'aria-label': 'Energy and carrier guide' },
+          h('div', { className: 'semi-study', 'aria-label': t('stem.semiconductor.energy_and_carrier_guide','Energy and carrier guide') },
             h('h4', null, t('stem.semiconductor.read_energy','Read this as energy, not distance')),
             h('p', null, t('stem.semiconductor.energy_axis_help','Higher on the diagram means higher electron energy. The gap is an energy range without allowed bulk states, not an empty space between atoms. Particle counts and motion are illustrative.')),
             d.showPhoton && !isConductor && h('div', null,
@@ -2228,7 +2233,7 @@ window.StemLab = window.StemLab || {
               }, 'dop-' + key);
             })
           ),
-          h('div', {className:'semi-inspector-controls semi-view-switch',role:'group','aria-label':'Crystal view'},
+          h('div', {className:'semi-inspector-controls semi-view-switch',role:'group','aria-label':t('stem.semiconductor.crystal_view','Crystal view')},
             h('button',{type:'button','aria-pressed':d.crystalView!=='3d',onClick:function(){upd('crystalView','2d');}},t('stem.semiconductor.diagram_2d','2D bond diagram')),
             h('button',{type:'button','aria-pressed':d.crystalView==='3d',onClick:function(){upd('crystalView','3d');}},t('stem.semiconductor.crystal_3d','3D crystal'))),
           d.crystalView === '3d' ? h(SemiCrystalInspector,{React:React,t:t,dopant:dopant}) : h('canvas', {
@@ -2451,7 +2456,7 @@ window.StemLab = window.StemLab || {
               + ' volts. ' + (bias > 0 ? 'Forward biased' : bias < 0 ? 'Reverse biased' : 'Zero bias, equilibrium')
               + '. ' + (pnDepletionLabel || '')
           }),
-          h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Bias presets'},
+          h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.bias_presets','Bias presets')},
             h('button',{type:'button',onClick:function(){upd('pnBias',-1);}},t('stem.semiconductor.reverse_preset','Reverse −1 V')),
             h('button',{type:'button',onClick:function(){upd('pnBias',0);}},t('stem.semiconductor.equilibrium_preset','Equilibrium 0 V')),
             h('button',{type:'button',onClick:function(){upd('pnBias',.5);}},t('stem.semiconductor.forward_preset','Forward +0.5 V'))),
@@ -2712,7 +2717,7 @@ window.StemLab = window.StemLab || {
             pill('NPN BJT', type === 'bjt-npn' && !showCMOS, function() { updMulti({ transistorType: 'bjt-npn', showCMOS: false, gateVoltage:.7 }); tryAwardXP('bjt', 10, 'Explored BJT'); }),
             pill('\u2699\uFE0F CMOS Inverter', showCMOS, function() { updMulti({ showCMOS: !showCMOS, transistorType:'mosfet-n', gateVoltage:0, drainVoltage:5 }); tryAwardXP('cmos', 15, 'Explored CMOS inverter'); })
           ),
-          !showCMOS&&isMos&&h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Transistor view'},
+          !showCMOS&&isMos&&h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.transistor_view','Transistor view')},
             h('button',{type:'button','aria-pressed':d.deviceView!=='3d',onClick:function(){upd('deviceView','2d');}},'2D device diagram'),
             h('button',{type:'button','aria-pressed':d.deviceView==='3d',onClick:function(){upd('deviceView','3d');}},'3D device cutaway')),
           !showCMOS&&isMos&&d.deviceView==='3d'?h(SemiMOSInspector,{React:React,t:t,model:mos,onExperiment:updMulti,restoreComparison:d.mosComparisonRestore,onNotebook:openNotebook,onSave:function(reference,observation){
@@ -2747,7 +2752,7 @@ window.StemLab = window.StemLab || {
               ? 'Use input 0 V and 5 V for logic states. Between 1.5 V and 3.5 V both devices can conduct; the output is in transition. This digital illustration does not solve an analog transfer curve.'
               : isMos ? (isP?'PMOS uses negative VGS and VDS with its source at 0 V. ':'NMOS uses positive VGS and VDS with its source at 0 V. ')+(mos.channel&&Vd===0?'A channel alone does not make current: a drain-to-source voltage is also needed. ':'Gate voltage controls channel formation; drain voltage drives transport.')
               : 'Use the base-emitter voltage control to explore the onset of conduction. This BJT view is qualitative, not a prediction of collector current.'),
-            !showCMOS&&isMos&&h('div',{className:'semi-inspector-controls',role:'group','aria-label':'MOSFET experiment presets'},
+            !showCMOS&&isMos&&h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.mosfet_experiment_presets','MOSFET experiment presets')},
               h('button',{type:'button',onClick:function(){updMulti({gateVoltage:0,drainVoltage:isP?-5:5});}},'Cutoff'),
               h('button',{type:'button',onClick:function(){updMulti({gateVoltage:isP?-3:3,drainVoltage:0});}},'Channel, zero current'),
               h('button',{type:'button',onClick:function(){updMulti({gateVoltage:isP?-3:3,drainVoltage:isP?-.5:.5});}},'Linear region'),
@@ -2905,17 +2910,17 @@ window.StemLab = window.StemLab || {
         return h('div',null,
           h('section',{className:'semi-study'},h('p',null,'INPUTS → RULE → RESULT'),h('h4',null,'Build an explanation one input row at a time'),
             h('p',null,'Choose a rule, predict its result, then change the inputs. Record each row you inspect and connect the truth table to a circuit implementation.')),
-          h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Logic experiment'},
+          h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.logic_experiment','Logic experiment')},
             pill('Single gate',!model.half,function(){upd('gateExperiment','single');}),
             pill('Half adder',model.half,function(){upd('gateExperiment','halfadder');})),
-          !model.half&&h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Logic gate'},
+          !model.half&&h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.logic_gate','Logic gate')},
             Object.keys(SEMI_GATES).map(function(key){return pill(key,gateType===key,function(){upd('gateType',key);},'gate-'+key);})),
           h('canvas',{id:'semi-gates-canvas',width:440,height:180,
             className:'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
             role: 'img','aria-label':description}),
           h('section',{className:'semi-study'},
             h('h4',null,model.half?'Add two one-bit numbers':gate.definition.formula),
-            h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Logic inputs'},
+            h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.logic_inputs','Logic inputs')},
               h('button',{type:'button','aria-pressed':inA,onClick:function(){selectInputs(!inA,inB);}},'A = '+(+inA)),
               model.inputs===2&&h('button',{type:'button','aria-pressed':inB,onClick:function(){selectInputs(inA,!inB);}},'B = '+(+inB))),
             h('p',{role:'status'},model.half?'Sum = '+(+output)+' · Carry = '+(+model.carry)+' · Binary result = '+(+model.carry)+(+output)+'₂':'Output Q = '+(+output)+' · '+gate.definition.desc),
@@ -3176,17 +3181,17 @@ window.StemLab = window.StemLab || {
         function setParts(next){updMulti({circuitComponents:next,circuitSimResult:null});}
         function preset(types){updMulti({circuitComponents:types.map(part),circuitVoltage:5,circuitSimResult:null});}
         var usable=result.currentA!=null,colors=['#22d3ee','#fbbf24','#a78bfa','#34d399','#fb7185'];
-        return h('section',{'aria-label':'Series circuit workbench'},
+        return h('section',{'aria-label':t('stem.semiconductor.series_circuit_workbench','Series circuit workbench')},
           h('div',{className:'semi-study'},
             h('span',{className:'semi-eyebrow'},'FROM DEVICE TO CIRCUIT'),
             h('h4',null,'Build one path. Account for every volt.'),
             h('p',null,'Add components in series. The calculation updates as you change the supply or resistance. Follow the same current through each part, then compare its voltage drop.'),
-            h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Circuit starters'},
+            h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.circuit_starters','Circuit starters')},
               h('button',{type:'button',onClick:function(){preset(['resistor']);}},'Resistor baseline'),
               h('button',{type:'button',onClick:function(){preset(['resistor','led']);}},'Light an LED'),
               h('button',{type:'button',onClick:function(){preset(['resistor','resistor']);}},'Share the voltage'),
               h('button',{type:'button',onClick:function(){preset(['resistor','capacitor']);}},'Capacitor at steady DC'))),
-          h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Add a series component'},
+          h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.add_a_series_component','Add a series component')},
             ['resistor','diode','led','capacitor'].map(function(type){return h('button',{type:'button',key:type,disabled:components.length>=10,onClick:function(){setParts(components.concat([part(type,components.length)]));}},'Add '+names[type]);})),
           components.length>=10&&h('p',{className:'semi-model-note'},'This workbench supports up to 10 components in one path.'),
           sliderRow('Supply',supplyV,0,12,.5,function(v){updMulti({circuitVoltage:v,circuitSimResult:null});},' V'),
@@ -3201,7 +3206,7 @@ window.StemLab = window.StemLab || {
                 h('button',{type:'button','aria-label':'Remove component '+(index+1)+' '+(names[comp.type]||''),onClick:function(){setParts(components.filter(function(p,i){return i!==index;}));},style:{minHeight:44,marginTop:10,padding:'6px 12px',border:'1px solid #94a3b8',borderRadius:7,background:'#1e293b',color:'#f8fafc'}},'Remove'));
               })),
             components.length>0&&h('div',{className:'semi-inspector-controls'},h('button',{type:'button',onClick:function(){setParts([]);}},'Clear circuit'))),
-          h('section',{className:'semi-study','aria-label':'Live circuit result'},
+          h('section',{className:'semi-study','aria-label':t('stem.semiconductor.live_circuit_result','Live circuit result')},
             h('h4',{role:'status'},!usable?result.message:'Series current: '+(result.currentA*1000).toFixed(3)+' mA'),
             usable&&h('p',null,result.message),
             usable&&h('div',{className:'flex flex-wrap gap-2'},statBadge('Supply power',(result.powerW*1000).toFixed(3)+' mW'),statBadge('Explicit resistance',result.resistance.toLocaleString()+' Ω'),components.some(function(comp){return comp.type==='led';})&&statBadge('LED',result.ledOn?'Emitting (illustrative)':'No modeled emission')),
@@ -3294,11 +3299,11 @@ window.StemLab = window.StemLab || {
           var canvas=document.getElementById('semi-fab-canvas');if(!canvas)return;
           return bindStaticCanvas(canvas,canvasRef);
         }, [tab, subtool,d.motionPaused,d.fabStage,d.fabTemp,d.fabTime,d.fabMask,d.fabDoseLog,d.fabEnergy,d.fabAnnealed,d.fabDopant]);
-        return h('section',{'aria-label':'Wafer process workbench'},
+        return h('section',{'aria-label':t('stem.semiconductor.wafer_process_workbench','Wafer process workbench')},
           h('div',{className:'semi-study'},h('span',{className:'semi-eyebrow'},'PROCESS → STRUCTURE → PURPOSE'),
             h('h4',null,'Follow what each process changes'),
             h('p',null,'An eight-stage walkthrough of representative process ideas. Later stages reuse your mask and implant choices; the diagram is not a complete CMOS manufacturing recipe.')),
-          h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Wafer fabrication stages'},stages.map(function(item,i){return h('button',{key:i,type:'button','aria-label':'Stage '+(i+1)+': '+item.name,'aria-pressed':stage===i,'aria-current':stage===i?'step':undefined,onClick:function(){goStage(i);}},(i+1)+'. '+item.name);})),
+          h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.wafer_fabrication_stages','Wafer fabrication stages')},stages.map(function(item,i){return h('button',{key:i,type:'button','aria-label':'Stage '+(i+1)+': '+item.name,'aria-pressed':stage===i,'aria-current':stage===i?'step':undefined,onClick:function(){goStage(i);}},(i+1)+'. '+item.name);})),
           h('canvas',{id:'semi-fab-canvas',width:440,height:260,className:'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',role: 'img','aria-label':description}),
           h('div',{className:'semi-inspector-controls'},
             h('button',{type:'button',disabled:stage===0,onClick:function(){goStage(stage-1);}},'← Prev'),
@@ -3308,7 +3313,7 @@ window.StemLab = window.StemLab || {
             h('p',null,h('strong',null,'Process: '),current.action),
             h('p',null,h('strong',null,'Result: '),current.result),
             h('p',null,h('strong',null,'Why it matters: '),current.why)),
-          stage===2&&h('section',{className:'semi-study','aria-label':'Oxidation experiment'},
+          stage===2&&h('section',{className:'semi-study','aria-label':t('stem.semiconductor.oxidation_experiment','Oxidation experiment')},
             h('h4',null,'Compare oxide growth'),
             sliderRow('Temperature',temp,800,1200,50,function(v){upd('fabTemp',v);},' °C'),
             sliderRow('Oxidation duration',minutes,0,120,5,function(v){upd('fabTime',v);},' min'),
@@ -3317,11 +3322,11 @@ window.StemLab = window.StemLab || {
             h('p',{className:'semi-model-note'},'Dimensionless kinetic comparison, not oxide thickness in nm. Diagram height is capped for readability. Silicon consumption and thin-oxide corrections are not drawn.')),
           stage>=4&&growth.index===0&&h('p',{className:'semi-model-note'},'No oxide was grown in this setup, so there is no oxide for the etch to remove. Return to Thermal Oxidation to compare a nonzero duration.'),
           stage>=3&&stage<=5&&h('div',{className:'semi-study'},h('h4',null,'Pattern the openings'),
-            h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Mask openings'},
+            h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.mask_openings','Mask openings')},
               h('button',{type:'button','aria-pressed':windows.length===1,onClick:function(){upd('fabMask','one');}},'One opening'),
               h('button',{type:'button','aria-pressed':windows.length===2,onClick:function(){upd('fabMask','two');}},'Two openings')),
             h('p',null,'Pink resist protects the surface. Openings determine where oxide is etched and where the schematic implant enters.')),
-          stage===5&&h('section',{className:'semi-study','aria-label':'Implant experiment'},
+          stage===5&&h('section',{className:'semi-study','aria-label':t('stem.semiconductor.implant_experiment','Implant experiment')},
             h('h4',null,'Separate dose, energy, and activation'),
             sliderRow('Dose exponent',dose,12,16,.5,function(v){upd('fabDoseLog',v);},''),
             h('p',null,'Dose: '+Math.pow(10,dose).toExponential(2)+' ions/cm². More dose is shown by more dots. Dot count is compressed for readability; each dot represents many ions.'),
@@ -3382,14 +3387,14 @@ window.StemLab = window.StemLab || {
             h('h4',null,'What changes the light an LED emits?'),
             h('p',null,'Predict first: will changing the drive change the amount of light, its wavelength, or both? Compare a single emitter with two ways to make white light.')
           ),
-          h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Light source mode'},
+          h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.light_source_mode','Light source mode')},
             pill('Single LED',!mixMode,function(){upd('ledMixMode',false);}),
             pill('RGB Mixer',mixMode,function(){upd('ledMixMode',true);})
           ),
-          !mixMode&&h('div',{className:'semi-inspector-controls',role:'group','aria-label':'LED emitter'},
+          !mixMode&&h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.led_emitter','LED emitter')},
             Object.keys(SEMI_LED_EMITTERS).map(function(key){var m=SEMI_LED_EMITTERS[key];return h('button',{key:key,type:'button','aria-label':m.name+' LED','aria-pressed':model.key===key,onClick:function(){upd('ledMaterial',key);}},m.label);})
           ),
-          h('section',{className:'semi-study','aria-label':'Emission state'},
+          h('section',{className:'semi-study','aria-label':t('stem.semiconductor.emission_state','Emission state')},
             h('div',{style:{display:'flex',alignItems:'center',gap:'16px'}},
               h('span',{'aria-hidden':true,style:{display:'block',flexShrink:0,width:'48px',height:'48px',borderRadius:'50%',background:model.preview,border:'2px solid #94a3b8',boxShadow:model.active&&model.visible?'0 0 20px '+model.preview:'none'}}),
               h('div',null,h('h4',null,model.status),h('p',null,mixMode?'Screen RGB preview · not a calibrated prediction of LED color':!model.active?'No photons are emitted in this model at zero current.':!model.visible?'The spectrum shows emission, but this preview stays dark because the radiation is not visible.':'Color swatch identifies the source; its brightness is not a photometric measurement.'))
@@ -3594,7 +3599,7 @@ window.StemLab = window.StemLab || {
           sliderRow('Irradiance', irradiance, 0, 1200, 50, function(v) { upd('solarIrradiance', v); }, ' W/m\u00B2'),
           sliderRow('Cell Temp', temp, 270, 370, 5, function(v) { upd('solarTemp', v); }, ' K'),
           sliderRow('Area', area, 10, 500, 10, function(v) { upd('solarArea', v); }, ' cm\u00B2'),
-          h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Solar load experiments'},
+          h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.solar_load_experiments','Solar load experiments')},
             h('button',{type:'button',onClick:function(){updMulti({solarLoadR:0,solarOpen:false});}},'Short circuit'),
             h('button',{type:'button',disabled:Imp<=0,onClick:function(){updMulti({solarLoadR:Vmp/Imp,solarOpen:false});}},'Match load to maximum power'),
             h('button',{type:'button',onClick:function(){upd('solarOpen',true);}},'Open circuit'),
@@ -3686,7 +3691,7 @@ window.StemLab = window.StemLab || {
           h('section',{className:'semi-study'},h('p',null,'EVIDENCE · EXPONENTIAL GROWTH · SCOPE'),
             h('h4',null,'What does a growing transistor count tell us?'),
             h('p',null,'Compare sourced product counts with a doubling example. Ask whether a change comes from denser transistors, a larger die, more dies, or a different kind of product. This curated dataset ends in 2024.')),
-          h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Transistor count scale'},
+          h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.transistor_count_scale','Transistor count scale')},
             pill('Log scale',model.log,function(){upd('mooreLogScale',true);}),pill('Linear scale',!model.log,function(){upd('mooreLogScale',false);})),
           h('canvas',{id:'semi-moore-canvas',width:440,height:290,
             className:'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
@@ -3812,32 +3817,32 @@ window.StemLab = window.StemLab || {
           var canvas=document.getElementById('semi-qw-canvas');if(!canvas)return;
           return bindStaticCanvas(canvas,canvasRef);
         }, [tab, subtool,d.motionPaused,d.qwWidth,d.qwDepth,d.qwMaterial,d.qwLevels,d.qwShowWave,d.qwShowProb,d.qwModel,d.qwSelected]);
-        return h('section',{'aria-label':'Quantum confinement workbench'},
+        return h('section',{'aria-label':t('stem.semiconductor.quantum_confinement_workbench','Quantum confinement workbench')},
           h('div',{className:'semi-study'},h('span',{className:'semi-eyebrow'},'ENERGY AND PROBABILITY'),
             h('h4',null,'How tightly is the electron confined?'),
             h('p',null,'Compare a finite barrier with the ideal infinite limit. Change the width or barrier height, select a state, then look for probability extending into the barriers.'),
-            h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Quantum well model'},
+            h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.quantum_well_model','Quantum well model')},
               h('button',{type:'button','aria-pressed':!infinite,onClick:function(){upd('qwModel','finite');}},'Finite barriers'),
               h('button',{type:'button','aria-pressed':infinite,onClick:function(){upd('qwModel','infinite');}},'Infinite barrier comparison'))),
-          h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Effective mass presets'},Object.keys(QW_MATS).map(function(key){return h('button',{type:'button',key:key,'aria-pressed':material===key,onClick:function(){updMulti({qwMaterial:key,qwSelected:1});}},QW_MATS[key].name);})),
+          h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.effective_mass_presets','Effective mass presets')},Object.keys(QW_MATS).map(function(key){return h('button',{type:'button',key:key,'aria-pressed':material===key,onClick:function(){updMulti({qwMaterial:key,qwSelected:1});}},QW_MATS[key].name);})),
           h('canvas',{id:'semi-qw-canvas',width:440,height:(showWave||showProb)?360:260,className:'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',role: 'img', 'aria-label':description}),
           h('p',{className:'semi-model-note'},'Cyan line: selected energy. Dashed lines: other displayed energies. '+(showProb?'Gold curve: probability density |ψ|².':showWave?'Green curve: signed wavefunction ψ.':'Profiles hidden.')+' Energy and the selected profile use separate vertical axes and share the position axis. Zero energy is the well bottom. The horizontal range adapts to the selected state; probability totals include tails beyond the drawing.'),
           sliderRow('Well Width',wellWidth,1,20,.5,function(v){upd('qwWidth',v);},' nm'),
           !infinite&&sliderRow('Well Depth',wellDepth,.1,1,.05,function(v){upd('qwDepth',v);},' eV'),
           sliderRow('Display up to',numLevels,1,6,1,function(v){upd('qwLevels',v);},' states'),
-          h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Select a confined state'},
+          h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.select_a_confined_state','Select a confined state')},
             levels.map(function(level){return h('button',{type:'button',key:level.n,'aria-pressed':selected===level.n,onClick:function(){upd('qwSelected',level.n);}},'State n='+level.n);})),
           h('div',{className:'semi-inspector-controls'},
             h('label',null,h('input',{type:'checkbox',checked:showWave,onChange:function(){updMulti({qwShowWave:!showWave,qwShowProb:false});}}),'Show wavefunction'),
             h('label',null,h('input',{type:'checkbox',checked:showProb,onChange:function(){updMulti({qwShowProb:!showProb,qwShowWave:false});}}),'Show probability density')),
-          h('section',{className:'semi-study','aria-label':'Confinement measurements'},
+          h('section',{className:'semi-study','aria-label':t('stem.semiconductor.confinement_measurements','Confinement measurements')},
             h('h4',{role:'status'},infinite?'Infinite-barrier limit':model.total+' bound state'+(model.total===1?'':'s')+' supported; '+levels.length+' displayed'),
             h('p',null,'Selected state n='+selected+': '+state.E.toFixed(4)+' eV. Probability outside: '+(state.outside*100).toFixed(2)+'%.'),
             h('p',null,'Effective electron mass: '+qmat.me+' mₑ. '+(infinite?'No penetration is possible through an infinite barrier.':'The finite-barrier energy is below its same-width infinite-well value of '+state.infiniteE.toFixed(4)+' eV. Nonzero tails describe barrier penetration, not an escaping electron.')),
             h('table',null,h('caption',{className:'sr-only'},'Displayed bound-state energies and integrated probability outside the well'),
               h('thead',null,h('tr',null,h('th',{scope:'col'},'State'),h('th',{scope:'col'},'Energy (eV)'),h('th',{scope:'col'},'Outside (%)'))),
               h('tbody',null,levels.map(function(level){return h('tr',{key:level.n},h('th',{scope:'row'},'n='+level.n),h('td',null,level.E.toFixed(4)),h('td',null,(level.outside*100).toFixed(2)));}))),
-            h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Confinement experiments'},
+            h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.confinement_experiments','Confinement experiments')},
               h('button',{type:'button',onClick:function(){updMulti({qwModel:'finite',qwMaterial:'gaas-algaas',qwWidth:1,qwDepth:.1,qwSelected:1});}},'Shallow, narrow well'),
               h('button',{type:'button',onClick:function(){updMulti({qwModel:'finite',qwMaterial:'gaas-algaas',qwWidth:10,qwDepth:.5,qwSelected:1});}},'Wider, deeper well'))),
           transitions.length>0&&h('details',{className:'semi-study'},h('summary',null,'Compare adjacent energy spacings'),
@@ -3913,16 +3918,16 @@ window.StemLab = window.StemLab || {
           var canvas=document.getElementById('semi-mem-canvas');if(!canvas)return;
           return bindStaticCanvas(canvas,canvasRef);
         }, [tab, subtool,d.motionPaused,d.memType,d.memBanks,d.memAddress,d.memBitValue]);
-        return h('section',{'aria-label':'Memory operations workbench'},
+        return h('section',{'aria-label':t('stem.semiconductor.memory_operations_workbench','Memory operations workbench')},
           h('div',{className:'semi-study'},h('span',{className:'semi-eyebrow'},'WRITE · RETAIN · READ'),
             h('h4',null,'What keeps a bit stored?'),
             h('p',null,'Select a cell, enable writes, and store a bit. Then test time, refresh, and power loss. Each memory type keeps its own 16-cell experiment. Initial RAM and FeRAM zeros are a prepared teaching state, not a promise about hardware power-up.')),
-          h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Memory technology'},Object.keys(types).map(function(key){return h('button',{key:key,type:'button','aria-pressed':type===key,onClick:function(){var banks=Object.assign({},d.memBanks||{});banks[type]=bank;if(!banks[key])banks[key]=semiMemory(key);updMulti({memType:key,memBanks:banks,memWriteEnable:false,memAddress:0,memLastAction:null});}},types[key].name);})),
+          h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.memory_technology','Memory technology')},Object.keys(types).map(function(key){return h('button',{key:key,type:'button','aria-pressed':type===key,onClick:function(){var banks=Object.assign({},d.memBanks||{});banks[type]=bank;if(!banks[key])banks[key]=semiMemory(key);updMulti({memType:key,memBanks:banks,memWriteEnable:false,memAddress:0,memLastAction:null});}},types[key].name);})),
           h('canvas',{id:'semi-mem-canvas',width:440,height:240,className:'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',role: 'img','aria-label':description}),
           h('div',{className:'semi-study'},
             h('h4',null,'Addressable teaching array'),
             h('p',null,'Select an address. Selecting a cell does not read or write it. “?” means the original bit can no longer be inferred.'),
-            h('div',{role:'group','aria-label':'Memory addresses',style:{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:8}},bank.bits.map(function(v,index){return h('button',{type:'button',key:index,'aria-pressed':address===index,'aria-label':'Address '+index+': '+(v==null?'unknown':v),onClick:function(){upd('memAddress',index);},style:{minHeight:60,border:address===index?'2px solid #67e8f9':'1px solid #64748b',borderRadius:8,background:address===index?'#164e63':'#0f172a',color:'#f8fafc',padding:8}},
+            h('div',{role:'group','aria-label':t('stem.semiconductor.memory_addresses','Memory addresses'),style:{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:8}},bank.bits.map(function(v,index){return h('button',{type:'button',key:index,'aria-pressed':address===index,'aria-label':'Address '+index+': '+(v==null?'unknown':v),onClick:function(){upd('memAddress',index);},style:{minHeight:60,border:address===index?'2px solid #67e8f9':'1px solid #64748b',borderRadius:8,background:address===index?'#164e63':'#0f172a',color:'#f8fafc',padding:8}},
               h('span',{style:{display:'block',fontSize:11,color:'#cbd5e1'}},'Addr '+index),h('strong',{style:{fontSize:20}},v==null?'?':String(v)));})),
             h('p',null,'Selected address '+address+' · stored model state '+value+' · '+(bank.power?'powered':'power off')),
             h('div',{className:'semi-inspector-controls'},
@@ -4124,7 +4129,7 @@ window.StemLab = window.StemLab || {
             h('h4',{role:'status'},response.clipped?'Output clips at a supply rail':'Output remains within the supply rails'),
             h('p',null,'At '+freq+' Hz: gain magnitude '+response.magnitude.toFixed(2)+' V/V ('+response.gainDB.toFixed(1)+' dB). Output range '+response.min.toFixed(3)+' to '+response.max.toFixed(3)+' V.'),
             h('p',null,'The waveform and Bode plot share one frequency-response model. Increasing input amplitude can flatten the waveform at 0 V or VDD. Moving the output bias changes the available headroom.'),
-            h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Amplifier experiments'},
+            h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.amplifier_experiments','Amplifier experiments')},
               h('button',{type:'button',onClick:function(){updMulti({ampType:'common-emitter',ampVin:.01,ampVdd:5,ampBiasPoint:2.5,ampRd:10000,ampFreq:1000,ampShowBode:false});}},'Small signal'),
               h('button',{type:'button',onClick:function(){updMulti({ampType:'common-emitter',ampVin:.2,ampVdd:5,ampBiasPoint:2.5,ampRd:10000,ampFreq:1000,ampShowBode:false});}},'Observe clipping')),
             h('details',null,h('summary',null,t('stem.semiconductor.model_assumptions','Model assumptions & sources')),
@@ -4660,7 +4665,7 @@ window.StemLab = window.StemLab || {
         explore:   { accent: '#67e8f9', soft: 'rgba(14,165,233,0.18)', icon: '\uD83D\uDD2C', title: t('stem.semiconductor.explore_diodes_transistors_doping', 'Explore semiconductor behavior'), hint: t('stem.semiconductor.doping_silicon_with_phosphorus_n_type_', 'Begin with one observable change. Compare materials, add a dopant, or bias a junction, then explain what changed and why.') },
         challenge: { accent: '#fbbf24', soft: 'rgba(245,158,11,0.18)', icon: '\uD83C\uDFC6', title: t('stem.semiconductor.challenge_graded_problems', 'Challenge \u2014 graded problems'),              hint: t('stem.semiconductor.bias_a_transistor_calculate_band_gap_e', 'Bias a transistor, calculate band-gap energy, predict current vs voltage. AP Physics 2 + intro EE problems with step-by-step feedback.') },
         battle:    { accent: '#f87171', soft: 'rgba(239,68,68,0.18)',  icon: '\u2694\uFE0F', title: t('stem.semiconductor.battle_head_to_head_circuit_duels', 'Battle \u2014 head-to-head circuit duels'),       hint: t('stem.semiconductor.time_pressure_rounds_build_a_circuit_f', 'Time-pressure rounds: build a circuit faster than the timer. Tests whether semiconductor reasoning is automatic, not just recognized.') },
-        learn:     { accent: '#4ade80', soft: 'rgba(34,197,94,0.18)',  icon: '\uD83D\uDCDA', title: t('stem.semiconductor.learn_reference_history', 'Learn \u2014 reference + history'),               hint: t('stem.semiconductor.learn_history_empirical', "Bardeen, Brattain and Shockley developed the transistor at Bell Labs; the 1956 Nobel Prize recognized their work. Moore’s annual 1965 projection was revised toward two-year doubling in 1975. Counts, density and performance are different measures.") }
+        learn:     { accent: '#4ade80', soft: 'rgba(34,197,94,0.18)',  icon: '\uD83D\uDCDA', title: t('stem.semiconductor.learn_reference_history', 'Learn \u2014 reference + history'),               hint: t('stem.semiconductor.learn_history_empirical', 'Bardeen, Brattain and Shockley developed the transistor at Bell Labs; the 1956 Nobel Prize recognized their work. Moore’s annual 1965 projection was revised toward two-year doubling in 1975. Counts, density and performance are different measures.') }
       };
       var meta = TAB_META[tab] || TAB_META.explore;
       var tabHero = h('div', {
@@ -4687,7 +4692,7 @@ window.StemLab = window.StemLab || {
         role: 'navigation', 'aria-label': t('stem.semiconductor.semiconductor_sub_tools', 'Semiconductor simulations')
       },
         h('label', { htmlFor: 'semiconductor-simulation-select', className: 'text-xs font-bold text-slate-200' }, t('stem.semiconductor.simulation', 'Simulation')),
-        h('button', { type: 'button', className: 'semi-nav-step', onClick: function() { moveSubtool(-1); }, 'aria-label': 'Previous simulation', title: 'Previous simulation' }, '\u2190'),
+        h('button', { type: 'button', className: 'semi-nav-step', onClick: function() { moveSubtool(-1); }, 'aria-label': t('stem.semiconductor.previous_simulation','Previous simulation'), title: t('stem.semiconductor.previous_simulation_2','Previous simulation') }, '\u2190'),
         h('select', {
           id: 'semiconductor-simulation-select', value: subtool,
           onChange: function(e) { selectSubtool(e.target.value); },
@@ -4696,7 +4701,7 @@ window.StemLab = window.StemLab || {
         }, SUBTOOLS.map(function(st) {
           return h('option', { key: st.id, value: st.id }, st.label);
         })),
-        h('button', { type: 'button', className: 'semi-nav-step', onClick: function() { moveSubtool(1); }, 'aria-label': 'Next simulation', title: 'Next simulation' }, '\u2192'),
+        h('button', { type: 'button', className: 'semi-nav-step', onClick: function() { moveSubtool(1); }, 'aria-label': t('stem.semiconductor.next_simulation','Next simulation'), title: t('stem.semiconductor.next_simulation_2','Next simulation') }, '\u2192'),
         h('span', { className: 'semi-live-badge', role: 'status' },
           h('span', { className: 'semi-live-dot', 'aria-hidden': 'true' }),
           t('stem.semiconductor.live_model', 'Live model')
@@ -4832,7 +4837,7 @@ window.StemLab = window.StemLab || {
         },
         className: 'semi-snapshot mt-3 ml-auto px-5 py-2 text-xs font-black text-white bg-gradient-to-r from-cyan-700 to-indigo-600 rounded-full hover:from-cyan-700 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all',
         'aria-label': snapshotLabel + '. Save the current Semiconductor Lab state to your notebook.',
-        title: 'Save current state to notebook'
+        title: t('stem.semiconductor.save_current_state_to_notebook','Save current state to notebook')
       }, snapshotLabel);
 
       var currentSubtool = SUBTOOLS.find(function(st) { return st.id === subtool; }) || SUBTOOLS[0];
@@ -5124,7 +5129,7 @@ window.StemLab = window.StemLab || {
         ivcurve:{q:'Is a diode an ideal switch that suddenly starts conducting at 0.7 V?',choices:['Yes, current jumps instantly','No, its current changes continuously with voltage','Yes, for every diode and temperature'],answer:1,why:'The diode equation gives continuous current. A fixed forward drop is a circuit approximation. Series resistance limits the rise at high current; temperature also changes the curve.'}
       });
       var check = conceptChecks[subtool], checkedChoice = (d.conceptChoices || {})[subtool];
-      var studyEvidence = tab === 'explore' && currentEvidence && h('section',{className:'semi-study','aria-label':'Experiment evidence'},
+      var studyEvidence = tab === 'explore' && currentEvidence && h('section',{className:'semi-study','aria-label':t('stem.semiconductor.experiment_evidence','Experiment evidence')},
         h('h4',null,t('stem.semiconductor.evidence_title','Use evidence in your explanation')),
         guidedReady ? h('table',null,
           h('caption',{className:'sr-only'},t('stem.semiconductor.evidence_caption','Guided baseline compared with current settings')),
@@ -5225,7 +5230,7 @@ window.StemLab = window.StemLab || {
       var learningRoutes=tab==='explore'&&h('details',{className:'semi-study','data-learning-routes':true},
         h('summary',null,'Choose a question / learning route'),
         h('p',null,'Choose a route, then continue to its first lesson without a saved explanation. You can open any lesson directly; selecting a route does not reset an experiment.'),
-        h('div',{className:'semi-inspector-controls',role:'group','aria-label':'Learning routes'},SEMI_ROUTES.map(function(route){
+        h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.learning_routes','Learning routes')},SEMI_ROUTES.map(function(route){
           return h('button',{key:route.id,type:'button','aria-pressed':d.learningRoute===route.id,onClick:function(){upd('learningRoute',route.id);},style:{whiteSpace:'normal',textAlign:'left'}},route.question);
         })),
         routeProgress&&h('div',null,
@@ -5274,12 +5279,12 @@ window.StemLab = window.StemLab || {
         h('div',{className:'semi-inspector-controls'},h('button',{type:'button',disabled:!filteredEntries.length,onClick:exportNotebook},'Export filtered entries (.md)'),
           comparisonEntries.length>0&&btn('Clear comparison',function(){upd('notebookCompare',[]);})),
         d.notebookNotice&&h('p',{role:'status'},d.notebookNotice),
-        h('section',{'aria-label':'Notebook comparison'},
+        h('section',{'aria-label':t('stem.semiconductor.notebook_comparison','Notebook comparison')},
           h('h4',null,'Compare recorded evidence'),
           h('p',null,comparisonEntries.length===2?'Two entries selected. Uncheck one before choosing another.':'Select up to two entries using their Compare checkboxes.'),
           comparisonEntries.map(function(entry,i){return h('p',{key:entry.key},(i===0?'A: ':'B: ')+entry.label);}),
           comparison.reason&&h('p',{role:'status'},comparison.reason),
-          h(SemiSweepOverlay,{React:React,a:comparisonEntries[0],b:comparisonEntries[1]}),
+          h(SemiSweepOverlay,{React:React,a:comparisonEntries[0],b:comparisonEntries[1], t: t}),
           comparison.rows.length>0&&h('table',null,h('caption',null,'Recorded values · no recalculation'),
             h('thead',null,h('tr',null,h('th',{scope:'col'},'Quantity'),h('th',{scope:'col'},'Entry A'),h('th',{scope:'col'},'Entry B'))),
             h('tbody',null,comparison.rows.map(function(row){return h('tr',{key:row[0]},h('th',{scope:'row'},row[0]),h('td',null,row[1]),h('td',null,row[2]));})))
@@ -5297,7 +5302,7 @@ window.StemLab = window.StemLab || {
                 h('thead',null,h('tr',null,h('th',{scope:'col'},'Quantity'),h('th',{scope:'col'},'Recorded value'))),
                 h('tbody',null,entry.evidence.map(function(row){return h('tr',{key:row[0]},h('th',{scope:'row'},row[0]),h('td',null,row[1]));})))
                 :h('p',null,'No numerical evidence was stored with this older entry.'),
-              h(SemiSavedSweep,{React:React,entry:entry}),
+              h(SemiSavedSweep,{React:React,entry:entry, t: t}),
               entry.gateComparison&&h('p',null,'Restore experiment reopens the 3D curve with both gate settings and your explanation. Live readings use the current model; this saved evidence stays unchanged.'),
               h('div',{className:'semi-inspector-controls'},
                 h('label',null,h('input',{type:'checkbox',checked:checked,disabled:!entry.workspace||!checked&&comparisonEntries.length>=2,onChange:function(){toggleComparison(entry);},'aria-label':'Compare '+entry.label}),' Compare this entry'),
@@ -5326,7 +5331,7 @@ window.StemLab = window.StemLab || {
             ),
             h('span', { id: 'semiconductor-progress-summary', className: 'text-xs font-black text-cyan-50', 'aria-label': 'Progress: ' + progressText + ' Notebook: ' + notebookCount }, '\u2B50 ' + (getStemXP ? getStemXP() : 0) + ' XP · Notebook ' + notebookCount)
           ),
-          tab === 'explore' && h('div', { className: 'semi-progress-track', role: 'progressbar', 'aria-label': 'Experiment progress', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': guidedProgressStep, 'aria-valuetext': guidedProgressStep + ' of 3 steps complete' },
+          tab === 'explore' && h('div', { className: 'semi-progress-track', role: 'progressbar', 'aria-label': t('stem.semiconductor.experiment_progress','Experiment progress'), 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': guidedProgressStep, 'aria-valuetext': guidedProgressStep + ' of 3 steps complete' },
             h('span', { className: 'semi-progress-fill', style: { width: guidedProgressPercent + '%' } })
           )
         )
@@ -5349,7 +5354,7 @@ window.StemLab = window.StemLab || {
             h('textarea',{id:'semi-prediction',rows:2,maxLength:500,value:prediction,style:{display:'block',width:'100%',boxSizing:'border-box',marginTop:8,padding:10,border:'1px solid #64748b',borderRadius:8,background:'#020617',color:'#f8fafc'},
               onChange:function(e){var next=Object.assign({},predictions);next[subtool]=e.target.value;upd('guidedPredictions',next);}})),
           h('div', { className: 'semi-workspace flex-1' }, content),
-          tab === 'explore' && h(SemiSweepPanel,{key:subtool,React:React,data:d,materials:MATERIALS,solarMaterials:SOLAR_MATS,setData:setLabToolData,setSnapshots:setToolSnapshots}),
+          tab === 'explore' && h(SemiSweepPanel,{key:subtool,React:React,data:d,materials:MATERIALS,solarMaterials:SOLAR_MATS,setData:setLabToolData,setSnapshots:setToolSnapshots, t: t}),
           studyEvidence,
           guidedReflection,
           commandDrawer),

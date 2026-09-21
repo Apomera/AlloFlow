@@ -261,8 +261,35 @@ helper the file already uses, or re-baseline that one entry consciously with
 4. **If translating, go tool-first, not pack-first.** The top 14 tools reach 50% coverage; the
    top 30 reach 79%. The 34 packs still stale on the migration fact corrections (374 entries)
    are the concrete next batch.
-5. **Chip at the remaining 4,638 hardcoded strings** whenever a file is open for other reasons. The
+5. **Chip at the remaining hardcoded strings** whenever a file is open for other reasons. The
    ratchet means every removal is permanent; `--update` locks in the lower number.
+
+### Remaining STEM work, corrected (2026-09-21)
+
+An earlier count here searched only for `__alloT(` and so classed every tool that binds its
+translator as `t` — semiconductor among them — as having no i18n at all. Counting **both**
+binding styles gives a much more tractable split:
+
+| | Tools | Strings |
+|---|---|---|
+| **Wired, gaps only** — the proven pattern applies | **55** | **531** |
+| No i18n at all — needs a namespace established | 12 | 214 |
+
+Largest wired: cell 42 *(mirrors currently diverged — another session mid-edit)*, solarsystem 35,
+datastudio 29, spacecolony 26, geometryworld 25, aquarium 24, companionplanting 22, titration 21.
+
+Largest with no i18n: geometryworld_builder 71, particlelab3d 58, nuclearlab 22.
+
+**Method for each tool**, in order — it is what made these six cheap:
+1. Audit scope first: for every hit, is a translator already in scope, does the enclosing
+   function take `props`, or neither? So far *none* has needed genuinely new plumbing.
+2. Thread `t` from whichever component the host hands `ctx`/`t`, beside the `React` prop
+   children already receive. **Re-run the pass** — a child whose parent only just gained `t`
+   is invisible on the first sweep.
+3. Convert with a **scope-aware** emitter (`__alloT` vs `t` per site) and verify every call
+   resolves to a binding. A uniform emitter produced 21 ReferenceErrors in ecosystem that the
+   render smoke did not catch.
+4. Register the keys — wrapping alone translates nothing.
 
 ---
 
