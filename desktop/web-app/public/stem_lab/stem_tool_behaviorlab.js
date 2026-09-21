@@ -740,6 +740,8 @@ dataRef.current = d;
 
               termDef: 'Positive Reinforcement (SR+): Adding a stimulus after a behavior that increases the future probability of that behavior.',
 
+              plainDef: 'You add something the learner likes right after they do something, so they do it more. Giving a pellet after a lever press. Adding a good thing to grow a behaviour.',
+
               funFact: '🧪 B.F. Skinner discovered that pigeons could be trained to guide missiles during WWII using operant conditioning — the project was called "Project Pigeon"!',
 
               vocab: ['SR+ (Positive Reinforcement)', 'Operant Behavior', 'Consequence'],
@@ -756,6 +758,8 @@ dataRef.current = d;
 
               termDef: 'Shaping: Differentially reinforcing successive approximations toward a terminal (target) behavior.',
 
+              plainDef: 'You cannot wait for the whole trick, so you reward small steps that get closer and closer to it. Reward the turn, then the half-turn, then the full spin.',
+
               funFact: '🐬 Dolphin trainers at SeaWorld use shaping to teach dolphins to do backflips — they start by reinforcing any upward movement!',
 
               vocab: ['Successive Approximations', 'Terminal Behavior', 'Differential Reinforcement'],
@@ -771,6 +775,8 @@ dataRef.current = d;
               intro: __alloT('stem.behaviorlab.when_reinforcement_is_suddenly_withhel', 'When reinforcement is suddenly withheld, the organism often shows an extinction burst — a temporary INCREASE in the behavior before it decreases. First, reinforce 5 lever presses, then STOP reinforcing and watch what happens!'),
 
               termDef: 'Extinction Burst: A temporary increase in frequency/intensity of a previously reinforced behavior when reinforcement is discontinued.',
+
+              plainDef: 'When a behaviour that used to work suddenly stops working, it usually gets louder and more frequent BEFORE it fades. The burst is a sign it is starting to fade, not a sign you should give in.',
 
               funFact: '🛗 Ever push an elevator button multiple times when it doesn\'t light up? That\'s YOUR extinction burst!',
 
@@ -794,6 +800,8 @@ dataRef.current = d;
 
               termDef: 'Fixed Ratio (FR): A schedule where reinforcement is delivered after a fixed number of responses.',
 
+              plainDef: 'You reward after a set number of responses every time — say every 3rd press. The count never changes, so the learner often pauses right after each reward.',
+
               funFact: '🎰 Slot machines use Variable Ratio (VR) schedules — the most resistant to extinction — one reason they can be so habit-forming (along with other psychological, social, and neurological factors).',
 
               vocab: ['Fixed Ratio (FR)', 'Continuous Reinforcement (CRF)', 'Intermittent Reinforcement'],
@@ -809,6 +817,8 @@ dataRef.current = d;
               intro: __alloT('stem.behaviorlab.a_discriminative_stimulus_sd_signals_t', 'A discriminative stimulus (SD) signals that reinforcement is available. The green light = SD (reinforce lever presses). Red light = S-delta (do NOT reinforce). Teach the mouse to press only when the green light is on!'),
 
               termDef: 'SD (Discriminative Stimulus): A stimulus that signals reinforcement is available for a specific behavior.',
+
+              plainDef: 'A signal that tells the learner "right now, this behaviour will pay off." A green light means pressing works; a red light means it will not.',
 
               funFact: '🚦 Traffic lights work as discriminative stimuli for drivers — green (SD) signals "go" and red (S-delta) signals "stop"!',
 
@@ -826,6 +836,8 @@ dataRef.current = d;
 
               termDef: 'Applied Behavior Analysis (ABA): The science of applying behavioral principles to improve socially significant behavior.',
 
+              plainDef: 'Using what we know about how behaviour is learned to help with things that actually matter in someone’s life. The science part is that you measure whether it is working.',
+
               funFact: '🌍 ABA principles are used everywhere — from teaching children with autism to training service dogs, to designing better apps!',
 
               vocab: ['Behavior Chain', 'Generalization', 'Maintenance'],
@@ -841,6 +853,8 @@ dataRef.current = d;
               intro: __alloT('stem.behaviorlab.a_behavior_chain_links_multiple_behavi', 'A behavior chain links multiple behaviors in a specific sequence. The completion of one step becomes the signal (SD) for the next. Teach the mouse this chain: Sniff ➜ Rear Up ➜ Press Lever. Reinforce ONLY when the full 3-step chain is completed!'),
 
               termDef: 'Behavior Chain: A sequence of responses where each response produces the discriminative stimulus (SD) for the next response, and the last response is followed by a reinforcer.',
+
+              plainDef: 'A series of steps done in order, where finishing each step is the cue to start the next one. The reward comes at the end of the whole sequence, not after every step.',
 
               funFact: '🐕 Service dogs learn behavior chains of 20+ steps — like opening the fridge, grabbing a drink, closing the fridge, and bringing it to their handler!',
 
@@ -858,6 +872,8 @@ dataRef.current = d;
 
               termDef: 'DRO (Differential Reinforcement of Other Behavior): Reinforcement is delivered when a specified behavior does NOT occur for a predetermined interval of time.',
 
+              plainDef: 'You reward the learner for NOT doing the behaviour for a set stretch of time. Nothing happens for a whole interval, and that is what earns the reward.',
+
               funFact: '🏫 Teachers use DRO all the time — "If no one calls out for 5 minutes, the class earns a point!" It reduces unwanted behavior without punishment.',
 
               vocab: ['DRO', 'Differential Reinforcement', 'Interval', 'Target Behavior'],
@@ -873,6 +889,8 @@ dataRef.current = d;
               intro: __alloT('stem.behaviorlab.classical_conditioning_pairs_a_neutral', 'Classical conditioning pairs a neutral stimulus (bell) with an unconditioned stimulus (food) that naturally causes a response (salivation). After repeated pairings the bell ALONE triggers salivation! Phase 1: Ring the bell — nothing happens. Phase 2: Pair bell + food 5 times. Phase 3: Ring bell alone and watch for the conditioned response!'),
 
               termDef: 'Classical Conditioning: A learning process where a neutral stimulus (CS) is repeatedly paired with an unconditioned stimulus (US) until the CS alone elicits a conditioned response (CR).',
+
+              plainDef: 'Pair something meaningless with something meaningful often enough and the meaningless thing starts causing the same reaction on its own. A bell paired with food eventually makes you salivate at the bell.',
 
               funFact: '🐶 Ivan Pavlov discovered classical conditioning accidentally while studying dog digestion in the 1890s. The dogs began salivating at the sight of lab coats because they associated them with food!',
 
@@ -4053,13 +4071,74 @@ dataRef.current = d;
                   style: { color: 'var(--bl-muted)', borderLeft: '3px solid var(--bl-amber)', paddingLeft: 10, margin: '2px 0 0' }
                 }, __alloT('stem.behaviorlab.scope_note', 'This lab teaches the concepts of behaviour analysis. It does not qualify anyone to run a functional behaviour assessment or write a behaviour plan \u2014 that is supervised professional work, and the function of a real behaviour is a hypothesis you test with data, not a label you read off a description.')),
 
-                React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-600/40" },
+                (function () {
 
-                  React.createElement("p", { className: "text-xs text-amber-200 font-bold mb-1" }, __alloT('stem.behaviorlab.key_term', "\uD83D\uDCD6 Key Term:")),
+                  var blPlainTerm = !!d.blPlainTerm;
 
-                  React.createElement("p", { className: "text-xs text-slate-100 italic" }, currentLevel.termDef)
+                  // Hoisted out of the style ternary below: the i18n gate reads a
+                  // string literal in a ternary as untranslated UI copy, and these
+                  // are theme tokens, not words a translator should ever see.
+                  var BL_REG_ON_COLOR = 'var(--bl-amber-text)';
 
-                ),
+                  var BL_REG_OFF_COLOR = 'var(--bl-muted)';
+
+                  var regBtn = function (on, label, key) {
+
+                    return React.createElement("button", {
+
+                      key: key, type: "button",
+
+                      'aria-pressed': on ? 'true' : 'false',
+
+                      onClick: function () { upd('blPlainTerm', key === 'plain'); },
+
+                      style: {
+
+                        padding: '2px 9px', borderRadius: '999rem', cursor: 'pointer',
+
+                        fontSize: 10, fontWeight: 700, lineHeight: 1.6,
+
+                        background: on ? 'rgba(251,191,36,0.20)' : 'rgba(255,255,255,0.04)',
+
+                        border: on ? '1px solid rgba(251,191,36,0.55)' : '1px solid var(--bl-border)',
+
+                        color: on ? BL_REG_ON_COLOR : BL_REG_OFF_COLOR
+
+                      }
+
+                    }, label);
+
+                  };
+
+                  return React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-600/40" },
+
+                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 } },
+
+                      React.createElement("p", { className: "text-xs text-amber-200 font-bold", style: { margin: 0 } }, __alloT('stem.behaviorlab.key_term', "\uD83D\uDCD6 Key Term:")),
+
+                      React.createElement("div", { role: "group", "aria-label": __alloT('stem.behaviorlab.key_term_register', 'How should this definition be worded?'), style: { display: 'flex', gap: 4, marginLeft: 'auto' } },
+
+                        regBtn(!blPlainTerm, __alloT('stem.behaviorlab.register_technical', 'Technical'), 'technical'),
+
+                        regBtn(blPlainTerm, __alloT('stem.behaviorlab.register_plain', 'Plain words'), 'plain')
+
+                      )
+
+                    ),
+
+                    React.createElement("p", { className: "text-xs text-slate-100 italic", "aria-live": "polite" },
+
+                      (blPlainTerm && currentLevel.plainDef) ? currentLevel.plainDef : currentLevel.termDef),
+
+                    (blPlainTerm && currentLevel.plainDef) && React.createElement("p", {
+
+                      className: "text-[0.625rem]", style: { color: 'var(--bl-muted)', margin: '6px 0 0' }
+
+                    }, __alloT('stem.behaviorlab.plain_note', 'Same idea, everyday words. Switch to Technical for the term a behaviour analyst would use.'))
+
+                  );
+
+                })(),
 
                 currentLevel.goal > 0 && React.createElement("p", { className: "text-xs text-amber-400 font-bold" },
 
