@@ -2000,4 +2000,28 @@
     lightBackground: true,
     render: (ctx) => ctx.React.createElement(JourneyHost, { ctx, kind: "stem" })
   });
+
+  // ── Test-only exports ──────────────────────────────────────
+  // Exposes the module-scope run model to the vitest suite
+  // (tests/fieldjourneys_run_model.test.js). INERT IN PRODUCTION: only runs
+  // when a harness pre-sets window.__RR_TEST_EXPORTS__ BEFORE this script
+  // loads — the app never does. Same pattern as stem_tool_flightsim.js.
+  //
+  // createWatershedRuntime stubs its own dependencies, so the watershed
+  // campaign is reachable without the Tree Life Lab engine that createAdapters
+  // otherwise requires.
+  if (typeof window !== "undefined" && window.__RR_TEST_EXPORTS__) {
+    window.__RR_TEST_EXPORTS__.fieldJourneys = {
+      makeRun,
+      dispatch,
+      materialize,
+      validateRun,
+      validateResponses,
+      createWatershedRuntime,
+      saveRun,
+      readRun,
+      saveKey,
+      MAX_COMMANDS
+    };
+  }
 })();
