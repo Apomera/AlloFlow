@@ -79,7 +79,9 @@ afterEach(() => {
 });
 
 describe('AlloFlow portable skill distribution contract', () => {
-  it('uses one canonical skill in both platform wrappers', () => {
+  // 120s, not the 5s default: this walks and byte-compares the canonical skill tree
+  // against both platform wrappers. It was timing out before it finished comparing.
+  it('uses one canonical skill in both platform wrappers', { timeout: 120000 }, () => {
     expectTreeEqual(CANONICAL, join(OPENAI_PLUGIN, 'skills', SKILL_NAME));
     expectTreeEqual(CANONICAL, join(CLAUDE_PLUGIN, 'skills', SKILL_NAME));
   });
@@ -126,7 +128,8 @@ describe('AlloFlow portable skill distribution contract', () => {
     }
   });
 
-  it('runs from an extracted clean-install ZIP with no account or model key', async () => {
+  // 120s: builds the packages, extracts a ZIP to a temp dir and runs the engine from it.
+  it('runs from an extracted clean-install ZIP with no account or model key', { timeout: 120000 }, async () => {
     const build = packageBuffers(checkReceipt.version).find((item) => item.kind === 'agent-skill');
     const cleanRoot = mkdtempSync(join(tmpdir(), 'alloflow-portable-clean-install-'));
     scratchDirectories.push(cleanRoot);

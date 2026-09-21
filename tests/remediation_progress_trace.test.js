@@ -194,7 +194,10 @@ describe('remediation ownership and lifecycle regressions', () => {
     expect(view).toContain('setRemediationProgress(null);');
   });
 
-  it('binds every chunk lifecycle and resume choice to one monotonic session owner', () => {
+  // 120s, not the 5s default: this walks the Babel AST of doc_pipeline_source.jsx (3.3 MB)
+  // and view_pdf_audit_source.jsx (1.8 MB), which costs ~37s of test time on its own. It was
+  // timing out on the default, so it reported red without ever evaluating an assertion.
+  it('binds every chunk lifecycle and resume choice to one monotonic session owner', { timeout: 120000 }, () => {
     const events = [
       ...collectOwnedChunkEvents(pipeline, 'doc_pipeline_source.jsx'),
       ...collectOwnedChunkEvents(view, 'view_pdf_audit_source.jsx'),
