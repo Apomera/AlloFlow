@@ -25,6 +25,7 @@ const QUIET = process.argv.includes('--quiet');
 const BUGGY = /var\s+__alloT\s*=\s*[A-Za-z_$][\w$]*\.t\b/;
 
 const offenders = [];
+const unusedT = [];
 for (const dir of ['stem_lab', 'sel_hub']) {
   const d = path.join(ROOT, dir);
   if (!fs.existsSync(d)) continue;
@@ -37,6 +38,25 @@ for (const dir of ['stem_lab', 'sel_hub']) {
     for (let i = 0; i < lines.length; i++) {
       if (BUGGY.test(lines[i])) offenders.push(`${dir}/${f}:${i + 1}`);
     }
+
+    // ── The UNUSED `var t = ctx.t` trap (2026-09-21) ────────────────────────
+    // The header above deliberately leaves `t` alone, because many tools
+    // overload that name as a local and flagging it would be noise. But a
+    // declaration with ZERO call sites is not an overload — it is a loaded
+    // gun. Three SEL tools (coping, emotions, zones) carry it unused, and
+    // those are exactly the tools still waiting to be wired for translation.
+    // The next session reaches for the `t` that is already in scope, and
+    // every key missing from the pack renders as `sel.<tool>.<key>` at a
+    // student, because the SEL shell's own fallback ECHOES THE KEY
+    // (sel_hub_module.js:2114).
+    const deadT = /^\s*var\s+t\s*=\s*(?:ctx|props)\.t\s*;/m.exec(src);
+    if (deadT) {
+      const calls = (src.match(/[^A-Za-z0-9_$.]t\(/g) || []).length;
+      if (calls === 0) {
+        const line = src.slice(0, deadT.index).split('\n').length;
+        unusedT.push(`${dir}/${f}:${line}`);
+      }
+    }
   }
 }
 
@@ -46,5 +66,14 @@ if (offenders.length) {
   console.error('  Fix: define __alloT as a wrapper that applies the fallback (see this file\'s header).');
   process.exit(1);
 }
-if (!QUIET) console.log('✓ check_i18n_fallback: no `__alloT = ctx.t` fallback-dropping decls in STEM/SEL tools.');
+if (unusedT.length) {
+  console.error('✖ check_i18n_fallback: ' + unusedT.length + ' tool(s) declare `var t = ctx.t` and never call it.');
+  for (const o of unusedT) console.error('    ' + o);
+  console.error('  That binding drops the English fallback. Unused it is harmless; the');
+  console.error('  moment someone wires the tool and reaches for the `t` already in');
+  console.error('  scope, every missing key renders as `sel.<tool>.<key>` at a student.');
+  console.error('  Fix: delete the dead line, or replace it with the __alloT wrapper.');
+  process.exit(1);
+}
+if (!QUIET) console.log('✓ check_i18n_fallback: no `__alloT = ctx.t` fallback-dropping decls, and no unused `var t = ctx.t` traps.');
 process.exit(0);

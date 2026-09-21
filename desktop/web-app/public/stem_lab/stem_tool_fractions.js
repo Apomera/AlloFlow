@@ -1850,7 +1850,7 @@ window.StemLab = window.StemLab || {
     var awardXP = ctx.awardXP;
     var announceToSR = ctx.announceToSR;
     var a11yClick = ctx.a11yClick;
-    var t = ctx.t;
+    // `var t = ctx.t` removed 2026-09-21: declared, never called. This tool already uses the __alloT wrapper; the bare alias drops the English fallback, so leaving it invites a future edit to ship raw keys.
     // No ground of its own: the title, the shortcut hint, the preset label
     // and the planning blurb sit on the HOST surface - white in light and
     // dark, pure BLACK in the contrast theme, where they ran 2.6-2.8:1.
