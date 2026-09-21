@@ -3561,7 +3561,9 @@
       });
       var [_questHudCollapsed, _setQuestHudCollapsed] = React.useState(false);
       var [_showXpPanel, _setShowXpPanel] = React.useState(false);
-      var [_questFreeResponseOpen, _setQuestFreeResponseOpen] = React.useState(null); // qid of expanded free response
+      // (_questFreeResponseOpen removed: it tracked which reflection was
+      // "expanded", but nothing ever read or set it, and the response
+      // textarea is now always present rather than revealed on demand.)
 
       // Live mirrors of the overlay state for the global Escape handler.
       // That listener is re-bound only when [stemLabTool, stemLabTab,
@@ -3586,10 +3588,30 @@
         Object.keys(_stationTools || {}).some(function (k) { return _stationTools[k]; })
       );
 
-      // Quest progress persistence
+      // Quest progress persistence.
+      //
+      // This is the ONLY copy of a student's written reflections. A failed
+      // write used to reach the console and nowhere else, so a learner could
+      // type several paragraphs on a device at its storage limit, see them on
+      // screen, close the tab and lose them without ever being told.
+      //
+      // The warning is announced once per run of failures rather than on every
+      // keystroke, and reset on the next success, so a transient failure does
+      // not become a stream of identical toasts over a live region.
+      var _questSaveFailedRef = React.useRef(false);
       React.useEffect(function() {
-        try { localStorage.setItem('alloflow_quest_progress', JSON.stringify(_questProgress)); }
-        catch(e) { console.warn('[QuestSystem] Quest progress not saved (storage quota or permission) — non-fatal, continuing:', e.message || e); }
+        try {
+          localStorage.setItem('alloflow_quest_progress', JSON.stringify(_questProgress));
+          _questSaveFailedRef.current = false;
+        } catch(e) {
+          console.warn('[QuestSystem] Quest progress not saved (storage quota or permission) - non-fatal, continuing:', e.message || e);
+          if (!_questSaveFailedRef.current) {
+            _questSaveFailedRef.current = true;
+            var msg = 'This device would not save your quest progress. Your writing is still on screen - copy it somewhere before you close this page.';
+            if (typeof addToast === 'function') addToast(msg, 'error');
+            if (typeof announceToSR === 'function') announceToSR(msg);
+          }
+        }
       }, [_questProgress]);
 
       // Quest evaluation — watches labToolData for auto-completion
@@ -7464,26 +7486,47 @@
                     !disp.done && React.createElement("div", { className: "h-1.5 bg-slate-100 rounded-full overflow-hidden", role: 'progressbar', 'aria-valuenow': Math.round(disp.pct), 'aria-valuemax': 100 },
                       React.createElement("div", { className: "h-full rounded-full transition-all " + (disp.pct >= 80 ? 'bg-green-400' : disp.pct >= 50 ? 'bg-amber-400' : 'bg-amber-300'), style: { width: disp.pct + '%' } })
                     ),
-                    // Free response textarea
-                    quest.type === 'freeResponse' && !disp.done && React.createElement("textarea", {
-                      value: qp.response || '',
-                      placeholder: quest.params.prompt || 'Describe what you learned...',
-                      'aria-label': quest.params.prompt || 'Write your response',
-                      onChange: function(e) {
-                        var val = e.target.value;
-                        _setQuestProgress(function(prev) {
-                          var sp = Object.assign({}, prev[_activeStation.id] || {});
-                          var qpUpdate = Object.assign({}, sp[quest.qid] || {});
-                          qpUpdate.response = val;
-                          sp[quest.qid] = qpUpdate;
-                          var next = Object.assign({}, prev);
-                          next[_activeStation.id] = sp;
-                          return next;
-                        });
-                      },
-                      rows: 2,
-                      className: "w-full mt-1.5 px-2 py-1.5 text-xs border border-amber-200 rounded-lg resize-none focus:ring-2 focus:ring-amber-400 outline-none"
-                    })
+                    // Free response textarea.
+                    //
+                    // This used to render only while `!disp.done`. A reflection
+                    // completes as soon as it reaches minLength, so the moment
+                    // the quest was marked complete the box the student had
+                    // written in was removed: they could not finish the
+                    // sentence, reread what they had said, or fix a typo, and
+                    // nothing else on the row displayed the text. It still went
+                    // into the teacher's report verbatim.
+                    //
+                    // Writing stays visible and editable after completion. The
+                    // quest does not un-complete when edited below the
+                    // threshold, because taking a finished quest away again
+                    // would be worse than leaving it.
+                    quest.type === 'freeResponse' && React.createElement("div", { className: "mt-1.5" },
+                      disp.done && React.createElement("label", {
+                        className: "block text-[10px] font-bold text-green-700 mb-0.5",
+                        htmlFor: 'stem-quest-response-' + quest.qid
+                      }, "Your response (you can still edit it)"),
+                      React.createElement("textarea", {
+                        id: 'stem-quest-response-' + quest.qid,
+                        value: qp.response || '',
+                        placeholder: quest.params.prompt || 'Describe what you learned...',
+                        'aria-label': quest.params.prompt || 'Write your response',
+                        onChange: function(e) {
+                          var val = e.target.value;
+                          _setQuestProgress(function(prev) {
+                            var sp = Object.assign({}, prev[_activeStation.id] || {});
+                            var qpUpdate = Object.assign({}, sp[quest.qid] || {});
+                            qpUpdate.response = val;
+                            sp[quest.qid] = qpUpdate;
+                            var next = Object.assign({}, prev);
+                            next[_activeStation.id] = sp;
+                            return next;
+                          });
+                        },
+                        rows: 2,
+                        className: "w-full px-2 py-1.5 text-xs rounded-lg resize-none focus:ring-2 outline-none " +
+                          (disp.done ? "border border-green-300 bg-green-50/40 focus:ring-green-400" : "border border-amber-200 focus:ring-amber-400")
+                      })
+                    )
                   );
                 }),
                 // All quests complete celebration
