@@ -262,3 +262,39 @@ test('the week track shows why a stage failed, and season records survive a rest
  await season.screenshot({path:'scratch/butterfly-habitat/season-contrast.png'});
  await audit(page);
 });
+
+test('the field report appears only once there is evidence, and copies through the shell',async({page})=>{
+ await mount(page);
+ const report=page.locator('.bf-report');
+ await expect(report.getByRole('heading',{name:'Field report'})).toBeVisible();
+ // Nothing recorded: no report body, and the copy button is not offered.
+ await expect(report.locator('[data-bf-report]')).toHaveCount(0);
+ await expect(report.getByRole('button',{name:/Copy my field report/})).toBeDisabled();
+ await visit(page,'Common milkweed');
+ await expect(report.locator('[data-bf-report]')).toHaveCount(1);
+ await expect(report.locator('[data-bf-report]')).toContainText('PATCHES EXAMINED (1 of 3)');
+ // Capture what the shell is handed, rather than trusting the clipboard.
+ await page.evaluate(()=>{const w=window as any;w.__copied=null;w.alloCopyText=(t:string)=>{w.__copied=t;return true;};});
+ await report.getByRole('button',{name:/Copy my field report/}).click();
+ await expect(report.getByRole('button',{name:/Report copied/})).toBeVisible();
+ const copied=await page.evaluate(()=>(window as any).__copied);
+ expect(copied).toContain('Butterfly Habitat Lab');
+ expect(copied).toContain('Common milkweed (Asclepias syriaca)');
+ expect(copied).toContain('does not count butterflies, estimate survival');
+ await report.screenshot({path:'scratch/butterfly-habitat/report.png'});
+ await audit(page);
+});
+
+test('a blocked copy offers the report as selectable text instead of failing silently',async({page})=>{
+ await mount(page);await visit(page,'Common milkweed');
+ const report=page.locator('.bf-report');
+ // Every copy route refuses, the way a locked-down embed behaves.
+ await page.evaluate(()=>{const w=window as any;w.alloCopyText=()=>false;
+   try{Object.defineProperty(navigator,'clipboard',{value:undefined,configurable:true});}catch(e){}
+   document.execCommand=()=>false;});
+ await report.getByRole('button',{name:/Copy my field report/}).click();
+ const area=report.getByRole('textbox',{name:'Field report text to copy manually'});
+ await expect(area).toBeVisible();
+ await expect(area).toHaveValue(/PATCHES EXAMINED/);
+ await audit(page);
+});

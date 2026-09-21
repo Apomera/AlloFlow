@@ -281,6 +281,86 @@
     return pairs;
   }
 
+  // ── Field report ──────────────────────────────────────────
+  // A learner can build real evidence here and then have no way to hand it to a
+  // teacher. The report is assembled ONLY from records they made: nothing is
+  // inferred, no section appears for work not done, and a replanted row is
+  // reported as such rather than quietly dropped or quietly counted.
+  function reportLines(s){
+    var out=['Butterfly Habitat Lab — field report','Monarch (Danaus plexippus) · summer meadow investigation',''];
+    var seen=PLANTS.filter(function(p){return s.observations.indexOf(p.id)>=0;});
+    out.push('PATCHES EXAMINED (' + seen.length + ' of ' + PLANTS.length + ')');
+    if(!seen.length)out.push('  none yet');
+    seen.forEach(function(p){
+      out.push('  ' + p.name + ' (' + p.latin + ')');
+      out.push('    nectar for adults: ' + (p.nectar?'present':'absent') + '; milkweed leaves for caterpillars: ' + (p.host?'present':'absent'));
+    });
+    out.push('');
+    out.push('PLANTING COMPARISONS (' + s.restoration.trials.length + ' of ' + DESIGNS.length + ')');
+    if(!s.restoration.trials.length)out.push('  none yet');
+    DESIGNS.forEach(function(d){
+      var t=s.restoration.trials.find(function(x){return x.design===d.id;});
+      if(!t)return;
+      out.push('  ' + d.short + ': nectar ' + (d.nectar?'present':'absent') + ', milkweed leaves ' + (d.host?'present':'absent'));
+      out.push('    predicted: ' + prediction(t.prediction).label + ' — ' + (resources(d)===t.prediction?'matched':'differed'));
+    });
+    out.push('');
+    var broods=s.lifecycle.broods;
+    out.push('GENERATIONS FOLLOWED (' + broods.length + ')');
+    if(!broods.length)out.push('  none yet');
+    broods.forEach(function(b){
+      var p=patch(b.patch,s),name=p?p.name:b.patch;
+      out.push('  ' + name + (b.plan?' [' + design(b.plan).short + ']':'') + ': ' + outcome(b.result).label.toLowerCase());
+      out.push('    predicted: ' + outcome(b.prediction).label.toLowerCase() + ' — ' + (b.prediction===b.result?'matched':'differed') +
+        (broodIsCurrent(s,b)?'':' (this planting has since been replaced)'));
+    });
+    out.push('');
+    var runs=s.season.runs;
+    out.push('SEASONS RUN (' + runs.length + ')');
+    if(!runs.length)out.push('  none yet');
+    runs.forEach(function(r){
+      var p=patch(r.patch,s),name=p?p.name:r.patch;
+      out.push('  ' + name + (r.plan?' [' + design(r.plan).short + ']':'') + ', ' + mowing(r.mowing).short.toLowerCase() + ': ' +
+        (r.result==='complete'?'ran the whole cycle':'stopped before an adult'));
+      out.push('    predicted: ' + (r.prediction==='complete'?'whole cycle':'stops early') + ' — ' + (r.prediction===r.result?'matched':'differed') +
+        (seasonRunIsCurrent(s,r)?'':' (this planting has since been replaced)'));
+    });
+    var pairs=timingPairs(s);
+    if(pairs.length){
+      out.push('');
+      out.push('TIMING COMPARISONS');
+      pairs.forEach(function(pair){
+        var p=patch(pair.patch,s);
+        out.push('  ' + (p?p.name:pair.patch) + ': ' + mowing(pair.kept).short.toLowerCase() + ' completed, ' +
+          mowing(pair.cut).short.toLowerCase() + ' did not — same plants, different timing.');
+      });
+    }
+    out.push('');
+    out.push('WHAT THIS REPORT IS NOT');
+    out.push('  These are results from a teaching model. It shows whether a patch offers');
+    out.push('  what each stage needs and whether the plants were still standing when that');
+    out.push('  stage needed them. It does not count butterflies, estimate survival, or');
+    out.push('  model weather, predators, parasites or disease.');
+    return out;
+  }
+  // Route through the shell's alloCopyText first: Gemini Canvas refuses
+  // navigator.clipboard by permissions policy. Resolves false so the UI can
+  // offer the text for manual copying instead of failing silently.
+  function copyReportText(text){
+    return Promise.resolve().then(function(){
+      if(typeof window.alloCopyText==='function')return Promise.resolve(window.alloCopyText(text)).then(function(ok){return ok!==false;});
+      if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(text).then(function(){return true;},function(){return false;});
+      var area=document.createElement('textarea');area.value=text;area.setAttribute('readonly','');
+      area.style.cssText='position:fixed;left:-9999px;top:0';document.body.appendChild(area);area.select();
+      var ok=false;try{ok=document.execCommand('copy');}catch(_){ok=false;}
+      area.remove();return ok;
+    }).catch(function(){return false;});
+  }
+  function fieldReport(s){return reportLines(s).join("\n");}
+  function reportIsEmpty(s){
+    return !s.observations.length&&!s.restoration.trials.length&&!s.lifecycle.broods.length&&!s.season.runs.length;
+  }
+
   // ── Drawing a conclusion ──────────────────────────────────────────────
   // The old panel asked one fixed question and answered it from a count of
   // patch visits, so it stayed silent about the planting comparisons and the
@@ -566,6 +646,7 @@
     @media(max-width:1000px){.bf-layout{grid-template-columns:1fr}.bf-aside{display:grid;grid-template-columns:1fr 1fr;gap:14px}.bf-panel+.bf-panel{margin-top:0}.bf-stage{height:480px}}
     @media(max-width:580px){.bfl{padding:12px;border-radius:12px}.bf-header{gap:8px}.bf-mark{display:none}.bf-aside,.bf-bottom{grid-template-columns:1fr}.bf-stage{height:390px}.bf-overlay{padding:10px}.bf-toolbar{gap:6px}.bf-toolbar button{flex:1;padding:9px}.bf-toolbar .bf-spacer{display:none}.bf-scene-badge{font-size:11px}.bf-bottom{gap:14px}.bf-life span{min-width:100px}}
     .bf-cycle{margin-top:18px!important;border-top:4px solid #5a6f8c}.bf-cycle-head{display:flex;gap:16px;justify-content:space-between;align-items:start}.bf-cycle-head p{max-width:780px}.bf-cycle-steps{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:16px 0}.bf-cycle fieldset{border:0;margin:0;padding:0;min-width:0}.bf-cycle legend,.bf-cycle label{display:block;font-weight:750;margin-bottom:8px}.bf-cycle-choices{display:grid;gap:8px}.bf-cycle-choices button{text-align:left}.bf-cycle-choices small{display:block;font-weight:400;margin-top:3px}.bf-cycle select{display:block;width:100%;min-height:46px;margin:8px 0 12px;padding:10px;border:1px solid var(--bf-line);border-radius:9px;background:var(--bf-panel);color:var(--bf-ink);font:inherit}.bf-cycle select:focus-visible{outline:3px solid #b45b0c;outline-offset:3px}.bf-cycle-actions{display:flex;flex-wrap:wrap;gap:8px}
+    .bf-report{margin-top:18px!important;border-top:4px solid #4a6b7c}.bf-report-head{display:flex;gap:16px;justify-content:space-between;align-items:start;flex-wrap:wrap}.bf-report-head p{max-width:780px}.bf-report-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.bf-report pre{margin:12px 0 0;padding:14px;border:1px solid var(--bf-line);border-radius:12px;background:var(--bf-panel);font:12px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap;overflow-wrap:anywhere;max-height:340px;overflow:auto}.bf-report textarea{width:100%;margin-top:12px;padding:12px;border:1px solid var(--bf-line);border-radius:12px;background:var(--bf-panel);color:var(--bf-ink);font:12px/1.5 ui-monospace,Menlo,monospace}.bf-report textarea:focus-visible{outline:3px solid #b45b0c;outline-offset:3px}
     .bf-season{margin-top:18px!important;border-top:4px solid #7a5c2e}.bf-season-head{display:flex;gap:16px;justify-content:space-between;align-items:start}.bf-season-head p{max-width:780px}.bf-season-steps{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:16px 0}.bf-season label{display:block;font-weight:750;margin-bottom:8px}.bf-season select{display:block;width:100%;min-height:46px;margin:8px 0 12px;padding:10px;border:1px solid var(--bf-line);border-radius:9px;background:var(--bf-panel);color:var(--bf-ink);font:inherit}.bf-season select:focus-visible{outline:3px solid #b45b0c;outline-offset:3px}.bf-season-actions{display:flex;flex-wrap:wrap;gap:8px}.bf-season-current{font-size:12px;font-weight:700;color:var(--bf-muted);border:1px solid var(--bf-line);border-radius:30px;padding:7px 12px;flex-shrink:0}
     .bf-weeks{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0;list-style:none;padding:0}.bf-weeks li{border:1px solid var(--bf-line);border-radius:11px;padding:11px;background:var(--bf-panel)}.bf-weeks b{display:block;color:var(--bf-muted);font-size:10px;letter-spacing:.07em;text-transform:uppercase}.bf-weeks strong{display:block;margin-top:2px}.bf-weeks small{display:block;color:var(--bf-muted);font-size:12px;margin-top:5px}.bf-weeks li[data-state="cleared"]{border-left:4px solid var(--bf-accent);padding-left:8px}.bf-weeks li[data-state="cut"]{border-left:4px solid #b45b0c;padding-left:8px}.bf-weeks li[data-state="missing"]{border-left:4px solid #8a8f7a;padding-left:8px}.bf-season-feedback{min-height:50px;margin-top:12px;font-size:14px}.bf-seasons{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:15px;font-size:13px}.bf-seasons th,.bf-seasons td{border-bottom:1px solid var(--bf-line);text-align:left;padding:10px 8px;overflow-wrap:anywhere;vertical-align:top}.bf-seasons caption{text-align:left;font-weight:750;font-size:15px;padding-bottom:7px}.bf-seasons td span{display:block;color:var(--bf-muted);font-size:12px}
     .bf-track{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0;list-style:none;padding:0}.bf-track li{border:1px solid var(--bf-line);border-radius:11px;padding:11px;background:var(--bf-panel)}.bf-track b{display:block;color:var(--bf-muted);font-size:10px;letter-spacing:.07em;text-transform:uppercase}.bf-track strong{display:block;margin-top:2px}.bf-track small{display:block;color:var(--bf-muted);font-size:12px;margin-top:5px}.bf-track li[data-state="current"]{border-color:var(--bf-accent);border-width:2px;padding:10px}.bf-track li[data-state="reached"]{border-left:4px solid var(--bf-accent);padding-left:8px}.bf-track li[data-state="blocked"]{border-left:4px solid #b45b0c;padding-left:8px}.bf-track-tag{font-size:11px;font-weight:750;display:inline-block;margin-top:6px;border:1px solid var(--bf-line);border-radius:20px;padding:2px 8px}
@@ -602,11 +683,19 @@
     var mowPair=R.useState(s.season.mowing),mowPlan=mowPair[0],setMowPlan=mowPair[1];
     var seasonGuessPair=R.useState(s.season.prediction||''),seasonGuess=seasonGuessPair[0],setSeasonGuess=seasonGuessPair[1];
     var seasonFeedbackPair=R.useState(''),seasonFeedback=seasonFeedbackPair[0],setSeasonFeedback=seasonFeedbackPair[1];
+    var copyPair=R.useState(''),copyState=copyPair[0],setCopyState=copyPair[1];
     function applyDesign(){var result=applyPlan(s,plan,guess);if(result.ok){closeLens();keys.current={};persist();setCycleFeedback('');}setDesignFeedback(result.message);announce(result.message);}
     function startBrood(){var result=layEggs(s,eggSite,broodGuess);if(result.ok)persist();setCycleFeedback(result.message);announce(result.message);}
     function nextStage(){var result=advanceStage(s);if(result.ok)persist();setCycleFeedback(result.message);announce(result.message);}
     function recordBrood(){var result=broodResult(s);if(result.ok){persist();setBroodGuess('');}setCycleFeedback(result.message);announce(result.message);}
     function dropBrood(){var result=abandonBrood(s);if(result.ok){persist();setBroodGuess('');setEggSite('');}setCycleFeedback(result.message);announce(result.message);}
+    function copyReport(){
+      var text=fieldReport(s);
+      copyReportText(text).then(function(ok){
+        setCopyState(ok?'ok':'fail');
+        announce(ok?'Field report copied. Paste it wherever you keep your notes.':'Copying was blocked here. The report is shown below so you can select and copy it.');
+      });
+    }
     function startSeason(){
       s.season.mowing=mowPlan;s.season.prediction=seasonGuess||null;
       var result=runSeason(s,seasonSite,mowPlan,seasonGuess);
@@ -698,6 +787,7 @@
       return function(){alive=false;cancelAnimationFrame(raf);observer.disconnect();window.removeEventListener('blur',pauseForFocus);document.removeEventListener('visibilitychange',hidden);node.removeEventListener('keydown',keydown);window.removeEventListener('keyup',keyup);reduced.removeEventListener('change',draw);disposeWorld();api.current=null;keys.current={};s.paused=true;};
     },[retry]);
     var near=nearest(s),landed=patch(s.landed,s),remaining=s.observations.length,detail=fieldDetail(s,lens),recorded=evidenceRecorded(s,landed);
+    var reportEmpty=reportIsEmpty(s),reportText=reportEmpty?'':fieldReport(s);
     var seasonPatch=seasonSite?patch(seasonSite,s):null;
     var seasonView=seasonPatch?seasonOutcome(seasonPatch,mowPlan):null;
     var cycleSite=patch(s.lifecycle.patch,s),cycleIndex=STAGES.findIndex(function(st){return st.id===s.lifecycle.stage;});
@@ -829,6 +919,14 @@
               h('ul',{className:'bf-evidence'},verdict.evidence.lines.map(function(line,i){return h('li',{key:i,'data-evidence':line.kind},line.text);}))
             ):h('p',{className:'bf-help'},'You have not recorded anything yet. Examine a patch to begin.')):null,
           h('div',{role:'status','aria-live':'polite'},answer||(verdict?verdict.verdict+' '+verdict.why:'')))),
+      h('section',{className:'bf-panel bf-report','aria-label':'Field report','data-bf-report-copied':copyState||''},
+        h('div',{className:'bf-report-head'},h('div',null,h('div',{className:'bf-eyebrow'},'Take your evidence with you'),h('h3',null,'Field report'),
+          h('p',{className:'bf-help'},reportEmpty?'Once you have examined a patch, compared a planting, followed a generation or run a season, your records collect here as text you can copy.':'Everything you have recorded, as plain text. Nothing here is inferred — it lists only what you did.')),
+          h('div',{className:'bf-report-actions'},
+            button(copyState==='ok'?'✓ Report copied':'Copy my field report',copyReport,{className:'bf-primary',disabled:reportEmpty}))),
+        reportEmpty?null:h('pre',{'data-bf-report':'1',tabIndex:0,'aria-label':'Field report text'},reportText),
+        copyState==='fail'?h('textarea',{readOnly:true,value:reportText,rows:10,'aria-label':'Field report text to copy manually',
+          onFocus:function(e){e.target.select();},onCopy:function(){setCopyState('ok');}}):null),
       h('details',{className:'bf-sources'},h('summary',null,'Science notes & sources'),h('p',null,'Species: monarch (Danaus plexippus). This summer scene represents a Mid-Atlantic habitat investigation. Plants and wing patterns are illustrative and enlarged. Guided routes, flight speed, distances, and energy are teaching choices, not field measurements. The generation you follow is a teaching model of one outcome, not a population simulation: it turns on whether milkweed is present, and it deliberately leaves out weather, predators, parasites, disease, how many eggs are laid, and how many survive — all of which matter in a real meadow, where most eggs do not reach adulthood even on good milkweed. Real development also takes weeks and depends on temperature; the stages here advance when you choose, in a fixed order. Other butterfly species can have different host plants.'),h('ul',null,
         h('li',null,h('a',{href:'https://www.xerces.org/publications/plant-lists/monarch-nectar-plants-mid-atlantic',target:'_blank',rel:'noopener noreferrer'},'Xerces Society · Regional nectar plants and milkweed hosts')),
         h('li',null,h('a',{href:'https://monarchjointventure.org/monarch-biology/life-cycle',target:'_blank',rel:'noopener noreferrer'},'Monarch Joint Venture · Life cycle')),
@@ -839,7 +937,7 @@
     );
   }
   window.StemLab.registerTool('butterfly',{label:'Butterfly Habitat Lab',icon:'🦋',desc:'Explore a summer meadow as a monarch, compare nectar and host plants, and build a field journal.',category:'science',color:'orange',gradeRange:'4-12',aliases:['monarch','butterflies','milkweed','pollinator','habitat'],render:function(ctx){return ctx.React.createElement(ButterflyLab,{ctx:ctx});}});
-  if(window.__RR_TEST_EXPORTS__)window.__RR_TEST_EXPORTS__.butterfly={plants:PLANTS,freshState:freshState,nearest:nearest,step:step,advanceFrame:advanceFrame,land:land,observe:observe,save:save,buildWorld:buildWorld,designs:DESIGNS,habitats:habitats,applyPlan:applyPlan,cleanRestoration:cleanRestoration,fieldDetail:fieldDetail,evidenceRecorded:evidenceRecorded,broodIsCurrent:broodIsCurrent,broodRowsFor:broodRowsFor,mowings:MOWINGS,stageWeek:STAGE_WEEK,seasonOutcome:seasonOutcome,cleanSeason:cleanSeason,runSeason:runSeason,seasonRunFor:seasonRunFor,timingPairs:timingPairs,currentSeasonRuns:currentSeasonRuns,seasonRunIsCurrent:seasonRunIsCurrent,mowing:mowing,
+  if(window.__RR_TEST_EXPORTS__)window.__RR_TEST_EXPORTS__.butterfly={plants:PLANTS,freshState:freshState,nearest:nearest,step:step,advanceFrame:advanceFrame,land:land,observe:observe,save:save,buildWorld:buildWorld,designs:DESIGNS,habitats:habitats,applyPlan:applyPlan,cleanRestoration:cleanRestoration,fieldDetail:fieldDetail,evidenceRecorded:evidenceRecorded,broodIsCurrent:broodIsCurrent,broodRowsFor:broodRowsFor,fieldReport:fieldReport,reportLines:reportLines,reportIsEmpty:reportIsEmpty,mowings:MOWINGS,stageWeek:STAGE_WEEK,seasonOutcome:seasonOutcome,cleanSeason:cleanSeason,runSeason:runSeason,seasonRunFor:seasonRunFor,timingPairs:timingPairs,currentSeasonRuns:currentSeasonRuns,seasonRunIsCurrent:seasonRunIsCurrent,mowing:mowing,
     stages:STAGES,outcomes:OUTCOMES,layEggs:layEggs,advanceStage:advanceStage,broodResult:broodResult,broodFor:broodFor,
     cleanLifecycle:cleanLifecycle,clampStage:clampStage,abandonBrood:abandonBrood,reachedStage:reachedStage,stageStatus:stageStatus,expectedOutcome:expectedOutcome,
     claims:CLAIMS,judgeClaim:judgeClaim,evidenceFor:evidenceFor};

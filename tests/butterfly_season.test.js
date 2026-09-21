@@ -254,10 +254,49 @@ describe('Butterfly mowing and timing',()=>{
    expect(html).toContain('Milkweed + bergamot · replanted since');
  });
 
+ it('offers no report until the learner has recorded something',()=>{
+   const empty=render();
+   expect(empty).toContain('Field report');
+   expect(empty).toContain('your records collect here');
+   expect(empty).not.toContain('data-bf-report=');
+   expect(BF.reportIsEmpty(BF.freshState())).toBe(true);
+   const s=BF.freshState();s.observations.push('milkweed');
+   expect(BF.reportIsEmpty(s)).toBe(false);
+   expect(render({butterfly:BF.save(s)})).toContain('data-bf-report=');
+ });
+
+ it('reports only what the learner actually recorded',()=>{
+   const s=BF.freshState();s.observations.push('milkweed');
+   BF.runSeason(s,'milkweed','never','complete');
+   const text=BF.fieldReport(s);
+   expect(text).toContain('PATCHES EXAMINED (1 of 3)');
+   expect(text).toContain('Common milkweed (Asclepias syriaca)');
+   // Sections the learner never touched say so rather than being omitted or faked.
+   expect(text).toContain('PLANTING COMPARISONS (0 of 3)');
+   expect(text).toContain('GENERATIONS FOLLOWED (0)');
+   expect(text).toMatch(/SEASONS RUN \(1\)/);
+   expect(text).toContain('no cut: ran the whole cycle');
+   expect(text).toContain('matched');
+   // The disclosure travels with the report, not just the on-screen panel.
+   expect(text).toContain('does not count butterflies, estimate survival');
+ });
+
+ it('says in the report when a row describes a planting that has been replaced',()=>{
+   const s=BF.freshState();
+   BF.applyPlan(s,'mixed','both');Object.assign(s,{x:-42,z:38});BF.land(s);BF.observe(s);
+   BF.runSeason(s,'restoration','never','complete');
+   expect(BF.fieldReport(s)).not.toContain('has since been replaced');
+   BF.applyPlan(s,'flowers','nectar');Object.assign(s,{x:-42,z:38});BF.land(s);BF.observe(s);
+   const text=BF.fieldReport(s);
+   // Kept, attributed to its planting, and flagged -- not dropped, not counted.
+   expect(text).toContain('[Milkweed + bergamot]');
+   expect(text).toContain('this planting has since been replaced');
+ });
+
  it('never states a survival rate or a number of butterflies',()=>{
    const s=examined(BF.freshState(),'milkweed');
    BF.runSeason(s,'milkweed','never','complete');
-   const html=render(BF.save(s));
+   const html=render({butterfly:BF.save(s)});
    expect(html).toContain('not how many monarchs survive');
    expect(html).not.toMatch(/\d+\s*(butterflies|monarchs|eggs)\s+(survive|survived)/i);
  });
