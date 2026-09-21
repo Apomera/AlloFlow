@@ -165,6 +165,23 @@ const normalizeSuccessCriteria = (raw, options = {}) => {
     return out.slice(0, 8);
 };
 
+// --- Plan output language ---------------------------------------------------
+// "All Selected Languages" is a UI pseudo-value meaning "generate one copy per
+// selected language". The dispatcher implements that as a fan-out; a single
+// sidebar plan cannot, so it must resolve the pseudo-value to a real language
+// rather than forward it. Forwarding put "Language: All Selected Languages"
+// into the prompt and asked the model to write in a language that does not
+// exist. English is the same fallback content_engine already uses for this
+// case (phonics, word analysis).
+const ALLO_ALL_SELECTED_LANGUAGES = 'All Selected Languages';
+const resolvePlanOutputLanguage = (outputLanguage, uiLanguage) => {
+  const out = String(outputLanguage == null ? '' : outputLanguage).trim();
+  if (out && out !== ALLO_ALL_SELECTED_LANGUAGES) return out;
+  const ui = String(uiLanguage == null ? '' : uiLanguage).trim();
+  if (ui && ui !== ALLO_ALL_SELECTED_LANGUAGES) return ui;
+  return 'English';
+};
+
 // --- Unit Path context ------------------------------------------------------
 // Where a lesson sits on the teacher's Unit Path (Learning Web), read from the
 // registry's registered unit-path graphs (acg/v1). A plan is "on the path" when
@@ -1557,6 +1574,8 @@ window.AlloModules.UtilsPure = {
   resolveUnitPathContext,
   capturePlanningInputs,
   consumePendingUnitPathNode,
+  resolvePlanOutputLanguage,
+  ALLO_ALL_SELECTED_LANGUAGES,
   _ALLO_UNIT_PATH_STAMP_MAX_AGE_MS,
   getPlanningInputStatus,
   outlineNodeBlueprints,

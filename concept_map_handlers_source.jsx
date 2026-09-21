@@ -650,7 +650,13 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
             // "lesson plan is inconsistent about honouring a non-English output
             // language" report; it was never model flakiness. Both entry points
             // now send leveledTextLanguage.
-            const planLanguage = leveledTextLanguage || currentUiLanguage || 'English';
+            // leveledTextLanguage can hold the "All Selected Languages" pseudo-value
+            // (the Output Language dropdown offers it once extra languages exist).
+            // currentUiLanguage never could, which is why rewiring these branches to
+            // leveledTextLanguage in 2026-08-16 opened that case. Resolve, never forward.
+            const planLanguage = (window.AlloModules?.UtilsPure?.resolvePlanOutputLanguage)
+                ? window.AlloModules.UtilsPure.resolvePlanOutputLanguage(leveledTextLanguage, currentUiLanguage)
+                : (leveledTextLanguage && leveledTextLanguage !== 'All Selected Languages' ? leveledTextLanguage : (currentUiLanguage || 'English'));
             if (isIndependentMode) {
                 prompt = buildStudyGuidePrompt(context, planLanguage, lessonCustomAdditions);
             } else if (isParentMode) {
