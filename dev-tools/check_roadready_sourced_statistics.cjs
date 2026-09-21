@@ -140,6 +140,29 @@ const CLAIMS = [
       'adult 275-day refusal suspension under §2521',
   },
   {
+    label: 'Maine standard inspection fee (§1751)',
+    re: /inspection fee by statute at about \$(\d{2}\.\d{2})/,
+    min: 12.5, max: 12.5,
+    source: 'Maine 29-A §1751(2): the basic inspection fee may not exceed $12.50 (higher in ' +
+      'Cumberland County for enhanced tests), payable whether or not the vehicle passes.',
+  },
+  {
+    label: 'Maine dealer used-car inspection-sticker age',
+    re: /inspection sticker issued within the last (\d{2}) days/,
+    min: 60, max: 60,
+    source: 'Maine dealer "warranty of inspectability": a used car sold by a dealer must ALREADY ' +
+      'carry a sticker issued within the past 60 days. The tool previously said "inspection ' +
+      'required within 10 days of purchase", which inverts who owes the obligation and is not ' +
+      'in §1751.',
+  },
+  {
+    label: 'Maine studded-tire season start month (§1919)',
+    re: /Maine allows studded tires Oct (\d) – May 1/,
+    min: 1, max: 1,
+    source: 'Maine 29-A §1919: studs are PROHIBITED from May 1 to Oct 1, so the legal window is ' +
+      'Oct 1 - May 1. Retractable studs may be fitted year-round but not extended in that window.',
+  },
+  {
     label: 'car purchase as a share of four-year ownership cost',
     re: /the car itself is only about (\d{2})-\d{2}% of what you actually spend/,
     min: 13, max: 16,

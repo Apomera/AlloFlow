@@ -38440,7 +38440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { title: __alloT('stem.roadready.after_purchase', 'After Purchase'), icon: '📋', items: [
             'Get insurance BEFORE driving it home (call your agent, get a policy number).',
             'Register within 30 days (Maine). Bring: bill of sale, title, proof of insurance, ID.',
-            'Maine inspection required within 10 days of purchase for used vehicles.',
+            'Buying used from a Maine dealer: the car must ALREADY carry an inspection sticker issued within the last 60 days — that is the dealer\'s "warranty of inspectability", not something you fix afterward. If it does not have one, that is the dealer\'s problem to solve before you drive away.',
             'Change ALL fluids (oil, coolant, brake fluid, transmission) — you don\'t know when the previous owner did.'
           ]}
         ];
