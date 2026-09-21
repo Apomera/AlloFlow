@@ -167,7 +167,12 @@ function discover(id) {
 
   views.delete('menu'); // the default screen is already covered by the null view
   // Deep tools have 20+ screens; the cap was hiding most of them.
-  return { keys: [...keys].slice(0, 60), views: [...views].slice(0, 30) };
+  const allKeys = [...keys];
+  const kept = allKeys.slice(0, KEY_CAP);
+  if (allKeys.length > KEY_CAP) {
+    truncated.push({ tool: id, read: allKeys.length, swept: KEY_CAP });
+  }
+  return { keys: kept, views: [...views].slice(0, 30) };
 }
 
 /** Which of the view key names this tool actually uses, so we set only those. */
@@ -201,6 +206,13 @@ function defaultsOf(id) {
 // Hostile values. Out-of-range integers included per the climateExplorer note:
 // that crash needed an out-of-range option INDEX, which "abc"/9999 never reach.
 const HOSTILE = ['abc', 9999, -1, 1.5, {}, [], null, 0];
+
+// Keys swept per tool. A cap is needed — a full run already exhausts an
+// 8 GB heap — but it MUST be visible: slicing silently meant 53 of 150 tools
+// were partially swept while the gate printed a clean tick, and that is how
+// nuclearLab's nkQuery crash (the 81st key) shipped. --deep raises it.
+const KEY_CAP = process.argv.includes('--deep') ? 400 : 60;
+const truncated = [];
 
 const palProxy = new Proxy({}, { get: () => '#888888' });
 const theme = new Proxy({ isDark: true, isContrast: false, reduceMotion: false, palette: palProxy },
@@ -304,6 +316,17 @@ console.log(`tools exercised : ${exercised}`);
 console.log(`crashing tools  : ${Object.keys(byTool).length}`);
 console.log(`distinct crashes: ${crashes.length}`);
 console.log(`views skipped   : ${skipped.length} (failed their CLEAN control — not hostile-input bugs)\n`);
+// Partial coverage must never read as complete. Without this, the tick at the
+// end said "no STEM tool crashes" while solarsystem had swept 60 of its 379
+// keys — 53 of 150 tools read more than the cap.
+if (truncated.length) {
+  const worst = truncated.slice().sort((a, b) => b.read - a.read);
+  const unswept = truncated.reduce((n, t) => n + (t.read - t.swept), 0);
+  console.log(`PARTIAL COVERAGE: ${truncated.length} tool(s) read more than ${KEY_CAP} keys; `
+    + `${unswept} key(s) were NOT swept. Re-run with --deep for full coverage.`);
+  for (const t of worst.slice(0, 5)) console.log(`  ${t.tool}: swept ${t.swept} of ${t.read}`);
+  console.log('');
+}
 for (const [tool, list] of Object.entries(byTool)) {
   console.log(`  ${tool} (${list.length})`);
   for (const c of list.slice(0, 6)) {
