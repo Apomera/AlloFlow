@@ -479,7 +479,7 @@ function SpedTimelinesPanel(props) {
                         else { setArmDelete(c.id); spedAnnounce(tt('spedtl.delete_arm_announce', 'Activate delete again to permanently remove this timeline.')); }
                       }}
                       aria-label={(armDelete === c.id ? tt('spedtl.delete_confirm_aria', 'Confirm delete') : tt('spedtl.delete_aria', 'Delete')) + ' ' + c.code + ' ' + typeLabel(c.type)}
-                      className={'shrink-0 min-w-9 min-h-9 inline-flex items-center justify-center rounded text-[11px] font-bold ' + (armDelete === c.id ? 'bg-rose-600 text-white' : 'text-slate-400 hover:text-rose-700 hover:bg-rose-50')}
+                      className={'shrink-0 min-w-9 min-h-9 inline-flex items-center justify-center rounded text-[11px] font-bold ' + (armDelete === c.id ? 'bg-rose-600 text-white' : 'text-slate-500 hover:text-rose-700 hover:bg-rose-50')}
                     >{armDelete === c.id ? tt('spedtl.delete_confirm_short', 'Sure?') : '✕'}</button>
                   </li>
                 ))}

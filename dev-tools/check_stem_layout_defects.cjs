@@ -367,6 +367,13 @@ function extractHostThemeRules(theme) {
 // x-user-units while `ry` is in y-user-units. A bare `rx` therefore becomes an
 // ellipse as wide as the scale ratio — the Pets Lab's commitment timeline drew
 // a 52px-by-8px "corner" on a 16px-tall bar and read as two grey smudges.
+// ★The 60-line window used to be scanned unconditionally, so a rect in a LATER,
+// uniformly-scaled SVG was reported against an earlier `preserveAspectRatio`.
+// circuit line 1856 (viewBox 340x114, no preserveAspectRatio, therefore
+// xMidYMid meet and a perfectly round corner) was flagged by line 1805's
+// attribute 51 lines above it. A window stops at the next `h('svg'` now: that
+// element ends the scope of the attribute regardless of nesting depth, so the
+// scan can only ever attribute a rect to the svg it actually sits in.
 function lintNonUniformRx(source, file) {
   const out = [];
   const lines = source.split('\n');
@@ -374,6 +381,10 @@ function lintNonUniformRx(source, file) {
     if (!/preserveAspectRatio:\s*'none'/.test(lines[i])) continue;
     for (let j = i; j < Math.min(lines.length, i + 60); j += 1) {
       const line = lines[j];
+      // A new svg opens a new scale context; anything past it is not governed
+      // by this preserveAspectRatio. (Line i itself may hold both, so only
+      // break on a LATER line.)
+      if (j > i && /h\('svg'/.test(line)) break;
       if (!/h\('rect'/.test(line)) continue;
       if (!/\brx:\s*[\d.]/.test(line)) continue;
       if (/\bry:/.test(line)) continue;
@@ -713,6 +724,19 @@ const PROBE = function (CONTRAST) {
         if (ns.overflowX === 'hidden' || ns.overflowY === 'hidden' || ns.overflowX === 'clip' || ns.overflowY === 'clip') { clipper = n; break; }
       }
       if (!clipper) return;
+      // ★A CLIPPER WITH NOTHING TO SCROLL IS NOT CLIPPING, 2026-09-20.
+      // `invisible()` above already skips a closed <details> subtree, but NOT
+      // its <summary>, which is genuinely painted. throwlab nests three
+      // <details> inside an `overflow:hidden` drawer: while the drawer is shut,
+      // those nested summaries are unpainted, yet Chromium still hands back
+      // live rects ~790px below the drawer, and they read as a 201px and a
+      // 277px vertical clip. The drawer's own scrollHeight EQUALS its
+      // clientHeight (57 = 57, measured in the browser), which is the decisive
+      // fact: a box that has nothing to scroll is not cutting anything off.
+      // A real fixed-height card that truly clips prose has scrollHeight >
+      // clientHeight, so the calibration fixture still reports its one cut.
+      if (clipper.scrollHeight <= clipper.clientHeight + 2 &&
+          clipper.scrollWidth <= clipper.clientWidth + 2) return;
       const ks = getComputedStyle(clipper);
       if (ks.webkitLineClamp && ks.webkitLineClamp !== 'none') return;
       if (clipper.clientWidth <= 2 || clipper.clientHeight <= 2) return;
