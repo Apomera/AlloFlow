@@ -100,7 +100,7 @@ An agent can author the same portable resource-pack structure without opening th
 |---------|-------------|
 | **Adventure Mode** | Choose-your-own-adventure RPG with XP, inventory, dynamic Imagen-generated scenes, and Storybook export |
 | **Boss Battle** | Whole-class cooperative quiz game — correct answers deal damage to the boss |
-| **Escape Room** | Team-based puzzle challenges with teacher-controlled hints and timed escape tracking |
+| **Puzzle Challenge** | Team-based puzzle challenges with teacher-controlled hints and timed escape tracking |
 | **Review Game** | Jeopardy-style competitive review with teams and real-time scoring |
 | **Democracy Mode** | Class votes on the answer; majority response is submitted |
 | **Gamification Engine** | XP, levels, streaks, and badges earned across all activities |
@@ -251,7 +251,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 
 | UDL Principle | AlloFlow Tools |
 |---------------|----------------|
-| **Engagement** | Adventure Mode, Boss Battle, Escape Room, Democracy Mode, Symbol Quest, Symbol Search, StoryForge, Growth Mindset Workshop, Gamification Engine |
+| **Engagement** | Adventure Mode, Boss Battle, Puzzle Challenge, Democracy Mode, Symbol Quest, Symbol Search, StoryForge, Growth Mindset Workshop, Gamification Engine |
 | **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab (150 plugin files / 150 registered IDs), SEL Hub (72 tools), TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
 | **Action & Expression** | Writing Scaffolds, StoryForge, Auto-Grader, Rubrics, Oral Fluency Coach, Dictation, QTI Export, Symbol Studio, Report Writer, PDF Pipeline |
 

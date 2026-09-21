@@ -40292,7 +40292,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           </ErrorBoundary>
       )}
       {!isTeacherMode && activeSessionCode && (sessionData?.escapeRoomState?.isActive || sessionData?.escapeRoomState?.isGameOver) && (
-          <ErrorBoundary fallbackMessage="Escape Room encountered an error. Waiting for sync...">
+          <ErrorBoundary fallbackMessage="Puzzle Challenge encountered an error. Waiting for sync...">
             <StudentEscapeRoomOverlay
                 sessionData={sessionData}
                 user={user}

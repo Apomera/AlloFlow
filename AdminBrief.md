@@ -70,7 +70,7 @@ For teachers:
 For students:
 
 - **Adventure Mode**: choose-your-own-adventure learning with XP, inventory, and AI-illustrated scenes
-- **Boss Battle / Escape Room / Democracy / Jeopardy**: whole-class cooperative learning games
+- **Boss Battle / Puzzle Challenge / Democracy / Jeopardy**: whole-class cooperative learning games
 - **Immersive Reader**: RSVP speed reader, karaoke highlighting, bionic reading, reading ruler, and oral-fluency supports
 
 For special educators, SLPs, and BCBAs:

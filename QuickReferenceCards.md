@@ -76,7 +76,7 @@
 | **Boss Battle** | Class works together — correct answers damage the boss |
 | **Team Showdown** | Competitive team quiz with live leaderboard |
 | **Democracy Mode** | Students vote; majority answer is submitted |
-| **Escape Room** | Timed team puzzle challenges |
+| **Puzzle Challenge** | Timed team puzzle challenges |
 | **Diff Push** | Send different content to different student groups |
 
 ---
