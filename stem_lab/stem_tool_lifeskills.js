@@ -1695,6 +1695,41 @@ window.StemLab = window.StemLab || {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var h = React.createElement;
       var d = (ctx.toolData && ctx.toolData.lifeSkills) || {};
+      // A saved project is INPUT: a student can hand-edit it or carry it
+      // across versions. These 69 keys hold free TEXT that is either
+      // .trim()-ed or handed straight to React as a child, so a stored
+      // number throws "trim is not a function" and a stored object throws
+      // "Objects are not valid as a React child". Either one blanks the
+      // WHOLE lab, because the shell's error boundary is unkeyed.
+      //
+      // Sanitised HERE rather than at each read: the values are consumed
+      // through two different idioms (a local bound once, and a bare d.x
+      // in the JSX), so guarding one site per key would miss the other.
+      // Non-strings become '' — these are all display/feedback strings, so
+      // an empty one renders nothing, which is the honest fallback.
+      var _LS_TEXT_KEYS = [
+        'appointmentScenarioFb', 'appointmentScriptMsg', 'bodyScenarioFb', 'ccDashFb', 'communicationPlanMsg',
+        'communicationScenarioFb', 'dentalScenarioFb', 'digitalPlanMsg', 'digitalScenarioFb', 'foodConfidenceScenarioFb',
+        'foodLabelFb', 'foodSafetyFb', 'homePlanMsg', 'homeSafetyScenarioFb', 'interviewDayMsg',
+        'interviewFollowUpMessage', 'interviewInput', 'interviewPacketMsg', 'interviewPlanMsg', 'interviewProofCueMsg',
+        'interviewProofNote', 'interviewReflectionMsg', 'interviewReflectionNote', 'interviewRehearsalMsg', 'interviewSavedStarAnswer',
+        'interviewSavedTranscript', 'interviewScenarioFb', 'interviewSparkMsg', 'interviewStarAction', 'interviewStarMsg',
+        'interviewStarResult', 'interviewStarSituation', 'interviewStarTask', 'interviewTranscriptMsg', 'kitchen3dMsg',
+        'laundry3dMsg', 'lifeSkills3dStatus', 'medLabelFb', 'medQuestionMsg', 'medScenarioFb',
+        'overviewPlanMsg', 'plumbFb', 'proofItemEvidence', 'proofItemMsg', 'proofItemShare',
+        'proofItemSkill', 'proofItemTitle', 'proofItemType', 'proofPlanMsg', 'proofScenarioFb',
+        'recordPlanMsg', 'recordScenarioFb', 'repair3dMsg', 'resumeAction', 'resumeBulletMsg',
+        'resumeContext', 'resumePlanMsg', 'resumeResult', 'resumeScenarioFb', 'resumeSkill',
+        'safety3dMsg', 'sleepScenarioFb', 'timePlanMsg', 'timeScenarioFb', 'transit3dMsg',
+        'transportPlanMsg', 'transportScenarioFb', 'workPlanMsg', 'workScenarioFb'
+      ];
+      for (var _lsi = 0; _lsi < _LS_TEXT_KEYS.length; _lsi++) {
+        var _lsk = _LS_TEXT_KEYS[_lsi];
+        if (_lsk in d && typeof d[_lsk] !== 'string') {
+          if (d === ctx.toolData.lifeSkills) d = Object.assign({}, d);
+          d[_lsk] = '';
+        }
+      }
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
       var a11yClick = ctx.a11yClick;
