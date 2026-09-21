@@ -2253,6 +2253,15 @@ window.StemLab = window.StemLab || {
       var totalLoad = 0;
       asRunning.forEach(function(name) { var dev = COMMON_DEVICES.find(function(x) { return x.name === name; }); if (dev) totalLoad += dev.watts; });
       var circuitUsage = totalLoad / asWatts * 100;
+      // NEC 210.19/210.20: a circuit may carry only 80% of its rating for a
+      // CONTINUOUS load (3 hours or more). The tool only warned above 100%, so a
+      // 1500W space heater on a 15A circuit - 1500W against a 1440W continuous
+      // limit - showed as fine. A space heater is the textbook continuous load
+      // and a leading cause of electrical fires.
+      var asContinuousW = Math.round(asWatts * 0.8);
+      var asOverContinuous = totalLoad > asContinuousW && totalLoad <= asWatts;
+      var CONTINUOUS_DEVICES = ['Space heater', 'Clothes dryer', 'Oven'];
+      var asContinuousOn = asRunning.filter(function(n) { return CONTINUOUS_DEVICES.indexOf(n) >= 0; });
       var asTireP1 = (typeof d.asTireP1 === 'number' && isFinite(d.asTireP1)) ? d.asTireP1 : 35;
       var asTireT1 = (typeof d.asTireT1 === 'number' && isFinite(d.asTireT1)) ? d.asTireT1 : 70;
       var asTireT2 = (typeof d.asTireT2 === 'number' && isFinite(d.asTireT2)) ? d.asTireT2 : 20;
@@ -6602,7 +6611,7 @@ window.StemLab = window.StemLab || {
           // Circuit Breaker
           h('div', { className: glassCard },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.circuit_load_calculator', '\u26A1 Circuit Load Calculator')),
-            h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Circuit: ' + asVolts + 'V \u00D7 ' + asAmps + 'A = ' + asWatts + 'W max'),
+            h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Circuit: ' + asVolts + 'V \u00D7 ' + asAmps + 'A = ' + asWatts + 'W max, but only ' + asContinuousW + 'W for anything running 3+ hours'),
             h('div', { className: 'flex flex-wrap gap-1.5' },
               COMMON_DEVICES.map(function(dev) {
                 var on = asRunning.indexOf(dev.name) >= 0;
@@ -6620,7 +6629,12 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'absolute inset-y-0 left-0 rounded-full transition-all', style: { width: Math.min(100, circuitUsage) + '%', background: circuitUsage > 100 ? '#ef4444' : circuitUsage > 80 ? '#f59e0b' : '#22c55e' } })
               ),
               h('p', { className: 'text-[11px] font-bold mt-1 ' + (circuitUsage > 100 ? 'text-red-600' : 'text-slate-600') },
-                totalLoad + 'W / ' + asWatts + 'W (' + Math.round(circuitUsage) + '%)' + (circuitUsage > 100 ? ' \u26A0\uFE0F BREAKER WILL TRIP!' : ''))
+                totalLoad + 'W / ' + asWatts + 'W (' + Math.round(circuitUsage) + '%)' + (circuitUsage > 100 ? ' \u26A0\uFE0F BREAKER WILL TRIP!' : '')),
+              asOverContinuous && h('p', { className: 'text-[11px] mt-1 p-2 rounded-lg bg-amber-50 border border-amber-300 text-amber-900' },
+                '\u26A0\uFE0F Under the ' + asWatts + 'W trip point, but over the ' + asContinuousW + 'W continuous limit. ' +
+                'The 80% rule says a circuit may carry only ' + asContinuousW + 'W for 3 hours or more. ' +
+                (asContinuousOn.length ? asContinuousOn.join(' and ') + (asContinuousOn.length > 1 ? ' run' : ' runs') + ' for hours, so this is a real fire risk, not a breaker nuisance.' : 'Safe for a few minutes; not safe left running.') +
+                ' The breaker will not save you here - it is not tripping.')
             )
           ),
           // Tire Pressure
