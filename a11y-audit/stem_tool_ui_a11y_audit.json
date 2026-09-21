@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-21T13:02:07.865Z",
+  "generatedAt": "2026-09-21T13:11:13.796Z",
   "source": {
     "stemToolFileCount": 150,
     "registeredToolCount": 152
@@ -8,10 +8,10 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 6,
+    "issueCount": 5,
     "errorCount": 0,
     "warningCount": 4,
-    "noticeCount": 2,
+    "noticeCount": 1,
     "toolsWithIssues": 4,
     "toolsWithErrors": 0,
     "toolsWithWarnings": 3,
@@ -118,7 +118,7 @@
         "toolCount": 1,
         "errorCount": 0,
         "warningCount": 0,
-        "noticeCount": 2
+        "noticeCount": 1
       },
       "creativity": {
         "toolCount": 1,
@@ -220,16 +220,6 @@
         "fieldJourneys"
       ],
       "recommendation": "Confirm light-background tools still pass contrast across light, dark, and high-contrast themes."
-    },
-    {
-      "code": "metadata",
-      "severity": "notice",
-      "count": 1,
-      "toolCount": 1,
-      "exampleTools": [
-        "fieldJourneys"
-      ],
-      "recommendation": "Fill in label, description, category, and aliases so discovery and context labels stay clear."
     }
   ],
   "recommendations": [
@@ -1877,7 +1867,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 71171,
+      "renderedBytes": 71168,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -2121,15 +2111,15 @@
       "ready": true,
       "lightBackground": true,
       "aliases": [],
-      "desc": "",
-      "renderedBytes": 16649,
+      "desc": "Try a story-led Watershed or Grove campaign. Explore the landscape, make decisions, and keep a field journal. Optional pilot with separate saves.",
+      "renderedBytes": 16700,
       "settlePasses": 1,
       "auditedAs": "client-mount",
       "standardShell": false,
-      "issueCount": 2,
+      "issueCount": 1,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 2,
+      "noticeCount": 1,
       "metrics": {
         "buttons": 3,
         "roleButtons": 0,
@@ -2146,12 +2136,6 @@
         {
           "toolId": "fieldJourneys",
           "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry description is missing or too short for catalog/context UI."
-        },
-        {
-          "toolId": "fieldJourneys",
-          "severity": "notice",
           "code": "light-background",
           "message": "Tool opts out of the shared dark tool shell; verify contrast across themes."
         }
@@ -2165,7 +2149,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 41970,
+      "renderedBytes": 41983,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -3929,7 +3913,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 19334,
+      "renderedBytes": 19342,
       "settlePasses": 2,
       "auditedAs": "default",
       "standardShell": true,

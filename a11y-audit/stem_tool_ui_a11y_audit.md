@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-09-21T13:02:07.865Z
+Generated: 2026-09-21T13:11:13.796Z
 
 ## Scope
 
@@ -13,10 +13,10 @@ Generated: 2026-09-21T13:02:07.865Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 6 |
+| Total findings | 5 |
 | High-confidence errors | 0 |
 | Tool-level warnings | 4 |
-| Review notices | 2 |
+| Review notices | 1 |
 | Tools with any finding | 4 |
 | Tools with high-confidence errors | 0 |
 | Tools with canvas surfaces | 46 |
@@ -28,7 +28,6 @@ Generated: 2026-09-21T13:02:07.865Z
 | warning | `no-interactive-controls` | 2 | 2 | coasterLab, geoSandbox | Confirm the first screen really has no control. If it does, the audit is stuck on a placeholder and the tool is effectively unaudited. |
 | warning | `placeholder-render` | 2 | 2 | geoSandbox, lawNavigator | The audit only saw a loading/gated screen. Give the harness what the tool waits on (host state, 3D loader, network stub) so the real first screen gets audited. |
 | notice | `light-background` | 1 | 1 | fieldJourneys | Confirm light-background tools still pass contrast across light, dark, and high-contrast themes. |
-| notice | `metadata` | 1 | 1 | fieldJourneys | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
 
 ## Recommended Next Passes
 
@@ -100,7 +99,7 @@ Generated: 2026-09-21T13:02:07.865Z
 | `ecosystem` Ecosystem Simulator | science | standard | 49 | 13 | 1 | 0 | 0 | 0 |  |
 | `epidemicSim` Epidemic Modeling Lab | Life Science | standard | 25 | 14 | 1 | 0 | 0 | 0 |  |
 | `evoLab` EvoLab — Evolution | biology | standard | 33 | 0 | 0 | 0 | 0 | 0 |  |
-| `fieldJourneys` Field Journeys (Pilot) | Ecology & Environment | light opt-out | 3 | 1 | 0 | 0 | 0 | 2 | light-background x1, metadata x1 |
+| `fieldJourneys` Field Journeys (Pilot) | Ecology & Environment | light opt-out | 3 | 1 | 0 | 0 | 0 | 1 | light-background x1 |
 | `fireEcology` Fire Ecology & Indigenous Stewardship | science | standard | 28 | 0 | 0 | 0 | 0 | 0 |  |
 | `firstResponse` First Response Lab | life-skills | standard | 1 | 0 | 0 | 0 | 0 | 0 |  |
 | `fisherLab` FisherLab: Boating & Fishing Sim | science | standard | 39 | 6 | 0 | 0 | 0 | 0 |  |
