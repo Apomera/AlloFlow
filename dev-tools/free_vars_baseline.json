@@ -6,6 +6,12 @@
     "chunkReport",
     "chunkWeightedScore"
   ],
+  "sel_hub/sel_tool_advocacy.js": [
+    "addToast"
+  ],
+  "sel_hub/sel_tool_mindfulness.js": [
+    "MANTRAS_PHRASES"
+  ],
   "view_pdf_audit_source.jsx": [
     "FileDown",
     "NodeFilter",

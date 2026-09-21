@@ -81,7 +81,13 @@ const KNOWN_GLOBALS = new Set([
 
 const args = process.argv.slice(2);
 const UPDATE = args.includes('--update');
-const files = args.filter((a) => a !== '--update');
+// Treat any leading-dash argument as a flag, not a path. `--quiet` is the
+// convention across the other gates, and this one used to pass it straight
+// through as a filename: it then tried to read the repo root, died with
+// EISDIR, and exited 1 on a CLEAN tree. A gate that fails green is worse than
+// no gate — it gets muted, and the real regressions go with it.
+const QUIET = args.includes('--quiet');
+const files = args.filter((a) => !a.startsWith('--'));
 // phase_o_misc_handlers_source.jsx joined the list 2026-07-27: `webSearchProvider`
 // was used by both standards-lookup handlers but never destructured from deps
 // (and never passed in the deps bag either), so the local-backend standards path
@@ -122,6 +128,25 @@ if (!files.length) {
   if (fs.existsSync(stemDir)) {
     for (const f of fs.readdirSync(stemDir).sort()) {
       if (/^stem_tool_.*\.js$/.test(f)) files.push('stem_lab/' + f);
+    }
+  }
+  // sel_hub added 2026-09-20: 72 SEL tools and the hub's own infrastructure had
+  // NO dangling-identifier coverage at all, while the 149 STEM tools next door
+  // have had it since the sweep that found eighteen live ReferenceErrors. These
+  // tools run in front of students during counselling and crisis work, so a
+  // free identifier there is the worst place to learn about one.
+  //
+  // First scan: 72 tools, 2 findings, both benign and baselined —
+  //   advocacy: `addToast` used above its own `var` declaration, every such use
+  //     already `typeof`-guarded (a previous author documented it at line 34).
+  //   mindfulness: `MANTRAS_PHRASES` is defined NOWHERE in the repo. Guarded,
+  //     so it does not throw, but the Mantras tab it gates can only ever render
+  //     "Mantras library loading..." — and `mantrasContent` is never rendered
+  //     at all. Dead half-built feature; reported, not silently "fixed".
+  const selDir = path.resolve(__dirname, '..', 'sel_hub');
+  if (fs.existsSync(selDir)) {
+    for (const f of fs.readdirSync(selDir).sort()) {
+      if (/\.js$/.test(f)) files.push('sel_hub/' + f);
     }
   }
 }
@@ -172,7 +197,7 @@ for (const rel of files) {
       totalBad++;
     }
   } else {
-    console.log('  ✓ ' + rel + ': no NEW free variables (' + bad.size + ' baselined injection-contract names)');
+    if (!QUIET) console.log('  ✓ ' + rel + ': no NEW free variables (' + bad.size + ' baselined injection-contract names)');
   }
 }
 
