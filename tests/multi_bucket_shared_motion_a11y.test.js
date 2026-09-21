@@ -36,7 +36,12 @@ describe('Shared MultiBucket sorter accessibility', () => {
   it('uses native item buttons, separate speech actions, and named bucket groups', () => {
     expect(sourceComponent).toContain('data-multi-bucket-item-id');
     expect(sourceComponent).toContain('aria-pressed={selected}');
-    expect(sourceComponent).toContain('</button>\n        <SpeakButton');
+    // Whitespace-insensitive: core.autocrlf=true checks this repo out with
+    // CRLF on Windows while the committed blob is LF, so a pin containing a
+    // bare newline escape can never match locally. The intent is ADJACENCY --
+    // the speech control sits immediately after the item's own button -- not
+    // the exact indentation, which no behaviour depends on.
+    expect(sourceComponent).toMatch(/<\/button>\s*<SpeakButton/);
     expect(sourceComponent).toContain('role="group"');
     expect(sourceComponent).not.toContain('role="button"');
     expect(sourceComponent).not.toContain('handleItemKeyDown');

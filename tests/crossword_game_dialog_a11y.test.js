@@ -42,7 +42,12 @@ describe('Crossword dialog accessibility', () => {
     // The speech control still sits immediately after the clue button; it is
     // now wrapped in a `no-print` span so it does not appear on the printed
     // worksheet (fleet L1/G7).
-    expect(component).toContain('</button>\n                               <span className="no-print"><SpeakButton');
+    // Whitespace-insensitive: core.autocrlf=true checks this repo out with
+    // CRLF on Windows while the committed blob is LF, so a pin containing a
+    // bare newline escape can never match locally. The intent is ADJACENCY --
+    // the speech control sits immediately after the item's own button -- not
+    // the exact indentation, which no behaviour depends on.
+    expect(component).toMatch(/<\/button>\s*<span className="no-print"><SpeakButton/);
     expect(component).not.toContain('role="button"');
     expect(component).not.toContain('onKeyDown={(event) =>');
     expect(component).toContain('crosswordGridRef.current?.focus()');
