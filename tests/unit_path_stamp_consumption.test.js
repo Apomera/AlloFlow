@@ -142,3 +142,56 @@ describe('both lesson-plan routes go through that one consumer', () => {
     expect(dispatcher).not.toContain('delete window.__alloPendingUnitPathNode');
   });
 });
+
+describe('why the stamp matters: it is the only anchor on this route', () => {
+  // resolveUnitPathContext locates a plan on the path two ways:
+  //   1. a node whose resourceId IS the plan id -- set when a node is authored
+  //      around an EXISTING resource, not when a plan is generated from a node;
+  //   2. the stamp (plan.data.unitPath).
+  // For the follow-up flow the node is "planned" (no resourceId yet), so the
+  // stamp is the only anchor. Losing it does not just drop a badge: the result
+  // feeds the "next lesson" options, where a located plan promotes "next node
+  // on your Unit Path" to option 1. No stamp -> no location -> no next node ->
+  // the path silently stops advancing on that route.
+  const GRAPH = [{
+    id: 'unit-path:u1',
+    graph: {
+      nodes: [
+        { id: 'n1', label: 'Halves and quarters' },
+        { id: 'n2', label: 'Fractions on a number line' },
+        { id: 'n3', label: 'Comparing fractions' },
+      ],
+      edges: [{ source: 'n1', target: 'n2' }, { source: 'n2', target: 'n3' }],
+    },
+  }];
+
+  const planStampedAt = (nodeId) => ({
+    id: 'plan-123',
+    data: { unitPath: { graphId: 'unit-path:u1', nodeId, label: 'x', title: 'Unit 1', index: 2, count: 3 } },
+  });
+
+  it('a stamped plan resolves to its node AND yields the next one', () => {
+    const ctx = Utils.resolveUnitPathContext(GRAPH, planStampedAt('n2'));
+    expect(ctx).toBeTruthy();
+    expect(ctx.current.id).toBe('n2');
+    expect(ctx.next.id).toBe('n3');
+  });
+
+  it('the same plan WITHOUT the stamp resolves to nothing', () => {
+    // This is exactly what the sidebar route produced before the fix.
+    const ctx = Utils.resolveUnitPathContext(GRAPH, { id: 'plan-123', data: {} });
+    expect(ctx).toBeNull();
+  });
+
+  it('a stamp for a different graph does not match this one', () => {
+    const plan = planStampedAt('n2');
+    plan.data.unitPath.graphId = 'unit-path:other';
+    expect(Utils.resolveUnitPathContext(GRAPH, plan)).toBeNull();
+  });
+
+  it('the last node resolves with no next, rather than wrapping around', () => {
+    const ctx = Utils.resolveUnitPathContext(GRAPH, planStampedAt('n3'));
+    expect(ctx.current.id).toBe('n3');
+    expect(ctx.next).toBeFalsy();
+  });
+});
