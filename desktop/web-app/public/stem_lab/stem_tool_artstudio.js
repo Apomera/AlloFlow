@@ -8847,6 +8847,8 @@ const d = labToolData.artStudio || {};
                   var isPaused = d.genPaused === undefined ? reducedMotion : !!d.genPaused;
 
                   canvas.setAttribute('data-paused', isPaused ? '1' : '0');
+                  // Restart the loop the moment play resumes; it stops itself on pause.
+                  if (!isPaused && typeof canvas._genResume === 'function') canvas._genResume();
 
                   canvas.setAttribute('aria-label', 'Generative art canvas using ' + (d.genStyle || 'flow') + ' style with ' +
 
@@ -9265,10 +9267,21 @@ const d = labToolData.artStudio || {};
                     return true;
                   };
                   function animate() {
-                    if (!canvas.isConnected) return;
-                    if (!isRestoring && canvas.getAttribute('data-paused') !== '1') stepSimulation();
-                    if (canvas.isConnected) canvas._genAnim = requestAnimationFrame(animate);
+                    if (!canvas.isConnected) { canvas._genAnim = null; return; }
+                    // A paused loop used to keep asking for frames and do nothing with
+                    // them: 60 wake-ups a second, for as long as the tab stays open, on
+                    // a student's laptop or tablet. Stop instead, and let the render
+                    // path below restart it when play resumes — the same shape the
+                    // watercolour tick already uses.
+                    if (canvas.getAttribute('data-paused') === '1' && !isRestoring) { canvas._genAnim = null; return; }
+                    if (!isRestoring) stepSimulation();
+                    canvas._genAnim = requestAnimationFrame(animate);
                   }
+                  canvas._genResume = function () {
+                    if (!canvas.isConnected || canvas._genAnim) return;
+                    if (canvas.getAttribute('data-paused') === '1') return;
+                    canvas._genAnim = requestAnimationFrame(animate);
+                  };
                   // A restored checkpoint remains at its exact frame until the next animation tick.
                   if (validState) canvas._genAnim = requestAnimationFrame(animate);
                   else animate();
@@ -9438,6 +9451,9 @@ const d = labToolData.artStudio || {};
                   canvas.dataset.sat = spinColor.s;
                   canvas.dataset.lit = spinColor.l;
                   canvas.dataset.rpm = d.spinRPM || 120;
+                  // Restart after a pause; the loop above stops itself when idle.
+                  if (canvas.dataset.paused !== '1' && !canvas._spinAnim && canvas.isConnected
+                      && typeof canvas._spinResume === 'function') canvas._spinResume();
                   canvas.dataset.dark = d.spinDark ? '1' : '0';
                   canvas.dataset.brush = d.spinBrush || 6;
                   canvas.dataset.splatter = d.spinSplatter ? '1' : '0';
@@ -9670,7 +9686,12 @@ const d = labToolData.artStudio || {};
                     if (spinRestoring || canvas.dataset.paused === '1') {
                       if (!spinRestoring && spinCheckpointPending && !canvas._spinPointerDown) persistSpinArtwork();
 
-                      if (canvas.isConnected) canvas._spinAnim = requestAnimationFrame(animate);
+                      // Keep the loop alive only while there is still work to flush or a
+                      // restore in flight. Otherwise stop: a paused disc used to ask for
+                      // 60 frames a second indefinitely and throw all of them away.
+                      var spinBusy = spinRestoring || spinCheckpointPending || canvas._spinPointerDown;
+                      if (canvas.isConnected && spinBusy) canvas._spinAnim = requestAnimationFrame(animate);
+                      else canvas._spinAnim = null;
 
                       return;
 
@@ -9738,8 +9759,14 @@ const d = labToolData.artStudio || {};
                     if (spinCheckpointPending && !canvas._spinPointerDown) persistSpinArtwork();
 
                     if (canvas.isConnected) canvas._spinAnim = requestAnimationFrame(animate);
+                    else canvas._spinAnim = null;
 
                   }
+
+                  canvas._spinResume = function () {
+                    if (!canvas.isConnected || canvas._spinAnim) return;
+                    canvas._spinAnim = requestAnimationFrame(animate);
+                  };
 
                   animate();
 
