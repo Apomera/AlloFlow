@@ -6587,6 +6587,20 @@
                 desc: t('stem.tools_menu.spot_phishing_emails_forge_strong_passwords') || 'Spot phishing emails, forge strong passwords, and crack ciphers. Gamified cybersecurity training aligned with Digital Citizenship standards.',
                 color: 'rose', ready: true
               },
+              // Teacher/developer workspace: the tool itself returns a "switch on
+              // Teacher Mode" notice unless ctx.isTeacherMode, so the tile is safe
+              // to list for everyone. Without this entry the tool had no way in at
+              // all \u2014 it is reached only by tile or by ?tool=forge, and the deep
+              // link resolved a name the loader could not fetch.
+              // NOTE: this comment must stay ABOVE the brace. Every tile parser
+              // here and in dev-tools matches /\{\s*id:\s*'...'/, so a comment
+              // between `{` and `id:` makes the entry invisible to all of them \u2014
+              // check_stem_tile_catalog then passes by not seeing the tile at all.
+              {
+                id: 'forge', icon: '\uD83D\uDEE0\uFE0F', label: t('stem.tools_menu.tool_forge') || 'Tool Forge',
+                desc: t('stem.tools_menu.author_validate_and_preview_new_plugins') || 'Teacher workspace: author, validate and preview new STEAM Lab / SEL Hub tools. Describe one in plain language or hand-code it against the plugin contract, then render it in a sandboxed preview before submitting it for review.',
+                color: 'indigo', ready: true
+              },
               {
                 id: 'a11yAuditor', icon: '\u267F', label: t('stem.tools_menu.digital_accessibility_lab') || 'Digital Accessibility Lab',
                 desc: t('stem.tools_menu.audit_websites_for_wcag_2_1') || 'Audit websites for WCAG 2.1 AA compliance. Learn how accessibility barriers affect people with disabilities and how to fix them.',

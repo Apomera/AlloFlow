@@ -13865,7 +13865,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '1790001881752';
+    var pluginCdnVersion = '1790011279260';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -14996,6 +14996,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // ten (observable universe → proton) on a true log axis, keyboard-driven
         // with a scale-ladder list and a written description of every object.
         'stem_lab/stem_tool_scaleexplorer.js',
+        // Tool Forge — teacher-gated plugin-authoring harness. It was in build.js
+        // (so deploy.sh shipped the file to the CDN) but never here, so the app
+        // never fetched it: ?tool=forge resolved the NAME and loaded nothing.
+        // It self-gates on ctx.isTeacherMode and shows a "teacher workspace"
+        // notice to everyone else, so listing it here exposes nothing to students.
+        // Submitting a finished plugin needs the PLUGIN_SUBMISSIONS KV binding on
+        // the catalog worker; until that exists /submitPlugin fails closed (500)
+        // and only the Submit button is affected — see
+        // catalog/cloudflare-worker/SETUP.md, "Plugin submissions (Tool Forge)".
+        'stem_lab/stem_tool_forge.js',
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer

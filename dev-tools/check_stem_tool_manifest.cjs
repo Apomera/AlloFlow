@@ -145,9 +145,11 @@ function readRegistrations(dir) {
  * failing the gate every run — but they are REPORTED, because a silent
  * allowlist is how a dead end becomes permanent.
  *
- *   forge          — Tool Forge, teacher-gated plugin-authoring harness. IS in
- *                    build.js (CDN hash maintained) but in no manifest;
- *                    build.js says "Phase A; go-live is Aaron's call".
+ *   (forge was here until 2026-09-21, when it got a manifest entry and a tile.
+ *   It is now reachable and guarded by this gate like any other tool. Its
+ *   Submit button still needs the PLUGIN_SUBMISSIONS KV binding on the catalog
+ *   worker — that is a server-side gap, not a reachability one.)
+ *
  *   timelineStudio — 17 KB, actively maintained (last touched by the 90-tool
  *                    label pass 61fb91781), "rehomed to Learning Hub" per
  *                    check_stem_tile_catalog's own allowlist. But it is in NO
@@ -159,7 +161,6 @@ function readRegistrations(dir) {
  * AND build.js) or was retired (drop its deep link and tile too).
  */
 const knownUnreachable = new Map([
-  ['forge', 'teacher-gated; in build.js but not the manifest — go-live is Aaron\'s call'],
   ['timelineStudio', 'in no manifest and not in build.js; deep link resolves but cannot load']
 ]);
 
