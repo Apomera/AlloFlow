@@ -33472,7 +33472,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               { label: __alloT('stem.roadready.at_35_mph', 'At 35 mph'), val: 'Within tire grip budget on dry pavement' },
               { label: __alloT('stem.roadready.at_55_mph', 'At 55 mph'), val: '2.5x the force needed — exceeds grip' },
               { label: __alloT('stem.roadready.result', 'Result'), val: 'Sideways skid → tires catch curb/grass → rollover' },
-              { label: __alloT('stem.roadready.suv_rollover_rate', 'SUV rollover rate'), val: '3x higher than sedans (higher CoG)' }
+              { label: __alloT('stem.roadready.suv_rollover_rate', 'SUV rollover rate'), val: 'In a single-vehicle crash, NHTSA puts a car near a 10% chance of rolling over and an SUV at 14-23% — roughly 1.5 to 2 times the risk, from the higher centre of gravity' }
             ],
             prevention: 'Posted curve speeds are NOT suggestions. They\'re set for the average car. SUVs need MORE margin, not less. On curves, brake BEFORE you enter, not in the middle. The square law means 55 in a 35 zone isn\'t 1.5x worse — it\'s 2.5x worse.'
           },

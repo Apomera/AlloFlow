@@ -140,6 +140,14 @@ const CLAIMS = [
       'adult 275-day refusal suspension under §2521',
   },
   {
+    label: 'SUV single-vehicle rollover risk, upper bound',
+    re: /an SUV at \d{2}-(\d{2})%/,
+    min: 20, max: 25,
+    source: 'NHTSA: ~10% rollover chance for a car in a single-vehicle crash, 14-23% for an SUV. ' +
+      'The tool previously said a bare "3x higher", which reflects 2000-era fatal-crash data ' +
+      '(36% vs 15%) rather than current single-vehicle risk',
+  },
+  {
     label: 'Maine failure-to-yield-to-emergency-vehicle fine (§2054)',
     re: /emergency vehicle is a Class E crime with at least a \$(\d{3}) fine/,
     min: 250, max: 250,
