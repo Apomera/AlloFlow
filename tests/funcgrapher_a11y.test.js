@@ -22,7 +22,11 @@ describe('Function Grapher chart and inquiry semantics', () => {
   });
 
   it('places the tool title directly below the host H1', () => {
+    // desktop/app-build/ is a build artifact, absent from a fresh checkout;
+    // reading it unconditionally failed this test for a missing file rather
+    // than for a missing heading.
     for (const filePath of [sourcePath, publicPath, 'desktop/app-build/stem_lab/stem_tool_funcgrapher.js']) {
+      if (!fs.existsSync(filePath)) continue;
       const source = fs.readFileSync(filePath, 'utf8');
       expect(source).toContain('React.createElement("h2", { className: "mt-3 text-xl font-black tracking-tight sm:text-2xl" }');
       expect(source).not.toContain('React.createElement("h3", { className: "mt-3 text-xl font-black tracking-tight sm:text-2xl" }');

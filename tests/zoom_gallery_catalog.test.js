@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 // Zoom Gallery v2 invariants (2026-09-07).
 //
 // The tool exists as an inline STEAM Lab tool (stem_lab/stem_tool_zoomgallery.js)
@@ -27,7 +28,12 @@ const TOOL = 'stem_lab/stem_tool_zoomgallery.js';
 const TOOL_MIRROR = 'desktop/web-app/public/stem_lab/stem_tool_zoomgallery.js';
 const POPUP = 'zoom_gallery/zoom_gallery.html';
 const POPUP_MIRROR = 'desktop/web-app/public/zoom_gallery/zoom_gallery.html';
-const UI_STRINGS_COPIES = ['ui_strings.js', 'desktop/web-app/public/ui_strings.js', 'desktop/web-app/build/ui_strings.js', 'desktop/app-build/ui_strings.js'];
+// desktop/app-build/ is a desktop BUILD ARTIFACT: never committed, absent from a
+// fresh checkout. Reading it unconditionally threw ENOENT at module load and took
+// the whole suite down — zero tests ran, which reports nothing rather than
+// failing loudly. Check the mirror only when it has actually been built, the same
+// way magnetism_numeric_render_guard and sel_four_copy_parity do.
+const UI_STRINGS_COPIES = ['ui_strings.js', 'desktop/web-app/public/ui_strings.js', 'desktop/web-app/build/ui_strings.js', 'desktop/app-build/ui_strings.js'].filter((p) => existsSync(p));
 
 // Evaluate a `var NAME = [...]` / `var NAME = {...}` literal out of source text.
 function extractLiteral(src, name) {

@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 // Scale Explorer contract (2026-09-07).
 //
 // A powers-of-ten tool is only worth anything if its numbers are right and if
@@ -18,7 +19,12 @@ const ROOT = process.cwd();
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const TOOL = 'stem_lab/stem_tool_scaleexplorer.js';
 const MIRROR = 'desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js';
-const UI_COPIES = ['ui_strings.js', 'desktop/web-app/public/ui_strings.js', 'desktop/web-app/build/ui_strings.js', 'desktop/app-build/ui_strings.js'];
+// desktop/app-build/ is a desktop BUILD ARTIFACT: never committed, absent from a
+// fresh checkout. Reading it unconditionally threw ENOENT at module load and took
+// the whole suite down — zero tests ran, which reports nothing rather than
+// failing loudly. Check the mirror only when it has actually been built, the same
+// way magnetism_numeric_render_guard and sel_four_copy_parity do.
+const UI_COPIES = ['ui_strings.js', 'desktop/web-app/public/ui_strings.js', 'desktop/web-app/build/ui_strings.js', 'desktop/app-build/ui_strings.js'].filter((p) => existsSync(p));
 const src = read(TOOL);
 
 function readArray(text, name) {

@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 
+// desktop/app-build/ is a desktop BUILD ARTIFACT: never committed, absent from a
+// fresh checkout. Reading it unconditionally threw ENOENT at module load and took
+// the whole suite down — zero tests ran, which reports nothing rather than
+// failing loudly. Check the mirror only when it has actually been built, the same
+// way magnetism_numeric_render_guard and sel_four_copy_parity do.
 const MAGNETISM_PATHS = [
   'stem_lab/stem_tool_magnetism.js',
   'desktop/web-app/public/stem_lab/stem_tool_magnetism.js',
   'desktop/app-build/stem_lab/stem_tool_magnetism.js',
-];
+].filter((p) => existsSync(p));
 
 describe.each(MAGNETISM_PATHS)('Magnetism host semantics in %s', (filePath) => {
   const source = readFileSync(filePath, 'utf8');

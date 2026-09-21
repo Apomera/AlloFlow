@@ -10,18 +10,23 @@
 // build targets serve, so agreement between copies is part of the contract.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createRequire } from 'node:module';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const require = createRequire(import.meta.url);
 const TOOL_PATH = 'stem_lab/stem_tool_gisstudio.js';
 const KEY_PREFIX = 'stem.gisstudio.';
+// desktop/app-build/ is a desktop BUILD ARTIFACT: never committed, absent from a
+// fresh checkout. Reading it unconditionally threw ENOENT at module load and took
+// the whole suite down — zero tests ran, which reports nothing rather than
+// failing loudly. Check the mirror only when it has actually been built, the same
+// way magnetism_numeric_render_guard and sel_four_copy_parity do.
 const UI_STRINGS_COPIES = [
   'ui_strings.js',
   'desktop/web-app/public/ui_strings.js',
   'desktop/web-app/build/ui_strings.js',
   'desktop/app-build/ui_strings.js'
-];
+].filter((p) => existsSync(p));
 
 let sourceKeys;
 let copies;
@@ -68,7 +73,13 @@ beforeAll(() => {
 describe('GIS Studio ui_strings parity', () => {
   it('finds the translator keys and every ui_strings copy', () => {
     expect(sourceKeys.keys.size).toBeGreaterThan(100);
-    expect(copies).toHaveLength(4);
+    // The three COMMITTED copies must always be here; desktop/app-build/ is a
+    // build artifact and only joins the parity check once it has been built.
+    // Asserting a flat 4 made this suite depend on a local build step.
+    expect(copies.length).toBeGreaterThanOrEqual(3);
+    for (const required of ['ui_strings.js', 'desktop/web-app/public/ui_strings.js', 'desktop/web-app/build/ui_strings.js']) {
+      expect(copies.map((c) => c.path), required + ' must be checked').toContain(required);
+    }
   });
 
   it('never uses one key with two different English strings', () => {

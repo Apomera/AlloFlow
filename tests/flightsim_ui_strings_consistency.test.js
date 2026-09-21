@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 
 /**
  * ui_strings.js OVERRIDES the English fallback written at the call site, so the
@@ -26,11 +26,16 @@ const UI = 'ui_strings.js';
 // ui_strings.js is mirrored four times and the mirrors are what the desktop and
 // build targets actually serve. Checking only the root let three of them fall 19
 // keys behind unnoticed.
+// desktop/app-build/ is a desktop BUILD ARTIFACT: never committed, absent from a
+// fresh checkout. Reading it unconditionally threw ENOENT at module load and took
+// the whole suite down — zero tests ran, which reports nothing rather than
+// failing loudly. Check the mirror only when it has actually been built, the same
+// way magnetism_numeric_render_guard and sel_four_copy_parity do.
 const UI_MIRRORS = [
   'desktop/web-app/public/ui_strings.js',
   'desktop/web-app/build/ui_strings.js',
   'desktop/app-build/ui_strings.js',
-];
+].filter((p) => existsSync(p));
 
 const findSection = (o, n) => {
   if (!o || typeof o !== 'object') return null;
