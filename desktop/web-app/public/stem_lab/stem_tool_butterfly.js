@@ -210,9 +210,25 @@
   function clamp(n,a,b) { return Math.max(a,Math.min(b,n)); }
   function freshState(saved) {
     var seen=saved && Array.isArray(saved.observations)?saved.observations:[];
-    return {x:0,y:6,z:52,yaw:0,clock:0,energy:100,paused:true,landed:null,target:null,
+    var state={x:0,y:6,z:52,yaw:0,clock:0,energy:100,paused:true,landed:null,target:null,
       observations:PLANTS.filter(function(p){return seen.indexOf(p.id)!==-1;}).map(function(p){return p.id;}),restoration:cleanRestoration(saved&&saved.restoration),
       lifecycle:cleanLifecycle(saved&&saved.lifecycle)};
+    clampStage(state);
+    return state;
+  }
+  // cleanLifecycle checks the stage id is real, but cannot check it is
+  // REACHABLE: which resources the restoration plot offers depends on the
+  // planting, which is only known once both parts of the state exist. A save
+  // naming a stage this patch cannot support (a chrysalis on mown lawn, from
+  // tampering or from a plot replanted in an older build) would otherwise put
+  // the track at a stage the same patch refuses to advance to.
+  function clampStage(state){
+    var lc=state.lifecycle,p=lc.stage?patch(lc.patch,state):null;
+    if(!lc.stage)return state;
+    if(!p){lc.stage=null;lc.prediction=null;return state;}
+    var index=STAGES.findIndex(function(st){return st.id===lc.stage;}),limit=reachedStage(p);
+    if(index>limit)lc.stage=STAGES[limit].id;
+    return state;
   }
   function nearest(s) {
     return habitats(s).map(function(p){return {plant:p,distance:Math.hypot(s.x-p.x,s.z-p.z)};})
@@ -620,6 +636,6 @@
   window.StemLab.registerTool('butterfly',{label:'Butterfly Habitat Lab',icon:'🦋',desc:'Explore a summer meadow as a monarch, compare nectar and host plants, and build a field journal.',category:'science',color:'orange',gradeRange:'4-12',aliases:['monarch','butterflies','milkweed','pollinator','habitat'],render:function(ctx){return ctx.React.createElement(ButterflyLab,{ctx:ctx});}});
   if(window.__RR_TEST_EXPORTS__)window.__RR_TEST_EXPORTS__.butterfly={plants:PLANTS,freshState:freshState,nearest:nearest,step:step,advanceFrame:advanceFrame,land:land,observe:observe,save:save,buildWorld:buildWorld,designs:DESIGNS,habitats:habitats,applyPlan:applyPlan,cleanRestoration:cleanRestoration,fieldDetail:fieldDetail,evidenceRecorded:evidenceRecorded,
     stages:STAGES,outcomes:OUTCOMES,layEggs:layEggs,advanceStage:advanceStage,broodResult:broodResult,broodFor:broodFor,
-    cleanLifecycle:cleanLifecycle,abandonBrood:abandonBrood,reachedStage:reachedStage,stageStatus:stageStatus,expectedOutcome:expectedOutcome,
+    cleanLifecycle:cleanLifecycle,clampStage:clampStage,abandonBrood:abandonBrood,reachedStage:reachedStage,stageStatus:stageStatus,expectedOutcome:expectedOutcome,
     claims:CLAIMS,judgeClaim:judgeClaim,evidenceFor:evidenceFor};
 })();

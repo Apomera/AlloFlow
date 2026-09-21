@@ -162,6 +162,32 @@ describe('Butterfly life cycle investigation',()=>{
    expect(BF.freshState().lifecycle).toEqual({patch:null,prediction:null,stage:null,broods:[]});
  });
 
+ it('clamps a restored stage to what that patch can actually support',()=>{
+   // A tampered save, or a plot replanted by an older build, could name a
+   // stage the patch refuses to advance to. The track would then sit at a
+   // stage the same patch will not move past.
+   const impossible=BF.freshState({observations:['lawn'],
+     lifecycle:{patch:'lawn',prediction:'complete',stage:'adult',broods:[]}});
+   expect(impossible.lifecycle.stage).toBe('caterpillar');
+   expect(impossible.lifecycle.patch).toBe('lawn');
+   // The restoration plot is judged against its CURRENT planting.
+   const bare=BF.freshState({restoration:{design:'lawn',prediction:null,trials:[{design:'lawn',prediction:'neither'}]},
+     lifecycle:{patch:'restoration',prediction:'complete',stage:'adult',broods:[]}});
+   expect(bare.lifecycle.stage).toBe('caterpillar');
+   const planted=BF.freshState({restoration:{design:'mixed',prediction:null,trials:[{design:'mixed',prediction:'both'}]},
+     lifecycle:{patch:'restoration',prediction:'complete',stage:'adult',broods:[]}});
+   expect(planted.lifecycle.stage).toBe('adult');
+ });
+
+ it('leaves every legal restored stage untouched',()=>{
+   for(const [patch,stage] of [['lawn','egg'],['lawn','caterpillar'],['bergamot','caterpillar'],
+     ['milkweed','egg'],['milkweed','chrysalis'],['milkweed','adult']]){
+     const s=BF.freshState({observations:['lawn','bergamot','milkweed'],
+       lifecycle:{patch,prediction:'complete',stage,broods:[]}});
+     expect(s.lifecycle.stage).toBe(stage);
+   }
+ });
+
  it('agrees with the stage track the panel renders',()=>{
    const milkweed=BF.habitats(BF.freshState()).find(p=>p.id==='milkweed');
    const bergamot=BF.habitats(BF.freshState()).find(p=>p.id==='bergamot');
