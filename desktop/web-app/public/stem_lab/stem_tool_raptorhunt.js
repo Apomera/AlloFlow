@@ -343,6 +343,242 @@
   if (document.head) document.head.appendChild(st);
 })();
 
+// Raptor Hunt station layer. The 99 activity pages are hand-written Tailwind that
+// predates the field-station visual system above, so they render as flat panels of
+// evenly-weighted boxes: a bare emoji on a two-stop gradient, 4px chip rows, metric
+// strips drawn with 1px dividers, and labelled cards that all carry one fill.
+// Restyling 99 sections by hand would be 99 chances to break one. Instead this layer
+// keys on the four class idioms those pages already share, tags them at runtime, and
+// styles the tags. Scoped to activity pages via [data-raptor-active-section]; the
+// hub, the collection landings and the 3D flight view are excluded.
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('raptorhunt-station-css')) return;
+  var st = document.createElement('style');
+  st.id = 'raptorhunt-station-css';
+  st.textContent = `
+[data-raptorhunt-root][data-raptor-active-section]:not([data-raptor-active-section="hub"]):not([data-raptor-active-section="hunt"]){--rh-st-line:rgba(148,163,184,.22);--rh-st-line-strong:rgba(148,163,184,.34);--rh-st-sunk:rgba(2,6,23,.42);}
+
+/* -- Intro banner ---------------------------------------------------------
+   Every activity opens with the same gradient card: a large bare emoji beside a
+   title and a paragraph. The gradient is flat, there is no depth, and the emoji
+   floats without a seat. Give it a contained surface, a seated glyph and a
+   readable measure. The gradient itself stays each section's own colour. */
+[data-rh-station] .rh-st-banner{position:relative;isolation:isolate;overflow:hidden;border-radius:18px!important;padding:20px 22px!important;box-shadow:0 18px 44px rgba(2,6,23,.34),inset 0 1px rgba(255,255,255,.07);}
+[data-rh-station] .rh-st-banner::after{content:"";position:absolute;z-index:-1;inset:-46% -12% auto auto;width:54%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.07),rgba(255,255,255,0) 68%);pointer-events:none;}
+[data-rh-station] .rh-st-banner>div{position:relative;z-index:1;gap:16px!important;align-items:center!important;}
+/* Seat the oversized emoji in a plate so it reads as an emblem, not stray text. */
+[data-rh-station] .rh-st-glyph{display:grid;place-items:center;flex:0 0 62px;width:62px;height:62px;border:1px solid rgba(255,255,255,.16);border-radius:16px;background:rgba(2,6,23,.4);font-size:34px!important;line-height:1!important;box-shadow:inset 0 1px rgba(255,255,255,.1),0 8px 22px rgba(2,6,23,.3);}
+[data-rh-station] .rh-st-banner-title{font-size:19px!important;letter-spacing:-.02em;line-height:1.2!important;text-wrap:balance;}
+[data-rh-station] .rh-st-banner-copy{margin-top:6px!important;font-size:13.5px!important;line-height:1.62!important;text-wrap:pretty;}
+/* The copy sits in a flex child that does not grow on its own, so it wrapped well
+   short of the card edge and left a ragged column of white space. */
+[data-rh-station] .rh-st-banner>div>*:not(.rh-st-glyph){flex:1 1 auto;min-width:0;}
+
+/* -- Chip rows ------------------------------------------------------------
+   The selectors use gap-1 (4px), so long label sets crowd into an uneven block
+   and the selected chip is distinguished by fill alone. Open the rhythm, give
+   every chip one height, and mark the selected one with an inset ring as well as
+   colour so it survives forced-colors and colour-blind viewing. */
+[data-rh-station] .rh-st-chips{gap:7px!important;align-items:stretch!important;row-gap:7px!important;}
+[data-rh-station] .rh-st-chips>button{display:inline-flex;align-items:center;min-height:34px;padding:7px 13px!important;border:1px solid var(--rh-st-line);border-radius:9px!important;font-size:12px!important;line-height:1.25;transition:transform .15s,border-color .15s,background-color .15s;}
+[data-rh-station] .rh-st-chips>button:hover{transform:translateY(-1px);border-color:var(--rh-st-line-strong);}
+[data-rh-station] .rh-st-chips>button[aria-pressed="true"],[data-rh-station] .rh-st-chips>button[aria-selected="true"]{border-color:currentColor;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),0 6px 16px rgba(2,6,23,.3);}
+
+/* -- Stat strips ----------------------------------------------------------
+   Metric rows (Cost / Accuracy / Weight / Battery) are laid out with bare 1px
+   dividers over the panel fill, so the numbers read as running text. Sink each
+   cell onto its own surface and separate the label from the value. */
+[data-rh-station] .rh-st-stats{gap:1px;background:var(--rh-st-line);border:1px solid var(--rh-st-line);border-radius:12px;overflow:hidden;}
+[data-rh-station] .rh-st-stats>*{background:var(--rh-st-sunk);padding:11px 13px!important;border:0!important;}
+[data-rh-station] .rh-st-stat-label{display:block;color:#94a3b8;font:800 9px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase;}
+/* Not every metric is a number -- several of these cells hold a phrase ("Recovery
+   dependent", "N/A (passive)"), which a monospace face sets too wide and wraps
+   badly. Keep the interface face and carry the emphasis with weight instead. */
+[data-rh-station] .rh-st-stat-value{display:block;margin-top:5px;font:800 13px/1.35 ui-sans-serif,system-ui;letter-spacing:-.005em;}
+
+/* -- Content cards --------------------------------------------------------
+   Labelled cards (How it works / Best for / Limitation / Symbol / The Story)
+   share one flat fill and weight, so nothing signals which to read first. Add a
+   left accent that inherits each card's own colour, lift the label into a true
+   eyebrow, and open the body line-height. */
+[data-rh-station] .rh-st-card{position:relative;border-radius:11px!important;padding:12px 14px 12px 15px!important;box-shadow:inset 0 1px rgba(255,255,255,.04);}
+[data-rh-station] .rh-st-card::before{content:"";position:absolute;left:0;top:11px;bottom:11px;width:2px;border-radius:99px;background:currentColor;opacity:.5;}
+[data-rh-station] .rh-st-card-label{display:block;margin-bottom:5px!important;font-size:10px!important;letter-spacing:.07em;text-transform:uppercase;}
+[data-rh-station] .rh-st-card-body{font-size:13px!important;line-height:1.6!important;}
+
+/* Reduced motion and forced colors: keep the structure, drop the decoration. */
+@media(prefers-reduced-motion:reduce){[data-rh-station] .rh-st-chips>button{transition:none!important;}[data-rh-station] .rh-st-chips>button:hover{transform:none!important;}}
+@media(forced-colors:active){
+[data-rh-station] .rh-st-banner,[data-rh-station] .rh-st-card,[data-rh-station] .rh-st-stats>*{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important;}
+[data-rh-station] .rh-st-banner::after{display:none;}
+[data-rh-station] .rh-st-glyph{border-color:CanvasText;background:Canvas;}
+[data-rh-station] .rh-st-stats{background:CanvasText;border-color:CanvasText;}
+[data-rh-station] .rh-st-card::before{background:CanvasText;opacity:1;}
+[data-rh-station] .rh-st-chips>button{border-color:ButtonText;background:ButtonFace;color:ButtonText;}
+[data-rh-station] .rh-st-chips>button[aria-pressed="true"],[data-rh-station] .rh-st-chips>button[aria-selected="true"]{border-color:Highlight;box-shadow:inset 0 0 0 2px Highlight;}
+}
+@container (max-width:600px){
+[data-rh-station] .rh-st-banner{padding:16px!important;}
+[data-rh-station] .rh-st-banner>div{gap:12px!important;align-items:flex-start!important;}
+[data-rh-station] .rh-st-glyph{flex-basis:46px;width:46px;height:46px;border-radius:12px;font-size:25px!important;}
+[data-rh-station] .rh-st-banner-title{font-size:17px!important;}
+[data-rh-station] .rh-st-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+}
+`;
+  if (document.head) document.head.appendChild(st);
+})();
+
+// Tag the shared activity-page idioms so the station stylesheet can reach them.
+// This only adds class names and a data attribute; it never moves, replaces or
+// removes a node, so React stays the sole owner of the tree it rendered.
+(function() {
+  if (typeof window === 'undefined') return;
+  if (window.__rhStationTagger) return;
+
+  function isFlexRowOfButtons(el) {
+    // Chip rows are `flex flex-wrap gap-1` wrappers whose children are all buttons.
+    if (!el.classList.contains('flex') || !el.classList.contains('flex-wrap')) return false;
+    if (!el.classList.contains('gap-1')) return false;
+    var kids = el.children;
+    if (kids.length < 2) return false;
+    for (var i = 0; i < kids.length; i++) if (kids[i].tagName !== 'BUTTON') return false;
+    return true;
+  }
+
+  function tagBanner(root) {
+    // The intro banner is the gradient card that opens a section: a bg-gradient-to-br
+    // wrapper holding an oversized emoji (text-4xl/5xl/6xl) next to a title + copy.
+    var cards = root.querySelectorAll('div[class*="bg-gradient-to-br"]');
+    for (var i = 0; i < cards.length; i++) {
+      var card = cards[i];
+      if (card.dataset.rhSt) continue;
+      var glyph = card.querySelector(':scope > div > .text-5xl, :scope > div > .text-4xl, :scope > div > .text-6xl');
+      if (!glyph) continue;
+      // Only the opening banner, not a nested decorative gradient.
+      if (card.parentElement && card.parentElement.closest('[class*="bg-gradient-to-br"]')) continue;
+      card.dataset.rhSt = 'banner';
+      card.classList.add('rh-st-banner');
+      glyph.classList.add('rh-st-glyph');
+      var body = glyph.parentElement;
+      var title = body && body.querySelector(':scope > div > .font-bold, :scope > div > .text-xl, :scope > div > .text-lg');
+      if (title) title.classList.add('rh-st-banner-title');
+      var copy = title && title.nextElementSibling;
+      if (copy) copy.classList.add('rh-st-banner-copy');
+    }
+  }
+
+  function tagChips(root) {
+    var rows = root.querySelectorAll('div.flex.flex-wrap.gap-1');
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].dataset.rhSt) continue;
+      if (!isFlexRowOfButtons(rows[i])) continue;
+      rows[i].dataset.rhSt = 'chips';
+      rows[i].classList.add('rh-st-chips');
+    }
+  }
+
+  function tagCards(root) {
+    // A labelled content card: a bordered rounded box whose first child is a small
+    // bold label and whose second is the body text.
+    var boxes = root.querySelectorAll('div[class*="rounded"][class*="border"]');
+    for (var i = 0; i < boxes.length; i++) {
+      var box = boxes[i];
+      if (box.dataset.rhSt) continue;
+      if (box.classList.contains('rh-st-banner')) continue;
+      if (box.children.length !== 2) continue;
+      var label = box.children[0];
+      var body = box.children[1];
+      if (label.tagName !== 'DIV' || body.tagName !== 'DIV') continue;
+      if (!label.classList.contains('font-bold')) continue;
+      if (!label.classList.contains('text-xs')) continue;
+      if (!body.classList.contains('text-sm')) continue;
+      box.dataset.rhSt = 'card';
+      box.classList.add('rh-st-card');
+      label.classList.add('rh-st-card-label');
+      body.classList.add('rh-st-card-body');
+    }
+  }
+
+  function tagStats(root) {
+    // A metric strip: a grid whose cells each hold a small muted label above a bold
+    // value, separated by borders rather than sitting on their own surface.
+    var grids = root.querySelectorAll('div.grid');
+    for (var i = 0; i < grids.length; i++) {
+      var grid = grids[i];
+      if (grid.dataset.rhSt) continue;
+      var cells = grid.children;
+      if (cells.length < 2 || cells.length > 6) continue;
+      var ok = true, pairs = [];
+      for (var c = 0; c < cells.length; c++) {
+        var cell = cells[c];
+        if (cell.children.length !== 2) { ok = false; break; }
+        var lab = cell.children[0], val = cell.children[1];
+        // The label is muted and unemphasised; the value carries the weight. Size is
+        // often inherited from the grid rather than set on the label itself, so match
+        // on the muted colour rather than on a text-size class.
+        if (!/(^|\s)text-(slate|gray|zinc)-(400|500)(\s|$)/.test(lab.className || '')) { ok = false; break; }
+        if (lab.classList.contains('font-bold')) { ok = false; break; }
+        if (!val.classList.contains('font-bold')) { ok = false; break; }
+        // Both halves must be leaf text; a cell holding further structure is a
+        // layout grid that happens to look like a metric, not a metric.
+        if (lab.children.length || val.children.length) { ok = false; break; }
+        pairs.push([lab, val]);
+      }
+      if (!ok) continue;
+      grid.dataset.rhSt = 'stats';
+      grid.classList.add('rh-st-stats');
+      for (var q = 0; q < pairs.length; q++) {
+        pairs[q][0].classList.add('rh-st-stat-label');
+        pairs[q][1].classList.add('rh-st-stat-value');
+      }
+    }
+  }
+
+  function tag(root) {
+    if (!root) return;
+    var section = root.getAttribute('data-raptor-active-section');
+    // The hub, the collection landings and the 3D flight view keep their own styling.
+    if (!section || section === 'hub' || section === 'hunt') {
+      root.removeAttribute('data-rh-station');
+      return;
+    }
+    var panel = root.querySelector('[id^="rh-panel-"]');
+    if (!panel) return;
+    root.setAttribute('data-rh-station', 'true');
+    try {
+      tagBanner(panel);
+      tagChips(panel);
+      tagStats(panel);
+      tagCards(panel);
+    } catch (e) {}
+  }
+
+  function scan() {
+    var roots = document.querySelectorAll('[data-raptorhunt-root]');
+    for (var i = 0; i < roots.length; i++) tag(roots[i]);
+  }
+
+  // React re-renders the panel on every section change and on most interactions, so
+  // observe rather than tagging once. The observer is cheap: it only fires on
+  // subtree mutation and each tagger skips nodes it has already marked.
+  var pending = false;
+  function schedule() {
+    if (pending) return;
+    pending = true;
+    (window.requestAnimationFrame || window.setTimeout)(function() { pending = false; scan(); }, 0);
+  }
+  var obs = new MutationObserver(schedule);
+  function start() {
+    if (!document.body) return;
+    obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-raptor-active-section'] });
+    scan();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+  window.__rhStationTagger = { scan: scan };
+})();
+
 // Hunt simulator layout contract: keep the 3D viewport dominant while the
 // controls remain reachable below it on touch, keyboard, embedded, and
 // fullscreen surfaces.
