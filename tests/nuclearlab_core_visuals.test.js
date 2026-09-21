@@ -172,6 +172,46 @@ describe('temperature is not encoded by colour alone', () => {
   });
 });
 
+describe('the 3D view is reachable without sight', () => {
+  // The host sets aria-hidden="true" on the WebGL canvas it creates, so the 3D
+  // core is invisible to a screen reader BY DESIGN and the tool has to describe
+  // it. Nothing did: the container carried no role and no name, while the 2D
+  // control panel beside it had a full aria-label and aria-describedby. A
+  // screen reader user met a labelled panel next to an unlabelled blank.
+  it('names the 3D container and says what it shows', () => {
+    const attach = /ref: rxAttach,[\s\S]{0,900}?\}\)/.exec(SRC);
+    expect(attach, 'rxAttach container not found').toBeTruthy();
+    const block = attach[0];
+    expect(block).toContain("role: 'img'");
+    expect(block).toContain('aria-label');
+    // It must describe the two things that actually move.
+    expect(block).toMatch(/control rods|rods rise/i);
+    expect(block).toMatch(/steam voids|coolant/i);
+  });
+
+  it('points at the equivalents rather than pretending the canvas is operable', () => {
+    // Every part has a keyboard button and every live value is in the telemetry
+    // list; the label should send a screen reader user there.
+    const attach = /ref: rxAttach,[\s\S]{0,900}?\}\)/.exec(SRC)[0];
+    expect(attach).toContain("'aria-describedby': 'rx-live-readings'");
+    expect(attach).toMatch(/Parts of the core/);
+  });
+
+  it('keeps the status overlay outside the labelled container', () => {
+    // role="img" makes a subtree presentational. The loading / WebGL-blocked
+    // message must NOT be inside it, or the one thing a failed viewer still has
+    // to say would be hidden.
+    const view = SRC.slice(SRC.indexOf("nk-rx-core-view"));
+    const attachAt = view.indexOf('ref: rxAttach');
+    const statusAt = view.indexOf("role: 'status'");
+    expect(attachAt).toBeGreaterThan(-1);
+    expect(statusAt).toBeGreaterThan(attachAt);
+    // The attach div closes before the status div opens: they are siblings.
+    const between = view.slice(attachAt, statusAt);
+    expect(between).toContain('}),');
+  });
+});
+
 describe('the temperature the scene is given', () => {
   it('spans reference coolant temperature to cladding failure in 12 steps', () => {
     expect(SRC).toContain('(s.t - RX_T_REF) / (RX_T_CLAD - RX_T_REF)');

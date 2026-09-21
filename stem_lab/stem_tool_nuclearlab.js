@@ -5905,7 +5905,17 @@
 
           h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-2' },
             h('div', { className: 'nk-rx-core-view relative rounded-xl overflow-hidden border' + ((rxViewerStatus === 'failed' || (!rxViewerStatus && RX_MISSING === 'host')) ? ' nk-rx-core-unavailable' : ''), style: { borderColor: 'rgba(52,211,153,0.4)', height: '260px', background: isDark ? '#0b1220' : '#dfe6ef' } },
-              h('div', { ref: rxAttach, style: { position: 'absolute', inset: 0 } }),
+              h('div', {
+                ref: rxAttach,
+                role: 'img',
+                'aria-label': 'Cutaway view of a pressurised water reactor core: containment shell, '
+                  + 'pressure vessel, coolant, fuel assemblies and control rods. The rods rise and fall '
+                  + 'with the control setting, and the coolant colours and fills with steam voids as the '
+                  + 'fuel heats. Everything it shows is also in the readings below, and each part has a '
+                  + 'button under "Parts of the core".',
+                'aria-describedby': 'rx-live-readings',
+                style: { position: 'absolute', inset: 0 }
+              }),
               rxViewerStatus !== 'ready' ? h('div', { role: 'status', className: 'absolute inset-0 flex items-center justify-center text-center p-4', style: { background: isDark ? 'rgba(11,18,32,0.92)' : 'rgba(223,230,239,0.92)' } },
                 h('p', { className: 'text-[0.6875rem] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } },
                   rxViewerStatus === 'loading' ? 'Loading the 3D core…'
