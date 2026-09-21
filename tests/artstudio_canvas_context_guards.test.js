@@ -8,12 +8,21 @@ import { describe, expect, it } from 'vitest';
 //     and the depth-map previews threw an uncaught TypeError inside a click handler.
 //  2. The AI stereogram pattern stored the LIVE ImageData buffer instead of an owned
 //     copy, unlike every sibling call site which uses copyArtStudioPixels().
-const COPIES = [
+// desktop/app-build is a gitignored BUILD OUTPUT: the desktop build clears and
+// regenerates it, so between builds the tool is legitimately absent and pinning
+// it as a required path failed on a missing file rather than on a real defect.
+// The tracked copies are always checked; a build mirror is checked only when it
+// is actually present, which still catches the case that matters — a repaired
+// tool shipped to one mirror and not another.
+const REQUIRED_COPIES = [
   path.join(process.cwd(), 'stem_lab', 'stem_tool_artstudio.js'),
   path.join(process.cwd(), 'desktop', 'web-app', 'public', 'stem_lab', 'stem_tool_artstudio.js'),
+];
+const BUILD_MIRRORS = [
   path.join(process.cwd(), 'desktop', 'web-app', 'build', 'stem_lab', 'stem_tool_artstudio.js'),
   path.join(process.cwd(), 'desktop', 'app-build', 'stem_lab', 'stem_tool_artstudio.js'),
 ];
+const COPIES = REQUIRED_COPIES.concat(BUILD_MIRRORS.filter((file) => fs.existsSync(file)));
 
 function readSource(file) {
   return fs.readFileSync(file, 'utf8');

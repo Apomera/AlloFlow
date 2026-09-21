@@ -7258,7 +7258,7 @@ const d = labToolData.artStudio || {};
                       React.createElement("span", { className: "text-[0.625rem] font-bold text-slate-600" }, 'Direction'),
                       [{ id: 'clockwise', label: '\u21BB CW', aria: 'Repeat symmetry copies clockwise' }, { id: 'counterclockwise', label: '\u21BA CCW', aria: 'Repeat symmetry copies counterclockwise' }].map(function(direction) {
                         var activeDirection = (d.symCopyDirection === 'counterclockwise' ? 'counterclockwise' : 'clockwise') === direction.id;
-                        return React.createElement("button", { key: direction.id, type: "button", className: "rounded px-2 py-1 text-[0.625rem] font-bold " + (activeDirection ? 'bg-cyan-700 text-white' : 'border border-cyan-200 bg-white text-cyan-800 hover:bg-cyan-100'), "aria-label": direction.aria, "aria-pressed": activeDirection, onClick: function() { upd('symCopyDirection', direction.id); } }, direction.label);
+                        return React.createElement("button", { key: direction.id, type: "button", className: "rounded px-2 py-1 min-h-[24px] text-[0.625rem] font-bold " + (activeDirection ? 'bg-cyan-700 text-white' : 'border border-cyan-200 bg-white text-cyan-800 hover:bg-cyan-100'), "aria-label": direction.aria, "aria-pressed": activeDirection, onClick: function() { upd('symCopyDirection', direction.id); } }, direction.label);
                       })
                     ),
                     React.createElement("div", { className: "flex flex-wrap items-center gap-3", role: "group", "aria-label": __alloT('stem.artstudio.a11y_variation_across_symmetry_copies', 'Variation across symmetry copies') },
@@ -7271,7 +7271,7 @@ const d = labToolData.artStudio || {};
                       React.createElement("button", { type: "button", className: "rounded border border-cyan-200 bg-white px-2 py-1 text-[0.625rem] font-bold text-cyan-800 hover:bg-cyan-100", "aria-label": __alloT('stem.artstudio.a11y_reset_symmetry_repeat_variation', 'Reset symmetry repeat variation'), onClick: function() { updMany({ symPhaseDeg: 0, symMirrorAxisDeg: currentPattern === 'bilateral' ? 90 : 0, symCopyDirection: 'clockwise', symCopyHueStep: 0, symCopySizeStep: 0, symCopyOpacityStep: 0 }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_symmetry_repeat_variation_reset', 'Symmetry repeat variation reset.')); } }, 'Reset variation')
                     ),
                     React.createElement("div", { className: "flex flex-wrap items-center gap-2", role: "group", "aria-label": __alloT('stem.artstudio.a11y_symmetry_canvas_appearance', 'Symmetry canvas appearance') },
-                      React.createElement("button", { type: "button", className: "rounded px-2 py-1 text-[0.625rem] font-bold " + (d.symShowGuides === false ? 'border border-cyan-200 bg-white text-cyan-800' : 'bg-cyan-700 text-white'), "aria-label": __alloT('stem.artstudio.a11y_show_symmetry_guides', 'Show symmetry guides'), "aria-pressed": d.symShowGuides !== false, onClick: function() { upd('symShowGuides', d.symShowGuides === false); } }, 'Guides'),
+                      React.createElement("button", { type: "button", className: "rounded px-2 py-1 min-h-[24px] text-[0.625rem] font-bold " + (d.symShowGuides === false ? 'border border-cyan-200 bg-white text-cyan-800' : 'bg-cyan-700 text-white'), "aria-label": __alloT('stem.artstudio.a11y_show_symmetry_guides', 'Show symmetry guides'), "aria-pressed": d.symShowGuides !== false, onClick: function() { upd('symShowGuides', d.symShowGuides === false); } }, 'Guides'),
                       React.createElement("label", { className: "grid grid-cols-[78px_100px_36px] items-center gap-1 text-[0.625rem] font-bold text-slate-600" }, 'Guide opacity',
                         React.createElement("input", { type: "range", min: 5, max: 60, step: 5, value: Math.round(guideOpacityValue * 100), disabled: d.symShowGuides === false, "aria-label": __alloT('stem.artstudio.a11y_symmetry_guide_opacity', 'Symmetry guide opacity'), "aria-valuetext": Math.round(guideOpacityValue * 100) + ' percent', onChange: function(event) { upd('symGuideOpacity', parseInt(event.target.value, 10) / 100); }, className: "accent-cyan-600" }),
                         React.createElement("output", null, Math.round(guideOpacityValue * 100) + '%')
@@ -7279,7 +7279,7 @@ const d = labToolData.artStudio || {};
                       React.createElement("span", { className: "text-[0.625rem] font-bold text-slate-600" }, 'Background'),
                       [{ id: 'dark', label: 'Dark' }, { id: 'light', label: 'Light' }, { id: 'transparent', label: 'Transparent' }].map(function(background) {
                         var activeBackground = (['dark', 'light', 'transparent'].indexOf(d.symBackgroundMode) !== -1 ? d.symBackgroundMode : 'dark') === background.id;
-                        return React.createElement("button", { key: background.id, type: "button", className: "rounded px-2 py-1 text-[0.625rem] font-bold " + (activeBackground ? 'bg-cyan-700 text-white' : 'border border-cyan-200 bg-white text-cyan-800 hover:bg-cyan-100'), "aria-label": background.label + ' symmetry canvas background', "aria-pressed": activeBackground, onClick: function() { upd('symBackgroundMode', background.id); } }, background.label);
+                        return React.createElement("button", { key: background.id, type: "button", className: "rounded px-2 py-1 min-h-[24px] text-[0.625rem] font-bold " + (activeBackground ? 'bg-cyan-700 text-white' : 'border border-cyan-200 bg-white text-cyan-800 hover:bg-cyan-100'), "aria-label": background.label + ' symmetry canvas background', "aria-pressed": activeBackground, onClick: function() { upd('symBackgroundMode', background.id); } }, background.label);
                       }),
                       React.createElement("span", { className: "text-[0.625rem] text-slate-500" }, 'Guides are editing aids and are not included in PNG exports.')
                     )
@@ -7386,7 +7386,7 @@ const d = labToolData.artStudio || {};
                   "aria-expanded": !!d.showSymInfo,
                   "aria-controls": "artstudio-symmetry-info",
                   onClick: function () { upd('showSymInfo', !d.showSymInfo); },
-                  className: "w-full flex items-center justify-between rounded text-xs font-bold text-violet-700 focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
+                  className: "w-full flex items-center justify-between rounded py-1 text-xs font-bold text-violet-700 focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
                 },
 
                   React.createElement("span", null, __alloT('stem.artstudio.learn_about_symmetry', "\uD83D\uDD2E Learn About Symmetry")),
@@ -8287,7 +8287,7 @@ const d = labToolData.artStudio || {};
                       React.createElement("p", { className: "mb-1 text-[0.6875rem] font-black text-violet-800" }, 'Morph selected form'),
                       React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-label": __alloT('stem.artstudio.a11y_morph_selected_form', 'Morph selected form') }, builtInMorphProfiles.map(function(profile) {
                         var profileActive = selectedMorphSignature === morphSignature(profile);
-                        return React.createElement("button", { key: profile.id, type: "button", className: "rounded px-2 py-1 text-[0.625rem] font-bold transition-all " + (profileActive ? 'bg-violet-600 text-white' : 'border border-violet-200 bg-white text-violet-700 hover:bg-violet-100'), "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_apply_form_profile', 'Apply {value1} form profile'), { value1: profile.label }), "aria-pressed": profileActive, disabled: selectedPartLocked, style: miniStyle(selectedPartLocked), onClick: function() { applySelectedMorphProfile(profile); } }, profile.label);
+                        return React.createElement("button", { key: profile.id, type: "button", className: "rounded px-2 py-1 min-h-[24px] text-[0.625rem] font-bold transition-all " + (profileActive ? 'bg-violet-600 text-white' : 'border border-violet-200 bg-white text-violet-700 hover:bg-violet-100'), "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_apply_form_profile', 'Apply {value1} form profile'), { value1: profile.label }), "aria-pressed": profileActive, disabled: selectedPartLocked, style: miniStyle(selectedPartLocked), onClick: function() { applySelectedMorphProfile(profile); } }, profile.label);
                       })),
                       customMorphProfiles.length ? React.createElement("div", { className: "mt-1 flex flex-wrap gap-1", role: "group", "aria-label": __alloT('stem.artstudio.a11y_saved_custom_form_profiles', 'Saved custom form profiles') }, customMorphProfiles.map(function(profile, profileIndex) {
                         var customActive = selectedMorphSignature === morphSignature(profile);
@@ -8342,7 +8342,7 @@ const d = labToolData.artStudio || {};
                           React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-600 mb-1" }, 'Surface finish'),
                           React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-label": __alloT('stem.artstudio.a11y_selected_part_surface_finish', 'Selected part surface finish') },
                             [{ id: 'standard', label: 'Standard' }, { id: 'matte', label: 'Matte' }, { id: 'gloss', label: 'Gloss' }, { id: 'metal', label: 'Metal' }, { id: 'wire', label: 'Wire' }].map(function(finish) {
-                              return React.createElement("button", { key: finish.id, type: "button", className: "rounded px-2 py-1 text-[0.625rem] font-bold " + (selectedPart.finish === finish.id ? 'bg-violet-600 text-white' : 'border border-slate-300 bg-white text-slate-600 hover:bg-violet-50'), "aria-label": finish.label + " selected part finish", "aria-pressed": selectedPart.finish === finish.id, onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { finish: finish.id }); }); } }, finish.label);
+                              return React.createElement("button", { key: finish.id, type: "button", className: "rounded px-2 py-1 min-h-[24px] text-[0.625rem] font-bold " + (selectedPart.finish === finish.id ? 'bg-violet-600 text-white' : 'border border-slate-300 bg-white text-slate-600 hover:bg-violet-50'), "aria-label": finish.label + " selected part finish", "aria-pressed": selectedPart.finish === finish.id, onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { finish: finish.id }); }); } }, finish.label);
                             })
                           ),
                           React.createElement("label", { className: "mt-2 grid grid-cols-[52px_1fr_38px] items-center gap-1 text-[0.625rem] text-slate-600" }, 'Opacity',
@@ -8563,7 +8563,7 @@ const d = labToolData.artStudio || {};
                       React.createElement('li', null, __alloT('stem.artstudio.high_saturation_many_colors_busy_try_d', 'High saturation + many colors = busy. Try desaturating with the blend slider — what happens to "harmony"?')))),
                   React.createElement('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                     React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
-                      React.createElement('input', { type: 'checkbox', id: 'hh-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                      React.createElement('input', { type: 'checkbox', id: 'hh-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4 min-w-[24px] min-h-[24px]' }),
                       React.createElement('label', { htmlFor: 'hh-und', className: 'text-[0.75rem] font-bold text-emerald-900 cursor-pointer' },
                         __alloT('stem.artstudio.i_think_i_understand_color_harmony_now', 'I think I understand color harmony now — let me explain it in my own words'))),
                     iq.understood && React.createElement('textarea', { 'aria-label': __alloT('stem.artstudio.a11y_explain_your_understanding_of_color_harmony', 'Explain your understanding of color harmony'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.artstudio.explain_in_your_own_words_how_do_hue_s', 'Explain in your own words: how do hue spacing, saturation, and palette size determine "harmony"?'),
@@ -9737,7 +9737,7 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "mt-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200" },
 
-                React.createElement("button", { id: "artstudio-spin-info-toggle", "aria-expanded": !!d.showSpinInfo, "aria-controls": "artstudio-spin-physics", onClick: function () { upd('showSpinInfo', !d.showSpinInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-orange-700" },
+                React.createElement("button", { id: "artstudio-spin-info-toggle", "aria-expanded": !!d.showSpinInfo, "aria-controls": "artstudio-spin-physics", onClick: function () { upd('showSpinInfo', !d.showSpinInfo); }, className: "w-full flex items-center justify-between py-1 text-xs font-bold text-orange-700" },
 
                   React.createElement("span", null, __alloT('stem.artstudio.physics_of_spin_art', "\uD83C\uDF00 Physics of Spin Art")),
 
@@ -10105,7 +10105,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-3 border border-purple-200" },
 
-                    React.createElement("button", { id: "artstudio-op-info-toggle", "aria-expanded": !!d.showOpInfo, "aria-controls": "artstudio-op-info", onClick: function () { upd('showOpInfo', !d.showOpInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-purple-700 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 rounded" },
+                    React.createElement("button", { id: "artstudio-op-info-toggle", "aria-expanded": !!d.showOpInfo, "aria-controls": "artstudio-op-info", onClick: function () { upd('showOpInfo', !d.showOpInfo); }, className: "w-full flex items-center justify-between py-1 text-xs font-bold text-purple-700 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 rounded" },
 
                       React.createElement("span", null, __alloT('stem.artstudio.the_science_of_op_art', "\uD83E\uDDE0 The Science of Op Art")),
 
@@ -10468,7 +10468,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-3 border border-cyan-200" },
 
-                    React.createElement("button", { id: "artstudio-tess-info-toggle", "aria-expanded": !!d.showTessInfo, "aria-controls": "artstudio-tess-math", onClick: function () { upd('showTessInfo', !d.showTessInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-cyan-700" },
+                    React.createElement("button", { id: "artstudio-tess-info-toggle", "aria-expanded": !!d.showTessInfo, "aria-controls": "artstudio-tess-math", onClick: function () { upd('showTessInfo', !d.showTessInfo); }, className: "w-full flex items-center justify-between py-1 text-xs font-bold text-cyan-700" },
 
                       React.createElement("span", null, __alloT('stem.artstudio.the_math_of_tessellations', "\uD83D\uDCCF The Math of Tessellations")),
 
@@ -11156,7 +11156,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-3 border border-purple-200" },
 
-                    React.createElement("button", { id: "artstudio-fractal-info-toggle", "aria-expanded": !!d.showFractalInfo, "aria-controls": "artstudio-fractal-info", onClick: function () { upd('showFractalInfo', !d.showFractalInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-purple-700 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 rounded" },
+                    React.createElement("button", { id: "artstudio-fractal-info-toggle", "aria-expanded": !!d.showFractalInfo, "aria-controls": "artstudio-fractal-info", onClick: function () { upd('showFractalInfo', !d.showFractalInfo); }, className: "w-full flex items-center justify-between py-1 text-xs font-bold text-purple-700 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 rounded" },
 
                       React.createElement("span", null, __alloT('stem.artstudio.the_math_of_fractals', "\uD83D\uDD2C The Math of Fractals")),
 
@@ -11708,7 +11708,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-3 border border-orange-200" },
 
-                    React.createElement("button", { id: "artstudio-gradient-info-toggle", "aria-expanded": !!d.showGradInfo, "aria-controls": "artstudio-gradient-info", onClick: function () { upd('showGradInfo', !d.showGradInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-orange-700 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 rounded" },
+                    React.createElement("button", { id: "artstudio-gradient-info-toggle", "aria-expanded": !!d.showGradInfo, "aria-controls": "artstudio-gradient-info", onClick: function () { upd('showGradInfo', !d.showGradInfo); }, className: "w-full flex items-center justify-between py-1 text-xs font-bold text-orange-700 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 rounded" },
 
                       React.createElement("span", null, __alloT('stem.artstudio.the_science_of_gradients', "\uD83C\uDFA8 The Science of Gradients")),
 
@@ -12506,7 +12506,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200" },
 
-                    React.createElement("button", { id: "artstudio-stereogram-info-toggle", "aria-expanded": !!d.showStereoInfo, "aria-controls": "artstudio-stereogram-science", onClick: function () { upd('showStereoInfo', !d.showStereoInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-teal-700" },
+                    React.createElement("button", { id: "artstudio-stereogram-info-toggle", "aria-expanded": !!d.showStereoInfo, "aria-controls": "artstudio-stereogram-science", onClick: function () { upd('showStereoInfo', !d.showStereoInfo); }, className: "w-full flex items-center justify-between py-1 text-xs font-bold text-teal-700" },
 
                       React.createElement("span", null, __alloT('stem.artstudio.the_science_of_stereograms', "\uD83E\uDDE0 The Science of Stereograms")),
 
