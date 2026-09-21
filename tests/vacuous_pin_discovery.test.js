@@ -63,6 +63,10 @@ function dryRun(rel) {
   }
 }
 
+// Explicit timeouts below: every test here shells out to the tool, which
+// walks ~4,300 test files. On vitest's 5 s default they pass alone and fail
+// when another suite that also scans tests/ runs in parallel — an
+// intermittent red that reads as a logic bug and is not one.
 describe('find_vacuous_pins - source discovery', () => {
   it('finds a bare literal (the shape that always worked)', () => {
     const rel = writeSuite('bare.test.js', [
@@ -72,7 +76,7 @@ describe('find_vacuous_pins - source discovery', () => {
       '',
     ].join('\n'));
     expect(dryRun(rel)).toContain(SRC_REL);
-  });
+  }, 120000);
 
   it('finds resolve(process.cwd(), ...) - the repo\'s most common idiom', () => {
     const rel = writeSuite('cwd.test.js', [
@@ -85,7 +89,7 @@ describe('find_vacuous_pins - source discovery', () => {
     const out = dryRun(rel);
     expect(out, 'resolve(process.cwd(), ...) must be discovered').toContain(SRC_REL);
     expect(out).not.toMatch(/reads no source file directly/);
-  });
+  }, 120000);
 
   it('finds a path hoisted into a const', () => {
     const rel = writeSuite('const.test.js', [
@@ -97,7 +101,7 @@ describe('find_vacuous_pins - source discovery', () => {
       '',
     ].join('\n'));
     expect(dryRun(rel)).toContain(SRC_REL);
-  });
+  }, 120000);
 
   it('follows a local helper that does the reading (the harness shape)', () => {
     const rel = writeSuite('harness.test.js', [
@@ -108,7 +112,7 @@ describe('find_vacuous_pins - source discovery', () => {
     const out = dryRun(rel);
     expect(out, 'a suite reading only through a helper must still be discovered').toContain(SRC_REL);
     expect(out).not.toMatch(/reads no source file directly/);
-  });
+  }, 120000);
 
   it('keeps root-level sources, which have no slash in the path', () => {
     // Requiring a '/' separator dropped 317 suites that name a root file
@@ -121,7 +125,7 @@ describe('find_vacuous_pins - source discovery', () => {
       '',
     ].join('\n'));
     expect(dryRun(rel)).toMatch(/package\.json/);
-  });
+  }, 120000);
 
   it('finds a call packed onto a line with other statements', () => {
     // A `[^;]` argument bound stops at the first semicolon INSIDE the call, so
@@ -133,7 +137,7 @@ describe('find_vacuous_pins - source discovery', () => {
       '',
     ].join('\n'));
     expect(dryRun(rel)).toContain(SRC_REL);
-  });
+  }, 120000);
 
   it('still skips a suite whose paths are genuinely dynamic', () => {
     // Over-reaching would be worse than skipping: the tool WRITES to whatever it
@@ -145,7 +149,7 @@ describe('find_vacuous_pins - source discovery', () => {
       '',
     ].join('\n'));
     expect(dryRun(rel)).toMatch(/reads no source file directly/);
-  });
+  }, 120000);
 
   it('never invents a path that is not a real file', () => {
     const rel = writeSuite('notafile.test.js', [
@@ -156,7 +160,7 @@ describe('find_vacuous_pins - source discovery', () => {
     const out = dryRun(rel);
     expect(out).not.toMatch(/definitely\/not\/here\.js/);
     expect(out).toMatch(/reads no source file directly/);
-  });
+  }, 120000);
 });
 
 // ── Files passed through a parameterised block ──

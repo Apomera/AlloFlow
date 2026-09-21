@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'node:fs';
+import { resolve, join } from 'node:path';
+import { tmpdir } from 'node:os';
 
 // The ratchet gate must survive this tree, not just a quiet one.
 //
@@ -23,9 +24,24 @@ import { resolve } from 'node:path';
 const ROOT = process.cwd();
 const GATE = resolve(ROOT, 'dev-tools/check_anchored_slices.cjs');
 
-function runGate(args = []) {
+// The gate WRITES to its baseline (it absorbs growth in files the current
+// author has not touched). Pointed at the tracked file, this suite dirtied
+// dev-tools/anchored_slices_baseline.json on every run and raced any other
+// suite that also drives the gate — vitest runs test files in parallel.
+// ANCHORED_SLICES_BASELINE hands it a private copy instead.
+const PRIVATE_BASELINE = join(tmpdir(), `anchored_slices_robustness_${process.pid}.json`);
+writeFileSync(PRIVATE_BASELINE, readFileSync(resolve(ROOT, 'dev-tools/anchored_slices_baseline.json')));
+
+function runGate(args = [], scanDir) {
+  const env = { ...process.env, ANCHORED_SLICES_BASELINE: PRIVATE_BASELINE };
+  // Scanning only the probe directory isolates this suite from every other one
+  // that writes fixtures under tests/ — their files appearing and vanishing
+  // mid-scan is a race this suite cannot control, and it surfaced as an
+  // intermittent failure that passed alone and failed in a batch.
+  if (scanDir) env.ANCHORED_SLICES_TESTS_DIR = scanDir;
+  const opts = { cwd: ROOT, encoding: 'utf8', env };
   try {
-    return { code: 0, out: execFileSync(process.execPath, [GATE, ...args], { cwd: ROOT, encoding: 'utf8' }) };
+    return { code: 0, out: execFileSync(process.execPath, [GATE, ...args], opts) };
   } catch (e) {
     // The gate exits 1 when the ratchet is exceeded; that is a REPORT, not a crash.
     return { code: e.status === undefined ? -1 : e.status, out: String(e.stdout || '') + String(e.stderr || '') };
@@ -45,7 +61,11 @@ describe('check_anchored_slices - survives a file vanishing mid-scan', () => {
     expect([0, 1], `gate exited ${code}:\n${out.slice(0, 600)}`).toContain(code);
     expect(out).not.toMatch(/ENOENT/);
     expect(out).not.toMatch(/at Module\._compile/);
-  });
+    // Explicit timeout: the gate walks ~4,300 test files and shells out to git
+    // for authorship, so it runs in seconds, not milliseconds — and slower
+    // still on a cold filesystem cache. The 5 s default failed here once the
+    // authorship lookup landed; the sibling test below already allows 120 s.
+  }, 120000);
 
   it('still finishes when a scratch suite disappears while it runs', () => {
     // Recreate the exact shape: a test file that exists when the walk starts.
@@ -62,10 +82,12 @@ describe('check_anchored_slices - survives a file vanishing mid-scan', () => {
       // the fixture honest and the scan accurate.
       const RAW = ['const r = s', 'slice(s', "indexOf('A'), s", "indexOf('B'));"].join('.');
       writeFileSync(resolve(dir, 'probe.test.js'), RAW + '\n');
-      const first = runGate();
+      const first = runGate([], dir);
       expect([0, 1]).toContain(first.code);
       rmSync(dir, { recursive: true, force: true });
-      const second = runGate();
+      // The directory is gone: the gate must report that it has nothing to
+      // scan, not crash on the vanished path.
+      const second = runGate([], dir);
       expect([0, 1], 'the gate broke after the probe directory was removed').toContain(second.code);
       expect(second.out).not.toMatch(/ENOENT/);
     } finally {

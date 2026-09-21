@@ -200,6 +200,50 @@ In Canvas mode, `apiKey` is intentionally empty (`""`). Canvas's proxy intercept
 - `npm run test:e2e` — Playwright end-to-end specs (PDF golden masters, etc.).
 - See `dev-tools/README.md` for the full list of `verify:*` checks.
 
+#### Pinning a region of a source file
+
+Many suites here pin behaviour by reading a big source file and asserting on a
+slice of it. Written the obvious way, that **fails open**:
+
+```js
+// DON'T: if either anchor moves, this keeps passing while testing nothing.
+const branch = source.slice(source.indexOf(START), source.indexOf(END));
+expect(branch).toContain('onClose={handleCloseDashboard}');
+```
+
+`indexOf` returns `-1` for an anchor that no longer matches, and `slice` reads a
+negative bound as an offset from the *end* of the string. A stale END anchor
+therefore grows the region to the whole file, so `toContain` passes against
+unrelated code. This is not hypothetical: a dashboard suite pinned the wrong
+component's close handler for weeks this way, and only its sibling assertion,
+which happened to fail closed, ever complained.
+
+Use the helper instead. It throws naming the anchor that moved, and points at
+the closest surviving line:
+
+```js
+import { sliceBetween } from './helpers/anchored_slice.js';
+
+const branch = sliceBetween(source, START, END, { file: 'AlloFlowANTI.txt', label: 'teacher branch' });
+```
+
+`npm run verify:anchored-slices` is the ratchet. It only blames files *you* have
+in flight, so another session's work never blocks you. A line that must keep the
+raw pattern — a fixture proving a detector works — takes an `allow-raw-slice`
+comment on it or just above it.
+
+To ask whether a suite pins anything at all, don't grep: destroy the code it
+claims to pin and see if it notices.
+
+```bash
+node dev-tools/find_vacuous_pins.cjs tests/your_suite.test.js
+```
+
+It gutts each source file the suite reads, re-runs it, and reports any suite
+that still passes. It writes to tracked files for a few seconds, so it refuses
+any file with uncommitted work and keeps a recovery journal; run it on a quiet
+tree.
+
 ---
 
 ## 7. Code Standards
