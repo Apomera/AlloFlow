@@ -140,6 +140,36 @@ const CLAIMS = [
       'adult 275-day refusal suspension under §2521',
   },
   {
+    label: 'NWS depth that carries away most cars',
+    re: /(\d{2}) inches to carry away most cars/,
+    min: 12, max: 12,
+    source: 'NWS Turn Around Don\'t Drown: 6 in knocks over an adult, 12 in carries most cars, ' +
+      '2 ft moves an SUV or truck. The tool previously credited the 6 in figure to CARS.',
+  },
+  {
+    label: 'vehicle share of US flood deaths (CSU 1996-2023)',
+    re: /put the vehicle-related share at (\d{2})%/,
+    min: 60, max: 66,
+    source: 'CSU/CIRA study of 2,461 US flood fatality records 1996-2023: 63% vehicle-related. ' +
+      'NWS states "over half". The tool previously claimed 80%.',
+  },
+  {
+    label: 'left-turn share of CROSSING-PATH crashes',
+    re: /about (\d{2})% of CROSSING-PATH crashes/,
+    min: 50, max: 56,
+    source: 'NHTSA DOT HS 811 366: ~53.1% of crossing-path crashes occur at or just after a left ' +
+      'turn. This is NOT the left-turn share of all intersection crashes — the tool previously ' +
+      'presented it as such, which overstates it several-fold.',
+  },
+  {
+    label: 'FMCSA loaded tractor-trailer stopping distance at 65 mph',
+    re: /about (\d{3}) ft to stop from 65 mph/,
+    min: 500, max: 550,
+    source: 'FMCSA: ~525 ft for a loaded 80,000 lb tractor-trailer vs ~316 ft for a car at 65 mph ' +
+      '(~66% farther). The tool previously said "40% more", which also contradicted its own ' +
+      'sedan-vs-school-bus figures (200 ft vs 480 ft at 55 mph = 140% more).',
+  },
+  {
     label: 'SUV single-vehicle rollover risk, upper bound',
     re: /an SUV at \d{2}-(\d{2})%/,
     min: 20, max: 25,

@@ -50,7 +50,18 @@ const PACK_DIRS = [
 
 // The keys corrected in 23cfe982d. Each is matched against the OLD text below
 // before anything is written.
-const KEYS = [
+// Keys default to the nine corrected in 23cfe982d, but any key can be passed:
+//   node … --key <name> --key <name> [--base <sha>]
+function argList(flag) {
+  const out = [];
+  for (let i = 0; i < process.argv.length - 1; i++) {
+    if (process.argv[i] === flag) out.push(process.argv[i + 1]);
+  }
+  return out;
+}
+const ARG_KEYS = argList('--key');
+const ARG_BASE = (argList('--base')[0] || '23cfe982d') + '^:ui_strings.js';
+const DEFAULT_KEYS = [
   'maine_has_roughly_500_700_reported_moo',
   'dawn_and_dusk_low_light_plus_late_may_',
   'brake_hard_let_up_just_before_impact_h',
@@ -61,6 +72,7 @@ const KEYS = [
   '3_142_distracted_driving_deaths_in_the',
   'maine_2054_a_when_passing_a_stopped_em',
 ];
+const KEYS = ARG_KEYS.length ? ARG_KEYS : DEFAULT_KEYS;
 
 // Current English, read from the catalog rather than retyped here, so this
 // script cannot disagree with what the tool actually ships.
@@ -82,10 +94,10 @@ function previousEnglish() {
   const { execFileSync } = require('node:child_process');
   let src;
   try {
-    src = execFileSync('git', ['show', '23cfe982d^:ui_strings.js'],
+    src = execFileSync('git', ['show', ARG_BASE],
       { cwd: ROOT, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
   } catch (e) {
-    throw new Error('could not read the pre-correction ui_strings.js from git: ' + e.message);
+    throw new Error('could not read the pre-correction ui_strings.js (' + ARG_BASE + ') from git: ' + e.message);
   }
   const out = {};
   for (const key of KEYS) {
