@@ -402,6 +402,44 @@ test.describe('magnetism — 3D visual pass', () => {
       .toBeGreaterThan(0);
   });
 
+  test('the induction field lines are tubes too', async ({ page }) => {
+    // The last traced field lines in the tool. Same counting rule as the
+    // electromagnet test and for the same reason: count tubes that CARRY A
+    // COLOUR ATTRIBUTE, because the PMREM environment builds a vertex-coloured
+    // gradient box on every scene and the coil rings are TorusGeometry — so
+    // counting vertexColors materials alone stays green with the feature
+    // reverted.
+    await page.goto(`${harness.url}/__harness`);
+    await page.waitForFunction(
+      () => !!(window as any).StemLab?._registry?.magnetism, null, { timeout: 30000 });
+    await page.evaluate(() => {
+      const T = (window as any).THREE, w = window as any;
+      w.__tally = { tubes: 0, colouredTubes: 0 };
+      const Tube = T.TubeGeometry;
+      T.TubeGeometry = function (...a: any[]) {
+        const g = new Tube(...a);
+        w.__tally.tubes++;
+        const setAttr = g.setAttribute.bind(g);
+        g.setAttribute = function (name: string, attr: any) {
+          if (name === 'color') w.__tally.colouredTubes++;
+          return setAttr(name, attr);
+        };
+        return g;
+      };
+      T.TubeGeometry.prototype = Tube.prototype;
+    });
+    await page.evaluate(() => (window as any).__mount({
+      magnetism: { tab: 'induce', induceMode: '3d' },
+    }));
+    await page.waitForSelector('#wrap canvas', { timeout: 30000 });
+    await page.waitForTimeout(1500);
+
+    const tally = await page.evaluate(() => (window as any).__tally);
+    expect(tally.tubes, 'induction scene built no TubeGeometry at all').toBeGreaterThan(0);
+    expect(tally.colouredTubes, 'no tube carries a colour attribute — the field lines are still flat')
+      .toBeGreaterThan(0);
+  });
+
   test('releases its GL context on unmount', async ({ page }) => {
     await harness.mount(page, FIELD_3D);
     await page.evaluate(() => (window as any).__magProbe());

@@ -8457,18 +8457,71 @@
               });
               dynamicGroup.add(magnetGroup);
             }
+            // The last traced field lines in the tool still drawn as 1px lines.
+            // They matter most here: the whole Faraday story is that the magnet
+            // has to MOVE through the coil, and a uniform line gives no sense
+            // of where the field is dense enough for that motion to matter.
+            // Tapered tube + cool->hot ramp on |B|, normalised against this
+            // scene's own sampled peak so the tubes agree with the field arrows
+            // buildCoil already draws through the coil face.
+            function addInductionTube(points, magnet, maxMagnitude) {
+              var lowPower = magLowPower();
+              var curve = new THREE.CatmullRomCurve3(points);
+              var tubular = Math.max(8, Math.min(lowPower ? 64 : 112, Math.floor(points.length * 0.9)));
+              var radial = lowPower ? 4 : 6;
+              // getPointAt (arc-length), NOT getPoint: TubeGeometry builds its
+              // rings on the arc-length parameterization, so getPoint's centres
+              // sit off the real tube axis and the taper skews.
+              var levels = [], centres = [];
+              for (var t = 0; t <= tubular; t++) {
+                var pt = curve.getPointAt(t / tubular);
+                // One non-finite sample makes a ring NaN, which poisons the
+                // buffer's bounding sphere and blanks the scene — abandon the
+                // tube rather than ship a hole.
+                if (!pt || !isFinite(pt.x) || !isFinite(pt.y) || !isFinite(pt.z)) return;
+                centres.push(pt);
+                var b = dipoleFieldAt3D(pt.x, pt.y, pt.z, magnet);
+                var mag = Math.hypot(b.x, b.y, b.z);
+                var lvl = isFinite(mag) && maxMagnitude > 0 ? Math.sqrt(Math.min(1, mag / maxMagnitude)) : 0;
+                levels.push(isFinite(lvl) ? lvl : 0);
+              }
+              var geometry = new THREE.TubeGeometry(curve, tubular, 1, radial, false);
+              var pos = geometry.attributes.position;
+              var cool = new THREE.Color(0x38bdf8), hot = new THREE.Color(0xf43f5e);
+              var colors = new Float32Array(pos.count * 3), tmp = new THREE.Color();
+              for (var i = 0; i < pos.count; i++) {
+                var ringIndex = Math.min(levels.length - 1, Math.floor(i / (radial + 1)));
+                var level = levels[ringIndex], centre = centres[ringIndex];
+                var rr = 0.010 + level * 0.046;
+                pos.setXYZ(i, centre.x + (pos.getX(i) - centre.x) * rr, centre.y + (pos.getY(i) - centre.y) * rr, centre.z + (pos.getZ(i) - centre.z) * rr);
+                tmp.copy(cool).lerp(hot, level);
+                colors[i * 3] = tmp.r; colors[i * 3 + 1] = tmp.g; colors[i * 3 + 2] = tmp.b;
+              }
+              pos.needsUpdate = true;
+              geometry.computeVertexNormals();
+              geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+              dynamicGroup.add(new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.82 })));
+            }
             function buildFieldLines(state) {
               var magnet = state.magnet, moment = momentVector(magnet, true);
               var north = new THREE.Vector3(magnet.x, magnet.y, magnet.z).add(moment.clone().multiplyScalar(1.05));
               var basis = basisFor(moment);
+              // Trace first, then colour: one shared peak means every tube is
+              // measured against the same scale rather than against itself.
+              var traces = [], peak = 1e-9;
               for (var seedIndex = 0; seedIndex < 12; seedIndex++) {
                 var angle = seedIndex / 12 * Math.PI * 2;
                 var seed = north.clone().add(basis.u.clone().multiplyScalar(Math.cos(angle) * 0.3)).add(basis.v.clone().multiplyScalar(Math.sin(angle) * 0.3));
                 var traced = traceLine3D({ x: seed.x, y: seed.y, z: seed.z }, [magnet], 1, { step: 0.13, maxSteps: 180, bound: 6.2, bodyR: 0.42 });
                 if (traced.length < 3) continue;
-                var points = traced.map(function (p) { return new THREE.Vector3(p.x, p.y, p.z); });
-                dynamicGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: 0xf43f5e, transparent: true, opacity: 0.46 })));
+                traces.push(traced.map(function (p) { return new THREE.Vector3(p.x, p.y, p.z); }));
+                for (var k = 0; k < traced.length; k += 6) {
+                  var bb = dipoleFieldAt3D(traced[k].x, traced[k].y, traced[k].z, magnet);
+                  var mm = Math.hypot(bb.x, bb.y, bb.z);
+                  if (isFinite(mm) && mm > peak) peak = mm;
+                }
               }
+              traces.forEach(function (points) { addInductionTube(points, magnet, peak); });
             }
             function buildCoil(state) {
               var coil = state.coil, normal = coilNormalVector(coil), basis = basisFor(normal), center = new THREE.Vector3(coil.x, coil.y, coil.z);
