@@ -1,0 +1,6 @@
+{
+  "stem.printlab.exit_fullscreen": "Exit fullscreen 3D preview (Escape)",
+  "stem.printlab.enter_fullscreen": "View the 3D preview fullscreen",
+  "stem.printlab.a11y_preview_static_description": "This preview is a still picture of the model. Use the rotate, zoom and reset buttons above it to change the view; the Preflight tab holds the full text report of dimensions and printability checks.",
+  "stem.printlab.description_starters": "Description starters"
+}

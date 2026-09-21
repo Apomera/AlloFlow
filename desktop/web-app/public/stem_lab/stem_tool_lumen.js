@@ -2698,9 +2698,9 @@
           kids.push(h('div', { key: 'setup', className: 'mt-3 flex items-end gap-2 flex-wrap', role: 'group', 'aria-label': __alloT('stem.lumen.measure_setup', 'Measure setup') },
             h('span', { className: 'text-xs text-slate-500 mr-1 self-center' }, 'Setup:'),
             h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.measure_name', 'Measure name'),
-              h('input', { type: 'text', value: d.variable == null ? '' : d.variable, placeholder: 'e.g. Plant height', 'aria-label': __alloT('stem.lumen.measure_name_y_variable', 'Measure name (y variable)'), onChange: function (ev) { upd('variable', ev.target.value); }, className: 'w-32 px-2 py-1 border rounded' })),
+              h('input', { type: 'text', value: d.variable == null ? '' : d.variable, placeholder: __alloT('stem.lumen.e_g_plant_height','e.g. Plant height'), 'aria-label': __alloT('stem.lumen.measure_name_y_variable', 'Measure name (y variable)'), onChange: function (ev) { upd('variable', ev.target.value); }, className: 'w-32 px-2 py-1 border rounded' })),
             h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.unit', 'Unit'),
-              h('input', { type: 'text', value: d.unit == null ? '' : d.unit, placeholder: 'e.g. cm', 'aria-label': __alloT('stem.lumen.unit_2', 'Unit'), onChange: function (ev) { upd('unit', ev.target.value); }, className: 'w-28 px-2 py-1 border rounded' })),
+              h('input', { type: 'text', value: d.unit == null ? '' : d.unit, placeholder: __alloT('stem.lumen.e_g_cm','e.g. cm'), 'aria-label': __alloT('stem.lumen.unit_2', 'Unit'), onChange: function (ev) { upd('unit', ev.target.value); }, className: 'w-28 px-2 py-1 border rounded' })),
             h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.x_axis_label', 'X-axis label'),
               h('input', { type: 'text', value: d.xLabel == null ? '' : d.xLabel, placeholder: __alloT('stem.lumen.week', 'Week'), 'aria-label': __alloT('stem.lumen.x_axis_label_x_variable', 'X-axis label (x variable)'), onChange: function (ev) { upd('xLabel', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' }))
           ));
@@ -2714,7 +2714,7 @@
             // change). Typed points inherit it until you change it; a phase CHANGE draws the dashed
             // phase line the geometry already supports. Deliberately NOT an aimline/goal/RTI device.
             h('label', { key: 'phaselab', className: 'text-xs text-slate-600 flex flex-col', title: __alloT('stem.lumen.phase_tooltip', 'Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.') }, __alloT('stem.lumen.phase_optional', 'Phase (optional)'),
-              h('input', { type: 'text', value: d.draftPhase == null ? '' : d.draftPhase, placeholder: 'e.g. before', onChange: function (ev) { upd('draftPhase', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' })),
+              h('input', { type: 'text', value: d.draftPhase == null ? '' : d.draftPhase, placeholder: __alloT('stem.lumen.e_g_before','e.g. before'), onChange: function (ev) { upd('draftPhase', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' })),
             // The 2nd-measure input appears ONLY in the scatter view (calm-by-default: the trend entry stays two fields).
             (chartType === 'scatter' ? h('label', { key: 'y2lab', className: 'text-xs text-slate-600 flex flex-col' }, (comp.variable2 || 'value₂') + ' (y2)',
               h('input', { type: 'number', value: d.draftY2 == null ? '' : d.draftY2, onChange: function (ev) { upd('draftY2', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' })) : null),

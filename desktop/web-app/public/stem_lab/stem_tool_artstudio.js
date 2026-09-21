@@ -644,6 +644,14 @@ const d = labToolData.artStudio || {};
             }
             return safe.length ? safe : ART_STUDIO_GRADIENT_STOPS.slice();
           };
+          // A saved colour is input, and `d.x || '#fallback'` is a truthiness guard:
+          // a number or an object from a hand-edited save walks straight through it
+          // and then .toLowerCase() throws, blanking the Watercolor lab.
+          const artStudioHexColor = function (raw, fallback) {
+            return (typeof raw === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(raw))
+              ? raw.toLowerCase()
+              : String(fallback || '#2f6fb0').toLowerCase();
+          };
           const copyArtStudioPixels = function (source) {
             var pixels = source && source.data ? source.data : source;
             return new Uint8ClampedArray(pixels || 0);
@@ -6852,7 +6860,7 @@ const d = labToolData.artStudio || {};
                 React.createElement("input", { id: "artstudio-watercolor-color", type: "color", value: d.watercolorColor || '#2f6fb0', onChange: function (e) { upd('watercolorColor', e.target.value); }, 'aria-label': __alloT('stem.artstudio.watercolor_color', "Pigment color"), className: "h-8 w-12 rounded cursor-pointer border border-teal-600 bg-white" }),
                 React.createElement("div", { className: "flex gap-1 ml-auto flex-wrap" },
                   WATERCOLOR_PIGMENTS.map(function (swatch) {
-                    return React.createElement("button", { key: swatch.color, type: "button", onClick: function () { upd('watercolorColor', swatch.color); Object.keys(swatch.values).forEach(function (key) { upd(key, swatch.values[key]); }); if (typeof announceToSR === 'function') announceToSR(swatch.label + ' pigment preset applied: ' + swatch.description + '.'); }, title: swatch.label + ': ' + swatch.description, 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_choose_pigment_preset', 'Choose {value1} pigment preset, {value2}'), { value1: swatch.label, value2: swatch.description }), 'aria-pressed': (d.watercolorColor || '#2f6fb0').toLowerCase() === swatch.color, className: "h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 " + ((d.watercolorColor || '#2f6fb0').toLowerCase() === swatch.color ? 'border-slate-900 scale-110' : 'border-white'), style: { background: swatch.color, boxShadow: '0 1px 3px rgba(0,0,0,0.25)' } });
+                    return React.createElement("button", { key: swatch.color, type: "button", onClick: function () { upd('watercolorColor', swatch.color); Object.keys(swatch.values).forEach(function (key) { upd(key, swatch.values[key]); }); if (typeof announceToSR === 'function') announceToSR(swatch.label + ' pigment preset applied: ' + swatch.description + '.'); }, title: swatch.label + ': ' + swatch.description, 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_choose_pigment_preset', 'Choose {value1} pigment preset, {value2}'), { value1: swatch.label, value2: swatch.description }), 'aria-pressed': artStudioHexColor(d.watercolorColor, '#2f6fb0') === swatch.color, className: "h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 " + (artStudioHexColor(d.watercolorColor, '#2f6fb0') === swatch.color ? 'border-slate-900 scale-110' : 'border-white'), style: { background: swatch.color, boxShadow: '0 1px 3px rgba(0,0,0,0.25)' } });
                   })
                 )
               ),
@@ -8318,7 +8326,7 @@ const d = labToolData.artStudio || {};
                         );
                       })) : null,
                       React.createElement("div", { className: "mt-2 flex gap-1" },
-                        React.createElement("input", { type: "text", maxLength: 40, value: d.sculptProfileName || '', "aria-label": __alloT('stem.artstudio.a11y_name_for_reusable_form_profile', 'Name for reusable form profile'), placeholder: 'My vase form', onChange: function(event) { upd('sculptProfileName', event.target.value); }, className: "min-w-0 flex-1 rounded border border-violet-600 bg-white px-2 py-1 text-[0.625rem]" }),
+                        React.createElement("input", { type: "text", maxLength: 40, value: d.sculptProfileName || '', "aria-label": __alloT('stem.artstudio.a11y_name_for_reusable_form_profile', 'Name for reusable form profile'), placeholder: __alloT('stem.artstudio.my_vase_form','My vase form'), onChange: function(event) { upd('sculptProfileName', event.target.value); }, className: "min-w-0 flex-1 rounded border border-violet-600 bg-white px-2 py-1 text-[0.625rem]" }),
                         React.createElement("button", { type: "button", className: "rounded bg-fuchsia-600 px-2 py-1 text-[0.625rem] font-bold text-white hover:bg-fuchsia-700", "aria-label": __alloT('stem.artstudio.a11y_save_selected_form_as_reusable_profile', 'Save selected form as reusable profile'), onClick: saveSelectedMorphProfile }, 'Save form')
                       )
                     ),
@@ -8341,9 +8349,9 @@ const d = labToolData.artStudio || {};
                       React.createElement("button", { className: mini, title: 'Smaller', "aria-label": __alloT('stem.artstudio.a11y_smaller', 'Smaller'), disabled: selectedPartLocked, style: miniStyle(selectedPartLocked), onClick: function() { partOp(function(P, r) { return P.scalePart(r, sel, 0.8); }); } }, '➖'),
                       React.createElement("button", { className: mini, title: 'Spin', "aria-label": __alloT('stem.artstudio.a11y_spin', 'Spin'), disabled: selectedPartLocked, style: miniStyle(selectedPartLocked), onClick: function() { partOp(function(P, r) { return P.nudgePart(r, sel, 'rotation', 1, 30); }); } }, '🔄'),
                       React.createElement("button", { className: mini, title: 'Color', "aria-label": __alloT('stem.artstudio.a11y_change_color', 'Change color'), onClick: function() { partOp(function(P, r) { return P.recolorPart(r, sel); }); } }, '🎨'),
-                      React.createElement("button", { className: mini, title: 'Duplicate', "aria-label": __alloT('stem.artstudio.a11y_duplicate', 'Duplicate'), onClick: function() { partOp(function(P, r) { return P.duplicatePart(r, sel); }); } }, '⧉'),
+                      React.createElement("button", { className: mini, title: __alloT('stem.artstudio.duplicate','Duplicate'), "aria-label": __alloT('stem.artstudio.a11y_duplicate', 'Duplicate'), onClick: function() { partOp(function(P, r) { return P.duplicatePart(r, sel); }); } }, '⧉'),
                       React.createElement("button", { className: mini, title: 'Mirror copy on ' + sculptMirrorAxis.toUpperCase() + ' axis', "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_mirror_copy_on_axis', 'Mirror copy on {value1} axis'), { value1: sculptMirrorAxis.toUpperCase() }), onClick: mirrorSelectedPart }, '↔'),
-                      React.createElement("button", { className: mini, title: 'Remove part', "aria-label": __alloT('stem.artstudio.a11y_remove_part', 'Remove part'), onClick: function() { partOp(function(P, r) { return P.removePart(r, sel); }); upd('sculptSel', Math.max(0, sel - 1)); } }, '✕')
+                      React.createElement("button", { className: mini, title: __alloT('stem.artstudio.remove_part','Remove part'), "aria-label": __alloT('stem.artstudio.a11y_remove_part', 'Remove part'), onClick: function() { partOp(function(P, r) { return P.removePart(r, sel); }); upd('sculptSel', Math.max(0, sel - 1)); } }, '✕')
                     ),
                     selectedPart ? React.createElement("details", { className: "mt-2 rounded-xl border border-slate-200 bg-slate-50 p-2" },
                       React.createElement("summary", { className: "cursor-pointer text-xs font-black text-slate-700" }, 'Fine-tune selected part'),

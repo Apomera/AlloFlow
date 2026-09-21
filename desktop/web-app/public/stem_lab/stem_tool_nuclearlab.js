@@ -3282,7 +3282,7 @@
             : (kind === 'emergency'
               ? 'In an actual release, follow state and local officials. Whether to shelter, evacuate, or take KI depends on measurements and conditions this model cannot know.'
               : 'This personal-dose estimate is educational, not a medical assessment. Ask a qualified clinician, health physicist, or local radon program about a real exposure.'));
-        return h('aside', { role: 'note', 'aria-label': 'Educational safety notice', className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(248,113,113,0.6)', background: isDark ? 'rgba(69,10,10,0.35)' : 'rgba(254,242,242,0.95)' } },
+        return h('aside', { role: 'note', 'aria-label': t('stem.nuclearlab.educational_safety_notice','Educational safety notice'), className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(248,113,113,0.6)', background: isDark ? 'rgba(69,10,10,0.35)' : 'rgba(254,242,242,0.95)' } },
           h('p', { className: 'text-[0.6875rem] font-black', style: { color: ink('#ef4444') } }, 'Educational model — not emergency or medical instructions'),
           h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#fecaca' : '#7f1d1d' } }, detail),
           h('a', { href: NK_SOURCES.nrc.url, target: '_blank', rel: 'noopener noreferrer', className: 'inline-block mt-1 text-[0.6875rem] font-bold underline', style: { color: ink('#ef4444') } }, 'Official NRC emergency guidance ↗'));
@@ -4027,7 +4027,7 @@
         : ' · ' + nkSummaryPosition + '/' + nkSummarySequence.length;
 
       var nkIndex = h('nav', {
-        'aria-label': 'Nuclear lab topics',
+        'aria-label': t('stem.nuclearlab.nuclear_lab_topics','Nuclear lab topics'),
         'data-nk-open': nkOpen ? 'true' : 'false',
         className: 'nk-topic-nav rounded-xl border px-2.5 py-2 mt-1',
         style: {
@@ -4109,7 +4109,7 @@
               'aria-atomic': 'true',
               className: 'sr-only'
             }),
-            h('div', { role: 'group', 'aria-label': 'Reading display options', className: 'flex flex-wrap gap-1' },
+            h('div', { role: 'group', 'aria-label': t('stem.nuclearlab.reading_display_options','Reading display options'), className: 'flex flex-wrap gap-1' },
               nkDisplayToggle(nkLargeText, 'A+ Text', 'Use larger text throughout the nuclear lab', function () {
                 upd({ nkLargeText: !nkLargeText });
                 if (typeof announceToSR === 'function') announceToSR('Larger text ' + (!nkLargeText ? 'on.' : 'off.'));
@@ -4141,7 +4141,7 @@
           id: 'nk-index-body',
           role: 'region',
           tabIndex: 0,
-          'aria-label': 'Guided routes, topic categories, and topic links',
+          'aria-label': t('stem.nuclearlab.guided_routes_topic_categories_and_topic_lin','Guided routes, topic categories, and topic links'),
           style: { maxHeight: '42vh', overflowY: 'auto' }
         },
           h('div', { className: 'mt-1.5' },
@@ -4282,7 +4282,7 @@
           // the same factor, which is not something to do to a live control.
           nkPath ? h('span', { className: 'block text-[0.625rem] font-black mt-1.5', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'OR BROWSE BY CATEGORY') : null,
-          h('div', { role: 'group', 'aria-label': 'Browse topics by category', className: 'nk-group-filters flex flex-wrap gap-1 mt-1.5' },
+          h('div', { role: 'group', 'aria-label': t('stem.nuclearlab.browse_topics_by_category','Browse topics by category'), className: 'nk-group-filters flex flex-wrap gap-1 mt-1.5' },
             NK_GROUPS.map(function (g) {
               var n = g.id === 'all' ? NK_SECTIONS.length : NK_SECTIONS.filter(function (s) { return s.grp === g.id; }).length;
               return pill(nkGroup === g.id && !nkPath, '#a78bfa', g.label + ' (' + n + ')', function () {
@@ -4462,7 +4462,7 @@
               h('span', { className: 'text-xs', style: { color: 'rgba(196,181,253,0.9)' } }, 'What the numbers actually say — including where they are disputed')
             ),
             h('ul', {
-              'aria-label': 'Nuclear lab learning progress',
+              'aria-label': t('stem.nuclearlab.nuclear_lab_learning_progress','Nuclear lab learning progress'),
               className: 'nk-hero-progress ml-auto flex flex-wrap justify-end gap-1.5'
             },
               h('li', {
@@ -4567,7 +4567,7 @@
           h('div', { className: 'flex flex-wrap items-end gap-2 mt-2' },
             h('div', { className: 'flex-1 min-w-[150px]' },
               h('label', { htmlFor: 'nk-age-guess', className: 'block text-[0.6875rem] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Your estimate (years)'),
-              h('input', { id: 'nk-age-guess', type: 'number', value: ageGuess, placeholder: 'e.g. 5730',
+              h('input', { id: 'nk-age-guess', type: 'number', value: ageGuess, placeholder: t('stem.nuclearlab.e_g_5730','e.g. 5730'),
                 onChange: function (e) { setAgeGuess(e.target.value); },
                 className: 'w-full min-h-11 px-3 py-2 rounded-lg text-[0.6875rem]',
                 style: { border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.32)' : 'rgba(100,116,139,0.3)'), background: isDark ? 'rgba(15,23,42,0.8)' : '#fff', color: isDark ? '#e2e8f0' : '#0f172a' } })),
@@ -4629,11 +4629,11 @@
             h('canvas', { ref: chainRef, role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'nk-chain-description',
-              'aria-label': 'The uranium-238 chain plotted on the chart of nuclides, neutrons across and protons up. It starts at uranium-238 with 92 protons and 146 neutrons, top right, and walks down-left to lead-206 with 82 protons and 124 neutrons, bottom left. Each of the eight alpha steps moves two protons down and two neutrons left; each of the six beta steps moves one proton up and one neutron left, which is the zigzag. Radon-222, the only gas, sits in the middle at 86 protons and 136 neutrons.',
+              'aria-label': t('stem.nuclearlab.the_uranium_238_chain_plotted_on_the_chart_o','The uranium-238 chain plotted on the chart of nuclides, neutrons across and protons up. It starts at uranium-238 with 92 protons and 146 neutrons, top right, and walks down-left to lead-206 with 82 protons and 124 neutrons, bottom left. Each of the eight alpha steps moves two protons down and two neutrons left; each of the six beta steps moves one proton up and one neutron left, which is the zigzag. Radon-222, the only gas, sits in the middle at 86 protons and 136 neutrons.'),
               style: { width: '100%', height: '100%', display: 'block' } })),
           h('p', { id: 'nk-chain-description', className: 'text-[0.6875rem] mb-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             'Every alpha step takes the same diagonal down-left; every beta step kicks back up-left at a shallower one. That sawtooth is not decoration — it is why the chain crosses the same elements more than once, and why uranium appears twice in the list below. Choose a row to light up its nucleus here.'),
-          h('div', { role: 'list', 'aria-label': 'Uranium-238 decay chain steps', className: 'space-y-1 max-h-72 overflow-y-auto pr-1' },
+          h('div', { role: 'list', 'aria-label': t('stem.nuclearlab.uranium_238_decay_chain_steps','Uranium-238 decay chain steps'), className: 'space-y-1 max-h-72 overflow-y-auto pr-1' },
             U238_CHAIN.map(function (step, i) {
               var on = d.chainPick === i;
               var col = step.kind === 'alpha' ? '#f87171' : (step.kind === 'beta' ? '#60a5fa' : '#94a3b8');
@@ -4878,7 +4878,7 @@
             h('canvas', { ref: beRef, role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'nk-binding-description',
-              'aria-label': 'Binding energy per nucleon against mass number. It climbs steeply from hydrogen at zero, through helium-4 at 7.07, peaks at nickel-62 at 8.795 MeV, then falls slowly to uranium-238 at 7.57. Light nuclei release energy by fusing up the left slope; heavy nuclei release it by splitting down the right slope.',
+              'aria-label': t('stem.nuclearlab.binding_energy_per_nucleon_against_mass_numb','Binding energy per nucleon against mass number. It climbs steeply from hydrogen at zero, through helium-4 at 7.07, peaks at nickel-62 at 8.795 MeV, then falls slowly to uranium-238 at 7.57. Light nuclei release energy by fusing up the left slope; heavy nuclei release it by splitting down the right slope.'),
               style: { width: '100%', height: '100%', display: 'block' } })),
           h('p', { id: 'nk-binding-description', className: 'text-[0.625rem] mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Mass number across, MeV per nucleon up. The marked peak is where nothing can release energy by changing at all.'),
@@ -5934,13 +5934,13 @@
               h('canvas', { ref: rxCanvasRef, role: 'img',
                 'data-a11y-static': 'true',
                 'aria-describedby': 'rx-live-readings rx-objective-progress',
-                'aria-label': 'Reactor control panel showing a power trace, fuel temperature, net reactivity in pcm and xenon level. Use the controls below; every reading is also given as text under the panel.',
+                'aria-label': t('stem.nuclearlab.reactor_control_panel_showing_a_power_trace','Reactor control panel showing a power trace, fuel temperature, net reactivity in pcm and xenon level. Use the controls below; every reading is also given as text under the panel.'),
                 style: { width: '100%', height: '100%', display: 'block' } }))
           ),
 
           h('dl', {
             id: 'rx-live-readings', ref: rxTelemetryRef,
-            'aria-label': 'Live reactor readings', 'aria-live': 'off',
+            'aria-label': t('stem.nuclearlab.live_reactor_readings','Live reactor readings'), 'aria-live': 'off',
             className: 'nk-rx-telemetry mt-2 grid grid-cols-2 sm:grid-cols-5 gap-2'
           }, [
             ['rx-live-power', 'Power', nkFmt(rxRead.power, rxRead.power < 10 ? 1 : 0) + '%', 'power'],
@@ -5969,7 +5969,7 @@
           h('div', { className: 'mt-2 flex justify-end' },
             h('button', {
               type: 'button',
-              'aria-label': 'Show current status. Read a text snapshot of the reactor',
+              'aria-label': t('stem.nuclearlab.show_current_status_read_a_text_snapshot_of','Show current status. Read a text snapshot of the reactor'),
               'aria-controls': 'rx-status-summary',
               onClick: rxAnnounceStatus,
               className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
@@ -5995,7 +5995,7 @@
 
           // controls
           h('fieldset', {
-            'aria-label': '1. Choose scenario',
+            'aria-label': t('stem.nuclearlab.1_choose_scenario','1. Choose scenario'),
             className: 'nk-rx-control-group mt-3 rounded-xl border p-2.5',
             style: { borderColor: 'rgba(52,211,153,0.4)', background: isDark ? 'rgba(6,78,59,0.1)' : 'rgba(240,253,244,0.7)' }
           },
@@ -6055,7 +6055,7 @@
           ),
 
           h('fieldset', {
-            'aria-label': '2. Choose core design',
+            'aria-label': t('stem.nuclearlab.2_choose_core_design','2. Choose core design'),
             className: 'nk-rx-control-group mt-2 rounded-xl border p-2.5',
             style: { borderColor: 'rgba(96,165,250,0.4)', background: isDark ? 'rgba(30,58,138,0.1)' : 'rgba(239,246,255,0.72)' }
           },
@@ -6074,7 +6074,7 @@
           ),
 
           h('fieldset', {
-            'aria-label': '3. Operate the reactor',
+            'aria-label': t('stem.nuclearlab.3_operate_the_reactor','3. Operate the reactor'),
             className: 'nk-rx-control-group mt-2 rounded-xl border p-2.5',
             style: { borderColor: 'rgba(251,191,36,0.42)', background: isDark ? 'rgba(120,53,15,0.1)' : 'rgba(255,251,235,0.74)' }
           },
@@ -6086,7 +6086,7 @@
               className: 'min-h-11 px-4 py-2 rounded-lg text-[0.6875rem] font-black',
               style: rxUi.running ? { background: '#f59e0b', color: '#0b1020', border: '1px solid #f59e0b' } : { background: '#065f46', color: '#fff', border: '1px solid #065f46' }
             }, rxUi.running ? '⏸ Pause' : '▶ Run'),
-            h('button', { type: 'button', 'aria-label': 'Scram: drop every control rod immediately',
+            h('button', { type: 'button', 'aria-label': t('stem.nuclearlab.scram_drop_every_control_rod_immediately','Scram: drop every control rod immediately'),
               onClick: function () {
                 rxSet({ scrammed: true, sinceScram: 0, rods: 100, holdOk: 0 });
                 rxPatchUi({ scrammed: true, rodStep: 100 });
@@ -6095,7 +6095,7 @@
               },
               className: 'min-h-11 px-4 py-2 rounded-lg text-[0.6875rem] font-black text-white',
               style: { background: '#dc2626', border: '1px solid #dc2626' } }, '🛑 SCRAM'),
-            h('button', { type: 'button', 'aria-label': 'Reset. Return the reactor to its starting condition',
+            h('button', { type: 'button', 'aria-label': t('stem.nuclearlab.reset_return_the_reactor_to_its_starting_con','Reset. Return the reactor to its starting condition'),
               onClick: function () { rxRestart(); if (typeof beep === 'function') beep(); },
               className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
               style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') } }, '↺ Reset'),
@@ -6132,7 +6132,7 @@
             style: { borderColor: rxUi.verdict.ok ? 'rgba(52,211,153,0.6)' : 'rgba(248,113,113,0.6)', background: isDark ? 'rgba(15,23,42,0.7)' : (rxUi.verdict.ok ? 'rgba(240,253,244,0.9)' : 'rgba(254,242,242,0.9)') } },
             h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink(rxUi.verdict.ok ? '#059669' : '#dc2626') } }, rxUi.verdict.ok ? '✅ Scenario complete' : '⚠️ Run ended'),
             h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, rxUi.verdict.why),
-            h('button', { type: 'button', 'aria-label': 'Try again. Reset the reactor scenario',
+            h('button', { type: 'button', 'aria-label': t('stem.nuclearlab.try_again_reset_the_reactor_scenario','Try again. Reset the reactor scenario'),
               onClick: function () {
                 rxRetryFocusRef.current = true;
                 rxRestart();
@@ -6190,7 +6190,7 @@
               activeEvidenceMastered.length + ' of ' + evidenceClaims.length + ' mastered')
           ),
 
-          h('nav', { 'aria-label': 'Evidence challenge claims', className: 'mt-2' },
+          h('nav', { 'aria-label': t('stem.nuclearlab.evidence_challenge_claims','Evidence challenge claims'), className: 'mt-2' },
             h('ol', { className: 'flex flex-wrap gap-1.5' },
               evidenceClaims.map(function (claim, i) {
                 var current = i === evidenceIndex;
@@ -6410,7 +6410,7 @@
           ),
 
           activeEvidenceComplete ? h('aside', {
-            role: 'note', 'aria-label': 'Evidence challenge complete',
+            role: 'note', 'aria-label': t('stem.nuclearlab.evidence_challenge_complete','Evidence challenge complete'),
             className: 'mt-3 rounded-lg border p-2.5',
             style: { borderColor: 'rgba(52,211,153,0.65)', background: isDark ? 'rgba(6,78,59,0.28)' : 'rgba(236,253,245,0.96)' }
           },
@@ -6523,7 +6523,7 @@
               d.nkSummaryCopied === 'failed'
                 ? h('textarea', {
                   readOnly: true,
-                  'aria-label': 'Your summary text, ready to select and copy',
+                  'aria-label': t('stem.nuclearlab.your_summary_text_ready_to_select_and_copy','Your summary text, ready to select and copy'),
                   value: nkSummaryText(),
                   rows: 8,
                   className: 'w-full mt-2 rounded-lg p-2 text-[0.6875rem] font-mono',

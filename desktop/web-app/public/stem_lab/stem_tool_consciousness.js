@@ -1958,6 +1958,10 @@
   console.log('[StemLab Plugin] Loaded: stem_lab/stem_tool_consciousness.js');
 
   function renderConsciousnessLab(ctx) {
+    // This tool had no translator: every string it speaks was a bare literal with
+    // no key, so no translator was ever shown them. render(ctx) delegates here, so
+    // this is the one scope that encloses all of them.
+    var __alloT = function (k, fb) { var v; try { v = (ctx && typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
     var React = ctx.React || window.React;
     if (!React || !React.createElement) return null;
     var h = React.createElement;
@@ -2107,7 +2111,7 @@
           h('strong', null, 'Reading path: ' + profile.shortLabel + '.'),
           ' This selection changes vocabulary, theory count, examples, evidence limits, and questions - ', profile.tone, '.'
         ),
-        h('nav', { className: 'cns-tabs', role: 'tablist', 'aria-label': 'Consciousness Theory Lab sections' },
+        h('nav', { className: 'cns-tabs', role: 'tablist', 'aria-label': __alloT('stem.consciousness.consciousness_theory_lab_sections','Consciousness Theory Lab sections') },
           VIEWS.map(function (item, index) {
             var active = activeView === item[0];
             return h('button', {
@@ -2142,7 +2146,7 @@
       var next = nextArtifactFor(artifacts);
       var nextHere = !!next && next.view === activeView;
       function labelFor(artifact) { return early && artifact.plainLabel ? artifact.plainLabel : artifact.label; }
-      return h('nav', { className: 'cns-progress', 'aria-label': 'Learning path', style: { background: C.raised, borderColor: C.border } },
+      return h('nav', { className: 'cns-progress', 'aria-label': __alloT('stem.consciousness.learning_path','Learning path'), style: { background: C.raised, borderColor: C.border } },
         h('div', { className: 'cns-progress-heading' },
           h('strong', null, early ? 'My path' : 'Learning path'),
           h('span', { role: 'status' }, doneCount + ' of ' + artifacts.length + (early ? ' done' : ' steps done'))
@@ -2235,7 +2239,7 @@
               h('h3', null, target[0]), h('p', null, target[1])
             );
           })),
-          h('div', { className: 'cns-vocab', 'aria-label': 'Vocabulary for this grade path' },
+          h('div', { className: 'cns-vocab', 'aria-label': __alloT('stem.consciousness.vocabulary_for_this_grade_path','Vocabulary for this grade path') },
             h('strong', null, 'Vocabulary: '),
             // Buttons, not spans: selecting a term reveals its definition and
             // example below. A real <button> also gets keyboard operation and
@@ -2401,7 +2405,7 @@
               byProfile[profile.id] = value;
               return { compareReflections: byProfile };
             });
-          }, rows: 4, 'aria-label': 'Theory comparison reflection', placeholder: 'Write your comparison here...' }),
+          }, rows: 4, 'aria-label': __alloT('stem.consciousness.theory_comparison_reflection','Theory comparison reflection'), placeholder: __alloT('stem.consciousness.write_your_comparison_here','Write your comparison here...') }),
           h('p', { className: 'cns-debate-requirement' }, 'Write at least ' + comparisonMinimumForProfile(profile) + ' characters to log this comparison on your path.'),
           comparisonCompleteForProfile(d, profile) && h('p', { className: 'cns-debate-complete', role: 'status', style: { color: C.good } }, 'Comparison logged \u2713')
         )
@@ -2423,7 +2427,7 @@
           h('span', { className: 'cns-score', role: 'status', 'aria-live': 'polite' }, correct + ' correct · ' + placed + '/' + items.length + ' placed')
         ),
         h('p', { className: 'cns-ladder-intro' }, profile.id === 'early' ? 'Now put each idea on a rung. “Unknown” means we do not have enough evidence yet.' : 'Now place each claim by the current state of evidence. A rung describes confidence in this precise claim, not the worth of an entire theory.'),
-        h('ol', { className: 'cns-ladder-key', 'aria-label': 'Evidence ladder from most settled to unresolved' }, EVIDENCE_LADDER_LABELS.map(function (label, index) {
+        h('ol', { className: 'cns-ladder-key', 'aria-label': __alloT('stem.consciousness.evidence_ladder_from_most_settled_to_unresol','Evidence ladder from most settled to unresolved') }, EVIDENCE_LADDER_LABELS.map(function (label, index) {
           var gloss = LADDER_GLOSSES[profile.id] ? LADDER_GLOSSES[profile.id][label] : null;
           return h('li', { key: label }, h('span', { 'aria-hidden': 'true' }, index + 1),
             h('div', null, h('strong', null, label), gloss && h('em', { className: 'cns-ladder-gloss' }, gloss)));
@@ -2893,7 +2897,7 @@
       return panel(h(React.Fragment, null,
         h('div', { className: 'cns-section-heading' }, h('div', null, h('span', { className: 'cns-step' }, 'THOUGHT EXPERIMENT STUDIO'), h('h2', null, 'Apply theories without pretending the puzzle is settled'))),
         h('p', { className: 'cns-lead' }, profile.id === 'early' ? 'A story can help us ask a careful question. It is not the same as a science experiment.' : 'Cases reveal what a view commits to. Empirical cases provide data; philosophical thought experiments test implications and intuitions.'),
-        h('div', { className: 'cns-case-tabs', role: 'tablist', 'aria-label': 'Consciousness cases' }, cases.map(function (item, index) {
+        h('div', { className: 'cns-case-tabs', role: 'tablist', 'aria-label': __alloT('stem.consciousness.consciousness_cases','Consciousness cases') }, cases.map(function (item, index) {
           var active = item.id === selectedCaseId;
           return h('button', { key: item.id, id: 'cns-case-tab-' + item.id, type: 'button', role: 'tab', 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'cns-case-panel', tabIndex: active ? 0 : -1, onKeyDown: function (event) { handleCaseKeyDown(event, index); }, onClick: function () { patchState({ selectedCase: item.id }, item.title + ' selected'); }, style: { background: active ? C.accent : C.panel, color: active ? C.accentText : C.text, borderColor: active ? C.accent : C.border } }, h('span', { 'aria-hidden': 'true' }, item.icon), item.title);
         })),
@@ -2992,8 +2996,8 @@
             h('div', { className: 'cns-debate-grid' },
               h('label', null, h('strong', null, '1. Fair account of ' + theoryHandle(debateTheoryA, profile)), h('span', null, debateGuide.positionA), h('textarea', { required: true, rows: 3, value: debate.positionA || '', onChange: function (e) { updateDebate('positionA', e.target.value); }, placeholder: theoryTitle(debateTheoryA, profile) + ' would argue...' })),
               h('label', null, h('strong', null, '2. Fair account of ' + theoryHandle(debateTheoryB, profile)), h('span', null, debateGuide.positionB), h('textarea', { required: true, rows: 3, value: debate.positionB || '', onChange: function (e) { updateDebate('positionB', e.target.value); }, placeholder: theoryTitle(debateTheoryB, profile) + ' would argue...' })),
-              h('label', null, h('strong', null, '3. Evidence and limit'), h('span', null, debateGuide.evidence), h('textarea', { required: true, rows: 3, value: debate.evidence || '', onChange: function (e) { updateDebate('evidence', e.target.value); }, placeholder: 'The evidence shows... Its limit is...' })),
-              h('label', null, h('strong', null, '4. Uncertainty and next test'), h('span', null, debateGuide.uncertainty), h('textarea', { required: true, rows: 3, value: debate.uncertainty || '', onChange: function (e) { updateDebate('uncertainty', e.target.value); }, placeholder: 'We still do not know... A useful next test would...' }))
+              h('label', null, h('strong', null, '3. Evidence and limit'), h('span', null, debateGuide.evidence), h('textarea', { required: true, rows: 3, value: debate.evidence || '', onChange: function (e) { updateDebate('evidence', e.target.value); }, placeholder: __alloT('stem.consciousness.the_evidence_shows_its_limit_is','The evidence shows... Its limit is...') })),
+              h('label', null, h('strong', null, '4. Uncertainty and next test'), h('span', null, debateGuide.uncertainty), h('textarea', { required: true, rows: 3, value: debate.uncertainty || '', onChange: function (e) { updateDebate('uncertainty', e.target.value); }, placeholder: __alloT('stem.consciousness.we_still_do_not_know_a_useful_next_test_woul','We still do not know... A useful next test would...') }))
             ),
             h('fieldset', { className: 'cns-debate-selfcheck' },
               h('legend', null, early ? 'Before you finish, check:' : 'Self-check before finishing'),
@@ -3158,7 +3162,7 @@
             type: 'button',
             'data-allo-fs-btn': 'true',
             'aria-pressed': 'false',
-            'aria-label': 'View the network diagram fullscreen',
+            'aria-label': __alloT('stem.consciousness.view_the_network_diagram_fullscreen','View the network diagram fullscreen'),
             'data-fs-out': 'View the network diagram fullscreen',
             'data-fs-in': 'Exit fullscreen network diagram (Escape)',
             style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + C.border, color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
@@ -3226,7 +3230,7 @@
         h('p', { className: 'cns-lead' }, simple
           ? 'Move the sliders and watch which steps light up. This is a made-up machine that helps us ask questions. It is not a real brain and not a real computer program.'
           : 'Run the same settings through a human masking paradigm and through a language-model probe. The point is not that either lane is realistic. The point is that the functional markers can match while the question this lab is about stays open in both.'),
-        h('div', { className: 'cns-sim-substrates', role: 'group', 'aria-label': 'Choose a substrate' },
+        h('div', { className: 'cns-sim-substrates', role: 'group', 'aria-label': __alloT('stem.consciousness.choose_a_substrate','Choose a substrate') },
           [SIM_SUBSTRATES.human, SIM_SUBSTRATES.model].map(function (item) {
             var active = item.id === cfg.substrate;
             return h('button', {
@@ -3242,7 +3246,7 @@
           h('p', { className: 'cns-sim-hint' }, simple
             ? 'Each button sets the sliders for you. Read what to look for first, then look at the numbers.'
             : 'Each preset is one change from the clear-signal baseline. Read the question and what to expect before reading the run — a bench you interpret after the fact can seem to confirm anything.'),
-          h('div', { className: 'cns-sim-preset-row', role: 'group', 'aria-label': 'Preset comparisons' }, presets.map(function (preset) {
+          h('div', { className: 'cns-sim-preset-row', role: 'group', 'aria-label': __alloT('stem.consciousness.preset_comparisons','Preset comparisons') }, presets.map(function (preset) {
             var active = activePreset && activePreset.id === preset.id;
             var presetLabel = simple && preset.plainLabel ? preset.plainLabel : preset.label;
             var presetNote = simple && preset.plainNote ? preset.plainNote : preset.note;
@@ -3545,7 +3549,7 @@
           : 'Outputs below are qualitative deductions from simplified theory commitments. They are not empirical data, effect-size estimates, clinical guidance, or evidence that a theory is true.'),
         h('section', { className: 'cns-experiment-design', 'aria-labelledby': 'cns-experiment-design-title', style: { background: C.raised, borderColor: C.border } },
           h('div', { className: 'cns-section-heading' }, h('div', null, h('span', { className: 'cns-step' }, 'STEP 1'), h('h3', { id: 'cns-experiment-design-title' }, 'Set the experimental conditions')), h('span', { className: 'cns-score', role: 'status', 'aria-live': 'polite' }, scenario)),
-          h('ol', { className: 'cns-experiment-flow', 'aria-label': 'Masking experiment sequence' },
+          h('ol', { className: 'cns-experiment-flow', 'aria-label': __alloT('stem.consciousness.masking_experiment_sequence','Masking experiment sequence') },
             h('li', null, h('strong', null, '1. Target'), h('span', null, profile.id === 'early' ? 'A small picture flashes.' : 'A near-threshold visual target appears briefly.')),
             h('li', null, h('strong', null, '2. Delay'), h('span', null, settings.maskDelay + ' milliseconds')),
             h('li', null, h('strong', null, '3. Mask'), h('span', null, profile.id === 'early' ? 'A jumble covers the picture.' : 'A backward mask competes with target processing.')),
@@ -3685,7 +3689,7 @@
             }, d.summaryCopied ? 'Copied \u2713' : 'Copy summary')
           ),
           h('p', { className: 'cns-sim-hint' }, profile.id === 'early' ? 'Everything in your folder as plain words, ready to give to a teacher.' : 'Plain text of everything above, ready to paste into a document or hand to a teacher.'),
-          h('textarea', { className: 'cns-summary-text', readOnly: true, rows: 12, value: summaryText, 'aria-label': 'Plain-text portfolio summary' })
+          h('textarea', { className: 'cns-summary-text', readOnly: true, rows: 12, value: summaryText, 'aria-label': __alloT('stem.consciousness.plain_text_portfolio_summary','Plain-text portfolio summary') })
         )
       ));
     }

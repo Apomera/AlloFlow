@@ -3805,7 +3805,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   value: missionIntent,
                   onChange: function(e) { upd('missionIntent', (e.target.value || '').slice(0, 220)); },
                   rows: 3, maxLength: 220,
-                  placeholder: 'Example: I predict oxygen and hull margins will matter more than science points until we understand the radiation belts.',
+                  placeholder: __alloT('stem.spaceexplorer.example_i_predict_oxygen_and_hull_margins_wi','Example: I predict oxygen and hull margins will matter more than science points until we understand the radiation belts.'),
                   'aria-label': __alloT('stem.spaceexplorer.a11y_mission_hypothesis', 'Mission hypothesis'),
                   className: 'w-full rounded-lg bg-slate-950/70 border border-purple-600/30 p-2 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-400 focus:outline-none'
                 }),
@@ -4018,7 +4018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 value: protocolRevisionDraft,
                 onChange: function(e) { upd('protocolRevisionDraft', (e.target.value || '').slice(0, 220)); },
                 rows: 2, maxLength: 220,
-                placeholder: 'The oxygen margin is falling faster than predicted, so I will prioritize life support because ...',
+                placeholder: __alloT('stem.spaceexplorer.the_oxygen_margin_is_falling_faster_than_pre','The oxygen margin is falling faster than predicted, so I will prioritize life support because ...'),
                 'aria-label': __alloT('stem.spaceexplorer.a11y_protocol_revision_justification', 'Protocol revision justification'),
                 className: 'w-full rounded-md bg-slate-950/70 border border-fuchsia-600/30 p-2 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-fuchsia-400 focus:outline-none'
               }),
@@ -4482,7 +4482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 value: currentDecisionReason,
                 onChange: function(e) { upd('currentDecisionReason', (e.target.value || '').slice(0, 220)); },
                 rows: 2, maxLength: 220,
-                placeholder: 'Because the spectrum/evidence suggests..., I will trade ... to protect ...',
+                placeholder: __alloT('stem.spaceexplorer.because_the_spectrum_evidence_suggests_i_wil','Because the spectrum/evidence suggests..., I will trade ... to protect ...'),
                 'aria-label': __alloT('stem.spaceexplorer.a11y_commander_reasoning_before_choosing_a_response', 'Commander reasoning before choosing a response'),
                 className: 'w-full rounded-md bg-slate-950/70 border border-sky-600/30 p-2 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-sky-400 focus:outline-none'
               })
@@ -4750,7 +4750,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               value: missionReflection,
               onChange: function(e) { upd('missionReflection', (e.target.value || '').slice(0, 260)); },
               rows: 3, maxLength: 260,
-              placeholder: 'Revise your claim: What would you test differently next mission?',
+              placeholder: __alloT('stem.spaceexplorer.revise_your_claim_what_would_you_test_differ','Revise your claim: What would you test differently next mission?'),
               'aria-label': __alloT('stem.spaceexplorer.a11y_mission_reflection_and_revised_hypothesis', 'Mission reflection and revised hypothesis'),
               className: 'w-full rounded-lg bg-slate-950/70 border border-purple-600/30 p-2 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-400 focus:outline-none'
             }),

@@ -1,0 +1,13 @@
+{
+  "stem.raptorhunt.station_title": "Raptor Lab",
+  "stem.raptorhunt.station_intro": "Take flight. Follow your curiosity. Explore the physics, senses, and survival strategies of the world’s birds of prey.",
+  "stem.raptorhunt.topic_browse_hint": "Choose a collection to find your next experiment, field guide, or challenge.",
+  "stem.raptorhunt.silent_strike_mission_range": "Mission rule: glide within {range} m of prey. Flapping inside this range ends the mission.",
+  "stem.raptorhunt.scenic_view": "Scenic view",
+  "stem.raptorhunt.flight_review_details": "Flight review details",
+  "stem.raptorhunt.last_strike": "Last strike",
+  "stem.raptorhunt.trail_center_tip": "Aim inside the small circle for +2",
+  "stem.raptorhunt.search_threats_species_mechanisms_or_actions": "Search threats, species, mechanisms, or actions",
+  "stem.raptorhunt.search_results": "Search results",
+  "stem.raptorhunt.activities_found": "activities found"
+}

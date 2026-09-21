@@ -8546,9 +8546,9 @@
                 ),
                 h('div', { id: 'astronomy-energy-budget', role: 'img', 'aria-label': __alloT('stem.astronomy.a11y_cosmic_energy_budget_5_percent_ordinary_matter', 'Cosmic energy budget: 5 percent ordinary matter, 27 percent dark matter, and 68 percent dark energy.'), style: { marginBottom: 14 } },
                   h('div', { style: { display: 'flex', height: 24, borderRadius: 999, overflow: 'hidden', border: '1px solid #475569', background: '#0f172a' } },
-                    h('div', { title: 'Ordinary matter: 5%', style: { width: '5%', minWidth: 10, background: '#38bdf8' } }),
-                    h('div', { title: 'Dark matter: 27%', style: { width: '27%', background: '#a855f7' } }),
-                    h('div', { title: 'Dark energy: 68%', style: { width: '68%', background: '#f59e0b' } })
+                    h('div', { title: __alloT('stem.astronomy.ordinary_matter_5','Ordinary matter: 5%'), style: { width: '5%', minWidth: 10, background: '#38bdf8' } }),
+                    h('div', { title: __alloT('stem.astronomy.dark_matter_27','Dark matter: 27%'), style: { width: '27%', background: '#a855f7' } }),
+                    h('div', { title: __alloT('stem.astronomy.dark_energy_68','Dark energy: 68%'), style: { width: '68%', background: '#f59e0b' } })
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 6, marginTop: 8, fontSize: 11.5 } },
                     h('div', { style: { color: '#bae6fd' } }, h('span', { 'aria-hidden': 'true' }, '● '), h('strong', null, '5%'), ' ordinary matter'),

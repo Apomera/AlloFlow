@@ -3325,7 +3325,7 @@ window.StemLab = window.StemLab || {
                           value: crAnswer,
                           onChange: function(e) { upd('crAnswer', e.target.value); },
                           onKeyDown: function(e) { if(e.key === 'Enter') submitCashierAnswer(); },
-                          placeholder: "Total...", autoFocus: true,
+                          placeholder: __alloT('stem.money.total',"Total..."), autoFocus: true,
                           'aria-label': __alloT('stem.money.cashier_register_answer', 'Cashier register answer'),
                           className: "w-full pl-12 pr-4 py-4 bg-zinc-800 border-2 border-zinc-400 rounded-xl text-zinc-100 font-mono text-xl font-bold focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all shadow-inner"
                         })

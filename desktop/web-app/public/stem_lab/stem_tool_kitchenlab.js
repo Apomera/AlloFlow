@@ -5831,7 +5831,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 },
                 style: { padding: '6px 12px', background: 'rgba(15,23,42,0.7)', color: '#fde68a', border: '1px solid rgba(251,146,60,0.45)', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                 d.klPortfolioCopied === 'ok' ? '✓ Portfolio copied' : '📄 Copy my portfolio'),
-              d.klPortfolioCopied === 'fail' && d.klPortfolioText ? h('textarea', { readOnly: true, value: d.klPortfolioText, 'aria-label': 'Portfolio text', rows: 6, onFocus: function(e) { e.target.select(); }, onCopy: function() { setKL({ klPortfolioCopied: 'ok' }); },
+              d.klPortfolioCopied === 'fail' && d.klPortfolioText ? h('textarea', { readOnly: true, value: d.klPortfolioText, 'aria-label': __alloT('stem.kitchenlab.portfolio_text','Portfolio text'), rows: 6, onFocus: function(e) { e.target.select(); }, onCopy: function() { setKL({ klPortfolioCopied: 'ok' }); },
                 style: { width: '100%', fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11, background: 'rgba(15,23,42,0.7)', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 8, padding: 8 } }) : null);
           })(),
           // Where the kitchen is: water boils lower at altitude, and everything cooked in water follows
@@ -6241,7 +6241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               d.klWorksheetCopied === 'ok' ? '✓ Class set copied' : '📋 Copy a class set (5 cases)')));
         var worksheetFallback = d.klWorksheetCopied === 'fail' && d.klWorksheetText ? h('div', { style: { marginTop: 10 } },
           h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } }, 'Copying was blocked here. Select the text and copy it yourself:'),
-          h('textarea', { readOnly: true, value: d.klWorksheetText, 'aria-label': 'Class set text', rows: 8, onFocus: function(e) { e.target.select(); }, onCopy: function() { setKL({ klWorksheetCopied: 'ok' }); },
+          h('textarea', { readOnly: true, value: d.klWorksheetText, 'aria-label': __alloT('stem.kitchenlab.class_set_text','Class set text'), rows: 8, onFocus: function(e) { e.target.select(); }, onCopy: function() { setKL({ klWorksheetCopied: 'ok' }); },
             style: { width: '100%', fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11, background: 'rgba(15,23,42,0.7)', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 8, padding: 8 } })) : null;
         if (!kase) {
           return h('div', { 'data-kl-detective': 'none', style: Object.assign({}, cardStyle(), { marginTop: 18 }) },
@@ -6916,7 +6916,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               phase !== 'cold' && phase !== 'drained' ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
                 h('label', { htmlFor: 'kl-pot-dial', style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Pot burner'),
                 h('input', { id: 'kl-pot-dial', type: 'range', min: 0, max: 10, step: 1, value: d.potBurnerLevel != null ? d.potBurnerLevel : POT_BURNER_LEVEL, disabled: controlsDisabled, 'data-kl-pot-dial': d.potBurnerLevel != null ? d.potBurnerLevel : POT_BURNER_LEVEL,
-                  onChange: function(e) { setPotDial(parseInt(e.target.value, 10)); }, 'aria-label': 'Pot burner level', style: { flex: '1 1 140px', minWidth: 0, accentColor: phaseColor } }),
+                  onChange: function(e) { setPotDial(parseInt(e.target.value, 10)); }, 'aria-label': __alloT('stem.kitchenlab.pot_burner_level','Pot burner level'), style: { flex: '1 1 140px', minWidth: 0, accentColor: phaseColor } }),
                 h('span', { style: { fontSize: 12, fontWeight: 800, color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 52 } }, (d.potBurnerLevel != null ? d.potBurnerLevel : POT_BURNER_LEVEL) + ' / 10'),
                 (d.potBurnerLevel === 0) ? h('span', { 'data-kl-pot-off': '1', style: { fontSize: 11, color: '#fca5a5' } }, 'off: the water is cooling; once it falls below the boil the pasta stops cooking') : null) : null,
               // Action buttons (vary by phase)

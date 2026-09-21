@@ -4216,7 +4216,7 @@ window.StemLab = window.StemLab || {
           ),
           h("label", { className: "mt-3 block rounded-lg border border-amber-200 bg-white p-3" },
             h("span", { className: "text-[0.625rem] font-black uppercase tracking-wide text-amber-700" }, "Reflection / claim"),
-            h("textarea", { value: dnaReportNote, onChange: function(e) { upd('dnaReportNote', e.target.value); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[0.6875rem] text-slate-700 outline-none focus:border-amber-500", 'aria-label': __alloT('stem.dna.a11y_dna_lab_report_reflection_or_claim', 'DNA lab report reflection or claim'), placeholder: "What changed? What stayed the same? What evidence supports your claim?" })
+            h("textarea", { value: dnaReportNote, onChange: function(e) { upd('dnaReportNote', e.target.value); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[0.6875rem] text-slate-700 outline-none focus:border-amber-500", 'aria-label': __alloT('stem.dna.a11y_dna_lab_report_reflection_or_claim', 'DNA lab report reflection or claim'), placeholder: t('stem.dna.what_changed_what_stayed_the_same_what_evide','What changed? What stayed the same? What evidence supports your claim?') })
           ),
           h("section", { className: "mt-3 rounded-xl border border-violet-200 bg-violet-50/60 p-3", "data-dna-evidence-mode": true, role: "region", "aria-labelledby": "dna-evidence-mode-title" },
             h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
@@ -4254,7 +4254,7 @@ window.StemLab = window.StemLab || {
             ),
             h("label", { className: "mt-3 block rounded-lg border border-violet-500 bg-white p-3" },
               h("span", { className: "text-[0.625rem] font-black uppercase tracking-wide text-violet-800" }, "Reasoning"),
-              h("textarea", { value: dnaEvidenceReasoning, onChange: function(e) { updMulti({ dnaEvidenceReasoning: e.target.value, dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[0.6875rem] text-slate-700 outline-none focus:border-violet-500", 'aria-label': __alloT('stem.dna.a11y_explain_how_the_evidence_supports_the_claim', 'Explain how the evidence supports the claim'), placeholder: "Use because, shows, so, or therefore to connect the evidence to your claim." })
+              h("textarea", { value: dnaEvidenceReasoning, onChange: function(e) { updMulti({ dnaEvidenceReasoning: e.target.value, dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[0.6875rem] text-slate-700 outline-none focus:border-violet-500", 'aria-label': __alloT('stem.dna.a11y_explain_how_the_evidence_supports_the_claim', 'Explain how the evidence supports the claim'), placeholder: t('stem.dna.use_because_shows_so_or_therefore_to_connect','Use because, shows, so, or therefore to connect the evidence to your claim.') })
             ),
             h("div", { className: "mt-3 flex flex-wrap items-center gap-2" },
               h("button", { type: "button", onClick: checkDnaEvidence, className: "rounded-lg bg-violet-700 px-3 py-2 text-[0.6875rem] font-black text-white hover:bg-violet-800" }, "Check reasoning"),
@@ -4971,7 +4971,7 @@ window.StemLab = window.StemLab || {
                   ),
                   h("label", { className: "block rounded-lg border border-indigo-500 bg-white p-3" },
                     h("span", { className: "text-[0.625rem] font-black uppercase tracking-wide text-indigo-800" }, "Comparison reflection"),
-                    h("textarea", { value: dnaCompareReflection, onChange: function(e) { upd('dnaCompareReflection', e.target.value); }, rows: 2, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[0.6875rem] text-slate-700 outline-none focus:border-indigo-500", 'aria-label': __alloT('stem.dna.a11y_saved_experiment_comparison_reflection', 'Saved experiment comparison reflection'), placeholder: "What changed between A and B, and which codon or protein evidence supports your conclusion?" })
+                    h("textarea", { value: dnaCompareReflection, onChange: function(e) { upd('dnaCompareReflection', e.target.value); }, rows: 2, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[0.6875rem] text-slate-700 outline-none focus:border-indigo-500", 'aria-label': __alloT('stem.dna.a11y_saved_experiment_comparison_reflection', 'Saved experiment comparison reflection'), placeholder: t('stem.dna.what_changed_between_a_and_b_and_which_codon','What changed between A and B, and which codon or protein evidence supports your conclusion?') })
                   )
                 )
               : h("p", { className: "mt-3 mb-0 rounded-lg border border-dashed border-indigo-200 bg-white/70 p-3 text-[0.6875rem] text-slate-600" }, "Choose two different saved experiments to open the side-by-side comparison.")

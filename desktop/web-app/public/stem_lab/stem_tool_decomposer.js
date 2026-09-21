@@ -3153,7 +3153,7 @@
                   h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempC, h: iq.humidity, o: iq.oxygen, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
                   h('button', { onClick: function() { setIQ({ tempC: 25, humidity: 70, oxygen: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Which condition is most important for decomposition?',
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.decomposer.hypothesis_which_condition_is_most_important','Hypothesis: Which condition is most important for decomposition?'),
                   'aria-label': __alloT('stem.decomposer.a11y_decomposition_hypothesis', 'Decomposition hypothesis'),
                   className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
@@ -3164,7 +3164,7 @@
                 h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   'I understand — explain in own words'),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how temperature, humidity, and oxygen jointly drive decomposition.',
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.decomposer.explain_how_temperature_humidity_and_oxygen','Explain how temperature, humidity, and oxygen jointly drive decomposition.'),
                   'aria-label': __alloT('stem.decomposer.a11y_explain_decomposition_conditions', 'Explain decomposition conditions'),
                   className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
                 h('div', { className: 'text-[0.625rem] italic text-slate-500' }, 'Design note: discrete 4-state decomposition marker; no rate score; no reveal — by design.')

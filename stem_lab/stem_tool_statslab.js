@@ -1995,7 +1995,7 @@ window.StemLab = window.StemLab || {
         d.mode === 'wizard' && _renderWizard(d, upd, h),
         d.mode === 'data' && _renderData(d, upd, h, addToast),
         d.mode === 'test' && _renderTest(d, upd, runTest, h, addToast),
-        d.mode === 'results' && _renderResults(d, upd, h, addToast, gradeInterpretation, awardXP, setSlCeleb),
+        d.mode === 'results' && _renderResults(d, upd, h, addToast, gradeInterpretation, awardXP, setSlCeleb, __alloT),
         d.mode === 'power' && _renderPower(d, upd, h, addToast),
         d.mode === 'mastery' && _renderStatsMasteryPanel(d, upd, h),
         d.mode === 'inquiry' && (function() {
@@ -2607,7 +2607,7 @@ window.StemLab = window.StemLab || {
       },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-info)', marginBottom: 4 } }, '🧮 Local analytical workspace'),
         h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Run read-only SQL over the numeric data currently in Stats Lab. The query executes locally in your browser and keeps its source/provenance with the result.'),
-        h('textarea', { value: kernelSQL, onChange: function(e) { upd({ kernelSQL: e.target.value, kernelRecipeId: '' }); }, rows: 2, spellCheck: false, 'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_local_analytical_sql_query', 'Local analytical SQL query'), placeholder: 'SELECT group_name, COUNT(*) AS rows, AVG(measure_value) AS mean_value FROM data GROUP BY group_name ORDER BY group_name', style: { width: '100%', padding: '7px 9px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid rgba(56,189,248,0.42)', borderRadius: 6, fontFamily: 'monospace', fontSize: 11, resize: 'vertical', boxSizing: 'border-box' } }),
+        h('textarea', { value: kernelSQL, onChange: function(e) { upd({ kernelSQL: e.target.value, kernelRecipeId: '' }); }, rows: 2, spellCheck: false, 'data-sl-focusable': 'true', 'aria-label': __alloSLT('stem.statslab.a11y_local_analytical_sql_query', 'Local analytical SQL query'), placeholder: t('stem.statslab.select_group_name_count_as_rows_avg_measure','SELECT group_name, COUNT(*) AS rows, AVG(measure_value) AS mean_value FROM data GROUP BY group_name ORDER BY group_name'), style: { width: '100%', padding: '7px 9px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid rgba(56,189,248,0.42)', borderRadius: 6, fontFamily: 'monospace', fontSize: 11, resize: 'vertical', boxSizing: 'border-box' } }),
         kernelRecipes.length > 0 && h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, flexWrap: 'wrap' } },
           h('label', { htmlFor: 'sl-kernel-recipe', style: { fontSize: 10, fontWeight: 800, color: 'var(--sl-info)' } }, 'Starter recipe'),
           h('select', { id: 'sl-kernel-recipe', value: kernelRecipeId, onChange: function(e) { var recipe = kernelRecipes.find(function(item) { return item.id === e.target.value; }); applyKernelRecipe(recipe); }, 'data-sl-focusable': 'true', style: { flex: 1, minWidth: 190, padding: '5px 7px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-info)', border: '1px solid rgba(56,189,248,0.42)', borderRadius: 6, fontSize: 10 } },
@@ -3440,7 +3440,8 @@ window.StemLab = window.StemLab || {
     );
   }
 
-  function _renderResults(d, upd, h, addToast, gradeInterpretation, awardXP, setSlCeleb) {
+  function _renderResults(d, upd, h, addToast, gradeInterpretation, awardXP, setSlCeleb, t) {
+    if (typeof t !== 'function') t = function(k, fb){ return fb != null ? fb : k; };
     var r = d.lastResult;
     if (!r) {
       return h('div', {
@@ -3692,7 +3693,7 @@ window.StemLab = window.StemLab || {
             onClick: function() { upd('showGlossary', !d.showGlossary); },
             'data-sl-focusable': 'true',
             'aria-expanded': !!d.showGlossary,
-            title: 'Show definitions of every statistic in this result',
+            title: t('stem.statslab.show_definitions_of_every_statistic_in_this','Show definitions of every statistic in this result'),
             style: { padding: '4px 10px', background: 'rgba(168,85,247,0.18)', color: 'var(--sl-purple)', border: '1px solid rgba(168,85,247,0.55)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
           }, (d.showGlossary ? '▼' : '▶') + ' 📖 Glossary')
         ),
@@ -3749,7 +3750,7 @@ window.StemLab = window.StemLab || {
             h('button', {
               onClick: copyFullReport,
               'data-sl-focusable': 'true',
-              title: 'Copy a structured lab report (APA + plain-English + numeric + math + interpretation) to clipboard, ready for paste into Google Docs or Word',
+              title: t('stem.statslab.copy_a_structured_lab_report_apa_plain_engli','Copy a structured lab report (APA + plain-English + numeric + math + interpretation) to clipboard, ready for paste into Google Docs or Word'),
               style: { padding: '4px 10px', background: 'rgba(34,197,94,0.18)', color: 'var(--sl-positive)', border: '1px solid rgba(34,197,94,0.55)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
             }, '📄 Export full report')
           )
@@ -4213,7 +4214,7 @@ window.StemLab = window.StemLab || {
           onChange: function(e) { upd('interpretationDraft', e.target.value); },
           'data-sl-focusable': 'true',
           rows: 4,
-          placeholder: 'e.g., Visualization-based study led to higher recall than rote rehearsal. The difference was statistically significant and the effect was large, suggesting visualization is meaningfully better, not just a small statistical bump.',
+          placeholder: t('stem.statslab.e_g_visualization_based_study_led_to_higher','e.g., Visualization-based study led to higher recall than rote rehearsal. The difference was statistically significant and the effect was large, suggesting visualization is meaningfully better, not just a small statistical bump.'),
           style: { width: '100%', padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
         }),
         h('button', {

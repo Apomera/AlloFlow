@@ -1119,7 +1119,7 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            h('details', { className: 'mt-3 text-white' }, h('summary', { style: { color: ctx.isContrast ? '#ffffff' : undefined }, className: 'cursor-pointer text-sm font-bold' }, t('stem.multtable.learning_steps', 'Learning steps')), h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Multiplication reasoning pathway' },
+            h('details', { className: 'mt-3 text-white' }, h('summary', { style: { color: ctx.isContrast ? '#ffffff' : undefined }, className: 'cursor-pointer text-sm font-bold' }, t('stem.multtable.learning_steps', 'Learning steps')), h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': t('stem.multtable.multiplication_reasoning_pathway','Multiplication reasoning pathway') },
               [
                 { n: '1', title: 'Observe', detail: 'See the fact as an array or pattern.' },
                 { n: '2', title: 'Predict', detail: 'Use a known relationship.' },

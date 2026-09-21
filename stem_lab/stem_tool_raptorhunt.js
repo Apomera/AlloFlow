@@ -10582,7 +10582,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   },
                     h('button', {
                       type: 'button', className: 'rh-scenic-toggle',
-                      'aria-label': 'Scenic view', 'aria-pressed': !!rh.scenicView,
+                      'aria-label': __alloT('stem.raptorhunt.scenic_view','Scenic view'), 'aria-pressed': !!rh.scenicView,
                       onClick: function(event) {
                         var nextScenicView = !rh.scenicView;
                         setRH({ scenicView: nextScenicView });
@@ -10713,7 +10713,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         h('h3', { id: 'rh-flight-result-title', className: 'rh-flight-result-title' }, simUI.missionState === 'success' ? 'Mission complete' : 'Mission ended'),
                         h('p', { className: 'rh-flight-result-message' }, simUI.missionMessage || 'Review the objective and try another flight.')
                         ),
-                        h('div', { className: 'rh-flight-result-body', role: 'region', 'aria-label': 'Flight review details', tabIndex: 0 },
+                        h('div', { className: 'rh-flight-result-body', role: 'region', 'aria-label': __alloT('stem.raptorhunt.flight_review_details','Flight review details'), tabIndex: 0 },
                         flightSummary && h('div', {
                           className: 'rh-flight-debrief',
                           role: 'group',
@@ -11029,7 +11029,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   simUI.lastStrikeResult && h('section', {
                     className: 'rh-flight-strike-review',
                     'data-raptor-strike-review': simUI.lastStrikeResult.kind,
-                    'aria-label': 'Last strike', role: 'region'
+                    'aria-label': __alloT('stem.raptorhunt.last_strike','Last strike'), role: 'region'
                   },
                     h('div', { className: 'rh-strike-review-mark', 'aria-hidden': 'true' }, simUI.lastStrikeResult.kind === 'hit' ? '✓' : '↗'),
                     h('div', { className: 'rh-strike-review-copy' },
@@ -29097,7 +29097,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'rh-threat-control-row' },
               h('label', { className: 'rh-threat-control-label', htmlFor: 'rh-threat-search' }, 'Search evidence'),
               h('div', { className: 'rh-threat-search' },
-                h('input', { id: 'rh-threat-search', type: 'search', value: search, maxLength: 120, placeholder: 'Search threats, species, mechanisms, or actions', onChange: function(event) { setRH({ threatSearch: event.target.value }); }, 'data-threat-search': 'true' }),
+                h('input', { id: 'rh-threat-search', type: 'search', value: search, maxLength: 120, placeholder: __alloT('stem.raptorhunt.search_threats_species_mechanisms_or_actions','Search threats, species, mechanisms, or actions'), onChange: function(event) { setRH({ threatSearch: event.target.value }); }, 'data-threat-search': 'true' }),
                 (query || category !== 'all') && h('button', { type: 'button', onClick: clearDiscovery }, 'Clear filters'),
                 h('div', { className: 'rh-threat-result-count', role: 'status', 'aria-live': 'polite' }, visibleEntries.length + ' of ' + count + ' records')
               )

@@ -4738,7 +4738,7 @@ window.StemLab = window.StemLab || {
                   'Working explanation after observing (not a prediction):'),
                 h('textarea', { id: 'ep-hypo', value: iq.hypothesis || '',
                   onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
-                  placeholder: 'What relationships do you notice among the three inputs, R_eff, the curve shapes, and the growth band? Cite at least two logged settings as evidence.',
+                  placeholder: __alloT('stem.epidemic.what_relationships_do_you_notice_among_the_t','What relationships do you notice among the three inputs, R_eff, the curve shapes, and the growth band? Cite at least two logged settings as evidence.'),
                   className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 })
               ),
               h('div', { className: 'mb-3' },
@@ -4763,7 +4763,7 @@ window.StemLab = window.StemLab || {
                 iq.understood && h('textarea', { value: iq.explanation || '',
                   onChange: function(e) { setIQ({ explanation: e.target.value }); },
                   'aria-label': __alloT('stem.epidemic.evidence_based_growth_explanation', 'Evidence-based outbreak growth explanation'),
-                  placeholder: 'Use one or more logged observations as evidence. What happens around R_eff = 1? What does this simplified model not tell you about real geographic spread?',
+                  placeholder: __alloT('stem.epidemic.use_one_or_more_logged_observations_as_evide','Use one or more logged observations as evidence. What happens around R_eff = 1? What does this simplified model not tell you about real geographic spread?'),
                   className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
                 iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[0.625rem] italic text-emerald-700' },
                   'Saved as your explanation. It is not scored; compare it with your logged runs and revise it if the evidence changes.')

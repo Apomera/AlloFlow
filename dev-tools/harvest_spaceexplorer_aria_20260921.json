@@ -1,0 +1,8 @@
+{
+  "stem.spaceexplorer.enter_fullscreen": "View the planet approach view fullscreen",
+  "stem.spaceexplorer.exit_fullscreen": "Exit fullscreen planet approach view (Escape)",
+  "stem.spaceexplorer.example_i_predict_oxygen_and_hull_margins_wi": "Example: I predict oxygen and hull margins will matter more than science points until we understand the radiation belts.",
+  "stem.spaceexplorer.the_oxygen_margin_is_falling_faster_than_pre": "The oxygen margin is falling faster than predicted, so I will prioritize life support because ...",
+  "stem.spaceexplorer.because_the_spectrum_evidence_suggests_i_wil": "Because the spectrum/evidence suggests..., I will trade ... to protect ...",
+  "stem.spaceexplorer.revise_your_claim_what_would_you_test_differ": "Revise your claim: What would you test differently next mission?"
+}

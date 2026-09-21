@@ -1640,7 +1640,7 @@
                 h('div', null, field('Object to create', aiSubject, function (value) { setAiSubject(value.slice(0, 1000)); }, { maxLength: 1000 }), h('button', { type: 'button', disabled: aiBusy || typeof ctx.callGemini !== 'function' || !runtimeReady, onClick: function () { callRecipeAi('create'); }, className: 'mt-2 min-h-[42px] rounded-xl bg-violet-700 px-4 text-xs font-black text-white disabled:opacity-50' }, aiBusy ? 'Working…' : 'Create editable recipe')),
                 h('div', null, field('Change to the current model', aiRefinement, function (value) { setAiRefinement(value.slice(0, 1000)); }, { maxLength: 1000 }), h('button', { type: 'button', disabled: !recipe || aiBusy || typeof ctx.callGemini !== 'function' || !runtimeReady, onClick: function () { callRecipeAi('refine'); }, className: 'mt-2 min-h-[42px] rounded-xl border border-violet-500 px-4 text-xs font-black text-violet-100 disabled:opacity-50' }, 'Refine current recipe'))
               ),
-              h('div', { className: 'mt-3 flex flex-wrap gap-2', 'aria-label': 'Description starters' }, [
+              h('div', { className: 'mt-3 flex flex-wrap gap-2', 'aria-label': __alloT('stem.printlab.description_starters','Description starters') }, [
                 'A small turtle with a broad flat base and short thick legs',
                 'A simple rocket trophy attached to a wide circular base',
                 'A chunky flower token with rounded petals on a flat backing'

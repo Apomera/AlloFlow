@@ -2116,7 +2116,7 @@ window.StemLab = window.StemLab || {
                   type: 'text', value: aiQuestion,
                   onChange: function(e) { upd('_aiQuestion', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAI(); },
-                  placeholder: 'Ask about genetics, inheritance, alleles...',
+                  placeholder: __alloT('stem.punnett.ask_about_genetics_inheritance_alleles','Ask about genetics, inheritance, alleles...'),
                   'aria-label': __alloT('stem.punnett.a11y_ask_the_genetics_tutor', 'Ask the genetics tutor'),
                   className: 'flex-1 px-3 py-1.5 text-sm border border-sky-600 rounded-lg focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-300'
                 }),
@@ -3181,7 +3181,7 @@ window.StemLab = window.StemLab || {
                 h('input', {
                   type: 'text', value: dnaSeq,
                   onChange: function(e) { upd('_dnaSeq', e.target.value.toUpperCase().replace(/[^ATCG]/g, '')); },
-                  placeholder: 'e.g. ATGCGTACCTGA',
+                  placeholder: __alloT('stem.punnett.e_g_atgcgtacctga','e.g. ATGCGTACCTGA'),
                   'aria-label': __alloT('stem.punnett.a11y_dna_template_strand_sequence', 'DNA template strand sequence'),
                   className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-fuchsia-600 rounded-lg focus:outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-300 tracking-widest'
                 }),
@@ -3801,7 +3801,7 @@ window.StemLab = window.StemLab || {
                   h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
                     h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                     'I understand — explain in own words'),
-                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': __alloT('stem.punnett.explanation_input', 'Explain allele selection and mutation'), placeholder: 'Explain how selection, mutation, and frequency interact.',
+                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': __alloT('stem.punnett.explanation_input', 'Explain allele selection and mutation'), placeholder: __alloT('stem.punnett.explain_how_selection_mutation_and_frequency','Explain how selection, mutation, and frequency interact.'),
                     className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
                 h('div', { className: 'mt-3 text-[0.625rem] italic text-slate-500' }, 'Design note: discrete 4-state outcome; no fitness optimization; no reveal — by design.')
               );

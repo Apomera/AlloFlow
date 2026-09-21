@@ -1,0 +1,6 @@
+{
+  "stem.statslab.select_group_name_count_as_rows_avg_measure": "SELECT group_name, COUNT(*) AS rows, AVG(measure_value) AS mean_value FROM data GROUP BY group_name ORDER BY group_name",
+  "stem.statslab.show_definitions_of_every_statistic_in_this": "Show definitions of every statistic in this result",
+  "stem.statslab.copy_a_structured_lab_report_apa_plain_engli": "Copy a structured lab report (APA + plain-English + numeric + math + interpretation) to clipboard, ready for paste into Google Docs or Word",
+  "stem.statslab.e_g_visualization_based_study_led_to_higher": "e.g., Visualization-based study led to higher recall than rote rehearsal. The difference was statistically significant and the effect was large, suggesting visualization is meaningfully better, not just a small statistical bump."
+}

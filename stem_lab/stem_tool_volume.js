@@ -2733,7 +2733,7 @@ window.StemLab = window.StemLab || {
                   maxLength: 600,
                   value: dispExplanation,
                   onChange: function(e) { upd({ dispExplanation: e.target.value }); },
-                  placeholder: 'The object\'s volume is ... because the water level changed from ... to ...',
+                  placeholder: __alloT('stem.volume.the_object_s_volume_is_because_the_water_lev','The object\'s volume is ... because the water level changed from ... to ...'),
                   className: 'mt-2 w-full rounded-lg border-2 border-emerald-200 p-2 text-sm leading-relaxed',
                 })
               )
@@ -3006,7 +3006,7 @@ window.StemLab = window.StemLab || {
               tabIndex: isDisplacement ? 0 : -1,
               onKeyDown: function(e) { volumeTabKeyDown(e, 3); },
               style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }, className: 'px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-sky-400 ' + (isDisplacement ? 'bg-white text-sky-800 shadow-sm' : 'text-emerald-700 hover:text-sky-800'),
-              title: 'Water Displacement Lab mode (D)'
+              title: __alloT('stem.volume.water_displacement_lab_mode_d','Water Displacement Lab mode (D)')
             }, '\uD83E\uDDEA Displacement')),
           // Mute toggle
           h('button', {

@@ -2280,7 +2280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             ref: canvasRef,
             role: 'application',
             'aria-label': t('stem.atctower.air_traffic_control_radar_display_use_', 'Air Traffic Control radar display. Use Tab to cycle aircraft, H for heading, R for runway, C to clear approach, Space to pause, I for status summary.'),
-            'aria-roledescription': 'Air traffic control simulator',
+            'aria-roledescription': __alloT('stem.atctower.air_traffic_control_simulator','Air traffic control simulator'),
             tabIndex: 0,
             style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair', outline: 'none', boxShadow: 'none' },
             onFocusCapture: function(e) { e.currentTarget.style.boxShadow = '0 0 0 3px rgba(74,222,128,0.7)'; },

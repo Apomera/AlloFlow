@@ -1,0 +1,3 @@
+{
+  "stem.dataplot.select_count_as_rows_avg_y_as_mean_y_from_da": "SELECT COUNT(*) AS rows, AVG(y) AS mean_y FROM data"
+}

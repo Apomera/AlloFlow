@@ -6123,7 +6123,7 @@ window.StemLab = window.StemLab || {
             h('canvas', {
               ref: canvasRef, width: 640, height: 360,
               role: 'application',
-              'aria-roledescription': 'interactive trajectory simulation',
+              'aria-roledescription': __alloT('stem.throwlab.interactive_trajectory_simulation','interactive trajectory simulation'),
               tabIndex: 0,
               'data-tl-focusable': 'true',
               'data-throwlab-canvas': 'true',

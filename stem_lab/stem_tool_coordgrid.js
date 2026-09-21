@@ -1965,7 +1965,7 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Coordinate reasoning pathway' },
+            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': t('stem.coordgrid.coordinate_reasoning_pathway','Coordinate reasoning pathway') },
               [
                 { n: '1', title: 'Locate', detail: 'Read x first, then y.' },
                 { n: '2', title: 'Relate', detail: 'Compare quadrant, distance, or slope.' },

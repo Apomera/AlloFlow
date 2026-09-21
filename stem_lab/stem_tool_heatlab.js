@@ -1855,7 +1855,7 @@
         if (typeof announceToSR === 'function') announceToSR('Jumped to ' + s.label + '.');
       }
       var htIndex = h('nav', {
-        'aria-label': 'Heat lab topics',
+        'aria-label': t('stem.heatlab.heat_lab_topics','Heat lab topics'),
         className: 'rounded-xl border px-2.5 py-2 mt-1',
         style: {
           position: 'sticky', top: 0, zIndex: 30,
@@ -1945,7 +1945,7 @@
         // ── 1. heat transfer ──
         sec('conduction', '#f97316',
           heading('#fb923c', '🔥 1. The three ways heat moves'),
-          h('div', { role: 'group', 'aria-label': 'Heat transfer mechanism', className: 'flex flex-wrap gap-1.5 mb-2' },
+          h('div', { role: 'group', 'aria-label': t('stem.heatlab.heat_transfer_mechanism','Heat transfer mechanism'), className: 'flex flex-wrap gap-1.5 mb-2' },
             MODES.map(function (m) {
               return pill(mode === m.id, '#fb923c', m.label, function () {
                 upd({ mode: m.id });
@@ -2029,7 +2029,7 @@
               }, raceOn ? '⏱ Racing two bars' : '⏱ Race two materials'),
               h('button', {
                 type: 'button',
-                'aria-label': 'Restart the bars from room temperature',
+                'aria-label': t('stem.heatlab.restart_the_bars_from_room_temperature','Restart the bars from room temperature'),
                 onClick: function () {
                   var el = canvasRef.current;
                   if (el && el._heatReset) el._heatReset();
@@ -2041,7 +2041,7 @@
               }, '↺ Restart'),
               prefersReducedMotion ? h('button', {
                 type: 'button',
-                'aria-label': 'Advance the conduction model by 10 simulated seconds',
+                'aria-label': t('stem.heatlab.advance_the_conduction_model_by_10_simulated','Advance the conduction model by 10 simulated seconds'),
                 onClick: function () {
                   var el = canvasRef.current;
                   if (el && el._heatStep) el._heatStep();
@@ -2222,7 +2222,7 @@
             );
           })(),
 
-          h('div', { role: 'list', 'aria-label': 'Wall layers from inside to outside', className: 'space-y-1' },
+          h('div', { role: 'list', 'aria-label': t('stem.heatlab.wall_layers_from_inside_to_outside','Wall layers from inside to outside'), className: 'space-y-1' },
             wallStack.length === 0
               ? h('p', { className: 'text-[0.6875rem] italic', style: { color: isDark ? '#94a3b8' : '#64748b' } }, 'No layers yet. Even an empty opening has some resistance from the still air on each face.')
               : wallStack.map(function (id, i) {
@@ -2282,7 +2282,7 @@
             var trackBase = isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)';
             var grid = 'repeating-linear-gradient(to right, ' + gridline + ' 0 1px, transparent 1px ' + decadePct.toFixed(4) + '%)';
             return h('div', null,
-              h('div', { role: 'list', 'aria-label': 'Thermal conductivity of each material', className: 'space-y-1' },
+              h('div', { role: 'list', 'aria-label': t('stem.heatlab.thermal_conductivity_of_each_material','Thermal conductivity of each material'), className: 'space-y-1' },
                 MATERIALS.slice().sort(function (a, b) { return b.k - a.k; }).map(function (m) {
                   var frac = fracOf(m.k);
                   return h('div', {
@@ -2357,7 +2357,7 @@
               h('label', { htmlFor: 'heat-predict', className: 'block text-[0.6875rem] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Your temperature estimate (°C)'),
               h('input', {
                 id: 'heat-predict', type: 'number', min: 0, max: 100, value: predictText,
-                placeholder: 'e.g. 45',
+                placeholder: t('stem.heatlab.e_g_45','e.g. 45'),
                 'aria-describedby': 'heat-estimate-help',
                 onChange: function (e) {
                   setPredictText(e.target.value);
@@ -2372,7 +2372,7 @@
               type: 'button',
               disabled: !mixEstimateReady || revealed,
               'aria-disabled': mixEstimateReady && !revealed ? 'false' : 'true',
-              'aria-label': 'Compare your temperature estimate with the calorimetry model',
+              'aria-label': t('stem.heatlab.compare_your_temperature_estimate_with_the_c','Compare your temperature estimate with the calorimetry model'),
               onClick: function () {
                 if (!mixEstimateReady || revealed) return;
                 var guess = parseFloat(predictText);
@@ -2408,7 +2408,7 @@
             h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               mixExplanation)
           ) : null,
-          revealed && mixEstimateResult ? h('section', { className: 'mt-2 rounded-lg border p-2.5', 'data-heat-estimation-reflection': 'true', 'aria-label': 'Calorimetry estimation reflection', style: { borderColor: 'rgba(56,189,248,0.5)', background: isDark ? 'rgba(8,47,73,0.45)' : 'rgba(240,249,255,0.9)' } },
+          revealed && mixEstimateResult ? h('section', { className: 'mt-2 rounded-lg border p-2.5', 'data-heat-estimation-reflection': 'true', 'aria-label': t('stem.heatlab.calorimetry_estimation_reflection','Calorimetry estimation reflection'), style: { borderColor: 'rgba(56,189,248,0.5)', background: isDark ? 'rgba(8,47,73,0.45)' : 'rgba(240,249,255,0.9)' } },
             h('h4', { className: 'text-[0.6875rem] font-black uppercase tracking-wide', style: { color: ink('#0284c7') } }, 'Revise from evidence'),
             h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Choose how the comparison changed your thinking, then cite the measured difference or the energy model. This completion credit is independent of accuracy.'),
             h('fieldset', { className: 'mt-2' },
@@ -2426,7 +2426,7 @@
               )
             ),
             h('label', { htmlFor: 'heat-estimation-reflection', className: 'mt-2 block text-[0.6875rem] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } }, 'Evidence note'),
-            h('textarea', { id: 'heat-estimation-reflection', rows: 2, maxLength: 400, value: mixEstimateReflection, onChange: function (e) { upd({ mixEstimateReflection: e.target.value.slice(0, 400), mixEstimateReflectionComplete: false }); }, placeholder: 'The model result and temperature difference show... Next time I would...', className: 'mt-1 w-full rounded-lg border p-2 text-[0.6875rem]', style: { borderColor: 'rgba(56,189,248,0.4)', background: isDark ? 'rgba(15,23,42,0.8)' : '#fff', color: isDark ? '#e2e8f0' : '#0f172a' } }),
+            h('textarea', { id: 'heat-estimation-reflection', rows: 2, maxLength: 400, value: mixEstimateReflection, onChange: function (e) { upd({ mixEstimateReflection: e.target.value.slice(0, 400), mixEstimateReflectionComplete: false }); }, placeholder: t('stem.heatlab.the_model_result_and_temperature_difference','The model result and temperature difference show... Next time I would...'), className: 'mt-1 w-full rounded-lg border p-2 text-[0.6875rem]', style: { borderColor: 'rgba(56,189,248,0.4)', background: isDark ? 'rgba(15,23,42,0.8)' : '#fff', color: isDark ? '#e2e8f0' : '#0f172a' } }),
             h('div', { className: 'mt-2 flex flex-wrap gap-2' },
               h('button', { type: 'button', disabled: !mixEstimateRevision || mixEstimateReflection.trim().length < 12 || !!d.mixEstimateReflectionComplete, 'aria-disabled': mixEstimateRevision && mixEstimateReflection.trim().length >= 12 && !d.mixEstimateReflectionComplete ? 'false' : 'true', onClick: function () {
                 if (!mixEstimateRevision || mixEstimateReflection.trim().length < 12 || d.mixEstimateReflectionComplete) return;
@@ -2455,7 +2455,7 @@
                 'then rises as steam. Currently at ' + fmt(energyIn, 0) + ' kilojoules, ' + wstate.temp.toFixed(0) + ' degrees, ' + wstate.phase + '.',
               style: { width: '100%', height: '100%', display: 'block' }
           })),
-          h('div', { className: 'mt-2 rounded-xl border p-3', 'data-heat-3d-snapshot': 'true', role: 'group', 'aria-label': '3D convection model snapshot', style: { borderColor: 'rgba(251,146,60,0.32)', background: isDark ? 'linear-gradient(135deg, rgba(15,23,42,0.92), rgba(124,45,18,0.28))' : 'linear-gradient(135deg, rgba(255,247,237,0.96), rgba(224,242,254,0.72))' } },
+          h('div', { className: 'mt-2 rounded-xl border p-3', 'data-heat-3d-snapshot': 'true', role: 'group', 'aria-label': t('stem.heatlab.3d_convection_model_snapshot','3D convection model snapshot'), style: { borderColor: 'rgba(251,146,60,0.32)', background: isDark ? 'linear-gradient(135deg, rgba(15,23,42,0.92), rgba(124,45,18,0.28))' : 'linear-gradient(135deg, rgba(255,247,237,0.96), rgba(224,242,254,0.72))' } },
             h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
               h('div', null,
                 h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.18em]', style: { color: isDark ? '#fdba74' : '#c2410c' } }, 'Model snapshot'),
@@ -2681,7 +2681,7 @@
           h('p', { id: 'ht-convection3d-description', className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'A flat arrow diagram makes convection look like a circle. It is not — it is a closed roll wrapping all the way round the tank. Drag to rotate, or use the buttons and arrow keys.'),
 
-          h('div', { role: 'group', 'aria-label': 'Interactive 3D convection tank', 'aria-describedby': 'ht-convection3d-description', className: 'relative rounded-xl overflow-hidden border', style: { borderColor: 'rgba(251,146,60,0.4)', height: '300px', background: isDark ? '#0b1220' : '#dfe6ef' } },
+          h('div', { role: 'group', 'aria-label': t('stem.heatlab.interactive_3d_convection_tank','Interactive 3D convection tank'), 'aria-describedby': 'ht-convection3d-description', className: 'relative rounded-xl overflow-hidden border', style: { borderColor: 'rgba(251,146,60,0.4)', height: '300px', background: isDark ? '#0b1220' : '#dfe6ef' } },
             h('div', { ref: heat3dAttach, style: { position: 'absolute', inset: 0 } }),
             view3dStatus !== 'ready' ? h('div', {
               role: 'status',
@@ -2699,7 +2699,7 @@
           h('div', {
             className: 'mt-2 rounded-lg p-2.5',
             role: 'group',
-            'aria-label': 'Convection flow path: heat enters, warm fluid rises, the ceiling cools it, dense fluid sinks, and the tank walls shape the loop.',
+            'aria-label': t('stem.heatlab.convection_flow_path_heat_enters_warm_fluid','Convection flow path: heat enters, warm fluid rises, the ceiling cools it, dense fluid sinks, and the tank walls shape the loop.'),
             style: { background: isDark ? 'rgba(148,163,184,0.08)' : 'rgba(251,146,60,0.07)', border: '1px solid rgba(251,146,60,0.28)' }
           },
             h('div', { role: 'list', className: 'flex flex-wrap items-center gap-1.5' }, heatFlowNodes),
@@ -2707,7 +2707,7 @@
               'Read the loop left to right: heat in → rise → cool → sink → the boundary turns the flow back around.')
           ),
 
-          h('div', { role: 'group', 'aria-label': '3D view controls', className: 'flex flex-wrap gap-1 mt-2' },
+          h('div', { role: 'group', 'aria-label': t('stem.heatlab.3d_view_controls','3D view controls'), className: 'flex flex-wrap gap-1 mt-2' },
             [['◀', 'Rotate left', function () { HEAT_VIEWER.nudge(-0.3, 0); }],
              ['▶', 'Rotate right', function () { HEAT_VIEWER.nudge(0.3, 0); }],
              ['▲', 'Tilt up', function () { HEAT_VIEWER.nudge(0, 0.2); }],

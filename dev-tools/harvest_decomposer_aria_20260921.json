@@ -1,0 +1,6 @@
+{
+  "stem.decomposer.enter_fullscreen": "View the decomposer scene fullscreen",
+  "stem.decomposer.exit_fullscreen": "Exit fullscreen decomposer scene (Escape)",
+  "stem.decomposer.hypothesis_which_condition_is_most_important": "Hypothesis: Which condition is most important for decomposition?",
+  "stem.decomposer.explain_how_temperature_humidity_and_oxygen": "Explain how temperature, humidity, and oxygen jointly drive decomposition."
+}

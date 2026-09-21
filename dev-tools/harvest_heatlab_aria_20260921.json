@@ -1,0 +1,16 @@
+{
+  "stem.heatlab.heat_lab_topics": "Heat lab topics",
+  "stem.heatlab.heat_transfer_mechanism": "Heat transfer mechanism",
+  "stem.heatlab.restart_the_bars_from_room_temperature": "Restart the bars from room temperature",
+  "stem.heatlab.advance_the_conduction_model_by_10_simulated": "Advance the conduction model by 10 simulated seconds",
+  "stem.heatlab.wall_layers_from_inside_to_outside": "Wall layers from inside to outside",
+  "stem.heatlab.thermal_conductivity_of_each_material": "Thermal conductivity of each material",
+  "stem.heatlab.e_g_45": "e.g. 45",
+  "stem.heatlab.compare_your_temperature_estimate_with_the_c": "Compare your temperature estimate with the calorimetry model",
+  "stem.heatlab.calorimetry_estimation_reflection": "Calorimetry estimation reflection",
+  "stem.heatlab.the_model_result_and_temperature_difference": "The model result and temperature difference show... Next time I would...",
+  "stem.heatlab.3d_convection_model_snapshot": "3D convection model snapshot",
+  "stem.heatlab.interactive_3d_convection_tank": "Interactive 3D convection tank",
+  "stem.heatlab.convection_flow_path_heat_enters_warm_fluid": "Convection flow path: heat enters, warm fluid rises, the ceiling cools it, dense fluid sinks, and the tank walls shape the loop.",
+  "stem.heatlab.3d_view_controls": "3D view controls"
+}

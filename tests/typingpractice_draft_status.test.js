@@ -11,7 +11,10 @@ describe('Typing Lab private draft status cue', () => {
     expect(source).toContain("interruptedDraftMatches(state.interruptedDrill, activeDrill && activeDrill.id, state.drillRunId)");
     expect(source).toContain("typedLength < 1");
     expect(source).toContain("'aria-label': __alloTPT('stem.typingpractice.a11y_private_resume_draft_saved_locally', 'Private resume draft saved locally'");
-    expect(source).toContain("title: 'Private resume draft saved locally'");
+    // Went through the translator on 2026-09-21, like the aria-label above it: a
+    // bare literal has no key, so no translator is ever shown it and it ships
+    // English in all 63 packs. Assert the key and the English fallback together.
+    expect(source).toContain("title: __alloT('stem.typingpractice.private_resume_draft_saved_locally','Private resume draft saved locally')");
     expect(source).toContain("}, 'Draft saved');");
   });
 
