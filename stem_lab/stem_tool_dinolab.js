@@ -12584,7 +12584,81 @@ var evidenceRoute = [
       function renderAnatomy() {
         var cards = ANATOMY.map(function (a) { return panel([el('div', { key: 'h', style: { fontSize: 22, marginBottom: 4 } }, a.icon + ' ', el('span', { style: { fontSize: 15, fontWeight: 800, verticalAlign: 'middle' } }, a.name)), el('div', { key: 'w', style: { fontSize: 12.5, color: T.text, marginBottom: 6, lineHeight: 1.5 } }, a.what), el('div', { key: 't', style: { fontSize: 12, color: T.text, fontWeight: 700, marginBottom: 2 } }, 'What it tells us'), el('div', { key: 'tt', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, a.tells)], { key: a.id }); });
         var fossilSteps = [{ n: 1, t: 'Death and burial', d: 'An animal dies and is quickly buried by mud or sand, before scavengers or weather destroy it.' }, { n: 2, t: 'Mineral replacement', d: 'Over ages, groundwater minerals seep in and replace the bone, turning it to stone.' }, { n: 3, t: 'Rock and uplift', d: 'Layers pile up and harden into rock. Earth movements lift them toward the surface.' }, { n: 4, t: 'Erosion and discovery', d: 'Wind and water wear the rock away and expose the fossil, where someone might spot it.' }];
+        var evQ = ANATOMY[modIndex(d.evidenceIdx, ANATOMY.length)];
+        var evPicked = d.evidencePicked == null ? null : String(d.evidencePicked);
+        var evAnswered = !!d.evidenceAnswered;
+        function evPick(id) {
+          if (evAnswered) return;
+          upd({ evidencePicked: id, evidenceAnswered: true });
+        }
+        function evNext() {
+          upd({
+            evidenceIdx: (modIndex(d.evidenceIdx, ANATOMY.length) + 1) % ANATOMY.length,
+            evidencePicked: null,
+            evidenceAnswered: false
+          });
+        }
+        var evChoices = ANATOMY.map(function (a) { return a.id; });
+        var evChallenge = panel([
+          el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 6 } },
+            '🔍 Read the evidence'),
+          el('p', { key: 'p', style: { margin: '0 0 10px', color: T.soft, fontSize: 13, lineHeight: 1.5 } },
+            'A field team brings you one kind of fossil. Which one answers this question?'),
+          el('div', {
+            key: 'q', role: 'status',
+            style: {
+              padding: 10, borderRadius: 8, background: T.deeper,
+              border: '1px solid ' + T.border, marginBottom: 10,
+              fontSize: 14, color: T.text, lineHeight: 1.5
+            }
+          }, '“' + evQ.tells + '”'),
+          el('div', {
+            key: 'c',
+            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 }
+          }, evChoices.map(function (id) {
+            var a = ANATOMY.filter(function (x) { return x.id === id; })[0];
+            var isRight = id === evQ.id;
+            var isPicked = evPicked === id;
+            var bg = T.panel;
+            if (evAnswered && isRight) bg = 'rgba(34,197,94,0.28)';
+            else if (evAnswered && isPicked) bg = 'rgba(245,158,11,0.28)';
+            return el('button', {
+              key: id, type: 'button',
+              'aria-disabled': evAnswered ? 'true' : undefined,
+              'aria-label': a.name + (evAnswered
+                ? (isRight ? '. Correct answer.' : (isPicked ? '. You chose this. Not the best fit.' : ''))
+                : '. Choose this fossil.'),
+              onClick: function () { evPick(id); },
+              style: {
+                minHeight: 44, padding: '9px 10px', borderRadius: 8,
+                border: '1px solid ' + (evAnswered && isRight ? 'rgba(34,197,94,0.75)' : T.border),
+                background: bg, color: T.text, fontSize: 13, fontWeight: 700,
+                cursor: evAnswered ? 'default' : 'pointer', textAlign: 'left'
+              }
+            }, a.icon + ' ' + a.name);
+          })),
+          evAnswered ? el('div', {
+            key: 'f', role: 'status',
+            style: { marginTop: 10, fontSize: 13, color: T.soft, lineHeight: 1.55 }
+          },
+            (evPicked === evQ.id
+              ? '✓ ' + evQ.name + '. '
+              : '→ ' + evQ.name + ' is the one that answers it. '),
+            evQ.what,
+            el('div', { style: { marginTop: 8 } },
+              el('button', {
+                type: 'button', onClick: evNext,
+                style: {
+                  minHeight: 44, padding: '9px 14px', borderRadius: 8,
+                  border: '1px solid ' + T.border, background: T.deeper,
+                  color: T.text, fontSize: 13, fontWeight: 700, cursor: 'pointer'
+                }
+              }, 'Next find →'))
+          ) : null
+        ], { marginBottom: 12 });
+
         return el('div', null, sectionTitle('🦴', 'How we know what we know', 'Paleontologists are detectives. Every fossil is a clue, and different clues answer different questions.'),
+          evChallenge,
           panel([el('div', { key: 't', style: { fontWeight: 800, fontSize: 14, marginBottom: 8 } }, '🪨 How a fossil forms'), el('div', { key: 's', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } }, fossilSteps.map(function (st) { return el('div', { key: st.n, style: { padding: 10, borderRadius: 8, background: T.deeper, border: '1px solid ' + T.border } }, el('div', { style: { fontSize: 12, fontWeight: 800, color: T.text, marginBottom: 3 } }, 'Step ' + st.n + ': ' + st.t), el('div', { style: { fontSize: 12, color: T.soft, lineHeight: 1.5 } }, st.d)); })), el('div', { key: 'r', style: { fontSize: 11.5, color: T.soft, fontStyle: 'italic', marginTop: 8 } }, 'Most living things never fossilize at all. The fossil record is a tiny, lucky sample of past life.')], { marginBottom: 14 }),
           el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 } }, cards)
         );
