@@ -7898,8 +7898,26 @@
                     key: tool.id,
                     onClick: function() {
                       var next = Object.assign({}, _stationTools);
-                      if (next[tool.id]) { delete next[tool.id]; } else { next[tool.id] = true; }
+                      var removing = !!next[tool.id];
+                      if (removing) { delete next[tool.id]; } else { next[tool.id] = true; }
                       _setStationTools(next);
+                      // Deselecting a tool used to leave its quests behind.
+                      // The saved station then listed tools WITHOUT that tool,
+                      // and the station filter shows only the station's own
+                      // tools, so the orphaned quests named something the
+                      // student could not open from there: they sat in the
+                      // Quest HUD at 0% forever and the station could never
+                      // read complete.
+                      if (removing) {
+                        var orphaned = _stationQuests.filter(function(q) { return q.toolId === tool.id; });
+                        if (orphaned.length > 0) {
+                          _setStationQuests(_stationQuests.filter(function(q) { return q.toolId !== tool.id; }));
+                          var msg = 'Removed ' + orphaned.length + ' quest' + (orphaned.length > 1 ? 's' : '') +
+                            ' for ' + tool.label + ', because students could not reach that tool from this station.';
+                          if (addToast) addToast(msg, 'info');
+                          if (typeof announceToSR === 'function') announceToSR(msg);
+                        }
+                      }
                     },
                     className: "p-2 rounded-lg text-left text-[10px] font-bold transition-all border " +
                       (isSelected ? "bg-indigo-100 border-indigo-400 text-indigo-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-600")
@@ -7917,6 +7935,14 @@
                 onClick: function() {
                   var selectedIds = Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; });
                   if (selectedIds.length === 0) { if (addToast) addToast('Select at least one tool', 'error'); return; }
+                  // Last line of defence against a quest naming a tool the
+                  // station does not carry. The toggle prunes these as they
+                  // happen; this catches any other route into the same state,
+                  // because a station saved with one can never read complete.
+                  var _inStation = {};
+                  selectedIds.forEach(function(tid) { _inStation[tid] = true; });
+                  var _keptQuests = _stationQuests.filter(function(q) { return !q.toolId || _inStation[q.toolId]; });
+                  var _droppedCount = _stationQuests.length - _keptQuests.length;
                   var station = {
                     id: 'station_' + Date.now(),
                     name: _stationName.trim() || 'STEM Station',
@@ -7925,7 +7951,7 @@
                     timeEstimate: _stationTimeEst + ' min',
                     teacherNote: _stationNote.trim(),
                     createdAt: new Date().toISOString(),
-                    quests: _stationQuests.map(function(q, qi) {
+                    quests: _keptQuests.map(function(q, qi) {
                       return { qid: 'q_' + Date.now() + '_' + qi, type: q.type, toolId: q.toolId, label: q.label, params: q.params };
                     })
                   };
@@ -7941,6 +7967,9 @@
                   _setActiveStationId(station.id);
                   if (station.grade && typeof props.setGradeLevel === 'function') props.setGradeLevel(station.grade);
                   var questMsg = station.quests.length > 0 ? ' \u2022 ' + station.quests.length + ' quest' + (station.quests.length > 1 ? 's' : '') : '';
+                  // Dropping a quest silently would leave the teacher counting
+                  // quests that are not there.
+                  if (_droppedCount > 0) questMsg += ' (' + _droppedCount + ' dropped for unselected tools)';
                   if (addToast) addToast('\u2705 Station "' + station.name + '" created with ' + selectedIds.length + ' tools!' + questMsg, 'success');
                 },
                 disabled: Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; }).length === 0,
