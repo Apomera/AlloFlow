@@ -3922,7 +3922,16 @@ const d = labToolData.solarSystem || {};
             }, 500);
           }
 
-          const simSpeed = d.simSpeed || 1;
+          // A saved project is INPUT. `|| 1` only replaces a FALSY value, so a
+          // stored string sailed through and threw on simSpeed.toFixed(1),
+          // which blanks the whole lab (the shell's error boundary is unkeyed).
+          // The slider is bounded 0.1-10, so clamp to the same range rather
+          // than merely checking the type: an out-of-range number is a value
+          // the UI can never produce and the animation cannot honour.
+          const _rawSimSpeed = Number(d.simSpeed);
+          const simSpeed = Number.isFinite(_rawSimSpeed)
+            ? Math.min(10, Math.max(0.1, _rawSimSpeed))
+            : 1;
 
           const paused = d.paused || false;
           // A planet row's `color` may be a CSS var so the chip can follow the theme,
