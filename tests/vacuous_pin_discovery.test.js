@@ -195,6 +195,73 @@ describe('find_vacuous_pins - parameterised source lists', () => {
     ].join('\n'));
     expect(dryRun(rel)).toMatch(/reads no source file directly/);
   });
+
+  // The four-mirror shape this repo uses everywhere:
+  //
+  //   const PATHS = ['stem_lab/x.js', 'desktop/web-app/public/stem_lab/x.js'];
+  //   PATHS.forEach((filePath) => { readFileSync(filePath, 'utf8') });
+  //
+  // No literal is inside the readFileSync call, and the const is not read
+  // directly by it either, so neither the inline rule nor the hoisted-const
+  // rule saw these. 218 suites were reported "skipped: reads no source file
+  // directly" — which reads as benign rather than as "no vacuity coverage".
+  it('finds paths in an array the suite iterates with forEach', () => {
+    const rel = writeSuite('array_foreach.test.js', [
+      "import { readFileSync } from 'node:fs';",
+      `const PATHS = ['${SRC_REL}'];`,
+      "PATHS.forEach((filePath) => {",
+      "  it('pins ' + filePath, () => {",
+      "    expect(readFileSync(filePath, 'utf8')).toContain('MARKER');",
+      '  });',
+      '});',
+      '',
+    ].join('\n'));
+    const out = dryRun(rel);
+    expect(out, 'a forEach-iterated path array must be discovered').toContain(SRC_REL);
+    expect(out).not.toMatch(/reads no source file directly/);
+  });
+
+  it('finds paths in an array driving describe.each', () => {
+    const rel = writeSuite('array_describe_each.test.js', [
+      "import { readFileSync } from 'node:fs';",
+      `const MIRRORS = ['${SRC_REL}'];`,
+      "describe.each(MIRRORS)('%s', (filePath) => {",
+      "  it('pins', () => { expect(readFileSync(filePath, 'utf8')).toContain('MARKER'); });",
+      '});',
+      '',
+    ].join('\n'));
+    const out = dryRun(rel);
+    expect(out).toContain(SRC_REL);
+  });
+
+  it('finds paths in an array walked by for...of', () => {
+    const rel = writeSuite('array_forof.test.js', [
+      "import { readFileSync } from 'node:fs';",
+      `const FILES = ['${SRC_REL}'];`,
+      'for (const filePath of FILES) {',
+      "  it('pins ' + filePath, () => {",
+      "    expect(readFileSync(filePath, 'utf8')).toContain('MARKER');",
+      '  });',
+      '}',
+      '',
+    ].join('\n'));
+    expect(dryRun(rel)).toContain(SRC_REL);
+  });
+
+  it('ignores an array of non-path strings even when the suite reads files', () => {
+    // The array rule must not turn ids, keys or fixture text into mutation
+    // targets just because readFileSync appears somewhere in the file.
+    const rel = writeSuite('array_ids.test.js', [
+      "import { readFileSync } from 'node:fs';",
+      "const IDS = ['alpha', 'beta', 'gamma'];",
+      `const s = readFileSync('${SRC_REL}', 'utf8');`,
+      "IDS.forEach((id) => { it(id, () => { expect(s).toContain('MARKER'); }); });",
+      '',
+    ].join('\n'));
+    const out = dryRun(rel);
+    expect(out).toContain(SRC_REL);
+    expect(out, 'plain ids must never become mutation targets').not.toMatch(/alpha|beta|gamma/);
+  });
 });
 
 // ── "partial" is not "vacuous" ──

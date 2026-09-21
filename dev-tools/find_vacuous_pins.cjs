@@ -181,6 +181,36 @@ function readTargetsIn(src, out) {
     }
   }
 
+  // A PATH ARRAY iterated somewhere else in the file:
+  //
+  //   const WATER_CYCLE_PATHS = ['stem_lab/x.js', 'desktop/.../x.js'];
+  //   WATER_CYCLE_PATHS.forEach((filePath) => { readFileSync(filePath, 'utf8') })
+  //
+  // No literal sits inside the readFileSync call and the const is not read
+  // directly by it either, so neither of the two rules above sees these. That
+  // blinded the tool to 218 suites — reported as "skipped: reads no source file
+  // directly", which reads as benign rather than as "no vacuity coverage". The
+  // four-mirror suites in this repo are nearly all written this way.
+  //
+  // Only accept entries that resolve to a real file, so an array of ids, keys
+  // or fixture strings contributes nothing.
+  if (/readFileSync\(/.test(src)) {
+    const arrayDecl = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*\[([^\]]{0,1200})\]/g;
+    let arr;
+    while ((arr = arrayDecl.exec(src))) {
+      const name = arr[1];
+      // The array must actually be iterated or indexed somewhere.
+      const used = new RegExp(name + '\\s*(?:\\.\\s*(?:forEach|map|flatMap|filter|some|every)\\b|\\[|\\))').test(src)
+        || new RegExp('(?:of|in)\\s+' + name + '\\b').test(src)
+        || new RegExp('describe\\.each\\(\\s*' + name).test(src)
+        || new RegExp('it\\.each\\(\\s*' + name).test(src);
+      if (!used) continue;
+      const litRe = /['"]([^'"\n]+)['"]/g;
+      let lit;
+      while ((lit = litRe.exec(arr[2]))) add(lit[1]);
+    }
+  }
+
   // Path consts referenced by a readFileSync elsewhere in the same file.
   const named = new Set();
   const useRe = /readFileSync\(\s*([A-Z_][A-Z0-9_]*)\b/g;
