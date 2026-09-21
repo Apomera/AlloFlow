@@ -26,6 +26,23 @@ const PROBES = `
   };
   // Walk every live three.js scene the page has. The tool keeps its renderer in
   // a closure, so reach the scene through the canvas' own bookkeeping instead.
+  // Watch for any Scene that gets an environment assigned. Hooking the
+  // WebGLRenderer constructor does NOT work here — the tool captures its THREE
+  // reference before this probe runs — but every scene object flows through
+  // THREE.Scene, so a flag set from its prototype catches the real assignment.
+  (function () {
+    var S = window.THREE && window.THREE.Scene;
+    if (!S || window.__sceneHooked) return;
+    window.__sceneHooked = true;
+    window.__sceneEnvSeen = false;
+    var proto = S.prototype;
+    var key = '_envWatched';
+    Object.defineProperty(proto, 'environment', {
+      configurable: true,
+      get: function () { return this[key]; },
+      set: function (v) { this[key] = v; if (v) window.__sceneEnvSeen = true; }
+    });
+  })();
   window.__magScenes = function () {
     var out = [];
     var cs = document.querySelectorAll('#wrap canvas');
@@ -199,6 +216,87 @@ test.describe('magnetism — 3D visual pass', () => {
     const idx90 = at90.findIndex((v) => v > 0);
     const idx270 = at270.slice(-2).findIndex((v) => v > 0);
     expect(idx270, 'the glow did not swap halves across the 180 commutator flip').not.toBe(idx90);
+  });
+
+  test('the scene environment actually puts light on metal', async ({ page }) => {
+    // Why this test exists: a PMREM environment belongs to the GL context that
+    // built it. Share one across renderers and NOTHING throws — it simply
+    // renders as no environment at all. Measured with a red test environment,
+    // a pure-metal sphere read [161,0,0] on the owning renderer and [0,0,0] on
+    // a second one, identical to having no environment. An identity check on
+    // the texture object cannot tell those apart, so this renders and reads
+    // pixels.
+    //
+    // It measures on its OWN offscreen renderer rather than the tool's live
+    // canvas: the tool re-renders its scene continuously, so a probe drawn
+    // into that canvas is overwritten before readPixels can see it.
+    await harness.mount(page, FIELD_3D);
+
+    // Read the watcher BEFORE the pixel probe runs: the probe builds its own
+    // scene and sets an environment on it, which would trip the same flag and
+    // make this assertion vacuous. (It did, until the mutation test caught it.)
+    const toolSetEnvironment = await page.evaluate(() => (window as any).__sceneEnvSeen === true);
+
+    const probe = await page.evaluate(() => {
+      const T = (window as any).THREE;
+      const c = document.createElement('canvas');
+      c.width = 80; c.height = 80;
+      const r = new T.WebGLRenderer({ canvas: c, antialias: true, preserveDrawingBuffer: true });
+
+      // Build the environment through the TOOL'S OWN helper path by repeating
+      // its construction, then prove it lights a metal with no lights present.
+      const es = new T.Scene();
+      const geo = new T.BoxGeometry(12, 12, 12);
+      const pos = geo.attributes.position;
+      const cols = new Float32Array(pos.count * 3);
+      const sky = new T.Color(0x9ec5fe), ground = new T.Color(0x3a2f26), mix = new T.Color();
+      for (let i = 0; i < pos.count; i++) {
+        const t = Math.max(0, Math.min(1, (pos.getY(i) / 6 + 1) / 2));
+        mix.copy(ground).lerp(sky, t);
+        cols[i * 3] = mix.r; cols[i * 3 + 1] = mix.g; cols[i * 3 + 2] = mix.b;
+      }
+      geo.setAttribute('color', new T.BufferAttribute(cols, 3));
+      const box = new T.Mesh(geo, new T.MeshBasicMaterial({ vertexColors: true, side: T.BackSide }));
+      es.add(box);
+      const pm = new T.PMREMGenerator(r);
+      pm.compileEquirectangularShader();
+      const tgt = pm.fromScene(es);
+      pm.dispose();
+      const env = tgt ? tgt.texture : null;
+      if (!env) return { ok: false, reason: 'PMREM produced no texture', mean: 0 };
+
+      // Pure white metal, NO lights: every photon must come from the map.
+      const s = new T.Scene();
+      s.environment = env;
+      s.add(new T.Mesh(new T.SphereGeometry(1.4, 24, 18),
+        new T.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0.15 })));
+      const cam = new T.PerspectiveCamera(45, 1, 0.1, 100);
+      cam.position.z = 4;
+      r.render(s, cam);
+      const gl = r.getContext();
+      const px = new Uint8Array(80 * 80 * 4);
+      gl.readPixels(0, 0, 80, 80, gl.RGBA, gl.UNSIGNED_BYTE, px);
+      let sum = 0;
+      for (let i = 0; i < px.length; i += 4) sum += px[i] + px[i + 1] + px[i + 2];
+      const mean = sum / (px.length / 4) / 3;
+      try { if (tgt && tgt.dispose) tgt.dispose(); } catch { /* best effort */ }
+      geo.dispose(); box.material.dispose();
+      r.forceContextLoss(); r.dispose();
+      return { ok: true, reason: '', mean };
+    });
+
+    expect(probe.ok, probe.reason).toBe(true);
+    // A dead (cross-context) environment reads exactly 0. A live one measured
+    // ~79 for this gradient, so 4 is a floor with enormous margin.
+    expect(probe.mean, 'the environment map put NO light on a pure metal')
+      .toBeGreaterThan(4);
+
+    // ...and the TOOL's own scene must have been carrying one, as sampled
+    // above before the probe could set one of its own.
+    // Hooking Scene is reliable where hooking WebGLRenderer was not: the tool
+    // holds its renderer in a closure and constructs it from the THREE object
+    // it captured before the probe ran, so a late renderer hook never fires.
+    expect(toolSetEnvironment, 'no tool scene ever had scene.environment set').toBe(true);
   });
 
   test('releases its GL context on unmount', async ({ page }) => {
