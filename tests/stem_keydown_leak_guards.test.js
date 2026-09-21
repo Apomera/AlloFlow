@@ -66,3 +66,95 @@ describe('no unguarded global-swap keydown handlers remain in the catalog', () =
     expect(offenders, offenders.join(' | ')).toEqual([]);
   });
 });
+
+// The sweep above reads stem_lab_module.js like every other file, but its
+// regex only matches `window._NAME = function (e) {`, and the hub attaches
+// its handlers as local function declarations and element properties. It
+// therefore matched 0 of the hub's 6 keydown sites -- including the
+// CSS-fullscreen Escape handler that leaked on every tool unmount until
+// 2026-09-21. The hub is the one file in stem_lab/ that is always loaded, so
+// a listener leaked there outlives every tool.
+//
+// This sweep is written against the attachment rather than the assignment, so
+// it sees any spelling. It is a ratchet: the known-permanent singleton is
+// listed by name, and any NEW global attachment must remove itself.
+describe('the hub module cleans up its own global key listeners', () => {
+  const HUB = 'stem_lab_module.js';
+
+  // Attachments to window/document that are deliberately permanent.
+  const PERMANENT = [
+    // The StemInput runtime sits behind `if (window.StemInput) return;`, so it
+    // attaches exactly once per page and must stay for the session.
+    { handler: 'onKeyboard', why: 'once-only StemInput runtime singleton' }
+  ];
+
+  function globalKeySites(src) {
+    const out = [];
+    const re = /(window|document)\.addEventListener\(\s*'(keydown|keyup)'\s*,\s*([A-Za-z_$][\w$.]*)/g;
+    let m;
+    while ((m = re.exec(src)) !== null) {
+      out.push({ target: m[1], type: m[2], handler: m[3], at: m.index });
+    }
+    return out;
+  }
+
+  it('attaches its global key listeners only in ways this gate can see', () => {
+    // Guards the gate itself: if the hub grows a new attachment spelling,
+    // this count moves and the sweep below must be revisited rather than
+    // silently covering less.
+    const sites = globalKeySites(read(HUB));
+    expect(sites.length, sites.map((s) => s.handler).join(', ')).toBeGreaterThanOrEqual(5);
+  });
+
+  it('removes every global key listener it adds, or declares it permanent', () => {
+    const src = read(HUB);
+    const offenders = [];
+    for (const site of globalKeySites(src)) {
+      const permanent = PERMANENT.some((p) => p.handler === site.handler);
+      if (permanent) continue;
+      const esc = site.handler.replace(/[.$]/g, '\\$&');
+      const removed = new RegExp(
+        'removeEventListener\\(\\s*\'' + site.type + '\'\\s*,\\s*' + esc
+      ).test(src);
+
+      // A handler stored ON A NODE (el.__alloFsEsc) outlives that node: the
+      // hub cannot know when a plugin's subtree unmounts, so an explicit
+      // remove elsewhere in the file is NOT sufficient on its own -- it only
+      // runs on the paths the tool chooses to take. Such a handler must ALSO
+      // drop itself once its node has left the document. Requiring only the
+      // explicit remove is what let the real leak pass: _stemFsExit removes
+      // this listener by the same name, so deleting the self-removal changed
+      // nothing the gate could see.
+      const nodeScoped = site.handler.includes('.');
+      const selfRemoving = new RegExp(
+        esc + '\\s*=\\s*function[\\s\\S]{0,500}?isConnected[\\s\\S]{0,300}?removeEventListener\\(\\s*\'' + site.type + '\''
+      ).test(src);
+
+      const ok = nodeScoped ? (removed && selfRemoving) : (removed || selfRemoving);
+      if (!ok) {
+        offenders.push(
+          site.target + '.' + site.type + ' <- ' + site.handler +
+          (nodeScoped && removed && !selfRemoving
+            ? ' (removed on the normal path, but never drops itself after its node is gone)'
+            : '')
+        );
+      }
+    }
+    expect(offenders, offenders.join(' | ')).toEqual([]);
+  });
+
+  it('keeps the permanent list honest', () => {
+    const src = read(HUB);
+    for (const { handler } of PERMANENT) {
+      // A name listed as permanent must still exist, or the exemption is
+      // covering nothing and hiding the next leak that reuses the name.
+      expect(src, handler + ' is exempted but no longer attached').toContain("'keydown'," + handler);
+    }
+    // The StemInput runtime's once-only guard is what makes it safe.
+    expect(src).toContain('if (window.StemInput) return;');
+  });
+
+  it('mirror is byte-identical', () => {
+    expect(pub(HUB)).toBe(read(HUB));
+  });
+});
