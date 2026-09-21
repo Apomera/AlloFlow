@@ -85586,7 +85586,9 @@
       "pilot_leaf_energy_progress": "Model progress to vapor",
       "pilot_pores_saturated": "Water fills connected pores",
       "pilot_pores_unsaturated": "Air and water share pore space",
-      "pilot_pore_closeup_key": "Illustration · gray is rock; blue is water"
+      "pilot_pore_closeup_key": "Illustration · gray is rock; blue is water",
+      "a11y_view_the_droplet_journey_full_screen": "View the droplet journey full screen",
+      "a11y_exit_full_screen_droplet_journey": "Exit full screen droplet journey"
     },
     "wave": {
       "choose_experiment": "Choose a wave experiment",

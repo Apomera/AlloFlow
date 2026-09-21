@@ -428,6 +428,19 @@
       '.wc-reset-control:focus-visible,.wc-viewport-btn:focus-visible{outline:3px solid #facc15;outline-offset:2px}',
       '.wc-viewport-btn{transition:background 160ms ease,transform 160ms ease,box-shadow 160ms ease}.wc-viewport-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 7px 14px rgba(14,165,233,.18)}',
       '.wc-viewport-actions{row-gap:6px}.wc-viewport-actions::before{content:"Camera";align-self:center;margin-right:2px;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#7dd3fc}',
+      // Fullscreen trim. SIZING is deliberately not set here: the UA's own
+      // :fullscreen rule sits above author !important in the cascade, so the
+      // shell fills the screen on its own -- measured identical (1100x720) with
+      // and without an author width/height, even against its
+      // height:clamp(360px,48vw,520px)!important. Declaring it again would only
+      // look load-bearing.
+      // What DOES need overriding is the card trim: without this the scene keeps
+      // its 18px radius and 1px border and reads as a rounded card floating on
+      // the black backdrop instead of an edge-to-edge view. The 3D canvas is
+      // inset:0/100% and the journey ResizeObserver watches it, so the renderer
+      // re-aspects itself once the shell grows.
+      '.wc-canvas-shell:fullscreen{border-radius:0!important;border:0!important;margin:0!important}',
+      '.wc-canvas-shell:-webkit-full-screen{border-radius:0!important;border:0!important;margin:0!important}',
       '@media(max-width:560px){.wc-viewport-actions::before{flex-basis:100%;margin-bottom:-1px}.wc-reset-control{flex-basis:100%;margin-top:2px}}',
       '.wc-preset-control{display:flex;align-items:center;gap:5px;margin-left:auto;font-size:10px;font-weight:900;color:#6d28d9}.wc-preset-control select{min-height:28px;max-width:190px;padding:4px 24px 4px 7px;border:1px solid rgba(124,58,237,.25);border-radius:8px;background:rgba(255,255,255,.76);color:#4338ca;font-size:10px;font-weight:900}.wc-preset-control select:focus-visible{outline:3px solid #facc15;outline-offset:2px}',
       '.wc-preset-lesson{flex:1 0 100%;margin:0 0 8px;padding:6px 8px;border-left:2px solid #8b5cf6;border-radius:5px;background:rgba(245,243,255,.72);color:#4c1d95;font-size:10px;line-height:1.35}.wc-preset-lesson-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#6d28d9}.wc-preset-lesson-copy{display:block;margin-top:2px}.dark .wc-preset-lesson{background:rgba(49,46,129,.26);border-left-color:#a78bfa;color:#ddd6fe}.dark .wc-preset-lesson-kicker{color:#c4b5fd}@media(forced-colors:active){.wc-preset-lesson{border-color:Highlight;background:Canvas;color:CanvasText}.wc-preset-lesson-kicker{color:CanvasText}}',
@@ -31122,7 +31135,54 @@ const d = labToolData.waterCycle || {};
                       "data-tooltip": cameraControl.label,
                       onClick: function() { controlJourneyCamera(cameraControl.action); }
                     }, cameraControl.icon);
-                  })
+                  }),
+
+                  // Full-screen the whole shell, not just the canvas: the dock this
+                  // button sits in is absolutely positioned inside .wc-canvas-shell,
+                  // so the scene keeps its pause / speed / camera controls and its
+                  // stage readout. Fullscreening the canvas alone would strand them.
+                  React.createElement("button", {
+                    type: "button",
+                    className: "wc-viewport-btn wc-viewport-fullscreen",
+                    "aria-label": __alloT('stem.watercycle.a11y_view_the_droplet_journey_full_screen', 'View the droplet journey full screen'),
+                    "data-tooltip": "Full screen",
+                    "aria-pressed": "false",
+                    onClick: function(event) {
+                      var fsButton = event.currentTarget;
+                      var shell = fsButton.closest('[data-watercycle-canvas-shell]');
+                      if (!shell) return;
+                      // Esc and the browser's own chrome exit fullscreen without ever
+                      // firing this click, so the label has to follow the REAL state.
+                      // Bound once per node; the listener is removed when the shell
+                      // leaves the document.
+                      if (!fsButton._wcFullscreenBound) {
+                        fsButton._wcFullscreenBound = true;
+                        var syncFullscreenLabel = function() {
+                          if (!fsButton.isConnected) {
+                            document.removeEventListener('fullscreenchange', syncFullscreenLabel);
+                            return;
+                          }
+                          var isFull = document.fullscreenElement === shell;
+                          fsButton.setAttribute('aria-pressed', isFull ? 'true' : 'false');
+                          fsButton.setAttribute('aria-label', isFull
+                            ? __alloT('stem.watercycle.a11y_exit_full_screen_droplet_journey', 'Exit full screen droplet journey')
+                            : __alloT('stem.watercycle.a11y_view_the_droplet_journey_full_screen', 'View the droplet journey full screen'));
+                          fsButton.setAttribute('data-tooltip', isFull ? 'Exit full screen' : 'Full screen');
+                          fsButton.textContent = isFull ? '\u2715' : '\u26F6';
+                        };
+                        document.addEventListener('fullscreenchange', syncFullscreenLabel);
+                      }
+                      if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                      } else if (shell.requestFullscreen) {
+                        shell.requestFullscreen().catch(function() {
+                          if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_full_screen_is_unavailable_in_this_browser', 'Full screen is unavailable in this browser.'));
+                        });
+                      } else if (typeof announceToSR === 'function') {
+                        announceToSR(__alloT('stem.watercycle.sr_full_screen_is_unavailable_in_this_browser', 'Full screen is unavailable in this browser.'));
+                      }
+                    }
+                  }, "\u26F6")
                 )
               )
 
