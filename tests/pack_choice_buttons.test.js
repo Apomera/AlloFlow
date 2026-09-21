@@ -296,10 +296,14 @@ const modalFiles = [
   'view_misc_modals_module.js',
   'desktop/web-app/public/view_misc_modals_module.js',
 ];
+// The auto-fill chooser moved out of the shell into host_handlers during the
+// ANTI extraction work, so pinning it in AlloFlowANTI.txt and App.jsx was
+// asserting against files that no longer own it. Read the extracted SOURCE
+// rather than host_handlers_module.js, which is minified: the built module
+// collapses "type: 'choices', stage: 'initial_choice'" to a spaceless form and
+// an exact-string pin would then fail on formatting instead of on substance.
 const hostFiles = [
-  'AlloFlowANTI.txt',
-  'desktop/web-app/src/AlloFlowANTI.txt',
-  'desktop/web-app/src/App.jsx',
+  'host_handlers_source.jsx',
 ];
 
 describe('Step/Pack chooser copy-sync guardrails', () => {

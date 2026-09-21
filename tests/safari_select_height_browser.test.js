@@ -59,8 +59,16 @@ describe('select controls honour the 44px minimum in WebKit (Safari) as well as 
     const before = await measure(webkit, '');
     const after = await measure(webkit, selectRules);
     expect(before.input).toBeGreaterThanOrEqual(44);
-    // The defect: without the rule WebKit ignores min-height on a menulist select.
-    expect(before.select).toBeLessThan(44);
+    // This used to assert before.select < 44 — the original defect, where WebKit
+    // ignored min-height on a menulist select and left it under the touch-target
+    // minimum. WebKit has since changed: it now renders the bare select at 50px,
+    // so that precondition fails on a browser where nothing is wrong. Measured
+    // here 2026-09-20: 50 without the rule, exactly 44 with it.
+    //
+    // What the rule has to guarantee is the 44px minimum, whichever side it
+    // approaches from, so assert that rather than re-pinning a number the engine
+    // owns. The appearance and arrow assertions below still prove the rule is
+    // the thing doing the work.
     expect(after.select).toBeGreaterThanOrEqual(44);
     expect(after.appearance).toBe('none');
     expect(after.arrow).toBe(true);
