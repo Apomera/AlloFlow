@@ -26251,7 +26251,7 @@ window.SelHub = window.SelHub || {
       var _matcherTier    = d._matcherTier || 0;
 
       // Practice log state
-      var practiceLog     = d.practiceLog || []; // { strategyId, type, timestamp, rating, note }
+      var practiceLog     = Array.isArray(d.practiceLog) ? d.practiceLog : []; // { strategyId, type, timestamp, rating, note }
 
       // Badge state
       var earnedBadges    = d.earnedBadges || {};

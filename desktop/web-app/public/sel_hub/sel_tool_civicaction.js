@@ -2596,7 +2596,7 @@ window.SelHub = window.SelHub || {
         // on a 2D plane: x = position on issue (against ←→ for), y = power (low to high).
         // Helps think strategically — who already agrees + has power? who needs persuading?
         tab === 'powermap' && (function() {
-          var stakeholders = d.powerMapStakeholders || [
+          var stakeholders = Array.isArray(d.powerMapStakeholders) ? d.powerMapStakeholders : [
             { id: 'self', label: 'Me', x: 50, y: 30, color: '#06b6d4', isMe: true }
           ];
           function updateStakeholders(newList) { upd('powerMapStakeholders', newList); }
@@ -2694,7 +2694,7 @@ window.SelHub = window.SelHub || {
 
         // ═══ ALLIES WEB ═══ map your existing support network
         tab === 'allies' && (function() {
-          var allies = d.alliesWeb || [];
+          var allies = Array.isArray(d.alliesWeb) ? d.alliesWeb : [];
           var categories = [
             { id: 'family', label: '👨‍👩‍👧 Family', color: '#a855f7' },
             { id: 'school', label: '🏫 School staff', color: '#06b6d4' },
@@ -2782,7 +2782,7 @@ window.SelHub = window.SelHub || {
 
         // ═══ ACTION TIMELINE ═══ visual milestone tracker
         tab === 'timeline' && (function() {
-          var milestones = d.actionMilestones || [];
+          var milestones = Array.isArray(d.actionMilestones) ? d.actionMilestones : [];
           async function addMilestone() {
             var values = await askCivicActionForm({
               title: 'Add an action milestone',
@@ -2855,7 +2855,7 @@ window.SelHub = window.SelHub || {
 
         // ═══ TALK PREP ═══ practice hard civic conversations
         tab === 'talkprep' && (function() {
-          var topics = d.talkTopics || [];
+          var topics = Array.isArray(d.talkTopics) ? d.talkTopics : [];
           var currentDraft = d.talkDraft || { topic: '', otherView: '', commonGround: '', myPoint: '', evidence: '', question: '' };
           function updateDraft(field, value) {
             upd('talkDraft', Object.assign({}, currentDraft, (function() { var o = {}; o[field] = value; return o; })()));

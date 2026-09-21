@@ -118,7 +118,21 @@ function discover(id) {
     const vre = /\{\s*id:\s*'([a-zA-Z][\w]*)'/g;
     while ((m = vre.exec(block)) !== null) views.add(m[1]);
   }
-  return { keys: [...keys].slice(0, 40), views: [...views].slice(0, 14) };
+  // ★ The cap is a SILENT COVERAGE HOLE, not a performance knob (2026-09-21).
+  // 23 of 72 SEL tools read more than 40 keys — sel_tool_mindfulness reads 118 —
+  // so two thirds of their saved state went unswept and the gate reported the
+  // hub CLEAN. Raising the cap to 200/30 immediately surfaced SIX real crashes
+  // in civicAction and coping, every one a `d.x || []` truthiness guard that a
+  // saved string walks straight through to .map/.filter/.forEach.
+  //
+  // If this ever needs to be bounded again for runtime, PRINT the tools that
+  // get truncated. A cap that silently drops keys makes a green run meaningless.
+  const KEY_CAP = 200;
+  const VIEW_CAP = 30;
+  if (keys.size > KEY_CAP || views.size > VIEW_CAP) {
+    console.log(`  ! ${id}: ${keys.size} keys / ${views.size} views exceeds the cap — NOT fully swept`);
+  }
+  return { keys: [...keys].slice(0, KEY_CAP), views: [...views].slice(0, VIEW_CAP) };
 }
 
 function defaultsOf(id) {
