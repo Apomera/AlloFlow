@@ -210,7 +210,13 @@ describe('live collaboration (phases 2-4): section buttons, review queue, watch-
 
   it('queue items bridge to the Workbench and can be marked reviewed', () => {
     expect(view).toContain('const _reviewToWorkbench = (f) => {');
-    expect(view).toContain("setReviewDismissed((prev) => ({ ...prev, [_k]: _at }));");
+    // Marking reviewed used to be an inline spread, `setReviewDismissed((prev) => ({
+    // ...prev, [_k]: _at }))`. It is a named `change` reducer now, guarded by a
+    // document-epoch and HTML staleness check that refuses to record a review against a
+    // document that moved underneath it. Assert the state update plus that guard, which
+    // is the stronger contract, rather than the old literal.
+    expect(view).toContain('setReviewDismissed(prev => change(prev) || {});');
+    expect(view).toContain('The document changed before this review was recorded.');
   });
 
   it('watch-live is READ-ONLY: srcDoc-bound, no scripts, and never the editing modal', () => {

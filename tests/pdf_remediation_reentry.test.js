@@ -16,6 +16,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const host = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+const hostHandlers = readFileSync(resolve(process.cwd(), 'host_handlers_source.jsx'), 'utf8');
+const recoveryDialog = readFileSync(resolve(process.cwd(), 'view_canvas_recovery_dialog_source.jsx'), 'utf8');
 const viewSrc = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 const viewMod = readFileSync(resolve(process.cwd(), 'view_pdf_audit_module.js'), 'utf8');
 
@@ -54,15 +56,20 @@ describe('host: result survives close and is re-openable in-session', () => {
     const pill = host.slice(pillStart, pillStart + 3600);
     expect(pill.indexOf('onClick={dismissCachedPdfRemediationShortcut}')).toBeGreaterThan(-1);
     expect(pill.indexOf('onClick={dismissCachedPdfRemediationShortcut}')).toBeLessThan(pill.indexOf('onClick={() => openCachedPdfRemediation(false)}'));
-    // The second door: dismissing must not be able to lose the work.
-    expect(host).toContain("t('storage.remediation_open')");
-    expect(host).toContain('aria-labelledby="storage-local-documents-title"');
+    // The second door: dismissing must not be able to lose the work. The Managed Local
+    // Storage UI was extracted out of ANTI into its own view module, so its markup is
+    // asserted against that source now.
+    expect(recoveryDialog).toContain("t('storage.remediation_open')");
+    expect(recoveryDialog).toContain('aria-labelledby="storage-local-documents-title"');
     // Both doors use one re-entry function, with a proven-renderable fallback shape (mirrors the
     // Load-Project pdfAuditResult shape) for the post-reload case where the ref is empty.
-    expect(host).toContain('const restoredAudit = lastPdfAuditResultRef.current || {');
-    expect(host).toMatch(/const restoredAudit = lastPdfAuditResultRef\.current \|\|[\s\S]{0,500}setPdfAuditResult\(restoredAudit\)/);
+    // openCachedPdfRemediation moved into host_handlers_source.jsx during the ANTI extraction
+    // (ANTI keeps a one-line delegator) and reads its collaborators off `__d`, so the same
+    // fallback is spelled `__d.lastPdfAuditResultRef`. Unchanged in substance.
+    expect(hostHandlers).toContain('const restoredAudit = __d.lastPdfAuditResultRef.current || {');
+    expect(hostHandlers).toMatch(/const restoredAudit = __d\.lastPdfAuditResultRef\.current \|\|[\s\S]{0,500}setPdfAuditResult\(restoredAudit\)/);
     // the fallback carries the fields the results view reads
-    expect(host).toMatch(/const restoredAudit = lastPdfAuditResultRef\.current \|\|[\s\S]{0,500}hasSearchableText: true/);
+    expect(hostHandlers).toMatch(/const restoredAudit = __d\.lastPdfAuditResultRef\.current \|\|[\s\S]{0,500}hasSearchableText: true/);
   });
 
   it('dismissal preserves the exact cache, while Managed Local Storage owns confirmed deletion', () => {
@@ -76,12 +83,13 @@ describe('host: result survives close and is re-openable in-session', () => {
     expect(host).toContain('restored._cacheStorageKey = latestKey;');
     expect(host).toContain('const storageKey = restoredStorageKey || `allo.lastPdfAudit__${fname}__${fsize}__${fingerprint}`;');
 
-    expect(host).toContain("t('storage.remediation_delete') || 'Delete'");
-    expect(host).toContain("t('storage.remediation_delete_warning')");
-    expect(host).toContain('onClick={deleteCachedPdfRemediation}');
-    expect(host).toContain('pdfRemediationCacheEntries.map(entry => {');
-    expect(host).toContain('restoreCachedPdfRemediation(entry.storageKey, true)');
-    expect(host).toContain('deleteCachedPdfRemediationEntry(entry.storageKey)');
+    // Same extraction as above: the delete affordances live in the recovery-dialog view.
+    expect(recoveryDialog).toContain("t('storage.remediation_delete') || 'Delete'");
+    expect(recoveryDialog).toContain("t('storage.remediation_delete_warning')");
+    expect(recoveryDialog).toContain('onClick={deleteCachedPdfRemediation}');
+    expect(recoveryDialog).toContain('pdfRemediationCacheEntries.map(entry => {');
+    expect(recoveryDialog).toContain('restoreCachedPdfRemediation(entry.storageKey, true)');
+    expect(recoveryDialog).toContain('deleteCachedPdfRemediationEntry(entry.storageKey)');
     const deleteStart = host.indexOf('const deleteCachedPdfRemediation = () => {');
     const deleteBody = host.slice(deleteStart, host.indexOf('\n  };', deleteStart));
     expect(deleteBody).toContain('ALLO_PDF_REMEDIATION_CACHE.clear(localStorage)');
@@ -94,12 +102,15 @@ describe('host: result survives close and is re-openable in-session', () => {
     // documents view now identifies those snapshots and restores the draft before opening it.
     expect(host).toContain("if (typeof window !== 'undefined' && window.__alloBuilderEditedPack) builderDraft = await _getBuilderDraftForProject();");
     expect(host).toContain('builderDraft,');
-    expect(host).toContain('await _restoreBuilderDraftFromProject(workspace.builderDraft || null, restoredHistory);');
+    // The extraction split this flow three ways: the restore helper went to
+    // host_handlers, the local-documents markup to the recovery-dialog view, and the
+    // opener stayed in ANTI. Assert each where it now lives.
+    expect(hostHandlers).toContain('await _restoreBuilderDraftFromProject(workspace.builderDraft || null, restoredHistory);');
     expect(host).toContain('const openCanvasDocumentHubDraft = async (snapshot) => {');
     expect(host).toMatch(/const openCanvasDocumentHubDraft = async \(snapshot\) => \{[\s\S]{0,500}restoreCanvasWorkspaceSnapshot\(snapshot\)[\s\S]{0,300}openExportPreview\('print'\)/);
-    expect(host).toContain('Document Hub draft</span>');
-    expect(host).toContain('onClick={() => void openCanvasDocumentHubDraft(snapshot)}');
-    expect(host).toContain("Document Hub drafts are stored with their saved workspaces below.");
+    expect(recoveryDialog).toContain('Document Hub draft</span>');
+    expect(recoveryDialog).toContain('onClick={() => void openCanvasDocumentHubDraft(snapshot)}');
+    expect(recoveryDialog).toContain("Document Hub drafts are stored with their saved workspaces below.");
   });
 
   it('stores and restores the exact audit context for each remediation generation', () => {
@@ -107,8 +118,10 @@ describe('host: result survives close and is re-openable in-session', () => {
     // complete audit object so reopening a different document cannot show another run's details.
     expect(host).toContain("auditResult: (pdfAuditResult && !pdfAuditResult._choosing) ? pdfAuditResult : (lastPdfAuditResultRef.current || null)");
     expect(host).toContain('}, [pdfFixResult, pendingPdfFile, pdfAuditResult]);');
-    const restoreStart = host.indexOf('const restoreCachedPdfRemediation = async (storageKey, closeStorageManager = true) => {');
-    const restoreBody = host.slice(restoreStart, host.indexOf('\n  };', restoreStart));
+    // restoreCachedPdfRemediation moved into host_handlers with the rest of the re-entry
+    // helpers; the stash write and the audit fallback are unchanged inside it.
+    const restoreStart = hostHandlers.indexOf('const restoreCachedPdfRemediation = async (storageKey, closeStorageManager = true) => {');
+    const restoreBody = hostHandlers.slice(restoreStart, hostHandlers.indexOf('\n  };', restoreStart));
     expect(restoreStart).toBeGreaterThan(-1);
     expect(restoreBody).toContain('const restoredAudit = entry.auditResult || {');
     expect(restoreBody).toContain('lastPdfAuditResultRef.current = entry.auditResult || null;');
@@ -118,11 +131,15 @@ describe('host: result survives close and is re-openable in-session', () => {
   it('starting a NEW audit drops the stash (no stale re-entry for a cleared result)', () => {
     const invalidateStart = host.indexOf('const invalidatePdfDocumentOperations = () => {');
     const invalidateBody = host.slice(invalidateStart, host.indexOf('\n  };', invalidateStart));
-    const startNewStart = host.indexOf('const startNewPdfAudit = () => {');
-    const startNewBody = host.slice(startNewStart, host.indexOf('\n  };', startNewStart));
+    // startNewPdfAudit moved to host_handlers; invalidatePdfDocumentOperations stayed in ANTI.
+    const startNewStart = hostHandlers.indexOf('const startNewPdfAudit = () => {');
+    const startNewBody = hostHandlers.slice(startNewStart, hostHandlers.indexOf('\n  };', startNewStart));
     expect(invalidateStart).toBeGreaterThan(-1);
     expect(invalidateBody).toMatch(/const documentIntakeEpoch = \+\+pdfDocumentSelectionEpochRef\.current;[\s\S]*invalidatePdfAuditRun\(\);/);
-    expect(startNewBody).toMatch(/const documentIntakeEpoch = invalidatePdfDocumentOperations\(\);[\s\S]{0,400}lastPdfAuditResultRef\.current = null;/);
+    // host_handlers reaches its collaborators through the `__d` dependency object, so the
+    // same two statements are `__d.`-prefixed. Order still matters: the epoch is bumped
+    // before the stash is dropped.
+    expect(startNewBody).toMatch(/const documentIntakeEpoch = __d\.invalidatePdfDocumentOperations\(\);[\s\S]{0,400}__d\.lastPdfAuditResultRef\.current = null;/);
     expect(startNewBody).toContain('ALLO_PDF_REMEDIATION_CACHE.clearDismissal(localStorage)');
   });
 });
