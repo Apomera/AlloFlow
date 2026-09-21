@@ -1518,6 +1518,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // drivingSteeringGeometry. Must stay low enough that a sustained turn does
   // not demand more grip than the tyres have on dry pavement.
   var RR_STEER_RATIO_KNEE = 6.0;
+  // Speedometer needle easing, per SECOND. Chosen so that at 60 Hz it matches
+  // the previous per-frame constant exactly: 1 - exp(-9.05/60) = 0.14.
+  var RR_SPEEDO_EASE_PER_SEC = 9.05;
   var MS_TO_MPH = 2.23694;
   var FT_PER_M = 3.28084;
   var METERS_PER_MILE = 1609.344; // 1 statute mile (NIST exact)
@@ -26184,11 +26187,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, Math.PI, limitAngle, false); gfx.strokeStyle = 'rgba(34,197,94,0.35)'; gfx.lineWidth = 10; gfx.stroke();
           gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, limitAngle, overAngle, false); gfx.strokeStyle = 'rgba(245,158,11,0.45)'; gfx.lineWidth = 10; gfx.stroke();
           gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, overAngle, 2 * Math.PI, false); gfx.strokeStyle = 'rgba(239,68,68,0.55)'; gfx.lineWidth = 10; gfx.stroke();
-          // Active fill arc — needle smoothly interpolates toward target speed
-          // so the gauge glides rather than snapping. stats._displaySpeed carries
-          // the animated value between frames (ease-out: ~12% of delta per frame).
+          // Active fill arc — the needle eases toward the true speed so the
+          // gauge glides rather than snapping. stats._displaySpeed carries the
+          // animated value between frames.
+          //
+          // Time-based, not per-frame. This used a flat 0.14 of the delta per
+          // FRAME, so the needle settled twice as fast on a 120 Hz display as
+          // on a 60 Hz one: the same drive showed a different speedometer lag
+          // depending on the monitor. That matters here because speeding is
+          // scored against the TRUE speed while the learner reacts to the
+          // needle, so the size of that gap should not be hardware-dependent.
+          //
+          // RR_SPEEDO_EASE_PER_SEC reproduces the old 60 Hz feel exactly
+          // (1 - exp(-9.05/60) = 0.14) and now holds at any refresh rate.
           if (stats._displaySpeed == null) stats._displaySpeed = speedMph;
-          stats._displaySpeed += (speedMph - stats._displaySpeed) * 0.14;
+          var speedoDt = Math.max(0, Math.min(0.1,
+            timeRef.current - (stats._displaySpeedAt == null ? timeRef.current : stats._displaySpeedAt)));
+          stats._displaySpeedAt = timeRef.current;
+          stats._displaySpeed = drivingResponse(
+            stats._displaySpeed, speedMph, RR_SPEEDO_EASE_PER_SEC, speedoDt);
           var shownSpeed = stats._displaySpeed;
           var needleAngle = Math.PI + (Math.min(shownSpeed, maxGauge) / maxGauge) * Math.PI;
           var activeColor = speedMph > hudPostedLimitMph + 5 ? '#ef4444' : speedMph > hudPostedLimitMph ? hudPalette.amber : hudPalette.accent;
@@ -38534,6 +38551,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       backingCarHitsCone: backingCarHitsCone, backingDrillMotion: backingDrillMotion, backingDrillCoachState: backingDrillCoachState,
       drivingDrillTicks: drivingDrillTicks, drivingDrillSpeed: drivingDrillSpeed, backingDrillFinishCheck: backingDrillFinishCheck,
       drivingResponse: drivingResponse, drivingSteeringGeometry: drivingSteeringGeometry,
+      RR_SPEEDO_EASE_PER_SEC: RR_SPEEDO_EASE_PER_SEC,
       drivingPedalResponse: drivingPedalResponse,
       drivingFollowingTarget: drivingFollowingTarget, drivingFollowingDisplay: drivingFollowingDisplay,
       drivingSignalPreview: drivingSignalPreview, drawDrivingSignalLamps: drawDrivingSignalLamps,

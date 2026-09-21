@@ -284,3 +284,32 @@ describe('RoadReady speeding thresholds', () => {
     }
   });
 });
+
+describe('RoadReady speedometer easing', () => {
+  it('settles at the same rate on any refresh rate', () => {
+    // The needle used a flat 0.14 of the delta per FRAME, so it settled 2.4x
+    // faster on a 144 Hz display than on a 60 Hz one. Speeding is scored
+    // against the TRUE speed while the learner reacts to the needle, so the
+    // size of that lag must not depend on the monitor.
+    const settleTime = (fps) => {
+      const dt = 1 / fps;
+      let shown = 15;
+      let t = 0;
+      while (Math.abs(20 - shown) > 0.25 && t < 3) {
+        shown = RR.drivingResponse(shown, 20, RR.RR_SPEEDO_EASE_PER_SEC, dt);
+        t += dt;
+      }
+      return t;
+    };
+    const at60 = settleTime(60);
+    const at144 = settleTime(144);
+    expect(at60).toBeGreaterThan(0.05);
+    expect(at144).toBeCloseTo(at60, 1);
+  });
+
+  it('keeps the historic 60 Hz feel', () => {
+    // 1 - exp(-rate/60) should still be the old per-frame 0.14.
+    const perFrame = 1 - Math.exp(-RR.RR_SPEEDO_EASE_PER_SEC / 60);
+    expect(perFrame).toBeCloseTo(0.14, 2);
+  });
+});
