@@ -307,6 +307,26 @@ describe('RoadReady speedometer easing', () => {
     expect(at144).toBeCloseTo(at60, 1);
   });
 
+  it('eases every HUD readout on a time basis, not per frame', () => {
+    // The speedometer, tachometer and the safety/efficiency bars all used a
+    // flat fraction of the delta PER FRAME. Each rate below reproduces its old
+    // 60 Hz constant exactly, and must now settle in the same wall-clock time
+    // at any refresh rate.
+    const settle = (rate, fps) => {
+      const dt = 1 / fps;
+      let v = 0;
+      let t = 0;
+      while (Math.abs(100 - v) > 1 && t < 5) {
+        v = RR.drivingResponse(v, 100, rate, dt);
+        t += dt;
+      }
+      return t;
+    };
+    for (const [label, rate] of [['speedo', RR.RR_SPEEDO_EASE_PER_SEC], ['tach', 11.91], ['scores', 7.67]]) {
+      expect(settle(rate, 144), label).toBeCloseTo(settle(rate, 60), 1);
+    }
+  });
+
   it('keeps the historic 60 Hz feel', () => {
     // 1 - exp(-rate/60) should still be the old per-frame 0.14.
     const perFrame = 1 - Math.exp(-RR.RR_SPEEDO_EASE_PER_SEC / 60);

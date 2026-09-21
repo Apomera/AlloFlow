@@ -26200,12 +26200,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           //
           // RR_SPEEDO_EASE_PER_SEC reproduces the old 60 Hz feel exactly
           // (1 - exp(-9.05/60) = 0.14) and now holds at any refresh rate.
+          // One frame delta for every eased HUD readout below (speed, tach,
+          // safety, efficiency). Clamped so a stalled tab or a debugger pause
+          // cannot snap a gauge.
           if (stats._displaySpeed == null) stats._displaySpeed = speedMph;
-          var speedoDt = Math.max(0, Math.min(0.1,
+          var hudEaseDt = Math.max(0, Math.min(0.1,
             timeRef.current - (stats._displaySpeedAt == null ? timeRef.current : stats._displaySpeedAt)));
           stats._displaySpeedAt = timeRef.current;
           stats._displaySpeed = drivingResponse(
-            stats._displaySpeed, speedMph, RR_SPEEDO_EASE_PER_SEC, speedoDt);
+            stats._displaySpeed, speedMph, RR_SPEEDO_EASE_PER_SEC, hudEaseDt);
           var shownSpeed = stats._displaySpeed;
           var needleAngle = Math.PI + (Math.min(shownSpeed, maxGauge) / maxGauge) * Math.PI;
           var activeColor = speedMph > hudPostedLimitMph + 5 ? '#ef4444' : speedMph > hudPostedLimitMph ? hudPalette.amber : hudPalette.accent;
@@ -26254,7 +26257,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var targetRpm = 800 + (car.throttle || 0) * 3200 + Math.abs(car.speed) * 180;
           if (car.brake > 0.3 && Math.abs(car.speed) > 2) targetRpm *= 0.8;
           targetRpm = Math.min(6500, Math.max(650, targetRpm));
-          stats._displayRpm += (targetRpm - stats._displayRpm) * 0.18;
+          // Time-based for the same reason as the speedometer above: a flat
+          // per-frame fraction made the tach settle at different speeds on
+          // different displays. 11.91/s matches the old 0.18 at 60 Hz.
+          stats._displayRpm = drivingResponse(stats._displayRpm, targetRpm, 11.91, hudEaseDt);
           var rpmX = gaugeX + gaugeR + 80, rpmY = H - 50, rpmR = 26;
           // Half-ring background (red zone on right side 5500-6500)
           var rpmMax = 6500, rpmRedline = 5500;
@@ -26411,8 +26417,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Safety + efficiency — smoothly interpolate displayed values so drops feel gradual
           if (stats._displaySafety == null) stats._displaySafety = stats.safetyScore;
           if (stats._displayEco == null) stats._displayEco = stats.efficiencyScore;
-          stats._displaySafety += (stats.safetyScore - stats._displaySafety) * 0.12;
-          stats._displayEco += (stats.efficiencyScore - stats._displayEco) * 0.12;
+          // Time-based (7.67/s matches the old 0.12 per frame at 60 Hz), so a
+          // score drop animates over the same wall-clock time on every display.
+          stats._displaySafety = drivingResponse(
+            stats._displaySafety, stats.safetyScore, 7.67, hudEaseDt);
+          stats._displayEco = drivingResponse(
+            stats._displayEco, stats.efficiencyScore, 7.67, hudEaseDt);
           var showSafety = Math.max(0, Math.round(stats._displaySafety));
           var showEco = Math.max(0, Math.round(stats._displayEco));
           var safetyX = hudCompact ? W - 12 : W - 20;
