@@ -3288,6 +3288,84 @@
       var _prefersReducedMotion = false;
       try { _prefersReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
 
+      // ── Shared 3D post-processing + material helpers ───────────────────
+      // Guarded bloom (the house pattern): plain render until the r128 addons
+      // arrive, every GPU-facing op try/caught with a fallback to plain render,
+      // kill-switch window.AlloPostFXEnabled === false, half-res + gentler
+      // strength on low power. Bloom is sighted-only decoration — every scene
+      // here keeps its 2D diagram and SR text as the authoritative surface.
+      var MAG_POSTFX_URLS = [
+        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
+        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
+        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
+        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
+        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
+        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+      ];
+      var _magPostFXPromise = null;
+      function magPostFXReady() { return !!(window.THREE && window.THREE.EffectComposer && window.THREE.RenderPass && window.THREE.UnrealBloomPass); }
+      // The r128 example addons depend on each other in order, so they load one
+      // at a time; the shared promise means six scenes never double-load them.
+      function magLoadPostFX() {
+        if (magPostFXReady()) return Promise.resolve(true);
+        if (_magPostFXPromise) return _magPostFXPromise;
+        _magPostFXPromise = new Promise(function (resolve) {
+          var i = 0;
+          (function next() {
+            if (i >= MAG_POSTFX_URLS.length) { resolve(magPostFXReady()); return; }
+            try {
+              var s = document.createElement('script'); s.src = MAG_POSTFX_URLS[i]; s.async = false;
+              s.onload = function () { i++; next(); }; s.onerror = function () { i++; next(); };
+              document.head.appendChild(s);
+            } catch (e) { resolve(false); }
+          })();
+        });
+        return _magPostFXPromise;
+      }
+      function magLowPower() { return _prefersReducedMotion || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4); }
+
+      // Attaches a composer to `pack` ({renderer, scene, camera, disposed}).
+      // onReady re-renders the scene so the glow appears on these on-demand
+      // scenes, which would otherwise not repaint until the next interaction.
+      function magAttachBloom(pack, opts, onReady) {
+        opts = opts || {};
+        pack.composer = null;
+        if (window.AlloPostFXEnabled === false) return;
+        magLoadPostFX().then(function (ok) {
+          if (!ok || pack.disposed) return;
+          try {
+            var T = window.THREE, lp = magLowPower(), rs = lp ? 0.5 : 1;
+            var size = new T.Vector2(); pack.renderer.getSize(size);
+            var cc = new T.EffectComposer(pack.renderer);
+            cc.addPass(new T.RenderPass(pack.scene, pack.camera));
+            cc.addPass(new T.UnrealBloomPass(
+              new T.Vector2(Math.max(1, Math.round(size.x * rs)), Math.max(1, Math.round(size.y * rs))),
+              (opts.strength || 0.85) * (lp ? 0.7 : 1), opts.radius || 0.4, opts.threshold || 0.8));
+            pack.composer = cc;
+            if (onReady) onReady();
+          } catch (e) { pack.composer = null; }
+        });
+      }
+      function magRenderPack(pack) {
+        if (!pack || pack.disposed) return;
+        if (pack.composer) {
+          try { pack.composer.render(); return; } catch (e) { pack.composer = null; }
+        }
+        try { pack.renderer.render(pack.scene, pack.camera); } catch (e) {}
+      }
+      function magResizeComposer(pack, width, height) {
+        if (!pack || !pack.composer) return;
+        try { pack.composer.setSize(width, height); } catch (e) {}
+      }
+      function magDisposeComposer(pack) {
+        if (!pack || !pack.composer) return;
+        try {
+          (pack.composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); });
+          if (pack.composer.dispose) pack.composer.dispose();
+        } catch (e) {}
+        pack.composer = null;
+      }
+
       var PANEL = 'var(--allo-stem-panel, #1e293b)';
       var TEXT = 'var(--allo-stem-text, #e2e8f0)';
       var SOFT = 'var(--allo-stem-text-soft, #94a3b8)';
@@ -4314,17 +4392,26 @@
                 disposeObject(child);
               }
             }
+            // The pack is what the shared bloom helpers operate on. `disposed`
+            // is read live off the closure var via the getter below so a late
+            // addon load can never draw into a torn-down renderer.
+            var fieldPack = { renderer: renderer, scene: scene, camera: camera, composer: null, disposed: false };
             function resize() {
               var width = Math.max(1, cv.clientWidth || 640), height = Math.max(1, cv.clientHeight || 410);
               renderer.setSize(width, height, false);
               camera.aspect = width / height;
               camera.updateProjectionMatrix();
+              magResizeComposer(fieldPack, width, height);
             }
             function renderScene() {
               if (disposed) return;
               resize();
-              renderer.render(scene, camera);
+              fieldPack.disposed = disposed;
+              magRenderPack(fieldPack);
             }
+            // Dark scene, bright field tubes: a low threshold lets the traced
+            // lines themselves bloom, which is the whole point here.
+            magAttachBloom(fieldPack, { strength: 0.78, radius: 0.42, threshold: 0.62 }, renderScene);
             function momentVector(mag, includePolarity) {
               var source = Object.assign({}, mag, { strength: 1, polarity: includePolarity ? mag.polarity : 1 });
               var m = dipoleMoment3D(source);
@@ -4399,6 +4486,148 @@
               });
             }
 
+            // A traced field line drawn as a solid tube instead of a 1px line.
+            // Two things the flat line could not show are now readable:
+            //   • RADIUS tapers with |B| — the tube is fat where the field is
+            //     strong (near the poles) and thin out in the weak far field,
+            //     so field strength is legible from the geometry itself.
+            //   • COLOR ramps along the same |B| scale, reusing the scene's
+            //     existing cyan->gold strength ramp so the tubes agree with the
+            //     vector arrows and the slice plane already on screen.
+            // Vertex colors carry the ramp (one material, one draw call per
+            // line). The base hue still identifies WHICH magnet a line belongs
+            // to, so the two-magnet case stays distinguishable.
+            var _fieldTubeMats = [];
+            // ── Field-line flow ────────────────────────────────────────────
+            // Beads of light travelling along each traced line, north pole to
+            // south. This is the one thing a static field map cannot show:
+            // field lines have a DIRECTION, and the arrows alone only sample it
+            // at one point per line. The beads run the whole path, so the
+            // convention (out of N, into S, closing through the magnet) becomes
+            // something a student watches rather than something they are told.
+            //
+            // Cost control: ONE Points object for the whole scene (one draw
+            // call), positions rewritten in place each frame. No per-frame
+            // allocation, no geometry rebuild.
+            //
+            // The loop is opt-in and self-stopping: it never starts under
+            // prefers-reduced-motion, and it is cancelled on cleanup, on
+            // context loss, and whenever the canvas leaves the document.
+            var _flowCurves = [], _flowPoints = null, _flowGeom = null, _flowMat = null;
+            var _flowRAF = null, _flowPhase = 0, _flowLast = null;
+            var FLOW_PER_LINE = magLowPower() ? 3 : 5;
+            function buildFlow() {
+              _flowPoints = null; _flowGeom = null; _flowMat = null;
+              if (_prefersReducedMotion) return;
+              if (!liveState.lines || !_flowCurves.length) return;
+              var total = _flowCurves.length * FLOW_PER_LINE;
+              _flowGeom = new THREE.BufferGeometry();
+              _flowGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(total * 3), 3));
+              _flowMat = new THREE.PointsMaterial({
+                color: 0xfff7ed, size: 0.13, sizeAttenuation: true,
+                transparent: true, opacity: 0.9, depthWrite: false,
+                blending: THREE.AdditiveBlending
+              });
+              _flowPoints = new THREE.Points(_flowGeom, _flowMat);
+              // The beads are decoration over the tubes; never let them occlude
+              // the magnet bodies or the probe.
+              _flowPoints.renderOrder = 2;
+              _flowPoints.frustumCulled = false;
+              lineGroup.add(_flowPoints);
+              updateFlow(0);
+            }
+            function updateFlow(phase) {
+              if (!_flowPoints || !_flowGeom) return;
+              var arr = _flowGeom.attributes.position.array, w = 0;
+              for (var c = 0; c < _flowCurves.length; c++) {
+                var curve = _flowCurves[c];
+                for (var b = 0; b < FLOW_PER_LINE; b++) {
+                  // Stagger beads evenly, then slide the whole train by phase.
+                  var t = (b / FLOW_PER_LINE + phase) % 1;
+                  var pt;
+                  try { pt = curve.getPointAt(t); } catch (e) { pt = null; }
+                  if (!pt || !isFinite(pt.x) || !isFinite(pt.y) || !isFinite(pt.z)) {
+                    // Park a bad sample far off-screen rather than writing NaN,
+                    // which would poison the whole buffer's bounding sphere.
+                    arr[w++] = 0; arr[w++] = -9999; arr[w++] = 0;
+                    continue;
+                  }
+                  arr[w++] = pt.x; arr[w++] = pt.y; arr[w++] = pt.z;
+                }
+              }
+              _flowGeom.attributes.position.needsUpdate = true;
+            }
+            function stopFlow() {
+              if (_flowRAF != null) { try { cancelAnimationFrame(_flowRAF); } catch (e) {} _flowRAF = null; }
+              _flowLast = null;
+            }
+            function startFlow() {
+              if (_prefersReducedMotion || disposed || _flowRAF != null) return;
+              if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') return;
+              function frame(ts) {
+                _flowRAF = null;
+                if (disposed || !cv.isConnected) return;
+                if (!_flowPoints) return;
+                if (_flowLast == null) _flowLast = ts;
+                // Clamp dt so a backgrounded tab does not jump the train.
+                var dt = Math.max(0, Math.min(80, ts - _flowLast));
+                _flowLast = ts;
+                _flowPhase = (_flowPhase + dt * 0.00016) % 1; // ~one lap per 6s
+                updateFlow(_flowPhase);
+                renderScene();
+                _flowRAF = window.requestAnimationFrame(frame);
+              }
+              _flowRAF = window.requestAnimationFrame(frame);
+            }
+            function addFieldTube(points, magnetIndex, magnets) {
+              // Radial segments stay low: a field map can carry 32 tubes and
+              // this runs on Chromebooks.
+              var lowPower = magLowPower();
+              var curve = new THREE.CatmullRomCurve3(points);
+              var tubular = Math.max(8, Math.min(lowPower ? 64 : 128, Math.floor(points.length * 0.9)));
+              var radial = lowPower ? 4 : 6;
+              // Sample |B| and the curve centre ONCE per ring, not per vertex:
+              // getPoint() re-walks the spline and there are (radial+1) vertices
+              // sharing every ring.
+              // getPointAt (arc-length), NOT getPoint: TubeGeometry builds its
+              // rings on the arc-length parameterization, so getPoint's centres
+              // are off the real tube axis and the taper would skew. Verified
+              // against r128: getPointAt matches every ring to 7.8e-8.
+              var levels = [], centres = [];
+              for (var t = 0; t <= tubular; t++) {
+                var pt = curve.getPointAt(t / tubular);
+                centres.push(pt);
+                var b = fieldAt3D(pt.x, pt.y, pt.z, magnets);
+                levels.push(fieldLevel(Math.sqrt(b.x * b.x + b.y * b.y + b.z * b.z)));
+              }
+              // Taper the tube by sampling |B| into a variable-radius function.
+              var geometry = new THREE.TubeGeometry(curve, tubular, 1, radial, false);
+              var pos = geometry.attributes.position;
+              var base = new THREE.Color(magnetIndex ? 0xa78bfa : 0xf43f5e);
+              var colors = new Float32Array(pos.count * 3);
+              var tmp = new THREE.Color();
+              // TubeGeometry lays vertices out as (tubular+1) rings of
+              // (radial+1) vertices, so ring index recovers the arc position.
+              for (var i = 0; i < pos.count; i++) {
+                var ring = Math.floor(i / (radial + 1));
+                var ringIndex = Math.min(levels.length - 1, ring);
+                var level = levels[ringIndex];
+                var centre = centres[ringIndex];
+                var r = 0.012 + level * 0.055;
+                pos.setXYZ(i, centre.x + (pos.getX(i) - centre.x) * r, centre.y + (pos.getY(i) - centre.y) * r, centre.z + (pos.getZ(i) - centre.z) * r);
+                tmp.copy(base).lerp(gold, level * 0.72);
+                colors[i * 3] = tmp.r; colors[i * 3 + 1] = tmp.g; colors[i * 3 + 2] = tmp.b;
+              }
+              pos.needsUpdate = true;
+              geometry.computeVertexNormals();
+              geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+              var material = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.88 });
+              _fieldTubeMats.push(material);
+              var tube = new THREE.Mesh(geometry, material);
+              tube.userData.fieldTube = true;
+              lineGroup.add(tube);
+            }
+
             function buildLines(state) {
               if (!state.lines) return;
               state.magnets.forEach(function (mag, magnetIndex) {
@@ -4415,9 +4644,8 @@
                     var traced = traceLine3D({ x: seed.x, y: seed.y, z: seed.z }, state.magnets, 1, { step: 0.13, maxSteps: 210, bound: 6.4, bodyR: 0.42 });
                     if (traced.length < 3) continue;
                     var points = traced.map(function (p) { return new THREE.Vector3(p.x, p.y, p.z); });
-                    var geometry = new THREE.BufferGeometry().setFromPoints(points);
-                    var material = new THREE.LineBasicMaterial({ color: magnetIndex ? 0xa78bfa : 0xf43f5e, transparent: true, opacity: 0.58 });
-                    lineGroup.add(new THREE.Line(geometry, material));
+                    addFieldTube(points, magnetIndex, state.magnets);
+                    _flowCurves.push(new THREE.CatmullRomCurve3(points));
                     var markerIndex = Math.min(points.length - 1, Math.max(1, Math.floor(points.length * 0.48)));
                     var markerPoint = points[markerIndex];
                     var markerField = fieldAt3D(markerPoint.x, markerPoint.y, markerPoint.z, state.magnets);
@@ -4479,8 +4707,11 @@
                 sliceOffset: state.sliceOffset
               };
               clearGroup(magnetGroup); clearGroup(lineGroup); clearGroup(vectorGroup); clearGroup(sliceGroup); clearGroup(probeGroup);
+              _flowCurves = [];
               buildSlice(liveState); buildLines(liveState); buildVectors(liveState); buildMagnets(liveState); buildProbe(liveState);
+              buildFlow();
               renderScene();
+              if (_flowPoints) startFlow(); else stopFlow();
             }
 
             function setPointer(event) {
@@ -4537,6 +4768,8 @@
             }
             function onContextLost(event) {
               event.preventDefault();
+              stopFlow();
+              fieldPack.composer = null;
               upd({ field3dStatus: 'error' });
               announceToSR(__alloT('stem.magnetism.sr_the_3d_graphics_context_was_lost_the_2d_field_map', 'The 3D graphics context was lost. The 2D field map remains available.'));
             }
@@ -4562,7 +4795,11 @@
               window.removeEventListener('resize', renderScene);
               controls.dispose();
               if (resizeObserver) resizeObserver.disconnect();
+              stopFlow();
+              _flowCurves = []; _flowPoints = null; _flowGeom = null; _flowMat = null;
               clearGroup(magnetGroup); clearGroup(lineGroup); clearGroup(vectorGroup); clearGroup(sliceGroup); clearGroup(probeGroup);
+              fieldPack.disposed = true;
+              magDisposeComposer(fieldPack);
               renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
               cv._mag3dInit = false;
               cv._mag3dUpdate = null;
@@ -5534,8 +5771,15 @@
             var resizeObserver = null, disposed = false, pointerStart = null;
             function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
             function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } }
-            function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); }
-            function renderScene() { if (!disposed) { resize(); renderer.render(scene, camera); } }
+            function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); magResizeComposer(electroPack, width, height); }
+            var electroPack = { renderer: renderer, scene: scene, camera: camera, composer: null, disposed: false };
+            function renderScene() {
+              if (disposed) return;
+              resize();
+              electroPack.disposed = disposed;
+              magRenderPack(electroPack);
+            }
+            magAttachBloom(electroPack, { strength: 0.72, radius: 0.4, threshold: 0.72 }, renderScene);
             function addArrow(origin, field, color, length, opacity) {
               var magnitude = Math.hypot(field.x, field.y, field.z); if (magnitude < 1e-10) return;
               var arrow = new THREE.ArrowHelper(new THREE.Vector3(field.x, field.y, field.z).normalize(), origin, length, color, Math.min(0.22, length * 0.3), Math.min(0.13, length * 0.18));
@@ -5641,6 +5885,8 @@
             }
             function cleanup() {
               if (disposed) return; disposed = true;
+              electroPack.disposed = true;
+              magDisposeComposer(electroPack);
               cv.removeEventListener('pointerdown', onPointerDown); cv.removeEventListener('pointerup', onPointerUp); cv.removeEventListener('webglcontextlost', onContextLost);
               controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
               clearDynamic(); renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); cv._electro3dInit = false; cv._electro3dUpdate = null; cv._electro3dCleanup = null;
@@ -6668,8 +6914,15 @@
             var particleGroup = null, velocityArrow = null, forceArrow = null, trailLine = null, trailGeometry = null, referenceLine = null, particleLightRef = particleLight;
             function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
             function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } particleGroup = null; velocityArrow = null; forceArrow = null; trailLine = null; trailGeometry = null; referenceLine = null; }
-            function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); }
-            function renderScene() { if (!disposed) { resize(); renderer.render(scene, camera); } }
+            function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); magResizeComposer(chargePack, width, height); }
+            var chargePack = { renderer: renderer, scene: scene, camera: camera, composer: null, disposed: false };
+            function renderScene() {
+              if (disposed) return;
+              resize();
+              chargePack.disposed = disposed;
+              magRenderPack(chargePack);
+            }
+            magAttachBloom(chargePack, { strength: 0.85, radius: 0.44, threshold: 0.58 }, renderScene);
             function addArrow(parent, origin, direction, color, length, opacity) {
               var arrow = new THREE.ArrowHelper(direction.clone().normalize(), origin, length, color, Math.min(0.25, length * 0.27), Math.min(0.14, length * 0.16));
               arrow.line.material.transparent = true; arrow.line.material.opacity = opacity; arrow.cone.material.transparent = true; arrow.cone.material.opacity = opacity; parent.add(arrow); return arrow;
@@ -6751,6 +7004,8 @@
             function onContextLost(event) { event.preventDefault(); stopCharge3D(); upd({ charge3dStatus: 'error' }); announceToSR(__alloT('stem.magnetism.sr_the_3d_particle_graphics_context_was_lost_the_2d', 'The 3D particle graphics context was lost. The 2D Lorentz-force diagram remains available.')); }
             function cleanup() {
               if (disposed) return; disposed = true;
+              chargePack.disposed = true;
+              magDisposeComposer(chargePack);
               cv.removeEventListener('webglcontextlost', onContextLost); controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
               clearDynamic(); renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); cv._charge3dInit = false; cv._charge3dUpdate = null; cv._charge3dCleanup = null;
             }
@@ -7270,8 +7525,15 @@
             var yAxis = new THREE.Vector3(0, 1, 0);
             function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
             function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } rotorGroup = null; forceArrows = []; currentArrows = []; momentArrow = null; torqueArrow = null; }
-            function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); }
-            function renderScene() { if (!disposed) { resize(); renderer.render(scene, camera); } }
+            function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); magResizeComposer(motorPack, width, height); }
+            var motorPack = { renderer: renderer, scene: scene, camera: camera, composer: null, disposed: false };
+            function renderScene() {
+              if (disposed) return;
+              resize();
+              motorPack.disposed = disposed;
+              magRenderPack(motorPack);
+            }
+            magAttachBloom(motorPack, { strength: 0.7, radius: 0.4, threshold: 0.74 }, renderScene);
             function addArrow(parent, origin, direction, color, length, opacity) {
               var arrow = new THREE.ArrowHelper(direction.clone().normalize(), origin, length, color, Math.min(0.28, length * 0.28), Math.min(0.16, length * 0.17));
               arrow.line.material.transparent = true; arrow.line.material.opacity = opacity; arrow.cone.material.transparent = true; arrow.cone.material.opacity = opacity; parent.add(arrow); return arrow;
@@ -7364,6 +7626,8 @@
             function onContextLost(event) { event.preventDefault(); upd({ motor3dStatus: 'error', motorRunning: false }); announceToSR(__alloT('stem.magnetism.sr_the_3d_motor_graphics_context_was_lost_the_2d_for', 'The 3D motor graphics context was lost. The 2D force diagram remains available.')); }
             function cleanup() {
               if (disposed) return; disposed = true;
+              motorPack.disposed = true;
+              magDisposeComposer(motorPack);
               cv.removeEventListener('webglcontextlost', onContextLost); controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
               clearDynamic(); renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); cv._motor3dInit = false; cv._motor3dUpdate = null; cv._motor3dCleanup = null;
             }
@@ -7768,8 +8032,16 @@
             function resize() {
               var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410);
               renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix();
+              magResizeComposer(inductionPack, width, height);
             }
-            function renderScene() { if (!disposed) { resize(); renderer.render(scene, camera); } }
+            var inductionPack = { renderer: renderer, scene: scene, camera: camera, composer: null, disposed: false };
+            function renderScene() {
+              if (disposed) return;
+              resize();
+              inductionPack.disposed = disposed;
+              magRenderPack(inductionPack);
+            }
+            magAttachBloom(inductionPack, { strength: 0.74, radius: 0.42, threshold: 0.7 }, renderScene);
             function addArrow(group, origin, vector, color, length, opacity) {
               var magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
               if (magnitude < 1e-10) return;
@@ -7917,6 +8189,8 @@
             }
             function cleanup() {
               if (disposed) return; disposed = true;
+              inductionPack.disposed = true;
+              magDisposeComposer(inductionPack);
               cv.removeEventListener('pointerdown', onPointerDown); cv.removeEventListener('pointermove', onPointerMove);
               cv.removeEventListener('pointerup', onPointerUp); cv.removeEventListener('pointercancel', onPointerUp);
               cv.removeEventListener('webglcontextlost', onContextLost); controls.removeEventListener('change', renderScene);
@@ -9368,8 +9642,15 @@
             var resizeObserver = null, disposed = false, liveSignature = '', animationFrame = 0, animatedParticles = [], animatedWind = [];
             function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
             function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } }
-            function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); }
-            function renderScene() { if (!disposed) { resize(); renderer.render(scene, camera); } }
+            function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); magResizeComposer(earthPack, width, height); }
+            var earthPack = { renderer: renderer, scene: scene, camera: camera, composer: null, disposed: false };
+            function renderScene() {
+              if (disposed) return;
+              resize();
+              earthPack.disposed = disposed;
+              magRenderPack(earthPack);
+            }
+            magAttachBloom(earthPack, { strength: 0.9, radius: 0.46, threshold: 0.56 }, renderScene);
             function addLine(parent, points, color, opacity, dashed) {
               var geometry = new THREE.BufferGeometry().setFromPoints(points);
               var material = dashed ? new THREE.LineDashedMaterial({ color: color, transparent: true, opacity: opacity, dashSize: 0.18, gapSize: 0.12 }) : new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: opacity });
@@ -9479,6 +9760,8 @@
             function onContextLost(event) { event.preventDefault(); upd({ earth3dStatus: 'error' }); announceToSR(__alloT('stem.magnetism.sr_the_3d_magnetosphere_graphics_context_was_lost_th', 'The 3D magnetosphere graphics context was lost. The 2D Earth-field model remains available.')); }
             function cleanup() {
               if (disposed) return; disposed = true;
+              earthPack.disposed = true;
+              magDisposeComposer(earthPack);
               cv.removeEventListener('webglcontextlost', onContextLost); controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
               if (animationFrame) window.cancelAnimationFrame(animationFrame); animationFrame = 0; clearDynamic(); renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); cv._earth3dInit = false; cv._earth3dUpdate = null; cv._earth3dCleanup = null;
             }
