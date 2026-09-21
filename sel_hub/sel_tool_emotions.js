@@ -107,205 +107,205 @@ window.SelHub = window.SelHub || {
   }
 
   var EMOTION_FAMILIES = [
-    {
+    { _k: 'sel.emotions.fam_happy',
       id: 'happy', label: 'Happy', emoji: '\uD83D\uDE04', color: '#22c55e', bgLight: '#dcfce7',
       desc: { elementary: 'Feeling good inside!', middle: 'Positive, upbeat feelings', high: 'States of well-being and positive affect' },
       feelings: {
         elementary: [
-          { word: 'happy', emoji: '\uD83D\uDE04', def: 'Feeling good and smiley' },
-          { word: 'excited', emoji: '\uD83E\uDD29', def: 'So happy you can\'t sit still!' },
-          { word: 'proud', emoji: '\uD83D\uDE0A', def: 'Feeling great about something you did' },
-          { word: 'grateful', emoji: '\uD83D\uDE4F', def: 'Thankful for something nice' },
-          { word: 'silly', emoji: '\uD83E\uDD2A', def: 'Wanting to laugh and be goofy' },
-          { word: 'loved', emoji: '\uD83E\uDD70', def: 'Feeling warm because someone cares about you' },
-          { word: 'calm', emoji: '\uD83D\uDE0C', def: 'Peaceful and relaxed' },
-          { word: 'hopeful', emoji: '\uD83C\uDF1F', def: 'Believing something good will happen' }
+          { _k: 'sel.emotions.fam_happy_elementary_happy', word: 'happy', emoji: '\uD83D\uDE04', def: 'Feeling good and smiley' },
+          { _k: 'sel.emotions.fam_happy_elementary_excited', word: 'excited', emoji: '\uD83E\uDD29', def: 'So happy you can\'t sit still!' },
+          { _k: 'sel.emotions.fam_happy_elementary_proud', word: 'proud', emoji: '\uD83D\uDE0A', def: 'Feeling great about something you did' },
+          { _k: 'sel.emotions.fam_happy_elementary_grateful', word: 'grateful', emoji: '\uD83D\uDE4F', def: 'Thankful for something nice' },
+          { _k: 'sel.emotions.fam_happy_elementary_silly', word: 'silly', emoji: '\uD83E\uDD2A', def: 'Wanting to laugh and be goofy' },
+          { _k: 'sel.emotions.fam_happy_elementary_loved', word: 'loved', emoji: '\uD83E\uDD70', def: 'Feeling warm because someone cares about you' },
+          { _k: 'sel.emotions.fam_happy_elementary_calm', word: 'calm', emoji: '\uD83D\uDE0C', def: 'Peaceful and relaxed' },
+          { _k: 'sel.emotions.fam_happy_elementary_hopeful', word: 'hopeful', emoji: '\uD83C\uDF1F', def: 'Believing something good will happen' }
         ],
         middle: [
-          { word: 'content', emoji: '\uD83D\uDE0C', def: 'Satisfied and at peace with how things are' },
-          { word: 'enthusiastic', emoji: '\uD83E\uDD29', def: 'Eager and full of energy about something' },
-          { word: 'accomplished', emoji: '\uD83C\uDFC6', def: 'Proud of achieving a goal' },
-          { word: 'grateful', emoji: '\uD83D\uDE4F', def: 'Deeply thankful for people or experiences' },
-          { word: 'amused', emoji: '\uD83D\uDE04', def: 'Finding something entertaining or funny' },
-          { word: 'inspired', emoji: '\u2728', def: 'Motivated by an idea or person' },
-          { word: 'relieved', emoji: '\uD83D\uDE2E\u200D\uD83D\uDCA8', def: 'Stress lifted after something went well' },
-          { word: 'confident', emoji: '\uD83D\uDCAA', def: 'Trusting in your own ability' }
+          { _k: 'sel.emotions.fam_happy_middle_content', word: 'content', emoji: '\uD83D\uDE0C', def: 'Satisfied and at peace with how things are' },
+          { _k: 'sel.emotions.fam_happy_middle_enthusiastic', word: 'enthusiastic', emoji: '\uD83E\uDD29', def: 'Eager and full of energy about something' },
+          { _k: 'sel.emotions.fam_happy_middle_accomplished', word: 'accomplished', emoji: '\uD83C\uDFC6', def: 'Proud of achieving a goal' },
+          { _k: 'sel.emotions.fam_happy_middle_grateful', word: 'grateful', emoji: '\uD83D\uDE4F', def: 'Deeply thankful for people or experiences' },
+          { _k: 'sel.emotions.fam_happy_middle_amused', word: 'amused', emoji: '\uD83D\uDE04', def: 'Finding something entertaining or funny' },
+          { _k: 'sel.emotions.fam_happy_middle_inspired', word: 'inspired', emoji: '\u2728', def: 'Motivated by an idea or person' },
+          { _k: 'sel.emotions.fam_happy_middle_relieved', word: 'relieved', emoji: '\uD83D\uDE2E\u200D\uD83D\uDCA8', def: 'Stress lifted after something went well' },
+          { _k: 'sel.emotions.fam_happy_middle_confident', word: 'confident', emoji: '\uD83D\uDCAA', def: 'Trusting in your own ability' }
         ],
         high: [
-          { word: 'euphoric', emoji: '\uD83E\uDD29', def: 'Intense happiness or elation' },
-          { word: 'fulfilled', emoji: '\uD83D\uDE0C', def: 'Deep satisfaction from meaningful engagement' },
-          { word: 'empowered', emoji: '\uD83D\uDCAA', def: 'Feeling capable and in control of your life' },
-          { word: 'serene', emoji: '\uD83C\uDF3F', def: 'Profound calm and inner peace' },
-          { word: 'awestruck', emoji: '\uD83E\uDD2F', def: 'Overwhelmed by wonder or beauty' },
-          { word: 'nostalgic', emoji: '\uD83D\uDE0A', def: 'Warm, bittersweet longing for the past' },
-          { word: 'validated', emoji: '\u2705', def: 'Feeling acknowledged and affirmed by others' },
-          { word: 'liberated', emoji: '\uD83D\uDD4A\uFE0F', def: 'Freed from a burden or constraint' }
+          { _k: 'sel.emotions.fam_happy_high_euphoric', word: 'euphoric', emoji: '\uD83E\uDD29', def: 'Intense happiness or elation' },
+          { _k: 'sel.emotions.fam_happy_high_fulfilled', word: 'fulfilled', emoji: '\uD83D\uDE0C', def: 'Deep satisfaction from meaningful engagement' },
+          { _k: 'sel.emotions.fam_happy_high_empowered', word: 'empowered', emoji: '\uD83D\uDCAA', def: 'Feeling capable and in control of your life' },
+          { _k: 'sel.emotions.fam_happy_high_serene', word: 'serene', emoji: '\uD83C\uDF3F', def: 'Profound calm and inner peace' },
+          { _k: 'sel.emotions.fam_happy_high_awestruck', word: 'awestruck', emoji: '\uD83E\uDD2F', def: 'Overwhelmed by wonder or beauty' },
+          { _k: 'sel.emotions.fam_happy_high_nostalgic', word: 'nostalgic', emoji: '\uD83D\uDE0A', def: 'Warm, bittersweet longing for the past' },
+          { _k: 'sel.emotions.fam_happy_high_validated', word: 'validated', emoji: '\u2705', def: 'Feeling acknowledged and affirmed by others' },
+          { _k: 'sel.emotions.fam_happy_high_liberated', word: 'liberated', emoji: '\uD83D\uDD4A\uFE0F', def: 'Freed from a burden or constraint' }
         ]
       }
     },
-    {
+    { _k: 'sel.emotions.fam_sad',
       id: 'sad', label: 'Sad', emoji: '\uD83D\uDE22', color: '#3b82f6', bgLight: '#dbeafe',
       desc: { elementary: 'Feeling down or blue', middle: 'Low, heavy feelings', high: 'States of loss, grief, or emotional pain' },
       feelings: {
         elementary: [
-          { word: 'sad', emoji: '\uD83D\uDE22', def: 'Feeling unhappy or down' },
-          { word: 'lonely', emoji: '\uD83D\uDE14', def: 'Wanting someone to be with' },
-          { word: 'disappointed', emoji: '\uD83D\uDE1E', def: 'Something didn\'t go the way you wanted' },
-          { word: 'left out', emoji: '\uD83D\uDE1F', def: 'Not included when others are having fun' },
-          { word: 'hurt', emoji: '\uD83E\uDD15', def: 'Someone said or did something that made you feel bad' },
-          { word: 'homesick', emoji: '\uD83C\uDFE0', def: 'Missing home or family' },
-          { word: 'bored', emoji: '\uD83D\uDE11', def: 'Nothing feels interesting right now' },
-          { word: 'guilty', emoji: '\uD83D\uDE16', def: 'Bad feeling because you did something wrong' }
+          { _k: 'sel.emotions.fam_sad_elementary_sad', word: 'sad', emoji: '\uD83D\uDE22', def: 'Feeling unhappy or down' },
+          { _k: 'sel.emotions.fam_sad_elementary_lonely', word: 'lonely', emoji: '\uD83D\uDE14', def: 'Wanting someone to be with' },
+          { _k: 'sel.emotions.fam_sad_elementary_disappointed', word: 'disappointed', emoji: '\uD83D\uDE1E', def: 'Something didn\'t go the way you wanted' },
+          { _k: 'sel.emotions.fam_sad_elementary_left out', word: 'left out', emoji: '\uD83D\uDE1F', def: 'Not included when others are having fun' },
+          { _k: 'sel.emotions.fam_sad_elementary_hurt', word: 'hurt', emoji: '\uD83E\uDD15', def: 'Someone said or did something that made you feel bad' },
+          { _k: 'sel.emotions.fam_sad_elementary_homesick', word: 'homesick', emoji: '\uD83C\uDFE0', def: 'Missing home or family' },
+          { _k: 'sel.emotions.fam_sad_elementary_bored', word: 'bored', emoji: '\uD83D\uDE11', def: 'Nothing feels interesting right now' },
+          { _k: 'sel.emotions.fam_sad_elementary_guilty', word: 'guilty', emoji: '\uD83D\uDE16', def: 'Bad feeling because you did something wrong' }
         ],
         middle: [
-          { word: 'melancholy', emoji: '\uD83D\uDE14', def: 'A deep, lingering sadness without a clear cause' },
-          { word: 'rejected', emoji: '\uD83D\uDE1E', def: 'Feeling unwanted or turned away by someone' },
-          { word: 'isolated', emoji: '\uD83E\uDDD1', def: 'Cut off from others, even in a crowd' },
-          { word: 'grief', emoji: '\uD83D\uDE22', def: 'Deep sadness from losing someone or something important' },
-          { word: 'regretful', emoji: '\uD83D\uDE16', def: 'Wishing you had done something differently' },
-          { word: 'empty', emoji: '\uD83D\uDD73\uFE0F', def: 'Feeling hollow or numb inside' },
-          { word: 'nostalgic', emoji: '\uD83D\uDE0A', def: 'Missing how things used to be' },
-          { word: 'helpless', emoji: '\uD83D\uDE1F', def: 'Feeling like nothing you do will change things' }
+          { _k: 'sel.emotions.fam_sad_middle_melancholy', word: 'melancholy', emoji: '\uD83D\uDE14', def: 'A deep, lingering sadness without a clear cause' },
+          { _k: 'sel.emotions.fam_sad_middle_rejected', word: 'rejected', emoji: '\uD83D\uDE1E', def: 'Feeling unwanted or turned away by someone' },
+          { _k: 'sel.emotions.fam_sad_middle_isolated', word: 'isolated', emoji: '\uD83E\uDDD1', def: 'Cut off from others, even in a crowd' },
+          { _k: 'sel.emotions.fam_sad_middle_grief', word: 'grief', emoji: '\uD83D\uDE22', def: 'Deep sadness from losing someone or something important' },
+          { _k: 'sel.emotions.fam_sad_middle_regretful', word: 'regretful', emoji: '\uD83D\uDE16', def: 'Wishing you had done something differently' },
+          { _k: 'sel.emotions.fam_sad_middle_empty', word: 'empty', emoji: '\uD83D\uDD73\uFE0F', def: 'Feeling hollow or numb inside' },
+          { _k: 'sel.emotions.fam_sad_middle_nostalgic', word: 'nostalgic', emoji: '\uD83D\uDE0A', def: 'Missing how things used to be' },
+          { _k: 'sel.emotions.fam_sad_middle_helpless', word: 'helpless', emoji: '\uD83D\uDE1F', def: 'Feeling like nothing you do will change things' }
         ],
         high: [
-          { word: 'despondent', emoji: '\uD83D\uDE1E', def: 'Loss of hope and motivation to continue' },
-          { word: 'bereft', emoji: '\uD83D\uDE22', def: 'Deprived of something deeply valued' },
-          { word: 'disillusioned', emoji: '\uD83D\uDE14', def: 'Discovering reality doesn\'t match expectations' },
-          { word: 'alienated', emoji: '\uD83E\uDDD1', def: 'Fundamentally disconnected from others or systems' },
-          { word: 'remorseful', emoji: '\uD83D\uDE16', def: 'Profound regret accompanied by a desire to make amends' },
-          { word: 'desolate', emoji: '\uD83C\uDF2B\uFE0F', def: 'Bleak emptiness, stripped of comfort' },
-          { word: 'wistful', emoji: '\uD83D\uDE0A', def: 'Gentle sadness about something gone but cherished' },
-          { word: 'resigned', emoji: '\uD83D\uDE10', def: 'Accepting an undesirable outcome without resistance' }
+          { _k: 'sel.emotions.fam_sad_high_despondent', word: 'despondent', emoji: '\uD83D\uDE1E', def: 'Loss of hope and motivation to continue' },
+          { _k: 'sel.emotions.fam_sad_high_bereft', word: 'bereft', emoji: '\uD83D\uDE22', def: 'Deprived of something deeply valued' },
+          { _k: 'sel.emotions.fam_sad_high_disillusioned', word: 'disillusioned', emoji: '\uD83D\uDE14', def: 'Discovering reality doesn\'t match expectations' },
+          { _k: 'sel.emotions.fam_sad_high_alienated', word: 'alienated', emoji: '\uD83E\uDDD1', def: 'Fundamentally disconnected from others or systems' },
+          { _k: 'sel.emotions.fam_sad_high_remorseful', word: 'remorseful', emoji: '\uD83D\uDE16', def: 'Profound regret accompanied by a desire to make amends' },
+          { _k: 'sel.emotions.fam_sad_high_desolate', word: 'desolate', emoji: '\uD83C\uDF2B\uFE0F', def: 'Bleak emptiness, stripped of comfort' },
+          { _k: 'sel.emotions.fam_sad_high_wistful', word: 'wistful', emoji: '\uD83D\uDE0A', def: 'Gentle sadness about something gone but cherished' },
+          { _k: 'sel.emotions.fam_sad_high_resigned', word: 'resigned', emoji: '\uD83D\uDE10', def: 'Accepting an undesirable outcome without resistance' }
         ]
       }
     },
-    {
+    { _k: 'sel.emotions.fam_angry',
       id: 'angry', label: 'Angry', emoji: '\uD83D\uDE21', color: '#ef4444', bgLight: '#fee2e2',
       desc: { elementary: 'Feeling mad or upset', middle: 'Frustrated, irritated, or furious', high: 'Responses to perceived injustice, threat, or boundary violation' },
       feelings: {
         elementary: [
-          { word: 'angry', emoji: '\uD83D\uDE21', def: 'Feeling really mad inside' },
-          { word: 'frustrated', emoji: '\uD83D\uDE24', def: 'Trying hard but it isn\'t working' },
-          { word: 'annoyed', emoji: '\uD83D\uDE12', def: 'Something small is bugging you' },
-          { word: 'jealous', emoji: '\uD83D\uDE12', def: 'Wanting what someone else has' },
-          { word: 'grumpy', emoji: '\uD83D\uDE20', def: 'In a bad mood about everything' },
-          { word: 'impatient', emoji: '\u23F3', def: 'Can\'t wait and it\'s making you mad' },
-          { word: 'furious', emoji: '\uD83E\uDD2C', def: 'Super duper mad — the most angry' },
-          { word: 'offended', emoji: '\uD83D\uDE20', def: 'Someone said something mean or unfair' }
+          { _k: 'sel.emotions.fam_angry_elementary_angry', word: 'angry', emoji: '\uD83D\uDE21', def: 'Feeling really mad inside' },
+          { _k: 'sel.emotions.fam_angry_elementary_frustrated', word: 'frustrated', emoji: '\uD83D\uDE24', def: 'Trying hard but it isn\'t working' },
+          { _k: 'sel.emotions.fam_angry_elementary_annoyed', word: 'annoyed', emoji: '\uD83D\uDE12', def: 'Something small is bugging you' },
+          { _k: 'sel.emotions.fam_angry_elementary_jealous', word: 'jealous', emoji: '\uD83D\uDE12', def: 'Wanting what someone else has' },
+          { _k: 'sel.emotions.fam_angry_elementary_grumpy', word: 'grumpy', emoji: '\uD83D\uDE20', def: 'In a bad mood about everything' },
+          { _k: 'sel.emotions.fam_angry_elementary_impatient', word: 'impatient', emoji: '\u23F3', def: 'Can\'t wait and it\'s making you mad' },
+          { _k: 'sel.emotions.fam_angry_elementary_furious', word: 'furious', emoji: '\uD83E\uDD2C', def: 'Super duper mad — the most angry' },
+          { _k: 'sel.emotions.fam_angry_elementary_offended', word: 'offended', emoji: '\uD83D\uDE20', def: 'Someone said something mean or unfair' }
         ],
         middle: [
-          { word: 'resentful', emoji: '\uD83D\uDE20', def: 'Lingering anger about being treated unfairly' },
-          { word: 'bitter', emoji: '\uD83D\uDE12', def: 'Hardened anger from repeated disappointment' },
-          { word: 'exasperated', emoji: '\uD83D\uDE24', def: 'Completely fed up after many frustrations' },
-          { word: 'envious', emoji: '\uD83D\uDE12', def: 'Uncomfortable wanting what others have' },
-          { word: 'hostile', emoji: '\uD83D\uDE21', def: 'Ready to fight or push back aggressively' },
-          { word: 'indignant', emoji: '\uD83D\uDE20', def: 'Angry because something is genuinely unfair' },
-          { word: 'irritated', emoji: '\uD83D\uDE12', def: 'Low-level anger from small annoyances building up' },
-          { word: 'betrayed', emoji: '\uD83D\uDC94', def: 'Hurt-anger from someone you trusted' }
+          { _k: 'sel.emotions.fam_angry_middle_resentful', word: 'resentful', emoji: '\uD83D\uDE20', def: 'Lingering anger about being treated unfairly' },
+          { _k: 'sel.emotions.fam_angry_middle_bitter', word: 'bitter', emoji: '\uD83D\uDE12', def: 'Hardened anger from repeated disappointment' },
+          { _k: 'sel.emotions.fam_angry_middle_exasperated', word: 'exasperated', emoji: '\uD83D\uDE24', def: 'Completely fed up after many frustrations' },
+          { _k: 'sel.emotions.fam_angry_middle_envious', word: 'envious', emoji: '\uD83D\uDE12', def: 'Uncomfortable wanting what others have' },
+          { _k: 'sel.emotions.fam_angry_middle_hostile', word: 'hostile', emoji: '\uD83D\uDE21', def: 'Ready to fight or push back aggressively' },
+          { _k: 'sel.emotions.fam_angry_middle_indignant', word: 'indignant', emoji: '\uD83D\uDE20', def: 'Angry because something is genuinely unfair' },
+          { _k: 'sel.emotions.fam_angry_middle_irritated', word: 'irritated', emoji: '\uD83D\uDE12', def: 'Low-level anger from small annoyances building up' },
+          { _k: 'sel.emotions.fam_angry_middle_betrayed', word: 'betrayed', emoji: '\uD83D\uDC94', def: 'Hurt-anger from someone you trusted' }
         ],
         high: [
-          { word: 'contemptuous', emoji: '\uD83D\uDE12', def: 'Disgust mixed with anger — feeling superior to the target' },
-          { word: 'indignant', emoji: '\uD83D\uDE20', def: 'Righteous anger in response to injustice' },
-          { word: 'vindictive', emoji: '\uD83D\uDE21', def: 'Desire for revenge or to inflict consequences' },
-          { word: 'embittered', emoji: '\uD83D\uDE24', def: 'Chronic resentment that has become part of one\'s worldview' },
-          { word: 'incensed', emoji: '\uD83E\uDD2C', def: 'White-hot fury that demands immediate expression' },
-          { word: 'exasperated', emoji: '\uD83D\uDE24', def: 'Exhausted frustration at repeated failures or obstacles' },
-          { word: 'disrespected', emoji: '\uD83D\uDE20', def: 'Anger from perceived dismissal of your worth or status' },
-          { word: 'provoked', emoji: '\uD83D\uDE21', def: 'Anger intentionally triggered by another\'s actions' }
+          { _k: 'sel.emotions.fam_angry_high_contemptuous', word: 'contemptuous', emoji: '\uD83D\uDE12', def: 'Disgust mixed with anger — feeling superior to the target' },
+          { _k: 'sel.emotions.fam_angry_high_indignant', word: 'indignant', emoji: '\uD83D\uDE20', def: 'Righteous anger in response to injustice' },
+          { _k: 'sel.emotions.fam_angry_high_vindictive', word: 'vindictive', emoji: '\uD83D\uDE21', def: 'Desire for revenge or to inflict consequences' },
+          { _k: 'sel.emotions.fam_angry_high_embittered', word: 'embittered', emoji: '\uD83D\uDE24', def: 'Chronic resentment that has become part of one\'s worldview' },
+          { _k: 'sel.emotions.fam_angry_high_incensed', word: 'incensed', emoji: '\uD83E\uDD2C', def: 'White-hot fury that demands immediate expression' },
+          { _k: 'sel.emotions.fam_angry_high_exasperated', word: 'exasperated', emoji: '\uD83D\uDE24', def: 'Exhausted frustration at repeated failures or obstacles' },
+          { _k: 'sel.emotions.fam_angry_high_disrespected', word: 'disrespected', emoji: '\uD83D\uDE20', def: 'Anger from perceived dismissal of your worth or status' },
+          { _k: 'sel.emotions.fam_angry_high_provoked', word: 'provoked', emoji: '\uD83D\uDE21', def: 'Anger intentionally triggered by another\'s actions' }
         ]
       }
     },
-    {
+    { _k: 'sel.emotions.fam_scared',
       id: 'scared', label: 'Scared', emoji: '\uD83D\uDE28', color: '#a855f7', bgLight: '#f3e8ff',
       desc: { elementary: 'Feeling afraid or worried', middle: 'Fear, anxiety, or dread', high: 'Threat-response emotions — from unease to terror' },
       feelings: {
         elementary: [
-          { word: 'scared', emoji: '\uD83D\uDE28', def: 'Afraid something bad might happen' },
-          { word: 'worried', emoji: '\uD83D\uDE1F', def: 'Thinking about bad things that could happen' },
-          { word: 'nervous', emoji: '\uD83D\uDE2C', def: 'Butterflies in your stomach before something new' },
-          { word: 'shy', emoji: '\uD83D\uDE33', def: 'Afraid to talk or be around new people' },
-          { word: 'startled', emoji: '\uD83D\uDE31', def: 'Surprised and scared at the same time' },
-          { word: 'unsafe', emoji: '\u26A0\uFE0F', def: 'Feeling like you\'re in danger' },
-          { word: 'panicked', emoji: '\uD83D\uDE30', def: 'So scared you can\'t think straight' },
-          { word: 'confused', emoji: '\uD83D\uDE15', def: 'Not understanding and it feels scary' }
+          { _k: 'sel.emotions.fam_scared_elementary_scared', word: 'scared', emoji: '\uD83D\uDE28', def: 'Afraid something bad might happen' },
+          { _k: 'sel.emotions.fam_scared_elementary_worried', word: 'worried', emoji: '\uD83D\uDE1F', def: 'Thinking about bad things that could happen' },
+          { _k: 'sel.emotions.fam_scared_elementary_nervous', word: 'nervous', emoji: '\uD83D\uDE2C', def: 'Butterflies in your stomach before something new' },
+          { _k: 'sel.emotions.fam_scared_elementary_shy', word: 'shy', emoji: '\uD83D\uDE33', def: 'Afraid to talk or be around new people' },
+          { _k: 'sel.emotions.fam_scared_elementary_startled', word: 'startled', emoji: '\uD83D\uDE31', def: 'Surprised and scared at the same time' },
+          { _k: 'sel.emotions.fam_scared_elementary_unsafe', word: 'unsafe', emoji: '\u26A0\uFE0F', def: 'Feeling like you\'re in danger' },
+          { _k: 'sel.emotions.fam_scared_elementary_panicked', word: 'panicked', emoji: '\uD83D\uDE30', def: 'So scared you can\'t think straight' },
+          { _k: 'sel.emotions.fam_scared_elementary_confused', word: 'confused', emoji: '\uD83D\uDE15', def: 'Not understanding and it feels scary' }
         ],
         middle: [
-          { word: 'anxious', emoji: '\uD83D\uDE1F', def: 'Ongoing worry that\'s hard to control' },
-          { word: 'dread', emoji: '\uD83D\uDE28', def: 'Heavy fear about something coming' },
-          { word: 'insecure', emoji: '\uD83D\uDE2C', def: 'Doubting yourself and your place' },
-          { word: 'overwhelmed', emoji: '\uD83E\uDD2F', def: 'Too much to handle — drowning in demands' },
-          { word: 'vulnerable', emoji: '\uD83D\uDC94', def: 'Exposed and at risk of being hurt' },
-          { word: 'paranoid', emoji: '\uD83D\uDC40', def: 'Suspecting others are working against you' },
-          { word: 'apprehensive', emoji: '\uD83D\uDE30', def: 'Uneasy anticipation of something difficult' },
-          { word: 'intimidated', emoji: '\uD83D\uDE33', def: 'Feeling small or powerless in someone\'s presence' }
+          { _k: 'sel.emotions.fam_scared_middle_anxious', word: 'anxious', emoji: '\uD83D\uDE1F', def: 'Ongoing worry that\'s hard to control' },
+          { _k: 'sel.emotions.fam_scared_middle_dread', word: 'dread', emoji: '\uD83D\uDE28', def: 'Heavy fear about something coming' },
+          { _k: 'sel.emotions.fam_scared_middle_insecure', word: 'insecure', emoji: '\uD83D\uDE2C', def: 'Doubting yourself and your place' },
+          { _k: 'sel.emotions.fam_scared_middle_overwhelmed', word: 'overwhelmed', emoji: '\uD83E\uDD2F', def: 'Too much to handle — drowning in demands' },
+          { _k: 'sel.emotions.fam_scared_middle_vulnerable', word: 'vulnerable', emoji: '\uD83D\uDC94', def: 'Exposed and at risk of being hurt' },
+          { _k: 'sel.emotions.fam_scared_middle_paranoid', word: 'paranoid', emoji: '\uD83D\uDC40', def: 'Suspecting others are working against you' },
+          { _k: 'sel.emotions.fam_scared_middle_apprehensive', word: 'apprehensive', emoji: '\uD83D\uDE30', def: 'Uneasy anticipation of something difficult' },
+          { _k: 'sel.emotions.fam_scared_middle_intimidated', word: 'intimidated', emoji: '\uD83D\uDE33', def: 'Feeling small or powerless in someone\'s presence' }
         ],
         high: [
-          { word: 'existential dread', emoji: '\uD83C\uDF11', def: 'Deep anxiety about meaning, mortality, or identity' },
-          { word: 'hypervigilant', emoji: '\uD83D\uDC40', def: 'Heightened alertness from sustained threat perception' },
-          { word: 'dissociated', emoji: '\uD83C\uDF2B\uFE0F', def: 'Disconnection from reality as a protective response' },
-          { word: 'catastrophizing', emoji: '\uD83D\uDE30', def: 'Mind spiraling to worst-case scenarios' },
-          { word: 'vulnerable', emoji: '\uD83D\uDC94', def: 'Exposed emotional state that requires trust to hold' },
-          { word: 'phobic', emoji: '\uD83D\uDE28', def: 'Intense, irrational fear triggered by specific stimuli' },
-          { word: 'paralyzed', emoji: '\uD83E\uDDCA', def: 'Freeze response — too afraid to act or decide' },
-          { word: 'anticipatory anxiety', emoji: '\uD83D\uDE1F', def: 'Worrying about a future event that may or may not occur' }
+          { _k: 'sel.emotions.fam_scared_high_existential dread', word: 'existential dread', emoji: '\uD83C\uDF11', def: 'Deep anxiety about meaning, mortality, or identity' },
+          { _k: 'sel.emotions.fam_scared_high_hypervigilant', word: 'hypervigilant', emoji: '\uD83D\uDC40', def: 'Heightened alertness from sustained threat perception' },
+          { _k: 'sel.emotions.fam_scared_high_dissociated', word: 'dissociated', emoji: '\uD83C\uDF2B\uFE0F', def: 'Disconnection from reality as a protective response' },
+          { _k: 'sel.emotions.fam_scared_high_catastrophizing', word: 'catastrophizing', emoji: '\uD83D\uDE30', def: 'Mind spiraling to worst-case scenarios' },
+          { _k: 'sel.emotions.fam_scared_high_vulnerable', word: 'vulnerable', emoji: '\uD83D\uDC94', def: 'Exposed emotional state that requires trust to hold' },
+          { _k: 'sel.emotions.fam_scared_high_phobic', word: 'phobic', emoji: '\uD83D\uDE28', def: 'Intense, irrational fear triggered by specific stimuli' },
+          { _k: 'sel.emotions.fam_scared_high_paralyzed', word: 'paralyzed', emoji: '\uD83E\uDDCA', def: 'Freeze response — too afraid to act or decide' },
+          { _k: 'sel.emotions.fam_scared_high_anticipatory anxiety', word: 'anticipatory anxiety', emoji: '\uD83D\uDE1F', def: 'Worrying about a future event that may or may not occur' }
         ]
       }
     },
-    {
+    { _k: 'sel.emotions.fam_surprised',
       id: 'surprised', label: 'Surprised', emoji: '\uD83D\uDE32', color: '#f59e0b', bgLight: '#fef3c7',
       desc: { elementary: 'Something you didn\'t expect!', middle: 'Unexpected, shocking, or startling', high: 'Reactions to events that violate expectation' },
       feelings: {
         elementary: [
-          { word: 'surprised', emoji: '\uD83D\uDE32', def: 'Didn\'t expect that to happen!' },
-          { word: 'amazed', emoji: '\uD83E\uDD29', def: 'Something is SO cool or SO big!' },
-          { word: 'shocked', emoji: '\uD83D\uDE31', def: 'Something really unexpected happened' },
-          { word: 'curious', emoji: '\uD83E\uDD14', def: 'Wanting to know more about something' },
-          { word: 'confused', emoji: '\uD83D\uDE15', def: 'Not sure what just happened' },
-          { word: 'wonder', emoji: '\u2728', def: 'Amazed by something beautiful or cool' }
+          { _k: 'sel.emotions.fam_surprised_elementary_surprised', word: 'surprised', emoji: '\uD83D\uDE32', def: 'Didn\'t expect that to happen!' },
+          { _k: 'sel.emotions.fam_surprised_elementary_amazed', word: 'amazed', emoji: '\uD83E\uDD29', def: 'Something is SO cool or SO big!' },
+          { _k: 'sel.emotions.fam_surprised_elementary_shocked', word: 'shocked', emoji: '\uD83D\uDE31', def: 'Something really unexpected happened' },
+          { _k: 'sel.emotions.fam_surprised_elementary_curious', word: 'curious', emoji: '\uD83E\uDD14', def: 'Wanting to know more about something' },
+          { _k: 'sel.emotions.fam_surprised_elementary_confused', word: 'confused', emoji: '\uD83D\uDE15', def: 'Not sure what just happened' },
+          { _k: 'sel.emotions.fam_surprised_elementary_wonder', word: 'wonder', emoji: '\u2728', def: 'Amazed by something beautiful or cool' }
         ],
         middle: [
-          { word: 'astonished', emoji: '\uD83D\uDE32', def: 'Completely taken aback by something' },
-          { word: 'bewildered', emoji: '\uD83D\uDE15', def: 'Confused and disoriented by the unexpected' },
-          { word: 'intrigued', emoji: '\uD83E\uDD14', def: 'Deeply curious — wanting to investigate' },
-          { word: 'awestruck', emoji: '\uD83E\uDD29', def: 'Overwhelmed by something amazing' },
-          { word: 'caught off guard', emoji: '\uD83D\uDE31', def: 'Unprepared for what just happened' },
-          { word: 'perplexed', emoji: '\uD83E\uDD28', def: 'Confused in a way that makes you think hard' }
+          { _k: 'sel.emotions.fam_surprised_middle_astonished', word: 'astonished', emoji: '\uD83D\uDE32', def: 'Completely taken aback by something' },
+          { _k: 'sel.emotions.fam_surprised_middle_bewildered', word: 'bewildered', emoji: '\uD83D\uDE15', def: 'Confused and disoriented by the unexpected' },
+          { _k: 'sel.emotions.fam_surprised_middle_intrigued', word: 'intrigued', emoji: '\uD83E\uDD14', def: 'Deeply curious — wanting to investigate' },
+          { _k: 'sel.emotions.fam_surprised_middle_awestruck', word: 'awestruck', emoji: '\uD83E\uDD29', def: 'Overwhelmed by something amazing' },
+          { _k: 'sel.emotions.fam_surprised_middle_caught off guard', word: 'caught off guard', emoji: '\uD83D\uDE31', def: 'Unprepared for what just happened' },
+          { _k: 'sel.emotions.fam_surprised_middle_perplexed', word: 'perplexed', emoji: '\uD83E\uDD28', def: 'Confused in a way that makes you think hard' }
         ],
         high: [
-          { word: 'flabbergasted', emoji: '\uD83D\uDE32', def: 'So surprised you literally cannot respond' },
-          { word: 'disconcerted', emoji: '\uD83D\uDE15', def: 'Unsettled by something that doesn\'t fit your model of the world' },
-          { word: 'galvanized', emoji: '\u26A1', def: 'Shocked into sudden action or awareness' },
-          { word: 'disillusioned', emoji: '\uD83D\uDE14', def: 'Unpleasantly surprised by reality vs. expectation' },
-          { word: 'epiphanic', emoji: '\uD83D\uDCA1', def: 'A sudden, clarifying realization that reframes everything' },
-          { word: 'stupefied', emoji: '\uD83D\uDE31', def: 'So shocked that cognitive processing temporarily halts' }
+          { _k: 'sel.emotions.fam_surprised_high_flabbergasted', word: 'flabbergasted', emoji: '\uD83D\uDE32', def: 'So surprised you literally cannot respond' },
+          { _k: 'sel.emotions.fam_surprised_high_disconcerted', word: 'disconcerted', emoji: '\uD83D\uDE15', def: 'Unsettled by something that doesn\'t fit your model of the world' },
+          { _k: 'sel.emotions.fam_surprised_high_galvanized', word: 'galvanized', emoji: '\u26A1', def: 'Shocked into sudden action or awareness' },
+          { _k: 'sel.emotions.fam_surprised_high_disillusioned', word: 'disillusioned', emoji: '\uD83D\uDE14', def: 'Unpleasantly surprised by reality vs. expectation' },
+          { _k: 'sel.emotions.fam_surprised_high_epiphanic', word: 'epiphanic', emoji: '\uD83D\uDCA1', def: 'A sudden, clarifying realization that reframes everything' },
+          { _k: 'sel.emotions.fam_surprised_high_stupefied', word: 'stupefied', emoji: '\uD83D\uDE31', def: 'So shocked that cognitive processing temporarily halts' }
         ]
       }
     },
-    {
+    { _k: 'sel.emotions.fam_disgusted',
       id: 'disgusted', label: 'Disgusted', emoji: '\uD83E\uDD22', color: '#84cc16', bgLight: '#ecfccb',
       desc: { elementary: 'Yucky or icky feelings', middle: 'Revulsion, disapproval, or being grossed out', high: 'Rejection response — physical or moral revulsion' },
       feelings: {
         elementary: [
-          { word: 'disgusted', emoji: '\uD83E\uDD22', def: 'Something is gross or yucky' },
-          { word: 'grossed out', emoji: '\uD83E\uDD2E', def: 'Eww! That\'s really icky!' },
-          { word: 'uncomfortable', emoji: '\uD83D\uDE16', def: 'Something doesn\'t feel right' },
-          { word: 'embarrassed', emoji: '\uD83D\uDE33', def: 'Feeling like everyone is watching you mess up' },
-          { word: 'ashamed', emoji: '\uD83D\uDE14', def: 'Feeling really bad about something you did' }
+          { _k: 'sel.emotions.fam_disgusted_elementary_disgusted', word: 'disgusted', emoji: '\uD83E\uDD22', def: 'Something is gross or yucky' },
+          { _k: 'sel.emotions.fam_disgusted_elementary_grossed out', word: 'grossed out', emoji: '\uD83E\uDD2E', def: 'Eww! That\'s really icky!' },
+          { _k: 'sel.emotions.fam_disgusted_elementary_uncomfortable', word: 'uncomfortable', emoji: '\uD83D\uDE16', def: 'Something doesn\'t feel right' },
+          { _k: 'sel.emotions.fam_disgusted_elementary_embarrassed', word: 'embarrassed', emoji: '\uD83D\uDE33', def: 'Feeling like everyone is watching you mess up' },
+          { _k: 'sel.emotions.fam_disgusted_elementary_ashamed', word: 'ashamed', emoji: '\uD83D\uDE14', def: 'Feeling really bad about something you did' }
         ],
         middle: [
-          { word: 'repulsed', emoji: '\uD83E\uDD22', def: 'Strong physical or emotional rejection' },
-          { word: 'contemptuous', emoji: '\uD83D\uDE12', def: 'Looking down on someone\'s behavior' },
-          { word: 'revolted', emoji: '\uD83E\uDD2E', def: 'Deeply disturbed by something morally wrong' },
-          { word: 'humiliated', emoji: '\uD83D\uDE33', def: 'Publicly embarrassed to a painful degree' },
-          { word: 'mortified', emoji: '\uD83D\uDE14', def: 'Shame so intense you want to disappear' },
-          { word: 'appalled', emoji: '\uD83D\uDE32', def: 'Shocked and disgusted by something unacceptable' }
+          { _k: 'sel.emotions.fam_disgusted_middle_repulsed', word: 'repulsed', emoji: '\uD83E\uDD22', def: 'Strong physical or emotional rejection' },
+          { _k: 'sel.emotions.fam_disgusted_middle_contemptuous', word: 'contemptuous', emoji: '\uD83D\uDE12', def: 'Looking down on someone\'s behavior' },
+          { _k: 'sel.emotions.fam_disgusted_middle_revolted', word: 'revolted', emoji: '\uD83E\uDD2E', def: 'Deeply disturbed by something morally wrong' },
+          { _k: 'sel.emotions.fam_disgusted_middle_humiliated', word: 'humiliated', emoji: '\uD83D\uDE33', def: 'Publicly embarrassed to a painful degree' },
+          { _k: 'sel.emotions.fam_disgusted_middle_mortified', word: 'mortified', emoji: '\uD83D\uDE14', def: 'Shame so intense you want to disappear' },
+          { _k: 'sel.emotions.fam_disgusted_middle_appalled', word: 'appalled', emoji: '\uD83D\uDE32', def: 'Shocked and disgusted by something unacceptable' }
         ],
         high: [
-          { word: 'moral revulsion', emoji: '\uD83E\uDD22', def: 'Disgust at ethical violations — injustice, cruelty, hypocrisy' },
-          { word: 'visceral repulsion', emoji: '\uD83E\uDD2E', def: 'Bodily disgust that bypasses conscious thought' },
-          { word: 'self-loathing', emoji: '\uD83D\uDE14', def: 'Disgust directed inward — harsh self-rejection' },
-          { word: 'indignation', emoji: '\uD83D\uDE20', def: 'Disgust + anger at unfairness or wrongdoing' },
-          { word: 'disenfranchised', emoji: '\uD83D\uDE10', def: 'Repelled by systems that exclude or dehumanize' }
+          { _k: 'sel.emotions.fam_disgusted_high_moral revulsion', word: 'moral revulsion', emoji: '\uD83E\uDD22', def: 'Disgust at ethical violations — injustice, cruelty, hypocrisy' },
+          { _k: 'sel.emotions.fam_disgusted_high_visceral repulsion', word: 'visceral repulsion', emoji: '\uD83E\uDD2E', def: 'Bodily disgust that bypasses conscious thought' },
+          { _k: 'sel.emotions.fam_disgusted_high_self-loathing', word: 'self-loathing', emoji: '\uD83D\uDE14', def: 'Disgust directed inward — harsh self-rejection' },
+          { _k: 'sel.emotions.fam_disgusted_high_indignation', word: 'indignation', emoji: '\uD83D\uDE20', def: 'Disgust + anger at unfairness or wrongdoing' },
+          { _k: 'sel.emotions.fam_disgusted_high_disenfranchised', word: 'disenfranchised', emoji: '\uD83D\uDE10', def: 'Repelled by systems that exclude or dehumanize' }
         ]
       }
     }
@@ -17988,6 +17988,25 @@ var EMOTION_JOURNAL_TEMPLATES = [
       // answer key (opt === challenge.emotion) and the button text. The ids
       // must stay English for the comparison, so only the DISPLAY is
       // translated, here.
+      // Feeling words are identities: persisted (checkinFeeling,
+      // expandedFeeling, learnedWords) and the quiz answer key. They stay
+      // English; only the display is translated.
+      var _feelWord = function (id) {
+        if (!id) return id;
+        return __alloT('sel.emotions.feelword_' + id, id);
+      };
+      // EMOTION_FAMILIES rows also arrive from toolData (a journal entry
+      // stores one), so both helpers fall back when _k is absent.
+      var _famLabel = function (fam) {
+        if (!fam) return '';
+        return fam._k ? __alloT(fam._k + '_label', fam.label) : (fam.label || '');
+      };
+      var _famDesc = function (fam, b) {
+        if (!fam || !fam.desc || typeof fam.desc !== 'object') return '';
+        var text = fam.desc[b];
+        if (typeof text !== 'string') return '';
+        return fam._k ? __alloT(fam._k + '_desc_' + b, text) : text;
+      };
       var _emoWord = function (id) {
         if (!id) return id;
         var label = String(id).charAt(0).toUpperCase() + String(id).slice(1);
@@ -18122,6 +18141,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
       // Quiz state (Vocab Quiz in Wheel tab)
       var wheelMode        = d.wheelMode || 'explore'; // 'explore' or 'quiz'
       var quizDef          = d.quizDef || null;     // current definition shown
+      var quizDefKey       = d.quizDefKey || null;  // its key, so a SAVED quiz translates
       var quizWord         = d.quizWord || null;     // correct answer word
       var quizOptions      = d.quizOptions || [];    // 4 word choices
       var quizAnswer       = d.quizAnswer || null;
@@ -18220,7 +18240,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
         var allFeelings = [];
         EMOTION_FAMILIES.forEach(function(fam) {
           var feelings = fam.feelings[band] || fam.feelings.elementary;
-          feelings.forEach(function(f) { allFeelings.push({ word: f.word, def: f.def, family: fam.id }); });
+          feelings.forEach(function(f) { allFeelings.push({ word: f.word, def: f.def, defKey: f._k, family: fam.id }); });
         });
         // Pick a random target
         var targetIdx = Math.floor(Math.random() * allFeelings.length);
@@ -18241,7 +18261,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
           var qj = Math.floor(Math.random() * (qi + 1));
           var qtmp = opts[qi]; opts[qi] = opts[qj]; opts[qj] = qtmp;
         }
-        upd({ quizDef: target.def, quizWord: target.word, quizOptions: opts, quizAnswer: null, quizRevealed: false });
+        upd({ quizDef: target.def, quizDefKey: target.defKey, quizWord: target.word, quizOptions: opts, quizAnswer: null, quizRevealed: false });
       }
 
       // ── Badge helper ──
@@ -18423,7 +18443,11 @@ var EMOTION_JOURNAL_TEMPLATES = [
         );
       }
 
-      var selectedFamilyLabel = selectedFamily ? ((EMOTION_FAMILIES.find(function(f) { return f.id === selectedFamily; }) || {}).label || 'selected') : 'none yet';
+      var _selFam = selectedFamily ? EMOTION_FAMILIES.find(function(f) { return f.id === selectedFamily; }) : null;
+      var selectedFamilyLabel = _selFam
+        ? __alloT(_selFam._k + '_label', _selFam.label)
+        : (selectedFamily ? __alloT('sel.emotions.fam_selected', 'selected')
+                          : __alloT('sel.emotions.fam_none_yet', 'none yet'));
       var emotionsLaunchPanel = h('section', {
         role: 'region',
         'aria-label': 'Emotions explorer launch panel',
@@ -18568,7 +18592,8 @@ var EMOTION_JOURNAL_TEMPLATES = [
             // Definition card
             quizDef && h('div', { style: { padding: 24, borderRadius: 14, background: P.bg, border: '1px solid #8b5cf644', marginBottom: 20, textAlign: 'center' } },
               h('p', { style: { fontSize: 10, color: ST('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Definition'),
-              h('p', { style: { fontSize: 16, color: P.text, lineHeight: 1.6, fontStyle: 'italic' } }, '"' + quizDef + '"')
+              h('p', { style: { fontSize: 16, color: P.text, lineHeight: 1.6, fontStyle: 'italic' } },
+              '"' + (typeof quizDefKey === 'string' ? __alloT(quizDefKey + '_def', quizDef) : quizDef) + '"')
             ),
 
             // Answer options
@@ -18596,7 +18621,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                   },
                   onMouseEnter: function(e) { e.currentTarget.style.borderColor = '#8b5cf6'; },
                   onMouseLeave: function(e) { e.currentTarget.style.borderColor = P.border; }
-                }, opt);
+                }, _feelWord(opt));
               })
             ),
 
@@ -18615,7 +18640,8 @@ var EMOTION_JOURNAL_TEMPLATES = [
                     : (band === 'elementary' ? 'Not quite!' : 'Not this time')
                 ),
                 quizAnswer !== quizWord && h('p', { style: { fontSize: 13, color: P.textMuted } },
-                  'The answer was: ' + quizWord
+                  __alloT('sel.emotions.quiz_answer_was', 'The answer was: %s')
+                    .replace('%s', _feelWord(quizWord))
                 )
               ),
               h('button', { 'aria-label': 'Next Question',
@@ -18669,8 +18695,8 @@ var EMOTION_JOURNAL_TEMPLATES = [
                 onMouseLeave: function(e) { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }
               },
                 h('div', { style: { marginBottom: 6, display: 'flex', justifyContent: 'center' } }, _emoGlyph(h, 'families', fam.id, fam.emoji, 36, '')),
-                h('div', { style: { fontWeight: 700, color: INK(fam.color), fontSize: 14, marginBottom: 2 } }, fam.label),
-                h('div', { style: { fontSize: 10, color: P.textMuted, lineHeight: 1.3 } }, fam.desc[band]),
+                h('div', { style: { fontWeight: 700, color: INK(fam.color), fontSize: 14, marginBottom: 2 } }, _famLabel(fam)),
+                h('div', { style: { fontSize: 10, color: P.textMuted, lineHeight: 1.3 } }, _famDesc(fam, band)),
                 explored && h('div', { style: { fontSize: 11, color: P.textMuted, marginTop: 4 } }, '\u2713 explored')
               );
             })
@@ -18690,8 +18716,8 @@ var EMOTION_JOURNAL_TEMPLATES = [
 
               h('div', { style: { textAlign: 'center', marginBottom: 16 } },
                 h('span', { style: { fontSize: 36 } }, fam.emoji),
-                h('h4', { style: { margin: '4px 0', color: INK(fam.color), fontSize: 20 } }, fam.label + ' Family'),
-                h('p', { style: { color: P.textMuted, fontSize: 12 } }, fam.desc[band])
+                h('h4', { style: { margin: '4px 0', color: INK(fam.color), fontSize: 20 } }, _famLabel(fam) + ' Family'),
+                h('p', { style: { color: P.textMuted, fontSize: 12 } }, _famDesc(fam, band))
               ),
 
               // Vocabulary cards
@@ -18729,15 +18755,17 @@ var EMOTION_JOURNAL_TEMPLATES = [
                       _emoGlyph(h, 'feelings', feeling.word, feeling.emoji, 22, ''),
                       h('div', { style: { flex: 1 } },
                         h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                          h('span', { style: { fontWeight: 700, fontSize: 14, color: isExpanded ? fam.color : P.text, textTransform: 'capitalize' } }, feeling.word),
+                          h('span', { style: { fontWeight: 700, fontSize: 14, color: isExpanded ? fam.color : P.text, textTransform: 'capitalize' } }, _feelWord(feeling.word)),
                           isLearned && h('span', { style: { fontSize: 10, color: '#22c55e' } }, '\u2713')
                         )
                       )
                     ),
                     isExpanded && h('div', { style: { padding: '0 14px 14px', borderTop: ('1px solid ' + P.border) } },
-                      h('p', { style: { fontSize: 13, color: P.text3, lineHeight: 1.5, marginTop: 10, marginBottom: 10 } }, feeling.def),
+                      h('p', { style: { fontSize: 13, color: P.text3, lineHeight: 1.5, marginTop: 10, marginBottom: 10 } },
+                        feeling._k ? __alloT(feeling._k + '_def', feeling.def) : feeling.def),
                       band === 'elementary' && callTTS && h('button', { 'aria-label': 'Read Aloud',
-                        onClick: function() { readAloud(feeling.word + '. ' + feeling.def); },
+                        onClick: function() { readAloud(_feelWord(feeling.word) + '. ' +
+                          (feeling._k ? __alloT(feeling._k + '_def', feeling.def) : feeling.def)); },
                         style: { padding: '5px 12px', borderRadius: 6, border: ('1px solid ' + P.border), background: 'transparent', color: P.textMuted, cursor: 'pointer', fontSize: 11, marginRight: 6 }
                       }, '\uD83D\uDD0A Read Aloud'),
                       h('button', { 'aria-label': 'I’m feeling this',
@@ -18820,7 +18848,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                 var isSel = checkinFamily === fam.id;
                 return h('button', { 
                   key: fam.id,
-                  type: 'button', 'aria-pressed': isSel, 'aria-label': fam.label + ' emotion family',
+                  type: 'button', 'aria-pressed': isSel, 'aria-label': _famLabel(fam) + ' emotion family',
                   onClick: function() { upd({ checkinFamily: fam.id, checkinFeeling: null, checkinStrategy: null }); if (soundEnabled) sfxClick(); },
                   style: {
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '12px 14px',
@@ -18829,7 +18857,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                   }
                 },
                   h('span', { style: { fontSize: 24 } }, fam.emoji),
-                  h('span', { style: { fontSize: 10, color: isSel ? fam.color : P.textMuted, fontWeight: isSel ? 700 : 500 } }, fam.label)
+                  h('span', { style: { fontSize: 10, color: isSel ? fam.color : P.textMuted, fontWeight: isSel ? 700 : 500 } }, _famLabel(fam))
                 );
               })
             )
@@ -18842,7 +18870,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
             var feelings = fam.feelings[band] || fam.feelings.elementary;
             return h('div', { style: { marginBottom: 16 } },
               h('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, color: P.text2, marginBottom: 8 } },
-                '2. ' + (band === 'elementary' ? 'Which kind of ' + fam.label.toLowerCase() + '?' : 'Specific feeling')
+                '2. ' + (band === 'elementary' ? 'Which kind of ' + _famLabel(fam).toLowerCase() + '?' : 'Specific feeling')
               ),
               h('div', { role: 'group', 'aria-label': 'Choose specific feeling', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                 feelings.map(function(f) {
@@ -18856,7 +18884,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                       background: isSel ? fam.color + '22' : P.card, color: isSel ? fam.color : P.textMuted,
                       cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4
                     }
-                  }, h('span', null, f.emoji), f.word);
+                  }, h('span', null, f.emoji), _feelWord(f.word));
                 })
               ),
               h('input', {
@@ -19268,7 +19296,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                     }
                   },
                     h('span', { style: { fontSize: 18 } }, fam.emoji),
-                    h('span', { style: { fontSize: 12, color: isSel ? fam.color : P.textMuted, fontWeight: isSel ? 700 : 500 } }, fam.label)
+                    h('span', { style: { fontSize: 12, color: isSel ? fam.color : P.textMuted, fontWeight: isSel ? 700 : 500 } }, _famLabel(fam))
                   );
                 })
               ),
@@ -19364,7 +19392,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                   }
                 },
                   h('span', { style: { fontSize: 18 } }, fam.emoji),
-                  h('span', { style: { fontSize: 12, color: isSel ? fam.color : P.textMuted, fontWeight: isSel ? 700 : 500 } }, fam.label)
+                  h('span', { style: { fontSize: 12, color: isSel ? fam.color : P.textMuted, fontWeight: isSel ? 700 : 500 } }, _famLabel(fam))
                 );
               })
             ),
@@ -19525,7 +19553,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
         }
 
         var familyOptions = EMOTION_FAMILIES.map(function(family) {
-          return { id: family.id, label: family.emoji + ' ' + family.label };
+          return { id: family.id, label: family.emoji + ' ' + _famLabel(family) };
         });
         var intensityOptions = [1, 2, 3, 4, 5].map(function(level) {
           return { id: level, label: level + ' / 5' };
@@ -19652,15 +19680,15 @@ var EMOTION_JOURNAL_TEMPLATES = [
               ),
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 } },
                 EMOTION_FAMILIES.map(function(fam) {
-                  return h('button', { 'aria-label': fam.emoji + ' ' + fam.label,
+                  return h('button', { 'aria-label': fam.emoji + ' ' + _famLabel(fam),
                     key: fam.id,
-                    onClick: function() { upd('journalEmotion', fam.label); if (soundEnabled) sfxClick(); },
+                    onClick: function() { upd('journalEmotion', _famLabel(fam)); if (soundEnabled) sfxClick(); },
                     style: {
-                      padding: '4px 10px', borderRadius: 8, border: journalEmotion === fam.label ? '2px solid ' + fam.color : ('1px solid ' + P.border),
-                      background: journalEmotion === fam.label ? fam.color + '18' : 'transparent',
-                      color: journalEmotion === fam.label ? fam.color : P.textMuted, cursor: 'pointer', fontSize: 11
+                      padding: '4px 10px', borderRadius: 8, border: journalEmotion === _famLabel(fam) ? '2px solid ' + fam.color : ('1px solid ' + P.border),
+                      background: journalEmotion === _famLabel(fam) ? fam.color + '18' : 'transparent',
+                      color: journalEmotion === _famLabel(fam) ? fam.color : P.textMuted, cursor: 'pointer', fontSize: 11
                     }
-                  }, fam.emoji + ' ' + fam.label);
+                  }, fam.emoji + ' ' + _famLabel(fam));
                 })
               ),
               h('input', {
@@ -19867,7 +19895,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                   var isToday = day.date === today.toISOString().slice(0, 10);
                   return h('div', {
                     key: day.date,
-                    title: day.date + (fam ? ' \u2014 ' + fam.label + ' (' + day.intensity + '/10)' : ''),
+                    title: day.date + (fam ? ' \u2014 ' + _famLabel(fam) + ' (' + day.intensity + '/10)' : ''),
                     style: {
                       textAlign: 'center', padding: '4px 0', borderRadius: 6,
                       background: bgColor, border: '1px solid ' + (isToday ? '#3b82f6' : borderColor),
@@ -19884,7 +19912,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                 EMOTION_FAMILIES.map(function(fam) {
                   return h('div', { key: fam.id, style: { display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: P.textMuted } },
                     h('div', { style: { width: 8, height: 8, borderRadius: 2, background: fam.color } }),
-                    fam.label
+                    _famLabel(fam)
                   );
                 })
               )
@@ -19932,7 +19960,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                     var pct = totalCheckins > 0 ? (count / totalCheckins * 100) : 0;
                     return h('div', { key: fam.id, style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                       h('span', { style: { fontSize: 16, width: 24, textAlign: 'center', flexShrink: 0 } }, fam.emoji),
-                      h('span', { style: { fontSize: 11, color: P.textMuted, width: 60, flexShrink: 0 } }, fam.label),
+                      h('span', { style: { fontSize: 11, color: P.textMuted, width: 60, flexShrink: 0 } }, _famLabel(fam)),
                       h('div', { style: { flex: 1, height: 12, borderRadius: 6, background: P.bg, overflow: 'hidden' } },
                         h('div', { style: { height: '100%', width: pct + '%', background: fam.color, borderRadius: 6, transition: 'width 0.3s', minWidth: count > 0 ? 4 : 0 } })
                       ),
@@ -20022,7 +20050,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                   }
                 },
                   h('span', { style: { fontSize: 18 } }, fam.emoji),
-                  h('span', { style: { fontSize: 11, color: isSel ? fam.color : P.textMuted, fontWeight: isSel ? 700 : 500 } }, fam.label)
+                  h('span', { style: { fontSize: 11, color: isSel ? fam.color : P.textMuted, fontWeight: isSel ? 700 : 500 } }, _famLabel(fam))
                 );
               })
             )
@@ -20052,7 +20080,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                   }
                 },
                   h('span', { style: { fontSize: 18 } }, fam.emoji),
-                  h('span', { style: { fontSize: 11, color: isSel ? fam.color : P.textMuted, fontWeight: isSel ? 700 : 500 } }, fam.label)
+                  h('span', { style: { fontSize: 11, color: isSel ? fam.color : P.textMuted, fontWeight: isSel ? 700 : 500 } }, _famLabel(fam))
                 );
               })
             )
