@@ -11,8 +11,18 @@
 // is allowed only when the key is listed in ui_strings_drift_baseline.json with a reason —
 // ui_strings legitimately carries a few richer values (emoji markers, fuller aria text).
 //
+// Covers TWO sets of files (the second added 2026-09-21):
+//   stem_lab/stem_tool_*.js  under ui_strings.stem.<tool>.*
+//   ./*_module.js            under their own top-level namespace, e.g.
+//                            symbol_studio.*, export_preview.*, allohaven.*
+// Until then only the first was scanned, so every key the a11y-i18n pass added
+// to a root module had NO coverage: the gate reported clean because it never
+// looked. It also now matches __alloT(...) as well as t(...), which is what
+// most converted tools actually call.
+//
 //   node dev-tools/check_ui_strings_drift.cjs            # report + exit 1 on new drift
 //   node dev-tools/check_ui_strings_drift.cjs --update    # re-baseline deliberate cases
+//   node dev-tools/check_ui_strings_drift.cjs --selftest  # prove both matchers still fire
 
 const fs = require('fs');
 const path = require('path');
@@ -44,8 +54,43 @@ function normalize(text, dropEmoji) {
   return out.replace(/\s+/g, ' ').trim().toLowerCase().replace(/[^a-z0-9 %$.,+/()-]/g, '');
 }
 
+// One source of truth for "a fallback this gate can see". Both the STEM tools
+// (stem.<tool>.<key>) and the non-STEM CDN modules (<module>.<key>) use it.
+// Note it matches SINGLE-quoted fallbacks only — that is deliberate and is why
+// conversions must re-quote: a double-quoted fallback parses and runs fine and
+// is invisible here, so the source can be reworded while ui_strings keeps
+// shipping the old text forever.
+function fallbackRe(prefix, ns) {
+  const head = prefix ? prefix + "\\." + ns : ns;
+  return new RegExp("(?:__alloT|t)\\(\\s*'" + head + "\\.([A-Za-z0-9_]+)'\\s*,\\s*'((?:[^'\\\\]|\\\\.)*)'\\s*\\)", 'g');
+}
+
+// Compare every fallback in `src` against the ui_strings bank that overrides it.
+function compare(src, file, ns, bank, prefix, drift) {
+  if (!bank || typeof bank !== 'object') return 0;
+  let checked = 0;
+  const seen = new Set();
+  for (const m of src.matchAll(fallbackRe(prefix, ns))) {
+    const key = m[1];
+    if (seen.has(key) || !(key in bank)) continue;
+    seen.add(key);
+    checked += 1;
+    const fallback = unescapeJs(m[2]);
+    if (normalize(bank[key]) === normalize(fallback)) continue;
+    drift.push({
+      id: ns + '.' + key,
+      tool: file,
+      emojiOnly: normalize(bank[key], true) === normalize(fallback, true),
+      shipped: bank[key],
+      fallback
+    });
+  }
+  return checked;
+}
+
 function scan() {
-  const ui = JSON.parse(fs.readFileSync(path.join(ROOT, 'ui_strings.js'), 'utf8')).stem || {};
+  const uiAll = JSON.parse(fs.readFileSync(path.join(ROOT, 'ui_strings.js'), 'utf8'));
+  const ui = uiAll.stem || {};
   const tools = fs.readdirSync(path.join(ROOT, 'stem_lab'))
     .filter((f) => /^stem_tool_.*\.js$/.test(f));
   const drift = [];
@@ -54,28 +99,26 @@ function scan() {
   for (const file of tools) {
     const src = fs.readFileSync(path.join(ROOT, 'stem_lab', file), 'utf8');
     const namespaces = new Set([...src.matchAll(/t\(\s*'stem\.([a-z0-9_]+)\./g)].map((m) => m[1]));
-    for (const ns of namespaces) {
-      const bank = ui[ns];
-      if (!bank || typeof bank !== 'object') continue;
-      const re = new RegExp("t\\(\\s*'stem\\." + ns + "\\.([A-Za-z0-9_]+)'\\s*,\\s*'((?:[^'\\\\]|\\\\.)*)'\\s*\\)", 'g');
-      const seen = new Set();
-      for (const m of src.matchAll(re)) {
-        const key = m[1];
-        if (seen.has(key) || !(key in bank)) continue;
-        seen.add(key);
-        checked += 1;
-        const fallback = unescapeJs(m[2]);
-        if (normalize(bank[key]) === normalize(fallback)) continue;
-        drift.push({
-          id: ns + '.' + key,
-          tool: file,
-          emojiOnly: normalize(bank[key], true) === normalize(fallback, true),
-          shipped: bank[key],
-          fallback
-        });
-      }
-    }
+    for (const ns of namespaces) checked += compare(src, file, ns, ui[ns], 'stem', drift);
   }
+
+  // Non-STEM CDN modules (2026-09-21). This gate only ever looked at
+  // stem_lab/stem_tool_*.js under ui.stem. The a11y-i18n pass has since
+  // converted root modules to their OWN top-level namespaces — symbol_studio.*,
+  // export_preview.*, allohaven.* — and those keys had NO drift coverage at
+  // all: the gate reported clean because it never looked at them. The premise
+  // is the same, and matters more in these files, where an aria-label is often
+  // the only way a student reaches the text at all.
+  for (const file of fs.readdirSync(ROOT).filter((f) => /_module\.js$/.test(f))) {
+    const src = fs.readFileSync(path.join(ROOT, file), 'utf8');
+    const namespaces = new Set(
+      [...src.matchAll(/(?:__alloT|t)\(\s*'([a-z][a-z0-9_]*)\.[a-z0-9_]+'\s*,\s*'/g)]
+        .map((m) => m[1])
+        .filter((ns) => ns !== 'stem' && ns !== 'common')
+    );
+    for (const ns of namespaces) checked += compare(src, file, ns, uiAll[ns], null, drift);
+  }
+
   return { checked, drift };
 }
 
@@ -84,7 +127,42 @@ function loadBaseline() {
   return JSON.parse(fs.readFileSync(BASELINE, 'utf8')).allowed || {};
 }
 
+// A gate that cannot fail is worse than none. This scan has two independent
+// paths — stem_lab/stem_tool_*.js under ui.stem, and the root *_module.js files
+// under their own namespaces — and a broken regex in either one fails SILENTLY:
+// it just reports fewer keys and a clean tick. That is not hypothetical. The
+// module path was added on 2026-09-21 and three separate attempts to write its
+// regex through a shell arrived with the backslashes eaten (\bt became a
+// backspace), each time compiling fine and matching nothing.
+function selftest() {
+  const probe = String.raw`x = { 'aria-label': __alloT('ns_probe.k','English text') };`;
+  const bank = { k: 'DIFFERENT text' };
+  const drift = [];
+  const n = compare(probe, 'probe.js', 'ns_probe', bank, null, drift);
+  const okModule = n === 1 && drift.length === 1 && drift[0].shipped === 'DIFFERENT text';
+
+  const probeStem = String.raw`x = { title: t('stem.probe.k','English text') };`;
+  const drift2 = [];
+  const n2 = compare(probeStem, 'stem_tool_probe.js', 'probe', bank, 'stem', drift2);
+  const okStem = n2 === 1 && drift2.length === 1;
+
+  // And the live tree must actually be reaching both paths.
+  const live = scan();
+  const liveStem = live.drift.some((d) => d.tool.startsWith('stem_tool_'));
+  const liveModule = live.drift.some((d) => /_module\.js$/.test(d.tool));
+
+  console.log('  module-namespace matcher: ' + (okModule ? 'OK' : 'DEAD'));
+  console.log('  stem-namespace matcher  : ' + (okStem ? 'OK' : 'DEAD'));
+  console.log('  live scan reaches stem_lab tools : ' + (liveStem ? 'yes' : 'NO'));
+  console.log('  live scan reaches root modules   : ' + (liveModule ? 'yes' : 'NO'));
+  console.log('  fallbacks compared: ' + live.checked);
+  const pass = okModule && okStem;
+  console.log(pass ? '✓ selftest: both matchers fire.' : '✗ selftest: a matcher is dead.');
+  process.exitCode = pass ? 0 : 1;
+}
+
 function main() {
+  if (process.argv.includes('--selftest')) return selftest();
   const update = process.argv.includes('--update');
   const { checked, drift } = scan();
   const allowed = loadBaseline();
