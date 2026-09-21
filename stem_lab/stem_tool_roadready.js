@@ -38380,7 +38380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (view === 'carBuying') {
         var sections = [
           { title: __alloT('stem.roadready.budget_reality_check', 'Budget Reality Check'), icon: '💰', items: [
-            'The car itself is only 40-50% of the total cost. Add: insurance ($1,200-3,600/yr for teens), gas ($1,000-2,500/yr), maintenance ($500-1,200/yr), registration + inspection (~$150/yr).',
+            'The sticker price is the small part. Insurance ($1,200-3,600/yr for teens), gas ($1,000-2,500/yr), maintenance ($500-1,200/yr) and registration + inspection (~$150/yr) come to roughly $2,850-7,450 EVERY year. Over four years that is $11,400-29,800 — so on a $5,000 car the car itself is only about 14-30% of what you actually spend.',
             'Total first-year cost for a $5,000 used car: often $8,000-11,000. Budget accordingly.',
             'Financing: never agree to more than 48 months. A 72-month loan means you owe more than the car is worth for years.',
             'Put at least 20% down to avoid being "underwater" (owing more than value).'

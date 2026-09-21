@@ -140,6 +140,23 @@ const CLAIMS = [
       'adult 275-day refusal suspension under §2521',
   },
   {
+    label: 'car purchase as a share of four-year ownership cost',
+    re: /the car itself is only about (\d{2})-\d{2}% of what you actually spend/,
+    min: 13, max: 16,
+    source: 'Derived from the tool\'s OWN listed running costs: insurance 1200-3600, gas ' +
+      '1000-2500, maintenance 500-1200, reg+inspection 150 = 2850-7450/yr. Over 4 years on a ' +
+      '$5,000 car that is 14-30%. The card previously said the car is "40-50% of the total ' +
+      'cost", which understates running costs and so undercuts its own point.',
+  },
+  {
+    label: 'Maine handheld-device first-offense fine (§2121)',
+    re: /handheld first offense \$(\d{2});/,
+    min: 50, max: 50,
+    source: 'Maine 29-A §2121: $50 first offence, $250 for a 2nd or subsequent. This is a ' +
+      'DIFFERENT offence from §2119 texting, which starts at $250 — the tool states both and ' +
+      'must keep them distinct.',
+  },
+  {
     label: 'sedan stopping distance at 55 mph (must match the tool\'s own model)',
     re: /a sedan needs about (\d{3}) ft to stop/,
     min: 255, max: 268,
