@@ -33,20 +33,30 @@ describe('published tool pages match the registry', () => {
     expect(code, 'run `node dev-tools/build_tool_pages.cjs` to regenerate:\n' + out).toBe(0);
   });
 
+  // Proving the gate can fail means drifting a page and watching it go red. The generator
+  // only compares pages belonging to REGISTERED tools — an unknown extra tool-*.html is
+  // ignored — so the probe has to be a real page, and this test therefore briefly publishes
+  // a corrupted one. Two safeguards, both learned the hard way in this tree: the file is
+  // restored in a finally AND the restore is verified by re-reading it (OneDrive has left a
+  // mutation in place while the shell reported success), and a leftover probe from a crashed
+  // earlier run is detected rather than silently re-corrupted.
   it('fails when a published page drifts from the registry', () => {
     const page = resolve(process.cwd(), 'tool-water-cycle.html');
     const original = readFileSync(page, 'utf8');
+    expect(original, 'a previous run left this page drifted').not.toContain('(drift probe)');
     expect(original).toContain('Water Cycle');
     try {
-      writeFileSync(page, original.replace('Water Cycle', 'Water Cycle (drifted)'), 'utf8');
+      writeFileSync(page, original.replace('Water Cycle', 'Water Cycle (drift probe)'), 'utf8');
       const { code, out } = runCheck();
       expect(code, 'the gate must reject a drifted page').toBe(1);
       expect(out).toContain('tool-water-cycle.html');
     } finally {
       writeFileSync(page, original, 'utf8');
     }
-    // and the tree is left exactly as found
-    expect(readFileSync(page, 'utf8')).toBe(original);
+    // Re-read rather than trust the write: a silent restore failure would leave a corrupted
+    // page published and every later run of this test would "pass" against the damage.
+    expect(readFileSync(page, 'utf8'), 'restore did not take').toBe(original);
+    expect(runCheck().code, 'the tree is clean again after the probe').toBe(0);
   });
 });
 
