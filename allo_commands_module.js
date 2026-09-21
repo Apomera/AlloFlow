@@ -1614,24 +1614,29 @@ function buildAlloCommands(ctx, opts = {}) {
       return t("cmd.open_poet_tree_done", "Poet Tree opened.");
     } },
     { id: "find_reading", opensPanel: "readingLibrary", icon: "\u{1F4DA}", roles: "all", label: t("cmd.find_reading", "Find the right book"), aliases: ["find a book", "find books about", "recommend a book", "suggest a book", "book about", "books about", "reading about", "learn about", "science article about", "primary source about"], hint: t("cmd.find_reading_hint", "Ask by topic, grade, language, source, or type"), run: (c, params) => runFindReadingCommand(c, params || {}, t) },
-    // ── Create from this content (teacher) + submit (student) — added 2026-06-13 (Slice 2) ──
-    { id: "generate_quiz", icon: "\u{1F4DD}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_quiz", "Make a quiz from this"), aliases: ["make a quiz", "quiz me on this", "create a quiz", "comprehension questions", "generate quiz"], hint: t("cmd.generate_quiz_hint", "Generate a quiz from the current content"), run: (c) => {
+    // ── Create from this content (author roles) + submit (student) ──
+    // Author = teacher, parent, or independent learner. Parent/independent
+    // both set isTeacherMode(true), but getCommandAudience resolves them to
+    // their own audience, so roles:'teacher' hid these from the very people
+    // the parent role branch pre-expands glossary + simplified for. The ctx
+    // entries are plain handleGenerate calls with no role check.
+    { id: "generate_quiz", icon: "\u{1F4DD}", roles: ["teacher", "parent", "independent"], when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_quiz", "Make a quiz from this"), aliases: ["make a quiz", "quiz me on this", "create a quiz", "comprehension questions", "generate quiz"], hint: t("cmd.generate_quiz_hint", "Generate a quiz from the current content"), run: (c) => {
       c.generateQuiz();
       return t("cmd.generate_quiz_done", "Generating a quiz from this content\u2026");
     }, runAsync: (c) => Promise.resolve(c.generateQuiz()).then(() => t("cmd.generate_quiz_ready", "Quiz ready \u2014 it\u2019s in the output panel.")) },
-    { id: "generate_glossary", icon: "\u{1F4D6}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_glossary", "Make a vocabulary glossary"), aliases: ["glossary", "vocabulary", "vocab", "key terms", "word list", "glossary image style mode"], hint: t("cmd.generate_glossary_hint", "Generate a glossary from the current content"), run: (c) => {
+    { id: "generate_glossary", icon: "\u{1F4D6}", roles: ["teacher", "parent", "independent"], when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_glossary", "Make a vocabulary glossary"), aliases: ["glossary", "vocabulary", "vocab", "key terms", "word list", "glossary image style mode"], hint: t("cmd.generate_glossary_hint", "Generate a glossary from the current content"), run: (c) => {
       c.generateGlossary();
       return t("cmd.generate_glossary_done", "Generating a glossary\u2026");
     }, runAsync: (c) => Promise.resolve(c.generateGlossary()).then(() => t("cmd.generate_glossary_ready", "Glossary ready.")) },
-    { id: "generate_simplified", icon: "\u{1F4C9}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_simplified", "Simplify this text"), aliases: ["simplify", "simplify this", "make it easier", "lower the reading level", "leveled text", "easier version", "simplified instructional role"], hint: t("cmd.generate_simplified_hint", "Generate a simpler reading level \u2014 say \u201Cto grade N\u201D for a target"), run: (c, params) => {
+    { id: "generate_simplified", icon: "\u{1F4C9}", roles: ["teacher", "parent", "independent"], when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_simplified", "Simplify this text"), aliases: ["simplify", "simplify this", "make it easier", "lower the reading level", "leveled text", "easier version", "simplified instructional role"], hint: t("cmd.generate_simplified_hint", "Generate a simpler reading level \u2014 say \u201Cto grade N\u201D for a target"), run: (c, params) => {
       c.generateSimplified(params && params.grade ? { grade: params.grade } : {});
       return t("cmd.generate_simplified_done", "Generating a simpler version\u2026");
     }, runAsync: (c, params) => Promise.resolve(c.generateSimplified(params && params.grade ? { grade: params.grade } : {})).then(() => t("cmd.generate_simplified_ready", "Simpler version ready.")) },
-    { id: "generate_sentence_frames", icon: "\u{1F9E9}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_sentence_frames", "Make sentence frames"), aliases: ["sentence frames", "sentence starters", "scaffolds", "language support"], hint: t("cmd.generate_sentence_frames_hint", "Generate sentence frames from the current content"), run: (c) => {
+    { id: "generate_sentence_frames", icon: "\u{1F9E9}", roles: ["teacher", "parent", "independent"], when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_sentence_frames", "Make sentence frames"), aliases: ["sentence frames", "sentence starters", "scaffolds", "language support"], hint: t("cmd.generate_sentence_frames_hint", "Generate sentence frames from the current content"), run: (c) => {
       c.generateSentenceFrames();
       return t("cmd.generate_sentence_frames_done", "Generating sentence frames\u2026");
     }, runAsync: (c) => Promise.resolve(c.generateSentenceFrames()).then(() => t("cmd.generate_sentence_frames_ready", "Sentence frames ready.")) },
-    { id: "generate_analysis", icon: "\u{1F52C}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_analysis", "Analyze this source"), aliases: ["analyze", "analysis", "source analysis", "analyze this"], hint: t("cmd.generate_analysis_hint", "Run a source analysis on the current content"), run: (c) => {
+    { id: "generate_analysis", icon: "\u{1F52C}", roles: ["teacher", "parent", "independent"], when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_analysis", "Analyze this source"), aliases: ["analyze", "analysis", "source analysis", "analyze this"], hint: t("cmd.generate_analysis_hint", "Run a source analysis on the current content"), run: (c) => {
       c.generateAnalysis();
       return t("cmd.generate_analysis_done", "Analyzing this source\u2026");
     }, runAsync: (c) => Promise.resolve(c.generateAnalysis()).then(() => t("cmd.generate_analysis_ready", "Source analysis ready.")) },
@@ -1881,7 +1886,7 @@ function buildAlloCommands(ctx, opts = {}) {
       const r = c.toggleCloudSync();
       return r === "off" ? t("cmd.toggle_cloud_sync_off", "Cloud sync turned off.") : t("cmd.toggle_cloud_sync_consent", "Opening the cloud-sync consent dialog \u2014 confirm there to turn it on.");
     } },
-    { id: "generate_outline", icon: "\u{1F5C2}\uFE0F", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_outline", "Make a concept outline"), aliases: ["outline", "concept outline", "make an outline", "structure", "summary outline"], hint: t("cmd.generate_outline_hint", "Generate an outline from the current content"), run: (c) => {
+    { id: "generate_outline", icon: "\u{1F5C2}\uFE0F", roles: ["teacher", "parent", "independent"], when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_outline", "Make a concept outline"), aliases: ["outline", "concept outline", "make an outline", "structure", "summary outline"], hint: t("cmd.generate_outline_hint", "Generate an outline from the current content"), run: (c) => {
       c.generateOutline();
       return t("cmd.generate_outline_done", "Generating an outline\u2026");
     } },
