@@ -5989,10 +5989,10 @@ const d = labToolData.waterCycle || {};
               return h('details', {className:'wc-cloud-guide'},
                 h('summary',null,'Cloud field guide',h('span',null,'10 cloud types · shapes, height & weather')),
                 h('p',null,'Choose a cloud to compare its shape and typical sky level. These drawings are identification sketches, not forecasts.'),
-                h('div',{className:'wc-cloud-guide-grid','aria-label':'Choose a cloud type'},WC_CLOUD_GUIDE.map(function(cloud){
+                h('div',{className:'wc-cloud-guide-grid','aria-label':__alloT('stem.watercycle.choose_a_cloud_type','Choose a cloud type')},WC_CLOUD_GUIDE.map(function(cloud){
                   return h('button',{key:cloud.id,type:'button','aria-pressed':selected.id===cloud.id,onClick:function(){setIQ({cloudGuideType:cloud.id});}},wcCloudGuideDrawing(h,cloud),h('span',null,cloud.name));
                 })),
-                h('div',{className:'wc-cloud-guide-levels',role:'group','aria-label':'Cloud explanation depth'},[['notice','Notice'],['explain','Explain'],['investigate','Investigate']].map(function(item){
+                h('div',{className:'wc-cloud-guide-levels',role:'group','aria-label':__alloT('stem.watercycle.cloud_explanation_depth','Cloud explanation depth')},[['notice','Notice'],['explain','Explain'],['investigate','Investigate']].map(function(item){
                   return h('button',{key:item[0],type:'button','aria-pressed':level===item[0],onClick:function(){setIQ({cloudGuideLevel:item[0]});}},item[1]);
                 })),
                 h('article',{className:'wc-cloud-guide-detail','data-cloud-type':selected.id,'data-learning-depth':level,'aria-live':'polite'},
@@ -11944,7 +11944,7 @@ const d = labToolData.waterCycle || {};
                     h('label', { htmlFor: 'wcPrecipHypothesis' }, 'Your hypothesis'),
                     h('textarea', { id: 'wcPrecipHypothesis', rows: 3, value: iq.hypothesis || '',
                       onChange: function(event) { setIQ({ hypothesis: event.target.value }); },
-                      placeholder: 'What combination will make precipitation reach the ground?' }),
+                      placeholder: __alloT('stem.watercycle.what_combination_will_make_precipitation_rea','What combination will make precipitation reach the ground?') }),
                     !iq.stuckRevealed && h('button', { type: 'button', className: 'wc-precip-btn',
                       onClick: function() { setIQ({ stuckRevealed: true }); } }, 'Show investigation prompts'),
                     iq.stuckRevealed && h('div', { className: 'wc-precip-prompts' },
@@ -11959,7 +11959,7 @@ const d = labToolData.waterCycle || {};
                     iq.understood && h('textarea', { rows: 3, value: iq.explanation || '',
                       onChange: function(event) { setIQ({ explanation: event.target.value }); },
                       'aria-label': __alloT('stem.watercycle.a11y_explain_the_precipitation_pattern', 'Explain the precipitation pattern'),
-                      placeholder: 'Use moisture, lift, lower-air humidity, and temperature in your explanation.' })
+                      placeholder: __alloT('stem.watercycle.use_moisture_lift_lower_air_humidity_and_tem','Use moisture, lift, lower-air humidity, and temperature in your explanation.') })
                   )
                 )
               ),
@@ -19501,10 +19501,10 @@ const d = labToolData.waterCycle || {};
                   }, t('stem.watercycle.pilot_help_short', 'Help'))
                 ),
 
-                onboardingComplete && pilotStored.showLookControls && h('div',{id:'wcPilotLookPanel',className:'wc-pilot-look-panel',role:'group','aria-label':'Look around without dragging',onKeyDown:function(e){if(e.key==='Escape'){setPilot({showLookControls:false});var button=document.getElementById('wcPilotLookToggle');if(button)button.focus();}}},
+                onboardingComplete && pilotStored.showLookControls && h('div',{id:'wcPilotLookPanel',className:'wc-pilot-look-panel',role:'group','aria-label':__alloT('stem.watercycle.look_around_without_dragging','Look around without dragging'),onKeyDown:function(e){if(e.key==='Escape'){setPilot({showLookControls:false});var button=document.getElementById('wcPilotLookToggle');if(button)button.focus();}}},
                   h('span',null,'Look around'),
                   [['Look left',0.22,0],['Look right',-0.22,0],['Look up',0,-0.12],['Look down',0,0.12]].map(function(look){return h('button',{key:look[0],type:'button',onClick:function(){var i=pilotInput();if(i){i.lookYaw+=look[1];i.lookPitch+=look[2];}}},look[0]);}),
-                  h('button',{type:'button','aria-label':'Close look controls',onClick:function(){setPilot({showLookControls:false});var button=document.getElementById('wcPilotLookToggle');if(button)button.focus();}},'Done')),
+                  h('button',{type:'button','aria-label':__alloT('stem.watercycle.close_look_controls','Close look controls'),onClick:function(){setPilot({showLookControls:false});var button=document.getElementById('wcPilotLookToggle');if(button)button.focus();}},'Done')),
 
                 // Live HUD. Fixed light inks on a fixed dark glass panel: the
                 // canvas behind is always dark in both themes, so a theme-reactive
