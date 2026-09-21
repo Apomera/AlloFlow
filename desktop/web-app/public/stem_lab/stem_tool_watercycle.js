@@ -27236,8 +27236,11 @@ const d = labToolData.waterCycle || {};
               precipitating: [7.0, 3.2, 8.5], precipitation: [7.0, 3.2, 8.5],
               ground_choice: [9.0, 2.0, 6.8],
               river_runoff: [6.4, 1.8, 8.2],
-              infiltrating: [9.1, 0.4, 6.3], infiltration: [9.1, 0.4, 6.3],
-              aquifer_flow: [9.2, -0.4, 6.8],
+              // Subsurface states put the droplet at y -1.78 / -2.18; a camera
+              // at surface height frames the ground above it, not the soil it
+              // is in. Sit just above the droplet, inside the cutaway.
+              infiltrating: [9.1, -1.15, 6.3], infiltration: [9.1, -1.15, 6.3],
+              aquifer_flow: [9.2, -1.65, 6.8],
               plant_absorb: [9.2, 2.0, 7.3],
               transpiring: [9.0, 4.1, 7.6], transpiration: [9.0, 4.1, 7.6],
               complete: [3.2, 2.6, 9.5], idle: [8.5, 4.6, 11.5]
@@ -27489,6 +27492,21 @@ const d = labToolData.waterCycle || {};
                 ? activeCurve3d.getPointAt(journeyProgress3d)
                 : new THREE.Vector3(targetArray3d[0], targetArray3d[1], targetArray3d[2]);
               var cameraGoal3d = new THREE.Vector3(cameraArray3d[0], cameraArray3d[1], cameraArray3d[2]);
+              // Subsurface states move the droplet a long way vertically along
+              // their curve -- infiltration runs -0.82 down to -1.78, and the
+              // aquifer discharge climbs -2.18 back up to -0.72 as it returns to
+              // the ocean. A FIXED camera height cannot frame both ends: it
+              // either floats above the ground it is meant to be inside, or
+              // ends up buried below a droplet that has already surfaced.
+              // Track the droplet's height instead, keeping the same modest
+              // look-down the surface states use, and never rise above the land
+              // surface (top of the land box, y = -1.05) while still underground
+              // -- that is what keeps the camera inside the cutaway the scene
+              // has already prepared.
+              if (state3d === 'infiltrating' || state3d === 'infiltration' || state3d === 'aquifer_flow') {
+                var tracked3d = target3d.y + 0.55;
+                cameraGoal3d.y = target3d.y < -1.05 ? Math.min(tracked3d, -1.1) : tracked3d;
+              }
               syncJourneyRoute3d(state3d);
               canvasEl.dataset.journeyProgress = String(journeyProgress3d);
 
