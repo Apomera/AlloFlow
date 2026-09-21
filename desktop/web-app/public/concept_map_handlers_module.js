@@ -704,7 +704,7 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
                 meta: `${gradeLevel} - ${isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_guide') : t('common.udl_aligned'))}`,
                 title: isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_learning_guide') : t('common.udl_lesson_plan')),
                 timestamp: new Date(),
-                config: { language: planLanguage, generationInputs }
+                config: { gradeLevel, language: planLanguage, generationInputs }
             };
             if (switchView) {
                 setGeneratedContent(newItem);
