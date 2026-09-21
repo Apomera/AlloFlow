@@ -244,7 +244,7 @@ Underlying data: `WORD_SOUNDS_STRINGS`, `WORD_FAMILY_PRESETS`, `SOUND_MATCH_POOL
 
 | Feature | Purpose | Discoverability | Users | Module |
 |---|---|---|---|---|
-| **Escape Room** | 5-10 content-related puzzles in immersive game scenario; team or individual; timed variant | Sidebar → Escape Room OR Header → Games menu | Teacher, Student | `escape_room_module.js`; uses `escapeRoomState`, `escapeTimeLeft` |
+| **Puzzle Challenge** | 5-10 content-related puzzles in immersive game scenario; team or individual; timed variant | Sidebar → Puzzle Challenge OR Header → Games menu | Teacher, Student | `escape_room_module.js`; uses `escapeRoomState`, `escapeTimeLeft` |
 | **Word Bank** | Persistent floating sidebar with current glossary terms + audio pronunciation | Always available once Glossary generated | Student | `view_sidebar_panels_module.js`; `wordBankPosition` (drag-positioning) |
 | **History Panel** | Chronological log of session outputs with timestamps, version control, export, AI session-summary generation | Header → History | Teacher, Student, Parent | `firestore_sync_module.js` |
 | **Project Settings** | Named projects with metadata (grade, standards, theme), save/load JSON, assign to cohort | Header → Save/Load/Settings | Teacher, Student | `view_project_settings_module.js`; `studentProjectSettings`, `persistedLessonDNA` |
@@ -717,7 +717,7 @@ Each `view_*_module.js` registers a primary `XxxView` component on `window.AlloM
 | **misc_handlers_module.js** (496 lines) | `MiscHandlers` — assorted small handler functions |
 | **label_positions_module.js** (41 lines) | `LABEL_POSITIONS` — i18n-aware position constants for image annotations |
 
-### 3.41 Escape Room Engine (`escape_room_module.js`)
+### 3.41 Puzzle Challenge Engine (`escape_room_module.js`)
 
 2,267 lines — beyond the StudentEscapeRoomOverlay + EscapeRoomTeacherControls (in teacher_module), this provides the engine itself:
 - **`createEscapeRoomEngine(deps)`** — factory producing a full puzzle-room engine

@@ -298,7 +298,7 @@ Set: **6th Grade** (middle of 4-8 range)
 | **Glossary** | Tier 2 count: 5 · Tier 3 count: 5 · Definition Level: Same as Source · Etymology: off |
 | **Quiz** | MCQ count: 8 (3 password-strength scenarios, 3 phishing red-flag identification, 2 oversharing judgment calls) · Reflection count: 1 · DOK Level: Level 3 |
 | **Sentence Frames** | "Before I post online, I ask myself __." "A red flag in a phishing email is __." |
-| **Adventure / Escape Room** *(optional)* | "Hack-Proof Challenge" with 4 padlocks: password strength, phishing spotting, oversharing, 2FA. Use Adventure Mode or the Escape Room module if active. |
+| **Adventure / Puzzle Challenge** *(optional)* | "Hack-Proof Challenge" with 4 padlocks: password strength, phishing spotting, oversharing, 2FA. Use Adventure Mode or the Puzzle Challenge module if active. |
 
 ---
 
