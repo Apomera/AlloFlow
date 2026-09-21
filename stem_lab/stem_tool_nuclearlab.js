@@ -1251,6 +1251,35 @@
     meshes.coolant = cool;
     picks.push(cool);
 
+    // Steam voids — a SHAPE channel for temperature, not a colour one.
+    // Contrast mode paints the coolant white and the fuel emissive black, so
+    // colour carried no heat information there at all, and the blue-to-red ramp
+    // is exactly the pair a red-green colour-blind student reads worst at the
+    // top of the range. Bubbles appear once the coolant is genuinely hot and
+    // multiply as it climbs, which is also what really happens: boiling voids
+    // the moderator. Deterministic placement, so the same temperature always
+    // draws the same core and a rebuild does not make it shimmer.
+    var voidCount = hot <= 0.45 ? 0 : Math.round((hot - 0.45) / 0.55 * 14);
+    if (voidCount > 0) {
+      var voidGroup = new THREE.Group();
+      var voidGeo = new THREE.SphereGeometry(0.05, 6, 5);
+      var voidMat = mat('coolant', {
+        colour: contrast ? '#000000' : '#e2e8f0',
+        opacity: contrast ? 1 : 0.55
+      });
+      for (var vi = 0; vi < voidCount; vi++) {
+        // Golden-angle spiral: even coverage without random(), so successive
+        // rebuilds at the same temperature are identical.
+        var va = vi * 2.399963;
+        var vr = (R - 0.18) * Math.sqrt((vi + 0.5) / voidCount);
+        var vm = new THREE.Mesh(voidGeo, voidMat);
+        vm.position.set(Math.cos(va) * vr, ((vi % 7) / 6 - 0.5) * H * 0.8, Math.sin(va) * vr);
+        voidGroup.add(vm);
+      }
+      anchor.add(voidGroup);
+      meshes.voids = voidGroup;
+    }
+
     // fuel assemblies on a square lattice inside the circle
     var fuelGroup = new THREE.Group();
     var rodGroup = new THREE.Group();

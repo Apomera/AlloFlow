@@ -83,6 +83,95 @@ describe('the core keeps changing colour as it heats', () => {
   });
 });
 
+describe('temperature is not encoded by colour alone', () => {
+  // Contrast mode paints the coolant white and the fuel emissive black, so the
+  // colour ramp above carries NO heat information there — and blue-to-red is
+  // the pair a red-green colour-blind student reads worst at exactly the top of
+  // the range. Steam voids are the shape channel: real PWR behaviour, readable
+  // in any colour mode. WCAG 1.4.1 is the general form of this.
+  function buildCore() {
+    const partsOpen = SRC.indexOf('  var RX_PARTS = [');
+    const partsClose = SRC.indexOf('\n  ];', partsOpen) + 5;
+    const open = SRC.indexOf('  function rxBuildCore(');
+    const close = SRC.indexOf('\n  var RX_NULL', open);
+    expect(open).toBeGreaterThan(-1);
+    // eslint-disable-next-line no-new-func
+    return new Function(
+      SRC.slice(partsOpen, partsClose) + SRC.slice(open, close) + '\nreturn rxBuildCore;',
+    )();
+  }
+
+  function fakeThree() {
+    class Obj {
+      constructor() {
+        this.children = [];
+        // RECORD the coordinates. A no-op set() made the determinism test below
+        // vacuous: every position stringified to the same empty object, so
+        // swapping the golden-angle spiral for Math.random() still passed.
+        const pos = { x: 0, y: 0, z: 0 };
+        pos.set = (x, y, z) => { pos.x = x; pos.y = y; pos.z = z; };
+        this.position = pos;
+      }
+      add(c) { this.children.push(c); }
+    }
+    return {
+      Group: class extends Obj {},
+      Mesh: class extends Obj {
+        constructor(g, m) { super(); this.geometry = g; this.material = m; }
+      },
+      CylinderGeometry: class {},
+      SphereGeometry: class {},
+      MeshPhongMaterial: class { constructor(o) { Object.assign(this, o); } },
+      Color: class { constructor(v) { this.v = v; } },
+    };
+  }
+
+  const run = (hot, contrast) => buildCore()(fakeThree(), {
+    scene: { add() {} }, sceneProps: { rods: 50, hot }, contrast: !!contrast,
+  });
+
+  it('shows no steam while the core is running normally', () => {
+    // The steady scenario teaches that a healthy reactor is boring.
+    expect(run(0).meshes.voids).toBeFalsy();
+    expect(run(0.3).meshes.voids).toBeFalsy();
+  });
+
+  it('grows the void count as the core heats', () => {
+    const counts = [0.6, 0.8, 1].map((h) => {
+      const v = run(h).meshes.voids;
+      return v ? v.children.length : 0;
+    });
+    expect(counts[0]).toBeGreaterThan(0);
+    expect(counts[1]).toBeGreaterThan(counts[0]);
+    expect(counts[2]).toBeGreaterThan(counts[1]);
+  });
+
+  it('keeps the shape channel in contrast mode, where colour is gone', () => {
+    // This is the whole point: contrast mode still has to say 'hot'.
+    const v = run(1, true).meshes.voids;
+    expect(v, 'contrast mode lost every temperature cue').toBeTruthy();
+    expect(v.children.length).toBeGreaterThan(0);
+  });
+
+  it('places voids deterministically, so a rebuild does not shimmer', () => {
+    // sceneKey rebuilds happen on every quantised step; random placement would
+    // make the bubbles jump around at a constant temperature.
+    const xyz = (m) => m.position.x + ',' + m.position.y + ',' + m.position.z;
+    const a = run(0.9).meshes.voids.children.map(xyz);
+    const b = run(0.9).meshes.voids.children.map(xyz);
+    // Guard against the stub silently recording nothing.
+    expect(a.some((p) => p !== '0,0,0')).toBe(true);
+    expect(a).toEqual(b);
+  });
+
+  it('shares one geometry and one material across every bubble', () => {
+    const v = run(1).meshes.voids.children;
+    expect(v.length).toBeGreaterThan(5);
+    expect(new Set(v.map((m) => m.geometry)).size).toBe(1);
+    expect(new Set(v.map((m) => m.material)).size).toBe(1);
+  });
+});
+
 describe('the temperature the scene is given', () => {
   it('spans reference coolant temperature to cladding failure in 12 steps', () => {
     expect(SRC).toContain('(s.t - RX_T_REF) / (RX_T_CLAD - RX_T_REF)');
