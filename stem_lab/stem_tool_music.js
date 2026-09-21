@@ -187,6 +187,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
     slot.impl = impl;
     return slot.Type;
   }
+  // A saved project is INPUT. `activeKeys` is .indexOf/.concat/.filter-ed at
+  // five sites, and `|| []` only replaces a FALSY value — a stored number or
+  // string sailed through and threw. The shell's error boundary is unkeyed,
+  // so that blanks the whole lab, not just this tool.
+  function _msKeys(d) {
+    return (d && Array.isArray(d.activeKeys)) ? d.activeKeys : [];
+  }
   window.StemLab.registerTool('musicSynth', {
     icon: '🎹',
     label: 'Music Synthesizer',
@@ -1614,7 +1621,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 if (scaleLock && !isInScale(key.semitone)) return;
                 if (synthEngine === 'plucked') { playPlucked(key.freq, noteId, d.ksBrightness, d.ksDamping); }
                 else { playNote(key.freq, noteId); }
-                upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', key.freq);
+                upd('activeKeys', _msKeys(d).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', key.freq);
               }
             }
           };
@@ -1622,7 +1629,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             var semi = KEYBOARD_MAP[e.key.toLowerCase()];
             if (semi !== undefined) {
               var key = KEYS[semi];
-              if (key) { var noteId = key.note + key.octave; stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); }
+              if (key) { var noteId = key.note + key.octave; stopNote(noteId); upd('activeKeys', _msKeys(d).filter(function (x) { return x !== noteId; })); }
             }
           };
 
@@ -2542,7 +2549,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "relative mb-3 overflow-x-auto overflow-y-hidden", style: { height: '160px' } },
                 React.createElement("div", { className: "flex relative", style: { height: '140px', minWidth: '504px' } },
                   KEYS.map(function (key, idx) {
-                    var isActive = (d.activeKeys || []).indexOf(key.note + key.octave) !== -1;
+                    var isActive = _msKeys(d).indexOf(key.note + key.octave) !== -1;
                     var isBlack = key.isBlack;
                     var isScaleNote = isInScale(key.semitone);
                     var isRoot = key.semitone === 0;
@@ -2554,11 +2561,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       if (dimmed) return;
                       if (synthEngine === 'plucked') { playPlucked(key.freq, noteId, d.ksBrightness, d.ksDamping); }
                       else { playNote(key.freq, noteId); }
-                      upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', key.freq); upd('lastNoteColor', key.color || '#a855f7');
+                      upd('activeKeys', _msKeys(d).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', key.freq); upd('lastNoteColor', key.color || '#a855f7');
                       upd('notesPlayed', (d.notesPlayed || 0) + 1);
                       if (announceToSR) announceToSR(key.note + key.octave);
                     };
-                    var releaseKey = function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); };
+                    var releaseKey = function () { stopNote(noteId); upd('activeKeys', _msKeys(d).filter(function (x) { return x !== noteId; })); };
                     var onKeyDownKey = function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); pressKey(); } };
                     var onKeyUpKey = function (e) { if (e.key === ' ' || e.key === 'Enter') releaseKey(); };
                     if (isBlack) {
@@ -3321,7 +3328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   } });
                 }),
                 // Note name display
-                d.xyNoteName && React.createElement("div", { style: { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', color: 'rgba(255,255,255,0.7)', fontSize: '24px', fontWeight: 900, pointerEvents: 'none', textShadow: '0 0 20px rgba(168,85,247,0.8)' } }, d.xyNoteName)
+                typeof d.xyNoteName === 'string' && d.xyNoteName && React.createElement("div", { style: { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', color: 'rgba(255,255,255,0.7)', fontSize: '24px', fontWeight: 900, pointerEvents: 'none', textShadow: '0 0 20px rgba(168,85,247,0.8)' } }, d.xyNoteName)
               ),
               // XY Mode selector
               React.createElement("div", { className: "flex flex-wrap gap-2 mt-2 items-center" },
@@ -5324,9 +5331,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             // ── AI Music Theory Tutor (reading-level aware) ──
             (function () {
               var aiLevel = d.aiLevel || 'grade5';
-              var aiText = d.aiExplain || '';
+              // Rendered as a React child, so a saved object throws
+              // "Objects are not valid as a React child" and blanks the lab.
+              var aiText = typeof d.aiExplain === 'string' ? d.aiExplain : '';
               var aiLoading = !!d.aiLoading;
-              var aiError = d.aiError || '';
+              var aiError = typeof d.aiError === 'string' ? d.aiError : '';
               var LEVELS = [
                 { id: 'plain', label: __alloT('stem.music.plain', 'Plain'), hint: __alloT('stem.music.using_simple_everyday_words_and_short_', 'using simple everyday words and short sentences, no jargon') },
                 { id: 'grade5', label: __alloT('stem.music.grade_5', 'Grade 5'), hint: __alloT('stem.music.for_a_5th_grade_student_brief_and_frie', 'for a 5th grade student, brief and friendly') },
