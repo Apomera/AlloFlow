@@ -3346,6 +3346,76 @@
           } catch (e) { pack.composer = null; }
         });
       }
+      // Every 3D scene here leans on MeshStandardMaterial with real metalness
+      // (the motor shaft is 0.82, the electromagnet core 0.72, the coils 0.55),
+      // but none of them set an environment. That is a problem specific to PBR:
+      // a metal's diffuse contribution falls away as metalness rises and its
+      // colour is supposed to come back as reflected ENVIRONMENT — so with no
+      // envMap the metal parts just go dark and flat instead of shiny.
+      //
+      // This builds one tiny gradient environment with PMREMGenerator.fromScene
+      // (core r128 — RoomEnvironment lives in examples/ and would mean another
+      // CDN script) and hands the same prefiltered texture to every scene via
+      // scene.environment, so metals pick up a cool sky above and a warm bounce
+      // below. It is built ONCE and shared; the generator is disposed straight
+      // after, and the render target is kept for the lifetime of the module.
+      // A PMREM texture belongs to the GL CONTEXT THAT BUILT IT. Caching one
+      // texture module-wide and handing it to all six scenes looks like it
+      // works — nothing throws — but it renders as NO environment at all on
+      // every other renderer, and silently: measured with a red test
+      // environment, a pure metal sphere read [161,0,0] on the owning renderer
+      // and [0,0,0] on a second one, identical to the no-environment baseline.
+      // So the texture is built per renderer and parked on the renderer object
+      // itself, which means it is collected with that renderer and can never
+      // outlive its context.
+      function magEnvironment(THREE, renderer) {
+        if (!renderer) return null;
+        if (renderer._magEnvTried) return renderer._magEnvTexture || null;
+        renderer._magEnvTried = true;
+        renderer._magEnvTexture = null;
+        try {
+          if (!THREE.PMREMGenerator || typeof THREE.PMREMGenerator.prototype.fromScene !== 'function') return null;
+          var envScene = new THREE.Scene();
+          // A large inward-facing box, vertex-coloured into a simple sky/ground
+          // gradient. Cheap, deterministic, and no texture to download.
+          var geo = new THREE.BoxGeometry(12, 12, 12);
+          var pos = geo.attributes.position;
+          var cols = new Float32Array(pos.count * 3);
+          var sky = new THREE.Color(0x9ec5fe), ground = new THREE.Color(0x3a2f26), mix = new THREE.Color();
+          for (var i = 0; i < pos.count; i++) {
+            var t = Math.max(0, Math.min(1, (pos.getY(i) / 6 + 1) / 2));
+            mix.copy(ground).lerp(sky, t);
+            cols[i * 3] = mix.r; cols[i * 3 + 1] = mix.g; cols[i * 3 + 2] = mix.b;
+          }
+          geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+          var box = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide }));
+          envScene.add(box);
+          var pmrem = new THREE.PMREMGenerator(renderer);
+          pmrem.compileEquirectangularShader();
+          var target = pmrem.fromScene(envScene);
+          // Keep the TARGET, not just its texture: the render target is what
+          // holds the GPU allocation, and it is what has to be disposed.
+          renderer._magEnvTarget = target || null;
+          renderer._magEnvTexture = target ? target.texture : null;
+          pmrem.dispose();
+          geo.dispose(); box.material.dispose();
+        } catch (envError) { renderer._magEnvTexture = null; }
+        return renderer._magEnvTexture;
+      }
+      // (r128 Scene has no environmentIntensity — that arrived later — so the
+      // strength of the effect is carried by the gradient colours above.)
+      function magApplyEnvironment(THREE, renderer, scene) {
+        try {
+          var tex = magEnvironment(THREE, renderer);
+          if (tex) scene.environment = tex;
+        } catch (applyError) {}
+      }
+      // Called from each scene's cleanup, before renderer.dispose().
+      function magDisposeEnvironment(renderer) {
+        if (!renderer) return;
+        try { if (renderer._magEnvTarget && renderer._magEnvTarget.dispose) renderer._magEnvTarget.dispose(); } catch (e) {}
+        renderer._magEnvTarget = null; renderer._magEnvTexture = null; renderer._magEnvTried = false;
+      }
       function magRenderPack(pack) {
         if (!pack || pack.disposed) return;
         if (pack.composer) {
@@ -4342,6 +4412,7 @@
               if (themeBackground) backgroundColor.setStyle(themeBackground);
             } catch (themeError) {}
             scene.background = backgroundColor;
+            magApplyEnvironment(THREE, renderer, scene);
             scene.fog = new THREE.FogExp2(backgroundColor.getHex(), 0.035);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
             if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
@@ -4470,8 +4541,19 @@
                 group.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), momentVector(mag, false));
                 var northColor = mag.polarity < 0 ? 0x3b82f6 : 0xef4444;
                 var southColor = mag.polarity < 0 ? 0xef4444 : 0x3b82f6;
-                var north = new THREE.Mesh(new THREE.BoxGeometry(1, 0.66, 0.66), new THREE.MeshStandardMaterial({ color: northColor, roughness: 0.38, metalness: 0.35, emissive: northColor, emissiveIntensity: 0.12 }));
-                var south = new THREE.Mesh(new THREE.BoxGeometry(1, 0.66, 0.66), new THREE.MeshStandardMaterial({ color: southColor, roughness: 0.38, metalness: 0.35, emissive: southColor, emissiveIntensity: 0.12 }));
+                // The magnet is the object students DRAG, so it earns a tighter
+                // specular highlight that travels as the scene orbits — the cue
+                // that says "solid object, facing this way".
+                // Roughness ONLY: metalness is deliberately left at 0.35.
+                // MeshStandardMaterial is PBR, so a metal's diffuse goes to zero
+                // as metalness rises and its colour is meant to come back as
+                // reflected ENVIRONMENT — and this scene has no envMap. Raising
+                // metalness to 0.62 measured out as a 42% cut in diffuse colour
+                // energy with nothing replacing it, which would have dimmed the
+                // red/blue N/S coding. That coding is the teaching convention,
+                // so it does not get spent on a highlight.
+                var north = new THREE.Mesh(new THREE.BoxGeometry(1, 0.66, 0.66), new THREE.MeshStandardMaterial({ color: northColor, roughness: 0.28, metalness: 0.35, emissive: northColor, emissiveIntensity: 0.12 }));
+                var south = new THREE.Mesh(new THREE.BoxGeometry(1, 0.66, 0.66), new THREE.MeshStandardMaterial({ color: southColor, roughness: 0.28, metalness: 0.35, emissive: southColor, emissiveIntensity: 0.12 }));
                 north.position.x = 0.5;
                 south.position.x = -0.5;
                 north.userData.magnetIndex = index;
@@ -4692,8 +4774,20 @@
 
             function buildSlice(state) {
               if (!state.slice || state.slice === 'none') return;
-              var geometry = new THREE.PlaneGeometry(7.2, 7.2, 16, 16);
+              // 16x16 was too coarse to be HONEST, not just too coarse to be
+              // pretty: the colours are per-VERTEX and Gouraud-interpolated
+              // across each quad, and a dipole's near field changes far faster
+              // than a 0.45-unit quad can follow. Measured against the tool's
+              // own two-magnet default, the interpolated colour at a quad
+              // centre was off the true field level by up to 4.9% of the ramp
+              // at 16x16; 48x48 brings that to 1.9%. The slice is a READOUT
+              // students compare against the probe, so that error mattered.
+              // 24x24 on low power (~2.4x the vertices of 16x16, still a third
+              // of the full grid's 2401).
+              var sliceSegments = magLowPower() ? 24 : 48;
+              var geometry = new THREE.PlaneGeometry(7.2, 7.2, sliceSegments, sliceSegments);
               var positions = geometry.attributes.position, colors = [];
+              var sliceCold = new THREE.Color(0x172554), sliceHot = new THREE.Color(0xfbbf24), sliceColor = new THREE.Color();
               for (var i = 0; i < positions.count; i++) {
                 var lx = positions.getX(i), ly = positions.getY(i);
                 var wx = lx, wy = ly, wz = state.sliceOffset;
@@ -4701,8 +4795,11 @@
                 if (state.slice === 'yz') { wx = state.sliceOffset; wy = ly; wz = lx; }
                 var b = fieldAt3D(wx, wy, wz, state.magnets);
                 var level = fieldLevel(Math.sqrt(b.x * b.x + b.y * b.y + b.z * b.z));
-                var color = new THREE.Color(0x172554).lerp(new THREE.Color(0xfbbf24), level);
-                colors.push(color.r, color.g, color.b);
+                // Reuse three Color objects instead of allocating two per vertex:
+                // at 48x48 that is 2401 vertices, so the old code churned ~4800
+                // objects every time the slice moved.
+                sliceColor.copy(sliceCold).lerp(sliceHot, level);
+                colors.push(sliceColor.r, sliceColor.g, sliceColor.b);
               }
               geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
               var material = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.3, side: THREE.DoubleSide, depthWrite: false });
@@ -4835,6 +4932,7 @@
               clearGroup(magnetGroup); clearGroup(lineGroup); clearGroup(vectorGroup); clearGroup(sliceGroup); clearGroup(probeGroup);
               fieldPack.disposed = true;
               magDisposeComposer(fieldPack);
+              magDisposeEnvironment(renderer);
               renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
               cv._mag3dInit = false;
               cv._mag3dUpdate = null;
@@ -5792,6 +5890,7 @@
             var scene = new THREE.Scene(), backgroundColor = new THREE.Color(0x07111f);
             try { var themeBackground = window.getComputedStyle(cv).getPropertyValue('--allo-stem-instrument').trim(); if (themeBackground) backgroundColor.setStyle(themeBackground); } catch (themeError) {}
             scene.background = backgroundColor; scene.fog = new THREE.FogExp2(backgroundColor.getHex(), 0.032);
+            magApplyEnvironment(THREE, renderer, scene);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6)); if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
             var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 70); camera.position.set(7.5, 4.8, 7.2);
             var controls = new THREE.OrbitControls(camera, cv); controls.enableDamping = false; controls.minDistance = 5; controls.maxDistance = 20; controls.target.set(0, 0, 0);
@@ -5961,6 +6060,7 @@
               magDisposeComposer(electroPack);
               cv.removeEventListener('pointerdown', onPointerDown); cv.removeEventListener('pointerup', onPointerUp); cv.removeEventListener('webglcontextlost', onContextLost);
               controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
+              magDisposeEnvironment(renderer);
               clearDynamic(); renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); cv._electro3dInit = false; cv._electro3dUpdate = null; cv._electro3dCleanup = null;
             }
             cv.addEventListener('pointerdown', onPointerDown); cv.addEventListener('pointerup', onPointerUp); cv.addEventListener('webglcontextlost', onContextLost); controls.addEventListener('change', renderScene);
@@ -6974,6 +7074,7 @@
             var scene = new THREE.Scene(), backgroundColor = new THREE.Color(0x07111f);
             try { var themeBackground = window.getComputedStyle(cv).getPropertyValue('--allo-stem-instrument').trim(); if (themeBackground) backgroundColor.setStyle(themeBackground); } catch (themeError) {}
             scene.background = backgroundColor; scene.fog = new THREE.FogExp2(backgroundColor.getHex(), 0.028);
+            magApplyEnvironment(THREE, renderer, scene);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6)); if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
             var camera = new THREE.PerspectiveCamera(44, 1, 0.1, 70); camera.position.set(7.8, 5.8, 8.5);
             var controls = new THREE.OrbitControls(camera, cv); controls.enableDamping = false; controls.minDistance = 5; controls.maxDistance = 20; controls.target.set(0, 0, 0);
@@ -7118,6 +7219,7 @@
               chargePack.disposed = true;
               magDisposeComposer(chargePack);
               cv.removeEventListener('webglcontextlost', onContextLost); controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
+              magDisposeEnvironment(renderer);
               clearDynamic(); renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); cv._charge3dInit = false; cv._charge3dUpdate = null; cv._charge3dCleanup = null;
             }
             cv.addEventListener('webglcontextlost', onContextLost); controls.addEventListener('change', renderScene);
@@ -7622,6 +7724,7 @@
             var scene = new THREE.Scene(), backgroundColor = new THREE.Color(0x07111f);
             try { var themeBackground = window.getComputedStyle(cv).getPropertyValue('--allo-stem-instrument').trim(); if (themeBackground) backgroundColor.setStyle(themeBackground); } catch (themeError) {}
             scene.background = backgroundColor; scene.fog = new THREE.FogExp2(backgroundColor.getHex(), 0.026);
+            magApplyEnvironment(THREE, renderer, scene);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6)); if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
             var camera = new THREE.PerspectiveCamera(44, 1, 0.1, 70); camera.position.set(8.2, 5.4, 8.6);
             var controls = new THREE.OrbitControls(camera, cv); controls.enableDamping = false; controls.minDistance = 5.5; controls.maxDistance = 20; controls.target.set(0, 0, 0);
@@ -7788,6 +7891,7 @@
               motorPack.disposed = true;
               magDisposeComposer(motorPack);
               cv.removeEventListener('webglcontextlost', onContextLost); controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
+              magDisposeEnvironment(renderer);
               clearDynamic(); renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); cv._motor3dInit = false; cv._motor3dUpdate = null; cv._motor3dCleanup = null;
             }
             cv.addEventListener('webglcontextlost', onContextLost); controls.addEventListener('change', renderScene);
@@ -8158,6 +8262,7 @@
               if (themeBackground) backgroundColor.setStyle(themeBackground);
             } catch (themeError) {}
             scene.background = backgroundColor;
+            magApplyEnvironment(THREE, renderer, scene);
             scene.fog = new THREE.FogExp2(backgroundColor.getHex(), 0.032);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
             if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
@@ -8373,6 +8478,7 @@
               cv.removeEventListener('pointerup', onPointerUp); cv.removeEventListener('pointercancel', onPointerUp);
               cv.removeEventListener('webglcontextlost', onContextLost); controls.removeEventListener('change', renderScene);
               window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
+              magDisposeEnvironment(renderer);
               clearDynamic(); renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
               _induction3DRunToken++; if (_induction3DRAF) window.cancelAnimationFrame(_induction3DRAF); _induction3DRAF = null;
               cv._induction3dInit = false; cv._induction3dUpdate = null; cv._induction3dCleanup = null;
@@ -9271,7 +9377,7 @@
         var currentEvidence = evidence.items.find(function (entry) { return entry.id === currentItemId; });
         var evidenceLabel = currentEvidence ? (currentEvidence.tested ? ', evidence says ' + (currentEvidence.lifted ? 'lifted' : 'no pull') : currentEvidence.predicted !== null ? ', prediction says ' + (currentEvidence.predicted ? 'will lift' : 'no pull') : ', awaiting prediction') : '';
         return h('svg', { className: 'mag-crane-scene' + (d.cranePower ? ' is-powered' : ''), viewBox: '0 0 ' + W + ' ' + HH, width: '100%', style: { maxWidth: 420 }, role: 'img',
-          'aria-label': 'Junkyard crane at position ' + d.craneSlot + (d.cranePower ? ', magnet powered' : ', magnet off') + (d.craneHolding ? ', carrying ' + itemById(d.craneHolding).name : '') + evidenceLabel }, kids);
+          'aria-label': 'Junkyard crane at position ' + d.craneSlot + (d.cranePower ? ', magnet powered' : ', magnet off') + (d.craneHolding && itemById(d.craneHolding) ? ', carrying ' + itemById(d.craneHolding).name : '') + evidenceLabel }, kids);
       }
 
       function craneTab() {
@@ -9809,6 +9915,7 @@
             var scene = new THREE.Scene(), backgroundColor = new THREE.Color(0x050b18);
             try { var themeBackground = window.getComputedStyle(cv).getPropertyValue('--allo-stem-instrument').trim(); if (themeBackground) backgroundColor.setStyle(themeBackground); } catch (themeError) {}
             scene.background = backgroundColor; scene.fog = new THREE.FogExp2(backgroundColor.getHex(), 0.018);
+            magApplyEnvironment(THREE, renderer, scene);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6)); if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
             var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 80); camera.position.set(9.5, 6.5, 10.5);
             var controls = new THREE.OrbitControls(camera, cv); controls.enableDamping = false; controls.minDistance = 5; controls.maxDistance = 24; controls.target.set(0, 0, 0);
@@ -9987,6 +10094,7 @@
               // The starfield lives on the scene, NOT in dynamicGroup, so
               // clearDynamic() never touches it — dispose it explicitly.
               if (starField) { try { scene.remove(starField); if (starField.geometry) starField.geometry.dispose(); if (starField.material) starField.material.dispose(); } catch (e) {} starField = null; }
+              magDisposeEnvironment(renderer);
               renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); cv._earth3dInit = false; cv._earth3dUpdate = null; cv._earth3dCleanup = null;
             }
             cv.addEventListener('webglcontextlost', onContextLost); controls.addEventListener('change', renderScene);

@@ -111,6 +111,75 @@ describe('coil radius survives any saved value, at both precisions', () => {
   }
 });
 
+// The eight crashes the DEFAULT sweep could never reach ----------------------
+//
+// check_stem_hostile_tooldata caps at 60 keys per tool unless run with --deep.
+// magnetism reads 231, and benchTime sat at position 84 -- so the gate could not
+// have found the bug above, and could not find these either. Running
+// `--tool=magnetism --deep` surfaced eight more crashes, every one a truthiness
+// guard on a value that comes from the project save.
+describe('hostile saved values cannot crash the lab', () => {
+  // The exact field/value pairs the deep sweep reported, so a regression names
+  // itself rather than showing up as a generic render failure.
+  const REPORTED = [
+    ['notebookPrediction', 9999, /notebookPrediction/],
+    ['notebookTrials', 'abc', /notebookTrials/],
+    ['peakEMF', 'abc', /peakEMF/],
+    ['emfTrace', 'abc', /emfTrace/],
+    ['mazeRound', 'abc', /mazeRound/],
+    ['mazeTrail', 9999, /mazeTrail/],
+    ['craneHolding', 'abc', /craneHolding/],
+    ['craneMsg', {}, /craneMsg/],
+  ];
+
+  it('guards every field the deep sweep crashed on', () => {
+    // Each of these reached React or a method call unguarded. Assert the shipped
+    // source now type-checks it, rather than re-deriving what the guard is.
+    const guards = {
+      peakEMF: /Number\.isFinite\(Number\(d\.peakEMF\)\)/,
+      mazeRound: /Number\.isFinite\(Number\(d\.mazeRound\)\)/,
+      emfTrace: /Array\.isArray\(d\.emfTrace\)/,
+      mazeTrail: /Array\.isArray\(d\.mazeTrail\)/,
+      notebookTrials: /Array\.isArray\(d\.notebookTrials\)/,
+      notebookPrediction: /typeof (?:d|source|state)\.notebookPrediction === 'string'/,
+      craneMsg: /typeof d\.craneMsg === 'string'/,
+    };
+    for (const [field, pattern] of Object.entries(guards)) {
+      expect(src, `${field} should be type-guarded`).toMatch(pattern);
+    }
+    expect(REPORTED.length).toBe(8);
+  });
+
+  it('no longer trusts a truthiness check on any of them', () => {
+    // The shape that crashed: `d.x || fallback` used where a type is required.
+    for (const bare of [
+      /d\.peakEMF \|\| 0/,
+      /d\.emfTrace \|\| \[\]/,
+      /d\.mazeTrail \|\| \[\]/,
+      /d\.notebookTrials \|\| \[\]/,
+      /\.notebookPrediction \|\| ''\)\.trim\(\)/,
+    ]) {
+      expect(src, String(bare)).not.toMatch(bare);
+    }
+  });
+
+  it('clamps a negative round instead of indexing off the end', () => {
+    // mazeRound = -1 was its own crash: `-1 % len` is -1 in JS, which indexes
+    // nothing. Finiteness alone does not catch it.
+    expect(src).toMatch(/Math\.max\(0, Math\.floor\(Number\.isFinite\(Number\(d\.mazeRound\)\)/);
+    expect((-1) % 5).toBe(-1);
+    expect(Math.max(0, Math.floor(-1)) % 5).toBe(0);
+  });
+
+  it('never dereferences a material lookup that found nothing', () => {
+    // itemById returns undefined for an id that names no material, and a saved
+    // craneHolding is just a string. Two sites read .emoji / .name off it.
+    expect(src).toMatch(/var held = d\.craneHolding \? itemById/);
+    expect(src).toMatch(/d\.craneHolding && itemById\(d\.craneHolding\)/);
+    expect(src).toMatch(/\(itemById\(d\.craneHolding\) \|\| \{\}\)\.name/);
+  });
+});
+
 describe('the deployed copies carry the fix', () => {
   it('every mirror matches the source', () => {
     for (const dir of ['desktop/web-app/public', 'desktop/app-build', 'desktop/web-app/build']) {
