@@ -100,8 +100,16 @@ describe('immutable EPPP migration-source archive', () => {
     );
     const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 
-    expect(compatibilityBuilder).toContain('build_eppp_migration_source_archive.cjs');
-    expect(compatibilityBuilder).toContain('build_eppp_learning_library.cjs');
+    // _build_test_prep_hub_module.js was deliberately reduced to a DELEGATOR in
+    // c6842c34c: it used to be a 430-line second copy of the release pipeline
+    // that emitted a different public API, so everything except the EPPP Part 1
+    // refresh now runs through dev-tools/build_test_prep_hub_release.cjs. It
+    // therefore no longer names the archive or library scripts itself, and
+    // asserting that it does was pinning the two-pipeline shape the refactor
+    // removed. What still matters is that the archive stays reachable from this
+    // entry point, so assert the delegation instead — the release builder's own
+    // wiring is asserted directly below.
+    expect(compatibilityBuilder).toContain('build_test_prep_hub_release.cjs');
     expect(compatibilityBuilder).not.toMatch(/repair_eppp_diagram_quality_wave_\d+\.cjs/);
     expect(releaseBuilder).toContain('build_eppp_migration_source_archive.cjs');
     expect(releaseBuilder).toContain('build_eppp_learning_library.cjs');

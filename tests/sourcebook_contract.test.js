@@ -5063,7 +5063,13 @@ describe('Sourcebook initial feature contract', () => {
   });
 
   it('routes the prepared asset through the existing host handoff and retains its credit in Page Designer', () => {
-    const appSource = fs.readFileSync(path.join(root, 'AlloFlowANTI.txt'), 'utf8');
+    // The artwork handoff moved out of the shell into host_handlers during the
+    // ANTI extraction work, so these three pins were reading a file that no
+    // longer owns the behaviour. Read the extracted SOURCE, not the built
+    // module: host_handlers_module.js is minified, which collapses
+    // "usageIntent: ['flexible'" to "usageIntent:['flexible'" and would make an
+    // exact-string pin fail for formatting rather than for substance.
+    const appSource = fs.readFileSync(path.join(root, 'host_handlers_source.jsx'), 'utf8');
     const studioSource = fs.readFileSync(path.join(root, 'studio_module.js'), 'utf8');
     expect(appSource).toContain("setAlloStudioInitialAction('insert-visual-asset')");
     expect(appSource).toContain('attribution: String(artwork.attribution');
