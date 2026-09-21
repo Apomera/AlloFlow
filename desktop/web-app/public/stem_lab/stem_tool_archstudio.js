@@ -2605,7 +2605,10 @@ function __alloAST(k, fb) {
     var blueprintView = d.blueprintView || false;
     var showAnalysis = d.showAnalysis || false;
     var showChallenges = d.showChallenges || false;
-    var activeChallenge = d.activeChallenge != null ? d.activeChallenge : -1;
+    // Indexes `challenges` below. A range check alone is not enough: 1.5 sits
+    // inside [0, length) yet challenges[1.5] is undefined, which threw on
+    // .check(). -1 is the "no challenge selected" sentinel.
+    var activeChallenge = Number.isInteger(d.activeChallenge) ? d.activeChallenge : -1;
     var completedChallenges = d.completedChallenges && typeof d.completedChallenges === 'object' && !Array.isArray(d.completedChallenges) ? d.completedChallenges : {};
     var threeReady = ctx.toolData && ctx.toolData._threeLoaded;
 
@@ -2634,7 +2637,7 @@ function __alloAST(k, fb) {
     var filterMaterial = typeof d.filterMaterial === 'string' && ARCH_MATERIAL_IDS[d.filterMaterial] ? d.filterMaterial : '';
     var filterShape = typeof d.filterShape === 'string' && ARCH_SHAPE_IDS[d.filterShape] ? d.filterShape : '';
     var budgetEnabled = d.budgetEnabled || false;
-    var budget = d.budget != null ? d.budget : 200;
+    var budget = (typeof d.budget === 'number' && isFinite(d.budget)) ? d.budget : 200;
     var aiAdvice = d.aiAdviceBuildSignature === currentBuildSignature ? (d.aiAdvice || '') : '';
     var aiLoading = !!window.__archAiPendingReqId
       && d.aiRequestId === window.__archAiPendingReqId

@@ -453,6 +453,10 @@
       var canvasRef = useRef(null), stageRef = useRef(null), rendererRef = useRef(null), runtimeRef = useRef(null), frameRef = useRef(null), settingsRef = useRef(null), replaySnapshotRef = useRef(null), keysDialogRef = useRef(null), keysCloseRef = useRef(null), keysOpenerRef = useRef(null);
       function restoreOneOf(value, allowed, fallback) { return allowed.indexOf(value) >= 0 ? value : fallback; }
       function restoreNumber(value, min, max, fallback) { var n = Number(value); return isFinite(n) ? clamp(n, min, max) : fallback; }
+      // A saved project is INPUT. `|| ''` only catches the falsy cases, so a
+      // stored number (9999) or object survived and then threw on .trim() —
+      // these notebook fields are trimmed at a dozen sites.
+      function restoreText(value) { return typeof value === 'string' ? value : ''; }
       var [preset, setPreset] = useState(restoreOneOf(bucket.preset, ['solid', 'liquid', 'gas', 'diffusion', 'osmosis'], 'gas'));
       var [temperature, setTemperature] = useState(bucket.temperature == null ? 300 : restoreNumber(bucket.temperature, 40, 900, 300));
       var [count, setCount] = useState(bucket.count == null ? 64 : restoreNumber(bucket.count, 24, 120, 64));
@@ -515,10 +519,10 @@
       cssFsRef.current = cssFullscreen;
       var fsActive = isFullscreen || cssFullscreen;
       var [activeProtocol, setActiveProtocol] = useState(bucket.activeProtocol || 'free');
-      var [prediction, setPrediction] = useState(bucket.prediction || '');
-      var [observation, setObservation] = useState(bucket.observation || '');
-      var [conclusion, setConclusion] = useState(bucket.conclusion || '');
-      var [coachFeedback, setCoachFeedback] = useState(bucket.coachFeedback || '');
+      var [prediction, setPrediction] = useState(restoreText(bucket.prediction));
+      var [observation, setObservation] = useState(restoreText(bucket.observation));
+      var [conclusion, setConclusion] = useState(restoreText(bucket.conclusion));
+      var [coachFeedback, setCoachFeedback] = useState(restoreText(bucket.coachFeedback));
       var [activeIdea, setActiveIdea] = useState(COMMON_IDEAS.some(function (idea) { return idea.id === bucket.activeIdea; }) ? bucket.activeIdea : '');
       var [isCoaching, setIsCoaching] = useState(false);
       var [quality, setQuality] = useState(restoreOneOf(bucket.quality, ['eco', 'balanced', 'ultra'], 'balanced'));
