@@ -2259,7 +2259,9 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════
       // BUDGET STATE
       // ══════════════════════════════════════════
-      var budgetIncome = (typeof d.budgetIncome === 'number' && isFinite(d.budgetIncome)) ? d.budgetIncome : 3000;
+      // isFinite alone let a negative through, and every category then showed a
+      // negative default ("Housing $-150") — not a state a budget can be in.
+      var budgetIncome = (typeof d.budgetIncome === 'number' && isFinite(d.budgetIncome) && d.budgetIncome >= 0) ? d.budgetIncome : 3000;
       var budgetExp = d.budgetExp || {};
       var needsTotal = 0, wantsTotal = 0, savesTotal = 0;
       BUDGET_CATEGORIES.forEach(function(cat) {
@@ -2273,6 +2275,16 @@ window.StemLab = window.StemLab || {
       var budgetNeedsPct = budgetIncome > 0 ? Math.round(needsTotal / budgetIncome * 100) : 0;
       var budgetWantsPct = budgetIncome > 0 ? Math.round(wantsTotal / budgetIncome * 100) : 0;
       var budgetSavesPct = budgetIncome > 0 ? Math.round(savesTotal / budgetIncome * 100) : 0;
+      // The shipped defaults land at 62/18/20 against a 50/30/20 goal, so the tab
+      // opens already "failing" the rule it teaches. That is honest — housing at
+      // 30% of income is realistic and most real budgets do miss the target — but
+      // unexplained it reads as a bug. Name the gap and what it would take to close
+      // it, from the live numbers rather than the defaults.
+      var BUDGET_GOALS = { need: 50, want: 30, save: 20 };
+      var budgetNeedsGap = budgetNeedsPct - BUDGET_GOALS.need;
+      var budgetSavesGap = budgetSavesPct - BUDGET_GOALS.save;
+      // Dollars of "needs" that would have to move to reach the 50% target.
+      var budgetNeedsOverBy = Math.max(0, Math.round(needsTotal - budgetIncome * BUDGET_GOALS.need / 100));
 
       // Savings goal calculator
       var savingsGoal = d.savingsGoal || 10000;
@@ -6779,15 +6791,26 @@ window.StemLab = window.StemLab || {
             // 50/30/20 bar
             h('div', { className: 'space-y-1' },
               h('div', { className: 'flex justify-between text-[11px] font-bold' },
-                h('span', { className: 'text-blue-600' }, 'Needs ' + budgetNeedsPct + '% (goal: 50%)'),
+                h('span', { className: 'text-blue-600' }, 'Needs ' + budgetNeedsPct + '% (goal: 50%)' +
+                  (budgetTotalSpent > 0 && budgetNeedsGap > 0 ? ' \u2014 over by ' + budgetNeedsGap : '')),
                 h('span', { className: 'text-purple-600' }, 'Wants ' + budgetWantsPct + '% (goal: 30%)'),
-                h('span', { className: 'text-emerald-700' }, 'Savings ' + budgetSavesPct + '% (goal: 20%)')
+                h('span', { className: 'text-emerald-700' }, 'Savings ' + budgetSavesPct + '% (goal: 20%)' +
+                  (budgetTotalSpent <= 0 ? '' : budgetSavesGap >= 0 ? ' \u2705' : ' \u2014 under by ' + Math.abs(budgetSavesGap)))
               ),
               h('div', { className: 'h-5 rounded-full overflow-hidden flex bg-slate-200' },
                 needsTotal > 0 && h('div', { style: { width: budgetNeedsPct + '%', background: '#2563eb' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, fmtMoney(needsTotal)),
                 wantsTotal > 0 && h('div', { style: { width: budgetWantsPct + '%', background: '#7c3aed' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, fmtMoney(wantsTotal)),
                 savesTotal > 0 && h('div', { style: { width: budgetSavesPct + '%', background: '#047857' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, fmtMoney(savesTotal))
-              )
+              ),
+              // Why the starting budget misses the rule — the lesson, not an error.
+              budgetIncome > 0 && budgetNeedsOverBy > 0 && h('p', { className: 'text-[11px] text-slate-700 mt-2 p-2 rounded-lg bg-amber-50 border border-amber-300' },
+                __alloT('stem.lifeskills.budget_needs_over_goal', 'Most real budgets start here.') + ' ' +
+                'Needs are ' + budgetNeedsGap + ' points over the 50% goal, usually because of housing. ' +
+                'Reaching 50% would mean moving ' + fmtMoney(budgetNeedsOverBy) + '/month out of needs \u2014 ' +
+                'a cheaper place, a roommate, or a lower car payment. ' +
+                __alloT('stem.lifeskills.budget_rule_is_a_target', '50/30/20 is a target to steer by, not a pass/fail test.')),
+              budgetIncome > 0 && budgetTotalSpent > 0 && budgetNeedsOverBy === 0 && h('p', { className: 'text-[11px] text-slate-700 mt-2 p-2 rounded-lg bg-emerald-50 border border-emerald-300' },
+                __alloT('stem.lifeskills.budget_needs_within_goal', '\u2705 Needs are within the 50% goal. That leaves room for wants and savings to do their job.'))
             ),
             // Category sliders
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3' },
