@@ -1183,6 +1183,33 @@
     var rodFrac = typeof sp.rods === 'number' ? sp.rods / 100 : 0.5;
     var hot = typeof sp.hot === 'number' ? sp.hot : 0;          // 0..1 how hot the core is
 
+    // Blend between stops on a 0..1 scale. The core used to pick its colour
+    // from hard thresholds, which meant the last 300 degrees before cladding
+    // failure -- more than half the blackout scenario, and the whole point of
+    // it -- looked identical to 900 C. Interpolating makes the climb visible
+    // while it is happening rather than in two jumps.
+    var nkMix = function (a, b, f) {
+      var pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+      var ar = (pa >> 16) & 255, ag = (pa >> 8) & 255, ab = pa & 255;
+      var br = (pb >> 16) & 255, bg = (pb >> 8) & 255, bb = pb & 255;
+      var t = f < 0 ? 0 : (f > 1 ? 1 : f);
+      var r = Math.round(ar + (br - ar) * t);
+      var g = Math.round(ag + (bg - ag) * t);
+      var bl = Math.round(ab + (bb - ab) * t);
+      return '#' + ((1 << 24) + (r << 16) + (g << 8) + bl).toString(16).slice(1);
+    };
+    // Walk a list of [stop, colour] pairs.
+    var nkRamp = function (stops, f) {
+      if (f <= stops[0][0]) return stops[0][1];
+      for (var i = 1; i < stops.length; i++) {
+        if (f <= stops[i][0]) {
+          var span = stops[i][0] - stops[i - 1][0];
+          return nkMix(stops[i - 1][1], stops[i][1], span <= 0 ? 0 : (f - stops[i - 1][0]) / span);
+        }
+      }
+      return stops[stops.length - 1][1];
+    };
+
     var colourOf = function (id) {
       if (contrast) return '#ffffff';
       for (var i = 0; i < RX_PARTS.length; i++) if (RX_PARTS[i].id === id) return RX_PARTS[i].color;
@@ -1217,7 +1244,7 @@
     picks.push(vessel);
 
     // coolant volume, tinted by temperature
-    var coolCol = hot > 0.66 ? '#f87171' : (hot > 0.33 ? '#fb923c' : '#60a5fa');
+    var coolCol = nkRamp([[0, '#60a5fa'], [0.45, '#38bdf8'], [0.7, '#fb923c'], [1, '#f87171']], hot);
     var cool = new THREE.Mesh(new THREE.CylinderGeometry(R + 0.05, R + 0.05, H + 0.2, 24),
       mat('coolant', { colour: contrast ? '#ffffff' : coolCol, opacity: contrast ? 1 : 0.16 }));
     anchor.add(cool);
@@ -1229,7 +1256,11 @@
     var rodGroup = new THREE.Group();
     var fuelGeo = new THREE.CylinderGeometry(0.055, 0.055, H, 8);
     var rodGeo = new THREE.CylinderGeometry(0.045, 0.045, H, 8);
-    var glow = hot > 0.5 ? (hot > 0.8 ? '#7f1d1d' : '#4a2405') : '#000000';
+    // Emissive only starts to show once the fuel is genuinely hot, so normal
+    // operation still reads as unremarkable -- which is the lesson of the
+    // steady scenario. Past that it climbs smoothly to a glowing red.
+    var glow = nkRamp([[0, '#000000'], [0.35, '#000000'], [0.6, '#4a2405'],
+                       [0.85, '#7f1d1d'], [1, '#dc2626']], hot);
     var gx, gz, px, pz, isRod, m, n = 0;
     for (gx = -4; gx <= 4; gx++) {
       for (gz = -4; gz <= 4; gz++) {
@@ -2684,7 +2715,12 @@
 
             // sync only what the React controls actually need
             var rodStep = Math.round(s.rods / 5) * 5;
-            var hotStep = s.t > 900 ? 2 : (s.t > 450 ? 1 : 0);
+            // 0..1 across the band that matters: reference coolant temperature up to
+            // cladding failure. Twelve steps, so the climb is visible while it
+            // happens rather than in two jumps (see rxBuildCore's colour ramp).
+            var hotFrac = (s.t - RX_T_REF) / (RX_T_CLAD - RX_T_REF);
+            hotFrac = hotFrac < 0 ? 0 : (hotFrac > 1 ? 1 : hotFrac);
+            var hotStep = Math.round(hotFrac * 12);
             if (!advancing || !s.lastSync || ts - s.lastSync > 400) {
               s.lastSync = ts;
               var runningNow = el.dataset.running === 'on' && !s.verdict;
@@ -2747,7 +2783,7 @@
           dark: isDark,
           contrast: ctx.theme === 'contrast',
           reduced: nkReduceMotion,
-          sceneProps: { rods: rxUi.rodStep, hot: rxUi.hotStep / 2 },
+          sceneProps: { rods: rxUi.rodStep, hot: rxUi.hotStep / 12 },
           sceneKey: rxUi.rodStep + ':' + rxUi.hotStep,
           onPick: function (id) {
             upd({ rxPart: id });
