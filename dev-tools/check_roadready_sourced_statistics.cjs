@@ -140,6 +140,21 @@ const CLAIMS = [
       'adult 275-day refusal suspension under §2521',
   },
   {
+    label: 'all-season rubber stiffening threshold',
+    re: /All-season rubber starts stiffening below about (\d{2})°F/,
+    min: 45, max: 45,
+    source: 'Industry standard 7°C / 45°F — the point where a winter tire begins to out-grip an ' +
+      'all-season. The tool previously said "below 20°F", which understated the window by 25°F ' +
+      'AND contradicted the 45°F figure it states in three other places.',
+  },
+  {
+    label: 'winter-tire stopping distance on packed snow at 30 mph',
+    re: /a winter tire stops in roughly (\d{2}) ft/,
+    min: 55, max: 65,
+    source: 'Winter tire ~59 ft on packed snow at 30 mph; an all-season needs ~30 ft more. The ' +
+      'tool previously claimed winter tires "halve your stopping distance", which overstates it.',
+  },
+  {
     label: 'NWS depth that carries away most cars',
     re: /(\d{2}) inches to carry away most cars/,
     min: 12, max: 12,

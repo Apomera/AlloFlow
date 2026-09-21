@@ -68858,7 +68858,7 @@
       "all_handheld_phone_use_banned_while_dr": "Maine §2121: handheld phone/device interaction is banned while operating, including when temporarily stopped in traffic. Texting: ",
       "all_handheld_use_banned_texting_250": " handheld first offense $50; texting starts at $250; hands-free only 18+ and not permit/intermediate.",
       "all_in_drive_controls_at_a_glance": "All in-drive controls at a glance.",
-      "all_season_tires_lose_roughly_40_of_th": "All-season tires lose roughly 40% of their grip below 20°F because the rubber stiffens. Dedicated winter tires stay flexible and can halve your stopping distance on snow. Maine law allows studs Oct 1–May 1.",
+      "all_season_tires_lose_roughly_40_of_th": "All-season rubber starts stiffening below about 45°F (7°C) — that is the industry threshold where a winter tire begins to out-grip it, and it is well above freezing, so the window opens earlier in the fall than most people expect. Winter compounds stay pliable: on packed snow at 30 mph a winter tire stops in roughly 59 ft where an all-season needs about 30 ft more — two car lengths. Maine law allows studs Oct 1–May 1.",
       "allows_wheels_to_spin_at_different_spe": "Allows wheels to spin at different speeds in turns (outer wheel goes further). Essential for cornering.",
       "also_applies_to_stopped_tow_trucks_uti": " Applies to stationary disabled vehicles and vehicles using flashing lights, including tow, utility, roadside assistance, and responders.",
       "alternator": "Alternator",
