@@ -345,3 +345,107 @@ describe('Report Writer safety helpers', () => {
   });
 
 });
+
+// ── Redaction disclosure panel (Step 2) ────────────────────────────────────
+//
+// WHY: the scrubber cannot catch every identifier in free clinical text, and a
+// silent partial redaction is worse than a stated one. The panel tells the
+// clinician what WILL and WILL NOT be replaced before anything is sent, and the
+// highest-stakes case is the one with no student name set: redaction is then
+// doing nothing by name, which the person pasting a history has no way to know.
+describe('Report Writer redaction disclosure', () => {
+  const mountWithBackground = async (props) => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = createRoot(host);
+    await React.act(async () => {
+      root.render(React.createElement(ReportWriter, Object.assign({
+        onClose: vi.fn(),
+        callGemini: vi.fn(async () => '{"results":[]}'),
+        addToast: vi.fn(),
+        t: key => key,
+        behaviorLensData: null,
+        longitudinalData: null,
+        dashboardData: []
+      }, props || {})));
+    });
+    return { host, root };
+  };
+
+  const gotoStep2 = async (host) => {
+    const steps = Array.from(host.querySelectorAll('nav[aria-label="Report Writer steps"] button'));
+    await click(steps[1]);
+  };
+
+  const typeBackground = async (host, text) => {
+    const areas = Array.from(host.querySelectorAll('textarea'));
+    const target = areas[0];
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+    await React.act(async () => {
+      setter.call(target, text);
+      target.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  };
+
+  it('WARNS when no student name is set — nothing is redacted by name', async () => {
+    localStorage.clear();
+    const { host, root } = await mountWithBackground({ studentNickname: '' });
+    await gotoStep2(host);
+    await typeBackground(host, 'Sam Rivera was referred for evaluation.');
+    const panel = host.querySelector('[data-redaction-disclosure]');
+    expect(panel).toBeTruthy();
+    expect(panel.getAttribute('data-redaction-disclosure')).toBe('attention');
+    expect(panel.textContent).toContain('No student name is set');
+    await React.act(async () => root.unmount());
+    host.remove();
+  });
+
+  it('reports clean once a name is set and nothing risky is present', async () => {
+    localStorage.clear();
+    const { host, root } = await mountWithBackground({ studentNickname: 'Sam Rivera' });
+    await gotoStep2(host);
+    await typeBackground(host, 'The student was referred by the school team.');
+    const panel = host.querySelector('[data-redaction-disclosure]');
+    expect(panel).toBeTruthy();
+    expect(panel.getAttribute('data-redaction-disclosure')).toBe('clean');
+    await React.act(async () => root.unmount());
+    host.remove();
+  });
+
+  it('names the common-word parts it will NOT redact', async () => {
+    localStorage.clear();
+    const { host, root } = await mountWithBackground({ studentNickname: 'Mark Hall' });
+    await gotoStep2(host);
+    await typeBackground(host, 'Mark will mark the answer sheet.');
+    const panel = host.querySelector('[data-redaction-disclosure]');
+    expect(panel.getAttribute('data-redaction-disclosure')).toBe('attention');
+    expect(panel.textContent).toContain('Not redacted');
+    expect(panel.textContent).toContain('Mark');
+    await React.act(async () => root.unmount());
+    host.remove();
+  });
+
+  it('offers a people editor so other names redact by role', async () => {
+    localStorage.clear();
+    const { host, root } = await mountWithBackground({ studentNickname: 'Sam Rivera' });
+    await gotoStep2(host);
+    await typeBackground(host, 'Mother reported concerns at intake.');
+    const addButton = host.querySelector('[data-add-person]');
+    expect(addButton).toBeTruthy();
+    await click(addButton);
+    const roleSelect = host.querySelector('[data-redaction-disclosure] select');
+    expect(roleSelect).toBeTruthy();
+    expect(Array.from(roleSelect.options).map(o => o.value)).toContain('Mother');
+    await React.act(async () => root.unmount());
+    host.remove();
+  });
+
+  it('shows no panel when there is no background text to send', async () => {
+    localStorage.clear();
+    const { host, root } = await mountWithBackground({ studentNickname: 'Sam Rivera' });
+    await gotoStep2(host);
+    expect(host.querySelector('[data-redaction-disclosure]')).toBeNull();
+    await React.act(async () => root.unmount());
+    host.remove();
+  });
+});

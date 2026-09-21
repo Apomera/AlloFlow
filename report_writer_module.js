@@ -827,7 +827,249 @@ function toMarkdown(result) {
       _extractScoreCitations: extractScoreCitations,
     });
   })();
+
 }
+
+    // USED_CHUNKS is the report's citation trail: it is what lets a clinician
+    // ask "where did this sentence come from?". The model supplies those ids,
+    // so they are a CLAIM about provenance, not proof of it — an id naming no
+    // real chunk used to be stored verbatim, leaving an audit trail that
+    // looked intact while pointing at nothing. Ids are now checked against
+    // the chunks actually supplied to the prompt; unknown ids are dropped
+    // from the trail and reported separately so the caller can surface them.
+    //
+    // `knownChunkIds` optional: when omitted (callers that have no chunk list
+    // in scope) behaviour is unchanged and nothing is dropped.
+const parseEvidenceResponse = (rawResult, knownChunkIds) => {
+        const lines = String(rawResult == null ? '' : rawResult).trim().split('\n');
+        let usedChunks = [];
+        let textLines = [];
+        for (let i = lines.length - 1; i >= 0; i--) {
+            const line = lines[i].trim();
+            if (line.startsWith('USED_CHUNKS:')) {
+                usedChunks = line.replace('USED_CHUNKS:', '').split(',').map(s => s.trim()).filter(Boolean);
+                textLines = lines.slice(0, i);
+                break;
+            }
+        }
+        if (textLines.length === 0) textLines = lines;
+        let unknownChunks = [];
+        if (knownChunkIds) {
+            // Accept a Set, an array of ids, or an array of chunk objects.
+            const known = knownChunkIds instanceof Set
+                ? knownChunkIds
+                : new Set((Array.isArray(knownChunkIds) ? knownChunkIds : [])
+                    .map(c => (c && typeof c === 'object') ? c.id : c)
+                    .filter(Boolean));
+            if (known.size > 0) {
+                unknownChunks = usedChunks.filter(id => !known.has(id));
+                usedChunks = usedChunks.filter(id => known.has(id));
+            }
+        }
+        return { text: textLines.join('\n').trim(), usedChunks, unknownChunks };
+    };
+if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assign(window.AlloReportWriterTesting || {}, { parseEvidenceResponse: parseEvidenceResponse });
+
+// Split background text into OVERLAPPING windows for fact extraction.
+// Pure + module-scope so it is directly testable: the old code truncated at
+// 4000 chars inside an async handler, which is exactly the kind of silent
+// data loss that no test could reach.
+//
+// Returns { windows, capped, totalWindows }. `capped` is true when the text
+// needed more windows than maxWindows, so the caller can DISCLOSE the limit
+// rather than quietly extracting from a prefix.
+const buildExtractionWindows = (text, opts) => {
+    const o = opts || {};
+    const size = o.size || 4000;
+    const overlap = o.overlap || 400;
+    const maxWindows = o.maxWindows || 8;
+    const src = String(text == null ? '' : text);
+    if (!src) return { windows: [], capped: false, totalWindows: 0 };
+    const step = Math.max(1, size - overlap);
+    const all = [];
+    for (let pos = 0; pos < src.length; pos += step) {
+        all.push(src.substring(pos, pos + size));
+        if (pos + size >= src.length) break;
+    }
+    return {
+        windows: all.slice(0, maxWindows),
+        capped: all.length > maxWindows,
+        totalWindows: all.length
+    };
+};
+if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assign(window.AlloReportWriterTesting || {}, { buildExtractionWindows: buildExtractionWindows });
+
+// Pure predicate behind the export lock. Extracted to module scope so the
+// gate's conditions are directly testable: this decides whether a clinical
+// report can leave the tool as a formal document, and it previously existed
+// only as an inline boolean inside a 3000-line component.
+//
+// `unsourced` findings do not hard-block (some narrative connective tissue is
+// legitimately unsourced) but DO require an explicit acknowledgement, so a
+// clinician cannot sign past untraceable assertions without seeing them.
+const evaluateExportGate = (s) => {
+    const st = s || {};
+    const reasons = [];
+    if (!st.hasSections) reasons.push('no-content');
+    if (st.auditStatus !== 'passed') reasons.push('audit-not-passed');
+    if (!st.auditIsCurrent) reasons.push('audit-stale');
+    if ((st.blockingCount || 0) > 0) reasons.push('blocking-findings');
+    if (!st.psycheckIsCurrent) reasons.push('psycheck-stale');
+    if ((st.psycheckBlockingCount || 0) > 0) reasons.push('psycheck-findings');
+    if ((st.unsourcedCount || 0) > 0 && !st.unsourcedAcknowledged) reasons.push('unsourced-unacknowledged');
+    const canAttest = reasons.length === 0;
+    if (!st.clinicianAttested) reasons.push('not-attested');
+    return { ready: reasons.length === 0, canAttest: canAttest, reasons: reasons };
+};
+if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assign(window.AlloReportWriterTesting || {}, { evaluateExportGate: evaluateExportGate });
+
+// Redact student-identifying text before it leaves the browser for an AI
+// provider. 18 call sites route prompt text through this.
+//
+// DESIGN CONSTRAINT: never damage clinical meaning. This is ONE safeguard among
+// several, not the only one, so a miss is recoverable while a silent corruption
+// is not -- the scrub happens on the way OUT, so the clinician never sees the
+// mangled text the model actually reasoned over.
+//
+// Consequences:
+//   1. A name part that is also an ordinary English word is NOT redacted.
+//      Students are named Mark, Grace, Hope, Will, Hall, Berry. Redacting those
+//      would turn "will mark the answer" into "[Student] [Student] the answer".
+//      Such parts are REPORTED instead (analyzeRedaction) so the clinician can
+//      decide.
+//   2. Role is preserved: [Student] / [Mother] / [Teacher], never a flat [NAME].
+//      "mother reports X, teacher reports Y" is the informant distinction a
+//      psychoeducational report is built on.
+//   3. Age-relative timing ("at 18 months", "2nd grade level", "15 minutes") is
+//      KEPT. Only full calendar dates are redacted: regression at 18 months is a
+//      clinical fact, the date it was recorded is not.
+const NAME_PARTICLES = new Set(['de', 'del', 'della', 'der', 'di', 'du', 'la', 'le', 'van', 'von', 'bin', 'al', 'st', 'mc', 'mac', 'jr', 'sr', 'ii', 'iii', 'iv']);
+
+// Name parts that are also common English words. Redacting these corrupts
+// ordinary clinical prose, so they are surfaced to the clinician instead.
+const COMMON_WORD_NAMES = new Set(['mark', 'grace', 'hope', 'will', 'faith', 'joy', 'rose', 'daisy', 'lily', 'violet', 'summer', 'autumn', 'april', 'may', 'june', 'august', 'hall', 'berry', 'reed', 'bell', 'storm', 'justice', 'chase', 'brook', 'brooke', 'dean', 'earl', 'king', 'price', 'rich', 'young', 'long', 'short', 'small', 'white', 'black', 'brown', 'green', 'gray', 'grey', 'stone', 'wood', 'woods', 'field', 'fields', 'rivers', 'banks', 'bridge', 'cross', 'drew', 'frank', 'gene', 'art', 'bill', 'don', 'jack', 'rob', 'sue', 'pat', 'max', 'ray', 'dawn', 'holly', 'ivy', 'pearl', 'ruby', 'sunny', 'angel', 'baker', 'carter', 'cook', 'fisher', 'hunter', 'miller', 'parker', 'porter', 'potter', 'taylor', 'turner', 'walker', 'ward', 'wright']);
+
+const escapeRegExp = (value) => String(value == null ? '' : value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Split a name into { safe, risky } parts. `safe` can be redacted without
+// touching ordinary prose; `risky` collides with common English and is left
+// alone so the narrative survives intact.
+const nameRedactionParts = (fullName) => {
+    const raw = String(fullName == null ? '' : fullName).trim();
+    if (!raw) return { safe: [], risky: [] };
+    const parts = raw.split(/[\s,]+/)
+        .map(p => p.replace(/[.'"]+$/, '').trim())
+        .filter(p => p.length > 1 && !NAME_PARTICLES.has(p.toLowerCase()));
+    const safe = [];
+    const risky = [];
+    parts.forEach(p => {
+        if (COMMON_WORD_NAMES.has(p.toLowerCase())) risky.push(p);
+        else safe.push(p);
+    });
+    safe.sort((a, b) => b.length - a.length);
+    return { safe: safe, risky: risky };
+};
+
+// Collect { name, token } for the student plus every other person the clinician
+// named. `people`: [{ name, role }] where role is a label like 'Mother'.
+const redactionEntries = (opts) => {
+    const o = opts || {};
+    const entries = [];
+    const primary = String(o.studentName == null ? '' : o.studentName).trim();
+    if (primary) entries.push({ name: primary, token: '[Student]' });
+    (Array.isArray(o.people) ? o.people : []).forEach(entry => {
+        if (!entry) return;
+        const nm = String(entry.name == null ? '' : entry.name).trim();
+        if (!nm) return;
+        const role = String(entry.role || 'Name').trim() || 'Name';
+        entries.push({ name: nm, token: '[' + role + ']' });
+    });
+    return entries;
+};
+
+const scrubIdentifiers = (text, options) => {
+    if (!text) return text;
+    const opts = options || {};
+    let out = String(text);
+    const entries = redactionEntries(opts);
+
+    // Pass 1: every FULL multi-word name, longest first. This must complete
+    // before any single-part pass, or a shared family surname gets claimed by
+    // whoever ran first and the other person's full name is then half-redacted
+    // ("[Student] [Mother]").
+    entries.slice()
+        .sort((a, b) => b.name.length - a.name.length)
+        .forEach(function (item) {
+            const seq = item.name.split(/\s+/).filter(Boolean).map(escapeRegExp);
+            if (seq.length < 2) return;
+            // Whitespace-tolerant so double spaces and line wraps still match.
+            out = out.replace(new RegExp('\\b' + seq.join('[\\s\\n]+') + '\\b', 'gi'), item.token);
+            // "Surname, First" as rosters and protocols print it.
+            out = out.replace(new RegExp('\\b' + seq.slice().reverse().join(',[\\s\\n]+') + '\\b', 'gi'), item.token);
+        });
+
+    // Pass 2: single name parts. A part shared by more than one person is
+    // ambiguous alone -- "Rivera attended" could be either -- so it becomes a
+    // neutral [NAME] rather than guessing a role.
+    const partOwners = new Map();
+    entries.forEach(function (item) {
+        nameRedactionParts(item.name).safe.forEach(function (part) {
+            const key = part.toLowerCase();
+            if (!partOwners.has(key)) partOwners.set(key, { part: part, tokens: [] });
+            const rec = partOwners.get(key);
+            if (rec.tokens.indexOf(item.token) === -1) rec.tokens.push(item.token);
+        });
+    });
+    Array.from(partOwners.values())
+        .sort((a, b) => b.part.length - a.part.length)
+        .forEach(function (rec) {
+            const token = rec.tokens.length === 1 ? rec.tokens[0] : '[NAME]';
+            out = out.replace(new RegExp('\\b' + escapeRegExp(rec.part) + '\\b', 'gi'), token);
+        });
+
+    // Structured identifiers. Order matters: SSN before the generic phone
+    // pattern, which would otherwise consume a 9-digit run.
+    out = out.replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[EMAIL]');
+    out = out.replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN]');
+    out = out.replace(/(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/g, '[PHONE]');
+    out = out.replace(/\b(?:student\s*id|district\s*id|medicaid|case\s*(?:no|number)|dob)\s*[:#-]?\s*[A-Z0-9/-]+\b/gi, '[IDENTIFIER]');
+    out = out.replace(/\b\d{1,5}\s+[A-Z][A-Za-z]*\s+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Court|Ct|Way|Place|Pl|Terrace|Ter)\b\.?/gi, '[ADDRESS]');
+    // Calendar dates ONLY. Ages, durations and grade levels are clinical data.
+    out = out.replace(/\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/g, '[DATE]');
+    out = out.replace(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s*\d{2,4}\b/gi, '[DATE]');
+    return out;
+};
+
+// What redaction will and will not cover for this text. Drives the pre-send
+// disclosure: no regex catches every identifier, so the clinician is shown what
+// survives and decides. This is the honest half of the feature.
+const analyzeRedaction = (text, options) => {
+    const opts = options || {};
+    const src = String(text == null ? '' : text);
+    const hasName = !!String(opts.studentName == null ? '' : opts.studentName).trim();
+    const present = (word) => new RegExp('\\b' + escapeRegExp(word) + '\\b', 'i').test(src);
+    const risky = [];
+    redactionEntries(opts).forEach(function (item) {
+        nameRedactionParts(item.name).risky.forEach(function (p) {
+            if (present(p) && risky.indexOf(p) === -1) risky.push(p);
+        });
+    });
+    // Titled people the clinician never entered -- a grandmother, a classmate's
+    // parent, a consulting specialist -- so unlisted names still get flagged.
+    const titled = [];
+    const titleRe = /\b(?:Mr|Mrs|Ms|Miss|Dr|Prof|Coach|Principal|Nurse)\.?\s+([A-Z][a-z]{2,})\b/g;
+    let m;
+    while ((m = titleRe.exec(src)) !== null) {
+        if (titled.indexOf(m[1]) === -1) titled.push(m[1]);
+    }
+    return {
+        hasStudentName: hasName,
+        riskyNameParts: risky,
+        unlistedTitledNames: titled,
+        needsAttention: !hasName || risky.length > 0 || titled.length > 0
+    };
+};
+if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assign(window.AlloReportWriterTesting || {}, { scrubIdentifiers: scrubIdentifiers, nameRedactionParts: nameRedactionParts, analyzeRedaction: analyzeRedaction });
 // ─── PSYCHECK-INLINE-END ───
 
     const RESTORATIVE_PREAMBLE = `IMPORTANT — Language Guidelines: Use person-first, strengths-based language throughout your response. Frame challenges as unmet needs or lagging skills, not deficits. Say "the student demonstrates difficulty with..." rather than "the student refuses to..." or "is non-compliant." Avoid punitive framing; focus on teaching replacement skills and building supportive environments.`;
@@ -1426,11 +1668,20 @@ function toMarkdown(result) {
             throw new Error(`Unsupported report schema version: ${data.schemaVersion}`);
         }
         const stringFields = ['reportTitle', 'manualStudentName', 'selectedStudentId', 'studentAge', 'studentGrade', 'selectedAssessment', 'styleProfile', 'reportType', 'translatedReport', 'translationLang'];
-        const arrayFields = ['scoreEntries', 'factChunks', 'accuracyResults', 'hypotheses', 'selectedHypotheses', 'blueprint'];
+        const arrayFields = ['scoreEntries', 'factChunks', 'accuracyResults', 'hypotheses', 'selectedHypotheses', 'blueprint', 'reportPeople'];
         const objectFields = ['bgSections', 'clinicalObs', 'reportSections', 'differentialResults', 'sectionEvidenceMap'];
         stringFields.forEach(key => { if (data[key] != null && typeof data[key] !== 'string') throw new Error(`${key} must be text`); });
         arrayFields.forEach(key => { if (data[key] != null && !Array.isArray(data[key])) throw new Error(`${key} must be a list`); });
         objectFields.forEach(key => { if (data[key] != null && !isPlainObject(data[key])) throw new Error(`${key} must be an object`); });
+        // Redaction depends on these being {name, role} strings; a malformed
+        // import would otherwise silently drop names from redaction.
+        if (data.reportPeople) {
+            data.reportPeople.forEach((row, index) => {
+                if (!isPlainObject(row) || (row.name != null && typeof row.name !== 'string') || (row.role != null && typeof row.role !== 'string')) {
+                    throw new Error(`Person ${index + 1} is invalid`);
+                }
+            });
+        }
         if (data.reportSections) {
             for (const [name, text] of Object.entries(data.reportSections)) {
                 if (!name.trim() || typeof text !== 'string') throw new Error('Every report section must have a text name and value');
@@ -1597,6 +1848,14 @@ function toMarkdown(result) {
         // Step 5: Accuracy
         const [accuracyResults, setAccuracyResults] = useState([]);
         const [clinicianAttested, setClinicianAttested] = useState(false);
+        // Acknowledgement that the clinician has read the audit's unsourced-claim
+        // list. Pinned to the audited fingerprint like the attestation itself, so
+        // editing the report retracts it rather than carrying a stale sign-off.
+        const [unsourcedAcknowledged, setUnsourcedAcknowledged] = useState(false);
+        // Other individuals named in the clinician's text, as [{name, role}].
+        // Redacted with their ROLE as the token so the informant distinction
+        // ('mother reports X, teacher reports Y') survives redaction.
+        const [reportPeople, setReportPeople] = useState([]);
         const [checking, setChecking] = useState(false);
         const [auditStatus, setAuditStatus] = useState('not_run');
         const [auditedFingerprint, setAuditedFingerprint] = useState(null);
@@ -1643,6 +1902,13 @@ function toMarkdown(result) {
         // narrative; routing them through any persistence path would
         // join the Tier-2 leak surface.
         const [discrepancyReport, setDiscrepancyReport] = useState(null);
+        // Sections the automated score verifier did not clear, as
+        // [{section, reason}]. Render-only; drives the disclosure banner so a
+        // never-checked section cannot read as a checked-and-clean one.
+        const [unverifiedSections, setUnverifiedSections] = useState([]);
+        // Evidence ids the model cited that match no verified chunk, as
+        // [{section, ids}]. Dropped from the citation trail, surfaced here.
+        const [badCitations, setBadCitations] = useState([]);
         const [psycheckFingerprint, setPsycheckFingerprint] = useState(null);
         // ─── Phase D — Dynamic Assessment ingestion ───
         // When DA Studio writes window.__alloDAExport, surface a banner
@@ -1742,7 +2008,8 @@ function toMarkdown(result) {
         const reportFingerprint = useMemo(() => fingerprintForSections(reportSections), [auditFingerprintBase, reportSections]);
         useEffect(() => {
             if (clinicianAttested && auditedFingerprint !== reportFingerprint) setClinicianAttested(false);
-        }, [reportFingerprint, auditedFingerprint, clinicianAttested]);
+            if (unsourcedAcknowledged && auditedFingerprint !== reportFingerprint) setUnsourcedAcknowledged(false);
+        }, [reportFingerprint, auditedFingerprint, clinicianAttested, unsourcedAcknowledged]);
         const buildReportSnapshot = useCallback(() => ({
             schemaVersion: RW_SCHEMA_VERSION,
             reportTitle,
@@ -1765,12 +2032,15 @@ function toMarkdown(result) {
             reportType,
             reportGenPasses,
             sectionEvidenceMap,
+            // Persisted with the draft: losing it after a reload would silently
+            // weaken redaction while the disclosure still reported these names covered.
+            reportPeople,
             rtiTrendSeries,
             translatedReport,
             translationLang,
             isDemoLoaded,
             savedAt: new Date().toISOString()
-        }), [reportTitle, effectiveStudentName, selectedStudentId, studentAge, studentGrade, selectedAssessment, scoreEntries, bgSections, clinicalObs, factChunks, reportSections, accuracyResults, hypotheses, selectedHypotheses, differentialResults, blueprint, styleProfile, reportType, reportGenPasses, sectionEvidenceMap, rtiTrendSeries, translatedReport, translationLang, isDemoLoaded]);
+        }), [reportTitle, effectiveStudentName, selectedStudentId, studentAge, studentGrade, selectedAssessment, scoreEntries, bgSections, clinicalObs, factChunks, reportSections, accuracyResults, hypotheses, selectedHypotheses, differentialResults, blueprint, styleProfile, reportType, reportGenPasses, sectionEvidenceMap, reportPeople, rtiTrendSeries, translatedReport, translationLang, isDemoLoaded]);
 
 
         // ── Demo Data Generator ──
@@ -2201,6 +2471,7 @@ Return ONLY the adapted text, no commentary.`;
             setAuditStatus('not_run');
             setAuditedFingerprint(null);
             setClinicianAttested(false);
+            setUnsourcedAcknowledged(false);
             setChecking(false);
             setImportText('');
             setSaveReportName('');
@@ -2255,6 +2526,7 @@ Return ONLY the adapted text, no commentary.`;
             setReportType(data.reportType || 'Psychoeducational');
             setReportGenPasses(Number(data.reportGenPasses) || 3);
             setSectionEvidenceMap(data.sectionEvidenceMap || {});
+            setReportPeople(Array.isArray(data.reportPeople) ? data.reportPeople : []);
             setRtiTrendSeries(Array.isArray(data.rtiTrendSeries) ? data.rtiTrendSeries : null);
             setTranslatedReport(data.translatedReport || '');
             setTranslationLang(data.translationLang || 'Spanish');
@@ -2262,6 +2534,7 @@ Return ONLY the adapted text, no commentary.`;
             setAuditStatus('not_run');
             setAuditedFingerprint(null);
             setClinicianAttested(false);
+            setUnsourcedAcknowledged(false);
             setDiscrepancyReport(null);
             setPsycheckFingerprint(null);
             setCurrentStep(1);
@@ -2311,18 +2584,15 @@ Return ONLY the adapted text, no commentary.`;
         };
 
         // ── PII scrubbing ──
-        const scrubPII = (text) => {
-            if (!text) return text;
-            let scrubbed = text;
-            if (effectiveStudentName) scrubbed = scrubbed.replace(new RegExp(effectiveStudentName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '[Student]');
-            scrubbed = scrubbed.replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[EMAIL]');
-            scrubbed = scrubbed.replace(/(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/g, '[PHONE]');
-            scrubbed = scrubbed.replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN]');
-            scrubbed = scrubbed.replace(/\b(?:student\s*id|district\s*id|dob)\s*[:#-]?\s*[A-Z0-9/-]+\b/gi, '[IDENTIFIER]');
-            scrubbed = scrubbed.replace(/\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/g, '[DATE]');
-            scrubbed = scrubbed.replace(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s*\d{2,4}\b/gi, '[DATE]');
-            return scrubbed;
-        };
+        // Delegates to the module-scope scrubIdentifiers so all 18 call sites
+        // keep their single-argument shape. `reportPeople` lets the clinician
+        // name other individuals (parent, teacher) for role-preserving
+        // redaction; empty by default, so behaviour without it is just the
+        // student name plus structured identifiers.
+        const scrubPII = (text) => scrubIdentifiers(text, {
+            studentName: effectiveStudentName,
+            people: reportPeople
+        });
 
         // ── Step 1: Add score entry ──
         const addScoreEntry = (subtest, score) => {
@@ -2342,22 +2612,47 @@ Return ONLY the adapted text, no commentary.`;
 
         // ── Step 2: Import from BehaviorLens ──
         const importFromBehaviorLens = () => {
+            // Import caps are real data loss on a clinical record: a student with
+            // 40 ABC entries silently contributed 10, under a plain success toast.
+            // The caps stay (prompt-size discipline) but are now DISCLOSED, both
+            // in the toast and inline in the imported text the clinician reads.
+            const ABC_CAP = 10;
+            const OBS_CAP = 5;
+            const NOTE_CAP = 200;
+            const abcTotal = (abcEntries && abcEntries.length) || 0;
+            const obsTotal = (observationSessions && observationSessions.length) || 0;
+            let notesTruncated = 0;
             let behavioral = bgSections.behavioral || '';
-            if (abcEntries && abcEntries.length > 0) {
+            if (abcTotal > 0) {
                 behavioral += '\n\n--- Imported from BehaviorLens ABC Data ---\n';
-                abcEntries.slice(0, 10).forEach((e, i) => {
+                if (abcTotal > ABC_CAP) behavioral += `[NOTE: showing the first ${ABC_CAP} of ${abcTotal} ABC entries. ${abcTotal - ABC_CAP} not imported.]\n`;
+                abcEntries.slice(0, ABC_CAP).forEach((e, i) => {
                     behavioral += `\n${i + 1}. Antecedent: ${e.antecedent || 'N/A'} | Behavior: ${e.behavior || 'N/A'} | Consequence: ${e.consequence || 'N/A'} | Function: ${e.function || 'unknown'}`;
                 });
             }
             let observations = bgSections.observations || '';
-            if (observationSessions && observationSessions.length > 0) {
+            if (obsTotal > 0) {
                 observations += '\n\n--- Imported from BehaviorLens Observation Sessions ---\n';
-                observationSessions.slice(0, 5).forEach((s, i) => {
-                    observations += `\nSession ${i + 1}: ${s.date || ''} | Type: ${s.type || 'general'} | Duration: ${s.duration || 'N/A'} | Notes: ${(s.notes || '').substring(0, 200)}`;
+                if (obsTotal > OBS_CAP) observations += `[NOTE: showing the first ${OBS_CAP} of ${obsTotal} sessions. ${obsTotal - OBS_CAP} not imported.]\n`;
+                observationSessions.slice(0, OBS_CAP).forEach((s, i) => {
+                    const rawNote = s.notes || '';
+                    const note = rawNote.length > NOTE_CAP ? rawNote.substring(0, NOTE_CAP) + ' [\u2026 note truncated]' : rawNote;
+                    if (rawNote.length > NOTE_CAP) notesTruncated++;
+                    observations += `\nSession ${i + 1}: ${s.date || ''} | Type: ${s.type || 'general'} | Duration: ${s.duration || 'N/A'} | Notes: ${note}`;
                 });
             }
             setBgSections(prev => ({ ...prev, behavioral, observations }));
-            if (addToast) addToast(t('toasts.behaviorlens_data_imported'), 'success');
+            if (addToast) {
+                const dropped = [];
+                if (abcTotal > ABC_CAP) dropped.push(`${abcTotal - ABC_CAP} ABC entry(ies)`);
+                if (obsTotal > OBS_CAP) dropped.push(`${obsTotal - OBS_CAP} session(s)`);
+                if (notesTruncated > 0) dropped.push(`${notesTruncated} shortened note(s)`);
+                if (dropped.length > 0) {
+                    addToast(`\u26a0\ufe0f Imported with limits \u2014 not included: ${dropped.join(', ')}. Add anything essential by hand.`, 'info');
+                } else {
+                    addToast(t('toasts.behaviorlens_data_imported'), 'success');
+                }
+            }
         };
 
         // ── Step 2: Import Longitudinal Student Progress ──
@@ -2425,35 +2720,77 @@ Return ONLY the adapted text, no commentary.`;
                 const bgText = Object.entries(bgSections).filter(([, v]) => v.trim()).map(([k, v]) => `${k}: ${v}`).join('\n\n');
                 const obsText = Object.entries(clinicalObs).filter(([, v]) => v.text?.trim()).map(([, v]) => `[Source: ${v.source}]\n${v.text}`).join('\n\n');
                 const allBgText = (bgText + '\n\n' + obsText).trim();
+                // Background text is extracted in WINDOWS, not truncated. The
+                // prior `substring(0, 4000)` silently discarded everything past
+                // 4000 chars: a clinician who pasted a full developmental history
+                // got facts from its opening only, with a success toast and no
+                // indication the rest was never read. Windows overlap so a fact
+                // straddling a boundary is not lost, and duplicates are collapsed.
+                let bgExtractWindows = 0;
+                let bgExtractFailures = 0;
+                let bgExtractCapped = false;
                 if (allBgText && callGemini) {
                     const scrubbed = scrubPII(allBgText);
-                    const prompt = `You are a clinical data extractor. Extract atomic facts from this background information. Each fact should be a single, verifiable statement.
+                    const _win = buildExtractionWindows(scrubbed, { size: 4000, overlap: 400, maxWindows: 8 });
+                    const capped = _win.windows;
+                    bgExtractCapped = _win.capped;
+                    bgExtractWindows = capped.length;
+                    const seen = new Set();
+                    for (let w = 0; w < capped.length; w++) {
+                        if (capped.length > 1) setGenProgress(`Extracting background facts (part ${w + 1}/${capped.length})...`);
+                        const prompt = `You are a clinical data extractor. Extract atomic facts from this background information. Each fact should be a single, verifiable statement.
 ${RESTORATIVE_PREAMBLE}
 
 Text to extract from:
 """
-${scrubbed.substring(0, 4000)}
+${capped[w]}
 """
 
 Return ONLY valid JSON array of objects:
 [{"type":"background","source":"section_name","field":"brief_label","value":"the factual statement","category":"developmental|medical|educational|social|behavioral|observation"}]
 
 Extract 5-20 key facts. Be precise and factual.`;
-                    try {
-                        const result = await callGemini(prompt, true);
-                        const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-                        let parsed;
-                        try { parsed = JSON.parse(cleaned); }
-                        catch { const m = result.match(/\[[\s\S]*\]/); if (m) parsed = JSON.parse(m[0]); else parsed = []; }
-                        bgChunks = (Array.isArray(parsed) ? parsed : []).map(c => ({
-                            id: uid(), type: c.type || 'background', source: c.source || 'background',
-                            field: c.field || '', value: c.value || '', category: c.category || 'general',
-                            verified: false, immutable: false, devNormResult: null
-                        }));
-                    } catch (err) { warnLog('Fact extraction error:', err); }
+                        try {
+                            const result = await callGemini(prompt, true);
+                            const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                            let parsed;
+                            try { parsed = JSON.parse(cleaned); }
+                            catch { const m = result.match(/\[[\s\S]*\]/); if (m) parsed = JSON.parse(m[0]); else parsed = []; }
+                            (Array.isArray(parsed) ? parsed : []).forEach(c => {
+                                const value = c && c.value ? String(c.value) : '';
+                                if (!value) return;
+                                // Overlapping windows re-surface the same fact; key
+                                // on field+value so it is stored once.
+                                const key = ((c.field || '') + '\u0000' + value).toLowerCase();
+                                if (seen.has(key)) return;
+                                seen.add(key);
+                                bgChunks.push({
+                                    id: uid(), type: c.type || 'background', source: c.source || 'background',
+                                    field: c.field || '', value: value, category: c.category || 'general',
+                                    verified: false, immutable: false, devNormResult: null
+                                });
+                            });
+                        } catch (err) { bgExtractFailures++; warnLog('Fact extraction error (window ' + (w + 1) + '):', err); }
+                    }
+                    if (bgExtractCapped && addToast) {
+                        addToast(`⚠️ Background text is very long — facts were extracted from the first ${capped.length} part(s) only. Review the remainder manually.`, 'info');
+                    }
+                    if (bgExtractFailures > 0 && addToast) {
+                        addToast(`⚠️ Background fact extraction failed on ${bgExtractFailures} of ${bgExtractWindows} part(s) — some facts may be missing.`, 'info');
+                    }
                 }
                 setFactChunks([...scoreChunks, ...bgChunks]);
-                if (addToast) addToast(`Extracted ${scoreChunks.length + bgChunks.length} fact chunks`, 'success');
+                // A green "Extracted N" that counts only scores looks identical
+                // whether background extraction succeeded, returned nothing, or
+                // failed outright. Report the background outcome explicitly.
+                if (addToast) {
+                    const total = scoreChunks.length + bgChunks.length;
+                    if (allBgText && bgExtractWindows > 0 && bgChunks.length === 0) {
+                        addToast(`\u26a0\ufe0f Extracted ${total} fact chunk(s) from scores, but NO facts were extracted from the background text \u2014 review it manually.`, 'info');
+                    } else {
+                        addToast(`Extracted ${total} fact chunks (${scoreChunks.length} score, ${bgChunks.length} background)`, 'success');
+                    }
+                }
             } catch (err) {
                 warnLog('Extract error:', err);
                 if (addToast) addToast(t('toasts.extraction_failed'), 'error');
@@ -2546,21 +2883,6 @@ listing only the [chunk-id] values you actually referenced. Return the section t
         };
 
         // ── Parse evidence from AI response ──
-        const parseEvidenceResponse = (rawResult) => {
-            const lines = rawResult.trim().split('\n');
-            let usedChunks = [];
-            let textLines = [];
-            for (let i = lines.length - 1; i >= 0; i--) {
-                const line = lines[i].trim();
-                if (line.startsWith('USED_CHUNKS:')) {
-                    usedChunks = line.replace('USED_CHUNKS:', '').split(',').map(s => s.trim()).filter(Boolean);
-                    textLines = lines.slice(0, i);
-                    break;
-                }
-            }
-            if (textLines.length === 0) textLines = lines;
-            return { text: textLines.join('\n').trim(), usedChunks };
-        };
 
         // ── Helper: verify ONE section's score citations against the structured
         // input. Used by both generateReport (per-section verification, replacing
@@ -2572,9 +2894,21 @@ listing only the [chunk-id] values you actually referenced. Return the section t
         // uninterpretable JSON and the caller MUST surface "inconclusive", not
         // green-success — silently swallowing parse failures is what made the
         // previous pass into fabricated reassurance on signed clinical reports.
+        // A section we did not actually check is NOT a verified section. The
+        // previous `parseOk: true` here reported "clean" for every short or
+        // un-runnable section, so a 49-character Summary carrying a fabricated
+        // score rendered identically to one the verifier had cleared. `checked`
+        // distinguishes the three real states for callers: checked-and-clean,
+        // checked-and-flagged, and never-checked.
         const verifySectionAgainstScores = async (sectionName, sectionText, allScoreData) => {
-            if (!callGemini || !sectionText || sectionText.length < 50) {
-                return { errors: [], parseOk: true };
+            if (!callGemini || !sectionText) {
+                return { errors: [], parseOk: false, checked: false, skipReason: 'unavailable' };
+            }
+            // Short sections still get checked when they cite a score; only text
+            // with no digits at all is safe to skip, since a score citation
+            // cannot exist without one.
+            if (sectionText.length < 50 && !/\d/.test(sectionText)) {
+                return { errors: [], parseOk: true, checked: true, skipReason: 'no-citable-content' };
             }
             const verifyResult = await callGemini(`You are a clinical data verification specialist. Cross-reference EVERY number, score, percentile, and classification label in this report SECTION against the actual input data.
 
@@ -2606,9 +2940,9 @@ If no errors, return {"errors":[]}.`, true);
                 const errors = Array.isArray(parsed.errors)
                     ? parsed.errors.map(e => ({ ...e, section: sectionName }))
                     : [];
-                return { errors, parseOk: true };
+                return { errors, parseOk: true, checked: true };
             } catch (e) {
-                return { errors: [], parseOk: false };
+                return { errors: [], parseOk: false, checked: false, skipReason: 'unparseable' };
             }
         };
 
@@ -2619,6 +2953,7 @@ If no errors, return {"errors":[]}.`, true);
             setAuditStatus('not_run');
             setAuditedFingerprint(null);
             setClinicianAttested(false);
+            setUnsourcedAcknowledged(false);
             // Phase 2: kick off Pyodide warmup in the background so the Python
             // audit pass at the end of generation doesn't have to wait for the
             // ~10MB download. Lazy loader is no-op if already warmed.
@@ -2628,6 +2963,10 @@ If no errors, return {"errors":[]}.`, true);
             if (verifiedChunks.length === 0) { setGenerating(false); if (addToast) addToast(t('toasts.verified_fact_chunks'), 'error'); return; }
             const sections = blueprint.filter(s => s.enabled).map(s => s.name);
             const generated = {};
+            // Citation ids the model emitted that match no verified chunk, as
+            // [{section, ids}]. A fabricated id is a provenance failure, not a
+            // score error, so it is tracked separately from allErrors.
+            const runBadCitations = [];
             const evidenceMap = {};
             const genVariants = [
                 null, // default prompt
@@ -2645,14 +2984,15 @@ If no errors, return {"errors":[]}.`, true);
                         // Single pass (fast mode)
                         const prompt = buildSectionPrompt(section, verifiedChunks, null);
                         const result = await callGen(callGemini, prompt, false);
-                        const { text, usedChunks } = parseEvidenceResponse(result);
+                        const { text, usedChunks, unknownChunks } = parseEvidenceResponse(result, verifiedChunks);
                         generated[section] = text;
                         evidenceMap[section] = usedChunks;
+                        if (unknownChunks && unknownChunks.length) runBadCitations.push({ section: section, ids: unknownChunks });
                     } else {
                         // Triangulated: run N passes in parallel, score each, pick best
                         const passPromises = genVariants.slice(0, numPasses).map(variant => {
                             const prompt = buildSectionPrompt(section, verifiedChunks, variant);
-                            return callGen(callGemini, prompt, false).then(r => parseEvidenceResponse(r)).catch(() => null);
+                            return callGen(callGemini, prompt, false).then(r => parseEvidenceResponse(r, verifiedChunks)).catch(() => null);
                         });
                         const passResults = (await Promise.all(passPromises)).filter(Boolean);
                         if (passResults.length === 0) throw new Error('All passes failed');
@@ -2673,6 +3013,7 @@ If no errors, return {"errors":[]}.`, true);
                         const best = scored[0];
                         generated[section] = best.text;
                         evidenceMap[section] = best.usedChunks;
+                        if (best.unknownChunks && best.unknownChunks.length) runBadCitations.push({ section: section, ids: best.unknownChunks });
                         if (numPasses >= 3) {
                             warnLog(`[Report] ${section}: best-of-${passResults.length} (scores: ${scored.map(s => Math.round(s.qualityScore)).join(', ')})`);
                         }
@@ -2694,15 +3035,23 @@ If no errors, return {"errors":[]}.`, true);
                 let allErrors = [];
                 let parseFailureCount = 0;
                 let sectionsChecked = 0;
+                // Sections the verifier never actually cleared. Carried to the
+                // document itself (not just a toast) so an unverified section is
+                // never indistinguishable from a verified one on a signed report.
+                const unverifiedSections = [];
                 const sectionEntries = Object.entries(generated);
                 for (let i = 0; i < sectionEntries.length; i++) {
                     const [secName, secText] = sectionEntries[i];
                     setGenProgress(`Verifying score citations (${i + 1}/${sectionEntries.length}: ${secName})...`);
-                    const { errors, parseOk } = await verifySectionAgainstScores(secName, secText, allScoreData);
-                    sectionsChecked++;
+                    const { errors, parseOk, checked, skipReason } = await verifySectionAgainstScores(secName, secText, allScoreData);
+                    // Count only sections the verifier actually ran on, so the
+                    // "N of M verified" denominator cannot overstate coverage.
+                    if (checked) sectionsChecked++;
+                    else unverifiedSections.push({ section: secName, reason: skipReason || 'unknown' });
                     if (!parseOk) parseFailureCount++;
                     allErrors = allErrors.concat(errors);
                 }
+                setUnverifiedSections(unverifiedSections);
                 // Self-heal: regenerate ONLY sections flagged critical. Lifted
                 // sectionsWithErrors to this scope so the toast logic below can
                 // see it for the "auto-fixed critical" tail.
@@ -2718,9 +3067,10 @@ If no errors, return {"errors":[]}.`, true);
                         try {
                             const fixPrompt = buildSectionPrompt(secName, verifiedChunks, `CRITICAL CORRECTIONS FROM SCORE VERIFICATION:\n${corrections}\n\nFix these specific errors while keeping the rest of the section intact.`);
                             const fixResult = await callGemini(fixPrompt, false);
-                            const { text, usedChunks } = parseEvidenceResponse(fixResult);
+                            const { text, usedChunks, unknownChunks } = parseEvidenceResponse(fixResult, verifiedChunks);
                             generated[secName] = text;
                             evidenceMap[secName] = usedChunks;
+                            if (unknownChunks && unknownChunks.length) runBadCitations.push({ section: secName, ids: unknownChunks });
                         } catch(fixErr) { warnLog(`Score fix failed for ${secName}:`, fixErr); }
                     }
                 }
@@ -2729,18 +3079,29 @@ If no errors, return {"errors":[]}.`, true);
                 // of Gemini's totalScoresCited (which could render the literal
                 // string "N" on a signed clinical document via the prior
                 // `|| 'N'` fallback). Parse-failure no longer renders green-success.
+                // Unverified sections are reported against the TOTAL section
+                // count, never against sectionsChecked, so coverage can never
+                // read as complete while sections went unchecked.
+                const unverifiedTail = unverifiedSections.length > 0
+                    ? ` — ${unverifiedSections.length} of ${sectionEntries.length} section(s) NOT verified`
+                    : '';
                 if (addToast) {
                     if (allErrors.length > 0) {
                         const errSectionCount = new Set(allErrors.map(e => e.section)).size;
                         const inconclusiveTail = parseFailureCount > 0 ? ` (${parseFailureCount} section(s) inconclusive)` : '';
                         const fixedTail = sectionsWithErrors.length > 0 ? ' — correction drafts generated; final audit required' : '';
-                        addToast(`\u26a0\ufe0f Score verification: ${allErrors.length} issue(s) across ${errSectionCount} section(s)${fixedTail}${inconclusiveTail}`, 'info');
-                    } else if (parseFailureCount > 0) {
-                        addToast(`\u26a0\ufe0f Score verification inconclusive on ${parseFailureCount} of ${sectionsChecked} section(s) — please review manually`, 'info');
+                        addToast(`\u26a0\ufe0f Score verification: ${allErrors.length} issue(s) across ${errSectionCount} section(s)${fixedTail}${inconclusiveTail}${unverifiedTail}`, 'info');
+                    } else if (parseFailureCount > 0 || unverifiedSections.length > 0) {
+                        addToast(`\u26a0\ufe0f Score verification incomplete: ${sectionsChecked} of ${sectionEntries.length} section(s) checked${unverifiedTail} — please review manually`, 'info');
                     } else {
-                        addToast(`\u2705 ${scoreEntries.length} score citation(s) verified across ${sectionsChecked} section(s)`, 'success');
+                        addToast(`\u2705 ${scoreEntries.length} score citation(s) verified across ${sectionsChecked} of ${sectionEntries.length} section(s)`, 'success');
+                    }
+                    if (runBadCitations.length > 0) {
+                        const badIdCount = runBadCitations.reduce((n, b) => n + b.ids.length, 0);
+                        addToast(`\u26a0\ufe0f ${badIdCount} unrecognized evidence id(s) across ${runBadCitations.length} section(s) were dropped from the citation trail — those statements have no traceable source`, 'info');
                     }
                 }
+                setBadCitations(runBadCitations);
             } catch(svErr) { warnLog('[Report] Score verification pass failed (non-blocking):', svErr); }
 
             // ── Improvement 2: Cross-Section Consistency Check ──
@@ -3143,6 +3504,7 @@ Return ONLY JSON:
             setAuditStatus('running');
             setAuditedFingerprint(null);
             setClinicianAttested(false);
+            setUnsourcedAcknowledged(false);
             const verifiedChunks = factChunks.filter(c => c.verified);
             const referenceCtx = buildReferenceContext(scoreEntries, parseFloat(studentAge));
             const chunksText = scrubPII(verifiedChunks.map(c => `- [${c.id}] ${c.source} ${c.field}: ${c.value} (${c.classification || ''})`).join('\n'));
@@ -3356,12 +3718,30 @@ Return ONLY valid JSON:
 
         // ── Step 6: Export ──
         const blockingAccuracyFindings = accuracyResults.filter(result => result.status === 'contradicts' || (result.status === 'discrepancy' && result.confidence === 'needs-review'));
+        // An `unsourced` claim is a statement the auditor could NOT tie to any
+        // verified fact. It is not a contradiction, so it never blocked export —
+        // a clinician could attest and sign a report containing assertions with
+        // no traceable basis, with the count sitting in a panel they may not have
+        // opened. Unsourced claims still do not hard-block (some narrative
+        // connective tissue is legitimately unsourced), but they now require a
+        // SEPARATE, explicit acknowledgement before attestation is available.
+        const unsourcedFindings = accuracyResults.filter(result => result.status === 'unsourced');
         const auditIsCurrent = auditedFingerprint !== null && auditedFingerprint === reportFingerprint;
         const psycheckBlockingCount = Array.isArray(discrepancyReport?.discrepancies) ? discrepancyReport.discrepancies.length : 0;
         const psycheckIsCurrent = scoreEntries.length === 0 || psycheckFingerprint === reportFingerprint;
-        const formalExportReady = Object.keys(reportSections).length > 0 && auditStatus === 'passed' && auditIsCurrent && blockingAccuracyFindings.length === 0
-            && psycheckIsCurrent && psycheckBlockingCount === 0 && clinicianAttested;
-        const clinicianCanAttest = auditStatus === 'passed' && auditIsCurrent && blockingAccuracyFindings.length === 0 && psycheckIsCurrent && psycheckBlockingCount === 0;
+        const _exportGate = evaluateExportGate({
+            hasSections: Object.keys(reportSections).length > 0,
+            auditStatus: auditStatus,
+            auditIsCurrent: auditIsCurrent,
+            blockingCount: blockingAccuracyFindings.length,
+            psycheckIsCurrent: psycheckIsCurrent,
+            psycheckBlockingCount: psycheckBlockingCount,
+            unsourcedCount: unsourcedFindings.length,
+            unsourcedAcknowledged: unsourcedAcknowledged,
+            clinicianAttested: clinicianAttested
+        });
+        const formalExportReady = _exportGate.ready;
+        const clinicianCanAttest = _exportGate.canAttest;
         const requireFormalExportReady = () => {
             if (formalExportReady) return true;
             let message = 'Formal export is locked.';
@@ -3371,6 +3751,7 @@ Return ONLY valid JSON:
             else if (blockingAccuracyFindings.length > 0 || auditStatus === 'blocked') message += ' Resolve blocking contradictions or discrepancies and rerun the audit.';
             else if (!psycheckIsCurrent) message += ' Run the inline deterministic score verifier on the current report.';
             else if (psycheckBlockingCount > 0) message += ' Resolve deterministic score discrepancies and rerun verification.';
+            else if (unsourcedFindings.length > 0 && !unsourcedAcknowledged) message += ` Acknowledge the ${unsourcedFindings.length} unsourced claim(s) flagged by the audit.`;
             else if (!clinicianAttested) message += ' Complete the clinician attestation.';
             if (addToast) addToast(message, 'error');
             return false;
@@ -3905,6 +4286,61 @@ Return ONLY valid JSON:
             currentStep === 2 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '📋 Background & History'),
                 h('p', { className: 'text-[11px] text-slate-600' }, 'Enter only information needed for the report. Common identifiers (selected code name, dates, email, phone, SSN, and ID labels) are redacted before AI calls, but automated redaction is not complete—review text and do not enter direct identifiers.'),
+                // ── Redaction disclosure ──────────────────────────────────
+                // No regex catches every identifier in free clinical text. The
+                // honest move is to show the clinician what redaction WILL and
+                // WILL NOT cover for the text they actually pasted, and let them
+                // fix what the patterns cannot. Render-only; nothing persisted.
+                (() => {
+                    const bgAll = Object.values(bgSections || {}).filter(v => typeof v === 'string' && v.trim()).join('\n\n');
+                    const obsAll = Object.values(clinicalObs || {}).map(v => (v && v.text) || '').filter(t => t.trim()).join('\n\n');
+                    const combined = (bgAll + '\n\n' + obsAll).trim();
+                    if (!combined) return null;
+                    const scan = analyzeRedaction(combined, { studentName: effectiveStudentName, people: reportPeople });
+                    const tone = scan.needsAttention ? 'bg-amber-50 border-amber-300' : 'bg-emerald-50 border-emerald-200';
+                    return h('div', { className: 'rounded-lg p-3 border ' + tone, role: 'status', 'data-redaction-disclosure': scan.needsAttention ? 'attention' : 'clean' },
+                        h('p', { className: 'text-[11px] font-bold text-slate-800 mb-1' },
+                            (scan.needsAttention ? '⚠️ ' : '✓ ') + 'Before this text is sent for AI processing'),
+                        h('ul', { className: 'space-y-1 text-[11px] text-slate-700' },
+                            h('li', null, scan.hasStudentName
+                                ? 'The student name (including first or last name alone), emails, phone numbers, IDs, addresses and calendar dates are replaced before sending. Ages, grade levels and scores are kept — they are clinical data.'
+                                : h('strong', null, 'No student name is set, so NO name redaction is applied. Enter the student name in Step 1, or remove names from the text below.')),
+                            scan.riskyNameParts.length > 0 && h('li', null,
+                                h('strong', null, 'Not redacted: ' + scan.riskyNameParts.join(', ') + '. '),
+                                'These are also ordinary words, so replacing them would corrupt the narrative. Edit the text yourself if they must not be sent.'),
+                            scan.unlistedTitledNames.length > 0 && h('li', null,
+                                h('strong', null, 'Other people named: ' + scan.unlistedTitledNames.join(', ') + '. '),
+                                'Add them below to redact them by role, or remove them from the text.')
+                        ),
+                        h('div', { className: 'mt-2 pt-2 border-t border-slate-200' },
+                            h('p', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, 'Other people named in this text'),
+                            h('p', { className: 'text-[10px] text-slate-600 mb-1.5' }, 'Each is replaced by their role, so "mother reports…" and "teacher reports…" stay distinguishable in the report.'),
+                            (reportPeople || []).map((person, idx) => h('div', { key: idx, className: 'flex flex-wrap items-center gap-1.5 mb-1' },
+                                h('input', {
+                                    type: 'text', value: person.name || '', placeholder: 'Full name',
+                                    'aria-label': 'Person ' + (idx + 1) + ' name',
+                                    onChange: (e) => { const v = e.target.value; setReportPeople(prev => prev.map((p, i) => i === idx ? { ...p, name: v } : p)); },
+                                    className: 'flex-1 min-w-[120px] px-2 py-1 border border-slate-300 rounded text-[11px]'
+                                }),
+                                h('select', {
+                                    value: person.role || 'Parent', 'aria-label': 'Person ' + (idx + 1) + ' role',
+                                    onChange: (e) => { const v = e.target.value; setReportPeople(prev => prev.map((p, i) => i === idx ? { ...p, role: v } : p)); },
+                                    className: 'px-2 py-1 border border-slate-300 rounded text-[11px] bg-white'
+                                }, ['Parent', 'Mother', 'Father', 'Guardian', 'Sibling', 'Teacher', 'Counselor', 'Clinician', 'Relative', 'Peer'].map(r => h('option', { key: r, value: r }, r))),
+                                h('button', {
+                                    type: 'button', 'aria-label': 'Remove person ' + (idx + 1),
+                                    onClick: () => setReportPeople(prev => prev.filter((p, i) => i !== idx)),
+                                    className: 'px-2 py-1 text-[11px] text-slate-600 border border-slate-300 rounded hover:bg-slate-100'
+                                }, 'Remove')
+                            )),
+                            h('button', {
+                                type: 'button', 'data-add-person': 'true',
+                                onClick: () => setReportPeople(prev => [...(prev || []), { name: '', role: 'Parent' }]),
+                                className: 'px-2 py-1 bg-slate-100 text-slate-700 text-[11px] font-medium rounded border border-slate-300 hover:bg-slate-200'
+                            }, '+ Add a person')
+                        )
+                    );
+                })(),
                 h('div', { className: 'flex flex-wrap gap-2' },
                     (abcEntries?.length > 0 || observationSessions?.length > 0) && h('button', { className: 'px-3 py-1.5 bg-indigo-50 text-indigo-700 text-[11px] font-medium rounded-lg border border-indigo-600 hover:bg-indigo-100 transition-colors',
                         onClick: importFromBehaviorLens
@@ -4190,6 +4626,31 @@ Return ONLY valid JSON:
                         h('div', { className: 'h-full bg-violet-500 rounded-full transition-all motion-reduce:animate-none' + (reducedMotion ? '' : ' animate-pulse'), style: { width: '60%' } })
                     ),
                     h('p', { className: 'text-[11px] text-center text-violet-600' }, genProgress)
+                ),
+                // ── Automated-verification coverage disclosure ──
+                // A section the score verifier never cleared must not be visually
+                // indistinguishable from one it did. This states coverage on the
+                // document itself, not only in a toast the clinician may have
+                // dismissed before reading. Render-only; nothing persisted.
+                Object.keys(reportSections).length > 0 && (unverifiedSections.length > 0 || badCitations.length > 0) && h('div', {
+                    className: 'mt-3 rounded-lg p-3 border bg-amber-50 border-amber-300',
+                    role: 'status'
+                },
+                    h('div', { className: 'flex items-start gap-2' },
+                        h('span', { className: 'text-sm', 'aria-hidden': 'true' }, '\u26a0\ufe0f'),
+                        h('div', { className: 'text-[11px] text-amber-900 space-y-1' },
+                            h('p', { className: 'font-bold' }, 'Automated verification did not cover this whole draft'),
+                            unverifiedSections.length > 0 && h('p', null,
+                                'Score citations were NOT automatically checked in: ' +
+                                unverifiedSections.map(u => u.section).join(', ') +
+                                '. Check these sections against the source data yourself.'),
+                            badCitations.length > 0 && h('p', null,
+                                'Some statements cited evidence ids that match no verified fact (' +
+                                badCitations.map(b => b.section).join(', ') +
+                                '). Those citations were dropped, so the text there has no traceable source.'),
+                            h('p', { className: 'italic' }, 'This notice reflects automated checks only. A clinician must review the full report before signing.')
+                        )
+                    )
                 ),
                 // ── psycheck handoff (Architecture C): import discrepancy report ──
                 // Render-only; never persisted. See state declaration block for the
@@ -4515,6 +4976,37 @@ Return ONLY valid JSON:
                                     : auditStatus === 'inconclusive' || auditStatus === 'failed'
                                         ? '⚠️ The audit did not complete successfully. Formal copy and print are locked.'
                                         : '⚠️ Accuracy audit passed. Complete the clinician attestation to unlock formal copy and print.'
+                    )
+                ),
+                // Unsourced-claim acknowledgement. Shown ONLY when the audit found
+                // claims it could not tie to a verified fact. These do not block
+                // export outright — some narrative connective tissue is legitimately
+                // unsourced — but the clinician must see the specific sentences and
+                // say so before attesting, rather than signing past a count in a
+                // panel they may never have opened.
+                unsourcedFindings.length > 0 && auditIsCurrent && h('div', {
+                    className: `rounded-lg p-3 border ${unsourcedAcknowledged ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-300'}`
+                },
+                    h('p', { className: 'text-[11px] font-bold text-amber-900 mb-1' },
+                        `${unsourcedFindings.length} claim(s) could not be traced to a verified fact`),
+                    h('ul', { className: 'mb-2 max-h-32 overflow-y-auto space-y-1' },
+                        unsourcedFindings.slice(0, 12).map((r, i) => h('li', {
+                            key: i, className: 'text-[11px] text-slate-700 leading-snug'
+                        }, (r.section ? `[${r.section}] ` : '') + String(r.claim || '').substring(0, 160)))
+                    ),
+                    unsourcedFindings.length > 12 && h('p', { className: 'text-[10px] italic text-slate-600 mb-2' },
+                        `…and ${unsourcedFindings.length - 12} more — see the audit results list above.`),
+                    h('label', { className: 'flex items-start gap-2 cursor-pointer' },
+                        h('input', {
+                            type: 'checkbox', checked: unsourcedAcknowledged,
+                            'aria-describedby': 'rw-unsourced-help',
+                            onChange: (e) => setUnsourcedAcknowledged(e.target.checked),
+                            className: 'mt-0.5 rounded border-slate-300'
+                        }),
+                        h('span', { className: 'text-[11px] text-slate-700 leading-relaxed' },
+                            h('strong', { id: 'rw-unsourced-help' }, 'Unsourced claims reviewed: '),
+                            'I have read each statement listed above and confirm it is either clinically appropriate as written or has been corrected.'
+                        )
                     )
                 ),
                 // Clinician attestation
