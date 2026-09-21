@@ -869,6 +869,11 @@ const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange,
   );
 };
 
+// The per-box ceiling. Named because it is enforced in three places that must
+// agree: the textarea's maxLength, the counter below it, and the slice() that
+// builds the submitted snapshot.
+const ORGANIZER_REFLECTION_MAX_CHARS = 2000;
+const ORGANIZER_REFLECTION_WARN_AT = 200;
 const ORGANIZER_REFLECTION_FIELDS = {
   'KWL Chart': [['know', 'What I know', 'Describe your own prior knowledge. It is okay to be unsure.'], ['want', 'What I want to know', 'Ask a question you would like to investigate.'], ['learned', 'What I learned or revised', 'Return after learning. What changed, and what evidence helped?']],
   'Claim-Evidence-Reasoning': [['claim', 'My claim', 'Answer the question in your own words.'], ['evidence', 'My evidence', 'Give specific observations, data, or a quotation and its source location.'], ['reasoning', 'My reasoning', 'Explain why your evidence supports the claim. Consider another explanation.']],
@@ -1012,7 +1017,7 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
   const empty = () => ({ key: storageKey, values: {}, submitted: null });
   const load = key => {
     try { const value = JSON.parse(window.localStorage.getItem(key) || 'null');
-      if (value && value.version === 1) return { key, values: Object.fromEntries(fields.map(([id]) => [id, String(value.values?.[id] || '').slice(0, 2000)])), submitted: value.submitted || null };
+      if (value && value.version === 1) return { key, values: Object.fromEntries(fields.map(([id]) => [id, String(value.values?.[id] || '').slice(0, ORGANIZER_REFLECTION_MAX_CHARS)])), submitted: value.submitted || null };
     } catch (_) {}
     return { key, values: {}, submitted: null };
   };
@@ -1049,7 +1054,7 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
   if (type === 'KWL Chart' && !isTeacherMode && kwlNotesKey) {
     try {
       const saved = JSON.parse(window.localStorage.getItem(kwlNotesKey) || 'null');
-      if (Array.isArray(saved) && saved.length === 3 && saved.some(value => typeof value === 'string' && value.trim())) earlierKwlNotes = saved.map(value => String(value || '').slice(0, 2000));
+      if (Array.isArray(saved) && saved.length === 3 && saved.some(value => typeof value === 'string' && value.trim())) earlierKwlNotes = saved.map(value => String(value || '').slice(0, ORGANIZER_REFLECTION_MAX_CHARS));
     } catch (_) {}
   }
   const signature = JSON.stringify(fields.map(([id]) => shown.values[id] || ''));
@@ -1066,7 +1071,7 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
   // Teacher previews are excluded: a preview must not seed a student's import.
   React.useEffect(() => {
     if (type !== 'KWL Chart' || isTeacherMode || !kwlNotesKey || entry.key !== storageKey) return;
-    const notes = fields.slice(0, 3).map(([id]) => String(entry.values?.[id] || '').slice(0, 2000));
+    const notes = fields.slice(0, 3).map(([id]) => String(entry.values?.[id] || '').slice(0, ORGANIZER_REFLECTION_MAX_CHARS));
     try {
       if (notes.some(text => text.trim())) window.localStorage.setItem(kwlNotesKey, JSON.stringify(notes));
     } catch (_) { /* carry-over is a convenience; never surface it as a draft failure */ }
@@ -1077,7 +1082,7 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
     const requestOwner = submissionOwner;
     const snapshot = { version: 1, resourceId: String(resource?.id || ''), structureType: type, activityId: activityId || null,
       revision: Number(shown.submitted?.revision || 0) + 1, submittedAt: Date.now(),
-      fields: fields.map(([id, label]) => ({ id, label, text: String(shown.values[id] || '').trim().slice(0, 2000) })) };
+      fields: fields.map(([id, label]) => ({ id, label, text: String(shown.values[id] || '').trim().slice(0, ORGANIZER_REFLECTION_MAX_CHARS) })) };
     setBusy(true); setNotice(''); setNoticeFailed(false);
     try {
       const result = isTeacherMode ? { ok: true, message: tr("preview_saved", "Preview saved on this device. It was not submitted as student work.") }
@@ -1098,10 +1103,37 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
     <p className="mt-2 text-sm">{tr("student_intro", "Write in your own words. The diagram is a reference, not your response. Different interpretations can be supported by evidence.")}</p>
     <p className="mt-2 text-sm font-semibold">{isTeacherMode ? tr("teacher_preview", "Teacher preview — never submitted as student work.") : sessionCode ? (submissionMethod === 'lan' ? tr("lan_submit_info", "Drafts stay on this device. Submit sends your reflection privately to your teacher.") : submissionMethod === 'mailbox' ? tr("mailbox_submit_info", "Drafts stay on this device. Submit sends your reflection to your teacher’s Class Mailbox.") : tr("download_submit_info", "Submit downloads your reflection for you to share with your teacher.") + (activityId ? tr("progress_info", " Your live progress is updated too.") : '')) : tr("local_info", "Local practice — your reflection stays on this device.")}</p>
     {earlierKwlNotes && !fields.some(([id]) => shown.values[id]) && <div className="mt-3 text-sm"><p>{tr("import_info", "Earlier KWL notes for this topic are saved on this device. Import them if they are yours.")}</p><button type="button" onClick={() => setEntry({ key: storageKey, values: Object.fromEntries(fields.map(([id], index) => [id, earlierKwlNotes[index]])), submitted: null })} className="mt-2 min-h-11 rounded-lg border border-indigo-600 px-4 font-bold text-indigo-800">{tr("import_notes", "Import my earlier KWL notes")}</button></div>}
-    <div className="mt-4 grid gap-4 md:grid-cols-3">{fields.map(([id, label, prompt]) => <label key={id} className="block text-sm font-semibold">
-      <span>{label}</span><span className="my-1 block text-xs font-normal text-slate-700">{prompt}</span>
-      <textarea aria-label={label} rows={7} maxLength={2000} value={shown.values[id] || ''} onChange={event => { const text = event.target.value; setEntry(current => ({ ...(current.key === storageKey ? current : empty()), values: { ...(current.key === storageKey ? current.values : {}), [id]: text } })); setNotice(''); }} className="w-full rounded-lg border border-slate-400 p-3 font-normal focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700" />
-    </label>)}</div>
+    {/* maxLength stops typing DEAD at 2000 with no explanation, and a paste over
+        the limit is silently truncated - a student can lose the end of an answer
+        without ever being told. The counter stays quiet until the last 200
+        characters so it is not noise for ordinary answers.
+
+        Announcement is deliberately coarse: aria-live on a per-keystroke count
+        would make a screen reader read a number after every letter. The live
+        region carries only the threshold crossings (approaching, then full),
+        while the visible count updates silently for sighted users. */}
+    <div className="mt-4 grid gap-4 md:grid-cols-3">{fields.map(([id, label, prompt]) => {
+      const used = String(shown.values[id] || '').length;
+      const left = ORGANIZER_REFLECTION_MAX_CHARS - used;
+      const near = left <= ORGANIZER_REFLECTION_WARN_AT;
+      const full = left <= 0;
+      const countId = 'reflection-count-' + id;
+      return <label key={id} className="block text-sm font-semibold">
+        <span>{label}</span><span className="my-1 block text-xs font-normal text-slate-700">{prompt}</span>
+        <textarea aria-label={label} aria-describedby={near ? countId : undefined} rows={7} maxLength={ORGANIZER_REFLECTION_MAX_CHARS} value={shown.values[id] || ''} onChange={event => { const text = event.target.value; setEntry(current => ({ ...(current.key === storageKey ? current : empty()), values: { ...(current.key === storageKey ? current.values : {}), [id]: text } })); setNotice(''); }} className="w-full rounded-lg border border-slate-400 p-3 font-normal focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700" />
+        {near && <span id={countId} className={'mt-1 block text-xs font-normal ' + (full ? 'font-semibold text-red-800' : 'text-slate-700')}>
+          {full
+            ? tr('chars_full', 'You have reached the {max}-character limit for this box. Shorten this answer to add more.').replace('{max}', String(ORGANIZER_REFLECTION_MAX_CHARS))
+            : tr('chars_left', '{n} characters left').replace('{n}', String(left))}
+        </span>}
+      </label>;
+    })}</div>
+    <p role="status" aria-live="polite" className="sr-only">{(() => {
+      const worst = fields.reduce((least, [id]) => Math.min(least, ORGANIZER_REFLECTION_MAX_CHARS - String(shown.values[id] || '').length), ORGANIZER_REFLECTION_MAX_CHARS);
+      if (worst <= 0) return tr('chars_full_live', 'A box has reached its character limit.');
+      if (worst <= ORGANIZER_REFLECTION_WARN_AT) return tr('chars_near_live', 'A box is close to its character limit.');
+      return '';
+    })()}</p>
     <p className="mt-3 text-sm">{type === 'KWL Chart' ? tr("kwl_guidance", "Submit your current thinking; you can return to Learned and submit a revision later. Blank sections are allowed.") : tr("reasoning_guidance", "Before submitting, check that you explained your choices and named supporting evidence. This is not automatically scored.")}</p>
     {storageFailed && <p role="alert" className="mt-2 text-sm text-red-800">{tr("storage_failed", "This browser could not save your draft. Keep this page open and copy your writing before leaving.")}</p>}
     {changed && <p role="status" className="mt-2 text-sm font-semibold text-amber-900">{tr("draft_changes", "You have changes that have not been submitted.")}</p>}
