@@ -572,6 +572,28 @@
     var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef, useCallback = React.useCallback;
 
     var dark = !!ctx.isDark, hc = !!ctx.isContrast;
+    // ★AI is NOT available on every path this tool is reachable from.
+    // resolveAiCapability() (ANTI) returns text:true for Gemini Canvas
+    // (reason 'canvas') and for a BYOK install (reason 'api-key'), but
+    // text:false for a plain CDN/deep-link visit with no key — which is the
+    // DEFAULT for anyone who was simply sent the Forge URL. Without this the
+    // Describe door looks fully available and only fails after the user has
+    // written a description and pressed Generate. The Code door, the contract
+    // validator, the render-smoke and Submit all work with no key at all, so
+    // a keyless visitor still has a complete hand-authoring tool — they just
+    // have to start at the right door.
+    var aiText = (function () {
+      try {
+        if (typeof window === 'undefined') return false;
+        if (typeof window.__alloResolveAiCapability !== 'function') {
+          // No resolver (old host, or a stub ctx): fall back to the only other
+          // honest signal we have rather than claiming AI works.
+          return typeof ctx.callGemini === 'function';
+        }
+        var cap = window.__alloResolveAiCapability();
+        return !!(cap && cap.text) && typeof ctx.callGemini === 'function';
+      } catch (e) { return typeof ctx.callGemini === 'function'; }
+    })();
     // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
     var t = function (k, f) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, f) : null; } catch (e) { v = null; } return (v == null) ? (f != null ? f : k) : v; };
 
@@ -880,7 +902,14 @@
 
       // doors
       h('div', { style: { display: 'flex', borderBottom: '1px solid ' + border } },
-        h('button', { onClick: function () { setDoor('ai'); }, style: tab(door === 'ai'), 'aria-pressed': door === 'ai' }, '🤖 ' + t('stem.forge.door_ai', 'Describe (AI)')),
+        h('button', {
+          onClick: function () { setDoor('ai'); },
+          style: tab(door === 'ai'),
+          'aria-pressed': door === 'ai',
+          // Still reachable — the panel explains how to enable it — but never
+          // presented as if it were ready to use.
+          title: !aiText ? t('stem.forge.ai_unavailable_short', 'Needs an AI connection') : undefined
+        }, '🤖 ' + t('stem.forge.door_ai', 'Describe (AI)') + (aiText ? '' : ' ' + t('stem.forge.door_ai_locked_suffix', '(needs AI)'))),
         h('button', { onClick: function () { setDoor('code'); }, style: tab(door === 'code'), 'aria-pressed': door === 'code' }, '⌨️ ' + t('stem.forge.door_code', 'Code'))
       ),
 
@@ -891,6 +920,14 @@
         h('div', { style: { flex: '1 1 420px', minWidth: 300, display: 'flex', flexDirection: 'column', gap: 8 } },
           door === 'ai'
             ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                // Say it BEFORE the textarea, not in a toast after Generate.
+                !aiText ? h('div', {
+                  role: 'status',
+                  style: { padding: 10, borderRadius: 8, border: '1px solid ' + border, background: panelBg, color: fg, fontSize: 13, lineHeight: 1.5 }
+                },
+                  t('stem.forge.ai_unavailable',
+                    'This door needs an AI connection, and this copy of AlloFlow does not have one. Add a Gemini API key in Settings, or switch to the Code door — the editor, the contract validator, the live preview and Submit all work without a key.')
+                ) : null,
                 h('label', { style: { fontSize: 13, fontWeight: 600 } }, t('stem.forge.describe', 'Describe the tool you want')),
                 h('textarea', {
                   value: desc, onChange: function (e) { setDesc(e.target.value); }, rows: 5,
@@ -903,7 +940,13 @@
                   h('select', { value: target, onChange: function (e) { setTarget(e.target.value); }, 'aria-label': t('stem.forge.target', 'Target'), style: { padding: '6px 8px', borderRadius: 6, border: '1px solid ' + border, background: panelBg, color: fg } },
                     h('option', { value: 'stem' }, 'STEAM Lab'),
                     h('option', { value: 'sel' }, 'SEL Hub')),
-                  h('button', { onClick: generate, disabled: busy, 'aria-busy': busy, style: btn(true) }, busy ? t('stem.forge.working', 'Working…') : t('stem.forge.generate', 'Generate plugin')),
+                  h('button', {
+                    onClick: generate,
+                    disabled: busy || !aiText,
+                    'aria-busy': busy,
+                    title: !aiText ? t('stem.forge.ai_unavailable_short', 'Needs an AI connection') : undefined,
+                    style: Object.assign({}, btn(true), aiText ? {} : { opacity: 0.5, cursor: 'not-allowed' })
+                  }, busy ? t('stem.forge.working', 'Working…') : t('stem.forge.generate', 'Generate plugin')),
                   // Four sequential model calls with no way out until now.
                   busy ? h('button', {
                     onClick: function () { cancelRef.current = true; ctx.announceToSR && ctx.announceToSR('Cancelling after the current step.'); },

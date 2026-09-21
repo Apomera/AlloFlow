@@ -8617,6 +8617,11 @@
             singing: true,
             migration: true,
             appLab: true,
+            // Tool Forge — without this entry the guard below returns null and
+            // its deep link opens a BLANK content area (the same failure the
+            // gisStudio and arccity notes above record). build.js already ships
+            // the file; stemToolModules in ANTI fetches it.
+            forge: true,
             bakingScience: true,
             alloBotSage: true,
             // Jun 2026: Lumen go-live — provenance-bound reactive research canvas.

@@ -13865,7 +13865,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '1790011279260';
+    var pluginCdnVersion = '1790013049351';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -14835,6 +14835,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js', 'stem_lab/stem_tool_sourcebook.js', 'stem_lab/stem_tool_wheelandfire.js',
         'data_kernel_loader.js',
         'stem_lab/stem_tool_datastudio.js', 'stem_lab/stem_tool_coding.js', 'stem_lab/stem_tool_trajectorycomputing.js', 'stem_lab/stem_tool_applab.js',
+        'stem_lab/stem_tool_forge.js',
         'stem_lab/stem_tool_dataplot.js', 'stem_lab/stem_tool_geo.js', 'stem_lab/stem_tool_gisstudio.js', 'stem_lab/stem_tool_titration.js',
         'stem_lab/stem_tool_volume.js', 'stem_lab/stem_tool_numberline.js', 'stem_lab/stem_tool_areamodel.js',
         'stem_lab/stem_tool_arithmetic.js',

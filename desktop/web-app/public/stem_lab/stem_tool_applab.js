@@ -19026,7 +19026,18 @@ test('no a11y violations', async () => {
       // ── Hierarchical Multi-Agent Generate App ──
       // Architect breaks app into sections → each section gets Build→Review→Fix → Assembler combines
       var generateApp = useCallback(async function(userPrompt) {
-        if (!callGemini || !userPrompt.trim()) return;
+        // ★A bare `return` here meant a keyless student pressed Generate and got
+        // NOTHING — no toast, no message, no spinner. AI is absent by default on
+        // the CDN/deep-link path (resolveAiCapability returns text:false with no
+        // key; Gemini Canvas and a BYOK install are the paths that have it), so
+        // this is the ordinary first-run experience, not an edge case. The other
+        // five tabs (Learn, Practice, Patterns, Quality, Career) work with no key.
+        if (!callGemini) {
+          addToast && addToast(__alloT('stem.applab.ai_unavailable',
+            'Building an app needs an AI connection. Add a Gemini API key in Settings — the Learn, Practice, Patterns, Quality and Career tabs work without one.'), 'info');
+          return;
+        }
+        if (!userPrompt.trim()) return;
         cancelRef.current = false;
         setIsGenerating(true);
         setShowCode(false);
