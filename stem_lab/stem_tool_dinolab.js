@@ -4914,7 +4914,7 @@ window.StemLab = window.StemLab || {
 
   var KPG_EVIDENCE = [
     { id: 'iridium', label: 'The iridium layer', text: 'A worldwide thin clay layer is rich in iridium, a metal rare in Earth’s crust but common in asteroids. Found by the Alvarez team in 1980.' },
-    { id: 'crater', label: 'The Chicxulub crater', text: 'A buried ~180 km crater off Mexico’s Yucatán dates to exactly 66 million years ago, matching the layer.' },
+    { id: 'crater', label: 'The Chicxulub crater', text: 'A buried ~180 km crater off Mexico’s Yucatán dates to 66.04 million years ago, give or take about 40,000 — tight enough to tie it to the layer.' },
     { id: 'spherules', label: 'Glass spherules and shocked quartz', text: 'Tiny melted-rock beads and quartz with shock fractures, made by an enormous impact, appear in the same layer.' },
     { id: 'soot', label: 'Soot and a dark "impact winter"', text: 'Soot and dust would have blocked sunlight for months to years, cooling the planet and collapsing food chains.' },
     { id: 'deccan', label: 'The Deccan Traps debate', text: 'Vast volcanic eruptions in India overlapped the impact. Most researchers see the asteroid as the main trigger, with volcanism as added stress.' }

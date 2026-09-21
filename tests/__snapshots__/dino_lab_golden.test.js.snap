@@ -3119,7 +3119,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the extinction ta
 </div>
 <div style="padding:10px;border-radius:8px;background:var(--allo-stem-deeper, #0b1220);border:1px solid var(--allo-stem-border, #334155);margin-bottom:6px">
 <div style="font-weight:700;font-size:12.5px;margin-bottom:2px">The Chicxulub crater</div>
-<div style="font-size:12px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.5">A buried ~180 km crater off Mexico’s Yucatán dates to exactly 66 million years ago, matching the layer.</div>
+<div style="font-size:12px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.5">A buried ~180 km crater off Mexico’s Yucatán dates to 66.04 million years ago, give or take about 40,000 — tight enough to tie it to the layer.</div>
 </div>
 <div style="padding:10px;border-radius:8px;background:var(--allo-stem-deeper, #0b1220);border:1px solid var(--allo-stem-border, #334155);margin-bottom:6px">
 <div style="font-weight:700;font-size:12.5px;margin-bottom:2px">Glass spherules and shocked quartz</div>
