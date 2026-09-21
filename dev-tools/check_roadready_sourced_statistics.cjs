@@ -140,6 +140,22 @@ const CLAIMS = [
       'adult 275-day refusal suspension under §2521',
   },
   {
+    label: 'Maine reportable-crash property damage threshold (§2251)',
+    re: /apparent property damage of \$([\d,]+) or more/,
+    min: 2000, max: 2000,
+    source: 'Maine 29-A §2251: a reportable accident is one with bodily injury, death, or apparent ' +
+      'property damage of $2,000 or more, judged on the market value of necessary repairs. Must ' +
+      'be reported immediately by the quickest means to state police, a sheriff, or local police.',
+  },
+  {
+    label: 'Maine new-resident registration window, correctly attributed',
+    re: /for NEW RESIDENTS converting an out-of-state registration/,
+    min: null, max: null,
+    source: 'The 30-day window applies to NEW RESIDENTS converting an out-of-state registration, ' +
+      'not to a vehicle purchase. Maine BMV states no post-purchase grace period. The checklist ' +
+      'previously said "Register within 30 days" under an "After purchase" heading.',
+  },
+  {
     label: 'Maine standard inspection fee (§1751)',
     re: /inspection fee by statute at about \$(\d{2}\.\d{2})/,
     min: 12.5, max: 12.5,
@@ -312,6 +328,10 @@ for (const c of CLAIMS) {
       'check now protects nothing. Re-anchor it or drop the entry deliberately.\n      source: ' + c.source);
     continue;
   }
+  // Some claims are PRESENCE checks, not ranges: the thing being protected is
+  // an attribution or a qualifier that a later edit could quietly drop. Those
+  // declare min === null and only need the anchor to still match.
+  if (c.min === null && c.max === null) continue;
   const n = Number(String(m[1]).replace(/,/g, ''));
   if (!Number.isFinite(n)) {
     errors.push(c.label + ': captured "' + m[1] + '", which is not a number');

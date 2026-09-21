@@ -38439,7 +38439,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ]},
           { title: __alloT('stem.roadready.after_purchase', 'After Purchase'), icon: '📋', items: [
             'Get insurance BEFORE driving it home (call your agent, get a policy number).',
-            'Register within 30 days (Maine). Bring: bill of sale, title, proof of insurance, ID.',
+            'Register before you drive it, not "within 30 days" — Maine sets no grace period after a PURCHASE, and an unregistered car on a public way is a violation from day one. (The 30-day rule people repeat is for NEW RESIDENTS converting an out-of-state registration.) Pay municipal excise tax at your town office first, then register there or at a BMV branch. Bring: bill of sale, signed title, proof of insurance, ID.',
             'Buying used from a Maine dealer: the car must ALREADY carry an inspection sticker issued within the last 60 days — that is the dealer\'s "warranty of inspectability", not something you fix afterward. If it does not have one, that is the dealer\'s problem to solve before you drive away.',
             'Change ALL fluids (oil, coolant, brake fluid, transmission) — you don\'t know when the previous owner did.'
           ]}
