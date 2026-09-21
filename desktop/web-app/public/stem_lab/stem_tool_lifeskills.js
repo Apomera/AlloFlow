@@ -1761,6 +1761,16 @@ window.StemLab = window.StemLab || {
       var lifeSkills3dPassportHint = lifeSkills3dNextLab ? 'Next suggested lab: ' + lifeSkills3dNextLab.title + '.' : lifeSkills3dTransferFocus ? 'Transfer focus: Rehearse ' + lifeSkills3dTransferFocus + ' in a changed capstone context.' : lifeSkills3dProcedurePractice < 5 ? 'Action goal: Practice the three-step actions in the capstone.' : lifeSkills3dContextTransfer < 5 ? 'Transfer goal: Complete changed-context practice in the capstone.' : 'All ' + LIFE_SKILLS_3D_LABS.length + ' 3D labs are complete with procedural and context-transfer evidence.';
 
       // ── State helpers ──
+      // `d.X || ''` is NOT a type guard: it only replaces falsy values, so a
+      // persisted OBJECT or ARRAY sails through and React throws
+      // "Objects are not valid as a React child", blanking the whole lab. Found by
+      // a hostile-state sweep on chalFeedback. Coerce anything that is not a
+      // primitive string to the empty string.
+      function asText(v) {
+        if (typeof v === 'string') return v;
+        if (v == null || typeof v === 'object' || typeof v === 'function') return '';
+        return String(v);
+      }
       function upd(k, v) {
         ctx.setToolData(function(prev) {
           var copy = Object.assign({}, prev);
@@ -1871,12 +1881,26 @@ window.StemLab = window.StemLab || {
           return next;
         });
       }
+      // The 3D labs are served either from the CDN or from this same origin
+      // (see openLifeSkillsSafety3D and its siblings, which pick between them).
+      // Anything else is not one of our windows.
+      function lifeSkills3dOriginAllowed(origin) {
+        if (!origin || origin === 'null') return false;
+        try { if (origin === window.location.origin) return true; } catch (_) {}
+        return origin === 'https://alloflow-cdn.pages.dev';
+      }
       if (!window.__alloflowLifeSkills3dBridge) {
         window.__alloflowLifeSkills3dBridge = { seen: {}, handle: null };
         window.addEventListener('message', function(event) {
           var bridge = window.__alloflowLifeSkills3dBridge;
           var data = event && event.data;
           if (!bridge || !data || !/^alloflow-life-(safety|repair|kitchen|laundry|transit|capstone)-3d$/.test(String(data.source || ''))) return;
+          // The handler awards badges, XP and passport progress, so the message is
+          // a trust boundary. Filtering on data.source alone is not a check: ANY
+          // page - another tab, an embedded ad frame - can post a matching object
+          // and forge a student's completed work. Verify the ORIGIN, which is set
+          // by the browser and cannot be spoofed.
+          if (!lifeSkills3dOriginAllowed(event.origin)) return;
           if (typeof bridge.handle === 'function') bridge.handle(data);
         }, false);
       }
@@ -2167,7 +2191,7 @@ window.StemLab = window.StemLab || {
       var glassCard = 'bg-white/70 backdrop-blur-md rounded-2xl border border-white/40 shadow-lg p-4';
       var overviewFocus = d.overviewFocus || 'money';
       var overviewConfidence = (typeof d.overviewConfidence === 'number' && isFinite(d.overviewConfidence)) ? d.overviewConfidence : 3;
-      var overviewNextStep = d.overviewNextStep || '';
+      var overviewNextStep = asText(d.overviewNextStep);
       var overviewPath = LIFE_SKILL_PATHS.find(function(path) { return path.id === overviewFocus; }) || LIFE_SKILL_PATHS[0];
 
       function saveOverviewPlan() {
@@ -2413,7 +2437,7 @@ window.StemLab = window.StemLab || {
       var cookDesiredServings = Math.round(cookRecipe.servings * cookScale);
 
       var nutritionIdx = (Number.isInteger(d.nutritionIdx) && d.nutritionIdx >= 0) ? d.nutritionIdx : 0;
-      var nutritionAnswer = d.nutritionAnswer || '';
+      var nutritionAnswer = asText(d.nutritionAnswer);
       var nutritionFb = typeof d.nutritionFb === 'string' ? d.nutritionFb : '';
       var nutritionScore = d.nutritionScore || 0;
       var nutritionCurrent = NUTRITION_LABELS[nutritionIdx % NUTRITION_LABELS.length];
@@ -2434,11 +2458,11 @@ window.StemLab = window.StemLab || {
       var laundryChecklist = d.laundryChecklist || {};
       var laundryStainIdx = (Number.isInteger(d.laundryStainIdx) && d.laundryStainIdx >= 0) ? d.laundryStainIdx : 0;
       var laundryStainChoice = d.laundryStainChoice;
-      var laundryStainFb = d.laundryStainFb || '';
+      var laundryStainFb = asText(d.laundryStainFb);
       var laundryStainScore = d.laundryStainScore || 0;
       var laundryMythIdx = (Number.isInteger(d.laundryMythIdx) && d.laundryMythIdx >= 0) ? d.laundryMythIdx : 0;
       var laundryMythAnswer = d.laundryMythAnswer;
-      var laundryMythFb = d.laundryMythFb || '';
+      var laundryMythFb = asText(d.laundryMythFb);
       var laundryMythScore = d.laundryMythScore || 0;
       var laundryCareIdx = (Number.isInteger(d.laundryCareIdx) && d.laundryCareIdx >= 0) ? d.laundryCareIdx : 0;
       var laundryStainFamilyIdx = (Number.isInteger(d.laundryStainFamilyIdx) && d.laundryStainFamilyIdx >= 0) ? d.laundryStainFamilyIdx : 0;
@@ -2530,8 +2554,8 @@ window.StemLab = window.StemLab || {
       var dentalRoutine = d.dentalRoutine || {};
       var dentalRoutineDone = DENTAL_ROUTINE_STEPS.filter(function(step) { return !!dentalRoutine[step.id]; }).length;
       var dentalScenarioIdx = (Number.isInteger(d.dentalScenarioIdx) && d.dentalScenarioIdx >= 0) ? d.dentalScenarioIdx : 0;
-      var dentalScenarioChoice = d.dentalScenarioChoice || '';
-      var dentalScenarioFb = d.dentalScenarioFb || '';
+      var dentalScenarioChoice = asText(d.dentalScenarioChoice);
+      var dentalScenarioFb = asText(d.dentalScenarioFb);
       var dentalScenarioScore = d.dentalScenarioScore || 0;
       var dentalCurrentScenario = DENTAL_SCENARIOS[dentalScenarioIdx % DENTAL_SCENARIOS.length];
       var dentalVisitCost = (typeof d.dentalVisitCost === 'number' && isFinite(d.dentalVisitCost)) ? d.dentalVisitCost : 180;
@@ -2575,8 +2599,8 @@ window.StemLab = window.StemLab || {
       var bodyResetIdx = (Number.isInteger(d.bodyResetIdx) && d.bodyResetIdx >= 0) ? d.bodyResetIdx : 0;
       var bodyReset = BODYCARE_RESETS[bodyResetIdx % BODYCARE_RESETS.length];
       var bodyScenarioIdx = (Number.isInteger(d.bodyScenarioIdx) && d.bodyScenarioIdx >= 0) ? d.bodyScenarioIdx : 0;
-      var bodyScenarioChoice = d.bodyScenarioChoice || '';
-      var bodyScenarioFb = d.bodyScenarioFb || '';
+      var bodyScenarioChoice = asText(d.bodyScenarioChoice);
+      var bodyScenarioFb = asText(d.bodyScenarioFb);
       var bodyScenarioScore = d.bodyScenarioScore || 0;
       var bodyCurrentScenario = BODYCARE_SCENARIOS[bodyScenarioIdx % BODYCARE_SCENARIOS.length];
       var bodySetupTips = [];
@@ -2616,8 +2640,8 @@ window.StemLab = window.StemLab || {
       var sleepCaffeineCutoff = (typeof d.sleepCaffeineCutoff === 'number' && isFinite(d.sleepCaffeineCutoff)) ? d.sleepCaffeineCutoff : 14;
       var sleepScreenMinutes = (typeof d.sleepScreenMinutes === 'number' && isFinite(d.sleepScreenMinutes)) ? d.sleepScreenMinutes : 45;
       var sleepScenarioIdx = (Number.isInteger(d.sleepScenarioIdx) && d.sleepScenarioIdx >= 0) ? d.sleepScenarioIdx : 0;
-      var sleepScenarioChoice = d.sleepScenarioChoice || '';
-      var sleepScenarioFb = d.sleepScenarioFb || '';
+      var sleepScenarioChoice = asText(d.sleepScenarioChoice);
+      var sleepScenarioFb = asText(d.sleepScenarioFb);
       var sleepScenarioScore = d.sleepScenarioScore || 0;
       var sleepCurrentScenario = SLEEP_SCENARIOS[sleepScenarioIdx % SLEEP_SCENARIOS.length];
       var sleepEnergyTools = d.sleepEnergyTools || {};
@@ -2656,16 +2680,16 @@ window.StemLab = window.StemLab || {
       var medChecklistDone = MED_LABEL_PARTS.filter(function(part) { return !!medChecklist[part.id]; }).length;
       var medLabelIdx = (Number.isInteger(d.medLabelIdx) && d.medLabelIdx >= 0) ? d.medLabelIdx : 0;
       var medLabel = MED_SAMPLE_LABELS[medLabelIdx % MED_SAMPLE_LABELS.length];
-      var medLabelAnswer = d.medLabelAnswer || '';
-      var medLabelFb = d.medLabelFb || '';
+      var medLabelAnswer = asText(d.medLabelAnswer);
+      var medLabelFb = asText(d.medLabelFb);
       var medScenarioIdx = (Number.isInteger(d.medScenarioIdx) && d.medScenarioIdx >= 0) ? d.medScenarioIdx : 0;
-      var medScenarioChoice = d.medScenarioChoice || '';
-      var medScenarioFb = d.medScenarioFb || '';
+      var medScenarioChoice = asText(d.medScenarioChoice);
+      var medScenarioFb = asText(d.medScenarioFb);
       var medScenarioScore = d.medScenarioScore || 0;
       var medCurrentScenario = MED_SCENARIOS[medScenarioIdx % MED_SCENARIOS.length];
       var medQuestionIdx = (Number.isInteger(d.medQuestionIdx) && d.medQuestionIdx >= 0) ? d.medQuestionIdx : 0;
-      var medQuestionNote = d.medQuestionNote || '';
-      var medQuestionMsg = d.medQuestionMsg || '';
+      var medQuestionNote = asText(d.medQuestionNote);
+      var medQuestionMsg = asText(d.medQuestionMsg);
       var medQuestionPrompt = MED_QUESTION_PROMPTS[medQuestionIdx % MED_QUESTION_PROMPTS.length];
 
       function setMedChecklist(id, checked) {
@@ -2704,14 +2728,14 @@ window.StemLab = window.StemLab || {
       var appointmentTypeIdx = (Number.isInteger(d.appointmentTypeIdx) && d.appointmentTypeIdx >= 0) ? d.appointmentTypeIdx : 0;
       var appointmentType = APPOINTMENT_TYPES[appointmentTypeIdx % APPOINTMENT_TYPES.length];
       var appointmentScenarioIdx = (Number.isInteger(d.appointmentScenarioIdx) && d.appointmentScenarioIdx >= 0) ? d.appointmentScenarioIdx : 0;
-      var appointmentScenarioChoice = d.appointmentScenarioChoice || '';
-      var appointmentScenarioFb = d.appointmentScenarioFb || '';
+      var appointmentScenarioChoice = asText(d.appointmentScenarioChoice);
+      var appointmentScenarioFb = asText(d.appointmentScenarioFb);
       var appointmentScenarioScore = d.appointmentScenarioScore || 0;
       var appointmentCurrentScenario = APPOINTMENT_SCENARIOS[appointmentScenarioIdx % APPOINTMENT_SCENARIOS.length];
       var appointmentScriptIdx = (Number.isInteger(d.appointmentScriptIdx) && d.appointmentScriptIdx >= 0) ? d.appointmentScriptIdx : 0;
       var appointmentScriptPrompt = APPOINTMENT_SCRIPT_PROMPTS[appointmentScriptIdx % APPOINTMENT_SCRIPT_PROMPTS.length];
-      var appointmentScriptNote = d.appointmentScriptNote || '';
-      var appointmentScriptMsg = d.appointmentScriptMsg || '';
+      var appointmentScriptNote = asText(d.appointmentScriptNote);
+      var appointmentScriptMsg = asText(d.appointmentScriptMsg);
 
       function setAppointmentPrep(id, checked) {
         var next = Object.assign({}, appointmentPrep);
@@ -2736,16 +2760,16 @@ window.StemLab = window.StemLab || {
       var homeSafetyChecklist = d.homeSafetyChecklist || {};
       var homeSafetyDone = HOME_SAFETY_CHECKS.filter(function(step) { return !!homeSafetyChecklist[step.id]; }).length;
       var homeSafetyScenarioIdx = (Number.isInteger(d.homeSafetyScenarioIdx) && d.homeSafetyScenarioIdx >= 0) ? d.homeSafetyScenarioIdx : 0;
-      var homeSafetyScenarioChoice = d.homeSafetyScenarioChoice || '';
-      var homeSafetyScenarioFb = d.homeSafetyScenarioFb || '';
+      var homeSafetyScenarioChoice = asText(d.homeSafetyScenarioChoice);
+      var homeSafetyScenarioFb = asText(d.homeSafetyScenarioFb);
       var homeSafetyScenarioScore = d.homeSafetyScenarioScore || 0;
       var homeSafetyCurrentScenario = HOME_SAFETY_SCENARIOS[homeSafetyScenarioIdx % HOME_SAFETY_SCENARIOS.length];
       var firstAidIdx = (Number.isInteger(d.firstAidIdx) && d.firstAidIdx >= 0) ? d.firstAidIdx : 0;
       var firstAidCard = FIRST_AID_CARDS[firstAidIdx % FIRST_AID_CARDS.length];
       var homePlanIdx = (Number.isInteger(d.homePlanIdx) && d.homePlanIdx >= 0) ? d.homePlanIdx : 0;
       var homePlanPrompt = HOME_SAFETY_PLAN_PROMPTS[homePlanIdx % HOME_SAFETY_PLAN_PROMPTS.length];
-      var homePlanNote = d.homePlanNote || '';
-      var homePlanMsg = d.homePlanMsg || '';
+      var homePlanNote = asText(d.homePlanNote);
+      var homePlanMsg = asText(d.homePlanMsg);
 
       function setHomeSafetyCheck(id, checked) {
         var next = Object.assign({}, homeSafetyChecklist);
@@ -2770,16 +2794,16 @@ window.StemLab = window.StemLab || {
       var digitalChecklist = d.digitalChecklist || {};
       var digitalChecklistDone = DIGITAL_SAFETY_CHECKS.filter(function(step) { return !!digitalChecklist[step.id]; }).length;
       var digitalScenarioIdx = (Number.isInteger(d.digitalScenarioIdx) && d.digitalScenarioIdx >= 0) ? d.digitalScenarioIdx : 0;
-      var digitalScenarioChoice = d.digitalScenarioChoice || '';
-      var digitalScenarioFb = d.digitalScenarioFb || '';
+      var digitalScenarioChoice = asText(d.digitalScenarioChoice);
+      var digitalScenarioFb = asText(d.digitalScenarioFb);
       var digitalScenarioScore = d.digitalScenarioScore || 0;
       var digitalCurrentScenario = DIGITAL_SCENARIOS[digitalScenarioIdx % DIGITAL_SCENARIOS.length];
       var digitalScamIdx = (Number.isInteger(d.digitalScamIdx) && d.digitalScamIdx >= 0) ? d.digitalScamIdx : 0;
       var digitalScam = DIGITAL_SCAM_SIGNS[digitalScamIdx % DIGITAL_SCAM_SIGNS.length];
       var digitalPlanIdx = (Number.isInteger(d.digitalPlanIdx) && d.digitalPlanIdx >= 0) ? d.digitalPlanIdx : 0;
       var digitalPlanPrompt = DIGITAL_PLAN_PROMPTS[digitalPlanIdx % DIGITAL_PLAN_PROMPTS.length];
-      var digitalPlanNote = d.digitalPlanNote || '';
-      var digitalPlanMsg = d.digitalPlanMsg || '';
+      var digitalPlanNote = asText(d.digitalPlanNote);
+      var digitalPlanMsg = asText(d.digitalPlanMsg);
 
       function setDigitalChecklist(id, checked) {
         var next = Object.assign({}, digitalChecklist);
@@ -2804,8 +2828,8 @@ window.StemLab = window.StemLab || {
       var recordsChecklist = d.recordsChecklist || {};
       var recordsDone = RECORDS_CHECKS.filter(function(step) { return !!recordsChecklist[step.id]; }).length;
       var recordScenarioIdx = (Number.isInteger(d.recordScenarioIdx) && d.recordScenarioIdx >= 0) ? d.recordScenarioIdx : 0;
-      var recordScenarioChoice = d.recordScenarioChoice || '';
-      var recordScenarioFb = d.recordScenarioFb || '';
+      var recordScenarioChoice = asText(d.recordScenarioChoice);
+      var recordScenarioFb = asText(d.recordScenarioFb);
       var recordScenarioScore = d.recordScenarioScore || 0;
       var recordCurrentScenario = RECORD_SCENARIOS[recordScenarioIdx % RECORD_SCENARIOS.length];
       var recordTypeIdx = (Number.isInteger(d.recordTypeIdx) && d.recordTypeIdx >= 0) ? d.recordTypeIdx : 0;
@@ -2814,8 +2838,8 @@ window.StemLab = window.StemLab || {
       var formFieldCard = FORM_FIELD_CARDS[formFieldIdx % FORM_FIELD_CARDS.length];
       var recordPlanIdx = (Number.isInteger(d.recordPlanIdx) && d.recordPlanIdx >= 0) ? d.recordPlanIdx : 0;
       var recordPlanPrompt = RECORD_PLAN_PROMPTS[recordPlanIdx % RECORD_PLAN_PROMPTS.length];
-      var recordPlanNote = d.recordPlanNote || '';
-      var recordPlanMsg = d.recordPlanMsg || '';
+      var recordPlanNote = asText(d.recordPlanNote);
+      var recordPlanMsg = asText(d.recordPlanMsg);
 
       function setRecordsCheck(id, checked) {
         var next = Object.assign({}, recordsChecklist);
@@ -2840,8 +2864,8 @@ window.StemLab = window.StemLab || {
       var transportChecklist = d.transportChecklist || {};
       var transportDone = TRANSPORT_CHECKS.filter(function(step) { return !!transportChecklist[step.id]; }).length;
       var transportScenarioIdx = (Number.isInteger(d.transportScenarioIdx) && d.transportScenarioIdx >= 0) ? d.transportScenarioIdx : 0;
-      var transportScenarioChoice = d.transportScenarioChoice || '';
-      var transportScenarioFb = d.transportScenarioFb || '';
+      var transportScenarioChoice = asText(d.transportScenarioChoice);
+      var transportScenarioFb = asText(d.transportScenarioFb);
       var transportScenarioScore = d.transportScenarioScore || 0;
       var transportCurrentScenario = TRANSPORT_SCENARIOS[transportScenarioIdx % TRANSPORT_SCENARIOS.length];
       var transportModeIdx = (Number.isInteger(d.transportModeIdx) && d.transportModeIdx >= 0) ? d.transportModeIdx : 0;
@@ -2850,8 +2874,8 @@ window.StemLab = window.StemLab || {
       var transportSymbolCard = TRANSPORT_SYMBOL_CARDS[transportSymbolIdx % TRANSPORT_SYMBOL_CARDS.length];
       var transportPlanIdx = (Number.isInteger(d.transportPlanIdx) && d.transportPlanIdx >= 0) ? d.transportPlanIdx : 0;
       var transportPlanPrompt = TRANSPORT_PLAN_PROMPTS[transportPlanIdx % TRANSPORT_PLAN_PROMPTS.length];
-      var transportPlanNote = d.transportPlanNote || '';
-      var transportPlanMsg = d.transportPlanMsg || '';
+      var transportPlanNote = asText(d.transportPlanNote);
+      var transportPlanMsg = asText(d.transportPlanMsg);
 
       function setTransportCheck(id, checked) {
         var next = Object.assign({}, transportChecklist);
@@ -2876,8 +2900,8 @@ window.StemLab = window.StemLab || {
       var workChecklist = d.workChecklist || {};
       var workDone = WORK_CHECKS.filter(function(step) { return !!workChecklist[step.id]; }).length;
       var workScenarioIdx = (Number.isInteger(d.workScenarioIdx) && d.workScenarioIdx >= 0) ? d.workScenarioIdx : 0;
-      var workScenarioChoice = d.workScenarioChoice || '';
-      var workScenarioFb = d.workScenarioFb || '';
+      var workScenarioChoice = asText(d.workScenarioChoice);
+      var workScenarioFb = asText(d.workScenarioFb);
       var workScenarioScore = d.workScenarioScore || 0;
       var workCurrentScenario = WORK_SCENARIOS[workScenarioIdx % WORK_SCENARIOS.length];
       var workplaceCardIdx = (Number.isInteger(d.workplaceCardIdx) && d.workplaceCardIdx >= 0) ? d.workplaceCardIdx : 0;
@@ -2886,8 +2910,8 @@ window.StemLab = window.StemLab || {
       var interviewCard = INTERVIEW_CARDS[interviewCardIdx % INTERVIEW_CARDS.length];
       var workPlanIdx = (Number.isInteger(d.workPlanIdx) && d.workPlanIdx >= 0) ? d.workPlanIdx : 0;
       var workPlanPrompt = WORK_PLAN_PROMPTS[workPlanIdx % WORK_PLAN_PROMPTS.length];
-      var workPlanNote = d.workPlanNote || '';
-      var workPlanMsg = d.workPlanMsg || '';
+      var workPlanNote = asText(d.workPlanNote);
+      var workPlanMsg = asText(d.workPlanMsg);
 
       function setWorkCheck(id, checked) {
         var next = Object.assign({}, workChecklist);
@@ -2912,8 +2936,8 @@ window.StemLab = window.StemLab || {
       var resumeChecklist = d.resumeChecklist || {};
       var resumeDone = RESUME_CHECKS.filter(function(step) { return !!resumeChecklist[step.id]; }).length;
       var resumeScenarioIdx = (Number.isInteger(d.resumeScenarioIdx) && d.resumeScenarioIdx >= 0) ? d.resumeScenarioIdx : 0;
-      var resumeScenarioChoice = d.resumeScenarioChoice || '';
-      var resumeScenarioFb = d.resumeScenarioFb || '';
+      var resumeScenarioChoice = asText(d.resumeScenarioChoice);
+      var resumeScenarioFb = asText(d.resumeScenarioFb);
       var resumeScenarioScore = d.resumeScenarioScore || 0;
       var resumeCurrentScenario = RESUME_SCENARIOS[resumeScenarioIdx % RESUME_SCENARIOS.length];
       var resumeSectionIdx = (Number.isInteger(d.resumeSectionIdx) && d.resumeSectionIdx >= 0) ? d.resumeSectionIdx : 0;
@@ -2924,15 +2948,15 @@ window.StemLab = window.StemLab || {
       var resumeResearchCard = RESUME_RESEARCH_CARDS[resumeResearchIdx % RESUME_RESEARCH_CARDS.length];
       var resumePlanIdx = (Number.isInteger(d.resumePlanIdx) && d.resumePlanIdx >= 0) ? d.resumePlanIdx : 0;
       var resumePlanPrompt = RESUME_PLAN_PROMPTS[resumePlanIdx % RESUME_PLAN_PROMPTS.length];
-      var resumePlanNote = d.resumePlanNote || '';
-      var resumePlanMsg = d.resumePlanMsg || '';
+      var resumePlanNote = asText(d.resumePlanNote);
+      var resumePlanMsg = asText(d.resumePlanMsg);
       var resumeRole = d.resumeRole || 'entry-level job, volunteer role, internship, or program';
-      var resumeAction = d.resumeAction || '';
-      var resumeContext = d.resumeContext || '';
-      var resumeSkill = d.resumeSkill || '';
-      var resumeResult = d.resumeResult || '';
+      var resumeAction = asText(d.resumeAction);
+      var resumeContext = asText(d.resumeContext);
+      var resumeSkill = asText(d.resumeSkill);
+      var resumeResult = asText(d.resumeResult);
       var resumeBulletPreview = (resumeAction.trim() || 'Supported') + ' ' + (resumeContext.trim() || 'a real task') + (resumeSkill.trim() ? ' using ' + resumeSkill.trim() : '') + (resumeResult.trim() ? ' to ' + resumeResult.trim() : '') + '.';
-      var resumeBulletMsg = d.resumeBulletMsg || '';
+      var resumeBulletMsg = asText(d.resumeBulletMsg);
 
       function setResumeCheck(id, checked) {
         var next = Object.assign({}, resumeChecklist);
@@ -2957,8 +2981,8 @@ window.StemLab = window.StemLab || {
       var proofChecklist = d.proofChecklist || {};
       var proofDone = PROOF_CHECKS.filter(function(step) { return !!proofChecklist[step.id]; }).length;
       var proofScenarioIdx = (Number.isInteger(d.proofScenarioIdx) && d.proofScenarioIdx >= 0) ? d.proofScenarioIdx : 0;
-      var proofScenarioChoice = d.proofScenarioChoice || '';
-      var proofScenarioFb = d.proofScenarioFb || '';
+      var proofScenarioChoice = asText(d.proofScenarioChoice);
+      var proofScenarioFb = asText(d.proofScenarioFb);
       var proofScenarioScore = d.proofScenarioScore || 0;
       var proofCurrentScenario = PROOF_SCENARIOS[proofScenarioIdx % PROOF_SCENARIOS.length];
       var proofTypeIdx = (Number.isInteger(d.proofTypeIdx) && d.proofTypeIdx >= 0) ? d.proofTypeIdx : 0;
@@ -2969,15 +2993,15 @@ window.StemLab = window.StemLab || {
       var proofShareCard = PROOF_SHARE_LEVELS[proofShareIdx % PROOF_SHARE_LEVELS.length];
       var proofPlanIdx = (Number.isInteger(d.proofPlanIdx) && d.proofPlanIdx >= 0) ? d.proofPlanIdx : 0;
       var proofPlanPrompt = PROOF_PLAN_PROMPTS[proofPlanIdx % PROOF_PLAN_PROMPTS.length];
-      var proofPlanNote = d.proofPlanNote || '';
-      var proofPlanMsg = d.proofPlanMsg || '';
+      var proofPlanNote = asText(d.proofPlanNote);
+      var proofPlanMsg = asText(d.proofPlanMsg);
       var proofItemType = d.proofItemType || 'project sample';
-      var proofItemTitle = d.proofItemTitle || '';
-      var proofItemSkill = d.proofItemSkill || '';
-      var proofItemEvidence = d.proofItemEvidence || '';
+      var proofItemTitle = asText(d.proofItemTitle);
+      var proofItemSkill = asText(d.proofItemSkill);
+      var proofItemEvidence = asText(d.proofItemEvidence);
       var proofItemShare = d.proofItemShare || 'limited link';
       var proofItemPreview = (proofItemTitle.trim() || 'Untitled proof item') + ' - ' + (proofItemType.trim() || 'proof') + ' showing ' + (proofItemSkill.trim() || 'a real skill') + '. Share level: ' + (proofItemShare.trim() || 'limited') + '.';
-      var proofItemMsg = d.proofItemMsg || '';
+      var proofItemMsg = asText(d.proofItemMsg);
 
       function setProofCheck(id, checked) {
         var next = Object.assign({}, proofChecklist);
@@ -3002,8 +3026,8 @@ window.StemLab = window.StemLab || {
       var interviewChecklist = d.interviewChecklist || {};
       var interviewDone = INTERVIEW_CHECKS.filter(function(step) { return !!interviewChecklist[step.id]; }).length;
       var interviewScenarioIdx = (Number.isInteger(d.interviewScenarioIdx) && d.interviewScenarioIdx >= 0) ? d.interviewScenarioIdx : 0;
-      var interviewScenarioChoice = d.interviewScenarioChoice || '';
-      var interviewScenarioFb = d.interviewScenarioFb || '';
+      var interviewScenarioChoice = asText(d.interviewScenarioChoice);
+      var interviewScenarioFb = asText(d.interviewScenarioFb);
       var interviewScenarioScore = d.interviewScenarioScore || 0;
       var interviewCurrentScenario = INTERVIEW_SCENARIOS[interviewScenarioIdx % INTERVIEW_SCENARIOS.length];
       var interviewRoleIdx = (Number.isInteger(d.interviewRoleIdx) && d.interviewRoleIdx >= 0) ? d.interviewRoleIdx : 0;
@@ -3014,25 +3038,25 @@ window.StemLab = window.StemLab || {
       var interviewRubricCard = INTERVIEW_RUBRIC_CARDS[interviewRubricIdx % INTERVIEW_RUBRIC_CARDS.length];
       var interviewReflectionIdx = (Number.isInteger(d.interviewReflectionIdx) && d.interviewReflectionIdx >= 0) ? d.interviewReflectionIdx : 0;
       var interviewReflectionPrompt = INTERVIEW_REFLECTION_PROMPTS[interviewReflectionIdx % INTERVIEW_REFLECTION_PROMPTS.length];
-      var interviewReflectionNote = d.interviewReflectionNote || '';
-      var interviewReflectionMsg = d.interviewReflectionMsg || '';
+      var interviewReflectionNote = asText(d.interviewReflectionNote);
+      var interviewReflectionMsg = asText(d.interviewReflectionMsg);
       var interviewMode = d.interviewMode || 'guided';
       var interviewHintsOn = d.interviewHintsOn !== false;
       var interviewAutoRead = !!d.interviewAutoRead;
-      var interviewInput = d.interviewInput || '';
+      var interviewInput = asText(d.interviewInput);
       var interviewChatHistory = Array.isArray(d.interviewChatHistory) ? d.interviewChatHistory : [];
       var interviewDisplayHistory = interviewChatHistory.length ? interviewChatHistory : [{ role: 'interviewer', speaker: interviewRole.interviewer, text: interviewRole.opening }];
       var interviewSuggestions = Array.isArray(d.interviewSuggestions) && d.interviewSuggestions.length ? d.interviewSuggestions : INTERVIEW_SUGGESTIONS.slice(0, 4);
       var interviewLoading = !!d.interviewLoading;
-      var interviewFeedback = d.interviewFeedback || '';
+      var interviewFeedback = asText(d.interviewFeedback);
       var interviewScore = d.interviewScore || 0;
-      var interviewSparkMsg = d.interviewSparkMsg || '';
-      var interviewTranscriptMsg = d.interviewTranscriptMsg || '';
-      var interviewStarSituation = d.interviewStarSituation || '';
-      var interviewStarTask = d.interviewStarTask || '';
-      var interviewStarAction = d.interviewStarAction || '';
-      var interviewStarResult = d.interviewStarResult || '';
-      var interviewStarMsg = d.interviewStarMsg || '';
+      var interviewSparkMsg = asText(d.interviewSparkMsg);
+      var interviewTranscriptMsg = asText(d.interviewTranscriptMsg);
+      var interviewStarSituation = asText(d.interviewStarSituation);
+      var interviewStarTask = asText(d.interviewStarTask);
+      var interviewStarAction = asText(d.interviewStarAction);
+      var interviewStarResult = asText(d.interviewStarResult);
+      var interviewStarMsg = asText(d.interviewStarMsg);
       var interviewStarPreview = 'Situation: ' + (interviewStarSituation.trim() || 'the context') + ' Task: ' + (interviewStarTask.trim() || 'what needed to happen') + ' Action: ' + (interviewStarAction.trim() || 'what I did') + ' Result: ' + (interviewStarResult.trim() || 'what changed or what I learned') + '.';
       var interviewPlanIdx = (Number.isInteger(d.interviewPlanIdx) && d.interviewPlanIdx >= 0) ? d.interviewPlanIdx : 0;
       var interviewPracticePlan = INTERVIEW_PLAN_TEMPLATES[interviewPlanIdx % INTERVIEW_PLAN_TEMPLATES.length];
@@ -3040,37 +3064,37 @@ window.StemLab = window.StemLab || {
       var interviewPlanGoal = d.interviewPlanGoal || interviewPracticePlan.goal;
       var interviewPlanChecklist = d.interviewPlanChecklist || {};
       var interviewPlanDone = INTERVIEW_PLAN_STEPS.filter(function(step) { return !!interviewPlanChecklist[step.id]; }).length;
-      var interviewPlanNote = d.interviewPlanNote || '';
-      var interviewPlanMsg = d.interviewPlanMsg || '';
+      var interviewPlanNote = asText(d.interviewPlanNote);
+      var interviewPlanMsg = asText(d.interviewPlanMsg);
       var interviewPlanSavedAt = d.interviewPlanSavedAt || 0;
       var interviewPlanLog = Array.isArray(d.interviewPlanLog) ? d.interviewPlanLog : [];
       var interviewPlanProgress = Math.round(interviewPlanDone / INTERVIEW_PLAN_STEPS.length * 100);
-      var interviewSavedTranscript = d.interviewSavedTranscript || '';
-      var interviewSavedStarAnswer = d.interviewSavedStarAnswer || '';
+      var interviewSavedTranscript = asText(d.interviewSavedTranscript);
+      var interviewSavedStarAnswer = asText(d.interviewSavedStarAnswer);
       var interviewFollowUpMessage = d.interviewFollowUpMessage || 'Thank you for meeting with me. I appreciated learning about the role. I am especially interested in... Please let me know if you need anything else from me.';
-      var interviewPacketMsg = d.interviewPacketMsg || '';
+      var interviewPacketMsg = asText(d.interviewPacketMsg);
       var interviewPacketSavedAt = d.interviewPacketSavedAt || 0;
       var interviewRehearsalConfidence = Number(d.interviewRehearsalConfidence || 3);
       var interviewRehearsalTargetId = d.interviewRehearsalTargetId || '60';
       var interviewRehearsalTarget = INTERVIEW_REHEARSAL_TARGETS.find(function(target) { return target.id === interviewRehearsalTargetId; }) || INTERVIEW_REHEARSAL_TARGETS[1];
       var interviewRehearsalScriptIdx = (Number.isInteger(d.interviewRehearsalScriptIdx) && d.interviewRehearsalScriptIdx >= 0) ? d.interviewRehearsalScriptIdx : 0;
       var interviewRehearsalScript = INTERVIEW_REHEARSAL_SCRIPTS[interviewRehearsalScriptIdx % INTERVIEW_REHEARSAL_SCRIPTS.length];
-      var interviewRehearsalNote = d.interviewRehearsalNote || '';
-      var interviewRehearsalMsg = d.interviewRehearsalMsg || '';
+      var interviewRehearsalNote = asText(d.interviewRehearsalNote);
+      var interviewRehearsalMsg = asText(d.interviewRehearsalMsg);
       var interviewRehearsalSavedAt = d.interviewRehearsalSavedAt || 0;
       var interviewProofMatcherIdx = (Number.isInteger(d.interviewProofMatcherIdx) && d.interviewProofMatcherIdx >= 0) ? d.interviewProofMatcherIdx : 0;
       var interviewProofMatcher = INTERVIEW_PROOF_MATCHERS[interviewProofMatcherIdx % INTERVIEW_PROOF_MATCHERS.length];
-      var interviewProofNote = d.interviewProofNote || '';
-      var interviewSavedProofCue = d.interviewSavedProofCue || '';
-      var interviewProofCueMsg = d.interviewProofCueMsg || '';
+      var interviewProofNote = asText(d.interviewProofNote);
+      var interviewSavedProofCue = asText(d.interviewSavedProofCue);
+      var interviewProofCueMsg = asText(d.interviewProofCueMsg);
       var interviewProofCueSavedAt = d.interviewProofCueSavedAt || 0;
       var interviewProofCuePreview = interviewProofMatcher.answerStem + ' Proof I can use: ' + (interviewProofNote.trim() || interviewProofMatcher.proofPrompt);
       var interviewDayChecklist = d.interviewDayChecklist || {};
       var interviewDayDone = INTERVIEW_DAY_CHECKS.filter(function(step) { return !!interviewDayChecklist[step.id]; }).length;
-      var interviewArrivalPlan = d.interviewArrivalPlan || '';
-      var interviewMaterialsNote = d.interviewMaterialsNote || '';
-      var interviewBackupPlan = d.interviewBackupPlan || '';
-      var interviewDayMsg = d.interviewDayMsg || '';
+      var interviewArrivalPlan = asText(d.interviewArrivalPlan);
+      var interviewMaterialsNote = asText(d.interviewMaterialsNote);
+      var interviewBackupPlan = asText(d.interviewBackupPlan);
+      var interviewDayMsg = asText(d.interviewDayMsg);
       var interviewDaySavedAt = d.interviewDaySavedAt || 0;
       var interviewPacketPreview = buildInterviewPrepPacket();
 
@@ -3488,8 +3512,8 @@ window.StemLab = window.StemLab || {
       var communicationChecklist = d.communicationChecklist || {};
       var communicationDone = COMMUNICATION_CHECKS.filter(function(step) { return !!communicationChecklist[step.id]; }).length;
       var communicationScenarioIdx = (Number.isInteger(d.communicationScenarioIdx) && d.communicationScenarioIdx >= 0) ? d.communicationScenarioIdx : 0;
-      var communicationScenarioChoice = d.communicationScenarioChoice || '';
-      var communicationScenarioFb = d.communicationScenarioFb || '';
+      var communicationScenarioChoice = asText(d.communicationScenarioChoice);
+      var communicationScenarioFb = asText(d.communicationScenarioFb);
       var communicationScenarioScore = d.communicationScenarioScore || 0;
       var communicationCurrentScenario = COMMUNICATION_SCENARIOS[communicationScenarioIdx % COMMUNICATION_SCENARIOS.length];
       var messageToneIdx = (Number.isInteger(d.messageToneIdx) && d.messageToneIdx >= 0) ? d.messageToneIdx : 0;
@@ -3498,8 +3522,8 @@ window.StemLab = window.StemLab || {
       var boundaryRepairCard = BOUNDARY_REPAIR_CARDS[boundaryRepairIdx % BOUNDARY_REPAIR_CARDS.length];
       var communicationPlanIdx = (Number.isInteger(d.communicationPlanIdx) && d.communicationPlanIdx >= 0) ? d.communicationPlanIdx : 0;
       var communicationPlanPrompt = COMMUNICATION_PLAN_PROMPTS[communicationPlanIdx % COMMUNICATION_PLAN_PROMPTS.length];
-      var communicationPlanNote = d.communicationPlanNote || '';
-      var communicationPlanMsg = d.communicationPlanMsg || '';
+      var communicationPlanNote = asText(d.communicationPlanNote);
+      var communicationPlanMsg = asText(d.communicationPlanMsg);
 
       function setCommunicationCheck(id, checked) {
         var next = Object.assign({}, communicationChecklist);
@@ -3524,8 +3548,8 @@ window.StemLab = window.StemLab || {
       var timeChecklist = d.timeChecklist || {};
       var timeDone = TIME_CHECKS.filter(function(step) { return !!timeChecklist[step.id]; }).length;
       var timeScenarioIdx = (Number.isInteger(d.timeScenarioIdx) && d.timeScenarioIdx >= 0) ? d.timeScenarioIdx : 0;
-      var timeScenarioChoice = d.timeScenarioChoice || '';
-      var timeScenarioFb = d.timeScenarioFb || '';
+      var timeScenarioChoice = asText(d.timeScenarioChoice);
+      var timeScenarioFb = asText(d.timeScenarioFb);
       var timeScenarioScore = d.timeScenarioScore || 0;
       var timeCurrentScenario = TIME_SCENARIOS[timeScenarioIdx % TIME_SCENARIOS.length];
       var priorityCardIdx = (Number.isInteger(d.priorityCardIdx) && d.priorityCardIdx >= 0) ? d.priorityCardIdx : 0;
@@ -3534,8 +3558,8 @@ window.StemLab = window.StemLab || {
       var timeToolCard = TIME_TOOL_CARDS[timeToolIdx % TIME_TOOL_CARDS.length];
       var timePlanIdx = (Number.isInteger(d.timePlanIdx) && d.timePlanIdx >= 0) ? d.timePlanIdx : 0;
       var timePlanPrompt = TIME_PLAN_PROMPTS[timePlanIdx % TIME_PLAN_PROMPTS.length];
-      var timePlanNote = d.timePlanNote || '';
-      var timePlanMsg = d.timePlanMsg || '';
+      var timePlanNote = asText(d.timePlanNote);
+      var timePlanMsg = asText(d.timePlanMsg);
 
       function setTimeCheck(id, checked) {
         var next = Object.assign({}, timeChecklist);
@@ -3560,8 +3584,8 @@ window.StemLab = window.StemLab || {
       var foodConfidenceChecklist = d.foodConfidenceChecklist || {};
       var foodConfidenceDone = FOOD_CONFIDENCE_CHECKS.filter(function(step) { return !!foodConfidenceChecklist[step.id]; }).length;
       var foodConfidenceScenarioIdx = (Number.isInteger(d.foodConfidenceScenarioIdx) && d.foodConfidenceScenarioIdx >= 0) ? d.foodConfidenceScenarioIdx : 0;
-      var foodConfidenceScenarioChoice = d.foodConfidenceScenarioChoice || '';
-      var foodConfidenceScenarioFb = d.foodConfidenceScenarioFb || '';
+      var foodConfidenceScenarioChoice = asText(d.foodConfidenceScenarioChoice);
+      var foodConfidenceScenarioFb = asText(d.foodConfidenceScenarioFb);
       var foodConfidenceScenarioScore = d.foodConfidenceScenarioScore || 0;
       var foodConfidenceCurrentScenario = FOOD_CONFIDENCE_SCENARIOS[foodConfidenceScenarioIdx % FOOD_CONFIDENCE_SCENARIOS.length];
       var foodStorageIdx = (Number.isInteger(d.foodStorageIdx) && d.foodStorageIdx >= 0) ? d.foodStorageIdx : 0;
@@ -3577,8 +3601,8 @@ window.StemLab = window.StemLab || {
       var foodMealCost = foodBase.cost + foodProtein.cost + foodProduce.cost + foodFlavor.cost;
       var foodLabelIdx = (Number.isInteger(d.foodLabelIdx) && d.foodLabelIdx >= 0) ? d.foodLabelIdx : 0;
       var foodLabel = FOOD_LABEL_SAMPLES[foodLabelIdx % FOOD_LABEL_SAMPLES.length];
-      var foodLabelAnswer = d.foodLabelAnswer || '';
-      var foodLabelFb = d.foodLabelFb || '';
+      var foodLabelAnswer = asText(d.foodLabelAnswer);
+      var foodLabelFb = asText(d.foodLabelFb);
 
       function setFoodConfidenceCheck(id, checked) {
         var next = Object.assign({}, foodConfidenceChecklist);
@@ -3615,8 +3639,8 @@ window.StemLab = window.StemLab || {
       // live Check button that then threw on chalQ.a. Allow-list the real tiers.
       var chalTier = (d.chalTier === 1 || d.chalTier === 2 || d.chalTier === 3) ? d.chalTier : 1;
       var chalIdx = (typeof d.chalIdx === 'number' && isFinite(d.chalIdx)) ? d.chalIdx : 0;
-      var chalAnswer = d.chalAnswer || '';
-      var chalFeedback = d.chalFeedback || '';
+      var chalAnswer = asText(d.chalAnswer);
+      var chalFeedback = asText(d.chalFeedback);
       var chalStreak = d.chalStreak || 0;
       var chalScore = d.chalScore || 0;
       var tierQs = CHALLENGE_QS.filter(function(q) { return q.tier === chalTier; });
@@ -3644,8 +3668,8 @@ window.StemLab = window.StemLab || {
       var battleRound = d.battleRound || 0;
       var battlePlayerHP = (typeof d.battlePlayerHP === 'number' && isFinite(d.battlePlayerHP)) ? d.battlePlayerHP : 100;
       var battleEnemyHP = (typeof d.battleEnemyHP === 'number' && isFinite(d.battleEnemyHP)) ? d.battleEnemyHP : 100;
-      var battleAnswer = d.battleAnswer || '';
-      var battleFeedback = d.battleFeedback || '';
+      var battleAnswer = asText(d.battleAnswer);
+      var battleFeedback = asText(d.battleFeedback);
       var battleOver = d.battleOver || false;
       var battleWon = d.battleWon || false;
       var battleUseAI = d.battleUseAI || false;
