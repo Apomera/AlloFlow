@@ -3650,7 +3650,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <canvas id="dinolab-3d-canvas-tyrannosaurus" class="dinolab-3d-canvas" tabindex="0" role="application" aria-roledescription="Interactive 3D dinosaur reconstruction" aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown PageUp PageDown A D Home" aria-describedby="dino3d-viewer-desc-tyrannosaurus dino3d-status-tyrannosaurus" aria-label="T. rex procedural 3D reconstruction viewer. Environment scene hypothesis: Floodplain woodland. Drag in two directions to orbit and use the wheel to zoom. Arrow keys rotate and raise or lower the camera; Page Up and Page Down zoom; Home resets the view." style="width:100%;height:clamp(520px, 62vh, 760px);display:block;touch-action:none;outline:none;outline-offset:-3px">
 </canvas>
 <div class="dinolab-body-label-overlay" aria-hidden="true" style="display:none;position:absolute;inset:0;pointer-events:none">
-<svg width="100%" height="100%" style="position:absolute;inset:0;overflow:hidden">
+<svg width="100%" height="100%" aria-hidden="true" focusable="false" style="position:absolute;inset:0;overflow:hidden">
 <g data-dino-part-line="head" style="display:none">
 <line stroke="#99f6e4" stroke-width="1.5">
 </line>
