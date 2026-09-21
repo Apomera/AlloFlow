@@ -3015,17 +3015,36 @@
       var [_journeyEntry, _setJourneyEntry] = React.useState(null);
 
       // ── STEAM Lab Global Sound Effect Helper ──
-      var _stemAudioCtx = null;
+      //
+      // Use the ONE shared context, not a local of this component.
+      //
+      // `var _stemAudioCtx = null;` lived inside StemLabModal, so it was
+      // re-declared on every RENDER of the hub - not merely every mount - and
+      // the next beep constructed a fresh AudioContext that nothing ever
+      // closed. The hub re-renders on search input, catalog filter, XP award,
+      // quest tick and theme toggle, so this was reached in ordinary use.
+      // WebKit refuses a fifth live context and Chromium a seventh; past that
+      // the constructor throws, the bare catch below swallows it, and the XP
+      // chime and celebration fanfare go silent for the rest of the session
+      // with nothing reported.
+      //
+      // window.StemLab.audioContext() is the host getter the 2026-09-14 tool
+      // sweep introduced for exactly this: one context, resumed when
+      // suspended, with close() neutered so no caller can silence the others.
+      // The hub's own helper was missed by that sweep. The fallback keeps stub
+      // harnesses that do not define the getter working.
       function stemBeep(freq, dur, vol) {
         try {
-          if (!_stemAudioCtx) _stemAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-          var osc = _stemAudioCtx.createOscillator();
-          var gain = _stemAudioCtx.createGain();
-          osc.connect(gain); gain.connect(_stemAudioCtx.destination);
+          var ctx = (window.StemLab && typeof window.StemLab.audioContext === 'function')
+            ? window.StemLab.audioContext()
+            : new (window.AudioContext || window.webkitAudioContext)();
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
           osc.frequency.value = freq; osc.type = 'sine';
           gain.gain.value = vol || 0.12;
-          gain.gain.exponentialRampToValueAtTime(0.001, _stemAudioCtx.currentTime + (dur || 0.15));
-          osc.start(); osc.stop(_stemAudioCtx.currentTime + (dur || 0.15));
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (dur || 0.15));
+          osc.start(); osc.stop(ctx.currentTime + (dur || 0.15));
         } catch (e) { }
       }
       function stemCelebrate() {
