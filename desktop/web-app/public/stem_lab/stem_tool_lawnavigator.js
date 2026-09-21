@@ -67,6 +67,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
   var _manifest = null;
   var _docs = {};        // slug -> document object
   var _loading = {};     // slug -> true while in flight
+  var _docErr = {};      // slug -> message for a fetch that failed
+
+  // A failed document fetch used to set the SHARED error state, which is only
+  // rendered when the manifest itself is missing. With a manifest present the
+  // message went nowhere and the reader sat on "Loading the official text…"
+  // for good. Failures are per-document, so the record has to be per-slug too.
 
   // ── LIVE MODE ────────────────────────────────────────────────────────────
   // eCFR serves CORS-open JSON/XML (Access-Control-Allow-Origin: *, verified
@@ -369,15 +375,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
         return function() { cancelled = true; };
       }, []);
 
-      function ensureDoc(slug) {
+      function ensureDoc(slug, retry) {
         if (!slug || _docs[slug] || _loading[slug]) return;
+        // A prior failure stops the automatic re-request, so a dead corpus entry
+        // cannot spin on every render. An explicit retry clears it.
+        if (_docErr[slug] && !retry) return;
         _loading[slug] = true;
+        delete _docErr[slug];
         loadJson('law_corpus/' + slug + '.json').then(function(doc) {
           _docs[slug] = doc; _loading[slug] = false;
           setDocTick(function(n) { return n + 1; });
         }).catch(function(e) {
           _loading[slug] = false;
-          setLoadErr(String(e.message || e));
+          _docErr[slug] = String(e.message || e);
           setDocTick(function(n) { return n + 1; });
         });
       }
@@ -532,6 +542,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
       var disclaimer = h('p', { className: 'text-[0.6875rem] mt-3 leading-snug', style: { color: pal.muted } },
         __alloT('stem.lawNav.disclaimer', 'This tool reproduces published regulation text for reading and orientation. It is not legal advice, it is not a complete statement of your rights, and state and district procedures vary. For advice about a specific child, talk to your school team, your state parent center, or an attorney.'));
 
+      // A document that failed to fetch gets the same treatment as one that is
+      // not in the corpus: say plainly that nothing was loaded, offer the
+      // official source, and offer a retry. Never a spinner that never ends,
+      // and never text recalled instead of fetched.
+      function docLoadFailure(slug, meta, compact) {
+        var why = _docErr[slug];
+        if (!why) return null;
+        var size = compact ? 'text-xs' : 'text-sm';
+        return h('div', { key: slug + '-err', role: 'alert', className: 'rounded-xl p-3 ' + size,
+            style: { background: 'rgba(190,18,60,0.1)', border: '1px solid rgba(190,18,60,0.4)', color: pal.text } },
+          h('p', { className: 'font-bold mb-1' }, __alloT('stem.lawNav.doc_err_title', 'This text could not be loaded.')),
+          h('p', { className: 'text-[0.75rem] leading-relaxed' },
+            __alloT('stem.lawNav.doc_err_body', 'Nothing is shown here rather than text recalled from memory. Check your connection and try again, or read it at the official source.')),
+          h('div', { className: 'flex items-center gap-3 flex-wrap mt-2' },
+            h('button', {
+              type: 'button',
+              className: 'text-[0.6875rem] font-bold rounded-lg px-2 py-1',
+              style: { background: pal.btn, color: '#fff', minHeight: 32 },
+              onClick: function() { ensureDoc(slug, true); setDocTick(function(n) { return n + 1; }); }
+            }, __alloT('stem.lawNav.doc_err_retry', 'Try again')),
+            meta && meta.sourceUrl ? h('a', {
+              href: meta.sourceUrl, target: '_blank', rel: 'noopener noreferrer',
+              className: 'text-[0.6875rem] font-bold', style: { color: pal.accent, textDecoration: 'underline' }
+            }, __alloT('stem.lawNav.open_official', 'Open the official source ↗')) : null
+          ),
+          h('p', { className: 'text-[0.6875rem] mt-2', style: { color: pal.muted } }, why)
+        );
+      }
+
       // ── Load failure: say so, render nothing else ─────────────────────────
       if (loadErr && !manifest) {
         return h('div', { className: 'max-w-3xl mx-auto p-4', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
@@ -619,9 +658,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
       if (view === 'compare') {
         var topic = TOPICS.filter(function(t) { return t.id === d.topic; })[0] || TOPICS[0];
         var panels = [];
+        var failedFed = null;   // the forEach parameter is out of scope below
         federalDocs.forEach(function(fm) {
           var doc = _docs[fm.slug];
-          if (!doc) { ensureDoc(fm.slug); return; }
+          if (!doc) { ensureDoc(fm.slug); if (_docErr[fm.slug] && !failedFed) failedFed = fm; return; }
           var picked = (doc.sections || []).filter(function(s) { return topic.federal.indexOf(s.number) !== -1; });
           if (picked.length) panels.push({ meta: fm, doc: doc, sections: picked });
         });
@@ -645,7 +685,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
                     );
                   })
                 );
-              }) : h('p', { className: 'text-xs', style: { color: pal.muted } }, __alloT('stem.lawNav.loading', 'Loading the official text…'))
+              }) : ((failedFed && docLoadFailure(failedFed.slug, failedFed, true)) || h('p', { className: 'text-xs', style: { color: pal.muted } }, __alloT('stem.lawNav.loading', 'Loading the official text…')))
             ),
             h('div', null,
               h('div', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: pal.accent } }, '📍 ' + __alloT('stem.lawNav.state', 'State')),
@@ -661,7 +701,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
                       __alloT('stem.lawNav.open_state', 'Open the official state source ↗'))
                   );
                 }
-                if (!sdoc) { ensureDoc(sm.slug); return h('p', { key: sm.slug, className: 'text-xs', style: { color: pal.muted } }, __alloT('stem.lawNav.loading', 'Loading the official text…')); }
+                if (!sdoc) { ensureDoc(sm.slug); return docLoadFailure(sm.slug, sm, true) || h('p', { key: sm.slug, className: 'text-xs', style: { color: pal.muted } }, __alloT('stem.lawNav.loading', 'Loading the official text…')); }
                 var hits = stateMatches(sdoc, topic.phrase, 5);
                 return h('div', { key: sm.slug }, provenance(sm, true),
                   hits.length ? hits.map(function(hit, i) {
@@ -711,7 +751,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
             query ? h('p', { className: 'text-[0.6875rem] mt-1', style: { color: pal.muted } },
               results.length + ' ' + __alloT('stem.lawNav.matches', 'sections contain that phrase') + (results.length >= 60 ? ' ' + __alloT('stem.lawNav.capped', '(showing the first 60)') : '')) : null
           ),
-          !doc ? h('p', { className: 'text-sm', style: { color: pal.muted } }, __alloT('stem.lawNav.loading', 'Loading the official text…')) :
+          !doc ? (docLoadFailure(activeSlug, meta) || h('p', { className: 'text-sm', style: { color: pal.muted } }, __alloT('stem.lawNav.loading', 'Loading the official text…'))) :
           h('div', { className: 'flex flex-col gap-1.5' },
             list.map(function(s) {
               return h('button', {
@@ -853,7 +893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
           })()
         ) : null,
         sec ? readingControls() : null,
-        !sec ? h('p', { className: 'text-sm mt-3', style: { color: pal.muted } }, __alloT('stem.lawNav.loading', 'Loading the official text…')) :
+        !sec ? (docLoadFailure(activeSlug, smeta) || h('p', { className: 'text-sm mt-3', style: { color: pal.muted } }, __alloT('stem.lawNav.loading', 'Loading the official text…'))) :
         h('div', { className: 'rounded-2xl p-4 mt-3', style: { background: pal.panel, border: '1px solid ' + pal.border } },
           h('p', { className: 'text-[0.625rem] font-bold uppercase tracking-wider mb-2', style: { color: pal.muted } },
             usingLive ? __alloT('stem.lawNav.verbatim_live', 'Verbatim text, fetched live from eCFR')
