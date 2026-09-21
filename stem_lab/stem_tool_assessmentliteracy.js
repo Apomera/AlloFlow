@@ -9483,7 +9483,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       // MODULE 2: PERSONALITY  (PLACEHOLDER — expanded below)
       // ─────────────────────────────────────────
       function renderPersonality() {
-        return _RENDER_PERSONALITY(h, s, upd, callGemini, addToast, backBtn);
+        return _RENDER_PERSONALITY(h, s, upd, callGemini, addToast, backBtn, __alloT);
       }
 
       // ─────────────────────────────────────────
@@ -9497,14 +9497,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       // MODULE 4: EMPLOYER  (PLACEHOLDER — expanded below)
       // ─────────────────────────────────────────
       function renderEmployer() {
-        return _RENDER_EMPLOYER(h, s, upd, callGemini, addToast, backBtn);
+        return _RENDER_EMPLOYER(h, s, upd, callGemini, addToast, backBtn, __alloT);
       }
 
       // ─────────────────────────────────────────
       // MODULE 5: SCHOOL PSYCH (PLACEHOLDER — expanded below)
       // ─────────────────────────────────────────
       function renderSchoolPsych() {
-        return _RENDER_SCHOOLPSYCH(h, s, upd, callGemini, addToast, backBtn);
+        return _RENDER_SCHOOLPSYCH(h, s, upd, callGemini, addToast, backBtn, __alloT);
       }
 
       // ─────────────────────────────────────────
@@ -9883,7 +9883,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
   // MODULE 2: PERSONALITY IMPLEMENTATION
   // ═══════════════════════════════════════════════════════════════
 
-  function _RENDER_PERSONALITY(h, s, upd, callGemini, addToast, backBtn) {
+  function _RENDER_PERSONALITY(h, s, upd, callGemini, addToast, backBtn, t) {
+    if (typeof t !== 'function') t = function(k, fb){ return fb != null ? fb : k; };
     var sub = s.sub;
 
     if (sub === 'inventory') {
@@ -10268,7 +10269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('input', {
             id: 'al-peer-name', type: 'text', value: pName,
             onChange: function(e) { upd({ peerName: e.target.value }); },
-            placeholder: 'Who rated you?',
+            placeholder: t('stem.assessmentliteracy.who_rated_you','Who rated you?'),
             className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100'
           })
         ),
@@ -10988,7 +10989,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             type: 'text', value: f.search || '',
             'aria-label': __alloT('stem.assessmentliteracy.career_search_accessible_label', 'Search careers by title, skill, or task'),
             onChange: function(e) { setF({ search: e.target.value }); },
-            placeholder: 'Search by title, skill, or task (e.g., "patient", "data", "welding")',
+            placeholder: __alloT('stem.assessmentliteracy.search_by_title_skill_or_task_e_g_patient_da','Search by title, skill, or task (e.g., "patient", "data", "welding")'),
             className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100 placeholder-slate-500'
           }),
           // CLUSTERS
@@ -11674,7 +11675,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                       h('button', {
                         onClick: function() { upd({ compareIds: compareIds.filter(function(x) { return x !== c.id; }) }); },
                         className: 'transition-colors text-xs text-rose-400 hover:text-rose-300',
-                        title: 'Remove from comparison'
+                        title: __alloT('stem.assessmentliteracy.remove_from_comparison','Remove from comparison')
                       }, '\u2715')
                     )
                   );
@@ -12014,7 +12015,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             'aria-label': __alloT('stem.assessmentliteracy.skill_search_accessible_label', 'Search skills'),
             value: s.skillFilter || '',
             onChange: function(e) { upd({ skillFilter: e.target.value }); },
-            placeholder: 'Search skills (e.g., "communication", "data", "lifting", "patience")',
+            placeholder: __alloT('stem.assessmentliteracy.search_skills_e_g_communication_data_lifting','Search skills (e.g., "communication", "data", "lifting", "patience")'),
             className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100 placeholder-slate-500'
           }),
           filterText && h('div', { className: 'text-xs text-slate-400 mt-1' },
@@ -12225,7 +12226,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             id: 'coach-context',
             value: contextText,
             onChange: function(e) { upd({ coachContext: e.target.value }); },
-            placeholder: 'Tell the AI about your situation, constraints, what you care about, what\'s scared you off careers in the past, what you suspect you\'d love...',
+            placeholder: __alloT('stem.assessmentliteracy.tell_the_ai_about_your_situation_constraints','Tell the AI about your situation, constraints, what you care about, what\'s scared you off careers in the past, what you suspect you\'d love...'),
             rows: 5,
             className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100 placeholder-slate-500 leading-relaxed'
           })
@@ -17143,7 +17144,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
   // MODULE 4: EMPLOYER IMPLEMENTATION
   // ═══════════════════════════════════════════════════════════════
 
-  function _RENDER_EMPLOYER(h, s, upd, callGemini, addToast, backBtn) {
+  function _RENDER_EMPLOYER(h, s, upd, callGemini, addToast, backBtn, t) {
+    if (typeof t !== 'function') t = function(k, fb){ return fb != null ? fb : k; };
     var sub = s.sub;
 
     if (sub === 'ethics') {
@@ -17437,7 +17439,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               h('input', {
                 id: 'al-interview-role', type: 'text', value: role,
                 onChange: function(e) { upd({ interviewRole: e.target.value }); },
-                placeholder: 'e.g., "school psychologist", "software engineer", "sales manager"',
+                placeholder: t('stem.assessmentliteracy.e_g_school_psychologist_software_engineer_sa','e.g., "school psychologist", "software engineer", "sales manager"'),
                 className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100'
               })
             ),
@@ -17457,7 +17459,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               id: 'al-interview-star-response',
               value: ans,
               onChange: function(e) { upd({ interviewAnswer: e.target.value, interviewCritique: '' }); },
-              placeholder: 'Write your answer here. Aim for 2-3 minutes when spoken aloud (roughly 300-500 words typed). Cover all four STAR elements.',
+              placeholder: t('stem.assessmentliteracy.write_your_answer_here_aim_for_2_3_minutes_w','Write your answer here. Aim for 2-3 minutes when spoken aloud (roughly 300-500 words typed). Cover all four STAR elements.'),
               rows: 10,
               className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100 font-sans leading-relaxed'
             }),
@@ -17582,7 +17584,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
   // MODULE 5: SCHOOL PSYCH IMPLEMENTATION
   // ═══════════════════════════════════════════════════════════════
 
-  function _RENDER_SCHOOLPSYCH(h, s, upd, callGemini, addToast, backBtn) {
+  function _RENDER_SCHOOLPSYCH(h, s, upd, callGemini, addToast, backBtn, t) {
+    if (typeof t !== 'function') t = function(k, fb){ return fb != null ? fb : k; };
     var sub = s.sub;
 
     // SEM simulator — standard scores, mean=100, SD=15
@@ -18588,7 +18591,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 id: 'al-handout-student',
                 type: 'text', value: hStudent,
                 onChange: function(e) { upd({ handoutStudent: e.target.value }); },
-                placeholder: 'e.g., Malia or "Student M"',
+                placeholder: t('stem.assessmentliteracy.e_g_malia_or_student_m','e.g., Malia or "Student M"'),
                 className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100'
               })
             ),
@@ -18598,7 +18601,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 id: 'al-handout-grade',
                 type: 'text', value: hGrade,
                 onChange: function(e) { upd({ handoutGrade: e.target.value }); },
-                placeholder: 'e.g., "3rd grade" or "age 8"',
+                placeholder: t('stem.assessmentliteracy.e_g_3rd_grade_or_age_8','e.g., "3rd grade" or "age 8"'),
                 className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100'
               })
             )
@@ -18609,7 +18612,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               id: 'al-handout-findings',
               value: hFindings,
               onChange: function(e) { upd({ handoutFindings: e.target.value }); },
-              placeholder: 'Summarize the eval findings in professional terms. Examples: "Strong verbal reasoning (VCI 118). Below-average phonological processing (CTOPP-2 SS 78). Age-appropriate math achievement. Teacher reports classroom struggle with reading passages but strong oral participation."',
+              placeholder: t('stem.assessmentliteracy.summarize_the_eval_findings_in_professional','Summarize the eval findings in professional terms. Examples: "Strong verbal reasoning (VCI 118). Below-average phonological processing (CTOPP-2 SS 78). Age-appropriate math achievement. Teacher reports classroom struggle with reading passages but strong oral participation."'),
               rows: 5,
               className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100 font-sans leading-relaxed'
             })
@@ -18620,7 +18623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               id: 'al-handout-eligibility',
               type: 'text', value: hEligibility,
               onChange: function(e) { upd({ handoutEligibility: e.target.value }); },
-              placeholder: 'e.g., "SLD in basic reading skills (dyslexia profile)"',
+              placeholder: t('stem.assessmentliteracy.e_g_sld_in_basic_reading_skills_dyslexia_pro','e.g., "SLD in basic reading skills (dyslexia profile)"'),
               className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100'
             })
           ),
@@ -18630,7 +18633,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               id: 'al-handout-recs',
               value: hRecs,
               onChange: function(e) { upd({ handoutRecs: e.target.value }); },
-              placeholder: 'e.g., "Tier 3 systematic phonics intervention 30 min/day 5x/week (Wilson or similar). Extended time on reading tasks. Weekly DIBELS ORF progress monitoring. Consider co-occurring anxiety screening given avoidance behaviors."',
+              placeholder: t('stem.assessmentliteracy.e_g_tier_3_systematic_phonics_intervention_3','e.g., "Tier 3 systematic phonics intervention 30 min/day 5x/week (Wilson or similar). Extended time on reading tasks. Weekly DIBELS ORF progress monitoring. Consider co-occurring anxiety screening given avoidance behaviors."'),
               rows: 3,
               className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100 font-sans leading-relaxed'
             })

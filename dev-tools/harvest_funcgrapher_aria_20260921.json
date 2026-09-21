@@ -1,0 +1,9 @@
+{
+  "stem.funcgrapher.derivative_stationary_points_refined": "The derivative measures the rate of change. A zero derivative can mark a local maximum, a local minimum, or neither: x³ has derivative zero at 0 and keeps increasing. Compare behavior on both sides.",
+  "stem.funcgrapher.secant_slope_comparison_table": "Secant slope comparison table",
+  "stem.funcgrapher.endpoint_example": "Endpoint example",
+  "stem.funcgrapher.positive_endpoint_cutoff": "Positive endpoint cutoff",
+  "stem.funcgrapher.endpoint_trial_table": "Endpoint trial table",
+  "stem.funcgrapher.enter_fullscreen": "View the Function Zoo fullscreen",
+  "stem.funcgrapher.exit_fullscreen": "Exit fullscreen Function Zoo (Escape)"
+}

@@ -1773,7 +1773,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             return h('div',{className:'uni-notebook'},
               h('div',{className:'uni-notebook-overview','aria-label':__alloT('stem.universe.a11y_notebook_overview', 'Notebook overview')},[{count:mine.length,label:'Your entries',detail:'Epoch ideas and evidence responses'},{count:mine.filter(function(n){return n.selfReviewed;}).length,label:'Self-reviewed responses',detail:'Your recorded self-assessments'},{count:examples,label:'Worked examples',detail:'Provided ideas to compare with yours'}].map(function(item){return h('div',{key:item.label},h('strong',null,item.count),h('div',null,h('span',null,item.label),h('small',null,item.detail)));})),
               renderNotebookQuestions(all),
-              h('div',{className:'uni-notebook-tools'},h('label',null,'Show',h('select',{'aria-label':__alloT('stem.universe.a11y_notebook_entries', 'Notebook entries'),value:filter,onChange:function(e){upd('notebookFilter',e.target.value);}},h('option',{value:'mine'},'My explanations'),h('option',{value:'examples'},'Worked examples'),h('option',{value:'all'},'All entries'))),h('label',null,'Find an entry',h('input',{type:'search','aria-label':__alloT('stem.universe.a11y_search_notebook', 'Search notebook'),placeholder:'Search titles or your words',value:d.notebookSearch||'',onChange:function(e){upd('notebookSearch',e.target.value);}})),h('button',{type:'button',onClick:exportNotebook,disabled:all.length===0},'Export all entries')),
+              h('div',{className:'uni-notebook-tools'},h('label',null,'Show',h('select',{'aria-label':__alloT('stem.universe.a11y_notebook_entries', 'Notebook entries'),value:filter,onChange:function(e){upd('notebookFilter',e.target.value);}},h('option',{value:'mine'},'My explanations'),h('option',{value:'examples'},'Worked examples'),h('option',{value:'all'},'All entries'))),h('label',null,'Find an entry',h('input',{type:'search','aria-label':__alloT('stem.universe.a11y_search_notebook', 'Search notebook'),placeholder:t('stem.universe.search_titles_or_your_words','Search titles or your words'),value:d.notebookSearch||'',onChange:function(e){upd('notebookSearch',e.target.value);}})),h('button',{type:'button',onClick:exportNotebook,disabled:all.length===0},'Export all entries')),
               h('p',{role:'status',className:'uni-notebook-results'},filtered.length+' shown • '+all.length+' entries total. Drafts stay in tool progress; export a copy for your records.'),
               !filtered.length && h('div',{className:'uni-notebook-empty'},h('h4',null,all.length?'No entries match this view':'Start with an observation'),h('p',null,all.length?'Your entries are still here. Clear the filters to see all of them, or continue writing.':'Describe something you noticed, then connect it to an explanation. Your response will appear here as you write.'),
                 all.length>0 && h('button',{type:'button',onClick:function(){updMulti({notebookFilter:'all',notebookSearch:''});focusUniverseSection('universe-notebook-results');}},'Clear notebook filters'),
@@ -3935,7 +3935,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   id: "universe-topic-search",
                   type: "search",
                   value: d.uniQuery || '',
-                  placeholder: "Search topics, e.g. redshift, gold, Voyager, parallax",
+                  placeholder: t('stem.universe.search_topics_e_g_redshift_gold_voyager_para','Search topics, e.g. redshift, gold, Voyager, parallax'),
                   'aria-label': 'Search the ' + UNI_SECTIONS.length + ' topics by name or keyword',
                   onChange: function (e) { upd('uniQuery', e.target.value); },
                   className: "flex-1 min-w-[180px] min-h-11 px-3 py-2 rounded-lg text-[0.6875rem]",
@@ -4326,7 +4326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               React.createElement("div", { className: "text-xs font-bold text-violet-700 mb-2" }, "\uD83E\uDDD1\u200D\uD83D\uDE80 AI Cosmos Tutor"),
               React.createElement("div", { className: "flex gap-2 mb-2" },
                 React.createElement("input", {
-                  type: "text", placeholder: "Ask about the universe...",
+                  type: "text", placeholder: t('stem.universe.ask_about_the_universe','Ask about the universe...'),
                   value: d.aiQuestion || '',
                   'aria-label': __alloT('stem.universe.a11y_ask_the_ai_cosmos_tutor_a_question', 'Ask the AI cosmos tutor a question'),
                   onChange: function(e) { upd('aiQuestion', e.target.value); },
@@ -4354,7 +4354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_read_ai_cosmos_tutor_answer_aloud', 'Read AI cosmos tutor answer aloud'),
                   onClick: function() { speakText(_uniAiAnswer); },
                   className: "transition-colors absolute top-1 right-1 text-violet-400 hover:text-violet-600",
-                  title: "Read aloud"
+                  title: t('stem.universe.read_aloud','Read aloud')
                 }, "\uD83D\uDD0A")
               )
             ),
@@ -4983,7 +4983,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   iq.understood && React.createElement("div", { className: "mb-1" },
                     React.createElement("label", { htmlFor: "universe-cosmology-explanation", className: "block text-[0.625rem] font-bold mb-1" }, "Your explanation"),
                     React.createElement("p", { id: "universe-cosmology-explanation-hint", className: "text-[0.625rem] opacity-75 mb-1" }, "Explain how the selected distance and density mix leads to this redshift and fate."),
-                    React.createElement("textarea", { id: "universe-cosmology-explanation", 'aria-describedby': "universe-cosmology-explanation-hint", value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[0.625rem]", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } })
+                    React.createElement("textarea", { id: "universe-cosmology-explanation", 'aria-describedby': "universe-cosmology-explanation-hint", value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.universe.explain_in_your_own_words','Explain in your own words...'), className: "w-full p-1.5 rounded text-[0.625rem]", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } })
                   ),
                   React.createElement("p", { className: "m-0 text-[0.625rem] italic opacity-60" }, 'Inquiry widget \u2014 no score, no reveal, no answer dump. Look-back time uses linear approximation t \u2248 d/c (valid for low z; for z>0.3 a full \u039BCDM integration is needed). Fate label ignores spatial curvature (assumes \u03A9_total = 1) and dark-energy equation of state (assumes w = -1, cosmological constant); see open questions for what those simplifications cost. Hubble tension between Planck (~67) and local SH0ES (~73) measurements remains unresolved as of 2026.')
                 );

@@ -19634,7 +19634,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           iq.log.slice(-6).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · top:' + e.top + ' · T' + e.temp + ' S' + e.sal + ' O' + e.o2 + ' C' + e.cur + ' D' + e.dep); })
         ),
         h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which parameter most often disqualifies a species?)'),
-        h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.fisherlab.a11y_species_ranking_hypothesis', 'Species ranking hypothesis'), placeholder: 'e.g., depth eliminates halibut on the inshore profile but rescued by salinity...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+        h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.fisherlab.a11y_species_ranking_hypothesis', 'Species ranking hypothesis'), placeholder: __alloT('stem.fisherlab.e_g_depth_eliminates_halibut_on_the_inshore','e.g., depth eliminates halibut on the inshore profile but rescued by salinity...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
         !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
         iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
           h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
@@ -19649,7 +19649,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
           h('span', null, 'I can explain why these parameters yield this species ranking.')
         ),
-        iq.understood && h('textarea', { 'aria-label': __alloT('stem.fisherlab.a11y_explain_the_species_ranking_in_your_own_words', 'Explain the species ranking in your own words'), value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+        iq.understood && h('textarea', { 'aria-label': __alloT('stem.fisherlab.a11y_explain_the_species_ranking_in_your_own_words', 'Explain the species ranking in your own words'), value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.fisherlab.explain_in_your_own_words','Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
         h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Illustrative tolerance ranges only; do not use for actual stocking or fishery decisions. Always consult primary literature and DMR for production use.')
       );
     }
@@ -20695,7 +20695,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('textarea', { id: 'fl-journal-correction', rows: 4, maxLength: 600, value: journalReviewDraft,
                   'aria-describedby': 'fl-journal-correction-help fl-journal-correction-count',
                   onChange: function(e) { setJournalReviewDraft(e.target.value); },
-                  placeholder: 'State the diagnostic field mark or measurement rule, then explain how it changes the retention or release decision.',
+                  placeholder: __alloT('stem.fisherlab.state_the_diagnostic_field_mark_or_measureme','State the diagnostic field mark or measurement rule, then explain how it changes the retention or release decision.'),
                   style: Object.assign({}, controlStyle, { minHeight: 104, resize: 'vertical', lineHeight: 1.5 }) })),
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 8 } },
                 h('span', { id: 'fl-journal-correction-count', style: { color: journalReviewDraft.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 10, fontWeight: 800 } },
@@ -20790,7 +20790,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('option', { value: 'confirmed' }, 'Confirmed'),
                 h('option', { value: 'unscored' }, 'Not scored'))),
             h('label', { htmlFor: 'fl-journal-search', style: labelStyle }, 'Find species, mission, or evidence',
-              h('input', { id: 'fl-journal-search', type: 'search', value: journalQuery, onChange: function(e) { setJournalQuery(e.target.value); }, placeholder: 'Try cod, review, or slot minimum.', style: controlStyle })),
+              h('input', { id: 'fl-journal-search', type: 'search', value: journalQuery, onChange: function(e) { setJournalQuery(e.target.value); }, placeholder: __alloT('stem.fisherlab.try_cod_review_or_slot_minimum','Try cod, review, or slot minimum.'), style: controlStyle })),
             h('button', { type: 'button', className: 'fl-btn', onClick: function() { setJournalRegionFilter('current'); setJournalDispositionFilter('all'); setJournalEvidenceFilter('all'); setJournalQuery(''); flAnnounce(__alloT('stem.fisherlab.sr_field_journal_filters_reset', 'Field journal filters reset.')); },
               style: { minHeight: 42, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(148,163,184,0.4)', background: '#334155', color: '#f8fafc', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, 'Reset filters')
           ),
@@ -21125,7 +21125,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 onClick: toggleStageExpanded,
                 style: { padding: '6px 10px', background: stageExpanded ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: stageExpanded ? '#04141f' : '#cbd5e1', border: '1px solid ' + (stageExpanded ? '#38bdf8' : 'rgba(100,116,139,0.3)'), borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' }
               }, stageExpanded ? '⤡ Exit full screen' : '⛶ Full screen'),
-              h('button', { className: 'fl-btn', onClick: stopSim, style: { padding: '6px 10px', background: 'rgba(127,29,29,0.78)', color: '#fee2e2', border: '1px solid rgba(248,113,113,0.45)', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' }, title: 'Shut down the 3D simulator and return to the briefing' }, '✕ Leave sim'),
+              h('button', { className: 'fl-btn', onClick: stopSim, style: { padding: '6px 10px', background: 'rgba(127,29,29,0.78)', color: '#fee2e2', border: '1px solid rgba(248,113,113,0.45)', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' }, title: __alloT('stem.fisherlab.shut_down_the_3d_simulator_and_return_to_the','Shut down the 3D simulator and return to the briefing') }, '✕ Leave sim'),
               hud.closestTrapId && !hud.closestTrapHauled ? h('button', {
                 className: 'fl-btn',
                 onClick: function() { if (harborRef.current && harborRef.current.haulTrap) harborRef.current.haulTrap(); },
@@ -22400,7 +22400,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('div', { 'data-fisherlab-species-search': region, style: { padding: 14, marginBottom: 16, borderRadius: 10, border: '1px solid #35596c', background: '#0b2537' } },
             h('div', { className: 'fl-warmup-grid' },
               h('label', { style: { display: 'grid', gap: 6, color: '#e0f2fe', fontSize: 13, fontWeight: 800 } }, 'Find a species',
-                h('input', { type: 'search', value: speciesQuery, placeholder: 'Name, field mark, or habitat', onChange: function(e) { setSpeciesQuery(e.target.value); },
+                h('input', { type: 'search', value: speciesQuery, placeholder: __alloT('stem.fisherlab.name_field_mark_or_habitat','Name, field mark, or habitat'), onChange: function(e) { setSpeciesQuery(e.target.value); },
                   style: { boxSizing: 'border-box', width: '100%', minWidth: 0, minHeight: 44, padding: 10, background: '#061c2b', color: '#f1f5f9', border: '1px solid #648294', borderRadius: 6, fontSize: 13 } })),
               h('div', { style: { display: 'grid', gap: 6, color: '#e0f2fe', fontSize: 13, fontWeight: 800 } }, h('label', { htmlFor: 'fl-species-group' }, 'Species group'),
                 h('select', { id: 'fl-species-group', value: speciesGroup, onChange: function(e) { setSpeciesGroup(e.target.value); }, style: { width: '100%', minWidth: 0, minHeight: 44, padding: 10, background: '#061c2b', color: '#f1f5f9', border: '1px solid #648294', borderRadius: 6, fontSize: 13 } },

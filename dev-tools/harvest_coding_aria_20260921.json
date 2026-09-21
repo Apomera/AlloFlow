@@ -1,0 +1,10 @@
+{
+  "stem.coding.editor_view": "Editor view",
+  "stem.coding.run_robot_program": "Run robot program",
+  "stem.coding.stop_robot_program_playback": "Stop robot program playback",
+  "stem.coding.program_blocks": "Program blocks",
+  "stem.coding.enter_fullscreen": "View the turtle drawing fullscreen",
+  "stem.coding.exit_fullscreen": "Exit fullscreen turtle drawing (Escape)",
+  "stem.coding.run_turtle_program": "Run turtle program",
+  "stem.coding.stop_turtle_program_playback": "Stop turtle program playback"
+}

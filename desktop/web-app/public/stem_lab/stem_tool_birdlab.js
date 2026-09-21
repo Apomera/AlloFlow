@@ -16384,7 +16384,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     type: 'button',
                     onClick: function() { stepSceneLens(-1); },
                     'aria-label': __alloT('stem.birdlab.a11y_previous_scene_lens', 'Previous scene lens'),
-                    title: 'Previous scene lens',
+                    title: __alloT('stem.birdlab.previous_scene_lens','Previous scene lens'),
                     className: 'h-10 w-10 rounded-xl border-2 border-slate-300 bg-white text-lg font-black text-slate-800 transition hover:border-sky-500 focus:outline-none focus:ring-4 ring-sky-500/30'
                   }, '\u2190'),
                   h('button', {
@@ -16400,7 +16400,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     type: 'button',
                     onClick: function() { stepSceneLens(1); },
                     'aria-label': __alloT('stem.birdlab.a11y_next_scene_lens', 'Next scene lens'),
-                    title: 'Next scene lens',
+                    title: __alloT('stem.birdlab.next_scene_lens','Next scene lens'),
                     className: 'h-10 w-10 rounded-xl border-2 border-slate-300 bg-white text-lg font-black text-slate-800 transition hover:border-sky-500 focus:outline-none focus:ring-4 ring-sky-500/30'
                   }, '\u2192')
                 )
@@ -16497,7 +16497,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     h('strong', null, '#' + ((roundCounts[habitatId] || 0) + 1)),
                     h('span', null, 'Observation round')
                   ),
-                  h('div', { className: 'birdlab-status-chip', title: 'Completed habitat field reports are archived across BirdLab.' },
+                  h('div', { className: 'birdlab-status-chip', title: __alloT('stem.birdlab.completed_habitat_field_reports_are_archived','Completed habitat field reports are archived across BirdLab.') },
                     h('strong', null, reportHistoryCount + '/' + reportHistoryTotal),
                     h('span', null, 'Habitats documented')
                   )
@@ -16863,7 +16863,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   onClick: function() { startNewRound(); },
                   className: 'px-3 py-2 rounded-xl border-2 font-black text-xs transition focus:outline-none focus:ring-4 ring-emerald-500/30 active:scale-[0.97] ' + (foundCount >= totalBirds ? 'bg-emerald-700 text-white border-emerald-800 shadow' : 'bg-white text-emerald-900 border-emerald-400 hover:bg-emerald-50'),
                   'aria-label': (foundCount >= totalBirds ? 'Start next' : 'Restart') + ' ' + habitat.name + ' observation round',
-                  title: 'Clears only this round. Medals, XP, records, and life-list entries stay saved.'
+                  title: __alloT('stem.birdlab.clears_only_this_round_medals_xp_records_and','Clears only this round. Medals, XP, records, and life-list entries stay saved.')
                 }, foundCount >= totalBirds ? '\u21BB Start next round' : '\u21BA Restart round')
               )
             ),
@@ -17039,7 +17039,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     maxLength: 240,
                     rows: 3,
                     onChange: function(event) { updateFieldNote(event.target.value); },
-                    placeholder: 'Example: It moved headfirst down the trunk and made a short nasal call...',
+                    placeholder: __alloT('stem.birdlab.example_it_moved_headfirst_down_the_trunk_an','Example: It moved headfirst down the trunk and made a short nasal call...'),
                     className: 'w-full resize-y rounded-lg border-2 border-amber-300 bg-white/90 px-3 py-2 text-sm leading-7 text-slate-900 shadow-sm focus:outline-none focus:ring-4 ring-amber-400/30 focus:border-amber-500',
                     'aria-describedby': 'birdlab-field-note-help'
                   }),
@@ -17379,7 +17379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         className: 'ml-auto rounded-full px-1.5 py-0.5 text-[0.5625rem] font-black ' + (speciesEvidenceReady ? 'bg-emerald-700 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300')
                       }, '\uD83D\uDD0E ' + Math.min(speciesEvidenceCount, 2) + '/2'),
                       isFound && speciesHasNote && h('span', {
-                        className: 'text-[0.6875rem]', title: 'Field journal note saved', 'aria-label': __alloT('stem.birdlab.a11y_field_journal_note_saved', 'Field journal note saved')
+                        className: 'text-[0.6875rem]', title: __alloT('stem.birdlab.field_journal_note_saved','Field journal note saved'), 'aria-label': __alloT('stem.birdlab.a11y_field_journal_note_saved', 'Field journal note saved')
                       }, '\uD83D\uDCDD'),
                       isFound && foundViaThis === 'spotted' && h('span', { 'aria-label': __alloT('stem.birdlab.spotted_in_the_scene', 'Spotted in the scene'), title: __alloT('stem.birdlab.you_spotted_this_one_in_the_scene', 'You spotted this one in the scene'), className: 'ml-1 text-[0.625rem] text-amber-600' }, '🌟')
                     ),

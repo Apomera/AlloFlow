@@ -2712,7 +2712,7 @@
                 })
               ),
               // Editor view selector
-              React.createElement("div", { role: "group", "aria-label": "Editor view", className: "coding-mode-toggle flex rounded-lg border border-white/20" },
+              React.createElement("div", { role: "group", "aria-label": t('stem.coding.editor_view','Editor view'), className: "coding-mode-toggle flex rounded-lg border border-white/20" },
                 [
                   { key: 'visual', icon: '🧩', label: 'Visual Blocks' },
                   { key: 'outline', icon: '☷', label: 'Accessible Outline' },
@@ -3045,12 +3045,12 @@
                         },
                         className: "px-2 py-1 rounded text-[0.6875rem] font-bold text-slate-200 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, t('stem.coding.reset_2', "\u21BA Reset")),
-                      React.createElement("button", { type: "button", "aria-label": "Run robot program", onClick: handleRobotRun,
+                      React.createElement("button", { type: "button", "aria-label": t('stem.coding.run_robot_program','Run robot program'), onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
                         className: "coding-robot-run-btn min-h-11 px-3 py-2 rounded text-[0.6875rem] font-bold transition-all " +
                           (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-800" : "bg-slate-700 text-slate-300 cursor-not-allowed")
                       }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run"),
-                      robotRunning && React.createElement("button", { type: "button", "aria-label": "Stop robot program playback", onClick: stopRun,
+                      robotRunning && React.createElement("button", { type: "button", "aria-label": t('stem.coding.stop_robot_program_playback','Stop robot program playback'), onClick: stopRun,
                         className: "min-h-11 px-3 py-2 rounded text-[0.6875rem] font-bold bg-red-600 text-white hover:bg-red-700 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                       }, t('stem.coding.stop_2', "\u25A0 Stop"))
                     )
@@ -3146,7 +3146,7 @@
                   t('stem.coding.click_blocks_above_or_load_a_template_', 'Click blocks above or load a template to start')
                 ),
                 React.createElement("p", { id: "coding-block-reorder-help", className: "mb-2 text-[0.6875rem] text-slate-300" }, "Reorder blocks with the Move up and Move down buttons, or focus a block and press Alt+Up or Alt+Down."),
-                React.createElement("div", { role: "list", "aria-label": "Program blocks", className: "flex flex-col gap-1" },
+                React.createElement("div", { role: "list", "aria-label": t('stem.coding.program_blocks','Program blocks'), className: "flex flex-col gap-1" },
                   blocks.map(function (b, idx) {
                     var def = BLOCK_TYPES.find(function (bt) { return bt.type === b.type; });
                     var isActive = running && stepIdx === idx;
@@ -3346,9 +3346,9 @@
                   type: "button",
                   "data-allo-fs-btn": "true",
                   "aria-pressed": "false",
-                  "aria-label": t("stem.coding.enter_fullscreen", "View the turtle drawing fullscreen"),
-                  "data-fs-out": t("stem.coding.enter_fullscreen", "View the turtle drawing fullscreen"),
-                  "data-fs-in": t("stem.coding.exit_fullscreen", "Exit fullscreen turtle drawing (Escape)"),
+                  "aria-label": t("stem.coding.enter_fullscreen", 'View the turtle drawing fullscreen'),
+                  "data-fs-out": t("stem.coding.enter_fullscreen", 'View the turtle drawing fullscreen'),
+                  "data-fs-in": t("stem.coding.exit_fullscreen", 'Exit fullscreen turtle drawing (Escape)'),
                   style: { position: "absolute", top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(15,23,42,0.88)", border: "1px solid rgba(148,163,184,0.55)", color: "#e2e8f0", fontSize: 16, fontWeight: 700, cursor: "pointer" }
                 }, React.createElement("span", { "aria-hidden": "true" }, "⛶")),
                 React.createElement("canvas", { tabIndex: 0,
@@ -3367,13 +3367,13 @@
               ),
               // Controls
               React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
-                React.createElement("button", { type: "button", "aria-label": "Run turtle program",
+                React.createElement("button", { type: "button", "aria-label": t('stem.coding.run_turtle_program','Run turtle program'),
                   onClick: handleRun,
                   disabled: running || (codeMode === 'text' ? !textCode.trim() : blocks.length === 0),
                   className: "coding-run-btn min-h-11 flex items-center gap-1 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all " +
                     (running ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 active:scale-95 shadow-lg hover:shadow-green-500/30')
                 }, t('stem.coding.run', "▶ Run")),
-                running && React.createElement("button", { type: "button", "aria-label": "Stop turtle program playback", onClick: stopRun,
+                running && React.createElement("button", { type: "button", "aria-label": t('stem.coding.stop_turtle_program_playback','Stop turtle program playback'), onClick: stopRun,
                   className: "min-h-11 flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-bold bg-red-600 text-white hover:bg-red-700 active:scale-95 shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 }, t('stem.coding.stop_4', "\u25A0 Stop")),
                 React.createElement("button", { "aria-label": t('stem.coding.clear_canvas', "Clear Canvas"),

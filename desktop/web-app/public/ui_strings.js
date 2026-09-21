@@ -13589,7 +13589,13 @@
       "a11y_shellfish_measurement_diagram_with_fixed_and_ad": "Shellfish measurement diagram with fixed and adjustable caliper jaws. Use the range control to align the jaws with the marked reference points.",
       "a11y_caliper_measurement_in_inches": "Caliper measurement in inches",
       "a11y_stylized_north_up_nautical_chart_of_the_portlan": "Stylized north-up nautical chart of the Portland Harbor approach. The mainland and Custom House Wharf are along the top, with Portland Head Light to the east. The channel runs down the middle to open water at the bottom. Three red nun buoys, numbered 2, 4 and 6, mark its eastern side on the right of the chart, and three green cans, numbered 1, 3 and 5, mark its western side on the left. A vessel returning from sea travels up the chart and keeps the red nuns to starboard; outbound the sides reverse. A red and white mid-channel safe-water mark sits at the seaward end, with Halfway Rock beyond it, and dashed 10-metre and 30-metre depth contours cross the chart.",
-      "a11y_questions_answered_in_this_round": "Questions answered in this round"
+      "a11y_questions_answered_in_this_round": "Questions answered in this round",
+      "e_g_depth_eliminates_halibut_on_the_inshore": "e.g., depth eliminates halibut on the inshore profile but rescued by salinity...",
+      "explain_in_your_own_words": "Explain in your own words...",
+      "state_the_diagnostic_field_mark_or_measureme": "State the diagnostic field mark or measurement rule, then explain how it changes the retention or release decision.",
+      "try_cod_review_or_slot_minimum": "Try cod, review, or slot minimum.",
+      "shut_down_the_3d_simulator_and_return_to_the": "Shut down the 3D simulator and return to the briefing",
+      "name_field_mark_or_habitat": "Name, field mark, or habitat"
     },
     "pets": {
       "sr_completion_updated_with_activity_evidence": "Completion updated with activity evidence.",
@@ -18702,7 +18708,31 @@
       "print_export": "Print & export",
       "export_stl": "STL file",
       "export_stl_aria": "Download this building as an STL file",
-      "print_note": "Print Lab previews the real geometry, sets scale, and prepares a staff-reviewed request. Nothing here spends points."
+      "print_note": "Print Lab previews the real geometry, sets scale, and prepares a staff-reviewed request. Nothing here spends points.",
+      "pick": "Pick",
+      "stability_na": "N/A",
+      "stability_stable": "Stable",
+      "stability_moderate": "Moderate",
+      "stability_unstable": "Unstable",
+      "tip_floating": "{n} blocks are floating! Add supports below them.",
+      "tip_high_cog": "Center of gravity is high ({y}). Widen the base!",
+      "tip_off_centre": "Center of gravity is {d} units off-centre. A structure tips toward its heavy side: add weight opposite it, or widen the base.",
+      "tip_top_heavy": "Most of the weight sits in the upper half (center of gravity at y={y} of {h}). Put heavier materials low: metal weighs 13 times what wood does.",
+      "tip_great": "Great structure! Stability: {s}%, Symmetry: {y}%",
+      "coach_challenge_done": "{title} complete! {fact}",
+      "coach_keep_building": "{desc} — keep building!",
+      "coach_over_budget": "Over budget! Remove blocks or switch to cheaper materials. Wood (💲{cost}) is the cheapest material.",
+      "coach_first_block": "Place your first block! Try 🏆 Challenges or 📂 Templates to get started.",
+      "coach_stack_up": "Stack blocks upward by clicking faces. Try 🪞 Mirror to double your build!",
+      "coach_columns_arches": "Add columns and arches for a classical look. Use 📐 Analysis to check stability!",
+      "coach_mix_contrast": "Mix materials for contrast! Use 🤖 AI Architect for personalized tips.",
+      "coach_colosseum": "The Colosseum had 80 arched entrances! Save your masterpiece with 💾 Save.",
+      "coach_legendary": "Legendary architect! Export your creation as STL for 3D printing!",
+      "deselect_escape": "Deselect (Escape)",
+      "duplicate_selected_block_above_d": "Duplicate selected block above (D)",
+      "delete_selected_block_delete": "Delete selected block (Delete)",
+      "mirror_place_paint_and_erase_edits_across_x": "Mirror place, paint, and erase edits across X=0",
+      "build_statistics": "Build statistics"
     },
     "area": {
       "volume": "Volume..."
@@ -21269,7 +21299,19 @@
       "explain_your_reliability_reasoning": "Explain your reasoning",
       "occupation_focus_accessible_label": "Optional occupation focus",
       "career_search_accessible_label": "Search careers by title, skill, or task",
-      "skill_search_accessible_label": "Search skills"
+      "skill_search_accessible_label": "Search skills",
+      "who_rated_you": "Who rated you?",
+      "search_by_title_skill_or_task_e_g_patient_da": "Search by title, skill, or task (e.g., \"patient\", \"data\", \"welding\")",
+      "remove_from_comparison": "Remove from comparison",
+      "search_skills_e_g_communication_data_lifting": "Search skills (e.g., \"communication\", \"data\", \"lifting\", \"patience\")",
+      "tell_the_ai_about_your_situation_constraints": "Tell the AI about your situation, constraints, what you care about, what's scared you off careers in the past, what you suspect you'd love...",
+      "e_g_school_psychologist_software_engineer_sa": "e.g., \"school psychologist\", \"software engineer\", \"sales manager\"",
+      "write_your_answer_here_aim_for_2_3_minutes_w": "Write your answer here. Aim for 2-3 minutes when spoken aloud (roughly 300-500 words typed). Cover all four STAR elements.",
+      "e_g_malia_or_student_m": "e.g., Malia or \"Student M\"",
+      "e_g_3rd_grade_or_age_8": "e.g., \"3rd grade\" or \"age 8\"",
+      "summarize_the_eval_findings_in_professional": "Summarize the eval findings in professional terms. Examples: \"Strong verbal reasoning (VCI 118). Below-average phonological processing (CTOPP-2 SS 78). Age-appropriate math achievement. Teacher reports classroom struggle with reading passages but strong oral participation.\"",
+      "e_g_sld_in_basic_reading_skills_dyslexia_pro": "e.g., \"SLD in basic reading skills (dyslexia profile)\"",
+      "e_g_tier_3_systematic_phonics_intervention_3": "e.g., \"Tier 3 systematic phonics intervention 30 min/day 5x/week (Wilson or similar). Extended time on reading tasks. Weekly DIBELS ORF progress monitoring. Consider co-occurring anxiety screening given avoidance behaviors.\""
     },
     "astronomy": {
       "a11y_question_for_the_sky_guide": "Question for the sky guide",
@@ -27991,7 +28033,15 @@
       "wing3d_preset_front": "◡ Front on — see the droop",
       "wing3d_title": "Turn the wing over — planform, sweep and slots in 3D",
       "wp_plate_note": "Woodpeckers sort first on what the back is doing — a white ladder stripe, zebra bars, solid black, or brown spots — and only then on which patch of the head is red. Bills are drawn to scale against the head.",
-      "wp_plate_title": "Back pattern + head marks"
+      "wp_plate_title": "Back pattern + head marks",
+      "previous_scene_lens": "Previous scene lens",
+      "next_scene_lens": "Next scene lens",
+      "completed_habitat_field_reports_are_archived": "Completed habitat field reports are archived across BirdLab.",
+      "clears_only_this_round_medals_xp_records_and": "Clears only this round. Medals, XP, records, and life-list entries stay saved.",
+      "example_it_moved_headfirst_down_the_trunk_an": "Example: It moved headfirst down the trunk and made a short nasal call...",
+      "field_journal_note_saved": "Field journal note saved",
+      "enter_fullscreen": "View the 3D wing fullscreen",
+      "exit_fullscreen": "Exit fullscreen wing view (Escape)"
     },
     "brainatlas": {
       "sr_treatment_comparison_already_has_two_modalities_r": "Treatment comparison already has two modalities. Remove one before adding another.",
@@ -29904,7 +29954,12 @@
       "below_axis_area": "Below the axis (magnitude): ",
       "total_geometric_area": "Total geometric area: ",
       "signed_net_equation": "Net integral = above − below: ",
-      "signed_area_reason": "The integral subtracts the region below the axis. Total geometric area adds both magnitudes. Displayed values are rounded."
+      "signed_area_reason": "The integral subtracts the region below the axis. Total geometric area adds both magnitudes. Displayed values are rounded.",
+      "my_estimate": "My estimate...",
+      "return_to_auto_animation": "Return to auto-animation",
+      "toggle_fullscreen": "Toggle fullscreen",
+      "working_explanation_after_observing_what_rel": "Working explanation after observing: what relationships do you notice among a, b, x, the sign of f'(x), and the graph behavior? Cite logged settings.",
+      "use_at_least_one_logged_comparison_as_eviden": "Use at least one logged comparison as evidence. Explain what f'(x) says about increasing, decreasing, constant, and turning behavior."
     },
     "cell": {
       "sr_choose_a_prediction_or_select_start_without_predi": "Choose a prediction, or select Start without prediction.",
@@ -34845,7 +34900,15 @@
       "keyboard_outline_help": "Choose Accessible Outline for a fully linear editor with explicit move buttons.",
       "your_explanation": "Your explanation",
       "explanation_hint": "Explain how the selected input size, loop depth, data structure, and recursion produce this complexity.",
-      "variable_amount_to_add": "Amount to add to variable"
+      "variable_amount_to_add": "Amount to add to variable",
+      "editor_view": "Editor view",
+      "run_robot_program": "Run robot program",
+      "stop_robot_program_playback": "Stop robot program playback",
+      "program_blocks": "Program blocks",
+      "enter_fullscreen": "View the turtle drawing fullscreen",
+      "exit_fullscreen": "Exit fullscreen turtle drawing (Escape)",
+      "run_turtle_program": "Run turtle program",
+      "stop_turtle_program_playback": "Stop turtle program playback"
     },
     "common": {
       "u2b50": "⭐ +",
@@ -36512,7 +36575,13 @@
       "we_attempted_to_deliver_your_package_t": "We attempted to deliver your package today but no one was home. Pay a $0.30 redelivery fee within 24 hours or the package will be returned to sender.",
       "we_detected_a_new_sign_in_to_your_goog": "We detected a new sign-in to your Google Account on a Windows device. If this wasn't you, your account may be at risk. Review your recent activity now to secure your account.",
       "your_principal_writes_from_the_school_": "Your principal writes from the school domain. Anyone can make \"principal.smith\" at gmail.com",
-      "your_teacher_announced_this_form_in_cl": "Your teacher announced this form in class — expected messages are far more trustworthy than surprises"
+      "your_teacher_announced_this_form_in_cl": "Your teacher announced this form in class — expected messages are far more trustworthy than surprises",
+      "mission_transfer_cues": "Mission transfer cues",
+      "decision_lens": "Decision lens",
+      "inbox_triage_time_remaining": "Inbox triage time remaining",
+      "technical_email_header_details": "Technical email header details",
+      "choose_your_email_verdict": "Choose your email verdict",
+      "logged_defense_observations": "Logged defense observations"
     },
     "data_plot": {
       "correct": "✅ Correct! ",
@@ -46985,7 +47054,14 @@
       "wave_working_explanation": "What do you notice?",
       "wave_observation_placeholder": "Compare two settings. Which parameter changed, and what stayed the same?",
       "wave_explain_with_evidence": "Explain using saved settings",
-      "wave_evidence_placeholder": "Name two saved settings. Use the graph and measurements to explain the effect you observed."
+      "wave_evidence_placeholder": "Name two saved settings. Use the graph and measurements to explain the effect you observed.",
+      "derivative_stationary_points_refined": "The derivative measures the rate of change. A zero derivative can mark a local maximum, a local minimum, or neither: x³ has derivative zero at 0 and keeps increasing. Compare behavior on both sides.",
+      "secant_slope_comparison_table": "Secant slope comparison table",
+      "endpoint_example": "Endpoint example",
+      "positive_endpoint_cutoff": "Positive endpoint cutoff",
+      "endpoint_trial_table": "Endpoint trial table",
+      "enter_fullscreen": "View the Function Zoo fullscreen",
+      "exit_fullscreen": "Exit fullscreen Function Zoo (Escape)"
     },
     "galaxy": {
       "view_scale_value": "~{value} kpc high",
@@ -49749,7 +49825,32 @@
       "workbench_matte": "Matte",
       "workbench_gloss": "Gloss",
       "workbench_metal": "Metal",
-      "workbench_wire": "Wireframe"
+      "workbench_wire": "Wireframe",
+      "studio_completed_earlier": "Completed earlier. Your current construction is different; your earned progress is saved.",
+      "studio_current_target_met": "Target met. Keep exploring or try another lesson.",
+      "studio_curve_quality": "Curve quality",
+      "studio_curve_light": "Lightweight",
+      "studio_curve_smooth": "Smooth",
+      "studio_curve_fine": "Extra smooth",
+      "studio_curve_help": "Choose Lightweight for slower devices or Extra smooth for close-up viewing. Dimensions and measurements stay the same.",
+      "find_saved_investigations": "Find saved investigations",
+      "guided_experiments": "Guided experiments",
+      "edit_saved_reflection": "Edit saved reflection",
+      "prism_measurement_explanations": "Prism measurement explanations",
+      "engine_failed": "The 3D engine could not load. Check your connection and try again. Your saved work is unchanged.",
+      "studio_immersive_3d": "Immersive 3D",
+      "stretch_notebook": "Stretch learning notebook",
+      "stretch_notebook_help": "Capture a starting construction, predict a change, then save your explanation with both models.",
+      "stretch_begin": "Start investigation",
+      "import_preview": "Import preview",
+      "stretch_export_contents": "Editable projects include unfinished investigations and lesson progress. Readable notebooks include saved entries.",
+      "studio_edit_short": "Edit",
+      "studio_measure_short": "Measure",
+      "workbench_fit_model": "Fit model in view",
+      "workbench_views": "Views",
+      "workbench_camera_angle": "Camera angle",
+      "challenge_hint": "Hint",
+      "challenge_solution": "Show worked solution"
     },
     "graphcalc": {
       "support_options": "Graphing support",
@@ -82753,7 +82854,12 @@
       "focus-errors_description": "Auto-generated practice for YOUR top error keys. Updates after every session based on the heatmap.",
       "reduce_motion": "⏸ Motion",
       "non_english_passages_use_matching_keyboard": "This passage uses the selected language's correct accents or writing system. Choose the matching keyboard layout or input method on your device.",
-      "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu"
+      "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
+      "use_left_and_right_arrow_home_or_end_to_move": "Use Left and Right Arrow, Home, or End to move between filters.",
+      "search_drills": "Search drills",
+      "private_resume_draft_saved_locally": "Private resume draft saved locally",
+      "how_did_this_session_go_for_example_started": "How did this session go? For example: started slowly, persisted, used a break.",
+      "optional": "(optional)"
     },
     "unitconvert": {
       "length": "📏 Length",
@@ -82946,7 +83052,15 @@
       "start_table": "Choose a measurement to compare its units in the reference table.",
       "start_quiz": "Choose a practice question, enter your answer, then check the conversion.",
       "start_wordproblem": "Choose a word problem, identify the units, then enter and check your answer.",
-      "start_magHunt": "Compare the quantities and use their units to decide which is larger."
+      "start_magHunt": "Compare the quantities and use their units to decide which is larger.",
+      "unit_conversion_reasoning_pathway": "Unit conversion reasoning pathway",
+      "measurement_categories": "Measurement categories",
+      "temperature_conversion_steps": "Temperature conversion steps",
+      "show_next_unit_fact": "Show next unit fact",
+      "next_fact": "Next fact",
+      "enter_fullscreen": "View the metric prefix scale fullscreen",
+      "exit_fullscreen": "Exit fullscreen metric prefix scale (Escape)",
+      "unit_conversion_scale_visualization": "Unit conversion scale visualization."
     },
     "universe": {
       "milky_way_assembly": "Milky Way assembly",
@@ -83040,7 +83154,18 @@
       "our_sun_is_born": "Our Sun Is Born",
       "present_day": "Present Day",
       "the_far_future": "The Far Future",
-      "universe": "Universe: "
+      "universe": "Universe: ",
+      "search_titles_or_your_words": "Search titles or your words",
+      "protoplanetary_disk": "Protoplanetary disk",
+      "structure_guides": "Show illustrative matter halos and connections",
+      "structure_guides_short": "Structure guides",
+      "enter_fullscreen": "View the universe time-lapse fullscreen",
+      "exit_fullscreen": "Exit fullscreen universe time-lapse (Escape)",
+      "structure_guides_help": "Structure guides show illustrative matter halos and connections in later epochs.",
+      "search_topics_e_g_redshift_gold_voyager_para": "Search topics, e.g. redshift, gold, Voyager, parallax",
+      "ask_about_the_universe": "Ask about the universe...",
+      "read_aloud": "Read aloud",
+      "explain_in_your_own_words": "Explain in your own words..."
     },
     "volume": {
       "tab_set_dimensions": "Set dimensions",

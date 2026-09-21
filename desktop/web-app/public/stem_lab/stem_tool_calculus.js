@@ -2237,7 +2237,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('p', { className: 'text-xs text-violet-600 mb-1 italic' }, 'Look at the graph. Think about average height \u00D7 width. Don\u2019t compute \u2014 just estimate!'),
               h('p', { className: 'text-[0.6875rem] text-violet-700 mb-3' }, 'This is quantitative calibration practice. The displayed difference is descriptive feedback, not a grade.'),
               h('div', { className: 'flex flex-col sm:flex-row gap-2' },
-                h('input', {style:{minWidth:0,background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  type:'number', step:'any', placeholder:'My estimate...', value: predictInput, onChange: function(e){upd('predictInput',e.target.value);}, onKeyDown: function(e){if(e.key==='Enter'&&predictInput)upd('predictSubmitted',true);}, 'aria-label': __alloT('stem.calculus.a11y_integral_estimate_input', 'Integral estimate input'), className:'flex-1 px-3 py-2 border-2 border-violet-600 rounded-lg text-sm font-bold text-violet-900 focus:border-violet-500', autoFocus: true }),
+                h('input', {style:{minWidth:0,background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  type:'number', step:'any', placeholder:t('stem.calculus.my_estimate','My estimate...'), value: predictInput, onChange: function(e){upd('predictInput',e.target.value);}, onKeyDown: function(e){if(e.key==='Enter'&&predictInput)upd('predictSubmitted',true);}, 'aria-label': __alloT('stem.calculus.a11y_integral_estimate_input', 'Integral estimate input'), className:'flex-1 px-3 py-2 border-2 border-violet-600 rounded-lg text-sm font-bold text-violet-900 focus:border-violet-500', autoFocus: true }),
                 h('button', {"aria-label":__alloT('stem.calculus.a11y_compare_estimate_with_exact_integral', 'Compare estimate with exact integral'), disabled:!predictInput, onClick:function(){if(predictInput)upd('predictSubmitted',true);}, className:'transition-colors px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 disabled:opacity-50' }, 'Commit and compare \u2192')
               )
             ),
@@ -3040,7 +3040,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       upd('vizUserInteracted', {});
                       upd('vizSlopeSeeds', []);
                     },
-                    title: 'Return to auto-animation',
+                    title: t('stem.calculus.return_to_auto_animation','Return to auto-animation'),
                     'aria-label': __alloT('stem.calculus.a11y_reset_interaction_resume_auto_animation', 'Reset interaction; resume auto-animation'),
                     className: 'transition-colors absolute top-2 right-12 px-2 h-8 rounded-lg bg-slate-900/70 text-indigo-200 hover:bg-slate-900/90 text-xs font-bold'
                   }, '\u21BA auto'),
@@ -3051,7 +3051,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       if (document.fullscreenElement) { document.exitFullscreen(); }
                       else { if (window.__alloStemFS) window.__alloStemFS(el); }
                     },
-                    title: 'Toggle fullscreen',
+                    title: t('stem.calculus.toggle_fullscreen','Toggle fullscreen'),
                     'aria-label': __alloT('stem.calculus.a11y_toggle_fullscreen', 'Toggle fullscreen'),
                     className: 'transition-colors absolute top-2 right-2 w-8 h-8 rounded-lg bg-slate-900/70 text-indigo-200 hover:bg-slate-900/90 text-sm font-bold'
                   }, '\u26F6')
@@ -3135,7 +3135,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     return h('li', { key: derivativeLogKey(entry) + '-' + index, className: 'font-mono' }, (index + 1) + '. a=' + entry.a + ', b=' + entry.b + ', c=' + entry.c + ', x=' + entry.x + ' \u2192 f\'(x)=' + entry.d + '; ' + (loggedMeta ? loggedMeta.label : entry.st));
                   }))
                 ),
-                h('textarea', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  'aria-label': __alloT('stem.calculus.a11y_working_explanation_from_live_derivative_eviden', 'Working explanation from live derivative evidence'), 'data-calculus-post-observation-explanation': 'working', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Working explanation after observing: what relationships do you notice among a, b, x, the sign of f\'(x), and the graph behavior? Cite logged settings.',
+                h('textarea', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  'aria-label': __alloT('stem.calculus.a11y_working_explanation_from_live_derivative_eviden', 'Working explanation from live derivative evidence'), 'data-calculus-post-observation-explanation': 'working', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.calculus.working_explanation_after_observing_what_rel','Working explanation after observing: what relationships do you notice among a, b, x, the sign of f\'(x), and the graph behavior? Cite logged settings.'),
                   className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, '\uD83E\uDD14 Stuck? Show comparison prompts'),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700' },
@@ -3150,7 +3150,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('input', { type: 'checkbox', id: 'calc-deriv-understood', checked: evidenceReady && !!iq.understood, disabled: !evidenceReady, 'aria-disabled': evidenceReady ? 'false' : 'true', 'aria-describedby': 'calc-deriv-evidence-ready', onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   h('label', { htmlFor: 'calc-deriv-understood', className: 'text-[0.75rem] font-bold text-emerald-800 cursor-pointer' }, 'I can explain the pattern I observed')
                 ),
-                evidenceReady && iq.understood && h('textarea', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  'aria-label': __alloT('stem.calculus.a11y_evidence_based_derivative_behavior_explanation', 'Evidence-based derivative behavior explanation'), 'data-calculus-post-observation-explanation': 'final', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Use at least one logged comparison as evidence. Explain what f\'(x) says about increasing, decreasing, constant, and turning behavior.',
+                evidenceReady && iq.understood && h('textarea', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  'aria-label': __alloT('stem.calculus.a11y_evidence_based_derivative_behavior_explanation', 'Evidence-based derivative behavior explanation'), 'data-calculus-post-observation-explanation': 'final', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.calculus.use_at_least_one_logged_comparison_as_eviden','Use at least one logged comparison as evidence. Explain what f\'(x) says about increasing, decreasing, constant, and turning behavior.'),
                   className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
                 h('div', { className: 'text-[0.625rem] italic text-slate-500' }, 'Model note: the live marker and numerical derivative are visible, descriptive evidence. They are not a hidden prediction result or a score.')
               )

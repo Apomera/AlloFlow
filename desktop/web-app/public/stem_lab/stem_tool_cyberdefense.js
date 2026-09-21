@@ -3285,12 +3285,12 @@
                       el('span', { className: 'cyberd-learning-brief__start-label' }, 'Start here'),
                       activeCyberBrief.firstMove)
                 ),
-                el('div', { className: 'cyberd-learning-brief__meta', 'aria-label': 'Mission transfer cues' },
+                el('div', { className: 'cyberd-learning-brief__meta', 'aria-label': t('stem.cyberdefense.mission_transfer_cues','Mission transfer cues') },
                   el('span', { className: 'cyberd-learning-brief__chip' }, el('strong', null, 'Look for: '), activeCyberBrief.evidence),
                   el('span', { className: 'cyberd-learning-brief__chip' }, el('strong', null, 'Take away: '), activeCyberBrief.transfer)
                 ),
                 renderCyberReasoningFlow(),
-                el('div', { id: 'cyberd-learning-brief-decision', className: 'cyberd-learning-brief__decision', role: 'note', 'aria-label': 'Decision lens' },
+                el('div', { id: 'cyberd-learning-brief-decision', className: 'cyberd-learning-brief__decision', role: 'note', 'aria-label': t('stem.cyberdefense.decision_lens','Decision lens') },
                   el('span', { className: 'cyberd-learning-brief__decision-label' }, 'Decision lens'),
                   activeCyberBrief.decision)
               ),
@@ -3340,7 +3340,7 @@
                     aiGeneratedEmail && el('span', { style: { padding: '2px 6px', borderRadius: 6, background: 'rgba(168,85,247,0.2)', color: '#c084fc', fontSize: 11, fontWeight: 800, border: '1px solid rgba(168,85,247,0.3)' } }, '\uD83E\uDD16 AI')
                   ),
                   phishMode === 'triage' && !phishAnswer && triageActive && el('div', { role: 'timer', 'aria-live': triageTimeLeft <= 5 ? 'assertive' : 'off', 'aria-label': triageTimeLeft + ' seconds remaining', style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                    el('div', { role: 'progressbar', 'aria-label': 'Inbox triage time remaining', 'aria-valuemin': 0, 'aria-valuemax': 15, 'aria-valuenow': triageTimeLeft, 'aria-valuetext': triageTimeLeft + ' seconds remaining', style: { width: 100, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', overflow: 'hidden' } },
+                    el('div', { role: 'progressbar', 'aria-label': t('stem.cyberdefense.inbox_triage_time_remaining','Inbox triage time remaining'), 'aria-valuemin': 0, 'aria-valuemax': 15, 'aria-valuenow': triageTimeLeft, 'aria-valuetext': triageTimeLeft + ' seconds remaining', style: { width: 100, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', overflow: 'hidden' } },
                       el('div', { style: { width: (triageTimeLeft / 15 * 100) + '%', height: '100%', borderRadius: 3, background: triageTimeLeft > 10 ? '#22c55e' : triageTimeLeft > 5 ? '#f59e0b' : '#ef4444', boxShadow: '0 0 10px ' + (triageTimeLeft > 10 ? 'rgba(34,197,94,0.5)' : triageTimeLeft > 5 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.6)'), transition: 'width 1s linear, background 0.5s, box-shadow 0.5s' } })
                     ),
                     el('span', { style: { color: triageTimeLeft > 5 ? '#94a3b8' : '#ef4444', fontSize: 12, fontWeight: 900, fontFamily: 'monospace', minWidth: 24, textAlign: 'right' } }, triageTimeLeft + 's')
@@ -3417,7 +3417,7 @@
                     )
                   ),
                   // Technical Header Inspector Panel
-                  showHeaders && activeEmail && activeEmail.headers && el('div', { id: 'cyber-email-headers', role: 'region', 'aria-label': 'Technical email header details',
+                  showHeaders && activeEmail && activeEmail.headers && el('div', { id: 'cyber-email-headers', role: 'region', 'aria-label': t('stem.cyberdefense.technical_email_header_details','Technical email header details'),
                     style: {
                       background: '#0f172a',
                       borderBottom: '1px solid rgba(255,255,255,0.06)',
@@ -3526,7 +3526,7 @@
                 ),
 
                 // Verdict Buttons
-                !phishAnswer && (phishMode === 'triage' || cluesFound.length >= 2) && el('div', { className: 'cyberd-verdict-actions', role: 'group', 'aria-label': 'Choose your email verdict', style: { display: 'flex', gap: 12, marginTop: 12 } },
+                !phishAnswer && (phishMode === 'triage' || cluesFound.length >= 2) && el('div', { className: 'cyberd-verdict-actions', role: 'group', 'aria-label': t('stem.cyberdefense.choose_your_email_verdict','Choose your email verdict'), style: { display: 'flex', gap: 12, marginTop: 12 } },
                   el('button', { onClick: function() { handleVerdict(true); },
                     style: { flex: 1, padding: '14px', borderRadius: 10, border: '2px solid rgba(34,197,94,0.3)', background: 'rgba(34,197,94,0.1)', color: '#4ade80', fontSize: 14, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
                     '\u2705', ' Safe Email'),
@@ -6319,7 +6319,7 @@
                     ),
                     (iq.log || []).length > 0 && el('div', { style: { marginBottom: 10, padding: 10, borderRadius: 6, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(100,116,139,0.3)' } },
                       el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, 'Observation log (' + iq.log.length + '/8)'),
-                      el('div', { role: 'list', 'aria-label': 'Logged defense observations' }, iq.log.map(function(row, idx) {
+                      el('div', { role: 'list', 'aria-label': t('stem.cyberdefense.logged_defense_observations','Logged defense observations') }, iq.log.map(function(row, idx) {
                         return el('div', { key: idx, role: 'listitem', style: { display: 'grid', gridTemplateColumns: '28px repeat(3, 1fr) minmax(82px, 1.2fr)', gap: 5, padding: '4px 0', borderTop: idx ? '1px solid rgba(100,116,139,0.18)' : 'none', color: '#cbd5e1', fontSize: 10 } },
                           el('span', null, '#' + (idx + 1)), el('span', null, 'D ' + row.d), el('span', null, 'R ' + row.r), el('span', null, 'T ' + row.t), el('strong', { style: { color: '#e2e8f0', textTransform: 'capitalize' } }, row.st));
                       }))

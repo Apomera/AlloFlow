@@ -1,0 +1,10 @@
+{
+  "stem.unitconvert.unit_conversion_reasoning_pathway": "Unit conversion reasoning pathway",
+  "stem.unitconvert.measurement_categories": "Measurement categories",
+  "stem.unitconvert.temperature_conversion_steps": "Temperature conversion steps",
+  "stem.unitconvert.show_next_unit_fact": "Show next unit fact",
+  "stem.unitconvert.next_fact": "Next fact",
+  "stem.unitconvert.enter_fullscreen": "View the metric prefix scale fullscreen",
+  "stem.unitconvert.exit_fullscreen": "Exit fullscreen metric prefix scale (Escape)",
+  "stem.unitconvert.unit_conversion_scale_visualization": "Unit conversion scale visualization."
+}

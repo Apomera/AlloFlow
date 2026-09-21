@@ -1,0 +1,14 @@
+{
+  "stem.assessmentliteracy.who_rated_you": "Who rated you?",
+  "stem.assessmentliteracy.search_by_title_skill_or_task_e_g_patient_da": "Search by title, skill, or task (e.g., \"patient\", \"data\", \"welding\")",
+  "stem.assessmentliteracy.remove_from_comparison": "Remove from comparison",
+  "stem.assessmentliteracy.search_skills_e_g_communication_data_lifting": "Search skills (e.g., \"communication\", \"data\", \"lifting\", \"patience\")",
+  "stem.assessmentliteracy.tell_the_ai_about_your_situation_constraints": "Tell the AI about your situation, constraints, what you care about, what's scared you off careers in the past, what you suspect you'd love...",
+  "stem.assessmentliteracy.e_g_school_psychologist_software_engineer_sa": "e.g., \"school psychologist\", \"software engineer\", \"sales manager\"",
+  "stem.assessmentliteracy.write_your_answer_here_aim_for_2_3_minutes_w": "Write your answer here. Aim for 2-3 minutes when spoken aloud (roughly 300-500 words typed). Cover all four STAR elements.",
+  "stem.assessmentliteracy.e_g_malia_or_student_m": "e.g., Malia or \"Student M\"",
+  "stem.assessmentliteracy.e_g_3rd_grade_or_age_8": "e.g., \"3rd grade\" or \"age 8\"",
+  "stem.assessmentliteracy.summarize_the_eval_findings_in_professional": "Summarize the eval findings in professional terms. Examples: \"Strong verbal reasoning (VCI 118). Below-average phonological processing (CTOPP-2 SS 78). Age-appropriate math achievement. Teacher reports classroom struggle with reading passages but strong oral participation.\"",
+  "stem.assessmentliteracy.e_g_sld_in_basic_reading_skills_dyslexia_pro": "e.g., \"SLD in basic reading skills (dyslexia profile)\"",
+  "stem.assessmentliteracy.e_g_tier_3_systematic_phonics_intervention_3": "e.g., \"Tier 3 systematic phonics intervention 30 min/day 5x/week (Wilson or similar). Extended time on reading tasks. Weekly DIBELS ORF progress monitoring. Consider co-occurring anxiety screening given avoidance behaviors.\""
+}

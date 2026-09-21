@@ -7324,7 +7324,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   role: 'group',
                   'aria-label': __alloTPT('stem.typingpractice.a11y_filter_drills', 'Filter drills'),
                   'aria-controls': 'tp-drill-results',
-                  'aria-description': 'Use Left and Right Arrow, Home, or End to move between filters.',
+                  'aria-description': __alloT('stem.typingpractice.use_left_and_right_arrow_home_or_end_to_move','Use Left and Right Arrow, Home, or End to move between filters.'),
                   onKeyDown: handleTypingPracticeFilterKeys,
                   style: { display: 'flex', gap: '6px', flexWrap: 'wrap' }
                 },
@@ -7369,7 +7369,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         setDrillQuery('');
                       }
                     },
-                    placeholder: 'Search drills',
+                    placeholder: __alloT('stem.typingpractice.search_drills','Search drills'),
                     'aria-controls': 'tp-drill-results',
                     'aria-describedby': 'tp-drill-results-status',
                     style: {
@@ -9755,7 +9755,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 if (!interruptedDraftMatches(state.interruptedDrill, activeDrill && activeDrill.id, state.drillRunId) || typedLength < 1) return null;
                 return h('span', {
                   'aria-label': __alloTPT('stem.typingpractice.a11y_private_resume_draft_saved_locally', 'Private resume draft saved locally'),
-                  title: 'Private resume draft saved locally',
+                  title: __alloT('stem.typingpractice.private_resume_draft_saved_locally','Private resume draft saved locally'),
                   style: {
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -11086,7 +11086,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   },
                   readOnly: !!s.note,
                   'aria-describedby': 'tp-summary-note-help tp-summary-note-count',
-                  placeholder: 'How did this session go? For example: started slowly, persisted, used a break.',
+                  placeholder: __alloT('stem.typingpractice.how_did_this_session_go_for_example_started','How did this session go? For example: started slowly, persisted, used a break.'),
                   maxLength: 400, rows: 3,
                   style: {
                     width: '100%', minHeight: '88px', padding: '10px 11px', borderRadius: '6px',
@@ -12291,7 +12291,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                           upd('dailyGoal', next.targetSessions || next.targetWpm ? next : null);
                         });
                       },
-                      placeholder: '(optional)',
+                      placeholder: __alloT('stem.typingpractice.optional','(optional)'),
                       style: {
                         width: '100%',
                         padding: '8px 10px',

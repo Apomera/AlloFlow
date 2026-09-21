@@ -892,7 +892,7 @@ window.StemLab = window.StemLab || {
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
                   React.createElement("span", { className: "font-bold text-amber-800" }, __alloT('stem.funcgrapher.derivative_f_x', "\uD83D\uDCC9 Derivative f\u2032(x): ")),
-                  __alloT('stem.funcgrapher.derivative_stationary_points_refined', "The derivative measures the rate of change. A zero derivative can mark a local maximum, a local minimum, or neither: x³ has derivative zero at 0 and keeps increasing. Compare behavior on both sides.")
+                  __alloT('stem.funcgrapher.derivative_stationary_points_refined', 'The derivative measures the rate of change. A zero derivative can mark a local maximum, a local minimum, or neither: x³ has derivative zero at 0 and keeps increasing. Compare behavior on both sides.')
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
                   React.createElement("span", { className: "font-bold text-indigo-600" }, __alloT('stem.funcgrapher.area_under_the_curve', "\u222B Area Under the Curve: ")),
@@ -976,7 +976,7 @@ window.StemLab = window.StemLab || {
                 study?h('div',{'data-secant-results':true},
                   study.value===null?h('p',null,'The function is undefined or non-finite at the base point, so a derivative there is unavailable.'):null,
                   study.rows.some(function(row){return row.collapsed;})?h('p',null,'Some sample positions coincide at machine precision. A smaller step cannot resolve a slope there.'):null,
-                  h('div',{tabIndex:0,role:'region','aria-label':'Secant slope comparison table',style:{overflowX:'auto',marginTop:12}},h('table',{style:{width:'100%',borderCollapse:'collapse',fontSize:13}},
+                  h('div',{tabIndex:0,role:'region','aria-label':__alloT('stem.funcgrapher.secant_slope_comparison_table','Secant slope comparison table'),style:{overflowX:'auto',marginTop:12}},h('table',{style:{width:'100%',borderCollapse:'collapse',fontSize:13}},
                     h('caption',{style:{color:ink,textAlign:'left'}},'Four shrinking steps at x₀ = '+study.x),
                     h('thead',null,h('tr',null,['Step h','Left slope ≈','Right slope ≈','Centered estimate ≈'].map(function(label){return h('th',{key:label,scope:'col',style:{padding:8,textAlign:'left',borderBottom:'1px solid '+border,color:ink}},label);}))),
                     h('tbody',null,study.rows.map(function(row,i){return h('tr',{key:i},[row.step,row.left,row.right,row.center].map(function(value,j){return h('td',{key:j,style:{padding:8,borderBottom:'1px solid '+border,color:ink,whiteSpace:'nowrap'}},number(value));}));})))),
@@ -1002,9 +1002,9 @@ window.StemLab = window.StemLab || {
                 h('summary',{style:{fontSize:16,fontWeight:700,cursor:'pointer'}},'Can an unbounded function have finite area?'),
                 h('p',null,'Compare 1/√x, 1/x, and 1/x² from 0 to 1. All are undefined at zero. Start at a positive cutoff ε and move it toward zero to investigate the missing endpoint.'),
                 h('div',{style:{display:'flex',gap:10,flexWrap:'wrap'}},
-                  h('label',null,'Endpoint example',h('select',{'aria-label':'Endpoint example',value:power,style:field,onChange:function(e){set({improperPower:Number(e.target.value),improperReveal:false,improperNotice:''});}},
+                  h('label',null,'Endpoint example',h('select',{'aria-label':__alloT('stem.funcgrapher.endpoint_example','Endpoint example'),value:power,style:field,onChange:function(e){set({improperPower:Number(e.target.value),improperReveal:false,improperNotice:''});}},
                     h('option',{value:.5},'1/√x'),h('option',{value:1},'1/x'),h('option',{value:2},'1/x²'))),
-                  h('label',null,'Cutoff ε',h('input',{'aria-label':'Positive endpoint cutoff',type:'number',step:'any',min:.000001,max:.999999,value:epsilon,style:field,onChange:function(e){set({improperEpsilon:e.target.value,improperNotice:''});}}))),
+                  h('label',null,'Cutoff ε',h('input',{'aria-label':__alloT('stem.funcgrapher.positive_endpoint_cutoff','Positive endpoint cutoff'),type:'number',step:'any',min:.000001,max:.999999,value:epsilon,style:field,onChange:function(e){set({improperEpsilon:e.target.value,improperNotice:''});}}))),
                 h('label',{style:{display:'block',marginTop:12}},'Predict what happens as ε approaches zero',
                   h('select',{value:d.improperPrediction||'',style:Object.assign({},field,{display:'block'}),onChange:function(e){upd('improperPrediction',e.target.value);}},
                     h('option',{value:''},'Choose a prediction'),h('option',{value:'finite'},'Area approaches a finite value'),h('option',{value:'unbounded'},'Area grows without bound'),h('option',{value:'unsure'},'I need more evidence'))),
@@ -1015,7 +1015,7 @@ window.StemLab = window.StemLab || {
                   set({improperRows:rows.concat([{power:power,epsilon:sample.epsilon,prediction:d.improperPrediction}]).slice(-18),improperNotice:'Trial recorded. Try ε / 10, then compare how much area was added.'});
                 }},'Record cutoff trial'),
                 (typeof d.improperNotice === 'string' && d.improperNotice)?h('p',{role:'status'},d.improperNotice):null,
-                rows.length?h('div',{tabIndex:0,role:'region','aria-label':'Endpoint trial table',style:{overflowX:'auto'}},h('table',{style:{width:'100%',fontSize:13,borderCollapse:'collapse',color:ink}},
+                rows.length?h('div',{tabIndex:0,role:'region','aria-label':__alloT('stem.funcgrapher.endpoint_trial_table','Endpoint trial table'),style:{overflowX:'auto'}},h('table',{style:{width:'100%',fontSize:13,borderCollapse:'collapse',color:ink}},
                   h('caption',{style:{color:ink}},'Recent cutoff trials: area from ε to 1'),
                   h('thead',null,h('tr',null,['Function','Cutoff ε','Area ≈','Prediction'].map(function(label){return h('th',{key:label,scope:'col',style:{padding:8,textAlign:'left',borderBottom:'1px solid '+border,color:ink}},label);}))),
                   h('tbody',null,rows.map(function(row,i){var r=fgTruncatedIntegral(row.power,row.epsilon);return h('tr',{key:i},[r.power===.5?'1/√x':r.power===1?'1/x':'1/x²',r.epsilon,Number(r.area.toPrecision(7)),row.prediction].map(function(v,j){return h('td',{key:j,style:{padding:8,borderBottom:'1px solid '+border,color:ink}},String(v));}));})))):null,
