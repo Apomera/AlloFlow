@@ -140,6 +140,22 @@ const CLAIMS = [
       'adult 275-day refusal suspension under §2521',
   },
   {
+    label: 'Maine wildlife-collision failure-to-report fine, low end (12 §12403)',
+    re: /civil violation carrying a \$(\d{3})[–-]\$\d{3} fine/,
+    min: 100, max: 100,
+    source: 'Maine Title 12 §12403: failing to report a collision with a deer, moose, bear or ' +
+      'wild turkey, or removing part of a carcass without the certificate, is a civil violation ' +
+      'with a fine of not less than $100 nor more than $500.',
+  },
+  {
+    label: 'Maine wildlife-collision carcass rule says CERTIFICATE, not permit',
+    re: /the officer issues a certificate at the scene/,
+    min: null, max: null,
+    source: 'Title 12 §12403 issues a CERTIFICATE at the scene when the vehicle has apparent ' +
+      'damage. The tool previously said "roadkill salvage requires a permit", which implies an ' +
+      'application afterward and would leave a driver waiting instead of asking the officer.',
+  },
+  {
     label: 'Maine reportable-crash property damage threshold (§2251)',
     re: /apparent property damage of \$([\d,]+) or more/,
     min: 2000, max: 2000,
