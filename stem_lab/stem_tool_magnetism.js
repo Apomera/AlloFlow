@@ -10709,8 +10709,13 @@
             })),
           axisText ? h('span', { className: 'mag-scene-axis', 'aria-hidden': 'true' }, axisText) : null);
       }
+      // No inline minHeight here. `.mag-root button{min-height:36px}` sets the
+      // desktop floor and `@media(pointer:coarse)` raises it to 44px, but an
+      // INLINE style beats a stylesheet rule whatever its media query — so an
+      // inline 36 here silently defeated the tool's own touch accommodation and
+      // left every one of these buttons at 38px on a phone.
       function btn(active) {
-        return { minHeight: 36, padding: '8px 12px', borderRadius: 9, border: '1px solid ' + (active ? ACTIVE : BORDER), background: active ? ACTIVE : PANEL, color: active ? '#fff' : TEXT, boxShadow: active ? 'inset 0 -3px 0 #fff' : 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer' };
+        return { padding: '8px 12px', borderRadius: 9, border: '1px solid ' + (active ? ACTIVE : BORDER), background: active ? ACTIVE : PANEL, color: active ? '#fff' : TEXT, boxShadow: active ? 'inset 0 -3px 0 #fff' : 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer' };
       }
       function slider(label, val, min, max, step, onChange, disabled) {
         var sliderId = 'mag-slider-' + (++_sliderUid);

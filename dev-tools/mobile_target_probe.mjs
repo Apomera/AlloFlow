@@ -57,6 +57,48 @@ for (const tab of TABS) {
   });
   await page.addScriptTag({ path: resolve(ROOT, 'desktop/web-app/node_modules/react/umd/react.development.js') });
   await page.addScriptTag({ path: resolve(ROOT, 'desktop/web-app/node_modules/react-dom/umd/react-dom.development.js') });
+  // 42 of the 150 STEM tools register only when a host already exists
+  // (`var _hasHost = !!(window.StemLab && ...registerTool)`), rather than
+  // creating window.StemLab themselves. Without this stub they load, register
+  // nothing, and the probe reports "tool did not register" — so their tap
+  // targets were never measured on a phone at all.
+  //
+  // Shaped to match the real host in stem_lab_module.js, and matching the
+  // stub in tests/helpers/stem_widgets_smoke_harness.js. A partial host is
+  // worse than none: a tool that finds registerTool but not ensureThree can
+  // take a different branch than it does in the app.
+  await page.evaluate(() => {
+    const pending = () => new Promise(() => {});
+    window.StemLab = window.StemLab || {
+      _registry: {},
+      _order: [],
+      registerTool(id, config) {
+        config.id = id;
+        config.ready = config.ready !== false;
+        this._registry[id] = config;
+        if (this._order.indexOf(id) === -1) this._order.push(id);
+      },
+      isRegistered(id) { return !!this._registry[id]; },
+      renderTool(id, ctx) {
+        const tool = this._registry[id];
+        return tool && tool.render ? tool.render(ctx) : null;
+      },
+      // A forever-pending loader holds 3D tools in the state they occupy in a
+      // real browser before WebGL is ready, which is the 2D layout this probe
+      // is here to measure. Resolving it would need a real GL context.
+      loadScriptResilient: pending,
+      ensureThree: pending,
+      releaseGl() {},
+      makeBayViewer: () => ({
+        attach() {}, sync() {}, nudge() {}, zoom() {}, reset() {},
+        status: () => 'idle'
+      }),
+      makeOrbitViewer: () => ({
+        attach() {}, sync() {}, nudge() {}, zoom() {}, reset() {},
+        status: () => 'idle'
+      })
+    };
+  });
   await page.addScriptTag({ path: toolPath });
   const started = await page.evaluate(({ toolId, tab }) => {
     // The id a tool registers under is not always its file name:
