@@ -1,7 +1,7 @@
 {
   "note": "Per-file count of accessibility text hardcoded as English literals (no translation key). RATCHET: may only go down. Re-baseline with --update after removing some; an increase needs --allow-increase.",
   "set": "2026-09-21",
-  "total": 4363,
+  "total": 4154,
   "files": {
     "accessibility_lab_module.js": 3,
     "adventure_module.js": 1,
@@ -47,7 +47,7 @@
     "view_dbq_module.js": 12,
     "view_directions_composer_module.js": 9,
     "view_educator_hub_modal_module.js": 2,
-    "view_export_preview_module.js": 210,
+    "view_export_preview_module.js": 1,
     "view_faq_module.js": 3,
     "view_glossary_module.js": 2,
     "view_history_panel_module.js": 1,
