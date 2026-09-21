@@ -1393,7 +1393,7 @@ const d = labToolData.artStudio || {};
               palette: createColorWheelThreadPalette()
             };
             storeStudioThreadKitEntry(nextKit, runId);
-            if (typeof addToast === 'function') addToast('Palette added to the Thread Kit.', 'success');
+            if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_palette_added_to_the_thread_kit', 'Palette added to the Thread Kit.'), 'success');
             if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_color_wheel_palette_added_to_the_thread_kit', 'Color Wheel palette added to the Thread Kit.'));
           };
           const applyThreadKitPaletteToPixel = function () {
@@ -1406,7 +1406,7 @@ const d = labToolData.artStudio || {};
               pixelSat: firstColor.s,
               pixelLit: firstColor.l
             });
-            if (typeof addToast === 'function') addToast('Thread Kit palette loaded in Pixel Art.', 'success');
+            if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_thread_kit_palette_loaded_in_pixel_art', 'Thread Kit palette loaded in Pixel Art.'), 'success');
             if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_thread_kit_palette_loaded_in_pixel_art', 'Thread Kit palette loaded in Pixel Art.'));
           };
           const applyThreadKitPaletteToContrast = function () {
@@ -1930,11 +1930,11 @@ const d = labToolData.artStudio || {};
             function deliverArtwork(captured) {
               if (studioCaptureOwnerRef.current !== requestedOwner) return;
               if (!captured) {
-                if (typeof addToast === 'function') addToast('Finish or open an artwork canvas on this tab before sending it.', 'info');
+                if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_finish_or_open_an_artwork_canvas_on_this_tab_b', 'Finish or open an artwork canvas on this tab before sending it.'), 'info');
                 return;
               }
               if (typeof onUseArtwork !== 'function') {
-                if (typeof addToast === 'function') addToast('Artwork handoff is not available in this version of AlloFlow.', 'info');
+                if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_artwork_handoff_is_not_available_in_this_versi', 'Artwork handoff is not available in this version of AlloFlow.'), 'info');
                 return;
               }
               onUseArtwork(captured, destination);
@@ -2090,7 +2090,7 @@ const d = labToolData.artStudio || {};
               setStudioInspectorTab('make');
             }
             if (typeof addToast === 'function') {
-              addToast(completed ? '\u2713 Creative thread finished. Your artwork stays on the canvas.' : 'Creative thread closed. Your artwork stays on the canvas.', completed ? 'success' : 'info');
+              addToast(completed ? __alloT('stem.artstudio.toast_creative_thread_finished', '\u2713 Creative thread finished. Your artwork stays on the canvas.') : __alloT('stem.artstudio.toast_creative_thread_closed', 'Creative thread closed. Your artwork stays on the canvas.'), completed ? 'success' : 'info');
             }
             if (typeof canvasNarrate === 'function') {
               canvasNarrate('artStudio', 'creativeThreadEnd', (completed ? 'Finished ' : 'Closed ') + threadTitle + '. Your artwork remains available.', { debounce: 300 });
@@ -2150,7 +2150,7 @@ const d = labToolData.artStudio || {};
             var opts = options || {};
             persistArtworkBeforeLeave();
             if (typeof setToolSnapshots !== 'function') {
-              if (typeof addToast === 'function') addToast('Snapshot saving is not available here.', 'warning');
+              if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_snapshot_saving_is_not_available_here', 'Snapshot saving is not available here.'), 'warning');
               return null;
             }
             var now = Date.now();
@@ -2283,7 +2283,7 @@ const d = labToolData.artStudio || {};
             });
             setStudioProcessScope(savingThreadStep ? 'current' : 'free');
             setStudioProcessStatus((replacingThreadStep ? 'Replaced' : 'Saved') + ' ' + snapshotLabel + ' on the Process Shelf.');
-            if (typeof addToast === 'function') addToast((replacingThreadStep ? '\u2713 Study replaced' : '\uD83D\uDCF8 Study saved') + ' on your Process Shelf!', 'success');
+            if (typeof addToast === 'function') addToast((replacingThreadStep ? __alloT('stem.artstudio.toast_study_replaced_on_your_process_shelf', '\u2713 Study replaced on your Process Shelf!') : __alloT('stem.artstudio.toast_study_saved_on_your_process_shelf', '\uD83D\uDCF8 Study saved on your Process Shelf!')), 'success');
             return record;
           };
           const openStudioProcess = function () {
@@ -2450,7 +2450,7 @@ const d = labToolData.artStudio || {};
             setStudioInspectorTab('make');
             setStudioProcessOpen(false);
             setStudioProcessStatus('Forked the saved ' + (snapshot.artStudioStudy ? snapshot.artStudioStudy.stepLabel : 'Art Studio') + ' setup as a variation. Other Studio work was preserved.');
-            if (typeof addToast === 'function') addToast('\u21aa Variation opened. Other Studio work was preserved.', 'success');
+            if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_variation_opened_other_studio_work_was_preserv', '\u21aa Variation opened. Other Studio work was preserved.'), 'success');
             focusArtStudioTarget('artstudio-panel-' + savedTab);
           };
           const closeStudioActionsMenu = function (event, restoreFocus) {
@@ -5478,7 +5478,7 @@ const d = labToolData.artStudio || {};
 
               URL.revokeObjectURL(link.href);
 
-              if (typeof addToast === 'function') addToast('\uD83C\uDFAC Animated GIF exported!', 'success');
+              if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_animated_gif_exported', '\uD83C\uDFAC Animated GIF exported!'), 'success');
 
             }
 
@@ -6491,7 +6491,7 @@ const d = labToolData.artStudio || {};
                 if (existingIndex !== -1) ids.splice(existingIndex, 1);
                 else if (ids.length < 3) ids.push(profile.id);
                 else {
-                  if (typeof addToast === 'function') addToast('Compare up to three artists at a time.', 'info');
+                  if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_compare_up_to_three_artists_at_a_time', 'Compare up to three artists at a time.'), 'info');
                   return;
                 }
                 setArtistCompareIds(ids);
@@ -6518,7 +6518,7 @@ const d = labToolData.artStudio || {};
               }
               function saveWorkToSourcebook(item) {
                 if (!sourcebookReady || !sourcebookApi.allowsRightsScope(item, artistRightsScope)) {
-                  if (typeof addToast === 'function') addToast('This asset did not pass the active Sourcebook rights filter.', 'error');
+                  if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_this_asset_did_not_pass_the_active_sourcebook', 'This asset did not pass the active Sourcebook rights filter.'), 'error');
                   return;
                 }
                 setLabToolData(function (prev) {
@@ -6537,7 +6537,7 @@ const d = labToolData.artStudio || {};
                     })
                   });
                 });
-                if (typeof addToast === 'function') addToast('Saved to the Sourcebook palette with rights and source metadata.', 'success');
+                if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_saved_to_the_sourcebook_palette_with_rights_an', 'Saved to the Sourcebook palette with rights and source metadata.'), 'success');
                 if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_saved_to_the_sourcebook_palette', 'Saved {value1} to the Sourcebook palette'), { value1: item.title }));
               }
               function continueInSourcebook(profile) {
@@ -6885,7 +6885,7 @@ const d = labToolData.artStudio || {};
                   React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.clear(); else saveWatercolorMetadata('', ''); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_canvas_cleared', 'Watercolor canvas cleared.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100" }, __alloT('stem.artstudio.clear_watercolor', "Clear")),
                   React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.reload(); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_brush_reloaded', 'Watercolor brush reloaded.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100" }, __alloT('stem.artstudio.reload_watercolor_brush', "Reload brush")),
                   React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.dry(); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_dried', 'Watercolor dried.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100" }, __alloT('stem.artstudio.dry_watercolor', "Dry paint")),
-                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'watercolor-' + Date.now() + '.png'; link.href = c._watercolorEngine && c._watercolorEngine.captureSnapshot ? c._watercolorEngine.captureSnapshot() : c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Watercolor PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_png_exported_without_diagnostic_overl', 'Watercolor PNG exported without diagnostic overlays.')); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_watercolor_png', "Export PNG"))
+                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'watercolor-' + Date.now() + '.png'; link.href = c._watercolorEngine && c._watercolorEngine.captureSnapshot ? c._watercolorEngine.captureSnapshot() : c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_watercolor_png_exported', '\uD83D\uDCE5 Watercolor PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_png_exported_without_diagnostic_overl', 'Watercolor PNG exported without diagnostic overlays.')); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_watercolor_png', "Export PNG"))
                 ),
                 React.createElement("p", { id: "artstudio-watercolor-keyboard-help", className: "text-[0.6875rem] text-slate-600 text-center" }, __alloT('stem.artstudio.watercolor_keyboard_help', "Draw with a pointer or stylus; pressure, tilt, and stroke speed shape the mark. Focus the canvas and use Arrow keys to move; press Enter or Space to dab, P to pause drying, and Ctrl/Command+Z to undo.")),
                 React.createElement("div", { id: "artstudio-watercolor-status", className: "text-[0.6875rem] font-semibold text-teal-900 text-center bg-teal-50 rounded-lg border border-teal-200 px-3 py-2" }, "Paper: Dry | active area 0%. Brush load: 100% water | 100% pigment. Masked area: 0%. Climate: 45% humidity | 25% airflow. Paper chemistry: 58% sizing | 60% bloom response. Drying active. Wet-state autosave on.")
@@ -7088,7 +7088,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("button", { onClick: function () { upd('pixelData', {}); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_2', "\uD83D\uDDD1 Clear")),
 
-                  React.createElement("button", { onClick: function () { var c = document.querySelector('canvas[style*="pixelated"]'); if (!c) return; var link = document.createElement('a'); link.download = 'pixel-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_png', "\uD83D\uDCE5 Export PNG")),
+                  React.createElement("button", { onClick: function () { var c = document.querySelector('canvas[style*="pixelated"]'); if (!c) return; var link = document.createElement('a'); link.download = 'pixel-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_png', "\uD83D\uDCE5 Export PNG")),
 
                   React.createElement("select", { 'aria-label': __alloT('stem.artstudio.grid_size', 'Grid size'), value: typeof d.pixelGrid === 'number' ? d.pixelGrid : 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-400 rounded-lg" },
 
@@ -7242,7 +7242,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (c && c._symClearAction) c._symClearAction(); else upd('symmetryClear', Date.now()); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_3', "\uD83D\uDDD1 Clear")),
 
-                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; var picture = c._symExportAction ? c._symExportAction() : c.toDataURL('image/png'); var finishExport = function (src) { if (!src) return; link.href = src; link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_symmetry_png_exported_without_editing_guides', 'Symmetry PNG exported without editing guides.')); }; return picture && typeof picture.then === 'function' ? picture.then(finishExport) : finishExport(picture); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_png_2', "\uD83D\uDCE5 Export PNG")),
+                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; var picture = c._symExportAction ? c._symExportAction() : c.toDataURL('image/png'); var finishExport = function (src) { if (!src) return; link.href = src; link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_symmetry_png_exported_without_editing_guides', 'Symmetry PNG exported without editing guides.')); }; return picture && typeof picture.then === 'function' ? picture.then(finishExport) : finishExport(picture); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_png_2', "\uD83D\uDCE5 Export PNG")),
 
                 React.createElement("button", { "aria-label": __alloT('stem.artstudio.fullscreen', "Toggle fullscreen Symmetry Studio workspace"), onClick: function () { toggleFullscreen('symmetryFullscreenWorkspace'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all" }, __alloT('stem.artstudio.fullscreen_2', "\u26F6 Fullscreen"))
 
@@ -8051,7 +8051,7 @@ const d = labToolData.artStudio || {};
                 Promise.resolve().then(function () { return callGemini(prompt, false, false, 0.5); }).then(function(resp) {
                   if (!runtime.mounted) return;
                   if (runtime.version !== version) {
-                    if (typeof addToast === 'function') addToast('The sculpture changed while AI was working. Your edits were kept; describe the next change again.', 'info');
+                    if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_the_sculpture_changed_while_ai_was_working_you', 'The sculpture changed while AI was working. Your edits were kept; describe the next change again.'), 'info');
                     return;
                   }
                   var r = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
@@ -8065,7 +8065,7 @@ const d = labToolData.artStudio || {};
                   }) });
                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_sculpture_updated', 'Sculpture updated'));
                 }).catch(function() {
-                  if (runtime.mounted && runtime.version === version && typeof addToast === 'function') addToast('Sculpting could not finish. Your model is unchanged; try a simpler description.', 'error');
+                  if (runtime.mounted && runtime.version === version && typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_sculpting_could_not_finish_your_model_is_uncha', 'Sculpting could not finish. Your model is unchanged; try a simpler description.'), 'error');
                 }).then(function () {
                   runtime.busy = false;
                   if (runtime.mounted) upd('_sculptPing', Date.now());
@@ -8101,11 +8101,11 @@ const d = labToolData.artStudio || {};
                   document.body.appendChild(a); a.click(); document.body.removeChild(a);
                   if (objectUrl) setTimeout(function() { try { window.URL.revokeObjectURL(objectUrl); } catch (e) {} }, 0);
                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_editable_sculpture_model_exported_as_json', 'Editable sculpture model exported as JSON.'));
-                  if (typeof addToast === 'function') addToast('Editable sculpture model exported.', 'success');
+                  if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_editable_sculpture_model_exported', 'Editable sculpture model exported.'), 'success');
                 } catch (e) {
                   if (objectUrl) { try { window.URL.revokeObjectURL(objectUrl); } catch (err) {} }
                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_unable_to_export_the_sculpture_model', 'Unable to export the sculpture model.'));
-                  if (typeof addToast === 'function') addToast('Unable to export the sculpture model.', 'error');
+                  if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_unable_to_export_the_sculpture_model', 'Unable to export the sculpture model.'), 'error');
                 }
               };
               // Continue in Print Lab (2026-09-05): the sculpture is already the
@@ -8115,7 +8115,7 @@ const d = labToolData.artStudio || {};
                 if (!recipe) return;
                 var normalized = P3D.normalizeRecipe(recipe);
                 if (!normalized || !normalized.parts || !normalized.parts.length) {
-                  if (typeof addToast === 'function') addToast('Add at least one part before continuing in Print Lab.', 'error');
+                  if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_add_at_least_one_part_before_continuing_in_pri', 'Add at least one part before continuing in Print Lab.'), 'error');
                   return;
                 }
                 var handoffPayload = {
@@ -8148,7 +8148,7 @@ const d = labToolData.artStudio || {};
                   }
                 } else {
                   delete window.__alloPrintLabPendingHandoff;
-                  if (typeof addToast === 'function') addToast('Print Lab is not available here. Export the model JSON and load it in Print Lab instead.', 'info');
+                  if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_print_lab_is_not_available_here_export_the_mod', 'Print Lab is not available here. Export the model JSON and load it in Print Lab instead.'), 'info');
                 }
               };
               var importSculptJson = function(event) {
@@ -8178,7 +8178,7 @@ const d = labToolData.artStudio || {};
                     upd('sculptSel', 0);
                     setRecipe(imported);
                     if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(imported.parts.length === 1 ? __alloT('stem.artstudio.sr_imported_sculpture_one', 'Imported {value1} with {value2} part.') : __alloT('stem.artstudio.sr_imported_sculpture_many', 'Imported {value1} with {value2} parts.'), { value1: (imported.name || __alloT('stem.artstudio.sr_word_an_editable_sculpture', 'an editable sculpture')), value2: imported.parts.length }));
-                    if (typeof addToast === 'function') addToast('Sculpture model imported.', 'success');
+                    if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_sculpture_model_imported', 'Sculpture model imported.'), 'success');
                     finishImport();
                   } catch (e) {
                     rejectImport('That file is not a valid Sculpture JSON model.');
@@ -8661,7 +8661,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("button", { onClick: function () { upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_redrawing_the_spirograph', 'Redrawing the spirograph.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-300 hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.redraw_spirograph', "\u21BB Redraw")),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_spirograph_png', "Export spirograph as PNG"), onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_spirograph_png_exported', 'Spirograph PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_3', "\uD83D\uDCE5 Export PNG")),
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_spirograph_png', "Export spirograph as PNG"), onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_spirograph_png_exported', 'Spirograph PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_3', "\uD83D\uDCE5 Export PNG")),
 
                       React.createElement("button", { "aria-label": d.spiroRainbow ? "Use a single color for the spirograph" : "Use a rainbow color progression for the spirograph", "aria-pressed": !!d.spiroRainbow, onClick: function () { var nextRainbow = !d.spiroRainbow; upd('spiroRainbow', nextRainbow); upd('spiroReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(nextRainbow ? __alloT('stem.artstudio.sr_rainbow_spirograph_enabled', 'Rainbow spirograph enabled.') : __alloT('stem.artstudio.sr_single_color_spirograph_enabled', 'Single-color spirograph enabled.')); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 " + (d.spiroRainbow ? 'bg-gradient-to-r from-red-600 via-yellow-700 to-blue-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-400 hover:bg-indigo-50') }, d.spiroRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
 
@@ -8826,7 +8826,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("button", { onClick: function () { resetGenerativeRun(); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_6', "\uD83D\uDDD1 Clear")),
 
-                React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_4', "Export PNG"), onClick: function () { var c = document.getElementById('genCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'generative-art-' + Date.now() + '.png'; link.href = c._genExportAction ? c._genExportAction() : c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_5', "\uD83D\uDCE5 Export PNG"))
+                React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_4', "Export PNG"), onClick: function () { var c = document.getElementById('genCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'generative-art-' + Date.now() + '.png'; link.href = c._genExportAction ? c._genExportAction() : c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_5', "\uD83D\uDCE5 Export PNG"))
 
               ),
 
@@ -9391,7 +9391,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("button", { onClick: function () { updMany({ spinReset: Date.now(), spinSnapshot: '', spinDrips: [], spinAngle: 0 }); }, className: "transition-colors ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_7', "\uD83D\uDDD1 Clear")),
 
-                React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_6', "Export PNG"), onClick: function () { var c = document.getElementById('spinCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spin-art-' + Date.now() + '.png'; var picture = c._spinExportAction ? c._spinExportAction() : c.toDataURL('image/png'); var finishExport = function (src) { if (!src) return; link.href = src; link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }; return picture && typeof picture.then === 'function' ? picture.then(finishExport) : finishExport(picture); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_7', "\uD83D\uDCE5 Export PNG"))
+                React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_6', "Export PNG"), onClick: function () { var c = document.getElementById('spinCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spin-art-' + Date.now() + '.png'; var picture = c._spinExportAction ? c._spinExportAction() : c.toDataURL('image/png'); var finishExport = function (src) { if (!src) return; link.href = src; link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); }; return picture && typeof picture.then === 'function' ? picture.then(finishExport) : finishExport(picture); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_7', "\uD83D\uDCE5 Export PNG"))
 
               ),
 
@@ -9887,7 +9887,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("button", { onClick: function () { upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_redrawing_the_string_art', 'Redrawing the string art.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.redraw_string_art', "\u21BB Redraw")),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_string_art_png', "Export string art as PNG"), onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_string_art_png_exported', 'String-art PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_8', "\uD83D\uDCE5 Export PNG")),
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_string_art_png', "Export string art as PNG"), onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_string_art_png_exported', 'String-art PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_8', "\uD83D\uDCE5 Export PNG")),
 
                       React.createElement("button", { "aria-label": d.strRainbow ? "Use a single thread color" : "Use a rainbow thread progression", "aria-pressed": !!d.strRainbow, onClick: function () { var nextRainbow = !d.strRainbow; upd('strRainbow', nextRainbow); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(nextRainbow ? __alloT('stem.artstudio.sr_rainbow_threads_enabled', 'Rainbow threads enabled.') : __alloT('stem.artstudio.sr_single_color_threads_enabled', 'Single-color threads enabled.')); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + (d.strRainbow ? 'bg-gradient-to-r from-red-600 via-yellow-700 to-blue-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-400 hover:bg-rose-50') }, d.strRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
 
@@ -10151,7 +10151,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("button", { "aria-label": (d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? "Resume Op Art animation" : "Pause Op Art animation", "aria-describedby": "artstudio-op-motion-status", onClick: function () { var isPaused = d.opPaused === undefined ? reducedMotion : !!d.opPaused; upd('opPaused', !isPaused); if (typeof announceToSR === 'function') announceToSR(isPaused ? __alloT('stem.artstudio.sr_op_art_animation_resumed', 'Op Art animation resumed.') : __alloT('stem.artstudio.sr_op_art_animation_paused', 'Op Art animation paused.')); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2 " + ((d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? 'bg-green-50 text-green-700 border border-green-600 hover:bg-green-100' : 'bg-amber-50 text-amber-800 border border-amber-600 hover:bg-amber-100') }, (d.opPaused === undefined ? reducedMotion : !!d.opPaused) ? '\u25B6 Resume' : '\u23F8 Pause'),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_op_art_png', "Export Op Art as PNG"), onClick: function () { var c = document.getElementById('opArtCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'op-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_op_art_png_exported', 'Op Art PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_10', "\uD83D\uDCE5 Export PNG"))
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_op_art_png', "Export Op Art as PNG"), onClick: function () { var c = document.getElementById('opArtCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'op-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_op_art_png_exported', 'Op Art PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_10', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
@@ -10516,7 +10516,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("button", { "aria-label": __alloT('stem.artstudio.a11y_clear_tessellation_tile_colors', 'Clear tessellation tile colors'), onClick: function () { upd('tessClickData', {}); upd('tessReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_tessellation_tile_colors_cleared', 'Tessellation tile colors cleared.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_colors', "\uD83D\uDDD1 Clear Colors")),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_11', "Export PNG"), onClick: function () { var c = document.getElementById('tessCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'tessellation-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_12', "\uD83D\uDCE5 Export PNG"))
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_11', "Export PNG"), onClick: function () { var c = document.getElementById('tessCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'tessellation-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_png_12', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
@@ -11202,7 +11202,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("button", { onClick: function () { upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_fractal_view_reset_to_one_times_zoom_and_centere', 'Fractal view reset to one times zoom and centered pan.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.reset_view', "\u21BA Reset View")),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_13', "Export fractal as PNG"), onClick: function () { var c = document.getElementById('fractalCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'fractal-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_fractal_png_exported', 'Fractal PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_14', "\uD83D\uDCE5 Export PNG"))
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_png_13', "Export fractal as PNG"), onClick: function () { var c = document.getElementById('fractalCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'fractal-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_fractal_png_exported', 'Fractal PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_14', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
@@ -11710,7 +11710,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_gradient_png', "Export gradient as PNG"), onClick: function () { var c = document.getElementById('gradientCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'gradient-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_gradient_png_exported', 'Gradient PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_16', "\uD83D\uDCE5 Export PNG"))
+                      React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_gradient_png', "Export gradient as PNG"), onClick: function () { var c = document.getElementById('gradientCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'gradient-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_gradient_png_exported', 'Gradient PNG exported.')); }, className: "transition-colors flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.export_png_16', "\uD83D\uDCE5 Export PNG"))
 
                     ),
 
@@ -11758,7 +11758,7 @@ const d = labToolData.artStudio || {};
 
                         else css = 'background: linear-gradient(' + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + 'deg, ' + stopsStr + ');';
 
-                        (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(css).then(function () { if (typeof addToast === 'function') addToast('\u2705 CSS copied!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_gradient_css_copied_to_the_clipboard', 'Gradient CSS copied to the clipboard.')); }, function () { if (typeof addToast === 'function') addToast('Unable to copy CSS.', 'error'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_unable_to_copy_gradient_css', 'Unable to copy gradient CSS.')); });
+                        (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(css).then(function () { if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_css_copied', '\u2705 CSS copied!'), 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_gradient_css_copied_to_the_clipboard', 'Gradient CSS copied to the clipboard.')); }, function () { if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_unable_to_copy_css', 'Unable to copy CSS.'), 'error'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_unable_to_copy_gradient_css', 'Unable to copy gradient CSS.')); });
 
                       }, className: "transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900" }, __alloT('stem.artstudio.copy_2', "\uD83D\uDCCB Copy"))
 
@@ -12123,7 +12123,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'bw', label: __alloT('stem.artstudio.b_w', '\u26AB B&W') }, { id: 'color', label: __alloT('stem.artstudio.color', '\uD83C\uDFA8 Color') }, { id: 'noise', label: __alloT('stem.artstudio.noise', '\uD83D\uDCFA Noise') }, { id: 'ai', label: __alloT('stem.artstudio.ai', '\u2728 AI') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoPattern || 'bw') === s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast('Please generate an AI Pattern first!', 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-cyan-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoPattern || 'bw') === s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_please_generate_an_ai_pattern_first', 'Please generate an AI Pattern first!'), 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-cyan-50') }, s.label);
 
                         })
 
@@ -12208,7 +12208,7 @@ const d = labToolData.artStudio || {};
 
                                   upd('stereoAiGen', null);
 
-                                  if(typeof addToast === 'function') addToast('\u2728 Depth map generated!', 'success');
+                                  if(typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_depth_map_generated', '\u2728 Depth map generated!'), 'success');
 
                                 };
 
@@ -12218,7 +12218,7 @@ const d = labToolData.artStudio || {};
 
                                 upd('stereoAiGen', null);
 
-                                if(typeof addToast === 'function') addToast('AI Error: ' + e.message, 'error');
+                                if(typeof addToast === 'function') addToast(formatArtStudioLearningText(__alloT('stem.artstudio.toast_ai_error', 'AI Error: {value1}'), { value1: e.message }), 'error');
 
                               });
 
@@ -12260,7 +12260,7 @@ const d = labToolData.artStudio || {};
 
                                   upd('stereoPattern', 'ai');
 
-                                  if(typeof addToast === 'function') addToast('\u2728 AI Pattern loaded and selected!', 'success');
+                                  if(typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_ai_pattern_loaded_and_selected', '\u2728 AI Pattern loaded and selected!'), 'success');
 
                                 };
 
@@ -12270,7 +12270,7 @@ const d = labToolData.artStudio || {};
 
                                 upd('stereoAiGen', null);
 
-                                if(typeof addToast === 'function') addToast('AI Error: ' + e.message, 'error');
+                                if(typeof addToast === 'function') addToast(formatArtStudioLearningText(__alloT('stem.artstudio.toast_ai_error', 'AI Error: {value1}'), { value1: e.message }), 'error');
 
                               });
 
@@ -12308,7 +12308,7 @@ const d = labToolData.artStudio || {};
 
                     ),
 
-                    React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_stereogram_2', "Export Stereogram"), onClick: function () { var c = document.getElementById('stereoCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'stereogram-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "w-full mt-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_stereogram_3', "\uD83D\uDCE5 Export Stereogram"))
+                    React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_stereogram_2', "Export Stereogram"), onClick: function () { var c = document.getElementById('stereoCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'stereogram-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_png_exported', '\uD83D\uDCE5 PNG exported!'), 'success'); }, className: "w-full mt-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_stereogram_3', "\uD83D\uDCE5 Export Stereogram"))
 
                   ),
 
@@ -12574,7 +12574,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "flex gap-2 mt-2" },
 
-                    React.createElement("button", { "aria-label": __alloT('stem.artstudio.save_depth_map_png', "Save Depth Map PNG"), onClick: function () { var c = document.getElementById('depthMapCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-map-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Depth map saved as PNG!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200 hover:from-indigo-100 hover:to-purple-100 transition-all" }, __alloT('stem.artstudio.save_depth_map_png_2', "\u2B07\uFE0F Save Depth Map PNG"))
+                    React.createElement("button", { "aria-label": __alloT('stem.artstudio.save_depth_map_png', "Save Depth Map PNG"), onClick: function () { var c = document.getElementById('depthMapCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-map-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_depth_map_saved_as_png', '\uD83D\uDCE5 Depth map saved as PNG!'), 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200 hover:from-indigo-100 hover:to-purple-100 transition-all" }, __alloT('stem.artstudio.save_depth_map_png_2', "\u2B07\uFE0F Save Depth Map PNG"))
 
                   ),
 
@@ -13089,7 +13089,7 @@ const d = labToolData.artStudio || {};
 
                         if (kf.length >= ART_STUDIO_MAX_ANIM_KEYFRAMES) {
 
-                          if (typeof addToast === 'function') addToast('Keep up to ' + ART_STUDIO_MAX_ANIM_KEYFRAMES + ' keyframes. Remove one before capturing another.', 'warning');
+                          if (typeof addToast === 'function') addToast(formatArtStudioLearningText(__alloT('stem.artstudio.toast_keep_up_to_n_keyframes', 'Keep up to {value1} keyframes. Remove one before capturing another.'), { value1: ART_STUDIO_MAX_ANIM_KEYFRAMES }), 'warning');
 
                           if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_keyframe_limit_reached_remove_a_keyframe_before', 'Keyframe limit reached. Remove a keyframe before capturing another.'));
 
@@ -13101,7 +13101,7 @@ const d = labToolData.artStudio || {};
 
                         upd('stereoAnimKeyframes', kf);
 
-                        if (typeof addToast === 'function') addToast('\uD83D\uDCF8 Keyframe ' + kf.length + ' captured!', 'success');
+                        if (typeof addToast === 'function') addToast(formatArtStudioLearningText(__alloT('stem.artstudio.toast_keyframe_captured', '\uD83D\uDCF8 Keyframe {value1} captured!'), { value1: kf.length }), 'success');
                         if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_keyframe_captured', 'Keyframe {value1} captured.'), { value1: kf.length }));
 
                       }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-green-700 to-emerald-700 text-white hover:from-green-800 hover:to-emerald-800 shadow-sm" }, __alloT('stem.artstudio.capture_keyframe_2', "\uD83D\uDCF8 Capture Keyframe")),
@@ -13116,15 +13116,15 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("button", { onClick: function() { upd('stereoAnimKeyframes', []); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_all_animation_keyframes_cleared', 'All animation keyframes cleared.')); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_all_frames', "\u274C Clear All Frames")),
 
-                      React.createElement("button", { onClick: function() { var c = document.getElementById('stereoAnimDrawCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-drawing-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Drawing saved as PNG!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-600 hover:from-indigo-100 hover:to-purple-100 transition-all" }, __alloT('stem.artstudio.save_drawing_png', "\u2B07\uFE0F Save Drawing PNG")),
+                      React.createElement("button", { onClick: function() { var c = document.getElementById('stereoAnimDrawCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-drawing-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_drawing_saved_as_png', '\uD83D\uDCE5 Drawing saved as PNG!'), 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-600 hover:from-indigo-100 hover:to-purple-100 transition-all" }, __alloT('stem.artstudio.save_drawing_png', "\u2B07\uFE0F Save Drawing PNG")),
 
                       (d.stereoAnimKeyframes && d.stereoAnimKeyframes.length >= 2) && React.createElement("button", { "aria-label": __alloT('stem.artstudio.export_depth_map_gif', "Export Depth Map GIF"), onClick: function() {
 
                         var kfs = d.stereoAnimKeyframes;
 
-                        if (!kfs || kfs.length < 2) { if (typeof addToast === 'function') addToast('Need at least 2 keyframes for GIF!', 'warning'); return; }
+                        if (!kfs || kfs.length < 2) { if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_need_at_least_2_keyframes_for_gif', 'Need at least 2 keyframes for GIF!'), 'warning'); return; }
 
-                        if (typeof addToast === 'function') addToast('\u23F3 Building depth map GIF...', 'info');
+                        if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_building_depth_map_gif', '\u23F3 Building depth map GIF...'), 'info');
 
                         var totalFrames = 24;
 
@@ -13242,7 +13242,7 @@ const d = labToolData.artStudio || {};
 
                             upd('stereoAnimUploadedDepth', { width: 400, height: 400, data: copyArtStudioPixels(imgData) });
 
-                            if (typeof addToast === 'function') addToast('\uD83D\uDCF8 Depth map uploaded!', 'success');
+                            if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_depth_map_uploaded', '\uD83D\uDCF8 Depth map uploaded!'), 'success');
 
                           };
 
@@ -13395,7 +13395,7 @@ const d = labToolData.artStudio || {};
 
                                 upd('stereoAnimAiGenerating', false);
 
-                                if (typeof addToast === 'function') addToast('\u2728 AI depth map generated!', 'success');
+                                if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_ai_depth_map_generated', '\u2728 AI depth map generated!'), 'success');
 
                               };
 
@@ -13405,7 +13405,7 @@ const d = labToolData.artStudio || {};
 
                               upd('stereoAnimAiGenerating', false);
 
-                              if (typeof addToast === 'function') addToast('AI Error: ' + e.message, 'error');
+                              if (typeof addToast === 'function') addToast(formatArtStudioLearningText(__alloT('stem.artstudio.toast_ai_error', 'AI Error: {value1}'), { value1: e.message }), 'error');
 
                             });
 
@@ -13575,17 +13575,17 @@ const d = labToolData.artStudio || {};
 
                         // Validation
 
-                        if (source === 'preset' && !d.stereoAnimPreset) { if (typeof addToast === 'function') addToast('Pick an animation preset first!', 'warning'); return; }
+                        if (source === 'preset' && !d.stereoAnimPreset) { if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_pick_an_animation_preset_first', 'Pick an animation preset first!'), 'warning'); return; }
 
-                        if (source === 'draw' && (!d.stereoAnimKeyframes || d.stereoAnimKeyframes.length < 2)) { if (typeof addToast === 'function') addToast('Capture at least 2 keyframes!', 'warning'); return; }
+                        if (source === 'draw' && (!d.stereoAnimKeyframes || d.stereoAnimKeyframes.length < 2)) { if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_capture_at_least_2_keyframes', 'Capture at least 2 keyframes!'), 'warning'); return; }
 
-                        if (source === 'upload' && !d.stereoAnimUploadedDepth) { if (typeof addToast === 'function') addToast('Upload a depth map image first!', 'warning'); return; }
+                        if (source === 'upload' && !d.stereoAnimUploadedDepth) { if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_upload_a_depth_map_image_first', 'Upload a depth map image first!'), 'warning'); return; }
 
-                        if (source === 'ai' && !d.stereoAnimAiDepth) { if (typeof addToast === 'function') addToast('Generate an AI depth map first!', 'warning'); return; }
+                        if (source === 'ai' && !d.stereoAnimAiDepth) { if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_generate_an_ai_depth_map_first', 'Generate an AI depth map first!'), 'warning'); return; }
 
                         if (source === 'transform' && !d.stereoStaticDepthSnapshot) {
 
-                          if (typeof addToast === 'function') addToast('Draw a static depth map before using Transform.', 'warning');
+                          if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_draw_a_static_depth_map_before_using_transform', 'Draw a static depth map before using Transform.'), 'warning');
 
                           if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_no_static_depth_map_is_available_return_to_stati', 'No static depth map is available. Return to Static mode and draw one first.'));
 
@@ -13624,7 +13624,7 @@ const d = labToolData.artStudio || {};
 
                             upd('stereoAnimRendering', false);
 
-                            if (typeof addToast === 'function') addToast('AI Motion needs Gemini + Imagen — switch transforms or check AI setup.', 'error');
+                            if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_ai_motion_needs_gemini_imagen', 'AI Motion needs Gemini + Imagen — switch transforms or check AI setup.'), 'error');
 
                             return;
 
@@ -13636,7 +13636,7 @@ const d = labToolData.artStudio || {};
 
                             upd('stereoAnimRendering', false);
 
-                            if (typeof addToast === 'function') addToast('Need an AI prompt for AI Motion mode.', 'warning');
+                            if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_need_an_ai_prompt_for_ai_motion_mode', 'Need an AI prompt for AI Motion mode.'), 'warning');
 
                             return;
 
@@ -13832,7 +13832,7 @@ const d = labToolData.artStudio || {};
 
                             upd('stereoAnimProgress', 0);
 
-                            if (typeof addToast === 'function') addToast('AI Motion failed: ' + (err && err.message ? err.message : 'unknown'), 'error');
+                            if (typeof addToast === 'function') addToast(formatArtStudioLearningText(__alloT('stem.artstudio.toast_ai_motion_failed', 'AI Motion failed: {value1}'), { value1: (err && err.message ? err.message : __alloT('stem.artstudio.toast_word_unknown', 'unknown')) }), 'error');
 
                           });
 
@@ -13860,7 +13860,7 @@ const d = labToolData.artStudio || {};
 
                                 upd('stereoAnimHasFrames', true);
 
-                                if (typeof addToast === 'function') addToast('🎭 AI Motion: ' + renderedFrames.length + ' frames rendered!', 'success');
+                                if (typeof addToast === 'function') addToast(formatArtStudioLearningText(__alloT('stem.artstudio.toast_ai_motion_frames_rendered', '🎭 AI Motion: {value1} frames rendered!'), { value1: renderedFrames.length }), 'success');
 
                                 if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_ai_motion_animation_rendered', 'AI motion animation rendered.'));
 
@@ -13936,7 +13936,7 @@ const d = labToolData.artStudio || {};
 
                               upd('stereoAnimRendering', false); upd('stereoAnimProgress', 100); upd('stereoAnimHasFrames', true);
 
-                              if (typeof addToast === 'function') addToast('\uD83C\uDFAC ' + frames.length + ' frames rendered!', 'success');
+                              if (typeof addToast === 'function') addToast(formatArtStudioLearningText(__alloT('stem.artstudio.toast_frames_rendered', '\uD83C\uDFAC {value1} frames rendered!'), { value1: frames.length }), 'success');
 
                               if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_animation_rendered', 'Animation rendered.'));
 
@@ -14069,7 +14069,7 @@ const d = labToolData.artStudio || {};
 
                               upd('stereoAnimRendering', false); upd('stereoAnimProgress', 100); upd('stereoAnimHasFrames', true);
 
-                              if (typeof addToast === 'function') addToast('\uD83C\uDFAC ' + frames.length + ' frames rendered!', 'success');
+                              if (typeof addToast === 'function') addToast(formatArtStudioLearningText(__alloT('stem.artstudio.toast_frames_rendered', '\uD83C\uDFAC {value1} frames rendered!'), { value1: frames.length }), 'success');
 
                               if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_animation_rendered', 'Animation rendered.'));
 
