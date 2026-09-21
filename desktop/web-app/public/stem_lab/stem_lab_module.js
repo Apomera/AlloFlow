@@ -3272,6 +3272,21 @@
         //
         // The updater stays pure — it only records what it did — and the
         // feedback below reads that real number.
+        //
+        // `points` arrives from ctx.awardXP, which every tool plugin can call.
+        // A plugin computing points from a division, a parse or a missing
+        // field can hand over NaN, and `Math.min(NaN, n)` is NaN, so
+        // `earned += NaN` poisoned that activity PERMANENTLY: the XP panel
+        // then rendered "NaN / 100 XP" with style width:"NaN%", and no later
+        // award could repair it because every sum with NaN is NaN. Infinity
+        // and a numeric string are the same class of input. Normalise once,
+        // here, rather than defending every read downstream.
+        var _points = Math.floor(Number(points));
+        if (!isFinite(_points) || _points <= 0) {
+          if (typeof onCredited === 'function') { try { onCredited(0); } catch (_) {} }
+          return;
+        }
+        points = _points;
         var _awardedPts = Math.min(points, Math.max(0, 100 - getStemXP(activityId)));
         if (_awardedPts <= 0) {
           // Callers that describe the award themselves still need to hear that
@@ -3332,13 +3347,25 @@
           setTimeout(function () { _setXpBadgePulse(false); }, 600);
         }, 0);
       }
+      // Reads persisted XP, which may predate the input guard in awardStemXP
+      // or have been edited by hand. A stored NaN used to flow straight to the
+      // panel as "NaN / 100 XP" with style width:"NaN%"; a negative drew a
+      // negative bar. Clamping on the way out repairs those records on sight
+      // instead of requiring a migration.
       function getStemXP(activityId) {
-        return (stemXpData[activityId] && stemXpData[activityId].earned) || 0;
+        var raw = stemXpData[activityId] && stemXpData[activityId].earned;
+        var n = Math.floor(Number(raw));
+        if (!isFinite(n) || n <= 0) return 0;
+        return Math.min(100, n);
       }
       function getStemXPCap(activityId) {
         return 100 - getStemXP(activityId);
       }
-      var totalStemXP = stemXpData._total || 0;
+      // _total is a stored sum, so it carries the same risk as an entry.
+      var totalStemXP = (function () {
+        var n = Math.floor(Number(stemXpData._total));
+        return isFinite(n) && n > 0 ? n : 0;
+      })();
 
       // ── AI Helper Functions (powered by main app's callGemini) ──
       var _aiPending = {};
@@ -5786,7 +5813,12 @@
               var _xpKeys = Object.keys(stemXpData);
               _xpKeys.forEach(function(key) {
                 if (key === '_total') return;
-                if (!stemXpData[key] || typeof stemXpData[key].earned !== 'number' || stemXpData[key].earned <= 0) return;
+                if (!stemXpData[key]) return;
+                // `typeof x === 'number'` is true for NaN and Infinity, so the
+                // old guard admitted both and the tile rendered "NaN / 100 XP".
+                // getStemXP now normalises, so list the activity only when the
+                // value it will actually display is real.
+                if (getStemXP(key) <= 0) return;
                 _xpActivities.push(_xpLabel(key));
               });
               // Sort: maxed first, then by earned descending
@@ -5804,9 +5836,24 @@
                     React.createElement("span", { className: "text-[10px] font-bold text-amber-700 uppercase" },
                       _earnedCount + " Active" + (_maxedCount > 0 ? " \u00B7 " + _maxedCount + " Maxed" : "")
                     ),
-                    React.createElement("span", { className: "text-[10px] font-black text-amber-600" }, totalStemXP + " Total XP")
+                    React.createElement("span", { className: "text-[10px] font-black text-amber-600" },
+                      // The bar is totalStemXP/10, i.e. it fills at 1000 XP and
+                      // turns green there. Nothing said so, so a learner at
+                      // 1000+ saw a full bar with no idea what it measured or
+                      // that they had passed anything.
+                      totalStemXP >= 1000
+                        ? totalStemXP + ' Total XP \u00B7 1000 reached'
+                        : totalStemXP + ' / 1000 Total XP')
                   ),
-                  React.createElement("div", { className: "w-full h-3 bg-amber-100 rounded-full overflow-hidden", style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' } },
+                  React.createElement("div", {
+                    className: "w-full h-3 bg-amber-100 rounded-full overflow-hidden",
+                    style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' },
+                    role: 'progressbar',
+                    'aria-valuenow': Math.min(1000, totalStemXP),
+                    'aria-valuemin': 0,
+                    'aria-valuemax': 1000,
+                    'aria-label': 'Total STEAM Lab XP'
+                  },
                     React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: {
                       width: Math.min(100, totalStemXP / 10) + '%',
                       background: totalStemXP >= 1000 ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, #f59e0b, #eab308, #f59e0b)',
