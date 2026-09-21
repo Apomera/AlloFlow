@@ -151,7 +151,7 @@ window.SelHub = window.SelHub || {
           { _k: 'sel.emotions.fam_sad_elementary_sad', word: 'sad', emoji: '\uD83D\uDE22', def: 'Feeling unhappy or down' },
           { _k: 'sel.emotions.fam_sad_elementary_lonely', word: 'lonely', emoji: '\uD83D\uDE14', def: 'Wanting someone to be with' },
           { _k: 'sel.emotions.fam_sad_elementary_disappointed', word: 'disappointed', emoji: '\uD83D\uDE1E', def: 'Something didn\'t go the way you wanted' },
-          { _k: 'sel.emotions.fam_sad_elementary_left out', word: 'left out', emoji: '\uD83D\uDE1F', def: 'Not included when others are having fun' },
+          { _k: 'sel.emotions.fam_sad_elementary_left_out', word: 'left out', emoji: '\uD83D\uDE1F', def: 'Not included when others are having fun' },
           { _k: 'sel.emotions.fam_sad_elementary_hurt', word: 'hurt', emoji: '\uD83E\uDD15', def: 'Someone said or did something that made you feel bad' },
           { _k: 'sel.emotions.fam_sad_elementary_homesick', word: 'homesick', emoji: '\uD83C\uDFE0', def: 'Missing home or family' },
           { _k: 'sel.emotions.fam_sad_elementary_bored', word: 'bored', emoji: '\uD83D\uDE11', def: 'Nothing feels interesting right now' },
@@ -240,14 +240,14 @@ window.SelHub = window.SelHub || {
           { _k: 'sel.emotions.fam_scared_middle_intimidated', word: 'intimidated', emoji: '\uD83D\uDE33', def: 'Feeling small or powerless in someone\'s presence' }
         ],
         high: [
-          { _k: 'sel.emotions.fam_scared_high_existential dread', word: 'existential dread', emoji: '\uD83C\uDF11', def: 'Deep anxiety about meaning, mortality, or identity' },
+          { _k: 'sel.emotions.fam_scared_high_existential_dread', word: 'existential dread', emoji: '\uD83C\uDF11', def: 'Deep anxiety about meaning, mortality, or identity' },
           { _k: 'sel.emotions.fam_scared_high_hypervigilant', word: 'hypervigilant', emoji: '\uD83D\uDC40', def: 'Heightened alertness from sustained threat perception' },
           { _k: 'sel.emotions.fam_scared_high_dissociated', word: 'dissociated', emoji: '\uD83C\uDF2B\uFE0F', def: 'Disconnection from reality as a protective response' },
           { _k: 'sel.emotions.fam_scared_high_catastrophizing', word: 'catastrophizing', emoji: '\uD83D\uDE30', def: 'Mind spiraling to worst-case scenarios' },
           { _k: 'sel.emotions.fam_scared_high_vulnerable', word: 'vulnerable', emoji: '\uD83D\uDC94', def: 'Exposed emotional state that requires trust to hold' },
           { _k: 'sel.emotions.fam_scared_high_phobic', word: 'phobic', emoji: '\uD83D\uDE28', def: 'Intense, irrational fear triggered by specific stimuli' },
           { _k: 'sel.emotions.fam_scared_high_paralyzed', word: 'paralyzed', emoji: '\uD83E\uDDCA', def: 'Freeze response — too afraid to act or decide' },
-          { _k: 'sel.emotions.fam_scared_high_anticipatory anxiety', word: 'anticipatory anxiety', emoji: '\uD83D\uDE1F', def: 'Worrying about a future event that may or may not occur' }
+          { _k: 'sel.emotions.fam_scared_high_anticipatory_anxiety', word: 'anticipatory anxiety', emoji: '\uD83D\uDE1F', def: 'Worrying about a future event that may or may not occur' }
         ]
       }
     },
@@ -268,7 +268,7 @@ window.SelHub = window.SelHub || {
           { _k: 'sel.emotions.fam_surprised_middle_bewildered', word: 'bewildered', emoji: '\uD83D\uDE15', def: 'Confused and disoriented by the unexpected' },
           { _k: 'sel.emotions.fam_surprised_middle_intrigued', word: 'intrigued', emoji: '\uD83E\uDD14', def: 'Deeply curious — wanting to investigate' },
           { _k: 'sel.emotions.fam_surprised_middle_awestruck', word: 'awestruck', emoji: '\uD83E\uDD29', def: 'Overwhelmed by something amazing' },
-          { _k: 'sel.emotions.fam_surprised_middle_caught off guard', word: 'caught off guard', emoji: '\uD83D\uDE31', def: 'Unprepared for what just happened' },
+          { _k: 'sel.emotions.fam_surprised_middle_caught_off_guard', word: 'caught off guard', emoji: '\uD83D\uDE31', def: 'Unprepared for what just happened' },
           { _k: 'sel.emotions.fam_surprised_middle_perplexed', word: 'perplexed', emoji: '\uD83E\uDD28', def: 'Confused in a way that makes you think hard' }
         ],
         high: [
@@ -287,7 +287,7 @@ window.SelHub = window.SelHub || {
       feelings: {
         elementary: [
           { _k: 'sel.emotions.fam_disgusted_elementary_disgusted', word: 'disgusted', emoji: '\uD83E\uDD22', def: 'Something is gross or yucky' },
-          { _k: 'sel.emotions.fam_disgusted_elementary_grossed out', word: 'grossed out', emoji: '\uD83E\uDD2E', def: 'Eww! That\'s really icky!' },
+          { _k: 'sel.emotions.fam_disgusted_elementary_grossed_out', word: 'grossed out', emoji: '\uD83E\uDD2E', def: 'Eww! That\'s really icky!' },
           { _k: 'sel.emotions.fam_disgusted_elementary_uncomfortable', word: 'uncomfortable', emoji: '\uD83D\uDE16', def: 'Something doesn\'t feel right' },
           { _k: 'sel.emotions.fam_disgusted_elementary_embarrassed', word: 'embarrassed', emoji: '\uD83D\uDE33', def: 'Feeling like everyone is watching you mess up' },
           { _k: 'sel.emotions.fam_disgusted_elementary_ashamed', word: 'ashamed', emoji: '\uD83D\uDE14', def: 'Feeling really bad about something you did' }
@@ -301,8 +301,8 @@ window.SelHub = window.SelHub || {
           { _k: 'sel.emotions.fam_disgusted_middle_appalled', word: 'appalled', emoji: '\uD83D\uDE32', def: 'Shocked and disgusted by something unacceptable' }
         ],
         high: [
-          { _k: 'sel.emotions.fam_disgusted_high_moral revulsion', word: 'moral revulsion', emoji: '\uD83E\uDD22', def: 'Disgust at ethical violations — injustice, cruelty, hypocrisy' },
-          { _k: 'sel.emotions.fam_disgusted_high_visceral repulsion', word: 'visceral repulsion', emoji: '\uD83E\uDD2E', def: 'Bodily disgust that bypasses conscious thought' },
+          { _k: 'sel.emotions.fam_disgusted_high_moral_revulsion', word: 'moral revulsion', emoji: '\uD83E\uDD22', def: 'Disgust at ethical violations — injustice, cruelty, hypocrisy' },
+          { _k: 'sel.emotions.fam_disgusted_high_visceral_repulsion', word: 'visceral repulsion', emoji: '\uD83E\uDD2E', def: 'Bodily disgust that bypasses conscious thought' },
           { _k: 'sel.emotions.fam_disgusted_high_self-loathing', word: 'self-loathing', emoji: '\uD83D\uDE14', def: 'Disgust directed inward — harsh self-rejection' },
           { _k: 'sel.emotions.fam_disgusted_high_indignation', word: 'indignation', emoji: '\uD83D\uDE20', def: 'Disgust + anger at unfairness or wrongdoing' },
           { _k: 'sel.emotions.fam_disgusted_high_disenfranchised', word: 'disenfranchised', emoji: '\uD83D\uDE10', def: 'Repelled by systems that exclude or dehumanize' }
@@ -17993,7 +17993,12 @@ var EMOTION_JOURNAL_TEMPLATES = [
       // English; only the display is translated.
       var _feelWord = function (id) {
         if (!id) return id;
-        return __alloT('sel.emotions.feelword_' + id, id);
+        // Some feeling ids are multi-word ('left out', 'existential dread').
+        // The id keeps its space -- it is persisted state and the quiz answer
+        // -- but the KEY is slugged, so this must match how the keys were
+        // generated or those words stop resolving.
+        var key = String(id).replace(/ /g, '_');
+        return __alloT('sel.emotions.feelword_' + key, id);
       };
       // EMOTION_FAMILIES rows also arrive from toolData (a journal entry
       // stores one), so both helpers fall back when _k is absent.
