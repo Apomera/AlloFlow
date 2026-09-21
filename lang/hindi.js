@@ -5076,7 +5076,7 @@
     "config_saved": "एस्केप रूम सहेजा गया! लोड करें it anytime से सेटिंग्स.",
     "invalid_save": "सहेजें डेटा है corrupted",
     "load_saved": "लोड करें सहेजें",
-    "loaded_saved": "सहेजा गया Escape Room लोड हो गया! तैयार होने पर समीक्षा करें और लॉन्च करें।",
+    "loaded_saved": "सहेजी गई पहेली चुनौती लोड हो गई! समीक्षा करें और तैयार होने पर शुरू करें।",
     "no_saved": "नहीं सहेजा गया एस्केप रूम found",
     "preview_confirmed": "✅ एस्केप रूम locked • ready को चलाएं!",
     "xp_earned_streak": "+{xp} XP ({multiplier}x स्ट्रीक बोनस!)",
