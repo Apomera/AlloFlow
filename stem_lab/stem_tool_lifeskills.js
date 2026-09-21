@@ -792,6 +792,59 @@ window.StemLab = window.StemLab || {
   ];
 
   // ── Helper Functions ──
+  // Recipes are measured with cups and spoons, not decimals. Showing 2.25 cups as
+  // "2.3" misreported the recipe at its OWN scale, and "0.38 cup" is not something
+  // a measuring cup can do. Snap to the fractions real kitchen tools have; fall
+  // back to a decimal when the value is not close to one (1/16 is not 1/8).
+  function fmtCookAmount(v) {
+    if (typeof v !== 'number' || !isFinite(v) || v <= 0) return '0';
+    var whole = Math.floor(v + 1e-9);
+    var frac = v - whole;
+    var PARTS = [[0, ''], [1 / 8, '1/8'], [1 / 4, '1/4'], [1 / 3, '1/3'], [3 / 8, '3/8'],
+                 [1 / 2, '1/2'], [5 / 8, '5/8'], [2 / 3, '2/3'], [3 / 4, '3/4'],
+                 [7 / 8, '7/8'], [1, '']];
+    var best = null, bestD = Infinity;
+    for (var i = 0; i < PARTS.length; i++) {
+      var dd = Math.abs(frac - PARTS[i][0]);
+      if (dd < bestD) { bestD = dd; best = PARTS[i]; }
+    }
+    // Half the gap between 1/8 steps: anything further is genuinely not a kitchen
+    // fraction, so show a number rather than lie about it.
+    if (bestD > 0.042) return v.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+    if (best[0] === 1) { whole += 1; best = PARTS[0]; }
+    if (whole === 0) return best[1] || '0';
+    return best[1] ? whole + ' ' + best[1] : String(whole);
+  }
+
+  // "1 egg" / "2 eggs" - the unit field is blank for countable items, so the item
+  // name itself has to agree with the number.
+  function fmtCookItem(item, shownQty) {
+    var s = String(item == null ? '' : item);
+    // `shownQty` is the DISPLAYED text ("1", "1/2", "2 1/4"), not the float:
+    // half an egg displays as "1/2" and must read "1/2 egg", while 0.5 rounded
+    // for display to "1" must read "1 egg", not "1 eggs".
+    var qty = String(shownQty).trim();
+    var one = qty === '1';
+    // A fraction below one is still "1/2 egg", not "1/2 eggs".
+    var underOne = /^[0-9]+\/[0-9]+$/.test(qty);
+    var COUNTABLE = /(^|\s)(egg|banana|apple|onion|carrot|potato|lemon|lime|clove|slice)s?$/i;
+    if (!COUNTABLE.test(s)) return s;
+    var singular = s.replace(/s$/i, '');
+    return (one || underOne) ? singular : singular + 's';
+  }
+
+  // "1 cups" reads wrong. Units are stored plural, so singularise at exactly one.
+  function fmtCookUnit(unit, shownQty) {
+    var u = String(unit == null ? '' : unit).trim();
+    if (!u) return '';
+    // tsp / tbsp / oz / lb do not inflect; only spelled-out units do.
+    if (!/^(cup|cups|tablespoon|tablespoons|teaspoon|teaspoons|ounce|ounces|pound|pounds|clove|cloves|slice|slices)$/i.test(u)) return u;
+    var qty = String(shownQty).trim();
+    var singular = qty === '1' || /^[0-9]+\/[0-9]+$/.test(qty);
+    var stem = u.replace(/s$/i, '');
+    return singular ? stem : stem + 's';
+  }
+
   // Body Care & Ergonomics Data
   var BODYCARE_CHECKS = [
     { id: 'neck', icon: '\uD83E\uDD37', title: 'Neck and shoulders', action: 'Let shoulders drop, bring work closer, and avoid holding the neck bent for a long stretch.', why: 'Small changes in reach and height can reduce strain during reading, typing, or drawing.' },
@@ -7320,11 +7373,12 @@ window.StemLab = window.StemLab || {
                 h('tbody', null,
                   cookRecipe.ingredients.map(function(ing, i) {
                     var scaled = ing.amount * cookScale;
-                    var display = scaled % 1 === 0 ? scaled.toString() : scaled < 1 ? scaled.toFixed(2) : scaled.toFixed(1);
+                    var display = fmtCookAmount(scaled);
+                    var baseDisplay = fmtCookAmount(ing.amount);
                     return h('tr', { key: i, className: i % 2 === 0 ? '' : 'bg-slate-50' },
-                      h('td', { className: 'px-2 py-1' }, ing.item),
-                      h('td', { className: 'px-2 py-1 text-right text-slate-600' }, ing.amount + ' ' + ing.unit),
-                      h('td', { className: 'px-2 py-1 text-right font-bold text-teal-700' }, display + ' ' + ing.unit)
+                      h('td', { className: 'px-2 py-1' }, fmtCookItem(ing.item, display)),
+                      h('td', { className: 'px-2 py-1 text-right text-slate-600' }, (baseDisplay + ' ' + fmtCookUnit(ing.unit, baseDisplay)).trim()),
+                      h('td', { className: 'px-2 py-1 text-right font-bold text-teal-700' }, (display + ' ' + fmtCookUnit(ing.unit, display)).trim())
                     );
                   })
                 )
