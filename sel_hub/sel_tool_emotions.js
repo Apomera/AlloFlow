@@ -376,7 +376,7 @@ window.SelHub = window.SelHub || {
   // Emotion Detective: a replayable, no-timer practice loop for reading a whole
   // emotional signal (family + intensity + blend + body cue + next step).
   var DETECTIVE_CASES = [
-    {
+    { _k: 'sel.emotions.case_a_friend_shares_their_lunch_wi',
       situation: 'A friend shares their lunch with you after noticing you forgot yours.',
       clue: 'Notice the feeling, its volume, and what your body is doing.',
       family: 'happy',
@@ -384,24 +384,24 @@ window.SelHub = window.SelHub || {
       intensity: 3,
       blend: 'grateful',
       blendOptions: [
-        { id: 'grateful', label: 'Grateful' },
-        { id: 'relieved', label: 'Relieved' },
-        { id: 'connected', label: 'Connected' }
+        { _k: 'sel.emotions.case_a_friend_shares_their_lunch_wi_blendOptions_grateful', id: 'grateful', label: 'Grateful' },
+        { _k: 'sel.emotions.case_a_friend_shares_their_lunch_wi_blendOptions_relieved', id: 'relieved', label: 'Relieved' },
+        { _k: 'sel.emotions.case_a_friend_shares_their_lunch_wi_blendOptions_connected', id: 'connected', label: 'Connected' }
       ],
       bodyBest: 'warm',
       bodyOptions: [
-        { id: 'warm', label: 'Warm chest or relaxed face' },
-        { id: 'buzz', label: 'Busy, energized hands' },
-        { id: 'heavy', label: 'Heavy shoulders or low energy' }
+        { _k: 'sel.emotions.case_a_friend_shares_their_lunch_wi_bodyOptions_warm', id: 'warm', label: 'Warm chest or relaxed face' },
+        { _k: 'sel.emotions.case_a_friend_shares_their_lunch_wi_bodyOptions_buzz', id: 'buzz', label: 'Busy, energized hands' },
+        { _k: 'sel.emotions.case_a_friend_shares_their_lunch_wi_bodyOptions_heavy', id: 'heavy', label: 'Heavy shoulders or low energy' }
       ],
       strategyBest: 'thanks',
       strategyOptions: [
-        { id: 'thanks', label: 'Name the kindness and say thank you', hint: 'Connect the feeling to the relationship.' },
-        { id: 'pause', label: 'Take a quiet pause and notice the feeling', hint: 'Let the feeling be present without rushing.' },
-        { id: 'move', label: 'Move your body to release extra energy', hint: 'Useful when a good feeling is very activated.' }
+        { _k: 'sel.emotions.case_a_friend_shares_their_lunch_wi_strategyOptions_thanks', id: 'thanks', label: 'Name the kindness and say thank you', hint: 'Connect the feeling to the relationship.' },
+        { _k: 'sel.emotions.case_a_friend_shares_their_lunch_wi_strategyOptions_pause', id: 'pause', label: 'Take a quiet pause and notice the feeling', hint: 'Let the feeling be present without rushing.' },
+        { _k: 'sel.emotions.case_a_friend_shares_their_lunch_wi_strategyOptions_move', id: 'move', label: 'Move your body to release extra energy', hint: 'Useful when a good feeling is very activated.' }
       ]
     },
-    {
+    { _k: 'sel.emotions.case_you_find_out_a_close_friend_ma',
       situation: 'You find out a close friend made plans with others and did not invite you.',
       clue: 'More than one feeling can be true at once.',
       family: 'sad',
@@ -409,24 +409,24 @@ window.SelHub = window.SelHub || {
       intensity: 4,
       blend: 'hurt',
       blendOptions: [
-        { id: 'hurt', label: 'Hurt' },
-        { id: 'jealous', label: 'Jealous' },
-        { id: 'confused', label: 'Confused' }
+        { _k: 'sel.emotions.case_you_find_out_a_close_friend_ma_blendOptions_hurt', id: 'hurt', label: 'Hurt' },
+        { _k: 'sel.emotions.case_you_find_out_a_close_friend_ma_blendOptions_jealous', id: 'jealous', label: 'Jealous' },
+        { _k: 'sel.emotions.case_you_find_out_a_close_friend_ma_blendOptions_confused', id: 'confused', label: 'Confused' }
       ],
       bodyBest: 'tight',
       bodyOptions: [
-        { id: 'tight', label: 'Tight throat or chest' },
-        { id: 'hot', label: 'Hot face or clenched hands' },
-        { id: 'float', label: 'Light, buzzy body' }
+        { _k: 'sel.emotions.case_you_find_out_a_close_friend_ma_bodyOptions_tight', id: 'tight', label: 'Tight throat or chest' },
+        { _k: 'sel.emotions.case_you_find_out_a_close_friend_ma_bodyOptions_hot', id: 'hot', label: 'Hot face or clenched hands' },
+        { _k: 'sel.emotions.case_you_find_out_a_close_friend_ma_bodyOptions_float', id: 'float', label: 'Light, buzzy body' }
       ],
       strategyBest: 'checkin',
       strategyOptions: [
-        { id: 'checkin', label: 'Ask for context before deciding what it means', hint: 'Curiosity can protect the relationship.' },
-        { id: 'journal', label: 'Write the feeling before responding', hint: 'Make room for the first reaction.' },
-        { id: 'distance', label: 'Take a short pause from messages', hint: 'A pause can lower the intensity.' }
+        { _k: 'sel.emotions.case_you_find_out_a_close_friend_ma_strategyOptions_checkin', id: 'checkin', label: 'Ask for context before deciding what it means', hint: 'Curiosity can protect the relationship.' },
+        { _k: 'sel.emotions.case_you_find_out_a_close_friend_ma_strategyOptions_journal', id: 'journal', label: 'Write the feeling before responding', hint: 'Make room for the first reaction.' },
+        { _k: 'sel.emotions.case_you_find_out_a_close_friend_ma_strategyOptions_distance', id: 'distance', label: 'Take a short pause from messages', hint: 'A pause can lower the intensity.' }
       ]
     },
-    {
+    { _k: 'sel.emotions.case_you_have_a_big_presentation_to',
       situation: 'You have a big presentation tomorrow and keep imagining everything going wrong.',
       clue: 'Intensity can rise even before anything has happened.',
       family: 'scared',
@@ -434,24 +434,24 @@ window.SelHub = window.SelHub || {
       intensity: 4,
       blend: 'nervous',
       blendOptions: [
-        { id: 'nervous', label: 'Nervous' },
-        { id: 'excited', label: 'Excited' },
-        { id: 'overwhelmed', label: 'Overwhelmed' }
+        { _k: 'sel.emotions.case_you_have_a_big_presentation_to_blendOptions_nervous', id: 'nervous', label: 'Nervous' },
+        { _k: 'sel.emotions.case_you_have_a_big_presentation_to_blendOptions_excited', id: 'excited', label: 'Excited' },
+        { _k: 'sel.emotions.case_you_have_a_big_presentation_to_blendOptions_overwhelmed', id: 'overwhelmed', label: 'Overwhelmed' }
       ],
       bodyBest: 'flutter',
       bodyOptions: [
-        { id: 'flutter', label: 'Fluttery stomach or fast heartbeat' },
-        { id: 'warm', label: 'Warm, open chest' },
-        { id: 'heavy', label: 'Heavy, slowed body' }
+        { _k: 'sel.emotions.case_you_have_a_big_presentation_to_bodyOptions_flutter', id: 'flutter', label: 'Fluttery stomach or fast heartbeat' },
+        { _k: 'sel.emotions.case_you_have_a_big_presentation_to_bodyOptions_warm', id: 'warm', label: 'Warm, open chest' },
+        { _k: 'sel.emotions.case_you_have_a_big_presentation_to_bodyOptions_heavy', id: 'heavy', label: 'Heavy, slowed body' }
       ],
       strategyBest: 'smallstep',
       strategyOptions: [
-        { id: 'smallstep', label: 'Choose one small preparation step', hint: 'A concrete next step gives the energy somewhere to go.' },
-        { id: 'breathe', label: 'Use a longer-exhale breath', hint: 'Slow the body before solving the task.' },
-        { id: 'support', label: 'Tell a trusted person what you need', hint: 'Connection can reduce isolation.' }
+        { _k: 'sel.emotions.case_you_have_a_big_presentation_to_strategyOptions_smallstep', id: 'smallstep', label: 'Choose one small preparation step', hint: 'A concrete next step gives the energy somewhere to go.' },
+        { _k: 'sel.emotions.case_you_have_a_big_presentation_to_strategyOptions_breathe', id: 'breathe', label: 'Use a longer-exhale breath', hint: 'Slow the body before solving the task.' },
+        { _k: 'sel.emotions.case_you_have_a_big_presentation_to_strategyOptions_support', id: 'support', label: 'Tell a trusted person what you need', hint: 'Connection can reduce isolation.' }
       ]
     },
-    {
+    { _k: 'sel.emotions.case_you_finish_a_difficult_project',
       situation: 'You finish a difficult project after nearly giving up.',
       clue: 'Notice the difference between quiet satisfaction and a very loud rush.',
       family: 'happy',
@@ -459,21 +459,21 @@ window.SelHub = window.SelHub || {
       intensity: 3,
       blend: 'proud',
       blendOptions: [
-        { id: 'proud', label: 'Proud' },
-        { id: 'relieved', label: 'Relieved' },
-        { id: 'accomplished', label: 'Accomplished' }
+        { _k: 'sel.emotions.case_you_finish_a_difficult_project_blendOptions_proud', id: 'proud', label: 'Proud' },
+        { _k: 'sel.emotions.case_you_finish_a_difficult_project_blendOptions_relieved', id: 'relieved', label: 'Relieved' },
+        { _k: 'sel.emotions.case_you_finish_a_difficult_project_blendOptions_accomplished', id: 'accomplished', label: 'Accomplished' }
       ],
       bodyBest: 'open',
       bodyOptions: [
-        { id: 'open', label: 'Open posture and easier breathing' },
-        { id: 'hot', label: 'Hot face and tight jaw' },
-        { id: 'flutter', label: 'Fluttery stomach' }
+        { _k: 'sel.emotions.case_you_finish_a_difficult_project_bodyOptions_open', id: 'open', label: 'Open posture and easier breathing' },
+        { _k: 'sel.emotions.case_you_finish_a_difficult_project_bodyOptions_hot', id: 'hot', label: 'Hot face and tight jaw' },
+        { _k: 'sel.emotions.case_you_finish_a_difficult_project_bodyOptions_flutter', id: 'flutter', label: 'Fluttery stomach' }
       ],
       strategyBest: 'reflect',
       strategyOptions: [
-        { id: 'reflect', label: 'Write down what helped you persist', hint: 'Turn the experience into a future resource.' },
-        { id: 'share', label: 'Share the accomplishment with someone supportive', hint: 'Let connection reinforce the learning.' },
-        { id: 'rest', label: 'Let yourself rest without immediately starting more', hint: 'Recovery is part of accomplishment.' }
+        { _k: 'sel.emotions.case_you_finish_a_difficult_project_strategyOptions_reflect', id: 'reflect', label: 'Write down what helped you persist', hint: 'Turn the experience into a future resource.' },
+        { _k: 'sel.emotions.case_you_finish_a_difficult_project_strategyOptions_share', id: 'share', label: 'Share the accomplishment with someone supportive', hint: 'Let connection reinforce the learning.' },
+        { _k: 'sel.emotions.case_you_finish_a_difficult_project_strategyOptions_rest', id: 'rest', label: 'Let yourself rest without immediately starting more', hint: 'Recovery is part of accomplishment.' }
       ]
     }
   ];
@@ -545,36 +545,36 @@ window.SelHub = window.SelHub || {
   // Two emotions combine into complex feelings
   // ══════════════════════════════════════════════════════════════
   var EMOTION_MIXES = [
-    { emotion1: 'happy', emotion2: 'scared', result: 'Nervous Excitement', emoji: '\uD83C\uDFA2', desc: { elementary: 'Like when you\'re about to ride a roller coaster \u2014 scared AND excited!', middle: 'That butterflies feeling before a big performance or trying something new.', high: 'Anticipatory arousal where threat and reward circuits activate simultaneously.' } },
-    { emotion1: 'sad', emotion2: 'happy', result: 'Nostalgia', emoji: '\uD83D\uDCF7', desc: { elementary: 'Missing something fun that happened \u2014 happy it happened, sad it\'s over.', middle: 'Looking at old photos and smiling while feeling a gentle ache.', high: 'Bittersweet affect \u2014 simultaneous appreciation and loss processing.' } },
-    { emotion1: 'angry', emotion2: 'sad', result: 'Frustration', emoji: '\uD83D\uDE24', desc: { elementary: 'When you try SO hard but it still doesn\'t work and you want to cry AND yell.', middle: 'Repeated effort without results creates a mix of grief and rage.', high: 'Goal-blockage distress \u2014 anger at the obstacle fused with grief over the desired outcome.' } },
-    { emotion1: 'scared', emotion2: 'angry', result: 'Defensiveness', emoji: '\uD83D\uDEE1\uFE0F', desc: { elementary: 'When you\'re scared so you act tough and push people away.', middle: 'Fear disguised as anger \u2014 protecting yourself by going on the offensive.', high: 'Fight response masking threat perception \u2014 aggression as a fear-management strategy.' } },
-    { emotion1: 'happy', emotion2: 'sad', result: 'Gratitude', emoji: '\uD83D\uDE4F', desc: { elementary: 'Feeling SO thankful it almost makes you cry happy tears!', middle: 'Deep appreciation that touches something tender inside.', high: 'Gratitude lives at the intersection of joy and awareness of impermanence.' } },
-    { emotion1: 'surprised', emotion2: 'happy', result: 'Delight', emoji: '\u2728', desc: { elementary: 'When something AMAZING happens that you didn\'t expect at all!', middle: 'Unexpected joy \u2014 the pleasant shock of something wonderful.', high: 'Positive violation of expectation \u2014 dopamine surge from unpredicted reward.' } },
-    { emotion1: 'angry', emotion2: 'disgusted', result: 'Contempt', emoji: '\uD83D\uDE12', desc: { elementary: 'Thinking someone is being really unfair AND really icky about it.', middle: 'Looking down on someone while feeling angry at their behavior.', high: 'Moral superiority fused with indignation \u2014 one of the most corrosive emotional blends.' } },
-    { emotion1: 'sad', emotion2: 'scared', result: 'Hopelessness', emoji: '\uD83C\uDF27\uFE0F', desc: { elementary: 'Feeling like nothing good is coming and you can\'t fix it.', middle: 'When sadness about now meets fear about the future.', high: 'Learned helplessness \u2014 grief over present circumstances amplified by anticipated future loss.' } },
-    { emotion1: 'happy', emotion2: 'angry', result: 'Passion', emoji: '\uD83D\uDD25', desc: { elementary: 'Caring SO much about something that it makes you both excited and fierce!', middle: 'That fire when you love something and fight hard to protect it.', high: 'High-arousal approach motivation \u2014 joy in purpose combined with fierce protectiveness.' } },
-    { emotion1: 'surprised', emotion2: 'scared', result: 'Shock', emoji: '\u26A1', desc: { elementary: 'When something happens SO fast your brain can\'t catch up!', middle: 'Overwhelmed by something sudden \u2014 frozen between fear and disbelief.', high: 'Acute stress response to unexpected threat \u2014 cognitive processing temporarily suspended.' } },
-    { emotion1: 'disgusted', emotion2: 'sad', result: 'Shame', emoji: '\uD83D\uDE14', desc: { elementary: 'Feeling really bad about yourself \u2014 like YOU are the problem.', middle: 'Self-directed disgust combined with sadness about who you are.', high: 'Self-evaluation failure \u2014 disgust turned inward, often accompanied by withdrawal motivation.' } },
-    { emotion1: 'scared', emotion2: 'sad', result: 'Vulnerability', emoji: '\uD83D\uDC94', desc: { elementary: 'Feeling open and easily hurt, like you have no armor on.', middle: 'Being emotionally exposed \u2014 scary, but also the only way to connect deeply.', high: 'Emotional exposure without guaranteed safety \u2014 the prerequisite for authentic connection.' } }
+    { _k: 'sel.emotions.mix_nervous_excitement', emotion1: 'happy', emotion2: 'scared', result: 'Nervous Excitement', emoji: '\uD83C\uDFA2', desc: { elementary: 'Like when you\'re about to ride a roller coaster \u2014 scared AND excited!', middle: 'That butterflies feeling before a big performance or trying something new.', high: 'Anticipatory arousal where threat and reward circuits activate simultaneously.' } },
+    { _k: 'sel.emotions.mix_nostalgia', emotion1: 'sad', emotion2: 'happy', result: 'Nostalgia', emoji: '\uD83D\uDCF7', desc: { elementary: 'Missing something fun that happened \u2014 happy it happened, sad it\'s over.', middle: 'Looking at old photos and smiling while feeling a gentle ache.', high: 'Bittersweet affect \u2014 simultaneous appreciation and loss processing.' } },
+    { _k: 'sel.emotions.mix_frustration', emotion1: 'angry', emotion2: 'sad', result: 'Frustration', emoji: '\uD83D\uDE24', desc: { elementary: 'When you try SO hard but it still doesn\'t work and you want to cry AND yell.', middle: 'Repeated effort without results creates a mix of grief and rage.', high: 'Goal-blockage distress \u2014 anger at the obstacle fused with grief over the desired outcome.' } },
+    { _k: 'sel.emotions.mix_defensiveness', emotion1: 'scared', emotion2: 'angry', result: 'Defensiveness', emoji: '\uD83D\uDEE1\uFE0F', desc: { elementary: 'When you\'re scared so you act tough and push people away.', middle: 'Fear disguised as anger \u2014 protecting yourself by going on the offensive.', high: 'Fight response masking threat perception \u2014 aggression as a fear-management strategy.' } },
+    { _k: 'sel.emotions.mix_gratitude', emotion1: 'happy', emotion2: 'sad', result: 'Gratitude', emoji: '\uD83D\uDE4F', desc: { elementary: 'Feeling SO thankful it almost makes you cry happy tears!', middle: 'Deep appreciation that touches something tender inside.', high: 'Gratitude lives at the intersection of joy and awareness of impermanence.' } },
+    { _k: 'sel.emotions.mix_delight', emotion1: 'surprised', emotion2: 'happy', result: 'Delight', emoji: '\u2728', desc: { elementary: 'When something AMAZING happens that you didn\'t expect at all!', middle: 'Unexpected joy \u2014 the pleasant shock of something wonderful.', high: 'Positive violation of expectation \u2014 dopamine surge from unpredicted reward.' } },
+    { _k: 'sel.emotions.mix_contempt', emotion1: 'angry', emotion2: 'disgusted', result: 'Contempt', emoji: '\uD83D\uDE12', desc: { elementary: 'Thinking someone is being really unfair AND really icky about it.', middle: 'Looking down on someone while feeling angry at their behavior.', high: 'Moral superiority fused with indignation \u2014 one of the most corrosive emotional blends.' } },
+    { _k: 'sel.emotions.mix_hopelessness', emotion1: 'sad', emotion2: 'scared', result: 'Hopelessness', emoji: '\uD83C\uDF27\uFE0F', desc: { elementary: 'Feeling like nothing good is coming and you can\'t fix it.', middle: 'When sadness about now meets fear about the future.', high: 'Learned helplessness \u2014 grief over present circumstances amplified by anticipated future loss.' } },
+    { _k: 'sel.emotions.mix_passion', emotion1: 'happy', emotion2: 'angry', result: 'Passion', emoji: '\uD83D\uDD25', desc: { elementary: 'Caring SO much about something that it makes you both excited and fierce!', middle: 'That fire when you love something and fight hard to protect it.', high: 'High-arousal approach motivation \u2014 joy in purpose combined with fierce protectiveness.' } },
+    { _k: 'sel.emotions.mix_shock', emotion1: 'surprised', emotion2: 'scared', result: 'Shock', emoji: '\u26A1', desc: { elementary: 'When something happens SO fast your brain can\'t catch up!', middle: 'Overwhelmed by something sudden \u2014 frozen between fear and disbelief.', high: 'Acute stress response to unexpected threat \u2014 cognitive processing temporarily suspended.' } },
+    { _k: 'sel.emotions.mix_shame', emotion1: 'disgusted', emotion2: 'sad', result: 'Shame', emoji: '\uD83D\uDE14', desc: { elementary: 'Feeling really bad about yourself \u2014 like YOU are the problem.', middle: 'Self-directed disgust combined with sadness about who you are.', high: 'Self-evaluation failure \u2014 disgust turned inward, often accompanied by withdrawal motivation.' } },
+    { _k: 'sel.emotions.mix_vulnerability', emotion1: 'scared', emotion2: 'sad', result: 'Vulnerability', emoji: '\uD83D\uDC94', desc: { elementary: 'Feeling open and easily hurt, like you have no armor on.', middle: 'Being emotionally exposed \u2014 scary, but also the only way to connect deeply.', high: 'Emotional exposure without guaranteed safety \u2014 the prerequisite for authentic connection.' } }
   ];
 
   // ══════════════════════════════════════════════════════════════
   // ── Body Language Challenges (harder Face Reader difficulty) ──
   // ══════════════════════════════════════════════════════════════
   var BODY_LANGUAGE_CHALLENGES = [
-    { emotion: 'happy', desc: 'Their eyes crinkle at the corners, shoulders are relaxed and open, leaning slightly forward.', options: ['happy', 'surprised', 'scared', 'angry'] },
-    { emotion: 'sad', desc: 'Shoulders slumped, looking down at the floor, speaking very quietly, moving slowly.', options: ['angry', 'sad', 'disgusted', 'scared'] },
-    { emotion: 'angry', desc: 'Jaw clenched tight, standing very rigid, arms crossed, speaking through gritted teeth.', options: ['scared', 'sad', 'angry', 'disgusted'] },
-    { emotion: 'scared', desc: 'Eyes darting around the room, body pressed against the wall, hands trembling slightly.', options: ['angry', 'surprised', 'sad', 'scared'] },
-    { emotion: 'surprised', desc: 'Mouth hanging open, eyebrows raised high, stepped backward suddenly, hand on chest.', options: ['surprised', 'scared', 'happy', 'angry'] },
-    { emotion: 'disgusted', desc: 'Nose wrinkled, upper lip curled, leaning away, turning their head to the side.', options: ['sad', 'disgusted', 'angry', 'surprised'] },
-    { emotion: 'nervous', desc: 'Fidgeting with their hands, bouncing their leg, checking the clock repeatedly, biting their lip.', options: ['happy', 'nervous', 'angry', 'sad'] },
-    { emotion: 'embarrassed', desc: 'Face turning red, avoiding eye contact, covering their face with their hand, nervous laugh.', options: ['angry', 'scared', 'embarrassed', 'sad'] },
-    { emotion: 'proud', desc: 'Standing tall, chin slightly raised, broad smile, making eye contact with everyone.', options: ['proud', 'surprised', 'angry', 'happy'] },
-    { emotion: 'frustrated', desc: 'Sighing repeatedly, running hands through hair, pushing things around on the desk, muttering.', options: ['sad', 'scared', 'frustrated', 'disgusted'] },
-    { emotion: 'lonely', desc: 'Sitting apart from the group, watching others interact, hugging themselves, quiet and still.', options: ['angry', 'lonely', 'disgusted', 'surprised'] },
-    { emotion: 'excited', desc: 'Bouncing on their toes, talking fast, gesturing wildly, can\'t sit still, voice getting louder.', options: ['scared', 'angry', 'surprised', 'excited'] }
+    { _k: 'sel.emotions.bodylang_happy', emotion: 'happy', desc: 'Their eyes crinkle at the corners, shoulders are relaxed and open, leaning slightly forward.', options: ['happy', 'surprised', 'scared', 'angry'] },
+    { _k: 'sel.emotions.bodylang_sad', emotion: 'sad', desc: 'Shoulders slumped, looking down at the floor, speaking very quietly, moving slowly.', options: ['angry', 'sad', 'disgusted', 'scared'] },
+    { _k: 'sel.emotions.bodylang_angry', emotion: 'angry', desc: 'Jaw clenched tight, standing very rigid, arms crossed, speaking through gritted teeth.', options: ['scared', 'sad', 'angry', 'disgusted'] },
+    { _k: 'sel.emotions.bodylang_scared', emotion: 'scared', desc: 'Eyes darting around the room, body pressed against the wall, hands trembling slightly.', options: ['angry', 'surprised', 'sad', 'scared'] },
+    { _k: 'sel.emotions.bodylang_surprised', emotion: 'surprised', desc: 'Mouth hanging open, eyebrows raised high, stepped backward suddenly, hand on chest.', options: ['surprised', 'scared', 'happy', 'angry'] },
+    { _k: 'sel.emotions.bodylang_disgusted', emotion: 'disgusted', desc: 'Nose wrinkled, upper lip curled, leaning away, turning their head to the side.', options: ['sad', 'disgusted', 'angry', 'surprised'] },
+    { _k: 'sel.emotions.bodylang_nervous', emotion: 'nervous', desc: 'Fidgeting with their hands, bouncing their leg, checking the clock repeatedly, biting their lip.', options: ['happy', 'nervous', 'angry', 'sad'] },
+    { _k: 'sel.emotions.bodylang_embarrassed', emotion: 'embarrassed', desc: 'Face turning red, avoiding eye contact, covering their face with their hand, nervous laugh.', options: ['angry', 'scared', 'embarrassed', 'sad'] },
+    { _k: 'sel.emotions.bodylang_proud', emotion: 'proud', desc: 'Standing tall, chin slightly raised, broad smile, making eye contact with everyone.', options: ['proud', 'surprised', 'angry', 'happy'] },
+    { _k: 'sel.emotions.bodylang_frustrated', emotion: 'frustrated', desc: 'Sighing repeatedly, running hands through hair, pushing things around on the desk, muttering.', options: ['sad', 'scared', 'frustrated', 'disgusted'] },
+    { _k: 'sel.emotions.bodylang_lonely', emotion: 'lonely', desc: 'Sitting apart from the group, watching others interact, hugging themselves, quiet and still.', options: ['angry', 'lonely', 'disgusted', 'surprised'] },
+    { _k: 'sel.emotions.bodylang_excited', emotion: 'excited', desc: 'Bouncing on their toes, talking fast, gesturing wildly, can\'t sit still, voice getting louder.', options: ['scared', 'angry', 'surprised', 'excited'] }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -17984,6 +17984,15 @@ var EMOTION_JOURNAL_TEMPLATES = [
         if (fn) { try { value = fn(key, fallback); } catch (e) { value = null; } }
         return (value == null) ? (fallback != null ? fallback : key) : value;
       };
+      // The face and body-language games use emotion ids as BOTH the
+      // answer key (opt === challenge.emotion) and the button text. The ids
+      // must stay English for the comparison, so only the DISPLAY is
+      // translated, here.
+      var _emoWord = function (id) {
+        if (!id) return id;
+        var label = String(id).charAt(0).toUpperCase() + String(id).slice(1);
+        return __alloT('sel.emotions.word_' + id, label);
+      };
       var React = ctx.React;
       var h = React.createElement;
       var Sparkles = ctx.icons.Sparkles;
@@ -19082,7 +19091,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                       },
                       onMouseEnter: function(e) { e.currentTarget.style.borderColor = '#3b82f6'; },
                       onMouseLeave: function(e) { e.currentTarget.style.borderColor = P.border; }
-                    }, opt);
+                    }, _emoWord(opt));
                   })
                 )
               : h('div', null,
@@ -19099,7 +19108,8 @@ var EMOTION_JOURNAL_TEMPLATES = [
                         : (band === 'elementary' ? 'Not quite!' : 'Not this time')
                     ),
                     faceRevealed === 'wrong' && h('p', { style: { fontSize: 13, color: P.textMuted } },
-                      'This face shows: ' + challenge.emotion
+                      __alloT('sel.emotions.face_answer_is', 'This face shows: %s')
+                        .replace('%s', _emoWord(challenge.emotion))
                     )
                   ),
                   h('button', { 'aria-label': 'Next Face',
@@ -19131,7 +19141,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
             // Description card
             h('div', { style: { padding: 24, borderRadius: 14, background: P.bg, border: '1px solid #f59e0b44', marginBottom: 20 } },
               h('p', { style: { fontSize: 10, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Body Language Clue'),
-              h('p', { style: { fontSize: 15, color: P.text, lineHeight: 1.6, fontStyle: 'italic' } }, '"' + blChallenge.desc + '"')
+              h('p', { style: { fontSize: 15, color: P.text, lineHeight: 1.6, fontStyle: 'italic' } }, '"' + __alloT(blChallenge._k + '_desc', blChallenge.desc) + '"')
             ),
 
             // Options
@@ -19160,7 +19170,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                       },
                       onMouseEnter: function(e) { e.currentTarget.style.borderColor = '#f59e0b'; },
                       onMouseLeave: function(e) { e.currentTarget.style.borderColor = P.border; }
-                    }, opt);
+                    }, _emoWord(opt));
                   })
                 )
               : h('div', null,
@@ -19175,7 +19185,8 @@ var EMOTION_JOURNAL_TEMPLATES = [
                       bodyLangRevealed === 'correct' ? '\u2705 Correct!' : 'Not this time'
                     ),
                     bodyLangRevealed !== 'correct' && h('p', { style: { fontSize: 13, color: P.textMuted } },
-                      'The answer was: ' + blChallenge.emotion
+                      __alloT('sel.emotions.bodylang_answer_was', 'The answer was: %s')
+                        .replace('%s', _emoWord(blChallenge.emotion))
                     )
                   ),
                   h('button', { 'aria-label': 'Next Clue',
@@ -19523,9 +19534,13 @@ var EMOTION_JOURNAL_TEMPLATES = [
         var bodyOptions = currentDetective.bodyOptions;
         var strategyOptions = currentDetective.strategyOptions;
         var familyLabel = (EMOTION_FAMILIES.find(function(family) { return family.id === detectiveFamily; }) || {}).label || 'not chosen';
-        var blendLabel = (blendOptions.find(function(option) { return option.id === detectiveBlend; }) || {}).label || 'not chosen';
-        var bodyLabel = detectiveBodyChoice ? detectiveBodyChoice.label : 'not chosen';
-        var strategyLabel = detectiveStrategyChoice ? detectiveStrategyChoice.label : 'not chosen';
+        var _optLabel = function (option) {
+          return option && option._k ? __alloT(option._k + '_label', option.label) : null;
+        };
+        var _notChosen = __alloT('sel.emotions.case_not_chosen', 'not chosen');
+        var blendLabel = _optLabel(blendOptions.find(function(option) { return option.id === detectiveBlend; })) || _notChosen;
+        var bodyLabel = _optLabel(detectiveBodyChoice) || _notChosen;
+        var strategyLabel = _optLabel(detectiveStrategyChoice) || _notChosen;
 
         detectiveContent = h('section', {
           role: 'region',
@@ -19570,13 +19585,14 @@ var EMOTION_JOURNAL_TEMPLATES = [
             style: { padding: 14, borderRadius: 12, background: P.card, border: '1px solid ' + P.border, marginBottom: 12 }
           },
             h('div', { style: { color: '#c4b5fd', fontSize: 10, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 } }, 'Case ' + ((detectiveIdx % detectiveCases.length) + 1) + ' of ' + detectiveCases.length),
-            h('p', { style: { margin: 0, color: P.text, fontSize: 17, lineHeight: 1.4, fontWeight: 800 } }, currentDetective.situation),
-            h('p', { style: { margin: '7px 0 0', color: P.textMuted, fontSize: 12, lineHeight: 1.45, fontStyle: 'italic' } }, 'Clue: ' + currentDetective.clue),
-            detectiveRadioGroup('1. Pick the broad emotion family', 'Choose an emotion family', familyOptions, detectiveFamily, 'detectiveFamily', function(option) { return option.label; }),
-            detectiveRadioGroup('2. Estimate the intensity', 'Choose an intensity from 1 to 5', intensityOptions, detectiveIntensity, 'detectiveIntensity', function(option) { return option.label; }),
-            detectiveRadioGroup('3. Add a possible blend', 'Choose a possible blend', blendOptions, detectiveBlend, 'detectiveBlend', function(option) { return option.label; }),
-            detectiveRadioGroup('4. Notice a body clue', 'Choose a body clue', bodyOptions, detectiveBody, 'detectiveBody', function(option) { return option.label; }),
-            detectiveRadioGroup('5. Choose a helpful next step', 'Choose a strategy', strategyOptions, detectiveStrategy, 'detectiveStrategy', function(option) { return option.label; }),
+            h('p', { style: { margin: 0, color: P.text, fontSize: 17, lineHeight: 1.4, fontWeight: 800 } }, __alloT(currentDetective._k + '_situation', currentDetective.situation)),
+            h('p', { style: { margin: '7px 0 0', color: P.textMuted, fontSize: 12, lineHeight: 1.45, fontStyle: 'italic' } }, __alloT('sel.emotions.case_clue_prefix', 'Clue: %s')
+              .replace('%s', __alloT(currentDetective._k + '_clue', currentDetective.clue))),
+            detectiveRadioGroup('1. Pick the broad emotion family', 'Choose an emotion family', familyOptions, detectiveFamily, 'detectiveFamily', function(option) { return option._k ? __alloT(option._k + '_label', option.label) : option.label; }),
+            detectiveRadioGroup('2. Estimate the intensity', 'Choose an intensity from 1 to 5', intensityOptions, detectiveIntensity, 'detectiveIntensity', function(option) { return option._k ? __alloT(option._k + '_label', option.label) : option.label; }),
+            detectiveRadioGroup('3. Add a possible blend', 'Choose a possible blend', blendOptions, detectiveBlend, 'detectiveBlend', function(option) { return option._k ? __alloT(option._k + '_label', option.label) : option.label; }),
+            detectiveRadioGroup('4. Notice a body clue', 'Choose a body clue', bodyOptions, detectiveBody, 'detectiveBody', function(option) { return option._k ? __alloT(option._k + '_label', option.label) : option.label; }),
+            detectiveRadioGroup('5. Choose a helpful next step', 'Choose a strategy', strategyOptions, detectiveStrategy, 'detectiveStrategy', function(option) { return option._k ? __alloT(option._k + '_label', option.label) : option.label; }),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 } },
               h('button', {
                 type: 'button',
@@ -19600,7 +19616,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
             style: { padding: 14, borderRadius: 12, background: '#8b5cf611', border: '1px solid #8b5cf655', marginBottom: 12 }
           },
             h('h3', { style: { margin: 0, color: '#c4b5fd', fontSize: 15, fontWeight: 900 } }, 'Case debrief: ' + detectivePoints + ' of 5 guide points'),
-            h('p', { style: { margin: '7px 0 0', color: P.text2, fontSize: 12, lineHeight: 1.5 } }, currentDetective.familyReason),
+            h('p', { style: { margin: '7px 0 0', color: P.text2, fontSize: 12, lineHeight: 1.5 } }, __alloT(currentDetective._k + '_familyReason', currentDetective.familyReason)),
             h('p', { style: { margin: '7px 0 0', color: P.text2, fontSize: 12, lineHeight: 1.5 } },
               detectiveFamilyMatch ? 'Your family read matches the guide. ' : 'Your family read is a valid alternative. ',
               detectiveIntensityMatch ? 'Your intensity is close to the guide. ' : 'Intensity depends on context and the person. ',
@@ -20069,7 +20085,8 @@ var EMOTION_JOURNAL_TEMPLATES = [
           mixResult && mixResult !== 'custom' && h('div', { style: { padding: 24, borderRadius: 16, background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '2px solid #8b5cf666', textAlign: 'center', marginBottom: 20 } },
             h('div', { style: { fontSize: 48, marginBottom: 8 } }, mixResult.emoji),
             h('p', { style: { fontSize: 10, color: ST('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4, fontWeight: 700 } }, 'Emotion Mix Result'),
-            h('h4', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 22 } }, mixResult.result),
+            h('h4', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 22 } },
+              mixResult._k ? __alloT(mixResult._k + '_result', mixResult.result) : mixResult.result),
             (function() {
               var fam1 = EMOTION_FAMILIES.find(function(f) { return f.id === mixEmotion1; });
               var fam2 = EMOTION_FAMILIES.find(function(f) { return f.id === mixEmotion2; });
@@ -20077,7 +20094,15 @@ var EMOTION_JOURNAL_TEMPLATES = [
                 (fam1 ? fam1.emoji + ' ' + fam1.label : mixEmotion1) + ' + ' + (fam2 ? fam2.emoji + ' ' + fam2.label : mixEmotion2)
               );
             })(),
-            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.6 } }, mixResult.desc[band]),
+            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.6 } },
+              (function() {
+                // mixResult is persisted in toolData, so desc may be missing
+                // or not an object at all.
+                var descs = (mixResult.desc && typeof mixResult.desc === 'object') ? mixResult.desc : {};
+                var text = descs[band];
+                if (typeof text !== 'string') return null;
+                return mixResult._k ? __alloT(mixResult._k + '_desc_' + band, text) : text;
+              })()),
             h('button', { 'aria-label': 'Try Another Mix',
               onClick: function() { upd({ mixEmotion1: null, mixEmotion2: null, mixResult: null, mixAiCustom: null }); if (soundEnabled) sfxClick(); },
               style: { marginTop: 16, padding: '10px 24px', borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.15)', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
