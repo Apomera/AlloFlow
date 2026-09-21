@@ -3355,7 +3355,12 @@
       // phones, embedded narrow panels and short laptops, where the expanded
       // drawer would take over the first screen. An explicit choice always wins.
       var nkOpen = typeof d.nkOpen === 'boolean' ? d.nkOpen : nkAutoOpen;
-      var nkQuery = (d.nkQuery || '').trim().toLowerCase();
+      // Only a real string may be searched. `(d.nkQuery || '').trim()` throws
+      // for a saved number, object, array or true, and this runs in the render
+      // path, so a corrupted save blanked the entire lab instead of ignoring
+      // one bad field. Anything that is not a string searches for nothing.
+      var nkQueryRaw = typeof d.nkQuery === 'string' ? d.nkQuery : '';
+      var nkQuery = nkQueryRaw.trim().toLowerCase();
       var nkGroup = d.nkGroup || 'all';
       var nkPathId = d.nkPath || null;
       var nkPath = nkPathId ? NK_PATHS.filter(function (p) { return p.id === nkPathId; })[0] : null;
@@ -4080,7 +4085,7 @@
           h('div', { className: 'nk-index-secondary' },
             h('label', { htmlFor: 'nk-topic-search', className: 'sr-only' }, 'Search topics'),
             h('input', {
-              id: 'nk-topic-search', type: 'search', value: d.nkQuery || '',
+              id: 'nk-topic-search', type: 'search', value: nkQueryRaw,
               placeholder: 'Search topics…',
               'aria-label': 'Search the ' + NK_SECTIONS.length + ' topics by name or keyword',
               onChange: function (e) { upd({ nkQuery: e.target.value, nkPath: null }); },
@@ -4293,7 +4298,7 @@
           h('div', { className: 'nk-topic-jumps flex flex-wrap gap-1 mt-1.5' },
             nkVisible.length === 0
               ? h('span', { className: 'text-[0.6875rem]', style: { color: isDark ? '#cbd5e1' : '#475569' } },
-                  'No topic matches “' + (d.nkQuery || '') + '”.')
+                  'No topic matches “' + nkQueryRaw + '”.')
               : nkVisible.map(function (s, i) {
                   var opened = !!(nkPath && nkActiveRouteProgress.seen.indexOf(s.id) !== -1);
                   var jumpLabel = nkPath
