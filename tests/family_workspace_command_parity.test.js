@@ -22,13 +22,19 @@
 // Leadership and Educator hubs, rosters, class analytics, live sessions and the
 // submission inbox all address a class of other people's children.
 //
-// DELIBERATELY NOT WIDENED: open_ai_settings and use_gemini_canvas. They meet
-// both bars -- the AI setup modal auto-prompts on desktop startup regardless of
-// role and is gated on _isCanvasEnv, never on role -- but an existing assertion
-// in tests/allo_commands.test.js pins them OUT of every learner-facing mode.
-// Widening them would have required overwriting another session's explicit
-// decision, so they are left alone pending a call from the user. The narrower
-// change below stands on its own.
+// open_ai_settings and use_gemini_canvas were held back on the first pass: an
+// assertion in tests/allo_commands.test.js pinned them out of every
+// learner-facing mode, and overwriting another session's explicit decision
+// needed more than my own opinion. Resolved since. That test grouped four
+// contexts that resolve to THREE audiences -- both student contexts map to
+// 'student', but isIndependentMode and isParentMode map to themselves -- so it
+// was using open_ai_settings as an EXAMPLE of a teacher-only command rather
+// than judging AI setup specifically. The real boundary it protects is student
+// entry: _alloHasAnyStudentEntry (AlloFlowANTI.txt) withholds the teacher's
+// apiKey from anyone arriving via allo_join / allo_mb / an AlloPack link. A
+// parent or independent learner chose their role in onboarding, is on their own
+// device and brings their own key. That assertion is now scoped to the two
+// student contexts it was actually about, and both commands are widened here.
 
 import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -53,6 +59,8 @@ beforeAll(() => {
 // Workspace commands an author needs regardless of which kind of author they are.
 const WORKSPACE_COMMANDS = [
   'open_project_settings',
+  'open_ai_settings',
+  'use_gemini_canvas',
   'open_udl_guide',
   'open_accessibility_lab',
   'open_community_catalog',

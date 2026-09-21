@@ -1073,7 +1073,7 @@ function buildAlloCommands(ctx, opts = {}) {
     // every capability is host-supplied and `when`-guarded, so a host that
     // lacks the seam never lists a command that would report success and do
     // nothing (the silent-announcer class).
-    { id: "use_gemini_canvas", icon: "\u{1F680}", roles: "teacher", when: (c) => typeof c.setShowAIBackendModal === "function", label: t("cmd.use_gemini_canvas", "Use AlloFlow inside Gemini Canvas"), aliases: ["gemini canvas", "use canvas", "canvas setup", "free ai", "ai without a key", "no api key"], hint: t("cmd.use_gemini_canvas_hint", "Open AI setup, where the no-setup Canvas option leads"), run: (c) => {
+    { id: "use_gemini_canvas", icon: "\u{1F680}", roles: ["teacher", "parent", "independent"], when: (c) => typeof c.setShowAIBackendModal === "function", label: t("cmd.use_gemini_canvas", "Use AlloFlow inside Gemini Canvas"), aliases: ["gemini canvas", "use canvas", "canvas setup", "free ai", "ai without a key", "no api key"], hint: t("cmd.use_gemini_canvas_hint", "Open AI setup, where the no-setup Canvas option leads"), run: (c) => {
       c.setShowAIBackendModal(true);
       return t("cmd.use_gemini_canvas_done", "AI setup opened. The first card explains using AlloFlow inside Gemini Canvas with no setup.");
     } },
@@ -1162,7 +1162,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.setShowExportMenu(true);
       return t("cmd.open_export_menu_done", "Export menu opened.");
     } },
-    { id: "open_ai_settings", icon: "\u{1F916}", roles: "teacher", label: t("cmd.open_ai_settings", "Open AI settings"), aliases: ["ai settings", "ai backend", "api key", "model settings", "configure Gemini voice", "Gemini cloud services key", "forget Gemini backend key"], hint: t("cmd.open_ai_settings_hint", "Configure the AI backend"), run: (c) => {
+    { id: "open_ai_settings", icon: "\u{1F916}", roles: ["teacher", "parent", "independent"], label: t("cmd.open_ai_settings", "Open AI settings"), aliases: ["ai settings", "ai backend", "api key", "model settings", "configure Gemini voice", "Gemini cloud services key", "forget Gemini backend key"], hint: t("cmd.open_ai_settings_hint", "Configure the AI backend"), run: (c) => {
       c.setShowAIBackendModal(true);
       return t("cmd.open_ai_settings_done", "AI settings opened.");
     } },

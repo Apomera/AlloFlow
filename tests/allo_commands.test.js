@@ -226,17 +226,52 @@ describe('buildAlloCommands (role + when filtering)', () => {
     expect(got).toContain('open_learning_hub'); // roles: 'all'
   });
   it('excludes teacher-only commands in every learner-facing mode', () => {
-    const contexts = [
+    // These four contexts resolve to THREE audiences, not one: both student
+    // contexts -> 'student', but isIndependentMode -> 'independent' and
+    // isParentMode -> 'parent'. open_ai_settings was pinned out of all four,
+    // which conflated a student on a shared link with an adult who chose the
+    // parent or independent role during onboarding and owns the API key.
+    // Student contexts keep the full exclusion.
+    const studentContexts = [
       { isTeacherMode: false },
       { isStudentLinkMode: true, isTeacherMode: false },
-      { isIndependentMode: true },
-      { isParentMode: true },
     ];
-    for (const ctx of contexts) {
+    for (const ctx of studentContexts) {
       const got = ids(ctx);
       expect(got).not.toContain('open_educator_hub');
       expect(got).not.toContain('open_ai_settings');
       expect(got).toContain('open_learning_hub');
+    }
+    // Author roles: school-staff surfaces stay out, the learning hub stays in.
+    for (const ctx of [{ isIndependentMode: true }, { isParentMode: true }]) {
+      const got = ids(ctx);
+      expect(got).not.toContain('open_educator_hub');
+      expect(got).toContain('open_learning_hub');
+    }
+  });
+
+  it('lets the author roles reach AI setup, because they own the key', () => {
+    // A student arriving through a link is deliberately denied the teacher's
+    // apiKey (_alloHasAnyStudentEntry in AlloFlowANTI.txt gates it on URL
+    // params: allo_join / allo_mb / an AlloPack link). A parent or independent
+    // learner picked their role in onboarding, is on their own device and
+    // supplies their own key -- and the AI setup modal already auto-prompts for
+    // them on desktop startup, gated on _isCanvasEnv, never on role. So hiding
+    // the command hid the spoken route to a door already open to them.
+    // use_gemini_canvas gates on `when: typeof c.setShowAIBackendModal ===
+    // 'function'`, so supply it: otherwise the command is hidden for a reason
+    // unrelated to role, and the student-side negatives below would pass
+    // vacuously instead of failing on audience.
+    const withAiHost = (extra) => ({ setShowAIBackendModal: () => {}, ...extra });
+    for (const ctx of [withAiHost({ isIndependentMode: true }), withAiHost({ isParentMode: true })]) {
+      const got = ids(ctx);
+      expect(got).toContain('open_ai_settings');
+      expect(got).toContain('use_gemini_canvas');
+    }
+    for (const ctx of [withAiHost({ isTeacherMode: false }), withAiHost({ isStudentLinkMode: true, isTeacherMode: false })]) {
+      const got = ids(ctx);
+      expect(got).not.toContain('open_ai_settings');
+      expect(got).not.toContain('use_gemini_canvas');
     }
   });
 
