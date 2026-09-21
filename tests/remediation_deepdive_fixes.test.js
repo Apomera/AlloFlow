@@ -157,7 +157,9 @@ describe('the breaker reset clears every storm signal', () => {
   }, 60000);
 
   it('the reset clears the field, not just the streaks', () => {
-    const fn = dp.slice(dp.indexOf('var _resetGeminiBreaker = function()'));
+    // Arity-agnostic: the reset later took an extraRequestPacing argument, which broke a
+    // pin on the empty parameter list without changing anything this test asserts.
+    const fn = dp.slice(dp.indexOf('var _resetGeminiBreaker = function('));
     const body = fn.slice(0, fn.indexOf('_usesLocalTextBackend()'));
     expect(body).toContain('_geminiLastStormTripAt = 0;');
     expect(body).toContain('_geminiOffRouteOkStreak = 0;');

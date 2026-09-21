@@ -23,7 +23,10 @@ function boundResult() {
   });
   return result;
 }
-const live = result => window.AlloModules.DocPipelineModule.isLiveVerificationHtmlBound(result, result.accessibleHtml);
+// AlloModules.DocPipelineModule is the duplicate-load guard (a boolean), never a namespace.
+// The static helpers hang off createDocPipeline; reading them off the guard threw
+// "is not a function" and failed all five cases here for one reason.
+const live = result => window.AlloModules.createDocPipeline.isLiveVerificationHtmlBound(result, result.accessibleHtml);
 describe('human-review metadata updates', () => {
   it('retains exact live proof and canonical verification while replacing only the attestation map', () => {
     const previous = boundResult(); const before = Object.getOwnPropertyDescriptors(previous);

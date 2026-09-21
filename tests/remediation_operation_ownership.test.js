@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 const read = (name) => readFileSync(resolve(process.cwd(), name), 'utf8');
 const view = read('view_pdf_audit_source.jsx');
 const host = read('AlloFlowANTI.txt');
+const hostHandlers = read('host_handlers_source.jsx');
 const pipeline = read('doc_pipeline_source.jsx');
 
 const extract = (source, startNeedle, endNeedle) => {
@@ -49,28 +50,28 @@ const makeCommitGate = ({
   commitPdfFixResultIfCurrent,
   addToast = vi.fn(),
 }) => {
+  // The ANTI extraction moved this function into host_handlers_source.jsx and left a
+  // one-line delegator behind in ANTI, so reading it out of ANTI could no longer find a
+  // body. It also now takes every collaborator off the host-handlers dependency object
+  // `__d` rather than closing over them, so the harness supplies one instead of six
+  // separate parameters. Same function, same contract — only where it lives changed.
   const body = extract(
-    host,
-    '  const commitOrRevertPdfFix = (prev, candidate, extras, label, expectedOwner) => {',
-    '  const [liveChunkStream, setLiveChunkStream]',
+    hostHandlers,
+    'const commitOrRevertPdfFix = (prev, candidate, extras, label, expectedOwner) => {',
+    'function _playReadThisPageText(',
   );
   const commit = new Function(
-    'pdfDocumentSelectionEpochRef',
-    'commitPdfFixResultIfCurrent',
-    'blendAiAxe',
-    'addToast',
-    't',
-    'PDF_REGRESSION_TOLERANCE',
+    '__d',
     `${body}
     return commitOrRevertPdfFix;`,
-  )(
-    epochRef,
+  )({
+    pdfDocumentSelectionEpochRef: epochRef,
     commitPdfFixResultIfCurrent,
-    (ai, axe) => (ai == null ? axe : axe == null ? ai : Math.min(ai, axe)),
+    blendAiAxe: (ai, axe) => (ai == null ? axe : axe == null ? ai : Math.min(ai, axe)),
     addToast,
-    () => '',
-    5,
-  );
+    t: () => '',
+    PDF_REGRESSION_TOLERANCE: 5,
+  });
   return { commit, addToast };
 };
 
