@@ -12666,7 +12666,90 @@ var evidenceRoute = [
 
       function renderSites() {
         var cards = SITES.map(function (s) { return panel([el('div', { key: 'n', style: { fontWeight: 800, fontSize: 14 } }, '📍 ' + s.name), el('div', { key: 'w', style: { fontSize: 12, color: T.soft, marginBottom: 6 } }, s.where + '  ·  ' + s.when), el('div', { key: 'f', style: { fontSize: 12.5, marginBottom: 4 } }, el('strong', { style: { color: T.text } }, 'Famous for: '), s.famous), el('div', { key: 'no', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, __alloT('stem.dinolab.' + (s.id) + '_note', s.note))], { key: s.id }); });
-        return el('div', null, sectionTitle('🗺️', 'Famous fossil sites', 'Certain rock formations, laid down in the right place at the right time, hold most of what we know.'), el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 } }, cards));
+        var siteQ = SITES[modIndex(d.siteIdx, SITES.length)];
+        var sitePicked = d.sitePicked == null ? null : String(d.sitePicked);
+        var siteAnswered = !!d.siteAnswered;
+        var siteBase = modIndex(d.siteIdx, SITES.length);
+        var siteOthers = SITES.filter(function (x) { return x.id !== siteQ.id; });
+        var siteOptions = [siteQ];
+        for (var so = 0; so < siteOthers.length && siteOptions.length < 4; so++) {
+          var cand = siteOthers[(siteBase * 7 + so * 3) % siteOthers.length];
+          if (siteOptions.indexOf(cand) === -1) siteOptions.push(cand);
+        }
+        siteOptions.sort(function (a, b) { return a.name < b.name ? -1 : 1; });
+        // The brief names one animal the site is known for. Finding it is the
+        // whole job: the right rock, of the right age, in the right place.
+        var siteTarget = String(siteQ.famous || '').split(',')[0].trim();
+        function sitePick(id) {
+          if (siteAnswered) return;
+          upd({ sitePicked: id, siteAnswered: true });
+        }
+        function siteNext() {
+          upd({
+            siteIdx: (siteBase + 1) % SITES.length,
+            sitePicked: null,
+            siteAnswered: false
+          });
+        }
+        var siteChallenge = panel([
+          el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 6 } },
+            '⛏️ Where would you dig?'),
+          el('p', { key: 'p', style: { margin: '0 0 10px', color: T.soft, fontSize: 13, lineHeight: 1.5 } },
+            'A formation only holds what was living there when its rock was laid down. Pick the one worth the field season.'),
+          el('div', {
+            key: 'q', role: 'status',
+            style: {
+              padding: 10, borderRadius: 8, background: T.deeper,
+              border: '1px solid ' + T.border, marginBottom: 10,
+              fontSize: 14, color: T.text, lineHeight: 1.5
+            }
+          }, 'Your team wants to study ', el('strong', null, siteTarget), '. Which formation do you apply to dig?'),
+          el('div', {
+            key: 'c',
+            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 8 }
+          }, siteOptions.map(function (st) {
+            var isRight = st.id === siteQ.id;
+            var isPicked = sitePicked === st.id;
+            var bg = T.panel;
+            if (siteAnswered && isRight) bg = 'rgba(34,197,94,0.28)';
+            else if (siteAnswered && isPicked) bg = 'rgba(245,158,11,0.28)';
+            return el('button', {
+              key: st.id, type: 'button',
+              'aria-disabled': siteAnswered ? 'true' : undefined,
+              'aria-label': st.name + ', ' + st.when + (siteAnswered
+                ? (isRight ? '. Correct answer.' : (isPicked ? '. You chose this. Wrong age or place.' : ''))
+                : '. Choose this formation.'),
+              onClick: function () { sitePick(st.id); },
+              style: {
+                minHeight: 44, padding: '9px 10px', borderRadius: 8,
+                border: '1px solid ' + (siteAnswered && isRight ? 'rgba(34,197,94,0.75)' : T.border),
+                background: bg, color: T.text, fontSize: 13, fontWeight: 700,
+                cursor: siteAnswered ? 'default' : 'pointer', textAlign: 'left'
+              }
+            },
+              el('div', null, st.name),
+              el('div', { style: { fontWeight: 500, fontSize: 11, color: T.soft, marginTop: 2 } }, st.when));
+          })),
+          siteAnswered ? el('div', {
+            key: 'f', role: 'status',
+            style: { marginTop: 10, fontSize: 13, color: T.soft, lineHeight: 1.55 }
+          },
+            (sitePicked === siteQ.id ? '✓ ' : '→ ') + siteQ.name + ', ' + siteQ.where + '. ',
+            siteQ.when + '. Known for ' + siteQ.famous + '.',
+            el('div', { style: { marginTop: 8 } },
+              el('button', {
+                type: 'button', onClick: siteNext,
+                style: {
+                  minHeight: 44, padding: '9px 14px', borderRadius: 8,
+                  border: '1px solid ' + T.border, background: T.deeper,
+                  color: T.text, fontSize: 13, fontWeight: 700, cursor: 'pointer'
+                }
+              }, 'Next brief →'))
+          ) : null
+        ], { marginBottom: 12 });
+
+        return el('div', null, sectionTitle('🗺️', 'Famous fossil sites', 'Certain rock formations, laid down in the right place at the right time, hold most of what we know.'),
+          siteChallenge, el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 } }, cards));
       }
 
       function renderRecords() {

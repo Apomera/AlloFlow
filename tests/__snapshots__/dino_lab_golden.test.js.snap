@@ -5664,6 +5664,29 @@ exports[`Dino Lab — render per tab (golden master) > renders the sites tab (sn
 <div style="font-size:18px;font-weight:800">🗺️ Famous fossil sites</div>
 <div style="font-size:12.5px;color:var(--allo-stem-text-soft, #94a3b8);margin-top:2px">Certain rock formations, laid down in the right place at the right time, hold most of what we know.</div>
 </div>
+<div style="background:var(--allo-stem-panel, #1e293b);border:1px solid var(--allo-stem-border, #334155);border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,0.28);padding:14px;color:var(--allo-stem-text, #f1f5f9);margin-bottom:12px">
+<div style="font-weight:800;font-size:14px;margin-bottom:6px">⛏️ Where would you dig?</div>
+<p style="margin:0 0 10px;color:var(--allo-stem-text-soft, #94a3b8);font-size:13px;line-height:1.5">A formation only holds what was living there when its rock was laid down. Pick the one worth the field season.</p>
+<div role="status" style="padding:10px;border-radius:8px;background:var(--allo-stem-deeper, #0b1220);border:1px solid var(--allo-stem-border, #334155);margin-bottom:10px;font-size:14px;color:var(--allo-stem-text, #f1f5f9);line-height:1.5">Your team wants to study <strong>T. rex</strong>. Which formation do you apply to dig?</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));gap:8px">
+<button type="button" aria-label="Hell Creek Formation, latest Cretaceous, ~68 to 66 mya. Choose this formation." style="min-height:44px;padding:9px 10px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-panel, #1e293b);color:var(--allo-stem-text, #f1f5f9);font-size:13px;font-weight:700;cursor:pointer;text-align:left">
+<div>Hell Creek Formation</div>
+<div style="font-weight:500;font-size:11px;color:var(--allo-stem-text-soft, #94a3b8);margin-top:2px">latest Cretaceous, ~68 to 66 mya</div>
+</button>
+<button type="button" aria-label="Kem Kem Beds, mid-Cretaceous, ~99 mya. Choose this formation." style="min-height:44px;padding:9px 10px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-panel, #1e293b);color:var(--allo-stem-text, #f1f5f9);font-size:13px;font-weight:700;cursor:pointer;text-align:left">
+<div>Kem Kem Beds</div>
+<div style="font-weight:500;font-size:11px;color:var(--allo-stem-text-soft, #94a3b8);margin-top:2px">mid-Cretaceous, ~99 mya</div>
+</button>
+<button type="button" aria-label="Morrison Formation, Late Jurassic, ~155 to 145 mya. Choose this formation." style="min-height:44px;padding:9px 10px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-panel, #1e293b);color:var(--allo-stem-text, #f1f5f9);font-size:13px;font-weight:700;cursor:pointer;text-align:left">
+<div>Morrison Formation</div>
+<div style="font-weight:500;font-size:11px;color:var(--allo-stem-text-soft, #94a3b8);margin-top:2px">Late Jurassic, ~155 to 145 mya</div>
+</button>
+<button type="button" aria-label="Nemegt Formation, Late Cretaceous, ~71 to 69 mya. Choose this formation." style="min-height:44px;padding:9px 10px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-panel, #1e293b);color:var(--allo-stem-text, #f1f5f9);font-size:13px;font-weight:700;cursor:pointer;text-align:left">
+<div>Nemegt Formation</div>
+<div style="font-weight:500;font-size:11px;color:var(--allo-stem-text-soft, #94a3b8);margin-top:2px">Late Cretaceous, ~71 to 69 mya</div>
+</button>
+</div>
+</div>
 <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:12px">
 <div style="background:var(--allo-stem-panel, #1e293b);border:1px solid var(--allo-stem-border, #334155);border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,0.28);padding:14px;color:var(--allo-stem-text, #f1f5f9)">
 <div style="font-weight:800;font-size:14px">📍 Hell Creek Formation</div>
