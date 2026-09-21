@@ -2359,7 +2359,7 @@
         'Adjust the mirror type, focal length, and object distance in the sim. The thin-mirror equation 1/f = 1/d_o + 1/d_i computes the image automatically.'
       ),
       h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, padding: 10, fontFamily: 'monospace', fontSize: 12 } },
-        rows.map(function(r, i) {
+        _opticsMaskOutcomeRows('reflection', rows, _opticsPredictionRevealed('reflection', state)).map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '40% 60%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
             h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
@@ -3882,7 +3882,7 @@
         'Snell\'s law: n₁ sin θ₁ = n₂ sin θ₂. When n₁ > n₂ and θ₁ exceeds the critical angle θ_c, no light gets through — all is reflected (TIR).'
       ),
       h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, padding: 10, fontFamily: 'monospace', fontSize: 12 } },
-        rows.map(function(r, i) {
+        _opticsMaskOutcomeRows('refraction', rows, _opticsPredictionRevealed('refraction', state)).map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '50% 50%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
             h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
@@ -5307,7 +5307,7 @@
         'Thin lens equation: 1/f = 1/d_o + 1/d_i. Sign rules: f > 0 for converging lenses, f < 0 for diverging lenses; d_i > 0 → real image (far side), d_i < 0 → virtual (near side); m < 0 → inverted.'
       ),
       h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, padding: 10, fontFamily: 'monospace', fontSize: 12 } },
-        rows.map(function(r, i) {
+        _opticsMaskOutcomeRows('lenses', rows, _opticsPredictionRevealed('lenses', state)).map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '40% 60%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
             h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
@@ -6875,7 +6875,7 @@
         "Young's double-slit:  d sin θ = m λ  (bright fringes).  Small-angle approximation:  y_m = m λ L / d  on a screen at distance L."
       ),
       h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, padding: 10, fontFamily: 'monospace', fontSize: 12 } },
-        rows.map(function(r, i) {
+        _opticsMaskOutcomeRows('interference', rows, _opticsPredictionRevealed('interference', state)).map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '50% 50%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
             h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
@@ -7422,7 +7422,7 @@
           : 'Diffraction grating: d sin θ = m λ for maxima of order m. Very narrow peaks for many lines per mm. White light splits into a spectrum at each order.'
       ),
       h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, padding: 10, fontFamily: 'monospace', fontSize: 12 } },
-        rows.map(function(r, i) {
+        _opticsMaskOutcomeRows('diffraction', rows, _opticsPredictionRevealed('diffraction', state)).map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '40% 60%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
             h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
@@ -8464,7 +8464,7 @@
         !useQwp ? ' (independent of axis).' : ''
       ),
       h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, padding: 10, fontFamily: 'monospace', fontSize: 12 } },
-        rows.map(function(r, i) {
+        _opticsMaskOutcomeRows('polarization', rows, _opticsPredictionRevealed('polarization', state)).map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '40% 60%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
             h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
@@ -8677,6 +8677,60 @@
       if (state && state[key] != null && typeof state[key] !== 'object') captured[key] = state[key];
     });
     return captured;
+  }
+  // A prediction made with the answer already on screen is not a prediction.
+  // The topic panels ask the student to "predict BEFORE you look" while the
+  // Live calculation panel sits directly under the notebook showing the solved
+  // result, so the honest move was always to read it off. The Inquiry tab
+  // already solved this with a commit-then-reveal keyed to its setup; this is
+  // the same idea for the six shared topic panels.
+  //
+  // Keyed to the SETUP (the tab's own control keys), so changing a control
+  // asks for a fresh prediction rather than letting one note unlock every
+  // configuration for the rest of the session. Sorted, so key order cannot
+  // make two identical setups look different.
+  function _opticsSetupKey(tab, state) {
+    var captured = _captureOpticsTopicState(tab, state);
+    return Object.keys(captured).sort().map(function (k) { return k + '=' + captured[k]; }).join('|');
+  }
+  // Which calculator rows are the ANSWER, per topic. Everything not listed
+  // here — the governing equation, the sign rules, the student's own inputs
+  // (f, d_o, n1, theta1, ...) and diagram caveats like "Diagram scale" —
+  // stays visible, because those help form a prediction rather than give it
+  // away. Only the derived outcome is withheld until the student commits.
+  // Labels verified against the six calc builders, not guessed: the inputs
+  // (f, d_o, n₁, θ₁, λ, d, L, a) and the caveats stay; only what the student
+  // is being asked to predict is withheld.
+  var OPTICS_OUTCOME_ROWS = {
+    reflection:   ['d_i', 'm (magnification)', 'Image type', 'Orientation', 'Size'],
+    refraction:   ['θ₂ (refraction angle)', 'Result', 'Bending', 'Transmitted power', 'Reflected power (unpolarized)'],
+    lenses:       ['d_i', 'm (magnification)', 'Image type', 'Orientation', 'Size'],
+    interference: ['Fringe spacing y', '1st bright fringe (m=1)', '2nd bright fringe (m=2)', 'Angle to m=1 (small-angle)'],
+    diffraction:  ['First minimum y₁', 'Central max width (2y₁)', 'Angle to first min'],
+    polarization: ['After P₂', 'After P₃ (final)', 'Final transmitted']
+  };
+  // True once the student has saved a prediction FOR THE CURRENT SETUP.
+  // The calc builders only receive `state`, so this reads the same two keys
+  // the topic panel writes. A saved project is INPUT: guard on type.
+  function _opticsPredictionRevealed(tab, state) {
+    if (!state || typeof state !== 'object') return false;
+    var notes = state.opPredictionNotes;
+    if (!notes || typeof notes !== 'object' || Array.isArray(notes)) return false;
+    if (!String(notes[tab] || '').trim()) return false;
+    var setups = state.opPredictionSetups;
+    if (!setups || typeof setups !== 'object' || Array.isArray(setups)) return false;
+    return setups[tab] === _opticsSetupKey(tab, state);
+  }
+  // Mask the outcome rows in place, keeping the row order and count so the
+  // table does not reflow when the answer is revealed.
+  function _opticsMaskOutcomeRows(tab, rows, revealed) {
+    if (revealed) return rows;
+    var hide = OPTICS_OUTCOME_ROWS[tab];
+    if (!hide || !Array.isArray(rows)) return rows;
+    return rows.map(function (r) {
+      if (!Array.isArray(r) || hide.indexOf(r[0]) === -1) return r;
+      return [r[0], '— predict first'];
+    });
   }
   function _opticsTrialRecord(tab, state, preview) {
     var now = Date.now();
@@ -11618,6 +11672,16 @@
     var predictionNotes = (d.opPredictionNotes && typeof d.opPredictionNotes === 'object') ? d.opPredictionNotes : {};
     var predictionDraft = String(predictionDrafts[tab] || '');
     var predictionNote = String(predictionNotes[tab] || '');
+    // A saved project is INPUT: guard on type, not truthiness.
+    var predictionSetups = (d.opPredictionSetups && typeof d.opPredictionSetups === 'object' && !Array.isArray(d.opPredictionSetups)) ? d.opPredictionSetups : {};
+    var setupKey = _opticsSetupKey(tab, d);
+    // The live answer is revealed once a prediction exists FOR THIS SETUP.
+    // Changing a control re-hides it and asks again, which is the whole point:
+    // each configuration is its own question.
+    var predictionCommitted = !!predictionNote && predictionSetups[tab] === setupKey;
+    // A prediction saved against a previous setup is not lost — it is still
+    // shown in the comparison below; it just no longer unlocks this one.
+    var predictionStale = !!predictionNote && predictionSetups[tab] !== setupKey;
     var observationDrafts = (d.opObservationDrafts && typeof d.opObservationDrafts === 'object') ? d.opObservationDrafts : {};
     var observationNotes = (d.opObservationNotes && typeof d.opObservationNotes === 'object') ? d.opObservationNotes : {};
     var observationDraft = String(observationDrafts[tab] || '');
@@ -11668,8 +11732,12 @@
       }
       var next = Object.assign({}, predictionNotes);
       next[tab] = note;
-      upd('opPredictionNotes', next);
-      opAnnounce('Prediction saved for ' + tab + '. Run the simulation, then compare the result.');
+      // Record WHICH setup this prediction was about, so the reveal is tied to
+      // the configuration the student actually committed to.
+      var nextFor = Object.assign({}, predictionSetups);
+      nextFor[tab] = setupKey;
+      upd({ opPredictionNotes: next, opPredictionSetups: nextFor });
+      opAnnounce('Prediction saved for ' + tab + '. The live calculation is now unlocked — compare it with what you expected.');
     }
     function clearPrediction() {
       var nextNotes = Object.assign({}, predictionNotes);
@@ -11941,7 +12009,11 @@
         }
       },
         h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--op-accent-text, #7dd3fc)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 } }, '1 · Prediction notebook'),
-        h('p', { style: { margin: '0 0 6px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.45 } }, 'Before changing a control, write what you expect to happen. Save it, run the simulation, then compare the result with your prediction.'),
+        h('p', { style: { margin: '0 0 6px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.45 } }, predictionStale
+            ? 'You changed the setup, so the solved rows are hidden again — this is a new question. Say what you expect this time, and they come back.'
+            : (predictionCommitted
+              ? 'Prediction saved for this setup. The solved rows are unlocked below — compare them with what you expected.'
+              : 'The solved rows in the live calculation are hidden until you commit. Write what you expect, save it, and the answer appears next to your prediction.')),
         h('textarea', {
           value: predictionDraft,
           rows: 2,
