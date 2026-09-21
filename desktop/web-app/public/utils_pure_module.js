@@ -1253,6 +1253,40 @@ function _renderDiagramSvg(tool, state, titleText) {
 
 
 // Persist only source identities and fingerprints; never a second copy of lesson text.
+// A Unit Path follow-up stamps window.__alloPendingUnitPathNode and then hands
+// the user back to source input; it does not generate anything itself. BOTH
+// lesson-plan buttons must therefore consume that stamp: the dispatcher (Full
+// Pack / guided) and the sidebar button. The sidebar route previously ignored
+// it, so the plan the user actually asked for went unstamped AND the global
+// survived to attach itself to a later, unrelated plan.
+//
+// The setter records `since` and `priorPlanId` so staleness is judgeable;
+// neither was ever read. A stamp older than this window is dropped rather than
+// applied -- an abandoned follow-up must not relabel a plan made days later.
+const _ALLO_UNIT_PATH_STAMP_MAX_AGE_MS = 6 * 60 * 60 * 1000;
+
+// Returns the normalized unitPath record to write onto a plan, or null. Always
+// clears the global when a stamp is present -- including a stale one, which is
+// consumed and discarded so it cannot linger for the next plan.
+const consumePendingUnitPathNode = (now = Date.now()) => {
+  let pending = null;
+  try {
+    pending = typeof window !== 'undefined' ? window.__alloPendingUnitPathNode : null;
+  } catch (_) { return null; }
+  if (!pending || typeof pending !== 'object' || !pending.nodeId) return null;
+  try { delete window.__alloPendingUnitPathNode; } catch (_) {}
+  const since = Number(pending.since);
+  if (Number.isFinite(since) && (now - since) > _ALLO_UNIT_PATH_STAMP_MAX_AGE_MS) return null;
+  return {
+    graphId: String(pending.graphId || ''),
+    nodeId: String(pending.nodeId),
+    label: String(pending.label || '').slice(0, 400),
+    title: String(pending.title || '').slice(0, 300),
+    index: Number.isFinite(Number(pending.index)) ? Number(pending.index) : null,
+    count: Number.isFinite(Number(pending.count)) ? Number(pending.count) : null
+  };
+};
+
 const capturePlanningInputs = (options = {}) => {
   const { context = '', segments = [], suppliedContext = context, mode = 'teacher', route = 'sidebar',
     local = false, inventoryText = '', inventory = [], inventorySupplied = false, inventoryTraced = true } = options;
@@ -1522,6 +1556,8 @@ window.AlloModules.UtilsPure = {
   normalizeSuccessCriteria,
   resolveUnitPathContext,
   capturePlanningInputs,
+  consumePendingUnitPathNode,
+  _ALLO_UNIT_PATH_STAMP_MAX_AGE_MS,
   getPlanningInputStatus,
   outlineNodeBlueprints,
   synchronizeSavedOutline,

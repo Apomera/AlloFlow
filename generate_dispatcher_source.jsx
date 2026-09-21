@@ -7534,12 +7534,14 @@ Return ONLY JSON:
          // Unit Path context: when this plan is being generated for a node the
          // teacher activated from the path, tell the model where the lesson sits
          // and stamp the plan as that node afterwards (see normalisation below).
-         const _pendingUnitPathNode = (() => {
-             try {
-                 const p = typeof window !== 'undefined' ? window.__alloPendingUnitPathNode : null;
-                 return p && typeof p === 'object' && p.nodeId ? p : null;
-             } catch (_) { return null; }
-         })();
+         // Shared with the sidebar route via UtilsPure: one freshness rule, one
+         // record shape, one place that clears the global. Read here (before the
+         // prompt is built) because _unitPathBlock below needs it.
+         const _pendingUnitPathNode = (typeof window !== 'undefined'
+             && window.AlloModules && window.AlloModules.UtilsPure
+             && typeof window.AlloModules.UtilsPure.consumePendingUnitPathNode === 'function')
+             ? window.AlloModules.UtilsPure.consumePendingUnitPathNode()
+             : null;
          const _unitPathBlock = _pendingUnitPathNode
              ? `\n--- UNIT PATH CONTEXT ---\nThis lesson is node ${_pendingUnitPathNode.index || '?'} of ${_pendingUnitPathNode.count || '?'} on the unit path "${String(_pendingUnitPathNode.title || 'unit').replace(/\s+/g, ' ').slice(0, 200)}". Node: "${String(_pendingUnitPathNode.label || '').replace(/\s+/g, ' ').slice(0, 300)}". Keep the through-line: build on the prior lesson and set up the next node; do not restart the unit.\n---------------------------\n`
              : '';
@@ -7624,17 +7626,7 @@ Return ONLY JSON:
                  : (Array.isArray(content.successCriteria) ? content.successCriteria : []);
              if (_latestQuiz) content.successCriteriaQuizId = _latestQuiz.id;
          }
-         if (_pendingUnitPathNode) {
-             content.unitPath = {
-                 graphId: String(_pendingUnitPathNode.graphId || ''),
-                 nodeId: String(_pendingUnitPathNode.nodeId),
-                 label: String(_pendingUnitPathNode.label || '').slice(0, 400),
-                 title: String(_pendingUnitPathNode.title || '').slice(0, 300),
-                 index: Number.isFinite(Number(_pendingUnitPathNode.index)) ? Number(_pendingUnitPathNode.index) : null,
-                 count: Number.isFinite(Number(_pendingUnitPathNode.count)) ? Number(_pendingUnitPathNode.count) : null
-             };
-             try { delete window.__alloPendingUnitPathNode; } catch (_) {}
-         }
+         if (_pendingUnitPathNode) content.unitPath = _pendingUnitPathNode;
          if (!content.extensions || !Array.isArray(content.extensions)) content.extensions = [];
          const stringFields = ['essentialQuestion', 'hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'];
          stringFields.forEach(field => {

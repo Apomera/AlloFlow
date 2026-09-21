@@ -655,9 +655,9 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
             // now send leveledTextLanguage.
             const planLanguage = leveledTextLanguage || currentUiLanguage || 'English';
             if (isIndependentMode) {
-                prompt = buildStudyGuidePrompt(context, planLanguage);
+                prompt = buildStudyGuidePrompt(context, planLanguage, lessonCustomAdditions);
             } else if (isParentMode) {
-                prompt = buildParentGuidePrompt(context, planLanguage);
+                prompt = buildParentGuidePrompt(context, planLanguage, lessonCustomAdditions);
             } else {
                 prompt = buildLessonPlanPrompt(context, assetManifest, planLanguage, lessonCustomAdditions);
             }
@@ -686,6 +686,11 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
                     content.extensions = [];
                 }
             }
+            // Consume the Unit Path stamp on this route too. Shared with the
+            // dispatcher via UtilsPure so both buttons apply the same freshness
+            // rule and the same record shape.
+            const _unitPathStamp = window.AlloModules?.UtilsPure?.consumePendingUnitPathNode?.() || null;
+            if (_unitPathStamp) content.unitPath = _unitPathStamp;
             const newItem = {
                 id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
                 type: 'lesson-plan',
