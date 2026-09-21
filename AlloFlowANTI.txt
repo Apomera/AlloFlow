@@ -14004,7 +14004,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       'UtilsPure', 'MiscComponents', 'UIModalsModule', 'AppStyles', 'LiveAac',
       'SharedActivity', 'GuidedModeConfig', 'ViewLaunchPadModule',
       'SidebarTabsNav', 'HistoryPanel', 'HeaderBar', 'UILanguageSelector',
-      'ConfirmDialog', 'PromptDialog', 'AlloCommands', 'AlloCommandContext', 'HostHandlers', 'OnboardingCoach', 'OnboardingHelpers'
+      'ConfirmDialog', 'PromptDialog', 'AlloCommands', 'AlloCommandContext', 'HostHandlers', 'OnboardingCoach', 'OnboardingHelpers', 'IdentifierRedaction'
     ]);
     let __alloBootstrappingModules = true;
     const __alloDeferredModuleQueue = [];
@@ -14608,6 +14608,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=d8a97d4fa');
     loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=d8a97d4fa');
     loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=d8a97d4fa');
+    // FERPA boundary: Report Writer + Dynamic Assessment share one scrubber.
+    loadModule('IdentifierRedaction', 'https://alloflow-cdn.pages.dev/identifier_redaction_module.js?v=d8a97d4fa');
     loadModule('GenerationMatrix', 'https://alloflow-cdn.pages.dev/generation_matrix_module.js?v=d8a97d4fa');
     loadModule('ResourceContentFingerprint', 'https://alloflow-cdn.pages.dev/resource_content_fingerprint_module.js');
     loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=d8a97d4fa');

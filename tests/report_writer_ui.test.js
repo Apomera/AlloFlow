@@ -15,6 +15,9 @@ beforeAll(() => {
   ({ createRoot } = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/client')));
   globalThis.React = window.React = React;
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  // Redaction now lives in a shared module; the Step 2 disclosure panel
+  // resolves it from window.AlloModules at call time.
+  loadAlloModule('identifier_redaction_module.js');
   loadAlloModule('report_writer_module.js');
   ReportWriter = window.AlloModules.ReportWriter;
   if (typeof ReportWriter !== 'function') throw new Error('ReportWriter module did not register');

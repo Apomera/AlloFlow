@@ -13,7 +13,7 @@
 // reported separately in unknownChunks, and the no-known-ids call path is
 // unchanged so existing callers cannot regress.
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
@@ -25,6 +25,9 @@ let parseEvidenceResponse;
 beforeAll(() => {
   const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
   globalThis.React = window.React = React;
+  // Redaction now lives in a shared module; Report Writer resolves it from
+  // window.AlloModules at call time, so it must be loaded first.
+  loadAlloModule('identifier_redaction_module.js');
   loadAlloModule('report_writer_module.js');
   const seam = window.AlloReportWriterTesting;
   if (!seam || typeof seam.parseEvidenceResponse !== 'function') {
@@ -382,5 +385,42 @@ describe('analyzeRedaction — discloses what redaction will NOT cover', () => {
   it('reports clean when a name is set and nothing risky is present', () => {
     const r = analyzeRedaction('The student was evaluated.', { studentName: 'Sam Rivera' });
     expect(r.needsAttention).toBe(false);
+  });
+});
+
+// ── Shared-module resolution ───────────────────────────────────────────────
+//
+// WHY: redaction lives in identifier_redaction_module.js so Report Writer and
+// Dynamic Assessment cannot drift apart (a copied scrubber is how
+// tests/extracted_logic/clinical_logic.js came to assert the old leaky
+// behaviour). Report Writer resolves it from window.AlloModules AT CALL TIME,
+// because CDN module load order is not guaranteed. If that lookup ever fails
+// the fallback must fail SAFE: strip what patterns still can, and never report
+// "nothing to flag" for text it could not assess.
+describe('redaction shim — behaviour when the shared module is absent', () => {
+  let saved;
+  beforeEach(() => { saved = window.AlloModules.IdentifierRedaction; });
+  afterEach(() => { window.AlloModules.IdentifierRedaction = saved; });
+
+  it('still strips structured identifiers with no shared module', () => {
+    window.AlloModules.IdentifierRedaction = undefined;
+    const out = window.AlloReportWriterTesting.scrubIdentifiers(
+      'Call 555-867-5309 or a@b.com on 3/14/2024.', { studentName: 'Sam Rivera' });
+    expect(out).toContain('[PHONE]');
+    expect(out).toContain('[EMAIL]');
+    expect(out).toContain('[DATE]');
+  });
+
+  it('reports needsAttention rather than clean when it cannot assess', () => {
+    window.AlloModules.IdentifierRedaction = undefined;
+    const r = window.AlloReportWriterTesting.analyzeRedaction('anything', { studentName: 'Sam Rivera' });
+    expect(r.needsAttention).toBe(true);
+    expect(r.unavailable).toBe(true);
+  });
+
+  it('uses the shared module when it IS present', () => {
+    expect(window.AlloModules.IdentifierRedaction).toBeTruthy();
+    expect(window.AlloReportWriterTesting.scrubIdentifiers('Sam struggled.', { studentName: 'Sam Rivera' }))
+      .toBe('[Student] struggled.');
   });
 });

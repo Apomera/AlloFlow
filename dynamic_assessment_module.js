@@ -1850,6 +1850,43 @@
     return Math.max(0, 5 - l);
   }
 
+  // ── Clinician free text → AI provider ──────────────────────────────────
+  // Nearly everything DA sends is COMPUTED (scores, modifiability index,
+  // scaffold counts, construct tags) and carries no identifiers. The exception
+  // is clinician-authored prose: session notes and the intake language context.
+  // Those are where "Mom called about Jayden's IEP meeting" gets typed, and
+  // they previously reached the model verbatim.
+  //
+  // Redaction is shared with Report Writer (identifier_redaction_module.js) so
+  // the two cannot drift apart. Resolved per call because CDN load order is not
+  // guaranteed; when the module is missing the fallback strips what patterns
+  // still can rather than sending the text untouched.
+  //
+  // The student identity here is normally a nickname/code name, so name
+  // redaction is often a no-op by design. The value is the structured patterns
+  // (email, phone, SSN, address, calendar dates) plus any OTHER person named.
+  function daScrubFreeText(text, session) {
+    if (!text) return text;
+    var api = (typeof window !== "undefined" && window.AlloModules && window.AlloModules.IdentifierRedaction) || null;
+    var opts = { studentName: (session && session.studentNickname) || "", people: [] };
+    if (api && typeof api.scrubIdentifiers === "function") return api.scrubIdentifiers(text, opts);
+    var out = String(text);
+    out = out.replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[EMAIL]");
+    out = out.replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[SSN]");
+    out = out.replace(/(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/g, "[PHONE]");
+    out = out.replace(/\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/g, "[DATE]");
+    return out;
+  }
+
+  // The session note as it should appear in a prompt: trimmed, redacted, and
+  // bounded. The 600-char cap matches the evidence-chunk path at daBuildChunks
+  // so one builder cannot quietly ship more clinician prose than another.
+  function daPromptSessionNote(session) {
+    var raw = session && session.sessionNote ? String(session.sessionNote).trim() : "";
+    if (!raw) return "";
+    return daScrubFreeText(raw, session).slice(0, 600);
+  }
+
   function sumItemResultScores(itemResults) {
     if (!Array.isArray(itemResults)) return 0;
     return itemResults.reduce(function (s, r) { return s + (r.scoreAwarded || 0); }, 0);
@@ -3725,7 +3762,10 @@
 
     // Phase U — session-level clinician note (if present)
     if (session.sessionNote && session.sessionNote.trim()) {
-      chunks.push(chunk("Session-level clinician note", session.sessionNote.trim().slice(0, 600)));
+      // Redacted here too: these chunks travel to Report Writer (line ~4009)
+      // and become verified facts in ITS prompts, so leaving them raw would
+      // route clinician prose to a provider through the back door.
+      chunks.push(chunk("Session-level clinician note", daPromptSessionNote(session)));
     }
 
     // Phase K — drafted IEP goals (each goal is its own fact chunk so the
@@ -5362,7 +5402,7 @@
       "  - L3 modeling: " + workedAt.model + " items",
       "  - L4 direct teaching: " + workedAt.directTeach + " items",
       tagSummary ? ("Observation patterns: " + tagSummary) : "Observation patterns: (none recorded)",
-      session.sessionNote && session.sessionNote.trim() ? ("Session-level clinician notes: " + session.sessionNote.trim()) : "Session-level clinician notes: (none recorded)",
+      daPromptSessionNote(session) ? ("Session-level clinician notes: " + daPromptSessionNote(session)) : "Session-level clinician notes: (none recorded)",
       "",
       "=== OUTPUT FORMAT ===",
       "Return ONLY a JSON array. No prose, no markdown fences, no commentary. Each element must match this exact shape:",
@@ -5514,7 +5554,7 @@
       "  - L3 modeling: " + workedAt.model + " items",
       "  - L4 direct teaching: " + workedAt.directTeach + " items",
       tagSummary ? ("Observation patterns: " + tagSummary) : "Observation patterns: (none recorded)",
-      session.sessionNote && session.sessionNote.trim() ? ("Session-level clinician notes: " + session.sessionNote.trim()) : "Session-level clinician notes: (none recorded)",
+      daPromptSessionNote(session) ? ("Session-level clinician notes: " + daPromptSessionNote(session)) : "Session-level clinician notes: (none recorded)",
       "",
       "=== OUTPUT FORMAT ===",
       "Return ONLY a JSON array. No prose, no markdown fences, no commentary. Each element must match this exact shape:",
@@ -5847,7 +5887,7 @@
       "What helped most during our time together: " + bestSupport,
       formatSupportsForFamilyPrompt(daSupportsUsedInSession(session)),
       "Things we noticed about how the child works: " + (tagSummary || "(none recorded)"),
-      session.sessionNote && session.sessionNote.trim() ? ("Clinician's overall impression of the session: " + session.sessionNote.trim()) : "",
+      daPromptSessionNote(session) ? ("Clinician's overall impression of the session: " + daPromptSessionNote(session)) : "",
       "",
       "=== OUTPUT FORMAT ===",
       "Return ONLY a JSON object with these exact keys (each value is plain-language prose, NOT a list unless specified):",
@@ -5986,7 +6026,7 @@
         return note ? ("ACCESS-CONDITION EVIDENCE (include this faithfully in the headline or watchFor, kept hypothesis-generating, NOT diagnostic — do not overstate): " + note) : "";
       })(),
       tagSummary ? ("Observation patterns: " + tagSummary) : "Observation patterns: (none recorded)",
-      session.sessionNote && session.sessionNote.trim() ? ("Session-level clinician notes: " + session.sessionNote.trim()) : "Session-level clinician notes: (none recorded)",
+      daPromptSessionNote(session) ? ("Session-level clinician notes: " + daPromptSessionNote(session)) : "Session-level clinician notes: (none recorded)",
       "",
       "=== OUTPUT FORMAT ===",
       "Return ONLY a JSON object with these exact keys. No prose, no markdown, no commentary.",
@@ -17001,6 +17041,10 @@
     interpretCohenD: interpretCohenD,
     aggregateItemStatistics: aggregateItemStatistics,
     // Phase D — export helpers exposed for cross-tool integration
+    // Redaction seam: the single point where clinician free text is cleaned
+    // before any prompt or cross-tool chunk carries it.
+    promptSessionNote: daPromptSessionNote,
+    scrubFreeText: daScrubFreeText,
     buildDaFactChunks: buildDaFactChunks,
     buildDaNarrativeSection: buildDaNarrativeSection,
     exportSessionToReportWriter: exportSessionToReportWriter,
