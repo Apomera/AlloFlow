@@ -623,6 +623,27 @@ const d = labToolData.artStudio || {};
               runs: persistedStore.runs.concat(currentStore.runs)
             }, '');
           };
+          // gradStops comes straight from saved state, and `|| [defaults]` is not a
+          // type guard: a hand-edited or truncated save can carry a stop whose pos
+          // is a string, missing, or NaN, or an entry that is not an object at all.
+          // Math.max/Math.min PROPAGATE NaN rather than clamping it, so the old
+          // clamp handed a non-finite value to addColorStop, which throws and
+          // blanks the whole Gradient lab. Four shapes crashed it: a string pos, a
+          // missing pos, a non-object stop, and a non-finite hue.
+          const ART_STUDIO_GRADIENT_STOPS = [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
+          const artStudioGradientStops = function (raw) {
+            var list = Array.isArray(raw) ? raw : null;
+            if (!list || !list.length) return ART_STUDIO_GRADIENT_STOPS.slice();
+            var safe = [];
+            for (var i = 0; i < list.length && safe.length < 8; i++) {
+              var stop = list[i];
+              if (!stop || typeof stop !== 'object') continue;
+              var hue = (typeof stop.hue === 'number' && isFinite(stop.hue)) ? stop.hue : 0;
+              var pos = (typeof stop.pos === 'number' && isFinite(stop.pos)) ? stop.pos : 0;
+              safe.push({ hue: ((hue % 360) + 360) % 360, pos: Math.max(0, Math.min(100, pos)) });
+            }
+            return safe.length ? safe : ART_STUDIO_GRADIENT_STOPS.slice();
+          };
           const copyArtStudioPixels = function (source) {
             var pixels = source && source.data ? source.data : source;
             return new Uint8ClampedArray(pixels || 0);
@@ -9873,7 +9894,11 @@ const d = labToolData.artStudio || {};
 
                     var rainbow = d.strRainbow;
 
-                    var shape = d.strShape || 'circle';
+                    // `|| 'circle'` is not a type guard: a truthy but unknown value (a
+                    // number from a hand-edited save) passes it, matches none of the
+                    // shape branches below, and leaves nailPos empty — the draw loop
+                    // then reads from[0] of undefined and blanks the lab.
+                    var shape = ['circle', 'square', 'triangle', 'star'].indexOf(d.strShape) === -1 ? 'circle' : d.strShape;
 
                     var baseHue = stringColor.h;
 
@@ -11548,9 +11573,9 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("span", { id: "artstudio-gradient-stops-label", className: "text-[0.6875rem] font-bold text-rose-700" }, __alloT('stem.artstudio.color_stops', "Color Stops")),
 
-                        React.createElement("button", { "aria-label": __alloT('stem.artstudio.add_stop', "Add color stop"), "aria-describedby": "artstudio-gradient-stop-help", disabled: (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).length >= 8, onClick: function () {
+                        React.createElement("button", { "aria-label": __alloT('stem.artstudio.add_stop', "Add color stop"), "aria-describedby": "artstudio-gradient-stop-help", disabled: (artStudioGradientStops(d.gradStops)).length >= 8, onClick: function () {
 
-                          var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
+                          var stops = artStudioGradientStops(d.gradStops);
 
                           if (stops.length < 8) {
 
@@ -11570,11 +11595,11 @@ const d = labToolData.artStudio || {};
 
                       ),
 
-                      React.createElement("p", { id: "artstudio-gradient-stop-help", className: "text-[0.6875rem] text-rose-700 mb-2 leading-relaxed" }, "Adjust hue and position with the sliders. Positions stay between neighboring stops. " + (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).length + " of 8 stops."),
+                      React.createElement("p", { id: "artstudio-gradient-stop-help", className: "text-[0.6875rem] text-rose-700 mb-2 leading-relaxed" }, "Adjust hue and position with the sliders. Positions stay between neighboring stops. " + (artStudioGradientStops(d.gradStops)).length + " of 8 stops."),
 
                       (function () {
 
-                        var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
+                        var stops = artStudioGradientStops(d.gradStops);
 
                         return stops.map(function (stop, idx) {
 
@@ -11588,7 +11613,7 @@ const d = labToolData.artStudio || {};
 
                               React.createElement("input", { id: 'artstudio-grad-stop-' + idx + '-hue', type: "range", min: 0, max: 360, value: stop.hue, "aria-valuetext": stop.hue + ' degrees', onChange: function (e) {
 
-                                var newStops = (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).slice();
+                                var newStops = (artStudioGradientStops(d.gradStops)).slice();
 
                                 newStops[idx] = Object.assign({}, newStops[idx], { hue: parseInt(e.target.value) });
 
@@ -11604,7 +11629,7 @@ const d = labToolData.artStudio || {};
 
                               React.createElement("input", { id: 'artstudio-grad-stop-' + idx + '-position', type: "range", min: idx === 0 ? 0 : stops[idx - 1].pos, max: idx === stops.length - 1 ? 100 : stops[idx + 1].pos, value: stop.pos, "aria-valuetext": stop.pos + ' percent', onChange: function (e) {
 
-                                var newStops2 = (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).slice();
+                                var newStops2 = (artStudioGradientStops(d.gradStops)).slice();
 
                                 newStops2[idx] = Object.assign({}, newStops2[idx], { pos: parseInt(e.target.value) });
 
@@ -11616,7 +11641,7 @@ const d = labToolData.artStudio || {};
 
                             stops.length > 2 && React.createElement("button", { "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_remove_color_stop', 'Remove color stop {value1}'), { value1: (idx + 1) }), onClick: function () {
 
-                              var newStops3 = (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).slice();
+                              var newStops3 = (artStudioGradientStops(d.gradStops)).slice();
 
                               newStops3.splice(idx, 1);
 
@@ -11672,7 +11697,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("button", { "aria-label": __alloT('stem.artstudio.copy_gradient_css', "Copy gradient CSS to clipboard"), onClick: function () {
 
-                        var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
+                        var stops = artStudioGradientStops(d.gradStops);
 
                         var stopsStr = stops.map(function (s) { return 'hsl(' + s.hue + ', 85%, 55%) ' + s.pos + '%'; }).join(', ');
 
@@ -11692,7 +11717,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("code", { id: "artstudio-gradient-css", "aria-labelledby": "artstudio-gradient-css-label", className: "text-[0.6875rem] text-green-400 font-mono leading-relaxed block whitespace-pre-wrap" }, (function () {
 
-                      var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
+                      var stops = artStudioGradientStops(d.gradStops);
 
                       var stopsStr = stops.map(function (s) { return 'hsl(' + s.hue + ', 85%, 55%) ' + s.pos + '%'; }).join(',\n  ');
 
@@ -11734,7 +11759,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'gradientCanvas', width: 512, height: 512, role: "img", "aria-describedby": "artstudio-gradient-css", 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_gradient_output', 'Gradient output: {value1}{value2}, {value3} blend, with {value4} color stops: {value5}.'), { value1: __alloT('stem.artstudio.a11y_grad_type_' + String((d.gradType || 'linear')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.gradType || 'linear')), value2: ((d.gradType || 'linear') === 'linear' ? formatArtStudioLearningText(__alloT('stem.artstudio.a11y_gradient_angle', ' at {value1} degrees'), { value1: (typeof d.gradAngle === 'number' ? d.gradAngle : 90) }) : ''), value3: __alloT('stem.artstudio.a11y_grad_blend_' + String((d.gradBlend || 'smooth')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.gradBlend || 'smooth')), value4: (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).length, value5: (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).map(function (stop) { return formatArtStudioLearningText(__alloT('stem.artstudio.a11y_gradient_stop', 'hue {value1} at {value2} percent'), { value1: stop.hue, value2: stop.pos }); }).join(__alloT('stem.artstudio.a11y_list_separator', ', ')) }), className: "rounded-xl border-2 border-rose-300 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#1e1e2e' },
+                React.createElement("canvas", { id: 'gradientCanvas', width: 512, height: 512, role: "img", "aria-describedby": "artstudio-gradient-css", 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_gradient_output', 'Gradient output: {value1}{value2}, {value3} blend, with {value4} color stops: {value5}.'), { value1: __alloT('stem.artstudio.a11y_grad_type_' + String((d.gradType || 'linear')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.gradType || 'linear')), value2: ((d.gradType || 'linear') === 'linear' ? formatArtStudioLearningText(__alloT('stem.artstudio.a11y_gradient_angle', ' at {value1} degrees'), { value1: (typeof d.gradAngle === 'number' ? d.gradAngle : 90) }) : ''), value3: __alloT('stem.artstudio.a11y_grad_blend_' + String((d.gradBlend || 'smooth')).toLowerCase().replace(/[^a-z0-9]+/g, '_'), (d.gradBlend || 'smooth')), value4: (artStudioGradientStops(d.gradStops)).length, value5: (artStudioGradientStops(d.gradStops)).map(function (stop) { return formatArtStudioLearningText(__alloT('stem.artstudio.a11y_gradient_stop', 'hue {value1} at {value2} percent'), { value1: stop.hue, value2: stop.pos }); }).join(__alloT('stem.artstudio.a11y_list_separator', ', ')) }), className: "rounded-xl border-2 border-rose-300 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#1e1e2e' },
 
                   key: 'grad-' + (d.gradType || 'linear') + '-' + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + '-' + (d.gradBlend || 'smooth') + '-' + JSON.stringify(d.gradStops || []),
 
@@ -11756,7 +11781,7 @@ const d = labToolData.artStudio || {};
 
                     var blend = d.gradBlend || 'smooth';
 
-                    var stops = d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }];
+                    var stops = artStudioGradientStops(d.gradStops);
 
 
 
