@@ -225,7 +225,7 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
         Target Grade: ${gradeLevel}
         Topic: "${sourceTopic || "General"}"
         Language: ${language}
-        ${hasCustom ? `TEACHER REQUESTS: "${customAdditions}" — honour these while keeping the family-friendly tone.` : ''}
+        ${hasCustom ? `USER CUSTOM REQUESTS: "${customAdditions}" — honour these while keeping the family-friendly tone.` : ''}
         INSTRUCTIONS:
         Translate complex educational jargon into simple, fun, everyday language for a parent.
         The goal is to foster connection and curiosity, not just drill facts.
@@ -271,7 +271,7 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
         Target Grade: ${gradeLevel}
         Topic: "${sourceTopic || "General"}"
         Language: ${language}
-        ${hasCustom ? `TEACHER REQUESTS: "${customAdditions}" — honour these while keeping the student-facing tone.` : ''}
+        ${hasCustom ? `USER CUSTOM REQUESTS: "${customAdditions}" — honour these while keeping the student-facing tone.` : ''}
         INSTRUCTIONS:
         - Write directly to the student using "You".
         - Keep the tone encouraging, clear, and structured.

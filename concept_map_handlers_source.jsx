@@ -652,9 +652,9 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
             // now send leveledTextLanguage.
             const planLanguage = leveledTextLanguage || currentUiLanguage || 'English';
             if (isIndependentMode) {
-                prompt = buildStudyGuidePrompt(context, planLanguage);
+                prompt = buildStudyGuidePrompt(context, planLanguage, lessonCustomAdditions);
             } else if (isParentMode) {
-                prompt = buildParentGuidePrompt(context, planLanguage);
+                prompt = buildParentGuidePrompt(context, planLanguage, lessonCustomAdditions);
             } else {
                 prompt = buildLessonPlanPrompt(context, assetManifest, planLanguage, lessonCustomAdditions);
             }
