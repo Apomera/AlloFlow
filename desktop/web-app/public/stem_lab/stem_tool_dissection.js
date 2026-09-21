@@ -2132,6 +2132,7 @@
 
   function DissectionEyeStudy(props) {
     var React = props.React, h = React.createElement;
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     var canvasRef = React.useRef(null), sceneRef = React.useRef(null);
     var initialPart = DISSECTION_EYE_STUDY_PARTS.some(function (part) { return part.id === props.initialSelected; }) ? props.initialSelected : 'lens';
     var statePair = React.useState({ yaw: -0.65, elevation: 0.45, distance: 6.8, open: true, selected: initialPart, preset: 'oblique' });
@@ -2184,7 +2185,7 @@
         h('h3', { id: 'diss-eye-study-title', tabIndex: -1 }, 'Eye spatial study')),
         h('button', { type: 'button', onClick: props.onClose }, 'Return to 2D dissection')),
       h('p', { className: 'diss-eye-study__scope' }, 'Schematic companion for the sheep-eye activity. This is an authored teaching model, not a scan or a validated specimen reconstruction. Shape, spacing, and thickness are illustrative.'),
-      h('div', { className: 'diss-eye-study__presets', role: 'group', 'aria-label': '3D eye camera views' }, presets.map(function (preset) {
+      h('div', { className: 'diss-eye-study__presets', role: 'group', 'aria-label': t('stem.dissection.3d_eye_camera_views','3D eye camera views') }, presets.map(function (preset) {
         return h('button', { key: preset.id, type: 'button', disabled: !ready, 'aria-pressed': state.preset === preset.id,
           onClick: function () { patch({ yaw: preset.yaw, elevation: preset.elevation, distance: 6.8, preset: preset.id }); } }, preset.label);
       })),
@@ -2201,7 +2202,7 @@
         )
       ),
       h('p', { id: 'diss-eye-study-controls' }, 'Drag to rotate; select a visible surface or use the structure buttons. Keyboard: arrows rotate, +/− zoom, Home resets the camera. Fit specimen restores the full specimen at your current angle.'),
-      h('div', { className: 'diss-eye-study__actions', role: 'group', 'aria-label': '3D eye display controls' },
+      h('div', { className: 'diss-eye-study__actions', role: 'group', 'aria-label': t('stem.dissection.3d_eye_display_controls','3D eye display controls') },
         h('button', { type: 'button', disabled: !ready, 'aria-pressed': state.open, onClick: function () { patch({ open: !state.open }); } }, state.open ? 'Opened shell on' : 'Open the shell'),
         h('button', { type: 'button', disabled: !ready || state.distance <= 4.4, onClick: function () { patch({ distance: Math.max(4.4, state.distance - 0.4) }); } }, 'Zoom in'),
         h('button', { type: 'button', disabled: !ready || state.distance >= 9, onClick: function () { patch({ distance: Math.min(9, state.distance + 0.4) }); } }, 'Zoom out'),
@@ -2209,7 +2210,7 @@
         h('button', { type: 'button', disabled: !ready, onClick: home }, 'Reset camera')
       ),
       h('p', { className: 'diss-eye-study__camera', 'data-eye-camera': true, 'data-eye-view': state.preset }, (state.preset === 'custom' ? 'Free rotation' : (presets.find(function (preset) { return preset.id === state.preset; }) || presets[0]).label) + ' · zoom ' + Math.round(6.8 / state.distance * 100) + '% of fitted view'),
-      h('div', { className: 'diss-eye-study__parts', role: 'group', 'aria-label': 'Eye structure references' }, DISSECTION_EYE_STUDY_PARTS.map(function (part, index) {
+      h('div', { className: 'diss-eye-study__parts', role: 'group', 'aria-label': t('stem.dissection.eye_structure_references','Eye structure references') }, DISSECTION_EYE_STUDY_PARTS.map(function (part, index) {
         return h('button', { key: part.id, type: 'button', 'data-eye-part': part.id, 'aria-pressed': selected.id === part.id, onClick: function () { select(part.id); } },
           h('span', { className: 'diss-eye-study__swatch', style: { background: part.color }, 'aria-hidden': 'true' }, index + 1), part.name);
       })),
@@ -17697,13 +17698,13 @@ var d = labToolData.dissection || {};
                 React.createElement("button", {
                   type: "button", "aria-pressed": workspaceMode === 'essentials',
                   "aria-label": __alloT('stem.dissection.a11y_essentials_workspace', 'Essentials workspace'),
-                  title: 'Essentials workspace: keeps the procedure, instruments, observation, evidence, assessment, and accessibility controls in focus.',
+                  title: __alloT('stem.dissection.essentials_workspace_keeps_the_procedure_ins','Essentials workspace: keeps the procedure, instruments, observation, evidence, assessment, and accessibility controls in focus.'),
                   onClick: function () { setDissectionWorkspaceMode('essentials'); }
                 }, 'Essentials'),
                 React.createElement("button", {
                   type: "button", "aria-pressed": workspaceMode === 'advanced',
                   "aria-label": __alloT('stem.dissection.a11y_advanced_workspace', 'Advanced workspace'),
-                  title: 'Advanced workspace: adds scenarios, detailed telemetry, technique comparison, instructor settings, and extended visualization tools.',
+                  title: __alloT('stem.dissection.advanced_workspace_adds_scenarios_detailed_t','Advanced workspace: adds scenarios, detailed telemetry, technique comparison, instructor settings, and extended visualization tools.'),
                   onClick: function () { setDissectionWorkspaceMode('advanced'); }
                 }, 'Advanced')
               )
@@ -18150,7 +18151,7 @@ var d = labToolData.dissection || {};
                   React.createElement("div", { className: "diss-canvas-layout", "data-split": !d.quizMode && splitComparison && referenceEvidence ? "true" : "false" },
                     React.createElement("div", { className: "diss-canvas-frame", "data-diss-fullscreen-stage": true },
                       React.createElement("div", { id: "diss-fullscreen-dock", className: "diss-fullscreen-dock", role: "toolbar", "aria-label": __alloT('stem.dissection.a11y_fullscreen_specimen_view_and_tools', 'Fullscreen specimen view and tools') },
-                      React.createElement("button", { type: "button", className: "diss-fullscreen-dock__exit", "data-diss-fullscreen-exit": true, "aria-label": __alloT('stem.dissection.a11y_exit_fullscreen_specimen_mode', 'Exit fullscreen specimen mode'), "aria-keyshortcuts": "Escape", title: "Exit fullscreen (Escape)", onClick: function (event) { exitDissectionFullscreen(event.currentTarget); } }, 'Exit fullscreen'),
+                      React.createElement("button", { type: "button", className: "diss-fullscreen-dock__exit", "data-diss-fullscreen-exit": true, "aria-label": __alloT('stem.dissection.a11y_exit_fullscreen_specimen_mode', 'Exit fullscreen specimen mode'), "aria-keyshortcuts": "Escape", title: __alloT('stem.dissection.exit_fullscreen_escape','Exit fullscreen (Escape)'), onClick: function (event) { exitDissectionFullscreen(event.currentTarget); } }, 'Exit fullscreen'),
                         React.createElement("button", { type: "button", disabled: !!d.quizMode, onClick: function () { var views = ['dorsal', 'ventral', 'lateral', 'internal']; changeAnatomicalView(views[(views.indexOf(anatomicalView) + 1) % views.length], 'fullscreen dock'); }, "aria-label": d.quizMode ? "Fullscreen anatomical view locked during assessment" : "Fullscreen anatomical view: cycle dorsal, ventral, lateral, and internal" }, 'View: ' + anatomicalView),
                         React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { upd('labLight', labLight === 'neutral' ? 'warm' : (labLight === 'warm' ? 'cool' : 'neutral')); }, "aria-label": __alloT('stem.dissection.a11y_fullscreen_illumination_color_cycle_neutral_war', 'Fullscreen illumination color: cycle neutral, warm, and cool') }, 'Light: ' + labLight),
                         React.createElement("label", null,
@@ -18222,7 +18223,7 @@ var d = labToolData.dissection || {};
                       'data-diss-canvas': true,
                       'data-cursor-mode': pointerGuideData.mode,
                       'data-cursor-tone': pointerGuideData.tone,
-                      'aria-roledescription': 'interactive specimen canvas',
+                      'aria-roledescription': __alloT('stem.dissection.interactive_specimen_canvas','interactive specimen canvas'),
                       'aria-labelledby': 'diss-canvas-label',
                       'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Enter Space 0 R V' + (advancedWorkspace ? ' X M P F' : '') + ' 1 2 3 4 5 6 7',
                       tabIndex: 0,
@@ -18984,7 +18985,7 @@ var d = labToolData.dissection || {};
                 React: React, initialSelected: d._eyeStudyReturnPart, targets: eyeStudyTargets(),
                 onLocate: function (id) { handoffEyeStudy(id, false); },
                 onNote: function (id) { handoffEyeStudy(id, true); },
-                onClose: function () { upd('eyeStudyMode', false); focusDissectionTarget('diss-canvas'); }
+                onClose: function () { upd('eyeStudyMode', false); focusDissectionTarget('diss-canvas'); }, t: __alloT
               }),
 
               // Flashcard panel
@@ -19129,7 +19130,7 @@ var d = labToolData.dissection || {};
                     React.createElement('p', null, 'Needs notes includes missing notes or confidence. Low confidence means 1 of 3. These are review cues, not accuracy scores.'),
                     React.createElement('div', { className: 'diss-observation-search' },
                       React.createElement('label', { htmlFor: 'diss-observation-search' }, 'Search your observations'),
-                      React.createElement('input', { id: 'diss-observation-search', type: 'search', value: observationSearchValue, placeholder: 'Structure, layer, or words in your note',
+                      React.createElement('input', { id: 'diss-observation-search', type: 'search', value: observationSearchValue, placeholder: __alloT('stem.dissection.structure_layer_or_words_in_your_note','Structure, layer, or words in your note'),
                         'aria-controls': 'diss-observation-review-list', 'aria-describedby': 'diss-observation-search-help diss-observation-review-count',
                         onChange: function (event) { upd('_observationReviewSearch', event.target.value); },
                         onKeyDown: function (event) { if (event.key === 'Escape' && observationSearchValue) { event.preventDefault(); event.stopPropagation(); upd('_observationReviewSearch', ''); } }
@@ -19137,7 +19138,7 @@ var d = labToolData.dissection || {};
                       React.createElement('p', { id: 'diss-observation-search-help' }, 'Search names, layers, and your saved notes. All words must match; punctuation and accents are ignored. Filter counts reflect this search.'),
                       observationSearchValue && React.createElement('button', { type: 'button', onClick: function () { upd('_observationReviewSearch', ''); focusDissectionTarget('diss-observation-search'); } }, 'Clear observation search')
                     ),
-                    React.createElement('div', { className: 'diss-observation-review__filters', role: 'group', 'aria-label': 'Filter observation review' },
+                    React.createElement('div', { className: 'diss-observation-review__filters', role: 'group', 'aria-label': __alloT('stem.dissection.filter_observation_review','Filter observation review') },
                       observationReviewChoices.map(function (choice) { return React.createElement('button', { key: choice.id, type: 'button', 'data-observation-filter': choice.id,
                         'aria-pressed': observationReviewFilter === choice.id, 'aria-controls': 'diss-observation-review-list', onClick: function () { upd('_observationReviewFilter', choice.id); }
                       }, choice.label + ' (' + choice.count + ')'); })
@@ -20049,7 +20050,7 @@ var d = labToolData.dissection || {};
                       )
                     ),
                     React.createElement("label", { htmlFor: "diss-inquiry-hypothesis", className: "block text-[10px] font-bold mb-1" }, 'Your hypothesis: which factor will matter most, and why?'),
-                    React.createElement("textarea", { id: "diss-inquiry-hypothesis", value: iq.hypothesis, maxLength: 2000, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'Predict how size, depth, care, or time pressure will change the modeled outcome...', className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                    React.createElement("textarea", { id: "diss-inquiry-hypothesis", value: iq.hypothesis, maxLength: 2000, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.dissection.predict_how_size_depth_care_or_time_pressure','Predict how size, depth, care, or time pressure will change the modeled outcome...'), className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
                     React.createElement("button", { type: "button", "aria-expanded": !!iq.stuckRevealed, "aria-controls": "diss-inquiry-open-questions", onClick: function() { setIQ({ stuckRevealed: !iq.stuckRevealed }); }, className: "min-h-11 px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #64748b', cursor: 'pointer' } }, iq.stuckRevealed ? 'Hide open questions' : "🤔 I'm stuck — show open questions"),
                     iq.stuckRevealed && React.createElement("div", { id: "diss-inquiry-open-questions", className: "p-2 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
                       React.createElement("div", { className: "font-bold mb-1", style: { color: sm.color } }, 'Open questions (no answer key)'),
@@ -20066,7 +20067,7 @@ var d = labToolData.dissection || {};
                     ),
                     iq.understood && React.createElement("div", { id: "diss-inquiry-explanation" },
                       React.createElement("label", { htmlFor: "diss-inquiry-explanation-text", className: "block text-[10px] font-bold mb-1" }, 'Explain the modeled relationship in your own words'),
-                      React.createElement("textarea", { id: "diss-inquiry-explanation-text", value: iq.explanation, maxLength: 3000, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain how the four inputs affect the model, then name one limitation...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } })
+                      React.createElement("textarea", { id: "diss-inquiry-explanation-text", value: iq.explanation, maxLength: 3000, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.dissection.explain_how_the_four_inputs_affect_the_model','Explain how the four inputs affect the model, then name one limitation...'), className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } })
                     ),
                     React.createElement("p", { id: "diss-inquiry-disclaimer", role: "note", className: "m-0 text-[10px] italic" }, 'Inquiry widget — no score, no reveal, no answer dump. Damage and insight indices are pedagogical heuristics, not lab-grade rubrics or predictions of an actual specimen. Real outcomes depend on preservation, instruments, anatomy, and technique.')
                   );

@@ -12,7 +12,10 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
   it('provides a focusable, described simulator and protects form input from shortcuts', () => {
     const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquaculture.js'), 'utf8');
     expect(source).toContain("tabIndex: 0, role: 'application'");
-    expect(source).toContain("'aria-roledescription': 'Interactive 3D aquaculture farm simulator'");
+    // Went through the translator on 2026-09-21: a bare literal has no key, so no
+    // translator is ever shown it and it ships English in all 63 packs. Assert both
+    // halves — the key, and the English a screen reader falls back to.
+    expect(source).toContain("'aria-roledescription': __alloT('stem.aquaculture.interactive_3d_aquaculture_farm_simulator','Interactive 3D aquaculture farm simulator')");
     expect(source).toContain("'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight F P C Escape'");
     expect(source).toContain('event.currentTarget.focus()');
     expect(source).toContain("event.currentTarget.style.outline = '3px solid #5eead4'");

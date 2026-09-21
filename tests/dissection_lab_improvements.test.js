@@ -5151,7 +5151,10 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       const source = readFileSync(filePath, 'utf8');
       expect(source).toContain('data-allo-fullscreen-active="true"');
       expect(source).toContain('"data-diss-fullscreen-exit": true');
-      expect(source).toContain('title: "Exit fullscreen (Escape)"');
+      // Went through the translator on 2026-09-21: a bare literal has no key, so
+      // no translator is ever shown it and it ships English in all 63 packs.
+      // Assert both halves — the key, and the English a screen reader falls back to.
+      expect(source).toContain("title: __alloT('stem.dissection.exit_fullscreen_escape','Exit fullscreen (Escape)')");
       expect(source).toContain('"aria-keyshortcuts": "Escape"');
       expect(source).toContain('max-height: min(34vh, 18rem)');
       expect(source).toContain('grid-template-rows: minmax(0, 36vh) minmax(0, 1fr)');

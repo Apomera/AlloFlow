@@ -364,7 +364,10 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('maxLength: 2000');
     expect(source).toContain("onChange: function (event) { updateTutorialNote('prediction', event.target.value); }");
     expect(source).toContain('onClick: captureTutorialObservation');
-    expect(source).toContain('"Claim: ... Evidence: ... Reasoning: ..."');
+    // Went through the translator on 2026-09-21: a bare literal has no key, so no
+    // translator is ever shown it and it ships English in all 63 packs. Assert both
+    // halves — the key, and the English a screen reader falls back to.
+    expect(source).toContain("__alloT('stem.aquarium.claim_evidence_reasoning','Claim: ... Evidence: ... Reasoning: ...')");
     expect(source).toContain('writing is not required to operate the simulation.');
 
     const notebookStateStart = source.indexOf('var tutorialNotebook =');

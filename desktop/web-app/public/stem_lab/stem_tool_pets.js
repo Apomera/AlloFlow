@@ -6009,7 +6009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             ? h('span', {
                 className: 'petslab-activity-completion-hint',
                 role: 'note',
-                title: 'Finish the module activity to record completion.',
+                title: __alloT('stem.pets.finish_the_module_activity_to_record_complet','Finish the module activity to record completion.'),
                 style: { color: T.muted, fontSize: 11, fontWeight: 700 }
               }, 'Activity completion required')
           : h('button', {
@@ -6114,7 +6114,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var groupLabel = 'Prediction check: ' + check.prompt;
       return h('section', {
         className: 'petslab-species-check',
-        'aria-label': 'Prediction check',
+        'aria-label': __alloT('stem.pets.prediction_check','Prediction check'),
         style: {
           padding: 14, borderRadius: 10, background: T.card,
           border: '1px solid ' + T.accent, marginBottom: 14
@@ -7040,7 +7040,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               })
             ),
             h('label', { htmlFor: 'pets-care-inquiry-hypothesis', style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which species is hardest to keep thriving — and why?)'),
-            h('textarea', { id: 'pets-care-inquiry-hypothesis', value: iq.hypothesis, maxLength: 1200, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.pets.a11y_pet_welfare_hypothesis', 'Pet welfare hypothesis'), 'aria-describedby': 'pets-care-inquiry-hypothesis-count pets-care-inquiry-privacy-note', placeholder: 'e.g., parrots need high social provision because flock behavior...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#181210', color: '#fef3e2', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
+            h('textarea', { id: 'pets-care-inquiry-hypothesis', value: iq.hypothesis, maxLength: 1200, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.pets.a11y_pet_welfare_hypothesis', 'Pet welfare hypothesis'), 'aria-describedby': 'pets-care-inquiry-hypothesis-count pets-care-inquiry-privacy-note', placeholder: __alloT('stem.pets.e_g_parrots_need_high_social_provision_becau','e.g., parrots need high social provision because flock behavior...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#181210', color: '#fef3e2', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
             h('div', { id: 'pets-care-inquiry-hypothesis-count', style: { marginBottom: 6, color: '#bda891', fontSize: 9 } }, iq.hypothesis.length + ' / 1200 characters'),
             h('p', { id: 'pets-care-inquiry-privacy-note', role: 'note', style: { margin: '0 0 10px', color: '#bda891', fontSize: 9, lineHeight: 1.45 } },
               'Your hypothesis, explanation, and scenario log save with this project. Do not include names or identifying details.'),
@@ -7059,7 +7059,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('span', null, 'I can explain why this species shows this welfare state at these slider settings.')
             ),
             iq.understood && h('label', { htmlFor: 'pets-care-inquiry-explanation', style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your explanation'),
-            iq.understood && h('textarea', { id: 'pets-care-inquiry-explanation', value: iq.explanation, maxLength: 1200, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.pets.a11y_pet_welfare_explanation', 'Pet welfare explanation'), 'aria-describedby': 'pets-care-inquiry-explanation-count pets-care-inquiry-privacy-note', placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#181210', color: '#fef3e2', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
+            iq.understood && h('textarea', { id: 'pets-care-inquiry-explanation', value: iq.explanation, maxLength: 1200, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.pets.a11y_pet_welfare_explanation', 'Pet welfare explanation'), 'aria-describedby': 'pets-care-inquiry-explanation-count pets-care-inquiry-privacy-note', placeholder: __alloT('stem.pets.explain_in_your_own_words','Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#181210', color: '#fef3e2', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
             iq.understood && h('div', { id: 'pets-care-inquiry-explanation-count', style: { marginBottom: 6, color: '#bda891', fontSize: 9 } }, iq.explanation.length + ' / 1200 characters'),
             h('p', { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Welfare frameworks: Five Domains (Mellor 2017), Five Freedoms (Brambell 1965).')
           );
@@ -9079,7 +9079,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                     'Solved ' + goalState.count + ' of ' + goalState.total)),
                 h('p', { style: { margin: '0 0 9px', fontSize: 11.5, color: T.muted, lineHeight: 1.55 } },
                   'Reading the grid is one skill; building a cross that produces a given outcome is a harder and more useful one. Pick a challenge, then set the parents to satisfy it.'),
-                h('div', { role: 'group', 'aria-label': 'Choose a challenge', style: { display: 'grid', gap: 6, marginBottom: active ? 10 : 0 } },
+                h('div', { role: 'group', 'aria-label': __alloT('stem.pets.choose_a_challenge','Choose a challenge'), style: { display: 'grid', gap: 6, marginBottom: active ? 10 : 0 } },
                   PUNNETT_GOALS.map(function(goal) {
                     var done = goalState.solved.indexOf(goal.id) >= 0;
                     var isActive = activeId === goal.id;
@@ -9808,7 +9808,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
           return h('section', {
             className: 'petslab-service-cases',
-            'aria-label': 'Access calls',
+            'aria-label': __alloT('stem.pets.access_calls','Access calls'),
             style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 }
           },
             h('div', { style: { display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 5 } },
@@ -12172,7 +12172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
           return h('section', {
             className: 'petslab-cost-commit',
-            'aria-label': 'Budget reckoning',
+            'aria-label': __alloT('stem.pets.budget_reckoning','Budget reckoning'),
             style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 }
           },
             h('div', { style: { display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 5 } },
@@ -12530,7 +12530,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           var top = result.complete ? result.ranked.slice(0, 3) : [];
           return h('section', {
             className: 'petslab-career-fit',
-            'aria-label': 'Career self-inventory',
+            'aria-label': __alloT('stem.pets.career_self_inventory','Career self-inventory'),
             style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 }
           },
             h('div', { style: { display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 4 } },
@@ -12717,7 +12717,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             'Knowing how cats work doesn\'t change anything by itself. The animal-welfare picture in your community changes when people make small decisions in the same direction. Pick what fits your time + situation.')),
         h('section', {
           className: 'petslab-action-plan',
-          'aria-label': 'My action plan',
+          'aria-label': __alloT('stem.pets.my_action_plan','My action plan'),
           ref: _actionPlanRef,
           tabIndex: -1,
           style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 }
@@ -14875,7 +14875,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 aiCritiqueRequest: null
               });
             },
-            placeholder: 'Walk through what you\'d do or say. What do you ask first? What do you recommend? What would change your recommendation?',
+            placeholder: __alloT('stem.pets.walk_through_what_you_d_do_or_say_what_do_yo','Walk through what you\'d do or say. What do you ask first? What do you recommend? What would change your recommendation?'),
             'aria-label': __alloT('stem.pets.a11y_your_response', 'Your response'),
             'aria-describedby': 'pets-ai-response-count pets-ai-feedback-readiness pets-ai-privacy-note',
             rows: 6,
@@ -16065,7 +16065,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
           return h('section', {
             className: 'petslab-welfare-apply',
-            'aria-label': 'Apply the evidence',
+            'aria-label': __alloT('stem.pets.apply_the_evidence','Apply the evidence'),
             style: { marginTop: 14, padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent }
           },
             h('div', { style: { display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 6 } },
@@ -16075,7 +16075,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 'Decided ' + progress.done + ' of ' + progress.total + ' topics')),
             h('p', { style: { margin: '0 0 10px', fontSize: 13, color: T.text, lineHeight: 1.6, fontWeight: 600 } },
               apply.prompt),
-            h('div', { role: 'group', 'aria-label': 'Choose a response', style: { display: 'grid', gap: 8 } },
+            h('div', { role: 'group', 'aria-label': __alloT('stem.pets.choose_a_response','Choose a response'), style: { display: 'grid', gap: 8 } },
               apply.options.map(function(option) {
                 var isPick = picked === option.id;
                 var ring = T.border;
@@ -18841,7 +18841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             ? h('span', { className: 'petslab-complete-status', role: 'status' }, '✓ Complete')
             : h('span', {
                 className: 'petslab-mastery-goal',
-                title: 'Signal Log coverage completes automatically after all 27 canonical signals are identified correctly at least once.',
+                title: __alloT('stem.pets.signal_log_coverage_completes_automatically','Signal Log coverage completes automatically after all 27 canonical signals are identified correctly at least once.'),
                 style: { marginLeft: 'auto', color: T.muted, fontSize: 11, fontWeight: 700 }
               }, 'Coverage completes at 27 / 27')
         ),

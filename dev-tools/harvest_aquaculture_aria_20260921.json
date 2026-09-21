@@ -1,0 +1,18 @@
+{
+  "stem.aquaculture.use_observations_constraints_or_measurements": "Use observations, constraints, or measurements to explain your reasoning.",
+  "stem.aquaculture.investigation_progress": "Investigation progress",
+  "stem.aquaculture.name_one_input_an_expected_response_and_your": "Name one input, an expected response, and your reason.",
+  "stem.aquaculture.what_did_you_do_safely": "What did you do safely?",
+  "stem.aquaculture.which_buoy_route_probe_or_deployment_record": "Which buoy, route, probe, or deployment record shows it?",
+  "stem.aquaculture.why_did_those_choices_reduce_risk": "Why did those choices reduce risk?",
+  "stem.aquaculture.what_would_you_practice_or_measure_next": "What would you practice or measure next?",
+  "stem.aquaculture.enter_fullscreen": "View the farm simulator fullscreen",
+  "stem.aquaculture.exit_fullscreen": "Exit fullscreen farm simulator (Escape)",
+  "stem.aquaculture.interactive_3d_aquaculture_farm_simulator": "Interactive 3D aquaculture farm simulator",
+  "stem.aquaculture.what_navigation_choice_or_paired_reading_bes": "What navigation choice or paired reading best supports your conclusion?",
+  "stem.aquaculture.example_low_oxygen_and_warm_water_occur_toge": "Example: Low oxygen and warm water occur together, so I would repeat calibrated readings at crop depth after the tide turns before attributing weak attachment to one cause.",
+  "stem.aquaculture.what_is_the_relationship_between_density_exc": "What is the relationship between density, exchange rate, and pond health? Is there a single number that matters most? Or trade-offs?",
+  "stem.aquaculture.explain_in_your_own_words_what_drives_oxygen": "Explain in your own words: what drives oxygen consumption? What replenishes it? Why does feed rate matter even at constant density? What is the trade-off a real fish farmer faces?",
+  "stem.aquaculture.device_save_recovery": "Device save recovery",
+  "stem.aquaculture.what_surprised_you_what_would_you_investigat": "What surprised you? What would you investigate next?"
+}
