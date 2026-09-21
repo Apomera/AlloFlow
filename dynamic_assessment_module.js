@@ -3436,7 +3436,7 @@
       modifiabilityIndex: null,
       modifiabilityTier: {
         id: "insufficient",
-        label: "Incomplete?no interpretation",
+        label: "Incomplete — no interpretation",
         desc: "The assessment record is preserved, but the evidence is not sufficient for a Modifiability Index or interpretive outputs."
       },
       iepGoals: [],

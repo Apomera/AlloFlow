@@ -309,7 +309,8 @@ describe('evidence integrity, response statuses, and redacted exports', () => {
       pretestSum: null,
       posttestSum: null
     });
-    expect(record.modifiabilityTier.label).toBe('Incomplete?no interpretation');
+    // Em dash, not the literal '?' this string shipped with until 2026-09-21.
+    expect(record.modifiabilityTier.label).toBe('Incomplete — no interpretation');
     expect(record.incompleteReasons).toEqual(['fatigue', 'refusal']);
     expect(record.dateCompleted).toBeUndefined();
     expect(record.auditTrail[0]).toMatchObject({ type: 'session-archived-incomplete', sequence: 1, details: { recordStatus: 'incomplete', reason: 'fatigue' } });
