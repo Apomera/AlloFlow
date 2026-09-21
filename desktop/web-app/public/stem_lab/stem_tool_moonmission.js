@@ -3229,6 +3229,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   // nothing integrated it into a position, because a fixed side-on
                   // view had nowhere to put one. The 3D ground needs it to slide.
                   var groundX = 0, groundZ = 0;
+                  // Fixed-step accumulator. The descent used to advance one physics
+                  // step per FRAME, which tied a graded piloting task to the refresh
+                  // rate: the same flight scored differently on a fast machine than a
+                  // slow one, and adding the 3D world was enough to change the outcome.
+                  var _physLast = 0;            // ms timestamp of the last integration
+                  var _physAcc = 0;             // unspent milliseconds
+                  var PHYS_STEP_MS = 1000 / 60; // one step = the old per-frame step
+                  var PHYS_MAX_STEPS = 6;       // cap catch-up after a stall or a hidden tab
                   // The 3D scene, when it is available. Null means WebGL was refused
                   // or Three never loaded, and the 2D world below keeps painting.
                   var d3 = null;
@@ -3303,7 +3311,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     if (d3Ready && !d3 && !d3Failed) bootDescent3D(window.THREE);
                     ctx.clearRect(0, 0, W, H);
 
-                    if (!landed && !crashed) {
+                    // How many fixed steps does the elapsed wall-clock time buy?
+                    var _now = (typeof performance !== 'undefined' && performance.now)
+                      ? performance.now() : Date.now();
+                    if (!_physLast) _physLast = _now;
+                    var _elapsed = _now - _physLast;
+                    _physLast = _now;
+                    // A hidden tab or a long stall must not return and fly the whole
+                    // descent in one frame.
+                    if (_elapsed > 250) _elapsed = PHYS_STEP_MS;
+                    _physAcc += _elapsed;
+                    var _steps = Math.floor(_physAcc / PHYS_STEP_MS);
+                    if (_steps > PHYS_MAX_STEPS) _steps = PHYS_MAX_STEPS;
+                    _physAcc -= _steps * PHYS_STEP_MS;
+
+                    for (var _ps = 0; _ps < _steps && !landed && !crashed; _ps++) {
                       // Controls: up arrow = thrust, left/right = horizontal adjust
                       if (padCtl.thrust || keys['ArrowUp'] || keys['w'] || keys['W']) {
                         thrust = Math.min(1, thrust + 0.03);
