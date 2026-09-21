@@ -4017,14 +4017,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   };
   const avatarDepthFilter = theme === "contrast" ? "drop-shadow(0 2px 0 #000000)" : theme === "dark" ? "drop-shadow(0 2px 3px rgba(0,0,0,0.70)) drop-shadow(0 0 1px rgba(255,255,255,0.16))" : "drop-shadow(0 2px 3px rgba(15,23,42,0.28))";
   const trailFilter = isFlightActive ? `${avatarDepthFilter} drop-shadow(-6px 4px 0px ${colors.gradFrom}40) drop-shadow(-12px 8px 0px ${colors.gradFrom}20)` : avatarDepthFilter;
-  const generationStageNames = ["analyze", "build", "finalize"];
   const hudHeadroomLift = effectiveMood === "thinking" && !isSleeping ? Math.max(0, ALLOBOT_HUD_HEADROOM_PX - position.y) : 0;
-  const renderGenerationStageRail = () => /* @__PURE__ */ React.createElement("g", { "data-allo-generation-stage-rail": generationStage || "cycling", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("rect", { x: "30", y: "-54", width: "40", height: "9", rx: "4.5", fill: generationHudColors.panel, fillOpacity: generationHudColors.panelOpacity, stroke: generationHudColors.track, strokeOpacity: "0.58", strokeWidth: "0.75" }), /* @__PURE__ */ React.createElement("path", { d: "M 36 -49.5 H 64", stroke: generationHudColors.queued, strokeWidth: "1", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: `M 36 -49.5 H ${[36, 50, 64][generationAnimationPhase]}`, stroke: generationHudColors.complete, strokeWidth: "1", strokeLinecap: "round" }), generationStageNames.map((stageName, index) => {
-    const nodeState = index === generationAnimationPhase ? "active" : generationStage && index < generationAnimationPhase ? "complete" : "queued";
-    const nodeColor = nodeState === "active" ? generationHudColors.active : nodeState === "complete" ? generationHudColors.complete : generationHudColors.queued;
-    const iconColor = nodeState === "queued" ? generationHudColors.track : generationHudColors.panel;
-    return /* @__PURE__ */ React.createElement("g", { key: stageName, transform: `translate(${[36, 50, 64][index]}, -49.5)`, "data-allo-generation-stage-node": stageName, "data-allo-generation-stage-state": nodeState }, /* @__PURE__ */ React.createElement("g", { className: nodeState === "active" ? "animate-allobot-generation-stage-node" : void 0 }, /* @__PURE__ */ React.createElement("circle", { r: "3", fill: nodeState === "queued" ? generationHudColors.panel : nodeColor, stroke: nodeColor, strokeWidth: "1" }), index === 0 && /* @__PURE__ */ React.createElement("g", { stroke: iconColor, strokeWidth: "0.9", fill: "none", strokeLinecap: "round" }, /* @__PURE__ */ React.createElement("circle", { cy: "-0.35", r: "1.05" }), /* @__PURE__ */ React.createElement("path", { d: "M 0.75 0.45 L 1.55 1.25" })), index === 1 && /* @__PURE__ */ React.createElement("path", { d: "M -1.25 -1.25 H 1.25 V 1.25 H -1.25 Z", stroke: iconColor, strokeWidth: "0.9", fill: "none", strokeLinejoin: "round" }), index === 2 && /* @__PURE__ */ React.createElement("path", { d: "M -1.5 0 L -0.35 1.15 L 1.55 -1.2", stroke: iconColor, strokeWidth: "1", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" })));
-  }));
   const renderGenerationPackOrbit = () => {
     if (!generationPackSlotCount) return null;
     return /* @__PURE__ */ React.createElement("g", { "data-allo-generation-pack-orbit": "true", "data-allo-generation-pack-count": generationPackSlotCount, "data-allo-generation-pack-complete": generationPackCompletedSlots, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "-25", r: "23.5", fill: "none", stroke: generationHudColors.track, strokeOpacity: "0.30", strokeWidth: "0.65", strokeDasharray: "1.2 2.8" }), Array.from({ length: generationPackSlotCount }).map((_, index) => {
@@ -4254,10 +4247,16 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             background: var(--allobot-orbit-current);
             box-shadow: 0 70px 0 var(--allobot-orbit-current), -35px 35px 0 var(--allobot-orbit-current), 35px 35px 0 var(--allobot-orbit-current);
         }
-        .allobot-satellite--tl { top: -8px; left: -8px; }
-        .allobot-satellite--tr { top: -8px; right: -8px; }
-        .allobot-satellite--bl { bottom: -4px; left: -8px; }
-        .allobot-satellite--br { bottom: -4px; right: -8px; }
+        /* Pushed out from -8px/-4px. At -8px, 24px of a 32px control sat ON a
+           64px avatar - four of them buried the face, worst in contrast mode
+           where the controls are opaque and always visible. -18px halves that
+           to 14px so each button sits mostly BESIDE the bot and still reads as
+           attached to it. The 32/36px target itself is untouched: shrinking it
+           would trade a WCAG 2.2 touch minimum for tidiness. */
+        .allobot-satellite--tl { top: -18px; left: -18px; }
+        .allobot-satellite--tr { top: -18px; right: -18px; }
+        .allobot-satellite--bl { bottom: -14px; left: -18px; }
+        .allobot-satellite--br { bottom: -14px; right: -18px; }
         [data-allobot-control-surface="true"]:hover .allobot-satellite-control,
         [data-allobot-control-surface="true"]:focus-within .allobot-satellite-control,
         .allobot-satellite-control:focus-visible { opacity: 1; }
@@ -4575,8 +4574,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
 @keyframes allobotGenerationEnter { 0% { transform: translateY(8px) scale(0.72); opacity: 0; } 65% { transform: translateY(-1px) scale(1.04); opacity: 1; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 .animate-allobot-generation-enter { transform-box: fill-box; transform-origin: center; animation: allobotGenerationEnter 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) 1 both; }
 .allobot-generation-family-core { transition: opacity 0.16s ease; }
-@keyframes allobotGenerationStageNode { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.16); } }
-.animate-allobot-generation-stage-node { transform-box: fill-box; transform-origin: center; animation: allobotGenerationStageNode 1.8s ease-in-out infinite; }
 @keyframes allobotGenerationPackNode { 0%, 100% { transform: scale(1); opacity: 0.82; } 50% { transform: scale(1.2); opacity: 1; } }
 .animate-allobot-generation-pack-node { transform-box: fill-box; transform-origin: center; animation: allobotGenerationPackNode 1.55s ease-in-out infinite; }
 [data-allo-generation-phase="1"] .animate-hologram-3d { animation-duration: 10s; }
@@ -5210,7 +5207,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             ),
             /* @__PURE__ */ React.createElement("path", { d: "M 25 -45 L 75 -45", stroke: "#22D3EE", strokeWidth: "1", strokeOpacity: "0.8" }, /* @__PURE__ */ React.createElement("animate", { attributeName: "d", values: "M 46 5 L 54 5; M 20 -50 L 80 -50; M 46 5 L 54 5", dur: motionDisabled ? "indefinite" : "2s", repeatCount: "indefinite" }), /* @__PURE__ */ React.createElement("animate", { attributeName: "stroke-opacity", values: "0; 1; 0", dur: motionDisabled ? "indefinite" : "2s", repeatCount: "indefinite" })),
             renderGenerationPackOrbit(),
-            renderGenerationStageRail(),
             /* @__PURE__ */ React.createElement(
               "g",
               {

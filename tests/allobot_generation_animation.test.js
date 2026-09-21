@@ -100,11 +100,16 @@ describe('AlloBot generation animation signatures', () => {
     expect(botSource).toContain(": '100 100';");
     expect(botSource).toContain('data-allo-generation-ring="track"');
     expect(botSource).toContain('data-allo-generation-ring="progress"');
-    expect(botSource).toContain('const renderGenerationStageRail = () =>');
-    expect(botSource).toContain('data-allo-generation-stage-node={stageName}');
+    // The three-node stage rail was removed: it stacked a third progress signal
+    // above the ring and hologram and was illegible at 64px. These assert it
+    // STAYS gone, so it cannot be reintroduced without a deliberate decision.
+    expect(botSource).not.toContain('renderGenerationStageRail');
+    expect(botSource).not.toContain('data-allo-generation-stage-node');
+    expect(botModule).not.toContain('allobot-generation-stage-node');
     expect(botSource).toContain("data-allo-generation-motion={motionDisabled ? 'static' : 'animated'}");
     expect(botSource).toContain("{effectiveMood === 'thinking' && !isSleeping && (");
-    expect(botModule).toContain('allobot-generation-stage-node');
+    // The phase cycle still drives the ring, which is the surviving progress cue.
+    expect(botSource).toContain('generationAnimationPhase');
   });
 
   it('shows family-specific milestones during Full Pack runs', () => {

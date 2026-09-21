@@ -4214,7 +4214,14 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const trailFilter = isFlightActive
       ? `${avatarDepthFilter} drop-shadow(-6px 4px 0px ${colors.gradFrom}40) drop-shadow(-12px 8px 0px ${colors.gradFrom}20)`
       : avatarDepthFilter;
-  const generationStageNames = ['analyze', 'build', 'finalize'];
+  // The three-node stage rail that used to sit at y=-54 is gone. It stacked a
+  // third progress signal above the ring and the hologram, so the thinking
+  // state read as a tower: a 40x9 pill floating clear of the bot, holding 3px
+  // dots that were illegible at the 64px size the avatar usually renders at.
+  // The ring already carries progress and the hologram already says what is
+  // being made; which of three internal phases is running is not something a
+  // teacher acts on mid-generation. generationAnimationPhase still drives the
+  // ring's dasharray, so the phase cycle itself is unchanged.
   // Lift the whole bot so the hologram tower fits on screen. `top` already
   // animates over moveDuration, so this slides rather than jumps. Drag start
   // adopts the visual rect as the new position, so once a drag happens the
@@ -4222,28 +4229,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const hudHeadroomLift = effectiveMood === 'thinking' && !isSleeping
       ? Math.max(0, ALLOBOT_HUD_HEADROOM_PX - position.y)
       : 0;
-  const renderGenerationStageRail = () => (
-      <g data-allo-generation-stage-rail={generationStage || 'cycling'} aria-hidden="true">
-          <rect x="30" y="-54" width="40" height="9" rx="4.5" fill={generationHudColors.panel} fillOpacity={generationHudColors.panelOpacity} stroke={generationHudColors.track} strokeOpacity="0.58" strokeWidth="0.75" />
-          <path d="M 36 -49.5 H 64" stroke={generationHudColors.queued} strokeWidth="1" strokeLinecap="round" />
-          <path d={`M 36 -49.5 H ${[36, 50, 64][generationAnimationPhase]}`} stroke={generationHudColors.complete} strokeWidth="1" strokeLinecap="round" />
-          {generationStageNames.map((stageName, index) => {
-              const nodeState = index === generationAnimationPhase ? 'active' : (generationStage && index < generationAnimationPhase ? 'complete' : 'queued');
-              const nodeColor = nodeState === 'active' ? generationHudColors.active : (nodeState === 'complete' ? generationHudColors.complete : generationHudColors.queued);
-              const iconColor = nodeState === 'queued' ? generationHudColors.track : generationHudColors.panel;
-              return (
-                  <g key={stageName} transform={`translate(${[36, 50, 64][index]}, -49.5)`} data-allo-generation-stage-node={stageName} data-allo-generation-stage-state={nodeState}>
-                      <g className={nodeState === 'active' ? 'animate-allobot-generation-stage-node' : undefined}>
-                          <circle r="3" fill={nodeState === 'queued' ? generationHudColors.panel : nodeColor} stroke={nodeColor} strokeWidth="1" />
-                          {index === 0 && <g stroke={iconColor} strokeWidth="0.9" fill="none" strokeLinecap="round"><circle cy="-0.35" r="1.05" /><path d="M 0.75 0.45 L 1.55 1.25" /></g>}
-                          {index === 1 && <path d="M -1.25 -1.25 H 1.25 V 1.25 H -1.25 Z" stroke={iconColor} strokeWidth="0.9" fill="none" strokeLinejoin="round" />}
-                          {index === 2 && <path d="M -1.5 0 L -0.35 1.15 L 1.55 -1.2" stroke={iconColor} strokeWidth="1" fill="none" strokeLinecap="round" strokeLinejoin="round" />}
-                      </g>
-                  </g>
-              );
-          })}
-      </g>
-  );
   const renderGenerationPackOrbit = () => {
       if (!generationPackSlotCount) return null;
       return (
@@ -4645,10 +4630,16 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
             background: var(--allobot-orbit-current);
             box-shadow: 0 70px 0 var(--allobot-orbit-current), -35px 35px 0 var(--allobot-orbit-current), 35px 35px 0 var(--allobot-orbit-current);
         }
-        .allobot-satellite--tl { top: -8px; left: -8px; }
-        .allobot-satellite--tr { top: -8px; right: -8px; }
-        .allobot-satellite--bl { bottom: -4px; left: -8px; }
-        .allobot-satellite--br { bottom: -4px; right: -8px; }
+        /* Pushed out from -8px/-4px. At -8px, 24px of a 32px control sat ON a
+           64px avatar - four of them buried the face, worst in contrast mode
+           where the controls are opaque and always visible. -18px halves that
+           to 14px so each button sits mostly BESIDE the bot and still reads as
+           attached to it. The 32/36px target itself is untouched: shrinking it
+           would trade a WCAG 2.2 touch minimum for tidiness. */
+        .allobot-satellite--tl { top: -18px; left: -18px; }
+        .allobot-satellite--tr { top: -18px; right: -18px; }
+        .allobot-satellite--bl { bottom: -14px; left: -18px; }
+        .allobot-satellite--br { bottom: -14px; right: -18px; }
         [data-allobot-control-surface="true"]:hover .allobot-satellite-control,
         [data-allobot-control-surface="true"]:focus-within .allobot-satellite-control,
         .allobot-satellite-control:focus-visible { opacity: 1; }
@@ -4966,8 +4957,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
 @keyframes allobotGenerationEnter { 0% { transform: translateY(8px) scale(0.72); opacity: 0; } 65% { transform: translateY(-1px) scale(1.04); opacity: 1; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 .animate-allobot-generation-enter { transform-box: fill-box; transform-origin: center; animation: allobotGenerationEnter 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) 1 both; }
 .allobot-generation-family-core { transition: opacity 0.16s ease; }
-@keyframes allobotGenerationStageNode { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.16); } }
-.animate-allobot-generation-stage-node { transform-box: fill-box; transform-origin: center; animation: allobotGenerationStageNode 1.8s ease-in-out infinite; }
 @keyframes allobotGenerationPackNode { 0%, 100% { transform: scale(1); opacity: 0.82; } 50% { transform: scale(1.2); opacity: 1; } }
 .animate-allobot-generation-pack-node { transform-box: fill-box; transform-origin: center; animation: allobotGenerationPackNode 1.55s ease-in-out infinite; }
 [data-allo-generation-phase="1"] .animate-hologram-3d { animation-duration: 10s; }
@@ -5579,7 +5568,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                              <animate attributeName="stroke-opacity" values="0; 1; 0" dur={motionDisabled ? 'indefinite' : '2s'} repeatCount="indefinite" />
                         </path>
                         {renderGenerationPackOrbit()}
-                        {renderGenerationStageRail()}
                         <g
                             transform="translate(50, -25)"
                             className="allobot-generation-family-core"
