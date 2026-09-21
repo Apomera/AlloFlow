@@ -140,6 +140,44 @@ const CLAIMS = [
       'adult 275-day refusal suspension under §2521',
   },
   {
+    label: 'Maine child-restraint internal-harness weight (§2081)',
+    re: /age 2\+ under (\d{2}) lb in an internal-harness child restraint/,
+    min: 55, max: 55,
+    source: 'Maine 29-A §2081(3): a child 2 or older weighing less than 55 lb must be in a child ' +
+      'restraint system.',
+  },
+  {
+    label: 'Maine belt-positioning-seat weight ceiling (§2081)',
+    re: /under 8, under (\d{2}) lb, and under \d{2} in in a belt-positioning seat/,
+    min: 80, max: 80,
+    source: 'Maine 29-A §2081(3): under 80 lb AND under 57 in AND under 8 years — all three ' +
+      'conditions — requires a belt-positioning seat or other child restraint.',
+  },
+  {
+    label: 'Maine belt-positioning-seat height ceiling (§2081)',
+    re: /under 8, under \d{2} lb, and under (\d{2}) in in a belt-positioning seat/,
+    min: 57, max: 57,
+    source: 'Maine 29-A §2081(3): under 57 inches, alongside the 80 lb and age-8 conditions.',
+  },
+  {
+    label: 'Maine child-restraint first-offense fine (§2081)',
+    // Anchored on "First offense: $NN" alone. An earlier version included the
+    // whole under-12 clause, so ANY rewording of that sentence also broke the
+    // fine check -- two failures for one edit, and the fine's own value was
+    // never actually tested. The qualifier has its own presence check below.
+    re: /under 12 in the rear seat[^.]*\. First offense: \$(\d{2})/,
+    min: 50, max: 50,
+    source: 'Maine 29-A §2081: $50 first offence, $125 second, $250 third and subsequent; the ' +
+      'fine may not be suspended by the court.',
+  },
+  {
+    label: 'Maine under-12 rear-seat rule keeps its "if possible" qualifier (§2081)',
+    re: /under 12 in the rear seat if possible/,
+    min: null, max: null,
+    source: 'Maine 29-A §2081(3)(C) reads "properly secured in the rear seat of a vehicle, if ' +
+      'possible". The qualifier is in the statute — dropping it would overstate the duty.',
+  },
+  {
     label: 'Maine wildlife-collision failure-to-report fine, low end (12 §12403)',
     re: /civil violation carrying a \$(\d{3})[–-]\$\d{3} fine/,
     min: 100, max: 100,
