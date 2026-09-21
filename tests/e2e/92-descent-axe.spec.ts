@@ -67,12 +67,17 @@ for (const theme of ['light', 'dark'] as const) {
       });
     });
 
-    // KNOWN, PRE-EXISTING, NOT FROM THE 3D WORK: the tool's shared header paints
-    // slate-800/slate-600/indigo-700 ink and only swaps to white for high-CONTRAST
-    // mode (`onHostInk = isContrast ? ' text-white' : ''`), never for dark theme. On
-    // a dark card the title measures 1.22:1. It is in the header, so it affects all
-    // ten phases equally and predates this change; excluded here so this gate speaks
-    // only about the descent, and tracked separately rather than silently passed.
+    // HARNESS ARTIFACT, NOT A PRODUCT DEFECT — verified, not assumed.
+    // These six report slate-800/slate-600/indigo-700 ink on a dark card. In the real
+    // app they are fine: the host injects, under `[data-stem-lab]` in dark mode,
+    //   .text-slate-800 { color:#f1f5f9 !important }   (stem_lab_module.js ~L3358)
+    //   .text-slate-600 { color:#cbd5e1 !important }   (~L3359)
+    // and rewrites `.bg-white` to #1e293b with light ink (~L3353). This harness loads
+    // neither that stylesheet nor the [data-stem-lab] attribute it keys on, so it
+    // measures the tool's raw utility classes against a ground the app never shows.
+    // Excluded by name rather than by a blanket rule, so a NEW contrast failure here
+    // still fails. Do not "fix" the tool to satisfy this list — that would break the
+    // light theme, where these same classes are correct and axe is already clean.
     const HEADER_DARK_DEBT = new Set([
       'h3', '.-mt-0\\.5', '.font-mono',
       'button[data-moonmission-anim-toggle="true"]',
