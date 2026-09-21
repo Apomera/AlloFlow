@@ -306,6 +306,66 @@
     }
   },
   "dutch": {
+    "escape_room.config_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "4319d7096edf",
+      "translationHash": "efb4fab1c3fb"
+    },
+    "escape_room.end_game_confirm": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a042149703b6",
+      "translationHash": "b91401df4ce3"
+    },
+    "escape_room.generating": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "073b0c003085",
+      "translationHash": "7648a135f2d7"
+    },
+    "escape_room.launch_live_tooltip": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "a45825782b92"
+    },
+    "escape_room.loaded_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "292f49162e60",
+      "translationHash": "bd9e2d2701a9"
+    },
+    "escape_room.no_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "9de2cb31c2a4"
+    },
+    "escape_room.preview_confirmed": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "319f5bf5f7ee"
+    },
+    "escape_room.preview_desc": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "989d394fb536",
+      "translationHash": "27ff68b65f51"
+    },
+    "escape_room.reset": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "52b41f5ea6e1"
+    },
+    "escape_room.start": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "21c3cd120a6e"
+    },
+    "escape_room.stats_restored": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "630fd5c74f44"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "1069b6e5ea4c"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -599,6 +659,66 @@
     }
   },
   "german": {
+    "escape_room.config_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "4319d7096edf",
+      "translationHash": "6b6aba154675"
+    },
+    "escape_room.end_game_confirm": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a042149703b6",
+      "translationHash": "7b411fe69a0e"
+    },
+    "escape_room.generating": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "073b0c003085",
+      "translationHash": "fd50acbf33c7"
+    },
+    "escape_room.launch_live_tooltip": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "5c6b4e3d733c"
+    },
+    "escape_room.loaded_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "292f49162e60",
+      "translationHash": "c9c9e973b15b"
+    },
+    "escape_room.no_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "1e85b8db6ac2"
+    },
+    "escape_room.preview_confirmed": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "63818711badc"
+    },
+    "escape_room.preview_desc": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "989d394fb536",
+      "translationHash": "067ab7a247b1"
+    },
+    "escape_room.reset": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "ea538e31b956"
+    },
+    "escape_room.start": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "aba3df3fa428"
+    },
+    "escape_room.stats_restored": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "21315d0943b3"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "48615211ef2a"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -669,6 +789,16 @@
     }
   },
   "greek": {
+    "escape_room.loaded_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "292f49162e60",
+      "translationHash": "b8b72572b8e1"
+    },
+    "escape_room.preview_confirmed": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "e46fb9ef328c"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -953,6 +1083,66 @@
     }
   },
   "indonesian": {
+    "escape_room.config_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "4319d7096edf",
+      "translationHash": "0028fecef9dc"
+    },
+    "escape_room.end_game_confirm": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a042149703b6",
+      "translationHash": "eab77221bf33"
+    },
+    "escape_room.generating": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "073b0c003085",
+      "translationHash": "c1eea87b4dcb"
+    },
+    "escape_room.launch_live_tooltip": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "a3a528aa9fb3"
+    },
+    "escape_room.loaded_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "292f49162e60",
+      "translationHash": "8ec924d31adb"
+    },
+    "escape_room.no_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "e6faf94d87a7"
+    },
+    "escape_room.preview_confirmed": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "22eb420dc1b2"
+    },
+    "escape_room.preview_desc": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "989d394fb536",
+      "translationHash": "466314603c6f"
+    },
+    "escape_room.reset": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "c03819fa4378"
+    },
+    "escape_room.start": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "05cad12229f6"
+    },
+    "escape_room.stats_restored": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "5a66c9a42dd8"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "4c778062949a"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -1023,6 +1213,66 @@
     }
   },
   "italian": {
+    "escape_room.config_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "4319d7096edf",
+      "translationHash": "be2b9a60cb0d"
+    },
+    "escape_room.end_game_confirm": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a042149703b6",
+      "translationHash": "0cf1e3b61992"
+    },
+    "escape_room.generating": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "073b0c003085",
+      "translationHash": "32330de7ffd6"
+    },
+    "escape_room.launch_live_tooltip": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "3f2f4963b285"
+    },
+    "escape_room.loaded_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "292f49162e60",
+      "translationHash": "55488f4a8b35"
+    },
+    "escape_room.no_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "f5a39626612a"
+    },
+    "escape_room.preview_confirmed": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "826dd4048218"
+    },
+    "escape_room.preview_desc": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "989d394fb536",
+      "translationHash": "dc076ab1ec72"
+    },
+    "escape_room.reset": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "9554b79c94b8"
+    },
+    "escape_room.start": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "5a074f512787"
+    },
+    "escape_room.stats_restored": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "2bf9ba99d11e"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "1e91942ed44d"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -1319,6 +1569,66 @@
     }
   },
   "latin": {
+    "escape_room.config_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "4319d7096edf",
+      "translationHash": "bd696955c33c"
+    },
+    "escape_room.end_game_confirm": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a042149703b6",
+      "translationHash": "862bdacb58b0"
+    },
+    "escape_room.generating": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "073b0c003085",
+      "translationHash": "97b443dd04a9"
+    },
+    "escape_room.launch_live_tooltip": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "ed3ab9e2de02"
+    },
+    "escape_room.loaded_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "292f49162e60",
+      "translationHash": "558620071728"
+    },
+    "escape_room.no_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "5b6f7c796cb0"
+    },
+    "escape_room.preview_confirmed": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "fe8fd4666555"
+    },
+    "escape_room.preview_desc": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "989d394fb536",
+      "translationHash": "758b415fbc6e"
+    },
+    "escape_room.reset": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "8f30f59818a5"
+    },
+    "escape_room.start": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "c4c40c64b040"
+    },
+    "escape_room.stats_restored": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "41f99edbd920"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "6b9a7d2ca3c0"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -1471,6 +1781,66 @@
     }
   },
   "polish": {
+    "escape_room.config_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "4319d7096edf",
+      "translationHash": "8e2d16d490bb"
+    },
+    "escape_room.end_game_confirm": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a042149703b6",
+      "translationHash": "7ddee0443853"
+    },
+    "escape_room.generating": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "073b0c003085",
+      "translationHash": "377b13078bfe"
+    },
+    "escape_room.launch_live_tooltip": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "79b2bd5db80e"
+    },
+    "escape_room.loaded_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "292f49162e60",
+      "translationHash": "22086e1d78a8"
+    },
+    "escape_room.no_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "104f7b7136e6"
+    },
+    "escape_room.preview_confirmed": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "db9b9b281e4f"
+    },
+    "escape_room.preview_desc": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "989d394fb536",
+      "translationHash": "81cd27d66978"
+    },
+    "escape_room.reset": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "daa4180ca1c5"
+    },
+    "escape_room.start": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "03c06ef8bfcf"
+    },
+    "escape_room.stats_restored": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "0c668d165b94"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "aacc457e4221"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -1766,6 +2136,66 @@
     }
   },
   "romanian": {
+    "escape_room.config_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "4319d7096edf",
+      "translationHash": "e622ee7a6057"
+    },
+    "escape_room.end_game_confirm": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a042149703b6",
+      "translationHash": "32cbf8e93a8f"
+    },
+    "escape_room.generating": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "073b0c003085",
+      "translationHash": "c15d3a1fd51e"
+    },
+    "escape_room.launch_live_tooltip": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "e7eeca993468"
+    },
+    "escape_room.loaded_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "292f49162e60",
+      "translationHash": "3fd492be1f48"
+    },
+    "escape_room.no_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "e8369e16f27d"
+    },
+    "escape_room.preview_confirmed": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "80acb8d1b082"
+    },
+    "escape_room.preview_desc": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "989d394fb536",
+      "translationHash": "c8d39bc8caeb"
+    },
+    "escape_room.reset": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "0b1f3c1fae9c"
+    },
+    "escape_room.start": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "dfe13b3a4c38"
+    },
+    "escape_room.stats_restored": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "fbe8d69ad3fc"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "8c90988554fc"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -1836,6 +2266,66 @@
     }
   },
   "russian": {
+    "escape_room.config_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "4319d7096edf",
+      "translationHash": "972635bf30c9"
+    },
+    "escape_room.end_game_confirm": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a042149703b6",
+      "translationHash": "9aae0d058bb9"
+    },
+    "escape_room.generating": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "073b0c003085",
+      "translationHash": "c22e234efc9b"
+    },
+    "escape_room.launch_live_tooltip": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "6ee41bcbace0"
+    },
+    "escape_room.loaded_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "292f49162e60",
+      "translationHash": "d7633b16b1c0"
+    },
+    "escape_room.no_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "ee486c422398"
+    },
+    "escape_room.preview_confirmed": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "069f9907305c"
+    },
+    "escape_room.preview_desc": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "989d394fb536",
+      "translationHash": "d75bc7cdaab6"
+    },
+    "escape_room.reset": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "b5bf533a3a23"
+    },
+    "escape_room.start": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "a8924e44bd03"
+    },
+    "escape_room.stats_restored": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "87995a98d1f5"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "42713d7652d5"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -2060,6 +2550,41 @@
     }
   },
   "swahili": {
+    "escape_room.config_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "4319d7096edf",
+      "translationHash": "ea3359255fb8"
+    },
+    "escape_room.loaded_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "292f49162e60",
+      "translationHash": "4b2ea85785b8"
+    },
+    "escape_room.no_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "90f3e11a409d"
+    },
+    "escape_room.preview_confirmed": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "b907a59f4dc7"
+    },
+    "escape_room.reset": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "f5d8cf4d11cd"
+    },
+    "escape_room.start": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "5092c3ff16b9"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "c5fc3b65f3dd"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "98dfd01cb6ea"
@@ -2075,6 +2600,66 @@
     }
   },
   "tagalog": {
+    "escape_room.config_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "4319d7096edf",
+      "translationHash": "2faaea479372"
+    },
+    "escape_room.end_game_confirm": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a042149703b6",
+      "translationHash": "ddf5448dacf3"
+    },
+    "escape_room.generating": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "073b0c003085",
+      "translationHash": "e58b70942163"
+    },
+    "escape_room.launch_live_tooltip": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "719df09d1192"
+    },
+    "escape_room.loaded_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "292f49162e60",
+      "translationHash": "93a6a8db841c"
+    },
+    "escape_room.no_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "36127303a8af"
+    },
+    "escape_room.preview_confirmed": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "5f209e241e6e"
+    },
+    "escape_room.preview_desc": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "989d394fb536",
+      "translationHash": "110f69cea7f5"
+    },
+    "escape_room.reset": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "d8f6ddf812b1"
+    },
+    "escape_room.start": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "70689d34411c"
+    },
+    "escape_room.stats_restored": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "d1d172a39879"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "3d8df0995f99"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -2274,6 +2859,66 @@
     }
   },
   "ukrainian": {
+    "escape_room.config_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "4319d7096edf",
+      "translationHash": "4d23afe4ea22"
+    },
+    "escape_room.end_game_confirm": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a042149703b6",
+      "translationHash": "d85bd9b9cf63"
+    },
+    "escape_room.generating": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "073b0c003085",
+      "translationHash": "3896c79aaab7"
+    },
+    "escape_room.launch_live_tooltip": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "959e21d136b8"
+    },
+    "escape_room.loaded_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "292f49162e60",
+      "translationHash": "5317c0960231"
+    },
+    "escape_room.no_saved": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "b46675ad3ef1"
+    },
+    "escape_room.preview_confirmed": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "faf6583c26d8"
+    },
+    "escape_room.preview_desc": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "989d394fb536",
+      "translationHash": "4826133f3a09"
+    },
+    "escape_room.reset": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "6d90f742c16a"
+    },
+    "escape_room.start": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "d8636f8dd0b3"
+    },
+    "escape_room.stats_restored": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "2e7cdfd85766"
+    },
+    "escape_room.title": {
+      "reviewReason": "hand-translated-puzzle-challenge-rename",
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "42713d7652d5"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
