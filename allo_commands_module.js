@@ -1093,7 +1093,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.jumpToLatestLessonPlan();
       return t("cmd.jump_to_lesson_plan_done", "Latest lesson plan opened.");
     } },
-    { id: "open_block_suggestions", icon: "\u{1F4A1}", roles: "teacher", when: (c) => typeof c.openExportPreview === "function", label: t("cmd.open_block_suggestions", "Get document block suggestions"), aliases: ["block suggestions", "suggest blocks", "what should i add to this document", "document suggestions"], hint: t("cmd.open_block_suggestions_hint", "Open the Document Builder, where suggestions sit at the top"), run: (c) => {
+    { id: "open_block_suggestions", icon: "\u{1F4A1}", roles: ["teacher", "parent", "independent"], when: (c) => typeof c.openExportPreview === "function", label: t("cmd.open_block_suggestions", "Get document block suggestions"), aliases: ["block suggestions", "suggest blocks", "what should i add to this document", "document suggestions"], hint: t("cmd.open_block_suggestions_hint", "Open the Document Builder, where suggestions sit at the top"), run: (c) => {
       c.openExportPreview();
       return t("cmd.open_block_suggestions_done", "Document Builder opened. Block suggestions are in the highlighted panel near the top.");
     } },
@@ -1101,11 +1101,11 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openHistory();
       return t("cmd.open_history_done", "History opened.");
     } },
-    { id: "open_document_builder", opensPanel: "exportPreview", icon: "\u{1F4DD}", roles: "teacher", label: t("cmd.open_document_builder", "Open the Document Builder"), aliases: ["document builder", "builder", "export preview", "differentiate"], hint: t("cmd.open_document_builder_hint", "Build and export differentiated documents"), run: (c) => {
+    { id: "open_document_builder", opensPanel: "exportPreview", icon: "\u{1F4DD}", roles: ["teacher", "parent", "independent"], label: t("cmd.open_document_builder", "Open the Document Builder"), aliases: ["document builder", "builder", "export preview", "differentiate"], hint: t("cmd.open_document_builder_hint", "Build and export differentiated documents"), run: (c) => {
       c.openExportPreview();
       return t("cmd.open_document_builder_done", "Document Builder opened.");
     } },
-    { id: "open_wizard", icon: "\u{1FA84}", roles: "teacher", label: t("cmd.open_wizard", "Start the lesson wizard"), aliases: ["wizard", "new lesson", "create lesson", "guided setup"], hint: t("cmd.open_wizard_hint", "Step-by-step lesson creation"), run: (c) => {
+    { id: "open_wizard", icon: "\u{1FA84}", roles: ["teacher", "parent", "independent"], label: t("cmd.open_wizard", "Start the lesson wizard"), aliases: ["wizard", "new lesson", "create lesson", "guided setup"], hint: t("cmd.open_wizard_hint", "Step-by-step lesson creation"), run: (c) => {
       c.setShowWizard(true);
       return t("cmd.open_wizard_done", "Lesson wizard started.");
     } },
@@ -1113,7 +1113,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.setShowNotebook(true);
       return t("cmd.open_notebook_done", "Notebook opened.");
     } },
-    { id: "open_translate", icon: "\u{1F310}", roles: "teacher", label: t("cmd.open_translate", "Open translation"), aliases: ["translate", "translation", "language", "translate to", "translate into"], hint: t("cmd.open_translate_hint", "Translate the current content"), run: (c) => {
+    { id: "open_translate", icon: "\u{1F310}", roles: ["teacher", "parent", "independent"], label: t("cmd.open_translate", "Open translation"), aliases: ["translate", "translation", "language", "translate to", "translate into"], hint: t("cmd.open_translate_hint", "Translate the current content"), run: (c) => {
       c.openTranslateModal();
       return t("cmd.open_translate_done", "Translation dialog opened.");
     } },
@@ -1158,7 +1158,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.setShowRecentQrShares(true);
       return t("cmd.open_share_collect_done", "Share & Collect opened.");
     } },
-    { id: "open_export_menu", opensPanel: "exportMenu", icon: "\u{1F4E4}", roles: "teacher", label: t("cmd.open_export_menu", "Open the export menu"), aliases: ["export", "download menu", "share"], hint: t("cmd.open_export_menu_hint", "Export the current content"), run: (c) => {
+    { id: "open_export_menu", opensPanel: "exportMenu", icon: "\u{1F4E4}", roles: ["teacher", "parent", "independent"], label: t("cmd.open_export_menu", "Open the export menu"), aliases: ["export", "download menu", "share"], hint: t("cmd.open_export_menu_hint", "Export the current content"), run: (c) => {
       c.setShowExportMenu(true);
       return t("cmd.open_export_menu_done", "Export menu opened.");
     } },
@@ -1210,7 +1210,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openRoster();
       return t("cmd.open_roster_done", "Class roster opened.");
     } },
-    { id: "open_project_settings", icon: "\u2699\uFE0F", roles: "teacher", label: t("cmd.open_project_settings", "Open project settings"), aliases: ["project settings", "student settings", "lesson settings", "permissions", "allow ai"], hint: t("cmd.open_project_settings_hint", "Per-project AI, dictation, and Socratic gating"), run: (c) => {
+    { id: "open_project_settings", icon: "\u2699\uFE0F", roles: ["teacher", "parent", "independent"], label: t("cmd.open_project_settings", "Open project settings"), aliases: ["project settings", "student settings", "lesson settings", "permissions", "allow ai"], hint: t("cmd.open_project_settings_hint", "Per-project AI, dictation, and Socratic gating"), run: (c) => {
       c.openProjectSettings();
       return t("cmd.open_project_settings_done", "Project settings opened.");
     } },
@@ -1222,7 +1222,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openAssessmentBuilder();
       return t("cmd.open_assessment_builder_done", "Assessment Builder opened.");
     } },
-    { id: "open_udl_guide", icon: "\u267F", roles: "teacher", requiresCapabilities: ["udlGuide"], label: t("cmd.open_udl_guide", "Open the UDL Guide"), aliases: ["udl guide", "universal design guide", "udl help", "accessibility guide"], hint: t("cmd.open_udl_guide_hint", "Review UDL supports for the current lesson"), run: (c) => {
+    { id: "open_udl_guide", icon: "\u267F", roles: ["teacher", "parent", "independent"], requiresCapabilities: ["udlGuide"], label: t("cmd.open_udl_guide", "Open the UDL Guide"), aliases: ["udl guide", "universal design guide", "udl help", "accessibility guide"], hint: t("cmd.open_udl_guide_hint", "Review UDL supports for the current lesson"), run: (c) => {
       c.openUdlGuide();
       return t("cmd.open_udl_guide_done", "UDL Guide opened.");
     } },
@@ -1422,7 +1422,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openAlloStudio();
       return t("cmd.open_allo_studio_done", "Page Designer opened.");
     } },
-    { id: "open_accessibility_lab", opensPanel: "accessibilityLab", icon: "\u267F", roles: "teacher", label: t("cmd.open_accessibility_lab", "Open the Accessibility Lab"), aliases: ["accessibility lab", "a11y lab", "accessibility checker", "wcag", "contrast checker"], hint: t("cmd.open_accessibility_lab_hint", "Check & improve accessibility"), run: (c) => {
+    { id: "open_accessibility_lab", opensPanel: "accessibilityLab", icon: "\u267F", roles: ["teacher", "parent", "independent"], label: t("cmd.open_accessibility_lab", "Open the Accessibility Lab"), aliases: ["accessibility lab", "a11y lab", "accessibility checker", "wcag", "contrast checker"], hint: t("cmd.open_accessibility_lab_hint", "Check & improve accessibility"), run: (c) => {
       c.openAccessibilityLab();
       return t("cmd.open_accessibility_lab_done", "Accessibility Lab opened.");
     } },
@@ -1557,7 +1557,7 @@ function buildAlloCommands(ctx, opts = {}) {
       const next = c.adjustVoiceSpeed(0.25);
       return t("cmd.voice_speed_done", "Read-aloud speed is now ") + next + "x.";
     } },
-    { id: "open_community_catalog", opensPanel: "communityCatalog", icon: "\u{1F5C2}\uFE0F", roles: "teacher", label: t("cmd.open_community_catalog", "Open the Community Catalog"), aliases: ["community catalog", "catalog", "shared lessons", "browse lessons", "community"], hint: t("cmd.open_community_catalog_hint", "Browse shared community lessons"), run: (c) => {
+    { id: "open_community_catalog", opensPanel: "communityCatalog", icon: "\u{1F5C2}\uFE0F", roles: ["teacher", "parent", "independent"], label: t("cmd.open_community_catalog", "Open the Community Catalog"), aliases: ["community catalog", "catalog", "shared lessons", "browse lessons", "community"], hint: t("cmd.open_community_catalog_hint", "Browse shared community lessons"), run: (c) => {
       c.openCommunityCatalog();
       return t("cmd.open_community_catalog_done", "Community Catalog opened.");
     } },
@@ -1890,7 +1890,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.generateOutline();
       return t("cmd.generate_outline_done", "Generating an outline\u2026");
     } },
-    { id: "export_pack", icon: "\u{1F4E6}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.export_pack", "Download the lesson pack"), aliases: ["export pack", "download pack", "download lesson", "save lesson", "export html"], hint: t("cmd.export_pack_hint", "Download the lesson as a self-contained file"), run: (c) => {
+    { id: "export_pack", icon: "\u{1F4E6}", roles: ["teacher", "parent", "independent"], when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.export_pack", "Download the lesson pack"), aliases: ["export pack", "download pack", "download lesson", "save lesson", "export html"], hint: t("cmd.export_pack_hint", "Download the lesson as a self-contained file"), run: (c) => {
       c.exportPack();
       return t("cmd.export_pack_done", "Preparing the lesson pack download\u2026");
     } },
@@ -1912,7 +1912,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.clearWorkspace();
       return t("cmd.clear_workspace_done", "Workspace cleared.");
     } },
-    { id: "undo_settings", icon: "\u23EA", roles: "teacher", label: t("cmd.undo_settings", "Undo my last settings change"), aliases: ["undo settings", "restore settings", "revert settings", "undo that change"], hint: t("cmd.undo_settings_hint", "Restore the previous lesson settings (not generated content)"), run: (c) => {
+    { id: "undo_settings", icon: "\u23EA", roles: ["teacher", "parent", "independent"], label: t("cmd.undo_settings", "Undo my last settings change"), aliases: ["undo settings", "restore settings", "revert settings", "undo that change"], hint: t("cmd.undo_settings_hint", "Restore the previous lesson settings (not generated content)"), run: (c) => {
       c.restoreLastSettings();
       return t("cmd.undo_settings_done", "Restored your previous settings (if there was a change to undo).");
     } },
