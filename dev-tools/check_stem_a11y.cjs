@@ -34,11 +34,14 @@ const MARKDOWN_PATH = MARKDOWN_IDX >= 0 && process.argv[MARKDOWN_IDX + 1]
   ? path.resolve(ROOT, process.argv[MARKDOWN_IDX + 1])
   : path.join(ROOT, 'a11y-audit', 'stem_tool_ui_a11y_audit.md');
 
-let JSDOM, React, RDS;
+let JSDOM, React, RDS, RDC;
 try {
   JSDOM = require(path.join(MODULES, 'jsdom')).JSDOM;
   React = require(path.join(MODULES, 'react'));
   RDS = require(path.join(MODULES, 'react-dom', 'server'));
+  // Client renderer, for tools that build their UI in an effect. Optional: an
+  // older tree without react-dom/client keeps the server-only behaviour.
+  try { RDC = require(path.join(MODULES, 'react-dom', 'client')); } catch (_) { RDC = null; }
 } catch (e) {
   console.warn('[check_stem_a11y] SKIPPED - React/jsdom not found at ' + MODULES + ' (' + e.message + ')');
   process.exit(0);
@@ -334,6 +337,85 @@ function makeCtx(toolId, store, overrides) {
 
 function countInteractive(html) {
   return (String(html).match(/<button\b|<select\b|<textarea\b|<a\s[^>]*\bhref=|role="button"|<input\b(?![^>]*type="hidden")/g) || []).length;
+}
+
+// "Did this render anything a person could read or operate?" Used to decide
+// whether SSR markup is worth auditing, or whether the tool needs a real mount.
+// Tag-stripped text, not innerHTML: `<div></div>` is markup but says nothing.
+function hasReadableMarkup(html) {
+  const s = String(html || '');
+  if (countInteractive(s) > 0) return true;
+  return s.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().length > 0;
+}
+
+/*
+ * Render a tool the way a browser does: mount it, let effects run, then read
+ * what is actually on the page — INCLUDING shadow roots, which is where
+ * fieldJourneys and applab put their entire UI.
+ *
+ * Returns '' when a real mount is unavailable or fails, so the caller keeps the
+ * server-rendered markup and this can only ever add coverage.
+ */
+function renderMounted(id) {
+  if (!RDC || typeof RDC.createRoot !== 'function') return '';
+  const act = typeof React.act === 'function'
+    ? React.act
+    : (fn) => { fn(); };
+  const previousActFlag = global.IS_REACT_ACT_ENVIRONMENT;
+  global.IS_REACT_ACT_ENVIRONMENT = true;
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+  let root = null;
+  try {
+    const store = newStore();
+    const ctx = makeCtx(id, store, null);
+    root = RDC.createRoot(container);
+    act(() => { root.render(React.createElement(function StemA11yMount() {
+      return window.StemLab.renderTool(id, ctx);
+    })); });
+    // A second pass lets a tool that sets state in its first effect settle,
+    // the mounted analogue of the SETTLE_PASSES loop above.
+    act(() => {});
+    return serializeWithShadow(container);
+  } catch (_) {
+    return '';
+  } finally {
+    try { if (root) act(() => { root.unmount(); }); } catch (_) { /* teardown is best-effort */ }
+    try { container.remove(); } catch (_) {}
+    global.IS_REACT_ACT_ENVIRONMENT = previousActFlag;
+  }
+}
+
+/*
+ * Serialize an element tree, splicing each shadow root's content in place of
+ * its host's children.
+ *
+ * The auditor works on an HTML STRING, so shadow content has to be flattened
+ * into that string or every check downstream stays blind to it. Flattening is
+ * faithful for the things this gate asks about — names, roles, labels, ids —
+ * because those are per-element and do not depend on tree boundaries.
+ */
+function serializeWithShadow(node) {
+  const parts = [];
+  Array.from(node.childNodes).forEach(function (child) {
+    if (child.nodeType === 3) { parts.push(child.textContent || ''); return; }
+    if (child.nodeType !== 1) return;
+    // A subtree with no shadow root anywhere inside it serializes as-is; only
+    // rebuild the tag when there is shadow content to splice in, so ordinary
+    // markup is never reconstructed by hand.
+    const shadow = child.shadowRoot;
+    if (!shadow && !child.querySelector('*')) { parts.push(child.outerHTML); return; }
+
+    const tag = child.tagName.toLowerCase();
+    const attrs = Array.from(child.attributes)
+      .map(function (a) { return ' ' + a.name + '="' + String(a.value).replace(/"/g, '&quot;') + '"'; })
+      .join('');
+    // Keep the host's own attributes — a host may carry the accessible name —
+    // and use the shadow content in place of its (empty) light children.
+    const inner = shadow ? serializeWithShadow(shadow) : serializeWithShadow(child);
+    parts.push('<' + tag + attrs + '>' + inner + '</' + tag + '>');
+  });
+  return parts.join('');
 }
 
 function newStore() {
@@ -878,6 +960,21 @@ ids.forEach(function (id) {
   }
   try {
     html = renderSettled(null);
+    // A tool that builds its UI in an EFFECT renders empty under
+    // renderToStaticMarkup, because SSR never runs effects. fieldJourneys and
+    // applab do exactly that, into a shadow root — so this gate reported
+    // "rendered no readable content" for a tool that works, and that single
+    // false error was the only error it had. A gate whose one finding is wrong
+    // teaches the next reader to ignore all of them.
+    //
+    // Mount for real and let the effects run, then audit the shadow content.
+    if (!hasReadableMarkup(html)) {
+      const mounted = renderMounted(id);
+      if (mounted && hasReadableMarkup(mounted)) {
+        html = mounted;
+        auditedAs = 'client-mount';
+      }
+    }
     // Some tools render only a "turn on Teacher Mode" notice by default (forge).
     // Escalate once so the real UI gets audited instead of the gate notice.
     if (countInteractive(html) === 0) {

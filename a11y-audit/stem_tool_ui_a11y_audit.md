@@ -1,34 +1,32 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-09-16T00:22:52.600Z
+Generated: 2026-09-21T13:02:07.865Z
 
 ## Scope
 
-- Registered STEM tools audited: 151
-- Plugin files loaded: 149
-- Shared shell coverage: 150/151 tools
+- Registered STEM tools audited: 152
+- Plugin files loaded: 150
+- Shared shell coverage: 151/152 tools
 - Light-background opt-outs: 1
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 9 |
-| High-confidence errors | 1 |
-| Tool-level warnings | 6 |
+| Total findings | 6 |
+| High-confidence errors | 0 |
+| Tool-level warnings | 4 |
 | Review notices | 2 |
 | Tools with any finding | 4 |
-| Tools with high-confidence errors | 1 |
-| Tools with canvas surfaces | 45 |
+| Tools with high-confidence errors | 0 |
+| Tools with canvas surfaces | 46 |
 
 ## Top Findings
 
 | Severity | Code | Findings | Tools | Example tools | Recommendation |
 | --- | --- | ---: | ---: | --- | --- |
-| error | `empty-render` | 1 | 1 | fieldJourneys | Render a real first screen with a visible title, purpose, and starting action. |
-| warning | `no-interactive-controls` | 3 | 3 | coasterLab, fieldJourneys, geoSandbox | Confirm the first screen really has no control. If it does, the audit is stuck on a placeholder and the tool is effectively unaudited. |
+| warning | `no-interactive-controls` | 2 | 2 | coasterLab, geoSandbox | Confirm the first screen really has no control. If it does, the audit is stuck on a placeholder and the tool is effectively unaudited. |
 | warning | `placeholder-render` | 2 | 2 | geoSandbox, lawNavigator | The audit only saw a loading/gated screen. Give the harness what the tool waits on (host state, 3D loader, network stub) so the real first screen gets audited. |
-| warning | `heading` | 1 | 1 | fieldJourneys | Start each tool with a semantic heading so screen-reader users can orient quickly. |
 | notice | `light-background` | 1 | 1 | fieldJourneys | Confirm light-background tools still pass contrast across light, dark, and high-contrast themes. |
 | notice | `metadata` | 1 | 1 | fieldJourneys | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
 
@@ -54,7 +52,7 @@ Generated: 2026-09-16T00:22:52.600Z
 | `aquacultureLab` AquacultureLab: Mussel Farm Sim | science | standard | 182 | 6 | 0 | 0 | 0 | 0 |  |
 | `aquarium` Aquarium Lab | science | standard | 28 | 0 | 0 | 0 | 0 | 0 |  |
 | `arccity` Arc City | strategy | standard | 28 | 0 | 0 | 0 | 0 | 0 |  |
-| `archStudio` Architecture Studio | engineering | standard | 100 | 3 | 1 | 0 | 0 | 0 |  |
+| `archStudio` Architecture Studio | engineering | standard | 101 | 3 | 1 | 0 | 0 | 0 |  |
 | `areaPerimeter` Area & Perimeter Lab | math | standard | 10 | 2 | 0 | 0 | 0 | 0 |  |
 | `areamodel` Area Model | math | standard | 18 | 5 | 0 | 0 | 0 | 0 |  |
 | `arithmeticStudio` Arithmetic Strategy Studio | math | standard | 13 | 2 | 0 | 0 | 0 | 0 |  |
@@ -71,6 +69,7 @@ Generated: 2026-09-16T00:22:52.600Z
 | `birdLab` BirdLab — I-Spy Ornithology | science | standard | 127 | 1 | 0 | 0 | 0 | 0 |  |
 | `brainAtlas` Brain Atlas Explorer | science | standard | 71 | 1 | 1 | 0 | 0 | 0 |  |
 | `bridgeLab` Bridge Engineering Lab | science | standard | 26 | 9 | 0 | 0 | 0 | 0 |  |
+| `butterfly` Butterfly Habitat Lab | science | standard | 22 | 1 | 1 | 0 | 0 | 0 |  |
 | `calculus` Calculus | math | standard | 30 | 9 | 0 | 0 | 0 | 0 |  |
 | `cell` Cell Simulator | science | standard | 44 | 3 | 12 | 0 | 0 | 0 |  |
 | `cellAtlasLab` Cell Atlas Lab | biology | standard | 23 | 0 | 0 | 0 | 0 | 0 |  |
@@ -101,7 +100,7 @@ Generated: 2026-09-16T00:22:52.600Z
 | `ecosystem` Ecosystem Simulator | science | standard | 49 | 13 | 1 | 0 | 0 | 0 |  |
 | `epidemicSim` Epidemic Modeling Lab | Life Science | standard | 25 | 14 | 1 | 0 | 0 | 0 |  |
 | `evoLab` EvoLab — Evolution | biology | standard | 33 | 0 | 0 | 0 | 0 | 0 |  |
-| `fieldJourneys` Field Journeys (Pilot) | Ecology & Environment | light opt-out | 0 | 0 | 0 | 1 | 2 | 2 | empty-render x1, heading x1, light-background x1, metadata x1, no-interactive-controls x1 |
+| `fieldJourneys` Field Journeys (Pilot) | Ecology & Environment | light opt-out | 3 | 1 | 0 | 0 | 0 | 2 | light-background x1, metadata x1 |
 | `fireEcology` Fire Ecology & Indigenous Stewardship | science | standard | 28 | 0 | 0 | 0 | 0 | 0 |  |
 | `firstResponse` First Response Lab | life-skills | standard | 1 | 0 | 0 | 0 | 0 | 0 |  |
 | `fisherLab` FisherLab: Boating & Fishing Sim | science | standard | 39 | 6 | 0 | 0 | 0 | 0 |  |
@@ -110,8 +109,8 @@ Generated: 2026-09-16T00:22:52.600Z
 | `fractionViz` Fraction Lab | math | standard | 41 | 2 | 1 | 0 | 0 | 0 |  |
 | `fractions` Fraction Lab | math | standard | 41 | 2 | 1 | 0 | 0 | 0 |  |
 | `freeForms` Free Forms | creative | standard | 14 | 0 | 0 | 0 | 0 | 0 |  |
-| `funcGrapher` Function Grapher | math | standard | 52 | 13 | 1 | 0 | 0 | 0 |  |
-| `galaxy` Galaxy Explorer | science | standard | 68 | 4 | 1 | 0 | 0 | 0 |  |
+| `funcGrapher` Function Grapher | math | standard | 53 | 15 | 1 | 0 | 0 | 0 |  |
+| `galaxy` Galaxy Explorer | science | standard | 71 | 5 | 1 | 0 | 0 | 0 |  |
 | `gameStudio` Game Design Studio | creativity | standard | 34 | 3 | 0 | 0 | 0 | 0 |  |
 | `geoQuiz` Geography Explorer | geo | standard | 12 | 2 | 0 | 0 | 0 | 0 |  |
 | `geoSandbox` Geometry Sandbox | math | standard | 0 | 0 | 0 | 0 | 2 | 0 | no-interactive-controls x1, placeholder-render x1 |
@@ -127,9 +126,9 @@ Generated: 2026-09-16T00:22:52.600Z
 | `learningLab` Learning Lab | life-skills | standard | 22 | 0 | 0 | 0 | 0 | 0 |  |
 | `lifeSkills` Life Skills Lab | Life Skills | standard | 65 | 3 | 0 | 0 | 0 | 0 |  |
 | `llmLiteracy` AI Literacy Lab | technology | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
-| `logicLab` Logic Lab | math | standard | 41 | 1 | 0 | 0 | 0 | 0 |  |
+| `logicLab` Logic Lab | math | standard | 39 | 1 | 0 | 0 | 0 | 0 |  |
 | `lumen` Lumen | data | standard | 2 | 0 | 0 | 0 | 0 | 0 |  |
-| `machineLab` Machine Lab | engineering | standard | 38 | 8 | 0 | 0 | 0 | 0 |  |
+| `machineLab` Machine Lab | engineering | standard | 40 | 8 | 0 | 0 | 0 | 0 |  |
 | `magnetism` Magnetism Lab | science | standard | 41 | 4 | 0 | 0 | 0 | 0 |  |
 | `microbiology` Microbiology Lab | science | standard | 14 | 0 | 0 | 0 | 0 | 0 |  |
 | `migration` Migration & Wind Lab | science | standard | 14 | 4 | 0 | 0 | 0 | 0 |  |
@@ -155,7 +154,7 @@ Generated: 2026-09-16T00:22:52.600Z
 | `playlab` PlayLab | science | standard | 32 | 5 | 1 | 0 | 0 | 0 |  |
 | `printLab` Print Lab | engineering | standard | 26 | 4 | 1 | 0 | 0 | 0 |  |
 | `printingPress` PrintingPress | history-engineering | standard | 25 | 0 | 0 | 0 | 0 | 0 |  |
-| `probability` Probability Lab | math | standard | 39 | 5 | 0 | 0 | 0 | 0 |  |
+| `probability` Probability Lab | math | standard | 32 | 5 | 0 | 0 | 0 | 0 |  |
 | `protractor` Angle Explorer | math | standard | 69 | 5 | 0 | 0 | 0 | 0 |  |
 | `punnett` Punnett Square Lab | science | standard | 26 | 2 | 0 | 0 | 0 | 0 |  |
 | `raptorHunt` Raptor Hunt: Predator Physics + Biology | science | standard | 50 | 1 | 0 | 0 | 0 | 0 |  |
