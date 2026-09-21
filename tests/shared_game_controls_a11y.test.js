@@ -42,7 +42,13 @@ describe('Shared game controls and review accessibility', () => {
     const source = files[0][1];
     expect(source).toContain('<div aria-hidden="true" className={`w-6 h-6');
     expect(source).toContain('<span className="sr-only">{item.status');
-    expect(source).toContain("t('common.incorrect')");
+    // Pin the translation KEY, not the call syntax. The source now routes this
+    // through `gameMessage(t, key, fallback)` -- a helper that translates and
+    // falls back to English when the key is missing, which is better behaviour
+    // than the bare `t()` this used to assert. The key is what must survive:
+    // it is present in the source AND in both built copies, whereas the helper
+    // name only survives in the source.
+    expect(source).toContain("'common.incorrect'");
   });
 
   it('provides 44 CSS-pixel review actions with visible focus and decorative replay icon hiding', () => {
