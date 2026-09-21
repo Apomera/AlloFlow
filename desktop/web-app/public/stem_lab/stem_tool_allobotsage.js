@@ -1550,11 +1550,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       var expeditionsDone  = d.expeditionsCompleted || 0;
       var totalCasts       = d.totalCasts || 0;
       var critCasts        = d.critCasts || 0;
-      var seenSpells       = d.seenSpells || [];
-      var equippedLoadout  = d.equippedLoadout || [];
+      // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
+      var seenSpells = Array.isArray(d.seenSpells) ? d.seenSpells : [];
+      var equippedLoadout = Array.isArray(d.equippedLoadout) ? d.equippedLoadout : [];
 
       // ── Transient expedition state ──
-      var expedition       = d.expedition || null;
+      // A bare {} passed the old object check and then threw on
+      // expedition.enemy.hp and expedition.castLog.length. A partial run is
+      // not resumable, so require the fields every consumer reads.
+      var expedition = (d.expedition && typeof d.expedition === 'object' && !Array.isArray(d.expedition)
+        && d.expedition.enemy && typeof d.expedition.enemy === 'object'
+        && Array.isArray(d.expedition.castLog)) ? d.expedition : null;
       // expedition shape: { enemy: {id, hp, maxHp, atk, icon, name, flavor}, turn: 'player'|'enemy', log: [], playerHp, playerMaxHp }
 
       // Unlock detection
@@ -2289,7 +2295,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
 
       // ══ AI-WORKLOAD INQUIRY widget (H7b'') ══
       if (phase === 'inquiry') {
-        var iq = d.aiInquiry || { aiAssist: 50, learnerEffort: 50, novelty: 5, errorCost: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        // A string is truthy and passes `||` straight through, leaving
+        // iq.aiAssist and iq.log undefined. Merge over the defaults so a
+        // partial or wrong-typed saved object still has every field.
+        var _iqDefaults = { aiAssist: 50, learnerEffort: 50, novelty: 5, errorCost: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var iq = Object.assign({}, _iqDefaults, (d.aiInquiry && typeof d.aiInquiry === 'object' && !Array.isArray(d.aiInquiry)) ? d.aiInquiry : {});
+        if (!Array.isArray(iq.log)) iq.log = [];
+        ['aiAssist', 'learnerEffort', 'novelty', 'errorCost'].forEach(function(k) {
+          if (typeof iq[k] !== 'number' || !isFinite(iq[k])) iq[k] = _iqDefaults[k];
+        });
         var setIQ = function(patch) { updKey('aiInquiry', Object.assign({}, iq, patch)); };
         var setKey = function(k, v) { var p = {}; p[k] = v; setIQ(p); };
         // learning gain = effort × novelty, dampened by over-assist
@@ -2781,7 +2795,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               }, t('stem.allobotsage.skip_clear_all', 'Skip / clear all'))
             ),
             (function() {
-              var selectedGoals = d.selectedGoals || [];
+              var selectedGoals = Array.isArray(d.selectedGoals) ? d.selectedGoals : [];
               var GOALS = [
                 { id: 'crit_5',      icon: '\u2728', label: t('stem.allobotsage.land_5_critical_casts', 'Land 5 critical casts'),          desc: t('stem.allobotsage.rewards_fast_correct_retrieval', 'Rewards fast + correct retrieval') },
                 { id: 'spell_variety', icon: '\ud83c\udf08', label: t('stem.allobotsage.use_all_3_equipped_spells', 'Use all 3 equipped spells'),     desc: t('stem.allobotsage.rewards_versatility_not_one_trick', 'Rewards versatility, not one-trick') },
@@ -2854,7 +2868,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 // Snapshot the run-start state so debrief can compute goal progress
                 goals: (d.selectedGoals || []).slice(),
                 goalsStartCrits: critCasts,
-                goalsStartInterrupts: d.interruptCount || 0,
+                goalsStartInterrupts: ((typeof d.interruptCount === 'number' && isFinite(d.interruptCount)) ? d.interruptCount : 0),
                 goalsSpellsUsed: {}
               };
               updSage({ phase: 'expedition', expedition: exp });
@@ -3167,7 +3181,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             nextEnemy.interrupted = true;
             nextLog = nextLog.concat([{ text: '🛡️ ' + enemy.name + '’s special is interrupted by your critical strike!', kind: 'player' }]);
             if (nextLog.length > 18) nextLog = nextLog.slice(-18);
-            updKey('interruptCount', (d.interruptCount || 0) + 1);
+            updKey('interruptCount', ((typeof d.interruptCount === 'number' && isFinite(d.interruptCount)) ? d.interruptCount : 0) + 1);
           }
           // ── Per-run cast log (fuels the enriched debrief screen) ──
           // Each entry records: spell id, result, confidence, prompt, was-boss.
@@ -3715,7 +3729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           (expedition.goals && expedition.goals.length > 0) && (function() {
             var goals = expedition.goals;
             var critsThisRun = (d.critCasts || 0) - (expedition.goalsStartCrits || 0);
-            var interruptsThisRun = (d.interruptCount || 0) - (expedition.goalsStartInterrupts || 0);
+            var interruptsThisRun = ((typeof d.interruptCount === 'number' && isFinite(d.interruptCount)) ? d.interruptCount : 0) - (expedition.goalsStartInterrupts || 0);
             var spellsUsed = Object.keys(expedition.goalsSpellsUsed || {}).length;
             var GOAL_DEFS = {
               crit_5:        { icon: '\u2728', label: t('stem.allobotsage.land_5_critical_casts_2', 'Land 5 critical casts'),     check: function() { return critsThisRun >= 5; },        progress: critsThisRun + '/5 crits' },
@@ -4537,7 +4551,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             ),
             h('div', { className: 'p-3 rounded-xl bg-white border-2 border-rose-200 text-center' },
               h('div', { className: 'text-[0.5625rem] font-bold text-rose-700 uppercase tracking-wider' }, t('stem.allobotsage.interrupts', 'Interrupts')),
-              h('div', { className: 'text-2xl font-bold text-rose-600 mt-1' }, (d.interruptCount || 0)),
+              h('div', { className: 'text-2xl font-bold text-rose-600 mt-1' }, ((typeof d.interruptCount === 'number' && isFinite(d.interruptCount)) ? d.interruptCount : 0)),
               h('div', { className: 'text-[0.5625rem] text-slate-400 mt-0.5' }, t('stem.allobotsage.boss_specials_blocked', 'boss specials blocked'))
             )
           ),
@@ -4676,7 +4690,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('section', { className: 'rounded-xl border border-sky-200 bg-sky-50 p-3 mb-4' },
             h('h2', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-sky-700 mb-2' }, t('stem.allobotsage.reflection_journal', '📝 Reflection Journal')),
             (function() {
-              var reflections = d.reflections || [];
+              var reflections = Array.isArray(d.reflections) ? d.reflections : [];
               if (reflections.length === 0) {
                 return h('p', { className: 'text-[0.6875rem] text-sky-700 italic' },
                   t('stem.allobotsage.no_reflections_saved_yet_after_each_ex', 'No reflections saved yet. After each expedition, write one thing you noticed or learned. Future you will thank present you.')

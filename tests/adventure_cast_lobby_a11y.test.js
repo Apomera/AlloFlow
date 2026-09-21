@@ -88,7 +88,16 @@ describe('adventure mission report accessibility', () => {
     expect(source).toContain('role="progressbar"');
     expect(source).toContain('aria-valuemin={0} aria-valuemax={100} aria-valuenow={proficiency}');
     expect(source).toContain('Math.max(0, Math.min(100, Number(climax?.masteryScore) || 0))');
-    expect(source).toContain('bg-green-700 text-white hover:bg-green-600');
+    // This used to pin the exact green class pair. The button was restyled to
+    // slate, which RAISED contrast (5.02:1 -> 8.40:1, hover 7.58:1), so pin the
+    // property that matters instead of one palette: the action carries an
+    // explicit background AND foreground, never a background alone.
+    const newGameIdx = source.indexOf("aria-label={t('adventure.new_game')");
+    expect(newGameIdx).toBeGreaterThan(-1);
+    const newGameBtn = source.slice(newGameIdx, newGameIdx + 600);
+    expect(newGameBtn).toMatch(/className="[^"]*\bbg-\w+-\d{3}\b/);
+    expect(newGameBtn).toMatch(/className="[^"]*\btext-(?:white|\w+-\d{3})\b/);
+    expect(newGameBtn).toMatch(/hover:bg-\w+-\d{3}/);
     expect(source).toContain("<button aria-label={t('adventure.new_game') || \"New Game\"}");
     expect(source).not.toContain("<button aria-label={t('common.on_close')}");
   });

@@ -1082,12 +1082,20 @@
           var turtleState = d.turtle || { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 };
           var drawnLines = d.lines || [];
           var running = d.running || false;
-          var stepIdx = d.stepIdx != null ? d.stepIdx : -1;
+          var stepIdx = (typeof d.stepIdx === 'number' && isFinite(d.stepIdx)) ? d.stepIdx : -1;
           var rawCodeMode = d.codeMode || 'visual';
           var codeMode = rawCodeMode === 'text' || rawCodeMode === 'outline' ? rawCodeMode : 'visual';
           var workspaceTab = d.workspaceTab || 'build';
           var textCode = d.textCode || '';
-          var challengeIdx = d.challengeIdx != null ? d.challengeIdx : -1;
+          // -1 is the 'no challenge open' sentinel the render checks for, so an
+      // invalid value must fall back to it rather than to 0.
+      // -1 is the 'no challenge open' sentinel the render checks for, so an
+      // invalid value falls back to it rather than to 0. The upper bound is
+      // NOT checked here: CHALLENGES is declared deeper in the render (1318)
+      // and is not in scope at this point, so referencing it would throw.
+      // Consumers index it as CHALLENGES[challengeIdx] after their own
+      // `>= 0` test, and an out-of-range positive reads as undefined there.
+      var challengeIdx = (Number.isInteger(d.challengeIdx) && d.challengeIdx >= 0) ? d.challengeIdx : -1;
           var completed = d.completed || [];
           var speed = d.speed || 200;
           var showTurtle = d.showTurtle !== false;
@@ -1227,7 +1235,7 @@
           var turtleSkin = d.turtleSkin || '🐢';
           var extraTurtles = d.extraTurtles || [];   // [{name, x, y, angle, penDown, color, width, skin}]
           var showCoordPicker = d.showCoordPicker || false;
-          var timelinePos = d.timelinePos != null ? d.timelinePos : -1;
+          var timelinePos = (typeof d.timelinePos === 'number' && isFinite(d.timelinePos)) ? d.timelinePos : -1;
           var timelineFrames = d.timelineFrames || [];
           var showImportExport = d.showImportExport || false;
           var bgMusicNotes = d.bgMusicNotes || [];
@@ -1289,7 +1297,8 @@
           var robotBlocks = d.robotBlocks || [];
           var robotBlocklyState = d.robotBlocklyState || null;
           var robotRunning = d.robotRunning || false;
-          var robotChallengeIdx = d.robotChallengeIdx != null ? d.robotChallengeIdx : -1;
+          // ROBOT_CHALLENGES is declared later (1419) and out of scope here.
+          var robotChallengeIdx = (Number.isInteger(d.robotChallengeIdx) && d.robotChallengeIdx >= 0) ? d.robotChallengeIdx : -1;
           var robotCompleted = d.robotCompleted || [];
           var robotTrail = d.robotTrail || [];
 

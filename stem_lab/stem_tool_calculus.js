@@ -169,13 +169,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           tab: d.tab || 'integral',
           vizView: d.vizView || 'zoom',
           vizFn: d.vizFn || 'quadratic',
-          vizZoom: d.vizZoom !== undefined ? d.vizZoom : 1,
-          vizX0: d.vizX0 !== undefined ? d.vizX0 : 0,
-          vizFtcX: d.vizFtcX !== undefined ? d.vizFtcX : -1,
-          vizMotionT: d.vizMotionT !== undefined ? d.vizMotionT : 0,
+          vizZoom: (typeof d.vizZoom === 'number' && isFinite(d.vizZoom)) ? d.vizZoom : 1,
+          vizX0: (typeof d.vizX0 === 'number' && isFinite(d.vizX0)) ? d.vizX0 : 0,
+          vizFtcX: (typeof d.vizFtcX === 'number' && isFinite(d.vizFtcX)) ? d.vizFtcX : -1,
+          vizMotionT: (typeof d.vizMotionT === 'number' && isFinite(d.vizMotionT)) ? d.vizMotionT : 0,
           vizOptimX: d.vizOptimX !== undefined ? d.vizOptimX : null,
-          vizSlopeX: d.vizSlopeX !== undefined ? d.vizSlopeX : 0,
-          vizSlopeY: d.vizSlopeY !== undefined ? d.vizSlopeY : 0,
+          vizSlopeX: (typeof d.vizSlopeX === 'number' && isFinite(d.vizSlopeX)) ? d.vizSlopeX : 0,
+          vizSlopeY: (typeof d.vizSlopeY === 'number' && isFinite(d.vizSlopeY)) ? d.vizSlopeY : 0,
           vizRiemannMode: d.vizRiemannMode || 'midpoint',
           vizUserInteracted: d.vizUserInteracted || {},
           vizSlopeSeeds: d.vizSlopeSeeds || [],
@@ -1893,11 +1893,16 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var antiC2 = d.antiC2 || '';
 
         // Challenge state
-        var cq = d.calcQuiz || null;
+        // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
+        // Object-shape only. An earlier version also required `options`, but the
+        // tool reads `opts` (and already guards it at the .map site), so that
+        // extra condition REJECTED valid quizzes and blanked the challenge
+        // panel — caught by tests/calculus_challenge_correctness.test.js.
+        var cq = (d.calcQuiz && typeof d.calcQuiz === 'object' && !Array.isArray(d.calcQuiz)) ? d.calcQuiz : null;
         var cScore = d.calcScore || 0;
         var cStreak = d.calcStreak || 0;
         var cMode = d.calcChallengeMode || 'estimate';
-        var cHint = d.calcHint || '';
+        var cHint = typeof d.calcHint === 'string' ? d.calcHint : '';
         var CALC_CHALLENGES = [
           { id: 'estimate',  label: '\uD83C\uDFAF Estimate \u222B',  activeClass: 'bg-red-700' },
           { id: 'overunder', label: '\u2B06\u2B07 Over or Under?',    activeClass: 'bg-orange-700' },
@@ -2510,7 +2515,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('div',{className:'grid grid-cols-2 gap-2'},
                 (cMode==='overunder'
                   ? [{id:'over',label:'\u2B06 OVERestimate'},{id:'exact',label:'\u2713 EXACT'},{id:'under',label:'\u2B07 UNDERestimate'}]
-                  : cMode==='method'?cq.opts:cq.opts.map(function(o){return{id:o,label:cMode==='minN'?'n = '+o:String(o)};})
+                  // `overunder` builds its own options above, so a quiz with no
+                  // opts is VALID there; only these branches need the array.
+                  : cMode==='method'?(Array.isArray(cq.opts)?cq.opts:[]):(Array.isArray(cq.opts)?cq.opts:[]).map(function(o){return{id:o,label:cMode==='minN'?'n = '+o:String(o)};})
                 ).map(function(opt){
                   return h('button',{ key:String(opt.id),onClick:function(){checkCalcAnswer(opt.id);stemBeep&&stemBeep('click');},className:'px-3 py-2.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-red-400 hover:bg-red-50 transition-all'},opt.label);
                 })
@@ -3152,9 +3159,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           // ── AI Calculus Tutor (reading-level aware) ──
           (function () {
             var aiLevel = d.aiLevel || 'grade5';
-            var aiText = d.aiExplain || '';
+            var aiText = typeof d.aiExplain === 'string' ? d.aiExplain : '';
             var aiLoading = !!d.aiLoading;
-            var aiError = d.aiError || '';
+            var aiError = typeof d.aiError === 'string' ? d.aiError : '';
             var LEVELS = [
               { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences, no jargon' },
               { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, with a concrete everyday example' },

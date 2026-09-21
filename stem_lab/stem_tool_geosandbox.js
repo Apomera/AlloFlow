@@ -5760,7 +5760,7 @@ window.StemLab = window.StemLab || {
       // ── Loading state ──
       if (!labToolData._threeLoaded) {
         return h('div', { id: 'allo-geo-sandbox', className: 'flex flex-col items-center justify-center gap-4 p-12 opacity-90' },
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, gd._srMsg || ''),
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof gd._srMsg === 'string' ? gd._srMsg : ''),
           h('div', { className: 'text-5xl' }, '\uD83D\uDD37'),
           h('div', { role: labToolData._geoEngineError ? 'alert' : 'status', className: 'text-slate-200 text-lg' }, labToolData._geoEngineError ? t('stem.geosandbox.engine_failed', 'The 3D engine could not load. Check your connection and try again. Your saved work is unchanged.') : t('stem.geosandbox.loading_3d_engine', 'Loading 3D engine...')),
           labToolData._geoEngineError && h('button', {type:'button', className:'geo-workbench-button', onClick:function(){loadGeometryEngine(setLabToolData, addToast);}}, t('stem.geosandbox.retry', 'Retry'))

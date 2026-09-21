@@ -1,0 +1,27 @@
+{
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 0.9967567567567568,
+    "textRatio": 1,
+    "textLost": 0
+  },
+  "repaired": {
+    "open": false
+  },
+  "evidence": [
+    {
+      "totalChunks": 1,
+      "shippedOriginalChunks": 0,
+      "deferredChunks": 0,
+      "candidateRejectionCount": 0,
+      "candidateRejections": []
+    }
+  ],
+  "source": {
+    "open": false
+  },
+  "candidate": {
+    "open": false
+  }
+}

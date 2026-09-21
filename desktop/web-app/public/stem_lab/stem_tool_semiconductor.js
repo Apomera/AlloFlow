@@ -1784,7 +1784,7 @@ window.StemLab = window.StemLab || {
 
       // ═══ AI RESPONSE BOX (shared) ═══
       function aiBox() {
-        if (!d.aiExplain && !d.aiLoading) return null;
+        if (!(typeof d.aiExplain === 'string' && d.aiExplain) && !d.aiLoading) return null;
         return h('div', { className: 'mt-2 p-2 rounded-lg bg-indigo-900/40 border border-indigo-700 text-xs text-indigo-200' },
           d.aiLoading ? h('span', { className: 'motion-reduce:animate-none animate-pulse' }, t('stem.semiconductor.thinking', '\u2728 Thinking\u2026')) : h(React.Fragment, null,
             h('span', null, d.aiExplain),
@@ -4842,7 +4842,7 @@ window.StemLab = window.StemLab || {
       var chipRoutes = [
         { label: t('stem.semiconductor.route_band_structure', 'Band structure'), value: activeBandGap.toFixed(2) + ' eV', note: activeMaterial.name, accent: '#38bdf8', onClick: function() { updMulti({ mode: 'explore', subtool: 'bandgap', aiExplain: null }); } },
         { label: t('stem.semiconductor.route_doping', 'Doping'), value: (DOPANTS[d.dopant] || DOPANTS.none).name, note: (d.dopantCount || 3) + ' dopants on the lattice', accent: '#f59e0b', onClick: function() { updMulti({ mode: 'explore', subtool: 'doping', aiExplain: null }); } },
-        { label: t('stem.semiconductor.route_junctions', 'Junctions'), value: ((d.pnBias || 0).toFixed(1)) + ' V', note: t('stem.semiconductor.route_junctions_note', 'Bias a diode or LED'), accent: '#a78bfa', onClick: function() { updMulti({ mode: 'explore', subtool: 'pnjunction', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_junctions', 'Junctions'), value: (((typeof d.pnBias === 'number' && isFinite(d.pnBias)) ? d.pnBias : 0).toFixed(1)) + ' V', note: t('stem.semiconductor.route_junctions_note', 'Bias a diode or LED'), accent: '#a78bfa', onClick: function() { updMulti({ mode: 'explore', subtool: 'pnjunction', aiExplain: null }); } },
         { label: t('stem.semiconductor.route_chip_logic', 'Chip logic'), value: d.gateExperiment==='halfadder'?'Half adder':semiLogic(d.gateType).type, note: t('stem.semiconductor.route_chip_logic_note', 'Build gates and CMOS flow'), accent: '#34d399', onClick: function() { updMulti({ mode: 'explore', subtool: 'gates', aiExplain: null }); } },
         { label: t('stem.semiconductor.route_solar_led', 'Solar + LED'), value: semiLed(d).mix?'RGB mix':semiLed(d).current + ' mA', note: t('stem.semiconductor.route_solar_led_note', 'Turn photons into power and color'), accent: '#fb7185', onClick: function() { updMulti({ mode: 'explore', subtool: 'ledspec', aiExplain: null }); } },
         { label: t('stem.semiconductor.route_practice', 'Practice'), value: tab === 'challenge' ? t('stem.semiconductor.active', 'Active') : t('stem.semiconductor.ready', 'Ready'), note: t('stem.semiconductor.route_practice_note', 'Challenge or Chip Defense'), accent: '#22d3ee', onClick: function() { updMulti({ mode: 'challenge', aiExplain: null }); } }
@@ -4965,7 +4965,7 @@ window.StemLab = window.StemLab || {
         var hunt = d.dopeHunt || {};
         if (subtool === 'bandgap') return !!d.showPhoton || (d.material || 'silicon') !== 'silicon' || (d.temperature || 300) !== 300;
         if (subtool === 'doping') return (d.dopant || 'phosphorus') !== 'phosphorus' || (d.dopantCount == null ? 3 : d.dopantCount) !== 3;
-        if (subtool === 'pnjunction') return Math.abs(d.pnBias || 0) > 0.001;
+        if (subtool === 'pnjunction') return Math.abs((typeof d.pnBias === 'number' && isFinite(d.pnBias)) ? d.pnBias : 0) > 0.001;
         if (subtool === 'transistor') return Math.abs(d.gateVoltage || 0) > 0.001;
         if (subtool === 'gates') {var logic=semiLogicExperiment(d);return logic.half||logic.logic.type!=='NOT'||logic.logic.a||logic.recorded.indexOf('1')>=0;}
         if (subtool === 'ivcurve') return Math.abs(d.ivSweepV || 0) > 0.001;

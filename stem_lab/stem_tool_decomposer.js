@@ -495,7 +495,7 @@
 
         var checkDecomposerChallenges = function(customState) {
           var state = customState || {};
-          var completed = state.completedChallenges || [];
+          var completed = Array.isArray(state.completedChallenges) ? state.completedChallenges : [];
           var newlyCompleted = [];
           var pointsEarned = 0;
 
@@ -761,9 +761,13 @@
         var quizScore = d.quizScore || 0;
         var quizStreak = d.quizStreak || 0;
         var bestStreak = d.bestStreak || 0;
-        var badges = d.badges || [];
-        var aiMessages = d.aiMessages || [];
-        var aiInput = d.aiInput || '';
+        // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
+        var badges = Array.isArray(d.badges) ? d.badges : [];
+        var aiMessages = Array.isArray(d.aiMessages) ? d.aiMessages : [];
+        var aiInput = typeof d.aiInput === 'string' ? d.aiInput : '';
+        // Read inline at three sites inside the render tree, where there is no
+        // statement position to guard. One guarded local here covers all three.
+        var completedChallenges = Array.isArray(d.completedChallenges) ? d.completedChallenges : [];
         var aiLoading = d.aiLoading || false;
         var band = getGradeBand(ctx);
 
@@ -779,8 +783,8 @@
         var huntStreak = d.huntStreak || 0;
 
         // Reaction Lab state
-        var reactantA = d.reactantA || null;
-        var reactantB = d.reactantB || null;
+        var reactantA = typeof d.reactantA === 'string' ? d.reactantA : null;
+        var reactantB = typeof d.reactantB === 'string' ? d.reactantB : null;
         var activeReaction = d.activeReaction || null;
         var reactionsDiscovered = d.reactionsDiscovered || {};
 
@@ -791,11 +795,11 @@
         /* ═══════════════════════════════════════════════════
            Track material exploration  (for badges)
            ═══════════════════════════════════════════════════ */
-        var explored = d.materialsExplored || [];
+        var explored = Array.isArray(d.materialsExplored) ? d.materialsExplored : [];
         if (explored.indexOf(sel.name) < 0) {
           var next = explored.concat([sel.name]);
           var atoms = (d.totalAtomsViewed || 0) + totalAtoms;
-          var bonds = d.bondsSeen || [];
+          var bonds = Array.isArray(d.bondsSeen) ? d.bondsSeen : [];
           if (bonds.indexOf(sel.bondType) < 0) bonds = bonds.concat([sel.bondType]);
           var nextState = Object.assign({}, d, {
             materialsExplored: next,
@@ -816,7 +820,7 @@
            ═══════════════════════════════════════════════════ */
         function checkBadges(stateOverride) {
           var state = Object.assign({}, d, stateOverride || {});
-          var earned = state.badges || [];
+          var earned = Array.isArray(state.badges) ? state.badges : [];
           var newBadges = [];
           BADGES.forEach(function(b) {
             if (earned.indexOf(b.id) < 0 && b.check(state)) {
@@ -1423,17 +1427,17 @@
               ),
               h('span', {
                 className: 'text-[0.6875rem] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-700'
-              }, (d.completedChallenges || []).length + '/' + DECOMPOSER_CHALLENGES.length + ' challenges')
+              }, completedChallenges.length + '/' + DECOMPOSER_CHALLENGES.length + ' challenges')
             ),
             h('div', { className: 'w-full rounded-full h-2.5 bg-sky-100/50', style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
               h('div', {
                 className: 'bg-gradient-to-r from-sky-400 to-indigo-500 h-2.5 rounded-full transition-all duration-500',
-                style: { width: Math.min(100, ((d.completedChallenges || []).length / DECOMPOSER_CHALLENGES.length) * 100) + '%', boxShadow: '0 0 8px rgba(14,165,233,0.3)' }
+                style: { width: Math.min(100, (completedChallenges.length / DECOMPOSER_CHALLENGES.length) * 100) + '%', boxShadow: '0 0 8px rgba(14,165,233,0.3)' }
               })
             ),
             h('div', { className: 'flex flex-wrap gap-2 mt-1' },
               DECOMPOSER_CHALLENGES.map(function(ch) {
-                var done = (d.completedChallenges || []).indexOf(ch.id) !== -1;
+                var done = completedChallenges.indexOf(ch.id) !== -1;
                 return h('div', {
                   key: ch.id, title: ch.name + ': ' + ch.desc + ' (' + ch.rp + ' RP)',
                   className: 'text-center cursor-default transition-all ' + (done ? 'drop-shadow-md' : 'opacity-25 grayscale'),
@@ -2582,18 +2586,18 @@
             h('div', { className: 'bg-gradient-to-r from-blue-50 via-yellow-50 to-red-50 rounded-xl border border-slate-400 p-3 mb-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('span', { className: 'text-[0.6875rem] font-bold text-blue-600' }, '\u2744\uFE0F Cold'),
-                h('span', { className: 'text-xs font-bold text-slate-700' }, (d._simTemp != null ? d._simTemp : 25) + '\u00B0C'),
+                h('span', { className: 'text-xs font-bold text-slate-700' }, ((typeof d._simTemp === 'number' && isFinite(d._simTemp)) ? d._simTemp : 25) + '\u00B0C'),
                 h('span', { className: 'text-[0.6875rem] font-bold text-red-600' }, '\uD83D\uDD25 Hot')
               ),
               h('input', {
                 type: 'range', 'aria-label': __alloT('stem.decomposer.a11y_decomposer_slider', 'Decomposer slider'), min: -200, max: 500, step: 5,
-                value: d._simTemp != null ? d._simTemp : 25,
+                value: (typeof d._simTemp === 'number' && isFinite(d._simTemp)) ? d._simTemp : 25,
                 onChange: function(e) { upd('_simTemp', parseInt(e.target.value, 10)); },
                 style: { width: '100%', accentColor: (d._simTemp || 25) < 0 ? '#3b82f6' : (d._simTemp || 25) > 200 ? '#ef4444' : '#f59e0b' }
               }),
               // State label
               (function() {
-                var temp = d._simTemp != null ? d._simTemp : 25;
+                var temp = (typeof d._simTemp === 'number' && isFinite(d._simTemp)) ? d._simTemp : 25;
                 var geo = GEOMETRY[sel.name];
                 var mp = geo ? geo.mp : 0;
                 var bp = geo ? geo.bp : 100;
@@ -2622,7 +2626,7 @@
                   canvas.width = cw * dpr; canvas.height = ch2 * dpr;
                   canvas.style.height = ch2 + 'px'; c2.scale(dpr, dpr);
 
-                  var temp = d._simTemp != null ? d._simTemp : 25;
+                  var temp = (typeof d._simTemp === 'number' && isFinite(d._simTemp)) ? d._simTemp : 25;
                   var geo = GEOMETRY[sel.name];
                   var mp = geo ? geo.mp : 0;
                   var bp = geo ? geo.bp : 100;

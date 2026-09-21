@@ -4120,7 +4120,7 @@ const d = labToolData.waterCycle || {};
 
           var checkWaterCycleChallenges = function(customState) {
             var state = customState || {};
-            var completed = state.completedChallenges || [];
+            var completed = Array.isArray(state.completedChallenges) ? state.completedChallenges : [];
             var newlyCompleted = [];
             var pointsEarned = 0;
 
@@ -4437,8 +4437,8 @@ const d = labToolData.waterCycle || {};
               return;
             }
             updMulti({ hydrologistLoading: true, hydrologistError: '', hydrologistReply: '' });
-            var landContext = 'Land scenario: rainfall intensity ' + (d.landRainIntensity != null ? d.landRainIntensity : 55) +
-              '/100, antecedent soil saturation ' + (d.landSaturation != null ? d.landSaturation : 45) +
+            var landContext = 'Land scenario: rainfall intensity ' + ((typeof d.landRainIntensity === 'number' && isFinite(d.landRainIntensity)) ? d.landRainIntensity : 55) +
+              '/100, antecedent soil saturation ' + ((typeof d.landSaturation === 'number' && isFinite(d.landSaturation)) ? d.landSaturation : 45) +
               '/100, permeability ' + (d.landPermeability || 'medium') +
               ', slope ' + (d.landSlope || 'moderate') +
               ', land cover ' + (d.landCover || 'grass') + '. ';
@@ -29585,9 +29585,9 @@ const d = labToolData.waterCycle || {};
             }
           }
 
-          var currentSolar = d.climSolar != null ? d.climSolar : 1.0;
-          var currentTemp = d.climTemp != null ? d.climTemp : 15;
-          var currentWind = d.climWind != null ? d.climWind : 1.0;
+          var currentSolar = (typeof d.climSolar === 'number' && isFinite(d.climSolar)) ? d.climSolar : 1.0;
+          var currentTemp = (typeof d.climTemp === 'number' && isFinite(d.climTemp)) ? d.climTemp : 15;
+          var currentWind = (typeof d.climWind === 'number' && isFinite(d.climWind)) ? d.climWind : 1.0;
           var precipJourneyModel = d.precipLab3dActive && d.precipHunt
             ? computeWcPrecipitationModel(d.precipHunt)
             : null;
@@ -29654,7 +29654,7 @@ const d = labToolData.waterCycle || {};
           var resolvedStageIndex = Math.max(0, STAGES.findIndex(function(stage) { return stage.id === resolvedStageId; })) + 1;
           var wcWalkthroughActive = !!d.wcWalkthroughActive;
           var wcWalkthroughIndex = typeof d.wcWalkthroughIndex === 'number' ? Math.max(0, Math.min(STAGES.length - 1, d.wcWalkthroughIndex)) : Math.max(0, resolvedStageIndex - 1);
-          var completedChallengeCount = (d.completedChallenges || []).length;
+          var completedChallengeCount = (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length;
           var viewedStageCount = countWaterCycleStagesViewed(d);
           var journeyLabel = d.journeyActive
             ? ((d.journeyState || 'ocean').replace(/_/g, ' '))
@@ -29832,8 +29832,8 @@ const d = labToolData.waterCycle || {};
             : currentWind > 1.7
               ? 'Strong wind carries vapor away quickly and pushes clouds and precipitation downwind.'
               : 'Wind transports vapor and replaces moist surface air; it is not the cycle\'s energy source.';
-          var landRainIntensity = d.landRainIntensity != null ? d.landRainIntensity : 55;
-          var landSaturation = d.landSaturation != null ? d.landSaturation : 45;
+          var landRainIntensity = (typeof d.landRainIntensity === 'number' && isFinite(d.landRainIntensity)) ? d.landRainIntensity : 55;
+          var landSaturation = (typeof d.landSaturation === 'number' && isFinite(d.landSaturation)) ? d.landSaturation : 45;
           var landPermeability = d.landPermeability || 'medium';
           var landSlope = d.landSlope || 'moderate';
           var landCover = d.landCover || 'grass';
@@ -30761,9 +30761,9 @@ const d = labToolData.waterCycle || {};
                 "data-journey-paused": String(!!d.journeyPaused),
                 "data-wc-2d-paused": String(wc2dPaused),
                 "data-journey-speed": String(d.journeySpeed || 1),
-                "data-clim-solar": String(d.climSolar != null ? d.climSolar : 1.0),
-                "data-clim-temp": String(d.climTemp != null ? d.climTemp : 15),
-                "data-clim-wind": String(d.climWind != null ? d.climWind : 1.0),
+                "data-clim-solar": String((typeof d.climSolar === 'number' && isFinite(d.climSolar)) ? d.climSolar : 1.0),
+                "data-clim-temp": String((typeof d.climTemp === 'number' && isFinite(d.climTemp)) ? d.climTemp : 15),
+                "data-clim-wind": String((typeof d.climWind === 'number' && isFinite(d.climWind)) ? d.climWind : 1.0),
                 "data-precipitation-source": precipJourneyModel ? 'lab' : 'explorer',
                 "data-precipitation-type": precipJourneyModel ? precipJourneyModel.visualType : '',
                 "data-precipitation-updraft": precipJourneyModel ? String(precipJourneyModel.config.updraft) : '',
@@ -31270,7 +31270,7 @@ const d = labToolData.waterCycle || {};
                 ),
                 React.createElement("span", {
                   className: "text-[0.6875rem] font-bold px-2.5 py-0.5 rounded-full " + (isDark ? "bg-sky-950/50 text-sky-400 border border-sky-900/40" : "bg-sky-100 text-sky-800")
-                }, (d.completedChallenges || []).length + "/" + WATER_CYCLE_CHALLENGES.length + " challenges")
+                }, (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length + "/" + WATER_CYCLE_CHALLENGES.length + " challenges")
               ),
               React.createElement("div", {
                 className: "w-full rounded-full h-2.5 " + (isDark ? "bg-slate-800/50" : "bg-sky-100/50"),
@@ -31278,17 +31278,17 @@ const d = labToolData.waterCycle || {};
                 "aria-label": __alloT('stem.watercycle.a11y_water_cycle_challenge_progress', 'Water cycle challenge progress'),
                 "aria-valuemin": 0,
                 "aria-valuemax": WATER_CYCLE_CHALLENGES.length,
-                "aria-valuenow": (d.completedChallenges || []).length,
+                "aria-valuenow": (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length,
                 style: { boxShadow: "inset 0 1px 2px rgba(0,0,0,0.1)" }
               },
                 React.createElement("div", {
                   className: "bg-gradient-to-r from-sky-400 to-indigo-500 h-2.5 rounded-full transition-all duration-500",
-                  style: { width: Math.min(100, ((d.completedChallenges || []).length / WATER_CYCLE_CHALLENGES.length) * 100) + "%", boxShadow: isDark ? "0 0 8px rgba(14,165,233,0.5)" : "0 0 8px rgba(14,165,233,0.3)" }
+                  style: { width: Math.min(100, ((Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length / WATER_CYCLE_CHALLENGES.length) * 100) + "%", boxShadow: isDark ? "0 0 8px rgba(14,165,233,0.5)" : "0 0 8px rgba(14,165,233,0.3)" }
                 })
               ),
               React.createElement("div", { className: "wc-challenge-strip flex flex-wrap gap-2 mt-2", role: "list", "aria-label": __alloT('stem.watercycle.a11y_water_cycle_achievements', 'Water cycle achievements') },
                 WATER_CYCLE_CHALLENGES.map(function(ch) {
-                  var done = (d.completedChallenges || []).indexOf(ch.id) !== -1;
+                  var done = (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).indexOf(ch.id) !== -1;
                   return React.createElement("div", {
                     key: ch.id, "data-tooltip": ch.name + ": " + ch.desc + " (" + ch.rp + " RP)", "aria-label": ch.name + (done ? " completed" : " not yet completed") + ". Goal: " + ch.desc + ". Reward: " + ch.rp + " research points.", role: "listitem",
                     className: "wc-challenge-item text-center cursor-default transition-all " + (done ? "is-complete drop-shadow-md" : "is-open opacity-25 grayscale"),
@@ -31775,14 +31775,14 @@ React.createElement("div", {
                 React.createElement("div", { className: "wc-climate-control is-solar", "data-wc-delta": wcClimateSolarChanged ? "true" : undefined },
                   React.createElement("label", { htmlFor: "wc-climate-solar", className: isDark ? "text-amber-300" : "text-amber-800" },
                     React.createElement("span", { className: "wc-climate-control-label" }, "\u2600\uFE0F Sunlight"),
-                    React.createElement("output", { className: "wc-climate-value", htmlFor: "wc-climate-solar" }, ((d.climSolar != null ? d.climSolar : 1.0) * 100).toFixed(0) + "%")
+                    React.createElement("output", { className: "wc-climate-value", htmlFor: "wc-climate-solar" }, (((typeof d.climSolar === 'number' && isFinite(d.climSolar)) ? d.climSolar : 1.0) * 100).toFixed(0) + "%")
                   ),
                   React.createElement("input", {
                     id: "wc-climate-solar",
                     type: "range", min: "0", max: "2", step: "0.05",
                     "aria-label": t('stem.watercycle.solar_intensity_slider', 'Solar intensity'),
-                    "aria-valuetext": ((d.climSolar != null ? d.climSolar : 1.0) * 100).toFixed(0) + "% solar intensity",
-                    value: d.climSolar != null ? d.climSolar : 1.0,
+                    "aria-valuetext": (((typeof d.climSolar === 'number' && isFinite(d.climSolar)) ? d.climSolar : 1.0) * 100).toFixed(0) + "% solar intensity",
+                    value: (typeof d.climSolar === 'number' && isFinite(d.climSolar)) ? d.climSolar : 1.0,
                     onChange: function(e) { adjustClimate('climSolar', parseFloat(e.target.value)); },
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-indigo-300 via-amber-300 to-amber-500 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                     style: { accentColor: '#f59e0b' }
@@ -31798,14 +31798,14 @@ React.createElement("div", {
                 React.createElement("div", { className: "wc-climate-control is-temperature", "data-wc-delta": wcClimateTempChanged ? "true" : undefined },
                   React.createElement("label", { htmlFor: "wc-climate-temperature", className: isDark ? "text-sky-300" : "text-sky-800" },
                     React.createElement("span", { className: "wc-climate-control-label" }, "\uD83C\uDF21\uFE0F Temperature"),
-                    React.createElement("output", { className: "wc-climate-value", htmlFor: "wc-climate-temperature" }, (d.climTemp != null ? d.climTemp : 15) + "\u00B0C")
+                    React.createElement("output", { className: "wc-climate-value", htmlFor: "wc-climate-temperature" }, ((typeof d.climTemp === 'number' && isFinite(d.climTemp)) ? d.climTemp : 15) + "\u00B0C")
                   ),
                   React.createElement("input", {
                     id: "wc-climate-temperature",
                     type: "range", min: "-20", max: "45", step: "1",
                     "aria-label": t('stem.watercycle.temperature_slider_celsius', 'Temperature in degrees Celsius'),
-                    "aria-valuetext": (d.climTemp != null ? d.climTemp : 15) + " degrees Celsius",
-                    value: d.climTemp != null ? d.climTemp : 15,
+                    "aria-valuetext": ((typeof d.climTemp === 'number' && isFinite(d.climTemp)) ? d.climTemp : 15) + " degrees Celsius",
+                    value: (typeof d.climTemp === 'number' && isFinite(d.climTemp)) ? d.climTemp : 15,
                     onChange: function(e) { adjustClimate('climTemp', parseFloat(e.target.value)); },
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-blue-400 via-emerald-300 to-red-400 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                     style: { accentColor: '#0ea5e9' }
@@ -31821,14 +31821,14 @@ React.createElement("div", {
                 React.createElement("div", { className: "wc-climate-control is-wind", "data-wc-delta": wcClimateWindChanged ? "true" : undefined },
                   React.createElement("label", { htmlFor: "wc-climate-wind", className: isDark ? "text-emerald-300" : "text-emerald-800" },
                     React.createElement("span", { className: "wc-climate-control-label" }, "\uD83C\uDF2C\uFE0F Wind"),
-                    React.createElement("output", { className: "wc-climate-value", htmlFor: "wc-climate-wind" }, ((d.climWind != null ? d.climWind : 1.0)).toFixed(1) + "x")
+                    React.createElement("output", { className: "wc-climate-value", htmlFor: "wc-climate-wind" }, (((typeof d.climWind === 'number' && isFinite(d.climWind)) ? d.climWind : 1.0)).toFixed(1) + "x")
                   ),
                   React.createElement("input", {
                     id: "wc-climate-wind",
                     type: "range", min: "0", max: "3", step: "0.1",
                     "aria-label": t('stem.watercycle.wind_speed_slider', 'Wind speed multiplier'),
-                    "aria-valuetext": ((d.climWind != null ? d.climWind : 1.0)).toFixed(1) + " times baseline wind",
-                    value: d.climWind != null ? d.climWind : 1.0,
+                    "aria-valuetext": (((typeof d.climWind === 'number' && isFinite(d.climWind)) ? d.climWind : 1.0)).toFixed(1) + " times baseline wind",
+                    value: (typeof d.climWind === 'number' && isFinite(d.climWind)) ? d.climWind : 1.0,
                     onChange: function(e) { adjustClimate('climWind', parseFloat(e.target.value)); },
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-slate-200 to-emerald-400 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                     style: { accentColor: '#22c55e' }
@@ -32694,7 +32694,7 @@ React.createElement("div", {
                 React.createElement("span", { className: "px-1.5 py-0.5 text-[0.6875rem] font-bold rounded-full " + (isDark ? "bg-sky-950/60 text-sky-400 border border-sky-900/40" : "bg-sky-100 text-sky-800") }, "TEACHING MODEL")
               ),
               (function() {
-                var t3 = d.climTemp != null ? d.climTemp : 15;
+                var t3 = (typeof d.climTemp === 'number' && isFinite(d.climTemp)) ? d.climTemp : 15;
                 var evapRate = evaporationIndex;
                 var precipType = t3 < -2 ? 'Snow favored' : t3 <= 3 ? 'Mixed / uncertain' : 'Rain favored';
                 var runoffDisplay = landIndexBand(runoffTendency) + ' | ' + runoffTendency + '/100';
@@ -32879,7 +32879,7 @@ React.createElement("div", {
                   if (d.aiQuizLoading) return;
                   upd('aiQuizLoading', true);
                   var stageCtx = sel ? sel.id : 'evaporation';
-                  var climCtx = 'Solar=' + ((d.climSolar != null ? d.climSolar : 1) * 100).toFixed(0) + '%, Temp=' + (d.climTemp != null ? d.climTemp : 15) + '\u00B0C, Wind=' + ((d.climWind != null ? d.climWind : 1)).toFixed(1) + 'x';
+                  var climCtx = 'Solar=' + (((typeof d.climSolar === 'number' && isFinite(d.climSolar)) ? d.climSolar : 1) * 100).toFixed(0) + '%, Temp=' + ((typeof d.climTemp === 'number' && isFinite(d.climTemp)) ? d.climTemp : 15) + '\u00B0C, Wind=' + (((typeof d.climWind === 'number' && isFinite(d.climWind)) ? d.climWind : 1)).toFixed(1) + 'x';
                   var gradeCtx = gradeBand === 'K-2' ? 'kindergarten to 2nd grade (ages 5-7), use very simple words and fun analogies' :
                     gradeBand === '3-5' ? '3rd to 5th grade (ages 8-10), use clear explanations with some science vocabulary' :
                     gradeBand === '6-8' ? '6th to 8th grade (ages 11-13), use proper scientific terminology and quantitative data' :

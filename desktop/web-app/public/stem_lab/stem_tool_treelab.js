@@ -812,7 +812,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   // Environment for a given year. Season is a phase 0-1 through the year; the yearly
   // step integrates it, so this returns the growing-season average the yearly step needs.
   function envForYear(cfg, yearIndex) {
-    var drought = cfg.droughtYears && cfg.droughtYears.indexOf(yearIndex) >= 0;
+    var drought = Array.isArray(cfg.droughtYears) && cfg.droughtYears.indexOf(yearIndex) >= 0;
     return {
       tempC: cfg.tempC,
       light: cfg.light,

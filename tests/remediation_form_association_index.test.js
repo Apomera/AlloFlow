@@ -7,7 +7,10 @@ const end = source.indexOf('        const af = formState(before)', begin);
 if (begin < 0 || end < 0) throw Error('Missing form-state boundaries');
 const norm = s => String(s || '').normalize('NFKC').replace(/\s+/g, ' ').trim();
 const nodes = (root, selector) => Array.from(root.querySelectorAll(selector));
-const indexed = new Function('nodes', 'norm', source.slice(begin, end) + '\nreturn formState;')(nodes, norm);
+const helpersBegin = source.indexOf('        const getterCache = new Map();');
+const helpersEnd = source.indexOf('        const hiddenContent = doc => {', helpersBegin);
+if (helpersBegin < 0 || helpersEnd < 0) throw Error('Missing native DOM helper boundaries');
+const indexed = new Function(source.slice(helpersBegin, helpersEnd) + source.slice(begin, end) + '\nreturn formState;')();
 const parse = html => new DOMParser().parseFromString(html, 'text/html');
 const fixtures = [
  ['implicit', '<label>Name <input value="Ada"></label>'],

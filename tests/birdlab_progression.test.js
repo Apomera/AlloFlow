@@ -220,7 +220,9 @@ describe('BirdLab field progression and scene engagement', () => {
     expect(renderSource).toContain('d.blAssignmentClueProgress');
     expect(renderSource).toContain('assignmentClueProgress[assignmentKey]');
     expect(renderSource).toContain("upd('blAssignmentClueProgress'");
-    expect(rawSource).toContain('assignmentClueProgress: d.blAssignmentClueProgress');
+    // Type guard added (a saved null reached useState and threw on
+    // ledger[key]); the CLAIM is that the saved field feeds this slot.
+    expect(rawSource).toMatch(/assignmentClueProgress: [^,;]*d\.blAssignmentClueProgress/);
     expect(rawSource).toContain("upd('blAssignmentClueProgress', w.assignmentClueProgress");
     expect(renderSource).not.toContain('assignmentClueStage + 1');
     const clueDerivationStart = renderSource.indexOf('var assignmentClueLadderIds');
@@ -311,7 +313,11 @@ describe('BirdLab field progression and scene engagement', () => {
       const start = renderSource.indexOf('var ' + marker);
       expect(start, marker).toBeGreaterThan(-1);
       const initialSource = renderSource.slice(start, start + length);
-      expect(initialSource).toContain('d.' + dataField + ' !== undefined');
+      // The guard's SPELLING changed (a saved null passed `!== undefined`
+      // and reached useState, where ledger[key] threw), so pin the CLAIM:
+      // the saved field is consulted, and it wins over the window snapshot
+      // — which the ordering assertion below enforces.
+      expect(initialSource).toContain('d.' + dataField);
       expect(initialSource).toContain('birdLabWindowSnapshot.' + snapshotField);
       expect(initialSource.indexOf('d.' + dataField)).toBeLessThan(initialSource.indexOf('birdLabWindowSnapshot.' + snapshotField));
     };
@@ -364,7 +370,7 @@ describe('BirdLab field progression and scene engagement', () => {
       expect(renderSource, guardedSync).toContain(guardedSync);
     }
     expect(renderSource).toContain('useEffect(function() { hintsUsedRef.current = hintsUsed; }, [hintsUsed]);');
-    expect(renderSource).toContain('hintsUsedRef.current = d.blHintsUsed || {};');
+    expect(renderSource).toMatch(/hintsUsedRef\.current = [^;]*d\.blHintsUsed/);
 
     const restoreStart = rawSource.indexOf('function onRestore()');
     const restoreEnd = rawSource.indexOf("window.addEventListener('alloflow-birdlab-restored', onRestore);", restoreStart);
@@ -494,7 +500,8 @@ describe('BirdLab field progression and scene engagement', () => {
     expect(source).toContain('&& isFirstFind');
     expect(source).toContain('if (foundCount > 0) startNewRound(nextDifficulty)');
     expect(source).toContain("lsSet('birdLab.rounds.v1', nextCounts)");
-    expect(source).toContain('roundCounts: d.blRoundCounts');
+    // Type guard added; the CLAIM is that the saved field feeds this slot.
+    expect(source).toMatch(/roundCounts: [^,;]*d\.blRoundCounts/);
     expect(source).toContain('FIELD_EVIDENCE');
     expect(source).toContain("'evidence:' + speciesKey");
     expect(source).toContain("lsSet('birdLab.evidence.v1', nextEvidenceLog)");

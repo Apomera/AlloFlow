@@ -15,6 +15,7 @@ const rules = readFileSync(resolve(process.cwd(), 'firestore.rules'), 'utf8');
 const adventure = readFileSync(resolve(process.cwd(), 'adventure_handlers_source.jsx'), 'utf8');
 const adventureView = readFileSync(resolve(process.cwd(), 'view_adventure_source.jsx'), 'utf8');
 const shell = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+const hostHandlers = readFileSync(resolve(process.cwd(), 'host_handlers_source.jsx'), 'utf8');
 const adventureModule = readFileSync(resolve(process.cwd(), 'view_adventure_module.js'), 'utf8');
 const publicAdventureModule = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/view_adventure_module.js'), 'utf8');
 
@@ -35,9 +36,13 @@ describe('firestore.rules cover the niche student writes', () => {
     expect(rules).toContain("in resource.data.get('democracy', {}).get('activeOptions', [])");
     // The write these rules exist for:
     expect(adventure).toContain('democracy.votes.${user.uid}');
-    expect(shell).toContain("'democracy.activeOptions': activeOptions");
-    expect(shell).toContain("'democracy.phase': 'voting'");
-    expect(shell).toContain("const activeOptions = newOptions.map(option => String(option.action || '').trim())");
+    // The teacher half of the democracy write moved out of the host monolith
+    // into host_handlers when that surface was extracted. Follow it rather than
+    // pinning its old address; the invariant is that the server-authored option
+    // list and the voting phase are published together.
+    expect(hostHandlers).toContain("'democracy.activeOptions': activeOptions");
+    expect(hostHandlers).toContain("'democracy.phase': 'voting'");
+    expect(hostHandlers).toContain("const activeOptions = newOptions.map(option => String(option.action || '').trim())");
     expect(adventure).toContain('const nextActiveOptions = Array.from(new Set((data.scene?.options || [])');
     expect(adventure).toContain('"democracy.activeOptions": nextActiveOptions');
   });
@@ -46,7 +51,13 @@ describe('firestore.rules cover the niche student writes', () => {
     expect(adventureView).toContain('var currentUserUid = props.currentUserUid');
     expect(adventureView).toContain("Vote submitted. Choose another option to change it.");
     expect(adventureView).toContain("aria-pressed={isDemocracy && !isTeacherMode ? isMyVote : undefined}");
-    expect(adventureView).toContain("isDemocracy && isTeacherMode && voteCount > 0");
+    // Aggregate vote counts are teacher-only. The inline guard this replaced
+    // became renderAdventureChoiceStatus, which now enforces it TWICE: the
+    // caller only computes a real voteCount for a teacher, and the renderer
+    // re-checks before drawing the tally. Pin both halves.
+    expect(adventureView).toContain("if (!(isDemocracy && isTeacherMode) && !isMyVote && !isReading) return null;");
+    expect(adventureView).toContain("{isDemocracy && isTeacherMode && <>");
+    expect(adventureView).toContain("const voteCount = isTeacherMode ?");
     expect(adventureView).toContain("democracyTotalVotes + ' of ' + democracyAudienceTotal + ' students voted'");
     expect(shell).toContain('currentUserUid: user && user.uid');
     expect(publicAdventureModule).toBe(adventureModule);

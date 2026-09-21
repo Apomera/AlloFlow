@@ -3,6 +3,14 @@
 // this function so baseline export and rendered comparison share one policy.
 function inspectDocumentDependencies() {
   const elements = Array.from(document.querySelectorAll('*'));
+  // Named form controls may shadow attributes/style with an element. Keep
+  // dependency evidence tied to the native DOM, even for these valid names.
+  const nativeProperty = (node, property) => {
+    for (let prototype = Object.getPrototypeOf(node); prototype; prototype = Object.getPrototypeOf(prototype)) {
+      const descriptor = Object.getOwnPropertyDescriptor(prototype, property);
+      if (descriptor) return descriptor.get ? descriptor.get.call(node) : descriptor.value;
+    }
+  };
   const scripts = Array.from(document.scripts).filter(script => {
     // Unknown non-JavaScript types are inert data blocks, including XML.
     // Import maps/speculation rules still affect document behavior.
@@ -13,7 +21,7 @@ function inspectDocumentDependencies() {
     return ['module', 'importmap', 'speculationrules'].includes(type.toLowerCase())
       || /^(?:application\/(?:x-)?(?:java|ecma)script|text\/(?:(?:x-)?(?:java|ecma)script|javascript1\.[0-5]|jscript|livescript))$/i.test(type);
   }).length
-    + elements.reduce((count, el) => count + Array.from(el.attributes).filter(attribute => /^on/i.test(attribute.name)
+    + elements.reduce((count, el) => count + Array.from(nativeProperty(el, 'attributes')).filter(attribute => /^on/i.test(attribute.name)
       || /^(href|src|action|formaction|xlink:href)$/i.test(attribute.name) && /^javascript:/i.test(attribute.value.replace(/[\u0000-\u0020]/g, ''))).length, 0);
   const external = value => value.trim() && !/^data:/i.test(value.trim());
   // Respect srcset URL/descriptor boundaries and commas within data URLs.
@@ -87,7 +95,7 @@ function inspectDocumentDependencies() {
       if (rule.cssRules) inspectRules(rule.cssRules);
     }
   };
-  elements.forEach(element => inspectStyle(element.style));
+  elements.forEach(element => inspectStyle(nativeProperty(element, 'style')));
   let inaccessibleStyleSheets = 0;
   for (const sheet of document.styleSheets) {
     try { inspectRules(sheet.cssRules); } catch { inaccessibleStyleSheets++; }

@@ -20587,7 +20587,7 @@ test('no a11y violations', async () => {
         ),
 
         // ── Behind the Scenes: Agent Pipeline Visualizer ──
-        activeTab === 'build' && d.lastPipelineLog && d.lastPipelineLog.length > 0 && h('details', { style: { background: 'var(--allo-stem-panel, #1e1b4b)', borderRadius: '12px', border: '1px solid var(--allo-stem-border, #4338ca)', overflow: 'hidden' } },
+        activeTab === 'build' && Array.isArray(d.lastPipelineLog) && d.lastPipelineLog.length > 0 && h('details', { style: { background: 'var(--allo-stem-panel, #1e1b4b)', borderRadius: '12px', border: '1px solid var(--allo-stem-border, #4338ca)', overflow: 'hidden' } },
           h('summary', { style: { padding: '10px 14px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' } },
             __alloT('stem.applab.behind_the_scenes_how_ai_built_this_ap', '\uD83E\uDD16 Behind the Scenes — How AI Built This App')
           ),
@@ -20596,7 +20596,7 @@ test('no a11y violations', async () => {
               __alloT('stem.applab.this_app_was_built_by_a_team_of_ai_age', 'This app was built by a team of AI agents working together \u2014 each specializing in a different aspect of software development. This is called "agentic AI" or "multi-agent orchestration." Each agent has a specific role and passes its work to the next agent in the pipeline.')
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
-              d.lastPipelineLog.map(function(step, si) {
+              (Array.isArray(d.lastPipelineLog) ? d.lastPipelineLog : []).map(function(step, si) {
                 var colors = { Architect: '#818cf8', Builder: '#34d399', Reviewer: '#fbbf24', Fixer: '#f87171', Assembler: '#a78bfa' };
                 var agentColor = colors[step.agent] || (step.agent.indexOf('Section') === 0 ? '#06b6d4' : '#818cf8');
                 var isSection = !!step.children;
@@ -20782,7 +20782,8 @@ test('no a11y violations', async () => {
 
         // \u2550\u2550 PROMPT-CRAFT INQUIRY widget (H7b'') \u2550\u2550
         !isGenerating && !html && (function() {
-          var iq = d.promptIQ || { specificity: 5, constraints: 5, examples: 0, persona: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          var iq = (d.promptIQ && typeof d.promptIQ === 'object' && !Array.isArray(d.promptIQ))
+                ? Object.assign({}, { specificity: 5, constraints: 5, examples: 0, persona: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }, d.promptIQ) : { specificity: 5, constraints: 5, examples: 0, persona: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }
           function setIQ(patch) { upd('promptIQ', Object.assign({}, iq, patch)); }
           function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
           var promptQuality = (iq.specificity + iq.constraints + iq.persona) / 3 + iq.examples * 0.5;

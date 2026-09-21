@@ -2924,7 +2924,7 @@ const d = labToolData.rocks || {};
 
           var checkRocksChallenges = function(customState) {
             var state = customState || d || {};
-            var completed = state.completedChallenges || [];
+            var completed = Array.isArray(state.completedChallenges) ? state.completedChallenges : [];
             var newlyCompleted = [];
             var pointsEarned = 0;
 
@@ -4622,17 +4622,17 @@ const d = labToolData.rocks || {};
                 ),
                 React.createElement("span", {
                   className: "text-[0.6875rem] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700"
-                }, (d.completedChallenges || []).length + "/" + ROCKS_CHALLENGES.length + " " + __alloT('stem.rocks.challenges', "challenges"))
+                }, (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length + "/" + ROCKS_CHALLENGES.length + " " + __alloT('stem.rocks.challenges', "challenges"))
               ),
               React.createElement("div", { className: "w-full rounded-full h-2.5 bg-orange-100", style: { boxShadow: "inset 0 1px 2px rgba(0,0,0,0.1)" } },
                 React.createElement("div", {
                   className: "bg-gradient-to-r from-amber-500 to-orange-500 h-2.5 rounded-full transition-all duration-500",
-                  style: { width: Math.min(100, ((d.completedChallenges || []).length / ROCKS_CHALLENGES.length) * 100) + "%", boxShadow: "0 0 8px rgba(245,158,11,0.4)" }
+                  style: { width: Math.min(100, ((Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length / ROCKS_CHALLENGES.length) * 100) + "%", boxShadow: "0 0 8px rgba(245,158,11,0.4)" }
                 })
               ),
               React.createElement("div", { className: "flex flex-wrap gap-2 mt-3" },
                 ROCKS_CHALLENGES.map(function(ch) {
-                  var done = (d.completedChallenges || []).indexOf(ch.id) !== -1;
+                  var done = (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).indexOf(ch.id) !== -1;
                   return React.createElement("div", {
                     key: ch.id, title: rkChallengeText(ch, 'name') + ": " + rkChallengeText(ch, 'desc') + " (" + ch.rp + " RP)",
                     className: "text-center cursor-default transition-all " + (done ? "drop-shadow-md" : "opacity-25 grayscale"),
@@ -9893,6 +9893,13 @@ const d = labToolData.rocks || {};
       // ── Tool body (rockCycle) ──
       return (function() {
 const d = labToolData.rockCycle || {};
+        // Every read below gates on truthiness, which a saved STRING passes;
+        // .asked / .score / .concept then come back undefined. Declared here,
+        // in the render scope, because the uses span several callbacks.
+        // A bare {} passes an object check and then throws on .opts.map, so
+        // require the fields the quiz UI actually reads.
+        var _rcQuizSafe = (d.rcQuiz && typeof d.rcQuiz === 'object' && !Array.isArray(d.rcQuiz)
+          && Array.isArray(d.rcQuiz.opts)) ? d.rcQuiz : null;
 
           // Localized views of the hoisted tables. The data lives at module scope
           // as pure records carrying `labelKey`; the display label is resolved
@@ -11647,28 +11654,30 @@ const d = labToolData.rockCycle || {};
                   // question straight back, and a ten-press run showed about six
                   // distinct ones. Refill once the bag is empty so the quiz
                   // never runs out.
-                  var rcAsked = (d.rcQuiz && d.rcQuiz.asked) || [];
+                  // A saved quiz is INPUT and every read below gates on truthiness,
+                  // which a string passes; .asked/.score then come back undefined.
+                  var rcAsked = (_rcQuizSafe && typeof _rcQuizSafe === 'object' && Array.isArray(_rcQuizSafe.asked) ? _rcQuizSafe.asked : []);
                   var rcPool = RC_QS.filter(function (item) { return rcAsked.indexOf(item.q) === -1; });
                   if (!rcPool.length) { rcAsked = []; rcPool = RC_QS; }
                   var q = rcPool[Math.floor(Math.random() * rcPool.length)];
-                  upd('rcQuiz', { q: q.q, a: q.a, opts: q.opts, wrongFeedback: q.wrongFeedback, concept: q.concept, answered: false, score: (d.rcQuiz && d.rcQuiz.score) || 0, asked: rcAsked.concat([q.q]) });
-                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.rcQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-700 text-white') + " transition-all"
-              }, d.rcQuiz ? "🔄 " + __alloT('stem.rocks.next_question', "Next Question") : "🧠 " + __alloT('stem.rocks.quiz_mode', "Quiz Mode")),
+                  upd('rcQuiz', { q: q.q, a: q.a, opts: q.opts, wrongFeedback: q.wrongFeedback, concept: q.concept, answered: false, score: (_rcQuizSafe && typeof _rcQuizSafe === 'object' && typeof _rcQuizSafe.score === 'number' ? _rcQuizSafe.score : 0), asked: rcAsked.concat([q.q]) });
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (_rcQuizSafe ? 'bg-orange-100 text-orange-700' : 'bg-orange-700 text-white') + " transition-all"
+              }, _rcQuizSafe ? "🔄 " + __alloT('stem.rocks.next_question', "Next Question") : "🧠 " + __alloT('stem.rocks.quiz_mode', "Quiz Mode")),
 
-              d.rcQuiz && d.rcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-800" }, "⭐ " + d.rcQuiz.score + " " + __alloT('stem.rocks.correct_count_suffix', "correct")),
+              _rcQuizSafe && _rcQuizSafe.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-800" }, "⭐ " + _rcQuizSafe.score + " " + __alloT('stem.rocks.correct_count_suffix', "correct")),
 
-              d.rcQuiz && React.createElement("div", { className: "mt-2 bg-orange-50 rounded-lg p-3 border border-orange-200" },
-                React.createElement("p", { className: "text-sm font-bold text-orange-800 mb-2" }, d.rcQuiz.q),
+              _rcQuizSafe && React.createElement("div", { className: "mt-2 bg-orange-50 rounded-lg p-3 border border-orange-200" },
+                React.createElement("p", { className: "text-sm font-bold text-orange-800 mb-2" }, _rcQuizSafe.q),
                 React.createElement("div", { className: "grid grid-cols-1 gap-2 animate-in fade-in" },
-                  d.rcQuiz.opts.map(function (opt, i) {
-                    var isCorrect = opt === d.rcQuiz.a;
-                    var wasChosen = d.rcQuiz.chosen === opt;
-                    var cls = !d.rcQuiz.answered ? 'transition-colors bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-600 text-emerald-800' : wasChosen ? 'bg-red-100 border-red-600 text-red-800' : 'bg-slate-50 border-slate-200 opacity-50';
+                  _rcQuizSafe.opts.map(function (opt, i) {
+                    var isCorrect = opt === _rcQuizSafe.a;
+                    var wasChosen = _rcQuizSafe.chosen === opt;
+                    var cls = !_rcQuizSafe.answered ? 'transition-colors bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-600 text-emerald-800' : wasChosen ? 'bg-red-100 border-red-600 text-red-800' : 'bg-slate-50 border-slate-200 opacity-50';
 
                     return React.createElement("button", { "aria-label": __alloT('stem.rocks.select_answer_label', "Select answer: ") + opt,
-                      key: opt, disabled: d.rcQuiz.answered, onClick: function () {
-                        var correct = opt === d.rcQuiz.a;
-                        upd('rcQuiz', Object.assign({}, d.rcQuiz, { answered: true, chosen: opt, chosenIdx: i, score: d.rcQuiz.score + (correct ? 1 : 0) }));
+                      key: opt, disabled: _rcQuizSafe.answered, onClick: function () {
+                        var correct = opt === _rcQuizSafe.a;
+                        upd('rcQuiz', Object.assign({}, _rcQuizSafe, { answered: true, chosen: opt, chosenIdx: i, score: _rcQuizSafe.score + (correct ? 1 : 0) }));
                         if (correct) {
                           sfxRockCorrect();
                         } else {
@@ -11681,24 +11690,24 @@ const d = labToolData.rockCycle || {};
                     }, opt);
                   })
                 ),
-                d.rcQuiz.answered && React.createElement("div", { className: "mt-3 space-y-2 animate-in slide-in-from-bottom-1" },
+                _rcQuizSafe.answered && React.createElement("div", { className: "mt-3 space-y-2 animate-in slide-in-from-bottom-1" },
                   React.createElement("div", { className: "p-3 rounded-lg text-xs leading-relaxed bg-white border border-slate-200 text-slate-700" },
-                    d.rcQuiz.wrongFeedback ? d.rcQuiz.wrongFeedback[d.rcQuiz.opts.indexOf(d.rcQuiz.chosen)] : (d.rcQuiz.chosen === d.rcQuiz.a ? __alloT('stem.rocks.correct_exclaim', 'Correct!') : __alloT('stem.rocks.incorrect', 'Incorrect.'))
+                    _rcQuizSafe.wrongFeedback ? _rcQuizSafe.wrongFeedback[_rcQuizSafe.opts.indexOf(_rcQuizSafe.chosen)] : (_rcQuizSafe.chosen === _rcQuizSafe.a ? __alloT('stem.rocks.correct_exclaim', 'Correct!') : __alloT('stem.rocks.incorrect', 'Incorrect.'))
                   ),
-                  d.rcQuiz.concept && ROCKS_VOCAB[d.rcQuiz.concept] && (function() {
+                  _rcQuizSafe.concept && ROCKS_VOCAB[_rcQuizSafe.concept] && (function() {
                     var rState = labToolData.rocks || {};
-                    var studied = (rState.vocabLookedUp || []).indexOf(d.rcQuiz.concept) !== -1;
+                    var studied = (rState.vocabLookedUp || []).indexOf(_rcQuizSafe.concept) !== -1;
                     return React.createElement("div", { className: "p-2.5 rounded-lg bg-orange-100 border border-orange-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3" },
                       React.createElement("div", { className: "flex-1" },
-                        React.createElement("p", { className: "text-xs font-bold text-orange-800" }, "🔍 " + __alloT('stem.rocks.concept_focus_label', "Concept Focus: ") + rkVocabTerm(__alloT, d.rcQuiz.concept)),
-                        React.createElement("p", { className: "text-[0.625rem] text-slate-600 mt-0.5 leading-relaxed" }, rkVocabDef(__alloT, d.rcQuiz.concept))
+                        React.createElement("p", { className: "text-xs font-bold text-orange-800" }, "🔍 " + __alloT('stem.rocks.concept_focus_label', "Concept Focus: ") + rkVocabTerm(__alloT, _rcQuizSafe.concept)),
+                        React.createElement("p", { className: "text-[0.625rem] text-slate-600 mt-0.5 leading-relaxed" }, rkVocabDef(__alloT, _rcQuizSafe.concept))
                       ),
                       !studied && React.createElement("button", {
                         onClick: function() {
                           setLabToolData(function(prev) {
                             var r = Object.assign({}, (prev && prev.rocks) || {});
                             var list = r.vocabLookedUp || [];
-                            var newList = list.concat([d.rcQuiz.concept]);
+                            var newList = list.concat([_rcQuizSafe.concept]);
                             r.vocabLookedUp = newList;
                             
                             var completed = r.completedChallenges || [];
@@ -11739,8 +11748,8 @@ const d = labToolData.rockCycle || {};
                             return Object.assign({}, prev, { rocks: r });
                           });
                           sfxRockClick();
-                          if (typeof awardStemXP === 'function') awardStemXP(5, 'Concept studied: ' + d.rcQuiz.concept);
-                          if (typeof addToast === 'function') addToast('📖 Concept studied: ' + d.rcQuiz.concept + ' (+5 RP)', 'success');
+                          if (typeof awardStemXP === 'function') awardStemXP(5, 'Concept studied: ' + _rcQuizSafe.concept);
+                          if (typeof addToast === 'function') addToast('📖 Concept studied: ' + _rcQuizSafe.concept + ' (+5 RP)', 'success');
                         },
                         className: "px-2 py-1 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded text-[0.625rem] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
                       }, "📖 " + __alloT('stem.rocks.study_term', "Study Term (+5 RP)"))

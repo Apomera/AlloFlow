@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-09-20T15:08:46.243Z",
+  "status": "passed",
+  "unitTests": 61,
+  "chromiumTests": 61,
+  "chromiumRetries": 0,
+  "addedReplacementCases": 14,
+  "sourcePolicy": "20260920-3",
+  "scope": "Targeted native-contract suites after replacement-encoding fix. Unit and Chromium process exits were zero. Native requests aborted before transmission. Root owns final generated bundles and combined validation."
+}

@@ -1293,7 +1293,7 @@ window.SelHub = window.SelHub || {
         // ── Quick Reflection Prompt (reusable) ──
         function renderQuickReflection(activityType) {
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: _teaBg('#0f172a'), border: '1px solid #334155' } },
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
             h('div', { style: { fontSize: 12, fontWeight: 600, color: ACCENT, marginBottom: 8 } }, '\uD83D\uDCDD Quick Reflection'),
             h('div', { style: { fontSize: 12, color: _teaFg('#94a3b8'), marginBottom: 8 } }, 'What teamwork skill did you practice?'),
             h('select', {
@@ -2628,7 +2628,7 @@ window.SelHub = window.SelHub || {
         var content = rolesContent || challengesContent || scenariosContent || commStyleContent || virtualTeamContent || conflictToolContent || retroContent || quizContent || contractContent || progressContent;
 
         return h('div', { className: 'selh-teamwork', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('teamwork', h, ctx) : null),
           tabBar,
           heroBand,

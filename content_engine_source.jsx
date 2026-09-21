@@ -416,8 +416,13 @@ var createContentEngine = function(deps) {
       if (standards) query += ' ' + String(standards);
       if (!query) return null;
 
-      var store = E.createProjectStore(E.readingScope ? E.readingScope({}) : {});
-      var project = store && typeof store.load === 'function' ? await store.load() : null;
+      // Open the corpus through the shared helper. Calling createProjectStore
+      // directly here passed the scope STRING as the whole options bag, so the
+      // store got no storage adapter and a key derived from an object: it
+      // loaded nothing, every time, and own-source grounding silently did
+      // nothing on a machine that had documents imported.
+      var OS = (typeof window !== 'undefined') && window.AlloOwnSources;
+      var project = OS && typeof OS.loadProject === 'function' ? await OS.loadProject({}) : null;
       if (!project || !Array.isArray(project.sources) || !project.sources.length) return null;
 
       var hits = E.retrieve(project, query, { limit: OWN_SOURCE_PASSAGE_LIMIT });

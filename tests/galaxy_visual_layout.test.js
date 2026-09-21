@@ -56,7 +56,8 @@ describe('galaxy visual layout', () => {
   it.each(GALAXY_PATHS)('%s includes cinematic depth and adaptive detail systems', (filePath) => {
     const source = readFileSync(filePath, 'utf8');
 
-    expect(source).toContain("var galaxyQuality = d.galaxyQuality || 'auto';");
+    // Type-guarded now; the claim is the key and its 'auto' default.
+    expect(source).toMatch(/var galaxyQuality = [^;]*d\.galaxyQuality[^;]*'auto'/);
     expect(source).toContain('data-resolved-quality');
     expect(source).toContain('volumetricAtmosphere');
     expect(source).toContain('satellitesAndTidalStreams');

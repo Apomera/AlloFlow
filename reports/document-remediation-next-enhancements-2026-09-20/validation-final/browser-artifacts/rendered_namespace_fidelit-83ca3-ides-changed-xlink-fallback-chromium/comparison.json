@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "533593dd0490736b1ef698e3c0732b4e8c3c8f9854aca2b0897c3b23acf1d93a",
+    "bytes": 335
+  },
+  "candidate": {
+    "sha256": "50fd39d0689d6dfa603b12f44cba1ba09a127ad023300336b7704f13d4f70567",
+    "bytes": 336
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 491.4660000000149,
+  "status": "passed",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "p",
+      "sourceSelector": "#p",
+      "candidateSelector": "#p",
+      "status": "passed",
+      "properties": [
+        {
+          "property": "href",
+          "status": "passed",
+          "source": {
+            "relative": "",
+            "resolved": "https://rendered-fidelity.invalid/document"
+          },
+          "candidate": {
+            "relative": "",
+            "resolved": "https://rendered-fidelity.invalid/document"
+          }
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

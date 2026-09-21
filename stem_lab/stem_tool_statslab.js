@@ -1443,8 +1443,8 @@ window.StemLab = window.StemLab || {
     category: 'math',
     questHooks: [
       { id: 'sl_first_test', label: 'Run your first hypothesis test', icon: '📊',
-        check: function(d) { return (d.testsRun || 0) >= 1; },
-        progress: function(d) { return (d.testsRun || 0) + '/1 tests run'; } },
+        check: function(d) { return ((typeof d.testsRun === 'number' && isFinite(d.testsRun)) ? d.testsRun : 0) >= 1; },
+        progress: function(d) { return ((typeof d.testsRun === 'number' && isFinite(d.testsRun)) ? d.testsRun : 0) + '/1 tests run'; } },
       { id: 'sl_compare_means', label: 'Run a t-test or ANOVA', icon: '⚖️',
         check: function(d) { return !!(d.compareMeansRun); },
         progress: function(d) { return d.compareMeansRun ? '✓' : 'pending'; } },
@@ -1540,6 +1540,19 @@ window.StemLab = window.StemLab || {
         });
       }
       var d = labToolData.statsLab || STATSLAB_DEFAULTS;
+      // A saved project is INPUT. The dataset objects are read straight as
+      // d.twoColData.a / d.oneColData.values / d.multiColData.groups, so a
+      // string or a partial object throws before any test runs. Merge each
+      // over its default so a partial save keeps whatever it does have.
+      d = Object.assign({}, d);
+      ['oneColData', 'twoColData', 'multiColData'].forEach(function (k) {
+        d[k] = Object.assign({}, STATSLAB_DEFAULTS[k],
+          (d[k] && typeof d[k] === 'object' && !Array.isArray(d[k])) ? d[k] : {});
+      });
+      if (!Array.isArray(d.twoColData.a)) d.twoColData.a = STATSLAB_DEFAULTS.twoColData.a;
+      if (!Array.isArray(d.twoColData.b)) d.twoColData.b = STATSLAB_DEFAULTS.twoColData.b;
+      if (!Array.isArray(d.oneColData.values)) d.oneColData.values = STATSLAB_DEFAULTS.oneColData.values;
+      if (!Array.isArray(d.multiColData.groups)) d.multiColData.groups = STATSLAB_DEFAULTS.multiColData.groups;
 
       // ── Concept-mastery state + Canvas-survival persistence ──
       // The StemLab host's localStorage block does not include statsLab,
@@ -1702,7 +1715,7 @@ window.StemLab = window.StemLab || {
             quizCorrect: 0
           };
           if (!result.error) {
-            bumps.testsRun = (d.testsRun || 0) + 1;
+            bumps.testsRun = ((typeof d.testsRun === 'number' && isFinite(d.testsRun)) ? d.testsRun : 0) + 1;
             if (/ttest_|anova_/.test(testType)) bumps.compareMeansRun = true;
             if (testType === 'pearson' || testType === 'spearman') bumps.correlationRun = true;
             if (/[rR]egression/.test(testType)) bumps.regressionRun = true;
@@ -1881,7 +1894,7 @@ window.StemLab = window.StemLab || {
               h('h2', { id: 'statslab-command-title', className: 'mt-2 text-xl sm:text-2xl font-black text-white' }, analysisMission.icon + ' ' + analysisMission.title),
               h('p', { className: 'mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed' }, analysisMission.detail),
               h('div', { className: 'mt-4 grid grid-cols-3 gap-2', 'aria-label': __alloSLT('stem.statslab.a11y_statistics_workflow_status', 'Statistics workflow status') },
-                [[d.sampleId ? 'Ready' : '—', 'Sample'], [d.selectedTest ? 'Chosen' : '—', 'Test'], [d.testsRun || 0, 'Runs']].map(function(metric) { return h('div', { key: metric[1], className: 'rounded-xl border border-white/10 bg-white/5 p-3 text-center' }, h('div', { className: 'text-base font-black text-white' }, metric[0]), h('div', { className: 'mt-1 text-[0.625rem] font-bold text-slate-200' }, metric[1])); })
+                [[d.sampleId ? 'Ready' : '—', 'Sample'], [d.selectedTest ? 'Chosen' : '—', 'Test'], [(typeof d.testsRun === 'number' && isFinite(d.testsRun)) ? d.testsRun : 0, 'Runs']].map(function(metric) { return h('div', { key: metric[1], className: 'rounded-xl border border-white/10 bg-white/5 p-3 text-center' }, h('div', { className: 'text-base font-black text-white' }, metric[0]), h('div', { className: 'mt-1 text-[0.625rem] font-bold text-slate-200' }, metric[1])); })
               )
             ),
             h('aside', { className: 'rounded-xl border border-cyan-500/20 bg-black/20 p-4', 'aria-label': __alloSLT('stem.statslab.a11y_statistics_evidence_route', 'Statistics evidence route') },
@@ -5191,7 +5204,7 @@ window.StemLab = window.StemLab || {
   // Parametric tests (t-tests, Pearson, regression) get an additional Q-Q plot
   // for visual normality assessment.
   function _renderChartFor(d, h) {
-    var sel = d.selectedTest || '';
+    var sel = typeof d.selectedTest === 'string' ? d.selectedTest : '';
     var t = d.twoColData, t2 = d.multiColData, t1 = d.oneColData;
     var twoColReady = t.a.length >= 2 && t.b.length >= 2;
     var multiColReady = t2.groups.length >= 2 && t2.groups.every(function(g) { return _clean(g.values).length >= 2; });

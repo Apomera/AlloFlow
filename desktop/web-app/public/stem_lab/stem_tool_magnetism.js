@@ -3429,6 +3429,15 @@
         askInput: '', askAnswer: '', askLoading: false
       };
       var d = Object.assign({}, MAG_DEFAULTS, (labToolData && labToolData.magnetism) || {});
+      // A saved project is INPUT. `magnets` is iterated at 24 sites and
+      // `compass` is read as .x/.y at 9, so one bad value blanks the lab.
+      // Merging defaults does NOT help when the stored key is present but
+      // wrong-typed — Object.assign copies it over the default — so fix the
+      // types here, after the merge.
+      if (!Array.isArray(d.magnets)) d.magnets = MAG_DEFAULTS.magnets;
+      if (!d.compass || typeof d.compass !== 'object' || Array.isArray(d.compass)
+        || typeof d.compass.x !== 'number' || typeof d.compass.y !== 'number') d.compass = MAG_DEFAULTS.compass;
+      if (typeof d.motorAngle !== 'number' || !isFinite(d.motorAngle)) d.motorAngle = MAG_DEFAULTS.motorAngle || 0;
       _motorSpinConfig.current = Number(d.motorCurrent) || 0;
       _motorSpinConfig.field = Number(d.motorField) || 0;
       _motorSpinConfig.load = Math.max(0, Number(d.motorLoad) || 0);
@@ -4461,7 +4470,7 @@
             function rebuild(state) {
               if (disposed) return;
               liveState = {
-                magnets: (state.magnets || []).map(function (mag) { return Object.assign({}, mag); }),
+                magnets: (Array.isArray(state.magnets) ? state.magnets : []).map(function (mag) { return Object.assign({}, mag); }),
                 probe: Object.assign({}, state.probe),
                 selected: state.selected,
                 vectors: state.vectors,

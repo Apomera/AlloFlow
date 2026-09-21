@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-15T21:37:00.593Z",
+  "generatedAt": "2026-09-20T23:53:21.433Z",
   "toolCount": 72,
   "themesAudited": [
     "light",
@@ -15,7 +15,7 @@
     "toolsWithIssues": 0,
     "toolsWithoutStandardShell": [],
     "contrastCoverage": {
-      "textNodesGraded": 18416,
+      "textNodesGraded": 18470,
       "skippedGradientBackground": 901,
       "skippedColourFromCssClass": 933,
       "note": "Skipped nodes are NOT passes. Gradient-backed text has no single background to measure; class-sourced colours cannot be resolved from SSR markup."
@@ -25,7 +25,7 @@
     {
       "id": "advocacy",
       "label": "Self-Advocacy Workshop",
-      "renderedBytes": 430164,
+      "renderedBytes": 430221,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -33,7 +33,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 143388,
+          "renderedBytes": 143407,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -42,7 +42,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 143388,
+          "renderedBytes": 143407,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -51,7 +51,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 143388,
+          "renderedBytes": 143407,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1039,7 +1039,7 @@
     {
       "id": "friendship",
       "label": "Friendship Workshop",
-      "renderedBytes": 68781,
+      "renderedBytes": 73956,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1047,7 +1047,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 22927,
+          "renderedBytes": 24652,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1056,7 +1056,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 22927,
+          "renderedBytes": 24652,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1065,7 +1065,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 22927,
+          "renderedBytes": 24652,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1819,7 +1819,7 @@
     {
       "id": "quietQuestions",
       "label": "Quiet Questions",
-      "renderedBytes": 25224,
+      "renderedBytes": 25164,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1827,7 +1827,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 8406,
+          "renderedBytes": 8386,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1836,7 +1836,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 8406,
+          "renderedBytes": 8386,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1845,7 +1845,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 8412,
+          "renderedBytes": 8392,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2248,7 +2248,7 @@
     {
       "id": "strengths",
       "label": "Strengths Finder",
-      "renderedBytes": 79221,
+      "renderedBytes": 79281,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2256,7 +2256,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 26407,
+          "renderedBytes": 26427,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2265,7 +2265,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 26407,
+          "renderedBytes": 26427,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2274,7 +2274,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 26407,
+          "renderedBytes": 26427,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2365,7 +2365,7 @@
     {
       "id": "teamwork",
       "label": "Teamwork Builder",
-      "renderedBytes": 58365,
+      "renderedBytes": 58353,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2373,7 +2373,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 19455,
+          "renderedBytes": 19451,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2382,7 +2382,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 19455,
+          "renderedBytes": 19451,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2391,7 +2391,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 19455,
+          "renderedBytes": 19451,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,

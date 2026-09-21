@@ -372,16 +372,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
     color: 'slate',
     category: 'science',
     questHooks: [
-      { id: 'visit_all_planets', label: 'Visit all 8 planets + Pluto', icon: '\uD83C\uDF0D', field: 'planetsVisited', check: function(d) { return (d.planetsVisited || []).length >= 9; }, progress: function(d) { return (d.planetsVisited || []).length + '/9 worlds'; } },
+      { id: 'visit_all_planets', label: 'Visit all 8 planets + Pluto', icon: '\uD83C\uDF0D', field: 'planetsVisited', check: function(d) { return (Array.isArray(d.planetsVisited) ? d.planetsVisited : []).length >= 9; }, progress: function(d) { return (Array.isArray(d.planetsVisited) ? d.planetsVisited : []).length + '/9 worlds'; } },
       { id: 'quiz_score_5', label: 'Score 5+ on the planet quiz', icon: '\uD83E\uDDE0', field: 'quiz.score', check: function(d) { return d.quiz && d.quiz.score >= 5; }, progress: function(d) { return (d.quiz ? d.quiz.score : 0) + '/5'; } },
       { id: 'quiz_score_8', label: 'Score 8+ on the planet quiz', icon: '\uD83C\uDFC6', field: 'quiz.score', check: function(d) { return d.quiz && d.quiz.score >= 8; }, progress: function(d) { return (d.quiz ? d.quiz.score : 0) + '/8'; } },
       { id: 'deploy_rover', label: 'Deploy a rover or probe on any planet', icon: '\uD83D\uDE97', field: 'missionLog', check: function(d) { return (d.missionLog || []).length >= 1; }, progress: function(d) { return (d.missionLog || []).length > 0 ? 'Done' : 'Not yet'; } },
-      { id: 'visit_5_planets', label: 'Visit at least 5 different planets', icon: '\u2B50', field: 'planetsVisited', check: function(d) { return (d.planetsVisited || []).length >= 5; }, progress: function(d) { return (d.planetsVisited || []).length + '/5 planets'; } },
+      { id: 'visit_5_planets', label: 'Visit at least 5 different planets', icon: '\u2B50', field: 'planetsVisited', check: function(d) { return (Array.isArray(d.planetsVisited) ? d.planetsVisited : []).length >= 5; }, progress: function(d) { return (Array.isArray(d.planetsVisited) ? d.planetsVisited : []).length + '/5 planets'; } },
       { id: 'explore_interior', label: 'View the interior of 3 different planets', icon: '\uD83C\uDF0B', field: 'interiorsViewed', check: function(d) { return (d.interiorsViewed || []).length >= 3; }, progress: function(d) { return (d.interiorsViewed || []).length + '/3'; } },
       { id: 'descent_sim', label: 'Descend through an atmosphere', icon: '\uD83D\uDE80', field: 'descentsDone', check: function(d) { return (d.descentsDone || []).length >= 1; }, progress: function(d) { return (d.descentsDone || []).length > 0 ? 'Done' : 'Not yet'; } },
       // Pedagogical quest hooks (for Station Builder integration)
-      { id: 'journal_3', label: 'Write 3 field journal entries', icon: '\uD83D\uDCD3', field: 'journalEntries', check: function(d) { return (d.journalEntries || []).length >= 3; }, progress: function(d) { return (d.journalEntries || []).length + '/3 entries'; } },
-      { id: 'journal_5_planets', label: 'Journal entries for 5 different planets', icon: '\uD83D\uDCDD', field: 'journalEntries', check: function(d) { var planets = {}; (d.journalEntries || []).forEach(function(j) { planets[j.planet] = true; }); return Object.keys(planets).length >= 5; }, progress: function(d) { var planets = {}; (d.journalEntries || []).forEach(function(j) { planets[j.planet] = true; }); return Object.keys(planets).length + '/5 planets'; } },
+      { id: 'journal_3', label: 'Write 3 field journal entries', icon: '\uD83D\uDCD3', field: 'journalEntries', check: function(d) { return (Array.isArray(d.journalEntries) ? d.journalEntries : []).length >= 3; }, progress: function(d) { return (Array.isArray(d.journalEntries) ? d.journalEntries : []).length + '/3 entries'; } },
+      { id: 'journal_5_planets', label: 'Journal entries for 5 different planets', icon: '\uD83D\uDCDD', field: 'journalEntries', check: function(d) { var planets = {}; (Array.isArray(d.journalEntries) ? d.journalEntries : []).forEach(function(j) { planets[j.planet] = true; }); return Object.keys(planets).length >= 5; }, progress: function(d) { var planets = {}; (Array.isArray(d.journalEntries) ? d.journalEntries : []).forEach(function(j) { planets[j.planet] = true; }); return Object.keys(planets).length + '/5 planets'; } },
       { id: 'vocab_10', label: 'Explore 10 vocabulary terms', icon: '\uD83D\uDCD6', field: 'vocabLookedUp', check: function(d) { return (d.vocabLookedUp || []).length >= 10; }, progress: function(d) { return (d.vocabLookedUp || []).length + '/10 terms'; } },
       { id: 'poe_5', label: 'Make predictions for 5 planets', icon: '\uD83E\uDD14', field: 'poeSeen', check: function(d) { return (d.poeSeen || []).length >= 5; }, progress: function(d) { return (d.poeSeen || []).length + '/5 predictions'; } },
       { id: 'misconception_5', label: 'Answer 5 misconception checkpoints', icon: '\u2753', field: 'misconceptionsSeen', check: function(d) { return (d.misconceptionsSeen || []).length >= 5; }, progress: function(d) { return (d.misconceptionsSeen || []).length + '/5 checked'; } },
@@ -565,7 +565,7 @@ const d = labToolData.solarSystem || {};
           }
 
           // --- Research Points & Challenges ---
-          var researchPoints = d.researchPoints || 0;
+          var researchPoints = (typeof d.researchPoints === 'number' && isFinite(d.researchPoints)) ? d.researchPoints : 0;
           var totalRP = d.totalRP || 0;
           // ★ Same defect as plateTectonics: `|| []` catches null but not a wrong
           // TYPE, and this value comes from a project file. A string survives the
@@ -576,7 +576,7 @@ const d = labToolData.solarSystem || {};
           // it is plain in the code, and it is fixed on that basis rather than on
           // whether a flaky probe happens to trip.
           var completedChallenges = Array.isArray(d.completedChallenges) ? d.completedChallenges : [];
-          var planetsVisited = d.planetsVisited || [];
+          var planetsVisited = Array.isArray(d.planetsVisited) ? d.planetsVisited : [];
 
           // Engagement ledger. These badges used to fire on d.showX -- on revealing a
           // panel rather than doing anything in it. Panels with a real control now
@@ -1244,7 +1244,7 @@ const d = labToolData.solarSystem || {};
           };
 
           // ── Field Journal Template ──
-          var journalEntries = d.journalEntries || [];
+          var journalEntries = Array.isArray(d.journalEntries) ? d.journalEntries : [];
           function addJournalEntry(planet, prediction, observation, surprise, question, investigation, synthesis) {
             var entry = { planet: planet, prediction: prediction, observation: observation, surprise: surprise, question: question, timestamp: Date.now(), samples: (d.collectedSamples || []).filter(function(s) { return s.planet === planet; }).length };
             if (investigation && ['compare', 'seasons', 'signal', 'gravity', 'moon'].indexOf(investigation.id) >= 0) {
@@ -3989,7 +3989,7 @@ const d = labToolData.solarSystem || {};
           function finishMarsMission() {
             if (!marsProgress.complete && marsProgress.predicted && marsProgress.transferDone && marsProgress.surfaceDone && (marsMission.reflection || '').trim().length >= 20) marsMissionFocusRef.current = '#mars-expedition-debrief-title';
             setLabToolData(function(prev) {
-              var data = prev.solarSystem || {}, mission = data.marsMission || {}, entries = data.journalEntries || [];
+              var data = prev.solarSystem || {}, mission = data.marsMission || {}, entries = Array.isArray(data.journalEntries) ? data.journalEntries : [];
               var progress = marsMissionProgress(mission, entries, marsWorld.name);
               var reflection = (mission.reflection || '').trim();
               if (mission.completedAt || !progress.predicted || !progress.transferDone || !progress.surfaceDone || reflection.length < 20) return prev;
@@ -7711,10 +7711,10 @@ const d = labToolData.solarSystem || {};
   var resetRequest = Number(d.orr_view_reset || 0);
 
   // Kepler I
-  var k1_ecc = d.orr_k1e !== undefined ? d.orr_k1e : 0.5;
+  var k1_ecc = (typeof d.orr_k1e === 'number' && isFinite(d.orr_k1e)) ? d.orr_k1e : 0.5;
 
   // Kepler II
-  var k2_ecc = d.orr_k2e !== undefined ? d.orr_k2e : 0.6;
+  var k2_ecc = (typeof d.orr_k2e === 'number' && isFinite(d.orr_k2e)) ? d.orr_k2e : 0.6;
   var k2_sectors = d.orr_k2s || 6;
 
   // Workshop
@@ -12236,7 +12236,7 @@ const d = labToolData.solarSystem || {};
       patchDebrief({ snapshot: { route: debriefRoute, from: from.name, to: to.name, planet: world ? world.name : to.name, offset: flight.offset, days: trial.transitDays, referenceGap: reference.separation, testGap: trial.separation, timestamp: capturedAt, followUp: followUp, missionStartedAt: (followUp || marsMission.active) && from.id === 'earth' && to.id === 'mars' ? marsMission.startedAt : null } });
     }
     function buildFollowUpFlightGuide() {
-      var guide = marsFollowUpFlightGuide(marsMission, d.journalEntries || [], debriefRoute, flight, debrief, Date.now());
+      var guide = marsFollowUpFlightGuide(marsMission, Array.isArray(d.journalEntries) ? d.journalEntries : [], debriefRoute, flight, debrief, Date.now());
       if (!guide) return null;
       var descriptions = {
         setup: 'The live controls differ from your launched test. Restore its angle to collect evidence for this prediction.',
@@ -12268,7 +12268,7 @@ const d = labToolData.solarSystem || {};
       );
     }
     function buildTransferDebrief() {
-      var snapshot = debrief.snapshot, saved = !!snapshot && debrief.savedSignature === transferDebriefSignature(debrief) && (d.journalEntries || []).some(function(entry) { return entry && entry.transferComparisonId === 'transfer-comparison:' + debriefRoute + ':' + snapshot.timestamp; });
+      var snapshot = debrief.snapshot, saved = !!snapshot && debrief.savedSignature === transferDebriefSignature(debrief) && (Array.isArray(d.journalEntries) ? d.journalEntries : []).some(function(entry) { return entry && entry.transferComparisonId === 'transfer-comparison:' + debriefRoute + ':' + snapshot.timestamp; });
       var ready = snapshot && debrief.changed === 'destination' && (debrief.explanation || '').trim().length >= 20 && (debrief.question || '').trim().length >= 10;
       var inputStyle = { width: '100%', boxSizing: 'border-box', minHeight: '44px', border: '1px solid ' + border, borderRadius: '8px', padding: '9px', background: cardBg, color: fg, fontSize: '12px' };
       return h('details', { 'data-transfer-debrief': true, style: { marginTop: '12px', padding: '10px', border: '1px solid ' + border, borderRadius: '10px', background: cardBg, color: fg } },
@@ -16442,7 +16442,7 @@ const d = labToolData.solarSystem || {};
                       var padding = 40;
                       var layerAreaH = ch - padding * 2;
                       var layerH = layerAreaH / descentLayers.length;
-                      var probeY = clampSolarDescentProbeValue(d._descentProbeY != null ? d._descentProbeY : 0);
+                      var probeY = clampSolarDescentProbeValue((typeof d._descentProbeY === 'number' && isFinite(d._descentProbeY)) ? d._descentProbeY : 0);
                       var compactDescent = cw < 560;
                       var probeLayerIdx = getSolarDescentLayerIndex(descentLayers, probeY);
                       var activeDescentLayer = descentLayers[probeLayerIdx];
@@ -16568,7 +16568,7 @@ const d = labToolData.solarSystem || {};
                 },
                   (function() {
                     var controlLayers = DESCENT_LAYERS[sel.key] || [];
-                    var controlProbeY = clampSolarDescentProbeValue(d._descentProbeY != null ? d._descentProbeY : 0);
+                    var controlProbeY = clampSolarDescentProbeValue((typeof d._descentProbeY === 'number' && isFinite(d._descentProbeY)) ? d._descentProbeY : 0);
                     var controlLayerIndex = getSolarDescentLayerIndex(controlLayers, controlProbeY);
                     var controlLayer = controlLayers[controlLayerIndex];
                     var controlAltitude = controlLayer ? (controlLayer.alt >= 0 ? '+' : '') + controlLayer.alt + ' km' : '';
@@ -16586,12 +16586,12 @@ const d = labToolData.solarSystem || {};
                     React.createElement("span", { className: "text-[0.6875rem] text-white/70 font-bold" }, __alloT('stem.solarsystem.high', "High")),
                     React.createElement("input", {
                       type: "range", min: "0", max: "100", step: "1",
-                      value: clampSolarDescentProbeValue(d._descentProbeY != null ? d._descentProbeY : 0) * 100,
+                      value: clampSolarDescentProbeValue((typeof d._descentProbeY === 'number' && isFinite(d._descentProbeY)) ? d._descentProbeY : 0) * 100,
                       "data-solar-descent-slider": "true",
                       "aria-label": __alloT('stem.solarsystem.descent_depth_slider', "Descent depth slider"),
                       "aria-valuetext": (function() {
                         var valueLayers = DESCENT_LAYERS[sel.key] || [];
-                        var valueIndex = getSolarDescentLayerIndex(valueLayers, d._descentProbeY != null ? d._descentProbeY : 0);
+                        var valueIndex = getSolarDescentLayerIndex(valueLayers, (typeof d._descentProbeY === 'number' && isFinite(d._descentProbeY)) ? d._descentProbeY : 0);
                         var valueLayer = valueLayers[valueIndex];
                         return valueLayer ? valueLayer.name + ", " + (valueLayer.alt >= 0 ? "+" : "") + valueLayer.alt + " kilometers, temperature " + valueLayer.temp + ", pressure " + valueLayer.pressure : "";
                       })(),
@@ -16611,7 +16611,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2.5", "data-solar-descent-card-grid": "true" },
                   DESCENT_LAYERS[sel.key].map(function(layer, li) {
                     var descentLayerCount = DESCENT_LAYERS[sel.key].length;
-                    var activeDescentIndex = getSolarDescentLayerIndex(DESCENT_LAYERS[sel.key], d._descentProbeY != null ? d._descentProbeY : 0);
+                    var activeDescentIndex = getSolarDescentLayerIndex(DESCENT_LAYERS[sel.key], (typeof d._descentProbeY === 'number' && isFinite(d._descentProbeY)) ? d._descentProbeY : 0);
                     var isActive = activeDescentIndex === li;
                     return React.createElement("button", {
                       key: li,
@@ -20894,7 +20894,7 @@ const d = labToolData.solarSystem || {};
                           journalEntries = updatedJournal;
                           setLabToolData(function(prev) {
                             var data = prev.solarSystem || {};
-                            return Object.assign({}, prev, { solarSystem: Object.assign({}, data, { journalEntries: (data.journalEntries || []).concat([entry]) }) });
+                            return Object.assign({}, prev, { solarSystem: Object.assign({}, data, { journalEntries: (Array.isArray(data.journalEntries) ? data.journalEntries : []).concat([entry]) }) });
                           });
                           markMissionStat('journaled');
                           refreshJournalPanel();
@@ -21995,7 +21995,7 @@ const d = labToolData.solarSystem || {};
                         function saveSpecimenReview(){
                           if(!specimenSelected||specimenSave.disabled)return;
                           var target=specimenSelected,observation=specimenObservation.value,question=specimenQuestion.value,now=Date.now();
-                          setLabToolData(function(prev){var data=prev.solarSystem||{},entries=data.journalEntries||[],next=saveDroneSpecimenReview(entries,target,observation,question,now);return next===entries?prev:Object.assign({},prev,{solarSystem:Object.assign({},data,{journalEntries:next})});});
+                          setLabToolData(function(prev){var data=prev.solarSystem||{},entries=Array.isArray(data.journalEntries) ? data.journalEntries : [],next=saveDroneSpecimenReview(entries,target,observation,question,now);return next===entries?prev:Object.assign({},prev,{solarSystem:Object.assign({},data,{journalEntries:next})});});
                           specimenEntries=saveDroneSpecimenReview(specimenEntries,target,observation,question,now);specimenSelected=specimenEntries.find(function(entry){return sameDroneSpecimen(entry,target);});
                           droneJournalEntries=saveDroneSpecimenReview(droneJournalEntries,target,observation,question,now);journalEntries=saveDroneSpecimenReview(journalEntries,target,observation,question,now);
                           stashSpecimenDraft();specimenFeedback.textContent='Review saved with this sample in your journal. Continue exploring to compare another site.';specimenBench.dataset.reviewState='saved';refreshJournalPanel();
@@ -26134,7 +26134,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("div", { className: "mb-2" },
                     React.createElement("input", {
                       type: "range", min: "0", max: "100",
-                      value: d.descentAlt !== undefined ? d.descentAlt : 100,
+                      value: (typeof d.descentAlt === 'number' && isFinite(d.descentAlt)) ? d.descentAlt : 100,
                       'aria-label': __alloT('stem.solarsystem.descent_altitude', 'Descent altitude'),
                       onChange: function(e) { var alt = parseInt(e.target.value); upd('descentAlt', alt); playDescentTick(alt); },
                       className: "w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer",
@@ -26148,7 +26148,7 @@ const d = labToolData.solarSystem || {};
                   // Current layer display
                   (function() {
                     var layers = DESCENT_LAYERS[sel.key];
-                    var pct = (d.descentAlt !== undefined ? d.descentAlt : 100) / 100;
+                    var pct = ((typeof d.descentAlt === 'number' && isFinite(d.descentAlt)) ? d.descentAlt : 100) / 100;
                     var layerIdx = Math.min(layers.length - 1, Math.floor((1 - pct) * layers.length));
                     var layer = layers[layerIdx];
                     return React.createElement("div", {
@@ -26167,7 +26167,7 @@ const d = labToolData.solarSystem || {};
                   // Visual depth indicator
                   React.createElement("div", { className: "mt-2 flex gap-0.5", style: { height: '24px' } },
                     (DESCENT_LAYERS[sel.key] || []).map(function(layer, li) {
-                      var pct2 = (d.descentAlt !== undefined ? d.descentAlt : 100) / 100;
+                      var pct2 = ((typeof d.descentAlt === 'number' && isFinite(d.descentAlt)) ? d.descentAlt : 100) / 100;
                       var layerIdx2 = Math.min(DESCENT_LAYERS[sel.key].length - 1, Math.floor((1 - pct2) * DESCENT_LAYERS[sel.key].length));
                       return React.createElement("div", {
                         key: li,
@@ -27275,7 +27275,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.drag_the_time_slider_to_watch_a_star_e', "Drag the time slider to watch a star evolve from birth to death. Choose a mass — different stars live very different lives.")),
                 d.showStellarEvo && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var phase = (d.stellarPhase != null ? d.stellarPhase : 50);
+                                      var phase = ((typeof d.stellarPhase === 'number' && isFinite(d.stellarPhase)) ? d.stellarPhase : 50);
                                       var massChoice = d.stellarMass || 'sun';
                                       var MASS_PROFILES = {
                                         lowmass: { name: __alloT('stem.solarsystem.red_dwarf_0_3_m', 'Red Dwarf (0.3 M☉)'), color: '#dc2626', lifespan: 'hundreds of billions of years', stages: [
@@ -27386,7 +27386,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.drag_the_slider_to_orbit_the_moon_arou', "Drag the slider to orbit the Moon around Earth. Watch the phase update in real time based on the Sun-Earth-Moon angle.")),
                 d.showMoonPhase && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var pos = d.moonPhasePos != null ? d.moonPhasePos : 90;
+                                      var pos = (typeof d.moonPhasePos === 'number' && isFinite(d.moonPhasePos)) ? d.moonPhasePos : 90;
                                       var rad = pos * Math.PI / 180;
                                       var earthX = 200, earthY = 130, orbitR = 70;
                                       var moonX = earthX - Math.cos(rad) * orbitR;
@@ -27452,7 +27452,7 @@ const d = labToolData.solarSystem || {};
                 d.showEclipse && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var type = d.eclipseType || 'solar';
-                                      var alignment = d.eclipseAlign != null ? d.eclipseAlign : 50;
+                                      var alignment = (typeof d.eclipseAlign === 'number' && isFinite(d.eclipseAlign)) ? d.eclipseAlign : 50;
                                       var offset = (alignment - 50) * 0.6;
                                       var perfect = Math.abs(offset) < 3;
                                       var partial = Math.abs(offset) < 12;
@@ -27525,9 +27525,9 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.adjust_solar_wind_latitude_and_altitud', "Adjust solar wind, latitude, and altitude to tune the aurora. Color depends on what particles excite which atmospheric atoms.")),
                 d.showAurora && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var wind = d.auroraWind != null ? d.auroraWind : 50;
-                                      var lat = d.auroraLat != null ? d.auroraLat : 65;
-                                      var alt = d.auroraAlt != null ? d.auroraAlt : 100;
+                                      var wind = (typeof d.auroraWind === 'number' && isFinite(d.auroraWind)) ? d.auroraWind : 50;
+                                      var lat = (typeof d.auroraLat === 'number' && isFinite(d.auroraLat)) ? d.auroraLat : 65;
+                                      var alt = (typeof d.auroraAlt === 'number' && isFinite(d.auroraAlt)) ? d.auroraAlt : 100;
                                       var color = alt < 100 ? '#a78bfa' : alt < 240 ? '#22c55e' : '#dc2626';
                                       var colorName = alt < 100 ? 'Purple/Blue (nitrogen <100km)' : alt < 240 ? 'Green (oxygen 100-240km)' : 'Red (oxygen >240km)';
                                       var visibility = wind > 70 && lat > 50 ? 'STRONG — dancing curtains, easy naked-eye' : wind > 40 && lat > 55 ? 'Visible — soft glow on horizon' : 'Too faint — try higher latitude or stronger storm';
@@ -27592,8 +27592,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.a_comet_gets_two_tails_when_it_nears_t', "A comet gets two tails when it nears the Sun. Adjust distance + wind angle to see how they form.")),
                 d.showComet && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var distToSun = d.cometDist != null ? d.cometDist : 50;
-                                      var angle = d.cometAngle != null ? d.cometAngle : 90;
+                                      var distToSun = (typeof d.cometDist === 'number' && isFinite(d.cometDist)) ? d.cometDist : 50;
+                                      var angle = (typeof d.cometAngle === 'number' && isFinite(d.cometAngle)) ? d.cometAngle : 90;
                                       var activity = Math.max(0, 1 - distToSun / 100);
                                       var rad = angle * Math.PI / 180;
                                       var dustL = 30 + activity * 80;
@@ -27663,8 +27663,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.adjust_mass_and_spin_watch_the_event_h', "Adjust mass and spin. Watch the event horizon grow and the accretion disk respond. Heavy spin launches polar jets.")),
                 d.showBlackHole && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var mass = d.bhMass != null ? d.bhMass : 50;
-                                      var spin = d.bhSpin != null ? d.bhSpin : 60;
+                                      var mass = (typeof d.bhMass === 'number' && isFinite(d.bhMass)) ? d.bhMass : 50;
+                                      var spin = (typeof d.bhSpin === 'number' && isFinite(d.bhSpin)) ? d.bhSpin : 60;
                                       var horizonR = 18 + (mass / 100) * 40;
                                       var diskInner = horizonR * 1.3;
                                       var diskOuter = horizonR * 3 + spin * 0.3;
@@ -27727,7 +27727,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.scrub_earth_years_and_watch_all_five_i', "Scrub Earth years and watch all five inner planets orbit at their real relative speeds. Kepler's third law in motion.")),
                 d.showRace && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var t = d.raceTime != null ? d.raceTime : 0;
+                                      var t = (typeof d.raceTime === 'number' && isFinite(d.raceTime)) ? d.raceTime : 0;
                                       var planets = [
                                         { name: __alloT('stem.solarsystem.mercury_2', 'Mercury'), radius: 25, period: 0.24, color: 'var(--allo-stem-text-soft, #94a3b8)', size: 2.5 },
                                         { name: __alloT('stem.solarsystem.venus_2', 'Venus'), radius: 45, period: 0.62, color: '#fbbf24', size: 4 },
@@ -27871,7 +27871,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.the_sun_has_an_11_year_cycle_of_sunspo', "The Sun has an 11-year cycle of sunspot activity. Scrub through to see sunspots come and go + CME launches.")),
                 d.showSunCycle && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var year = d.sunCycleYear != null ? d.sunCycleYear : 5.5;
+                                      var year = (typeof d.sunCycleYear === 'number' && isFinite(d.sunCycleYear)) ? d.sunCycleYear : 5.5;
                                       var phase = (year % 11) / 11;
                                       var sunspots = Math.max(0, 100 * (1 - Math.cos(phase * Math.PI * 2)) / 2);
                                       var cmeProb = sunspots > 70 ? 'HIGH' : sunspots > 30 ? 'Moderate' : 'Low';
@@ -27943,8 +27943,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.where_could_life_as_we_know_it_survive', "Where could life-as-we-know-it survive around any star? Adjust star luminosity + planet distance to see.")),
                 d.showHZ && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var Lstar = d.hzLum != null ? d.hzLum : 1.0;
-                                      var planetDist = d.hzDist != null ? d.hzDist : 1.0;
+                                      var Lstar = (typeof d.hzLum === 'number' && isFinite(d.hzLum)) ? d.hzLum : 1.0;
+                                      var planetDist = (typeof d.hzDist === 'number' && isFinite(d.hzDist)) ? d.hzDist : 1.0;
                                       // Kasting, Whitmire & Reynolds (1993) conservative limits:
                                       // water loss at S = 1.1 and CO2 condensation at S = 0.53,
                                       // which put the Sun's zone at 0.95 to 1.37 AU. Worth naming,
@@ -28042,8 +28042,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.drag_the_moon_closer_to_make_earth_s_t', "Drag the Moon closer to make Earth's tides bigger. Note the bulge is on both the near + far sides.")),
                 d.showTides && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var moonDist = d.tideDist != null ? d.tideDist : 60;
-                                      var moonAng = d.tideAng != null ? d.tideAng : 0;
+                                      var moonDist = (typeof d.tideDist === 'number' && isFinite(d.tideDist)) ? d.tideDist : 60;
+                                      var moonAng = (typeof d.tideAng === 'number' && isFinite(d.tideAng)) ? d.tideAng : 0;
                                       var earthX = 200, earthY = 130;
                                       var bulge = Math.max(2, 80 / moonDist);
                                       var rad = moonAng * Math.PI / 180;
@@ -28110,8 +28110,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.rotate_earth_and_adjust_season_watch_t', "Rotate Earth and adjust season. Watch the day/night terminator move + the axis tilt shift the sunlit hemisphere.")),
                 d.showGlobe && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var rot = d.dayNightRot != null ? d.dayNightRot : 0;
-                                      var season = d.dayNightSeason != null ? d.dayNightSeason : 0;
+                                      var rot = (typeof d.dayNightRot === 'number' && isFinite(d.dayNightRot)) ? d.dayNightRot : 0;
+                                      var season = (typeof d.dayNightSeason === 'number' && isFinite(d.dayNightSeason)) ? d.dayNightSeason : 0;
                                       var tilt = 23.5 * Math.sin(season * Math.PI / 180);
                                       var cx = 200, cy = 130, r = 80;
                                       var sunDir = -tilt;
@@ -28184,7 +28184,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.five_gravitational_sweet_spots_between', "Five gravitational sweet spots between two bodies where spacecraft can hover. James Webb sits at L2.")),
                 d.showLagrange && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var massRatio = d.lagrangeMass != null ? d.lagrangeMass : 0.01;
+                                      var massRatio = (typeof d.lagrangeMass === 'number' && isFinite(d.lagrangeMass)) ? d.lagrangeMass : 0.01;
                                       var cx = 250, cy = 130;
                                       var R = 100;
                                       var planetX = cx + R;
@@ -28489,7 +28489,7 @@ const d = labToolData.solarSystem || {};
                                       var path = d.roverPath || [{ x: 0, y: 5 }];
                                       var pos = path[path.length - 1];
                                       var goal = { x: 9, y: 5 };
-                                      var fuel = d.roverFuel != null ? d.roverFuel : 30;
+                                      var fuel = (typeof d.roverFuel === 'number' && isFinite(d.roverFuel)) ? d.roverFuel : 30;
                                       var terrain = d.roverTerrain || [
                                         [0,0,0,1,0,0,2,0,0,3], [0,0,1,1,0,2,0,0,0,0], [0,1,0,0,2,0,0,0,1,0],
                                         [0,0,0,1,0,0,3,0,1,0], [1,0,0,0,2,0,0,2,0,0], [0,0,0,2,0,0,0,0,0,0],
@@ -28630,7 +28630,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.light_from_receding_objects_redshifts_', "Light from receding objects redshifts; from approaching, blueshifts. This is how we measure cosmic distances + know universe is expanding.")),
                 d.showDoppler && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var vel = d.dopplerVel != null ? d.dopplerVel : 0;
+                                      var vel = (typeof d.dopplerVel === 'number' && isFinite(d.dopplerVel)) ? d.dopplerVel : 0;
                                       var lambdaRest = 656;
                                       var c = 300000;
                                       var lambdaObs = lambdaRest * Math.sqrt((1 + vel / c) / (1 - vel / c));
@@ -28700,8 +28700,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.how_much_of_a_planet_s_incoming_sunlig', "How much of a planet's incoming sunlight is reflected vs absorbed? This drives global temperature.")),
                 d.showAlbedo && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var iceCover = d.albIce != null ? d.albIce : 30;
-                                      var cloudCover = d.albCloud != null ? d.albCloud : 60;
+                                      var iceCover = (typeof d.albIce === 'number' && isFinite(d.albIce)) ? d.albIce : 30;
+                                      var cloudCover = (typeof d.albCloud === 'number' && isFinite(d.albCloud)) ? d.albCloud : 60;
                                       var albedo = 0.03 + (iceCover / 100) * 0.7 + (cloudCover / 100) * 0.35;
                                       albedo = Math.min(0.95, albedo);
                                       var Tsun = 5778;
@@ -28770,7 +28770,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.13_8_billion_years_compressed_into_a_s', "13.8 billion years compressed into a slider. Scrub from singularity to today.")),
                 d.showBigBang && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var time = d.bbTime != null ? d.bbTime : 5;
+                                      var time = (typeof d.bbTime === 'number' && isFinite(d.bbTime)) ? d.bbTime : 5;
                                       var stages = [
                                         { t: 0, label: __alloT('stem.solarsystem.big_bang_singularity', 'Big Bang singularity'), desc: __alloT('stem.solarsystem.spacetime_matter_compressed_to_a_point', 'Spacetime + matter compressed to a point') },
                                         { t: 1, label: __alloT('stem.solarsystem.inflation_epoch_10_s', 'Inflation epoch (10⁻³⁶ s)'), desc: __alloT('stem.solarsystem.universe_expands_by_10_in_a_fraction_o', 'Universe expands by 10²⁶ in a fraction of a second') },
@@ -28918,7 +28918,7 @@ const d = labToolData.solarSystem || {};
                 d.showGalaxy && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var type = d.galType || 'spiral';
-                                      var rotation = d.galRot != null ? d.galRot : 0;
+                                      var rotation = (typeof d.galRot === 'number' && isFinite(d.galRot)) ? d.galRot : 0;
                                       var TYPES = {
                                         spiral: { name: __alloT('stem.solarsystem.spiral_like_milky_way', 'Spiral (like Milky Way)'), arms: 4, colors: ['#fde047','#fca5a5','#7dd3fc','#a78bfa'] },
                                         barred: { name: __alloT('stem.solarsystem.barred_spiral', 'Barred Spiral'), arms: 2, colors: ['#fde047','#7dd3fc'] },
@@ -29005,8 +29005,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.bigger_aperture_gathers_more_light_res', "Bigger aperture gathers more light + resolves finer detail. Magnification matters less than you think.")),
                 d.showScope && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var aperture = d.scopeAp != null ? d.scopeAp : 10;
-                                      var magnif = d.scopeMag != null ? d.scopeMag : 50;
+                                      var aperture = (typeof d.scopeAp === 'number' && isFinite(d.scopeAp)) ? d.scopeAp : 10;
+                                      var magnif = (typeof d.scopeMag === 'number' && isFinite(d.scopeMag)) ? d.scopeMag : 50;
                                       var maxMag = aperture * 5;
                                       if (magnif > maxMag) magnif = maxMag;
                                       var resolveArcsec = 11.6 / aperture;
@@ -29102,7 +29102,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.drag_the_altitude_slider_up_through_ea', "Drag the altitude slider up through Earth's atmosphere. Pressure drops, temp swings, and chemistry changes layer by layer.")),
                 d.showAtmos && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var alt = d.atmAlt != null ? d.atmAlt : 50;
+                                      var alt = (typeof d.atmAlt === 'number' && isFinite(d.atmAlt)) ? d.atmAlt : 50;
                                       var layers = [
                                         { name: __alloT('stem.solarsystem.troposphere_2', 'Troposphere'), range: [0, 12], color: '#3b82f6', desc: __alloT('stem.solarsystem.weather_happens_here_temperature_decre', 'Weather happens here. Temperature decreases with altitude.') },
                                         { name: __alloT('stem.solarsystem.stratosphere_3', 'Stratosphere'), range: [12, 50], color: '#60a5fa', desc: __alloT('stem.solarsystem.ozone_layer_absorbs_uv_temperature_inc', 'Ozone layer absorbs UV. Temperature increases with altitude.') },
@@ -29183,7 +29183,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.galileo_s_1610_observations_venus_goes', "Galileo's 1610 observations: Venus goes through phases. This proved Venus orbits the Sun, not Earth.")),
                 d.showPhasesV && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var ang = d.phVAng != null ? d.phVAng : 90;
+                                      var ang = (typeof d.phVAng === 'number' && isFinite(d.phVAng)) ? d.phVAng : 90;
                                       var rad = ang * Math.PI / 180;
                                       var earthX = 60, sunX = 350, sunY = 130;
                                       var orbR = 80;
@@ -29263,8 +29263,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.a_magnetic_field_deflects_solar_wind_p', "A magnetic field deflects solar wind + protects atmosphere. Mars lost both; that's why it's barren.")),
                 d.showMag && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var strength = d.magStr != null ? d.magStr : 50;
-                                      var solar = d.magSolar != null ? d.magSolar : 50;
+                                      var strength = (typeof d.magStr === 'number' && isFinite(d.magStr)) ? d.magStr : 50;
+                                      var solar = (typeof d.magSolar === 'number' && isFinite(d.magSolar)) ? d.magSolar : 50;
                                       var cx = 200, cy = 150;
                                       var compressR = 80 - (solar / 100) * 40;
                                       var protected_ = strength > 30;
@@ -29419,7 +29419,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.pick_a_destination_see_how_long_light_', "Pick a destination + see how long light takes to reach it. Beyond the solar system, distances grow staggering.")),
                 d.showLY && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var dist = d.lyDist != null ? d.lyDist : 0;
+                                      var dist = (typeof d.lyDist === 'number' && isFinite(d.lyDist)) ? d.lyDist : 0;
                                       var DESTS = [
                                         { d: 0.000016, name: __alloT('stem.solarsystem.moon_3', 'Moon'), time: '1.3 seconds (light)', detail: __alloT('stem.solarsystem.384_400_km', '384,400 km') },
                                         { d: 0.00002, name: 'Sun', time: '8 minutes', detail: __alloT('stem.solarsystem.150_million_km', '150 million km') },
@@ -29481,8 +29481,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.where_exactly_does_the_sun_rise_set_it', "Where exactly does the Sun rise + set? It depends on your latitude + the day. Try Maine vs Arctic Circle.")),
                 d.showSunPath && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var lat = d.sunLat != null ? d.sunLat : 45;
-                                      var doy = d.sunDoy != null ? d.sunDoy : 172;
+                                      var lat = (typeof d.sunLat === 'number' && isFinite(d.sunLat)) ? d.sunLat : 45;
+                                      var doy = (typeof d.sunDoy === 'number' && isFinite(d.sunDoy)) ? d.sunDoy : 172;
                                       var decl = -23.45 * Math.cos(((doy + 10) / 365) * 2 * Math.PI);
                                       function altAz(hour) {
                                         var HA = (hour - 12) * 15;
@@ -29634,9 +29634,9 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.what_would_it_take_to_make_mars_liveab', "What would it take to make Mars liveable? Adjust greenhouse gas, ice melt, and plant cover — watch Mars transform.")),
                 d.showTerraform && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var co2 = d.tfCO2 != null ? d.tfCO2 : 10;
-                                      var ice = d.tfIce != null ? d.tfIce : 50;
-                                      var trees = d.tfTrees != null ? d.tfTrees : 0;
+                                      var co2 = (typeof d.tfCO2 === 'number' && isFinite(d.tfCO2)) ? d.tfCO2 : 10;
+                                      var ice = (typeof d.tfIce === 'number' && isFinite(d.tfIce)) ? d.tfIce : 50;
+                                      var trees = (typeof d.tfTrees === 'number' && isFinite(d.tfTrees)) ? d.tfTrees : 0;
                                       var temp = -65 + co2 * 0.8 + ice * 0.1 - trees * 0.05;
                                       var oxy = trees * 0.2;
                                       var water = ice / 100;
@@ -29699,7 +29699,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.hubble_stared_at_an_empty_patch_of_sky', "Hubble stared at an empty patch of sky for 10 days and found 3000 distant galaxies. Look closer + each fuzzy blob is a galaxy.")),
                 d.showHDF && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var zoom = d.hdfZoom != null ? d.hdfZoom : 1;
+                                      var zoom = (typeof d.hdfZoom === 'number' && isFinite(d.hdfZoom)) ? d.hdfZoom : 1;
                                       var stars = [];
                                       var galaxies = [];
                                       for (var i = 0; i < 200; i++) {
@@ -29760,7 +29760,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.hotter_stars_look_bluer_cooler_stars_r', "Hotter stars look bluer; cooler stars redder. Stars are classified OBAFGKM by spectral type.")),
                 d.showStarWheel && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var temp = d.starTemp != null ? d.starTemp : 5778;
+                                      var temp = (typeof d.starTemp === 'number' && isFinite(d.starTemp)) ? d.starTemp : 5778;
                                       function tempColor(t) {
                                         if (t < 3500) return '#dc2626';
                                         if (t < 5000) return '#f97316';
@@ -29837,8 +29837,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.why_does_the_moon_always_show_the_same', "Why does the Moon always show the same face? Tidal forces slowed its rotation. See how distance + mass affect time-to-lock.")),
                 d.showTLock && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var dist = d.tlDist != null ? d.tlDist : 50;
-                                      var mass = d.tlMass != null ? d.tlMass : 50;
+                                      var dist = (typeof d.tlDist === 'number' && isFinite(d.tlDist)) ? d.tlDist : 50;
+                                      var mass = (typeof d.tlMass === 'number' && isFinite(d.tlMass)) ? d.tlMass : 50;
                                       var lockTime = Math.pow(dist / 50, 6) * 100 / mass;
                                       var locked = lockTime < 5;
                                       var rotSpeed = locked ? 0 : Math.max(0.1, 5 - lockTime / 20);
@@ -29955,8 +29955,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.mass_curves_spacetime_drag_mass_watch_', "Mass curves spacetime. Drag mass + watch the well deepen. Roll the ball to see how it falls in.")),
                 d.showGrav && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var mass = d.gravMass != null ? d.gravMass : 50;
-                                      var ballX = d.gravBallX != null ? d.gravBallX : 50;
+                                      var mass = (typeof d.gravMass === 'number' && isFinite(d.gravMass)) ? d.gravMass : 50;
+                                      var ballX = (typeof d.gravBallX === 'number' && isFinite(d.gravBallX)) ? d.gravBallX : 50;
                                       var cx = 200, cy = 140;
                                       var depth = mass * 1.2;
                                       function gravPt(angle, r) {
@@ -30117,7 +30117,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.light_from_380_000_years_after_the_big', "Light from 380,000 years after the Big Bang. Tiny variations are the seeds of every galaxy.")),
                 d.showCMB && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var contrast = d.cmbContrast != null ? d.cmbContrast : 50;
+                                      var contrast = (typeof d.cmbContrast === 'number' && isFinite(d.cmbContrast)) ? d.cmbContrast : 50;
                                       var pixels = [];
                                       for (var py = 0; py < 50; py++) {
                                         for (var px = 0; px < 80; px++) {
@@ -30169,8 +30169,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.saturn_s_rings_are_99_water_ice_in_tri', "Saturn's rings are 99% water ice in trillions of pieces. They might be just 100 million years old.")),
                 d.showRings && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var iceFrac = d.ringIce != null ? d.ringIce : 95;
-                                      var density = d.ringDensity != null ? d.ringDensity : 60;
+                                      var iceFrac = (typeof d.ringIce === 'number' && isFinite(d.ringIce)) ? d.ringIce : 95;
+                                      var density = (typeof d.ringDensity === 'number' && isFinite(d.ringDensity)) ? d.ringDensity : 60;
                                       var nLines = 5 + Math.floor(density / 8);
                                       var color = iceFrac > 80 ? '#f0f9ff' : iceFrac > 50 ? '#cbd5e1' : '#a16207';
                                       return React.createElement('div', null,
@@ -30289,8 +30289,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.pulsars_are_spinning_neutron_stars_wit', "Pulsars are spinning neutron stars with magnetic beams. Earth sees a pulse only when a beam sweeps by.")),
                 d.showPulsar && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var spin = d.pulsarSpin != null ? d.pulsarSpin : 0;
-                                      var tiltDeg = d.pulsarTilt != null ? d.pulsarTilt : 30;
+                                      var spin = (typeof d.pulsarSpin === 'number' && isFinite(d.pulsarSpin)) ? d.pulsarSpin : 0;
+                                      var tiltDeg = (typeof d.pulsarTilt === 'number' && isFinite(d.pulsarTilt)) ? d.pulsarTilt : 30;
                                       var rad = spin * Math.PI / 180;
                                       var beamLen = 100;
                                       return React.createElement('div', null,
@@ -30347,8 +30347,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.stream_of_charged_particles_from_sun_h', "Stream of charged particles from Sun, hitting Earth. Stronger wind = more auroras + GPS disruption.")),
                 d.showSWind && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var speed = d.swSpeed != null ? d.swSpeed : 400;
-                                      var density = d.swDens != null ? d.swDens : 5;
+                                      var speed = (typeof d.swSpeed === 'number' && isFinite(d.swSpeed)) ? d.swSpeed : 400;
+                                      var density = (typeof d.swDens === 'number' && isFinite(d.swDens)) ? d.swDens : 5;
                                       var streamers = [];
                                       for (var s = 0; s < density; s++) {
                                         var sy = 30 + s * (200 / density);
@@ -30415,7 +30415,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.the_iss_orbits_earth_every_90_minutes_', "The ISS orbits Earth every 90 minutes. Sometimes in daylight, sometimes in Earth's shadow.")),
                 d.showISS && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var orb = d.issOrbit != null ? d.issOrbit : 0;
+                                      var orb = (typeof d.issOrbit === 'number' && isFinite(d.issOrbit)) ? d.issOrbit : 0;
                                       var cx = 200, cy = 140;
                                       var orbitR = 90;
                                       var rad = orb * Math.PI / 180;
@@ -30474,7 +30474,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.voyager_1_2_launched_1977_they_are_now', "Voyager 1 + 2 launched in 1977. They are now in interstellar space; Voyager 1 crossed the heliopause in 2012 and Voyager 2 in 2018.")),
                 d.showVoy && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var year = d.voyYear != null ? d.voyYear : 2026;
+                                      var year = (typeof d.voyYear === 'number' && isFinite(d.voyYear)) ? d.voyYear : 2026;
                                       var v1AU = 0.058 + (year - 1977) * 3.6;
                                       var v2AU = 0.062 + (year - 1977) * 3.3;
                                       var hpAU = 120;
@@ -30550,7 +30550,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.mercury_passes_in_front_of_the_sun_eve', "Mercury passes in front of the Sun every few years. Watch it cross — but only with a proper solar filter.")),
                 d.showTrans && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var phase = d.transPhase != null ? d.transPhase : 50;
+                                      var phase = (typeof d.transPhase === 'number' && isFinite(d.transPhase)) ? d.transPhase : 50;
                                       var mercX = 60 + (phase / 100) * 280;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
@@ -30602,8 +30602,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.l_on_foucault_1851_proved_earth_rotate', "Léon Foucault 1851 proved Earth rotates with a giant pendulum. Its swing-plane rotates faster at the poles.")),
                 d.showFouc && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var lat = d.foucLat != null ? d.foucLat : 45;
-                                      var t = d.foucTime != null ? d.foucTime : 0;
+                                      var lat = (typeof d.foucLat === 'number' && isFinite(d.foucLat)) ? d.foucLat : 45;
+                                      var t = (typeof d.foucTime === 'number' && isFinite(d.foucTime)) ? d.foucTime : 0;
                                       var period = 24 / Math.abs(Math.sin(lat * Math.PI / 180));
                                       var rotation = (t / period) * 360;
                                       var rad = rotation * Math.PI / 180;
@@ -30655,7 +30655,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.saturn_s_north_pole_has_a_perfect_hexa', "Saturn's north pole has a perfect hexagonal storm 30,000 km wide. Discovered by Voyager 1981.")),
                 d.showHex && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var rot = d.hexRot != null ? d.hexRot : 0;
+                                      var rot = (typeof d.hexRot === 'number' && isFinite(d.hexRot)) ? d.hexRot : 0;
                                       var rad = rot * Math.PI / 180;
                                       var hpts = [];
                                       for (var hi = 0; hi < 6; hi++) {
@@ -30707,7 +30707,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.the_original_clock_as_the_sun_arcs_acr', "The original clock. As the Sun arcs across the sky, the gnomon casts a rotating shadow that marks the hours.")),
                 d.showSundial && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var hour = d.sdHour != null ? d.sdHour : 12;
+                                      var hour = (typeof d.sdHour === 'number' && isFinite(d.sdHour)) ? d.sdHour : 12;
                                       var rotation = (hour - 12) * 15;
                                       var rad = rotation * Math.PI / 180;
                                       var shadowX = 200 + Math.sin(rad) * 80;
@@ -30804,7 +30804,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.what_size_asteroid_kills_which_level_o', "What size asteroid kills which level of life? Compare from pebble to dinosaur-killer.")),
                 d.showImpact && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var size = d.impSize != null ? d.impSize : 10;
+                                      var size = (typeof d.impSize === 'number' && isFinite(d.impSize)) ? d.impSize : 10;
                                       // Impact scaling, so the numbers match real events. The old
                                       // model used energy = size^3.5 * 0.4 MT and crater =
                                       // size^0.78 * 1.16 KM. That put Chelyabinsk (20 m) at 28,600
@@ -30895,8 +30895,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.a_cme_blasts_billions_of_tons_of_plasm', "A CME blasts billions of tons of plasma from Sun. Days later, it can cause spectacular auroras + GPS failures.")),
                 d.showCME && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var phase = d.cmePhase != null ? d.cmePhase : 0;
-                                      var size = d.cmeSize != null ? d.cmeSize : 50;
+                                      var phase = (typeof d.cmePhase === 'number' && isFinite(d.cmePhase)) ? d.cmePhase : 0;
+                                      var size = (typeof d.cmeSize === 'number' && isFinite(d.cmeSize)) ? d.cmeSize : 50;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
                                           React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.coronal_mass_ejection', "⚡ Coronal Mass Ejection"), viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
@@ -30957,8 +30957,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.cepheids_pulse_on_a_regular_cycle_thei', "Cepheids pulse on a regular cycle. Their period reveals their true brightness — a cosmic ruler.")),
                 d.showPVar && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var t = d.pvT != null ? d.pvT : 0;
-                                      var period = d.pvPer != null ? d.pvPer : 5;
+                                      var t = (typeof d.pvT === 'number' && isFinite(d.pvT)) ? d.pvT : 0;
+                                      var period = (typeof d.pvPer === 'number' && isFinite(d.pvPer)) ? d.pvPer : 5;
                                       var phase = (t % period) / period;
                                       var bright = Math.sin(phase * Math.PI * 2);
                                       var size = 40 + bright * 20;
@@ -31019,7 +31019,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.orbits_range_from_circles_to_long_elli', "Orbits range from circles to long ellipses. Adjust eccentricity to draw planet-like or comet-like paths.")),
                 d.showCOrb && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var ecc = d.cobEcc != null ? d.cobEcc : 0.85;
+                                      var ecc = (typeof d.cobEcc === 'number' && isFinite(d.cobEcc)) ? d.cobEcc : 0.85;
                                       var a = 100;
                                       var b = a * Math.sqrt(1 - ecc * ecc);
                                       var c = a * ecc;
@@ -31298,7 +31298,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.earth_rotates_15_per_hour_watch_when_i', "Earth rotates 15° per hour. Watch when it's noon in Tokyo, when sunrise hits Portland.")),
                 d.showTZ && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var hour = d.tzHour != null ? d.tzHour : 12;
+                                      var hour = (typeof d.tzHour === 'number' && isFinite(d.tzHour)) ? d.tzHour : 12;
                                       var cities = [
                                         { name: __alloT('stem.solarsystem.tokyo', 'Tokyo'), x: 40, offset: 9 }, { name: __alloT('stem.solarsystem.beijing', 'Beijing'), x: 75, offset: 8 }, { name: __alloT('stem.solarsystem.mumbai', 'Mumbai'), x: 110, offset: 5.5 },
                                         { name: __alloT('stem.solarsystem.cairo', 'Cairo'), x: 155, offset: 2 }, { name: __alloT('stem.solarsystem.london', 'London'), x: 195, offset: 0 }, { name: __alloT('stem.solarsystem.sao_paulo', 'Sao Paulo'), x: 260, offset: -3 },
@@ -31492,8 +31492,8 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.total_eclipses_cover_narrow_strips_the', "Total eclipses cover narrow strips. The 2024 eclipse path crossed northern Maine.")),
                 d.showEPath && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var lat = d.ePathLat != null ? d.ePathLat : 40;
-                                      var lon = d.ePathLon != null ? d.ePathLon : 0;
+                                      var lat = (typeof d.ePathLat === 'number' && isFinite(d.ePathLat)) ? d.ePathLat : 40;
+                                      var lon = (typeof d.ePathLon === 'number' && isFinite(d.ePathLon)) ? d.ePathLon : 0;
                                       var inMaine = lat > 40 && lat < 50 && lon > -75 && lon < -65;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
@@ -31589,13 +31589,13 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.how_many_alien_civilizations_adjust_ea', "How many alien civilizations? Adjust each unknown factor + see the answer.")),
                 d.showDrake && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var R = d.drR != null ? d.drR : 1.5;
-                                      var fp = d.drFp != null ? d.drFp : 1.0;
-                                      var ne = d.drNe != null ? d.drNe : 0.4;
-                                      var fl = d.drFl != null ? d.drFl : 0.5;
-                                      var fi = d.drFi != null ? d.drFi : 0.1;
-                                      var fc = d.drFc != null ? d.drFc : 0.5;
-                                      var L = d.drL != null ? d.drL : 1000;
+                                      var R = (typeof d.drR === 'number' && isFinite(d.drR)) ? d.drR : 1.5;
+                                      var fp = (typeof d.drFp === 'number' && isFinite(d.drFp)) ? d.drFp : 1.0;
+                                      var ne = (typeof d.drNe === 'number' && isFinite(d.drNe)) ? d.drNe : 0.4;
+                                      var fl = (typeof d.drFl === 'number' && isFinite(d.drFl)) ? d.drFl : 0.5;
+                                      var fi = (typeof d.drFi === 'number' && isFinite(d.drFi)) ? d.drFi : 0.1;
+                                      var fc = (typeof d.drFc === 'number' && isFinite(d.drFc)) ? d.drFc : 0.5;
+                                      var L = (typeof d.drL === 'number' && isFinite(d.drL)) ? d.drL : 1000;
                                       var N = R * fp * ne * fl * fi * fc * L;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg p-3 ' + (isDark ? 'bg-slate-900 border border-slate-700' : 'bg-indigo-50 border border-indigo-200') },
@@ -31687,7 +31687,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.massive_stars_live_fast_die_young_adju', "Massive stars live fast + die young. Adjust mass + see how long the star burns.")),
                 d.showSLT && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var mass = d.sltMass != null ? d.sltMass : 1;
+                                      var mass = (typeof d.sltMass === 'number' && isFinite(d.sltMass)) ? d.sltMass : 1;
                                       var lifespan = 10 * Math.pow(mass, -2.5);
                                       // 3.2 Tyr at 0.1 solar masses down to 0.6 Myr at 50 - nearly seven
                                       // orders of magnitude - so the track is logarithmic, and
@@ -31736,8 +31736,8 @@ const d = labToolData.solarSystem || {};
                 d.showSummary && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var stats = [
-                                        { label: __alloT('stem.solarsystem.planets_explored', '🌍 Planets explored'), val: (d.planetsVisited || []).length + '/9' },
-                                        { label: __alloT('stem.solarsystem.research_points', '⭐ Research Points'), val: d.researchPoints || 0 },
+                                        { label: __alloT('stem.solarsystem.planets_explored', '🌍 Planets explored'), val: (Array.isArray(d.planetsVisited) ? d.planetsVisited : []).length + '/9' },
+                                        { label: __alloT('stem.solarsystem.research_points', '⭐ Research Points'), val: (typeof d.researchPoints === 'number' && isFinite(d.researchPoints)) ? d.researchPoints : 0 },
                                         { label: __alloT('stem.solarsystem.missions_logged', '🛰 Missions logged'), val: (d.missionLog || []).length },
                                         { label: __alloT('stem.solarsystem.vocab_looked_up', '📚 Vocab looked up'), val: (d.vocabLookedUp || []).length }
                                       ];
@@ -32201,7 +32201,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.36_500_objects_orbit_earth_at_various_', "36,500 objects orbit Earth at various altitudes. Move altitude slider to see what's there.")),
                 d.showJunk && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var alt = d.junkAlt != null ? d.junkAlt : 600;
+                                      var alt = (typeof d.junkAlt === 'number' && isFinite(d.junkAlt)) ? d.junkAlt : 600;
                                       var density = alt < 400 ? 'Very dense' : alt < 800 ? 'Dense (LEO)' : alt < 2000 ? 'Moderate' : alt < 35000 ? 'Light' : 'GEO ring';
                                       // Altitude is this tool's only control, and it used to change
                                       // nothing but the caption and the number of dots: the debris
@@ -32499,7 +32499,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement('p', { className: 'text-[0.625rem] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.watch_stars_form_from_cold_dust_to_hot', "Watch stars form from cold dust to hot suns. 6 stages over a few million years.")),
                 d.showSFR && React.createElement('div', { className: 'mt-2' },
                   (function() {
-                                      var stage = d.sfrStage != null ? d.sfrStage : 0;
+                                      var stage = (typeof d.sfrStage === 'number' && isFinite(d.sfrStage)) ? d.sfrStage : 0;
                                       var STAGES = [
                                         'Molecular cloud — cold, dark, dense',
                                         'Cloud collapses under gravity, fragmenting',

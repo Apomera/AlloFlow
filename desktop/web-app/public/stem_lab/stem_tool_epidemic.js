@@ -1420,21 +1420,26 @@ window.StemLab = window.StemLab || {
       // is assigned further down and `var` hoists the declaration, not the value.
       var TAB_IDS = ['battle', 'challenge', 'contacttrace', 'history', 'inquiry', 'interventions', 'learn', 'outbreak', 'outbreakmap', 'r0explorer', 'scenarios', 'seir', 'sir', 'vaccination'];
       var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'sir';
-      var r0 = d.r0 != null ? d.r0 : 2.5;
-      var vaccRate = d.vaccRate != null ? d.vaccRate : 0;
-      var infectPeriod = d.infectPeriod != null ? d.infectPeriod : 10;
-      var latentPeriod = d.latentPeriod != null ? d.latentPeriod : 5;
-      var popSize = d.popSize != null ? d.popSize : 1000000;
-      var simDays = d.simDays != null ? d.simDays : 300;
-      var initialInfectedPct = d.initialInfectedPct != null ? d.initialInfectedPct : 0.1;
+      var r0 = (typeof d.r0 === 'number' && isFinite(d.r0)) ? d.r0 : 2.5;
+      var vaccRate = (typeof d.vaccRate === 'number' && isFinite(d.vaccRate)) ? d.vaccRate : 0;
+      var infectPeriod = (typeof d.infectPeriod === 'number' && isFinite(d.infectPeriod)) ? d.infectPeriod : 10;
+      var latentPeriod = (typeof d.latentPeriod === 'number' && isFinite(d.latentPeriod)) ? d.latentPeriod : 5;
+      var popSize = (typeof d.popSize === 'number' && isFinite(d.popSize)) ? d.popSize : 1000000;
+      var simDays = (typeof d.simDays === 'number' && isFinite(d.simDays)) ? d.simDays : 300;
+      var initialInfectedPct = (typeof d.initialInfectedPct === 'number' && isFinite(d.initialInfectedPct)) ? d.initialInfectedPct : 0.1;
       var chartPlaybackRunning = d.chartPlaybackRunning || false;
       var chartPlaybackSpeed = d.chartPlaybackSpeed || 1;
       var reducedMotion = epidemicPrefersReducedMotion();
       var stochasticSummary = d.stochasticSummary || null;
-      var sirRunNote = d.sirRunNote || null;
+      // Read as .initialEffectiveR/.peak/.attackRate, each with .toFixed(), so
+      // a bare {} is as broken as a string. Require the numeric fields.
+      var sirRunNote = (d.sirRunNote && typeof d.sirRunNote === 'object' && !Array.isArray(d.sirRunNote)
+        && typeof d.sirRunNote.initialEffectiveR === 'number' && typeof d.sirRunNote.peak === 'number'
+        && typeof d.sirRunNote.attackRate === 'number') ? d.sirRunNote : null;
       var lastRunParams = d.lastRunParams || null;
-      var historySimulationNote = d.historySimulationNote || null;
-      var selectedPreset = d.selectedPreset != null ? d.selectedPreset : 0;
+      // Rendered straight into the tree; an object makes React throw.
+      var historySimulationNote = typeof d.historySimulationNote === 'string' ? d.historySimulationNote : null;
+      var selectedPreset = (Number.isInteger(d.selectedPreset) && d.selectedPreset >= 0 && d.selectedPreset < PRESETS.length) ? d.selectedPreset : 0;
       var EPI_CORE_TABS = ['sir', 'seir', 'r0explorer', 'vaccination', 'interventions', 'outbreak', 'challenge', 'inquiry'];
       var showFullEpiNav = !!d.showEpiLibrary || EPI_CORE_TABS.indexOf(tab) === -1;
       var visibleSubtools = showFullEpiNav ? SUBTOOLS : SUBTOOLS.filter(function(st) { return EPI_CORE_TABS.indexOf(st.id) !== -1; });
@@ -1945,9 +1950,9 @@ window.StemLab = window.StemLab || {
 
       // ── Challenge state ──
       var chalTier = d.chalTier || 1;
-      var chalIdx = d.chalIdx != null ? d.chalIdx : 0;
+      var chalIdx = (Number.isInteger(d.chalIdx) && d.chalIdx >= 0) ? d.chalIdx : 0;
       var chalAnswer = d.chalAnswer || '';
-      var chalFeedback = d.chalFeedback || '';
+      var chalFeedback = typeof d.chalFeedback === 'string' ? d.chalFeedback : '';
       var chalStreak = d.chalStreak || 0;
       var chalScore = d.chalScore || 0;
       var tierQs = CHALLENGE_QS.filter(function(q) { return q.tier === chalTier; });
@@ -2001,8 +2006,8 @@ window.StemLab = window.StemLab || {
       // ── Battle state ──
       var battleActive = d.battleActive || false;
       var battleRound = d.battleRound || 0;
-      var battlePlayerHP = d.battlePlayerHP != null ? d.battlePlayerHP : 100;
-      var battleEnemyHP = d.battleEnemyHP != null ? d.battleEnemyHP : 100;
+      var battlePlayerHP = (typeof d.battlePlayerHP === 'number' && isFinite(d.battlePlayerHP)) ? d.battlePlayerHP : 100;
+      var battleEnemyHP = (typeof d.battleEnemyHP === 'number' && isFinite(d.battleEnemyHP)) ? d.battleEnemyHP : 100;
       var battleAnswer = d.battleAnswer || '';
       var battleFeedback = d.battleFeedback || '';
       var battleOver = d.battleOver || false;
@@ -2071,14 +2076,16 @@ window.StemLab = window.StemLab || {
       }
 
       // ── Outbreak Map state ──
-      var mapScenario = d.mapScenario != null ? d.mapScenario : 0;
+      var mapScenario = (Number.isInteger(d.mapScenario) && d.mapScenario >= 0 && d.mapScenario < MAP_SCENARIOS.length) ? d.mapScenario : 0;
       var pathogenProfile = getPathogenProfile(d.mapPathogen || PATHOGEN_PROFILES[0].id);
       var mapPathogen = pathogenProfile.id;
-      var mapVacc = d.mapVacc != null ? d.mapVacc : 0;
-      var mapExposure = d.mapExposure != null ? d.mapExposure : 50;
+      var mapVacc = (typeof d.mapVacc === 'number' && isFinite(d.mapVacc)) ? d.mapVacc : 0;
+      var mapExposure = (typeof d.mapExposure === 'number' && isFinite(d.mapExposure)) ? d.mapExposure : 50;
       var mapInterventions = d.mapInterventions || {};
       var mapSeed = normalizeMapSeed(d.mapSeed);
-      var mapGrid = d.mapGrid || null;
+      // A 2-D grid: consumers read mapDisplayGrid[0].length and .reduce over
+      // rows, so the ROWS must be arrays too, not just the outer value.
+      var mapGrid = (Array.isArray(d.mapGrid) && d.mapGrid.length && Array.isArray(d.mapGrid[0])) ? d.mapGrid : null;
       var mapBaselineGrid = d.mapBaselineGrid || null;
       var mapRunning = d.mapRunning || false;
       var mapPlacementMode = d.mapPlacementMode || false;
@@ -2166,7 +2173,7 @@ window.StemLab = window.StemLab || {
         }, 220);
       }
       // R0 Explorer state
-      var r0Compared = d.r0Compared || [];
+      var r0Compared = Array.isArray(d.r0Compared) ? d.r0Compared : [];
 
       function addR0Comparison() {
         var entry = { r0: r0, vaccRate: vaccRate, infectPeriod: infectPeriod, effR0: effR0, herd: herdThresh, peakI: peakI, peakDay: peakDay, totalInf: totalInf, preset: PRESETS[selectedPreset].name };
@@ -2227,7 +2234,7 @@ window.StemLab = window.StemLab || {
       }
 
       // ── Intervention state ──
-      var activeNPIs = d.activeNPIs || [];
+      var activeNPIs = Array.isArray(d.activeNPIs) ? d.activeNPIs : [];
       var npiResult = (tab === 'interventions') ? solveSIR_NPI({ r0: r0, vaccRate: vaccRate, infectPeriod: infectPeriod, popSize: popSize, simDays: simDays, initialInfectedPct: initialInfectedPct }, activeNPIs) : null;
       var npiBaseline = (tab === 'interventions') ? solveSIR_NPI({ r0: r0, vaccRate: vaccRate, infectPeriod: infectPeriod, popSize: popSize, simDays: simDays, initialInfectedPct: initialInfectedPct }, []) : null;
 
@@ -2253,7 +2260,10 @@ window.StemLab = window.StemLab || {
       }
 
       // ── Contact tracing state ──
-      var ctNetwork = d.ctNetwork || null;
+      // Every consumer reads ctNetwork.solution as an array, so an object
+      // without it is as broken as a string.
+      var ctNetwork = (d.ctNetwork && typeof d.ctNetwork === 'object' && !Array.isArray(d.ctNetwork)
+        && Array.isArray(d.ctNetwork.solution)) ? d.ctNetwork : null;
       var ctRevealed = d.ctRevealed || [];
       var ctGuesses = d.ctGuesses || 0;
       var ctScore = d.ctScore || 0;
@@ -2345,7 +2355,7 @@ window.StemLab = window.StemLab || {
         focusMapPlacementControl();
       }
       // ── Hospital capacity for outbreak map ──
-      var hospitalBeds = d.hospitalBeds != null ? d.hospitalBeds : HOSP_CAPACITY_PCT; // % of pop
+      var hospitalBeds = (typeof d.hospitalBeds === 'number' && isFinite(d.hospitalBeds)) ? d.hospitalBeds : HOSP_CAPACITY_PCT; // % of pop
       var mapComparison = compareMapHistories(mapHistory, mapBaselineHistory, hospitalBeds);
       var mapSummary = mapComparison.actual;
       var mapBaselineSummary = mapComparison.baseline;

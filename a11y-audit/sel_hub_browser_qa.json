@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-03T00:28:49.080Z",
+  "generatedAt": "2026-09-21T01:10:49.098Z",
   "harness": "standalone SEL Hub and AlloHaven browser fixture",
   "summary": {
     "total": 21,
-    "failed": 0,
-    "passed": 21
+    "failed": 1,
+    "passed": 20
   },
   "scenarios": [
     {
@@ -89,7 +89,7 @@
               "key": "Tab",
               "active": {
                 "tag": "button",
-                "id": "",
+                "id": "sel-clear-all-data-button",
                 "text": "🗑️ Clear my SEL data",
                 "aria": "Clear all my SEL data from this device",
                 "inExplainer": false,
@@ -113,7 +113,7 @@
               "key": "Tab",
               "active": {
                 "tag": "button",
-                "id": "",
+                "id": "sel-clear-all-data-button",
                 "text": "🗑️ Clear my SEL data",
                 "aria": "Clear all my SEL data from this device",
                 "inExplainer": false,
@@ -137,7 +137,7 @@
               "key": "Tab",
               "active": {
                 "tag": "button",
-                "id": "",
+                "id": "sel-clear-all-data-button",
                 "text": "🗑️ Clear my SEL data",
                 "aria": "Clear all my SEL data from this device",
                 "inExplainer": false,
@@ -161,7 +161,7 @@
               "key": "Tab",
               "active": {
                 "tag": "button",
-                "id": "",
+                "id": "sel-clear-all-data-button",
                 "text": "🗑️ Clear my SEL data",
                 "aria": "Clear all my SEL data from this device",
                 "inExplainer": false,
@@ -185,7 +185,7 @@
               "key": "Shift+Tab",
               "active": {
                 "tag": "button",
-                "id": "",
+                "id": "sel-clear-all-data-button",
                 "text": "🗑️ Clear my SEL data",
                 "aria": "Clear all my SEL data from this device",
                 "inExplainer": false,
@@ -366,22 +366,11 @@
             "selectedTools": "4 tools selected",
             "selectedQuests": "2 quests"
           }
-        },
-        {
-          "id": "station-builder-focus-handoff",
-          "pass": true,
-          "activeAfterOpen": {
-            "tag": "input",
-            "id": "sel-station-name-input",
-            "text": "",
-            "aria": "Station name",
-            "inExplainer": false,
-            "inSharePacket": false,
-            "inEducators": false
-          }
         }
       ],
-      "errors": []
+      "errors": [
+        "locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /Build a new custom SEL Station/i }).first() to be visible\u001b[22m\n"
+      ]
     },
     {
       "name": "desktop-dark-responsive",

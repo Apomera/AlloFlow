@@ -6,6 +6,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { randomUUID } = require('node:crypto');
 const { validateManifest, summarizeUnit, summarizeBrowser } = require('./remediation_validation.cjs');
+const { captureIdentity, compareIdentity } = require('./remediation_validation_identity.cjs');
 const manifest = require('./mcp_calibration_validation.json');
 const ROOT = path.resolve(__dirname, '..');
 
@@ -18,10 +19,10 @@ function runCli(cli, args, env, logFile) {
   } finally { fs.closeSync(log); }
 }
 
-function executeCalibration({ reportDir, selection = manifest, run = runCli }) {
+function executeCalibration({ reportDir, selection = manifest, run = runCli, capture = () => captureIdentity(ROOT, [...selection.unit, ...selection.browser, ...selection.identityInputs]) }) {
   fs.mkdirSync(reportDir, { recursive: true });
   const summaryFile = path.join(reportDir, 'summary.json');
-  const summary = { runId: randomUUID(), status: 'running', startedAt: new Date().toISOString(), phases: { unit: { status: 'not-started' }, browser: { status: 'not-started' } } };
+  const summary = { runId: randomUUID(), status: 'running', startedAt: new Date().toISOString(), identityScope: 'Declared manifest inputs, selected suites, tool versions and Git HEAD', identity: {}, phases: { unit: { status: 'not-started' }, browser: { status: 'not-started' } } };
   const save = () => {
     const pending = summaryFile + '.' + summary.runId + '.tmp';
     fs.writeFileSync(pending, JSON.stringify(summary, null, 2) + '\n');
@@ -55,13 +56,34 @@ function executeCalibration({ reportDir, selection = manifest, run = runCli }) {
       const file = path.join(reportDir, name); if (fs.existsSync(file)) fs.unlinkSync(file);
     }
     validateManifest(selection);
+    if (!Array.isArray(selection.identityInputs) || !selection.identityInputs.length || selection.identityInputs.some(input => typeof input !== 'string' || !input) || new Set(selection.identityInputs).size !== selection.identityInputs.length)
+      throw new Error('Missing or invalid calibration identity inputs');
+    summary.identity.before = capture();
+    save();
+    if (Object.values(summary.identity.before.inputSha256).some(hash => hash === null)) throw new Error('A required calibration input is missing');
+    if (!summary.identity.before.gitHead) throw new Error('Calibration Git revision could not be verified before the run');
+    if (selection === manifest && JSON.stringify(JSON.parse(fs.readFileSync(path.join(ROOT, 'dev-tools/mcp_calibration_validation.json'), 'utf8'))) !== JSON.stringify(manifest))
+      throw new Error('Suite manifest changed before calibration started');
     phase('unit', 'node_modules/vitest/vitest.mjs', ['run', ...selection.unit, '--pool=threads', '--maxWorkers=1', '--allowOnly=false', '--retry=0', '--testTimeout=360000', '--reporter=dot', '--reporter=json', '--outputFile=' + path.join(reportDir, 'unit.json')], {});
     phase('browser', 'node_modules/@playwright/test/cli.js', ['test', ...selection.browser, '--project=chromium', '--forbid-only', '--workers=1', '--retries=0', '--reporter=line,json', '--output=' + path.join(reportDir, 'browser-artifacts')], { PLAYWRIGHT_JSON_OUTPUT_FILE: path.join(reportDir, 'browser.json') });
-    summary.status = 'passed'; summary.testsPassed = summary.phases.unit.passed + summary.phases.browser.passed;
-  } catch (error) { summary.status = 'failed'; summary.error = error.message; }
-  finally { summary.finishedAt = new Date().toISOString(); save(); }
+  } catch (error) { summary.error = error.message; }
+  finally {
+    try {
+      summary.identity.after = capture();
+      if (summary.identity.before) {
+        Object.assign(summary.identity, compareIdentity(summary.identity.before, summary.identity.after));
+        if (summary.identity.changedInputs.length || summary.identity.toolsChanged || summary.identity.gitHeadChanged)
+          summary.error = [summary.error, 'Calibration inputs, tools or revision changed during the run'].filter(Boolean).join('; ');
+        if (!summary.identity.gitHeadVerified)
+          summary.error = [summary.error, 'Calibration Git revision could not be verified for the run'].filter(Boolean).join('; ');
+      }
+    } catch (error) { summary.error = [summary.error, 'Final identity capture failed: ' + error.message].filter(Boolean).join('; '); }
+    summary.status = summary.error ? 'failed' : 'passed';
+    if (summary.status === 'passed') summary.testsPassed = summary.phases.unit.passed + summary.phases.browser.passed;
+    summary.finishedAt = new Date().toISOString(); save();
+  }
   if (summary.status !== 'passed') throw new Error(summary.error);
-  console.log('[mcp-calibration] ' + summary.testsPassed + ' tests passed; no skipped or retried tests.');
+  console.log('[mcp-calibration] ' + summary.testsPassed + ' tests passed; no skipped or retried tests; calibration inputs unchanged.');
   return summary;
 }
 

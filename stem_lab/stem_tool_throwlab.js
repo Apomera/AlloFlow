@@ -1826,12 +1826,55 @@ window.StemLab = window.StemLab || {
       // Merge new defaults at read time so saved sessions from earlier
       // versions gain prediction, replay, and per-mode fields without a
       // destructive migration or an undefined-value render crash.
+      // A saved session is INPUT: it can be copied between devices, hand-edited,
+      // or carried across tool versions. The merge below already protects
+      // against MISSING fields; these helpers protect against wrong-TYPED ones.
+      // aimDegV and releaseHeight are read at 16 sites, several calling
+      // .toFixed() straight on the value, so the only maintainable place to fix
+      // them is here, where saved state enters.
+      function _tlNum(v, min, max, fallback) {
+        return (typeof v === 'number' && isFinite(v)) ? Math.min(max, Math.max(min, v)) : fallback;
+      }
+      function _tlCount(v) {
+        return (typeof v === 'number' && isFinite(v) && v >= 0) ? Math.floor(v) : 0;
+      }
       var d = storedThrowLab
         ? Object.assign({}, THROWLAB_DEFAULTS, storedThrowLab, {
             drillStats: Object.assign({}, THROWLAB_DEFAULTS.drillStats, storedThrowLab.drillStats || {}),
-            predictionStats: Object.assign({}, THROWLAB_DEFAULTS.predictionStats, storedThrowLab.predictionStats || {})
+            predictionStats: Object.assign({}, THROWLAB_DEFAULTS.predictionStats, storedThrowLab.predictionStats || {}),
+            // Widest per-mode ranges are releaseHeight [0.0, 3.2] and a vertical
+            // aim well inside +/-90; the sliders enforce the per-mode range on
+            // input, so these are the backstop for a malformed save.
+            releaseHeight: _tlNum(storedThrowLab.releaseHeight, 0, 4, THROWLAB_DEFAULTS.releaseHeight),
+            aimDegV: _tlNum(storedThrowLab.aimDegV, -90, 90, THROWLAB_DEFAULTS.aimDegV),
+            customScenarios: Array.isArray(storedThrowLab.customScenarios) ? storedThrowLab.customScenarios : [],
+            coachError: typeof storedThrowLab.coachError === 'string' ? storedThrowLab.coachError : '',
+            // lastResult is read as .trial / .location; referenceList and
+            // recentThrows are mapped and sliced; spinRpm and coachReply are
+            // rendered straight into the tree, where an object makes React throw.
+            // A bare {} passed the old object check and then threw on
+            // lr.outcome.plateT / .trial. A partial result is not usable:
+            // require the fields every consumer reads, or fall back to null,
+            // which every call site already handles.
+            lastResult: (storedThrowLab.lastResult && typeof storedThrowLab.lastResult === 'object' && !Array.isArray(storedThrowLab.lastResult)
+              && storedThrowLab.lastResult.outcome && typeof storedThrowLab.lastResult.outcome === 'object'
+              && typeof storedThrowLab.lastResult.location === 'string') ? storedThrowLab.lastResult : null,
+            referenceList: Array.isArray(storedThrowLab.referenceList) ? storedThrowLab.referenceList : [],
+            recentThrows: Array.isArray(storedThrowLab.recentThrows) ? storedThrowLab.recentThrows : [],
+            spinRpm: _tlNum(storedThrowLab.spinRpm, 0, 10000, THROWLAB_DEFAULTS.spinRpm),
+            coachReply: typeof storedThrowLab.coachReply === 'string' ? storedThrowLab.coachReply : ''
           })
         : THROWLAB_DEFAULTS;
+      // Every *Count key is a per-sport tally rendered directly into the tree,
+      // where an object makes React throw. There are at least nine of them and
+      // two (wicketCount, golfGreenCount) are read without being declared in
+      // THROWLAB_DEFAULTS, so normalise by SHAPE rather than by a hand list
+      // that goes stale the next time a sport is added.
+      if (storedThrowLab) {
+        Object.keys(d).forEach(function(k) {
+          if (/Count$/.test(k) && typeof d[k] !== 'number') d[k] = _tlCount(d[k]);
+        });
+      }
       var upd = function(key, val) {
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev.throwlab); next[key] = val;

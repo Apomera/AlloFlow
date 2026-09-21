@@ -231,9 +231,9 @@ var d = labToolData || {};
           // markers, tax wedge, probe, canvas summary) derives from these two —
           // change them TOGETHER or the graph and its annotations disagree.
 
-          var sdDemSlope = d.sdDemSlope !== undefined ? d.sdDemSlope : 0.8;
+          var sdDemSlope = (typeof d.sdDemSlope === 'number' && isFinite(d.sdDemSlope)) ? d.sdDemSlope : 0.8;
 
-          var sdSupSlope = d.sdSupSlope !== undefined ? d.sdSupSlope : 0.8;
+          var sdSupSlope = (typeof d.sdSupSlope === 'number' && isFinite(d.sdSupSlope)) ? d.sdSupSlope : 0.8;
 
 
 
@@ -274,7 +274,7 @@ var d = labToolData || {};
 
           // ── Stock Market State ──
 
-          var smCash = d.smCash !== undefined ? d.smCash : 10000;
+          var smCash = (typeof d.smCash === 'number' && isFinite(d.smCash)) ? d.smCash : 10000;
 
           var smPortfolio = d.smPortfolio || {};
 
@@ -4383,8 +4383,8 @@ var d = labToolData || {};
               // long-run-average teaching numbers and every panel says so.
               (function () {
 
-                var paStocks = d.paStocks !== undefined ? d.paStocks : 60;
-                var paBonds = d.paBonds !== undefined ? d.paBonds : 30;
+                var paStocks = (typeof d.paStocks === 'number' && isFinite(d.paStocks)) ? d.paStocks : 60;
+                var paBonds = (typeof d.paBonds === 'number' && isFinite(d.paBonds)) ? d.paBonds : 30;
                 if (paStocks + paBonds > 100) paBonds = 100 - paStocks;
                 var paCash = 100 - paStocks - paBonds;
 
@@ -4526,7 +4526,7 @@ var d = labToolData || {};
 
                 // ── Panel 2: Risk Visualizer (volatility drag, deterministic) ──
                 var rvMk = function (a, b) { var rr = []; for (var ri = 0; ri < 10; ri++) rr.push(ri % 2 === 0 ? a : b); return rr; };
-                var rvSwing = d.rvSwing !== undefined ? d.rvSwing : 0;
+                var rvSwing = (typeof d.rvSwing === 'number' && isFinite(d.rvSwing)) ? d.rvSwing : 0;
                 var rvBase = [
                   { name: t('stem.economicslab.iv_rv_steady', 'Steady Eddie'), color: '#059669', rets: rvMk(7, 7) },
                   { name: t('stem.economicslab.iv_rv_wild', 'Wild Ride'), color: '#dc2626', rets: rvMk(32, -18) },
@@ -4574,9 +4574,9 @@ var d = labToolData || {};
                 // ── Panel 3: Range of Outcomes (Monte Carlo, seeded/deterministic) ──
                 var mcYears = d.mcYears || 30;
                 var mcMode = d.mcMode || 'grow';
-                var mcContrib = d.mcContrib !== undefined ? d.mcContrib : 1000;
-                var mcSpend = d.mcSpend !== undefined ? d.mcSpend : 20000;
-                var mcFee = d.mcFee !== undefined ? d.mcFee : 0.2;
+                var mcContrib = (typeof d.mcContrib === 'number' && isFinite(d.mcContrib)) ? d.mcContrib : 1000;
+                var mcSpend = (typeof d.mcSpend === 'number' && isFinite(d.mcSpend)) ? d.mcSpend : 20000;
+                var mcFee = (typeof d.mcFee === 'number' && isFinite(d.mcFee)) ? d.mcFee : 0.2;
                 var mcStart = mcMode === 'retire' ? 500000 : 10000;
                 var mcPanel = null;
                 if (d.mcOpen) {
@@ -5055,7 +5055,7 @@ var d = labToolData || {};
             // framing as the Policy Inquiry widget: heuristic, contested.
             econTab === 'macro' && (function () {
               var mClamp = function (v, lo, hi) { return Math.min(hi, Math.max(lo, v)); };
-              var mRate = d.macroInterest !== undefined ? d.macroInterest : 5.25;
+              var mRate = (typeof d.macroInterest === 'number' && isFinite(d.macroInterest)) ? d.macroInterest : 5.25;
               var mSpend = d.macroSpend || 0;
               var mTax = d.macroTax || 0;
               var mNeutral = 3;

@@ -1965,7 +1965,7 @@ window.StemLab = window.StemLab || {
     category: 'science',
     questHooks: [
       { id: 'discover_5', label: 'Discover 5 organisms', icon: '\uD83D\uDD2C', check: function(d) { var e = d._cellExt || {}; return (e.organismsObserved || []).length >= 5; }, progress: function(d) { var e = d._cellExt || {}; return (e.organismsObserved || []).length + '/5'; } },
-      { id: 'discover_10', label: 'Discover 10 organisms', icon: '\uD83C\uDFC6', check: function(d) { return (d.discoveries || []).length >= 10; }, progress: function(d) { return (d.discoveries || []).length + '/10'; } },
+      { id: 'discover_10', label: 'Discover 10 organisms', icon: '\uD83C\uDFC6', check: function(d) { return (Array.isArray(d.discoveries) ? d.discoveries : []).length >= 10; }, progress: function(d) { return (Array.isArray(d.discoveries) ? d.discoveries : []).length + '/10'; } },
       { id: 'quiz_3', label: 'Answer 3 cell biology quiz questions correctly', icon: '\uD83E\uDDE0', check: function(d) { var e = d._cellExt || {}; return (e.quizCorrect || 0) >= 3; }, progress: function(d) { var e = d._cellExt || {}; return (e.quizCorrect || 0) + '/3'; } },
       { id: 'earn_50_xp', label: 'Earn 50 Cell Explorer XP', icon: '\u2B50', check: function(d) { return (d.xpEarned || 0) >= 50; }, progress: function(d) { return (d.xpEarned || 0) + '/50 XP'; } }
     ],
@@ -2181,7 +2181,7 @@ var d = labToolData.cell || {};
       var ext = normalizeCellExt(d._cellExt);
       var cellObservedKey = ext.organismsObserved.join('|');
       var cellOrganelleKey = ext.organellesClicked.join('|');
-      var cellDiscoveryKey = (d.discoveries || []).join('|');
+      var cellDiscoveryKey = (Array.isArray(d.discoveries) ? d.discoveries : []).join('|');
       var cellStudyVocabKey = Object.keys(d._studiedVocab || {}).sort().join('|');
       function updateCellDataFunctional(mutator) {
         setLabToolData(function(prev) {
@@ -2465,7 +2465,7 @@ var d = labToolData.cell || {};
         if ((d.quizStreak || 0) >= 5) award('quizStreak5');
         if (ext.quizCorrect >= 15) award('quizMaster');
         if (ext.playModeUsed) award('playMode');
-        if ((d.discoveries || []).length >= 10) award('discoverer10');
+        if ((Array.isArray(d.discoveries) ? d.discoveries : []).length >= 10) award('discoverer10');
         if (ext.totalFood >= 20) award('foodCollector');
         if (ext.organellesClicked.length >= 10) award('anatomyExplorer');
         if ((d.xpEarned || 0) >= 100) award('centurion');
@@ -23971,7 +23971,7 @@ var d = labToolData.cell || {};
           var visibleModelCount = ORGANISMS.filter(function(model) { return !d._activeSpawns || d._activeSpawns[model.id] !== false; }).length;
           var observedCount = (ext.organismsObserved || []).length;
           var observedModelCount = ORGANISMS.filter(function(model) { return (ext.organismsObserved || []).indexOf(model.id) !== -1; }).length;
-          var discoveredCount = (d.discoveries || []).length;
+          var discoveredCount = (Array.isArray(d.discoveries) ? d.discoveries : []).length;
           var completedChallengeCount = CELL_CHALLENGES.filter(function(c) { return d._completedChallenges && d._completedChallenges[c.id]; }).length;
           var organellesExplored = (ext.organellesClicked || []).length + (d.interiorSeen || []).length;
           var cellModeCategoryHint = {
@@ -24134,6 +24134,9 @@ var d = labToolData.cell || {};
 @media(prefers-reduced-motion:reduce){[data-cell-visibility-option]{transition:none!important;transform:none!important}}
 [data-cell-organism-chooser]{padding:20px!important;gap:16px!important;border:1px solid #d4e3df!important;border-radius:18px!important;background:#f7fbf9!important}
 [data-cell-organism-chooser] h4{font-size:19px!important;letter-spacing:-.3px;color:#173f3b!important}
+.theme-contrast [data-cell-organism-chooser]{background:#000!important;border-color:#fff!important}
+.theme-contrast [data-cell-organism-chooser] h4{color:#fff!important}
+.theme-contrast [data-cell-organism-chooser] h4+p{color:#e6e6e6!important}
 [data-cell-organism-chooser] h4+p{font-size:12px!important;line-height:1.6;margin-top:5px}
 [data-cell-organism-grid]{gap:12px!important;align-items:stretch}
 [data-cell-organism-chooser] button{border-radius:12px!important;min-height:44px}
@@ -26547,7 +26550,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
                 selDef.facts.map(function (fact, i) {
 
-                  var discovered = (d.discoveries || []).indexOf(selDef.id + '_' + i) !== -1;
+                  var discovered = (Array.isArray(d.discoveries) ? d.discoveries : []).indexOf(selDef.id + '_' + i) !== -1;
 
                   return React.createElement("div", { key: i, className: "flex items-start gap-2 text-[0.6875rem] py-0.5" },
 
@@ -26721,7 +26724,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
                             var ansOrg = ORGANISMS.find(function (o) { return o.id === quizQuestion.a || o.label.toLowerCase() === quizQuestion.a; });
 
-                            if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function (f, i) { return ansOrg.id + '_' + i; }).filter(function (k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
+                            if (ansOrg) { var dd = (Array.isArray(d.discoveries) ? d.discoveries : []).slice(); var und = ansOrg.facts.map(function (f, i) { return ansOrg.id + '_' + i; }).filter(function (k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
 
                             // Auto advance after 1500ms on correct
                             setTimeout(function() {
@@ -26784,7 +26787,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
                             var ansOrg = ORGANISMS.find(function (o) { return o.id === quizQuestion.a || o.label.toLowerCase() === quizQuestion.a; });
 
-                            if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function (f, i) { return ansOrg.id + '_' + i; }).filter(function (k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
+                            if (ansOrg) { var dd = (Array.isArray(d.discoveries) ? d.discoveries : []).slice(); var und = ansOrg.facts.map(function (f, i) { return ansOrg.id + '_' + i; }).filter(function (k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
 
                             // Auto advance after 1500ms on correct
                             setTimeout(function() {

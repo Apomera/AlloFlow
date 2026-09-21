@@ -2629,7 +2629,7 @@
                   w.bookTitle ? e('div', { className: 'text-[11px] text-slate-400 truncate' }, w.bookTitle) : null,
                   w.passage && Number.isInteger(w.page) && props.onReadReflect ? e('button', { type: 'button', className: 'min-h-[44px] text-sm underline font-bold', onClick: function () { stopAll(); props.onReadReflect({ text: w.passage, title: w.bookTitle || w.word, language: w.language, allowAI: w.allowAI === true, anchor: { kind: 'library', resourceId: w.slug, slug: w.slug, section: w.page, page: w.page } }); } }, tr('readinglib_open_saved_passage', 'Open saved passage')) : null),
                 e('button', {
-                  className: 'px-1.5 py-0.5 rounded-lg text-[12px] text-slate-400 hover:text-red-600 hover:bg-red-50 border border-transparent',
+                  className: 'px-1.5 py-0.5 rounded-lg text-[12px] text-slate-500 hover:text-red-600 hover:bg-red-50 border border-transparent',
                   onClick: function () {
                     var next = wordBank.filter(function (x, xi) { return xi !== i; });
                     saveWordBank(next, props.readingScope); setWordBank(next);

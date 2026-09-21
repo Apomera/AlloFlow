@@ -4,6 +4,16 @@ const source=readFileSync('AlloFlowANTI.txt','utf8');
 function between(start,end,from=0){const a=source.indexOf(start,from),b=source.indexOf(end,a);if(a<0||b<=a)throw Error(start);return source.slice(a,b);}
 export const createCoordinator=new Function(between('function createLiveSessionHydrationCoordinator(', 'function createLiveSessionRetryController(')+';return createLiveSessionHydrationCoordinator;')();
 export const createConnectionRecovery=new Function(between('function createLiveSessionConnectionRecovery(', 'function createLiveSessionHydrationCoordinator(')+';return createLiveSessionConnectionRecovery;')();
+// The real mailbox pack fetcher, lifted from the host rather than stubbed.
+// It was missing from the injected values entirely, so every mailbox branch in
+// the extracted snapshot body hit an undefined reference, threw, and was
+// swallowed - which read as "the mailbox mock was never called" and failed 8
+// tests while their firebase twins passed. A hand-written stand-in would hide
+// the part-consistency checks these tests exist to cover, so use the article.
+export const fetchMailboxPackParts=new Function('ALLO_MB_PACK_FETCH_CONCURRENCY',
+  between('async function _alloFetchMailboxPackParts(', '// Poll cadence policy:')+
+  ';return _alloFetchMailboxPackParts;')(4);
+
 export function makeHydrationHarness(options={}) {
  const refs={liveResourceHydrationAttemptsRef:{current:{signature:'',count:0}},liveResourceHydrationRetryTimerRef:{current:null},lastResourcesStringRef:{current:null},lastPackRefRef:{current:null},hydratedHistoryRef:{current:[{id:'old',type:'quiz'}]}};
  let status={status:'idle',attempt:0};
@@ -14,7 +24,7 @@ export function makeHydrationHarness(options={}) {
  const epoch=vi.fn(),history=vi.fn(),mailbox=options.mailbox||vi.fn(async()=>({of:1,data:JSON.stringify({kind:'assignment',resources:[]})}));
  const connectionRecovery=createConnectionRecovery({stateRef:connectionState,sessionKey:'fixture',onState:s=>connectionStates.push(s),reconnect:epoch});
  connectionRecovery.connected();
- const values={connectionRecovery,liveSessionConnectionAttemptsRef:connectionState,liveSessionConnectionRecoveryRef:{current:connectionRecovery},...refs,hydrationCoordinator:coordinator,clearHydrationRetry,setLiveResourceRetryEpoch:epoch,setLiveResourceLoadState:vi.fn(s=>{status=s;}),setHistory:history,activeSessionAppId:'app',activeSessionCode:'session',hydrateSessionAssets:options.hydrate||vi.fn(async(_app,resources)=>resources),_alloMbBridgeActive:()=>true,_alloMbBridgeState:{url:'local-fixture'},_alloMailboxCall:mailbox,_alloDecodeAlloPack:async s=>s,_alloStudentSafeResources:items=>items.filter(r=>r&&r.id&&r.type!=='lesson-plan'),_alloSessionSyncTrace:vi.fn(),warnLog:vi.fn(),isTeacherMode:false};
+ const values={connectionRecovery,liveSessionConnectionAttemptsRef:connectionState,liveSessionConnectionRecoveryRef:{current:connectionRecovery},...refs,hydrationCoordinator:coordinator,clearHydrationRetry,setLiveResourceRetryEpoch:epoch,setLiveResourceLoadState:vi.fn(s=>{status=s;}),setHistory:history,activeSessionAppId:'app',activeSessionCode:'session',hydrateSessionAssets:options.hydrate||vi.fn(async(_app,resources)=>resources),_alloMbBridgeActive:()=>true,_alloMbBridgeState:{url:'local-fixture'},_alloMailboxCall:mailbox,_alloFetchMailboxPackParts:fetchMailboxPackParts,_alloDecodeAlloPack:async s=>s,_alloStudentSafeResources:items=>items.filter(r=>r&&r.id&&r.type!=='lesson-plan'),_alloSessionSyncTrace:vi.fn(),warnLog:vi.fn(),isTeacherMode:false};
  const retrySource=between('      const scheduleHydrationRetry = attempt => {','      window.addEventListener(\'online\', retryHydrationOnNetworkReturn);');
  const retryApi=new Function(...Object.keys(values),retrySource+';return {scheduleHydrationRetry,retryHydrationOnNetworkReturn};')(...Object.values(values));
  Object.assign(values,retryApi);

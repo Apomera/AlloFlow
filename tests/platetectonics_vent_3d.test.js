@@ -746,7 +746,9 @@ describe('research points: an award cannot be counted twice', () => {
     const body = source.slice(start, start + 1800);
 
     // Read-modify-write must start from `cur`, the state React hands the updater.
-    expect(body).toContain('var done = (cur.completedChallenges || []).slice();');
+    // Type-guarded now (`|| []` admitted a truthy non-array, and .slice threw);
+    // the CLAIM is that the challenge list is copied before mutation.
+    expect(body).toMatch(/var done = \([^;]*cur\.completedChallenges[^;]*\)\.slice\(\);/);
     expect(body).toContain('researchPoints: (cur.researchPoints || 0) + rpGain');
     expect(body).toContain('totalRP: (cur.totalRP || 0) + rpGain');
 

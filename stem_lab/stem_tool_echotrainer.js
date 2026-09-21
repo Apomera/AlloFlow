@@ -716,14 +716,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       var envType = d.envType || 'simple_room';
       var seed = d.seed || 42;
       var viewMode = d.viewMode || 'echo';
-      var goalsFound = d.goalsFound || 0;
-      var blindWins = d.blindWins || 0;
+      // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
+      var goalsFound = (typeof d.goalsFound === 'number' && isFinite(d.goalsFound) && d.goalsFound >= 0) ? Math.floor(d.goalsFound) : 0;
+      var blindWins = (typeof d.blindWins === 'number' && isFinite(d.blindWins) && d.blindWins >= 0) ? Math.floor(d.blindWins) : 0;
       var clicks = d.clicks || 0;
       var hasRevealed = d.hasRevealed || false;
       var bumps = d.bumps || 0;
       var multiBounce = d.multiBounce || false;
       var clickType = d.clickType || 'tongue';
-      var tutStep = d.tutStep || 0;
+      var tutStep = (typeof d.tutStep === 'number' && isFinite(d.tutStep) && d.tutStep >= 0) ? Math.floor(d.tutStep) : 0;
       var distChallenge = d.distChallenge || null;
       var matQuiz = d.matQuiz || null;
       var waypointMode = d.waypointMode || false;
@@ -1529,7 +1530,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 var finalXP = Math.max(5, Math.round((baseXP - bumpPenalty) * diff.xpMult));
                 var modeLabel = currentViewMode === 'audio' ? t('stem.echotrainer.mode_audio_only', 'Audio-only') : currentViewMode === 'echo' ? t('stem.echotrainer.mode_echo_vision', 'Echo Vision') : t('stem.echotrainer.mode_revealed', 'Revealed');
                 var runTime = Math.floor((Date.now() - runStartRef.current) / 1000);
-                var runHistory = (d.runHistory || []).slice();
+                var runHistory = (Array.isArray(d.runHistory) ? d.runHistory : []).slice();
                 runHistory.push({ env: envType, mode: modeLabel, difficulty: diff.label, time: runTime, clicks: d.clicks || 0, bumps: d.bumps || 0, xp: finalXP });
                 if (runHistory.length > 20) runHistory.shift();
                 updateObj.runHistory = runHistory;
@@ -1693,7 +1694,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                   var finalXP2 = Math.max(5, Math.round((baseXP2 - bumpPenalty2) * diff.xpMult));
                   var modeLabel2 = currentViewMode2d === 'audio' ? t('stem.echotrainer.mode_audio_only', 'Audio-only') : currentViewMode2d === 'echo' ? t('stem.echotrainer.mode_echo_vision', 'Echo Vision') : t('stem.echotrainer.mode_revealed', 'Revealed');
                   var runTime2 = Math.floor((Date.now() - runStartRef.current) / 1000);
-                  var runHistory2 = (d.runHistory || []).slice();
+                  var runHistory2 = (Array.isArray(d.runHistory) ? d.runHistory : []).slice();
                   runHistory2.push({ env: envType, mode: modeLabel2, difficulty: diff.label, time: runTime2, clicks: d.clicks || 0, bumps: d.bumps || 0, xp: finalXP2 });
                   if (runHistory2.length > 20) runHistory2.shift();
                   updateObj2d.runHistory = runHistory2;
@@ -1765,9 +1766,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         : (d.viewMode || 'echo') === 'audio'
           ? { label: t('stem.echotrainer.audio_only', 'Audio Only'), color: isDark ? '#ddd6fe' : '#6d28d9', bg: isDark ? '#2e1065' : '#f5f3ff', border: '#8b5cf6' }
           : { label: t('stem.echotrainer.reveal_mode', 'Reveal Mode'), color: isDark ? '#fecaca' : '#b91c1c', bg: isDark ? '#450a0a' : '#fef2f2', border: '#ef4444' };
-      var runCount = (d.runHistory || []).length;
+      // Read inline at three sites; one guarded local covers all of them.
+      var runHistorySafe = Array.isArray(d.runHistory) ? d.runHistory : [];
+      var runCount = runHistorySafe.length;
       var bestRun = null;
-      (d.runHistory || []).forEach(function(run) { if (!bestRun || run.time < bestRun.time) bestRun = run; });
+      (Array.isArray(d.runHistory) ? d.runHistory : []).forEach(function(run) { if (!bestRun || run.time < bestRun.time) bestRun = run; });
       var briefingStats = [
         { label: t('stem.echotrainer.goals_found', 'Goals Found'), value: goalsFound },
         { label: t('stem.echotrainer.audio_wins', 'Audio Wins'), value: blindWins },
@@ -1966,16 +1969,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           })
         ),
         h('details', { style: { fontSize: '11px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), overflow: 'hidden' } },
-          h('summary', { style: { padding: '8px 12px', cursor: 'pointer', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569', background: isDark ? '#1e293b' : '#f8fafc' } }, '\uD83D\uDCCA Performance Stats (' + (d.runHistory || []).length + ' runs) | ' + coveragePct + '% mapped | Mat Quiz: ' + (d.matQuizCorrect || 0) + '/' + (d.matQuizTotal || 0)),
+          h('summary', { style: { padding: '8px 12px', cursor: 'pointer', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569', background: isDark ? '#1e293b' : '#f8fafc' } }, '\uD83D\uDCCA Performance Stats (' + (Array.isArray(d.runHistory) ? d.runHistory : []).length + ' runs) | ' + coveragePct + '% mapped | Mat Quiz: ' + (d.matQuizCorrect || 0) + '/' + (d.matQuizTotal || 0)),
           h('div', { style: { padding: '10px', background: isDark ? '#0f172a' : '#fff' } },
-            (d.runHistory && d.runHistory.length > 0) ?
+            (Array.isArray(d.runHistory) && d.runHistory.length > 0) ?
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '8px' } },
-                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#f5f3ff', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: etint('#6366f1') } }, (d.runHistory || []).length), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.total_runs', 'Total Runs'))),
-                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#ecfdf5', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#22c55e' } }, (d.runHistory || []).reduce(function(sum, r) { return sum + r.xp; }, 0)), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.total_xp', 'Total XP'))),
-                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#eff6ff', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: etint('#3b82f6') } }, Math.min.apply(null, (d.runHistory || [{ time: 0 }]).map(function(r) { return r.time; })) + 's'), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.best_time', 'Best Time'))),
-                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#fef3c7', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: etint('#f59e0b') } }, Math.min.apply(null, (d.runHistory || [{ bumps: 0 }]).map(function(r) { return r.bumps; }))), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.fewest_bumps', 'Fewest Bumps')))
+                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#f5f3ff', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: etint('#6366f1') } }, (Array.isArray(d.runHistory) ? d.runHistory : []).length), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.total_runs', 'Total Runs'))),
+                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#ecfdf5', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#22c55e' } }, (Array.isArray(d.runHistory) ? d.runHistory : []).reduce(function(sum, r) { return sum + r.xp; }, 0)), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.total_xp', 'Total XP'))),
+                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#eff6ff', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: etint('#3b82f6') } }, Math.min.apply(null, (Array.isArray(d.runHistory) && d.runHistory.length ? d.runHistory : [{ time: 0 }]).map(function(r) { return r.time; })) + 's'), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.best_time', 'Best Time'))),
+                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#fef3c7', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: etint('#f59e0b') } }, Math.min.apply(null, (Array.isArray(d.runHistory) && d.runHistory.length ? d.runHistory : [{ bumps: 0 }]).map(function(r) { return r.bumps; }))), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.fewest_bumps', 'Fewest Bumps')))
               ) : h('p', { style: { color: isDark ? '#94a3b8' : '#64748b', fontStyle: 'italic' } }, t('stem.echotrainer.complete_a_run_to_see_your_stats_here', 'Complete a run to see your stats here.')),
-            (d.runHistory && d.runHistory.length > 0) ?
+            (Array.isArray(d.runHistory) && d.runHistory.length > 0) ?
               h('table', { style: { width: '100%', fontSize: '10px', borderCollapse: 'collapse' } },
                 h('thead', null, h('tr', { style: { borderBottom: '1px solid ' + (isDark ? '#334155' : '#e2e8f0') } },
                   h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, 'Env'),
@@ -1985,7 +1988,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                   h('th', { scope: 'col', style: { textAlign: 'right', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.bumps', 'Bumps')),
                   h('th', { scope: 'col', style: { textAlign: 'right', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, 'XP')
                 )),
-                h('tbody', null, (d.runHistory || []).slice().reverse().map(function(run, idx) {
+                h('tbody', null, (Array.isArray(d.runHistory) ? d.runHistory : []).slice().reverse().map(function(run, idx) {
                   return h('tr', { key: idx, style: { borderBottom: '1px solid ' + (isDark ? '#1e293b' : '#f1f5f9') } },
                     h('td', { style: { padding: '3px 4px', color: isDark ? '#e2e8f0' : '#1e293b' } }, run.env),
                     h('td', { style: { padding: '3px 4px', color: isDark ? '#94a3b8' : '#475569' } }, run.mode),

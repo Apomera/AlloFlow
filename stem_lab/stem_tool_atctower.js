@@ -148,9 +148,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
     color: 'emerald',
     category: 'applied',
     questHooks: [
-      { id: 'land_3', label: 'Land 3 aircraft safely', icon: '🛬', check: function(d) { return (d.totalLanded || 0) >= 3; }, progress: function(d) { return (d.totalLanded || 0) + '/3'; } },
-      { id: 'land_10', label: 'Land 10 aircraft total', icon: '🏆', check: function(d) { return (d.totalLanded || 0) >= 10; }, progress: function(d) { return (d.totalLanded || 0) + '/10'; } },
-      { id: 'score_50', label: 'Reach ATC score of 50', icon: '⭐', check: function(d) { return (d.totalScore || 0) >= 50; }, progress: function(d) { return (d.totalScore || 0) + '/50'; } }
+      { id: 'land_3', label: 'Land 3 aircraft safely', icon: '🛬', check: function(d) { return ((typeof d.totalLanded === 'number' && isFinite(d.totalLanded)) ? d.totalLanded : 0) >= 3; }, progress: function(d) { return ((typeof d.totalLanded === 'number' && isFinite(d.totalLanded)) ? d.totalLanded : 0) + '/3'; } },
+      { id: 'land_10', label: 'Land 10 aircraft total', icon: '🏆', check: function(d) { return ((typeof d.totalLanded === 'number' && isFinite(d.totalLanded)) ? d.totalLanded : 0) >= 10; }, progress: function(d) { return ((typeof d.totalLanded === 'number' && isFinite(d.totalLanded)) ? d.totalLanded : 0) + '/10'; } },
+      { id: 'score_50', label: 'Reach ATC score of 50', icon: '⭐', check: function(d) { return ((typeof d.totalScore === 'number' && isFinite(d.totalScore)) ? d.totalScore : 0) >= 50; }, progress: function(d) { return ((typeof d.totalScore === 'number' && isFinite(d.totalScore)) ? d.totalScore : 0) + '/50'; } }
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
@@ -170,9 +170,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       var gradeLevel = ctx.gradeLevel;
 
       var view = d.view || 'menu';
-      var totalScore = d.totalScore || 0;
-      var totalLanded = d.totalLanded || 0;
-      var bestStreak = d.bestStreak || 0;
+      var totalScore = (typeof d.totalScore === 'number' && isFinite(d.totalScore)) ? d.totalScore : 0;
+      var totalLanded = (typeof d.totalLanded === 'number' && isFinite(d.totalLanded)) ? d.totalLanded : 0;
+      var bestStreak = (typeof d.bestStreak === 'number' && isFinite(d.bestStreak)) ? d.bestStreak : 0;
 
       // ── Game State Refs ──
       var canvasRef = useRef(null);

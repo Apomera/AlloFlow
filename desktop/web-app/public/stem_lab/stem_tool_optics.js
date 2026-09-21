@@ -3011,8 +3011,8 @@
   function _renderRefractionSim(state, upd, h) {
     var W = _opticsDiagramWidth(state), H = 280;
     var pad = { l: 12, r: 12, t: 12, b: 28 };
-    var n1 = state.refrN1 != null ? state.refrN1 : 1.000;
-    var n2 = state.refrN2 != null ? state.refrN2 : 1.520;
+    var n1 = (typeof state.refrN1 === 'number' && isFinite(state.refrN1)) ? state.refrN1 : 1.000;
+    var n2 = (typeof state.refrN2 === 'number' && isFinite(state.refrN2)) ? state.refrN2 : 1.520;
     var theta1Deg = clamp(state.refrTheta1 != null ? +state.refrTheta1 : 30, 0, 89);
     var theta1 = degToRad(theta1Deg);
     var snellRes = snell(theta1, n1, n2);
@@ -3853,9 +3853,9 @@
   // REFRACTION CALCULATOR
   // ---
   function _renderRefractionCalc(state, upd, h) {
-    var n1 = state.refrN1 != null ? state.refrN1 : 1.000;
-    var n2 = state.refrN2 != null ? state.refrN2 : 1.520;
-    var theta1Deg = state.refrTheta1 != null ? state.refrTheta1 : 30;
+    var n1 = (typeof state.refrN1 === 'number' && isFinite(state.refrN1)) ? state.refrN1 : 1.000;
+    var n2 = (typeof state.refrN2 === 'number' && isFinite(state.refrN2)) ? state.refrN2 : 1.520;
+    var theta1Deg = (typeof state.refrTheta1 === 'number' && isFinite(state.refrTheta1)) ? state.refrTheta1 : 30;
     var theta1 = degToRad(theta1Deg);
     var res = snell(theta1, n1, n2);
     var calcPower = fresnelUnpolarized(theta1, n1, n2);
@@ -4352,9 +4352,9 @@
     var W = _opticsDiagramWidth(state), H = 280;
     var pad = { l: 12, r: 12, t: 12, b: 28 };
     var lt = state.lensType || 'converging';   // 'converging' | 'diverging'
-    var fAbs = Math.abs(state.lensFocal != null ? state.lensFocal : 12);
+    var fAbs = Math.abs((typeof state.lensFocal === 'number' && isFinite(state.lensFocal)) ? state.lensFocal : 12);
     var f = lt === 'converging' ? fAbs : -fAbs;
-    var d_o = state.lensDo != null ? state.lensDo : 25;
+    var d_o = (typeof state.lensDo === 'number' && isFinite(state.lensDo)) ? state.lensDo : 25;
     var lensHeightMin = 2, lensHeightMax = 10;
     var hObj = clamp(state.lensObjH != null ? +state.lensObjH : 5, lensHeightMin, lensHeightMax);
     var lens = thinLens(d_o, f);
@@ -5275,9 +5275,9 @@
   // ---
   function _renderLensCalc(state, upd, h, addToast, awardXP) {
     var lt = state.lensType || 'converging';
-    var fAbs = Math.abs(state.lensFocal != null ? state.lensFocal : 12);
+    var fAbs = Math.abs((typeof state.lensFocal === 'number' && isFinite(state.lensFocal)) ? state.lensFocal : 12);
     var f = lt === 'converging' ? fAbs : -fAbs;
-    var d_o = state.lensDo != null ? state.lensDo : 25;
+    var d_o = (typeof state.lensDo === 'number' && isFinite(state.lensDo)) ? state.lensDo : 25;
     var lens = thinLens(d_o, f);
     var atFocal = !!lens.error && lt === 'converging' && Math.abs(d_o - fAbs) < 1e-9;
     var rows = [];
@@ -6472,10 +6472,10 @@
   function _renderInterferenceSim(state, upd, h) {
     var W = _opticsDiagramWidth(state), H = 280;
     var pad = { l: 12, r: 12, t: 12, b: 28 };
-    var lambdaNm = state.intLambda != null ? state.intLambda : 600;     // nm
-    var d_mm = state.intSlitSep != null ? state.intSlitSep : 0.10;       // mm
-    var L_m = state.intScreenL != null ? state.intScreenL : 1.0;         // m
-    var slitWidth_um = state.intSlitWidth != null ? state.intSlitWidth : 50;  // μm (a)
+    var lambdaNm = (typeof state.intLambda === 'number' && isFinite(state.intLambda)) ? state.intLambda : 600;     // nm
+    var d_mm = (typeof state.intSlitSep === 'number' && isFinite(state.intSlitSep)) ? state.intSlitSep : 0.10;       // mm
+    var L_m = (typeof state.intScreenL === 'number' && isFinite(state.intScreenL)) ? state.intScreenL : 1.0;         // m
+    var slitWidth_um = (typeof state.intSlitWidth === 'number' && isFinite(state.intSlitWidth)) ? state.intSlitWidth : 50;  // μm (a)
     // Convert all to meters
     var lambda = lambdaNm * 1e-9;
     var d = d_mm * 1e-3;
@@ -6853,9 +6853,9 @@
   // INTERFERENCE CALCULATOR
   // ---
   function _renderInterferenceCalc(state, upd, h) {
-    var lambdaNm = state.intLambda != null ? state.intLambda : 600;
-    var d_mm = state.intSlitSep != null ? state.intSlitSep : 0.10;
-    var L_m = state.intScreenL != null ? state.intScreenL : 1.0;
+    var lambdaNm = (typeof state.intLambda === 'number' && isFinite(state.intLambda)) ? state.intLambda : 600;
+    var d_mm = (typeof state.intSlitSep === 'number' && isFinite(state.intSlitSep)) ? state.intSlitSep : 0.10;
+    var L_m = (typeof state.intScreenL === 'number' && isFinite(state.intScreenL)) ? state.intScreenL : 1.0;
     var lambda = lambdaNm * 1e-9;
     var d = d_mm * 1e-3;
     var L = L_m;
@@ -6917,10 +6917,10 @@
     var W = _opticsDiagramWidth(state), H = 280;
     var pad = { l: 12, r: 12, t: 12, b: 28 };
     var mode = state.diffMode || 'single';   // 'single' | 'grating'
-    var lambdaNm = state.diffLambda != null ? state.diffLambda : 600;
-    var slitWidth_um = state.diffSlitWidth != null ? state.diffSlitWidth : 30;   // a, μm
-    var L_m = state.diffScreenL != null ? state.diffScreenL : 1.5;
-    var grooveDensity = state.diffGrating != null ? state.diffGrating : 600;     // lines/mm
+    var lambdaNm = (typeof state.diffLambda === 'number' && isFinite(state.diffLambda)) ? state.diffLambda : 600;
+    var slitWidth_um = (typeof state.diffSlitWidth === 'number' && isFinite(state.diffSlitWidth)) ? state.diffSlitWidth : 30;   // a, μm
+    var L_m = (typeof state.diffScreenL === 'number' && isFinite(state.diffScreenL)) ? state.diffScreenL : 1.5;
+    var grooveDensity = (typeof state.diffGrating === 'number' && isFinite(state.diffGrating)) ? state.diffGrating : 600;     // lines/mm
     var lambda = lambdaNm * 1e-9;
     var gratingGeometry = _opticsGratingGeometry(state);
     var gratingDuty = gratingGeometry.dutyPercent;
@@ -7380,15 +7380,15 @@
   // ---
   function _renderDiffractionCalc(state, upd, h) {
     var mode = state.diffMode || 'single';
-    var lambdaNm = state.diffLambda != null ? state.diffLambda : 600;
-    var L_m = state.diffScreenL != null ? state.diffScreenL : 1.5;
+    var lambdaNm = (typeof state.diffLambda === 'number' && isFinite(state.diffLambda)) ? state.diffLambda : 600;
+    var L_m = (typeof state.diffScreenL === 'number' && isFinite(state.diffScreenL)) ? state.diffScreenL : 1.5;
     var lambda = lambdaNm * 1e-9;
     var rows = [];
     rows.push(['Mode', mode === 'single' ? 'Single slit' : 'Diffraction grating']);
     rows.push(['λ', lambdaNm.toFixed(0) + ' nm']);
     rows.push(['L', L_m.toFixed(2) + ' m']);
     if (mode === 'single') {
-      var slitWidth_um = state.diffSlitWidth != null ? state.diffSlitWidth : 30;
+      var slitWidth_um = (typeof state.diffSlitWidth === 'number' && isFinite(state.diffSlitWidth)) ? state.diffSlitWidth : 30;
       var a = slitWidth_um * 1e-6;
       var firstMin_m = singleSlitFirstMin(lambda, L_m, a);
       rows.push(['a (slit width)', slitWidth_um.toFixed(0) + ' μm']);
@@ -7438,7 +7438,7 @@
       state.diffShowMath && h('div', { style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre' } },
         (function() {
           if (mode === 'single') {
-            var slitWidth_um = state.diffSlitWidth != null ? state.diffSlitWidth : 30;
+            var slitWidth_um = (typeof state.diffSlitWidth === 'number' && isFinite(state.diffSlitWidth)) ? state.diffSlitWidth : 30;
             var a = slitWidth_um * 1e-6;
             var firstMin_m = singleSlitFirstMin(lambda, L_m, a);
             return [
@@ -7881,8 +7881,8 @@
   function _renderPolarizationSim(state, upd, h) {
     var W = _opticsDiagramWidth(state), H = 280;
     var pad = { l: 12, r: 12, t: 12, b: 28 };
-    var theta2 = state.polTheta2 != null ? state.polTheta2 : 30;   // degrees, axis of P2
-    var theta3 = state.polTheta3 != null ? state.polTheta3 : 90;   // degrees, axis of P3
+    var theta2 = (typeof state.polTheta2 === 'number' && isFinite(state.polTheta2)) ? state.polTheta2 : 30;   // degrees, axis of P2
+    var theta3 = (typeof state.polTheta3 === 'number' && isFinite(state.polTheta3)) ? state.polTheta3 : 90;   // degrees, axis of P3
     var useP3 = !!state.polUseP3;
     // Quarter-wave plate after P1, fast axis at 45 deg to P1. Converts the linear
     // light to circular. This tool's own experiment sheet asks the student to show
@@ -8427,8 +8427,8 @@
   // POLARIZATION CALCULATOR
   // ---
   function _renderPolarizationCalc(state, upd, h) {
-    var theta2 = state.polTheta2 != null ? state.polTheta2 : 30;
-    var theta3 = state.polTheta3 != null ? state.polTheta3 : 90;
+    var theta2 = (typeof state.polTheta2 === 'number' && isFinite(state.polTheta2)) ? state.polTheta2 : 30;
+    var theta3 = (typeof state.polTheta3 === 'number' && isFinite(state.polTheta3)) ? state.polTheta3 : 90;
     var useP3 = !!state.polUseP3;
     var useQwp = !!state.polQwp;
     var I0 = 1.0;
@@ -8703,7 +8703,7 @@
         : 'd_i = ' + _fmt(image.d_i, 2) + ' cm; ' + (image.isReal ? 'real' : 'virtual') + ', '
           + (image.isUpright ? 'upright' : 'inverted') + ', m = ' + _fmt(image.m, 2) + '.';
     } else if (tab === 'refraction') {
-      var incidentDeg = +(state.refrTheta1 != null ? state.refrTheta1 : 30);
+      var incidentDeg = +((typeof state.refrTheta1 === 'number' && isFinite(state.refrTheta1)) ? state.refrTheta1 : 30);
       var refracted = snell(degToRad(incidentDeg), +(state.refrN1 || 1), +(state.refrN2 || 1));
       trial.x = incidentDeg;
       trial.y = refracted.tir || refracted.error ? null : radToDeg(refracted.theta2);
@@ -8714,9 +8714,9 @@
         : (refracted.error ? refracted.error : 'theta2 = ' + _fmt(trial.y, 2) + ' deg; light bends '
           + (Math.abs(trial.y) < Math.abs(incidentDeg) ? 'toward' : 'away from') + ' the normal.');
     } else if (tab === 'interference') {
-      var intLambda = +(state.intLambda != null ? state.intLambda : 600) * 1e-9;
-      var separationMm = +(state.intSlitSep != null ? state.intSlitSep : 0.1);
-      var spacingMm = doubleSlitFringe(1, intLambda, +(state.intScreenL != null ? state.intScreenL : 1), separationMm * 1e-3) * 1000;
+      var intLambda = +((typeof state.intLambda === 'number' && isFinite(state.intLambda)) ? state.intLambda : 600) * 1e-9;
+      var separationMm = +((typeof state.intSlitSep === 'number' && isFinite(state.intSlitSep)) ? state.intSlitSep : 0.1);
+      var spacingMm = doubleSlitFringe(1, intLambda, +((typeof state.intScreenL === 'number' && isFinite(state.intScreenL)) ? state.intScreenL : 1), separationMm * 1e-3) * 1000;
       var intAdvanced = _opticsWaveModel('interference', state) === 'fresnel'
         || _opticsWaveSetting('interference', state, 'BandwidthNm', 0) > 0
         || _opticsWaveSetting('interference', state, 'DetectorWidthMm', 0) > 0
@@ -8739,8 +8739,8 @@
         trial.summary = 'Adjacent bright fringes are ' + _fmt(spacingMm, 3) + ' mm apart.';
       }
     } else if (tab === 'diffraction') {
-      var diffLambda = +(state.diffLambda != null ? state.diffLambda : 600) * 1e-9;
-      var screenDistance = +(state.diffScreenL != null ? state.diffScreenL : 1.5);
+      var diffLambda = +((typeof state.diffLambda === 'number' && isFinite(state.diffLambda)) ? state.diffLambda : 600) * 1e-9;
+      var screenDistance = +((typeof state.diffScreenL === 'number' && isFinite(state.diffScreenL)) ? state.diffScreenL : 1.5);
       var diffAdvanced = _opticsWaveModel('diffraction', state) === 'fresnel'
         || _opticsWaveSetting('diffraction', state, 'BandwidthNm', 0) > 0
         || _opticsWaveSetting('diffraction', state, 'DetectorWidthMm', 0) > 0
@@ -8757,7 +8757,7 @@
           + (diffReading.widthMm > 0 ? _fmt(diffReading.widthMm, 1) + ' mm aperture average' : 'point detector')
           + (diffReading.noisePercent > 0 ? ', ±' + _fmt(diffReading.noisePercent, 1) + '% uncertainty.' : '.');
       } else if ((state.diffMode || 'single') === 'single') {
-        var slitWidthUm = +(state.diffSlitWidth != null ? state.diffSlitWidth : 30);
+        var slitWidthUm = +((typeof state.diffSlitWidth === 'number' && isFinite(state.diffSlitWidth)) ? state.diffSlitWidth : 30);
         var firstMinimumMm = singleSlitFirstMin(diffLambda, screenDistance, slitWidthUm * 1e-6) * 1000;
         trial.series = 'diffraction-single';
         trial.x = slitWidthUm; trial.y = firstMinimumMm;
@@ -8778,8 +8778,8 @@
           + ' Grating is ' + gratingGeometry.dutyPercent.toFixed(0) + '% open.';
       }
     } else if (tab === 'polarization') {
-      var p2 = +(state.polTheta2 != null ? state.polTheta2 : 30);
-      var p3 = +(state.polTheta3 != null ? state.polTheta3 : 90);
+      var p2 = +((typeof state.polTheta2 === 'number' && isFinite(state.polTheta2)) ? state.polTheta2 : 30);
+      var p3 = +((typeof state.polTheta3 === 'number' && isFinite(state.polTheta3)) ? state.polTheta3 : 90);
       var afterP1 = 0.5;
       var afterP2 = state.polQwp ? afterP1 * 0.5 : malus(afterP1, degToRad(p2));
       var output = state.polUseP3 ? malus(afterP2, degToRad(p3 - p2)) : afterP2;
@@ -9971,9 +9971,9 @@
 
       React.useEffect(function() {
         if (d.mode !== 'lenses') return;
-        var focal = Math.abs(d.lensFocal != null ? d.lensFocal : 12);
+        var focal = Math.abs((typeof d.lensFocal === 'number' && isFinite(d.lensFocal)) ? d.lensFocal : 12);
         var signedFocal = (d.lensType || 'converging') === 'converging' ? focal : -focal;
-        var result = thinLens(d.lensDo != null ? d.lensDo : 25, signedFocal);
+        var result = thinLens((typeof d.lensDo === 'number' && isFinite(d.lensDo)) ? d.lensDo : 25, signedFocal);
         if (result.error) return;
         // The tab opens on converging f=12, d_o=25, which is d_o > f and
         // therefore ALREADY a real image: 'Form a real image with a lens'
@@ -10181,7 +10181,7 @@
                   'data-op-focusable': 'true',
                   onClick: function() { upd({ mode: 'home', showOpticsLibrary: false }); }
                 }, t('stem.optics.back_to_benches', '← Bench home')),
-                d.mode === 'home' && d.lastTopicTab && h('button', {
+                d.mode === 'home' && typeof d.lastTopicTab === 'string' && d.lastTopicTab && h('button', {
                   type: 'button', className: 'opticslab-home-button',
                   'data-op-focusable': 'true',
                   onClick: function() { upd({ mode: d.lastTopicTab, showOpticsLibrary: false }); }
@@ -11022,7 +11022,10 @@
     // draw. Counting rounds answered is what the learner means by 'how far
     // am I', and it keeps counting past one pass through the deck.
     var OP_SLEUTH_TOTAL_VIGNETTES = V.length;
-    var ssIdx = d.ssIdx == null ? -1 : d.ssIdx;
+    // -1 is the 'not started' sentinel the start screen checks for; any other
+    // value indexes V directly, so anything that is not a valid index must
+    // fall back to the sentinel rather than to 0.
+    var ssIdx = (Number.isInteger(d.ssIdx) && d.ssIdx >= 0 && d.ssIdx < V.length) ? d.ssIdx : -1;
     var ssSeed = d.ssSeed || 1;
     var ssAns = !!d.ssAns;
     var ssPick = d.ssPick;
@@ -11356,7 +11359,7 @@
         },
           h('p', { style: { margin: '0 0 10px', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
             'Take a 5-question AP-style multiple-choice quiz. Two questions are tied to whichever topic you most recently visited (',
-            h('b', { style: { color: 'var(--op-amber-text, #fbbf24)' } }, d.lastTopicTab || 'pick a topic above'),
+            h('b', { style: { color: 'var(--op-amber-text, #fbbf24)' } }, (typeof d.lastTopicTab === 'string' && d.lastTopicTab) || 'pick a topic above'),
             '), two are universal anchors on core concepts, and one is random. Per-question rationales appear after submit.'
           ),
           h('button', {
@@ -12175,7 +12178,7 @@
     // visually didn't look like a rainbow. This version shows what an observer
     // actually sees: the geometric origin of the bow, with the live arc forming.
     var W = 460, H = 320;
-    var sunAlt = d.phenoRbSunAlt != null ? d.phenoRbSunAlt : 25; // sun altitude (°)
+    var sunAlt = (typeof d.phenoRbSunAlt === 'number' && isFinite(d.phenoRbSunAlt)) ? d.phenoRbSunAlt : 25; // sun altitude (°)
     var showRays = d.phenoRbShowRays !== false; // default on
     var horizonY = H - 60;
     // Observer at center bottom
@@ -12381,7 +12384,7 @@
     // hot ground (warmer air = lower density = lower n). Brain extrapolates rays
     // straight back, sees an inverted reflection that looks like water.
     var W = 420, H = 240;
-    var grad = d.phenoMirageGrad != null ? d.phenoMirageGrad : 0.6; // 0..1 strength
+    var grad = (typeof d.phenoMirageGrad === 'number' && isFinite(d.phenoMirageGrad)) ? d.phenoMirageGrad : 0.6; // 0..1 strength
     // Stack of layers — top cooler (n=1.0008), bottom hotter (n=1.0002 at max grad).
     var nLayers = 12;
     var groundY = H - 30;
@@ -12566,12 +12569,12 @@
 
   // ── Color mixing (additive vs subtractive) ───────────────────────
   function _renderPhColorMix(d, upd, h) {
-    var rI = d.phenoMixR != null ? d.phenoMixR : 1.0; // 0..1 intensity
-    var gI = d.phenoMixG != null ? d.phenoMixG : 1.0;
-    var bI = d.phenoMixB != null ? d.phenoMixB : 1.0;
-    var cI = d.phenoMixC != null ? d.phenoMixC : 1.0;
-    var mI = d.phenoMixM != null ? d.phenoMixM : 1.0;
-    var yI = d.phenoMixY != null ? d.phenoMixY : 1.0;
+    var rI = (typeof d.phenoMixR === 'number' && isFinite(d.phenoMixR)) ? d.phenoMixR : 1.0; // 0..1 intensity
+    var gI = (typeof d.phenoMixG === 'number' && isFinite(d.phenoMixG)) ? d.phenoMixG : 1.0;
+    var bI = (typeof d.phenoMixB === 'number' && isFinite(d.phenoMixB)) ? d.phenoMixB : 1.0;
+    var cI = (typeof d.phenoMixC === 'number' && isFinite(d.phenoMixC)) ? d.phenoMixC : 1.0;
+    var mI = (typeof d.phenoMixM === 'number' && isFinite(d.phenoMixM)) ? d.phenoMixM : 1.0;
+    var yI = (typeof d.phenoMixY === 'number' && isFinite(d.phenoMixY)) ? d.phenoMixY : 1.0;
     // Additive sum (RGB). Caps at 255.
     function addClamp(a, b, c) { return Math.min(255, Math.round(a + b + c)); }
     var addR = Math.round(255 * rI), addG = Math.round(255 * gI), addB = Math.round(255 * bI);
@@ -12640,8 +12643,8 @@
 
   // ── Polarized sky ────────────────────────────────────────────────
   function _renderPhPolSky(d, upd, h) {
-    var sunAz = d.phenoSkySunAz != null ? d.phenoSkySunAz : 30;     // degrees from east
-    var polDeg = d.phenoSkyPolDeg != null ? d.phenoSkyPolDeg : 0;   // polarizer rotation
+    var sunAz = (typeof d.phenoSkySunAz === 'number' && isFinite(d.phenoSkySunAz)) ? d.phenoSkySunAz : 30;     // degrees from east
+    var polDeg = (typeof d.phenoSkyPolDeg === 'number' && isFinite(d.phenoSkyPolDeg)) ? d.phenoSkyPolDeg : 0;   // polarizer rotation
     var W = 420, H = 240;
     // Sun position
     var sunX = W * 0.5 + W * 0.35 * Math.cos(degToRad(sunAz));
@@ -12776,8 +12779,8 @@
     // Object distance from eye (cm). The eye's lens accommodates by changing
     // shape: thicker for near objects (shorter f), thinner for far objects.
     // v2: adds eye conditions (normal/myopia/hyperopia) and corrective lenses.
-    var dObjCm = d.phenoEyeDist != null ? d.phenoEyeDist : 25;
-    var ageYears = d.phenoEyeAge != null ? d.phenoEyeAge : 20;
+    var dObjCm = (typeof d.phenoEyeDist === 'number' && isFinite(d.phenoEyeDist)) ? d.phenoEyeDist : 25;
+    var ageYears = (typeof d.phenoEyeAge === 'number' && isFinite(d.phenoEyeAge)) ? d.phenoEyeAge : 20;
     var condition = d.phenoEyeCondition || 'normal'; // normal | myopia | hyperopia
     var glassesOn = !!d.phenoEyeGlasses;
     var dObjMm = dObjCm * 10;
@@ -13166,7 +13169,7 @@
     // Rayleigh scattering ∝ 1/λ⁴ — strongly scatters short (blue) wavelengths.
     // At zenith (sun overhead), short path → only some blue scattered → sky looks blue.
     // At horizon, long path → most blue scattered out → only red wavelengths reach you → red sun.
-    var sunAlt = d.phenoSunsetAlt != null ? d.phenoSunsetAlt : 30; // sun altitude angle (degrees above horizon)
+    var sunAlt = (typeof d.phenoSunsetAlt === 'number' && isFinite(d.phenoSunsetAlt)) ? d.phenoSunsetAlt : 30; // sun altitude angle (degrees above horizon)
     // Air mass (atmospheric path length factor) — secant approximation, capped for low angles
     var altRad = degToRad(Math.max(2, sunAlt));
     var airmass = Math.min(40, 1 / Math.sin(altRad));
@@ -13378,8 +13381,8 @@
     };
     var matKey = d.phenoPrismMat || 'flint';
     var mat = materials[matKey] || materials.flint;
-    var prismApex = d.phenoPrismApex != null ? d.phenoPrismApex : 60; // apex angle (°)
-    var incidence = d.phenoPrismInc != null ? d.phenoPrismInc : 45;   // incidence angle on face 1 (°)
+    var prismApex = (typeof d.phenoPrismApex === 'number' && isFinite(d.phenoPrismApex)) ? d.phenoPrismApex : 60; // apex angle (°)
+    var incidence = (typeof d.phenoPrismInc === 'number' && isFinite(d.phenoPrismInc)) ? d.phenoPrismInc : 45;   // incidence angle on face 1 (°)
 
     // n(λ) for each wavelength
     function nAt(nm) {
@@ -13610,7 +13613,7 @@
   // ---
   function _renderPhQuantumTwist(d, upd, h) {
     var W = 460, H = 200;
-    var dots = d.phenoQuantumDots || [];
+    var dots = _opArray(d.phenoQuantumDots);
     var count = d.phenoQuantumCount || 0;
     var playing = !!d.phenoQuantumPlaying;
     var rate = d.phenoQuantumRate || 'slow'; // slow | fast
@@ -19908,8 +19911,8 @@
   // ───── 4. Lensmaker's equation calculator ─────
   function _renderLensmakerCalc(d, upd, h) {
     var n = d.lmkrN || 1.50;
-    var r1 = d.lmkrR1 != null ? d.lmkrR1 : 20;
-    var r2 = d.lmkrR2 != null ? d.lmkrR2 : -30;
+    var r1 = (typeof d.lmkrR1 === 'number' && isFinite(d.lmkrR1)) ? d.lmkrR1 : 20;
+    var r2 = (typeof d.lmkrR2 === 'number' && isFinite(d.lmkrR2)) ? d.lmkrR2 : -30;
     var t = d.lmkrT || 3;
     // Thin lens formula
     var oneOverF = (n - 1) * (1/r1 - 1/r2);
@@ -20070,9 +20073,9 @@
 
   // ───── 7. Color mixer (additive RGB) ─────
   function _renderColorMixerCalc(d, upd, h) {
-    var r = d.mixR != null ? d.mixR : 128;
-    var g = d.mixG != null ? d.mixG : 128;
-    var b = d.mixB != null ? d.mixB : 128;
+    var r = (typeof d.mixR === 'number' && isFinite(d.mixR)) ? d.mixR : 128;
+    var g = (typeof d.mixG === 'number' && isFinite(d.mixG)) ? d.mixG : 128;
+    var b = (typeof d.mixB === 'number' && isFinite(d.mixB)) ? d.mixB : 128;
     var hex = '#' + [r, g, b].map(function(v) { var s = Math.round(v).toString(16); return s.length < 2 ? '0' + s : s; }).join('');
     var lum = (0.299 * r + 0.587 * g + 0.114 * b);
     var hsl_h = 0, hsl_s = 0, hsl_l = 0;
@@ -20129,7 +20132,7 @@
 
   // ───── 8. EM spectrum slider explorer ─────
   function _renderEmSpectrumCalc(d, upd, h) {
-    var logFreq = d.emLogFreq != null ? d.emLogFreq : 14.4; // log10 of frequency in Hz
+    var logFreq = (typeof d.emLogFreq === 'number' && isFinite(d.emLogFreq)) ? d.emLogFreq : 14.4; // log10 of frequency in Hz
     var freq = Math.pow(10, logFreq);
     var lambda = 3e8 / freq;
     var energyEv = 6.626e-34 * freq / 1.602e-19;
@@ -20496,8 +20499,8 @@
 
   // ───── 14. Polarization 3-polarizer simulator ─────
   function _renderPolarTriCalc(d, upd, h) {
-    var theta2 = d.polTriTheta2 != null ? d.polTriTheta2 : 45;
-    var theta3 = d.polTriTheta3 != null ? d.polTriTheta3 : 90;
+    var theta2 = (typeof d.polTriTheta2 === 'number' && isFinite(d.polTriTheta2)) ? d.polTriTheta2 : 45;
+    var theta3 = (typeof d.polTriTheta3 === 'number' && isFinite(d.polTriTheta3)) ? d.polTriTheta3 : 90;
     var i0 = 1.0;
     var i1 = i0 / 2; // unpolarized → polarized halves
     var i2 = i1 * Math.pow(Math.cos(degToRad(theta2 - 0)), 2);
@@ -20622,9 +20625,9 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Drag the incidence angle + the refractive indices. Watch the ray bend, and trigger TIR at the critical angle."),
         d.vizShowSnell && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var th1 = d.vizSnellTh != null ? d.vizSnellTh : 30;
-                      var n1 = d.vizSnellN1 != null ? d.vizSnellN1 : 1.00;
-                      var n2 = d.vizSnellN2 != null ? d.vizSnellN2 : 1.52;
+                      var th1 = (typeof d.vizSnellTh === 'number' && isFinite(d.vizSnellTh)) ? d.vizSnellTh : 30;
+                      var n1 = (typeof d.vizSnellN1 === 'number' && isFinite(d.vizSnellN1)) ? d.vizSnellN1 : 1.00;
+                      var n2 = (typeof d.vizSnellN2 === 'number' && isFinite(d.vizSnellN2)) ? d.vizSnellN2 : 1.52;
                       var th1Rad = th1 * Math.PI / 180;
                       var sinTh2 = n1 * Math.sin(th1Rad) / n2;
                       var tir = Math.abs(sinTh2) > 1;
@@ -20682,9 +20685,9 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Drag object closer to a lens + watch ray diagram update. Converging vs diverging, real vs virtual."),
         d.vizShowLens && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var f = d.vizLensF != null ? d.vizLensF : 60;
-                      var doDist = d.vizLensDo != null ? d.vizLensDo : 150;
-                      var hObj = d.vizLensH != null ? d.vizLensH : 40;
+                      var f = (typeof d.vizLensF === 'number' && isFinite(d.vizLensF)) ? d.vizLensF : 60;
+                      var doDist = (typeof d.vizLensDo === 'number' && isFinite(d.vizLensDo)) ? d.vizLensDo : 150;
+                      var hObj = (typeof d.vizLensH === 'number' && isFinite(d.vizLensH)) ? d.vizLensH : 40;
                       var converging = (d.vizLensType || 'converging') === 'converging';
                       var fSigned = converging ? f : -f;
                       var di = 1 / (1/fSigned - 1/doDist);
@@ -20747,7 +20750,7 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "White light splits into a rainbow because shorter wavelengths refract more. Newton 1666 used this to prove sunlight contains all colors."),
         d.vizShowPrism && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var angle = d.vizPrismAngle != null ? d.vizPrismAngle : 60;
+                      var angle = (typeof d.vizPrismAngle === 'number' && isFinite(d.vizPrismAngle)) ? d.vizPrismAngle : 60;
                       var nGlass = 1.52;
                       var WAVELENGTHS = [{ nm: 400, c: '#7e22ce' }, { nm: 440, c: '#2563eb' }, { nm: 490, c: '#06b6d4' }, { nm: 550, c: '#22c55e' }, { nm: 590, c: '#facc15' }, { nm: 630, c: '#f97316' }, { nm: 700, c: '#dc2626' }];
                       return h('div', null,
@@ -20793,9 +20796,9 @@
         d.vizShowMirror && h('div', { style: { marginTop: 8 } },
           (function() {
                       var type = d.vizMirrType || 'concave';
-                      var f = d.vizMirrF != null ? d.vizMirrF : 50;
-                      var doDist = d.vizMirrDo != null ? d.vizMirrDo : 110;
-                      var hObj = d.vizMirrH != null ? d.vizMirrH : 40;
+                      var f = (typeof d.vizMirrF === 'number' && isFinite(d.vizMirrF)) ? d.vizMirrF : 50;
+                      var doDist = (typeof d.vizMirrDo === 'number' && isFinite(d.vizMirrDo)) ? d.vizMirrDo : 110;
+                      var hObj = (typeof d.vizMirrH === 'number' && isFinite(d.vizMirrH)) ? d.vizMirrH : 40;
                       var fSigned = type === 'concave' ? f : -f;
                       var di = 1 / (1/fSigned - 1/doDist);
                       var m = -di / doDist;
@@ -20850,9 +20853,9 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Two coherent light sources interfere — bright + dark fringes appear. Drag wavelength + slit separation to see spacing change."),
         d.vizShowDS && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var lam = d.vizDsLam != null ? d.vizDsLam : 550;
-                      var slit = d.vizDsSlit != null ? d.vizDsSlit : 0.05;
-                      var L = d.vizDsL != null ? d.vizDsL : 1.0;
+                      var lam = (typeof d.vizDsLam === 'number' && isFinite(d.vizDsLam)) ? d.vizDsLam : 550;
+                      var slit = (typeof d.vizDsSlit === 'number' && isFinite(d.vizDsSlit)) ? d.vizDsSlit : 0.05;
+                      var L = (typeof d.vizDsL === 'number' && isFinite(d.vizDsL)) ? d.vizDsL : 1.0;
                       var fringeSpacing = (lam * 1e-9) * L / (slit * 1e-3) * 1000;
                       var fringes = [];
                       for (var fi = 0; fi < 60; fi++) {
@@ -20902,8 +20905,8 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Two polarizers in series. Light gets dimmer as filters rotate out of alignment. At 90° apart: total extinction."),
         d.vizShowPol && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var th1 = d.vizPol1 != null ? d.vizPol1 : 0;
-                      var th2 = d.vizPol2 != null ? d.vizPol2 : 45;
+                      var th1 = (typeof d.vizPol1 === 'number' && isFinite(d.vizPol1)) ? d.vizPol1 : 0;
+                      var th2 = (typeof d.vizPol2 === 'number' && isFinite(d.vizPol2)) ? d.vizPol2 : 45;
                       var diff = Math.abs(th2 - th1);
                       var trans = Math.cos(diff * Math.PI / 180);
                       var Itrans = trans * trans;
@@ -20949,8 +20952,8 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "A narrow slit spreads light into a broad central peak with side lobes. The narrower the slit, the wider the pattern."),
         d.vizShowSS && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var lam = d.vizSsLam != null ? d.vizSsLam : 550;
-                      var w = d.vizSsW != null ? d.vizSsW : 0.05;
+                      var lam = (typeof d.vizSsLam === 'number' && isFinite(d.vizSsLam)) ? d.vizSsLam : 550;
+                      var w = (typeof d.vizSsW === 'number' && isFinite(d.vizSsW)) ? d.vizSsW : 0.05;
                       var pts = [];
                       for (var i = -150; i <= 150; i++) {
                         var x = i / 150;
@@ -20994,8 +20997,8 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Soap bubbles + oil slicks show rainbow colors. Light reflects off both surfaces and interferes — different thicknesses reinforce different wavelengths."),
         d.vizShowTF && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var thick = d.vizTfThick != null ? d.vizTfThick : 400;
-                      var n = d.vizTfN != null ? d.vizTfN : 1.33;
+                      var thick = (typeof d.vizTfThick === 'number' && isFinite(d.vizTfThick)) ? d.vizTfThick : 400;
+                      var n = (typeof d.vizTfN === 'number' && isFinite(d.vizTfN)) ? d.vizTfN : 1.33;
                       var COLORS = [];
                       for (var w = 400; w <= 700; w += 5) {
                         var pathLen = 2 * n * thick / w;
@@ -21045,7 +21048,7 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Light bends + reflects inside raindrops. Different wavelengths come out at slightly different angles → rainbow."),
         d.vizShowRb && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var angle = d.vizRbAngle != null ? d.vizRbAngle : 42;
+                      var angle = (typeof d.vizRbAngle === 'number' && isFinite(d.vizRbAngle)) ? d.vizRbAngle : 42;
                       var COLORS = [{ nm: 700, c: '#dc2626', a: 40.4 }, { nm: 600, c: '#f97316', a: 41 }, { nm: 580, c: '#fbbf24', a: 41.4 }, { nm: 540, c: '#22c55e', a: 41.8 }, { nm: 480, c: '#06b6d4', a: 42.0 }, { nm: 450, c: '#2563eb', a: 42.2 }, { nm: 420, c: '#7e22ce', a: 42.4 }];
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
@@ -21082,7 +21085,7 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Hot air near ground has lower index of refraction. Light from above curves up → looks like puddles on a desert road."),
         d.vizShowMir && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var heat = d.vizMirH != null ? d.vizMirH : 50;
+                      var heat = (typeof d.vizMirH === 'number' && isFinite(d.vizMirH)) ? d.vizMirH : 50;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
                           h('svg', { role: 'img', 'aria-label': __alloT('stem.optics.a11y_mirage_diagram_showing_light_bending_through_he', 'Mirage diagram showing light bending through heated air.'), viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #fef3c7 0%, #fbbf24 40%, #f97316 70%, #dc2626 100%)' } },
@@ -21118,7 +21121,7 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Rayleigh scattering: short wavelengths scatter more than long. Noon = blue. Sunset = red."),
         d.vizShowSky && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var alt = d.vizSkyAlt != null ? d.vizSkyAlt : 60;
+                      var alt = (typeof d.vizSkyAlt === 'number' && isFinite(d.vizSkyAlt)) ? d.vizSkyAlt : 60;
                       var skyColor = alt > 50 ? '#3b82f6' : alt > 20 ? '#fbbf24' : '#dc2626';
                       var sunColor = alt > 50 ? '#fde047' : alt > 20 ? '#fbbf24' : '#dc2626';
                       return h('div', null,
@@ -21154,7 +21157,7 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Each photon arrives as a particle. But the pattern of many photons is wave interference. Drag count to watch the pattern emerge."),
         d.vizShowWp && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var nPhot = d.vizWpN != null ? d.vizWpN : 100;
+                      var nPhot = (typeof d.vizWpN === 'number' && isFinite(d.vizWpN)) ? d.vizWpN : 100;
                       var dots = [];
                       for (var i = 0; i < nPhot; i++) {
                         var x = (i * 71 + 17) % 400;
@@ -21194,8 +21197,8 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "A tiny hole acts as a lens. Image is inverted. Smaller hole = sharper but dimmer image."),
         d.vizShowPh && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var pSize = d.vizPhSize != null ? d.vizPhSize : 1;
-                      var dist = d.vizPhD != null ? d.vizPhD : 100;
+                      var pSize = (typeof d.vizPhSize === 'number' && isFinite(d.vizPhSize)) ? d.vizPhSize : 1;
+                      var dist = (typeof d.vizPhD === 'number' && isFinite(d.vizPhD)) ? d.vizPhD : 100;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
                           h('svg', { role: 'img', 'aria-label': __alloT('stem.optics.a11y_pinhole_camera_diagram_showing_an_inverted_proj', 'Pinhole camera diagram showing an inverted projected image.'), viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
@@ -21239,9 +21242,9 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Computer screens + TVs use red, green, blue. Mix them in different proportions to make any color."),
         d.vizShowCm && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var R = d.vizCmR != null ? d.vizCmR : 255;
-                      var G = d.vizCmG != null ? d.vizCmG : 255;
-                      var B = d.vizCmB != null ? d.vizCmB : 255;
+                      var R = (typeof d.vizCmR === 'number' && isFinite(d.vizCmR)) ? d.vizCmR : 255;
+                      var G = (typeof d.vizCmG === 'number' && isFinite(d.vizCmG)) ? d.vizCmG : 255;
+                      var B = (typeof d.vizCmB === 'number' && isFinite(d.vizCmB)) ? d.vizCmB : 255;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
                           h('svg', { role: 'img', 'aria-label': __alloT('stem.optics.a11y_additive_red_green_and_blue_color_mixing_diagra', 'Additive red, green, and blue color mixing diagram.'), viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },
@@ -21278,7 +21281,7 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Earth's atmosphere bends light. When the Sun looks like it's on the horizon, it's actually already set."),
         d.vizShowAr && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var alt = d.vizArAlt != null ? d.vizArAlt : 5;
+                      var alt = (typeof d.vizArAlt === 'number' && isFinite(d.vizArAlt)) ? d.vizArAlt : 5;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
                           h('svg', { role: 'img', 'aria-label': __alloT('stem.optics.a11y_atmospheric_refraction_diagram_showing_the_appa', 'Atmospheric refraction diagram showing the apparent position of the Sun.'), viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #0a0a18 0%, #4338ca 30%, #f97316 70%, #dc2626 100%)' } },
@@ -21405,7 +21408,7 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Curved lens on flat glass produces concentric rings of interference. Used to test optics quality."),
         d.vizShowNr && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var lam = d.vizNrLam != null ? d.vizNrLam : 550;
+                      var lam = (typeof d.vizNrLam === 'number' && isFinite(d.vizNrLam)) ? d.vizNrLam : 550;
                       var rings = [];
                       for (var i = 0; i < 8; i++) {
                         rings.push({ r: Math.sqrt(i * lam * 0.001 * 1000) * 8, dark: i % 2 === 0 });
@@ -21444,8 +21447,8 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "At Brewster's angle, reflected light is perfectly s-polarized. Why polarized sunglasses reduce glare from water + windshields."),
         d.vizShowBr && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var n1 = d.vizBrN1 != null ? d.vizBrN1 : 1.00;
-                      var n2 = d.vizBrN2 != null ? d.vizBrN2 : 1.52;
+                      var n1 = (typeof d.vizBrN1 === 'number' && isFinite(d.vizBrN1)) ? d.vizBrN1 : 1.00;
+                      var n2 = (typeof d.vizBrN2 === 'number' && isFinite(d.vizBrN2)) ? d.vizBrN2 : 1.52;
                       var brAng = Math.atan(n2 / n1) * 180 / Math.PI;
                       var th = d.vizBrTh != null ? d.vizBrTh : brAng;
                       var isBrew = Math.abs(th - brAng) < 1;
@@ -21487,8 +21490,8 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Many slits create sharp bright peaks at specific angles. Higher line density → wider spectrum."),
         d.vizShowDg && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var lines = d.vizDgLines != null ? d.vizDgLines : 600;
-                      var lam = d.vizDgLam != null ? d.vizDgLam : 550;
+                      var lines = (typeof d.vizDgLines === 'number' && isFinite(d.vizDgLines)) ? d.vizDgLines : 600;
+                      var lam = (typeof d.vizDgLam === 'number' && isFinite(d.vizDgLam)) ? d.vizDgLam : 550;
                       var d_grat = 1e-3 / lines;
                       var maxOrder = Math.floor(d_grat / (lam * 1e-9));
                       var orders = [];
@@ -21539,7 +21542,7 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Eye lens reshapes to focus near + far objects. With age, this flexibility fades → reading glasses needed."),
         d.vizShowEye && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var focusDist = d.vizEyeF != null ? d.vizEyeF : 25;
+                      var focusDist = (typeof d.vizEyeF === 'number' && isFinite(d.vizEyeF)) ? d.vizEyeF : 25;
                       var lensThick = focusDist < 25 ? 'thicker' : focusDist > 100 ? 'thinner' : 'relaxed';
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
@@ -21582,7 +21585,7 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Wide aperture (small f-number) blurs background for portraits. Narrow aperture (high f-number) keeps everything sharp."),
         d.vizShowCam && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var fst = d.vizCamF != null ? d.vizCamF : 8;
+                      var fst = (typeof d.vizCamF === 'number' && isFinite(d.vizCamF)) ? d.vizCamF : 8;
                       var dof = 1 / fst * 2;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
@@ -21619,7 +21622,7 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "From gamma rays to radio waves — all electromagnetic radiation. Visible light is a tiny slice."),
         d.vizShowEm && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var lam = d.vizEmLam != null ? d.vizEmLam : 550;
+                      var lam = (typeof d.vizEmLam === 'number' && isFinite(d.vizEmLam)) ? d.vizEmLam : 550;
                       var freq = 3e8 / (lam * 1e-9);
                       var region = lam < 10 ? 'X-ray' : lam < 400 ? 'UV' : lam < 750 ? 'Visible' : lam < 1e6 ? 'Infrared' : lam < 1e9 ? 'Microwave' : 'Radio';
                       function wlColor(w) { if (w < 10) return '#7e22ce'; if (w < 400) return '#a78bfa'; if (w < 440) return '#7e22ce'; if (w < 490) return '#2563eb'; if (w < 580) return '#22c55e'; if (w < 645) return '#facc15'; if (w < 700) return '#f97316'; if (w < 750) return '#dc2626'; if (w < 1e6) return '#b91c1c'; return '#1e40af'; }
@@ -21725,7 +21728,7 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "v = c/n. Light slows in dense materials. In diamond, only 41% of vacuum speed."),
         d.vizShowLs && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var n = d.vizLsN != null ? d.vizLsN : 1.5;
+                      var n = (typeof d.vizLsN === 'number' && isFinite(d.vizLsN)) ? d.vizLsN : 1.5;
                       var c = 299792458;
                       var v = c / n;
                       return h('div', null,
@@ -21753,7 +21756,7 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Each photon carries energy E = hf. UV photons are energetic enough to damage DNA. IR photons just warm you up."),
         d.vizShowPe && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var lam = d.vizPeLam != null ? d.vizPeLam : 550;
+                      var lam = (typeof d.vizPeLam === 'number' && isFinite(d.vizPeLam)) ? d.vizPeLam : 550;
                       var freq = 3e8 / (lam * 1e-9);
                       var E = 4.136e-15 * freq;
                       return h('div', null,
@@ -21784,7 +21787,7 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Spherical lenses focus outer rays closer than central. Why telescopes use parabolic mirrors instead."),
         d.vizShowSa && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var sa = d.vizSaAmt != null ? d.vizSaAmt : 30;
+                      var sa = (typeof d.vizSaAmt === 'number' && isFinite(d.vizSaAmt)) ? d.vizSaAmt : 30;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
                           h('svg', { role: 'img', 'aria-label': __alloT('stem.optics.a11y_spherical_aberration_diagram_showing_marginal_a', 'Spherical aberration diagram showing marginal and central ray focus.'), viewBox: '0 0 500 200', style: { width: '100%', display: 'block', background: '#0a0a18' } },
@@ -21947,7 +21950,7 @@
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "Light microscopes top out around 1500×. Electron microscopes (200,000×) needed for atoms."),
         d.vizShowMs && h('div', { style: { marginTop: 8 } },
           (function() {
-                      var mag = d.vizMsMag != null ? d.vizMsMag : 400;
+                      var mag = (typeof d.vizMsMag === 'number' && isFinite(d.vizMsMag)) ? d.vizMsMag : 400;
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
                           h('svg', { role: 'img', 'aria-label': __alloT('stem.optics.a11y_microscope_field_visualization_at_the_selected', 'Microscope field visualization at the selected magnification.'), viewBox: '0 0 500 220', style: { width: '100%', display: 'block', background: '#0a0a18' } },

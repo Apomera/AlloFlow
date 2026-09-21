@@ -39,7 +39,7 @@
   },
   "ai": "Fixture provider; invalid then repaired JSON",
   "writes": 37,
-  "completedDocumentChars": 9030,
+  "completedDocumentChars": 9028,
   "scans": [
     {
       "label": "import review",

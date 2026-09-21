@@ -329,7 +329,7 @@ window.StemLab = window.StemLab || {
       rows.push({ label: 'Custom play completed', value: s.completedCustomPlay ? '✓' : '—' });
     }
     rows.push({ label: 'Badges earned', value: Object.keys(d.badgesEarned || {}).length + ' / ' + PLAYLAB_BADGES.length });
-    rows.push({ label: 'Saved plays', value: (d.savedPlays || []).length });
+    rows.push({ label: 'Saved plays', value: (Array.isArray(d.savedPlays) ? d.savedPlays : []).length });
     // Career Highs — sport-specific PBs
     var sportKey = d.sport || 'football';
     var pbs = (d.personalBests && d.personalBests[sportKey]) || {};
@@ -428,7 +428,7 @@ window.StemLab = window.StemLab || {
       } },
     { id: 'tactician', emoji: '📋', label: 'Tactician',
       hint: 'Save 5 custom plays',
-      check: function(d) { return (d.savedPlays || []).length >= 5; } },
+      check: function(d) { return (Array.isArray(d.savedPlays) ? d.savedPlays : []).length >= 5; } },
     { id: 'globetrotter-pl', emoji: '🌍', label: 'Globetrotter',
       hint: 'Complete plays in BOTH football and soccer',
       check: function(d, outcome, stats) {
@@ -439,7 +439,7 @@ window.StemLab = window.StemLab || {
         // Stats are sport-specific so this needs a session-level OR. We reach
         // for savedPlays as a proxy: if a play has been saved in BOTH sports.
         var savedSports = {};
-        (d.savedPlays || []).forEach(function(sp) { savedSports[sp.sport] = true; });
+        (Array.isArray(d.savedPlays) ? d.savedPlays : []).forEach(function(sp) { savedSports[sp.sport] = true; });
         return savedSports.football && savedSports.soccer;
       } }
   ];
@@ -2200,7 +2200,7 @@ window.StemLab = window.StemLab || {
       function runRandomPlayLabScenario() {
         var activeSport = d.sport || 'football';
         var pool = PLAYLAB_SCENARIOS.filter(function(sc) { return sc.sport === activeSport; })
-          .concat((d.savedPlays || []).filter(function(sp) { return sp.sport === activeSport; }));
+          .concat((Array.isArray(d.savedPlays) ? d.savedPlays : []).filter(function(sp) { return sp.sport === activeSport; }));
         if (!pool.length) return;
         var pick = pool[Math.floor(Math.random() * pool.length)];
         // Built-in vs saved-play apply path
@@ -2311,7 +2311,7 @@ window.StemLab = window.StemLab || {
           entry.playId = d.playId;
           entry.coverageId = d.coverageId;
         }
-        var saved = (d.savedPlays || []).concat([entry]);
+        var saved = (Array.isArray(d.savedPlays) ? d.savedPlays : []).concat([entry]);
         // FIFO eviction at 24 entries
         if (saved.length > 24) saved = saved.slice(saved.length - 24);
         setLabToolData(function(prev) {
@@ -3287,7 +3287,7 @@ window.StemLab = window.StemLab || {
         // ── Persistent down & distance HUD (top-left) — always on, not just in
         // the post-play outcome banner, so the situation is readable mid-setup. ──
         (function() {
-          var dn = d.down || 1, ytg = d.yardsToGoal != null ? d.yardsToGoal : 75;
+          var dn = d.down || 1, ytg = (typeof d.yardsToGoal === 'number' && isFinite(d.yardsToGoal)) ? d.yardsToGoal : 75;
           var ord = dn === 1 ? '1st' : dn === 2 ? '2nd' : dn === 3 ? '3rd' : '4th';
           var full = '🏈 ' + ord + ' down · ' + ytg + ' yd to goal';
           gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'left'; gfx.textBaseline = 'middle';
@@ -3959,7 +3959,7 @@ window.StemLab = window.StemLab || {
         },
           h('summary', {
             style: { cursor: 'pointer', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600 }
-          }, '🎬 Scenarios — one-click teaching demos (' + PLAYLAB_SCENARIOS.filter(function(sc) { return sc.sport === (d.sport || 'football'); }).length + ' built-in' + ((d.savedPlays || []).filter(function(sp) { return sp.sport === (d.sport || 'football'); }).length ? ' + ' + (d.savedPlays || []).filter(function(sp) { return sp.sport === (d.sport || 'football'); }).length + ' custom' : '') + ' for ' + (isSoccer ? 'soccer' : 'football') + ')'),
+          }, '🎬 Scenarios — one-click teaching demos (' + PLAYLAB_SCENARIOS.filter(function(sc) { return sc.sport === (d.sport || 'football'); }).length + ' built-in' + ((Array.isArray(d.savedPlays) ? d.savedPlays : []).filter(function(sp) { return sp.sport === (d.sport || 'football'); }).length ? ' + ' + (Array.isArray(d.savedPlays) ? d.savedPlays : []).filter(function(sp) { return sp.sport === (d.sport || 'football'); }).length + ' custom' : '') + ' for ' + (isSoccer ? 'soccer' : 'football') + ')'),
           h('div', {
             role: 'group', 'aria-label': __alloT('stem.playlab.tactical_scenarios', 'Tactical scenarios'),
             style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }
@@ -3982,7 +3982,7 @@ window.StemLab = window.StemLab || {
               }, sc.icon + ' ' + sc.label);
             }).concat(
               // Custom scenarios — saved plays for the current sport
-              (d.savedPlays || [])
+              (Array.isArray(d.savedPlays) ? d.savedPlays : [])
                 .filter(function(sp) { return sp.sport === (d.sport || 'football'); })
                 .slice().reverse()
                 .map(function(sp) {
@@ -4816,7 +4816,9 @@ window.StemLab = window.StemLab || {
             // Renders only when there's a reply, error, or in-flight request.
             // Sits between the toggles and the analysis panel so coaching
             // appears prominently right under the field.
-            (d.coachReply || d.coachError || d.coachLoading) ? h('section', {
+            // Truthiness lets an object open the panel, and the object then
+            // reaches a React child below.
+            ((typeof d.coachReply === 'string' && d.coachReply) || (typeof d.coachError === 'string' && d.coachError) || d.coachLoading) ? h('section', {
               'aria-labelledby': 'pl-coach-heading',
               'aria-busy': !!d.coachLoading,
               style: { marginTop: 10, padding: 12, background: 'linear-gradient(135deg, rgba(217,70,239,0.10), rgba(124,58,237,0.10))', border: '1px solid #d946ef', borderRadius: 10 }
@@ -4827,8 +4829,8 @@ window.StemLab = window.StemLab || {
               d.coachLoading
                 ? h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontStyle: 'italic' } }, __alloT('stem.playlab.analyzing_the_play_vs_the_coverage', 'Analyzing the play vs the coverage…'))
                 : d.coachError
-                ? h('div', { style: { color: '#ef4444', fontSize: 12 } }, d.coachError)
-                : h('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, lineHeight: 1.5 } }, d.coachReply)
+                ? h('div', { style: { color: '#ef4444', fontSize: 12 } }, typeof d.coachError === 'string' ? d.coachError : '')
+                : h('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, lineHeight: 1.5 } }, typeof d.coachReply === 'string' ? d.coachReply : '')
             ) : null,
 
             // Analysis panel
@@ -4951,7 +4953,7 @@ window.StemLab = window.StemLab || {
                 style: { fontSize: 12, margin: 0, marginBottom: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
               }, '💾 My Plays (' + d.savedPlays.length + ')'),
               h('ul', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
-                d.savedPlays.slice().reverse().map(function(entry) {
+                (Array.isArray(d.savedPlays) ? d.savedPlays : []).slice().reverse().map(function(entry) {
                   return h('li', {
                     key: entry.id,
                     style: { display: 'flex', gap: 6, alignItems: 'center', padding: '4px 6px', borderRadius: 4, background: '#0f172a', border: '1px solid #64748b' }

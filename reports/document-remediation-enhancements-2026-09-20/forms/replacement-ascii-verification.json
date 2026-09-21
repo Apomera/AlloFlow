@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-09-20T15:10:49.682Z",
+  "status": "passed",
+  "unitTests": 63,
+  "chromiumTests": 63,
+  "chromiumRetries": 0,
+  "addedReplacementAndAsciiCases": 16,
+  "sourcePolicy": "20260920-3",
+  "scope": "Targeted native-contract suites after replacement-encoding and ASCII-label fixes. Both process exits zero. Native requests aborted before transmission. Root owns final generated bundles and combined validation."
+}

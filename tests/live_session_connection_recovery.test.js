@@ -161,7 +161,12 @@ describe('persistent learner connection banner', () => {
 const dock = readFileSync('view_live_session_dock_source.jsx', 'utf8');
 const healthStart = dock.indexOf('{(() => {');
 const healthEnd = dock.indexOf('})()}', healthStart) + '})()}'.length;
-const healthJsx = 'function Health({activeSessionCode="class",activeSessionAppId="app",t}) {const sessionData={roster:{}};const _alloMbBridgeActive=()=>true;return <>' + dock.slice(healthStart, healthEnd) + '</>; }';
+// The indicator reads props.organizerReflectionRequest. The stub used to
+// declare no `props` at all, so that read threw a ReferenceError - and the
+// block's own `catch (e) { return null; }` swallowed it and rendered nothing,
+// which surfaced only as "Missing button". Give the stub the same shape the
+// real component is mounted with, so a genuine render failure still fails.
+const healthJsx = 'function Health({activeSessionCode="class",activeSessionAppId="app",t,props={}}) {const sessionData={roster:{}};const _alloMbBridgeActive=()=>true;return <>' + dock.slice(healthStart, healthEnd) + '</>; }';
 const Health = new Function('React', transformSync(healthJsx, { plugins: ['@babel/plugin-transform-react-jsx'], configFile: false, babelrc: false }).code + ';return Health;')(React);
 const healthStrings = JSON.parse(readFileSync('ui_strings.js', 'utf8')).live_dock;
 const healthT = key => healthStrings[key.split('.')[1]];

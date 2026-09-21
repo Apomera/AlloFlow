@@ -15850,7 +15850,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       uses: 'Chloride makes stomach acid; fiber feeds gut microbes that make short-chain fatty acids; dietary fat carries vitamins A, D, E and K across the intestinal wall.',
       short: 'Constipation and a starved microbiome (fiber); poor absorption of fat-soluble vitamins (very low fat).' },
     { id: 'kidneys', label: 'Kidneys & fluid balance', color: '#fbbf24', icon: '🫘',
-      uses: 'Balance sodium, potassium, chloride and water to hold blood pressure and volume steady, filtering your whole blood volume about 60 times a day.',
+      uses: 'Balance sodium, potassium, chloride and water to hold blood pressure and volume steady, filtering a volume of plasma equal to about 60 times your plasma volume each day.',
       short: 'Dehydration headaches and dizziness (water); blood-pressure drift (the sodium-to-potassium ratio).' },
     { id: 'bones',   label: 'Bones & teeth',           color: '#e2e8f0', icon: '🦴',
       uses: 'Calcium and phosphorus are the mineral itself; vitamin D lets you absorb the calcium; vitamin K and magnesium help lay it down; fluoride hardens enamel.',
@@ -15972,7 +15972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     liver:   { pct: 21, note: 'Never idle: processing nutrients, storing and releasing glucose, building blood proteins, clearing waste.' },
     brain:   { pct: 20, note: 'About 2% of body weight, about 20% of resting energy — and higher in children and adolescents, whose brains are still building.' },
     heart:   { pct: 9,  note: 'Roughly 100,000 beats a day, with no rest periods. Small organ, relentless demand.' },
-    kidneys: { pct: 8,  note: 'Filter your entire blood volume around 60 times a day to hold salts and water steady.' }
+    kidneys: { pct: 8,  note: 'Filter about 180 litres of plasma a day - around 60 times your plasma volume - to hold salts and water steady.' }
   };
   var BODY_ENERGY_OTHER_PCT = 20;   // skin, gut, immune cells, bone, blood, fat
   var BODY_ENERGY_MAX_PCT = 22;

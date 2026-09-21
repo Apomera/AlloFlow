@@ -6652,7 +6652,11 @@
       var aiRefinePrompt = d.aiRefinePrompt || '';
       var lastGeneratedLesson = d.lastGeneratedLesson || null;
       var activeLesson = d.activeLesson || 'volumeExplorer';
-      var measureResult = d.measureResult ? enrichMeasurement(d.measureResult) : null;
+      // enrichMeasurement ASSIGNS onto this value, so a primitive throws
+      // outright; and consumers call .toFixed on its numeric fields, so a
+      // partial object is equally unusable. Require the numbers.
+      var measureResult = (d.measureResult && typeof d.measureResult === 'object' && !Array.isArray(d.measureResult)
+        && typeof d.measureResult.fillPercent === 'number') ? enrichMeasurement(d.measureResult) : null;
       var layerFocusState = React.useState(0);
       var layerFocus = layerFocusState[0];
       var setLayerFocus = layerFocusState[1];
@@ -6674,7 +6678,7 @@
       var volumeRepresentations = buildVolumeRepresentations(measureResult);
       var activeVolumeRepresentation = volumeRepresentations.find(function(view) { return view.key === volumeRepresentationKey; }) || volumeRepresentations[0] || null;
       var predictionStrategy = d.predictionStrategy || '';
-      var volumeRepresentationVisitedKeys = d.volumeRepresentationVisitedKeys || [];
+      var volumeRepresentationVisitedKeys = Array.isArray(d.volumeRepresentationVisitedKeys) ? d.volumeRepresentationVisitedKeys : [];
       var representationExploration = buildRepresentationExploration(volumeRepresentations, volumeRepresentationVisitedKeys, activeVolumeRepresentation && activeVolumeRepresentation.key);
       var recommendedVolumeRepresentation = recommendVolumeRepresentation(measureResult, predictionResult, volumeRepresentations);
       var predictionReason = d.predictionReason || '';

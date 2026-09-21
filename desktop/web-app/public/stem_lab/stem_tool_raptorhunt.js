@@ -401,7 +401,7 @@
     '.rh-flight-species-profile-label{display:block;color:#a5f3fc;font:800 9px/1.1 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;}',
     '.rh-flight-species-profile-value{display:block;margin-top:3px;color:#fff;font:900 12px/1.15 ui-monospace,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
     '.rh-flight-telemetry-strip{position:absolute;z-index:12;top:10px;left:50%;transform:translateX(-50%);display:flex;max-width:calc(100% - 20px);overflow:hidden;border:1px solid rgba(103,232,249,.72);border-radius:11px;background:rgba(2,6,23,.86);box-shadow:0 8px 24px rgba(0,0,0,.28);backdrop-filter:blur(6px);pointer-events:none;}',
-    '.rh-flight-state{position:absolute;z-index:13;top:64px;left:10px;display:inline-flex;align-items:center;gap:6px;min-height:25px;padding:5px 8px;border:1px solid rgba(148,163,184,.62);border-radius:999px;background:rgba(2,6,23,.84);color:#e2e8f0;font:900 9px/1 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 5px 14px rgba(0,0,0,.24);pointer-events:none;}.rh-flight-state::before{content:"";width:6px;height:6px;border-radius:50%;background:#94a3b8;box-shadow:0 0 8px currentColor;}.rh-flight-state[data-flight-state="glide"]{border-color:rgba(103,232,249,.68);color:#cffafe;}.rh-flight-state[data-flight-state="glide"]::before{background:#67e8f9;}.rh-flight-state[data-flight-state="climb"],.rh-flight-state[data-flight-state="thermal"]{border-color:rgba(74,222,128,.72);color:#dcfce7;}.rh-flight-state[data-flight-state="climb"]::before,.rh-flight-state[data-flight-state="thermal"]::before{background:#4ade80;}.rh-flight-state[data-flight-state="thermal"]::after{content:" · LIFT";font-size:8px;letter-spacing:.06em;color:#86efac;}.rh-flight-state[data-flight-state="dive"],.rh-flight-state[data-flight-state="descent"]{border-color:rgba(251,191,36,.82);color:#fef3c7;}.rh-flight-state[data-flight-state="dive"]::before,.rh-flight-state[data-flight-state="descent"]::before{background:#fbbf24;}.rh-flight-state[data-flight-state="pull-up"]{border-color:rgba(244,114,182,.78);color:#fce7f3;}.rh-flight-state[data-flight-state="pull-up"]::before{background:#f472b6;}.rh-flight-state[data-flight-state="landed"],.rh-flight-state[data-flight-state="stunned"]{border-color:rgba(251,146,60,.78);color:#ffedd5;}.rh-flight-state[data-flight-state="landed"]::before,.rh-flight-state[data-flight-state="stunned"]::before{background:#fb923c;}.rh-flight-state[data-flight-state="paused"]{border-color:rgba(148,163,184,.78);color:#e2e8f0;}.rh-flight-state[data-flight-state="paused"]::before{background:#cbd5e1;}',
+    '.rh-flight-state{position:absolute;z-index:13;top:64px;left:10px;display:inline-flex;align-items:center;gap:6px;min-height:25px;padding:5px 8px;border:1px solid rgba(148,163,184,.62);border-radius:999px;background:rgba(2,6,23,.84);color:#e2e8f0;font:900 9px/1 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 5px 14px rgba(0,0,0,.24);pointer-events:none;}.rh-flight-state::before{content:"";width:6px;height:6px;border-radius:50%;background:#94a3b8;box-shadow:0 0 8px currentColor;}.rh-flight-state[data-flight-state="glide"]{border-color:rgba(103,232,249,.68);color:#cffafe;}.rh-flight-state[data-flight-state="glide"]::before{background:#67e8f9;}.rh-flight-state[data-flight-state="climb"],.rh-flight-state[data-flight-state="thermal"]{border-color:rgba(74,222,128,.72);color:#dcfce7;}.rh-flight-state[data-flight-state="climb"]::before,.rh-flight-state[data-flight-state="thermal"]::before{background:#4ade80;}.rh-flight-state[data-flight-state="thermal"]::after{content:" · LIFT";font-size:8px;letter-spacing:.06em;color:#86efac;}.rh-flight-state[data-flight-state="dive"],.rh-flight-state[data-flight-state="descent"]{border-color:rgba(251,191,36,.82);color:#fef3c7;}.rh-flight-state[data-flight-state="dive"]::before,.rh-flight-state[data-flight-state="descent"]::before{background:#fbbf24;}.rh-flight-state[data-flight-state="pull-up"]{border-color:rgba(244,114,182,.78);color:#fce7f3;}.rh-flight-state[data-flight-state="pull-up"]::before{background:#f472b6;}.rh-flight-state[data-flight-state="landed"],.rh-flight-state[data-flight-state="stunned"]{border-color:rgba(251,146,60,.78);color:#ffedd5;}.rh-flight-state[data-flight-state="landed"]::before,.rh-flight-state[data-flight-state="stunned"]::before{background:#fb923c;}.rh-flight-state[data-flight-state="paused"]{border-color:rgba(148,163,184,.78);color:#e2e8f0;}.rh-flight-state[data-flight-state="paused"]::before{background:#cbd5e1;}.rh-flight-state[data-flight-state="stunned"]::before{width:10px;height:10px;flex:0 0 10px;background:conic-gradient(#fdba74 var(--rh-recovery-progress,0%),rgba(251,146,60,.2) 0);mask:radial-gradient(farthest-side,transparent 55%,#000 60%);box-shadow:none;}@media(forced-colors:active){.rh-flight-state[data-flight-state="stunned"]::before{background:CanvasText;mask:none;}}',
     '.rh-flight-wind{position:absolute;z-index:13;top:94px;left:10px;display:inline-flex;align-items:center;gap:5px;min-height:22px;padding:4px 7px;border:1px solid rgba(103,232,249,.48);border-radius:7px;background:rgba(2,6,23,.72);color:#bae6fd;font:800 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.04em;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none;}.rh-flight-wind::before{content:"↑";display:inline-block;flex:0 0 11px;width:11px;text-align:center;color:#67e8f9;font-size:11px;transform:rotate(var(--rh-wind-angle,0deg));}.rh-flight-wind[data-wind-flow="calm"]::before{content:"·";transform:none;}.rh-flight-wind[data-wind-state="thermal"]{border-color:rgba(74,222,128,.72);color:#dcfce7;}.rh-flight-wind[data-wind-state="thermal"]::before{color:#4ade80;}',
     '.rh-flight-altitude-gauge{position:absolute;z-index:13;top:50%;right:10px;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%);pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.8));}.rh-flight-altitude-label{color:#bae6fd;font:900 8px/1 ui-sans-serif,system-ui;letter-spacing:.12em;}.rh-flight-altitude-track{position:relative;width:8px;height:112px;border:1px solid rgba(148,163,184,.72);border-radius:999px;background:rgba(2,6,23,.78);overflow:visible;}.rh-flight-altitude-track::before,.rh-flight-altitude-track::after{content:"";position:absolute;left:12px;width:5px;border-top:1px solid rgba(148,163,184,.62);}.rh-flight-altitude-track::before{top:25%;}.rh-flight-altitude-track::after{top:50%;}.rh-flight-altitude-fill{position:absolute;right:0;bottom:0;left:0;height:0;border-radius:inherit;background:linear-gradient(0deg,#f97316,#fbbf24 48%,#67e8f9);transition:height .18s linear,background .18s linear;}.rh-flight-altitude-marker{position:absolute;left:50%;bottom:0;width:16px;height:3px;transform:translate(-50%,50%);border-radius:99px;background:#fff7ed;box-shadow:0 0 8px rgba(251,191,36,.85);transition:bottom .18s linear,background .18s linear;}.rh-flight-altitude-value{min-width:36px;color:#f8fafc;font:800 9px/1 ui-monospace,Menlo,monospace;text-align:center;white-space:nowrap;}.rh-flight-altitude-gauge[data-altitude-state="low"] .rh-flight-altitude-track{border-color:rgba(248,113,113,.92);}.rh-flight-altitude-gauge[data-altitude-state="low"] .rh-flight-altitude-fill{background:#f87171;}.rh-flight-altitude-gauge[data-altitude-state="low"] .rh-flight-altitude-marker{background:#fecaca;box-shadow:0 0 10px rgba(248,113,113,.9);}.rh-flight-altitude-gauge[data-altitude-state="high"] .rh-flight-altitude-track{border-color:rgba(103,232,249,.82);}',
     '.rh-talon-ratio-panel{display:grid;gap:10px;padding:11px 12px;border:1px solid rgba(251,146,60,.42);border-radius:11px;background:linear-gradient(110deg,rgba(67,20,7,.5),rgba(15,23,42,.78));}.rh-talon-ratio-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;color:#fed7aa;font:800 10px/1.25 ui-sans-serif,system-ui;letter-spacing:.04em;text-transform:uppercase;}.rh-talon-ratio-head strong{color:#fef3c7;font:800 9px/1.25 ui-monospace,Menlo,monospace;letter-spacing:0;text-transform:none;}',
@@ -14999,6 +14999,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         //   gliding ≈ 4 kcal/min ≈ 0.067 kcal/s (very efficient)
         //   flapping ≈ 60 kcal/min ≈ 1.0 kcal/s (15× more than glide!)
         //   stooping ≈ 20 kcal/min ≈ 0.33 kcal/s (moderate — drag-limited)
+        var crashRecoveryDuration = 3;
         var raptor = {
           x: 0, y: startY, z: 80,
           yaw: Math.PI, pitch: mission.id === 'highStoop' ? -0.18 : 0,
@@ -15712,12 +15713,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           });
         }
         function updateFlightState(nextState) {
-          if (!flightStateEl || (nextState === lastFlightState && flightStateEl.dataset.flightState === nextState)) return;
+          if (!flightStateEl) return;
+          var stateChanged = nextState !== lastFlightState || flightStateEl.dataset.flightState !== nextState;
+          if (!stateChanged && nextState !== 'stunned') return;
           var labels = { glide: 'Glide', climb: 'Climb', thermal: 'Thermal', descent: 'Descent', dive: 'Stoop', 'pull-up': 'Pull-up', perched: 'Perched', landed: 'Landed', stunned: 'Stunned', paused: 'Paused' };
+          var stateLabel = labels[nextState] || nextState;
+          if (nextState === 'stunned' && missionOutcome === 'active') {
+            var recoveryRemaining = Math.max(0, raptor.crashTimer || 0);
+            var recoverySeconds = Math.max(1, Math.ceil(recoveryRemaining - 1e-9));
+            stateLabel = 'Recovering · ' + recoverySeconds + 's';
+            var recoveryDescription = 'Recovering: ' + recoverySeconds + (recoverySeconds === 1 ? ' second' : ' seconds') + ' until takeoff is available';
+            if (flightStateEl.getAttribute('aria-label') !== recoveryDescription) flightStateEl.setAttribute('aria-label', recoveryDescription);
+            flightStateEl.style.setProperty('--rh-recovery-progress', (100 * Math.max(0, Math.min(1, 1 - recoveryRemaining / crashRecoveryDuration))).toFixed(1) + '%');
+          } else {
+            flightStateEl.removeAttribute('aria-label');
+            flightStateEl.style.removeProperty('--rh-recovery-progress');
+          }
+          if (flightStateEl.textContent !== stateLabel) flightStateEl.textContent = stateLabel;
+          // Countdown paints must not publish another state transition or flight event.
+          if (!stateChanged) return;
           lastFlightState = nextState;
           notifyUI({ flightState: nextState });
           flightStateEl.dataset.flightState = nextState;
-          flightStateEl.textContent = labels[nextState] || nextState;
           recordFlightEvent('flight', labels[nextState] || nextState, nextState === 'thermal' ? 'Lift is carrying the bird' : '');
         }
         function setPaused(nextPaused, announcement) {
@@ -15910,6 +15927,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           rhAnnounce(soundEnabled ? 'Sound on' : 'Sound off');
         }
         function onKeyDown(event) {
+          // Preserve system shortcuts and text composition; Shift remains a flight control.
+          if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return;
           var raw = String(event.key || '').toLowerCase();
           var action = controlScheme.keys[raw];
           if (!action) return;  // keys outside the active preset do nothing
@@ -16972,8 +16991,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function targetRangeLabel(distance) {
           if (!isFinite(distance)) return '—';
           distance = Math.max(0, distance);
-          if (distance <= 10) return (Math.ceil(distance * 10) / 10).toFixed(1) + ' m';
-          if (distance <= 50) return Math.ceil(distance) + ' m';
+          // Ignore arithmetic noise at exact display boundaries while rounding up.
+          if (distance <= 10) return (Math.ceil(distance * 10 - 1e-9) / 10).toFixed(1) + ' m';
+          if (distance <= 50) return Math.ceil(distance - 1e-9) + ' m';
           return '~' + Math.round(distance / 5) * 5 + ' m';
         }
         function targetMarkerLabel(state, edge, ready, recovering) {
@@ -17932,7 +17952,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               pm2.beaconCap.visible = selected;
               if (selected) {
                 pm2.beaconCap.material.color.setHex(nextTargetState === 'ready' ? 0x4ade80 : nextTargetState === 'close' ? 0xfde047 : 0xfca5a5);
-                pm2.beaconCap.scale.setScalar(_rmFX ? 1 : 1 + Math.sin(motionNow * 0.006 + pm2.bobPhase) * 0.08);
+                pm2.beaconCap.scale.setScalar(_rmFX ? 1 : 0.6 + Math.sin(motionNow * 0.005 + pm2.bobPhase) * 0.4);
               } else {
                 pm2.beaconCap.scale.setScalar(1);
               }
@@ -18467,7 +18487,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               rhAnnounce('Crash! Stunned. Wait for recovery. ' + takeoffControlHint() + '.');
               energyEventLog.push({ kind: 'ground-contact', msg: '💥 CRASH — stunned ~3s', t: motionNow, color: '#fca5a5' });
               raptor.crashed = true;
-              raptor.crashTimer = 3.0;
+              raptor.crashTimer = crashRecoveryDuration;
               raptor.y = minY;
               raptor.speed = 0;
               raptor.pitch = 0;
@@ -18601,8 +18621,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           updateFlightFov(dt, strikeEnvelope, false);
           updateFlightCamera(dt, diveKey, visualTurnRate, strikeEnvelope, false);
-          var targetInfo = updateTargetFeedback(now, true);
-          var lockTarget = targetInfo ? targetInfo.prey : null;
           updateFlightTrail(dt);
           updateAirflowLines(now);
           updateWingtipVortices(now);
@@ -18661,23 +18679,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           distantTerrainGroup.position.set(0, 0, 0);
           sunSprite.position.copy(camera.position).addScaledVector(sunDir, sunDistance);
           moonSprite.position.copy(camera.position).addScaledVector(moonDir, moonDistance);
-
-          // Resolve gaze in the bird's actual local frame, including pitch and banking.
-          raptorGroup.updateWorldMatrix(true,false);
-          gazeOrigin.copy(headGroup.position).applyMatrix4(raptorGroup.matrixWorld);
-          var previousGazeTarget=gazeTarget;
-          gazeTarget=null;
-          if(!_rmFX&&!diveKey&&!raptor.crashed) {
-            // The visible head follows the same prey as the reticle. With assist off,
-            // nearby natural gaze still respects terrain and the forward field.
-            if(targetLockOn)gazeTarget=lockTarget;
-            else gazeTarget=selectRaptorGazeTarget(preyMeshes,previousGazeTarget,gazeOrigin,gazePreyVisible);
-          }
-          if(gazeTarget){gazeInverse.copy(raptorGroup.quaternion).invert();gazeDirection.copy(gazeTarget.mesh.position).sub(gazeOrigin).applyQuaternion(gazeInverse);}
-          var scanningFromRest=raptor.landed&&!raptor.crashed&&!gazeTarget;
-          if(scanningFromRest)gazeDirection.set(0,Math.sin(raptor.pitch),Math.cos(raptor.pitch));
-          advanceRaptorGaze(gazeState,gazeDirection,!!gazeTarget||scanningFromRest,dt,_rmFX);
-          headMesh.rotation.set(gazeState.pitch,gazeState.yaw,0,'YXZ');
 
           // ── NEW v0.26: Tree sway (gentle wind motion) ──
           // Forest instances remain static, avoiding hundreds of per-frame
@@ -18922,10 +18923,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 else pm2.animation.tail.rotation.z = _rmFX ? 0 : Math.sin(motionPhase * 0.8) * (pm2.animation.kind==='bird'?0.06*preyPose.spread:0.22);
               }
             }
-            if (pm2.beaconCap && pm2.beaconCap.visible) {
-              var pulse = _rmFX ? 1 : 0.6 + Math.sin(motionNow * 0.005 + pm2.bobPhase) * 0.4;
-              pm2.beaconCap.scale.set(pulse, pulse, pulse);
-            }
             // Despawn ancient prey
             if (motionNow - pm2.spawnedAt > 60000) {
               scene.remove(pm2.mesh);
@@ -18942,6 +18939,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var fresh = spawnPrey();
             if (fresh) preyMeshes.push(fresh);
           }
+
+          // Resolve feedback after prey move/spawn/despawn so markers, range and gaze
+          // all describe the same prey positions that this frame will render.
+          var targetInfo = updateTargetFeedback(now, true);
+          var lockTarget = targetInfo ? targetInfo.prey : null;
+          // Resolve gaze in the bird's actual local frame, including pitch and banking.
+          raptorGroup.updateWorldMatrix(true,false);
+          gazeOrigin.copy(headGroup.position).applyMatrix4(raptorGroup.matrixWorld);
+          var previousGazeTarget=gazeTarget;
+          gazeTarget=null;
+          if(!_rmFX&&!diveKey&&!raptor.crashed) {
+            // The visible head follows the same prey as the reticle. With assist off,
+            // nearby natural gaze still respects terrain and the forward field.
+            if(targetLockOn)gazeTarget=lockTarget;
+            else gazeTarget=selectRaptorGazeTarget(preyMeshes,previousGazeTarget,gazeOrigin,gazePreyVisible);
+          }
+          if(gazeTarget){gazeInverse.copy(raptorGroup.quaternion).invert();gazeDirection.copy(gazeTarget.mesh.position).sub(gazeOrigin).applyQuaternion(gazeInverse);}
+          var scanningFromRest=raptor.landed&&!raptor.crashed&&!gazeTarget;
+          if(scanningFromRest)gazeDirection.set(0,Math.sin(raptor.pitch),Math.cos(raptor.pitch));
+          advanceRaptorGaze(gazeState,gazeDirection,!!gazeTarget||scanningFromRest,dt,_rmFX);
+          headMesh.rotation.set(gazeState.pitch,gazeState.yaw,0,'YXZ');
 
           // ── HUD (v0.29 WCAG rewrite — explicit labels, bars, high contrast) ──
           evaluateMission();

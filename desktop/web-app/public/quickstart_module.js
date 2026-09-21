@@ -25,7 +25,6 @@
   var CheckCircle2 = window.CheckCircle2 || _IconFallback;
   var Download = window.Download || _IconFallback;
   var ExternalLink = window.ExternalLink || _IconFallback;
-  var FileText = window.FileText || _IconFallback;
   var Globe = window.Globe || _IconFallback;
   var GraduationCap = window.GraduationCap || _IconFallback;
   var HelpCircle = window.HelpCircle || _IconFallback;
@@ -457,16 +456,49 @@ const QuickStartWizard = React.memo(({
   // so a teacher who has imported nothing never sees a control that would do
   // nothing for them.
   const [wizOwnSourceCount, setWizOwnSourceCount] = useState(0);
+  const [wizImporting, setWizImporting] = useState(false);
+  const [wizImportMsg, setWizImportMsg] = useState('');
+  const [wizImportFailures, setWizImportFailures] = useState([]);
+  const wizOwnSourcesApi = typeof window !== 'undefined' && window.AlloOwnSources || null;
+
+  // Same import path as the source panel, through the shared helper: Lumen's
+  // adapter extracts text in this browser and only the text is stored.
+  const handleWizImportOwnSources = async event => {
+    const input = event && event.target;
+    const files = input && input.files ? Array.from(input.files) : [];
+    if (!files.length) return;
+    if (!wizOwnSourcesApi || typeof wizOwnSourcesApi.importFiles !== 'function') {
+      setWizImportMsg(t('input.my_sources_unavailable'));
+      return;
+    }
+    setWizImporting(true);
+    setWizImportMsg('');
+    setWizImportFailures([]);
+    try {
+      const outcome = await wizOwnSourcesApi.importFiles(files, {});
+      setWizOwnSourceCount(outcome.count);
+      // Name the files that did not make it: "2 of 3 imported" leaves the
+      // teacher guessing which document to fix.
+      setWizImportFailures((outcome.results || []).filter(row => row && !row.ok).map(row => [row.name, row.message].filter(Boolean).join(' — ')));
+      if (outcome.reason === 'storage') setWizImportMsg(t('input.my_sources_storage_failed'));else if (outcome.imported > 0) setWizImportMsg(t('input.my_sources_imported', {
+        count: outcome.imported
+      }));else setWizImportMsg(t('input.my_sources_none_added'));
+    } catch (_) {
+      setWizImportMsg(t('input.my_sources_none_added'));
+    } finally {
+      setWizImporting(false);
+      // Clear the input so choosing the same file again still fires onChange.
+      if (input) input.value = '';
+    }
+  };
   useEffect(() => {
     if (!isOpen) return undefined;
     let cancelled = false;
     (async () => {
       try {
-        const E = typeof window !== 'undefined' && window.LumenEvidence;
-        if (!E || typeof E.createProjectStore !== 'function') return;
-        const store = E.createProjectStore(E.readingScope ? E.readingScope({}) : {});
-        const project = store && typeof store.load === 'function' ? await store.load() : null;
-        const n = project && Array.isArray(project.sources) ? project.sources.filter(s => s && s.active !== false).length : 0;
+        const OS = typeof window !== 'undefined' && window.AlloOwnSources;
+        if (!OS || typeof OS.countSources !== 'function') return;
+        const n = await OS.countSources({});
         if (!cancelled) setWizOwnSourceCount(n);
       } catch (_) {/* the toggle simply stays hidden */}
     })();
@@ -1718,7 +1750,34 @@ const QuickStartWizard = React.memo(({
     "aria-hidden": "true"
   }), " ", t('input.use_my_sources'), /*#__PURE__*/React.createElement("span", {
     className: "font-normal text-slate-500"
-  }, "(", wizOwnSourceCount, ")"))), /*#__PURE__*/React.createElement("button", {
+  }, "(", wizOwnSourceCount, ")"))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-purple-50 p-3 rounded-xl border border-purple-100"
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: "wiz-own-sources-import",
+    className: "inline-flex min-h-11 items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer select-none rounded focus-within:ring-2 focus-within:ring-purple-500"
+  }, /*#__PURE__*/React.createElement(Upload, {
+    size: 16,
+    className: "text-purple-500",
+    "aria-hidden": "true"
+  }), wizImporting ? t('input.my_sources_importing') : t('input.my_sources_add')), /*#__PURE__*/React.createElement("input", {
+    id: "wiz-own-sources-import",
+    type: "file",
+    multiple: true,
+    className: "sr-only",
+    accept: wizOwnSourcesApi ? wizOwnSourcesApi.acceptAttribute() : undefined,
+    disabled: wizImporting,
+    onChange: handleWizImportOwnSources
+  }), /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    className: "text-xs text-slate-600 leading-relaxed"
+  }, wizImportMsg || (wizOwnSourceCount > 0 ? t('input.my_sources_stored', {
+    count: wizOwnSourceCount
+  }) : t('input.my_sources_empty'))), wizImportFailures.length > 0 && /*#__PURE__*/React.createElement("ul", {
+    className: "text-xs text-amber-900 leading-relaxed list-disc ms-4"
+  }, wizImportFailures.map((failure, index) => /*#__PURE__*/React.createElement("li", {
+    key: index
+  }, failure)))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.next'),
     onClick: () => setStep(4),

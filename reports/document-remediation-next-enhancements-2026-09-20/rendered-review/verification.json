@@ -1,0 +1,32 @@
+{
+  "exitCode": 0,
+  "stats": {
+    "startTime": "2026-09-20T14:55:12.786Z",
+    "duration": 159403.43600000002,
+    "expected": 174,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": 174,
+  "unexpected": 0,
+  "retries": 0,
+  "files": [
+    {
+      "path": "dev-tools/rendered_document_fidelity.cjs",
+      "sha256": "5feffb60050107ceb43b97820561bb944fb750ba7ff77b20bb0c88541a86076a"
+    },
+    {
+      "path": "dev-tools/document_html_dependencies.cjs",
+      "sha256": "57310b21a8882430d66027fa5c1e2563289486980780267219141d72a62750ad"
+    },
+    {
+      "path": "docs/rendered-document-fidelity.md",
+      "sha256": "e815134502c249341cf8ba7174366a60d3bcd281f96afa6077f76acad7da1be8"
+    },
+    {
+      "path": "tests/e2e/rendered_native_dom_regressions.spec.ts",
+      "sha256": "59f606b3a0ba3ad9c7f637405e441f3a428baef98ced6903e2fc178cb488d834"
+    }
+  ]
+}

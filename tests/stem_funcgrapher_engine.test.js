@@ -209,7 +209,9 @@ describe('render-surface guards (source pins)', () => {
   });
 
   it('the two AI panels no longer share one output key', () => {
-    expect(src).toContain("d.aiTutorText || ''");
+    // Type-guarded now (an object reached a React child); the claim is that
+    // aiTutorText is read with an empty-string default.
+    expect(src).toMatch(/d\.aiTutorText[^;)]*''/);
     // Exactly two writers: the clear-on-request and the response setter.
     expect(src.split("upd('aiTutorText',").length - 1).toBe(2);
     // The tutor panel must not read or write the button's aiExplain key anymore.

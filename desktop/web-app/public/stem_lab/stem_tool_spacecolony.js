@@ -655,7 +655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
 
           // ══ HoMM-Inspired Turn Phase System ══
           var turnPhase = d.turnPhase || (turn > 0 ? 'day' : null);
-          var actionPoints = d.actionPoints !== undefined ? d.actionPoints : 3;
+          var actionPoints = (typeof d.actionPoints === 'number' && isFinite(d.actionPoints)) ? d.actionPoints : 3;
           var maxAP = 3 + (buildings.indexOf('comms') >= 0 ? 1 : 0);
           var fateRoll = d.fateRoll || null;
           var dawnData = d.dawnData || null;

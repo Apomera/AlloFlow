@@ -241,6 +241,14 @@ or returns null.
 Instead the two fixed files were removed from the baseline by hand (4,800 → **4,638**), leaving
 `report_writer_module.js` at 99 so the gate still reports that regression to whoever owns it.
 
+**Follow-up (same day):** that session has since committed its work, so
+`report_writer_module.js` is at 100 in HEAD and the gate is red on it — deliberately. The
+baseline was left at 99 rather than raised, because raising another team's number is their
+call and silently absorbing it is exactly what this ratchet exists to prevent. To clear it,
+its owner should either route `'Close report writer'` (line 5241) through the translation
+helper the file already uses, or re-baseline that one entry consciously with
+`--update --allow-increase`.
+
 ## Recommended order
 
 1. ~~Add a gate for hardcoded `aria-label` literals.~~ **Done** — see above. Growth is blocked.

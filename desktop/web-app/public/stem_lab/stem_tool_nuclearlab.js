@@ -245,7 +245,7 @@
     { sym: 'Po-218', hl: '3.10 minutes',    kind: 'alpha', note: 'Once radon is in your lungs it decays to solid polonium, which sticks to lung tissue and keeps emitting alphas from the inside. The radon is the delivery mechanism; its daughters do most of the damage.' },
     { sym: 'Pb-214', hl: '26.8 minutes',    kind: 'beta',  note: 'Lead-214, still radioactive — most lead isotopes are not.' },
     { sym: 'Bi-214', hl: '19.9 minutes',    kind: 'beta',  note: 'Bismuth. Its gamma emission is what a radon detector actually measures.' },
-    { sym: 'Po-214', hl: '164 microseconds',kind: 'alpha', note: 'Blink and it is gone. Half-lives in this chain span 24 orders of magnitude, from microseconds to billions of years.' },
+    { sym: 'Po-214', hl: '164 microseconds',kind: 'alpha', note: 'Blink and it is gone. Half-lives in this chain span about 21 orders of magnitude, from microseconds to billions of years.' },
     { sym: 'Pb-210', hl: '22.3 y',          kind: 'beta',  note: 'A long pause. Used to date lake sediments and glacier ice over the last century or so.' },
     { sym: 'Bi-210', hl: '5.01 days',       kind: 'beta',  note: 'Bismuth again, briefly.' },
     { sym: 'Po-210', hl: '138.4 days',      kind: 'alpha', note: 'Polonium-210. Intensely radioactive, and notorious as a poison because intact skin blocks most alpha radiation while internal contamination can deliver a severe dose to a tiny volume of tissue.' },
@@ -1026,6 +1026,10 @@
   // ═══════════════════════════════════════════════════════════════════════
   var RX_BETA = 0.0065;          // delayed neutron fraction, U-235
   var RX_LAMBDA_D = 0.0767;      // one-group delayed precursor decay constant, /s
+  var RX_DECAY_K = 0.0781;       // decay-heat coefficient in k*t^-0.2, fitted to published PWR curves
+  var RX_TIME_COMPRESSION = 3.5; // scenario pacing, NOT thermal mass: a real core takes ~8 min to reach
+                                 // 1200 C adiabatically and hours with water in the vessel. This puts the
+                                 // uncooled blackout failure at ~114 s so it fits the 120 s hold.
   var RX_GEN = 1e-4;             // prompt neutron generation time, s
   var RX_T_REF = 290;            // reference coolant temperature, C
   var RX_T_CLAD = 1200;          // zirconium cladding starts to fail, C
@@ -1140,8 +1144,13 @@
   }
 
   function rxDecayHeat(p0, secs) {
-    // Wigner-Way approximation, valid from about 10 s after shutdown
-    return p0 * 0.065 * Math.pow(Math.max(secs, 10), -0.2) / Math.pow(10, -0.2);
+    // Decay heat as k * t^-0.2, the standard teaching form. k = 0.0781 is the
+    // least-squares fit to published PWR values after long operation (~5% at
+    // 10 s, ~3% at 100 s, ~1.5% at 1 h, ~0.8% at 1 day) and sits within a few
+    // percent of each. The curve passes 6.5% about 2.5 s after shutdown, which
+    // is the figure the blackout brief quotes. Clamped at 1 s: a power law
+    // diverges at zero, and nothing here models the prompt drop before that.
+    return p0 * RX_DECAY_K * Math.pow(Math.max(secs, 1), -0.2);
   }
 
   // ── 3D core. Geometry only; the host owns WebGL, orbit, picking and fallback.
@@ -2476,7 +2485,7 @@
         // by doing nothing at all. With cooling genuinely lost there is no
         // equilibrium below melting — which is the entire lesson of Fukushima.
         var removal = (s.pumps ? 4.5 : 0.002) * (s.t - RX_T_REF);
-        s.t += (s.power * 0.9 - removal) * dt * 2.6;
+        s.t += (s.power * 0.9 - removal) * dt * RX_TIME_COMPRESSION;
         s.t = Math.max(20, Math.min(4000, s.t));
         if (s.t > s.peakT) s.peakT = s.t;
 

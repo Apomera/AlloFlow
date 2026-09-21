@@ -1,0 +1,22 @@
+{
+  "stem.beehive.mite_evidence": "Mite Evidence",
+  "stem.beehive.mite_evidence_description": "Self-review a prediction, evidence, and explanation after an effective treatment at model mite pressure 20 or above. This recognizes reflection, not treatment frequency.",
+  "stem.beehive.recorded_flight_checkpoints": "Recorded flight checkpoints",
+  "stem.beehive.read_the_flight_scene_guides": "Read the flight scene guides",
+  "stem.beehive.plant_close_ups": "Plant close-ups",
+  "stem.beehive.explore_butterfly_anatomy": "Explore butterfly anatomy",
+  "stem.beehive.paused_scene_inspection": "Paused scene inspection",
+  "stem.beehive.modeled_updraft_conditions": "Modeled updraft conditions",
+  "stem.beehive.investigation_progress": "Investigation progress",
+  "stem.beehive.what_would_you_need_to_observe_at_real_nests": "What would you need to observe at real nests and flowers?",
+  "stem.beehive.choose_an_rts_field_objective": "Choose an RTS field objective",
+  "stem.beehive.show_colony_routes": "Show colony routes",
+  "stem.beehive.3d_map_overlays": "3D map overlays",
+  "stem.beehive.latest_rts_action_or_cycle_outcome": "Latest RTS action or cycle outcome",
+  "stem.beehive.cancel_placement_escape": "Cancel placement (Escape)",
+  "stem.beehive.before_and_after_evidence": "Before and after evidence",
+  "stem.beehive.saved_shared_patch_map_investigation": "Saved shared-patch map investigation",
+  "stem.beehive.across_all_three_perspectives_i_found": "Across all three perspectives, I found...",
+  "stem.beehive.advance_up_to_5_days_pauses_if_a_colony_even": "Advance up to 5 days; pauses if a colony event needs a decision",
+  "stem.beehive.advance_up_to_30_days_pauses_if_a_colony_eve": "Advance up to 30 days; pauses if a colony event needs a decision"
+}

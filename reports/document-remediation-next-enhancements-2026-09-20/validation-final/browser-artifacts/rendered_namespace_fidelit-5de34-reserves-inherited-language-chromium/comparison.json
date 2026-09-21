@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "175fca950db44c70342f934491108fcf4b6528727f35cec25a3a5f0e184cab43",
+    "bytes": 306
+  },
+  "candidate": {
+    "sha256": "0445486b863a22478973b11492766d09b436cd145aa78f1d0b3d81243319afaf",
+    "bytes": 321
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 405.50380000000587,
+  "status": "passed",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "p",
+      "sourceSelector": "#p",
+      "candidateSelector": "#p",
+      "status": "passed",
+      "properties": [
+        {
+          "property": "language",
+          "status": "passed",
+          "source": "fr",
+          "candidate": "fr"
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

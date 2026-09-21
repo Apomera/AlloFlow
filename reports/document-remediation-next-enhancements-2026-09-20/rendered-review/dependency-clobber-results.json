@@ -1,0 +1,184 @@
+[
+  {
+    "name": "attributes",
+    "status": "passed",
+    "resources": {
+      "source": {
+        "blocked": 0,
+        "scripts": 0,
+        "unresolved": 0,
+        "animations": 0,
+        "failures": []
+      },
+      "candidate": {
+        "blocked": 0,
+        "scripts": 0,
+        "unresolved": 0,
+        "animations": 0,
+        "failures": []
+      }
+    },
+    "report": {
+      "schemaVersion": 1,
+      "kind": "rendered-html-fidelity",
+      "source": {
+        "sha256": "b2e3db1c47e78caf5763d11b7b50a73091c7d894aa458c1aa35baa2bf80a6454",
+        "bytes": 119
+      },
+      "candidate": {
+        "sha256": "b2e3db1c47e78caf5763d11b7b50a73091c7d894aa458c1aa35baa2bf80a6454",
+        "bytes": 119
+      },
+      "execution": {
+        "complete": true
+      },
+      "browserVersion": "148.0.7778.96",
+      "viewport": {
+        "width": 1100,
+        "height": 800
+      },
+      "media": "screen",
+      "profileId": "default",
+      "durationMs": 293.24060000000003,
+      "status": "passed",
+      "coverage": {
+        "requested": 1,
+        "inspected": 1,
+        "complete": true,
+        "wholeDocument": false,
+        "reasons": []
+      },
+      "resources": {
+        "source": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0,
+          "failures": []
+        },
+        "candidate": {
+          "blocked": 0,
+          "scripts": 0,
+          "unresolved": 0,
+          "animations": 0,
+          "failures": []
+        }
+      },
+      "checks": [
+        {
+          "id": "form-text",
+          "sourceSelector": "#checkpoint",
+          "candidateSelector": "#checkpoint",
+          "status": "passed",
+          "properties": [
+            {
+              "property": "text",
+              "status": "passed",
+              "source": "Required instruction",
+              "candidate": "Required instruction"
+            }
+          ]
+        }
+      ],
+      "humanValidation": "not-run",
+      "limitations": [
+        "Only the source-authored checkpoints and selected properties are assessed.",
+        "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+        "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+        "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+      ]
+    }
+  },
+  {
+    "name": "answer",
+    "status": "unavailable",
+    "resources": {
+      "source": {
+        "blocked": 0,
+        "scripts": 1,
+        "unresolved": 0,
+        "animations": 0,
+        "failures": []
+      },
+      "candidate": {
+        "blocked": 0,
+        "scripts": 1,
+        "unresolved": 0,
+        "animations": 0,
+        "failures": []
+      }
+    },
+    "report": {
+      "schemaVersion": 1,
+      "kind": "rendered-html-fidelity",
+      "source": {
+        "sha256": "d898f9b4a91b7e713b232d2fa800e23b88ffb7634ac0f37ae20cb48158340caf",
+        "bytes": 115
+      },
+      "candidate": {
+        "sha256": "d898f9b4a91b7e713b232d2fa800e23b88ffb7634ac0f37ae20cb48158340caf",
+        "bytes": 115
+      },
+      "execution": {
+        "complete": true
+      },
+      "browserVersion": "148.0.7778.96",
+      "viewport": {
+        "width": 1100,
+        "height": 800
+      },
+      "media": "screen",
+      "profileId": "default",
+      "durationMs": 259.66829999999993,
+      "status": "unavailable",
+      "coverage": {
+        "requested": 1,
+        "inspected": 1,
+        "complete": false,
+        "wholeDocument": false,
+        "reasons": [
+          "script-dependent-content"
+        ]
+      },
+      "resources": {
+        "source": {
+          "blocked": 0,
+          "scripts": 1,
+          "unresolved": 0,
+          "animations": 0,
+          "failures": []
+        },
+        "candidate": {
+          "blocked": 0,
+          "scripts": 1,
+          "unresolved": 0,
+          "animations": 0,
+          "failures": []
+        }
+      },
+      "checks": [
+        {
+          "id": "form-text",
+          "sourceSelector": "#checkpoint",
+          "candidateSelector": "#checkpoint",
+          "status": "passed",
+          "properties": [
+            {
+              "property": "text",
+              "status": "passed",
+              "source": "Required instruction",
+              "candidate": "Required instruction"
+            }
+          ]
+        }
+      ],
+      "humanValidation": "not-run",
+      "limitations": [
+        "Only the source-authored checkpoints and selected properties are assessed.",
+        "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+        "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+        "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+      ]
+    }
+  }
+]

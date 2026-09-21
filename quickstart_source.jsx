@@ -332,18 +332,51 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
   // so a teacher who has imported nothing never sees a control that would do
   // nothing for them.
   const [wizOwnSourceCount, setWizOwnSourceCount] = useState(0);
+  const [wizImporting, setWizImporting] = useState(false);
+  const [wizImportMsg, setWizImportMsg] = useState('');
+  const [wizImportFailures, setWizImportFailures] = useState([]);
+  const wizOwnSourcesApi = (typeof window !== 'undefined' && window.AlloOwnSources) || null;
+
+  // Same import path as the source panel, through the shared helper: Lumen's
+  // adapter extracts text in this browser and only the text is stored.
+  const handleWizImportOwnSources = async (event) => {
+    const input = event && event.target;
+    const files = input && input.files ? Array.from(input.files) : [];
+    if (!files.length) return;
+    if (!wizOwnSourcesApi || typeof wizOwnSourcesApi.importFiles !== 'function') {
+      setWizImportMsg(t('input.my_sources_unavailable'));
+      return;
+    }
+    setWizImporting(true);
+    setWizImportMsg('');
+    setWizImportFailures([]);
+    try {
+      const outcome = await wizOwnSourcesApi.importFiles(files, {});
+      setWizOwnSourceCount(outcome.count);
+      // Name the files that did not make it: "2 of 3 imported" leaves the
+      // teacher guessing which document to fix.
+      setWizImportFailures((outcome.results || [])
+        .filter((row) => row && !row.ok)
+        .map((row) => [row.name, row.message].filter(Boolean).join(' — ')));
+      if (outcome.reason === 'storage') setWizImportMsg(t('input.my_sources_storage_failed'));
+      else if (outcome.imported > 0) setWizImportMsg(t('input.my_sources_imported', { count: outcome.imported }));
+      else setWizImportMsg(t('input.my_sources_none_added'));
+    } catch (_) {
+      setWizImportMsg(t('input.my_sources_none_added'));
+    } finally {
+      setWizImporting(false);
+      // Clear the input so choosing the same file again still fires onChange.
+      if (input) input.value = '';
+    }
+  };
   useEffect(() => {
     if (!isOpen) return undefined;
     let cancelled = false;
     (async () => {
       try {
-        const E = typeof window !== 'undefined' && window.LumenEvidence;
-        if (!E || typeof E.createProjectStore !== 'function') return;
-        const store = E.createProjectStore(E.readingScope ? E.readingScope({}) : {});
-        const project = store && typeof store.load === 'function' ? await store.load() : null;
-        const n = project && Array.isArray(project.sources)
-          ? project.sources.filter((s) => s && s.active !== false).length
-          : 0;
+        const OS = typeof window !== 'undefined' && window.AlloOwnSources;
+        if (!OS || typeof OS.countSources !== 'function') return;
+        const n = await OS.countSources({});
         if (!cancelled) setWizOwnSourceCount(n);
       } catch (_) { /* the toggle simply stays hidden */ }
     })();
@@ -1365,6 +1398,39 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       </label>
                                   </div>
                                   )}
+                                  {/* The import control shows even at zero sources. The toggle
+                                      above hides when the corpus is empty, so without this a
+                                      teacher starting in Quick Start saw neither control and
+                                      had no way in at all. Extraction runs in this browser —
+                                      a document's bytes never leave the device. */}
+                                  <div className="bg-purple-50 p-3 rounded-xl border border-purple-100">
+                                      <label
+                                          htmlFor="wiz-own-sources-import"
+                                          className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer select-none rounded focus-within:ring-2 focus-within:ring-purple-500"
+                                      >
+                                          <Upload size={16} className="text-purple-500" aria-hidden="true"/>
+                                          {wizImporting ? t('input.my_sources_importing') : t('input.my_sources_add')}
+                                      </label>
+                                      <input
+                                          id="wiz-own-sources-import"
+                                          type="file"
+                                          multiple
+                                          className="sr-only"
+                                          accept={wizOwnSourcesApi ? wizOwnSourcesApi.acceptAttribute() : undefined}
+                                          disabled={wizImporting}
+                                          onChange={handleWizImportOwnSources}
+                                      />
+                                      <p role="status" aria-live="polite" className="text-xs text-slate-600 leading-relaxed">
+                                          {wizImportMsg || (wizOwnSourceCount > 0
+                                              ? t('input.my_sources_stored', { count: wizOwnSourceCount })
+                                              : t('input.my_sources_empty'))}
+                                      </p>
+                                      {wizImportFailures.length > 0 && (
+                                          <ul className="text-xs text-amber-900 leading-relaxed list-disc ms-4">
+                                              {wizImportFailures.map((failure, index) => <li key={index}>{failure}</li>)}
+                                          </ul>
+                                      )}
+                                  </div>
                                   <button type="button"
                                       aria-label={t('common.next')}
                                       onClick={() => setStep(4)}

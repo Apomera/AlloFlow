@@ -885,7 +885,7 @@ window.StemLab = window.StemLab || {
             var crRecentHistoryLabel = crRecentHistory.map(function (round, roundIndex) {
               return 'Round ' + (crHistoryCount - crRecentHistory.length + roundIndex + 1) + ': ' + (Number(round.score) || 0) + ' points';
             }).join(', ');
-            var crPatiencePct = d.crPatiencePct != null ? d.crPatiencePct : 100;
+            var crPatiencePct = (typeof d.crPatiencePct === 'number' && isFinite(d.crPatiencePct)) ? d.crPatiencePct : 100;
             var crIntro = d.crIntro != null ? d.crIntro : true;
             var crGameOver = d.crGameOver || false;
             var crPatienceTimer = d.crPatienceTimer || null;

@@ -1,0 +1,60 @@
+{
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 1.019367991845056,
+    "textRatio": 1,
+    "textLost": 0
+  },
+  "repaired": {
+    "submissions": 0,
+    "valid": false,
+    "payload": [
+      [
+        "getAttribute",
+        "Original"
+      ],
+      [
+        "answer",
+        ""
+      ]
+    ]
+  },
+  "evidence": [
+    {
+      "totalChunks": 1,
+      "shippedOriginalChunks": 0,
+      "deferredChunks": 0,
+      "candidateRejectionCount": 0,
+      "candidateRejections": []
+    }
+  ],
+  "source": {
+    "submissions": 0,
+    "valid": false,
+    "payload": [
+      [
+        "getAttribute",
+        "Original"
+      ],
+      [
+        "answer",
+        ""
+      ]
+    ]
+  },
+  "candidate": {
+    "submissions": 0,
+    "valid": false,
+    "payload": [
+      [
+        "getAttribute",
+        "Original"
+      ],
+      [
+        "answer",
+        ""
+      ]
+    ]
+  }
+}

@@ -2851,11 +2851,14 @@ function checkReadingOrderPreserved(beforeHtml, afterHtml) {
       var root = doc.body || doc.documentElement;
       if (!root || !doc.createTreeWalker) return out;
       var SKIP = { SCRIPT: 1, STYLE: 1, NOSCRIPT: 1, HEAD: 1, TEMPLATE: 1 };
+      var nativeParent = Object.getOwnPropertyDescriptor(Node.prototype, 'parentNode').get;
+      var nativeType = Object.getOwnPropertyDescriptor(Node.prototype, 'nodeType').get;
+      var nativeTag = Object.getOwnPropertyDescriptor(Element.prototype, 'tagName').get;
       var w = doc.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
       var n;
       while ((n = w.nextNode())) {
         var p = n.parentNode, skip = false;
-        while (p && p.nodeType === 1) { if (SKIP[p.tagName]) { skip = true; break; } p = p.parentNode; }
+        while (p && nativeType.call(p) === 1) { if (SKIP[nativeTag.call(p)]) { skip = true; break; } p = nativeParent.call(p); }
         if (skip) continue;
         // Unicode-aware: \p{L}\p{N} covers EVERY script (Arabic, CJK, Cyrillic, Devanagari, Vietnamese, …)
         // — a Latin-only class made this a vacuous no-op for non-Latin docs. Keep length-1 tokens too: the
@@ -10752,9 +10755,29 @@ var createDocPipeline = function(deps) {
         const norm = s => String(s || '').normalize('NFKC').replace(/\s+/g, ' ').trim();
         // Locations describe this comparison's source, never an unchecked current-DOM target.
         const rejectAt = (reason, sourceLocation) => ({ accepted: false, reason, sourceLocation });
-        const nodes = (doc, selector) => Array.from(doc.querySelectorAll(selector));
+        // Named form controls can shadow DOM getters and methods (including
+        // noValidate, matches and tagName). Read native APIs, never named fields.
+        const getterCache = new Map();
+        const domValue = (node, property) => {
+          if (!(node instanceof HTMLFormElement)) return node[property];
+          let getter = getterCache.get(property);
+          if (!getter) {
+            for (const prototype of [HTMLFormElement.prototype, HTMLElement.prototype, Element.prototype, Node.prototype]) {
+              getter = Object.getOwnPropertyDescriptor(prototype, property)?.get;
+              if (getter) break;
+            }
+            if (!getter) throw Error('Unavailable native DOM property');
+            getterCache.set(property, getter);
+          }
+          return getter.call(node);
+        };
+        const attribute = (el, name) => Element.prototype.getAttribute.call(el, name);
+        const hasAttribute = (el, name) => Element.prototype.hasAttribute.call(el, name);
+        const matches = (el, selector) => Element.prototype.matches.call(el, selector);
+        const nodes = (doc, selector) => Array.from((domValue(doc, 'nodeType') === 9
+          ? Document.prototype.querySelectorAll : Element.prototype.querySelectorAll).call(doc, selector));
         const hiddenContent = doc => {
-          const hidden = new Set(nodes(doc, '[hidden],[inert],[aria-hidden]').filter(el => el.hasAttribute('hidden') || el.hasAttribute('inert') || String(el.getAttribute('aria-hidden')).toLowerCase() === 'true'));
+          const hidden = new Set(nodes(doc, '[hidden],[inert],[aria-hidden]').filter(el => hasAttribute(el, 'hidden') || hasAttribute(el, 'inert') || String(attribute(el, 'aria-hidden')).toLowerCase() === 'true'));
           // Resolve ordinary static CSS declarations without running document scripts.
           // Unsupported selectors/conditional rules remain conservative; rendered
           // export checks still own external styles and dynamic visibility.
@@ -10792,7 +10815,7 @@ var createDocPipeline = function(deps) {
               }
             }
           }
-          for (const el of nodes(doc, '[style]')) applyStyle(el, el.getAttribute('style') || '', 1e6);
+          for (const el of nodes(doc, '[style]')) applyStyle(el, attribute(el, 'style') || '', 1e6);
           for (const [el, state] of styles) {
             const value = key => state[key] && state[key].value;
             if (value('display') === 'none' || /^(hidden|collapse)$/.test(value('visibility') || '')
@@ -10805,12 +10828,12 @@ var createDocPipeline = function(deps) {
           const append = (value, masked) => { text += value; for (let i = 0; i < value.length; i++) masks.push(masked); };
           const walk = (node, masked) => {
             const isHidden = masked || hidden.has(node);
-            if (node.nodeType === 1 && /^(SCRIPT|STYLE|TEMPLATE|NOSCRIPT)$/.test(node.tagName)) return;
-            if (node.nodeType === 3) append(String(node.nodeValue || '').normalize('NFKC'), isHidden);
-            if (node.nodeType === 1 && /^(IMG|INPUT|SELECT|TEXTAREA|MATH)$/.test(node.tagName)) append(' asset:' + node.tagName + ':' + (node.getAttribute('src') || node.getAttribute('name') || '') + ' ', isHidden);
-            const block = node.nodeType === 1 && /^(P|DIV|SECTION|ARTICLE|MAIN|H[1-6]|LI|TD|TH|TR|BR|LABEL)$/.test(node.tagName);
+            if (domValue(node, 'nodeType') === 1 && /^(SCRIPT|STYLE|TEMPLATE|NOSCRIPT)$/.test(domValue(node, 'tagName'))) return;
+            if (domValue(node, 'nodeType') === 3) append(String(node.nodeValue || '').normalize('NFKC'), isHidden);
+            if (domValue(node, 'nodeType') === 1 && /^(IMG|INPUT|SELECT|TEXTAREA|MATH)$/.test(domValue(node, 'tagName'))) append(' asset:' + domValue(node, 'tagName') + ':' + (attribute(node, 'src') || attribute(node, 'name') || '') + ' ', isHidden);
+            const block = domValue(node, 'nodeType') === 1 && /^(P|DIV|SECTION|ARTICLE|MAIN|H[1-6]|LI|TD|TH|TR|BR|LABEL)$/.test(domValue(node, 'tagName'));
             if (block) append(' ', isHidden);
-            for (const child of Array.from(node.childNodes || [])) walk(child, isHidden);
+            for (const child of Array.from(domValue(node, 'childNodes') || [])) walk(child, isHidden);
             if (block) append(' ', isHidden);
           };
           walk(doc.body, false);
@@ -10830,7 +10853,7 @@ var createDocPipeline = function(deps) {
         for (let ti = 0; ti < sourceTableNodes.length; ti++) {
           const a = sourceTableNodes[ti], b = outputTableNodes[ti];
           if (!b) continue; // The grid check below reports removed tables.
-          const role = el => (el.getAttribute('role') || '').trim().toLowerCase();
+          const role = el => (attribute(el, 'role') || '').trim().toLowerCase();
           // ARIA role tokens use the first recognized concrete role. Invalid
           // fallback tokens do not override a native table header.
           const concreteRoles = new Set(('alert alertdialog application article banner blockquote button caption cell checkbox code columnheader combobox complementary contentinfo definition deletion dialog directory document emphasis feed figure form generic grid gridcell group heading img insertion link list listbox listitem log main marquee math menu menubar menuitem menuitemcheckbox menuitemradio meter navigation none note option paragraph presentation progressbar radio radiogroup region row rowgroup rowheader scrollbar search searchbox separator slider spinbutton status strong subscript superscript switch tab table tablist tabpanel term textbox time timer toolbar tooltip tree treegrid treeitem').split(' '));
@@ -10839,8 +10862,8 @@ var createDocPipeline = function(deps) {
             // Presentation is ignored on focusable elements or elements carrying
             // global ARIA state. Those inert spellings must not block a repair.
             const globalAria = /^(atomic|braillelabel|brailleroledescription|busy|controls|current|describedby|description|details|disabled|dropeffect|errormessage|flowto|grabbed|haspopup|hidden|invalid|keyshortcuts|label|labelledby|live|owns|relevant|roledescription)$/;
-            const focusable = /^[\t\n\f\r ]*[+-]?\d/.test(el.getAttribute('tabindex') || '')
-              || /^(true|plaintext-only|)$/i.test(el.getAttribute('contenteditable') ?? 'false');
+            const focusable = /^[\t\n\f\r ]*[+-]?\d/.test(attribute(el, 'tabindex') || '')
+              || /^(true|plaintext-only|)$/i.test(attribute(el, 'contenteditable') ?? 'false');
             if (/^(none|presentation)$/.test(value || '') && (focusable || Array.from(el.attributes).some(attr => attr.name.startsWith('aria-') && globalAria.test(attr.name.slice(5))))) return undefined;
             return value;
           };
@@ -10850,14 +10873,14 @@ var createDocPipeline = function(deps) {
           if (/^(table|grid|treegrid)$/.test(sourceTableRole) && sourceTableRole !== outputTableRole)
             return rejectAt('table-semantics-changed', 'table:' + (ti + 1));
           const headerRole = el => explicitRole(el)
-            || (/^(row|rowgroup)$/i.test(el.getAttribute('scope') || '') ? 'rowheader' : 'columnheader');
+            || (/^(row|rowgroup)$/i.test(attribute(el, 'scope') || '') ? 'rowheader' : 'columnheader');
           const rows = table => nodes(table, 'tr').filter(el => el.closest('table') === table);
           const rowRole = (row, table, tableRole) => {
             const explicit = explicitRole(row);
             if (explicit) return explicit;
             // Presentation on a native table/row group also removes the implicit
             // roles of its required descendants unless they supply an own role.
-            for (let parent = row.parentElement; parent && parent !== table; parent = parent.parentElement) {
+            for (let parent = row.parentElement; parent && parent !== table; parent = domValue(parent, 'parentElement')) {
               if (/^(none|presentation)$/.test(explicitRole(parent) || '')) return 'none';
             }
             return /^(none|presentation)$/.test(tableRole) ? 'none' : 'row';
@@ -10893,18 +10916,18 @@ var createDocPipeline = function(deps) {
               // A simple first row consisting entirely of unspanned headers can
               // correct row scope to column scope; complex grids stay conservative.
               const rows = nodes(a, 'tr').filter(row => row.closest('table') === a);
-              const first = rows[0], rowCells = first ? Array.from(first.children).filter(el => /^(TD|TH)$/.test(el.tagName)) : [];
+              const first = rows[0], rowCells = first ? Array.from(first.children).filter(el => /^(TD|TH)$/.test(domValue(el, 'tagName'))) : [];
               const simpleColumnRepair = scope === 'row' && bc[ci].getAttribute('scope') === 'col'
                 && ac[ci].parentElement === first && rows.length > 1 && rowCells.length > 1
-                && rowCells.every(el => el.tagName === 'TH' && el.rowSpan === 1 && el.colSpan === 1)
-                && rows.slice(1).every(row => Array.from(row.children).filter(el => /^(TD|TH)$/.test(el.tagName)).length === rowCells.length)
-                && ac.every(el => el.rowSpan === 1 && el.colSpan === 1 && !el.hasAttribute('headers'));
+                && rowCells.every(el => domValue(el, 'tagName') === 'TH' && el.rowSpan === 1 && el.colSpan === 1)
+                && rows.slice(1).every(row => Array.from(row.children).filter(el => /^(TD|TH)$/.test(domValue(el, 'tagName'))).length === rowCells.length)
+                && ac.every(el => el.rowSpan === 1 && el.colSpan === 1 && !hasAttribute(el, 'headers'));
               if (!simpleColumnRepair) return rejectAt('table-semantics-changed', loc);
               allowedScopeRepair = simpleColumnRepair;
             }
             if (ac[ci].tagName === 'TH' && /^(rowheader|columnheader)$/.test(sourceHeaderRole)
               && sourceHeaderRole !== outputHeaderRole && !(allowedScopeRepair && outputHeaderRole === 'columnheader')) return rejectAt('table-semantics-changed', loc);
-            const headers = (cell, all) => (cell.getAttribute('headers') || '').trim().split(/\s+/).filter(Boolean).map(id => all.findIndex(el => el.id === id));
+            const headers = (cell, all) => (cell.getAttribute('headers') || '').trim().split(/\s+/).filter(Boolean).map(id => all.findIndex(el => domValue(el, 'id') === id));
             const ah = headers(ac[ci], ac), bh = headers(bc[ci], bc);
             if (ah.length && ah.every(i => i >= 0) && JSON.stringify(ah) !== JSON.stringify(bh)) return rejectAt('table-semantics-changed', loc);
           }
@@ -10919,28 +10942,28 @@ var createDocPipeline = function(deps) {
           // Resolve descendant text alternatives before flattening native labels
           // or references. Image alt, SVG titles and descendant ARIA labels can
           // supply all of a control's name while textContent remains empty.
-          const hiddenForName = node => node.hidden || node.getAttribute('aria-hidden') === 'true'
-            || node.style.display === 'none' || /^(hidden|collapse)$/.test(node.style.visibility);
+          const hiddenForName = node => domValue(node, 'hidden') || attribute(node, 'aria-hidden') === 'true'
+            || domValue(node, 'style').display === 'none' || /^(hidden|collapse)$/.test(domValue(node, 'style').visibility);
           const textAlternative = (node, excluded, referenced = false, seen = new Set(), includeHidden = referenced) => {
             if (!node || node === excluded || seen.has(node)) return '';
-            if (node.nodeType === 3) return node.nodeValue || '';
-            if (node.nodeType !== 1 || /^(SCRIPT|STYLE|TEMPLATE|NOSCRIPT)$/.test(node.tagName)) return '';
+            if (domValue(node, 'nodeType') === 3) return node.nodeValue || '';
+            if (domValue(node, 'nodeType') !== 1 || /^(SCRIPT|STYLE|TEMPLATE|NOSCRIPT)$/.test(domValue(node, 'tagName'))) return '';
             if (!includeHidden && hiddenForName(node)) return '';
             const nextSeen = new Set(seen); nextSeen.add(node);
-            const refs = (node.getAttribute('aria-labelledby') || '').trim().split(/\s+/).map(id => doc.getElementById(id)).filter(Boolean);
+            const refs = (attribute(node, 'aria-labelledby') || '').trim().split(/\s+/).map(id => doc.getElementById(id)).filter(Boolean);
             // Do not recursively follow aria-labelledby from a referenced node.
             if (!referenced && refs.length) return ' ' + refs.map(ref => textAlternative(ref, excluded, true, nextSeen)).join(' ') + ' ';
-            const ariaLabel = norm(node.getAttribute('aria-label'));
+            const ariaLabel = norm(attribute(node, 'aria-label'));
             if (ariaLabel) return ' ' + ariaLabel + ' ';
-            if (node.tagName === 'IMG' || (node.tagName === 'INPUT' && node.type === 'image'))
-              return ' ' + (node.getAttribute('alt') || node.getAttribute('title') || '') + ' ';
-            if (node.localName === 'svg') {
-              const title = Array.from(node.children).find(child => child.localName === 'title');
+            if (domValue(node, 'tagName') === 'IMG' || (domValue(node, 'tagName') === 'INPUT' && node.type === 'image'))
+              return ' ' + (attribute(node, 'alt') || attribute(node, 'title') || '') + ' ';
+            if (domValue(node, 'localName') === 'svg') {
+              const title = Array.from(domValue(node, 'children')).find(child => child.localName === 'title');
               if (title) return ' ' + title.textContent + ' ';
             }
-            if (node.tagName === 'BR') return ' ';
-            const text = Array.from(node.childNodes).map(child => textAlternative(child, excluded, referenced, nextSeen, includeHidden)).join('');
-            return /^(P|DIV|SECTION|ARTICLE|LI|H[1-6])$/.test(node.tagName) ? ' ' + text + ' ' : text;
+            if (domValue(node, 'tagName') === 'BR') return ' ';
+            const text = Array.from(domValue(node, 'childNodes')).map(child => textAlternative(child, excluded, referenced, nextSeen, includeHidden)).join('');
+            return /^(P|DIV|SECTION|ARTICLE|LI|H[1-6])$/.test(domValue(node, 'tagName')) ? ' ' + text + ' ' : text;
           };
           const labelsByControl = new Map(), namesByControl = new Map();
           for (const label of nodes(doc, 'label')) {
@@ -10952,7 +10975,7 @@ var createDocPipeline = function(deps) {
             // A directly hidden native label still supplies its name. Hidden
             // descendants of an otherwise visible label do not supply words.
             let labelHidden = false;
-            for (let ancestor = label; ancestor; ancestor = ancestor.parentElement) {
+            for (let ancestor = label; ancestor; ancestor = domValue(ancestor, 'parentElement')) {
               if (hiddenForName(ancestor)) { labelHidden = true; break; }
             }
             namesByControl.get(control).push(norm(textAlternative(label, control, false, new Set(), labelHidden)));
@@ -10963,7 +10986,7 @@ var createDocPipeline = function(deps) {
             const refs = (fieldset.getAttribute('aria-labelledby') || '').trim().split(/\s+/).map(id => doc.getElementById(id)).filter(Boolean);
             const legend = Array.from(fieldset.children).find(child => child.tagName === 'LEGEND');
             let legendHidden = false;
-            for (let ancestor = legend; ancestor; ancestor = ancestor.parentElement) {
+            for (let ancestor = legend; ancestor; ancestor = domValue(ancestor, 'parentElement')) {
               if (hiddenForName(ancestor)) { legendHidden = true; break; }
             }
             const name = refs.length ? refs.map(ref => norm(textAlternative(ref, null, true))).join(' ')
@@ -10973,27 +10996,46 @@ var createDocPipeline = function(deps) {
           const formIndexes = new Map(nodes(doc, 'form').map((form, index) => [form, index]));
           const baseTarget = nodes(doc, 'base[target]').find(base => base.namespaceURI === 'http://www.w3.org/1999/xhtml')?.getAttribute('target') || '';
           const submissionTarget = (el, form) => {
-            const submitter = (el.tagName === 'BUTTON' && el.type === 'submit') || (el.tagName === 'INPUT' && /^(submit|image)$/.test(el.type));
-            if (el.tagName !== 'FORM' && (!submitter || !form)) return null;
-            const owner = el.tagName === 'FORM' ? el : form;
-            const method = submitter && el.hasAttribute('formmethod') ? el.formMethod : owner.method;
+            const submitter = (domValue(el, 'tagName') === 'BUTTON' && el.type === 'submit') || (domValue(el, 'tagName') === 'INPUT' && /^(submit|image)$/.test(el.type));
+            if (domValue(el, 'tagName') !== 'FORM' && (!submitter || !form)) return null;
+            const owner = domValue(el, 'tagName') === 'FORM' ? el : form;
+            const method = submitter && hasAttribute(el, 'formmethod') ? el.formMethod : domValue(owner, 'method');
             if (method === 'dialog') return null;
             // An empty submitter/form target falls back to the document base;
             // a missing submitter override inherits the owner's target first.
-            let target = (submitter && el.hasAttribute('formtarget') ? el.getAttribute('formtarget') : owner.getAttribute('target')) || baseTarget || '_self';
+            let target = (submitter && hasAttribute(el, 'formtarget') ? attribute(el, 'formtarget') : attribute(owner, 'target')) || baseTarget || '_self';
             if (/[\t\n\r<]/.test(target)) target = '_blank';
             // Reserved browsing contexts are ASCII case-insensitive; named
             // frames are case-sensitive and whitespace is part of their name.
             return /^_(self|blank|parent|top|unfencedtop)$/i.test(target) ? target.toLowerCase() : target;
           };
+          const submissionEncoding = form => {
+            const labels = (attribute(form, 'accept-charset') || '').split(/[\t\n\f\r ,]+/).filter(Boolean);
+            const asciiLower = label => label.replace(/[A-Z]/g, letter => letter.toLowerCase());
+            if (typeof TextDecoder !== 'function') return ['unresolved', labels.map(asciiLower)];
+            for (const label of labels) {
+              // TextDecoder rejects replacement labels, but HTML selects them
+              // before converting replacement to the UTF-8 output encoding.
+              const normalizedLabel = asciiLower(label);
+              if (/^(?:csiso2022kr|hz-gb-2312|iso-2022-cn|iso-2022-cn-ext|iso-2022-kr|replacement)$/.test(normalizedLabel)) return 'utf-8';
+              // Node's decoder omits this valid browser encoding; retain parity
+              // for DOM-backed validation outside the browser as well.
+              if (normalizedLabel === 'x-user-defined') return 'x-user-defined';
+              try {
+                const encoding = new TextDecoder(label).encoding;
+                return /^utf-16/.test(encoding) ? 'utf-8' : encoding;
+              } catch (_) { /* Unsupported labels fall through to the next choice. */ }
+            }
+            return 'document-encoding';
+          };
           return nodes(doc, 'form,input,select,textarea,button').map(el => {
           const attrs = ['name','type','value','checked','selected','multiple','disabled','readonly','required','min','max','step','pattern','action','method','enctype','formaction','formmethod','formenctype','placeholder','aria-checked','aria-valuenow'];
           const labels = labelsByControl.get(el) || [];
-          const form = el.form;
+          const form = domValue(el, 'tagName') === 'FORM' ? null : el.form;
           const owner = form ? (formIndexes.get(form) ?? -1) : -1;
-          const groups = el.tagName === 'SELECT' ? nodes(el, 'optgroup') : [];
+          const groups = domValue(el, 'tagName') === 'SELECT' ? nodes(el, 'optgroup') : [];
           const groupIndexes = new Map(groups.map((group, index) => [group, index]));
-          const options = el.tagName === 'SELECT' ? nodes(el, 'option').map(o => {
+          const options = domValue(el, 'tagName') === 'SELECT' ? nodes(el, 'option').map(o => {
             const group = o.closest('optgroup');
             // option.disabled reflects only the option's own attribute. A disabled
             // optgroup also makes every option unavailable, even when unselected.
@@ -11002,65 +11044,65 @@ var createDocPipeline = function(deps) {
             return [o.value, o.selected, o.disabled || !!(group && group.disabled), norm(o.textContent), norm(o.label || o.text),
               group ? groupIndexes.get(group) : -1];
           }) : [];
-          const references = attr => (el.getAttribute(attr) || '').trim().split(/\s+/).map(id => doc.getElementById(id)).filter(Boolean);
+          const references = attr => (attribute(el, attr) || '').trim().split(/\s+/).map(id => doc.getElementById(id)).filter(Boolean);
           const referenceText = ref => norm(textAlternative(ref, null, true));
           const namedRefs = references('aria-labelledby');
-          const nativeName = (namesByControl.get(el) || []).filter(Boolean).join(' ') || (el.tagName === 'BUTTON' ? norm(textAlternative(el, null))
-            : el.tagName === 'INPUT' && /^(button|submit|reset)$/.test(el.type) ? norm(el.value || (el.type === 'submit' ? 'Submit' : el.type === 'reset' ? 'Reset' : ''))
-            : el.tagName === 'INPUT' && el.type === 'image' ? norm(el.getAttribute('alt')) : '');
-          const primaryName = namedRefs.length ? namedRefs.map(referenceText).join(' ') : norm(el.getAttribute('aria-label')) || nativeName;
-          const accessibleName = namedRefs.length ? primaryName : primaryName || norm(el.getAttribute('title'))
-            || (/^(INPUT|TEXTAREA)$/.test(el.tagName) ? norm(el.getAttribute('placeholder')) : '');
+          const nativeName = (namesByControl.get(el) || []).filter(Boolean).join(' ') || (domValue(el, 'tagName') === 'BUTTON' ? norm(textAlternative(el, null))
+            : domValue(el, 'tagName') === 'INPUT' && /^(button|submit|reset)$/.test(el.type) ? norm(el.value || (el.type === 'submit' ? 'Submit' : el.type === 'reset' ? 'Reset' : ''))
+            : domValue(el, 'tagName') === 'INPUT' && el.type === 'image' ? norm(attribute(el, 'alt')) : '');
+          const primaryName = namedRefs.length ? namedRefs.map(referenceText).join(' ') : norm(attribute(el, 'aria-label')) || nativeName;
+          const accessibleName = namedRefs.length ? primaryName : primaryName || norm(attribute(el, 'title'))
+            || (/^(INPUT|TEXTAREA)$/.test(domValue(el, 'tagName')) ? norm(attribute(el, 'placeholder')) : '');
           const describedRefs = references('aria-describedby');
           const accessibleDescription = describedRefs.length ? describedRefs.map(referenceText).join(' ')
-            : norm(el.getAttribute('aria-description')) || (primaryName ? norm(el.getAttribute('title')) : '');
+            : norm(attribute(el, 'aria-description')) || (primaryName ? norm(attribute(el, 'title')) : '');
           // Resolved text keeps ID renaming valid while retaining the source's
           // ordered description/details/error associations. Empty source targets
           // may acquire wording during a legitimate accessibility repair.
           const relationships = ['aria-describedby', 'aria-details', 'aria-errormessage'].map(attr => references(attr).map(referenceText));
-          const attributeState = attrs.map(name => name === 'type' && el.tagName === 'INPUT' ? el.type : el.getAttribute(name));
+          const attributeState = attrs.map(name => name === 'type' && domValue(el, 'tagName') === 'INPUT' ? el.type : attribute(el, name));
           // Boolean DOM properties preserve validation behavior without treating
           // alternate boolean-attribute spelling as a change.
-          const validationBypass = el.tagName === 'FORM' ? el.noValidate
-            : ((el.tagName === 'BUTTON' && el.type === 'submit') || (el.tagName === 'INPUT' && /^(submit|image)$/.test(el.type))) ? el.formNoValidate : null;
+          const validationBypass = domValue(el, 'tagName') === 'FORM' ? domValue(el, 'noValidate')
+            : ((domValue(el, 'tagName') === 'BUTTON' && el.type === 'submit') || (domValue(el, 'tagName') === 'INPUT' && /^(submit|image)$/.test(el.type))) ? el.formNoValidate : null;
           // Native range/number controls expose value text separately from their
           // numeric value and accessible name. Empty value text may be repaired.
-          const accessibleValueText = el.tagName === 'INPUT' && /^(range|number)$/.test(el.type) ? norm(el.getAttribute('aria-valuetext')) : '';
+          const accessibleValueText = domValue(el, 'tagName') === 'INPUT' && /^(range|number)$/.test(el.type) ? norm(attribute(el, 'aria-valuetext')) : '';
           // Length attributes affect text-entry controls only. Native properties
           // preserve effective limits while accepting equivalent numeric spelling.
-          const lengthLimits = el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && /^(text|search|url|tel|email|password)$/.test(el.type))
+          const lengthLimits = domValue(el, 'tagName') === 'TEXTAREA' || (domValue(el, 'tagName') === 'INPUT' && /^(text|search|url|tel|email|password)$/.test(el.type))
             ? [el.minLength, el.maxLength] : [];
           // Hard wrapping changes the submitted textarea value even when its DOM
           // value is unchanged. Preserve effective columns only in that mode;
           // soft-wrap widths and equivalent numeric spelling remain repairable.
           // Chromium also implements the legacy physical spelling as hard wrap.
-          const hardWrap = el.tagName === 'TEXTAREA' && /^(hard|physical)$/i.test(el.wrap);
-          const submissionWrapping = el.tagName === 'TEXTAREA' ? [hardWrap, hardWrap ? el.cols : null] : [];
+          const hardWrap = domValue(el, 'tagName') === 'TEXTAREA' && /^(hard|physical)$/i.test(el.wrap);
+          const submissionWrapping = domValue(el, 'tagName') === 'TEXTAREA' ? [hardWrap, hardWrap ? el.cols : null] : [];
           // dirname creates another submitted field on supported named controls.
           // Disabled controls and reset/button inputs cannot contribute one. Keep
           // exact names, including empty ones: Chromium submits dirname="" too.
-          const directionName = !el.matches(':disabled') && el.getAttribute('name') && (el.tagName === 'TEXTAREA'
-            || (el.tagName === 'INPUT' && /^(hidden|text|search|tel|url|email|password|submit)$/.test(el.type)))
-            ? el.getAttribute('dirname') : null;
+          const directionName = !matches(el, ':disabled') && attribute(el, 'name') && (domValue(el, 'tagName') === 'TEXTAREA'
+            || (domValue(el, 'tagName') === 'INPUT' && /^(hidden|text|search|tel|url|email|password|submit)$/.test(el.type)))
+            ? attribute(el, 'dirname') : null;
           let submittedDirection = [];
           if (directionName !== null) {
-            let direction = el.matches(':dir(rtl)') ? 'rtl' : 'ltr';
+            let direction = matches(el, ':dir(rtl)') ? 'rtl' : 'ltr';
             // Chromium retains the original case of explicit inherited ltr/rtl
             // values in FormData. Auto direction and telephone defaults stop
             // inheritance; CSS direction does not set the submitted direction.
-            for (let ancestor = el; ancestor; ancestor = ancestor.parentElement) {
-              const dir = ancestor.getAttribute('dir') || '';
+            for (let ancestor = el; ancestor; ancestor = domValue(ancestor, 'parentElement')) {
+              const dir = attribute(ancestor, 'dir') || '';
               if (/^(ltr|rtl)$/i.test(dir)) { direction = dir; break; }
-              if (/^auto$/i.test(dir) || ancestor.tagName === 'BDI' || (ancestor.tagName === 'INPUT' && ancestor.type === 'tel')) break;
+              if (/^auto$/i.test(dir) || domValue(ancestor, 'tagName') === 'BDI' || (domValue(ancestor, 'tagName') === 'INPUT' && ancestor.type === 'tel')) break;
             }
             submittedDirection = [directionName, direction];
           }
           const fieldsetContext = [];
-          for (let ancestor = el.parentElement; ancestor; ancestor = ancestor.parentElement) {
+          for (let ancestor = domValue(el, 'parentElement'); ancestor; ancestor = domValue(ancestor, 'parentElement')) {
             const name = fieldsetNames.get(ancestor);
             if (name) fieldsetContext.unshift(name);
           }
-          return { accessibleName, accessibleDescription, accessibleValueText, relationships, fieldsetContext, state: [el.tagName, attributeState, owner, el.tagName === 'TEXTAREA' ? el.value : '', options, el.matches(':disabled'), lengthLimits, validationBypass, submissionWrapping, submittedDirection, submissionTarget(el, form)], labels, groupLabels: groups.map(group => norm(group.label)) };
+          return { accessibleName, accessibleDescription, accessibleValueText, relationships, fieldsetContext, state: [domValue(el, 'tagName'), attributeState, owner, domValue(el, 'tagName') === 'TEXTAREA' ? el.value : '', options, matches(el, ':disabled'), lengthLimits, validationBypass, submissionWrapping, submittedDirection, submissionTarget(el, form), domValue(el, 'tagName') === 'FORM' ? submissionEncoding(el) : null], labels, groupLabels: groups.map(group => norm(group.label)) };
           });
         };
         // New group context may repair an ungrouped field, but every existing
@@ -11082,16 +11124,16 @@ var createDocPipeline = function(deps) {
             || af[i].groupLabels.length !== bf[i].groupLabels.length || af[i].groupLabels.some((label, gi) => label && label !== bf[i].groupLabels[gi])) return rejectAt('form-state-changed', 'control:' + (i + 1));
         }
         const mathTree = el => {
-          if (el.nodeType === 3) return norm(el.nodeValue);
-          if (el.nodeType !== 1 || /^(annotation|annotation-xml)$/.test(el.localName)) return null;
-          const children = Array.from(el.childNodes).map(mathTree).filter(v => v !== null && v !== '');
-          return [el.localName, ['mathvariant','notation','linethickness','open','close','separators'].map(a => el.getAttribute(a)), children];
+          if (domValue(el, 'nodeType') === 3) return norm(el.nodeValue);
+          if (domValue(el, 'nodeType') !== 1 || /^(annotation|annotation-xml)$/.test(domValue(el, 'localName'))) return null;
+          const children = Array.from(domValue(el, 'childNodes')).map(mathTree).filter(v => v !== null && v !== '');
+          return [domValue(el, 'localName'), ['mathvariant','notation','linethickness','open','close','separators'].map(a => attribute(el, a)), children];
         };
         const am = nodes(before, 'math'), bm = nodes(after, 'math');
         for (let i = 0; i < Math.max(am.length, bm.length); i++) {
           const mathName = el => {
-            const refs = el ? (el.getAttribute('aria-labelledby') || '').trim().split(/\s+/).map(id => el.ownerDocument.getElementById(id)).filter(Boolean) : [];
-            return refs.length ? refs.map(ref => norm(ref.textContent)).join(' ') : el && el.getAttribute('aria-label') || '';
+            const refs = el ? (attribute(el, 'aria-labelledby') || '').trim().split(/\s+/).map(id => domValue(el, 'ownerDocument').getElementById(id)).filter(Boolean) : [];
+            return refs.length ? refs.map(ref => norm(domValue(ref, 'textContent'))).join(' ') : el && attribute(el, 'aria-label') || '';
           };
           if (!am[i] || !bm[i] || (mathName(am[i]) && mathName(am[i]) !== mathName(bm[i])) || JSON.stringify(mathTree(am[i])) !== JSON.stringify(mathTree(bm[i]))) return rejectAt('math-content-changed', 'math:' + (i + 1));
         }
@@ -11158,7 +11200,7 @@ var createDocPipeline = function(deps) {
           let id; try { id = decodeURIComponent(href.slice(1)); } catch (_) { return href; }
           const target = anchor.ownerDocument.getElementById(id);
           if (!target) return href;
-          const signature = el => JSON.stringify([norm(el.textContent), nodes(el, 'img,image').map(img => img.getAttribute('src') || img.getAttribute('href') || '')]);
+          const signature = el => JSON.stringify([norm(domValue(el, 'textContent')), nodes(el, 'img,image').map(img => img.getAttribute('src') || img.getAttribute('href') || '')]);
           const value = signature(target);
           let index = targetIndexes.get(anchor.ownerDocument);
           if (!index) {
@@ -11186,7 +11228,7 @@ var createDocPipeline = function(deps) {
             // Link wording normalization later detaches these nodes. Capture the
             // link and text preceding each script first, including the base to
             // which it is attached; inline wrappers do not change this evidence.
-            const range = el.ownerDocument.createRange();
+            const range = domValue(el, 'ownerDocument').createRange();
             range.setStart(containingLink, 0); range.setEndBefore(el);
             attachment = [links.indexOf(containingLink), cellText(range.cloneContents().textContent)];
           }
@@ -11195,23 +11237,23 @@ var createDocPipeline = function(deps) {
             // Captions are removed before the general reading-order check. Keep
             // each script's preceding caption content and script ancestry now;
             // neutral inline wrapping does not alter either piece of evidence.
-            const range = el.ownerDocument.createRange();
+            const range = domValue(el, 'ownerDocument').createRange();
             range.setStart(captionRoot, 0); range.setEndBefore(el);
-            const parents = []; let parent = el.parentElement;
+            const parents = []; let parent = domValue(el, 'parentElement');
             while (parent && parent !== captionRoot) {
-              if (/^(SUP|SUB)$/.test(parent.tagName)) parents.push(list.indexOf(parent));
-              parent = parent.parentElement;
+              if (/^(SUP|SUB)$/.test(domValue(parent, 'tagName'))) parents.push(list.indexOf(parent));
+              parent = domValue(parent, 'parentElement');
             }
             captionAttachment = [cellText(range.cloneContents().textContent), parents];
           }
-          return [el.tagName, cellText(clone.textContent), attachment, captionAttachment];
+          return [domValue(el, 'tagName'), cellText(clone.textContent), attachment, captionAttachment];
         });
         // Existing captions are source content. New captions can describe the
         // asset without their numbers being mistaken for invented source prose.
         for (const selector of ['figure', 'table']) {
           const a = Array.from(before.querySelectorAll(selector)), b = Array.from(after.querySelectorAll(selector));
-          const caption = el => el && Array.from(el.children).find(n => /^(FIGCAPTION|CAPTION)$/.test(n.tagName));
-          const captionText = el => String(el.textContent || '').normalize('NFC').replace(/\s+/g, ' ').trim();
+          const caption = el => el && Array.from(domValue(el, 'children')).find(n => /^(FIGCAPTION|CAPTION)$/.test(n.tagName));
+          const captionText = el => String(domValue(el, 'textContent') || '').normalize('NFC').replace(/\s+/g, ' ').trim();
           for (let i = 0; i < a.length; i++) {
             const ac = caption(a[i]), bc = caption(b[i]);
             if (ac && (!bc || captionText(ac) !== captionText(bc))) {
@@ -11257,16 +11299,16 @@ var createDocPipeline = function(deps) {
           return { accepted: false, reason: 'image-association-changed' };
         }
         const normalizeTextNodes = node => {
-          if (node.nodeType === 3) node.nodeValue = node.nodeValue.replace(numericPattern, value => ' ' + canonicalNumber(value) + ' ');
-          else Array.from(node.childNodes || []).forEach(normalizeTextNodes);
+          if (domValue(node, 'nodeType') === 3) node.nodeValue = node.nodeValue.replace(numericPattern, value => ' ' + canonicalNumber(value) + ' ');
+          else Array.from(domValue(node, 'childNodes') || []).forEach(normalizeTextNodes);
         };
         normalizeTextNodes(before.body); normalizeTextNodes(after.body);
         // Retain the attachment/order of scripts still present after allowed link
         // wording normalization. These markers exist only in comparison clones.
         for (const list of [sourceScripts, outputScripts]) list.forEach((el, index) => {
-          if (!el.ownerDocument.documentElement.contains(el)) return;
-          el.before(el.ownerDocument.createTextNode(' ' + markerPrefix + 'inline' + index + 'start '));
-          el.after(el.ownerDocument.createTextNode(' ' + markerPrefix + 'inline' + index + 'end '));
+          if (!domValue(el, 'ownerDocument').documentElement.contains(el)) return;
+          el.before(domValue(el, 'ownerDocument').createTextNode(' ' + markerPrefix + 'inline' + index + 'start '));
+          el.after(domValue(el, 'ownerDocument').createTextNode(' ' + markerPrefix + 'inline' + index + 'end '));
         });
         readingInput = before.body.innerHTML;
         readingOutput = after.body.innerHTML;
@@ -17820,7 +17862,7 @@ var createDocPipeline = function(deps) {
   // identity extension — the version had sat at 20260524-1 through six weeks of scoring/honesty
   // changes, so cache hits could replay results produced by superseded logic).
   // 2026-09-09: strict source values, link/figure associations, and bounded metadata additions.
-  const _PIPELINE_PROMPT_VERSION = '20260920-2';
+  const _PIPELINE_PROMPT_VERSION = '20260920-3';
   // Cache identity must include the AI backend/model — a result produced by a local Ollama model is
   // not interchangeable with a Gemini one for the SAME bytes and settings. Best-effort, stable id.
   const _cacheBackendId = () => {

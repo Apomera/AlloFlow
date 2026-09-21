@@ -2051,7 +2051,7 @@ window.StemLab = window.StemLab || {
       var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'overview';
       var glassCard = 'bg-white/70 backdrop-blur-md rounded-2xl border border-white/40 shadow-lg p-4';
       var overviewFocus = d.overviewFocus || 'money';
-      var overviewConfidence = d.overviewConfidence != null ? d.overviewConfidence : 3;
+      var overviewConfidence = (typeof d.overviewConfidence === 'number' && isFinite(d.overviewConfidence)) ? d.overviewConfidence : 3;
       var overviewNextStep = d.overviewNextStep || '';
       var overviewPath = LIFE_SKILL_PATHS.find(function(path) { return path.id === overviewFocus; }) || LIFE_SKILL_PATHS[0];
 
@@ -2068,8 +2068,8 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════
       // PAYCHECK STATE
       // ══════════════════════════════════════════
-      var payRate = d.payRate != null ? d.payRate : 15;
-      var payHours = d.payHours != null ? d.payHours : 30;
+      var payRate = (typeof d.payRate === 'number' && isFinite(d.payRate)) ? d.payRate : 15;
+      var payHours = (typeof d.payHours === 'number' && isFinite(d.payHours)) ? d.payHours : 30;
       var payFreq = d.payFreq || 'biweekly';
       var payState = d.payState || 'none';
       var payFiling = d.payFiling || 'single';
@@ -2090,7 +2090,9 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════
       // DATA LITERACY STATE
       // ══════════════════════════════════════════
-      var dlScenario = d.dlScenario || 0;
+      // Indexes DL_SCENARIOS as `dlScenario % len`; 'abc' % n is NaN, which
+      // makes the lookup undefined and the next `.title` read throw.
+      var dlScenario = (Number.isInteger(d.dlScenario) && d.dlScenario >= 0) ? d.dlScenario : 0;
       var dlAnswer = d.dlAnswer;
       var dlRevealed = d.dlRevealed || false;
       var dlScore = d.dlScore || 0;
@@ -2099,8 +2101,8 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════
       // DECISION MATRIX STATE
       // ══════════════════════════════════════════
-      var dmOptions = d.dmOptions || ['Option A', 'Option B', 'Option C'];
-      var dmCriteria = d.dmCriteria || [{ name: __alloT('stem.lifeskills.cost', 'Cost'), weight: 3 }, { name: __alloT('stem.lifeskills.quality', 'Quality'), weight: 4 }, { name: __alloT('stem.lifeskills.time', 'Time'), weight: 2 }];
+      var dmOptions = Array.isArray(d.dmOptions) ? d.dmOptions : ['Option A', 'Option B', 'Option C'];
+      var dmCriteria = Array.isArray(d.dmCriteria) ? d.dmCriteria : [{ name: __alloT('stem.lifeskills.cost', 'Cost'), weight: 3 }, { name: __alloT('stem.lifeskills.quality', 'Quality'), weight: 4 }, { name: __alloT('stem.lifeskills.time', 'Time'), weight: 2 }];
       var dmScores = d.dmScores || {};
       var dmTotals = dmOptions.map(function(opt, oi) {
         var total = 0;
@@ -2112,8 +2114,10 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════
       // CONTRACT STATE
       // ══════════════════════════════════════════
-      var crLevel = d.crLevel || 0;
-      var crFound = d.crFound || [];
+      // Indexes CONTRACTS as `crLevel % len`; 'abc' % n is NaN, so the
+      // lookup was undefined and the next `.traps` read threw.
+      var crLevel = (Number.isInteger(d.crLevel) && d.crLevel >= 0) ? d.crLevel : 0;
+      var crFound = Array.isArray(d.crFound) ? d.crFound : [];
       var crCurrent = CONTRACTS[crLevel % CONTRACTS.length];
 
       // ══════════════════════════════════════════
@@ -2121,7 +2125,9 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════
       var hiPlanA = d.hiPlanA || { premium: 250, deductible: 1500, copay: 30, coinsurance: 20, oop: 6000 };
       var hiPlanB = d.hiPlanB || { premium: 450, deductible: 500, copay: 15, coinsurance: 10, oop: 3000 };
-      var hiUsage = d.hiUsage || 'low';
+      // Keys usageScenarios; an unknown value made hiScene undefined and the
+      // next `.bills` read throw.
+      var hiUsage = (d.hiUsage === 'low' || d.hiUsage === 'medium' || d.hiUsage === 'high') ? d.hiUsage : 'low';
       var usageScenarios = { low: { visits: 2, bills: 500 }, medium: { visits: 6, bills: 3000 }, high: { visits: 12, bills: 15000 } };
       var hiScene = usageScenarios[hiUsage];
       var hiCostA = calcPlanCost(hiPlanA, hiScene);
@@ -2130,18 +2136,18 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════
       // APPLIED SCIENCE STATE
       // ══════════════════════════════════════════
-      var asCookTemp = d.asCookTemp != null ? d.asCookTemp : 350;
+      var asCookTemp = (typeof d.asCookTemp === 'number' && isFinite(d.asCookTemp)) ? d.asCookTemp : 350;
       var activeReactions = COOK_REACTIONS.filter(function(r) { return asCookTemp >= r.tempF; });
-      var asVolts = d.asVolts != null ? d.asVolts : 120;
-      var asAmps = d.asAmps != null ? d.asAmps : 15;
+      var asVolts = (typeof d.asVolts === 'number' && isFinite(d.asVolts)) ? d.asVolts : 120;
+      var asAmps = (typeof d.asAmps === 'number' && isFinite(d.asAmps)) ? d.asAmps : 15;
       var asWatts = asVolts * asAmps;
-      var asRunning = d.asRunning || ['Microwave'];
+      var asRunning = Array.isArray(d.asRunning) ? d.asRunning : ['Microwave'];
       var totalLoad = 0;
       asRunning.forEach(function(name) { var dev = COMMON_DEVICES.find(function(x) { return x.name === name; }); if (dev) totalLoad += dev.watts; });
       var circuitUsage = totalLoad / asWatts * 100;
-      var asTireP1 = d.asTireP1 != null ? d.asTireP1 : 35;
-      var asTireT1 = d.asTireT1 != null ? d.asTireT1 : 70;
-      var asTireT2 = d.asTireT2 != null ? d.asTireT2 : 20;
+      var asTireP1 = (typeof d.asTireP1 === 'number' && isFinite(d.asTireP1)) ? d.asTireP1 : 35;
+      var asTireT1 = (typeof d.asTireT1 === 'number' && isFinite(d.asTireT1)) ? d.asTireT1 : 70;
+      var asTireT2 = (typeof d.asTireT2 === 'number' && isFinite(d.asTireT2)) ? d.asTireT2 : 20;
       var t1K = (asTireT1 - 32) * 5 / 9 + 273.15;
       var t2K = (asTireT2 - 32) * 5 / 9 + 273.15;
       var asTireP2 = asTireP1 * t2K / t1K;
@@ -2149,10 +2155,10 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════
       // CAR CARE STATE
       // ══════════════════════════════════════════
-      var ccOilTemp = d.ccOilTemp != null ? d.ccOilTemp : 70;
-      var ccTread = d.ccTread != null ? d.ccTread : 6;
+      var ccOilTemp = (typeof d.ccOilTemp === 'number' && isFinite(d.ccOilTemp)) ? d.ccOilTemp : 70;
+      var ccTread = (typeof d.ccTread === 'number' && isFinite(d.ccTread)) ? d.ccTread : 6;
       var ccMileage = d.ccMileage || 30000;
-      var ccDashQ = d.ccDashQ != null ? d.ccDashQ : 0;
+      var ccDashQ = (Number.isInteger(d.ccDashQ) && d.ccDashQ >= 0) ? d.ccDashQ : 0;
       var ccRecommended = OIL_GRADES.filter(function(g) { return ccOilTemp >= g.minF && ccOilTemp <= g.maxF; });
       var treadStatus = ccTread <= 2 ? 'REPLACE NOW' : ccTread <= 4 ? 'Replace Soon' : ccTread <= 6 ? 'Fair' : 'Good';
       var treadColor = ccTread <= 2 ? '#b91c1c' : ccTread <= 4 ? '#92400e' : ccTread <= 6 ? '#854d0e' : '#15803d';
@@ -2168,10 +2174,13 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════
       // HOME REPAIR STATE
       // ══════════════════════════════════════════
-      var plumbQ = d.plumbQ != null ? d.plumbQ : 0;
+      var plumbQ = (Number.isInteger(d.plumbQ) && d.plumbQ >= 0) ? d.plumbQ : 0;
       var plumbCurrent = TOILET_PROBLEMS[plumbQ % TOILET_PROBLEMS.length];
       var paintL = d.paintL || 12, paintW = d.paintW || 10, paintH = d.paintH || 8;
-      var paintCoats = d.paintCoats || 2, paintWindows = d.paintWindows || 2, paintDoors = d.paintDoors || 1;
+      // Rendered into the tree and fed to arithmetic; an object throws.
+      var paintCoats = (typeof d.paintCoats === 'number' && isFinite(d.paintCoats)) ? d.paintCoats : 2,
+          paintWindows = (typeof d.paintWindows === 'number' && isFinite(d.paintWindows)) ? d.paintWindows : 2,
+          paintDoors = (typeof d.paintDoors === 'number' && isFinite(d.paintDoors)) ? d.paintDoors : 1;
       var paintWallArea = 2 * (paintL + paintW) * paintH;
       var paintNetArea = Math.max(0, paintWallArea - paintWindows * 15 - paintDoors * 21);
       var paintGallons = Math.ceil(paintNetArea * paintCoats / 350);
@@ -2179,7 +2188,7 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════
       // BUDGET STATE
       // ══════════════════════════════════════════
-      var budgetIncome = d.budgetIncome != null ? d.budgetIncome : 3000;
+      var budgetIncome = (typeof d.budgetIncome === 'number' && isFinite(d.budgetIncome)) ? d.budgetIncome : 3000;
       var budgetExp = d.budgetExp || {};
       var needsTotal = 0, wantsTotal = 0, savesTotal = 0;
       BUDGET_CATEGORIES.forEach(function(cat) {
@@ -2197,7 +2206,7 @@ window.StemLab = window.StemLab || {
       // Savings goal calculator
       var savingsGoal = d.savingsGoal || 10000;
       var savingsMonthly = d.savingsMonthly || 200;
-      var savingsRate = d.savingsRate != null ? d.savingsRate : 5;
+      var savingsRate = (typeof d.savingsRate === 'number' && isFinite(d.savingsRate)) ? d.savingsRate : 5;
       var savingsResult = calcCompoundInterest(0, savingsRate, 10, savingsMonthly);
       var monthsToGoal = 0;
       if (savingsMonthly > 0) {
@@ -2220,13 +2229,13 @@ window.StemLab = window.StemLab || {
 
       // Loan calculator
       var loanPrincipal = d.loanPrincipal || 25000;
-      var loanRate = d.loanRate != null ? d.loanRate : 6.5;
+      var loanRate = (typeof d.loanRate === 'number' && isFinite(d.loanRate)) ? d.loanRate : 6.5;
       var loanTerm = d.loanTerm || 5;
       var loanResult = calcLoanPayment(loanPrincipal, loanRate, loanTerm);
 
       // Compound interest demo
       var ciPrincipal = d.ciPrincipal || 1000;
-      var ciRate = d.ciRate != null ? d.ciRate : 7;
+      var ciRate = (typeof d.ciRate === 'number' && isFinite(d.ciRate)) ? d.ciRate : 7;
       var ciYears = d.ciYears || 20;
       var ciMonthly = d.ciMonthly || 100;
       var ciResult = calcCompoundInterest(ciPrincipal, ciRate, ciYears, ciMonthly);
@@ -2234,18 +2243,18 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════
       // COOKING STATE
       // ══════════════════════════════════════════
-      var cookRecipeIdx = d.cookRecipeIdx || 0;
-      var cookScale = d.cookScale != null ? d.cookScale : 1;
+      var cookRecipeIdx = (Number.isInteger(d.cookRecipeIdx) && d.cookRecipeIdx >= 0) ? d.cookRecipeIdx : 0;
+      var cookScale = (typeof d.cookScale === 'number' && isFinite(d.cookScale)) ? d.cookScale : 1;
       var cookRecipe = RECIPES[cookRecipeIdx % RECIPES.length];
       var cookDesiredServings = Math.round(cookRecipe.servings * cookScale);
 
-      var nutritionIdx = d.nutritionIdx || 0;
+      var nutritionIdx = (Number.isInteger(d.nutritionIdx) && d.nutritionIdx >= 0) ? d.nutritionIdx : 0;
       var nutritionAnswer = d.nutritionAnswer || '';
-      var nutritionFb = d.nutritionFb || '';
+      var nutritionFb = typeof d.nutritionFb === 'string' ? d.nutritionFb : '';
       var nutritionScore = d.nutritionScore || 0;
       var nutritionCurrent = NUTRITION_LABELS[nutritionIdx % NUTRITION_LABELS.length];
 
-      var foodSafetyQ = d.foodSafetyQ || 0;
+      var foodSafetyQ = (Number.isInteger(d.foodSafetyQ) && d.foodSafetyQ >= 0) ? d.foodSafetyQ : 0;
       var foodSafetyCurrent = FOOD_SAFETY[foodSafetyQ % FOOD_SAFETY.length];
       var foodSafetyScore = d.foodSafetyScore || 0;
 
@@ -2256,22 +2265,22 @@ window.StemLab = window.StemLab || {
       var laundryLoadItems = Array.isArray(d.laundryLoadItems) ? d.laundryLoadItems : ['White towels', 'Dark jeans', 'Red cotton shirt'];
       var laundryWater = d.laundryWater || 'cold';
       var laundryCycle = d.laundryCycle || 'normal';
-      var laundryDetergent = d.laundryDetergent != null ? d.laundryDetergent : 1;
-      var laundryLoadFill = d.laundryLoadFill != null ? d.laundryLoadFill : 70;
+      var laundryDetergent = (typeof d.laundryDetergent === 'number' && isFinite(d.laundryDetergent)) ? d.laundryDetergent : 1;
+      var laundryLoadFill = (typeof d.laundryLoadFill === 'number' && isFinite(d.laundryLoadFill)) ? d.laundryLoadFill : 70;
       var laundryChecklist = d.laundryChecklist || {};
-      var laundryStainIdx = d.laundryStainIdx || 0;
+      var laundryStainIdx = (Number.isInteger(d.laundryStainIdx) && d.laundryStainIdx >= 0) ? d.laundryStainIdx : 0;
       var laundryStainChoice = d.laundryStainChoice;
       var laundryStainFb = d.laundryStainFb || '';
       var laundryStainScore = d.laundryStainScore || 0;
-      var laundryMythIdx = d.laundryMythIdx || 0;
+      var laundryMythIdx = (Number.isInteger(d.laundryMythIdx) && d.laundryMythIdx >= 0) ? d.laundryMythIdx : 0;
       var laundryMythAnswer = d.laundryMythAnswer;
       var laundryMythFb = d.laundryMythFb || '';
       var laundryMythScore = d.laundryMythScore || 0;
-      var laundryCareIdx = d.laundryCareIdx || 0;
-      var laundryStainFamilyIdx = d.laundryStainFamilyIdx || 0;
-      var laundryLoadsWeek = d.laundryLoadsWeek != null ? d.laundryLoadsWeek : 3;
-      var laundryColdShare = d.laundryColdShare != null ? d.laundryColdShare : 70;
-      var laundryDryerShare = d.laundryDryerShare != null ? d.laundryDryerShare : 75;
+      var laundryCareIdx = (Number.isInteger(d.laundryCareIdx) && d.laundryCareIdx >= 0) ? d.laundryCareIdx : 0;
+      var laundryStainFamilyIdx = (Number.isInteger(d.laundryStainFamilyIdx) && d.laundryStainFamilyIdx >= 0) ? d.laundryStainFamilyIdx : 0;
+      var laundryLoadsWeek = (typeof d.laundryLoadsWeek === 'number' && isFinite(d.laundryLoadsWeek)) ? d.laundryLoadsWeek : 3;
+      var laundryColdShare = (typeof d.laundryColdShare === 'number' && isFinite(d.laundryColdShare)) ? d.laundryColdShare : 70;
+      var laundryDryerShare = (typeof d.laundryDryerShare === 'number' && isFinite(d.laundryDryerShare)) ? d.laundryDryerShare : 75;
       var laundryCurrentStain = LAUNDRY_STAINS[laundryStainIdx % LAUNDRY_STAINS.length];
       var laundryCurrentMyth = LAUNDRY_MYTHS[laundryMythIdx % LAUNDRY_MYTHS.length];
       var laundryCurrentCare = LAUNDRY_CARE_LABELS[laundryCareIdx % LAUNDRY_CARE_LABELS.length];
@@ -2356,20 +2365,20 @@ window.StemLab = window.StemLab || {
       // DENTAL CARE STATE
       var dentalRoutine = d.dentalRoutine || {};
       var dentalRoutineDone = DENTAL_ROUTINE_STEPS.filter(function(step) { return !!dentalRoutine[step.id]; }).length;
-      var dentalScenarioIdx = d.dentalScenarioIdx || 0;
+      var dentalScenarioIdx = (Number.isInteger(d.dentalScenarioIdx) && d.dentalScenarioIdx >= 0) ? d.dentalScenarioIdx : 0;
       var dentalScenarioChoice = d.dentalScenarioChoice || '';
       var dentalScenarioFb = d.dentalScenarioFb || '';
       var dentalScenarioScore = d.dentalScenarioScore || 0;
       var dentalCurrentScenario = DENTAL_SCENARIOS[dentalScenarioIdx % DENTAL_SCENARIOS.length];
-      var dentalVisitCost = d.dentalVisitCost != null ? d.dentalVisitCost : 180;
-      var dentalDeductible = d.dentalDeductible != null ? d.dentalDeductible : 50;
-      var dentalCoinsurance = d.dentalCoinsurance != null ? d.dentalCoinsurance : 20;
-      var dentalAnnualMax = d.dentalAnnualMax != null ? d.dentalAnnualMax : 1500;
+      var dentalVisitCost = (typeof d.dentalVisitCost === 'number' && isFinite(d.dentalVisitCost)) ? d.dentalVisitCost : 180;
+      var dentalDeductible = (typeof d.dentalDeductible === 'number' && isFinite(d.dentalDeductible)) ? d.dentalDeductible : 50;
+      var dentalCoinsurance = (typeof d.dentalCoinsurance === 'number' && isFinite(d.dentalCoinsurance)) ? d.dentalCoinsurance : 20;
+      var dentalAnnualMax = (typeof d.dentalAnnualMax === 'number' && isFinite(d.dentalAnnualMax)) ? d.dentalAnnualMax : 1500;
       var dentalAfterDeductible = Math.max(0, dentalVisitCost - dentalDeductible);
       var dentalPlanPayBeforeMax = dentalAfterDeductible * (1 - dentalCoinsurance / 100);
       var dentalPlanPay = Math.min(dentalPlanPayBeforeMax, dentalAnnualMax);
       var dentalYouPay = Math.max(0, dentalVisitCost - dentalPlanPay);
-      var dentalSnackIdx = d.dentalSnackIdx || 0;
+      var dentalSnackIdx = (Number.isInteger(d.dentalSnackIdx) && d.dentalSnackIdx >= 0) ? d.dentalSnackIdx : 0;
       var dentalSnack = DENTAL_SNACKS[dentalSnackIdx % DENTAL_SNACKS.length];
       var dentalSnackColor = dentalSnack.score <= 2 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : dentalSnack.score <= 3 ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-red-700 bg-red-50 border-red-200';
 
@@ -2395,13 +2404,13 @@ window.StemLab = window.StemLab || {
       // BODY CARE STATE
       var bodyCareChecklist = d.bodyCareChecklist || {};
       var bodyCareDone = BODYCARE_CHECKS.filter(function(step) { return !!bodyCareChecklist[step.id]; }).length;
-      var bodyScreenHeight = d.bodyScreenHeight != null ? d.bodyScreenHeight : 3;
-      var bodyReach = d.bodyReach != null ? d.bodyReach : 3;
-      var bodyLighting = d.bodyLighting != null ? d.bodyLighting : 3;
-      var bodyBreaks = d.bodyBreaks != null ? d.bodyBreaks : 2;
-      var bodyResetIdx = d.bodyResetIdx || 0;
+      var bodyScreenHeight = (typeof d.bodyScreenHeight === 'number' && isFinite(d.bodyScreenHeight)) ? d.bodyScreenHeight : 3;
+      var bodyReach = (typeof d.bodyReach === 'number' && isFinite(d.bodyReach)) ? d.bodyReach : 3;
+      var bodyLighting = (typeof d.bodyLighting === 'number' && isFinite(d.bodyLighting)) ? d.bodyLighting : 3;
+      var bodyBreaks = (typeof d.bodyBreaks === 'number' && isFinite(d.bodyBreaks)) ? d.bodyBreaks : 2;
+      var bodyResetIdx = (Number.isInteger(d.bodyResetIdx) && d.bodyResetIdx >= 0) ? d.bodyResetIdx : 0;
       var bodyReset = BODYCARE_RESETS[bodyResetIdx % BODYCARE_RESETS.length];
-      var bodyScenarioIdx = d.bodyScenarioIdx || 0;
+      var bodyScenarioIdx = (Number.isInteger(d.bodyScenarioIdx) && d.bodyScenarioIdx >= 0) ? d.bodyScenarioIdx : 0;
       var bodyScenarioChoice = d.bodyScenarioChoice || '';
       var bodyScenarioFb = d.bodyScenarioFb || '';
       var bodyScenarioScore = d.bodyScenarioScore || 0;
@@ -2437,12 +2446,12 @@ window.StemLab = window.StemLab || {
       // SLEEP & ENERGY STATE
       var sleepRoutine = d.sleepRoutine || {};
       var sleepRoutineDone = SLEEP_ROUTINE_STEPS.filter(function(step) { return !!sleepRoutine[step.id]; }).length;
-      var sleepWakeMinutes = d.sleepWakeMinutes != null ? d.sleepWakeMinutes : 390;
-      var sleepNeedHours = d.sleepNeedHours != null ? d.sleepNeedHours : 8;
-      var sleepWindDown = d.sleepWindDown != null ? d.sleepWindDown : 30;
-      var sleepCaffeineCutoff = d.sleepCaffeineCutoff != null ? d.sleepCaffeineCutoff : 14;
-      var sleepScreenMinutes = d.sleepScreenMinutes != null ? d.sleepScreenMinutes : 45;
-      var sleepScenarioIdx = d.sleepScenarioIdx || 0;
+      var sleepWakeMinutes = (typeof d.sleepWakeMinutes === 'number' && isFinite(d.sleepWakeMinutes)) ? d.sleepWakeMinutes : 390;
+      var sleepNeedHours = (typeof d.sleepNeedHours === 'number' && isFinite(d.sleepNeedHours)) ? d.sleepNeedHours : 8;
+      var sleepWindDown = (typeof d.sleepWindDown === 'number' && isFinite(d.sleepWindDown)) ? d.sleepWindDown : 30;
+      var sleepCaffeineCutoff = (typeof d.sleepCaffeineCutoff === 'number' && isFinite(d.sleepCaffeineCutoff)) ? d.sleepCaffeineCutoff : 14;
+      var sleepScreenMinutes = (typeof d.sleepScreenMinutes === 'number' && isFinite(d.sleepScreenMinutes)) ? d.sleepScreenMinutes : 45;
+      var sleepScenarioIdx = (Number.isInteger(d.sleepScenarioIdx) && d.sleepScenarioIdx >= 0) ? d.sleepScenarioIdx : 0;
       var sleepScenarioChoice = d.sleepScenarioChoice || '';
       var sleepScenarioFb = d.sleepScenarioFb || '';
       var sleepScenarioScore = d.sleepScenarioScore || 0;
@@ -2481,16 +2490,16 @@ window.StemLab = window.StemLab || {
       // MEDICATION & LABELS STATE
       var medChecklist = d.medChecklist || {};
       var medChecklistDone = MED_LABEL_PARTS.filter(function(part) { return !!medChecklist[part.id]; }).length;
-      var medLabelIdx = d.medLabelIdx || 0;
+      var medLabelIdx = (Number.isInteger(d.medLabelIdx) && d.medLabelIdx >= 0) ? d.medLabelIdx : 0;
       var medLabel = MED_SAMPLE_LABELS[medLabelIdx % MED_SAMPLE_LABELS.length];
       var medLabelAnswer = d.medLabelAnswer || '';
       var medLabelFb = d.medLabelFb || '';
-      var medScenarioIdx = d.medScenarioIdx || 0;
+      var medScenarioIdx = (Number.isInteger(d.medScenarioIdx) && d.medScenarioIdx >= 0) ? d.medScenarioIdx : 0;
       var medScenarioChoice = d.medScenarioChoice || '';
       var medScenarioFb = d.medScenarioFb || '';
       var medScenarioScore = d.medScenarioScore || 0;
       var medCurrentScenario = MED_SCENARIOS[medScenarioIdx % MED_SCENARIOS.length];
-      var medQuestionIdx = d.medQuestionIdx || 0;
+      var medQuestionIdx = (Number.isInteger(d.medQuestionIdx) && d.medQuestionIdx >= 0) ? d.medQuestionIdx : 0;
       var medQuestionNote = d.medQuestionNote || '';
       var medQuestionMsg = d.medQuestionMsg || '';
       var medQuestionPrompt = MED_QUESTION_PROMPTS[medQuestionIdx % MED_QUESTION_PROMPTS.length];
@@ -2528,14 +2537,14 @@ window.StemLab = window.StemLab || {
       // APPOINTMENTS & SELF-ADVOCACY STATE
       var appointmentPrep = d.appointmentPrep || {};
       var appointmentPrepDone = APPOINTMENT_PREP_STEPS.filter(function(step) { return !!appointmentPrep[step.id]; }).length;
-      var appointmentTypeIdx = d.appointmentTypeIdx || 0;
+      var appointmentTypeIdx = (Number.isInteger(d.appointmentTypeIdx) && d.appointmentTypeIdx >= 0) ? d.appointmentTypeIdx : 0;
       var appointmentType = APPOINTMENT_TYPES[appointmentTypeIdx % APPOINTMENT_TYPES.length];
-      var appointmentScenarioIdx = d.appointmentScenarioIdx || 0;
+      var appointmentScenarioIdx = (Number.isInteger(d.appointmentScenarioIdx) && d.appointmentScenarioIdx >= 0) ? d.appointmentScenarioIdx : 0;
       var appointmentScenarioChoice = d.appointmentScenarioChoice || '';
       var appointmentScenarioFb = d.appointmentScenarioFb || '';
       var appointmentScenarioScore = d.appointmentScenarioScore || 0;
       var appointmentCurrentScenario = APPOINTMENT_SCENARIOS[appointmentScenarioIdx % APPOINTMENT_SCENARIOS.length];
-      var appointmentScriptIdx = d.appointmentScriptIdx || 0;
+      var appointmentScriptIdx = (Number.isInteger(d.appointmentScriptIdx) && d.appointmentScriptIdx >= 0) ? d.appointmentScriptIdx : 0;
       var appointmentScriptPrompt = APPOINTMENT_SCRIPT_PROMPTS[appointmentScriptIdx % APPOINTMENT_SCRIPT_PROMPTS.length];
       var appointmentScriptNote = d.appointmentScriptNote || '';
       var appointmentScriptMsg = d.appointmentScriptMsg || '';
@@ -2562,14 +2571,14 @@ window.StemLab = window.StemLab || {
       // HOME SAFETY STATE
       var homeSafetyChecklist = d.homeSafetyChecklist || {};
       var homeSafetyDone = HOME_SAFETY_CHECKS.filter(function(step) { return !!homeSafetyChecklist[step.id]; }).length;
-      var homeSafetyScenarioIdx = d.homeSafetyScenarioIdx || 0;
+      var homeSafetyScenarioIdx = (Number.isInteger(d.homeSafetyScenarioIdx) && d.homeSafetyScenarioIdx >= 0) ? d.homeSafetyScenarioIdx : 0;
       var homeSafetyScenarioChoice = d.homeSafetyScenarioChoice || '';
       var homeSafetyScenarioFb = d.homeSafetyScenarioFb || '';
       var homeSafetyScenarioScore = d.homeSafetyScenarioScore || 0;
       var homeSafetyCurrentScenario = HOME_SAFETY_SCENARIOS[homeSafetyScenarioIdx % HOME_SAFETY_SCENARIOS.length];
-      var firstAidIdx = d.firstAidIdx || 0;
+      var firstAidIdx = (Number.isInteger(d.firstAidIdx) && d.firstAidIdx >= 0) ? d.firstAidIdx : 0;
       var firstAidCard = FIRST_AID_CARDS[firstAidIdx % FIRST_AID_CARDS.length];
-      var homePlanIdx = d.homePlanIdx || 0;
+      var homePlanIdx = (Number.isInteger(d.homePlanIdx) && d.homePlanIdx >= 0) ? d.homePlanIdx : 0;
       var homePlanPrompt = HOME_SAFETY_PLAN_PROMPTS[homePlanIdx % HOME_SAFETY_PLAN_PROMPTS.length];
       var homePlanNote = d.homePlanNote || '';
       var homePlanMsg = d.homePlanMsg || '';
@@ -2596,14 +2605,14 @@ window.StemLab = window.StemLab || {
       // DIGITAL SAFETY STATE
       var digitalChecklist = d.digitalChecklist || {};
       var digitalChecklistDone = DIGITAL_SAFETY_CHECKS.filter(function(step) { return !!digitalChecklist[step.id]; }).length;
-      var digitalScenarioIdx = d.digitalScenarioIdx || 0;
+      var digitalScenarioIdx = (Number.isInteger(d.digitalScenarioIdx) && d.digitalScenarioIdx >= 0) ? d.digitalScenarioIdx : 0;
       var digitalScenarioChoice = d.digitalScenarioChoice || '';
       var digitalScenarioFb = d.digitalScenarioFb || '';
       var digitalScenarioScore = d.digitalScenarioScore || 0;
       var digitalCurrentScenario = DIGITAL_SCENARIOS[digitalScenarioIdx % DIGITAL_SCENARIOS.length];
-      var digitalScamIdx = d.digitalScamIdx || 0;
+      var digitalScamIdx = (Number.isInteger(d.digitalScamIdx) && d.digitalScamIdx >= 0) ? d.digitalScamIdx : 0;
       var digitalScam = DIGITAL_SCAM_SIGNS[digitalScamIdx % DIGITAL_SCAM_SIGNS.length];
-      var digitalPlanIdx = d.digitalPlanIdx || 0;
+      var digitalPlanIdx = (Number.isInteger(d.digitalPlanIdx) && d.digitalPlanIdx >= 0) ? d.digitalPlanIdx : 0;
       var digitalPlanPrompt = DIGITAL_PLAN_PROMPTS[digitalPlanIdx % DIGITAL_PLAN_PROMPTS.length];
       var digitalPlanNote = d.digitalPlanNote || '';
       var digitalPlanMsg = d.digitalPlanMsg || '';
@@ -2630,16 +2639,16 @@ window.StemLab = window.StemLab || {
       // RECORDS & PAPERWORK STATE
       var recordsChecklist = d.recordsChecklist || {};
       var recordsDone = RECORDS_CHECKS.filter(function(step) { return !!recordsChecklist[step.id]; }).length;
-      var recordScenarioIdx = d.recordScenarioIdx || 0;
+      var recordScenarioIdx = (Number.isInteger(d.recordScenarioIdx) && d.recordScenarioIdx >= 0) ? d.recordScenarioIdx : 0;
       var recordScenarioChoice = d.recordScenarioChoice || '';
       var recordScenarioFb = d.recordScenarioFb || '';
       var recordScenarioScore = d.recordScenarioScore || 0;
       var recordCurrentScenario = RECORD_SCENARIOS[recordScenarioIdx % RECORD_SCENARIOS.length];
-      var recordTypeIdx = d.recordTypeIdx || 0;
+      var recordTypeIdx = (Number.isInteger(d.recordTypeIdx) && d.recordTypeIdx >= 0) ? d.recordTypeIdx : 0;
       var recordTypeCard = RECORD_TYPE_CARDS[recordTypeIdx % RECORD_TYPE_CARDS.length];
-      var formFieldIdx = d.formFieldIdx || 0;
+      var formFieldIdx = (Number.isInteger(d.formFieldIdx) && d.formFieldIdx >= 0) ? d.formFieldIdx : 0;
       var formFieldCard = FORM_FIELD_CARDS[formFieldIdx % FORM_FIELD_CARDS.length];
-      var recordPlanIdx = d.recordPlanIdx || 0;
+      var recordPlanIdx = (Number.isInteger(d.recordPlanIdx) && d.recordPlanIdx >= 0) ? d.recordPlanIdx : 0;
       var recordPlanPrompt = RECORD_PLAN_PROMPTS[recordPlanIdx % RECORD_PLAN_PROMPTS.length];
       var recordPlanNote = d.recordPlanNote || '';
       var recordPlanMsg = d.recordPlanMsg || '';
@@ -2666,16 +2675,16 @@ window.StemLab = window.StemLab || {
       // TRANSPORTATION & NAVIGATION STATE
       var transportChecklist = d.transportChecklist || {};
       var transportDone = TRANSPORT_CHECKS.filter(function(step) { return !!transportChecklist[step.id]; }).length;
-      var transportScenarioIdx = d.transportScenarioIdx || 0;
+      var transportScenarioIdx = (Number.isInteger(d.transportScenarioIdx) && d.transportScenarioIdx >= 0) ? d.transportScenarioIdx : 0;
       var transportScenarioChoice = d.transportScenarioChoice || '';
       var transportScenarioFb = d.transportScenarioFb || '';
       var transportScenarioScore = d.transportScenarioScore || 0;
       var transportCurrentScenario = TRANSPORT_SCENARIOS[transportScenarioIdx % TRANSPORT_SCENARIOS.length];
-      var transportModeIdx = d.transportModeIdx || 0;
+      var transportModeIdx = (Number.isInteger(d.transportModeIdx) && d.transportModeIdx >= 0) ? d.transportModeIdx : 0;
       var transportModeCard = TRANSPORT_MODE_CARDS[transportModeIdx % TRANSPORT_MODE_CARDS.length];
-      var transportSymbolIdx = d.transportSymbolIdx || 0;
+      var transportSymbolIdx = (Number.isInteger(d.transportSymbolIdx) && d.transportSymbolIdx >= 0) ? d.transportSymbolIdx : 0;
       var transportSymbolCard = TRANSPORT_SYMBOL_CARDS[transportSymbolIdx % TRANSPORT_SYMBOL_CARDS.length];
-      var transportPlanIdx = d.transportPlanIdx || 0;
+      var transportPlanIdx = (Number.isInteger(d.transportPlanIdx) && d.transportPlanIdx >= 0) ? d.transportPlanIdx : 0;
       var transportPlanPrompt = TRANSPORT_PLAN_PROMPTS[transportPlanIdx % TRANSPORT_PLAN_PROMPTS.length];
       var transportPlanNote = d.transportPlanNote || '';
       var transportPlanMsg = d.transportPlanMsg || '';
@@ -2702,16 +2711,16 @@ window.StemLab = window.StemLab || {
       // JOB READINESS & WORKPLACE STATE
       var workChecklist = d.workChecklist || {};
       var workDone = WORK_CHECKS.filter(function(step) { return !!workChecklist[step.id]; }).length;
-      var workScenarioIdx = d.workScenarioIdx || 0;
+      var workScenarioIdx = (Number.isInteger(d.workScenarioIdx) && d.workScenarioIdx >= 0) ? d.workScenarioIdx : 0;
       var workScenarioChoice = d.workScenarioChoice || '';
       var workScenarioFb = d.workScenarioFb || '';
       var workScenarioScore = d.workScenarioScore || 0;
       var workCurrentScenario = WORK_SCENARIOS[workScenarioIdx % WORK_SCENARIOS.length];
-      var workplaceCardIdx = d.workplaceCardIdx || 0;
+      var workplaceCardIdx = (Number.isInteger(d.workplaceCardIdx) && d.workplaceCardIdx >= 0) ? d.workplaceCardIdx : 0;
       var workplaceCard = WORKPLACE_CARDS[workplaceCardIdx % WORKPLACE_CARDS.length];
-      var interviewCardIdx = d.interviewCardIdx || 0;
+      var interviewCardIdx = (Number.isInteger(d.interviewCardIdx) && d.interviewCardIdx >= 0) ? d.interviewCardIdx : 0;
       var interviewCard = INTERVIEW_CARDS[interviewCardIdx % INTERVIEW_CARDS.length];
-      var workPlanIdx = d.workPlanIdx || 0;
+      var workPlanIdx = (Number.isInteger(d.workPlanIdx) && d.workPlanIdx >= 0) ? d.workPlanIdx : 0;
       var workPlanPrompt = WORK_PLAN_PROMPTS[workPlanIdx % WORK_PLAN_PROMPTS.length];
       var workPlanNote = d.workPlanNote || '';
       var workPlanMsg = d.workPlanMsg || '';
@@ -2738,18 +2747,18 @@ window.StemLab = window.StemLab || {
       // RESUME BUILDER & EVIDENCE REVIEW STATE
       var resumeChecklist = d.resumeChecklist || {};
       var resumeDone = RESUME_CHECKS.filter(function(step) { return !!resumeChecklist[step.id]; }).length;
-      var resumeScenarioIdx = d.resumeScenarioIdx || 0;
+      var resumeScenarioIdx = (Number.isInteger(d.resumeScenarioIdx) && d.resumeScenarioIdx >= 0) ? d.resumeScenarioIdx : 0;
       var resumeScenarioChoice = d.resumeScenarioChoice || '';
       var resumeScenarioFb = d.resumeScenarioFb || '';
       var resumeScenarioScore = d.resumeScenarioScore || 0;
       var resumeCurrentScenario = RESUME_SCENARIOS[resumeScenarioIdx % RESUME_SCENARIOS.length];
-      var resumeSectionIdx = d.resumeSectionIdx || 0;
+      var resumeSectionIdx = (Number.isInteger(d.resumeSectionIdx) && d.resumeSectionIdx >= 0) ? d.resumeSectionIdx : 0;
       var resumeSectionCard = RESUME_SECTION_CARDS[resumeSectionIdx % RESUME_SECTION_CARDS.length];
-      var resumeBulletIdx = d.resumeBulletIdx || 0;
+      var resumeBulletIdx = (Number.isInteger(d.resumeBulletIdx) && d.resumeBulletIdx >= 0) ? d.resumeBulletIdx : 0;
       var resumeBulletCard = RESUME_BULLET_EXAMPLES[resumeBulletIdx % RESUME_BULLET_EXAMPLES.length];
-      var resumeResearchIdx = d.resumeResearchIdx || 0;
+      var resumeResearchIdx = (Number.isInteger(d.resumeResearchIdx) && d.resumeResearchIdx >= 0) ? d.resumeResearchIdx : 0;
       var resumeResearchCard = RESUME_RESEARCH_CARDS[resumeResearchIdx % RESUME_RESEARCH_CARDS.length];
-      var resumePlanIdx = d.resumePlanIdx || 0;
+      var resumePlanIdx = (Number.isInteger(d.resumePlanIdx) && d.resumePlanIdx >= 0) ? d.resumePlanIdx : 0;
       var resumePlanPrompt = RESUME_PLAN_PROMPTS[resumePlanIdx % RESUME_PLAN_PROMPTS.length];
       var resumePlanNote = d.resumePlanNote || '';
       var resumePlanMsg = d.resumePlanMsg || '';
@@ -2783,18 +2792,18 @@ window.StemLab = window.StemLab || {
       // PORTFOLIO & PROOF LOCKER STATE
       var proofChecklist = d.proofChecklist || {};
       var proofDone = PROOF_CHECKS.filter(function(step) { return !!proofChecklist[step.id]; }).length;
-      var proofScenarioIdx = d.proofScenarioIdx || 0;
+      var proofScenarioIdx = (Number.isInteger(d.proofScenarioIdx) && d.proofScenarioIdx >= 0) ? d.proofScenarioIdx : 0;
       var proofScenarioChoice = d.proofScenarioChoice || '';
       var proofScenarioFb = d.proofScenarioFb || '';
       var proofScenarioScore = d.proofScenarioScore || 0;
       var proofCurrentScenario = PROOF_SCENARIOS[proofScenarioIdx % PROOF_SCENARIOS.length];
-      var proofTypeIdx = d.proofTypeIdx || 0;
+      var proofTypeIdx = (Number.isInteger(d.proofTypeIdx) && d.proofTypeIdx >= 0) ? d.proofTypeIdx : 0;
       var proofTypeCard = PROOF_TYPE_CARDS[proofTypeIdx % PROOF_TYPE_CARDS.length];
-      var proofQualityIdx = d.proofQualityIdx || 0;
+      var proofQualityIdx = (Number.isInteger(d.proofQualityIdx) && d.proofQualityIdx >= 0) ? d.proofQualityIdx : 0;
       var proofQualityCard = PROOF_QUALITY_CARDS[proofQualityIdx % PROOF_QUALITY_CARDS.length];
-      var proofShareIdx = d.proofShareIdx || 0;
+      var proofShareIdx = (Number.isInteger(d.proofShareIdx) && d.proofShareIdx >= 0) ? d.proofShareIdx : 0;
       var proofShareCard = PROOF_SHARE_LEVELS[proofShareIdx % PROOF_SHARE_LEVELS.length];
-      var proofPlanIdx = d.proofPlanIdx || 0;
+      var proofPlanIdx = (Number.isInteger(d.proofPlanIdx) && d.proofPlanIdx >= 0) ? d.proofPlanIdx : 0;
       var proofPlanPrompt = PROOF_PLAN_PROMPTS[proofPlanIdx % PROOF_PLAN_PROMPTS.length];
       var proofPlanNote = d.proofPlanNote || '';
       var proofPlanMsg = d.proofPlanMsg || '';
@@ -2828,18 +2837,18 @@ window.StemLab = window.StemLab || {
       // INTERVIEW PRACTICE STUDIO STATE
       var interviewChecklist = d.interviewChecklist || {};
       var interviewDone = INTERVIEW_CHECKS.filter(function(step) { return !!interviewChecklist[step.id]; }).length;
-      var interviewScenarioIdx = d.interviewScenarioIdx || 0;
+      var interviewScenarioIdx = (Number.isInteger(d.interviewScenarioIdx) && d.interviewScenarioIdx >= 0) ? d.interviewScenarioIdx : 0;
       var interviewScenarioChoice = d.interviewScenarioChoice || '';
       var interviewScenarioFb = d.interviewScenarioFb || '';
       var interviewScenarioScore = d.interviewScenarioScore || 0;
       var interviewCurrentScenario = INTERVIEW_SCENARIOS[interviewScenarioIdx % INTERVIEW_SCENARIOS.length];
-      var interviewRoleIdx = d.interviewRoleIdx || 0;
+      var interviewRoleIdx = (Number.isInteger(d.interviewRoleIdx) && d.interviewRoleIdx >= 0) ? d.interviewRoleIdx : 0;
       var interviewRole = INTERVIEW_ROLES[interviewRoleIdx % INTERVIEW_ROLES.length];
-      var interviewQuestionIdx = d.interviewQuestionIdx || 0;
+      var interviewQuestionIdx = (Number.isInteger(d.interviewQuestionIdx) && d.interviewQuestionIdx >= 0) ? d.interviewQuestionIdx : 0;
       var interviewQuestion = INTERVIEW_QUESTIONS[interviewQuestionIdx % INTERVIEW_QUESTIONS.length];
-      var interviewRubricIdx = d.interviewRubricIdx || 0;
+      var interviewRubricIdx = (Number.isInteger(d.interviewRubricIdx) && d.interviewRubricIdx >= 0) ? d.interviewRubricIdx : 0;
       var interviewRubricCard = INTERVIEW_RUBRIC_CARDS[interviewRubricIdx % INTERVIEW_RUBRIC_CARDS.length];
-      var interviewReflectionIdx = d.interviewReflectionIdx || 0;
+      var interviewReflectionIdx = (Number.isInteger(d.interviewReflectionIdx) && d.interviewReflectionIdx >= 0) ? d.interviewReflectionIdx : 0;
       var interviewReflectionPrompt = INTERVIEW_REFLECTION_PROMPTS[interviewReflectionIdx % INTERVIEW_REFLECTION_PROMPTS.length];
       var interviewReflectionNote = d.interviewReflectionNote || '';
       var interviewReflectionMsg = d.interviewReflectionMsg || '';
@@ -2861,7 +2870,7 @@ window.StemLab = window.StemLab || {
       var interviewStarResult = d.interviewStarResult || '';
       var interviewStarMsg = d.interviewStarMsg || '';
       var interviewStarPreview = 'Situation: ' + (interviewStarSituation.trim() || 'the context') + ' Task: ' + (interviewStarTask.trim() || 'what needed to happen') + ' Action: ' + (interviewStarAction.trim() || 'what I did') + ' Result: ' + (interviewStarResult.trim() || 'what changed or what I learned') + '.';
-      var interviewPlanIdx = d.interviewPlanIdx || 0;
+      var interviewPlanIdx = (Number.isInteger(d.interviewPlanIdx) && d.interviewPlanIdx >= 0) ? d.interviewPlanIdx : 0;
       var interviewPracticePlan = INTERVIEW_PLAN_TEMPLATES[interviewPlanIdx % INTERVIEW_PLAN_TEMPLATES.length];
       var interviewPlanMinutes = Number(d.interviewPlanMinutes || interviewPracticePlan.minutes || 5);
       var interviewPlanGoal = d.interviewPlanGoal || interviewPracticePlan.goal;
@@ -2880,12 +2889,12 @@ window.StemLab = window.StemLab || {
       var interviewRehearsalConfidence = Number(d.interviewRehearsalConfidence || 3);
       var interviewRehearsalTargetId = d.interviewRehearsalTargetId || '60';
       var interviewRehearsalTarget = INTERVIEW_REHEARSAL_TARGETS.find(function(target) { return target.id === interviewRehearsalTargetId; }) || INTERVIEW_REHEARSAL_TARGETS[1];
-      var interviewRehearsalScriptIdx = d.interviewRehearsalScriptIdx || 0;
+      var interviewRehearsalScriptIdx = (Number.isInteger(d.interviewRehearsalScriptIdx) && d.interviewRehearsalScriptIdx >= 0) ? d.interviewRehearsalScriptIdx : 0;
       var interviewRehearsalScript = INTERVIEW_REHEARSAL_SCRIPTS[interviewRehearsalScriptIdx % INTERVIEW_REHEARSAL_SCRIPTS.length];
       var interviewRehearsalNote = d.interviewRehearsalNote || '';
       var interviewRehearsalMsg = d.interviewRehearsalMsg || '';
       var interviewRehearsalSavedAt = d.interviewRehearsalSavedAt || 0;
-      var interviewProofMatcherIdx = d.interviewProofMatcherIdx || 0;
+      var interviewProofMatcherIdx = (Number.isInteger(d.interviewProofMatcherIdx) && d.interviewProofMatcherIdx >= 0) ? d.interviewProofMatcherIdx : 0;
       var interviewProofMatcher = INTERVIEW_PROOF_MATCHERS[interviewProofMatcherIdx % INTERVIEW_PROOF_MATCHERS.length];
       var interviewProofNote = d.interviewProofNote || '';
       var interviewSavedProofCue = d.interviewSavedProofCue || '';
@@ -3314,16 +3323,16 @@ window.StemLab = window.StemLab || {
       // COMMUNICATION & CONFLICT STATE
       var communicationChecklist = d.communicationChecklist || {};
       var communicationDone = COMMUNICATION_CHECKS.filter(function(step) { return !!communicationChecklist[step.id]; }).length;
-      var communicationScenarioIdx = d.communicationScenarioIdx || 0;
+      var communicationScenarioIdx = (Number.isInteger(d.communicationScenarioIdx) && d.communicationScenarioIdx >= 0) ? d.communicationScenarioIdx : 0;
       var communicationScenarioChoice = d.communicationScenarioChoice || '';
       var communicationScenarioFb = d.communicationScenarioFb || '';
       var communicationScenarioScore = d.communicationScenarioScore || 0;
       var communicationCurrentScenario = COMMUNICATION_SCENARIOS[communicationScenarioIdx % COMMUNICATION_SCENARIOS.length];
-      var messageToneIdx = d.messageToneIdx || 0;
+      var messageToneIdx = (Number.isInteger(d.messageToneIdx) && d.messageToneIdx >= 0) ? d.messageToneIdx : 0;
       var messageToneCard = MESSAGE_TONE_CARDS[messageToneIdx % MESSAGE_TONE_CARDS.length];
-      var boundaryRepairIdx = d.boundaryRepairIdx || 0;
+      var boundaryRepairIdx = (Number.isInteger(d.boundaryRepairIdx) && d.boundaryRepairIdx >= 0) ? d.boundaryRepairIdx : 0;
       var boundaryRepairCard = BOUNDARY_REPAIR_CARDS[boundaryRepairIdx % BOUNDARY_REPAIR_CARDS.length];
-      var communicationPlanIdx = d.communicationPlanIdx || 0;
+      var communicationPlanIdx = (Number.isInteger(d.communicationPlanIdx) && d.communicationPlanIdx >= 0) ? d.communicationPlanIdx : 0;
       var communicationPlanPrompt = COMMUNICATION_PLAN_PROMPTS[communicationPlanIdx % COMMUNICATION_PLAN_PROMPTS.length];
       var communicationPlanNote = d.communicationPlanNote || '';
       var communicationPlanMsg = d.communicationPlanMsg || '';
@@ -3350,16 +3359,16 @@ window.StemLab = window.StemLab || {
       // TIME MANAGEMENT & PLANNING STATE
       var timeChecklist = d.timeChecklist || {};
       var timeDone = TIME_CHECKS.filter(function(step) { return !!timeChecklist[step.id]; }).length;
-      var timeScenarioIdx = d.timeScenarioIdx || 0;
+      var timeScenarioIdx = (Number.isInteger(d.timeScenarioIdx) && d.timeScenarioIdx >= 0) ? d.timeScenarioIdx : 0;
       var timeScenarioChoice = d.timeScenarioChoice || '';
       var timeScenarioFb = d.timeScenarioFb || '';
       var timeScenarioScore = d.timeScenarioScore || 0;
       var timeCurrentScenario = TIME_SCENARIOS[timeScenarioIdx % TIME_SCENARIOS.length];
-      var priorityCardIdx = d.priorityCardIdx || 0;
+      var priorityCardIdx = (Number.isInteger(d.priorityCardIdx) && d.priorityCardIdx >= 0) ? d.priorityCardIdx : 0;
       var priorityCard = PRIORITY_CARDS[priorityCardIdx % PRIORITY_CARDS.length];
-      var timeToolIdx = d.timeToolIdx || 0;
+      var timeToolIdx = (Number.isInteger(d.timeToolIdx) && d.timeToolIdx >= 0) ? d.timeToolIdx : 0;
       var timeToolCard = TIME_TOOL_CARDS[timeToolIdx % TIME_TOOL_CARDS.length];
-      var timePlanIdx = d.timePlanIdx || 0;
+      var timePlanIdx = (Number.isInteger(d.timePlanIdx) && d.timePlanIdx >= 0) ? d.timePlanIdx : 0;
       var timePlanPrompt = TIME_PLAN_PROMPTS[timePlanIdx % TIME_PLAN_PROMPTS.length];
       var timePlanNote = d.timePlanNote || '';
       var timePlanMsg = d.timePlanMsg || '';
@@ -3386,23 +3395,23 @@ window.StemLab = window.StemLab || {
       // FOOD CONFIDENCE STATE
       var foodConfidenceChecklist = d.foodConfidenceChecklist || {};
       var foodConfidenceDone = FOOD_CONFIDENCE_CHECKS.filter(function(step) { return !!foodConfidenceChecklist[step.id]; }).length;
-      var foodConfidenceScenarioIdx = d.foodConfidenceScenarioIdx || 0;
+      var foodConfidenceScenarioIdx = (Number.isInteger(d.foodConfidenceScenarioIdx) && d.foodConfidenceScenarioIdx >= 0) ? d.foodConfidenceScenarioIdx : 0;
       var foodConfidenceScenarioChoice = d.foodConfidenceScenarioChoice || '';
       var foodConfidenceScenarioFb = d.foodConfidenceScenarioFb || '';
       var foodConfidenceScenarioScore = d.foodConfidenceScenarioScore || 0;
       var foodConfidenceCurrentScenario = FOOD_CONFIDENCE_SCENARIOS[foodConfidenceScenarioIdx % FOOD_CONFIDENCE_SCENARIOS.length];
-      var foodStorageIdx = d.foodStorageIdx || 0;
+      var foodStorageIdx = (Number.isInteger(d.foodStorageIdx) && d.foodStorageIdx >= 0) ? d.foodStorageIdx : 0;
       var foodStorageCard = FOOD_STORAGE_CARDS[foodStorageIdx % FOOD_STORAGE_CARDS.length];
-      var foodBaseIdx = d.foodBaseIdx || 0;
-      var foodProteinIdx = d.foodProteinIdx || 0;
-      var foodProduceIdx = d.foodProduceIdx || 0;
-      var foodFlavorIdx = d.foodFlavorIdx || 0;
+      var foodBaseIdx = (Number.isInteger(d.foodBaseIdx) && d.foodBaseIdx >= 0) ? d.foodBaseIdx : 0;
+      var foodProteinIdx = (Number.isInteger(d.foodProteinIdx) && d.foodProteinIdx >= 0) ? d.foodProteinIdx : 0;
+      var foodProduceIdx = (Number.isInteger(d.foodProduceIdx) && d.foodProduceIdx >= 0) ? d.foodProduceIdx : 0;
+      var foodFlavorIdx = (Number.isInteger(d.foodFlavorIdx) && d.foodFlavorIdx >= 0) ? d.foodFlavorIdx : 0;
       var foodBase = FOOD_MEAL_BASES[foodBaseIdx % FOOD_MEAL_BASES.length];
       var foodProtein = FOOD_MEAL_PROTEINS[foodProteinIdx % FOOD_MEAL_PROTEINS.length];
       var foodProduce = FOOD_MEAL_PRODUCE[foodProduceIdx % FOOD_MEAL_PRODUCE.length];
       var foodFlavor = FOOD_MEAL_FLAVORS[foodFlavorIdx % FOOD_MEAL_FLAVORS.length];
       var foodMealCost = foodBase.cost + foodProtein.cost + foodProduce.cost + foodFlavor.cost;
-      var foodLabelIdx = d.foodLabelIdx || 0;
+      var foodLabelIdx = (Number.isInteger(d.foodLabelIdx) && d.foodLabelIdx >= 0) ? d.foodLabelIdx : 0;
       var foodLabel = FOOD_LABEL_SAMPLES[foodLabelIdx % FOOD_LABEL_SAMPLES.length];
       var foodLabelAnswer = d.foodLabelAnswer || '';
       var foodLabelFb = d.foodLabelFb || '';
@@ -3438,7 +3447,7 @@ window.StemLab = window.StemLab || {
       }
 
       var chalTier = d.chalTier || 1;
-      var chalIdx = d.chalIdx != null ? d.chalIdx : 0;
+      var chalIdx = (typeof d.chalIdx === 'number' && isFinite(d.chalIdx)) ? d.chalIdx : 0;
       var chalAnswer = d.chalAnswer || '';
       var chalFeedback = d.chalFeedback || '';
       var chalStreak = d.chalStreak || 0;
@@ -3466,8 +3475,8 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════
       var battleActive = d.battleActive || false;
       var battleRound = d.battleRound || 0;
-      var battlePlayerHP = d.battlePlayerHP != null ? d.battlePlayerHP : 100;
-      var battleEnemyHP = d.battleEnemyHP != null ? d.battleEnemyHP : 100;
+      var battlePlayerHP = (typeof d.battlePlayerHP === 'number' && isFinite(d.battlePlayerHP)) ? d.battlePlayerHP : 100;
+      var battleEnemyHP = (typeof d.battleEnemyHP === 'number' && isFinite(d.battleEnemyHP)) ? d.battleEnemyHP : 100;
       var battleAnswer = d.battleAnswer || '';
       var battleFeedback = d.battleFeedback || '';
       var battleOver = d.battleOver || false;

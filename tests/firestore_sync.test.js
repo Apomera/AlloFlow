@@ -548,11 +548,15 @@ describe('sanitizeHistoryForCloud — artwork budget', () => {
       .every(card => card.visualImage === undefined)).toBe(true);
     expect(out[0].data.cards.filter(card => card.visualSource === 'uploaded')
       .every(card => card.visualImage === art)).toBe(true);
+    // Alt text for REGENERABLE art is dropped with the art it describes: an alt
+    // string that names a picture this copy no longer carries is worse than no
+    // alt at all (see stripMemoryAidCardArtwork). Everything else is preserved.
+    expect(out[0].data.cards[0].visualAlt).toBeUndefined();
+    expect(out[0].data.cards[0].visualAltSource).toBeUndefined();
     expect(out[0].data.cards[0]).toMatchObject({
       target: 'Water-cycle target 0',
       essentialFacts: ['Fact 0'],
       studentDraft: 'Cue 0',
-      visualAlt: 'A specific description for cue 0',
       visualSource: 'ai-generated',
       visualCheck: { alignment: 'supports', concern: 'None identified' },
       visualReview: { status: 'approved', note: 'Teacher reviewed cue 0' },
@@ -656,9 +660,9 @@ describe('sanitizeHistoryForCloud — artwork budget', () => {
     const nonMemory = out.data.resources[2];
     expect(estimateBytes([out])).toBeLessThanOrEqual(BUDGET);
     expect(artifact.payload.cards.every(card => card.visualImage === undefined && card.imageUrl === undefined)).toBe(true);
+    expect(artifact.payload.cards[0].visualAlt).toBeUndefined();
     expect(artifact.payload.cards[0]).toMatchObject({
       target: 'Nested target 0',
-      visualAlt: 'Nested description 0',
       visualSource: 'ai-refined',
       visualReview: { status: 'needs-revision', note: 'Keep review 0' },
       nested: { visualImage: 'KEEP NESTED CARD FIELD', imageUrl: 'KEEP NESTED LEGACY FIELD' },

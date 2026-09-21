@@ -18530,11 +18530,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           var oceanPop = d.oceanPop || { sardines: 800, tuna: 200, sharks: 50 };
 
-          var harvestRate = d.harvestRate != null ? d.harvestRate : 20;
+          var harvestRate = (typeof d.harvestRate === 'number' && isFinite(d.harvestRate)) ? d.harvestRate : 20;
 
           var meshSize = d.meshSize || 'medium';
 
-          var mpaPercent = d.mpaPercent != null ? d.mpaPercent : 10;
+          var mpaPercent = (typeof d.mpaPercent === 'number' && isFinite(d.mpaPercent)) ? d.mpaPercent : 10;
 
           var isOpenSeason = d.isOpenSeason != null ? d.isOpenSeason : true;
 

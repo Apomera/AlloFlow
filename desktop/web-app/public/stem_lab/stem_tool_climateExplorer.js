@@ -342,10 +342,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       var ccScale = ['school', 'city', 'country'].indexOf(d.ccScale) !== -1 ? d.ccScale : 'school';
       var ccSchoolSize = d.ccSchoolSize || 500;
       // Renewables state
-      var rsSolar = d.rsSolar != null ? d.rsSolar : 10;
-      var rsWind = d.rsWind != null ? d.rsWind : 5;
-      var rsHydro = d.rsHydro != null ? d.rsHydro : 15;
-      var rsNuclear = d.rsNuclear != null ? d.rsNuclear : 10;
+      var rsSolar = (typeof d.rsSolar === 'number' && isFinite(d.rsSolar)) ? d.rsSolar : 10;
+      var rsWind = (typeof d.rsWind === 'number' && isFinite(d.rsWind)) ? d.rsWind : 5;
+      var rsHydro = (typeof d.rsHydro === 'number' && isFinite(d.rsHydro)) ? d.rsHydro : 15;
+      var rsNuclear = (typeof d.rsNuclear === 'number' && isFinite(d.rsNuclear)) ? d.rsNuclear : 10;
       // buildTimeline() loops `y <= rsTimespan` and the readouts index
       // timeline[length-1], so a persisted -1 / "abc" / {} produced an EMPTY
       // timeline and threw on .gt. Only the four offered spans are valid.
@@ -2788,7 +2788,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 var n = (typeof raw === 'number') ? raw : parseFloat(raw);
                 if (!isFinite(n)) return 1;
                 return SLR_KEYS.reduce(function(p, c) { return Math.abs(c - n) < Math.abs(p - n) ? c : p; }, SLR_KEYS[0]);
-              })(d.slrMeters != null ? d.slrMeters : 1);
+              })((typeof d.slrMeters === 'number' && isFinite(d.slrMeters)) ? d.slrMeters : 1);
               var SLR_IMPACTS = {
                 0:  { displaced: 0,    cities: [], desc: t('stem.climateExplorer.baseline_today_s_coastlines', 'Baseline — today\'s coastlines.') },
                 1:  { displaced: 150,  cities: ['Miami Beach', 'parts of New Orleans', 'Maldives'],

@@ -465,7 +465,7 @@ function SpedTimelinesPanel(props) {
         }
       },
       "aria-label": (armDelete === c.id ? tt("spedtl.delete_confirm_aria", "Confirm delete") : tt("spedtl.delete_aria", "Delete")) + " " + c.code + " " + typeLabel(c.type),
-      className: "shrink-0 min-w-9 min-h-9 inline-flex items-center justify-center rounded text-[11px] font-bold " + (armDelete === c.id ? "bg-rose-600 text-white" : "text-slate-400 hover:text-rose-700 hover:bg-rose-50")
+      className: "shrink-0 min-w-9 min-h-9 inline-flex items-center justify-center rounded text-[11px] font-bold " + (armDelete === c.id ? "bg-rose-600 text-white" : "text-slate-500 hover:text-rose-700 hover:bg-rose-50")
     },
     armDelete === c.id ? tt("spedtl.delete_confirm_short", "Sure?") : "✕"
   )))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(

@@ -2459,7 +2459,7 @@ const d = labToolData.artStudio || {};
 
             var tick = 0;
 
-            var hue = d.hue || 0, sat = d.sat !== undefined ? d.sat : 100, lit = d.lit !== undefined ? d.lit : 50;
+            var hue = d.hue || 0, sat = (typeof d.sat === 'number' && isFinite(d.sat)) ? d.sat : 100, lit = (typeof d.lit === 'number' && isFinite(d.lit)) ? d.lit : 50;
 
             // Pre-render the static 360-segment hue ring ONCE. sat/lit are frozen for
             // this loop instance (wheelRef re-runs with fresh values on slider change),
@@ -6714,7 +6714,7 @@ const d = labToolData.artStudio || {};
               React.createElement("div", { className: "flex flex-col lg:flex-row gap-4", style: { alignItems: 'flex-start' } },
 
                 React.createElement("canvas", { tabIndex: 0, ref: wheelRef, width: 320, height: 320, role: "img",
-                  'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_interactive_color_wheel_hue_degrees_saturation', 'Interactive color wheel. Hue {value1} degrees, saturation {value2} percent, lightness {value3} percent.'), { value1: (d.hue || 0), value2: (d.sat !== undefined ? d.sat : 100), value3: (d.lit !== undefined ? d.lit : 50) }),
+                  'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_interactive_color_wheel_hue_degrees_saturation', 'Interactive color wheel. Hue {value1} degrees, saturation {value2} percent, lightness {value3} percent.'), { value1: (d.hue || 0), value2: ((typeof d.sat === 'number' && isFinite(d.sat)) ? d.sat : 100), value3: ((typeof d.lit === 'number' && isFinite(d.lit)) ? d.lit : 50) }),
                   'aria-describedby': "artstudio-color-wheel-help",
                   'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End",
                   className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair flex-shrink-0 focus-visible:ring-4 focus-visible:ring-pink-600 focus-visible:ring-offset-2",
@@ -6728,11 +6728,11 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
 
-                      React.createElement("div", { "aria-hidden": "true", style: { width: 60, height: 60, borderRadius: 12, background: 'hsl(' + (d.hue || 0) + ',' + (d.sat !== undefined ? d.sat : 100) + '%,' + (d.lit !== undefined ? d.lit : 50) + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
+                      React.createElement("div", { "aria-hidden": "true", style: { width: 60, height: 60, borderRadius: 12, background: 'hsl(' + (d.hue || 0) + ',' + ((typeof d.sat === 'number' && isFinite(d.sat)) ? d.sat : 100) + '%,' + ((typeof d.lit === 'number' && isFinite(d.lit)) ? d.lit : 50) + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-sm font-bold text-slate-800" }, "HSL(" + (d.hue || 0) + ", " + (d.sat !== undefined ? d.sat : 100) + "%, " + (d.lit !== undefined ? d.lit : 50) + "%)"),
+                        React.createElement("p", { className: "text-sm font-bold text-slate-800" }, "HSL(" + (d.hue || 0) + ", " + ((typeof d.sat === 'number' && isFinite(d.sat)) ? d.sat : 100) + "%, " + ((typeof d.lit === 'number' && isFinite(d.lit)) ? d.lit : 50) + "%)"),
 
                         React.createElement("p", { id: "artstudio-color-wheel-help", className: "text-[0.6875rem] text-slate-600" }, "Click the wheel, or focus it and use Arrow keys to adjust hue; hold Shift for 10-degree steps; Home selects 0 degrees and End selects 359 degrees.")
 

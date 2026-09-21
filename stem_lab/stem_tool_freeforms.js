@@ -199,7 +199,7 @@ window.StemLab = window.StemLab || {
   function ffGraphFromDoc(doc) {
     var g = { version: 'acg/v1', title: (doc && doc.title) || '', axes: null, nodes: [], edges: [], layers: [], meta: { generated: { structureType: (doc && doc.scaffold && doc.scaffold !== 'free') ? doc.scaffold : null } } };
     g.nodes.push({ id: 'root', label: (doc && doc.title) || 'My World of Forms', type: 'main', x: 0, y: 0, z: 0, category: null });
-    ((doc && doc.groups) || []).forEach(function(grp) {
+    ((doc && Array.isArray(doc.groups)) ? doc.groups : []).forEach(function(grp) {
       g.nodes.push({ id: grp.id, label: grp.title, type: 'branch', x: 0, y: 0, z: 0, category: grp.title });
       g.edges.push({ id: 'e_root_' + grp.id, fromId: 'root', toId: grp.id, type: 'elaborates' });
       (grp.items || []).forEach(function(it) {
@@ -225,9 +225,9 @@ window.StemLab = window.StemLab || {
   function ffReconcileMembership(doc, categories) {
     if (!doc || !categories) return { doc: doc, moved: 0 };
     var byTitle = {};
-    (doc.groups || []).forEach(function(g) { if (byTitle[g.title] == null) byTitle[g.title] = g.id; });
+    (Array.isArray(doc.groups) ? doc.groups : []).forEach(function(g) { if (byTitle[g.title] == null) byTitle[g.title] = g.id; });
     var moves = [];
-    (doc.groups || []).forEach(function(g) {
+    (Array.isArray(doc.groups) ? doc.groups : []).forEach(function(g) {
       (g.items || []).forEach(function(it) {
         var target = categories[it.id];
         if (typeof target === 'string' && target && target !== g.title && byTitle[target] != null) {
@@ -236,7 +236,7 @@ window.StemLab = window.StemLab || {
       });
     });
     if (!moves.length) return { doc: doc, moved: 0 };
-    var groups = doc.groups.map(function(g) { return Object.assign({}, g, { items: (g.items || []).slice() }); });
+    var groups = (Array.isArray(doc.groups) ? doc.groups : []).map(function(g) { return Object.assign({}, g, { items: (Array.isArray(g.items) ? g.items : []).slice() }); });
     var byId = {}; groups.forEach(function(g) { byId[g.id] = g; });
     moves.forEach(function(mv) {
       var from = byId[mv.fromId], to = byId[mv.toId];
@@ -259,7 +259,7 @@ window.StemLab = window.StemLab || {
 
   function ffStats(doc) {
     var groups = 0, items = 0, notes = 0, sculpted = 0;
-    ((doc && doc.groups) || []).forEach(function(g) {
+    ((doc && Array.isArray(doc.groups)) ? doc.groups : []).forEach(function(g) {
       groups++;
       (g.items || []).forEach(function(it) {
         items++;
@@ -286,7 +286,7 @@ window.StemLab = window.StemLab || {
       '',
       'Their groups and ideas (notes in parentheses are their own annotations; [sculpted] means they built a small 3D artwork for that idea):'
     ];
-    ((doc && doc.groups) || []).forEach(function(g) {
+    ((doc && Array.isArray(doc.groups)) ? doc.groups : []).forEach(function(g) {
       var row = '- ' + g.title + ':';
       var parts = (g.items || []).map(function(it) {
         var s = '"' + it.text + '"';
@@ -388,7 +388,7 @@ window.StemLab = window.StemLab || {
     var sc = ffScaffold(doc && doc.scaffold);
     var title = (doc && doc.title && doc.title.trim()) ? doc.title.trim() : 'My World of Forms';
     var rows = [];
-    ((doc && doc.groups) || []).forEach(function (g) {
+    ((doc && Array.isArray(doc.groups)) ? doc.groups : []).forEach(function (g) {
       var items = (g.items || []).map(function (it) {
         var s = '<li>' + _esc(it.text);
         if (doc.nodeArt && doc.nodeArt[it.id]) s += ' <span class="tag">sculpted</span>';
@@ -765,7 +765,7 @@ window.StemLab = window.StemLab || {
       // ── Sculpt (Prim3D recipes; live handle updated, NO remount) ──
       var findItem = function(id) {
         var found = null;
-        ((doc && doc.groups) || []).forEach(function(g) {
+        ((doc && Array.isArray(doc.groups)) ? doc.groups : []).forEach(function(g) {
           (g.items || []).forEach(function(it) { if (it.id === id) found = { group: g, item: it }; });
         });
         return found;
@@ -846,7 +846,7 @@ window.StemLab = window.StemLab || {
       };
 
       // ── Recall mode (Test yourself) ──
-      var groupsWithItems = ((doc && doc.groups) || []).filter(function(g) { return (g.items || []).length; }).length;
+      var groupsWithItems = ((doc && Array.isArray(doc.groups)) ? doc.groups : []).filter(function(g) { return (g.items || []).length; }).length;
       var recallEligible = stats.items >= 4 && groupsWithItems >= 2;
       var startChallenge = function() {
         var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
@@ -977,7 +977,7 @@ window.StemLab = window.StemLab || {
             h('h2', { className: 'text-2xl font-black text-violet-200 mb-1' }, '\u{1F3DB}️ ' + t('stem.freeforms.title', 'Free Forms')),
             h('p', { className: 'text-sm text-slate-300 mb-1' }, t('stem.freeforms.tagline', 'Build your own World of Forms: pick an archetypal structure, fill it with YOUR ideas, arrange it in 3D, and sculpt what matters.')),
             h('p', { className: 'text-xs text-slate-400 mb-4' }, t('stem.freeforms.tagline2', 'You are the author here — the AI only coaches, and only when you ask.')),
-            doc && doc.groups && doc.groups.some(function(g) { return (g.items || []).length; })
+            doc && doc.groups && (Array.isArray(doc.groups) ? doc.groups : []).some(function(g) { return (g.items || []).length; })
               ? h('p', { className: 'text-xs text-amber-300 mb-3' }, t('stem.freeforms.keep_content_hint', 'Your groups and ideas stay — choosing a form just changes the shape of the space.'))
               : null,
             h('div', { className: 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3', role: 'list' },
@@ -1061,7 +1061,7 @@ window.StemLab = window.StemLab || {
               className: 'w-full bg-slate-800 border border-slate-500 rounded-lg px-2 py-2 text-sm text-slate-100 mb-3',
               onBlur: function(e) { if (e.target.value !== doc.title) setTitle(e.target.value); }
             }),
-            doc.groups.map(function(g) {
+            (Array.isArray(doc.groups) ? doc.groups : []).map(function(g) {
               return h('div', { key: g.id + '-' + rev, className: 'mb-3 bg-slate-800/60 border border-slate-700 rounded-xl p-2' },
                 h('div', { className: 'flex items-center gap-1 mb-1' },
                   h('input', {

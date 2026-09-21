@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "kind": "rendered-html-fidelity",
+  "source": {
+    "sha256": "55abc74c41fdb49e2e7f2a8990852c50eec929c1421a522932462c6febf5f00c",
+    "bytes": 328
+  },
+  "candidate": {
+    "sha256": "b1c06e86d172b2750a685efa36a7a394e2139e2ec57f317f152e5b8339081f6f",
+    "bytes": 327
+  },
+  "execution": {
+    "complete": true
+  },
+  "browserVersion": "148.0.7778.96",
+  "viewport": {
+    "width": 1100,
+    "height": 800
+  },
+  "media": "screen",
+  "profileId": "default",
+  "durationMs": 476.19910000000164,
+  "status": "review-required",
+  "coverage": {
+    "requested": 1,
+    "inspected": 1,
+    "complete": true,
+    "wholeDocument": false,
+    "reasons": []
+  },
+  "resources": {
+    "source": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    },
+    "candidate": {
+      "blocked": 0,
+      "scripts": 0,
+      "unresolved": 0,
+      "animations": 0,
+      "failures": []
+    }
+  },
+  "checks": [
+    {
+      "id": "native-contract",
+      "sourceSelector": "#p",
+      "candidateSelector": "#p",
+      "status": "failed",
+      "properties": [
+        {
+          "property": "targetText",
+          "status": "failed",
+          "source": "Required explanation",
+          "candidate": "Changed explanation"
+        }
+      ]
+    }
+  ],
+  "humanValidation": "not-run",
+  "limitations": [
+    "Only the source-authored checkpoints and selected properties are assessed.",
+    "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+    "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+    "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+  ]
+}

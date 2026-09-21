@@ -442,7 +442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     color: 'slate',
     category: 'science',
     questHooks: [
-      { id: 'visit_5_epochs', label: 'Visit 5 cosmic epochs', icon: '🌠', check: function(d) { return (d.visitedEpochIds || d.epochsVisited || []).length >= 5; }, progress: function(d) { return (d.visitedEpochIds || d.epochsVisited || []).length + '/5'; } },
+      { id: 'visit_5_epochs', label: 'Visit 5 cosmic epochs', icon: '🌠', check: function(d) { return (Array.isArray(d.visitedEpochIds) ? d.visitedEpochIds : Array.isArray(d.epochsVisited) ? d.epochsVisited : []).length >= 5; }, progress: function(d) { return (Array.isArray(d.visitedEpochIds) ? d.visitedEpochIds : Array.isArray(d.epochsVisited) ? d.epochsVisited : []).length + '/5'; } },
       { id: 'earn_50_rp', label: 'Earn 50 research points', icon: '⭐', check: function(d) { return (d.totalRP || 0) >= 50; }, progress: function(d) { return (d.totalRP || 0) + '/50 RP'; } },
       { id: 'quiz_8', label: 'Score 8+ on cosmic quiz', icon: '🧠', check: function(d) { return (d.quizScore || 0) >= 8; }, progress: function(d) { return (d.quizScore || 0) + '/8'; } }
     ],
@@ -521,10 +521,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           var updMulti = function (obj) { setLabToolData(function (prev) { return Object.assign({}, prev, { universe: Object.assign({}, prev.universe || {}, obj) }); }); };
 
           // --- Research Points & Challenges ---
-          var researchPoints = d.researchPoints || 0;
-          var totalRP = d.totalRP || 0;
-          var completedChallenges = d.completedChallenges || [];
-          var epochsVisited = d.epochsVisited || [];
+          var researchPoints = (typeof d.researchPoints === 'number' && isFinite(d.researchPoints)) ? d.researchPoints : 0;
+          var totalRP = (typeof d.totalRP === 'number' && isFinite(d.totalRP)) ? d.totalRP : 0;
+          var completedChallenges = Array.isArray(d.completedChallenges) ? d.completedChallenges : [];
+          var epochsVisited = Array.isArray(d.epochsVisited) ? d.epochsVisited : [];
 
           var CHALLENGES = [
             { id: 'first_epoch', name: 'Time Traveler', desc: 'Visit any epoch', icon: '\u23F3', rp: 10, check: function() { return (d.visitedEpochIds || epochsVisited).length >= 1; } },
@@ -537,10 +537,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { id: 'hr_diagram', name: 'Astronomer', desc: 'Study the HR Diagram', icon: '\uD83D\uDCCA', rp: 20, check: function() { return uniDidEngage('hr-diagram', 2); } },
             { id: 'distance_ladder', name: 'Cosmic Surveyor', desc: 'Work through the distance ladder', icon: '\uD83D\uDCCF', rp: 15, check: function() { return uniDidEngage('distance-ladder', 2); } },
             { id: 'dark_energy', name: 'Dark Researcher', desc: 'Investigate about dark energy & dark matter', icon: '\uD83D\uDD73', rp: 20, check: function() { return uniDidEngage('dark-universe', 2); } },
-            { id: 'evidence_lab', name: 'Evidence Builder', desc: 'Self-review 3 evidence explanations', icon: '\uD83D\uDCCA', rp: 25, check: function() { return ((d.selfReviewedEvidence || []).length >= 3); } },
-            { id: 'guided_cosmic_mission', name: 'Mission Navigator', desc: 'Self-review a guided cosmic mission', icon: '\uD83D\uDE80', rp: 25, check: function() { return ((d.selfReviewedMissions || []).length >= 1); } },
-            { id: 'evidence_notebook', name: 'Evidence Archivist', desc: 'Save 3 evidence notebook entries', icon: '\uD83D\uDCDD', rp: 20, check: function() { return ((d.cosmicEvidenceNotebook || []).length >= 3); } },
-            { id: 'ai_question', name: 'Curious Mind', desc: 'Ask the AI Cosmos Tutor', icon: '\uD83E\uDDD1\u200D\uD83D\uDE80', rp: 20, check: function() { return !!d.aiAnswer; } },
+            { id: 'evidence_lab', name: 'Evidence Builder', desc: 'Self-review 3 evidence explanations', icon: '\uD83D\uDCCA', rp: 25, check: function() { return ((Array.isArray(d.selfReviewedEvidence) ? d.selfReviewedEvidence : []).length >= 3); } },
+            { id: 'guided_cosmic_mission', name: 'Mission Navigator', desc: 'Self-review a guided cosmic mission', icon: '\uD83D\uDE80', rp: 25, check: function() { return ((Array.isArray(d.selfReviewedMissions) ? d.selfReviewedMissions : []).length >= 1); } },
+            { id: 'evidence_notebook', name: 'Evidence Archivist', desc: 'Save 3 evidence notebook entries', icon: '\uD83D\uDCDD', rp: 20, check: function() { return ((Array.isArray(d.cosmicEvidenceNotebook) ? d.cosmicEvidenceNotebook : []).length >= 3); } },
+            { id: 'ai_question', name: 'Curious Mind', desc: 'Ask the AI Cosmos Tutor', icon: '\uD83E\uDDD1\u200D\uD83D\uDE80', rp: 20, check: function() { return !!_uniAiAnswer; } },
             { id: 'what_if', name: 'Thought Experimenter', desc: 'Work through a What If scenario', icon: '\uD83E\uDD14', rp: 15, check: function() { return uniDidEngage('what-if', 1); } },
             { id: 'elements', name: 'Alchemist', desc: 'Investigate where elements come from', icon: '\u2697', rp: 15, check: function() { return uniDidEngage('elements', 2); } },
             { id: 'structures', name: 'Cosmic Architect', desc: 'Work through the cosmic structure hierarchy', icon: '\uD83C\uDF0C', rp: 10, check: function() { return uniDidEngage('structures', 2); } },
@@ -1130,7 +1130,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           var cosmicEvidenceId = d.cosmicEvidenceThread || 'redshift';
           var activeCosmicEvidence = COSMIC_EVIDENCE_THREADS.find(function (thread) { return thread.id === cosmicEvidenceId; }) || COSMIC_EVIDENCE_THREADS[0];
           var activeEvidenceBridgeTool = activeCosmicEvidence.bridge.indexOf('StatsLab') !== -1 ? 'statsLab' : activeCosmicEvidence.bridge.indexOf('Data Lab') !== -1 ? 'dataLab' : activeCosmicEvidence.bridge.indexOf('Galaxy') !== -1 || activeCosmicEvidence.bridge.indexOf('Star Life') !== -1 ? 'galaxy' : 'universe';
-          var evidenceThreadsMastered = d.selfReviewedEvidence || [];
+          var evidenceThreadsMastered = Array.isArray(d.selfReviewedEvidence) ? d.selfReviewedEvidence : [];
           var activeEvidenceMastered = evidenceThreadsMastered.indexOf(activeCosmicEvidence.id) !== -1;
 
           var GUIDED_COSMIC_MISSIONS = [
@@ -1143,11 +1143,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
           var cosmicMissionId = d.activeCosmicMission || 'expansion';
           var activeCosmicMission = GUIDED_COSMIC_MISSIONS.find(function (mission) { return mission.id === cosmicMissionId; }) || GUIDED_COSMIC_MISSIONS[0];
-          var cosmicMissionsLaunched = d.cosmicMissionsLaunched || [];
-          var cosmicMissionsCompleted = d.selfReviewedMissions || [];
+          var cosmicMissionsLaunched = Array.isArray(d.cosmicMissionsLaunched) ? d.cosmicMissionsLaunched : [];
+          var cosmicMissionsCompleted = Array.isArray(d.selfReviewedMissions) ? d.selfReviewedMissions : [];
           var activeMissionLaunched = cosmicMissionsLaunched.indexOf(activeCosmicMission.id) !== -1;
           var activeMissionCompleted = cosmicMissionsCompleted.indexOf(activeCosmicMission.id) !== -1;
-          var cosmicEvidenceNotebook = d.cosmicEvidenceNotebook || [];
+          var cosmicEvidenceNotebook = Array.isArray(d.cosmicEvidenceNotebook) ? d.cosmicEvidenceNotebook : [];
           var activeEvidenceNotebookKey = 'evidence:' + activeCosmicEvidence.id;
           var activeMissionNotebookKey = 'mission:' + activeCosmicMission.id;
           var activeEvidenceInNotebook = cosmicEvidenceNotebook.some(function (note) { return note.key === activeEvidenceNotebookKey; });
@@ -1295,7 +1295,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           ];
           // Cosmic quiz bank + seeded shuffle live at module scope (pure,
           // test-exposed via window.__universePure).
-          var cosmicTime = d.cosmicTime !== undefined ? d.cosmicTime : 0;
+          var cosmicTime = (typeof d.cosmicTime === 'number' && isFinite(d.cosmicTime)) ? d.cosmicTime : 0;
+          // Rendered straight into the tree; an object makes React throw.
+          var _uniAiAnswer = typeof d.aiAnswer === 'string' ? d.aiAnswer : '';
 
           var isPlaying = d.isPlaying || false;
 
@@ -1468,7 +1470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           }
 
           EPOCHS.forEach(function (ep, index) { ep.id = UNIVERSE_EPOCH_IDS[index]; });
-          var visitedEpochIds = (d.visitedEpochIds || []).slice();
+          var visitedEpochIds = (Array.isArray(d.visitedEpochIds) ? d.visitedEpochIds : []).slice();
           EPOCHS.forEach(function (ep) { if (epochsVisited.indexOf(ep.name) !== -1 && visitedEpochIds.indexOf(ep.id) === -1) visitedEpochIds.push(ep.id); });
           var epoch = getCurrentEpoch(cosmicTime);
           // Track epoch visits
@@ -1480,7 +1482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           }
 
           if (visitedEpochIds.indexOf(epoch.id) === -1) visitedEpochIds.push(epoch.id);
-          if (JSON.stringify(visitedEpochIds) !== JSON.stringify(d.visitedEpochIds || [])) upd('visitedEpochIds', visitedEpochIds);
+          if (JSON.stringify(visitedEpochIds) !== JSON.stringify(Array.isArray(d.visitedEpochIds) ? d.visitedEpochIds : [])) upd('visitedEpochIds', visitedEpochIds);
           var epochIndex = EPOCHS.indexOf(epoch);
           var sceneStill = d.sceneMotion ? d.sceneMotion === 'still' : !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
           var epochReflections = d.epochReflections || {};
@@ -1542,7 +1544,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             var reviewed = evidenceThreadsMastered.indexOf(id) < 0 ? evidenceThreadsMastered.concat([id]) : evidenceThreadsMastered;
             var missions = cosmicMissionsCompleted.slice();
             if (missionId && missions.indexOf(missionId) < 0) missions.push(missionId);
-            var revisions=(d.evidenceRevisions||[]).slice();
+            var revisions=(Array.isArray(d.evidenceRevisions)?d.evidenceRevisions:[]).slice();
             var previous=revisions.filter(function(r){return r.evidenceId===id;}).pop();
             var text=evidenceResponseText(evidenceWork[id],true);
             if(!previous || previous.text!==text) revisions.push({evidenceId:id,text:text,savedAt:new Date().toISOString()});
@@ -1556,7 +1558,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           }
           function saveRevision() {
             if (!epochReflection.trim()) return;
-            var revisions = (d.explanationRevisions || []).slice();
+            var revisions = (Array.isArray(d.explanationRevisions) ? d.explanationRevisions : []).slice();
             var previous = revisions.filter(function (r) { return r.epochId === epoch.id; }).pop();
             if (previous && previous.text === epochReflection) return;
             revisions.push({ epochId: epoch.id, title: epoch.name, question: epochGuide.question, text: epochReflection, savedAt: new Date().toISOString() });
@@ -1689,8 +1691,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           }
           function notebookEntries() {
             var entries=[];
-            EPOCHS.forEach(function(ep,index) { var text=epochReflections[ep.id]!==undefined?epochReflections[ep.id]:epochReflections[String(index)]; if(text && text.trim()) entries.push({kind:'My explanation',key:ep.id,title:ep.name,question:EPOCH_GUIDES[index].question,text:text,epoch:index,revisions:(d.explanationRevisions||[]).filter(function(r){return r.epochId===ep.id;})}); });
-            COSMIC_EVIDENCE_THREADS.forEach(function(thread){var w=evidenceWork[thread.id];if(w && ['prediction','observation','explanation','limitation'].some(function(key){return !!(w[key]||'').trim();}))entries.push({kind:'My evidence response',key:thread.id,title:thread.title,question:thread.claim,text:evidenceResponseText(w,evidenceThreadsMastered.indexOf(thread.id)>=0),response:w,selfReviewed:evidenceThreadsMastered.indexOf(thread.id)>=0,revisions:(d.evidenceRevisions||[]).filter(function(r){return r.evidenceId===thread.id;})});});
+            EPOCHS.forEach(function(ep,index) { var text=epochReflections[ep.id]!==undefined?epochReflections[ep.id]:epochReflections[String(index)]; if(text && text.trim()) entries.push({kind:'My explanation',key:ep.id,title:ep.name,question:EPOCH_GUIDES[index].question,text:text,epoch:index,revisions:(Array.isArray(d.explanationRevisions)?d.explanationRevisions:[]).filter(function(r){return r.epochId===ep.id;})}); });
+            COSMIC_EVIDENCE_THREADS.forEach(function(thread){var w=evidenceWork[thread.id];if(w && ['prediction','observation','explanation','limitation'].some(function(key){return !!(w[key]||'').trim();}))entries.push({kind:'My evidence response',key:thread.id,title:thread.title,question:thread.claim,text:evidenceResponseText(w,evidenceThreadsMastered.indexOf(thread.id)>=0),response:w,selfReviewed:evidenceThreadsMastered.indexOf(thread.id)>=0,revisions:(Array.isArray(d.evidenceRevisions)?d.evidenceRevisions:[]).filter(function(r){return r.evidenceId===thread.id;})});});
             cosmicEvidenceNotebook.forEach(function(n){entries.push({kind:'Worked example',key:n.key,title:n.title,question:n.source,text:[n.claim,n.evidence,n.reasoning,n.next].filter(Boolean).join('\n')});});
             return entries;
           }
@@ -1765,7 +1767,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           }
 
           function renderNotebook() {
-            var all=notebookEntries(),query=(d.notebookSearch||'').trim().toLowerCase(),filter=d.notebookFilter||'mine';
+            var all=notebookEntries(),query=(typeof d.notebookSearch==='string'?d.notebookSearch:'').trim().toLowerCase(),filter=d.notebookFilter||'mine';
             var filtered=all.filter(function(n){return (filter==='all'||(filter==='examples'?n.kind==='Worked example':n.kind!=='Worked example')) && (n.title+' '+n.question+' '+n.text+' '+notebookComparisonText(n)).toLowerCase().includes(query);});
             var mine=all.filter(function(n){return n.kind!=='Worked example';}),examples=all.length-mine.length;
             return h('div',{className:'uni-notebook'},
@@ -2946,7 +2948,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             var section=UNI_SECTIONS.find(function(item){return item.id===topic;});
             if(section) uniGoTo(section);
           }
-          var uniQuery = (d.uniQuery || '').trim().toLowerCase();
+          var uniQuery = (typeof d.uniQuery === 'string' ? d.uniQuery : '').trim().toLowerCase();
           var uniGroup = d.uniGroup || 'all';
           function uniMatches(s) {
             if (uniGroup !== 'all' && s.grp !== uniGroup) return false;
@@ -3425,7 +3427,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         onChange: function (event) { writeEpochReflection(event.target.value); }
                       }),
                       h('button', {type:'button',disabled:!epochReflection.trim(),onClick:saveRevision}, 'Save a revision'),
-                      h('p', {role:'status'}, (d.explanationRevisions||[]).filter(function(r){return r.epochId===epoch.id;}).length + ' saved revisions for this epoch'),
+                      h('p', {role:'status'}, (Array.isArray(d.explanationRevisions)?d.explanationRevisions:[]).filter(function(r){return r.epochId===epoch.id;}).length + ' saved revisions for this epoch'),
                       React.createElement("p", { id: 'universe-reflection-hint-' + epochIndex }, "Kept with this epoch in your tool progress. You can revise it after comparing the explanation.")
                     ),
                     React.createElement("details", { key: 'check-' + epochIndex },
@@ -3966,7 +3968,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               ),
 
               uniVisible.length === 0
-                ? React.createElement("p", { role: "status", className: "text-[0.6875rem] font-bold py-2", style: { color: isDark ? '#fda4af' : '#be123c' } }, "No topic matches \u201C" + (d.uniQuery || '') + "\u201D. Try a broader word, or clear the filter.")
+                ? React.createElement("p", { role: "status", className: "text-[0.6875rem] font-bold py-2", style: { color: isDark ? '#fda4af' : '#be123c' } }, "No topic matches \u201C" + (typeof d.uniQuery === 'string' ? d.uniQuery : '') + "\u201D. Try a broader word, or clear the filter.")
                 : React.createElement("div", { className: "uni-topic-grid" },
                     uniVisible.map(function (s) {
                       var open = !!d[s.flag];
@@ -4347,10 +4349,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   return React.createElement("button", { "aria-label": "Ask cosmos tutor: " + q, key: qi, onClick: function() { askCosmosTutor(q); }, className: "text-[0.6875rem] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors" }, q);
                 })
               ),
-              d.aiAnswer && React.createElement("div", { className: "bg-white rounded-lg p-2 text-xs text-slate-700 border border-violet-100 relative" },
-                React.createElement("div", null, d.aiAnswer),
+              _uniAiAnswer && React.createElement("div", { className: "bg-white rounded-lg p-2 text-xs text-slate-700 border border-violet-100 relative" },
+                React.createElement("div", null, _uniAiAnswer),
                 React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_read_ai_cosmos_tutor_answer_aloud', 'Read AI cosmos tutor answer aloud'),
-                  onClick: function() { speakText(d.aiAnswer); },
+                  onClick: function() { speakText(_uniAiAnswer); },
                   className: "transition-colors absolute top-1 right-1 text-violet-400 hover:text-violet-600",
                   title: "Read aloud"
                 }, "\uD83D\uDD0A")
@@ -4471,8 +4473,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 }, d.showQuiz ? 'Hide' : 'Quiz Me! \u2192')
               ),
               d.showQuiz && (function() {
-                var qi = d.quizIdx || 0;
-                var qScore = d.quizScore || 0;
+                var qi = (Number.isInteger(d.quizIdx) && d.quizIdx >= 0) ? d.quizIdx : 0;
+                var qScore = (typeof d.quizScore === 'number' && isFinite(d.quizScore)) ? d.quizScore : 0;
                 var seed = d.quizSeed || 1;
                 var deck = d.quizReviewDeck || quizDeck(seed);
 
@@ -4555,7 +4557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         var patch = { quizIdx: qi + 1, quizAnswered: false, quizSelected: null };
                         // Record the best run so the wrap-up survives a later bad attempt.
                         if (qi + 1 >= deck.length) {
-                          patch.quizAttempts = (d.quizAttempts || []).concat([{responses:d.quizResponses||{},score:finalScore,total:deck.length,review:!!d.quizReviewDeck}]);
+                          patch.quizAttempts = (Array.isArray(d.quizAttempts) ? d.quizAttempts : []).concat([{responses:d.quizResponses||{},score:finalScore,total:deck.length,review:!!d.quizReviewDeck}]);
                           if (!d.quizReviewDeck && finalScore > (d.quizBest || 0)) patch.quizBest = finalScore;
                         }
                         updMulti(patch);
@@ -5836,7 +5838,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               ),
               d.showScale && (function () {
                 var zoomPow = typeof d.zoomPow === 'number' ? d.zoomPow : 0.23;
-                var zoomDir = d.zoomDir || 0;
+                var zoomDir = (typeof d.zoomDir === 'number' && isFinite(d.zoomDir)) ? d.zoomDir : 0;
                 var zoomSpeed = d.zoomSpeed || 1;
                 var zFocus = zoomFocus(zoomPow);
 
@@ -5962,7 +5964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                   // \u2500\u2500 Written detail for the nearest catalogued rung \u2500\u2500
                   (function () {
-                    var si = d.scaleIdx || 0;
+                    var si = (Number.isInteger(d.scaleIdx) && d.scaleIdx >= 0) ? d.scaleIdx : 0;
                     var cs = COSMIC_SCALES[si];
                     var isHuman = cs.power === 0;
                     return React.createElement("div", { className: "mt-2 text-center p-3 rounded-xl " + (isDark ? 'bg-slate-700' : 'bg-white') + " border " + (isDark ? 'border-slate-600' : 'border-violet-200') + (isHuman ? ' ring-2 ring-violet-400' : '') },
@@ -6031,7 +6033,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 ),
                 // Expanded card for selected class
                 (function() {
-                  var idx = d.spectralIdx !== undefined ? d.spectralIdx : 4; // Default to G (Sun)
+                  var idx = (Number.isInteger(d.spectralIdx) && d.spectralIdx >= 0 && d.spectralIdx < SPECTRAL_CLASSES.length) ? d.spectralIdx : 4; // Default to G (Sun)
                   var sc = SPECTRAL_CLASSES[idx];
                   return React.createElement("div", { className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-indigo-100') + " rounded-xl p-3 border-2 transition-all", style: { borderColor: sc.color } },
                     React.createElement("div", { className: "flex items-center gap-3 mb-2" },
@@ -6261,7 +6263,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               var opened = UNI_SECTIONS.filter(function (s) { return !!d[s.flag]; });
               var unopened = UNI_SECTIONS.filter(function (s) { return !d[s.flag]; });
               var pctTopics = Math.round(opened.length / UNI_SECTIONS.length * 100);
-              var quizBest = d.quizBest || 0;
+              var quizBest = (typeof d.quizBest === 'number' && isFinite(d.quizBest)) ? d.quizBest : 0;
               var zoomLow = d.zoomSeenMin, zoomHigh = d.zoomSeenMax;
               var zoomDecades = (zoomLow !== undefined && zoomHigh !== undefined) ? (zoomHigh - zoomLow) : 0;
               var touched = opened.length > 0 || epochsVisited.length > 0 || researchPoints > 0;

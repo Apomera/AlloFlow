@@ -679,7 +679,7 @@ if (!window._galaxyHasLoadedOnce) {
           var galaxyAutoRotate = d.galaxyAutoRotate !== false && !galaxyReducedMotion;
           var galaxyHudHidden = !!d.galaxyHudHidden;
           var galaxyTourActive = !!d.galaxyTourActive && !galaxyReducedMotion;
-          var galaxyQuality = d.galaxyQuality || 'auto';
+          var galaxyQuality = (typeof d.galaxyQuality === 'string' && d.galaxyQuality) ? d.galaxyQuality : 'auto';
           var galaxyBrightness = Number.isFinite(d.galaxyBrightness) ? Math.min(1.2, Math.max(0.7, d.galaxyBrightness)) : 1;
           var galaxyVelocityOverlay = d.galaxyVelocityOverlay !== false;
           var galaxyMagneticOverlay = d.galaxyMagneticOverlay !== false;
@@ -694,8 +694,8 @@ if (!window._galaxyHasLoadedOnce) {
 
           var simMode = ALLOWED_GALAXY_MODES[d.simMode] ? d.simMode : 'galaxy';
 
-          var blackHoleSpin = d.blackHoleSpin !== undefined ? d.blackHoleSpin : 0.72;
-          var blackHoleDisk = d.blackHoleDisk !== undefined ? d.blackHoleDisk : 0.78;
+          var blackHoleSpin = (typeof d.blackHoleSpin === 'number' && isFinite(d.blackHoleSpin)) ? d.blackHoleSpin : 0.72;
+          var blackHoleDisk = (typeof d.blackHoleDisk === 'number' && isFinite(d.blackHoleDisk)) ? d.blackHoleDisk : 0.78;
           var blackHolePaused = !!d.blackHolePaused;
           var blackHoleReducedMotion = galaxyPrefersReducedMotion;
           var blackHoleMotionAllowed = d.blackHoleMotionAllowed === true || !blackHoleReducedMotion;
@@ -707,7 +707,7 @@ if (!window._galaxyHasLoadedOnce) {
 
           var observeMode = d.observeMode || 'visible';
 
-          var dopplerVelocity = d.dopplerVelocity !== undefined ? d.dopplerVelocity : 0;
+          var dopplerVelocity = (typeof d.dopplerVelocity === 'number' && isFinite(d.dopplerVelocity)) ? d.dopplerVelocity : 0;
 
           var realSkyTargetKey = d.realSkyTarget || 'm31';
 
@@ -721,7 +721,7 @@ if (!window._galaxyHasLoadedOnce) {
 
           var realSkyRetry = d.realSkyRetry || 0;
 
-          var realSkyTargetQuery = d.realSkyTargetQuery || '';
+          var realSkyTargetQuery = typeof d.realSkyTargetQuery === 'string' ? d.realSkyTargetQuery : '';
 
           var realSkyRecipeId = d.realSkyRecipe || '';
 
@@ -1306,7 +1306,7 @@ if (!window._galaxyHasLoadedOnce) {
           var observeHistory = (Array.isArray(d.observeHistory) ? d.observeHistory : [observeMode])
             .filter(function (mode) { return OBSERVE_MODES.some(function (m) { return m.key === mode; }); });
           if (!observeHistory.length) observeHistory = [observeMode];
-          var galaxyEvidenceNote = d.galaxyEvidenceNote || '';
+          var galaxyEvidenceNote = typeof d.galaxyEvidenceNote === 'string' ? d.galaxyEvidenceNote : '';
 
           var DOPPLER_PRESETS = [
             { label: __alloT('stem.galaxy.doppler_approaching_star', 'Approaching star'), value: -450, icon: '\uD83D\uDD35' },
@@ -10507,7 +10507,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               // ── Warp info ──
 
-              d.warpInfo && React.createElement("div", { className: "mt-2 px-3 py-2 bg-indigo-50 rounded-lg border border-indigo-100 text-xs text-indigo-700" },
+              (typeof d.warpInfo === 'string' && d.warpInfo) && React.createElement("div", { className: "mt-2 px-3 py-2 bg-indigo-50 rounded-lg border border-indigo-100 text-xs text-indigo-700" },
 
                 React.createElement("span", { className: "font-bold" }, "\uD83D\uDCCD "),
 

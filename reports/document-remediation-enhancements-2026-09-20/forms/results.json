@@ -1,0 +1,176 @@
+{
+  "measuredAt": "2026-09-20T14:54:05.067Z",
+  "sourceSha256": "d7df8010aaff832fb2df2ad83a25e1efaa0ffbe9d84fa6ce791bf37350d707f7",
+  "sourceUnchanged": true,
+  "browserVersion": "148.0.7778.96",
+  "results": [
+    {
+      "id": "clobbered-noValidate-bypass",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form action=\"https://remediation.invalid/result\"><label>Validation mode<input name=\"noValidate\" value=\"Original\"></label><label>Required response<input required name=\"answer\"></label><button>Submit</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form novalidate action=\"https://remediation.invalid/result\"><label>Validation mode<input name=\"noValidate\" value=\"Original\"></label><label>Required response<input required name=\"answer\"></label><button>Submit</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "pipelineReturnedCandidate": false,
+      "pipelineReturnedSource": true,
+      "native": {
+        "source": {
+          "submissions": 0,
+          "valid": false,
+          "noValidate": false,
+          "propertyClobbered": true
+        },
+        "candidate": {
+          "submissions": 1,
+          "valid": false,
+          "noValidate": true,
+          "propertyClobbered": true
+        }
+      }
+    },
+    {
+      "id": "unclobbered-noValidate-bypass-control",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form action=\"https://remediation.invalid/result\"><label>Validation mode<input name=\"mode\" value=\"Original\"></label><label>Required response<input required name=\"answer\"></label><button>Submit</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form novalidate action=\"https://remediation.invalid/result\"><label>Validation mode<input name=\"mode\" value=\"Original\"></label><label>Required response<input required name=\"answer\"></label><button>Submit</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "pipelineReturnedCandidate": false,
+      "pipelineReturnedSource": true,
+      "native": {
+        "source": {
+          "submissions": 0,
+          "valid": false,
+          "noValidate": false,
+          "propertyClobbered": false
+        },
+        "candidate": {
+          "submissions": 1,
+          "valid": false,
+          "noValidate": true,
+          "propertyClobbered": false
+        }
+      }
+    },
+    {
+      "id": "clobbered-noValidate-harmless-class-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form action=\"https://remediation.invalid/result\"><label>Validation mode<input name=\"noValidate\" value=\"Original\"></label><label>Required response<input required name=\"answer\"></label><button>Submit</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form class=\"accessible\" action=\"https://remediation.invalid/result\"><label>Validation mode<input name=\"noValidate\" value=\"Original\"></label><label>Required response<input required name=\"answer\"></label><button>Submit</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0191919191919192,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "native": {
+        "source": {
+          "submissions": 0,
+          "valid": false,
+          "noValidate": false,
+          "propertyClobbered": true
+        },
+        "candidate": {
+          "submissions": 0,
+          "valid": false,
+          "noValidate": false,
+          "propertyClobbered": true
+        }
+      }
+    },
+    {
+      "id": "clobbered-matches-harmless-class-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form action=\"https://remediation.invalid/result\"><label>Validation mode<input name=\"matches\" value=\"Original\"></label><label>Required response<input required name=\"answer\"></label><button>Submit</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form class=\"accessible\" action=\"https://remediation.invalid/result\"><label>Validation mode<input name=\"matches\" value=\"Original\"></label><label>Required response<input required name=\"answer\"></label><button>Submit</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1.0192502532928065,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "native": {
+        "source": {
+          "submissions": 0,
+          "valid": false,
+          "noValidate": false,
+          "propertyClobbered": false
+        },
+        "candidate": {
+          "submissions": 0,
+          "valid": false,
+          "noValidate": false,
+          "propertyClobbered": false
+        }
+      }
+    },
+    {
+      "id": "submission-charset-changed",
+      "expected": "reject",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form action=\"https://remediation.invalid/result\" method=\"post\" accept-charset=\"UTF-8\"><label>Response<input name=\"answer\" value=\"café\"></label><button>Submit</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form action=\"https://remediation.invalid/result\" method=\"post\" accept-charset=\"windows-1252\"><label>Response<input name=\"answer\" value=\"café\"></label><button>Submit</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": false,
+        "reason": "form-state-changed",
+        "sourceLocation": "control:1"
+      },
+      "pipelineReturnedCandidate": false,
+      "pipelineReturnedSource": true,
+      "native": {
+        "source": {
+          "url": "https://remediation.invalid/result",
+          "method": "POST",
+          "postData": "answer=caf%C3%A9",
+          "requestAbortedBeforeNetwork": true
+        },
+        "candidate": {
+          "url": "https://remediation.invalid/result",
+          "method": "POST",
+          "postData": "answer=caf%E9",
+          "requestAbortedBeforeNetwork": true
+        }
+      }
+    },
+    {
+      "id": "submission-charset-case-control",
+      "expected": "accept",
+      "source": "<!doctype html><html lang=\"en\"><body><main><form action=\"https://remediation.invalid/result\" method=\"post\" accept-charset=\"UTF-8\"><label>Response<input name=\"answer\" value=\"café\"></label><button>Submit</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "candidate": "<!doctype html><html lang=\"en\"><body><main><form action=\"https://remediation.invalid/result\" method=\"post\" accept-charset=\"utf-8\"><label>Response<input name=\"answer\" value=\"café\"></label><button>Submit</button></form><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p><p>Read the original instructions carefully and record observations in your notebook.</p></main></body></html>",
+      "decision": {
+        "accepted": true,
+        "readingOrderWarn": null,
+        "sizeRatio": 1,
+        "textRatio": 1,
+        "textLost": 0
+      },
+      "pipelineReturnedCandidate": true,
+      "pipelineReturnedSource": false,
+      "native": {
+        "source": {
+          "url": "https://remediation.invalid/result",
+          "method": "POST",
+          "postData": "answer=caf%C3%A9",
+          "requestAbortedBeforeNetwork": true
+        },
+        "candidate": {
+          "url": "https://remediation.invalid/result",
+          "method": "POST",
+          "postData": "answer=caf%C3%A9",
+          "requestAbortedBeforeNetwork": true
+        }
+      }
+    }
+  ]
+}

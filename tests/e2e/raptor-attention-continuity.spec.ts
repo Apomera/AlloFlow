@@ -17,15 +17,16 @@ test.describe('Raptor attention continuity',()=>{
       const w=window as any,step=w.stepAttention;c._rhCommand('environment',{windSpeed:0,dayPhase:0.4,cloudCover:0.18});step(25);
       const scene=w.attentionScene,prey=scene.children.filter((o:any)=>o.children.some((child:any)=>child.name.startsWith('prey-')));
       w.placeAttention=(a:number,b:number,hidden=false)=>{const s=c._rhSnapshot(),p=s.raptorPosition,yaw=s.headingRadians;
-        prey.forEach((o:any,i:number)=>{const d=i===0?a:b,side=i===0?-5:5;
+        prey.forEach((o:any,i:number)=>{const d=i===0?(hidden?-a:a):b,side=i===0?-5:5;
           if(i>1||!Number.isFinite(d)){o.position.set(2000+i*20,2000,2000);return;}
-          o.position.set(p.x+Math.sin(yaw)*d+Math.cos(yaw)*side,p.y+(hidden&&i===0?-100:0),p.z-Math.cos(yaw)*d+Math.sin(yaw)*side);
+          o.position.set(p.x+Math.sin(yaw)*d+Math.cos(yaw)*side,p.y,p.z-Math.cos(yaw)*d+Math.sin(yaw)*side);
         });
       };
       const series=[];for(let i=0;i<24;i++){w.placeAttention(40,41);step(25);}const first=c._rhSnapshot();
       for(let i=0;i<20;i++){w.placeAttention(40,39+i%2);step(25);series.push(c._rhSnapshot());}
       w.placeAttention(40,25);step(25);const switched=c._rhSnapshot();
       for(let i=0;i<20;i++){w.placeAttention(40,25);step(25);}const settled=c._rhSnapshot();
+      // Move the target behind the bird; AI correctly returns below-ground fixtures to the surface.
       w.placeAttention(40,Infinity,true);step(25);const lost=c._rhSnapshot();
       return {first,series,switched,settled,lost};
     });

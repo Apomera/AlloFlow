@@ -328,7 +328,7 @@
     color: 'indigo',
     category: 'math',
     questHooks: [
-      { id: 'graph_3_functions', label: 'Graph 3 different functions', icon: '\uD83D\uDCC8', check: function(d) { return (d.funcs || []).filter(function(f) { return f && f.expr && String(f.expr).trim(); }).length >= 3; }, progress: function(d) { return (d.funcs || []).filter(function(f) { return f && f.expr && String(f.expr).trim(); }).length + '/3 functions'; } },
+      { id: 'graph_3_functions', label: 'Graph 3 different functions', icon: '\uD83D\uDCC8', check: function(d) { return (Array.isArray(d.funcs) ? d.funcs : []).filter(function(f) { return f && f.expr && String(f.expr).trim(); }).length >= 3; }, progress: function(d) { return (Array.isArray(d.funcs) ? d.funcs : []).filter(function(f) { return f && f.expr && String(f.expr).trim(); }).length + '/3 functions'; } },
       { id: 'complete_3_challenges', label: 'Complete 3 graphing challenges', icon: '\uD83C\uDFC6', check: function(d) { return (d._challengesCompleted || 0) >= 3; }, progress: function(d) { return (d._challengesCompleted || 0) + '/3'; } },
       { id: 'ask_ai_3', label: 'Ask the AI tutor 3 questions', icon: '\uD83E\uDD16', check: function(d) { return (d.aiQuestions || 0) >= 3; }, progress: function(d) { return (d.aiQuestions || 0) + '/3 questions'; } }
     ],
@@ -390,7 +390,7 @@
 
         /* ── State ── */
         var tier = d.tier || 'explorer';
-        var funcs = d.funcs || [
+        var funcs = Array.isArray(d.funcs) ? d.funcs : [
           { expr: '', color: '#38bdf8' }, { expr: '', color: '#f472b6' },
           { expr: '', color: '#34d399' }, { expr: '', color: '#fbbf24' },
           { expr: '', color: '#a78bfa' }, { expr: '', color: '#fb923c' }
@@ -452,9 +452,9 @@
         var arithResult = d.arithResult || '';
         var showSliders = d.showSliders || false;
         var focusedInput = d.focusedInput || 0;
-        var tableX = d.tableX != null ? d.tableX : -5;
-        var tableStep = d.tableStep != null ? d.tableStep : 1;
-        var badges = d.badges || [];
+        var tableX = (typeof d.tableX === 'number' && isFinite(d.tableX)) ? d.tableX : -5;
+        var tableStep = (typeof d.tableStep === 'number' && isFinite(d.tableStep)) ? d.tableStep : 1;
+        var badges = Array.isArray(d.badges) ? d.badges : [];
         var aiMessages = d.aiMessages || [];
         var aiInput = d.aiInput || '';
         var aiLoading = d.aiLoading || false;
@@ -577,7 +577,7 @@
         /* ── Badge Checker ── */
         function checkBadges(stateOverride) {
           var state = Object.assign({}, d, stateOverride || {});
-          var earned = state.badges || [];
+          var earned = Array.isArray(state.badges) ? state.badges : [];
           var newBadges = [];
           BADGES.forEach(function(b) {
             if (earned.indexOf(b.id) < 0 && b.check(state)) newBadges.push(b);
@@ -884,7 +884,7 @@
            UI RENDER
            ═══════════════════════════════════════════════════ */
         return h('div', { className: 'graphcalc-shell', style: { display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--allo-stem-canvas, #0f172a)', color: gcText, fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
 
           // Header
           h('div', { className: 'graphcalc-header', style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderBottom: '1px solid rgba(99,102,241,0.2)' } },

@@ -4988,7 +4988,7 @@ function focusTitrationRegion(id) {
 }
 
 if (!safetyChecked) {
-  var safetyStation = d.safetyStation || 1;
+  var safetyStation = (typeof d.safetyStation === 'number' && isFinite(d.safetyStation) && Number.isInteger(d.safetyStation) && d.safetyStation >= 1 && d.safetyStation <= 4) ? d.safetyStation : 1;
   var labMapFound = d.labMapFound || {};
   var chemsReviewed = d.chemsReviewed || {};
   var drillActive = d.drillActive || false;

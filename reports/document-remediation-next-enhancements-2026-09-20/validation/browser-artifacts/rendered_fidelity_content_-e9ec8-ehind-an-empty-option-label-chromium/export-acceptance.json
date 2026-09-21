@@ -1,0 +1,259 @@
+{
+  "schema": 1,
+  "runAt": "2026-09-20T15:04:17.887Z",
+  "browserVersion": "148.0.7778.96",
+  "artifacts": [
+    {
+      "id": "temperature",
+      "documentKind": "reading",
+      "kind": "html",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-next-enhancements-2026-09-20\\validation\\browser-artifacts\\rendered_fidelity_content_-e9ec8-ehind-an-empty-option-label-chromium\\candidate.html",
+      "sha256": "05ba5f5f8e981fc01798b05128d0134da8da68e2a8d173de448cbfc308d44e98",
+      "bytes": 249,
+      "checks": [
+        {
+          "id": "html.utf8-encoding",
+          "status": "passed",
+          "observed": {
+            "declaredCharsets": []
+          },
+          "expected": "valid UTF-8 with compatible declarations"
+        },
+        {
+          "id": "html.document-identity",
+          "status": "passed",
+          "observed": {
+            "title": "Temperature",
+            "language": "en"
+          },
+          "expected": {
+            "title": "Temperature",
+            "language": "en"
+          }
+        },
+        {
+          "id": "html.main-landmark",
+          "status": "passed",
+          "observed": 1,
+          "expected": 1
+        },
+        {
+          "id": "html.heading-navigation-semantics",
+          "status": "passed",
+          "observed": [
+            {
+              "level": 1,
+              "name": "Temperature"
+            }
+          ],
+          "expected": [
+            {
+              "level": 1,
+              "name": "Temperature"
+            }
+          ]
+        },
+        {
+          "id": "html.reading-order",
+          "status": "passed",
+          "observed": {
+            "anchorsInOrder": true
+          },
+          "expected": []
+        },
+        {
+          "id": "html.no-positive-tabindex",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.table-count",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.no-required-network",
+          "status": "passed",
+          "observed": 0,
+          "expected": 0
+        },
+        {
+          "id": "html.inspection-coverage",
+          "status": "passed",
+          "observed": {
+            "reasons": [],
+            "resources": {
+              "blocked": 0,
+              "scripts": 0,
+              "unresolved": 0,
+              "animations": 0
+            }
+          }
+        },
+        {
+          "id": "html.rendered-source-fidelity",
+          "status": "failed",
+          "observed": {
+            "status": "review-required",
+            "coverage": {
+              "requested": 1,
+              "inspected": 1,
+              "complete": true,
+              "wholeDocument": false,
+              "reasons": []
+            }
+          }
+        },
+        {
+          "id": "artifact.byte-stability",
+          "status": "passed",
+          "observed": {
+            "reason": "artifact-unchanged"
+          }
+        },
+        {
+          "id": "html.rendered-source-byte-stability",
+          "status": "passed",
+          "observed": {
+            "reason": "source-unchanged"
+          }
+        }
+      ],
+      "coverage": {
+        "complete": true,
+        "wholeDocument": false,
+        "reasons": []
+      },
+      "resources": {
+        "blocked": 0,
+        "scripts": 0,
+        "unresolved": 0,
+        "animations": 0
+      },
+      "limitations": [
+        "Chromium role/name exposure and native keyboard behavior only; no screen reader was run.",
+        "Focus style/geometry checks do not measure focus contrast or substitute for visual inspection.",
+        "Only the source-authored acceptance contract is assessed; whole-document fidelity is not established.",
+        "Document scripts and network requests are blocked. Unsupported encoding or dependent content leaves inspection coverage unavailable."
+      ],
+      "renderedFidelity": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-next-enhancements-2026-09-20\\validation\\browser-artifacts\\rendered_fidelity_content_-e9ec8-ehind-an-empty-option-label-chromium\\source.html",
+          "sha256": "fc55bef99fef5c7d01646a1f8bf47f75531c30e847cc5503cd1c1a74ebf242f2",
+          "bytes": 249
+        },
+        "candidate": {
+          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-next-enhancements-2026-09-20\\validation\\browser-artifacts\\rendered_fidelity_content_-e9ec8-ehind-an-empty-option-label-chromium\\candidate.html",
+          "sha256": "05ba5f5f8e981fc01798b05128d0134da8da68e2a8d173de448cbfc308d44e98",
+          "bytes": 249
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 497.09520000001066,
+        "status": "review-required",
+        "coverage": {
+          "requested": 1,
+          "inspected": 1,
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "p",
+            "sourceSelector": "#p",
+            "candidateSelector": "#p",
+            "status": "failed",
+            "properties": [
+              {
+                "property": "selected",
+                "status": "failed",
+                "source": [
+                  {
+                    "index": 0,
+                    "value": "temperature",
+                    "label": "Warm"
+                  }
+                ],
+                "candidate": [
+                  {
+                    "index": 0,
+                    "value": "temperature",
+                    "label": "Cold"
+                  }
+                ]
+              },
+              {
+                "property": "value",
+                "status": "passed",
+                "source": "temperature",
+                "candidate": "temperature"
+              },
+              {
+                "property": "name",
+                "status": "passed",
+                "source": "Temperature",
+                "candidate": "Temperature"
+              },
+              {
+                "property": "role",
+                "status": "passed",
+                "source": "listbox",
+                "candidate": "listbox"
+              },
+              {
+                "property": "exposed",
+                "status": "passed",
+                "source": true,
+                "candidate": true
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      },
+      "automatedStatus": "failed",
+      "manualATStatus": "not-run"
+    }
+  ],
+  "automatedStatus": "failed",
+  "humanAcceptance": {
+    "status": "not-run",
+    "releaseDecision": "pending-human-at",
+    "protocol": "docs/document-export-at-acceptance.md"
+  }
+}

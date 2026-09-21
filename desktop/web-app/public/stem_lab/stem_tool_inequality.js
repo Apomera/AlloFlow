@@ -249,7 +249,7 @@ window.StemLab = window.StemLab || {
       }
 
       // ── History / Undo ──
-      var exprHistory = d.exprHistory || [];
+      var exprHistory = Array.isArray(d.exprHistory) ? d.exprHistory : [];
       var addToHistory = function(expr) {
         if (!expr) return;
         var h2 = exprHistory.filter(function(e) { return e !== expr; });
@@ -523,7 +523,9 @@ window.StemLab = window.StemLab || {
 
       // ── STEP-BY-STEP SOLVER ──
       var solverExpr = d.solverExpr || '';
-      var solverSteps = d.solverSteps || null;
+      var // Read as solverSteps.slice().map AND solverSteps.solution: it is an
+      // ARRAY that also carries a property, so Array.isArray is the test.
+      solverSteps = Array.isArray(d.solverSteps) ? d.solverSteps : null;
       var solverRevealIdx = d.solverRevealIdx || 0;
 
       var solveInequality = function(raw) {

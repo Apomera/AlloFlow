@@ -4138,7 +4138,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var curTemp = d.safetyTemp || 70;
         var zone = tempZone(curTemp);
         // Danger-zone clock: hours on the counter at this temperature
-        var hoursOut = d.safetyHours != null ? d.safetyHours : 2;
+        var hoursOut = (typeof d.safetyHours === 'number' && isFinite(d.safetyHours)) ? d.safetyHours : 2;
         var clock = dangerClock(curTemp, hoursOut);
         var fmtMult = function(m) { return m >= 1000 ? Math.round(m).toLocaleString() + '×' : m >= 10 ? Math.round(m) + '×' : m.toFixed(1) + '×'; };
         return h('div', null,

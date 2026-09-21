@@ -11969,18 +11969,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             lifeList: d.blLifeList || current.lifeList || {},
             badges: d.blBadges || current.badges || {},
             xp: Number(d.blXp != null ? d.blXp : current.xp) || 0,
-            xpLedger: d.blXpLedger || current.xpLedger || {},
-            roundCounts: d.blRoundCounts || current.roundCounts || {},
+            xpLedger: (d.blXpLedger && typeof d.blXpLedger === 'object' && !Array.isArray(d.blXpLedger)) ? d.blXpLedger : (current.xpLedger || {}),
+            roundCounts: (d.blRoundCounts && typeof d.blRoundCounts === 'object' && !Array.isArray(d.blRoundCounts)) ? d.blRoundCounts : (current.roundCounts || {}),
             evidenceLog: d.blEvidenceLog || current.evidenceLog || {},
             reportHistory: d.blReportHistory || current.reportHistory || {},
             fieldSession: d.blFieldSession !== undefined ? d.blFieldSession : (current.fieldSession || null),
             fieldSessionHistory: Array.isArray(d.blFieldSessionHistory) ? d.blFieldSessionHistory : (current.fieldSessionHistory || []),
             assignmentSearchActive: d.blAssignmentSearchActive !== undefined
               ? d.blAssignmentSearchActive === true : current.assignmentSearchActive === true,
-            assignmentClueProgress: d.blAssignmentClueProgress || current.assignmentClueProgress || {},
-            hintsUsed: d.blHintsUsed || current.hintsUsed || {},
+            assignmentClueProgress: (d.blAssignmentClueProgress && typeof d.blAssignmentClueProgress === 'object' && !Array.isArray(d.blAssignmentClueProgress)) ? d.blAssignmentClueProgress : (current.assignmentClueProgress || {}),
+            hintsUsed: (d.blHintsUsed && typeof d.blHintsUsed === 'object' && !Array.isArray(d.blHintsUsed)) ? d.blHintsUsed : (current.hintsUsed || {}),
             habitatHinted: d.blHabitatHinted || current.habitatHinted || {},
-            spotStreak: Number(d.blSpotStreak != null ? d.blSpotStreak : current.spotStreak) || 0,
+            spotStreak: Number((typeof d.blSpotStreak === 'number' && isFinite(d.blSpotStreak)) ? d.blSpotStreak : current.spotStreak) || 0,
             binocularHoldMode: d.blBinocularHoldMode || current.binocularHoldMode || 'standard',
             difficulty: d.blDifficulty || current.difficulty || 'normal',
             hintMode: d.blHintMode !== undefined ? d.blHintMode !== false : current.hintMode !== false,
@@ -14094,11 +14094,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var habitatSceneRef = useRef(null);
         var foundByHabitat_state = useState(d.foundByHabitat || {});
         var foundByHabitat = foundByHabitat_state[0], setFoundByHabitat = foundByHabitat_state[1];
-        var initialRoundCounts = d.blRoundCounts !== undefined ? d.blRoundCounts : (birdLabWindowSnapshot.roundCounts || {});
+        var initialRoundCounts = (d.blRoundCounts && typeof d.blRoundCounts === 'object' && !Array.isArray(d.blRoundCounts))
+          ? d.blRoundCounts : (birdLabWindowSnapshot.roundCounts || {});
         var roundCounts_state = useState(initialRoundCounts);
         var roundCounts = roundCounts_state[0], setRoundCounts = roundCounts_state[1];
         useEffect(function() {
-          if (d.blRoundCounts !== undefined && d.blRoundCounts !== roundCounts) setRoundCounts(d.blRoundCounts || {});
+          if (d.blRoundCounts !== undefined && d.blRoundCounts !== roundCounts) setRoundCounts((d.blRoundCounts && typeof d.blRoundCounts === 'object' && !Array.isArray(d.blRoundCounts)) ? d.blRoundCounts : {});
         }, [d.blRoundCounts]);
         var evidenceLog_state = useState(d.blEvidenceLog || {});
         var evidenceLog = evidenceLog_state[0], setEvidenceLog = evidenceLog_state[1];
@@ -14155,18 +14156,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           var nextHintMode = d.blHintMode !== false;
           if (nextHintMode !== hintMode) setHintMode(nextHintMode);
         }, [d.blHintMode]);
-        var initialHintsUsed = d.blHintsUsed !== undefined ? d.blHintsUsed : (birdLabWindowSnapshot.hintsUsed || {});
+        var initialHintsUsed = (d.blHintsUsed && typeof d.blHintsUsed === 'object' && !Array.isArray(d.blHintsUsed))
+          ? d.blHintsUsed : (birdLabWindowSnapshot.hintsUsed || {});
         var hintsUsed_state = useState(initialHintsUsed);
         var hintsUsed = hintsUsed_state[0], setHintsUsed = hintsUsed_state[1];
         var hintsUsedRef = useRef(hintsUsed);
         useEffect(function() { hintsUsedRef.current = hintsUsed; }, [hintsUsed]);
         useEffect(function() {
           if (d.blHintsUsed !== undefined && d.blHintsUsed !== hintsUsed) {
-            hintsUsedRef.current = d.blHintsUsed || {};
-            setHintsUsed(d.blHintsUsed || {});
+            hintsUsedRef.current = (d.blHintsUsed && typeof d.blHintsUsed === 'object' && !Array.isArray(d.blHintsUsed)) ? d.blHintsUsed : {};
+            setHintsUsed((d.blHintsUsed && typeof d.blHintsUsed === 'object' && !Array.isArray(d.blHintsUsed)) ? d.blHintsUsed : {});
           }
         }, [d.blHintsUsed]);
-        var initialAssignmentClueProgress = d.blAssignmentClueProgress !== undefined
+        var initialAssignmentClueProgress = (d.blAssignmentClueProgress && typeof d.blAssignmentClueProgress === 'object' && !Array.isArray(d.blAssignmentClueProgress))
           ? d.blAssignmentClueProgress : (birdLabWindowSnapshot.assignmentClueProgress || {});
         var assignmentClueProgress_state = useState(initialAssignmentClueProgress);
         var assignmentClueProgress = assignmentClueProgress_state[0], setAssignmentClueProgress = assignmentClueProgress_state[1];
@@ -14186,11 +14188,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         // ── Spotter Streak: rewards consecutive spatial-spots (no hints) ──
         // Resets when a student uses a hint OR identifies via accessibility-mode button.
         // Persists across habitats so a strong run carries through.
-        var initialSpotStreak = d.blSpotStreak !== undefined ? d.blSpotStreak : (birdLabWindowSnapshot.spotStreak || 0);
+        var initialSpotStreak = (typeof d.blSpotStreak === 'number' && isFinite(d.blSpotStreak)) ? d.blSpotStreak : (birdLabWindowSnapshot.spotStreak || 0);
         var spotStreak_state = useState(initialSpotStreak);
         var spotStreak = spotStreak_state[0], setSpotStreak = spotStreak_state[1];
         useEffect(function() {
-          if (d.blSpotStreak !== undefined && Number(d.blSpotStreak || 0) !== Number(spotStreak || 0)) {
+          if (d.blSpotStreak !== undefined && Number((typeof d.blSpotStreak === 'number' && isFinite(d.blSpotStreak)) ? d.blSpotStreak : 0) !== Number(spotStreak || 0)) {
             setSpotStreak(Number(d.blSpotStreak) || 0);
           }
         }, [d.blSpotStreak]);
@@ -14217,7 +14219,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         // Durable field XP. A reward ledger makes every achievement idempotent,
         // so revisiting a bird never becomes an XP farming loop.
         var initialFieldXp = d.blXp !== undefined ? (Number(d.blXp) || 0) : (Number(birdLabWindowSnapshot.xp) || 0);
-        var initialXpLedger = d.blXpLedger !== undefined ? d.blXpLedger : (birdLabWindowSnapshot.xpLedger || {});
+        var initialXpLedger = (d.blXpLedger && typeof d.blXpLedger === 'object' && !Array.isArray(d.blXpLedger))
+          ? d.blXpLedger : (birdLabWindowSnapshot.xpLedger || {});
         var fieldXp_state = useState(initialFieldXp);
         var fieldXp = fieldXp_state[0], setFieldXp = fieldXp_state[1];
         var xpLedger_state = useState(initialXpLedger);

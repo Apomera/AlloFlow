@@ -226,6 +226,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
       var announceToSR = ctx.announceToSR;
       var isDark = !!(ctx.isDark || ctx.isContrast);
           var d = (ctx.toolData && ctx.toolData["musicSynth"]) || {};
+          // A saved patch is INPUT: it can be copied between devices,
+          // hand-edited, or carried across tool versions. Every synth parameter
+          // is read as `d[p.k]` from a slider table and formatted with
+          // .toFixed(), so a string or object threw and blanked the tool.
+          // Sanitise once here, using the ranges the slider tables themselves
+          // declare — per-site guards would miss the next slider added.
+          var _MS_RANGES = {
+            attack: [0.001, 2, 0.01], decay: [0.01, 1, 0.1],
+            sustain: [0, 1, 0.7], release: [0.01, 3, 0.3],
+            filterCutoff: [0, 1000, 8000], filterQ: [0.1, 20, 1],
+            tremoloRate: [0.5, 20, 0], tremoloDepth: [0, 1, 0],
+            vibratoRate: [0.5, 12, 0], vibratoDepth: [0, 1, 0],
+            ksBrightness: [0.1, 1, 0.8], ksDamping: [0.99, 0.9999, 0.996],
+            volume: [0, 1, 0.5], reverbMix: [0, 1, 0]
+          };
+          d = Object.keys(_MS_RANGES).reduce(function (acc, k) {
+            var r = _MS_RANGES[k];
+            if (acc[k] === undefined) return acc;
+            acc[k] = (typeof acc[k] === 'number' && isFinite(acc[k]))
+              ? Math.min(r[1], Math.max(r[0], acc[k]))
+              : r[2];
+            return acc;
+          }, Object.assign({}, d));
           var upd = function(key, val) { ctx.update("musicSynth", key, val); };
 
           // --- Tooltip helper ---
@@ -558,7 +581,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           function playNote(freq, noteId, vibratoOverride) {
             var audio = getCtx();
             if (window._alloSynthActiveNotes[noteId]) return;
-            var engine = d.synthEngine || 'standard';
+            var engine = (['standard','fm','pad','plucked','sub','supersaw'].indexOf(d.synthEngine) !== -1 ? d.synthEngine : 'standard');
             // Route to appropriate engine
             if (engine === 'fm') { playFM(freq, noteId, d.fmRatio || 2, d.fmDepth || 1.5); return; }
             if (engine === 'supersaw') { playSuperSaw(freq, noteId); return; }
@@ -638,7 +661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           function processXY(xPct, yPct) {
             upd('xyX', xPct); upd('xyY', yPct);
             // Trail (last 8 points)
-            var trail = (d.xyTrail || []).slice(-7).concat([{ x: xPct, y: yPct }]);
+            var trail = (Array.isArray(d.xyTrail) ? d.xyTrail : []).slice(-7).concat([{ x: xPct, y: yPct }]);
             upd('xyTrail', trail);
             // Map X to pitch (2 octaves range)
             var scaleIntervals = XY_SCALE_INTERVALS[d.xyScale || 'chromatic'] || XY_SCALE_INTERVALS.chromatic;
@@ -1262,7 +1285,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           });
 
           // ═══ STATE ═══
-          var synthTab = d.synthTab || 'play';
+          var synthTab = ['play','beatpad','chords','harmonypad','scales','theory','timbreHunt'].indexOf(d.synthTab) !== -1 ? d.synthTab : 'play';
           var selectedRoot = d.selectedRoot || 'C';
           var selectedScale = d.selectedScale || 'Major';
           var selectedChord = d.selectedChord || 'Major';
@@ -1294,12 +1317,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             return Math.max(0, Math.min(SWING_MAX_PCT, n)) / 100;
           }
           var tempoBPM = safeBPM(d.seqBPM);
-          var loopLen = d.loopLen || 16;
+          // Feeds `new Array(loopLen)`, which THROWS on a negative or
+          // fractional length. Nothing in the UI changes it, so any stored
+          // value is untrusted.
+          var loopLen = (Number.isInteger(d.loopLen) && d.loopLen > 0 && d.loopLen <= 64) ? d.loopLen : 16;
           var seq = d.sequence || new Array(loopLen).fill(0);
           var drumSeq = d.drumSequence || d.drumSeq || {};
           var intervalGame = d.intervalGame;
           var jazzMode = d.jazzMode || false;
-          var synthEngine = d.synthEngine || 'standard';
+          var synthEngine = (['standard','fm','pad','plucked','sub','supersaw'].indexOf(d.synthEngine) !== -1 ? d.synthEngine : 'standard');
           var vizMode = d.vizMode || 'waveform'; // waveform, lissajous, helix
 
           // Scale helpers
@@ -2319,7 +2345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("button", { onClick: function () { setStemLabTool(null); stopSequencer(); stopMetronome(); stopArpeggiator(); stopRhythm(); stopAllNotes(); }, className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': __alloT('stem.music.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
               React.createElement("h3", { className: "text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500" }, __alloT('stem.music.music_synthesizer', "\uD83C\uDFB9 Music Synthesizer")),
               React.createElement("span", { className: "px-2 py-0.5 bg-purple-100 text-purple-700 text-[0.6875rem] font-bold rounded-full" },
-                synthEngine === 'supersaw' ? '\u26A1 SUPERSAW' : synthEngine === 'fm' ? '\uD83C\uDF1F FM' : synthEngine === 'sub' ? '\uD83C\uDF0A SUB' : synthEngine === 'pad' ? '\u2601\uFE0F PAD' : synthEngine === 'plucked' ? '\uD83C\uDFB8 PLUCKED' : '\u223F ' + (d.waveType || 'sine').toUpperCase()
+                synthEngine === 'supersaw' ? '\u26A1 SUPERSAW' : synthEngine === 'fm' ? '\uD83C\uDF1F FM' : synthEngine === 'sub' ? '\uD83C\uDF0A SUB' : synthEngine === 'pad' ? '\u2601\uFE0F PAD' : synthEngine === 'plucked' ? '\uD83C\uDFB8 PLUCKED' : '\u223F ' + (["sine","square","sawtooth","triangle"].indexOf(d.waveType) !== -1 ? d.waveType : 'sine').toUpperCase()
               ),
               d.activePreset && React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 text-amber-700 text-[0.6875rem] font-bold rounded-full" }, "\u2B50 " + d.activePreset),
               // Tab selector
@@ -2341,7 +2367,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-purple-100" }, "The synth now starts from a studio workflow: shape a tone, learn a scale, build harmony, make a beat, or inspect the sound science."),
                   React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-2" },
                     [
-                      ['Engine', synthEngine === 'standard' ? (d.waveType || 'sine') : synthEngine, 'text-cyan-200'],
+                      ['Engine', synthEngine === 'standard' ? (["sine","square","sawtooth","triangle"].indexOf(d.waveType) !== -1 ? d.waveType : 'sine') : synthEngine, 'text-cyan-200'],
                       ['Root', selectedRoot + (d.octave || 4), 'text-amber-200'],
                       ['Mode', synthTab, 'text-emerald-200']
                     ].map(function(stat) {
@@ -2387,7 +2413,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 [{ id: 'standard', label: __alloT('stem.music.wave', '\u223F Wave') }, { id: 'supersaw', label: __alloT('stem.music.super', '\u26A1 Super') }, { id: 'fm', label: __alloT('stem.music.fm', '\uD83C\uDF1F FM') }, { id: 'sub', label: __alloT('stem.music.sub', '\uD83C\uDF0A Sub') }, { id: 'pad', label: __alloT('stem.music.pad', '\u2601 Pad') }, { id: 'plucked', label: __alloT('stem.music.pluck_2', '\uD83C\uDFB8 Pluck') }].map(function(eng) {
                   return React.createElement("button", { key: eng.id,
                     onClick: function() { upd('synthEngine', eng.id); upd('activePreset', null); },
-                    className: "px-1.5 py-0.5 rounded text-[0.6875rem] font-bold transition-all " + ((d.synthEngine || 'standard') === eng.id ? 'bg-purple-600 text-white' : 'text-purple-400 hover:text-white hover:bg-purple-500/30')
+                    className: "px-1.5 py-0.5 rounded text-[0.6875rem] font-bold transition-all " + ((['standard','fm','pad','plucked','sub','supersaw'].indexOf(d.synthEngine) !== -1 ? d.synthEngine : 'standard') === eng.id ? 'bg-purple-600 text-white' : 'text-purple-400 hover:text-white hover:bg-purple-500/30')
                   }, eng.label);
                 })
               )
@@ -2754,7 +2780,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       var wi = WAVE_INFO[w];
                       return React.createElement("button", { key: w,
                         onClick: function () { upd('waveType', w); },
-                        className: "flex-1 py-1 rounded-lg text-[0.6875rem] font-bold text-center transition-all " + ((d.waveType || 'sine') === w ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 hover:bg-purple-50'),
+                        className: "flex-1 py-1 rounded-lg text-[0.6875rem] font-bold text-center transition-all " + ((["sine","square","sawtooth","triangle"].indexOf(d.waveType) !== -1 ? d.waveType : 'sine') === w ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 hover:bg-purple-50'),
                         title: wi.desc
                       }, wi.emoji + " " + w);
                     })
@@ -3287,7 +3313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   transition: 'none', pointerEvents: 'none'
                 } }),
                 // Trail dots
-                (d.xyTrail || []).map(function(pt, i) {
+                (Array.isArray(d.xyTrail) ? d.xyTrail : []).map(function(pt, i) {
                   return React.createElement("div", { key: i, style: {
                     position: 'absolute', left: pt.x + '%', top: pt.y + '%', transform: 'translate(-50%,-50%)',
                     width: (4 + i * 0.5) + 'px', height: (4 + i * 0.5) + 'px', borderRadius: '50%',
@@ -3420,7 +3446,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 React.createElement("div", { className: "grid grid-cols-2 gap-3" },
                   Object.keys(WAVE_INFO).map(function (wType) {
                     var wi = WAVE_INFO[wType];
-                    var isActive = (d.waveType || 'sine') === wType;
+                    var isActive = (["sine","square","sawtooth","triangle"].indexOf(d.waveType) !== -1 ? d.waveType : 'sine') === wType;
                     return React.createElement("div", { 
                       key: wType,
                       onClick: function () { upd('waveType', wType); playNoteFor(noteFreq(selectedRoot, d.octave || 4), 'demo_' + wType, 800); },
@@ -5358,7 +5384,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
             // ── Snapshot button (bottom) ──
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
-              React.createElement("button", { "aria-label": __alloT('stem.music.snapshot_3', "Snapshot"), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sy-' + Date.now(), tool: 'synth', label: t('stem.synth_ui.synth') + (d.waveType || 'sine'), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(__alloT('stem.music.snapshot_saved_2', '\uD83D\uDCF8 Snapshot saved!'), 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, __alloT('stem.music.snapshot_4', "\uD83D\uDCF8 Snapshot"))
+              React.createElement("button", { "aria-label": __alloT('stem.music.snapshot_3', "Snapshot"), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sy-' + Date.now(), tool: 'synth', label: t('stem.synth_ui.synth') + (["sine","square","sawtooth","triangle"].indexOf(d.waveType) !== -1 ? d.waveType : 'sine'), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(__alloT('stem.music.snapshot_saved_2', '\uD83D\uDCF8 Snapshot saved!'), 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, __alloT('stem.music.snapshot_4', "\uD83D\uDCF8 Snapshot"))
             ),
 
             // \u2550\u2550\u2550 HARMONIC SERIES \u2550\u2550\u2550

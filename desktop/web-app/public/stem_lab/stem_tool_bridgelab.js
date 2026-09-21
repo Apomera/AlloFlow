@@ -527,7 +527,7 @@
     var supportsMOJ = trussStyle !== 'ktruss';
     var loadMode = d.loadMode || 'uniform';
     var loadOpts = loadMode === 'vehicle'
-      ? { mode: 'vehicle', position: d.vehiclePos != null ? d.vehiclePos : 0.5, totalKN: d.vehicleLoad || 150 }
+      ? { mode: 'vehicle', position: (typeof d.vehiclePos === 'number' && isFinite(d.vehiclePos)) ? d.vehiclePos : 0.5, totalKN: d.vehicleLoad || 150 }
       : { mode: 'uniform', loadPerJoint: d.loadPerJoint };
     var spec = supportsMOJ ? buildTrussSpec(trussStyle, d.span, d.nBays, d.height, loadOpts) : null;
     var moj = spec ? solveTrussMOJ(spec.joints, spec.members, spec.loads, spec.supports) : { ok: false };
@@ -1290,7 +1290,7 @@
             })(),
             // Load indicators / Dynamic illuminated vehicle
             loadMode === 'vehicle' ? (function() {
-              var vx = (d.vehiclePos != null ? d.vehiclePos : 0.5) * d.span;
+              var vx = ((typeof d.vehiclePos === 'number' && isFinite(d.vehiclePos)) ? d.vehiclePos : 0.5) * d.span;
               var vxScreen = tx(vx);
               var vTop = ty(d.height) - 14;
               return h('g', { key: 'vehicle' },
@@ -1556,7 +1556,7 @@
             sliderControl(__alloT('stem.bridgelab.label_bays', "Bays (triangle sections)"), d.nBays, 3, 8, 1, function(v) { upd({ nBays: v }); }, AMBER,
               __alloT('stem.bridgelab.hint_bays', "How many triangles the truss is divided into. More bays = shorter, sturdier pieces, but more joints to build.")),
             loadMode === 'vehicle'
-              ? sliderControl('Vehicle position (0=left, 1=right)', d.vehiclePos != null ? d.vehiclePos : 0.5, 0, 1, 0.02, function(v) { upd({ vehiclePos: v }); }, AMBER,
+              ? sliderControl('Vehicle position (0=left, 1=right)', (typeof d.vehiclePos === 'number' && isFinite(d.vehiclePos)) ? d.vehiclePos : 0.5, 0, 1, 0.02, function(v) { upd({ vehiclePos: v }); }, AMBER,
               __alloT('stem.bridgelab.hint_vehiclepos', "Slide the truck across the bridge and watch the forces chase it."))
               : sliderControl('Load per joint (kN)', d.loadPerJoint, 10, 200, 10, function(v) { upd({ loadPerJoint: v }); }, AMBER,
               __alloT('stem.bridgelab.hint_load', "The weight pressing down at each top joint. Imagine trucks parked all along the deck.")),
@@ -1741,7 +1741,7 @@
           sectionCard('💰 Cost optimization — what\'s the cheapest design that passes?',
             (function() {
               // Use current geometry (span, height, nBays, loadMode) but sweep material × cross-section
-              var targetSF = d.optTargetSF != null ? d.optTargetSF : 2.0;
+              var targetSF = (typeof d.optTargetSF === 'number' && isFinite(d.optTargetSF)) ? d.optTargetSF : 2.0;
               var sectionRange = [];
               for (var cs = 1000; cs <= 30000; cs += 500) sectionRange.push(cs);
               var results = [];
@@ -1900,9 +1900,9 @@
       function renderTypes() {
         // Catenary cable analyzer for suspension bridges
         function suspensionAnalyzer() {
-          var cSpan = d.suspSpan != null ? d.suspSpan : 1000; // m
-          var cSag  = d.suspSag != null ? d.suspSag : 100;    // m
-          var cLoad = d.suspLoad != null ? d.suspLoad : 10;   // kN/m (uniform deck load)
+          var cSpan = (typeof d.suspSpan === 'number' && isFinite(d.suspSpan)) ? d.suspSpan : 1000; // m
+          var cSag  = (typeof d.suspSag === 'number' && isFinite(d.suspSag)) ? d.suspSag : 100;    // m
+          var cLoad = (typeof d.suspLoad === 'number' && isFinite(d.suspLoad)) ? d.suspLoad : 10;   // kN/m (uniform deck load)
           // Parabolic-cable approximation (valid for taut suspension cables under uniform deck load):
           //   y(x) = (4*s/L²) * x * (L-x)
           //   Horizontal cable tension H = w * L² / (8s)
@@ -2061,9 +2061,9 @@
           (function() {
             // Arch thrust analyzer — parabolic arch under uniform load
             function archAnalyzer() {
-              var aSpan = d.archSpan != null ? d.archSpan : 50;     // m
-              var aRise = d.archRise != null ? d.archRise : 12;     // m
-              var aLoad = d.archLoad != null ? d.archLoad : 25;     // kN/m uniform load over span
+              var aSpan = (typeof d.archSpan === 'number' && isFinite(d.archSpan)) ? d.archSpan : 50;     // m
+              var aRise = (typeof d.archRise === 'number' && isFinite(d.archRise)) ? d.archRise : 12;     // m
+              var aLoad = (typeof d.archLoad === 'number' && isFinite(d.archLoad)) ? d.archLoad : 25;     // kN/m uniform load over span
               // For a parabolic arch under uniform load over the span (NOT cable length):
               //   y(x) = (4*r/L²) x (L-x)
               //   The arch is entirely in compression along the centerline.
@@ -2193,11 +2193,11 @@
             }
             // Beam bending analyzer — simply-supported beam with central point load
             function beamAnalyzer() {
-              var bSpan = d.beamSpan != null ? d.beamSpan : 10;        // m
-              var bDepth = d.beamDepth != null ? d.beamDepth : 600;    // mm
-              var bWidth = d.beamWidth != null ? d.beamWidth : 300;    // mm
-              var bLoad = d.beamLoad != null ? d.beamLoad : 50;        // kN (point load at center)
-              var bLoadPos = d.beamLoadPos != null ? d.beamLoadPos : 0.5;  // 0..1 along span
+              var bSpan = (typeof d.beamSpan === 'number' && isFinite(d.beamSpan)) ? d.beamSpan : 10;        // m
+              var bDepth = (typeof d.beamDepth === 'number' && isFinite(d.beamDepth)) ? d.beamDepth : 600;    // mm
+              var bWidth = (typeof d.beamWidth === 'number' && isFinite(d.beamWidth)) ? d.beamWidth : 300;    // mm
+              var bLoad = (typeof d.beamLoad === 'number' && isFinite(d.beamLoad)) ? d.beamLoad : 50;        // kN (point load at center)
+              var bLoadPos = (typeof d.beamLoadPos === 'number' && isFinite(d.beamLoadPos)) ? d.beamLoadPos : 0.5;  // 0..1 along span
               var bMatId = d.beamMatId || 'steel';
               var bMat = MATERIALS.find(function(m) { return m.id === bMatId; }) || MATERIALS[3];
 
@@ -2373,10 +2373,10 @@
 
             // Cable-stayed analyzer — multiple stays going directly from tower to deck
             function cableStayedAnalyzer() {
-              var csSpan = d.csSpan != null ? d.csSpan : 600;        // main span (m)
-              var csTowerH = d.csTowerH != null ? d.csTowerH : 150;  // tower height above deck (m)
-              var csNStays = d.csNStays != null ? d.csNStays : 12;   // stays per side
-              var csLoad = d.csLoad != null ? d.csLoad : 30;         // kN/m deck load
+              var csSpan = (typeof d.csSpan === 'number' && isFinite(d.csSpan)) ? d.csSpan : 600;        // main span (m)
+              var csTowerH = (typeof d.csTowerH === 'number' && isFinite(d.csTowerH)) ? d.csTowerH : 150;  // tower height above deck (m)
+              var csNStays = (typeof d.csNStays === 'number' && isFinite(d.csNStays)) ? d.csNStays : 12;   // stays per side
+              var csLoad = (typeof d.csLoad === 'number' && isFinite(d.csLoad)) ? d.csLoad : 30;         // kN/m deck load
               // Each stay carries the deck load over its tributary length.
               // Tributary length = (csSpan / 2) / csNStays per stay.
               // Stay angle to horizontal at the j-th stay (from tower): θ_j = atan2(towerH, j * tribLen)
@@ -3002,8 +3002,8 @@
 
           sectionCard('⚡ Prestressed concrete — concrete that never cracks',
             (function() {
-              var compStress = d.preCompStress != null ? d.preCompStress : 10;  // MPa precompression
-              var loadStress = d.preLoadStress != null ? d.preLoadStress : 8;     // MPa bending tension from load
+              var compStress = (typeof d.preCompStress === 'number' && isFinite(d.preCompStress)) ? d.preCompStress : 10;  // MPa precompression
+              var loadStress = (typeof d.preLoadStress === 'number' && isFinite(d.preLoadStress)) ? d.preLoadStress : 8;     // MPa bending tension from load
               // Net tension at the bottom fiber = bending tension MINUS precompression
               var netStress = loadStress - compStress;
               var cracking = netStress > 3;  // concrete cracks at ~3 MPa tension
@@ -3284,8 +3284,8 @@
           // Fatigue analysis — the failure mode that kills bridges over decades
           sectionCard('⏳ Fatigue — the slow killer of bridges',
             (function() {
-              var stress = d.fatigueStressMPa != null ? d.fatigueStressMPa : 100;
-              var cycles = d.fatigueCyclesPerDay != null ? d.fatigueCyclesPerDay : 5000;
+              var stress = (typeof d.fatigueStressMPa === 'number' && isFinite(d.fatigueStressMPa)) ? d.fatigueStressMPa : 100;
+              var cycles = (typeof d.fatigueCyclesPerDay === 'number' && isFinite(d.fatigueCyclesPerDay)) ? d.fatigueCyclesPerDay : 5000;
               // Basquin's equation: σ^a × N = constant. For structural steel, slope a ≈ 3,
               // endurance limit σ_e ≈ 100-150 MPa at ~10^6 cycles for high-cycle fatigue.
               // S-N curve: at low stress (below endurance limit) N → infinity.
@@ -3692,9 +3692,9 @@
           // Seismic loading — earthquakes are a major design consideration
           sectionCard('🌋 Seismic loading — designing for earthquakes',
             (function() {
-              var magnitude = d.seismicMag != null ? d.seismicMag : 7.0;
-              var distance = d.seismicDist != null ? d.seismicDist : 30;  // km
-              var weight = d.seismicWeight != null ? d.seismicWeight : 1000; // kN (bridge weight)
+              var magnitude = (typeof d.seismicMag === 'number' && isFinite(d.seismicMag)) ? d.seismicMag : 7.0;
+              var distance = (typeof d.seismicDist === 'number' && isFinite(d.seismicDist)) ? d.seismicDist : 30;  // km
+              var weight = (typeof d.seismicWeight === 'number' && isFinite(d.seismicWeight)) ? d.seismicWeight : 1000; // kN (bridge weight)
               // Simplified ground acceleration estimate (in g):
               //   PGA ≈ 10^(0.5*M - 1) / max(10, distance)^0.5 (very rough log-attenuation)
               var pga = Math.pow(10, 0.5 * magnitude - 1.5) / Math.pow(Math.max(10, distance), 0.5);
@@ -4127,7 +4127,7 @@
       // CASE STUDIES (with Tacoma flutter sim when selected)
       // ──────────────────────────────────────────────────────────────
       function tacomaFlutterDemo() {
-        var windSpeed = d.windSpeedMph != null ? d.windSpeedMph : 35;
+        var windSpeed = (typeof d.windSpeedMph === 'number' && isFinite(d.windSpeedMph)) ? d.windSpeedMph : 35;
         // Critical flutter speed (simplified): about 30-40 mph for the historical Tacoma deck cross-section
         var critical = 35;
         var safe = windSpeed < 20;
@@ -4226,7 +4226,7 @@
       }
 
       function millenniumPedestrianDemo() {
-        var nPeds = d.millenniumPeds != null ? d.millenniumPeds : 200;
+        var nPeds = (typeof d.millenniumPeds === 'number' && isFinite(d.millenniumPeds)) ? d.millenniumPeds : 200;
         // Critical synchronization threshold: empirically about 156-166 pedestrians on the London Millennium north span
         var critical = 160;
         // Synchronization fraction grows with pedestrian count above ~30 (where motion becomes perceptible)

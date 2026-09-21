@@ -8,13 +8,25 @@ const hostPaths = [
 ];
 const rendererSource = readFileSync('view_renderers_source.jsx', 'utf8');
 const outlineSource = readFileSync('view_outline_source.jsx', 'utf8');
+// The teacher half of the Venn broadcast (validate, then attach gameData to the
+// arm) was extracted out of the host monolith into this handler module. The
+// student half — receive, validate, apply — still lives in the host.
+const hostHandlersSource = readFileSync('host_handlers_source.jsx', 'utf8');
 
 describe('Venn live-session activity lifecycle', () => {
-  it.each(hostPaths)('%s transports bounded, finalized Venn game data to students', path => {
+  it('validates and attaches Venn game data before arming students', () => {
+    // Teacher side. This lived in the host until the broadcast was extracted;
+    // the assertions follow the code rather than pinning its old address.
+    expect(hostHandlersSource).toContain('__d.normalizeInteractiveVennGameData(activityConfig?.gameData)');
+    expect(hostHandlersSource).toContain("if (type === 'venn')");
+    // An incomplete Venn must fail loudly here, not arm an unplayable activity.
+    expect(hostHandlersSource).toContain('if (!__d.isPlayableInteractiveVennData(gameData)) throw new Error');
+    expect(hostHandlersSource).toContain('interactiveOrganizer = { ...interactiveOrganizer, gameData }');
+  });
+
+  it.each(hostPaths)('%s applies only playable Venn data it receives', path => {
     const host = readFileSync(path, 'utf8');
     expect(host).toContain('normalizeInteractiveVennGameData');
-    expect(host).toContain("if (type === 'venn')");
-    expect(host).toContain('interactiveOrganizer = { ...interactiveOrganizer, gameData }');
     expect(host).toContain("if (remote.type === 'venn')");
     expect(host).toContain('setVennGameData(syncedGameData)');
     expect(host).toContain('isPlayableInteractiveVennData(syncedGameData)');
@@ -31,7 +43,9 @@ describe('Venn live-session activity lifecycle', () => {
   it('launches only a complete activity and publishes the teacher-edited answer zones', () => {
     expect(rendererSource).toContain('const isVennGameReady =');
     expect(rendererSource).toContain('disabled={!isVennGameReady}');
-    expect(rendererSource).toContain("_broadcastInteractiveOrganizer('venn', { gameData: vennGameData })");
+    // Venn now launches through the shared organizer-start helper instead of a
+    // bespoke broadcast call, but it must still carry the teacher's edited zones.
+    expect(rendererSource).toContain("_startOrganizerGame('venn', handleSetIsVennPlayingToTrue, { gameData: vennGameData })");
     expect(rendererSource).toContain('Add at least one card to each region and four cards total');
   });
 

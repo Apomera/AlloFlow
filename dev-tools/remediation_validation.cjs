@@ -153,6 +153,7 @@ function executeValidation({ reportDir, run = runCli, capture = () => captureIde
     save();
     validateManifest();
     if (!Array.isArray(manifest.identityInputs) || !manifest.identityInputs.length) throw new Error('Missing validation identity inputs');
+    if (!summary.identity.before.gitHead) throw new Error('Git revision is unavailable before validation');
     if (Object.values(summary.identity.before.inputSha256).some(hash => hash === null)) throw new Error('A required validation input is missing');
     if (JSON.stringify(JSON.parse(fs.readFileSync(path.join(ROOT, 'dev-tools/remediation_validation.json'), 'utf8'))) !== JSON.stringify(manifest)) throw new Error('Suite manifest changed before validation started');
     runPhase('unit', 'node_modules/vitest/vitest.mjs', ['run', ...manifest.unit, '--pool=threads', '--maxWorkers=2', '--allowOnly=false', '--testTimeout=30000', '--hookTimeout=30000', '--reporter=dot', '--reporter=json', '--outputFile=' + unitReport]);
@@ -166,6 +167,8 @@ function executeValidation({ reportDir, run = runCli, capture = () => captureIde
       summary.identity.after = capture();
       if (summary.identity.before) {
         Object.assign(summary.identity, compareIdentity(summary.identity.before, summary.identity.after));
+        if (!summary.identity.gitHeadVerified)
+          summary.error = [summary.error, 'Git revision metadata is unavailable for verification'].filter(Boolean).join('; ');
         if (summary.identity.changedInputs.length || summary.identity.toolsChanged || summary.identity.gitHeadChanged)
           summary.error = [summary.error, 'Validation inputs, tools or revision changed during the run'].filter(Boolean).join('; ');
       }

@@ -56,6 +56,196 @@ describe('Half-lives and decay', () => {
   });
 });
 
+describe('Stay-time calculator across its real control ranges', () => {
+  // The published-constant check and the source ordering are already
+  // pinned above ('lands within 3% of the published constant', 'ranks the
+  // sources the way their decay schemes demand'), so this adds only what
+  // they do not cover: walking every control combination a learner can
+  // actually reach and demanding a printable number at each one.
+  function protectionModel() {
+    const a = SRC.indexOf('  function nkXi(');
+    const b = SRC.indexOf('  var PROTECT_SOURCES');
+    expect(a, 'helper block not found').toBeGreaterThan(-1);
+    expect(b, 'PROTECT_SOURCES not found').toBeGreaterThan(a);
+
+    const arrayAt = (mark) => {
+      const start = SRC.indexOf(mark);
+      const open = SRC.indexOf('[', start);
+      let depth = 0;
+      for (let j = open; j < SRC.length; j++) {
+        if (SRC[j] === '[') depth++;
+        else if (SRC[j] === ']') {
+          depth--;
+          if (depth === 0) return SRC.slice(start, j + 1);
+        }
+      }
+      return null;
+    };
+
+    return new Function(
+      SRC.slice(a, b)
+      + arrayAt('var PROTECT_SOURCES')
+      + '\nreturn { PROTECT_SOURCES, nkGammaConst, nkTimeToDose };',
+    )();
+  }
+
+  it('never returns a negative or NaN stay time anywhere a learner can go', () => {
+    // Swept the real control ranges: 4 sources x 7 distances x every dose
+    // limit. Infinity is a legitimate answer ("you do not reach this limit")
+    // and every render site guards it with isFinite; NaN or a negative is not.
+    const { PROTECT_SOURCES, nkGammaConst, nkTimeToDose } = protectionModel();
+    for (const src of PROTECT_SOURCES) {
+      const gamma = nkGammaConst(src.lines || []);
+      for (const dist of [0.1, 0.25, 0.5, 1, 2, 5, 10]) {
+        for (const limit of [0.1, 1, 6, 20, 50, 100]) {
+          const rate = gamma * (src.gbq || 0) / (dist * dist);
+          const stay = nkTimeToDose(rate, limit, src.halfLifeH);
+          expect(Number.isNaN(stay), src.id + ' d=' + dist + ' limit=' + limit).toBe(false);
+          expect(stay, src.id + ' d=' + dist + ' limit=' + limit).toBeGreaterThanOrEqual(0);
+        }
+      }
+    }
+  });
+});
+
+describe('Reactor constants match published nuclear-engineering values', () => {
+  // The simulator's numbers were checked one by one against the standard
+  // references on 2026-09-20. Every one held except the decay-heat
+  // normalisation (see the block below). Pinning them here so a future tuning
+  // pass has to notice it is changing physics rather than pacing.
+  const constant = (name) => {
+    const m = new RegExp('var ' + name + '\\s*=\\s*([^;]+);').exec(SRC);
+    expect(m, name + ' not found').toBeTruthy();
+    // eslint-disable-next-line no-new-func
+    return new Function('return (' + m[1] + ');')();
+  };
+
+  it('uses the accepted delayed-neutron fraction for U-235', () => {
+    // Keepin's measured beta for U-235 thermal fission: 0.0065.
+    // This is THE number reactor control depends on; prompt criticality is
+    // defined relative to it, so a wrong value moves the cliff edge.
+    expect(constant('RX_BETA')).toBeCloseTo(0.0065, 4);
+  });
+
+  it('keeps the prompt generation time in the thermal-reactor range', () => {
+    const gen = constant('RX_GEN');
+    expect(gen).toBeGreaterThanOrEqual(1e-5);
+    expect(gen).toBeLessThanOrEqual(1e-3);
+  });
+
+  it('uses real temperatures for the two things that can fail', () => {
+    // Zircaloy oxidises rapidly around 1200 C; UO2 melts at 2865 C. Both are
+    // quoted to the learner in the verdict text, so they must be the real ones.
+    expect(constant('RX_T_CLAD')).toBe(1200);
+    expect(constant('RX_T_MELT')).toBe(2865);
+    expect(SRC).toContain('2,865 °C');
+    expect(SRC).toContain('1,200 °C');
+  });
+
+  it('uses the published iodine and xenon half-lives', () => {
+    // I-135 6.57 h, Xe-135 9.14 h. The xenon pit is entirely a race between
+    // these two, so both have to be right for the trap to behave.
+    expect(SRC).toContain('6.57 * 3600');
+    expect(SRC).toContain('9.14 * 3600');
+  });
+
+  it('gives equilibrium xenon a reactivity worth a real PWR would recognise', () => {
+    // Checked by running the tool's own iodine/xenon pair to equilibrium at
+    // full power: it settles near xe = 1.72, and the worth term -0.03*(xe-1)
+    // puts that at about -2160 pcm. Published equilibrium xenon worth for a
+    // PWR is roughly -2600 to -3000 pcm, so this is the right size -- it is
+    // several times beta, which is why the pit can strand an operator.
+    const LAM_I = Math.LN2 / (6.57 * 3600);
+    const LAM_X = Math.LN2 / (9.14 * 3600);
+    let iod = 1;
+    let xe = 1;
+    for (let i = 0; i < 60 * 60 * 10; i++) {
+      const phi = 1;
+      iod += (phi * 0.0000642 - LAM_I * iod) * 60;
+      xe += (LAM_I * iod + 0.0000032 * phi - LAM_X * xe - 0.0000181 * phi * xe) * 60;
+      xe = Math.max(0.05, Math.min(6, xe));
+    }
+    // Read the worth coefficient out of the tool rather than restating it: a
+    // hardcoded -0.03 here would have passed happily while the tool itself was
+    // changed to -0.003, which is exactly the mutation this test exists to fail.
+    const worthMatch = /var rhoXe = (-?[\d.]+) \* \(s\.xe - 1\)/.exec(SRC);
+    expect(worthMatch, 'xenon worth term not found — did rxReactivity change shape?').toBeTruthy();
+    const worthPcm = Number(worthMatch[1]) * (xe - 1) * 1e5;
+    expect(worthPcm).toBeLessThan(-1500);
+    expect(worthPcm).toBeGreaterThan(-3500);
+    // And it must be worth several beta, or the trap is not a trap.
+    expect(Math.abs(worthPcm / 1e5) / constant('RX_BETA')).toBeGreaterThan(2);
+  });
+});
+
+describe('Decay heat after shutdown', () => {
+  // The blackout scenario rests entirely on this curve: fission stops and the
+  // core keeps making heat anyway. It used to pin 6.5% at ten seconds, but
+  // 6.5% is the figure for the INSTANT of shutdown, so the whole curve ran
+  // about 1.3x high against published values and made the accident hotter
+  // than the real one. Check it against the reference points rather than
+  // against a remembered constant.
+  // Built inside the tests, not at module scope: an expect() during collection
+  // aborts the whole FILE with a bare syntax-style error and reports "no tests"
+  // rather than one failure, which hides every other test in here.
+  function decayHeatFn() {
+    const open = SRC.indexOf('  var RX_DECAY_K =');
+    const fnOpen = SRC.indexOf('  function rxDecayHeat(');
+    expect(open, 'RX_DECAY_K not found').toBeGreaterThan(-1);
+    expect(fnOpen, 'rxDecayHeat not found').toBeGreaterThan(-1);
+    const fnClose = SRC.indexOf('\n  }', fnOpen) + 4;
+    // Keep the newline: the constant's line ends in a // comment, and without
+    // it that comment swallows the function declaration joined after it.
+    const constLine = SRC.slice(open, SRC.indexOf('\n', open)) + '\n';
+    return new Function(constLine + SRC.slice(fnOpen, fnClose) + '\nreturn rxDecayHeat;')();
+  }
+
+  // Published decay heat for a PWR after long operation, as a fraction of
+  // full thermal power. These are the standard teaching reference points.
+  const REFERENCE = [
+    { t: 10, frac: 0.050 },
+    { t: 100, frac: 0.030 },
+    { t: 3600, frac: 0.015 },
+    { t: 86400, frac: 0.008 },
+  ];
+
+  it('tracks published PWR decay heat across four decades', () => {
+    for (const { t, frac } of REFERENCE) {
+      const got = decayHeatFn()(1, t);
+      const ratio = got / frac;
+      expect(ratio, `t=${t}s: model ${(got * 100).toFixed(2)}% vs published ${(frac * 100).toFixed(1)}%`)
+        .toBeGreaterThan(0.85);
+      expect(ratio, `t=${t}s: model ${(got * 100).toFixed(2)}% vs published ${(frac * 100).toFixed(1)}%`)
+        .toBeLessThan(1.15);
+    }
+  });
+
+  it('passes through the 6.5% its own scenario brief quotes, near shutdown', () => {
+    // The blackout brief says the core "still makes about 6.5% of full power"
+    // after the scram. That has to be true of the curve, within seconds of it.
+    const crossing = Math.pow(0.065 / decayHeatFn()(1, 1), 1 / -0.2);
+    expect(crossing).toBeGreaterThan(1);
+    expect(crossing).toBeLessThan(10);
+    expect(SRC).toContain('about 6.5% of full power');
+  });
+
+  it('never returns an infinite power at t = 0', () => {
+    // A power law diverges at zero; the clamp is what stops the simulator
+    // painting Infinity in its first frame after a scram.
+    expect(Number.isFinite(decayHeatFn()(100, 0))).toBe(true);
+    expect(decayHeatFn()(100, 0)).toBeLessThan(100);
+  });
+
+  it('falls monotonically, because fission products only decay away', () => {
+    let prev = Infinity;
+    for (const t of [1, 10, 100, 1000, 10000, 100000]) {
+      const v = decayHeatFn()(1, t);
+      expect(v).toBeLessThan(prev);
+      prev = v;
+    }
+  });
+});
+
 describe('The uranium-238 decay series', () => {
   const massOf = sym => parseInt(sym.split('-')[1].replace(/[^0-9]/g, ''), 10);
 
@@ -72,6 +262,41 @@ describe('The uranium-238 decay series', () => {
     expect(CHAIN.filter(s => s.kind === 'stable')).toHaveLength(1);
     expect(CHAIN[CHAIN.length - 1].sym).toBe('Pb-206');
     expect(massOf('U-238') - massOf('Pb-206')).toBe(8 * 4);
+  });
+
+  it('states a span that its own half-lives actually support', () => {
+    // A number written into prose drifts silently from the table beside it.
+    // This one said 24 orders of magnitude; 164 microseconds to 4.468 billion
+    // years is 10^20.9. Compute the span, then hold the sentence to it.
+    const SECONDS = {
+      microseconds: 1e-6, microsecond: 1e-6,
+      seconds: 1, second: 1,
+      minutes: 60, minute: 60,
+      hours: 3600, hour: 3600,
+      days: 86400, day: 86400,
+      y: 365.25 * 86400, years: 365.25 * 86400,
+    };
+    const toSeconds = (hl) => {
+      const m = /^([\d.,]+)\s*(billion\s+)?(\w+)$/.exec(hl.trim());
+      if (!m) return null;
+      const n = parseFloat(m[1].replace(/,/g, '')) * (m[2] ? 1e9 : 1);
+      const unit = SECONDS[m[3]];
+      return unit ? n * unit : null;
+    };
+
+    const spans = CHAIN.map((s) => toSeconds(s.hl)).filter((v) => v != null && v > 0);
+    expect(spans.length, 'half-lives did not parse — did the hl format change?')
+      .toBeGreaterThanOrEqual(CHAIN.length - 1);
+
+    const orders = Math.log10(Math.max(...spans) / Math.min(...spans));
+    expect(orders).toBeGreaterThan(20);
+    expect(orders).toBeLessThan(22);
+
+    // And the claim in the note must match what that arithmetic gives.
+    const claim = /span(?:s)? (?:about )?(\d+) orders of magnitude/.exec(SRC);
+    expect(claim, 'the orders-of-magnitude sentence moved or was deleted').toBeTruthy();
+    expect(Math.abs(Number(claim[1]) - orders), `prose says ${claim[1]}, table gives ${orders.toFixed(1)}`)
+      .toBeLessThan(1);
   });
 
   it('flags radon as the only gas, in the middle of the chain', () => {

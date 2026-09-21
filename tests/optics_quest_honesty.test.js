@@ -129,7 +129,11 @@ describe('Optics quests — each award says what it means', () => {
   it('keeps the honest achievements checking real physics, not flags', () => {
     // These two were always honest: they run the shipped solvers.
     expect(SRC).toMatch(/var result = snell\(degToRad\(d\.refrTheta1/);
-    expect(SRC).toMatch(/var result = thinLens\(d\.lensDo/);
+    // The lensDo read now carries a type guard (a saved 'abc' reached
+    // d_o.toFixed and blanked the tool), so the pin matches the CALL and the
+    // key rather than the exact old spelling. The claim is unchanged: the
+    // award runs the shipped solver on the student's real saved value.
+    expect(SRC).toMatch(/var result = thinLens\([^;]*d\.lensDo/);
     expect(SRC).toMatch(/if \(result\.isReal && !d\.realImageFormed\)/);
   });
 });

@@ -225,28 +225,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       // is assigned further down and `var` hoists the declaration, not the value.
       var TAB_IDS = ['action', 'audit', 'badges', 'history', 'knowbility', 'learn'];
       var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'audit';
-      var auditUrl = d.auditUrl || '';
+      // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
+      var auditUrl = typeof d.auditUrl === 'string' ? d.auditUrl : '';
       var auditHtml = d.auditHtml || '';
       var auditResult = d.auditResult || null;
       var auditLoading = d.auditLoading || false;
       var deterministicAudit = d.deterministicAudit || null;
       var auditInputMode = d.auditInputMode || 'url'; // 'url' | 'html' | 'pdf' | 'screenshot'
-      var auditHistory = d.auditHistory || [];
+      var auditHistory = Array.isArray(d.auditHistory) ? d.auditHistory : [];
       var selectedCriterion = d.selectedCriterion || null;
-      var badges = d.badges || [];
+      var badges = Array.isArray(d.badges) ? d.badges : [];
       var auditsCompleted = d.auditsCompleted || 0;
       var criteriaExplored = d.criteriaExplored || 0;
       var reportsDownloaded = d.reportsDownloaded || 0;
-      var worstScore = d.worstScore !== undefined ? d.worstScore : 999;
+      var worstScore = (typeof d.worstScore === 'number' && isFinite(d.worstScore)) ? d.worstScore : 999;
       var uniqueSites = d.uniqueSites || 0;
       var complaintsGenerated = d.complaintsGenerated || 0;
       var socialAudits = d.socialAudits || 0;
       var govAudits = d.govAudits || 0;
       var knowbilityExplored = d.knowbilityExplored || 0;
-      var complaintEntity = d.complaintEntity || '';
+      var complaintEntity = typeof d.complaintEntity === 'string' ? d.complaintEntity : '';
       var complaintType = d.complaintType || 'ada_coordinator';
       var complaintImpact = d.complaintImpact || '';
-      var complaintResult = d.complaintResult || null;
+      var complaintResult = typeof d.complaintResult === 'string' ? d.complaintResult : null;
       var complaintLoading = d.complaintLoading || false;
       var socialText = d.socialText || '';
       var socialPlatform = d.socialPlatform || 'instagram';

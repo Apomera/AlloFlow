@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-17T05:30:57.040Z",
+  "generatedAt": "2026-09-20T17:59:47.038Z",
   "sourceCount": 7,
   "languageCount": 63,
   "expectedLanguageCount": 63,
@@ -63,7 +63,1331 @@
   },
   "errors": [],
   "missingPacks": [],
-  "invalidSource": [],
+  "invalidSource": [
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "acholi",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Cwako odoco laa ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "acholi",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Pe anongo laa man i plan.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "acholi",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Plan tye ka cwece — in twero neno laa acel acel i card.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "amharic",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "ደረጃውን እንደገና በመገንባት ላይ: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "amharic",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "ያንን ደረጃ በዕቅዱ ውስጥ አላገኘሁትም።",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "amharic",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "ዕቅዱን በመፍጠር ላይ ነው — እያንዳንዱን ደረጃ በካርዱ ላይ ማየት ይችላሉ።",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "arabic",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "جارٍ إعادة إنشاء الخطوة ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "arabic",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "تعذر العثور على تلك الخطوة في الخطة.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "arabic",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "جارٍ إنشاء الخطة — يمكنك متابعة كل خطوة على البطاقة.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "bengali",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "ধাপ পুনর্গঠন করা হচ্ছে: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "bengali",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "পরিকল্পনায় সেই ধাপটি খুঁজে পাইনি।",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "bengali",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "পরিকল্পনা তৈরি হচ্ছে — কার্ডে প্রতিটি ধাপ দেখতে পারবেন।",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "burmese",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "အဆင့်ကို ပြန်တည်ဆောက်နေသည်: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "burmese",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "အစီအစဉ်ထဲတွင် ထိုအဆင့်ကို မတွေ့ပါ။",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "burmese",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "အစီအစဉ်ကို ဖန်တီးနေသည် — ကတ်ပေါ်တွင် အဆင့်တိုင်းကို ကြည့်နိုင်သည်။",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "chin_falam",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Laa thar in tuah lio: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "chin_falam",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Plan chungah laa cu ka hmuh khawh lo.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "chin_falam",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Plan chuah lio — card cungah laa pakhat cio na hmuh khawh.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "chin_hakha",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Laa thar in tuah lio: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "chin_hakha",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Plan chungah laa cu ka hmuh khawh lo.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "chin_hakha",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Plan ser lio — card cungah laa pakhat cio na hmuh khawh.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "chinese_simplified",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "正在重新构建步骤：",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "chinese_simplified",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "在计划中找不到该步骤。",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "chinese_simplified",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "正在生成计划——你可以在卡片上查看每个步骤。",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "chinese_traditional",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "正在重新建立步驟：",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "chinese_traditional",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "在計畫中找不到該步驟。",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "chinese_traditional",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "正在產生計畫——你可以在卡片上查看每個步驟。",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "dari",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "در حال بازسازی مرحلهٔ ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "dari",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "آن مرحله در برنامه پیدا نشد.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "dari",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "برنامه در حال ایجاد است — می‌توانید هر مرحله را روی کارت ببینید.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "dutch",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Stap wordt opnieuw opgebouwd: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "dutch",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Ik kan die stap niet vinden in het plan.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "dutch",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Bezig met het plan — je kunt elke stap op de kaart volgen.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "esperanto",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Rekonstruas paŝon ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "esperanto",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Mi ne trovis tiun paŝon en la plano.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "esperanto",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Generas la planon — vi povas rigardi ĉiun paŝon sur la karto.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "farsi",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "در حال بازسازی مرحلهٔ ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "farsi",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "آن مرحله را در برنامه پیدا نکردم.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "farsi",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "برنامه در حال تولید است — می‌توانی هر مرحله را روی کارت ببینی.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "french",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Reconstruction de l’étape ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "french",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Cette étape est introuvable dans le plan.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "french",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Génération du plan — vous pouvez suivre chaque étape sur la carte.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "french_canadian",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Reconstruction de l’étape ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "french_canadian",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Cette étape est introuvable dans le plan.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "french_canadian",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Génération du plan — vous pouvez suivre chaque étape sur la carte.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "german",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Schritt wird neu erstellt: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "german",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Dieser Schritt wurde im Plan nicht gefunden.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "german",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Plan wird erstellt — du kannst jeden Schritt auf der Karte verfolgen.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "greek",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Αναδημιουργία βήματος ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "greek",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Δεν βρήκα αυτό το βήμα στο σχέδιο.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "greek",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Δημιουργείται το σχέδιο — μπορείς να παρακολουθείς κάθε βήμα στην κάρτα.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "gujarati",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "પગલું ફરી બનાવાઈ રહ્યું છે: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "gujarati",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "યોજનામાં તે પગલું મળ્યું નથી.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "gujarati",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "યોજના બની રહી છે — તમે કાર્ડ પર દરેક પગલું જોઈ શકો છો.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "haitian_creole",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Ap rebati etap ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "haitian_creole",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Mwen pa t jwenn etap sa a nan plan an.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "haitian_creole",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Ap jenere plan an — ou ka suiv chak etap sou kat la.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "hausa",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Ana sake gina mataki ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "hausa",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Ban sami wannan matakin a cikin tsarin ba.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "hausa",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Ana ƙirƙirar tsarin — za ka iya kallon kowane mataki a katin.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "hebrew",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "בונה מחדש את שלב ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "hebrew",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "לא מצאתי את השלב הזה בתוכנית.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "hebrew",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "התוכנית נוצרת — אפשר לעקוב אחרי כל שלב בכרטיס.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "hindi",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "चरण फिर से बनाया जा रहा है: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "hindi",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "मुझे योजना में वह चरण नहीं मिला।",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "hindi",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "योजना बनाई जा रही है — आप कार्ड पर हर चरण देख सकते हैं।",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "hmong",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Rov tsim kauj ruam ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "hmong",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Kuv nrhiav tsis tau kauj ruam ntawd hauv txoj kev npaj.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "hmong",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Tab tom tsim txoj kev npaj — koj tuaj yeem saib txhua kauj ruam ntawm daim npav.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "igbo",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Na-ewughachi nzọụkwụ ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "igbo",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Ahụghị m nzọụkwụ ahụ n'ime atụmatụ ahụ.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "igbo",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "A na-emepụta atụmatụ — ị nwere ike ilele nzọụkwụ ọ bụla na kaadị ahụ.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "indonesian",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Membangun ulang langkah ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "indonesian",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Langkah itu tidak ditemukan dalam rencana.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "indonesian",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Membuat rencana — Anda dapat melihat setiap langkah pada kartu.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "italian",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Ricreazione del passaggio ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "italian",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Non ho trovato quel passaggio nel piano.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "italian",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Generazione del piano — puoi seguire ogni passaggio sulla scheda.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "japanese",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "ステップを再構築中: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "japanese",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "プランにそのステップが見つかりません。",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "japanese",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "プランを生成中です — カードで各ステップを確認できます。",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "kannada",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "ಹಂತವನ್ನು ಮರುನಿರ್ಮಿಸಲಾಗುತ್ತಿದೆ: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "kannada",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "ಯೋಜನೆಯಲ್ಲಿ ಆ ಹಂತ ಕಂಡುಬರಲಿಲ್ಲ.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "kannada",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "ಯೋಜನೆ ರಚಿಸಲಾಗುತ್ತಿದೆ — ಕಾರ್ಡ್‌ನಲ್ಲಿ ಪ್ರತಿಯೊಂದು ಹಂತವನ್ನು ನೋಡಬಹುದು.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "karen",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "မၤက့ၤတဆီ ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "karen",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "ယတဘၣ်ထွဲတဆီအံၤလၢ plan အပူၤဘၣ်.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "karen",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "plan တ့ထီၣ်အံၤ — နကွၢ်တဆီတဆီလၢ card အဖီခိၣ်သ့.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "khmer",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "កំពុងបង្កើតជំហានឡើងវិញ ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "khmer",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "រកមិនឃើញជំហាននោះក្នុងផែនការ។",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "khmer",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "កំពុងបង្កើតផែនការ — អ្នកអាចមើលជំហាននីមួយៗលើកាត។",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "kinyarwanda",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Ongera wubaka intambwe ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "kinyarwanda",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Sinabonye iyo ntambwe muri gahunda.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "kinyarwanda",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Gahunda irakorwa — ushobora gukurikirana buri ntambwe ku ikarita.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "kirundi",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Subira wubaka intambwe ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "kirundi",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Sinabonye iyo ntambwe mu mugambi.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "kirundi",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Umugambi uraremwa — ushobora gukurikirana intambwe yose ku karata.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "korean",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "단계를 다시 만드는 중: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "korean",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "계획에서 해당 단계를 찾을 수 없습니다.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "korean",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "계획을 생성하는 중입니다 — 카드에서 각 단계를 확인할 수 있습니다.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "lao",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "ກຳລັງສ້າງຂັ້ນຕອນຄືນໃໝ່: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "lao",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "ບໍ່ພົບຂັ້ນຕອນນັ້ນໃນແຜນ.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "lao",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "ກຳລັງສ້າງແຜນ — ທ່ານສາມາດເບິ່ງແຕ່ລະຂັ້ນຕອນໃນບັດ.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "latin",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Gradus reficitur: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "latin",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Illum gradum in consilio invenire non potui.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "latin",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Consilium nunc generatur — quemque gradum in charta videre potes.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "lingala",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Kotonga lisusu litambe ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "lingala",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Nazwi te litambe yango na plan.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "lingala",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Plan ezali kosalama — okoki kolanda litambe nyonso na carte.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "maay_maay",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Dib ayaa loo dhisayaa tallaabada ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "maay_maay",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Ma helin tallaabadaas qorshaha.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "maay_maay",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Qorshaha ayaa la samaynayaa — waxaad ka daawan kartaa tallaabo kasta kaarka.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "malayalam",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "ഘട്ടം പുനർനിർമ്മിക്കുന്നു: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "malayalam",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "പ്ലാനിൽ ആ ഘട്ടം കണ്ടെത്താനായില്ല.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "malayalam",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "പ്ലാൻ സൃഷ്ടിക്കുന്നു — കാർഡിലെ ഓരോ ഘട്ടവും കാണാം.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "marathi",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "टप्पा पुन्हा तयार करत आहे: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "marathi",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "योजनेत तो टप्पा सापडला नाही.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "marathi",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "योजना तयार होत आहे — कार्डवर प्रत्येक टप्पा पाहू शकता.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "marshallese",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Kōṃṃan bar step ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "marshallese",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Jaab loe step eo ilo plan.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "marshallese",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Plan eo ej kōṃṃan — kwōmaroñ kile kajjojo step ilo card.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "nepali",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "चरण पुनर्निर्माण हुँदैछ: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "nepali",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "योजनामा त्यो चरण भेटिएन।",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "nepali",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "योजना सिर्जना हुँदैछ — कार्डमा प्रत्येक चरण हेर्न सक्नुहुन्छ।",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "pashto",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "مرحله بیا جوړېږي: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "pashto",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "ما هغه مرحله په پلان کې پیدا نه کړه.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "pashto",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "پلان جوړېږي — تاسو کولی شئ هره مرحله په کارت کې وګورئ.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "polish",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Przebudowywanie kroku ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "polish",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Nie znaleziono tego kroku w planie.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "polish",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Generowanie planu — możesz obserwować każdy krok na karcie.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "portuguese_angola",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "A refazer o passo ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "portuguese_angola",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Não encontrei esse passo no plano.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "portuguese_angola",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "A gerar o plano — pode acompanhar cada passo no cartão.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "portuguese_brazil",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Refazendo a etapa ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "portuguese_brazil",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Não encontrei essa etapa no plano.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "portuguese_brazil",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Gerando o plano — você pode acompanhar cada etapa no cartão.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "portuguese_portugal",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "A refazer o passo ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "portuguese_portugal",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Não encontrei esse passo no plano.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "portuguese_portugal",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "A gerar o plano — pode acompanhar cada passo no cartão.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "punjabi",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "ਕਦਮ ਮੁੜ ਬਣਾਇਆ ਜਾ ਰਿਹਾ ਹੈ: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "punjabi",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "ਮੈਨੂੰ ਯੋਜਨਾ ਵਿੱਚ ਉਹ ਕਦਮ ਨਹੀਂ ਮਿਲਿਆ।",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "punjabi",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "ਯੋਜਨਾ ਬਣ ਰਹੀ ਹੈ — ਤੁਸੀਂ ਕਾਰਡ ਉੱਤੇ ਹਰ ਕਦਮ ਦੇਖ ਸਕਦੇ ਹੋ।",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "romanian",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Se reconstruiește pasul ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "romanian",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Nu am găsit acel pas în plan.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "romanian",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Se generează planul — poți urmări fiecare pas pe card.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "russian",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Пересоздаётся шаг ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "russian",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Не удалось найти этот шаг в плане.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "russian",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "План создаётся — вы можете следить за каждым шагом на карточке.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "somali",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Dib ayaa loo dhisayaa tallaabada ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "somali",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Ma helin tallaabadaas qorshaha.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "somali",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Qorshaha ayaa la samaynayaa — waxaad ka daawan kartaa tallaabo kasta kaarka.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "spanish_castilian",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Reconstruyendo el paso ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "spanish_castilian",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "No pude encontrar ese paso en el plan.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "spanish_castilian",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Generando el plan; puedes ver cada paso en la tarjeta.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "spanish_latin_america",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Reconstruyendo el paso ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "spanish_latin_america",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "No encontré ese paso en el plan.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "spanish_latin_america",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Generando el plan; puedes ver cada paso en la tarjeta.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "swahili",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Inaandaa upya hatua ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "swahili",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Sikuweza kupata hatua hiyo kwenye mpango.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "swahili",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Mpango unatengenezwa — unaweza kufuatilia kila hatua kwenye kadi.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "tagalog",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Binubuo muli ang hakbang ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "tagalog",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Hindi ko makita ang hakbang na iyon sa plano.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "tagalog",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Binubuo ang plano — makikita mo ang bawat hakbang sa card.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "tamil",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "படி மீண்டும் உருவாக்கப்படுகிறது: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "tamil",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "திட்டத்தில் அந்தப் படியைக் கண்டுபிடிக்க முடியவில்லை.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "tamil",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "திட்டம் உருவாக்கப்படுகிறது — அட்டையில் ஒவ்வொரு படியையும் பார்க்கலாம்.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "telugu",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "దశను మళ్లీ రూపొందిస్తోంది: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "telugu",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "ప్లాన్‌లో ఆ దశను కనుగొనలేకపోయాను.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "telugu",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "ప్లాన్ రూపొందుతోంది — కార్డ్‌లో ప్రతి దశను చూడవచ్చు.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "thai",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "กำลังสร้างขั้นตอนใหม่: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "thai",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "ไม่พบขั้นตอนนั้นในแผน",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "thai",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "กำลังสร้างแผน — คุณดูแต่ละขั้นตอนได้บนการ์ด",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "tigrinya",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "ስጉምቲ እንደገና ይስራሕ: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "tigrinya",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "ነቲ ስጉምቲ ኣብ መደብ ኣይረኸብኩን።",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "tigrinya",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "መደብ ይፍጠር ኣሎ — ነፍሲ ወከፍ ስጉምቲ ኣብ ካርድ ክትከታተል ትኽእል።",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "turkish",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Adım yeniden oluşturuluyor: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "turkish",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Bu adımı planda bulamadım.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "turkish",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Plan oluşturuluyor — kartta her adımı izleyebilirsin.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "ukrainian",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Перебудову кроку розпочато: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "ukrainian",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Не вдалося знайти цей крок у плані.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "ukrainian",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "План створюється — ви можете стежити за кожним кроком на картці.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "urdu",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "مرحلہ دوبارہ بنایا جا رہا ہے: ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "urdu",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "مجھے منصوبے میں وہ مرحلہ نہیں ملا۔",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "urdu",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "منصوبہ بن رہا ہے — آپ کارڈ پر ہر مرحلہ دیکھ سکتے ہیں۔",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "vietnamese",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "Đang tạo lại bước ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "vietnamese",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Không tìm thấy bước đó trong kế hoạch.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "vietnamese",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "Đang tạo kế hoạch — bạn có thể theo dõi từng bước trên thẻ.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "yoruba",
+      "key": "cmd.rebuild_lesson_step_done",
+      "value": "A ń tún kọ́ ìgbésẹ̀ ",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "yoruba",
+      "key": "cmd.rebuild_lesson_step_missing",
+      "value": "Mi ò rí ìgbésẹ̀ yẹn nínú ètò.",
+      "reason": "key missing from cmd_keys_en.json"
+    },
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "yoruba",
+      "key": "cmd.run_lesson_blueprint_done",
+      "value": "A ń ṣẹ̀dá ètò náà — o lè wo gbogbo ìgbésẹ̀ lórí káàdì.",
+      "reason": "key missing from cmd_keys_en.json"
+    }
+  ],
   "englishPayload": [],
   "placeholderMismatch": [],
   "duplicateConflicts": [],
@@ -72,7 +1396,7 @@
   "summary": {
     "errors": 0,
     "missingPacks": 0,
-    "invalidSource": 0,
+    "invalidSource": 189,
     "englishPayload": 0,
     "placeholderMismatch": 0,
     "duplicateConflicts": 0,

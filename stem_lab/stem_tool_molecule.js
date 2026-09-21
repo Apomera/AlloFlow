@@ -1169,8 +1169,8 @@ window.StemLab = window.StemLab || {
       { id: 'discover_compound', label: 'Discover a chemical compound', icon: '\uD83E\uDDEA', check: function(d) { return (d.discoveredCompounds || []).length >= 1; }, progress: function(d) { return (d.discoveredCompounds || []).length >= 1 ? 'Done!' : 'Not yet'; } },
       { id: 'discover_5_compounds', label: 'Discover 5 different compounds', icon: '\uD83D\uDD2C', check: function(d) { return (d.discoveredCompounds || []).length >= 5; }, progress: function(d) { return (d.discoveredCompounds || []).length + '/5'; } },
       { id: 'balance_3_reactions', label: 'Balance 3 chemical reactions', icon: '\u2696\uFE0F', check: function(d) { return (d.reactionsBalanced || 0) >= 3; }, progress: function(d) { return (d.reactionsBalanced || 0) + '/3'; } },
-      { id: 'earn_50_rp', label: 'Earn 50 research points', icon: '\u2B50', check: function(d) { return (d.totalRP || 0) >= 50; }, progress: function(d) { return (d.totalRP || 0) + '/50 RP'; } },
-      { id: 'complete_3_challenges', label: 'Complete 3 chemistry challenges', icon: '\uD83C\uDFC6', check: function(d) { return (d.completedChallenges || []).length >= 3; }, progress: function(d) { return (d.completedChallenges || []).length + '/3'; } }
+      { id: 'earn_50_rp', label: 'Earn 50 research points', icon: '\u2B50', check: function(d) { return ((typeof d.totalRP === 'number' && isFinite(d.totalRP)) ? d.totalRP : 0) >= 50; }, progress: function(d) { return ((typeof d.totalRP === 'number' && isFinite(d.totalRP)) ? d.totalRP : 0) + '/50 RP'; } },
+      { id: 'complete_3_challenges', label: 'Complete 3 chemistry challenges', icon: '\uD83C\uDFC6', check: function(d) { return (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length >= 3; }, progress: function(d) { return (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length + '/3'; } }
     ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
@@ -1282,7 +1282,7 @@ window.StemLab = window.StemLab || {
                 className: "flex flex-col items-center gap-1"
               },
                 React.createElement("div", { className: "flex items-center justify-center gap-0.5 flex-wrap", style: { maxWidth: '88px' } },
-                  Object.keys(term.atoms || {}).map((sym) => {
+                  Object.keys((term.atoms && typeof term.atoms === 'object' && !Array.isArray(term.atoms)) ? term.atoms : {}).map((sym) => {
                     const count = term.atoms[sym];
                     return Array.apply(null, Array(Math.min(count, 6))).map((_, ai) =>
                       React.createElement("span", {
@@ -1302,7 +1302,7 @@ window.StemLab = window.StemLab || {
                 ),
                 React.createElement("span", {
                   className: "text-[0.6875rem] font-bold text-white"
-                }, term.formula || '')
+                }, typeof term.formula === 'string' ? term.formula : '')
               ))
             );
           };
@@ -1323,8 +1323,8 @@ window.StemLab = window.StemLab || {
 
           // ═══ Enhanced state ═══
           const researchPoints = d.researchPoints || 0;
-          const totalRP = d.totalRP || 0;
-          const completedChallenges = d.completedChallenges || [];
+          const totalRP = (typeof d.totalRP === 'number' && isFinite(d.totalRP)) ? d.totalRP : 0;
+          const completedChallenges = Array.isArray(d.completedChallenges) ? d.completedChallenges : [];
           const tutorialStep = d.tutorialStep || 0;
           const tutorialDismissed = d.tutorialDismissed || false;
           const modeDeckOpen = typeof d.modeDeckOpen === 'boolean' ? d.modeDeckOpen : !tutorialDismissed;
@@ -1350,7 +1350,7 @@ window.StemLab = window.StemLab || {
             return function() { document.removeEventListener('keydown', onKey); };
           }, []);
           const aiQuestion = d.aiQuestion || '';
-          const aiAnswer = d.aiAnswer || '';
+          const aiAnswer = typeof d.aiAnswer === 'string' ? d.aiAnswer : '';
           const aiLoading = d.aiLoading || false;
 
           // ── Three.js Sequenced Loader ──
@@ -1669,8 +1669,8 @@ window.StemLab = window.StemLab || {
             
             atomGroup.rotation.set(0, 0, 0);
 
-            var atoms = d.atoms || [];
-            var bonds = d.bonds || [];
+            var atoms = Array.isArray(d.atoms) ? d.atoms : [];
+            var bonds = Array.isArray(d.bonds) ? d.bonds : [];
             if (atoms.length === 0) return;
 
             var sumX = 0, sumY = 0;
@@ -3167,7 +3167,7 @@ window.StemLab = window.StemLab || {
             
 
 return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" + (isDark ? " dark-mode" : ""), 'data-molecule-tool': 'true' },
-            React.createElement("div", { "aria-live": "polite", "aria-atomic": "true", style: { position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" } }, d._srMsg || ""),
+            React.createElement("div", { "aria-live": "polite", "aria-atomic": "true", style: { position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" } }, typeof d._srMsg === "string" ? d._srMsg : ""),
 
             // Header
 
@@ -3215,7 +3215,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               var summaryStats = [
                 ['Compounds', discovered.length + '/' + COMPOUNDS.length, '#047857', '#6ee7b7'],
                 ['Research points', totalRP, '#d97706', '#fcd34d'],
-                ['Formula', d.formula || '-', '#2563eb', '#93c5fd']
+                ['Formula', (typeof d.formula === 'string' && d.formula) ? d.formula : '-', '#2563eb', '#93c5fd']
               ];
 
               return React.createElement("section", {
@@ -3409,7 +3409,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     React.createElement("canvas", {
                       ref: webglCanvasRef,
                       role: "img",
-                      "aria-label": "3D molecular model of " + (d.formula || "the selected molecule") + ". Camera controls follow with front, side, top, zoom, and reset options. " + (moleculeDisplayStyle === "spheres" ? "Sphere model. " : "Ball-and-stick model. ") + (showAtomLabels ? "Atom labels shown." : "Atom labels hidden."),
+                      "aria-label": "3D molecular model of " + ((typeof d.formula === 'string' && d.formula) ? d.formula : "the selected molecule") + ". Camera controls follow with front, side, top, zoom, and reset options. " + (moleculeDisplayStyle === "spheres" ? "Sphere model. " : "Ball-and-stick model. ") + (showAtomLabels ? "Atom labels shown." : "Atom labels hidden."),
                       className: "w-full h-full",
                       style: { display: 'block', background: 'transparent' }
                     }),
@@ -3421,7 +3421,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       style: { position: "absolute", top: 12, left: 12, right: 12, pointerEvents: "none", width: "fit-content", maxWidth: "calc(100% - 24px)", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", padding: "6px 9px", borderRadius: 10, background: "rgba(2,6,23,0.68)", color: "#dbeafe", border: "1px solid rgba(147,197,253,0.22)", boxShadow: "0 10px 24px rgba(2,6,23,0.35)", backdropFilter: "blur(10px)", fontSize: 11, fontWeight: 800, letterSpacing: 0 }
                     },
                       React.createElement("span", { style: { color: "#67e8f9" } }, "3D molecular model"),
-                      React.createElement("span", { style: { color: "#94a3b8", fontWeight: 700 } }, d.formula || "No formula")
+                      React.createElement("span", { style: { color: "#94a3b8", fontWeight: 700 } }, (typeof d.formula === 'string' && d.formula) ? d.formula : "No formula")
                     ),
                     xrSupported && React.createElement("button", {
                       onClick: function() { if (vrRef.current && vrRef.current.enterVR) vrRef.current.enterVR(); },
@@ -3458,8 +3458,8 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     }, control.text))
                   )
                 )
-                : React.createElement("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "2D molecule structure with " + (d.atoms || []).length + " atom" + ((d.atoms || []).length === 1 ? "" : "s") + ". Drag an atom to reposition it; use the controls to add atoms and bonds.", className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { height: "320px", maxHeight: "320px", display: "block" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
-                    (d.bonds || []).map((b, i) => {
+                : React.createElement("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "2D molecule structure with " + (Array.isArray(d.atoms) ? d.atoms : []).length + " atom" + ((Array.isArray(d.atoms) ? d.atoms : []).length === 1 ? "" : "s") + ". Drag an atom to reposition it; use the controls to add atoms and bonds.", className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { height: "320px", maxHeight: "320px", display: "block" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
+                    (Array.isArray(d.bonds) ? d.bonds : []).map((b, i) => {
                       const a = d.atoms[b[0]], z = d.atoms[b[1]];
                       if (!a || !z) return null;
                       const order = b[2] === 2 || b[2] === 3 ? b[2] : 1;
@@ -3470,7 +3470,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                         return React.createElement('line', { key: lineIndex, x1: a.x + dx, y1: a.y + dy, x2: z.x + dx, y2: z.y + dy, stroke: '#94a3b8', strokeWidth: order === 1 ? 4 : 2.5, strokeLinecap: 'round' });
                       }));
                     }),
-                    (d.atoms || []).map((a, i) => React.createElement("g", { key: i },
+                    (Array.isArray(d.atoms) ? d.atoms : []).map((a, i) => React.createElement("g", { key: i },
                       // A11y: role + tabIndex + aria-label + onKeyDown so keyboard /
                       // switch users (and Chromebook GPU-blacklist users on the
                       // WebGL-off 2D fallback) can move atoms with arrow keys.
@@ -3502,11 +3502,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
               (() => {
                 const counts = {};
-                (d.atoms || []).forEach(atom => { if (!counts[atom.el]) counts[atom.el] = { count: 0, color: atom.color }; counts[atom.el].count++; });
+                (Array.isArray(d.atoms) ? d.atoms : []).forEach(atom => { if (!counts[atom.el]) counts[atom.el] = { count: 0, color: atom.color }; counts[atom.el].count++; });
                 return React.createElement('section', { className: 'mol-composition', 'aria-label': __alloT('stem.molecule.displayed_model', 'Displayed model') },
                   React.createElement('div', null,
                     React.createElement('p', { className: 'mol-caption' }, __alloT('stem.molecule.formula', 'Formula')),
-                    React.createElement('div', { className: 'mol-formula' }, d.formula || '—')
+                    React.createElement('div', { className: 'mol-formula' }, (typeof d.formula === 'string' && d.formula) ? d.formula : '—')
                   ),
                   React.createElement('div', null,
                     React.createElement('p', { className: 'mol-caption' }, __alloT('stem.molecule.atoms_shown', 'Atoms shown · color key')),
@@ -3518,7 +3518,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       );
                     }))
                   ),
-                  d.formula && (d.atoms || []).length > 0 && React.createElement('p', { className: 'mol-caption' },
+                  d.formula && (Array.isArray(d.atoms) ? d.atoms : []).length > 0 && React.createElement('p', { className: 'mol-caption' },
                     __alloT('stem.molecule.displayed_atom_mass', 'Mass from displayed atoms:') + ' ' + calcMolarMass(Object.fromEntries(Object.entries(counts).map(([symbol, entry]) => [symbol, entry.count]))) + ' g/mol'
                   )
                 );

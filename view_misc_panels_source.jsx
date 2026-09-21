@@ -2183,19 +2183,109 @@ function SourceGenPanel(props) {
   // silently does nothing is worse than one that explains why it is unavailable.
   // Reads local storage only — no network, nothing sent anywhere.
   const [ownSourceCount, setOwnSourceCount] = React.useState(null);
+  const [ownSourceImporting, setOwnSourceImporting] = React.useState(false);
+  const [ownSourceImportMsg, setOwnSourceImportMsg] = React.useState('');
+  const [ownSourceImportFailures, setOwnSourceImportFailures] = React.useState([]);
+  const [ownSourceList, setOwnSourceList] = React.useState([]);
+  const [ownSourceBusy, setOwnSourceBusy] = React.useState(false);
+  const ownSourcesApi = (typeof window !== 'undefined' && window.AlloOwnSources) || null;
+
+  // Exclude keeps the document but drops it from retrieval; the count follows,
+  // because the count is what the toggle promises the AI will read.
+  const handleToggleOwnSource = React.useCallback(async (source) => {
+    if (!ownSourcesApi || typeof ownSourcesApi.setSourceActive !== 'function' || !source) return;
+    setOwnSourceBusy(true);
+    try {
+      const outcome = await ownSourcesApi.setSourceActive(source.id, !source.active, {});
+      if (outcome.ok) {
+        setOwnSourceList(outcome.sources);
+        setOwnSourceCount(outcome.count);
+        setOwnSourceImportMsg('');
+      } else if (outcome.reason === 'storage') {
+        setOwnSourceImportMsg(t('input.my_sources_storage_failed'));
+      }
+    } finally {
+      setOwnSourceBusy(false);
+    }
+  }, [ownSourcesApi, t]);
+
+  // Deleting a teacher's document is not undoable from here, so ask first.
+  const handleRemoveOwnSource = React.useCallback(async (source) => {
+    if (!ownSourcesApi || typeof ownSourcesApi.removeSource !== 'function' || !source) return;
+    const ask = (typeof window !== 'undefined' && typeof window.confirm === 'function') ? window.confirm : null;
+    if (ask && !ask(t('input.my_sources_remove_confirm', { title: source.title }))) return;
+    setOwnSourceBusy(true);
+    try {
+      const outcome = await ownSourcesApi.removeSource(source.id, {});
+      if (outcome.ok) {
+        setOwnSourceList(outcome.sources);
+        setOwnSourceCount(outcome.count);
+        setOwnSourceImportMsg(t('input.my_sources_removed', { title: source.title }));
+      } else if (outcome.reason === 'storage') {
+        setOwnSourceImportMsg(t('input.my_sources_storage_failed'));
+      }
+    } finally {
+      setOwnSourceBusy(false);
+    }
+  }, [ownSourcesApi, t]);
+
+  // Import documents into the teacher's own corpus. Everything runs locally:
+  // Lumen's adapter extracts text in this browser and only the text is stored,
+  // so a PDF that contains student names never leaves the device.
+  const handleImportOwnSources = React.useCallback(async (event) => {
+    const input = event && event.target;
+    const files = input && input.files ? Array.from(input.files) : [];
+    if (!files.length) return;
+    if (!ownSourcesApi || typeof ownSourcesApi.importFiles !== 'function') {
+      setOwnSourceImportMsg(t('input.my_sources_unavailable'));
+      return;
+    }
+    setOwnSourceImporting(true);
+    setOwnSourceImportMsg('');
+    setOwnSourceImportFailures([]);
+    try {
+      const outcome = await ownSourcesApi.importFiles(files, {});
+      setOwnSourceCount(outcome.count);
+      if (typeof ownSourcesApi.listSources === 'function') {
+        setOwnSourceList(await ownSourcesApi.listSources({}));
+      }
+      // Name the files that did not make it. A bare "2 of 3 imported" leaves
+      // the teacher guessing which document to fix.
+      setOwnSourceImportFailures(
+        (outcome.results || [])
+          .filter((row) => row && !row.ok)
+          .map((row) => [row.name, row.message].filter(Boolean).join(' — ')),
+      );
+      if (outcome.reason === 'storage') {
+        setOwnSourceImportMsg(t('input.my_sources_storage_failed'));
+      } else if (outcome.imported > 0) {
+        setOwnSourceImportMsg(t('input.my_sources_imported', { count: outcome.imported }));
+      } else {
+        setOwnSourceImportMsg(t('input.my_sources_none_added'));
+      }
+    } catch (_) {
+      setOwnSourceImportMsg(t('input.my_sources_none_added'));
+    } finally {
+      setOwnSourceImporting(false);
+      // Clear the input so choosing the same file again still fires onChange.
+      if (input) input.value = '';
+    }
+  }, [ownSourcesApi, t]);
   React.useEffect(() => {
     if (!showSourceGen) return undefined;
     let cancelled = false;
     (async () => {
       try {
-        const E = typeof window !== 'undefined' && window.LumenEvidence;
-        if (!E || typeof E.createProjectStore !== 'function') { if (!cancelled) setOwnSourceCount(0); return; }
-        const store = E.createProjectStore(E.readingScope ? E.readingScope({}) : {});
-        const project = store && typeof store.load === 'function' ? await store.load() : null;
-        const n = project && Array.isArray(project.sources)
-          ? project.sources.filter((s) => s && s.active !== false).length
-          : 0;
+        const OS = ownSourcesApi;
+        if (!OS || typeof OS.countSources !== 'function') { if (!cancelled) setOwnSourceCount(0); return; }
+        const n = await OS.countSources({});
         if (!cancelled) setOwnSourceCount(n);
+        // The manage list comes from the same load, so the count and the list
+        // can never disagree about what retrieval will search.
+        if (typeof OS.listSources === 'function') {
+          const rows = await OS.listSources({});
+          if (!cancelled) setOwnSourceList(rows);
+        }
       } catch (_) {
         if (!cancelled) setOwnSourceCount(0);
       }
@@ -2494,6 +2584,82 @@ function SourceGenPanel(props) {
                           )}
                           {ownSourceCount !== null && ownSourceCount > 0 && useOwnSources && (
                               <p className="text-[11px] text-purple-700 ml-12 leading-relaxed">{t('input.use_my_sources_desc')}</p>
+                          )}
+                          {/* The import control, unlike the toggle above, shows even at zero
+                              sources: with nothing imported the toggle is hidden, so this is
+                              the only way in. Extraction runs in this browser through Lumen's
+                              adapter — a document's bytes never leave the device. */}
+                          {ownSourceCount !== null && (
+                              <div className={'ml-6 ' + (ownSourceCount > 0 ? 'pt-1' : 'pt-1.5 border-t border-purple-200/70')}>
+                                  <label
+                                      htmlFor="ownSourcesImport"
+                                      className="inline-flex min-h-11 items-center gap-1.5 text-xs font-bold text-purple-900 cursor-pointer select-none rounded focus-within:ring-2 focus-within:ring-purple-500"
+                                  >
+                                      <Upload size={12} className="text-purple-600" aria-hidden="true"/>
+                                      {ownSourceImporting ? t('input.my_sources_importing') : t('input.my_sources_add')}
+                                  </label>
+                                  <input
+                                      id="ownSourcesImport"
+                                      type="file"
+                                      multiple
+                                      className="sr-only"
+                                      accept={ownSourcesApi ? ownSourcesApi.acceptAttribute() : undefined}
+                                      disabled={ownSourceImporting}
+                                      onChange={handleImportOwnSources}
+                                  />
+                                  {/* role=status so a screen reader hears the outcome; the
+                                      per-file detail matters because one unreadable scan among
+                                      five documents is not "import failed". */}
+                                  <p role="status" aria-live="polite" className="text-[11px] text-purple-700 leading-relaxed">
+                                      {ownSourceImportMsg || (ownSourceCount > 0
+                                          ? t('input.my_sources_stored', { count: ownSourceCount })
+                                          : t('input.my_sources_empty'))}
+                                  </p>
+                                  {ownSourceImportFailures.length > 0 && (
+                                      <ul className="text-[11px] text-amber-900 leading-relaxed list-disc ml-4">
+                                          {ownSourceImportFailures.map((failure, index) => (
+                                              <li key={index}>{failure}</li>
+                                          ))}
+                                      </ul>
+                                  )}
+                                  {/* Importing must not be a one-way door. A teacher who adds
+                                      the wrong PDF — or one that names a student — needs to see
+                                      it and take it back out. Exclude keeps the document but
+                                      drops it from retrieval; remove deletes it. */}
+                                  {ownSourceList.length > 0 && (
+                                      <details className="mt-1">
+                                          <summary className="min-h-11 flex items-center cursor-pointer text-[11px] font-bold text-purple-900 select-none">
+                                              {t('input.my_sources_manage', { count: ownSourceList.length })}
+                                          </summary>
+                                          <ul className="mt-1 space-y-1">
+                                              {ownSourceList.map((source) => (
+                                                  <li key={source.id} className="flex items-center justify-between gap-2 text-[11px]">
+                                                      <span className={'min-w-0 break-words ' + (source.active ? 'text-purple-900' : 'text-slate-500 line-through')}>
+                                                          {source.title}
+                                                      </span>
+                                                      <span className="flex items-center gap-1 shrink-0">
+                                                          <button type="button"
+                                                              onClick={() => handleToggleOwnSource(source)}
+                                                              disabled={ownSourceBusy}
+                                                              className="min-h-11 px-2 rounded border border-purple-300 bg-white font-bold text-purple-800 hover:bg-purple-50 disabled:opacity-50"
+                                                          >
+                                                              {source.active ? t('input.my_sources_exclude') : t('input.my_sources_include')}
+                                                          </button>
+                                                          <button type="button"
+                                                              onClick={() => handleRemoveOwnSource(source)}
+                                                              disabled={ownSourceBusy}
+                                                              aria-label={t('input.my_sources_remove_aria', { title: source.title })}
+                                                              className="min-h-11 px-2 rounded border border-rose-300 bg-white font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+                                                          >
+                                                              {t('input.my_sources_remove')}
+                                                          </button>
+                                                      </span>
+                                                  </li>
+                                              ))}
+                                          </ul>
+                                      </details>
+                                  )}
+                              </div>
                           )}
                       </div>
                       <button aria-label={t('common.generate_source_text')}

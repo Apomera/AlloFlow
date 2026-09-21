@@ -11,9 +11,19 @@ function snapshotInputs(root, inputs) {
   function visit(relative) {
     const absolute = path.resolve(root, relative);
     const key = path.relative(root, absolute).replace(/\\/g, '/');
-    if (!key || key.startsWith('../') || path.isAbsolute(key)) throw new Error('Validation input must be inside the workspace: ' + relative);
+    if (!key || key === '..' || key.startsWith('../') || path.isAbsolute(key)) throw new Error('Validation input must be inside the workspace: ' + relative);
     let stat;
-    try { stat = fs.lstatSync(absolute); } catch (error) {
+    try {
+      // Explicit file selections must enforce the same no-link policy as tree
+      // traversal. lstat on the final file alone follows any linked ancestors.
+      let parent = path.resolve(root);
+      for (const segment of key.split('/').slice(0, -1)) {
+        parent = path.join(parent, segment);
+        if (fs.lstatSync(parent).isSymbolicLink())
+          throw new Error('Symlink validation input is unsupported: ' + path.relative(root, parent).replace(/\\/g, '/'));
+      }
+      stat = fs.lstatSync(absolute);
+    } catch (error) {
       if (error.code !== 'ENOENT') throw error;
       hashes[key] = null; return;
     }
@@ -34,7 +44,8 @@ function captureIdentity(root, inputs) {
     .filter(browser => browser.name.startsWith('chromium')).map(({ name, revision, browserVersion }) => ({ name, revision, browserVersion }));
   return {
     capturedAt: new Date().toISOString(),
-    gitHead: git.status === 0 ? git.stdout.trim() : null,
+    gitHead: git.status === 0 && !git.error && !git.signal ? git.stdout.trim() || null : null,
+    git: { exitCode: git.status ?? null, signal: git.signal ?? null, error: String(git.error?.message || (git.status !== 0 ? git.stderr || '' : '')).trim().slice(0, 500) || null },
     tools: { node: process.version, platform: process.platform, arch: process.arch, vitest: version('vitest'), playwright: version('@playwright/test'), jsdom: version('jsdom'), configuredBrowsers: browsers },
     inputSha256: snapshotInputs(root, inputs),
   };

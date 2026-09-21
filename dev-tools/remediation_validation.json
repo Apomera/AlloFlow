@@ -36,7 +36,8 @@
     "tests/remediation_form_values.test.js",
     "tests/remediation_validation_identity.test.js",
     "tests/mcp_calibration_validation.test.js",
-    "tests/remediation_table_roles.test.js"
+    "tests/remediation_table_roles.test.js",
+    "tests/remediation_form_native_contract.test.js"
   ],
   "browser": [
     "tests/e2e/document_dependency_parity.spec.ts",
@@ -60,7 +61,9 @@
     "tests/e2e/document_static_crop_cleanup.spec.ts",
     "tests/e2e/remediation_table_roles.spec.ts",
     "tests/e2e/rendered_namespace_fidelity.spec.ts",
-    "tests/e2e/rendered_form_payload.spec.ts"
+    "tests/e2e/rendered_form_payload.spec.ts",
+    "tests/e2e/remediation_form_native_contract.spec.ts",
+    "tests/e2e/rendered_native_dom_regressions.spec.ts"
   ],
   "identityInputs": [
     "doc_pipeline_source.jsx",

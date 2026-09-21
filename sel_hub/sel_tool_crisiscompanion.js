@@ -82,7 +82,11 @@ window.SelHub = window.SelHub || {
 
   // localStorage helpers
   function lsGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
-  function lsSet(key, val)      { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
+  // Returns false when the device refuses the write (quota full, private
+  // mode, site data blocked). It used to swallow that, so a student could
+  // lose a safety plan with no warning at all. Callers that do not care
+  // can still ignore the result.
+  function lsSet(key, val)      { try { localStorage.setItem(key, JSON.stringify(val)); return true; } catch(e) { return false; } }
   // Per-student namespace for crisis data. Without it, every student on a shared
   // device read/wrote the SAME global key — so the next student loaded the
   // previous one's suicide safety plan / coping toolkit. _ccNs is set at render
@@ -732,7 +736,7 @@ window.SelHub = window.SelHub || {
     function toggle(id) {
       var next = saved.indexOf(id) === -1 ? saved.concat([id]) : saved.filter(function(x) { return x !== id; });
       upd('toolkitIds', next);
-      lsSet(ccKey('crisisCompanion.toolkit.v1'), next);
+      if (!lsSet(ccKey('crisisCompanion.toolkit.v1'), next)) announce('This device would not save it. Your work is still on screen — use Export or Print to keep a copy before you close this page.');
       announce(saved.indexOf(id) === -1 ? 'Added to your toolkit' : 'Removed from your toolkit');
     }
     var byCategory = {};
@@ -811,7 +815,7 @@ window.SelHub = window.SelHub || {
     function setStep(id, val) {
       var ne = Object.assign({}, entries); ne[id] = val;
       upd('safetyPlan', ne);
-      lsSet(ccKey('crisisCompanion.safetyPlan.v1'), ne);
+      if (!lsSet(ccKey('crisisCompanion.safetyPlan.v1'), ne)) announce('This device would not save it. Your work is still on screen — use Export or Print to keep a copy before you close this page.');
     }
     function clearAll() {
       if (requestClear) requestClear();
@@ -1575,7 +1579,7 @@ window.SelHub = window.SelHub || {
         if (!badges[id]) {
           var nb = Object.assign({}, badges); nb[id] = true;
           upd('badges', nb);
-          lsSet(ccKey('crisisCompanion.badges.v1'), nb);
+          if (!lsSet(ccKey('crisisCompanion.badges.v1'), nb)) announce('This device would not save it. Your work is still on screen — use Export or Print to keep a copy before you close this page.');
         }
       }
 

@@ -72,7 +72,7 @@ window.StemLab = window.StemLab || {
   function physStep(b, dt) {
     if (b.drag > 0) {
       var spd = Math.sqrt(b.mVx * b.mVx + b.mVy * b.mVy);
-      var dragA = b.drag * spd / (b.mass || 1);
+      var dragA = b.drag * spd / ((typeof b.mass === 'number' && isFinite(b.mass)) ? b.mass : 1);
       b.mVx -= dragA * b.mVx * dt;
       b.mVy -= dragA * b.mVy * dt;
     }
@@ -235,7 +235,27 @@ window.StemLab = window.StemLab || {
             // can otherwise resolve to light ink over the host's white tool card.
             return React.createElement('div', { className: 'p-8 text-center', style: { color: '#475569', backgroundColor: '#ffffff' } }, __alloT('stem.physics.loading', 'Loading...'));
           }
-const d = labToolData.physics;
+const _rawD = labToolData.physics;
+          // A saved project is INPUT. These four are rendered directly into the
+          // tree AND fed to the trajectory maths, so an object or string both
+          // blanks the panel and poisons the simulation. Clamp to ranges that
+          // still produce a sensible launch; the sliders enforce the real bounds
+          // on input, this is the backstop for a malformed or hand-edited save.
+          const _phNum = (v, lo, hi, dflt) =>
+            (typeof v === 'number' && isFinite(v)) ? Math.min(hi, Math.max(lo, v)) : dflt;
+          const d = Object.assign({}, _rawD, {
+            gravity: _phNum(_rawD.gravity, 0, 100, 9.8),
+            mass: _phNum(_rawD.mass, 0.01, 1000, 1),
+            angle: _phNum(_rawD.angle, 0, 90, 45),
+            velocity: _phNum(_rawD.velocity, 0, 1000, 25),
+            // Read as .predicted/.actual/.errPct with .toFixed(); a partial
+            // object is as broken as a string.
+            predictionResult: (_rawD.predictionResult && typeof _rawD.predictionResult === 'object'
+              && !Array.isArray(_rawD.predictionResult)
+              && typeof _rawD.predictionResult.errPct === 'number') ? _rawD.predictionResult : null,
+            aiExplain: typeof _rawD.aiExplain === 'string' ? _rawD.aiExplain : '',
+            aiError: typeof _rawD.aiError === 'string' ? _rawD.aiError : ''
+          });
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, physics: { ...prev.physics, [key]: val } }));
           // Functional increment: safe from setTimeout chains (symmetry demo,
@@ -2320,7 +2340,7 @@ const d = labToolData.physics;
             return txt;
           }
           function physRunLogCsv() {
-            var log = d.runLog || [];
+            var log = Array.isArray(d.runLog) ? d.runLog : [];
             if (!log.length) return null;
             var lines = ['run,angle_deg,velocity_mps,gravity_mps2,air_drag,mass_kg,range_m,max_height_m,flight_time_s'];
             log.forEach(function (r, i) {
@@ -2336,7 +2356,7 @@ const d = labToolData.physics;
             var trails = cv && cv._trails ? cv._trails : [];
             var tr = trails.length > 0 ? trails[trails.length - 1] : null;
             if (!tr || tr.length === 0) return null;
-            var lines = ['# angle_deg=' + tr.angle + ',velocity_mps=' + tr.velocity + ',gravity_mps2=' + tr.gravity + ',air_drag=' + (tr.drag ? 'on' : 'off') + ',mass_kg=' + (d.lastFlight && d.lastFlight.mass != null ? d.lastFlight.mass : (d.mass || 1))];
+            var lines = ['# angle_deg=' + tr.angle + ',velocity_mps=' + tr.velocity + ',gravity_mps2=' + tr.gravity + ',air_drag=' + (tr.drag ? 'on' : 'off') + ',mass_kg=' + (d.lastFlight && d.lastFlight.mass != null ? d.lastFlight.mass : ((typeof d.mass === 'number' && isFinite(d.mass)) ? d.mass : 1))];
             lines.push('t_s,x_m,y_m,vx_mps,vy_mps,speed_mps');
             for (var i = 0; i < tr.length; i++) {
               var p = tr[i];
@@ -2397,7 +2417,7 @@ const d = labToolData.physics;
                   ),
                   React.createElement("div", { className: "grid grid-cols-3 gap-2 lg:w-[22rem]" },
                     [
-                      { label: __alloT('stem.physics.metric_angle', 'Angle'), value: String(d.angle || 45) + '\u00B0' },
+                      { label: __alloT('stem.physics.metric_angle', 'Angle'), value: String((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45) + '\u00B0' },
                       { label: __alloT('stem.physics.metric_speed', 'Speed'), value: String(d.velocity || 25) + ' m/s' },
                       { label: __alloT('stem.physics.metric_launches', 'Launches'), value: String(d.launchCount || 0) }
                     ].map(function(metric) {
@@ -2474,7 +2494,7 @@ const d = labToolData.physics;
 
                 "data-angle": d.angle, "data-velocity": d.velocity, "data-gravity": d.gravity,
 
-                "data-mass": d.mass != null ? d.mass : 1,
+                "data-mass": (typeof d.mass === 'number' && isFinite(d.mass)) ? d.mass : 1,
 
                 "data-air-resist": d.airResist ? 'true' : 'false',
                 "data-show-vectors": d.showVectors ? 'true' : 'false',
@@ -2485,7 +2505,7 @@ const d = labToolData.physics;
                 "data-constraint-value": d.targetConstraint ? String(d.targetConstraint.value) : '',
                 "data-show-overlay": d.showOverlay ? 'true' : 'false',
                 "data-show-formulas": d.showFormulas ? 'true' : 'false',
-                "data-sim-speed": String(d.simSpeed != null ? d.simSpeed : 1.0),
+                "data-sim-speed": String((typeof d.simSpeed === 'number' && isFinite(d.simSpeed)) ? d.simSpeed : 1.0),
                 // The number the NEXT landing will claim, so the draw loop can
                 // stamp the trail without reading React state.
                 "data-run-next": String((d.runCount || 0) + 1),
@@ -2494,9 +2514,9 @@ const d = labToolData.physics;
 
                   // Same clamps as the sliders (5–85°, 5–50 m/s) so the keyboard
                   // cannot reach values the slider then cannot show.
-                  if (e.key === 'ArrowUp') { e.preventDefault(); upd('angle', Math.min(85, (d.angle || 45) + 5)); }
+                  if (e.key === 'ArrowUp') { e.preventDefault(); upd('angle', Math.min(85, ((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45) + 5)); }
 
-                  else if (e.key === 'ArrowDown') { e.preventDefault(); upd('angle', Math.max(5, (d.angle || 45) - 5)); }
+                  else if (e.key === 'ArrowDown') { e.preventDefault(); upd('angle', Math.max(5, ((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45) - 5)); }
 
                   else if (e.key === 'ArrowRight') { e.preventDefault(); upd('velocity', Math.min(50, (d.velocity || 25) + 5)); }
 
@@ -2587,47 +2607,52 @@ const d = labToolData.physics;
 
               }, "\uD83C\uDF2C\uFE0F " + __alloT('stem.physics.label_air_drag', 'Air Drag ') + (d.airResist ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
 
-              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_vectors_currently', 'Force vectors, currently ') + (d.showVectors ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
+              React.createElement('fieldset', { 'data-physics-display-controls': true, style: { width: '100%', minWidth: 0 }, className: 'rounded-xl border border-slate-200 p-3' },
+                React.createElement('legend', { className: 'px-1 text-xs font-bold' }, __alloT('stem.physics.display_controls', 'Views and explanations')),
+                React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: 8 } },
+              React.createElement("button", { type: "button", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, "aria-label": __alloT('stem.physics.aria_vectors_currently', 'Force vectors, currently ') + (d.showVectors ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
                 "aria-pressed": !!d.showVectors,
                 onClick: function () { upd('showVectors', !d.showVectors); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showVectors ? 'bg-purple-700 text-white shadow-md' : 'bg-purple-50 text-purple-700 border border-purple-200')
-              }, "\u2197\uFE0F " + __alloT('stem.physics.label_vectors', 'Vectors ') + (d.showVectors ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
+              }, "\u2197\uFE0F " + __alloT('stem.physics.label_vectors', 'Force vectors ') + (d.showVectors ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
 
-              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_energy_currently', 'Energy display, currently ') + (d.showEnergy ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
+              React.createElement("button", { type: "button", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, "aria-label": __alloT('stem.physics.aria_energy_currently', 'Energy display, currently ') + (d.showEnergy ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
                 "aria-pressed": !!d.showEnergy,
                 onClick: function () { upd('showEnergy', !d.showEnergy); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showEnergy ? 'bg-blue-700 text-white shadow-md' : 'bg-blue-50 text-blue-700 border border-blue-200')
-              }, "\u26A1 " + __alloT('stem.physics.label_energy', 'Energy ') + (d.showEnergy ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
+              }, "\u26A1 " + __alloT('stem.physics.label_energy', 'Energy display ') + (d.showEnergy ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
 
-              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_learn_currently', 'Learn panel, currently ') + (d.showLearn ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
+              React.createElement("button", { type: "button", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, "aria-label": __alloT('stem.physics.aria_learn_currently', 'Physics guide, currently ') + (d.showLearn ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
                 "aria-pressed": !!d.showLearn,
                 onClick: function () { upd('showLearn', !d.showLearn); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showLearn ? 'bg-emerald-700 text-white shadow-md' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')
-              }, "\uD83D\uDCD6 " + __alloT('stem.physics.label_learn', 'Learn')),
+              }, "\uD83D\uDCD6 " + __alloT('stem.physics.label_learn', 'Physics guide')),
 
-              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_data_currently', 'Flight data, currently ') + (d.showFlightData ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
+              React.createElement("button", { type: "button", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, "aria-label": __alloT('stem.physics.aria_data_currently', 'Flight data, currently ') + (d.showFlightData ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
                 "aria-pressed": !!d.showFlightData,
                 onClick: function () { upd('showFlightData', !d.showFlightData); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showFlightData ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200')
-              }, "\uD83D\uDCCA " + __alloT('stem.physics.label_data', 'Data ') + (d.showFlightData ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
+              }, "\uD83D\uDCCA " + __alloT('stem.physics.label_data', 'Flight data ') + (d.showFlightData ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
 
-              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_show_work_currently', 'Show your work formulas panel, currently ') + (d.showFormulas ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
+              React.createElement("button", { type: "button", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, "aria-label": __alloT('stem.physics.aria_show_work_currently', 'Show your work formulas panel, currently ') + (d.showFormulas ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
                 "aria-pressed": !!d.showFormulas,
                 onClick: function () { upd('showFormulas', !d.showFormulas); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showFormulas ? 'bg-fuchsia-700 text-white shadow-md' : 'bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200')
-              }, "\u{1F4DD} " + __alloT('stem.physics.label_show_work', 'Show Work ') + (d.showFormulas ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
+              }, "\u{1F4DD} " + __alloT('stem.physics.label_show_work', 'Show your work ') + (d.showFormulas ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
 
-              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_compare_currently', 'Trajectory comparison overlay, currently ') + (d.showOverlay ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
+              React.createElement("button", { type: "button", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, "aria-label": __alloT('stem.physics.aria_compare_currently', 'Trajectory comparison overlay, currently ') + (d.showOverlay ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
                 "aria-pressed": !!d.showOverlay,
                 onClick: function () { upd('showOverlay', !d.showOverlay); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showOverlay ? 'bg-rose-700 text-white shadow-md' : 'bg-rose-50 text-rose-700 border border-rose-200')
-              }, "\u{1F4C8} " + __alloT('stem.physics.label_compare', 'Compare ') + (d.showOverlay ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
+              }, "\u{1F4C8} " + __alloT('stem.physics.label_compare', 'Trajectory comparison ') + (d.showOverlay ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
 
-              React.createElement("button", { "aria-label": __alloT('stem.physics.aria_motion_currently', 'Motion component graphs (Vx vs t and Vy vs t), currently ') + (d.showGraphs ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
+              React.createElement("button", { type: "button", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, "aria-label": __alloT('stem.physics.aria_motion_currently', 'Motion component graphs (Vx vs t and Vy vs t), currently ') + (d.showGraphs ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
                 "aria-pressed": !!d.showGraphs,
                 onClick: function () { upd('showGraphs', !d.showGraphs); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showGraphs ? 'bg-teal-700 text-white shadow-md' : 'bg-teal-50 text-teal-700 border border-teal-200')
-              }, "\u{1F4C9} " + __alloT('stem.physics.label_motion', 'Motion ') + (d.showGraphs ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
+              }, "\u{1F4C9} " + __alloT('stem.physics.label_motion', 'Motion component graphs ') + (d.showGraphs ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF')))
+                )
+              ),
 
               React.createElement("button", { "aria-label": __alloT('stem.physics.aria_clear_trails', 'Clear all trajectory trails'),
                 onClick: function () {
@@ -2649,12 +2674,12 @@ const d = labToolData.physics;
               // Lets students freeze flight mid-arc to inspect velocity
               // vectors, energy bars, and position without losing context.
               // Active speed gets indigo background so state is obvious.
-              React.createElement("div", { className: "flex items-center gap-0 bg-slate-50 border border-slate-300 rounded-lg overflow-hidden", role: "group", "aria-label": __alloT('stem.physics.sim_speed', 'Simulation speed') },
-                React.createElement("span", { className: "px-2 py-1.5 text-[0.625rem] font-bold text-slate-600 bg-slate-100 border-r border-slate-300" }, __alloT('stem.physics.speed_caps', 'SPEED')),
-                [{ v: 1.0, label: "1×" }, { v: 0.5, label: "½×" }, { v: 0.25, label: "¼×" }, { v: 0, label: "⏸" }].map(function (sp) {
-                  var isActive = (d.simSpeed != null ? d.simSpeed : 1.0) === sp.v;
+              React.createElement("div", { "data-physics-playback": true, "aria-describedby": "physics-playback-help", style: { width: "100%", minWidth: 0 }, className: "flex flex-wrap items-center gap-2 p-3 bg-slate-50 border border-slate-300 rounded-lg", role: "group", "aria-label": __alloT('stem.physics.sim_speed', 'Simulation speed') },
+                React.createElement("span", { style: { flexBasis: "100%" }, className: "text-xs font-bold text-slate-600" }, __alloT('stem.physics.playback_heading', 'Animation playback')),
+                [{ v: 1.0, label: __alloT('stem.physics.playback_normal', 'Normal (1×)') }, { v: 0.5, label: __alloT('stem.physics.playback_half', 'Half speed (½×)') }, { v: 0.25, label: __alloT('stem.physics.playback_quarter', 'Quarter speed (¼×)') }, { v: 0, label: __alloT('stem.physics.pause', 'Pause') }].map(function (sp) {
+                  var isActive = ((typeof d.simSpeed === 'number' && isFinite(d.simSpeed)) ? d.simSpeed : 1.0) === sp.v;
                   return React.createElement("button", {
-                    key: sp.v,
+                    key: sp.v, type: "button", "data-physics-playback-rate": sp.v, style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" },
                     "aria-label": sp.v === 0 ? __alloT('stem.physics.pause', 'Pause') : __alloT('stem.physics.sim_speed_prefix', 'Simulation speed ') + sp.label,
                     "aria-pressed": isActive,
                     onClick: function () { upd('simSpeed', sp.v); },
@@ -2666,17 +2691,20 @@ const d = labToolData.physics;
                 // exactly one physics tick before re-pausing. Lets students
                 // walk through flight a frame at a time.
                 React.createElement("button", {
+                  type: "button", style: { minHeight: 44 }, "data-physics-step": true,
+                  type: "button", style: { minHeight: 44 }, "data-physics-step": true,
                   "aria-label": __alloT('stem.physics.aria_step_frame', 'Step one frame forward (only useful when paused)'),
-                  disabled: (d.simSpeed != null ? d.simSpeed : 1.0) !== 0,
+                  disabled: ((typeof d.simSpeed === 'number' && isFinite(d.simSpeed)) ? d.simSpeed : 1.0) !== 0,
                   onClick: function () {
                     var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
                     if (cv) cv._stepNext = true;
                   },
                   className: "px-2.5 py-1.5 text-xs font-bold transition-all border-l border-slate-300 " +
-                    ((d.simSpeed != null ? d.simSpeed : 1.0) === 0
+                    (((typeof d.simSpeed === 'number' && isFinite(d.simSpeed)) ? d.simSpeed : 1.0) === 0
                       ? 'bg-white text-indigo-700 hover:bg-indigo-50'
                       : 'bg-slate-100 text-slate-600 cursor-not-allowed')
-                }, "⏭ " + __alloT('stem.physics.step', 'Step'))
+                }, "⏭ " + __alloT('stem.physics.step_frame', 'Step one frame')),
+                React.createElement('p', { id: 'physics-playback-help', style: { flexBasis: '100%' }, className: 'text-xs text-slate-600' }, __alloT('stem.physics.playback_help', 'Changes animation pace, not launch velocity. Pause to inspect the flight, then use Step one frame to advance it.'))
               ),
 
               // ── Complementary-angles auto-demo ──
@@ -2703,7 +2731,7 @@ const d = labToolData.physics;
                   // The chain waits in REAL time, so slow-motion must stretch
                   // the waits or the second shot fires mid-flight. A paused
                   // sim is resumed at 1× first (a demo cannot run paused).
-                  var _sp = d.simSpeed != null ? d.simSpeed : 1.0;
+                  var _sp = (typeof d.simSpeed === 'number' && isFinite(d.simSpeed)) ? d.simSpeed : 1.0;
                   if (_sp === 0) { upd('simSpeed', 1.0); _sp = 1.0; }
                   var _stretch = 1 / _sp;
                   if (!fireLaunch()) return;
@@ -2723,15 +2751,19 @@ const d = labToolData.physics;
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100"
               }, "\u{1F500} " + __alloT('stem.physics.symmetry_demo', 'Symmetry Demo')),
 
+              React.createElement('fieldset', { 'data-physics-gravity-presets': true, 'aria-describedby': 'physics-gravity-presets-help', style: { width: '100%', minWidth: 0 }, className: 'rounded-xl border border-sky-200 p-3' },
+                React.createElement('legend', { className: 'px-1 text-xs font-bold' }, __alloT('stem.physics.gravity_presets', 'Gravity presets')),
+                React.createElement('p', { id: 'physics-gravity-presets-help', className: 'mb-2 text-xs text-slate-600' }, __alloT('stem.physics.gravity_presets_help', 'Changes gravity only. Launch angle, velocity, mass, and air drag stay as you set them.')),
+                React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: 8 } },
               PRESETS.map(function (p) {
 
-                return React.createElement("button", { key: p.label, onClick: function () { upd('gravity', p.gravity); },
+                return React.createElement("button", { key: p.label, type: 'button', 'data-gravity-preset': p.gravity, 'aria-pressed': d.gravity === p.gravity, style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }, onClick: function () { upd('gravity', p.gravity); },
 
                   className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.gravity === p.gravity ? 'bg-sky-700 text-white' : 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100')
 
-                }, p.label);
+                }, React.createElement('span', { className: 'block' }, p.label), React.createElement('span', { className: 'block mt-1 font-normal' }, p.gravity + ' m/s²'));
 
-              })
+              })))
 
             ),
 
@@ -2852,7 +2884,7 @@ const d = labToolData.physics;
             // This is where that instruction becomes checkable: each row names
             // what changed since the run above it and says outright when a
             // comparison confounds two changes at once.
-            (d.runLog || []).length > 0 && (function () {
+            (Array.isArray(d.runLog) ? d.runLog : []).length > 0 && (function () {
               var log = d.runLog;
               var oneVarRuns = 0;
               log.forEach(function (r, i) { if (i > 0 && (physRunChanges(log[i - 1], r) || []).length === 1) oneVarRuns++; });
@@ -2949,9 +2981,9 @@ const d = labToolData.physics;
             })(),
 
             d.showFormulas && (function() {
-              var ang = parseFloat(d.angle || 45);
+              var ang = parseFloat((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45);
               var vel = parseFloat(d.velocity || 25);
-              var grav = parseFloat(d.gravity || 9.8);
+              var grav = parseFloat((typeof d.gravity === 'number' && isFinite(d.gravity)) ? d.gravity : 9.8);
               var rad = ang * Math.PI / 180;
               var sinT = Math.sin(rad);
               var sin2T = Math.sin(2 * rad);
@@ -3102,9 +3134,9 @@ const d = labToolData.physics;
                 // parabolic relationship and where they sit on the curve.
                 // No-drag closed-form (the formulas panel disclaimer applies).
                 (function() {
-                  var ang = parseFloat(d.angle || 45);
+                  var ang = parseFloat((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45);
                   var vel = parseFloat(d.velocity || 25);
-                  var grav = parseFloat(d.gravity || 9.8);
+                  var grav = parseFloat((typeof d.gravity === 'number' && isFinite(d.gravity)) ? d.gravity : 9.8);
                   var maxR = (vel * vel) / grav; // peaks at θ = 45°
                   if (!isFinite(maxR) || maxR <= 0) return null;
                   var rW = 460, rH = 130, rPL = 36, rPR = 12, rPT = 10, rPB = 24;
@@ -3797,7 +3829,7 @@ const d = labToolData.physics;
                 upd('aiLoading', true); upd('aiError', ''); upd('aiExplain', '');
                 var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
                 var prompt = 'Explain this projectile motion setup ' + lv.hint + '. '
-                  + 'Launch angle: ' + (d.angle || 45) + '\u00B0. Initial velocity: ' + (d.velocity || 25) + ' m/s. Gravity: ' + (d.gravity || 9.8) + ' m/s\u00B2. Air resistance: ' + (d.airResist ? 'on' : 'off') + '. '
+                  + 'Launch angle: ' + ((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45) + '\u00B0. Initial velocity: ' + (d.velocity || 25) + ' m/s. Gravity: ' + ((typeof d.gravity === 'number' && isFinite(d.gravity)) ? d.gravity : 9.8) + ' m/s\u00B2. Air resistance: ' + (d.airResist ? 'on' : 'off') + '. '
                   + 'In 3 short sentences: (1) What the projectile will do. (2) Which variable most affects the range (and why). (3) One real-world analogy at this setting. '
                   + 'No markdown, no bullets, no headings. Plain prose.';
                 // Answer in the learner's interface language, not the prompt's.

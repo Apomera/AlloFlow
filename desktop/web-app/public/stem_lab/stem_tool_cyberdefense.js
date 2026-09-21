@@ -499,33 +499,55 @@
             }, extra || {}));
           }
 
-          var cyberTab       = d.cyberTab || 'phish';
-          var phishIdx        = d.phishIdx || 0;
+          // A saved project file is INPUT: it can be copied between devices,
+          // hand-edited, or carried across tool versions. `||` is a NULL guard,
+          // not a TYPE guard — 'abc' and 9999 are truthy and pass straight
+          // through to .split / .map / an array index. Guard on TYPE here, at
+          // the single point of entry, so every downstream read is covered.
+          function _cdOneOf(v, allowed, fallback) {
+            return allowed.indexOf(v) !== -1 ? v : fallback;
+          }
+          function _cdCount(v) {
+            // Non-negative counter: rejects 'abc', 1.5, -1, {} and NaN alike.
+            return (typeof v === 'number' && isFinite(v) && v >= 0) ? Math.floor(v) : 0;
+          }
+          var cyberTab       = _cdOneOf(d.cyberTab, ['phish', 'password', 'cipher', 'network', 'social', 'warroom', 'defenseHunt'], 'phish');
+          // Indexes filteredEmails as `phishIdx % len`; 'abc' % n is NaN, which
+          // makes the lookup undefined and the next .fromDisplay throw.
+          var phishIdx        = _cdCount(d.phishIdx);
           var phishAnswer     = d.phishAnswer || null;
-          var phishScore      = d.phishScore || 0;
-          var phishStreak     = d.phishStreak || 0;
+          var phishScore      = _cdCount(d.phishScore);
+          var phishStreak     = _cdCount(d.phishStreak);
           var pwInput         = _cyberPasswordSample;
-          var cipherMode      = d.cipherMode || 'caesar';
-          var cipherInput     = d.cipherInput || '';
-          var caesarShift      = d.caesarShift != null ? d.caesarShift : 3;
+          var cipherMode      = _cdOneOf(d.cipherMode, ['caesar', 'atbash', 'xor'], 'caesar');
+          var cipherInput     = typeof d.cipherInput === 'string' ? d.cipherInput : '';
+          var caesarShift      = (typeof d.caesarShift === 'number' && isFinite(d.caesarShift)) ? d.caesarShift : 3;
           var cipherEncode    = d.cipherEncode != null ? d.cipherEncode : true;
-          var cipherChallenge = d.cipherChallenge || '';
+          var cipherChallenge = typeof d.cipherChallenge === 'string' ? d.cipherChallenge : '';
           // Solved state is per-challenge (keyed by ciphertext): the active
           // challenge rotates with phishScore + caesarShift, so a single global
           // flag leaked "solved" onto challenges the student never decoded.
-          var solvedCiphers = d.solvedCiphers || {};
-          var difficulty      = d.difficulty || 'medium';
+          var solvedCiphers = (d.solvedCiphers && typeof d.solvedCiphers === 'object' && !Array.isArray(d.solvedCiphers)) ? d.solvedCiphers : {};
+          var difficulty      = _cdOneOf(d.difficulty, ['easy', 'medium', 'rookie', 'threatHunter'], 'medium');
           var pwChallengeDone = d.pwChallengeDone || false;
-          var phishMode       = d.phishMode || 'investigate';
-          var cluesFound      = d.cluesFound || [];
-          var casesClosed     = d.casesClosed || 0;
+          var phishMode       = _cdOneOf(d.phishMode, ['investigate', 'triage'], 'investigate');
+          var cluesFound      = Array.isArray(d.cluesFound) ? d.cluesFound : [];
+          var casesClosed     = _cdCount(d.casesClosed);
           var showHeaders     = d.showHeaders || false;
-          var triageTimeLeft  = d.triageTimeLeft != null ? d.triageTimeLeft : 15;
+          var triageTimeLeft  = (typeof d.triageTimeLeft === 'number' && isFinite(d.triageTimeLeft)) ? d.triageTimeLeft : 15;
           var triageActive    = d.triageActive || false;
           var evidenceExpanded = d.evidenceExpanded || false;
           var aiEmailLoading  = d.aiEmailLoading || false;
-          var aiGeneratedEmail = d.aiGeneratedEmail || null;
-          var aiEmailHistory  = d.aiEmailHistory || [];
+          // Downstream assigns .headers onto this and reads .fromDisplay[0] for
+          // the avatar initial, so a wrong-shaped object throws just as a string
+          // would. The tool already validates AI-generated emails field by field
+          // (sanitizeGeneratedPhishEmail, applied to the live response); a copy
+          // restored from a saved file is exactly as untrusted, so send it
+          // through the same validator instead of a weaker inline check.
+          var aiGeneratedEmail = (d.aiGeneratedEmail && typeof d.aiGeneratedEmail === 'object' && !Array.isArray(d.aiGeneratedEmail))
+            ? sanitizeGeneratedPhishEmail(d.aiGeneratedEmail, d.difficulty)
+            : null;
+          var aiEmailHistory  = Array.isArray(d.aiEmailHistory) ? d.aiEmailHistory : [];
           // Password Forge enhancements
           var pwShowPassword  = d.pwShowPassword || false;
           var pwBruteAnim     = d.pwBruteAnim || null; // derived estimate only; never includes the sample
@@ -550,15 +572,15 @@
           var warRoomActive       = d.warRoomActive || false;
           var warRoomRound        = d.warRoomRound || 1;           // 1..6
           var warRoomDifficulty   = d.warRoomDifficulty || 'rookie'; // rookie | analyst | threatHunter
-          var warRoomKillChain    = d.warRoomKillChain || [];       // [{stage, red, outcome, assetsLost}]
+          var warRoomKillChain    = Array.isArray(d.warRoomKillChain) ? d.warRoomKillChain : [];       // [{stage, red, outcome, assetsLost}]
           var warRoomRedAction    = d.warRoomRedAction || null;     // current round red card
-          var warRoomAlerts       = d.warRoomAlerts || [];          // [{id, text, real}]
-          var warRoomAlertsSeen   = d.warRoomAlertsSeen || [];      // ids investigated this round
-          var warRoomBudget       = d.warRoomBudget != null ? d.warRoomBudget : 12;
+          var warRoomAlerts       = Array.isArray(d.warRoomAlerts) ? d.warRoomAlerts : [];          // [{id, text, real}]
+          var warRoomAlertsSeen   = Array.isArray(d.warRoomAlertsSeen) ? d.warRoomAlertsSeen : [];      // ids investigated this round
+          var warRoomBudget       = (typeof d.warRoomBudget === 'number' && isFinite(d.warRoomBudget)) ? d.warRoomBudget : 12;
           var warRoomAssets       = d.warRoomAssets || { users: 10, servers: 5, data: 100 };
           var warRoomAssetsLost   = d.warRoomAssetsLost || { users: 0, servers: 0, data: 0 };
-          var warRoomLog          = d.warRoomLog || [];             // strings
-          var warRoomBluePlays    = d.warRoomBluePlays || [];       // blue card ids played this round
+          var warRoomLog          = Array.isArray(d.warRoomLog) ? d.warRoomLog : [];             // strings
+          var warRoomBluePlays    = Array.isArray(d.warRoomBluePlays) ? d.warRoomBluePlays : [];  // blue card ids played this round
           var warRoomVerdict      = d.warRoomVerdict || null;       // 'won' | 'lost' | null
           var warRoomAARLoading   = d.warRoomAARLoading || false;
           var warRoomAAR          = d.warRoomAAR || null;
@@ -575,7 +597,7 @@
           var warRoomGlossaryFilter = d.warRoomGlossaryFilter || '';
           var warRoomAICardLoading = d.warRoomAICardLoading || false;
           var warRoomFreeUsed = d.warRoomFreeUsed || []; // card ids whose free use is spent this campaign
-          var warRoomTimeLeft = d.warRoomTimeLeft != null ? d.warRoomTimeLeft : 90;
+          var warRoomTimeLeft = (typeof d.warRoomTimeLeft === 'number' && isFinite(d.warRoomTimeLeft)) ? d.warRoomTimeLeft : 90;
           var warRoomAchievements = d.warRoomAchievements || {};
           var warRoomCampaignAchievements = d.warRoomCampaignAchievements || [];
           var warRoomTotalCombos = d.warRoomTotalCombos || 0;
@@ -1752,7 +1774,7 @@
               alerts: fresh.warRoomAlerts || [],
               alertsSeen: fresh.warRoomAlertsSeen || [],
               bluePlays: fresh.warRoomBluePlays || [],
-              budget: fresh.warRoomBudget != null ? fresh.warRoomBudget : 0,
+              budget: (typeof fresh.warRoomBudget === 'number' && isFinite(fresh.warRoomBudget)) ? fresh.warRoomBudget : 0,
               assets: fresh.warRoomAssets || { users: 10, servers: 5, data: 100 },
               assetsLost: fresh.warRoomAssetsLost || { users: 0, servers: 0, data: 0 },
               killChain: fresh.warRoomKillChain || [],
@@ -1822,7 +1844,7 @@
                         warRoomAlerts: data.alerts || [],
                         warRoomAlertsSeen: data.alertsSeen || [],
                         warRoomBluePlays: data.bluePlays || [],
-                        warRoomBudget: data.budget != null ? data.budget : 0,
+                        warRoomBudget: (typeof data.budget === 'number' && isFinite(data.budget)) ? data.budget : 0,
                         warRoomAssets: data.assets || { users: 10, servers: 5, data: 100 },
                         warRoomAssetsLost: data.assetsLost || { users: 0, servers: 0, data: 0 },
                         warRoomKillChain: data.killChain || [],

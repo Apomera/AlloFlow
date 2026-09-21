@@ -557,12 +557,13 @@ onSpeak: function(formats) {
         // is assigned further down and `var` hoists the declaration, not the value.
         var TAB_IDS = ['builder', 'practice', 'scale', 'solve', 'tutor'];
         var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'solve';
-        var expression = d.expression || '';
-        var mode = d.mode || 'solve';
+        // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
+        var expression = typeof d.expression === 'string' ? d.expression : '';
+        var mode = (d.mode === 'solve' || d.mode === 'factor') ? d.mode : 'solve';
         var result = d.result || null;
         var verify = d.verify || null;
         var isLoading = d.isLoading || false;
-        var history = d.history || [];
+        var history = Array.isArray(d.history) ? d.history : [];
         var difficulty = d.difficulty || 'elementary';
         var practiceQ = d.practiceQ || null;
         var practiceAnswer = d.practiceAnswer || '';
@@ -571,12 +572,12 @@ onSpeak: function(formats) {
         var practiceScore = d.practiceScore || 0;
         var practiceStreak = d.practiceStreak || 0;
         var showSolution = d.showSolution || false;
-        var builderTiles = d.builderTiles || [];
+        var builderTiles = Array.isArray(d.builderTiles) ? d.builderTiles : [];
         var scaleEq = d.scaleEq || '';
         var scaleSteps = d.scaleSteps || [];
         var scaleSolved = d.scaleSolved || false;
-        var tutorChat = d.tutorChat || [];
-        var tutorInput = d.tutorInput || '';
+        var tutorChat = Array.isArray(d.tutorChat) ? d.tutorChat : [];
+        var tutorInput = typeof d.tutorInput === 'string' ? d.tutorInput : '';
 
         /* -- Theme-responsive style constants -- */
         var isContrast = !!ctx.isContrast;
@@ -919,7 +920,7 @@ onSpeak: function(formats) {
           return h('div', null,
             h('p', { style: { color: MUTED, fontSize: 12 } }, 'Local practice uses exact linear equations: one-step, brackets, or fractions at the selected level.'),
             h('button', { type: 'button', style: btnStyle(false), disabled: isLoading, onClick: startLocalPractice }, 'Start local linear practice'),
-            d.practiceNotice ? h('p', { role: 'status' }, d.practiceNotice) : null,
+            typeof d.practiceNotice === 'string' && d.practiceNotice ? h('p', { role: 'status' }, d.practiceNotice) : null,
             (practiceScore > 0 || practiceStreak > 0) ? h('div', { style: { display: 'flex', gap: '10px', marginBottom: '8px' } },
               practiceScore > 0 ? h('span', { style: { fontSize: '11px', fontWeight: '700', color: 'rgba(34,197,94,0.9)' } }, '\u2B50 ' + practiceScore + ' correct') : null,
               practiceStreak > 1 ? h('span', { style: { fontSize: '11px', fontWeight: '700', color: '#f97316' } }, '\uD83D\uDD25 ' + practiceStreak + ' streak') : null
@@ -1234,7 +1235,7 @@ onSpeak: function(formats) {
             ),
             h('p',{style:{fontSize:13,color:TEXT,marginBottom:6}},t('stem.algebraCAS.trial_beam_meaning','The level beam shows the goal: equal sides. Open Test a value for x to check whether a particular value makes them equal.')),
             h('p',{style:{fontSize:12,color:TEXT,marginBottom:10}},t('stem.algebraCAS.balance_model_meaning','A solution makes both sides equal. Add or subtract a term such as 2x, or multiply or divide by a nonzero constant. Fractions stay exact.')),
-            d.scaleNotice&&h('p',{role:'status','aria-live':'polite',style:{fontSize:13,color:TEXT,marginBottom:10}},d.scaleNotice),
+            typeof d.scaleNotice === 'string' && d.scaleNotice && h('p',{role:'status','aria-live':'polite',style:{fontSize:13,color:TEXT,marginBottom:10}},d.scaleNotice),
             scaleEq ? h('div', null,
               !scaleSolved && h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, t('stem.algebraCAS.apply_to_both_sides', 'Apply to Both Sides')),
               !scaleSolved && h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '8px', alignItems: 'center' } },
@@ -1306,7 +1307,7 @@ onSpeak: function(formats) {
         };
 
         /* ============ BADGE BAR ============ */
-        var earned = d._badgesEarned || [];
+        var earned = Array.isArray(d._badgesEarned) ? d._badgesEarned : [];
         var badgeBar = h('div', { style: { display: 'flex', gap: '3px', flexWrap: 'wrap', padding: '6px 0' } },
           BADGES.map(function(b) {
             var has = earned.indexOf(b.id) !== -1;

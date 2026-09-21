@@ -4931,7 +4931,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     },
     {
       topic: 'What\'s the fastest plane?',
-      explanation: 'The NASA X-43 unmanned aircraft flew over Mach 9.6 — about 7,000 mph! Even crewed jets like the SR-71 fly over Mach 3 (about 2,200 mph). That\'s about 50 times faster than highway speeds.',
+      explanation: 'The NASA X-43 unmanned aircraft flew over Mach 9.6 — about 7,000 mph, roughly a hundred times highway speed. Even crewed jets like the SR-71 fly over Mach 3 (about 2,200 mph), around thirty times highway speed.',
     },
     {
       topic: 'Can I be a pilot?',
@@ -25644,10 +25644,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       if (view === 'calculator') {
         var calcPreset = d.calcPreset || 0;
         var preset = FORCE_CALCULATOR_PRESETS[calcPreset] || FORCE_CALCULATOR_PRESETS[0];
-        var calcSpeed = d.calcSpeed != null ? d.calcSpeed : preset.maxSpeed * 0.6;
-        var calcAltitude = d.calcAltitude != null ? d.calcAltitude : 0;
-        var calcWingArea = d.calcWingArea != null ? d.calcWingArea : preset.wingArea;
-        var calcCl = d.calcCl != null ? d.calcCl : preset.cl;
+        var calcSpeed = (typeof d.calcSpeed === 'number' && isFinite(d.calcSpeed)) ? d.calcSpeed : preset.maxSpeed * 0.6;
+        var calcAltitude = (typeof d.calcAltitude === 'number' && isFinite(d.calcAltitude)) ? d.calcAltitude : 0;
+        var calcWingArea = (typeof d.calcWingArea === 'number' && isFinite(d.calcWingArea)) ? d.calcWingArea : preset.wingArea;
+        var calcCl = (typeof d.calcCl === 'number' && isFinite(d.calcCl)) ? d.calcCl : preset.cl;
 
         // Density at altitude (simplified ISA model)
         // DENSITY ratio σ = θ^4.2561 (θ^5.2561 is the PRESSURE ratio — using

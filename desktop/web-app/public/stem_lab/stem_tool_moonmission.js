@@ -505,7 +505,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       }
 
       var phase = d.missionPhase || 0;
-      var missionLog = d.missionLog || [];
+      var missionLog = Array.isArray(d.missionLog) ? d.missionLog : [];
       // Animation pause (WCAG 2.2.2): every passive phase canvas loops on its own. The
       // header toggle lets a student freeze them; with no explicit choice we follow the
       // OS reduced-motion setting. The module-level flag is what the loops actually
@@ -918,7 +918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         pilot:     { label: t('stem.moonmission.pilot', 'Pilot'),      icon: '\u2B50', desc: t('stem.moonmission.standard_apollo_parameters', 'Standard Apollo parameters'), gravity: 1.62, fuel: 100, o2Rate: 0.3, eventFreq: 0.6, showEffects: true, showOptimalHint: false },
         commander: { label: t('stem.moonmission.commander', 'Commander'),  icon: '\uD83C\uDFC5', desc: t('stem.moonmission.realistic_tight_fuel_budget_faster_o_d', 'Realistic \u2014 tight fuel budget, faster O\u2082 drain'), gravity: 1.62, fuel: 70, o2Rate: 0.6, eventFreq: 0.9, showEffects: false, showOptimalHint: false }
       };
-      var difficulty = d.difficulty || 'pilot';
+      var difficulty = (d.difficulty === 'pilot' || d.difficulty === 'commander') ? d.difficulty : 'pilot';
       var diffSettings = DIFFICULTIES[difficulty];
 
       // ── Achievement Badges ──
@@ -1005,7 +1005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       ];
       var phaseTask = PHASE_TASKS[Math.min(phase, 10)];
       var phaseProgressPct = Math.min(100, Math.round((Math.min(phase, 10) / 10) * 100));
-      var crewMorale = d.crewMorale != null ? d.crewMorale : 75;
+      var crewMorale = (typeof d.crewMorale === 'number' && isFinite(d.crewMorale)) ? d.crewMorale : 75;
       var earnedBadgeCount = Object.keys(d.earnedBadges || {}).length;
       var flightPlanGroups = [
         { id: 'brief', label: t('stem.moonmission.plan_brief', 'Brief'), icon: '\uD83D\uDCCB', phases: [0, 1] },
@@ -1160,7 +1160,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         // ── Mission Event modal (triggered by advancePhase) ──
-        d.activeEvent && h('div', {
+        (d.activeEvent && typeof d.activeEvent === 'object' && !Array.isArray(d.activeEvent)
+              && Array.isArray(d.activeEvent.stemConcepts) && Array.isArray(d.activeEvent.options)) && h('div', {
           className: 'mb-3 bg-gradient-to-br from-amber-950 to-slate-900 rounded-xl p-4 border border-amber-700/50 shadow-lg',
           role: 'alertdialog', 'aria-label': 'Mission event: ' + d.activeEvent.title
         },
@@ -6670,7 +6671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           // fast. Apollo's corridor was about two degrees wide after a quarter of a
           // million miles, which is the fact worth feeling rather than reading.
           (function() {
-            var ang = d.entryAngle != null ? d.entryAngle : -6.5;
+            var ang = (typeof d.entryAngle === 'number' && isFinite(d.entryAngle)) ? d.entryAngle : -6.5;
             var mag = Math.abs(ang);
             var tooShallow = mag < 5.3, tooSteep = mag > 7.4;
             var inCorridor = !tooShallow && !tooSteep;
@@ -6718,7 +6719,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           h('button', {
             'aria-label': t('stem.moonmission.begin_atmospheric_re_entry_sequence_at', 'Begin atmospheric re-entry sequence at 39,900 kilometers per hour'),
             onClick: function() {
-              var ang2 = d.entryAngle != null ? d.entryAngle : -6.5;
+              var ang2 = (typeof d.entryAngle === 'number' && isFinite(d.entryAngle)) ? d.entryAngle : -6.5;
               var mag2 = Math.abs(ang2);
               var outcome = mag2 < 5.3 ? 'skip' : mag2 > 7.4 ? 'steep' : 'nominal';
               upd('entryOutcome', { outcome: outcome, angle: ang2, peakG: Math.round((4 + (mag2 - 5.3) * 2.38) * 10) / 10 });
@@ -6998,7 +6999,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             )
           ),
           (function() {
-            var rs = d.reentryStatus != null ? d.reentryStatus : 0;
+            var rs = (typeof d.reentryStatus === 'number' && isFinite(d.reentryStatus)) ? d.reentryStatus : 0;
             return phaseStatus(rs >= 4,
               rs === 0 ? 'Entry interface. The heat shield is taking 2,760°C, and it protects you by burning away on purpose.'
                 : rs === 1 ? 'Radio blackout. Ionised air around the capsule blocks every signal — Houston cannot hear you, and this is the part everyone counts through.'

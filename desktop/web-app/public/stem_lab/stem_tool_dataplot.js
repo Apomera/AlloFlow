@@ -238,7 +238,8 @@ window.StemLab = window.StemLab || {
 
       // ── State ──
       var d = (ctx.toolData && ctx.toolData.dataPlot) || {};
-      var points = d.points || [];
+      // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
+      var points = Array.isArray(d.points) ? d.points : [];
       var upd = function(key, val) {
         if (ctx.update) ctx.update('dataPlot', key, val);
         else ctx.setToolData(function(prev) { var dp = Object.assign({}, (prev && prev.dataPlot) || {}); dp[key] = val; return Object.assign({}, prev, { dataPlot: dp }); });
@@ -255,8 +256,8 @@ window.StemLab = window.StemLab || {
       var showGrid = d.showGrid != null ? d.showGrid : true;
       var tableMode = d.tableMode || false;
       var paletteId = d.paletteId || 'teal';
-      var xLabel = d.xLabel || '';
-      var yLabel = d.yLabel || '';
+      var xLabel = typeof d.xLabel === 'string' ? d.xLabel : '';
+      var yLabel = typeof d.yLabel === 'string' ? d.yLabel : '';
       var activeTab = d.activeTab || 'chart';
       var regressionType = d.regressionType || 'linear';
       var predX = d.predX || '';
@@ -280,7 +281,7 @@ window.StemLab = window.StemLab || {
       var zScoreInput = d.zScoreInput || '';
       var showStemLeaf = d.showStemLeaf || false;
       var stepMode = d.stepMode || false;
-      var stepIdx = d.stepIdx != null ? d.stepIdx : 0;
+      var stepIdx = (typeof d.stepIdx === 'number' && isFinite(d.stepIdx)) ? d.stepIdx : 0;
       var showShortcuts = d.showShortcuts || false;
       var quizType = d.quizType || 'correlation';
       var quizTypesUsed = d.quizTypesUsed || {};

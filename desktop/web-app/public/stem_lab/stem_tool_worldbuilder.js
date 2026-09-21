@@ -204,7 +204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
       // ── Character Portrait & Consistency ──
       var characterPortrait = d.characterPortrait || null;
       var characterPortraitLoading = d.characterPortraitLoading || false;
-      var characterAppearance = d.characterAppearance || '';
+      var characterAppearance = typeof d.characterAppearance === 'string' ? d.characterAppearance : '';
 
       // ── Item Crafting, Structures & Inventory ──
       var inventory = d.inventory || [];
@@ -1039,7 +1039,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
         // ═══ WORLDBUILDING INQUIRY widget (H7b'') ═══
         !selectedWorld && (function() {
-          var iq = d.worldInquiry || { biome: 'temperate', popMillions: 50, techLevel: 5, conflictLevel: 3, govStability: 7, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          // A bare {} passes an object check and then leaves every field
+          // undefined, so MERGE over the defaults instead of choosing.
+          var iq = Object.assign({}, { biome: 'temperate', popMillions: 50, techLevel: 5, conflictLevel: 3, govStability: 7, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] },
+            (d.worldInquiry && typeof d.worldInquiry === 'object' && !Array.isArray(d.worldInquiry)) ? d.worldInquiry : {});
           function setIQ(patch) { upd('worldInquiry', Object.assign({}, iq, patch)); }
           function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
           var biomes = ({

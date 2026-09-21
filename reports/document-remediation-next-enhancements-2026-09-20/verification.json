@@ -1,0 +1,115 @@
+{
+  "generatedAt": "2026-09-20T15:20:09.153Z",
+  "pipelinePolicy": "20260920-3",
+  "hashes": {
+    "doc_pipeline_source.jsx": "a9c97187bdd04c7b24a2051c64a927c7cf8a336d21335505b5c515d85bf42ff0",
+    "doc_pipeline_module.js": "7a4f3f08093c6b49a96817297b2835d15f895b09f68ce9e92e047f3cd6115291",
+    "desktop/web-app/public/doc_pipeline_module.js": "7a4f3f08093c6b49a96817297b2835d15f895b09f68ce9e92e047f3cd6115291"
+  },
+  "bundlesIdentical": true,
+  "sourceLF": true,
+  "diffCheckExitCode": 0,
+  "ownedFilesChecked": [
+    "doc_pipeline_source.jsx",
+    "doc_pipeline_module.js",
+    "desktop/web-app/public/doc_pipeline_module.js",
+    "dev-tools/document_html_dependencies.cjs",
+    "dev-tools/rendered_document_fidelity.cjs",
+    "dev-tools/remediation_validation_identity.cjs",
+    "dev-tools/remediation_validation.cjs",
+    "dev-tools/remediation_validation.json",
+    "dev-tools/mcp_calibration_validation.cjs",
+    "dev-tools/mcp_calibration_validation.json",
+    "tests/remediation_validation_identity.test.js",
+    "tests/remediation_validation.test.js",
+    "tests/mcp_calibration_validation.test.js",
+    "tests/remediation_form_association_index.test.js",
+    "tests/remediation_form_native_contract.test.js",
+    "tests/fixtures/remediation_form_native_contract.json",
+    "tests/e2e/remediation_form_native_contract.spec.ts",
+    "tests/e2e/rendered_native_dom_regressions.spec.ts",
+    "docs/remediation-validation.md",
+    "docs/rendered-document-fidelity.md"
+  ],
+  "runs": {
+    "remediation": {
+      "command": "npm run verify:remediation -- --report-dir reports/document-remediation-next-enhancements-2026-09-20/validation-final",
+      "commandExitCode": 0,
+      "summary": "validation-final/summary.json",
+      "status": "passed",
+      "testsPassed": 1420,
+      "unit": {
+        "suites": 38,
+        "passed": 890
+      },
+      "browser": {
+        "suites": 24,
+        "passed": 530,
+        "stats": {
+          "startTime": "2026-09-20T15:11:53.742Z",
+          "duration": 318784.083,
+          "expected": 530,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      "identity": {
+        "inputFiles": 135,
+        "gitHead": "22b210e0c6d04fa373b2c8e3cc0994088278df0c",
+        "changedInputs": [],
+        "toolsChanged": false,
+        "gitHeadChanged": false,
+        "gitHeadVerified": true
+      },
+      "deliveryCheck": {
+        "capturedAt": "2026-09-20T15:20:08.756Z",
+        "gitHead": "b18cebf3ed4197a5c2a795afa0489aac1465446d",
+        "changedInputs": [],
+        "toolsChanged": false,
+        "gitHeadChanged": true,
+        "gitHeadVerified": true
+      }
+    },
+    "calibration": {
+      "command": "npm run verify:mcp-calibration -- --report-dir reports/document-remediation-next-enhancements-2026-09-20/calibration-final",
+      "commandExitCode": 0,
+      "summary": "calibration-final/summary.json",
+      "status": "passed",
+      "testsPassed": 256,
+      "unit": {
+        "suites": 21,
+        "passed": 244
+      },
+      "browser": {
+        "suites": 2,
+        "passed": 12,
+        "stats": {
+          "startTime": "2026-09-20T15:15:18.318Z",
+          "duration": 4994.982,
+          "expected": 12,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      "identity": {
+        "inputFiles": 174,
+        "gitHead": "22b210e0c6d04fa373b2c8e3cc0994088278df0c",
+        "changedInputs": [],
+        "toolsChanged": false,
+        "gitHeadChanged": false,
+        "gitHeadVerified": true
+      },
+      "deliveryCheck": {
+        "capturedAt": "2026-09-20T15:20:08.905Z",
+        "gitHead": "b18cebf3ed4197a5c2a795afa0489aac1465446d",
+        "changedInputs": [],
+        "toolsChanged": false,
+        "gitHeadChanged": true,
+        "gitHeadVerified": true
+      }
+    }
+  },
+  "postRunRevisionNote": "Both commands completed successfully at Git HEAD 22b210e0c6d04fa373b2c8e3cc0994088278df0c. A concurrent repository merge advanced HEAD afterward to b18cebf3ed4197a5c2a795afa0489aac1465446d. All declared input hashes and tool versions still match the completed runs. No validation guard was disabled or changed for this later repository event."
+}

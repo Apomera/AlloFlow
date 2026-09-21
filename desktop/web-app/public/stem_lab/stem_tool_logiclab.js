@@ -59,7 +59,7 @@ window.StemLab = window.StemLab || {
     questHooks: [
       { id: 'build_truth_table', label: 'Build a truth table for a logical expression', icon: '\uD83D\uDCCB', check: function(d) { return d.expression && d.expression !== 'P \u2192 Q'; }, progress: function(d) { return d.expression && d.expression !== 'P \u2192 Q' ? 'Built!' : 'Modify the expression'; } },
       { id: 'complete_challenge', label: 'Complete a logic challenge', icon: '\uD83C\uDFAF', check: function(d) { return (d.currentChallenge || 0) >= 1; }, progress: function(d) { return (d.currentChallenge || 0) >= 1 ? 'Done!' : 'Not yet'; } },
-      { id: 'write_3_proof_steps', label: 'Write 3 proof steps', icon: '\u270D\uFE0F', check: function(d) { return (d.proofSteps || []).length >= 3; }, progress: function(d) { return (d.proofSteps || []).length + '/3 steps'; } },
+      { id: 'write_3_proof_steps', label: 'Write 3 proof steps', icon: '\u270D\uFE0F', check: function(d) { return (Array.isArray(d.proofSteps) ? d.proofSteps : []).length >= 3; }, progress: function(d) { return (Array.isArray(d.proofSteps) ? d.proofSteps : []).length + '/3 steps'; } },
       { id: 'complete_3_challenges', label: 'Complete 3 logic challenges', icon: '\uD83C\uDFC6', check: function(d) { return (d.currentChallenge || 0) >= 3; }, progress: function(d) { return (d.currentChallenge || 0) + '/3'; } }
     ],
     render: function(ctx) {
@@ -117,13 +117,15 @@ window.StemLab = window.StemLab || {
 
           var expr = typeof d.expression === 'string' ? d.expression : 'P → Q';
 
-          var proofSteps = d.proofSteps || [];
+          var proofSteps = Array.isArray(d.proofSteps) ? d.proofSteps : [];
 
-          var currentChallenge = d.currentChallenge || 0;
+          var currentChallenge = (Number.isInteger(d.currentChallenge) && d.currentChallenge >= 0) ? d.currentChallenge : 0;
 
           var challengeMode = d.challengeMode || 'fallacy';
 
-          var challengeIdx = d.challengeIdx || 0;
+          // Indexes FALLACIES / TT_CHALLENGES as `challengeIdx % len`; -1 % n
+          // is -1 in JS and 'abc' % n is NaN, so both leave the lookup undefined.
+          var challengeIdx = (Number.isInteger(d.challengeIdx) && d.challengeIdx >= 0) ? d.challengeIdx : 0;
 
           var challengeAnswer = d.challengeAnswer || null;
 
@@ -140,16 +142,19 @@ window.StemLab = window.StemLab || {
 
           var aiFallacy = d.aiFallacy || null;
 
-          var aiProof = d.aiProof || null;
+          // Stands in for a PROOF_CHALLENGES entry, so consumers read .rulesNeeded
+          // and .steps off it. A string or bare {} is not a usable challenge.
+          var aiProof = (d.aiProof && typeof d.aiProof === 'object' && !Array.isArray(d.aiProof)
+            && Array.isArray(d.aiProof.steps)) ? d.aiProof : null;
 
           var aiDetective = d.aiDetective || null;
 
-          var aiExplain = d.aiExplain || '';
+          var aiExplain = typeof d.aiExplain === 'string' ? d.aiExplain : '';
           var score = d.score || 0;
           var streak = d.streak || 0;
           var bestStreak = d.bestStreak || 0;
           var animTick = d.animTick || 0;
-          var gateType = d.gateType || 'AND';
+          var gateType = (typeof d.gateType === 'string' && d.gateType) ? d.gateType : 'AND';
           var gateInputs = d.gateInputs || { A: false, B: false };
 
 
@@ -1486,13 +1491,13 @@ window.StemLab = window.StemLab || {
 
                     activeCh.premises.map(function(p, pi) {
 
-                      var isSelected = (d.selectedSteps || []).indexOf('P' + pi) !== -1;
+                      var isSelected = (Array.isArray(d.selectedSteps) ? d.selectedSteps : []).indexOf('P' + pi) !== -1;
 
                       return React.createElement("button", { "aria-label": t('stem.logiclab.drag_or_click_to_select', "Drag or click to select"),
                         key: pi, draggable: true,
                         onDragStart: function(e) { _drag.proofKey = 'P'+pi; e.dataTransfer.effectAllowed='move'; },
                         onClick: function() {
-                          var sel = (d.selectedSteps || []).slice();
+                          var sel = (Array.isArray(d.selectedSteps) ? d.selectedSteps : []).slice();
                           var idx = sel.indexOf('P'+pi);
                           if (idx !== -1) sel.splice(idx, 1); else sel.push('P'+pi);
                           upd({ selectedSteps: sel });
@@ -1539,14 +1544,14 @@ window.StemLab = window.StemLab || {
 
                     proofSteps.map(function(step, si) {
 
-                      var isSelected = (d.selectedSteps || []).indexOf('S' + si) !== -1;
+                      var isSelected = (Array.isArray(d.selectedSteps) ? d.selectedSteps : []).indexOf('S' + si) !== -1;
 
                       return React.createElement("button", { "aria-label": "Select derivation step " + (si + 1) + ": " + step.result,
                         key: si,
                         style: { animation: si === proofSteps.length-1 ? 'logicPop 0.3s ease-out' : 'none' },
                         onClick: function() {
 
-                          var sel = (d.selectedSteps || []).slice();
+                          var sel = (Array.isArray(d.selectedSteps) ? d.selectedSteps : []).slice();
 
                           var idx = sel.indexOf('S' + si);
 
@@ -1634,7 +1639,7 @@ window.StemLab = window.StemLab || {
 
                         if (proofComplete) return;
 
-                        var sel = d.selectedSteps || [];
+                        var sel = Array.isArray(d.selectedSteps) ? d.selectedSteps : [];
 
                         if (sel.length < rule.needs) {
 
@@ -1726,7 +1731,7 @@ window.StemLab = window.StemLab || {
 
                   // Fallacy note — appears when a failed rule application matches a
                   // classic invalid move; cleared on the next valid step or reset.
-                  d.fallacyNote && React.createElement("div", { className: "p-2.5 rounded-xl bg-amber-50 border-2 border-amber-300 text-[0.6875rem] leading-relaxed text-amber-900", role: "status" },
+                  typeof d.fallacyNote === 'string' && d.fallacyNote && React.createElement("div", { className: "p-2.5 rounded-xl bg-amber-50 border-2 border-amber-300 text-[0.6875rem] leading-relaxed text-amber-900", role: "status" },
                     React.createElement("span", { className: "font-black" }, "🚫 "),
                     d.fallacyNote
                   )

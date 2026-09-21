@@ -16201,9 +16201,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       function renderCamouflageLab() {
         var scene = d.camoScene || 'sand';
-        var chro = d.camoChromatophore != null ? d.camoChromatophore : 50;
-        var irid = d.camoIridophore != null ? d.camoIridophore : 30;
-        var leuc = d.camoLeucophore != null ? d.camoLeucophore : 30;
+        var chro = (typeof d.camoChromatophore === 'number' && isFinite(d.camoChromatophore)) ? d.camoChromatophore : 50;
+        var irid = (typeof d.camoIridophore === 'number' && isFinite(d.camoIridophore)) ? d.camoIridophore : 30;
+        var leuc = (typeof d.camoLeucophore === 'number' && isFinite(d.camoLeucophore)) ? d.camoLeucophore : 30;
         var pattern = d.camoPattern || 'uniform';
         // Scene definitions — target appearance for each
         var SCENES = {
@@ -16563,8 +16563,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             location: 'Ink sac, ejected via siphon',
             example: 'Several deep-sea octopuses (Octopoteuthis) + some squid' }
         ];
-        var depth = d.bioluxDepthFactor != null ? d.bioluxDepthFactor : 50;
-        var belly = d.bioluxBellyIntensity != null ? d.bioluxBellyIntensity : 50;
+        var depth = (typeof d.bioluxDepthFactor === 'number' && isFinite(d.bioluxDepthFactor)) ? d.bioluxDepthFactor : 50;
+        var belly = (typeof d.bioluxBellyIntensity === 'number' && isFinite(d.bioluxBellyIntensity)) ? d.bioluxBellyIntensity : 50;
         var matchScore = 100 - Math.abs(depth - belly);
         var matchVerdict = matchScore >= 90 ? { color: '#86efac', label: __alloT('stem.cephalopodlab.silhouette_erased_predator_sees_nothin', 'Silhouette erased — predator sees nothing.') } :
                            matchScore >= 70 ? { color: '#fbbf24', label: __alloT('stem.cephalopodlab.close_faint_silhouette_visible', 'Close, faint silhouette visible.') } :
@@ -20548,7 +20548,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         // give "a white reference for the chromatophores above").
         var sks = Object.keys(SKIN_ANATOMY);
         var sel = d.skinCell && SKIN_ANATOMY[d.skinCell] ? d.skinCell : 'chromatophore';
-        var drive = d.skinDrive != null ? d.skinDrive : 0;
+        var drive = (typeof d.skinDrive === 'number' && isFinite(d.skinDrive)) ? d.skinDrive : 0;
         var reduced = !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
         var META = {
           chromatophore: { color: '#f97316', role: __alloT('stem.cephalopodlab.skin_role_chromatophore', 'Pigment, actively stretched'), can: __alloT('stem.cephalopodlab.skin_can_chromatophore', 'browns, reds, yellows'), cannot: __alloT('stem.cephalopodlab.skin_cannot_chromatophore', 'blue or green') },

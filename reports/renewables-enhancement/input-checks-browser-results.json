@@ -1,0 +1,51 @@
+{
+  "scenarios": [
+    "solarPv/clouds",
+    "solarPv/daylight",
+    "wind/gust",
+    "wind/lull",
+    "hydro/dry",
+    "hydro/release",
+    "geothermal/interruption",
+    "geothermal/ramp",
+    "solarThermal/clouds",
+    "solarThermal/haze",
+    "wave/swell",
+    "wave/calm",
+    "tidal/reversal",
+    "tidal/weak",
+    "biomass/feed",
+    "biomass/quality",
+    "storage/evening",
+    "storage/interrupted"
+  ],
+  "behavior": [
+    "all scenarios produce two isolated trials",
+    "running checks preserves the workbench",
+    "36 trial inspections preserve recorded analysis and notebook work",
+    "combined setup restores its recorded minute and inputs",
+    "known PV interaction and flow-to-3D inspection",
+    "recorded baseline inspection keeps combined results available",
+    "recorded checks survive a scenario change and can restore context",
+    "scope changes retain results until an explicit rerun",
+    "running checks pauses playback",
+    "empty window disables new checks without deleting recorded results",
+    "each technology retains its recorded request",
+    "export recalculates all nine recorded analyses",
+    "signed and zero effects remain explicit and baseline names are escaped"
+  ],
+  "audits": {
+    "inspected-trial": [],
+    "outside-recorded-scenario": [],
+    "empty-window": [],
+    "desktop-results": [],
+    "dark-results": [],
+    "phone-390": [],
+    "phone-320": [],
+    "signed-effects": [],
+    "zero-effects": []
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "sourceSha256": "fade6fae73696f82a320b0aef4e7823dc75f386d440c0de8e8c412ed0f64ca33"
+}

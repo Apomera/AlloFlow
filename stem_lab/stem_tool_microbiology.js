@@ -917,7 +917,7 @@
 
     var organism = d.scopeOrganism || 'ecoli';
     var setOrganism = function(val) { upd({ scopeOrganism: val }); };
-    var mag = d.magnification != null ? d.magnification : 400;
+    var mag = (typeof d.magnification === 'number' && isFinite(d.magnification)) ? d.magnification : 400;
     var setMag = function(val) { upd({ magnification: val }); };
 
     var ss = R.useState(new Set()); var seen = ss[0];     var setSeen = ss[1];
@@ -937,8 +937,8 @@
     var sel = ORGANISMS.filter(function(o) { return o.id === organism; })[0] || ORGANISMS[0];
     
     // Focus calculation
-    var focusVal = d.microscopeFocus != null ? d.microscopeFocus : 10;
-    var targetFocus = d.microscopeTargetFocus != null ? d.microscopeTargetFocus : 50;
+    var focusVal = (typeof d.microscopeFocus === 'number' && isFinite(d.microscopeFocus)) ? d.microscopeFocus : 10;
+    var targetFocus = (typeof d.microscopeTargetFocus === 'number' && isFinite(d.microscopeTargetFocus)) ? d.microscopeTargetFocus : 50;
     var focusDiff = Math.abs(focusVal - targetFocus);
     var isFocused = focusDiff <= 4;
     var blurPx = Math.min(8, focusDiff * 0.15);
@@ -3593,7 +3593,7 @@
 
       // BIOFILMS + QUORUM SENSING
       function renderBiofilm() {
-        var density = d.biofilmDensity != null ? d.biofilmDensity : 50;
+        var density = (typeof d.biofilmDensity === 'number' && isFinite(d.biofilmDensity)) ? d.biofilmDensity : 50;
         // Quorum-sensing threshold: cells start coordinated behavior at high density
         var threshold = 100;
         var pctOfThreshold = (density / threshold) * 100;

@@ -47,6 +47,7 @@ test.describe('Raptor desert mission',()=>{
     expect(contact==='landing'?result.landed:result.crashed).toBe(true);expect(result.calories).toBeGreaterThan(0);
     const dialog=page.getByRole('dialog',{name:'Mission ended',exact:true});await expect(dialog).toBeVisible();await expect(dialog).toContainText('crossing ended on the ground');await expect(dialog).not.toContainText('You crossed.');
     await expect(route).toHaveAttribute('data-route-outcome','failed');await expect(page.locator('.rh-flight-pause')).toBeHidden();
+    await expect(page.locator('.rh-flight-state')).not.toContainText('Recovering');await expect(page.locator('.rh-flight-state')).not.toHaveAttribute('aria-label',/until takeoff/);
     expect(await page.evaluate(()=>(window as any).__toolData.raptorHunt.runHistory.at(-1).outcome)).toBe('failed');
     if(contact==='landing')await page.locator('[data-raptor-flight-stage]').screenshot({path:'scratch/raptor-flight-review/desert-grounded-result.png',timeout:90000});
     await dialog.getByRole('button',{name:'Fly again',exact:true}).click();await expect(dialog).toHaveCount(0);await expect(route).toHaveAttribute('data-route-outcome','active');await expect(panel).toContainText('Find a refuel catch');

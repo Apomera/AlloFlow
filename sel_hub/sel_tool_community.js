@@ -1024,7 +1024,7 @@ window.SelHub = window.SelHub || {
                 BADGES.map(function(b) {
                   var earned = !!earnedBadges[b.id];
                   return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _comBg('#0f172a') : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _comBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 } },
-                    h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+                    h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
                     h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, earned ? b.icon : '\uD83D\uDD12'),
                     h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? _comFg('#f1f5f9') : _comFg('#94a3b8'), marginTop: 4 } }, b.name),
                     h('div', { style: { fontSize: 10, color: _comFg('#94a3b8'), marginTop: 2 } }, b.desc)
@@ -2114,7 +2114,7 @@ window.SelHub = window.SelHub || {
         var content = exploreContent || identityContent || scenariosContent || privilegeContent || microaggContent || heritageContent || commtipsContent || quizContent || battleContent || badgesContent;
 
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('community', h, ctx) : null),
           tabBar,
           heroBand,

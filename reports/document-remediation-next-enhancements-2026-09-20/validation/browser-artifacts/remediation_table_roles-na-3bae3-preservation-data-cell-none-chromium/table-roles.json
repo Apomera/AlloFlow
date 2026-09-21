@@ -1,0 +1,42 @@
+{
+  "decision": {
+    "accepted": false,
+    "reason": "table-semantics-changed",
+    "sourceLocation": "table:1/cell:4"
+  },
+  "source": {
+    "row": {
+      "role": "row",
+      "name": "",
+      "ignored": false
+    },
+    "datum": {
+      "role": "cell",
+      "name": "95",
+      "ignored": false
+    }
+  },
+  "candidate": {
+    "row": {
+      "role": "row",
+      "name": "",
+      "ignored": false
+    },
+    "datum": {
+      "role": "none",
+      "ignored": true
+    }
+  },
+  "repaired": {
+    "row": {
+      "role": "row",
+      "name": "",
+      "ignored": false
+    },
+    "datum": {
+      "role": "cell",
+      "name": "95",
+      "ignored": false
+    }
+  }
+}

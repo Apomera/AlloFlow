@@ -1052,7 +1052,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontWeight: 700, color: _safFg('#fca5a5'), fontSize: 13, marginBottom: 6 } }, '\uD83D\uDCDE If you need help RIGHT NOW:'),
             CRISIS_RESOURCES.map(function(cr, i) {
               return h('div', { key: i, style: { padding: '4px 0', fontSize: 12, color: _safFg('#fde2e2') } },
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
                 h('span', { style: { fontWeight: 600 } }, cr.icon + ' ' + cr.name + ': '),
                 h('span', null, cr.contact)
               );
@@ -2439,7 +2439,7 @@ window.SelHub = window.SelHub || {
         var content = learnContent || digitalContent || circleContent || scenariosContent || assertiveContent || quizContent || flagsContent || emergencyContent || planContent || badgesContent;
 
         return h('div', { className: 'selh-safety', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('safety', h, ctx) : null),
           tabBar,
           heroBand,

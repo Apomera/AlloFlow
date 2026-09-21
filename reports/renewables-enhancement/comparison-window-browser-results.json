@@ -1,0 +1,49 @@
+{
+  "scenarios": [
+    "solarPv/clouds",
+    "solarPv/daylight",
+    "wind/gust",
+    "wind/lull",
+    "hydro/dry",
+    "hydro/release",
+    "geothermal/interruption",
+    "geothermal/ramp",
+    "solarThermal/clouds",
+    "solarThermal/haze",
+    "wave/swell",
+    "wave/calm",
+    "tidal/reversal",
+    "tidal/weak",
+    "biomass/feed",
+    "biomass/quality",
+    "storage/evening",
+    "storage/interrupted"
+  ],
+  "behavior": [
+    "both setups reconcile with independent interval accounting for every scenario",
+    "bidirectional shared boundaries preserve the workbench",
+    "milestone shortcut uses the selected scenario phase",
+    "window edits pause playback and scrubbing keeps bounds fixed",
+    "current-minute shortcuts handle crossings and empty windows",
+    "window and boundary inspection focus 3D without changing saved inputs",
+    "interval selections persist separately across profiles and technologies",
+    "baseline changes and notebook undo preserve window selection",
+    "export includes both matched interval analyses",
+    "window highlight follows disclosure without changing cumulative curve meaning",
+    "phone keyboard controls and empty battery windows"
+  ],
+  "audits": {
+    "empty-window": [],
+    "desktop-window": [],
+    "cumulative-chart": [],
+    "battery-window": [],
+    "flow-window": [],
+    "dark-window": [],
+    "phone-390": [],
+    "phone-320": [],
+    "phone-empty": []
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "sourceSha256": "5c54e455d0f40061a009d600ef6143c97fd81db01255b9220250dbb809a7a0b9"
+}

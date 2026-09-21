@@ -803,7 +803,7 @@ window.StemLab = window.StemLab || {
       var tab = dnaFocusMode && dnaFocusToolIds.indexOf(requestedTab) < 0 ? 'build' : requestedTab;
       var visibleDnaSubtools = SUBTOOLS.filter(function(tb) { return !dnaFocusMode || dnaFocusToolIds.indexOf(tb.id) >= 0; });
       var dnaModeToolCount = dnaFocusMode ? dnaFocusToolIds.length : SUBTOOLS.length;
-      var dnaSeq = d.dnaSequence || 'ATGCGTACCTGAAACTGA';
+      var dnaSeq = typeof d.dnaSequence === 'string' ? d.dnaSequence : 'ATGCGTACCTGAAACTGA';
       var dnaExperimentHistory = Array.isArray(d.dnaExperimentHistory) ? d.dnaExperimentHistory : [];
       var dnaCompareLeftId = typeof d.dnaCompareLeft === 'string' ? d.dnaCompareLeft : '';
       var dnaCompareRightId = typeof d.dnaCompareRight === 'string' ? d.dnaCompareRight : '';
@@ -816,7 +816,8 @@ window.StemLab = window.StemLab || {
         + dnaSeq.length + ' base pairs, about ' + DNA_BP_PER_TURN
         + ' pairs per turn, with a wide major groove and a narrow minor groove.';
 
-      var mRNA = d.mRNA || '';
+      // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
+      var mRNA = typeof d.mRNA === 'string' ? d.mRNA : '';
       var protein = d.protein || [];
       var animStep = d.animStep || 0;
       var animPlaying = !!d.animPlaying;
@@ -850,7 +851,7 @@ window.StemLab = window.StemLab || {
       var dnaScenarioPrediction = d.dnaScenarioPrediction || '';
       var dnaScenarioLockedPrediction = d.dnaScenarioLockedPrediction || '';
       var dnaScenarioPlan = d.dnaScenarioPlan && typeof d.dnaScenarioPlan === 'object' ? d.dnaScenarioPlan : null;
-      var dnaScenarioFeedback = d.dnaScenarioFeedback || '';
+      var dnaScenarioFeedback = typeof d.dnaScenarioFeedback === 'string' ? d.dnaScenarioFeedback : '';
       var dnaScenarioScore = parseInt(d.dnaScenarioScore, 10) || 0;
       var dnaScenarioRevision = ['supported', 'revised', 'uncertain'].indexOf(d.dnaScenarioRevision) >= 0 ? d.dnaScenarioRevision : '';
       var dnaScenarioRevisionReason = typeof d.dnaScenarioRevisionReason === 'string' ? d.dnaScenarioRevisionReason.slice(0, 500) : '';
@@ -980,7 +981,7 @@ window.StemLab = window.StemLab || {
         if (step.action === 'confirmPairing') return !!guidedActions.pairing;
         if (step.action === 'transcription') return d.mRNA === fullMRNA && fullMRNA.length > 0;
         if (step.action === 'translation') return Array.isArray(d.protein) && d.protein.length > 0;
-        if (step.action === 'insertion') return (d.mutationLog || []).some(function(m) { return m.type === 'Insertion'; });
+        if (step.action === 'insertion') return (Array.isArray(d.mutationLog) ? d.mutationLog : []).some(function(m) { return m.type === 'Insertion'; });
         return false;
       }
 
@@ -1100,7 +1101,7 @@ window.StemLab = window.StemLab || {
 
       function buildDnaEvidenceSummary() {
         var proteinText = fullProtein.map(function(p) { return p.aa; }).join('-') || 'No translated amino acids';
-        var mutationText = (d.mutationLog || []).map(function(m) {
+        var mutationText = (Array.isArray(d.mutationLog) ? d.mutationLog : []).map(function(m) {
           return m.type + ' at base ' + (m.pos + 1) + (m.from ? ' (' + m.from + ' -> ' + (m.to || 'deleted') + ')' : m.to ? ' (inserted ' + m.to + ')' : '');
         }).join('; ') || 'None recorded';
         var guidedText = DNA_GUIDED_STEPS.map(function(step) {
@@ -1861,7 +1862,7 @@ window.StemLab = window.StemLab || {
       // ═══ Translation state + timer ═══
       var transStep = d.transStep || 0;
       var transPlaying = !!d.transPlaying;
-      var builtProtein = d.builtProtein || [];
+      var builtProtein = Array.isArray(d.builtProtein) ? d.builtProtein : [];
 
       React.useEffect(function() {
       if (tab === 'translate' && transPlaying) {
@@ -2080,7 +2081,7 @@ window.StemLab = window.StemLab || {
         var pos = plan.pos;
         var original = plan.from;
         var replacement = plan.to;
-        var newLog = (d.mutationLog || []).slice();
+        var newLog = (Array.isArray(d.mutationLog) ? d.mutationLog : []).slice();
         if (scenario.mutationType === 'Deletion') {
           var removed = seq.splice(pos, 1)[0];
           newLog.push({ type: 'Deletion', pos: pos, from: removed, length: 1, scenario: scenario.id });
@@ -2148,7 +2149,7 @@ window.StemLab = window.StemLab || {
         var bases = 'ATGC'; var seq = dnaSeq.split('');
         var pos = Math.floor(Math.random() * (seq.length - 6)) + 3;
         var original = seq[pos]; var mutated;
-        var newLog = (d.mutationLog || []).slice();
+        var newLog = (Array.isArray(d.mutationLog) ? d.mutationLog : []).slice();
         if (type === 'substitution') {
           do { mutated = bases[Math.floor(Math.random() * 4)]; } while (mutated === original);
           seq[pos] = mutated;
@@ -2173,7 +2174,7 @@ window.StemLab = window.StemLab || {
 
       // ═══ CRISPR HELPERS ═══
       function undoLatestMutation() {
-        var log = (d.mutationLog || []).slice();
+        var log = (Array.isArray(d.mutationLog) ? d.mutationLog : []).slice();
         var latest = log.length ? log[log.length - 1] : null;
         if (!latest) return;
         var seq = dnaSeq.split('');
@@ -2200,7 +2201,7 @@ window.StemLab = window.StemLab || {
           id: 'dna-experiment-' + Date.now(),
           label: 'Experiment ' + nextNumber,
           dnaSequence: dnaSeq,
-          mutationLog: (d.mutationLog || []).slice(),
+          mutationLog: (Array.isArray(d.mutationLog) ? d.mutationLog : []).slice(),
           timestamp: Date.now()
         };
         var nextHistory = dnaExperimentHistory.concat([entry]).slice(-8);
@@ -2252,7 +2253,7 @@ window.StemLab = window.StemLab || {
         return sites;
       }
       var pamSites = findPAMSites(dnaSeq);
-      var requestedPAM = d.crisprTargetPAM != null ? d.crisprTargetPAM : 0;
+      var requestedPAM = (typeof d.crisprTargetPAM === 'number' && isFinite(d.crisprTargetPAM)) ? d.crisprTargetPAM : 0;
       var activePAM = requestedPAM >= 0 && requestedPAM < pamSites.length ? requestedPAM : (pamSites.length > 0 ? 0 : -1);
       var selectedPAMSite = activePAM >= 0 ? pamSites[activePAM] : null;
       var crisprDonorBase = d.crisprDonorBase || (selectedPAMSite ? BASE_COMPLEMENT[dnaSeq[selectedPAMSite.cutSite]] : 'A');
@@ -2782,8 +2783,8 @@ window.StemLab = window.StemLab || {
 
       // ═══ BATTLE HELPERS ═══
       var battleRound = d.battleRound || 0;
-      var battlePlayerHP = d.battlePlayerHP != null ? d.battlePlayerHP : 100;
-      var battleEnemyHP = d.battleEnemyHP != null ? d.battleEnemyHP : 100;
+      var battlePlayerHP = (typeof d.battlePlayerHP === 'number' && isFinite(d.battlePlayerHP)) ? d.battlePlayerHP : 100;
+      var battleEnemyHP = (typeof d.battleEnemyHP === 'number' && isFinite(d.battleEnemyHP)) ? d.battleEnemyHP : 100;
       var battleOrder = d.battleOrder || [];
       var battleAnswer = d.battleAnswer || '';
       var battleFeedback = d.battleFeedback || '';
@@ -2871,7 +2872,7 @@ window.StemLab = window.StemLab || {
       var visitedCount = Object.keys(visitedTabs).length + (visitedTabs[tab] ? 0 : 1);
       var gcCount = dnaSeq.split('').filter(function(b) { return b === 'G' || b === 'C'; }).length;
       var gcPercent = Math.round((gcCount / Math.max(1, dnaSeq.length)) * 100);
-      var latestMutation = (d.mutationLog || []).length ? (d.mutationLog || [])[(d.mutationLog || []).length - 1] : null;
+      var latestMutation = (Array.isArray(d.mutationLog) ? d.mutationLog : []).length ? (Array.isArray(d.mutationLog) ? d.mutationLog : [])[(Array.isArray(d.mutationLog) ? d.mutationLog : []).length - 1] : null;
       var latestMutationEffect = classifyMutationEffect(latestMutation);
       function buildMutationComparison(mutation) {
         if (!mutation) return null;
@@ -3019,7 +3020,7 @@ window.StemLab = window.StemLab || {
         latestMutation.from || '',
         latestMutation.to || ''
       ].join(':') : '';
-      var dnaEvidenceSequenceKey = [dnaSeq, (d.mutationLog || []).length, dnaEvidenceMutationKey].join('|');
+      var dnaEvidenceSequenceKey = [dnaSeq, (Array.isArray(d.mutationLog) ? d.mutationLog : []).length, dnaEvidenceMutationKey].join('|');
       var dnaSelectedCodonEvidenceDetail = '';
       if (dnaImpactSelectedCodon && mutationComparison) {
         var dnaSelectedEvidenceBaseStart = ((dnaImpactSelectedCodon.index - 1) * 3) + 1;
@@ -4980,7 +4981,7 @@ window.StemLab = window.StemLab || {
               if (d.aiExplainLoading) return;
               upd('aiExplainLoading', true); upd('aiExplain', '');
               var gradeCtx = gradeText('kindergarten (ages 5-7), very simple words', '3rd-5th grade (ages 8-10)', '6th-8th grade (ages 11-13), use scientific terms', '9th-12th grade (ages 14-18), use advanced biology terminology');
-              var mutLog = (d.mutationLog || []).slice(-3).map(function(m) { return m.type + (m.from ? ' ' + m.from : '') + (m.to ? '\u2192' + m.to : '') + ' at pos ' + (m.pos + 1); }).join('; ');
+              var mutLog = (Array.isArray(d.mutationLog) ? d.mutationLog : []).slice(-3).map(function(m) { return m.type + (m.from ? ' ' + m.from : '') + (m.to ? '\u2192' + m.to : '') + ' at pos ' + (m.pos + 1); }).join('; ');
               var prompt = 'You are a genetics teacher. Grade level: ' + gradeCtx + '. ' +
                 'DNA sequence: ' + dnaSeq + '. Protein: ' + fullProtein.map(function(p) { return p.aa; }).join('-') + '. ' +
                 'Recent mutations: ' + (mutLog || 'none') + '. ' +

@@ -40,6 +40,7 @@ var Search = _lazyIcon('Search');
 var Settings = _lazyIcon('Settings');
 var Sparkles = _lazyIcon('Sparkles');
 var StopCircle = _lazyIcon('StopCircle');
+var Upload = _lazyIcon('Upload');
 var UserCheck = _lazyIcon('UserCheck');
 var Users = _lazyIcon('Users');
 var X = _lazyIcon('X');
@@ -1775,20 +1776,96 @@ function SourceGenPanel(props) {
     setUseOwnSources
   } = props;
   const [ownSourceCount, setOwnSourceCount] = React.useState(null);
+  const [ownSourceImporting, setOwnSourceImporting] = React.useState(false);
+  const [ownSourceImportMsg, setOwnSourceImportMsg] = React.useState("");
+  const [ownSourceImportFailures, setOwnSourceImportFailures] = React.useState([]);
+  const [ownSourceList, setOwnSourceList] = React.useState([]);
+  const [ownSourceBusy, setOwnSourceBusy] = React.useState(false);
+  const ownSourcesApi = typeof window !== "undefined" && window.AlloOwnSources || null;
+  const handleToggleOwnSource = React.useCallback(async (source) => {
+    if (!ownSourcesApi || typeof ownSourcesApi.setSourceActive !== "function" || !source) return;
+    setOwnSourceBusy(true);
+    try {
+      const outcome = await ownSourcesApi.setSourceActive(source.id, !source.active, {});
+      if (outcome.ok) {
+        setOwnSourceList(outcome.sources);
+        setOwnSourceCount(outcome.count);
+        setOwnSourceImportMsg("");
+      } else if (outcome.reason === "storage") {
+        setOwnSourceImportMsg(t("input.my_sources_storage_failed"));
+      }
+    } finally {
+      setOwnSourceBusy(false);
+    }
+  }, [ownSourcesApi, t]);
+  const handleRemoveOwnSource = React.useCallback(async (source) => {
+    if (!ownSourcesApi || typeof ownSourcesApi.removeSource !== "function" || !source) return;
+    const ask = typeof window !== "undefined" && typeof window.confirm === "function" ? window.confirm : null;
+    if (ask && !ask(t("input.my_sources_remove_confirm", { title: source.title }))) return;
+    setOwnSourceBusy(true);
+    try {
+      const outcome = await ownSourcesApi.removeSource(source.id, {});
+      if (outcome.ok) {
+        setOwnSourceList(outcome.sources);
+        setOwnSourceCount(outcome.count);
+        setOwnSourceImportMsg(t("input.my_sources_removed", { title: source.title }));
+      } else if (outcome.reason === "storage") {
+        setOwnSourceImportMsg(t("input.my_sources_storage_failed"));
+      }
+    } finally {
+      setOwnSourceBusy(false);
+    }
+  }, [ownSourcesApi, t]);
+  const handleImportOwnSources = React.useCallback(async (event) => {
+    const input = event && event.target;
+    const files = input && input.files ? Array.from(input.files) : [];
+    if (!files.length) return;
+    if (!ownSourcesApi || typeof ownSourcesApi.importFiles !== "function") {
+      setOwnSourceImportMsg(t("input.my_sources_unavailable"));
+      return;
+    }
+    setOwnSourceImporting(true);
+    setOwnSourceImportMsg("");
+    setOwnSourceImportFailures([]);
+    try {
+      const outcome = await ownSourcesApi.importFiles(files, {});
+      setOwnSourceCount(outcome.count);
+      if (typeof ownSourcesApi.listSources === "function") {
+        setOwnSourceList(await ownSourcesApi.listSources({}));
+      }
+      setOwnSourceImportFailures(
+        (outcome.results || []).filter((row) => row && !row.ok).map((row) => [row.name, row.message].filter(Boolean).join(" \u2014 "))
+      );
+      if (outcome.reason === "storage") {
+        setOwnSourceImportMsg(t("input.my_sources_storage_failed"));
+      } else if (outcome.imported > 0) {
+        setOwnSourceImportMsg(t("input.my_sources_imported", { count: outcome.imported }));
+      } else {
+        setOwnSourceImportMsg(t("input.my_sources_none_added"));
+      }
+    } catch (_) {
+      setOwnSourceImportMsg(t("input.my_sources_none_added"));
+    } finally {
+      setOwnSourceImporting(false);
+      if (input) input.value = "";
+    }
+  }, [ownSourcesApi, t]);
   React.useEffect(() => {
     if (!showSourceGen) return void 0;
     let cancelled = false;
     (async () => {
       try {
-        const E = typeof window !== "undefined" && window.LumenEvidence;
-        if (!E || typeof E.createProjectStore !== "function") {
+        const OS = ownSourcesApi;
+        if (!OS || typeof OS.countSources !== "function") {
           if (!cancelled) setOwnSourceCount(0);
           return;
         }
-        const store = E.createProjectStore(E.readingScope ? E.readingScope({}) : {});
-        const project = store && typeof store.load === "function" ? await store.load() : null;
-        const n = project && Array.isArray(project.sources) ? project.sources.filter((s) => s && s.active !== false).length : 0;
+        const n = await OS.countSources({});
         if (!cancelled) setOwnSourceCount(n);
+        if (typeof OS.listSources === "function") {
+          const rows = await OS.listSources({});
+          if (!cancelled) setOwnSourceList(rows);
+        }
       } catch (_) {
         if (!cancelled) setOwnSourceCount(0);
       }
@@ -2001,7 +2078,45 @@ function SourceGenPanel(props) {
       onChange: (e) => setUseOwnSources && setUseOwnSources(e.target.checked),
       className: "w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500 cursor-pointer"
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "useOwnSources", className: "text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(FileText, { size: 12, className: "text-purple-600", "aria-hidden": "true" }), " ", t("input.use_my_sources"), /* @__PURE__ */ React.createElement("span", { className: "font-normal text-purple-700" }, "(", ownSourceCount, ")"))), ownSourceCount !== null && ownSourceCount > 0 && useOwnSources && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-purple-700 ml-12 leading-relaxed" }, t("input.use_my_sources_desc"))), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "useOwnSources", className: "text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(FileText, { size: 12, className: "text-purple-600", "aria-hidden": "true" }), " ", t("input.use_my_sources"), /* @__PURE__ */ React.createElement("span", { className: "font-normal text-purple-700" }, "(", ownSourceCount, ")"))), ownSourceCount !== null && ownSourceCount > 0 && useOwnSources && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-purple-700 ml-12 leading-relaxed" }, t("input.use_my_sources_desc")), ownSourceCount !== null && /* @__PURE__ */ React.createElement("div", { className: "ml-6 " + (ownSourceCount > 0 ? "pt-1" : "pt-1.5 border-t border-purple-200/70") }, /* @__PURE__ */ React.createElement(
+    "label",
+    {
+      htmlFor: "ownSourcesImport",
+      className: "inline-flex min-h-11 items-center gap-1.5 text-xs font-bold text-purple-900 cursor-pointer select-none rounded focus-within:ring-2 focus-within:ring-purple-500"
+    },
+    /* @__PURE__ */ React.createElement(Upload, { size: 12, className: "text-purple-600", "aria-hidden": "true" }),
+    ownSourceImporting ? t("input.my_sources_importing") : t("input.my_sources_add")
+  ), /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      id: "ownSourcesImport",
+      type: "file",
+      multiple: true,
+      className: "sr-only",
+      accept: ownSourcesApi ? ownSourcesApi.acceptAttribute() : void 0,
+      disabled: ownSourceImporting,
+      onChange: handleImportOwnSources
+    }
+  ), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "text-[11px] text-purple-700 leading-relaxed" }, ownSourceImportMsg || (ownSourceCount > 0 ? t("input.my_sources_stored", { count: ownSourceCount }) : t("input.my_sources_empty"))), ownSourceImportFailures.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "text-[11px] text-amber-900 leading-relaxed list-disc ml-4" }, ownSourceImportFailures.map((failure, index) => /* @__PURE__ */ React.createElement("li", { key: index }, failure))), ownSourceList.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-1" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 flex items-center cursor-pointer text-[11px] font-bold text-purple-900 select-none" }, t("input.my_sources_manage", { count: ownSourceList.length })), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-1" }, ownSourceList.map((source) => /* @__PURE__ */ React.createElement("li", { key: source.id, className: "flex items-center justify-between gap-2 text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "min-w-0 break-words " + (source.active ? "text-purple-900" : "text-slate-500 line-through") }, source.title), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 shrink-0" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => handleToggleOwnSource(source),
+      disabled: ownSourceBusy,
+      className: "min-h-11 px-2 rounded border border-purple-300 bg-white font-bold text-purple-800 hover:bg-purple-50 disabled:opacity-50"
+    },
+    source.active ? t("input.my_sources_exclude") : t("input.my_sources_include")
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => handleRemoveOwnSource(source),
+      disabled: ownSourceBusy,
+      "aria-label": t("input.my_sources_remove_aria", { title: source.title }),
+      className: "min-h-11 px-2 rounded border border-rose-300 bg-white font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+    },
+    t("input.my_sources_remove")
+  )))))))), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.generate_source_text"),

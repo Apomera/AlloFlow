@@ -1951,7 +1951,8 @@ var d = (labToolData.companionPlanting) || {};
 
           var gardenMode = d.gardenMode || 'sisters'; // 'sisters' | 'community'
 
-          var phase = d.phase || 'plant';  // 'plant' | 'grow' | 'harvest'
+          // Saved state is INPUT: an unknown phase reached phase.charAt().
+          var phase = ['plan', 'plant', 'grow', 'harvest'].indexOf(d.phase) !== -1 ? d.phase : 'plant';  // 'plant' | 'grow' | 'harvest'
 
           var growthTime = d.growthTime || 0;   // 0-100
 
@@ -2009,11 +2010,12 @@ var d = (labToolData.companionPlanting) || {};
 
           var synSquashAll = typeof d.synSquashAll === 'number' ? d.synSquashAll : 0;
 
-          var seasonScore = d.seasonScore || 0;
+          // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
+          var seasonScore = (typeof d.seasonScore === 'number' && isFinite(d.seasonScore) && d.seasonScore >= 0) ? Math.floor(d.seasonScore) : 0;
 
           var totalScore = d.totalScore || 0;
 
-          var harvestCount = d.harvestCount || 0;
+          var harvestCount = (typeof d.harvestCount === 'number' && isFinite(d.harvestCount) && d.harvestCount >= 0) ? Math.floor(d.harvestCount) : 0;
 
           var lastEventDay = d.lastEventDay || 0;
 

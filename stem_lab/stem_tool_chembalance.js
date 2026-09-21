@@ -3743,7 +3743,8 @@
     },
     readState: function(data) {
       var d = data || {};
-      var filtered = !d.tierFilter || d.tierFilter === 'all' ? ALL_PRESETS : ALL_PRESETS.filter(function(p) { return p.tier === d.tierFilter; });
+      var _tf = ['beginner', 'intermediate', 'advanced'].indexOf(d.tierFilter) !== -1 ? d.tierFilter : null;
+      var filtered = _tf === null ? ALL_PRESETS : ALL_PRESETS.filter(function(p) { return p.tier === _tf; });
       var preset = filtered.find(function(p) { return p.name === d.equation || activityEquationKey(p.eq) === activityEquationKey(d.equation); }) || filtered[0];
       if (!preset) return undefined;
       var coefficients = Array.isArray(d.coefficients) ? d.coefficients.slice(0, preset.target.length) : [];
@@ -3814,7 +3815,8 @@
         }
 
         var subtool = d.subtool || 'balance';
-        var chemSearchRaw = d._chemSearch || '';
+        // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
+        var chemSearchRaw = typeof d._chemSearch === 'string' ? d._chemSearch : '';
         var isChemHub = !d._activeCategory && !chemSearchRaw && !d._everPicked;
         var soundEnabled = d._soundEnabled !== false;
 
@@ -3910,7 +3912,9 @@
         };
 
         // ═══ BALANCE SUB-TOOL LOGIC ═══
-        var tierFilter = d.tierFilter || 'all';
+        // An unknown tier filtered ALL_PRESETS to empty, so `filtered[0]`
+        // was undefined and the next `.target` read threw.
+        var tierFilter = ['all', 'beginner', 'intermediate', 'advanced'].indexOf(d.tierFilter) !== -1 ? d.tierFilter : 'all';
         var filtered = tierFilter === 'all' ? ALL_PRESETS : ALL_PRESETS.filter(function(p) { return p.tier === tierFilter; });
         var preset = null;
         for (var fi = 0; fi < filtered.length; fi++) {
@@ -3918,7 +3922,7 @@
         }
         if (!preset) preset = filtered[0];
         var numSlots = preset.target.length;
-        var coeffs = (d.coefficients || []).slice(0, numSlots);
+        var coeffs = (Array.isArray(d.coefficients) ? d.coefficients : []).slice(0, numSlots);
         while (coeffs.length < numSlots) coeffs.push(1);
         var showHints = d.showHints || false;
         var rtypeInfo = null;
@@ -4187,8 +4191,8 @@
         // ═══ BATTLE STATE ═══
         var battleActive = d._battleActive || false;
         var battleRound = d._battleRound || 0;
-        var battleHP = d._battleHP != null ? d._battleHP : 100;
-        var battleEnemyHP = d._battleEnemyHP != null ? d._battleEnemyHP : 100;
+        var battleHP = (typeof d._battleHP === 'number' && isFinite(d._battleHP)) ? d._battleHP : 100;
+        var battleEnemyHP = (typeof d._battleEnemyHP === 'number' && isFinite(d._battleEnemyHP)) ? d._battleEnemyHP : 100;
         var battleFeedback = d._battleFeedback || null;
         var battleScore = d._battleScore || 0;
         var battleResult = d._battleResult || null;

@@ -136,3 +136,69 @@ describe('failed validation phase diagnostics', () => {
     }
   });
 });
+
+
+describe('revision evidence is required for a passing run', () => {
+  it.each(['missing-before', 'missing-after', 'missing-both', 'changed'])('fails closed when revision metadata is %s', mode => {
+    const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), 'remediation-revision-evidence-'));
+    let captures = 0, runners = 0;
+    const capture = () => {
+      captures++;
+      const missing = mode === 'missing-both' || mode === 'missing-before' && captures === 1 || mode === 'missing-after' && captures > 1;
+      return { inputSha256: { source: 'unchanged' }, tools: { node: 'test' }, gitHead: missing ? null : mode === 'changed' && captures > 1 ? 'new-revision' : 'original-revision' };
+    };
+    const run = (cli, args, env) => {
+      runners++;
+      if (cli.includes('vitest')) {
+        fs.writeFileSync(args.find(arg => arg.startsWith('--outputFile=')).slice('--outputFile='.length), JSON.stringify({
+          success: true, testResults: manifest.unit.map(file => ({ name: path.resolve(file), status: 'passed', assertionResults: [{ status: 'passed', fullName: file }] })),
+        }));
+      } else {
+        fs.writeFileSync(env.PLAYWRIGHT_JSON_OUTPUT_FILE, JSON.stringify({ suites: [{ specs: manifest.browser.map(file => ({
+          file, title: file, tests: [{ expectedStatus: 'passed', status: 'expected', results: [{ status: 'passed' }] }],
+        })) }] }));
+      }
+      return { exitCode: 0, signal: null };
+    };
+    try {
+      expect(() => executeValidation({ reportDir, capture, run })).toThrow(mode === 'changed' ? /revision changed/ : /revision.*unavailable/i);
+      const summary = JSON.parse(fs.readFileSync(path.join(reportDir, 'summary.json'), 'utf8'));
+      expect(summary.status).toBe('failed');
+      expect(summary.testsPassed).toBeUndefined();
+      expect(captures).toBe(2);
+      expect(summary.identity.gitHeadVerified).toBe(mode === 'changed');
+      expect(summary.identity.gitHeadChanged).toBe(mode === 'changed');
+      if (mode === 'missing-before' || mode === 'missing-both') {
+        expect(runners).toBe(0);
+        expect(summary.phases.unit.status).toBe('not-started');
+      } else {
+        expect(runners).toBe(2);
+        expect(summary.phases.unit.status).toBe('passed');
+        expect(summary.phases.browser.status).toBe('passed');
+      }
+    } finally {
+      if (path.dirname(reportDir) !== path.resolve(os.tmpdir())) throw Error('Unexpected scratch path');
+      fs.rmSync(reportDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('declared paths cannot traverse directory links', () => {
+  it.each(['inside', 'outside'])('rejects explicit file paths through a link to an %s directory', location => {
+    const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'remediation-identity-links-'));
+    const root = path.join(scratch, 'workspace');
+    const target = location === 'inside' ? path.join(root, 'actual') : path.join(scratch, 'outside');
+    try {
+      fs.mkdirSync(root);
+      fs.mkdirSync(target);
+      fs.writeFileSync(path.join(target, 'fixture.txt'), 'owned test fixture');
+      fs.symlinkSync(target, path.join(root, 'linked'), process.platform === 'win32' ? 'junction' : 'dir');
+      expect(() => snapshotInputs(root, ['linked/fixture.txt'])).toThrow(/Symlink validation input/);
+      expect(() => snapshotInputs(root, ['linked/missing.txt'])).toThrow(/Symlink validation input/);
+      expect(snapshotInputs(root, ['ordinary/missing.txt'])).toEqual({ 'ordinary/missing.txt': null });
+    } finally {
+      if (path.dirname(scratch) !== path.resolve(os.tmpdir()) || !path.basename(scratch).startsWith('remediation-identity-links-')) throw Error('Unexpected scratch path');
+      fs.rmSync(scratch, { recursive: true, force: true });
+    }
+  });
+});

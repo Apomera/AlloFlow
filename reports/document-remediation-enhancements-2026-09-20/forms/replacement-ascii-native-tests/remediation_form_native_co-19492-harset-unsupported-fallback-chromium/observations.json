@@ -1,0 +1,30 @@
+{
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 1.0052301255230125,
+    "textRatio": 1,
+    "textLost": 0
+  },
+  "repaired": {
+    "method": "POST",
+    "body": "answer=caf%C3%A9"
+  },
+  "evidence": [
+    {
+      "totalChunks": 1,
+      "shippedOriginalChunks": 0,
+      "deferredChunks": 0,
+      "candidateRejectionCount": 0,
+      "candidateRejections": []
+    }
+  ],
+  "source": {
+    "method": "POST",
+    "body": "answer=caf%C3%A9"
+  },
+  "candidate": {
+    "method": "POST",
+    "body": "answer=caf%C3%A9"
+  }
+}

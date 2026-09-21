@@ -36,7 +36,14 @@ describe('Ecosystem logistic predator-prey model', () => {
 
   it('calibrates the baseline and keeps chart and canvas capacities aligned', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_ecosystem.js', 'utf8');
-    expect(source).toContain('var pred0 = d.pred0 !== undefined ? d.pred0 : 12;');
+    // Type-guarded now (`!== undefined` admitted null/'abc'/{}); the claim is
+    // the key and its 12 default. NOT clamped — presets set values outside
+    // the guided slider range on purpose.
+    // Reads now go through _ecoParam(value, name, default), which type-checks
+    // and falls back — deliberately WITHOUT clamping, because the scenario
+    // presets set values outside the guided slider range on purpose.
+    expect(source).toMatch(/var pred0 = _ecoParam\(d\.pred0, 'pred0', 12\)/);
+    expect(source).toMatch(/function _ecoParam[\s\S]{0,200}typeof v === 'number'/);
     expect(source).toContain('var ECO_MODEL_TIME_STEP = 0.1;');
     expect(source).toContain('guided: {');
     expect(source).toContain('pred0: { min: 4, max: 30, step: 2 }');

@@ -1996,7 +1996,7 @@ window.SelHub = window.SelHub || {
         // ── UI ──
         // ═══════════════════════════════════════════════════════════
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', background: _goaBg('#0f172a'), color: _goaFg('#e2e8f0'), fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
           // Surface 988 / Crisis Text Line block when any AI-input turn was tier-3.
           (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
 
@@ -2097,7 +2097,7 @@ window.SelHub = window.SelHub || {
 
             // ── GOALS TAB ──
             tab === 'goals' ? h('div', null,
-              h('p', { role: 'status', 'aria-live': 'polite', style: { fontSize: 14, lineHeight: 1.6, color: _goaFg('#e2e8f0') } }, d.goalNotesNotice || ''),
+              h('p', { role: 'status', 'aria-live': 'polite', style: { fontSize: 14, lineHeight: 1.6, color: _goaFg('#e2e8f0') } }, typeof d.goalNotesNotice === 'string' ? d.goalNotesNotice : ''),
               // Motivational boost banner
               motivationalBoost ? h('div', { style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(234,179,8,0.08))', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', gap: 8 } },
                 h('span', { style: { fontSize: 18 } }, '\uD83D\uDCAB'),

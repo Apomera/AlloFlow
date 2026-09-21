@@ -1,20 +1,22 @@
 # SEL Hub Browser QA
 
-> **Generated audit snapshot (2026-07-09):** This report captures one browser-harness run from the generated timestamp below. Rerun the browser QA harness before treating pass/fail counts or scenario coverage as current.
-
-Generated: 2026-07-03T00:28:49.080Z
+Generated: 2026-09-21T01:10:49.098Z
 
 Harness: standalone SEL Hub and AlloHaven browser fixture
 
 ## Summary
 
-- Passed: 21
-- Failed: 0
+- Passed: 20
+- Failed: 1
 - Scenarios: 6
 
 ## Checks
 
 ### desktop-light-focus
+- FAIL runtime-error: locator.waitFor: Timeout 10000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('button', { name: /Build a new custom SEL Station/i }).first() to be visible[22m
+
 - PASS responsive-overflow
 - PASS theme-class-detected
 - PASS first-run-explainer-dismissable
@@ -23,7 +25,6 @@ Harness: standalone SEL Hub and AlloHaven browser fixture
 - PASS share-packet-lifecycle-reopen-draft
 - PASS share-packet-lifecycle-update-in-place
 - PASS teacher-launch-loads-station-preview
-- PASS station-builder-focus-handoff
 
 ### desktop-dark-responsive
 - PASS responsive-overflow
@@ -46,3 +47,4 @@ Harness: standalone SEL Hub and AlloHaven browser fixture
 - PASS allohaven-portfolio-source-filter
 - PASS allohaven-portfolio-search
 - PASS allohaven-portfolio-details-preview
+

@@ -317,7 +317,7 @@ function LessonPlanOverview({
     className: "list-disc space-y-1 pl-5 text-sm"
   }, items.map((item, index) => /*#__PURE__*/React.createElement("li", {
     key: index
-  }, item))) : /*#__PURE__*/React.createElement("p", {
+  }, _lessonPlanText(item)))) : /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
   }, tr('overview_not_recorded', 'Not recorded in this plan.')))), /*#__PURE__*/React.createElement("section", {
     className: "min-w-0 break-words"

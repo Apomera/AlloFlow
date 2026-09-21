@@ -1,0 +1,787 @@
+{
+  "browserVersion": "148.0.7778.96",
+  "sourceHash": "369b1239f354da12d7bd9f69b28ee6ee1f3db31ad50d60de2f1b7fdfb1683ee4",
+  "sourceUnchanged": true,
+  "cases": [
+    {
+      "id": "form-clobbered-tag-name-same-payload",
+      "property": "formData",
+      "native": {
+        "source": {
+          "isForm": true,
+          "tagNameValueType": "object",
+          "entries": [
+            [
+              "tagName",
+              "original"
+            ]
+          ]
+        },
+        "candidate": {
+          "isForm": true,
+          "tagNameValueType": "object",
+          "entries": [
+            [
+              "tagName",
+              "original"
+            ]
+          ]
+        }
+      },
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "sha256": "1731e10b2a57a0e76ea62842aa500271278ae16ae13de08dda70b3c3accb0d31",
+          "bytes": 189
+        },
+        "candidate": {
+          "sha256": "5b50c72da727df6ad9cce1baa8be59f07b8653b40fce1dd2de8b222fe33741c9",
+          "bytes": 204
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 1643.6593000000003,
+        "status": "unavailable",
+        "coverage": {
+          "requested": 1,
+          "inspected": 0,
+          "complete": false,
+          "wholeDocument": false,
+          "reasons": [
+            "incomplete-checkpoint"
+          ]
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "form-clobbered-tag-name-same-payload",
+            "sourceSelector": "#checkpoint",
+            "candidateSelector": "#checkpoint",
+            "status": "unavailable",
+            "source": {
+              "id": "form-clobbered-tag-name-same-payload",
+              "status": "unavailable",
+              "reason": "inspection-failed",
+              "message": "page.evaluate: TypeError: el.tagName.toLowerCase is not a function\n    at eval (eval at evaluate (:302:30), <anonymous>:3:34)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+            },
+            "candidate": {
+              "id": "form-clobbered-tag-name-same-payload",
+              "status": "unavailable",
+              "reason": "inspection-failed",
+              "message": "page.evaluate: TypeError: el.tagName.toLowerCase is not a function\n    at eval (eval at evaluate (:302:30), <anonymous>:3:34)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+            }
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      }
+    },
+    {
+      "id": "form-clobbered-tag-name-changed-payload",
+      "property": "formData",
+      "native": {
+        "source": {
+          "isForm": true,
+          "tagNameValueType": "object",
+          "entries": [
+            [
+              "tagName",
+              "original"
+            ]
+          ]
+        },
+        "candidate": {
+          "isForm": true,
+          "tagNameValueType": "object",
+          "entries": [
+            [
+              "tagName",
+              "changed"
+            ]
+          ]
+        }
+      },
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "sha256": "1731e10b2a57a0e76ea62842aa500271278ae16ae13de08dda70b3c3accb0d31",
+          "bytes": 189
+        },
+        "candidate": {
+          "sha256": "edd635b855efb7592c415309538a358a9f6723fd2209d4ea1972d35bc6114580",
+          "bytes": 188
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 260.4499999999998,
+        "status": "unavailable",
+        "coverage": {
+          "requested": 1,
+          "inspected": 0,
+          "complete": false,
+          "wholeDocument": false,
+          "reasons": [
+            "incomplete-checkpoint"
+          ]
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "form-clobbered-tag-name-changed-payload",
+            "sourceSelector": "#checkpoint",
+            "candidateSelector": "#checkpoint",
+            "status": "unavailable",
+            "source": {
+              "id": "form-clobbered-tag-name-changed-payload",
+              "status": "unavailable",
+              "reason": "inspection-failed",
+              "message": "page.evaluate: TypeError: el.tagName.toLowerCase is not a function\n    at eval (eval at evaluate (:302:30), <anonymous>:3:34)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+            },
+            "candidate": {
+              "id": "form-clobbered-tag-name-changed-payload",
+              "status": "unavailable",
+              "reason": "inspection-failed",
+              "message": "page.evaluate: TypeError: el.tagName.toLowerCase is not a function\n    at eval (eval at evaluate (:302:30), <anonymous>:3:34)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+            }
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      }
+    },
+    {
+      "id": "form-normal-name-same-payload",
+      "property": "formData",
+      "native": {
+        "source": {
+          "isForm": true,
+          "tagNameValueType": "string",
+          "entries": [
+            [
+              "answer",
+              "original"
+            ]
+          ]
+        },
+        "candidate": {
+          "isForm": true,
+          "tagNameValueType": "string",
+          "entries": [
+            [
+              "answer",
+              "original"
+            ]
+          ]
+        }
+      },
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "sha256": "9a6340729e29be1cf6e9f947bd33f96b79b7c5f84da912213f7b01b7d34729f4",
+          "bytes": 188
+        },
+        "candidate": {
+          "sha256": "a10867f306f69b82adea3d6e6ca9aa47fa99d56d7f0378432f538231941f796b",
+          "bytes": 203
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 275.2012999999997,
+        "status": "passed",
+        "coverage": {
+          "requested": 1,
+          "inspected": 1,
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "form-normal-name-same-payload",
+            "sourceSelector": "#checkpoint",
+            "candidateSelector": "#checkpoint",
+            "status": "passed",
+            "properties": [
+              {
+                "property": "formData",
+                "status": "passed",
+                "source": [
+                  [
+                    "answer",
+                    "original"
+                  ]
+                ],
+                "candidate": [
+                  [
+                    "answer",
+                    "original"
+                  ]
+                ]
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      }
+    },
+    {
+      "id": "form-normal-name-changed-payload",
+      "property": "formData",
+      "native": {
+        "source": {
+          "isForm": true,
+          "tagNameValueType": "string",
+          "entries": [
+            [
+              "answer",
+              "original"
+            ]
+          ]
+        },
+        "candidate": {
+          "isForm": true,
+          "tagNameValueType": "string",
+          "entries": [
+            [
+              "answer",
+              "changed"
+            ]
+          ]
+        }
+      },
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "sha256": "9a6340729e29be1cf6e9f947bd33f96b79b7c5f84da912213f7b01b7d34729f4",
+          "bytes": 188
+        },
+        "candidate": {
+          "sha256": "95eb57571546062786006a19460b709fef18b6e4b31b0105fa3e82814885fb79",
+          "bytes": 187
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 268.7345000000005,
+        "status": "review-required",
+        "coverage": {
+          "requested": 1,
+          "inspected": 1,
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "form-normal-name-changed-payload",
+            "sourceSelector": "#checkpoint",
+            "candidateSelector": "#checkpoint",
+            "status": "failed",
+            "properties": [
+              {
+                "property": "formData",
+                "status": "failed",
+                "source": [
+                  [
+                    "answer",
+                    "original"
+                  ]
+                ],
+                "candidate": [
+                  [
+                    "answer",
+                    "changed"
+                  ]
+                ]
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      }
+    },
+    {
+      "id": "svg-same-target",
+      "property": "targetText",
+      "native": {
+        "source": {
+          "isSvg": true,
+          "href": "#destination",
+          "targetText": "Required explanation",
+          "htmlOnlyHashProperty": null,
+          "browserNavigatedHash": "#destination"
+        },
+        "candidate": {
+          "isSvg": true,
+          "href": "#destination",
+          "targetText": "Required explanation",
+          "htmlOnlyHashProperty": null,
+          "browserNavigatedHash": "#destination"
+        }
+      },
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "sha256": "ae0de388dbd47605d7764592dacd889e8cd51ab5bda5d12d7d36babf5cb47bec",
+          "bytes": 249
+        },
+        "candidate": {
+          "sha256": "f2fb89fb057e263535e97077903281cf6652bfc4dcd02a5e85a1f04a5598802d",
+          "bytes": 264
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 261.28019999999924,
+        "status": "unavailable",
+        "coverage": {
+          "requested": 1,
+          "inspected": 0,
+          "complete": false,
+          "wholeDocument": false,
+          "reasons": [
+            "incomplete-checkpoint"
+          ]
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "svg-same-target",
+            "sourceSelector": "#checkpoint",
+            "candidateSelector": "#checkpoint",
+            "status": "unavailable",
+            "properties": [
+              {
+                "property": "targetText",
+                "status": "unavailable",
+                "source": null,
+                "candidate": null
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      }
+    },
+    {
+      "id": "svg-changed-target-text",
+      "property": "targetText",
+      "native": {
+        "source": {
+          "isSvg": true,
+          "href": "#destination",
+          "targetText": "Required explanation",
+          "htmlOnlyHashProperty": null,
+          "browserNavigatedHash": "#destination"
+        },
+        "candidate": {
+          "isSvg": true,
+          "href": "#destination",
+          "targetText": "Changed explanation",
+          "htmlOnlyHashProperty": null,
+          "browserNavigatedHash": "#destination"
+        }
+      },
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "sha256": "ae0de388dbd47605d7764592dacd889e8cd51ab5bda5d12d7d36babf5cb47bec",
+          "bytes": 249
+        },
+        "candidate": {
+          "sha256": "3afca1f7e8d618a2939653b4f429c97be21c6f7ee126c77c8067e49ba27625f6",
+          "bytes": 248
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 261.6356999999998,
+        "status": "unavailable",
+        "coverage": {
+          "requested": 1,
+          "inspected": 0,
+          "complete": false,
+          "wholeDocument": false,
+          "reasons": [
+            "incomplete-checkpoint"
+          ]
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "svg-changed-target-text",
+            "sourceSelector": "#checkpoint",
+            "candidateSelector": "#checkpoint",
+            "status": "unavailable",
+            "properties": [
+              {
+                "property": "targetText",
+                "status": "unavailable",
+                "source": null,
+                "candidate": null
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      }
+    },
+    {
+      "id": "html-same-target",
+      "property": "targetText",
+      "native": {
+        "source": {
+          "isSvg": false,
+          "href": "#destination",
+          "targetText": "Required explanation",
+          "htmlOnlyHashProperty": "#destination",
+          "browserNavigatedHash": "#destination"
+        },
+        "candidate": {
+          "isSvg": false,
+          "href": "#destination",
+          "targetText": "Required explanation",
+          "htmlOnlyHashProperty": "#destination",
+          "browserNavigatedHash": "#destination"
+        }
+      },
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "sha256": "04c036fef3a99df5858f09ecd85a5cbc7f87578a198829aed9978190713eeab2",
+          "bytes": 212
+        },
+        "candidate": {
+          "sha256": "a3243cff6a4e03dc54790984a935dd3177b5098ce4016b4f80f0ba71641d661d",
+          "bytes": 227
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 260.7600000000002,
+        "status": "passed",
+        "coverage": {
+          "requested": 1,
+          "inspected": 1,
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "html-same-target",
+            "sourceSelector": "#checkpoint",
+            "candidateSelector": "#checkpoint",
+            "status": "passed",
+            "properties": [
+              {
+                "property": "targetText",
+                "status": "passed",
+                "source": "Required explanation",
+                "candidate": "Required explanation"
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      }
+    },
+    {
+      "id": "html-changed-target-text",
+      "property": "targetText",
+      "native": {
+        "source": {
+          "isSvg": false,
+          "href": "#destination",
+          "targetText": "Required explanation",
+          "htmlOnlyHashProperty": "#destination",
+          "browserNavigatedHash": "#destination"
+        },
+        "candidate": {
+          "isSvg": false,
+          "href": "#destination",
+          "targetText": "Changed explanation",
+          "htmlOnlyHashProperty": "#destination",
+          "browserNavigatedHash": "#destination"
+        }
+      },
+      "report": {
+        "schemaVersion": 1,
+        "kind": "rendered-html-fidelity",
+        "source": {
+          "sha256": "04c036fef3a99df5858f09ecd85a5cbc7f87578a198829aed9978190713eeab2",
+          "bytes": 212
+        },
+        "candidate": {
+          "sha256": "4ad74a027c5d9335a757d1dc1bab50300152fd1530fba3aff20947af455c4dd3",
+          "bytes": 211
+        },
+        "execution": {
+          "complete": true
+        },
+        "browserVersion": "148.0.7778.96",
+        "viewport": {
+          "width": 1100,
+          "height": 800
+        },
+        "media": "screen",
+        "profileId": "default",
+        "durationMs": 285.14789999999994,
+        "status": "review-required",
+        "coverage": {
+          "requested": 1,
+          "inspected": 1,
+          "complete": true,
+          "wholeDocument": false,
+          "reasons": []
+        },
+        "resources": {
+          "source": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          },
+          "candidate": {
+            "blocked": 0,
+            "scripts": 0,
+            "unresolved": 0,
+            "animations": 0,
+            "failures": []
+          }
+        },
+        "checks": [
+          {
+            "id": "html-changed-target-text",
+            "sourceSelector": "#checkpoint",
+            "candidateSelector": "#checkpoint",
+            "status": "failed",
+            "properties": [
+              {
+                "property": "targetText",
+                "status": "failed",
+                "source": "Required explanation",
+                "candidate": "Changed explanation"
+              }
+            ]
+          }
+        ],
+        "humanValidation": "not-run",
+        "limitations": [
+          "Only the source-authored checkpoints and selected properties are assessed.",
+          "Chromium computed state and accessibility-tree evidence are not screen-reader acceptance.",
+          "Network resources and document scripts are blocked; dependent documents remain unavailable.",
+          "Visibility does not establish absence of occlusion, correct contrast, or useful alternative text."
+        ]
+      }
+    }
+  ]
+}

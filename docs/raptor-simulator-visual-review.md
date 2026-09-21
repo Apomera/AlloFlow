@@ -1154,3 +1154,46 @@ Validation:
 - JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
 
 Changes remain local. Verification uses software-rendered Chromium with optional bloom disabled, not physical-device testing or the full application suite. The starfield is a decorative sky, not a mapped astronomical chart.
+
+## Preserve system keyboard shortcuts during flight (2026-09-20)
+
+The simulator's keyboard handler now leaves Ctrl, Command/Meta, and Alt shortcut chords, plus text-composition events, unhandled. Previously mapped letters in those events could pause the flight, change the camera, zoom, or strike while also cancelling the normal shortcut. Shift remains available for diving and simultaneous steering. Key releases still clear held input even if a modifier was pressed after the original flight key.
+
+Validation:
+- The new browser regression reproduced interception on the previous source: modified Pause, View, and Zoom events were cancelled and dispatched as flight controls.
+- Seven Chromium checks passed together on the final source: the new shortcut-boundary check, all three input/pause checks, and all three held-control feedback checks.
+- The new check verifies that modified and composing events are not cancelled and leave flight state unchanged, normal steering still works, releasing a key with Ctrl held does not stick, Shift+D still dives and turns, and custom paused shortcuts distinguish modified chords from normal camera/resume keys.
+- Existing coverage retains keyboard/touch input ownership, held-button feedback, remapping, pause and blur clearing, paused resize, reduced motion, camera changes, and zoom.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Shortcut chords are dispatched as browser keyboard events to verify simulator handling; operating-system shortcut dialogs and physical keyboards were not exercised. This pass changes input behavior rather than scene appearance.
+
+## Clear crash-recovery countdown (2026-09-20)
+
+The flight-state badge now shows Recovering with the remaining whole seconds and a compact progress ring during the existing three-second crash recovery. The countdown follows simulation time, freezes while paused, and clears when takeoff becomes available. Its accessible label explains the wait. Countdown refreshes do not emit repeated flight-state events. Ended missions retain their resolved state without promising another takeoff.
+
+Validation:
+- All seven checks in the final Chromium run passed: the new recovery-indicator regression, both grounded-control checks, both trail-recovery checks, and both desert mission-ending scenarios.
+- The new check induces a crash using flight controls, verifies countdown and progress, pauses for 60 seconds of controlled clock time, resumes, checks reduced motion and forced colors, validates layout at 320px and 300px, and completes recovery and takeoff.
+- The first run exposed a countdown rounding issue at a whole-second boundary. Added a small floating-point tolerance; the final run passes that boundary and the remaining recovery sequence.
+- Desert mission checks confirm that a failed landing or crash does not retain recovery text or an accessible promise of takeoff.
+- Visually inspected the compact badge capture recovery-countdown-320.png in scratch/raptor-flight-review; text and progress ring remain readable. Browser layout assertions verify separation from neighboring wind and mission indicators.
+- JavaScript syntax and scoped whitespace checks passed; canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Verification uses controlled simulation timing and software-rendered Chromium, not physical-device testing or the full application suite. The existing recovery duration is a gameplay mechanic and was not changed.
+
+## Align live target feedback with rendered prey (2026-09-20)
+
+Target acquisition, range/bearing readouts, markers, and head gaze now update after prey movement, spawning, and removal within each flight frame. Previously those cues sampled the previous prey position before AI moved the animal, leaving feedback one frame behind the rendered scene. The existing acquisition and gaze calculations still run once per frame. Beacon-cap animation now has one update site and retains its existing in-flight pulse.
+
+Range labels also ignore tiny floating-point residue at exact display boundaries. An exact 5.2m fixture previously displayed 5.3m; values meaningfully above the boundary still round upward. Strike eligibility continues to use the unrounded distance.
+
+Validation:
+- The new live-target browser regression failed on the prior source because the marker projection differed from the rendered prey position. It now passes across consecutive moving-prey frames, perched observation, takeoff, zoom, reduced motion, and pause. It independently checks projection, actual distance versus both visible range labels, and shared gaze/reticle selection.
+- Twelve distinct Chromium checks passed across the final runs: live tracking, both hawk/owl attention cases, three paused-target cases, two grounded-control cases, two strike-loop cases, and two range-feedback cases. After the final rounding change, live tracking and both range cases were rerun together and all three passed.
+- Initial wider checks exposed fixtures that relied on pre-movement positions. Exact-distance tests now refresh the real feedback through the existing view command without an intervening AI step; attention-loss coverage moves prey outside the forward field instead of underground, where AI immediately returns it to the surface. Live movement remains covered separately by the new regression.
+- Expanded range coverage checks exact 5.2m and 30m boundaries plus slightly greater distances, retaining conservative upward rounding, readiness, cooldown, catches, and assist-off behavior.
+- Visually inspected paused-target-projection-narrow.png in scratch/raptor-flight-review. The prey caption remains inside the narrow viewport and clear of the lower controls.
+- JavaScript syntax, scoped whitespace, and test-diff checks passed. Canonical and packaged desktop sources are byte-identical.
+
+Changes remain local. Verification uses software-rendered Chromium and controlled simulation frames, not a hardware performance benchmark or the full application suite.

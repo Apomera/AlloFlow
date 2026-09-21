@@ -2167,10 +2167,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         var burnHumidity = typeof d.burnHumidity === 'number' ? d.burnHumidity : 40;
         var burnWind = typeof d.burnWind === 'number' ? d.burnWind : 6;
         var burnFuelMoisture = typeof d.burnFuelMoisture === 'number' ? d.burnFuelMoisture : 18;
-        var burnResult = d.burnResult || null;
+        // Read as .predicted / .prediction / .verdict, so a bare {} is unusable.
+      var burnResult = (d.burnResult && typeof d.burnResult === 'object' && !Array.isArray(d.burnResult)
+        && typeof d.burnResult.verdict !== 'undefined') ? d.burnResult : null;
 
         // Quiz state
-        var quizIdx = d.quizIdx || 0;
+        // Used as `quizIdx % len`; -1 % n is -1 and 1.5 % n is 1.5, so a plain
+        // finite-number guard is not enough for an index.
+        var quizIdx = (Number.isInteger(d.quizIdx) && d.quizIdx >= 0) ? d.quizIdx : 0;
         var quizScore = d.quizScore || 0;
         var quizTotal = d.quizTotal || 0;
         var quizAnswer = typeof d.quizAnswer === 'number' ? d.quizAnswer : -1;
@@ -2184,7 +2188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
         // AI state
         var aiQuestion = d.aiQuestion || '';
-        var aiResponse = d.aiResponse || '';
+        var aiResponse = typeof d.aiResponse === 'string' ? d.aiResponse : '';
         var aiLoading = d.aiLoading || false;
 
         // Case studies state
@@ -2207,7 +2211,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
         // Game state
         var gameActive = d.gameActive || false;
-        var gameDifficulty = d.gameDifficulty || 'medium';
+        // Keys DIFFICULTIES; an unknown string left the lookup undefined and threw
+      // on .targetYears.
+      var gameDifficulty = ['easy', 'medium', 'hard', 'apprentice', 'steward'].indexOf(d.gameDifficulty) !== -1 ? d.gameDifficulty : 'medium';
         var gameState = d.gameState || null;
         var gameEvent = d.gameEvent || null;
         var gameScore = d.gameScore || 0;
@@ -2216,7 +2222,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         var gameHistory = d.gameHistory || [];
 
         // Cultural Mosaic state
-        var mosaic = d.mosaic || defaultMosaicState();
+        // A bare {} passed the object check and then threw on a missing field, so
+      // MERGE over the defaults rather than choosing between them: a partial
+      // saved mosaic keeps whatever it does have.
+      var mosaic = Object.assign({}, defaultMosaicState(),
+        (d.mosaic && typeof d.mosaic === 'object' && !Array.isArray(d.mosaic)) ? d.mosaic : {});
 
         var band = getGradeBand(ctx);
 

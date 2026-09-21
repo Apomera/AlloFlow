@@ -16,6 +16,10 @@ const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 // Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
 const liveDock = readFileSync(resolve(process.cwd(), 'view_live_session_dock_source.jsx'), 'utf8');
 const polling = readFileSync(resolve(process.cwd(), 'live_polling_module.js'), 'utf8');
+// The dock's command wiring and the per-student resource handler were both
+// extracted out of the host monolith; assert against where they live now.
+const commandContext = readFileSync(resolve(process.cwd(), 'allo_command_context_source.js'), 'utf8');
+const hostHandlers = readFileSync(resolve(process.cwd(), 'host_handlers_source.jsx'), 'utf8');
 const uiStrings = readFileSync(resolve(process.cwd(), 'ui_strings.js'), 'utf8');
 
 describe('Live Dashboard dock (teacher)', () => {
@@ -26,9 +30,11 @@ describe('Live Dashboard dock (teacher)', () => {
     expect(liveDock).toContain("t('live_dock.quick_check') || 'Check understanding'");
     expect(uiStrings).toContain('"teacher_paced": "Teacher-led"');
     expect(uiStrings).toContain('"start_tooltip": "Teach live or open the Live Dashboard"');
-    expect(anti).toContain('setLivePollPreset(null); setShowLivePollingPanel(true); setShowLiveDock(false);');
+    // Same opener, now reachable from the dock button and the command palette.
+    expect(liveDock).toContain('setLivePollPreset(null); setShowLiveP');
+    expect(commandContext).toContain('setLivePollPreset(null); setShowLivePollingPanel(true); setShowLiveDock(false);');
     expect(liveDock).toContain("t('live_dock.quick_check')");
-    expect(anti).toContain('setShowPictionaryHost(true); setShowLiveDock(false);');
+    expect(commandContext).toContain('setShowPictionaryHost(true); setShowLiveDock(false);');
   });
 
   it('passes the composer preset into the polling HostPanel and clears it on close', () => {
@@ -37,7 +43,7 @@ describe('Live Dashboard dock (teacher)', () => {
   });
 
   it('quick check seeds a 1-3 confused→ready rating poll', () => {
-    expect(anti).toContain('1 = Confused\\n2 = Okay\\n3 = Ready');
+    expect(commandContext).toContain('1 = Confused\\n2 = Okay\\n3 = Ready');
     expect(liveDock).toContain('ratingMin: 1, ratingMax: 3');
   });
 
@@ -59,9 +65,13 @@ describe('Help signals (Tier-1 enum-only channel)', () => {
   });
 
   it('student sender writes through the Tier-1 gate, not raw updateDoc', () => {
-    const senderIdx = anti.indexOf('const sendSignal = (id) =>');
+    // `const sendSignal = (id) =>` became a `send:` method on the signals API.
+    // The gate got STRICTER in the move - it now rejects any id that is not one
+    // of LIVE_SIGNAL_OPTIONS before writing - so pin the allowlist too.
+    const senderIdx = anti.indexOf('send: (id) => {');
     expect(senderIdx).toBeGreaterThan(-1);
     const senderBlock = anti.slice(senderIdx, senderIdx + 400);
+    expect(senderBlock).toContain('LIVE_SIGNAL_OPTIONS.some((opt) => opt.id === id)');
     expect(senderBlock).toContain('writeToSession(signalRef,');
     expect(senderBlock).toContain('roster.${user.uid}.signal');
     expect(senderBlock).toContain('roster.${user.uid}.signalAt');
@@ -90,11 +100,13 @@ describe('per-student resource send (#9)', () => {
   });
 
   it('teacher handler writes id + consume-once nonce, and clears with null', () => {
-    const idx = anti.indexOf('const handleSetStudentResource');
+    // The handler body moved to host_handlers when that surface was extracted;
+    // ANTI keeps only a thin delegate.
+    const idx = hostHandlers.indexOf('const handleSetStudentResource');
     expect(idx).toBeGreaterThan(-1);
     // Keep enough context for optional pre-send safety checks that may be
     // added before the bounded session-document write.
-    const block = anti.slice(idx, idx + 1600);
+    const block = hostHandlers.slice(idx, idx + 1600);
     expect(block).toContain('roster.${uid}.resourceId');
     expect(block).toContain('roster.${uid}.resourceAt');
     expect(block).toContain('Number.isFinite(requestedResourceAt) && requestedResourceAt > 0 ? requestedResourceAt : Date.now()');

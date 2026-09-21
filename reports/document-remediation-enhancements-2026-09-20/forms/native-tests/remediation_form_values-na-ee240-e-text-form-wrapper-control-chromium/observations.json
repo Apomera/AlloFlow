@@ -1,0 +1,39 @@
+{
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 1.0121145374449338,
+    "textRatio": 1,
+    "textLost": 0
+  },
+  "repaired": {
+    "form": {
+      "valid": false,
+      "submissions": 0
+    },
+    "sliders": []
+  },
+  "evidence": [
+    {
+      "totalChunks": 1,
+      "shippedOriginalChunks": 0,
+      "deferredChunks": 0,
+      "candidateRejectionCount": 0,
+      "candidateRejections": []
+    }
+  ],
+  "source": {
+    "form": {
+      "valid": false,
+      "submissions": 0
+    },
+    "sliders": []
+  },
+  "candidate": {
+    "form": {
+      "valid": false,
+      "submissions": 0
+    },
+    "sliders": []
+  }
+}

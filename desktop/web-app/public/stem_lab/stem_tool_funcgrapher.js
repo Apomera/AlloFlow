@@ -971,7 +971,7 @@ window.StemLab = window.StemLab || {
                   set({secantResult:result,secantResultKey:key,secantReveal:false,secantReflection:'',secantNotice:'Four step sizes calculated. Compare the left and right slopes before revealing the derivative.'});
                   if(announceToSR)announceToSR('Secant slope investigation calculated.');
                 }},'Compute secant slopes'),
-                d.secantNotice?h('p',{role:'status'},d.secantNotice):null,
+                (typeof d.secantNotice === 'string' && d.secantNotice)?h('p',{role:'status'},d.secantNotice):null,
                 d.secantResult&&!current?h('p',{role:'status'},'The function, trace point, step, or prediction changed. Compute again to refresh the investigation.'):null,
                 study?h('div',{'data-secant-results':true},
                   study.value===null?h('p',null,'The function is undefined or non-finite at the base point, so a derivative there is unavailable.'):null,
@@ -1014,7 +1014,7 @@ window.StemLab = window.StemLab || {
                   if(rows.some(function(r){return Number(r.power)===power&&Number(r.epsilon)===sample.epsilon;})){set({improperNotice:'That cutoff is already recorded for this example. Try a smaller value.'});return;}
                   set({improperRows:rows.concat([{power:power,epsilon:sample.epsilon,prediction:d.improperPrediction}]).slice(-18),improperNotice:'Trial recorded. Try ε / 10, then compare how much area was added.'});
                 }},'Record cutoff trial'),
-                d.improperNotice?h('p',{role:'status'},d.improperNotice):null,
+                (typeof d.improperNotice === 'string' && d.improperNotice)?h('p',{role:'status'},d.improperNotice):null,
                 rows.length?h('div',{tabIndex:0,role:'region','aria-label':'Endpoint trial table',style:{overflowX:'auto'}},h('table',{style:{width:'100%',fontSize:13,borderCollapse:'collapse',color:ink}},
                   h('caption',{style:{color:ink}},'Recent cutoff trials: area from ε to 1'),
                   h('thead',null,h('tr',null,['Function','Cutoff ε','Area ≈','Prediction'].map(function(label){return h('th',{key:label,scope:'col',style:{padding:8,textAlign:'left',borderBottom:'1px solid '+border,color:ink}},label);}))),
@@ -1120,7 +1120,10 @@ window.StemLab = window.StemLab || {
 
             (() => {
 
-              var fgQuiz = d.fgQuiz || null;
+              // Read as fgQuiz.mode / .s / .answered / .options.map, so a
+              // string or bare {} is not a usable quiz.
+              var fgQuiz = (d.fgQuiz && typeof d.fgQuiz === 'object' && !Array.isArray(d.fgQuiz)
+                && typeof d.fgQuiz.mode === 'string') ? d.fgQuiz : null;
 
               var fgScore = d.fgScore || 0;
 
@@ -1561,9 +1564,9 @@ window.StemLab = window.StemLab || {
               var aiLevel = d.aiLevel || 'grade5';
               // Own state key: sharing d.aiExplain with the "Explain This Graph" button
               // above made each panel display the other's output.
-              var aiText = d.aiTutorText || '';
+              var aiText = typeof d.aiTutorText === 'string' ? d.aiTutorText : '';
               var aiLoading = !!d.aiLoading;
-              var aiError = d.aiError || '';
+              var aiError = typeof d.aiError === 'string' ? d.aiError : '';
               var LEVELS = [
                 { id: 'plain', label: __alloT('stem.funcgrapher.plain', 'Plain'), hint: __alloT('stem.funcgrapher.using_simple_everyday_words_and_short_', 'using simple everyday words and short sentences, no jargon') },
                 { id: 'grade5', label: __alloT('stem.funcgrapher.grade_5', 'Grade 5'), hint: __alloT('stem.funcgrapher.for_a_5th_grade_student', 'for a 5th grade student') },

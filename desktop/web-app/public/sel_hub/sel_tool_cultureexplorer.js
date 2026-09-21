@@ -942,7 +942,7 @@ window.SelHub = window.SelHub || {
       var badgesEarned = d.badgesEarned || [];
 
       return h('div', { className: 'selh-cultureexplorer space-y-4 animate-in fade-in duration-200' },
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
         // Surface 988 / Crisis Text Line block when any AI-input turn was tier-3.
         (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, gradeBand),
 

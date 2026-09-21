@@ -1843,7 +1843,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
 
       // ── Persistent progression ──
       var completedMissions = d.completedMissions || 0;
-      var unlockedTech = d.unlockedTech || [];
+      var unlockedTech = Array.isArray(d.unlockedTech) ? d.unlockedTech : [];
       var totalScience = d.totalScience || 0;
       var highestDifficulty = d.highestDifficulty || 0;
 
@@ -1851,13 +1851,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       var missionPhase = d.missionPhase || 'select'; // select | briefing | allocate | explore | event | outcome | debrief
       var destination = d.destination ? DESTINATIONS.find(function(dd) { return dd.id === d.destination; }) : null;
       var resources = d.resources || null;
-      var crew = d.crew || [];
+      var crew = Array.isArray(d.crew) ? d.crew : [];
       var turn = d.turn || 0;
       var maxTurns = destination ? Math.max(8, 5 + destination.difficulty * 3) : 10;
       var missionLog = d.missionLog || [];
       var activeEvent = d.activeEvent || null;
       var eventOutcome = d.eventOutcome || null;
-      var decisionLog = d.decisionLog || [];
+      var decisionLog = Array.isArray(d.decisionLog) ? d.decisionLog : [];
       var isGenerating = d.isGenerating || false;
       var powerAllocation = normalizeAllocation(d.powerAllocation, unlockedTech);
       var consultUsed = d.consultUsed || false;
@@ -1878,7 +1878,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       var missionProtocol = d.missionProtocolOverride || missionProtocolBase;
       var missionObjectives = missionDossier ? buildMissionObjectives(destination, missionDossier, missionProtocol) : [];
       var missionObjectiveReport = evaluateMissionObjectives(missionObjectives, missionEvidence, decisionLog, resources, d.protocolLog || []);
-      var crewConsultLog = d.crewConsultLog || [];
+      var crewConsultLog = Array.isArray(d.crewConsultLog) ? d.crewConsultLog : [];
       var crewConsultReport = buildCrewConsultReport(crew, crewConsultLog);
       var missionCausalSummary = buildDecisionCausalSummary(decisionLog);
       var missionBlueprint = missionDossier ? buildNextMissionBlueprint(missionDossier, missionIntentAssessment, missionProtocol, missionCausalSummary, crewConsultReport, missionReflection) : null;

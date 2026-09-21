@@ -1115,3 +1115,56 @@ node node_modules/vitest/vitest.mjs run tests/renewables_scenario_comparison.tes
 node reports/renewables-enhancement/scenario-comparison-browser-qa.cjs
 node reports/renewables-enhancement/scenario-comparison-verify.cjs
 ~~~
+
+
+## Compare a selected time window
+
+The whole-scenario overlay now includes **Compare a time window**. Its start and end boundaries are shared with **Measure a custom interval**, with separate selections retained for each technology and operating scenario. Changes in either tool update both. Scrubbing or inspecting the timeline keeps the chosen window fixed. Shortcuts select the active milestone, the full scenario, or the current minute as a boundary; crossing a boundary collapses to an explicit zero-length window. Opening the comparison highlights the selected span on the full-scenario chart. The full curves retain their original meaning, and an explanation distinguishes cumulative values from interval totals.
+
+Both setups are integrated over [start, end): the end boundary contributes no extra operating minute. Results compare electricity delivered, average electrical output, and the minutes when current output is above, below, or equal to the baseline. The largest absolute output gap uses the earliest tied operating minute within the selected window. It and either boundary can be inspected in 3D without changing saved inputs or readings. Equal-output and empty windows disable largest-gap inspection. Empty windows deliver zero electricity and display average power as **Not defined**.
+
+Battery windows additionally compare unserved scheduled demand, stored energy at both boundaries, and each setup's stored-energy change. These state changes remain separate from delivered electricity. Per-sample unserved request power is recorded in kW in comparison rows; the window integrates it into kWh. Interval energy is summed from minute power values rather than subtracted from potentially much larger cumulative totals, preserving very small late-window quantities.
+
+**Export comparison window** includes scenarioComparisonInterval alongside the existing current-scenario selectedInterval. Both use the same normalized boundaries. Changing or undoing the notebook baseline recalculates the comparison without resetting those boundaries. Opening a different scenario with an incompatible saved baseline preserves the selection until a matching comparison is available. Live announcements describe boundary changes without repeating playback's minute updates. Phone charts have larger axis labels and a visible horizontal-scroll hint.
+
+### Comparison-window validation
+
+**152 regression tests pass across six files**, including 19 new tests. Checks independently reconcile interval energy and average power for all 18 scenarios, verify a known constant-cloud PV calculation, window additivity, endpoint exclusion, reversed and out-of-range boundaries, negative and equal gaps, zero-length windows, battery charging/delivery/shortfall distinctions, tiny energy after large cumulative totals, rendering, and shared state.
+
+Two Chromium workflows pass **23 behavior checks and 18 accessibility audits** on the final source. The interval workflow covers every scenario, bidirectional controls, milestone and current-minute shortcuts, playback pausing, 3D focus and flow-to-3D inspection, selection persistence, baseline undo, exports, highlighting, keyboard controls, empty states, dark theme, and 390px/320px layouts. The existing whole-scenario workflow verifies its metric controls, full plots, inspection, notebook actions, and exports after integration. No page or console errors were recorded. Narrow layouts avoid document overflow; wide tables retain their accessible horizontal scroll regions. Desktop and dark 320px window screenshots were visually reviewed. Source, desktop copy, and running local preview match byte-for-byte; syntax and scoped whitespace checks pass. These are isolated local React/Three.js checks rather than a deployed full-application session.
+
+Review [desktop window](comparison-window-desktop.jpg), [highlighted chart](comparison-window-chart.jpg), [battery window](comparison-window-battery.jpg), and [320px battery window](comparison-window-phone-320.jpg). Evidence: [interval browser workflow](comparison-window-browser-qa.cjs), [interval browser results](comparison-window-browser-results.json), [full-scenario browser results](scenario-comparison-browser-results.json), [regression results](comparison-window-vitest-results.json), [verification script](comparison-window-verify.cjs), and [verification summary](comparison-window-verification.json).
+
+~~~powershell
+node node_modules/vitest/vitest.mjs run tests/renewables_comparison_window.test.js tests/renewables_scenario_comparison.test.js tests/renewables_pathway_comparison.test.js tests/renewables_energy3d.test.js tests/renewables_component_comparison.test.js tests/renewables_file_readings.test.js --pool=threads --maxWorkers=1
+node reports/renewables-enhancement/comparison-window-browser-qa.cjs
+node reports/renewables-enhancement/scenario-comparison-browser-qa.cjs
+node reports/renewables-enhancement/comparison-window-verify.cjs
+~~~
+
+
+## Explain changes with recorded one-input trials
+
+**Explain changes one input at a time** appears below a compatible scenario comparison. Choose the full scenario or selected comparison window, then run the checks. Each changed input gets an independent trial starting from the saved baseline; only that input takes its current value. The results record both reference setups, the scenario, the selected bounds, the original inspection minute, and each isolated trial. Every technology keeps its latest recorded request.
+
+Trial cards compare delivered electricity in kWh with signed bars sharing a scale centered on zero. A separate calculation shows the sum of isolated effects, the actual combined change, and their remainder. This remainder represents interaction between simultaneous changes, including model limits. Separate trials are not additive causal shares, and the remainder is not an additional energy source. For example, in the constant-cloud PV window, doubling area and increasing efficiency from 20% to 25% produce isolated gains of 0.24 and 0.06 kWh, a combined gain of 0.36 kWh, and an interaction of 0.06 kWh under the tested inputs.
+
+**Inspect this trial in 3D** loads the isolated settings and the earliest minute with the largest absolute power difference within the recorded period. If no power gap occurs, inspection uses its start minute. The recorded result remains available while the live workbench changes. **Restore combined setup in 3D** and **Inspect recorded baseline in 3D** load the recorded settings, scenario, and original minute. Inspection preserves notebook readings, draft names and observations, and interval selections. A notice distinguishes recorded results from the current comparison; changes in settings or scope only replace the recorded request when the user runs the checks again.
+
+New runs require a matching scenario baseline, at least one changed input, and a nonempty period. Existing results remain available after the current setup becomes incompatible or a selected window becomes empty. All scenario integrations begin at minute zero, then measure only [start, end), retaining battery history before a selected window. Battery cards include unserved scheduled demand and explain that changing capacity while holding initial charge percentage fixed can also change initial stored energy. Exports recalculate the latest recorded checks for all technologies in an inputChecks collection; file imports continue to ignore derived analysis fields and use validated saved inputs.
+
+### One-input checks validation
+
+**172 regression tests pass across seven files**, including 20 new tests. The new checks isolate exactly one setting for all 18 native scenarios, independently reconcile delivered and unserved energy, verify analytical positive and negative PV interactions, distinguish zero and single-input effects, retain fractional settings, normalize time bounds, exclude terminal intervals, handle tiny/empty results, reject unsupported scenarios, preserve recorded state, and escape baseline names.
+
+A Chromium workflow verifies all **18 scenarios across nine technologies** and **36 trial inspections**, covering full-scenario and selected-window scopes. Thirteen behavior checks exercise running without changing the workbench, restoration of the recorded combined setup and minute, flow-to-3D inspection, baseline inspection, incompatible scenario recovery, explicit reruns, playback pausing, empty-window gating, per-technology persistence, recalculated exports, signed and zero effects, and literal rendering of baseline names.
+
+**Nine accessibility audits pass**, covering inspected and stale results, empty-window controls, desktop, dark theme, 390px/320px layouts, signed effects, and zero effects. No browser page or console errors were recorded, and narrow layouts avoid document overflow. Desktop and dark 320px screenshots were visually reviewed. Source, desktop copy, and running local preview match byte-for-byte; syntax and scoped whitespace checks pass. Validation uses an isolated local React/Three.js host rather than a deployed full-application session.
+
+Review [desktop checks](input-checks-desktop.jpg), [dark checks](input-checks-dark.jpg), and [320px checks](input-checks-phone-320.jpg). Evidence: [browser workflow](input-checks-browser-qa.cjs), [browser results](input-checks-browser-results.json), [regression results](input-checks-vitest-results.json), [verification script](input-checks-verify.cjs), and [verification summary](input-checks-verification.json).
+
+~~~powershell
+node node_modules/vitest/vitest.mjs run tests/renewables_input_checks.test.js tests/renewables_comparison_window.test.js tests/renewables_scenario_comparison.test.js tests/renewables_pathway_comparison.test.js tests/renewables_energy3d.test.js tests/renewables_component_comparison.test.js tests/renewables_file_readings.test.js --pool=threads --maxWorkers=1
+node reports/renewables-enhancement/input-checks-browser-qa.cjs
+node reports/renewables-enhancement/input-checks-verify.cjs
+~~~

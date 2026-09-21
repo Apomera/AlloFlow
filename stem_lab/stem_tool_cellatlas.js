@@ -1122,7 +1122,9 @@
       var selectedGene = localGeneById(d.selectedGene || selectedCell.marker);
       var compareA = localCellById(d.compareA || tissue.defaultCell);
       var compareB = localCellById(d.compareB || tissue.defaultCompare);
-      var challengeIndex = Math.max(0, Math.min(CHALLENGES.length - 1, Number(d.challengeIndex) || 0));
+      // Math.min/max clamps the RANGE but not the type: 1.5 passes both and
+      // CHALLENGES[1.5] is undefined. Floor it.
+      var challengeIndex = Math.max(0, Math.min(CHALLENGES.length - 1, Math.floor(Number(d.challengeIndex) || 0)));
       var challenge = CHALLENGES[challengeIndex];
       var exploredCount = Object.keys(d.exploredTypes || {}).filter(function (key) { return key.indexOf(tissue.id + ':') === 0; }).length;
       var correctCount = Object.keys(d.completedChallenges || {}).filter(function (key) { return key.indexOf(tissue.id + ':') === 0 && d.completedChallenges[key]; }).length;
@@ -1157,7 +1159,7 @@
       var learnerSelfCheck = d.cellAtlasLearnerSelfCheck && typeof d.cellAtlasLearnerSelfCheck === 'object' ? d.cellAtlasLearnerSelfCheck : {};
       var studyDesign = Object.assign({}, DESIGN_DEFAULT, d.studyDesign || {});
       var designEvaluation = evaluateDesign(studyDesign);
-      var designCaseIndex = Math.max(0, Math.min(DESIGN_CASES.length - 1, Number(d.designCaseIndex) || 0));
+      var designCaseIndex = Math.max(0, Math.min(DESIGN_CASES.length - 1, Math.floor(Number(d.designCaseIndex) || 0)));
       var designCase = DESIGN_CASES[designCaseIndex];
       var completedDesignCount = Object.keys(d.completedDesignCases || {}).filter(function (key) { return d.completedDesignCases[key]; }).length;
       var realSnapshot = (typeof window !== 'undefined' && window.__alloCellAtlasRealSnapshots && window.__alloCellAtlasRealSnapshots.muraroPancreas) || null;

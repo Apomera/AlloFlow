@@ -18,6 +18,9 @@ test.describe('Raptor consistent target feedback',()=>{
     await harness.mount(page,{raptorHunt:{activeSection:'hunt',selectedSpecies:'peregrine',activeMission:'open',flightSession:{speciesId:'peregrine',missionId:'open'},huntTutorialDismissed:true,graphicsQuality:'low'}},"document.querySelector('[data-raptor-canvas]')?._rhSnapshot");
     await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{
       const w=window as any;c._rhCommand('environment',{windSpeed:0});
+      // Refresh an exact geometric fixture without letting prey AI return it to terrain.
+      // Moving-prey/frame-order coverage lives in raptor-live-target.spec.ts.
+      w.refreshHuntTarget=()=>c._rhCommand('scenic',false);
       w.placeHuntPrey=(distance:number)=>{
         const scene=w.huntScene,s=c._rhSnapshot(),p=s.raptorPosition,yaw=s.headingRadians,pitch=s.pitchRadians;
         const prey=scene.children.filter((o:any)=>o.children.some((child:any)=>child.name.startsWith('prey-')));
@@ -29,19 +32,19 @@ test.describe('Raptor consistent target feedback',()=>{
 
   test('keeps target readouts consistent at the strike boundary and shows real recovery readiness',async({page})=>{
     const range=page.locator('[data-raptor-metric="target"] .rh-flight-metric-value'),name=page.locator('.rh-target-name'),status=page.locator('.rh-target-status'),guidance=page.locator('[data-raptor-target-guidance]');
-    for(const [distance,expected,state] of [[5.2,'5.2 m','CLOSE'],[4.8,'4.8 m','READY'],[65,'~65 m','CLOSE']] as const){
-      await page.evaluate(distance=>{const w=window as any;w.placeHuntPrey(distance);w.stepHunt(1);},distance);
+    for(const [distance,expected,state] of [[5.2,'5.2 m','CLOSE'],[5.2001,'5.3 m','CLOSE'],[4.8,'4.8 m','READY'],[30,'30 m','CLOSE'],[30.0001,'31 m','CLOSE'],[65,'~65 m','CLOSE']] as const){
+      await page.evaluate(distance=>{const w=window as any;w.placeHuntPrey(distance);w.refreshHuntTarget();},distance);
       await expect(range).toHaveText(expected);await expect(name).toContainText(expected);await expect(guidance).toContainText(state);
       if(state==='CLOSE')await expect(guidance).toContainText(expected+' (need 5 m)');
     }
-    await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;w.placeHuntPrey(30);c._rhCommand('strike');w.placeHuntPrey(3);w.stepHunt(1);});
+    await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;w.placeHuntPrey(30);c._rhCommand('strike');w.placeHuntPrey(3);w.refreshHuntTarget();});
     await expect(status).toHaveText('RECOVERING');
-    // Keep the controlled prey ahead after its AI step before testing paused recovery.
+    // Keep the exact target fixture fixed while testing paused recovery.
     await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;w.placeHuntPrey(3);c._rhCommand('pause');w.stepHunt(60000);});await expect(status).toHaveText('RECOVERING');await expect(range).toHaveText('3.0 m');
-    await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;c._rhCommand('pause');w.advanceHunt(400);w.placeHuntPrey(3);w.stepHunt(1);});await expect(status).toHaveText('READY TO STRIKE');
+    await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;c._rhCommand('pause');w.advanceHunt(400);w.placeHuntPrey(3);w.refreshHuntTarget();});await expect(status).toHaveText('READY TO STRIKE');
     await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;w.placeHuntPrey(3);c._rhCommand('strike');});await expect(page.getByRole('region',{name:'Last strike',exact:true})).toContainText('Catch secured');
-    await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;c._rhCommand('assist');w.stepHunt(1);});await expect(range).toHaveText('Off');await expect(page.locator('.rh-target-tracker')).toBeHidden();
-    await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;c._rhCommand('assist');w.placeHuntPrey(2000);w.stepHunt(1);});await expect(range).toHaveText('None');
+    await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;c._rhCommand('assist');w.refreshHuntTarget();});await expect(range).toHaveText('Off');await expect(page.locator('.rh-target-tracker')).toBeHidden();
+    await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;c._rhCommand('assist');w.placeHuntPrey(2000);w.refreshHuntTarget();});await expect(range).toHaveText('None');
     expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
   });
   test('labels offscreen prey by screen position without conflicting steering commands',async({page})=>{

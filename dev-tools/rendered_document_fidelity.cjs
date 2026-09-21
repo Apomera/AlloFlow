@@ -127,19 +127,31 @@ async function snapshot(browser, html, checkpoints, side, viewport, media) {
         if (match !== 1) { observations.push({ id: checkpoint.id, status: 'unavailable', reason: match ? 'ambiguous-selector' : 'missing-selector', matches: match }); continue; }
         const dom = await page.evaluate(({ selector, properties }) => {
           const el = document.querySelector(selector), normal = value => String(value || '').normalize('NFC').replace(/\s+/gu, ' ').trim();
-          const tag = el.tagName.toLowerCase(), style = getComputedStyle(el), requested = new Set(properties);
+          // Form controls can shadow DOM properties and methods by name or ID.
+          // Read native descriptors so authored names cannot replace evidence.
+          const nativeProperty = (node, property) => {
+            for (let prototype = Object.getPrototypeOf(node); prototype; prototype = Object.getPrototypeOf(prototype)) {
+              const descriptor = Object.getOwnPropertyDescriptor(prototype, property);
+              if (descriptor) return descriptor.get ? descriptor.get.call(node) : descriptor.value;
+            }
+          };
+          const attribute = (node, name) => Element.prototype.getAttribute.call(node, name);
+          const parentElement = node => nativeProperty(node, 'parentElement');
+          const textContent = node => nativeProperty(node, 'textContent');
+          const checkVisibility = (node, options) => Element.prototype.checkVisibility.call(node, options);
+          const tag = nativeProperty(el, 'tagName').toLowerCase(), style = getComputedStyle(el), requested = new Set(properties);
           const visibilityOptions = { checkOpacity: true, checkVisibilityCSS: true, contentVisibilityAuto: true };
           const textIsVisible = node => {
-            const parent = node.parentElement;
+            const parent = parentElement(node);
             if (!parent || getComputedStyle(parent).visibility !== 'visible') return false;
             let boxParent = parent;
             // display:contents has no box. Text still inherits every ancestor's opacity.
-            for (let ancestor = parent; ancestor; ancestor = ancestor.parentElement) {
+            for (let ancestor = parent; ancestor; ancestor = parentElement(ancestor)) {
               const computed = getComputedStyle(ancestor);
               if (Number(computed.opacity) === 0 || computed.display === 'none' || computed.contentVisibility === 'hidden') return false;
             }
-            while (boxParent && getComputedStyle(boxParent).display === 'contents') boxParent = boxParent.parentElement;
-            if (!boxParent || !boxParent.checkVisibility({ ...visibilityOptions, checkVisibilityCSS: false })) return false;
+            while (boxParent && getComputedStyle(boxParent).display === 'contents') boxParent = parentElement(boxParent);
+            if (!boxParent || !checkVisibility(boxParent, { ...visibilityOptions, checkVisibilityCSS: false })) return false;
             const range = document.createRange(); range.selectNodeContents(node);
             return Array.from(range.getClientRects()).some(box => box.width > 0 && box.height > 0);
           };
@@ -147,34 +159,38 @@ async function snapshot(browser, html, checkpoints, side, viewport, media) {
             const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), parts = [];
             for (let node = walker.nextNode(); node; node = walker.nextNode()) {
               const path = [];
-              for (let current = node; current !== el; current = current.parentNode) path.unshift(Array.prototype.indexOf.call(current.parentNode.childNodes, current));
-              parts.push({ path, text: node.textContent, visible: requested.has('visible') ? textIsVisible(node) : false });
+              for (let current = node; current !== el;) {
+                const parent = nativeProperty(current, 'parentNode');
+                path.unshift(Array.prototype.indexOf.call(nativeProperty(parent, 'childNodes'), current));
+                current = parent;
+              }
+              parts.push({ path, text: textContent(node), visible: requested.has('visible') ? textIsVisible(node) : false });
             }
             return parts;
           };
           const visible = () => style.display === 'contents'
-            ? Array.from(el.querySelectorAll('*')).some(child => child.checkVisibility(visibilityOptions)) || Array.from(el.childNodes).some(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim() && textIsVisible(node))
-            : el.checkVisibility(visibilityOptions);
+            ? Array.from(Element.prototype.querySelectorAll.call(el, '*')).some(child => checkVisibility(child, visibilityOptions)) || Array.from(nativeProperty(el, 'childNodes')).some(node => nativeProperty(node, 'nodeType') === Node.TEXT_NODE && textContent(node).trim() && textIsVisible(node))
+            : checkVisibility(el, visibilityOptions);
           const linkDestination = () => {
             if (tag !== 'a') return null;
-            const svg = el.namespaceURI === 'http://www.w3.org/2000/svg';
-            if (!svg && el.namespaceURI !== 'http://www.w3.org/1999/xhtml') return null;
+            const svg = nativeProperty(el, 'namespaceURI') === 'http://www.w3.org/2000/svg';
+            if (!svg && nativeProperty(el, 'namespaceURI') !== 'http://www.w3.org/1999/xhtml') return null;
             // SVG href is an animated string, not a resolved URL. Its base value
             // respects href precedence over xlink:href, including an empty href.
-            const literal = svg ? el.hasAttribute('href') ? el.getAttribute('href') : el.getAttributeNS('http://www.w3.org/1999/xlink', 'href') : el.getAttribute('href');
+            const literal = svg ? Element.prototype.hasAttribute.call(el, 'href') ? attribute(el, 'href') : Element.prototype.getAttributeNS.call(el, 'http://www.w3.org/1999/xlink', 'href') : attribute(el, 'href');
             if (literal == null) return null;
             let resolved;
-            try { resolved = new URL(svg ? el.href.baseVal : el.href, el.baseURI).href; } catch { return null; }
+            try { resolved = new URL(svg ? nativeProperty(el, 'href').baseVal : nativeProperty(el, 'href'), nativeProperty(el, 'baseURI')).href; } catch { return null; }
             if (typeof resolved !== 'string') return null;
             // A synthetic origin is not the document's real base. Preserve relative
             // spelling as well as browser resolution, including an authored <base>.
             return !/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(literal.trim()) ? { relative: literal, resolved } : resolved;
           };
           const effectiveLanguage = () => {
-            for (let node = el; node; node = node.parentElement) {
+            for (let node = el; node; node = parentElement(node)) {
               // Only namespaced xml:lang takes precedence. In HTML, the literal
               // xml:lang spelling has no XML namespace and must not override lang.
-              const language = node.getAttributeNS('http://www.w3.org/XML/1998/namespace', 'lang') ?? node.getAttribute('lang');
+              const language = Element.prototype.getAttributeNS.call(node, 'http://www.w3.org/XML/1998/namespace', 'lang') ?? attribute(node, 'lang');
               // Empty attributes explicitly reset inheritance to unknown language.
               if (language !== null) return language.replace(/[A-Z]/g, letter => letter.toLowerCase());
             }
@@ -188,14 +204,14 @@ async function snapshot(browser, html, checkpoints, side, viewport, media) {
               .filter(meta => meta instanceof HTMLMetaElement && meta.httpEquiv.toLowerCase() === 'content-language')
               .map(meta => meta.content.replace(/[A-Z]/g, letter => letter.toLowerCase()))
               .sort((a, b) => b.length - a.length)
-              .find(language => language !== '' && el.matches(':lang(' + CSS.escape(language) + ')')) || '';
+              .find(language => language !== '' && Element.prototype.matches.call(el, ':lang(' + CSS.escape(language) + ')')) || '';
           };
           const result = {}, textEvidence = {};
           for (const property of properties) {
-            if (property === 'text') result.text = normal(el.textContent);
+            if (property === 'text') result.text = normal(textContent(el));
             else if (property === 'visible') result.visible = visible();
-            else if (property === 'disabled') result.disabled = /^(input|select|textarea|button|option|optgroup|fieldset)$/.test(tag) ? el.matches(':disabled') : null;
-            else if (property === 'value') result.value = 'value' in el ? String(el.value) : null;
+            else if (property === 'disabled') result.disabled = /^(input|select|textarea|button|option|optgroup|fieldset)$/.test(tag) ? Element.prototype.matches.call(el, ':disabled') : null;
+            else if (property === 'value') { const value = nativeProperty(el, 'value'); result.value = value === undefined ? null : String(value); }
             else if (property === 'formData') {
               // Native serialization includes CSS-dependent hard wrapping, successful
               // controls, duplicate names, dirname entries and external form owners.
@@ -204,13 +220,18 @@ async function snapshot(browser, html, checkpoints, side, viewport, media) {
               const entries = el instanceof HTMLFormElement ? Array.from(new FormData(el).entries()) : null;
               result.formData = entries && entries.every(([, value]) => typeof value === 'string') ? entries : null;
             }
-            else if (property === 'checked') result.checked = 'checked' in el ? el.checked : null;
+            else if (property === 'checked') result.checked = nativeProperty(el, 'checked') ?? null;
             else if (property === 'selected') result.selected = tag === 'select' ? Array.from(el.selectedOptions).map(option => ({ index: option.index, value: option.value, label: normal(option.label || option.text) })) : tag === 'option' ? el.selected : null;
             else if (property === 'href') result.href = linkDestination();
             else if (property === 'targetText') {
               result.targetText = null;
-              if (tag === 'a' && el.hash && el.href.split('#')[0] === location.href.split('#')[0]) {
-                try { const target = document.getElementById(decodeURIComponent(el.hash.slice(1))); if (target) result.targetText = normal(target.textContent); } catch (_) {}
+              const destination = linkDestination();
+              const resolved = typeof destination === 'string' ? destination : destination?.resolved;
+              if (resolved) {
+                const url = new URL(resolved);
+                if (url.hash && url.href.split('#')[0] === location.href.split('#')[0]) {
+                  try { const target = document.getElementById(decodeURIComponent(url.hash.slice(1))); if (target) result.targetText = normal(textContent(target)); } catch (_) {}
+                }
               }
             } else if (property === 'language') result.language = effectiveLanguage();
             else if (property === 'direction') result.direction = style.direction;

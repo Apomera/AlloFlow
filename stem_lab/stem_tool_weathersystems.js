@@ -3128,7 +3128,10 @@ var GEOGRAPHY_PROFILES = {
       var station = STATIONS.filter(function (item) { return item.id === selectedStation; })[0] || STATIONS[1];
       var observation = stationObservation(state, station);
       var current = projectConditions(state, state.simHour);
-      var forecastResult = d.forecastResult || null;
+      // Read as .truth / .score / .notes.map, so a string or a bare {} is not
+      // a usable result.
+      var forecastResult = (d.forecastResult && typeof d.forecastResult === 'object' && !Array.isArray(d.forecastResult)
+        && Array.isArray(d.forecastResult.notes)) ? d.forecastResult : null;
       var experimentVariable = d.experimentVariable || 'humidity';
       var experimentConfig = experimentVariableById(experimentVariable);
       var experimentBump = Math.max(experimentConfig.step, Math.round((experimentConfig.max - experimentConfig.min) * 0.18 / experimentConfig.step) * experimentConfig.step);
@@ -3508,10 +3511,10 @@ var GEOGRAPHY_PROFILES = {
           var timeline = normalizeHourlyWeatherTimeline(payload, live);
           var timelineIndex = weatherTimelineCurrentIndex(timeline);
           var terrainStatus = geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, live);
-          var hadTerrainEvidence = !!d.geographicTerrainEvidence || (d.evidence || []).indexOf(TERRAIN_EVIDENCE.id) !== -1;
+          var hadTerrainEvidence = !!d.geographicTerrainEvidence || (Array.isArray(d.evidence) ? d.evidence : []).indexOf(TERRAIN_EVIDENCE.id) !== -1;
           var livePatch = { liveWeather: live, liveWeatherTimeline: timeline, liveWeatherTimelineIndex: timelineIndex, liveWeatherTimelinePlaying: false, liveGeography: geography, liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: 'Current conditions and ' + timeline.length + ' hourly timeline points loaded for ' + live.label + '.', immersiveDataSource: 'live', terrainEvidenceInvalidatedMessage: '', geographicTerrainProbe: null };
           if (hadTerrainEvidence && !terrainStatus.current) {
-            livePatch.evidence = (d.evidence || []).filter(function (id) { return id !== TERRAIN_EVIDENCE.id; });
+            livePatch.evidence = (Array.isArray(d.evidence) ? d.evidence : []).filter(function (id) { return id !== TERRAIN_EVIDENCE.id; });
             livePatch.geographicTerrainEvidence = null;
             livePatch.terrainEvidenceInvalidatedMessage = 'Previous terrain evidence was removed because the live location or observation changed. Sample and save the new profile before forecasting.';
           }
@@ -3794,13 +3797,13 @@ var GEOGRAPHY_PROFILES = {
           if (announce) announce(__alloT('stem.weathersystems.sr_terrain_evidence_is_still_being_prepared', 'Terrain evidence is still being prepared.'));
           return;
         }
-        var evidence = (d.evidence || []).slice();
+        var evidence = (Array.isArray(d.evidence) ? d.evidence : []).slice();
         var selected = evidence.indexOf(TERRAIN_EVIDENCE.id) !== -1;
         var investigationNote = String(d.geographicInvestigationNote || '').trim().slice(0, 2000);
         if (selected && d.geographicTerrainEvidence && geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, evidenceWeather).current) {
           var existingNote = String(d.geographicTerrainEvidence.investigationNote || investigationNote).trim();
           var forecastPatch = { tab: 'forecast' };
-          if (existingNote && !String(d.reasoning || '').trim()) forecastPatch.reasoning = existingNote;
+          if (existingNote && !String(typeof d.reasoning === 'string' ? d.reasoning : '').trim()) forecastPatch.reasoning = existingNote;
           update(forecastPatch);
           if (announce) announce(__alloT('stem.weathersystems.sr_forecast_mission_opened_with_terrain_evidence_and', 'Forecast Mission opened with terrain evidence and the mapped evidence note carried forward.'));
           return;
@@ -3832,7 +3835,7 @@ var GEOGRAPHY_PROFILES = {
             source: 'Rendered open terrain elevation and learner field note'
           }
         };
-        if (investigationNote && !String(d.reasoning || '').trim()) evidencePatch.reasoning = investigationNote;
+        if (investigationNote && !String(typeof d.reasoning === 'string' ? d.reasoning : '').trim()) evidencePatch.reasoning = investigationNote;
         update(evidencePatch);
         if (addToast) addToast('Terrain profile added to forecast evidence.', 'success');
         if (announce) announce(__alloT('stem.weathersystems.sr_wind_aligned_terrain_profile_added_to_forecast_ev', 'Wind-aligned terrain profile added to forecast evidence.'));
@@ -4229,7 +4232,7 @@ function openImmersiveTourStep(stepId) {
       }
 
       function logObservation() {
-        var log = (d.observationLog || []).slice();
+        var log = (Array.isArray(d.observationLog) ? d.observationLog : []).slice();
         log.push({
           id: selectedStation + '-' + state.simHour + '-' + log.length,
           station: observation.name,
@@ -4253,7 +4256,7 @@ function openImmersiveTourStep(stepId) {
       }
 
       function toggleEvidence(id) {
-        var evidence = (d.evidence || []).slice();
+        var evidence = (Array.isArray(d.evidence) ? d.evidence : []).slice();
         var index = evidence.indexOf(id);
         if (index === -1) evidence.push(id); else evidence.splice(index, 1);
         update({ evidence: evidence });
@@ -4275,13 +4278,13 @@ function openImmersiveTourStep(stepId) {
 
       function issueForecast() {
         var terrainEvidenceStatus = geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, activeLiveWeather(d));
-        if ((d.evidence || []).indexOf(TERRAIN_EVIDENCE.id) !== -1 && !terrainEvidenceStatus.current) {
+        if ((Array.isArray(d.evidence) ? d.evidence : []).indexOf(TERRAIN_EVIDENCE.id) !== -1 && !terrainEvidenceStatus.current) {
           if (addToast) addToast('Refresh or remove stale terrain evidence before verifying the forecast.', 'warning');
           if (announce) announce(__alloT('stem.weathersystems.sr_forecast_verification_paused_because_the_selected', 'Forecast verification paused because the selected terrain evidence does not match the active live observation.'));
           return;
         }
         var reasoningTarget = band === 'K-2' ? 10 : 20;
-        var reasoningText = (d.reasoning || '').trim();
+        var reasoningText = (typeof d.reasoning === 'string' ? d.reasoning : '').trim();
         if (!d.predictionPrecip || !d.predictionTiming || !d.predictionHazard || !d.readinessAction || !d.forecastConfidence || reasoningText.length < reasoningTarget) {
           if (addToast) addToast('Complete the forecast choices and explain your reasoning before verification.', 'warning');
           if (announce) announce(__alloT('stem.weathersystems.sr_forecast_incomplete_complete_precipitation_timing', 'Forecast incomplete. Complete precipitation, timing, hazard, school action, confidence, and the reasoning note.'));
@@ -4293,7 +4296,7 @@ function openImmersiveTourStep(stepId) {
           hazard: d.predictionHazard,
           action: d.readinessAction,
           confidence: Number(d.forecastConfidence),
-          evidence: d.evidence || []
+          evidence: Array.isArray(d.evidence) ? d.evidence : []
         });
         var issued = (d.forecastsIssued || 0) + 1;
         var best = Math.max(d.bestForecast || 0, result.score);
@@ -4306,7 +4309,7 @@ function openImmersiveTourStep(stepId) {
           hazard: d.predictionHazard,
           action: d.readinessAction,
           confidence: Number(d.forecastConfidence),
-          evidenceCount: (d.evidence || []).length,
+          evidenceCount: (Array.isArray(d.evidence) ? d.evidence : []).length,
           reasoning: reasoningText,
           modelHour: state.simHour
         });
@@ -5838,9 +5841,9 @@ var geographyGroup = new THREE.Group();
       var buttonClass = 'min-h-11 rounded-lg border px-3 py-2 text-sm font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none ' + (dark ? 'bg-slate-800 border-slate-600 hover:bg-slate-700' : 'bg-white border-slate-300 hover:bg-sky-50');
 
       function meteorologistBadgeBoard() {
-        var observationCount = (d.observationLog || []).length;
+        var observationCount = (Array.isArray(d.observationLog) ? d.observationLog : []).length;
         var stationCount = Object.keys(d.stationsViewed || {}).length;
-        var evidenceCount = (d.evidence || []).length;
+        var evidenceCount = (Array.isArray(d.evidence) ? d.evidence : []).length;
         var revisionCount = (d.forecastHistory || []).length;
         var communicationCount = [d.predictionPrecip, d.predictionTiming, d.predictionHazard, d.readinessAction].filter(Boolean).length;
         var badges = [
@@ -5898,7 +5901,7 @@ var geographyGroup = new THREE.Group();
           {
             id: 'observe', icon: '\uD83D\uDD2D', label: early ? 'Look closely' : 'Observe',
             detail: early ? 'Save one weather clue.' : 'Log a station observation.', action: 'Log an observation', tab: 'map',
-            complete: (d.observationLog || []).length >= 1
+            complete: (Array.isArray(d.observationLog) ? d.observationLog : []).length >= 1
           },
           {
             id: 'compare', icon: '\u2194\uFE0F', label: early ? 'Compare' : 'Compare',
@@ -6860,7 +6863,7 @@ var geographyGroup = new THREE.Group();
         );
       }
       function observationLogPanel() {
-        var log = d.observationLog || [];
+        var log = Array.isArray(d.observationLog) ? d.observationLog : [];
         if (!log.length) return null;
         return h('div', { className: panelClass + ' overflow-hidden', 'data-weather-observation-log': true },
           h('div', { className: 'flex flex-wrap items-center justify-between gap-2 border-b p-3 ' + (dark ? 'border-slate-700' : 'border-sky-200') },
@@ -7444,7 +7447,7 @@ var geographyGroup = new THREE.Group();
             if (announce) announce(__alloT('stem.weathersystems.sr_select_at_least_one_evidence_card_before_opening', 'Select at least one evidence card before opening the Forecast Mission.'));
             return;
           }
-          var merged = (d.evidence || []).slice();
+          var merged = (Array.isArray(d.evidence) ? d.evidence : []).slice();
           selectedLensEvidence.forEach(function (id) { if (merged.indexOf(id) === -1) merged.push(id); });
           update({
             tab: 'forecast',
@@ -7869,10 +7872,10 @@ var geographyGroup = new THREE.Group();
       function forecastMission() {
         var truth = forecastResult && forecastResult.truth;
         var terrainEvidenceStatus = geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, activeLiveWeather(d));
-        var usableEvidenceIds = (d.evidence || []).filter(function (id) { return id !== TERRAIN_EVIDENCE.id || terrainEvidenceStatus.current; });
+        var usableEvidenceIds = (Array.isArray(d.evidence) ? d.evidence : []).filter(function (id) { return id !== TERRAIN_EVIDENCE.id || terrainEvidenceStatus.current; });
         var selectedEvidenceCount = usableEvidenceIds.length;
         var reasoningTarget = band === 'K-2' ? 10 : 20;
-        var reasoningLength = (d.reasoning || '').trim().length;
+        var reasoningLength = (typeof d.reasoning === 'string' ? d.reasoning : '').trim().length;
         var ensemble = ensembleForecast(state);
         var forecastEvidenceOptions = EVIDENCE.concat(d.geographicTerrainEvidence ? [TERRAIN_EVIDENCE] : []);
         var readinessItems = [
@@ -8003,7 +8006,7 @@ var geographyGroup = new THREE.Group();
             { id: 'reasoning', label: 'Add reasoning frame', text: 'This evidence supports my claim because ' + signalPhrase + ' connects the observations to the forecast.' }
           ];
           function appendFrame(frame) {
-            var existing = (d.reasoning || '').trim();
+            var existing = (typeof d.reasoning === 'string' ? d.reasoning : '').trim();
             var next = existing ? existing + ' ' + frame.text : frame.text;
             update({ reasoning: next, forecastResult: null });
             if (announce) announce(frame.label + ' added to the reasoning note. Edit the sentence in your own words.');
@@ -8749,7 +8752,7 @@ var geographyGroup = new THREE.Group();
               h('p', { className: 'mt-1 text-xs ' + mutedClass }, 'Choose the observations you used. Strong forecasts connect more than one data source.'),
               h('div', { className: 'mt-3 flex flex-wrap gap-2' },
                 forecastEvidenceOptions.map(function (item) {
-                  var selected = (d.evidence || []).indexOf(item.id) !== -1;
+                  var selected = (Array.isArray(d.evidence) ? d.evidence : []).indexOf(item.id) !== -1;
                   return h('button', {
                     key: item.id, type: 'button', onClick: function () { toggleEvidence(item.id); }, 'aria-pressed': selected,
                     className: 'min-h-11 rounded-full border px-3 py-2 text-xs font-bold focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none ' + (selected ? 'border-sky-400 bg-sky-700 text-white' : (dark ? 'border-slate-600 bg-slate-950 hover:bg-slate-800' : 'border-slate-300 bg-white hover:bg-sky-50'))
@@ -8793,7 +8796,7 @@ var geographyGroup = new THREE.Group();
               h('label', { htmlFor: 'forecast-reasoning', className: 'mt-4 block' },
                 h('span', { className: 'mb-1 block text-xs font-black' }, band === 'K-2' ? 'Why do you think so?' : 'Claim-Evidence-Reasoning note'),
                 h('textarea', {
-                  id: 'forecast-reasoning', rows: 4, value: d.reasoning || '',
+                  id: 'forecast-reasoning', rows: 4, value: typeof d.reasoning === 'string' ? d.reasoning : '',
                   onChange: function (event) { update({ reasoning: event.target.value, forecastResult: null }); },
                   'aria-describedby': 'weather-cer-guidance weather-reasoning-count',
                   placeholder: band === 'K-2' ? 'I think... because I noticed...' : 'I predict... My evidence is... This matters because...',
@@ -10238,7 +10241,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                     terrainProfileAnalysis && h('p', { className: 'mt-3 text-[0.6875rem] font-black text-violet-200' }, terrainProfileAnalysis.signalLabel),
                     terrainProfileAnalysis && h('p', { className: 'mt-1 text-[0.6875rem] leading-relaxed text-slate-300' }, terrainProfileAnalysis.interpretation),
                     terrainProfileAnalysis && d.geographicTerrainEvidence && h('p', { className: 'mt-3 text-[0.625rem] leading-relaxed text-emerald-200', 'data-weather-terrain-evidence-identity': true }, geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, live).detail),
-                    terrainProfileAnalysis && h('button', { type: 'button', onClick: useGeographicTerrainEvidence, 'aria-pressed': (d.evidence || []).indexOf(TERRAIN_EVIDENCE.id) !== -1, className: 'mt-3 min-h-11 w-full rounded-lg border border-violet-300/50 bg-violet-300/15 px-3 py-2 text-xs font-black text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, (d.evidence || []).indexOf(TERRAIN_EVIDENCE.id) !== -1 && d.geographicTerrainEvidence && geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, live).current ? 'Open forecast with terrain evidence' : (d.geographicTerrainEvidence ? 'Refresh terrain forecast evidence' : 'Use as forecast evidence'))
+                    terrainProfileAnalysis && h('button', { type: 'button', onClick: useGeographicTerrainEvidence, 'aria-pressed': (Array.isArray(d.evidence) ? d.evidence : []).indexOf(TERRAIN_EVIDENCE.id) !== -1, className: 'mt-3 min-h-11 w-full rounded-lg border border-violet-300/50 bg-violet-300/15 px-3 py-2 text-xs font-black text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, (Array.isArray(d.evidence) ? d.evidence : []).indexOf(TERRAIN_EVIDENCE.id) !== -1 && d.geographicTerrainEvidence && geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, live).current ? 'Open forecast with terrain evidence' : (d.geographicTerrainEvidence ? 'Refresh terrain forecast evidence' : 'Use as forecast evidence'))
                   ),
                   geographicTerrainAvailable === false && h('div', { className: 'mt-4 border-l-2 border-amber-300/70 bg-amber-300/10 p-3', role: 'status', 'data-weather-terrain-degraded': true },
                     h('p', { className: 'text-xs font-black text-amber-100' }, 'Base map available; 3D terrain unavailable'),
@@ -10703,7 +10706,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
         }
 
         function teacherCheckpointDashboard() {
-          var observationCount = (d.observationLog || []).length;
+          var observationCount = (Array.isArray(d.observationLog) ? d.observationLog : []).length;
           var stationCount = Object.keys(d.stationsViewed || {}).length;
           var selectedChangeCount = (d.lensEvidence || []).length;
           var comparisonComplete = !!d.patternCompared || selectedChangeCount >= 1 || !!d.carriedEvidence;
@@ -10711,8 +10714,8 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
           var forecastCount = d.forecastsIssued || 0;
           var history = d.forecastHistory || [];
           var latestForecast = history.length ? history[history.length - 1] : null;
-          var reasoningLength = (d.reasoning || (latestForecast && latestForecast.reasoning) || '').trim().length;
-          var evidenceCount = Math.max((d.evidence || []).length, latestForecast && latestForecast.evidenceCount || 0);
+          var reasoningLength = ((typeof d.reasoning === 'string' ? d.reasoning : '') || (latestForecast && latestForecast.reasoning) || '').trim().length;
+          var evidenceCount = Math.max((Array.isArray(d.evidence) ? d.evidence : []).length, latestForecast && latestForecast.evidenceCount || 0);
           var reasoningTarget = band === 'K-2' ? 10 : 20;
           var revisionDelta = history.length >= 2 ? Number(history[history.length - 1].score || 0) - Number(history[history.length - 2].score || 0) : null;
           var checkpoints = [
@@ -10861,7 +10864,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
             return 'Ask the learner to connect two pieces of evidence, explain why they matter, and try the reasoning in a new scenario.';
           }
           function teacherHandoffBrief() {
-            var observationCount = (d.observationLog || []).length;
+            var observationCount = (Array.isArray(d.observationLog) ? d.observationLog : []).length;
             var comparisonReady = !!d.patternCompared || (d.lensEvidence || []).length >= 1 || !!d.carriedEvidence;
             var experimentCount = d.experimentsRun || 0;
             var forecastCount = d.forecastsIssued || 0;

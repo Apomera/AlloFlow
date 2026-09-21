@@ -612,7 +612,7 @@
         var renderLeavening = function() {
           var acidId = d.leavAcid || 'buttermilk';
           var baseId = d.leavBase || 'baking_soda';
-          var amount = d.leavAmount != null ? d.leavAmount : 50;
+          var amount = (typeof d.leavAmount === 'number' && isFinite(d.leavAmount)) ? d.leavAmount : 50;
           var acid = ACIDS.filter(function(a) { return a.id === acidId; })[0] || ACIDS[0];
           var base = BASES.filter(function(b) { return b.id === baseId; })[0] || BASES[0];
 
@@ -821,9 +821,9 @@
         var renderEmulsion = function() {
           var goalId = d.emulGoal || 'vinaigrette';
           var goal = EMULSION_GOALS.filter(function(g) { return g.id === goalId; })[0] || EMULSION_GOALS[0];
-          var oil = d.emulOil != null ? d.emulOil : 50;
-          var water = d.emulWater != null ? d.emulWater : 50;
-          var yolk = d.emulYolk != null ? d.emulYolk : 0;
+          var oil = (typeof d.emulOil === 'number' && isFinite(d.emulOil)) ? d.emulOil : 50;
+          var water = (typeof d.emulWater === 'number' && isFinite(d.emulWater)) ? d.emulWater : 50;
+          var yolk = (typeof d.emulYolk === 'number' && isFinite(d.emulYolk)) ? d.emulYolk : 0;
 
           // Normalize to 100 for display consistency.
           var total = oil + water + yolk;
@@ -970,7 +970,7 @@
           if (lockFlour && baselineFlourGrams > 0) {
             factor = lockedFlourTarget / baselineFlourGrams;
           } else {
-            factor = d.scaleFactor != null ? d.scaleFactor : 1;
+            factor = (typeof d.scaleFactor === 'number' && isFinite(d.scaleFactor)) ? d.scaleFactor : 1;
           }
           factor = Math.max(0.1, Math.min(10, factor));
 
@@ -1154,7 +1154,7 @@
         // SUB-TOOL 4: OVEN TIMELINE
         // ═══════════════════════════════════════
         var renderOven = function() {
-          var temp = d.ovenTemp != null ? d.ovenTemp : 72; // canonical: °F
+          var temp = (typeof d.ovenTemp === 'number' && isFinite(d.ovenTemp)) ? d.ovenTemp : 72; // canonical: °F
           var unit = d.ovenUnit || 'F';
           var fToC = function(f) { return Math.round((f - 32) * 5 / 9); };
           var formatTemp = function(f) {
@@ -1377,7 +1377,7 @@
             }
             upd('diagOrder', order);
           }
-          var idx = d.diagIdx != null ? d.diagIdx : 0;
+          var idx = (Number.isInteger(d.diagIdx) && d.diagIdx >= 0) ? d.diagIdx : 0;
           if (idx >= order.length) idx = 0;
           var scenario = DIAGNOSIS_SCENARIOS[order[idx]];
           var selected = d.diagSelected || null;
@@ -1550,9 +1550,9 @@
         // SUB-TOOL 6: GLUTEN LAB
         // ═══════════════════════════════════════
         var renderGluten = function() {
-          var protein   = d.glutenProtein   != null ? d.glutenProtein   : 11;
-          var hydration = d.glutenHydration != null ? d.glutenHydration : 65;
-          var knead     = d.glutenKnead     != null ? d.glutenKnead     : 5;
+          var protein   = (typeof d.glutenProtein === 'number' && isFinite(d.glutenProtein)) ? d.glutenProtein : 11;
+          var hydration = (typeof d.glutenHydration === 'number' && isFinite(d.glutenHydration)) ? d.glutenHydration : 65;
+          var knead     = (typeof d.glutenKnead === 'number' && isFinite(d.glutenKnead)) ? d.glutenKnead : 5;
 
           // Factor model (each 0-1); final strength = product * 100.
           // protein → gluten potential
@@ -1839,8 +1839,8 @@
         var renderBrowning = function() {
           var foodId = d.brownFood || 'chicken';
           var food = BROWN_FOODS.filter(function(f) { return f.id === foodId; })[0] || BROWN_FOODS[0];
-          var temp = d.brownTemp != null ? d.brownTemp : 350;
-          var minutes = d.brownTime != null ? d.brownTime : 5;
+          var temp = (typeof d.brownTemp === 'number' && isFinite(d.brownTemp)) ? d.brownTemp : 350;
+          var minutes = (typeof d.brownTime === 'number' && isFinite(d.brownTime)) ? d.brownTime : 5;
           var dry = !!d.brownDry;
 
           // Browning physics (simplified):
@@ -2125,9 +2125,10 @@
 
         function makeAiPanel() {
           var aiLevel = d.aiLevel || 'grade5';
-          var aiText = d.aiExplain || '';
+          // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
+          var aiText = typeof d.aiExplain === 'string' ? d.aiExplain : '';
           var aiLoading = !!d.aiLoading;
-          var aiError = d.aiError || '';
+          var aiError = typeof d.aiError === 'string' ? d.aiError : '';
           var LEVELS = [
             { id: 'plain', label: __alloT('stem.bakingscience.plain', 'Plain'), hint: __alloT('stem.bakingscience.using_simple_everyday_words_and_short_', 'using simple everyday words and short sentences') },
             { id: 'grade5', label: __alloT('stem.bakingscience.grade_5', 'Grade 5'), hint: __alloT('stem.bakingscience.for_a_5th_grade_student_brief_and_frie', 'for a 5th grade student, brief and friendly') },

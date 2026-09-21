@@ -38,17 +38,25 @@ describe('the toggle is offered where source material is generated', () => {
     expect(read('quickstart_source.jsx')).toMatch(/\{wizOwnSourceCount > 0 && \(/);
   });
 
+  // Counting used to be inlined in each panel. It moved into own_sources_module
+  // because all three copies opened the Lumen store the SAME WRONG WAY — passing
+  // the scope string as the whole options bag, so the store had no adapter and
+  // loaded nothing. Assert the behaviour where it now lives.
   it('counts only ACTIVE sources, matching what retrieval will actually search', () => {
+    expect(read('own_sources_module.js')).toMatch(/source\.active !== false/);
+  });
+
+  it('both panels count through the shared helper rather than opening the store themselves', () => {
     for (const f of ['view_misc_panels_source.jsx', 'quickstart_source.jsx']) {
-      expect(read(f), f).toMatch(/filter\(\(s\) => s && s\.active !== false\)/);
+      expect(read(f), f).toMatch(/countSources\(/);
+      expect(read(f), `${f} should not hand-roll the store`).not.toMatch(/createProjectStore\(/);
     }
   });
 
   it('reads the count from local storage only — never the network', () => {
-    const panel = read('view_misc_panels_source.jsx');
-    const block = panel.slice(panel.indexOf('const [ownSourceCount'), panel.indexOf('if (!(showSourceGen)) return null;'));
-    expect(block).toMatch(/createProjectStore/);
-    expect(block).not.toMatch(/fetch\(|XMLHttpRequest/);
+    const helper = read('own_sources_module.js');
+    expect(helper).toMatch(/createProjectStore/);
+    expect(helper).not.toMatch(/fetch\(|XMLHttpRequest/);
   });
 });
 

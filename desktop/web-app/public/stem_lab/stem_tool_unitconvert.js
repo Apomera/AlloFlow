@@ -1267,7 +1267,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 }, t('stem.unitconvert.save_2', '\uD83D\uDCBE Save')),
                 h('button', { 'aria-label': 'Pin',
                   onClick: function() {
-                    var pinned = d.pinnedConversions || [];
+                    var pinned = Array.isArray(d.pinnedConversions) ? d.pinnedConversions : [];
                     if (pinned.length >= 10) { addToast('Max 10 pinned conversions', 'warning'); return; }
                     var key = d.category + '_' + d.fromUnit + '_' + d.toUnit;
                     if (pinned.find(function(p) { return p.key === key; })) { addToast('Already pinned', 'warning'); return; }
@@ -1347,10 +1347,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
 
             // Pinned conversions
-            d.pinnedConversions && d.pinnedConversions.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
+            Array.isArray(d.pinnedConversions) && d.pinnedConversions.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
               h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.unitconvert.pinned_conversions', '\uD83D\uDCCC Pinned Conversions')),
               h('div', { className: 'flex flex-wrap gap-1.5' },
-                d.pinnedConversions.map(function(p, i) {
+                (Array.isArray(d.pinnedConversions) ? d.pinnedConversions : []).map(function(p, i) {
                   return h('button', { key: p.key,
                     onClick: function() {
                       var c2 = CATEGORIES[p.category];
@@ -1384,13 +1384,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
 
             // Conversion history
-            !hideConversionResult && d.history && d.history.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
+            !hideConversionResult && Array.isArray(d.history) && d.history.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.unitconvert.history', '\uD83D\uDCDD History')),
                 h('button', { 'aria-label': t('stem.unitconvert.clear', 'Clear'), onClick: function() { upd('history', []); }, className: 'transition-colors text-[0.6875rem] text-red-400 hover:text-red-600 font-bold' }, t('stem.unitconvert.clear_2', 'Clear'))
               ),
               h('div', { className: 'space-y-1' },
-                d.history.map(function(item, i) {
+                (Array.isArray(d.history) ? d.history : []).map(function(item, i) {
                   return h('div', { key: i, className: 'flex items-center gap-2 text-xs bg-white rounded-lg px-2 py-1.5 border' },
                     h('span', { className: 'text-cyan-800 font-bold' }, item.from),
                     h('span', { className: 'text-slate-600' }, '\u2192'),

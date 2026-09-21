@@ -615,13 +615,19 @@ describe('the tool does not contradict itself in the headline', () => {
     const closing = SRC.slice(SRC.indexOf("sec('next'"));
     const ids = [...closing.matchAll(/\{ id: '([A-Za-z0-9_]+)', icon:/g)].map((m) => m[1]);
     expect(ids.length, 'cross-links not found — did sec(next) change shape?').toBeGreaterThanOrEqual(4);
-    const all = fs.readdirSync('stem_lab')
-      .filter((f) => f.startsWith('stem_tool_') && f.endsWith('.js'))
-      .map((f) => fs.readFileSync('stem_lab/' + f, 'utf8'))
-      .join('\n');
-    for (const id of ids) {
-      expect(all.includes("registerTool('" + id + "'"), `"${id}" is linked but no tool registers it`).toBe(true);
-    }
+    const files = fs.readdirSync('stem_lab')
+      .filter((f) => f.startsWith('stem_tool_') && f.endsWith('.js'));
+    const byLowerName = new Map(files.map((f) => [f.toLowerCase(), f]));
+    const registers = (file, id) =>
+      fs.readFileSync('stem_lab/' + file, 'utf8').includes("registerTool('" + id + "'");
+
+    const missing = ids.filter((id) => {
+      const guess = byLowerName.get('stem_tool_' + id.toLowerCase() + '.js');
+      if (guess && registers(guess, id)) return false;
+      // Not where the naming convention says it should be — look everywhere.
+      return !files.some((f) => registers(f, id));
+    });
+    expect(missing, 'linked but no tool registers them').toEqual([]);
   });
 });
 

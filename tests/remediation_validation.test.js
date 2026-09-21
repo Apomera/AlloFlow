@@ -10,7 +10,7 @@ describe('maintained remediation validation', () => {
     expect(manifest.unit).toContain('tests/remediation_form_context.test.js');
     expect(manifest.browser).toContain('tests/e2e/remediation_form_context.spec.ts');
     // Detect new relevant browser suites that were not added to the shared list.
-    const browserFiles = fs.readdirSync('tests/e2e').filter(file => /^(document_export_|document_focus_wrap|document_static_crop_cleanup|document_dependency_|rendered_|remediation_form_context|remediation_form_values|remediation_table_roles|remediation_continuity|remediation_batch_recovery)/.test(file) && file.endsWith('.spec.ts')).map(file => 'tests/e2e/' + file);
+    const browserFiles = fs.readdirSync('tests/e2e').filter(file => /^(document_export_|document_focus_wrap|document_static_crop_cleanup|document_dependency_|rendered_|remediation_form_context|remediation_form_values|remediation_form_native_contract|remediation_table_roles|remediation_continuity|remediation_batch_recovery)/.test(file) && file.endsWith('.spec.ts')).map(file => 'tests/e2e/' + file);
     expect(manifest.browser.slice().sort()).toEqual(browserFiles.sort());
     expect(JSON.parse(fs.readFileSync('package.json', 'utf8')).scripts['verify:remediation']).toBe('node dev-tools/remediation_validation.cjs');
     const workflow = fs.readFileSync('.github/workflows/verify.yml', 'utf8');

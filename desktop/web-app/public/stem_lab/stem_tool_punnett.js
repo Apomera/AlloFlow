@@ -1405,7 +1405,7 @@ window.StemLab = window.StemLab || {
           // ═══════════════════════════════════════
           // CROSS SUB-TOOL (existing logic)
           // ═══════════════════════════════════════
-          var inheritMode = d.inheritMode || 'complete';
+          var inheritMode = (['complete', 'incomplete', 'codominant', 'sexLinked'].indexOf(d.inheritMode) !== -1) ? d.inheritMode : 'complete';
           var isSexLinked = inheritMode === 'sexLinked';
           // ★ `|| default` catches null but not a wrong TYPE, and these three come
           // from toolData — a project file a student can save, copy, hand-edit or
@@ -1682,7 +1682,7 @@ window.StemLab = window.StemLab || {
           // ═══════════════════════════════════════
           // POPULATION GENETICS (Hardy-Weinberg)
           // ═══════════════════════════════════════
-          var popFreqA = d.popFreqA != null ? d.popFreqA : 0.5;
+          var popFreqA = (typeof d.popFreqA === 'number' && isFinite(d.popFreqA)) ? d.popFreqA : 0.5;
           var popSize = d.popSize || 200;
           var popGens = d.popGens || 30;
           var popSelection = d.popSelection || 0;
@@ -1747,8 +1747,8 @@ window.StemLab = window.StemLab || {
           // ═══════════════════════════════════════
           var battleActive = d._battleActive || false;
           var battleRound = d._battleRound || 0;
-          var battleHP = d._battleHP != null ? d._battleHP : 100;
-          var battleEnemyHP = d._battleEnemyHP != null ? d._battleEnemyHP : 100;
+          var battleHP = (typeof d._battleHP === 'number' && isFinite(d._battleHP)) ? d._battleHP : 100;
+          var battleEnemyHP = (typeof d._battleEnemyHP === 'number' && isFinite(d._battleEnemyHP)) ? d._battleEnemyHP : 100;
           var battleFeedback = d._battleFeedback || null;
           var battleScore = d._battleScore || 0;
           var battleResult = d._battleResult || null; // 'won' | 'lost' | null
@@ -1839,7 +1839,7 @@ window.StemLab = window.StemLab || {
           // TRAIT EXPLORER state
           // ═══════════════════════════════════════
           var traitFilter = d._traitFilter || 'all';
-          var traitSelected = d._traitSelected != null ? d._traitSelected : -1;
+          var traitSelected = (typeof d._traitSelected === 'number' && isFinite(d._traitSelected)) ? d._traitSelected : -1;
 
           // ═══════════════════════════════════════
           // LEARN state

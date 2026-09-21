@@ -4229,7 +4229,11 @@ var d = labToolData.dissection || {};
           }
           function tissueVariantDefinition(layerId, options) {
             options = options || {};
-            var seed = Math.abs(Number(options.variationSeed || d.variationSeed || variationSeed || 1));
+            // The seed indexes the `variants` table, so it must be an INTEGER:
+            // Math.abs(Number('abc')) is NaN, and a fraction like 1.5 survives
+            // an isFinite check but still leaves variants[1.5] undefined.
+            var _seedRaw = Math.abs(Number(options.variationSeed || d.variationSeed || variationSeed || 1));
+            var seed = isFinite(_seedRaw) ? Math.floor(_seedRaw) : 1;
             var variantLayerIdx = currentLayerIdx;
             if (layerId) {
               var resolvedLayerIdx = spec.layers.findIndex(function (layer) { return layer.id === layerId; });

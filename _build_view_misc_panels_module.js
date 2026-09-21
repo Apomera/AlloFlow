@@ -72,6 +72,7 @@ var Search = _lazyIcon('Search');
 var Settings = _lazyIcon('Settings');
 var Sparkles = _lazyIcon('Sparkles');
 var StopCircle = _lazyIcon('StopCircle');
+var Upload = _lazyIcon('Upload');
 var UserCheck = _lazyIcon('UserCheck');
 var Users = _lazyIcon('Users');
 var X = _lazyIcon('X');

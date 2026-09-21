@@ -2,7 +2,7 @@
   "passed": true,
   "ai": "Deterministic fixture through independent production review requests",
   "soloTransportWrites": 0,
-  "keyboardTabSteps": 373,
+  "keyboardTabSteps": 377,
   "scenarios": [
     "saved library preserves two variations and separate progress",
     "saved selection resumes after reload",

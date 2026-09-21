@@ -1103,7 +1103,7 @@ window.SelHub = window.SelHub || {
                     usedWords.forEach(function(w) { pending[w] = true; });
                     var displayCount = Object.keys(pending).length;
                     return h('div', { style: { marginTop: 10, textAlign: 'center', fontSize: 11, color: _jouFg('#94a3b8') } },
-          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
                       '\uD83D\uDCDA Your Emotion Vocabulary: ' + displayCount + ' word' + (displayCount !== 1 ? 's' : '') + ' used',
                       displayCount >= 10 && h('span', { style: { color: _jouFg('#22c55e'), marginLeft: 6, fontWeight: 600 } }, '\u2605 Wordsmith!')
                     );
@@ -1524,7 +1524,7 @@ window.SelHub = window.SelHub || {
             // Sub-tab navigation
             journalSubTabs,
             h('p', { style: { color: _jouFg('#cbd5e1'), fontSize: 14, lineHeight: 1.6 } }, 'Write as much or as little as helps. You can use a made-up situation, reflect away from the screen, or pass. Sharing is optional.'),
-            h('p', { role: 'status', 'aria-live': 'polite', style: { color: _jouFg('#e2e8f0'), fontSize: 14, lineHeight: 1.5 } }, d.jNotice || ''),
+            h('p', { role: 'status', 'aria-live': 'polite', style: { color: _jouFg('#e2e8f0'), fontSize: 14, lineHeight: 1.5 } }, typeof d.jNotice === 'string' ? d.jNotice : ''),
 
             // Letter viewing mode
             letterViewingPast && letterEntries.length > 0 ? letterViewerContent :

@@ -1,0 +1,26 @@
+{
+  "sourceSha256": "fade6fae73696f82a320b0aef4e7823dc75f386d440c0de8e8c412ed0f64ca33",
+  "sourceAndDesktopIdentical": true,
+  "previewIdentical": true,
+  "syntaxValid": true,
+  "regressionTests": 172,
+  "newTests": 20,
+  "testFiles": 7,
+  "scenarios": 18,
+  "technologies": 9,
+  "trialInspections": 36,
+  "browserBehaviors": 13,
+  "accessibilityAudits": 9,
+  "pageErrors": [],
+  "consoleErrors": [],
+  "viewportWidths": [
+    1280,
+    390,
+    320
+  ],
+  "visualReview": [
+    "input-checks-desktop.jpg",
+    "input-checks-phone-320.jpg"
+  ],
+  "scope": "Isolated local React/Three.js browser host and running preview source; no deployment."
+}

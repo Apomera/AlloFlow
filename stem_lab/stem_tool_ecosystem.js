@@ -3284,14 +3284,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       };
 
       // ── Default state ──
-      var prey0 = d.prey0 !== undefined ? d.prey0 : 80;
-      var pred0 = d.pred0 !== undefined ? d.pred0 : 12;
-      var preyBirth = d.preyBirth !== undefined ? d.preyBirth : 0.1;
-      var preyDeath = d.preyDeath !== undefined ? d.preyDeath : 0.005;
-      var predBirth = d.predBirth !== undefined ? d.predBirth : 0.005;
-      var predDeath = d.predDeath !== undefined ? d.predDeath : 0.1;
+      // A saved session is INPUT. `d.x !== undefined ? d.x : default` admits
+      // null, strings and objects — everything except the one value it tests
+      // for — and those reached .toFixed(), .toString() and React children.
+      // The tool already declares the valid range of every parameter, so clamp
+      // to it: that rejects wrong TYPES and nonsense magnitudes (9999 prey) in
+      // one step, and a clamped value still simulates sensibly.
       var modelRangeMode = d.modelRangeMode === 'full' ? 'full' : 'guided';
       var activeModelRanges = ECO_MODEL_RANGES[modelRangeMode];
+      // TYPE only — deliberately NOT clamped to activeModelRanges.
+      //
+      // Those ranges bound the SLIDERS, not the model. The tool's own scenario
+      // presets set values outside the guided range on purpose (Equilibrium
+      // uses prey0: 20 where the guided minimum is 25; Extinction uses
+      // preyDeath: 0.03 against a guided max of 0.01) without switching
+      // modelRangeMode. Clamping here silently rewrote every preset — caught by
+      // tests/ecosystem_parameter_sweep.test.js, which asserts the preset values
+      // survive. A malformed value still falls back to the author's default;
+      // an out-of-range NUMBER is a legitimate scenario, not hostile input.
+      function _ecoParam(v, name, fallback) {
+        return (typeof v === 'number' && isFinite(v)) ? v : fallback;
+      }
+      var prey0 = _ecoParam(d.prey0, 'prey0', 80);
+      var pred0 = _ecoParam(d.pred0, 'pred0', 12);
+      var preyBirth = _ecoParam(d.preyBirth, 'preyBirth', 0.1);
+      var preyDeath = _ecoParam(d.preyDeath, 'preyDeath', 0.005);
+      var predBirth = _ecoParam(d.predBirth, 'predBirth', 0.005);
+      var predDeath = _ecoParam(d.predDeath, 'predDeath', 0.1);
       var data = d.data || [];
       var steps = d.steps || 0;
       var livePopHistory = d.livePopHistory || [];
@@ -3308,7 +3327,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       var TAB_IDS = ['badges', 'conserve', 'explore', 'foodweb', 'inquiry', 'quiz', 'sandbox'];
       var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'explore';
       // Quiz state
-      var quizIndex = d.quizIndex !== undefined ? d.quizIndex : 0;
+      // Indexes QUIZ_QUESTIONS; a non-integer made the lookup undefined and
+      // the next `.q` read threw.
+      var quizIndex = (Number.isInteger(d.quizIndex) && d.quizIndex >= 0 && d.quizIndex < QUIZ_QUESTIONS.length) ? d.quizIndex : 0;
       var quizAnswer = d.quizAnswer !== undefined ? d.quizAnswer : -1;
       var quizFeedback = d.quizFeedback || '';
       var quizCorrect = d.quizCorrect || 0;
@@ -3327,22 +3348,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
       // ── NEW state: pause/speed ──
       var simPaused = d.simPaused || false;
-      var simSpeed = d.simSpeed !== undefined ? d.simSpeed : 2;
+      var simSpeed = (typeof d.simSpeed === 'number' && isFinite(d.simSpeed)) ? Math.min(10, Math.max(0, d.simSpeed)) : 2;
 
       // ── NEW state: carrying capacity ──
-      var carryingCapacity = d.carryingCapacity !== undefined ? d.carryingCapacity : 100;
+      var carryingCapacity = _ecoParam(d.carryingCapacity, 'carryingCapacity', 100);
       var carryCapChanges = d.carryCapChanges || 0;
 
       // ── NEW state: sandbox ──
       var sandboxTool = d.sandboxTool || 'rabbit';
-      var sandboxPlaceCount = d.sandboxPlaceCount || 0;
+      var sandboxPlaceCount = (typeof d.sandboxPlaceCount === 'number' && isFinite(d.sandboxPlaceCount) && d.sandboxPlaceCount >= 0) ? Math.floor(d.sandboxPlaceCount) : 0;
 
       // ── NEW state: events ──
       var eventsTriggered = d.eventsTriggered || {};
-      var eventHistory = d.eventHistory || [];
-      var lastObservation = d.lastObservation || 'Ecosystem running -- observe the predator-prey cycle.';
-      var livePhaseLabel = d.livePhaseLabel || 'Waiting for live phase data.';
-      var livePhaseExplain = d.livePhaseExplain || 'Run the live canvas for a few seconds to see which population phase is emerging.';
+      var eventHistory = Array.isArray(d.eventHistory) ? d.eventHistory : [];
+      // These four are rendered straight into the tree; an object makes React throw.
+      var lastObservation = typeof d.lastObservation === 'string' && d.lastObservation ? d.lastObservation : 'Ecosystem running -- observe the predator-prey cycle.';
+      var livePhaseLabel = typeof d.livePhaseLabel === 'string' && d.livePhaseLabel ? d.livePhaseLabel : 'Waiting for live phase data.';
+      var livePhaseExplain = typeof d.livePhaseExplain === 'string' && d.livePhaseExplain ? d.livePhaseExplain : 'Run the live canvas for a few seconds to see which population phase is emerging.';
       var runPrediction = d.runPrediction || '';
       var runPredictionReason = d.runPredictionReason || '';
       // A prediction only counts for a run after it is committed with the exact
@@ -3351,7 +3373,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       var committedRunPrediction = d.committedRunPrediction || null;
       var completedRunCommitment = d.completedRunCommitment || null;
       var experimentReflection = d.experimentReflection || '';
-      var predictionFeedback = d.predictionFeedback || '';
+      var predictionFeedback = typeof d.predictionFeedback === 'string' ? d.predictionFeedback : '';
       var baselineRun = d.baselineRun || null;
       var experimentLog = Array.isArray(d.experimentLog) ? d.experimentLog : [];
       var runName = d.runName || '';
@@ -3362,25 +3384,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       var replayStep = d.replayStep !== undefined ? d.replayStep : (data.length > 0 ? data.length - 1 : 0);
       var displayProfile = d.displayProfile || 'advanced';
       var analysisView = d.analysisView || 'population';
-      var uncertaintyTrials = d.uncertaintyTrials !== undefined ? d.uncertaintyTrials : 30;
-      var uncertaintyVariation = d.uncertaintyVariation !== undefined ? d.uncertaintyVariation : 0.25;
-      var uncertaintySeed = d.uncertaintySeed !== undefined ? d.uncertaintySeed : 42;
+      var uncertaintyTrials = (typeof d.uncertaintyTrials === 'number' && isFinite(d.uncertaintyTrials)) ? d.uncertaintyTrials : 30;
+      var uncertaintyVariation = (typeof d.uncertaintyVariation === 'number' && isFinite(d.uncertaintyVariation)) ? d.uncertaintyVariation : 0.25;
+      var uncertaintySeed = (typeof d.uncertaintySeed === 'number' && isFinite(d.uncertaintySeed)) ? d.uncertaintySeed : 42;
       var uncertaintyResult = d.uncertaintyResult || null;
       var interventionType = d.interventionType || 'drought';
-      var interventionStep = d.interventionStep !== undefined ? d.interventionStep : 50;
-      var interventionIntensity = d.interventionIntensity !== undefined ? d.interventionIntensity : 0.3;
+      var interventionStep = (typeof d.interventionStep === 'number' && isFinite(d.interventionStep)) ? d.interventionStep : 50;
+      var interventionIntensity = (typeof d.interventionIntensity === 'number' && isFinite(d.interventionIntensity)) ? d.interventionIntensity : 0.3;
       var interventionResult = d.interventionResult || null;
       var cerClaim = d.cerClaim || '';
       var cerReasoning = d.cerReasoning || '';
       var cerEvidence = Array.isArray(d.cerEvidence) ? d.cerEvidence : [];
       var trajectory3dOpen = d.trajectory3dOpen || false;
-      var trajectoryAzimuth = d.trajectoryAzimuth !== undefined ? d.trajectoryAzimuth : -35;
-      var trajectoryElevation = d.trajectoryElevation !== undefined ? d.trajectoryElevation : 24;
+      var trajectoryAzimuth = (typeof d.trajectoryAzimuth === 'number' && isFinite(d.trajectoryAzimuth)) ? d.trajectoryAzimuth : -35;
+      var trajectoryElevation = (typeof d.trajectoryElevation === 'number' && isFinite(d.trajectoryElevation)) ? d.trajectoryElevation : 24;
       var scenarioCompareOpen = d.scenarioCompareOpen || false;
       var scenarioCompareProtocol = d.scenarioCompareProtocol === 'baselines' ? 'baselines' : 'shared';
       var scenarioComparePrediction = d.scenarioComparePrediction || '';
       var scenarioCompareRevealed = d.scenarioCompareRevealed || false;
-      var scenarioCompareStep = d.scenarioCompareStep !== undefined ? d.scenarioCompareStep : 50;
+      var scenarioCompareStep = (typeof d.scenarioCompareStep === 'number' && isFinite(d.scenarioCompareStep)) ? d.scenarioCompareStep : 50;
       var teacherMode = d.teacherMode || false;
       var teacherPrompt = d.teacherPrompt || '';
       var DISPLAY_PROFILES = [

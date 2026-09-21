@@ -487,7 +487,9 @@ describe('Seismogram — the trace shows what the panels around it claim', () =>
     // With only a magnitude slider the S-minus-P gap was a constant a student
     // could not question. Magnitude sets amplitude; distance sets the gap.
     expect(text).toMatch(/'data-pt-eq-distance': 'true'/);
-    expect(text).toMatch(/var eqDistKm = d\.eqDistKm != null \? d\.eqDistKm : 600;/);
+    // The guard's spelling changed (`!= null` admitted strings and objects,
+    // which reached .toFixed); the CLAIM is the key and its 600 default.
+    expect(text).toMatch(/var eqDistKm = [^;]*d\.eqDistKm[^;]*600;/);
     expect(text).toMatch(/eqDistKm: eqDistKm, isDark: isDark/);
   });
 
@@ -1134,9 +1136,11 @@ describe('Every key the sim writes is read by something', () => {
     const i = text.indexOf("['Strongest quake'");
     expect(i).toBeGreaterThan(-1);
     const tile = text.slice(i, i + 700);
-    expect(tile).toMatch(/d\.lastQuakeMag\s*\?\s*'latest M ' \+ d\.lastQuakeMag\.toFixed\(1\)/);
+    // Now typeof-guarded (a saved string is truthy and has no .toFixed); the
+    // claim is unchanged: the tile reads lastQuakeMag back out and formats it.
+    expect(tile).toMatch(/d\.lastQuakeMag[^?]*\?\s*'latest M ' \+ d\.lastQuakeMag\.toFixed\(1\)/);
     // and the record is still what the tile's headline number reports
-    expect(tile).toMatch(/d\.maxQuakeMag \? 'M ' \+ d\.maxQuakeMag\.toFixed\(1\) : '--'/);
+    expect(tile).toMatch(/d\.maxQuakeMag[^?]*\?\s*'M ' \+ d\.maxQuakeMag\.toFixed\(1\) : '--'/);
   });
 
   it('leaves no badge key that nothing writes', () => {

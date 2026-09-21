@@ -476,7 +476,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
         onClick: () => dismissGrammarNote(idx),
         title: t('analysis.grammar_dismiss_hint') || 'Dismiss this notice without using AI (already fixed by hand, or not a real error)',
         "aria-label": `${t('analysis.grammar_dismiss_one') || 'Dismiss notice'}: ${bareNote.slice(0, 80)}`,
-        className: "shrink-0 ml-1 px-1.5 py-0.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 transition-colors"
+        className: "shrink-0 ml-1 px-1.5 py-0.5 rounded text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 transition-colors"
       }, /*#__PURE__*/React.createElement(X, {
         size: 14,
         "aria-hidden": "true"

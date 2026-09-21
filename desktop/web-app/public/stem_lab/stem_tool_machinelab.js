@@ -1238,7 +1238,10 @@ window.StemLab = window.StemLab || {
   }
 
   function fmt(n, places) {
-    if (n === null || n === undefined || !isFinite(n)) return '—';
+    // isFinite() COERCES: isFinite([]) and isFinite('') are both true,
+    // because [] and '' become 0. A saved value of [] therefore passed this
+    // guard and threw on v.toFixed below. Test the TYPE, then finiteness.
+    if (typeof n !== 'number' || !isFinite(n)) return '—';
     var p = (places === undefined) ? 2 : places;
     // toFixed(-0) yields "-0.00"; normalise so a zero never renders signed.
     var v = (Object.is(n, -0)) ? 0 : n;
@@ -8308,7 +8311,7 @@ window.StemLab = window.StemLab || {
         // the light-stone / heavy-stone lesson: a table of ranges states the
         // trade-off, but two arcs side by side SHOW it.
         var past = (d.showOverlay === false) ? []
-          : (d.shotHistory || []).slice(0, -1).filter(function (r) { return r.path && r.path.length > 1; }).slice(-4);
+          : (Array.isArray(d.shotHistory) ? d.shotHistory : []).slice(0, -1).filter(function (r) { return r.path && r.path.length > 1; }).slice(-4);
 
         // Scale to fit EVERY trace, or the older, longer shots run off the edge.
         var maxX = 0, maxY = 0;
@@ -8378,7 +8381,7 @@ window.StemLab = window.StemLab || {
           };
         }
         var nextId = (d.shotId || 0) + 1;
-        var hist = (d.shotHistory || []).slice(-7);
+        var hist = (Array.isArray(d.shotHistory) ? d.shotHistory : []).slice(-7);
         // The diameter rides along because without it a logged shot's density
         // cannot be recovered afterwards, and the work record then reports a
         // furthest throw with no way to know it was made by an object that
@@ -9411,7 +9414,7 @@ window.StemLab = window.StemLab || {
         var revealMetrics = !!(rangeScene && (d.animating || shotIsCurrent));
         var rangePath = (revealMetrics && rangeScene && rangeScene.path) ? rangeScene.path : [];
         var rangeValid = !!(rangeScene && rangeScene.path && rangeScene.path.length > 1);
-        var rangePast = (d.showOverlay === false) ? [] : (d.shotHistory || []).slice(0, -1)
+        var rangePast = (d.showOverlay === false) ? [] : (Array.isArray(d.shotHistory) ? d.shotHistory : []).slice(0, -1)
           .filter(function (r) { return r && r.path && r.path.length > 1; }).slice(-4)
           .map(function (r) { return r.path; });
         var rangePastSig = rangePast.map(function (p) {
@@ -9611,7 +9614,7 @@ window.StemLab = window.StemLab || {
               }, [
                 h('h3', { key: 'h', style: { margin: 0, fontSize: 14, color: T.text } },
                   __alloT('stem.machinelab.flight_path', 'Flight path')),
-                ((d.shotHistory || []).length > 1) ? h('button', {
+                ((Array.isArray(d.shotHistory) ? d.shotHistory : []).length > 1) ? h('button', {
                   key: 'ov', 'aria-pressed': (d.showOverlay !== false) ? 'true' : 'false',
                   onClick: function () { upd('showOverlay', d.showOverlay === false); },
                   style: {
@@ -9634,11 +9637,11 @@ window.StemLab = window.StemLab || {
                   __alloT('stem.machinelab.aria_traj3', ' metres, flight time ') + fmt(s.flightTime, 1) +
                   __alloT('stem.machinelab.aria_traj4', ' seconds.')
               }, trajectoryGraph(s)),
-              ((d.showOverlay !== false) && (d.shotHistory || []).length > 1) ? h('p', {
+              ((d.showOverlay !== false) && (Array.isArray(d.shotHistory) ? d.shotHistory : []).length > 1) ? h('p', {
                 key: 'ovtxt',
                 style: { margin: '6px 0 0', fontSize: 12, color: T.dim, lineHeight: 1.5 }
               }, __alloT('stem.machinelab.overlay_note', 'Dashed arcs are earlier shots: ') +
-                 (d.shotHistory || []).slice(0, -1).slice(-4).map(function (r) {
+                 (Array.isArray(d.shotHistory) ? d.shotHistory : []).slice(0, -1).slice(-4).map(function (r) {
                    return fmt(r.projMass, 0) + ' kg → ' + fmt(r.range, 0) + ' m';
                  }).join(', ') + '.') : null,
               h('div', { key: 'nums', style: { display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 8 } }, [
@@ -9699,7 +9702,7 @@ window.StemLab = window.StemLab || {
           ]),
           h('div', { key: 'r' }, [
             ledger(d.animating ? (s || preview) : preview, 'rangeledger'),
-            (d.shotHistory && d.shotHistory.length > 1) ? card([
+            (Array.isArray(d.shotHistory) && d.shotHistory.length > 1) ? card([
               h('h3', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
                 __alloT('stem.machinelab.shot_log', 'Shot log')),
               h('table', { key: 't', style: { width: '100%', borderCollapse: 'collapse', fontSize: 12, color: T.text } }, [
@@ -9709,7 +9712,7 @@ window.StemLab = window.StemLab || {
                   h('th', { key: '3', scope: 'col', style: { textAlign: 'right', padding: 3 } }, __alloT('stem.machinelab.col_eff', 'Efficiency')),
                   h('th', { key: '4', scope: 'col', style: { textAlign: 'right', padding: 3 } }, __alloT('stem.machinelab.col_range', 'Range'))
                 ])),
-                h('tbody', { key: 'b' }, (d.shotHistory || []).slice().reverse().map(function (r, i) {
+                h('tbody', { key: 'b' }, (Array.isArray(d.shotHistory) ? d.shotHistory : []).slice().reverse().map(function (r, i) {
                   return h('tr', { key: i }, [
                     h('td', { key: '1', style: { padding: 3 } }, fmt(r.projMass, 0) + ' kg'),
                     h('td', { key: '2', style: { padding: 3, textAlign: 'right' } }, fmt(r.muzzleV, 1) + ' m/s'),
@@ -11184,7 +11187,7 @@ window.StemLab = window.StemLab || {
       function workRecord() {
         var proven = Object.keys(d.provenBenches || {});
         var fired = d.machinesFired || [];
-        var log = d.shotHistory || [];
+        var log = Array.isArray(d.shotHistory) ? d.shotHistory : [];
         var best = null;
         log.forEach(function (r) { if (best === null || r.range > best.range) best = r; });
 

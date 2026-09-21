@@ -3369,7 +3369,7 @@ var d = labToolData.plateTectonics || {};
 
           var simTab = d.simTab || 'sim';
 
-          var speed = d.speed != null ? d.speed : 1;
+          var speed = (typeof d.speed === 'number' && isFinite(d.speed)) ? d.speed : 1;
 
           var showLabels = d.showLabels !== false;
 
@@ -3467,7 +3467,10 @@ var d = labToolData.plateTectonics || {};
           var ptDrift = d.ptDrift != null ? !!d.ptDrift : !ptReducedMotion();
           // Published by the sim loop when the boundary in focus changes. The
           // canvas classifies; the panel below only describes what it was told.
-          var ptFocusBoundary = d.ptFocusBoundary || null;
+          // Consumers read ptFocusBoundary.kind as a string (.replace, ===), so an
+      // object without it is as broken as a string.
+      var ptFocusBoundary = (d.ptFocusBoundary && typeof d.ptFocusBoundary === 'object' && !Array.isArray(d.ptFocusBoundary)
+        && typeof d.ptFocusBoundary.kind === 'string') ? d.ptFocusBoundary : null;
           // Published by the sim loop on the edges of an eruption. The tool's
           // eruption handler ignores a click while one is already running, so
           // without this the button stayed bright and simply did nothing.
@@ -3476,7 +3479,7 @@ var d = labToolData.plateTectonics || {};
           // How far the recording station is from the quake. Drives the S-minus-P
           // gap on the seismogram, which is the measurement the epicenter widget
           // is built on.
-          var eqDistKm = d.eqDistKm != null ? d.eqDistKm : 600;
+          var eqDistKm = (typeof d.eqDistKm === 'number' && isFinite(d.eqDistKm)) ? d.eqDistKm : 600;
           // aria-disabled, NOT the disabled attribute: a disabled button drops
           // out of the tab order and is skipped by a screen reader, so the user
           // gets no explanation for why the control stopped responding.
@@ -3505,7 +3508,9 @@ var d = labToolData.plateTectonics || {};
 
           var eqMagnitude = d.eqMagnitude || 5;
 
-          var timelineEra = d.timelineEra || 0;
+          // Indexes ERAS, which is declared later in the render (6749) and so is
+          // not in scope here — the upper bound is enforced at the read sites.
+          var timelineEra = (Number.isInteger(d.timelineEra) && d.timelineEra >= 0) ? d.timelineEra : 0;
 
           var showEdu = d.showEdu || false;
 
@@ -3561,7 +3566,7 @@ var d = labToolData.plateTectonics || {};
           // --- UDL Challenges & Vocabulary ---
           var CHALLENGES = [
             { id: 'first_quake', name: __alloT('stem.platetectonics.plate_boundary_shaker', 'Plate Boundary Shaker'), desc: __alloT('stem.platetectonics.trigger_an_earthquake', 'Trigger an earthquake'), icon: '📈', rp: 10, check: function(s) { return (s.quakeCount || 0) >= 1; } },
-            { id: 'major_quake', name: __alloT('stem.platetectonics.cataclysmic_rumble', 'Cataclysmic Rumble'), desc: __alloT('stem.platetectonics.trigger_a_magnitude_8_0_earthquake', 'Make an M8.0+ earthquake in the simulator — not every boundary can'), icon: '⚡', rp: 25, check: function(s) { return (s.maxQuakeMag || 0) >= 8.0; } },
+            { id: 'major_quake', name: __alloT('stem.platetectonics.cataclysmic_rumble', 'Cataclysmic Rumble'), desc: __alloT('stem.platetectonics.trigger_a_magnitude_8_0_earthquake', 'Make an M8.0+ earthquake in the simulator — not every boundary can'), icon: '⚡', rp: 25, check: function(s) { return ((typeof s.maxQuakeMag === 'number' && isFinite(s.maxQuakeMag)) ? s.maxQuakeMag : 0) >= 8.0; } },
             { id: 'erupt_volcano', name: __alloT('stem.platetectonics.magma_vent', 'Magma Vent'), desc: __alloT('stem.platetectonics.trigger_a_volcanic_eruption', 'Trigger a volcanic eruption'), icon: '🌋', rp: 15, check: function(s) { return (s.eruptionCount || 0) >= 1; } },
             { id: 'five_eruptions', name: __alloT('stem.platetectonics.volcanic_ring', 'Volcanic Ring'), desc: __alloT('stem.platetectonics.trigger_5_volcanic_eruptions', 'Trigger 5+ volcanic eruptions'), icon: '🔥', rp: 30, check: function(s) { return (s.eruptionCount || 0) >= 5; } },
             { id: 'read_cascadia', name: __alloT('stem.platetectonics.cascadia_scholar', 'Cascadia Scholar'), desc: __alloT('stem.platetectonics.read_the_cascadia_subduction_zone_tab', 'Read the Cascadia Subduction Zone tab'), icon: '🌲', rp: 20, check: function(s) { return s.simTab === 'cascadia'; } },
@@ -6771,6 +6776,11 @@ var d = labToolData.plateTectonics || {};
           ];
 
           var ERAS_COUNT = ERAS.length;
+          // timelineEra is guarded as a non-negative integer where it enters
+          // (3511), but ERAS is not in scope there, so the UPPER bound lands
+          // here. ERAS[timelineEra].icon and ageOf(ERAS[timelineEra]) are read
+          // without their own fallback, so an out-of-range index throws.
+          timelineEra = timelineEra < ERAS_COUNT ? timelineEra : 0;
 
 
 
@@ -7101,8 +7111,9 @@ var d = labToolData.plateTectonics || {};
               // of the biggest. `lastQuakeMag` was written for exactly this and
               // then read nowhere, which is why the badge tile only ever spoke
               // about the record.
-              ['Strongest quake', d.maxQuakeMag ? 'M ' + d.maxQuakeMag.toFixed(1) : '--',
-                d.lastQuakeMag
+              // typeof, not truthiness: a saved string is truthy and has no .toFixed.
+              ['Strongest quake', typeof d.maxQuakeMag === 'number' && isFinite(d.maxQuakeMag) ? 'M ' + d.maxQuakeMag.toFixed(1) : '--',
+                typeof d.lastQuakeMag === 'number' && isFinite(d.lastQuakeMag)
                   ? 'latest M ' + d.lastQuakeMag.toFixed(1) + (d.maxQuakeMag >= 8 ? ' · megathrust territory' : ' · try a subduction zone')
                   : (d.maxQuakeMag ? (d.maxQuakeMag >= 8 ? 'megathrust territory' : 'try a subduction zone') : 'drag plates together')],
               ['Research', challengeTotal + '/' + CHALLENGES.length, (d.researchPoints || 0) + ' RP']
@@ -9529,7 +9540,7 @@ var d = labToolData.plateTectonics || {};
                 var activeCategoryId = d._ptCategory || PT_TAB_TO_CATEGORY[simTab] || null;
                 var atHub = !d._ptCategory && !d._ptSearch && !d._ptPicked;
                 var activeCat = PT_CATEGORIES.find(function(c) { return c.id === activeCategoryId; });
-                var searchTerm = (d._ptSearch || "").toLowerCase();
+                var searchTerm = (typeof d._ptSearch === "string" ? d._ptSearch : "").toLowerCase();
                 // Derive the searchable list from the categories so every wired tab is
                 // findable (the old hand-kept list had drifted to 18 of the ~54 tabs).
                 var allTabs = [];
@@ -10331,9 +10342,9 @@ var d = labToolData.plateTectonics || {};
               // ── AI Tutor Panel (reading-level aware) ──
               (function () {
                 var aiLevel = d.aiLevel || 'grade5';
-                var aiText = d.aiExplain || '';
+                var aiText = typeof d.aiExplain === 'string' ? d.aiExplain : '';
                 var aiLoading = !!d.aiLoading;
-                var aiError = d.aiError || '';
+                var aiError = typeof d.aiError === 'string' ? d.aiError : '';
                 var LEVELS = [
                   { id: 'plain', label: __alloT('stem.platetectonics.plain', 'Plain'), hint: __alloT('stem.platetectonics.using_simple_everyday_words_and_short_', 'using simple everyday words and short sentences') },
                   { id: 'grade5', label: __alloT('stem.platetectonics.grade_5', 'Grade 5'), hint: __alloT('stem.platetectonics.for_a_5th_grade_student_brief_and_frie', 'for a 5th grade student, brief and friendly') },

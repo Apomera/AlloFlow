@@ -6511,12 +6511,39 @@
               return _normalizeToolSearchText([tool.id, tool.label, tool.desc, tool.category, aliases.join(' '), extra].join(' '));
             }
             var _searchLower = _normalizeToolSearchText(_stemToolSearch);
+            // Match EVERY word, not one contiguous run.
+            //
+            // This was a single indexOf of the whole query against the
+            // haystack, so a multi-word search only hit when the words sat
+            // adjacent AND in that order. "water cycle" found Water Cycle
+            // Explorer; "water evaporation" found NOTHING, though both words
+            // are in its alias string a dozen characters apart. Measured over
+            // the real alias table, 8 of 10 realistic two-word teacher queries
+            // ("magnet compass", "planets orbit", "bacteria antibiotic")
+            // returned zero tools.
+            //
+            // The hub already had the better matcher — _localStemToolMatches
+            // scores word by word — but it was reachable only as the AI
+            // suggest panel's fallback, so the same words typed in the search
+            // box and in the suggest field gave different answers.
+            //
+            // Requiring every word keeps precision (adding a word can only
+            // narrow) while fixing order- and adjacency-sensitivity. An exact
+            // phrase hit still sorts first via _stemToolSearchRank below.
+            var _searchWords = _searchLower ? _searchLower.split(' ').filter(Boolean) : [];
+            function _stemToolSearchMatches(tool) {
+              var hay = _stemToolSearchHaystack(tool);
+              for (var wi = 0; wi < _searchWords.length; wi++) {
+                if (hay.indexOf(_searchWords[wi]) === -1) return false;
+              }
+              return true;
+            }
             var _filteredTools = _searchLower ? _allStemTools.filter(function (tool) {
               if (tool.category) {
                 // Keep category if ANY tool in it matches
                 return true;
               }
-              return _stemToolSearchHaystack(tool).indexOf(_searchLower) !== -1;
+              return _stemToolSearchMatches(tool);
             }) : _allStemTools;
             // Remove orphan category headers (categories with no matching tools after them)
             if (_searchLower) {
@@ -6529,6 +6556,35 @@
                 }
                 return false;
               });
+            }
+            // Float exact-phrase hits to the top of their OWN section.
+            //
+            // Now that scattered words match, "water cycle" also surfaces tools
+            // that merely mention both words far apart. A tool whose text holds
+            // the typed phrase intact is the likelier intent, so it leads.
+            // Sorting happens strictly WITHIN a category run: the grid renders
+            // headers and tiles from one flat array, so a global sort would
+            // tear tiles out from under their heading.
+            if (_searchWords.length > 1) {
+              var _ranked = [];
+              var _run = [];
+              var _flushRun = function () {
+                // Stable partition, not a comparator sort — equal-rank tiles
+                // keep their authored order.
+                var phrase = [], rest = [];
+                for (var ri = 0; ri < _run.length; ri++) {
+                  if (_stemToolSearchHaystack(_run[ri]).indexOf(_searchLower) !== -1) phrase.push(_run[ri]);
+                  else rest.push(_run[ri]);
+                }
+                _ranked = _ranked.concat(phrase, rest);
+                _run = [];
+              };
+              for (var fi = 0; fi < _filteredTools.length; fi++) {
+                if (_filteredTools[fi].category) { _flushRun(); _ranked.push(_filteredTools[fi]); }
+                else _run.push(_filteredTools[fi]);
+              }
+              _flushRun();
+              _filteredTools = _ranked;
             }
             // Station filter — only show tools in active station
             if (_activeStation && _activeStation.tools && _activeStation.tools.length > 0) {
@@ -8236,6 +8292,35 @@
                 if (srMsg) announceToSR(srMsg);
               }
             }),
+            // Save to this device and SAY SO WHEN IT FAILS.
+            //
+            // 24 localStorage writes across 17 STEM tools ship as
+            //     try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {}
+            // which discards every failure. Quota full, private mode, blocked
+            // site data, a shared school device at its limit: the work stays on
+            // screen, the student closes the tab, and it is gone silently. Four
+            // tools (geometryWorld, swimLab, firstResponse, renewables) have no
+            // setToolData mirror, so localStorage is their ONLY persistence.
+            //
+            // Returns true/false. On failure it announces through the same live
+            // region every other STEM announcement uses, naming the action that
+            // preserves the work rather than only reporting an error.
+            //
+            // `silent: true` is for genuine preferences (theme, tour-seen),
+            // where a lost write costs the student nothing.
+            saveLocal: function(key, value, opts) {
+              var o = opts || {};
+              try {
+                if (o.remove) localStorage.removeItem(key);
+                else localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+                return true;
+              } catch (e) {
+                if (!o.silent && typeof announceToSR === 'function') {
+                  announceToSR(o.message || 'This device would not save your work. It is still on screen \u2014 use Export, Print, or Save Project to keep a copy before you close this page.');
+                }
+                return false;
+              }
+            },
             // Art Studio can hand a static canvas result to a host destination
             // without coupling the plugin to Page Designer or Visual Supports.
             onUseArtwork: typeof onUseArtwork === 'function' ? onUseArtwork : null,
