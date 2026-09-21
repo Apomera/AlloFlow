@@ -20168,25 +20168,25 @@ if (activeTab === 'plutchik') {
   var pwShowDyads = !!d.pwShowDyads;
   // 8 primary emotions arranged clockwise from top, with 3 intensity tiers (outer=mild, inner=intense)
   var PLUTCHIK_PRIMARIES = [
-    { id: 'joy',          angle:   0, color: '#fde047', mild: { name: 'Serenity',     desc: 'Calm contentment, quiet pleasure.' },             moderate: { name: 'Joy',         desc: 'Active, present happiness.' },     intense: { name: 'Ecstasy',     desc: 'Overwhelming bliss; can be hard to contain.' } },
-    { id: 'trust',        angle:  45, color: '#86efac', mild: { name: 'Acceptance',   desc: 'Open, allowing posture toward others.' },         moderate: { name: 'Trust',       desc: 'Willingness to be vulnerable with someone.' }, intense: { name: 'Admiration', desc: 'Deep respect approaching reverence.' } },
-    { id: 'fear',         angle:  90, color: '#34d399', mild: { name: 'Apprehension', desc: 'Mild worry, anticipatory unease.' },              moderate: { name: 'Fear',        desc: 'Real threat-response activation.' },           intense: { name: 'Terror',     desc: 'Overwhelm of the threat-response system.' } },
-    { id: 'surprise',     angle: 135, color: '#67e8f9', mild: { name: 'Distraction',  desc: 'Briefly drawn off-course by the unexpected.' },   moderate: { name: 'Surprise',    desc: 'Genuine unexpected event response.' },         intense: { name: 'Amazement',  desc: 'World-rearranging surprise.' } },
-    { id: 'sadness',      angle: 180, color: '#93c5fd', mild: { name: 'Pensiveness',  desc: 'Quiet melancholy, thoughtful low.' },             moderate: { name: 'Sadness',     desc: 'The full felt loss or disappointment.' },       intense: { name: 'Grief',      desc: 'The depth of mourning; comes in waves.' } },
-    { id: 'disgust',      angle: 225, color: ST('#c4b5fd'), mild: { name: 'Boredom',      desc: 'Mild aversion to the current situation.' },        moderate: { name: 'Disgust',     desc: 'Active rejection — physical or moral.' },      intense: { name: 'Loathing',   desc: 'Deep, settled revulsion.' } },
-    { id: 'anger',        angle: 270, color: '#fca5a5', mild: { name: 'Annoyance',    desc: 'Surface-level irritation.' },                     moderate: { name: 'Anger',       desc: 'Energy toward an injustice or block.' },        intense: { name: 'Rage',       desc: 'Overwhelming, fight-response level.' } },
-    { id: 'anticipation', angle: 315, color: '#fdba74', mild: { name: 'Interest',     desc: 'Curiosity, drawn toward something.' },            moderate: { name: 'Anticipation',desc: 'Active looking-forward to something.' },        intense: { name: 'Vigilance',  desc: 'Hyper-alert anticipation; can shade into anxiety.' } }
+    { id: 'joy',          angle:   0, color: '#fde047', mild: { name: __alloT('sel.emotions.plutchik_joy_mild_name', 'Serenity'),     desc: __alloT('sel.emotions.plutchik_joy_mild_desc', 'Calm contentment, quiet pleasure.') },             moderate: { name: 'Joy',         desc: __alloT('sel.emotions.plutchik_joy_moderate_desc', 'Active, present happiness.') },     intense: { name: __alloT('sel.emotions.plutchik_joy_intense_name', 'Ecstasy'),     desc: __alloT('sel.emotions.plutchik_joy_intense_desc', 'Overwhelming bliss; can be hard to contain.') } },
+    { id: 'trust',        angle:  45, color: '#86efac', mild: { name: __alloT('sel.emotions.plutchik_trust_mild_name', 'Acceptance'),   desc: __alloT('sel.emotions.plutchik_trust_mild_desc', 'Open, allowing posture toward others.') },         moderate: { name: __alloT('sel.emotions.plutchik_trust_moderate_name', 'Trust'),       desc: __alloT('sel.emotions.plutchik_trust_moderate_desc', 'Willingness to be vulnerable with someone.') }, intense: { name: __alloT('sel.emotions.plutchik_trust_intense_name', 'Admiration'), desc: __alloT('sel.emotions.plutchik_trust_intense_desc', 'Deep respect approaching reverence.') } },
+    { id: 'fear',         angle:  90, color: '#34d399', mild: { name: __alloT('sel.emotions.plutchik_fear_mild_name', 'Apprehension'), desc: __alloT('sel.emotions.plutchik_fear_mild_desc', 'Mild worry, anticipatory unease.') },              moderate: { name: __alloT('sel.emotions.plutchik_fear_moderate_name', 'Fear'),        desc: __alloT('sel.emotions.plutchik_fear_moderate_desc', 'Real threat-response activation.') },           intense: { name: __alloT('sel.emotions.plutchik_fear_intense_name', 'Terror'),     desc: __alloT('sel.emotions.plutchik_fear_intense_desc', 'Overwhelm of the threat-response system.') } },
+    { id: 'surprise',     angle: 135, color: '#67e8f9', mild: { name: __alloT('sel.emotions.plutchik_surprise_mild_name', 'Distraction'),  desc: __alloT('sel.emotions.plutchik_surprise_mild_desc', 'Briefly drawn off-course by the unexpected.') },   moderate: { name: __alloT('sel.emotions.plutchik_surprise_moderate_name', 'Surprise'),    desc: __alloT('sel.emotions.plutchik_surprise_moderate_desc', 'Genuine unexpected event response.') },         intense: { name: __alloT('sel.emotions.plutchik_surprise_intense_name', 'Amazement'),  desc: __alloT('sel.emotions.plutchik_surprise_intense_desc', 'World-rearranging surprise.') } },
+    { id: 'sadness',      angle: 180, color: '#93c5fd', mild: { name: __alloT('sel.emotions.plutchik_sadness_mild_name', 'Pensiveness'),  desc: __alloT('sel.emotions.plutchik_sadness_mild_desc', 'Quiet melancholy, thoughtful low.') },             moderate: { name: __alloT('sel.emotions.plutchik_sadness_moderate_name', 'Sadness'),     desc: __alloT('sel.emotions.plutchik_sadness_moderate_desc', 'The full felt loss or disappointment.') },       intense: { name: __alloT('sel.emotions.plutchik_sadness_intense_name', 'Grief'),      desc: __alloT('sel.emotions.plutchik_sadness_intense_desc', 'The depth of mourning; comes in waves.') } },
+    { id: 'disgust',      angle: 225, color: ST('#c4b5fd'), mild: { name: __alloT('sel.emotions.plutchik_disgust_mild_name', 'Boredom'),      desc: __alloT('sel.emotions.plutchik_disgust_mild_desc', 'Mild aversion to the current situation.') },        moderate: { name: __alloT('sel.emotions.plutchik_disgust_moderate_name', 'Disgust'),     desc: __alloT('sel.emotions.plutchik_disgust_moderate_desc', 'Active rejection — physical or moral.') },      intense: { name: __alloT('sel.emotions.plutchik_disgust_intense_name', 'Loathing'),   desc: __alloT('sel.emotions.plutchik_disgust_intense_desc', 'Deep, settled revulsion.') } },
+    { id: 'anger',        angle: 270, color: '#fca5a5', mild: { name: __alloT('sel.emotions.plutchik_anger_mild_name', 'Annoyance'),    desc: __alloT('sel.emotions.plutchik_anger_mild_desc', 'Surface-level irritation.') },                     moderate: { name: __alloT('sel.emotions.plutchik_anger_moderate_name', 'Anger'),       desc: __alloT('sel.emotions.plutchik_anger_moderate_desc', 'Energy toward an injustice or block.') },        intense: { name: __alloT('sel.emotions.plutchik_anger_intense_name', 'Rage'),       desc: __alloT('sel.emotions.plutchik_anger_intense_desc', 'Overwhelming, fight-response level.') } },
+    { id: 'anticipation', angle: 315, color: '#fdba74', mild: { name: __alloT('sel.emotions.plutchik_anticipation_mild_name', 'Interest'),     desc: __alloT('sel.emotions.plutchik_anticipation_mild_desc', 'Curiosity, drawn toward something.') },            moderate: { name: __alloT('sel.emotions.plutchik_anticipation_moderate_name', 'Anticipation'),desc: __alloT('sel.emotions.plutchik_anticipation_moderate_desc', 'Active looking-forward to something.') },        intense: { name: __alloT('sel.emotions.plutchik_anticipation_intense_name', 'Vigilance'),  desc: __alloT('sel.emotions.plutchik_anticipation_intense_desc', 'Hyper-alert anticipation; can shade into anxiety.') } }
   ];
   // Plutchik primary dyads (adjacent emotions blend):
   var PLUTCHIK_DYADS = [
-    { a: 'joy',          b: 'trust',        name: 'Love',          desc: 'Joy met with trust opens into love.' },
-    { a: 'trust',        b: 'fear',         name: 'Submission',    desc: 'Trust met with fear becomes deference.' },
-    { a: 'fear',         b: 'surprise',     name: 'Awe',           desc: 'Fear met with surprise opens into reverent awe.' },
-    { a: 'surprise',     b: 'sadness',      name: 'Disapproval',   desc: 'Surprise met with sadness signals disapproval.' },
-    { a: 'sadness',      b: 'disgust',      name: 'Remorse',       desc: 'Sadness met with disgust at oneself is remorse.' },
-    { a: 'disgust',      b: 'anger',        name: 'Contempt',      desc: 'Disgust met with anger hardens into contempt.' },
-    { a: 'anger',        b: 'anticipation', name: 'Aggressiveness',desc: 'Anger met with anticipation drives toward attack.' },
-    { a: 'anticipation', b: 'joy',          name: 'Optimism',      desc: 'Anticipation met with joy becomes hopeful optimism.' }
+    { a: 'joy',          b: 'trust',        name: __alloT('sel.emotions.dyad_love_name', 'Love'),          desc: __alloT('sel.emotions.dyad_love_desc', 'Joy met with trust opens into love.') },
+    { a: 'trust',        b: 'fear',         name: __alloT('sel.emotions.dyad_submission_name', 'Submission'),    desc: __alloT('sel.emotions.dyad_submission_desc', 'Trust met with fear becomes deference.') },
+    { a: 'fear',         b: 'surprise',     name: 'Awe',           desc: __alloT('sel.emotions.dyad_awe_desc', 'Fear met with surprise opens into reverent awe.') },
+    { a: 'surprise',     b: 'sadness',      name: __alloT('sel.emotions.dyad_disapproval_name', 'Disapproval'),   desc: __alloT('sel.emotions.dyad_disapproval_desc', 'Surprise met with sadness signals disapproval.') },
+    { a: 'sadness',      b: 'disgust',      name: __alloT('sel.emotions.dyad_remorse_name', 'Remorse'),       desc: __alloT('sel.emotions.dyad_remorse_desc', 'Sadness met with disgust at oneself is remorse.') },
+    { a: 'disgust',      b: 'anger',        name: __alloT('sel.emotions.dyad_contempt_name', 'Contempt'),      desc: __alloT('sel.emotions.dyad_contempt_desc', 'Disgust met with anger hardens into contempt.') },
+    { a: 'anger',        b: 'anticipation', name: __alloT('sel.emotions.dyad_aggressiveness_name', 'Aggressiveness'),desc: __alloT('sel.emotions.dyad_aggressiveness_desc', 'Anger met with anticipation drives toward attack.') },
+    { a: 'anticipation', b: 'joy',          name: __alloT('sel.emotions.dyad_optimism_name', 'Optimism'),      desc: __alloT('sel.emotions.dyad_optimism_desc', 'Anticipation met with joy becomes hopeful optimism.') }
   ];
   var cx = 220, cy = 220;
   // Outer ring (mild): r 190-140; middle (moderate): 140-90; inner (intense): 90-40
@@ -20581,39 +20581,39 @@ if (activeTab === 'iceberg') {
   var ibRevealed = d.ibRevealed || {};
   // Map of visible-feeling -> hidden-feelings beneath
   var ICEBERG_PAIRS = [
-    { visible: 'anger',     visibleLabel: 'Anger',        hidden: [
-      { id: 'hurt',         label: 'Hurt',         desc: 'Something or someone wounded me, and anger feels safer than hurt.' },
-      { id: 'fear',         label: 'Fear',         desc: 'I\'m scared of what this means or what comes next.' },
-      { id: 'embarrassment',label: 'Embarrassment',desc: 'Someone saw me at a vulnerable moment, and I\'m covering with rage.' },
-      { id: 'powerlessness',label: 'Powerlessness', desc: 'I can\'t change this, and anger gives me back a sense of force.' },
-      { id: 'grief',        label: 'Grief',        desc: 'I\'ve lost something — anger is an early stage of mourning it.' }
+    { visible: 'anger',     visibleLabel: __alloT('sel.emotions.iceberg_anger_visibleLabel', 'Anger'),        hidden: [
+      { id: 'hurt',         label: __alloT('sel.emotions.iceberg_anger_hurt_label', 'Hurt'),         desc: __alloT('sel.emotions.iceberg_anger_hurt_desc', 'Something or someone wounded me, and anger feels safer than hurt.') },
+      { id: 'fear',         label: __alloT('sel.emotions.iceberg_anger_fear_label', 'Fear'),         desc: __alloT('sel.emotions.iceberg_anger_fear_desc', 'I\'m scared of what this means or what comes next.') },
+      { id: 'embarrassment',label: __alloT('sel.emotions.iceberg_anger_embarrassment_label', 'Embarrassment'),desc: __alloT('sel.emotions.iceberg_anger_embarrassment_desc', 'Someone saw me at a vulnerable moment, and I\'m covering with rage.') },
+      { id: 'powerlessness',label: __alloT('sel.emotions.iceberg_anger_powerlessness_label', 'Powerlessness'), desc: __alloT('sel.emotions.iceberg_anger_powerlessness_desc', 'I can\'t change this, and anger gives me back a sense of force.') },
+      { id: 'grief',        label: __alloT('sel.emotions.iceberg_anger_grief_label', 'Grief'),        desc: __alloT('sel.emotions.iceberg_anger_grief_desc', 'I\'ve lost something — anger is an early stage of mourning it.') }
     ]},
-    { visible: 'jealousy',  visibleLabel: 'Jealousy',     hidden: [
-      { id: 'inadequacy',   label: 'Feeling not-enough', desc: 'When I compare, I come up short — and that hurts.' },
-      { id: 'fear_lose',    label: 'Fear of losing them', desc: 'I\'m worried they\'ll prefer someone else.' },
-      { id: 'longing',      label: 'Longing for what they have', desc: 'I want that for myself but don\'t know how to ask.' },
-      { id: 'admiration',   label: 'Hidden admiration', desc: 'Sometimes jealousy is admiration twisted by fear.' }
+    { visible: 'jealousy',  visibleLabel: __alloT('sel.emotions.iceberg_jealousy_visibleLabel', 'Jealousy'),     hidden: [
+      { id: 'inadequacy',   label: __alloT('sel.emotions.iceberg_jealousy_inadequacy_label', 'Feeling not-enough'), desc: __alloT('sel.emotions.iceberg_jealousy_inadequacy_desc', 'When I compare, I come up short — and that hurts.') },
+      { id: 'fear_lose',    label: __alloT('sel.emotions.iceberg_jealousy_fear_lose_label', 'Fear of losing them'), desc: __alloT('sel.emotions.iceberg_jealousy_fear_lose_desc', 'I\'m worried they\'ll prefer someone else.') },
+      { id: 'longing',      label: __alloT('sel.emotions.iceberg_jealousy_longing_label', 'Longing for what they have'), desc: __alloT('sel.emotions.iceberg_jealousy_longing_desc', 'I want that for myself but don\'t know how to ask.') },
+      { id: 'admiration',   label: __alloT('sel.emotions.iceberg_jealousy_admiration_label', 'Hidden admiration'), desc: __alloT('sel.emotions.iceberg_jealousy_admiration_desc', 'Sometimes jealousy is admiration twisted by fear.') }
     ]},
-    { visible: 'apathy',    visibleLabel: 'Apathy / "I don\'t care"', hidden: [
-      { id: 'overwhelm',    label: 'Overwhelm', desc: 'I care too much, so I\'ve shut it off to cope.' },
-      { id: 'protect',      label: 'Self-protection', desc: 'If I don\'t care, I can\'t be disappointed.' },
-      { id: 'exhaustion',   label: 'Exhaustion', desc: 'I\'ve been caring for too long without rest.' },
-      { id: 'depression',   label: 'Depression', desc: 'My emotion system is dampened across the board right now.' }
+    { visible: 'apathy',    visibleLabel: __alloT('sel.emotions.iceberg_apathy_visibleLabel', 'Apathy / "I don\'t care"'), hidden: [
+      { id: 'overwhelm',    label: __alloT('sel.emotions.iceberg_apathy_overwhelm_label', 'Overwhelm'), desc: __alloT('sel.emotions.iceberg_apathy_overwhelm_desc', 'I care too much, so I\'ve shut it off to cope.') },
+      { id: 'protect',      label: __alloT('sel.emotions.iceberg_apathy_protect_label', 'Self-protection'), desc: __alloT('sel.emotions.iceberg_apathy_protect_desc', 'If I don\'t care, I can\'t be disappointed.') },
+      { id: 'exhaustion',   label: __alloT('sel.emotions.iceberg_apathy_exhaustion_label', 'Exhaustion'), desc: __alloT('sel.emotions.iceberg_apathy_exhaustion_desc', 'I\'ve been caring for too long without rest.') },
+      { id: 'depression',   label: __alloT('sel.emotions.iceberg_apathy_depression_label', 'Depression'), desc: __alloT('sel.emotions.iceberg_apathy_depression_desc', 'My emotion system is dampened across the board right now.') }
     ]},
-    { visible: 'controlling',visibleLabel: 'Being controlling / bossy', hidden: [
-      { id: 'anxiety_unknown',label: 'Anxiety about uncertainty', desc: 'Controlling outside feels like the only way to manage how scared I am inside.' },
-      { id: 'past_chaos',   label: 'Memory of past chaos', desc: 'When things were out of control before, it was bad — I\'m trying to prevent that.' },
-      { id: 'lack_of_trust',label: 'Lack of trust', desc: 'I don\'t trust this will go well without my hands on it.' }
+    { visible: 'controlling',visibleLabel: __alloT('sel.emotions.iceberg_controlling_visibleLabel', 'Being controlling / bossy'), hidden: [
+      { id: 'anxiety_unknown',label: __alloT('sel.emotions.iceberg_controlling_anxiety_unknown_label', 'Anxiety about uncertainty'), desc: __alloT('sel.emotions.iceberg_controlling_anxiety_unknown_desc', 'Controlling outside feels like the only way to manage how scared I am inside.') },
+      { id: 'past_chaos',   label: __alloT('sel.emotions.iceberg_controlling_past_chaos_label', 'Memory of past chaos'), desc: __alloT('sel.emotions.iceberg_controlling_past_chaos_desc', 'When things were out of control before, it was bad — I\'m trying to prevent that.') },
+      { id: 'lack_of_trust',label: __alloT('sel.emotions.iceberg_controlling_lack_of_trust_label', 'Lack of trust'), desc: __alloT('sel.emotions.iceberg_controlling_lack_of_trust_desc', 'I don\'t trust this will go well without my hands on it.') }
     ]},
-    { visible: 'people_pleasing', visibleLabel: 'People-pleasing', hidden: [
-      { id: 'fear_rejection',label: 'Fear of rejection', desc: 'If I say no, will they still like me?' },
-      { id: 'unworthiness', label: 'Unworthiness', desc: 'My needs feel less important than theirs.' },
-      { id: 'learned_safety',label: 'Learned safety strategy', desc: 'Being agreeable kept me safe earlier in life.' }
+    { visible: 'people_pleasing', visibleLabel: __alloT('sel.emotions.iceberg_people_pleasing_visibleLabel', 'People-pleasing'), hidden: [
+      { id: 'fear_rejection',label: __alloT('sel.emotions.iceberg_people_pleasing_fear_rejection_label', 'Fear of rejection'), desc: __alloT('sel.emotions.iceberg_people_pleasing_fear_rejection_desc', 'If I say no, will they still like me?') },
+      { id: 'unworthiness', label: __alloT('sel.emotions.iceberg_people_pleasing_unworthiness_label', 'Unworthiness'), desc: __alloT('sel.emotions.iceberg_people_pleasing_unworthiness_desc', 'My needs feel less important than theirs.') },
+      { id: 'learned_safety',label: __alloT('sel.emotions.iceberg_people_pleasing_learned_safety_label', 'Learned safety strategy'), desc: __alloT('sel.emotions.iceberg_people_pleasing_learned_safety_desc', 'Being agreeable kept me safe earlier in life.') }
     ]},
-    { visible: 'sarcasm',   visibleLabel: 'Constant sarcasm / joking', hidden: [
-      { id: 'vulnerability',label: 'Avoiding vulnerability', desc: 'If I joke, I don\'t have to say what I really feel.' },
-      { id: 'past_hurt',    label: 'Old hurt I haven\'t processed', desc: 'Humor became my armor a while back.' },
-      { id: 'connection_want', label: 'Wanting connection but unsure how', desc: 'Jokes ARE my way of reaching out.' }
+    { visible: 'sarcasm',   visibleLabel: __alloT('sel.emotions.iceberg_sarcasm_visibleLabel', 'Constant sarcasm / joking'), hidden: [
+      { id: 'vulnerability',label: __alloT('sel.emotions.iceberg_sarcasm_vulnerability_label', 'Avoiding vulnerability'), desc: __alloT('sel.emotions.iceberg_sarcasm_vulnerability_desc', 'If I joke, I don\'t have to say what I really feel.') },
+      { id: 'past_hurt',    label: __alloT('sel.emotions.iceberg_sarcasm_past_hurt_label', 'Old hurt I haven\'t processed'), desc: __alloT('sel.emotions.iceberg_sarcasm_past_hurt_desc', 'Humor became my armor a while back.') },
+      { id: 'connection_want', label: __alloT('sel.emotions.iceberg_sarcasm_connection_want_label', 'Wanting connection but unsure how'), desc: __alloT('sel.emotions.iceberg_sarcasm_connection_want_desc', 'Jokes ARE my way of reaching out.') }
     ]}
   ];
   var pair = ICEBERG_PAIRS.find(function(p) { return p.visible === ibVisible; }) || ICEBERG_PAIRS[0];
