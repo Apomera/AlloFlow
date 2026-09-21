@@ -6368,7 +6368,7 @@
       function pauseBenchMission() {
         if (_benchTimer && typeof window !== 'undefined') { window.clearInterval(_benchTimer); _benchTimer = null; }
         upd({ benchRunning: false, benchMissionStatus: 'paused' });
-        announceToSR(__alloFill(__alloT('stem.magnetism.sr_motor_generator_trial_paused_at_seconds', 'Motor-generator trial paused at {value1} seconds.'), { value1: d.benchTime.toFixed(1) }));
+        announceToSR(__alloFill(__alloT('stem.magnetism.sr_motor_generator_trial_paused_at_seconds', 'Motor-generator trial paused at {value1} seconds.'), { value1: (Number.isFinite(Number(d.benchTime)) ? Number(d.benchTime) : 0).toFixed(1) }));
       }
 
       function resetBenchMission() {
@@ -6509,8 +6509,8 @@
         var evaluation = trace.length ? evaluateMotorGeneratorMission(trace) : null;
         var status = d.benchMissionStatus || 'ready';
         var checks = evaluation ? evaluation.checks : [false, false, false, true];
-        var statusText = status === 'running' ? 'Trial running at ' + d.benchTime.toFixed(1) + ' seconds.' :
-          status === 'paused' ? 'Trial paused at ' + d.benchTime.toFixed(1) + ' seconds.' :
+        var statusText = status === 'running' ? 'Trial running at ' + (Number.isFinite(Number(d.benchTime)) ? Number(d.benchTime) : 0).toFixed(1) + ' seconds.' :
+          status === 'paused' ? 'Trial paused at ' + (Number.isFinite(Number(d.benchTime)) ? Number(d.benchTime) : 0).toFixed(1) + ' seconds.' :
           status === 'passed' ? 'Mission passed and recorded.' :
           status === 'needs-work' ? 'Trial recorded. Revise one variable and test again.' :
           'Ready. The dashed curves predict the current design.';
@@ -7672,7 +7672,7 @@
             d.ind3dStatus === 'error' ? h('span', null, '3D graphics did not load; every other generator mode remains available. ', h('button', { onClick: function () { upd({ ind3dStatus: 'loading', ind3dAttempt: (d.ind3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D induction engine...'),
           h('p', { id: 'mag-induction3d-instructions', style: { color: SOFT, fontSize: 11.5, margin: '0 0 8px', lineHeight: 1.4 } }, 'Axis key: x passes through the coil, y is height, and z is sideways offset. The green arrow is the coil-area normal used for signed flux. Every pointer action has a labeled control below.'),
           poleLegend('North pole — red; N or one bright stripe', 'South pole — blue; S or two bright stripes'),
-          sceneTextAlternative('mag-induction3d-summary', 'The bar magnet is at x ' + magnet.x.toFixed(2) + ', y ' + magnet.y.toFixed(2) + ', z ' + magnet.z.toFixed(2) + '. The coil has ' + d.ind3dTurns + ' turns and radius ' + d.ind3dCoilRadius.toFixed(2) + '. Signed flux is ' + flux.toFixed(2) + ' and induced voltage is ' + emf.toFixed(2) + '. The induced-current interpretation is: ' + direction + '.'),
+          sceneTextAlternative('mag-induction3d-summary', 'The bar magnet is at x ' + magnet.x.toFixed(2) + ', y ' + magnet.y.toFixed(2) + ', z ' + magnet.z.toFixed(2) + '. The coil has ' + d.ind3dTurns + ' turns and radius ' + (Number.isFinite(Number(d.ind3dCoilRadius)) ? Number(d.ind3dCoilRadius) : 0).toFixed(2) + '. Signed flux is ' + flux.toFixed(2) + ' and induced voltage is ' + emf.toFixed(2) + '. The induced-current interpretation is: ' + direction + '.'),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_3d_induction_camera_views', '3D induction camera views'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 9 } },
             h('span', { style: { color: SOFT, fontSize: 11.5, alignSelf: 'center', fontWeight: 700 } }, 'Camera'),
             cameraButton('perspective', 'Perspective'), cameraButton('axis', 'Along coil axis'), cameraButton('side', 'Side'), cameraButton('top', 'Top')),
@@ -10419,7 +10419,7 @@
         }
         if (d.tab === 'induce' && d.induceMode === '3d') {
           var i3 = currentInduction3DState();
-          return { station: '3D induction lab', setup: d.ind3dTurns + ' turns, radius ' + d.ind3dCoilRadius.toFixed(1) + ', magnet (' + i3.magnet.x.toFixed(1) + ', ' + i3.magnet.y.toFixed(1) + ', ' + i3.magnet.z.toFixed(1) + ')',
+          return { station: '3D induction lab', setup: d.ind3dTurns + ' turns, radius ' + (Number.isFinite(Number(d.ind3dCoilRadius)) ? Number(d.ind3dCoilRadius) : 0).toFixed(1) + ', magnet (' + i3.magnet.x.toFixed(1) + ', ' + i3.magnet.y.toFixed(1) + ', ' + i3.magnet.z.toFixed(1) + ')',
             result: 'flux ' + i3.flux.toFixed(2) + ', voltage ' + (Number(d.ind3dEMF) || 0).toFixed(2) + ', ' + (d.ind3dTrace || []).length + ' samples' };
         }        if (d.tab === 'induce' && d.induceMode === 'coil') {
           var ge = rotatingEMF(d.genAngle, d.genTurns, d.genField, d.genRPM / 60);
