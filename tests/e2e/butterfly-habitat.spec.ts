@@ -98,3 +98,91 @@ test('restoration predictions survive a restored mobile session and work in the 
  await page.getByRole('combobox',{name:/Predict the resources/}).selectOption('neither');await page.getByRole('button',{name:'Apply habitat plan',exact:true}).click();
  await expect(page.locator('.bf-stage')).toHaveAttribute('data-bf-design','lawn');await expect(page.locator('[data-design-record="mixed"] td').nth(1)).toHaveText('Present');
 });
+
+async function followGeneration(page:any,patch:string,prediction:string){
+ const panel=page.getByRole('region',{name:'Life cycle investigation'});
+ await panel.getByRole('combobox',{name:/Choose where to lay eggs/}).selectOption(patch);
+ await panel.getByRole('combobox',{name:/Predict how far it gets/}).selectOption(prediction);
+ await panel.getByRole('button',{name:'Lay eggs here',exact:true}).click();
+ const next=panel.getByRole('button',{name:'Next stage',exact:true});
+ while(await next.isEnabled())await next.click();
+ await panel.getByRole('button',{name:'Record result',exact:true}).click();
+}
+test('a generation stops without milkweed and completes with it, and the claim panel follows the evidence',async({page})=>{
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ // The map fallback exercises the same investigation without waiting on WebGL.
+ await mount(page,true,{version:3,observations:['milkweed','bergamot','lawn']});
+ const cycle=page.getByRole('region',{name:'Life cycle investigation'});
+ const claim=page.getByRole('region',{name:'Habitat evidence question'});
+
+ // Before any generation is followed, the correct claim is still not "tested".
+ await claim.getByRole('button',{name:'Monarchs need nectar for adults and milkweed for caterpillars'}).click();
+ await expect(page.locator('.bf-verdict')).toHaveAttribute('data-bf-tested','false');
+ await expect(page.locator('.bf-evidence li[data-evidence="brood"]')).toHaveCount(0);
+
+ // Nectar without milkweed: the generation stalls at the caterpillar stage.
+ await followGeneration(page,'bergamot','complete');
+ await expect(page.locator('.bf-cycle-feedback')).toContainText('Different from your prediction.');
+ await expect(page.locator('.bf-cycle-feedback')).toContainText('adult nectar cannot substitute');
+ await expect(page.locator('[data-brood-record="bergamot"] td').nth(1)).toContainText('Stops before becoming an adult');
+ await expect(cycle.locator('li[data-stage="caterpillar"]')).toHaveAttribute('data-state','blocked');
+
+ // With milkweed the same steps carry the generation through to an adult.
+ await followGeneration(page,'milkweed','complete');
+ await expect(page.locator('.bf-cycle-feedback')).toContainText('Prediction matched.');
+ await expect(page.locator('[data-brood-record="milkweed"] td').nth(1)).toContainText('Reaches the adult stage');
+ await expect(page.locator('.bf-broods caption')).toContainText('2 recorded');
+
+ // Now the claim is tested, and the unsound ones are refused on the same evidence.
+ await claim.getByRole('button',{name:'Monarchs need nectar for adults and milkweed for caterpillars'}).click();
+ await expect(page.locator('.bf-verdict')).toHaveAttribute('data-bf-tested','true');
+ await expect(page.locator('.bf-verdict strong')).toHaveText('Your records support that claim.');
+ await expect(page.locator('.bf-evidence li[data-evidence="brood"]')).toHaveCount(2);
+ for(const label of ['Flowers with nectar are enough to support monarchs here','Any green, planted patch will do']){
+  await claim.getByRole('button',{name:label}).click();
+  await expect(page.locator('.bf-verdict strong')).toHaveText('Your records do not support that claim.');
+ }
+ expect(await page.evaluate(()=>(window as any).__toolData.butterfly.lifecycle.broods.length)).toBe(2);
+ await audit(page);expect(errors).toEqual([]);
+});
+test('a running generation is abandoned when its plot is replanted, and survives a restored session',async({page})=>{
+ await page.setViewportSize({width:375,height:900});
+ await mount(page,true,{version:3,observations:['milkweed'],
+   restoration:{design:'mixed',prediction:null,trials:[{design:'mixed',prediction:'both'}]},
+   lifecycle:{patch:'milkweed',prediction:'complete',stage:'caterpillar',broods:[{patch:'lawn',prediction:'stalls',result:'stalls'}]}});
+ const cycle=page.getByRole('region',{name:'Life cycle investigation'});
+ await expect(cycle).toContainText('Generation at: Common milkweed');
+ await expect(page.locator('.bf-broods caption')).toContainText('1 recorded');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+ await cycle.screenshot({path:'scratch/butterfly-habitat/lifecycle-mobile.png'});
+ await audit(page);
+
+ // A generation on a reference patch is unaffected by replanting the plot.
+ await planHabitat(page,'Plant wild bergamot','nectar');
+ await expect(cycle).toContainText('Generation at: Common milkweed');
+
+ // Both choosers lock while a generation runs, so there must be a way out.
+ await expect(cycle.getByRole('combobox',{name:/Choose where to lay eggs/})).toBeDisabled();
+ await cycle.getByRole('button',{name:'Start over',exact:true}).click();
+ await expect(page.locator('.bf-cycle-feedback')).toContainText('Nothing was recorded');
+ await expect(cycle).toContainText('No generation started');
+ await expect(cycle.getByRole('combobox',{name:/Choose where to lay eggs/})).toBeEnabled();
+ await expect(page.locator('.bf-broods caption')).toContainText('1 recorded');
+
+ await followGeneration(page,'milkweed','complete');
+ await expect(page.locator('[data-brood-record="milkweed"] td').nth(1)).toContainText('Reaches the adult stage');
+
+ // Replanting the plot a generation lives on WOULD leave it running against
+ // plants that are gone, so that one is dropped rather than allowed to finish.
+ await visitRestoration(page);
+ await cycle.getByRole('combobox',{name:/Choose where to lay eggs/}).selectOption('restoration');
+ await cycle.getByRole('combobox',{name:/Predict how far it gets/}).selectOption('complete');
+ await cycle.getByRole('button',{name:'Lay eggs here',exact:true}).click();
+ await expect(cycle).toContainText('Generation at: Restoration plot');
+ await planHabitat(page,'Keep it mown','neither');
+ await expect(cycle).toContainText('No generation started');
+ await expect(page.locator('[data-brood-record="restoration"] td').nth(1)).toContainText('Not followed');
+ await page.evaluate(()=>{const w=window as any;w.__ctx.isDark=true;w.__ctx.isContrast=true;w.__rerender();});
+ await cycle.screenshot({path:'scratch/butterfly-habitat/lifecycle-contrast.png'});
+ await audit(page);
+});

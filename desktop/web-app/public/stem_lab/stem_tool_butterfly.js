@@ -134,6 +134,9 @@
     if(index<reachedStage(p))return {ok:false,message:'Keep following this generation before recording what happened.'};
     var record={patch:lc.patch,prediction:lc.prediction,result:expectedOutcome(p)};
     lc.broods=lc.broods.filter(function(b){return b.patch!==record.patch;}).concat([record]);
+    // The stage clears (the generation is over) but the patch stays, so the
+    // track keeps showing HOW FAR it got instead of blanking at the moment the
+    // learner most wants to read it. `stage` null is what gates re-laying eggs.
     lc.prediction=null;lc.stage=null;
     return {ok:true,message:broodFeedback(record,p)};
   }
@@ -144,6 +147,16 @@
       :p.name+' did not carry a generation to an adult. The caterpillar stage had no milkweed leaves, and adult nectar cannot substitute for it.');
   }
   function broodFor(s,patchId){return s.lifecycle.broods.find(function(b){return b.patch===patchId;})||null;}
+  // Both choosers lock while a generation runs, so without this a learner who
+  // laid eggs on the wrong patch has no way back. Abandoning records nothing:
+  // an unfinished generation is not evidence about the habitat.
+  function abandonBrood(s){
+    var lc=s.lifecycle;
+    if(!lc.stage)return {ok:false,message:'No generation is running.'};
+    var p=patch(lc.patch,s);
+    lc.stage=null;lc.prediction=null;lc.patch=broodFor(s,lc.patch)?lc.patch:null;
+    return {ok:true,message:'Stopped following the generation at '+(p?p.name:'that patch')+'. Nothing was recorded. You can lay eggs again.'};
+  }
 
   // ── Drawing a conclusion ──────────────────────────────────────────────
   // The old panel asked one fixed question and answered it from a count of
@@ -425,6 +438,7 @@
     function startBrood(){var result=layEggs(s,eggSite,broodGuess);if(result.ok)persist();setCycleFeedback(result.message);announce(result.message);}
     function nextStage(){var result=advanceStage(s);if(result.ok)persist();setCycleFeedback(result.message);announce(result.message);}
     function recordBrood(){var result=broodResult(s);if(result.ok){persist();setBroodGuess('');}setCycleFeedback(result.message);announce(result.message);}
+    function dropBrood(){var result=abandonBrood(s);if(result.ok){persist();setBroodGuess('');setEggSite('');}setCycleFeedback(result.message);announce(result.message);}
 
     function update(){refresh(function(n){return n+1;});if(api.current)api.current.draw();}
     function announce(text){setMessage(text);update();}
@@ -547,7 +561,7 @@
         h('p',{className:'bf-help'},'Each row keeps your latest examined plan. Resource availability is one part of habitat quality; this comparison does not estimate butterfly numbers or survival.')),
       h('section',{className:'bf-panel bf-cycle','aria-label':'Life cycle investigation','data-bf-cycle-patch':s.lifecycle.patch||'','data-bf-cycle-stage':s.lifecycle.stage||''},
         h('div',{className:'bf-cycle-head'},h('div',null,h('div',{className:'bf-eyebrow'},'Follow a generation · Predict → Lay → Observe'),h('h3',null,'What happens to the next generation here?'),h('p',{className:'bf-help'},'You fly the adult. Place eggs on a patch you have already examined, then follow the generation one stage at a time and see how far it gets.')),
-          h('span',{className:'bf-cycle-current'},cycleSite?'Generation at: '+cycleSite.name:'No generation started')),
+          h('span',{className:'bf-cycle-current'},!cycleSite?'No generation started':s.lifecycle.stage?'Generation at: '+cycleSite.name:'Last followed: '+cycleSite.name)),
         h('div',{className:'bf-cycle-steps'},
           h('div',null,h('label',{htmlFor:'bf-egg-site'},'1. Choose where to lay eggs'),
             h('select',{id:'bf-egg-site',value:eggSite,onChange:function(e){setEggSite(e.target.value);},disabled:!!s.lifecycle.stage},
@@ -561,11 +575,17 @@
             h('div',{className:'bf-cycle-actions'},
               button('Lay eggs here',startBrood,{className:'bf-primary',disabled:!eggSite||!broodGuess||!!s.lifecycle.stage}),
               button('Next stage',nextStage,{disabled:!s.lifecycle.stage||!canAdvance}),
-              button('Record result',recordBrood,{disabled:!s.lifecycle.stage||canAdvance})),
+              button('Record result',recordBrood,{disabled:!s.lifecycle.stage||canAdvance}),
+              button('Start over',dropBrood,{disabled:!s.lifecycle.stage})),
             h('p',{className:'bf-help'},s.lifecycle.stage?'Follow the generation to the end, then record what happened.':'Laying eggs does not change the plants. What the generation can do depends on what is already growing there.'))),
         h('ol',{className:'bf-track'},STAGES.map(function(st,i){
-          var reached=cycleSite&&i<=STAGES.findIndex(function(x){return x.id===s.lifecycle.stage;});
-          var state=!cycleSite||!s.lifecycle.stage?'idle':st.id===s.lifecycle.stage?'current':reached?stageStatus(cycleSite,i)==='thriving'?'reached':'blocked':'idle';
+          // While a generation runs the track follows its current stage. Once the
+          // result is recorded the stage clears, so the track shows the finished
+          // outcome instead of blanking just as the learner reads it.
+          var done=!s.lifecycle.stage&&cycleSite&&broodFor(s,cycleSite.id);
+          var edge=done?reachedStage(cycleSite):STAGES.findIndex(function(x){return x.id===s.lifecycle.stage;});
+          var reached=!!cycleSite&&i<=edge;
+          var state=!cycleSite||(!s.lifecycle.stage&&!done)?'idle':st.id===s.lifecycle.stage?'current':reached?stageStatus(cycleSite,i)==='thriving'?'reached':'blocked':'idle';
           return h('li',{key:st.id,'data-state':state,'data-stage':st.id},h('b',null,st.ordinal+' · '+st.name),
             h('small',null,cycleSite&&reached?(stageStatus(cycleSite,i)==='thriving'?st.thriving:st.failing):st.caption),
             state==='current'?h('span',{className:'bf-track-tag'},'Now'):null);
@@ -600,6 +620,6 @@
   window.StemLab.registerTool('butterfly',{label:'Butterfly Habitat Lab',icon:'🦋',desc:'Explore a summer meadow as a monarch, compare nectar and host plants, and build a field journal.',category:'science',color:'orange',gradeRange:'4-12',aliases:['monarch','butterflies','milkweed','pollinator','habitat'],render:function(ctx){return ctx.React.createElement(ButterflyLab,{ctx:ctx});}});
   if(window.__RR_TEST_EXPORTS__)window.__RR_TEST_EXPORTS__.butterfly={plants:PLANTS,freshState:freshState,nearest:nearest,step:step,advanceFrame:advanceFrame,land:land,observe:observe,save:save,buildWorld:buildWorld,designs:DESIGNS,habitats:habitats,applyPlan:applyPlan,cleanRestoration:cleanRestoration,fieldDetail:fieldDetail,evidenceRecorded:evidenceRecorded,
     stages:STAGES,outcomes:OUTCOMES,layEggs:layEggs,advanceStage:advanceStage,broodResult:broodResult,broodFor:broodFor,
-    cleanLifecycle:cleanLifecycle,reachedStage:reachedStage,stageStatus:stageStatus,expectedOutcome:expectedOutcome,
+    cleanLifecycle:cleanLifecycle,abandonBrood:abandonBrood,reachedStage:reachedStage,stageStatus:stageStatus,expectedOutcome:expectedOutcome,
     claims:CLAIMS,judgeClaim:judgeClaim,evidenceFor:evidenceFor};
 })();

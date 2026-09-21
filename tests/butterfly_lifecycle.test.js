@@ -94,6 +94,30 @@ describe('Butterfly life cycle investigation',()=>{
    expect(s.lifecycle.patch).toBe('milkweed');expect(s.lifecycle.stage).toBe('caterpillar');
  });
 
+ it('lets the learner abandon a running generation without recording evidence',()=>{
+   const s=examined(BF.freshState(),'milkweed');
+   expect(BF.abandonBrood(s).ok).toBe(false);
+   BF.layEggs(s,'milkweed','complete');BF.advanceStage(s);
+   const result=BF.abandonBrood(s);
+   expect(result.ok).toBe(true);expect(result.message).toContain('Nothing was recorded');
+   // An unfinished generation says nothing about the habitat, so no row appears.
+   expect(s.lifecycle.broods).toEqual([]);
+   expect(s.lifecycle.stage).toBeNull();expect(s.lifecycle.prediction).toBeNull();
+   expect(s.lifecycle.patch).toBeNull();
+   // The choosers are usable again, so the learner is not stuck.
+   expect(BF.layEggs(s,'milkweed','stalls').ok).toBe(true);
+ });
+
+ it('keeps an earlier recorded result visible after abandoning a rerun',()=>{
+   const s=examined(BF.freshState(),'milkweed');
+   BF.layEggs(s,'milkweed','complete');runToEnd(s);BF.broodResult(s);
+   BF.layEggs(s,'milkweed','stalls');BF.advanceStage(s);
+   BF.abandonBrood(s);
+   // The finished record stands; only the abandoned rerun is discarded.
+   expect(s.lifecycle.broods).toEqual([{patch:'milkweed',prediction:'complete',result:'complete'}]);
+   expect(s.lifecycle.patch).toBe('milkweed');
+ });
+
  it('does not fly, spend energy, or grant patch evidence while a generation runs',()=>{
    const s=examined(BF.freshState(),'milkweed');
    Object.assign(s,{energy:44,clock:9,paused:true});

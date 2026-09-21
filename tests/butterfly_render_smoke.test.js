@@ -28,6 +28,15 @@ describe('Butterfly panels render',()=>{
    expect(html).toContain('Generations you have followed · 1 recorded');
    expect(html).toContain('3 of 3 patches investigated');
  });
+ it('keeps the finished outcome on the track instead of blanking it',()=>{
+   // stage null + a recorded brood = the generation is over but still readable.
+   const html=render({butterfly:{version:3,observations:['bergamot'],restoration:{},
+     lifecycle:{patch:'bergamot',prediction:null,stage:null,
+       broods:[{patch:'bergamot',prediction:'complete',result:'stalls'}]}}});
+   expect(html).toContain('Last followed: Wild bergamot');
+   expect(html).toContain('data-state="blocked"');
+   expect(html).not.toContain('No generation started');
+ });
  it('renders every claim without throwing on an empty record set',()=>{
    for(const saved of [undefined,{butterfly:{version:3,observations:[],restoration:{},lifecycle:{}}}])
      expect(()=>render(saved)).not.toThrow();
