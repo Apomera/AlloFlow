@@ -89766,7 +89766,32 @@
       "badge_vocab_30_desc": "Aprende 30 palabras del vocabulario de emociones",
       "badge_vocab_30_name": "Erudición emocional",
       "badge_wheel_explorer_desc": "Explora las 6 familias de emociones",
-      "badge_wheel_explorer_name": "Exploración de la rueda"
+      "badge_wheel_explorer_name": "Exploración de la rueda",
+      "tabbar_arc": "Arco del ánimo",
+      "tabbar_atlas": "Atlas cultural",
+      "tabbar_bodymap": "Mapa corporal",
+      "tabbar_checkin": "Registro",
+      "tabbar_color": "Sintonizador de color",
+      "tabbar_compounds": "Compuestas",
+      "tabbar_coreg": "Ayuda a un amigo",
+      "tabbar_detective": "Detective",
+      "tabbar_empathy_mirror": "Espejo de empatía",
+      "tabbar_face_builder": "Constructor de rostros",
+      "tabbar_faces": "Lectura de rostros",
+      "tabbar_history": "Historial",
+      "tabbar_iceberg": "Iceberg",
+      "tabbar_journal": "Diario",
+      "tabbar_micro": "Microexpresiones",
+      "tabbar_mixer": "Mezclador",
+      "tabbar_nameit": "Nómbralo",
+      "tabbar_plutchik": "Rueda de Plutchik",
+      "tabbar_scenarios": "Situaciones",
+      "tabbar_strategies": "Estrategias",
+      "tabbar_validation": "Validación",
+      "tabbar_vocab": "Vocabulario",
+      "tabbar_volcano": "Volcán del enojo",
+      "tabbar_weather": "Clima",
+      "tabbar_wheel": "Rueda de emociones"
     }
   }
 }
