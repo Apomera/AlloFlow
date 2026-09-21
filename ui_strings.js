@@ -33715,7 +33715,13 @@
       "xray_off": "🐙 Skin view",
       "xray_on": "👁️ X-ray: organs visible",
       "zoom_in": "Zoom in",
-      "zoom_out": "Zoom out"
+      "zoom_out": "Zoom out",
+      "photic_zone_0_5m_surface_light_penetr": "Photic zone, 0-5m. Surface light penetrates fully.",
+      "twilight_zone_30_1000m_cuttlefish_and": "Open water below the reef, 30-1000m. Cuttlefish and squid common; the twilight zone proper starts at 200m.",
+      "caption_pressure_crushing": "Mantle crushing under pressure",
+      "sr_crushing_pressure": "Crushing pressure — ascend with Q",
+      "caption_pressure_building": "Pressure building — near crush depth",
+      "sr_pressure_building": "Pressure building. Crush depth is close."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Random: ",
@@ -48982,7 +48988,11 @@
       "real_sky_controls_hint": "Drag to pan · scroll or pinch to zoom · right-click to identify",
       "real_sky_credit": "Real survey imagery and object data via CDS Aladin Lite and SIMBAD.",
       "canvas_mass_solar": "{mass} Solar Masses",
-      "canvas_progenitor_mass": "Started as a {mass} M☉ star"
+      "canvas_progenitor_mass": "Started as a {mass} M☉ star",
+      "caption_hide_panel": "Hide",
+      "caption_show_panel": "Panel",
+      "fullscreen_hide_panel": "Hide the settings panel",
+      "fullscreen_show_panel": "Show the settings panel"
     },
     "gamestudio": {
       "sprites": "Sprites",
@@ -49926,6 +49936,11 @@
       "a11y_selected_sculpt_part_navigation": "Selected sculpt part navigation",
       "a11y_select_previous_sculpt_part": "Select previous sculpt part",
       "a11y_select_next_sculpt_part": "Select next sculpt part",
+      "aria_cross_section_with_area": " cross-section with area ",
+      "aria_square_units": " square units",
+      "aria_comma_area": ", area ",
+      "aria_measured_ring_z": "Measured along the ring local Z axis.",
+      "aria_measured_part_y": "Measured along the part local Y axis.",
       "a11y_cross_section_height_through_selected_part": "Cross-section height through selected part",
       "a11y_investigation_phases": "Investigation phases",
       "loading_3d_engine": "Loading 3D engine...",

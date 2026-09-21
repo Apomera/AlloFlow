@@ -82,8 +82,15 @@ window.StemLab = window.StemLab || {
       [data-galaxy-workspace][data-galaxy-fullscreen=true] > [data-galaxy-stage] { height: 100% !important; top: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
       /* With the sidebar kept, the stage must still fill the height it is given: the
          clamped 58vw cap is what left a 774px-tall stage in an 800px viewport. */
-      [data-galaxy-workspace][data-galaxy-fullscreen=true] { height: 100% !important; align-items: stretch !important; }
-      [data-galaxy-workspace][data-galaxy-fullscreen=true] > [data-galaxy-controls] { overflow-y: auto !important; max-height: 100% !important; }
+      /* grid-template-rows matters: the stage carries an inline clamp(...620px) and
+         the row sized itself to that, leaving a 726px stage and sidebar in an 800px
+         viewport. Forcing a single 100% row makes both columns fill the screen. */
+      [data-galaxy-workspace][data-galaxy-fullscreen=true] { height: 100% !important; align-items: stretch !important; padding: 0 !important; grid-template-rows: 100% !important; grid-auto-rows: 100% !important; }
+      /* The settings column is sticky with a top offset on wide screens, which in
+         fullscreen pushed both columns down and left a 726px stage in an 800px
+         viewport. In fullscreen the grid row IS the viewport, so pin it flush and let
+         the column scroll internally instead. */
+      [data-galaxy-workspace][data-galaxy-fullscreen=true] > [data-galaxy-controls] { overflow-y: auto !important; max-height: 100% !important; height: 100% !important; top: 0 !important; border-radius: 0 !important; }
       [data-galaxy-workspace][data-galaxy-focus=true] > [data-galaxy-stage] > :not(canvas):not([data-galaxy-focus-exit]):not(.sr-only) { display: none !important; }
       [data-galaxy-workspace][data-galaxy-focus=true] [data-galaxy-focus-exit] { display: flex; position: absolute; top: 16px; right: 16px; z-index: 30; align-items: center; min-height: 44px; padding: 10px 16px; border: 1px solid #ffffff40; border-radius: 999px; color: #f1f5f9; background: #020617bd; font: 600 12px/1.3 system-ui, sans-serif; cursor: pointer; opacity: 1; transition: opacity .18s; }
       [data-galaxy-workspace][data-galaxy-focus-idle=true] [data-galaxy-focus-exit] { opacity: 0; }
@@ -694,6 +701,10 @@ if (!window._galaxyHasLoadedOnce) {
           var galaxyReducedMotion = galaxyPrefersReducedMotion;
           var galaxyAutoRotate = d.galaxyAutoRotate !== false && !galaxyReducedMotion;
           var galaxyHudHidden = !!d.galaxyHudHidden;
+          // Fullscreen defaults to the scene alone, but a learner who is adjusting
+          // settings should not have to leave fullscreen to reach them. Persisted, so
+          // the choice survives a reload the way the other view preferences do.
+          var galaxyFullscreenPanel = !!d.galaxyFullscreenPanel;
           var galaxyTourActive = !!d.galaxyTourActive && !galaxyReducedMotion;
           var galaxyQuality = (typeof d.galaxyQuality === 'string' && d.galaxyQuality) ? d.galaxyQuality : 'auto';
           var galaxyBrightness = Number.isFinite(d.galaxyBrightness) ? Math.min(1.2, Math.max(0.7, d.galaxyBrightness)) : 1;
@@ -2132,6 +2143,39 @@ if (!window._galaxyHasLoadedOnce) {
           var _galaxySceneReady = React.useState(false);
           var galaxySceneReady = _galaxySceneReady[0];
           var setGalaxySceneReady = _galaxySceneReady[1];
+          // Drives the fullscreen-only panel toggle. Local, not toolData: whether the
+          // browser is fullscreen right now is not a saveable preference, and a
+          // restored session must never reopen believing it still is.
+          var _galaxyIsFullscreen = React.useState(false);
+          var galaxyIsFullscreen = _galaxyIsFullscreen[0];
+          var setGalaxyIsFullscreen = _galaxyIsFullscreen[1];
+          // The CSS fallback never fires fullscreenchange, so poll the tool's own
+          // predicate as well. Both paths set it, and cheap equality keeps this from
+          // re-rendering the scene.
+          React.useEffect(function () {
+            var read = function () {
+              var cv = galaxyCanvasActive.current;
+              var now = !!(cv && cv._galaxyIsFullscreen && cv._galaxyIsFullscreen());
+              setGalaxyIsFullscreen(function (prev) { return prev === now ? prev : now; });
+            };
+            document.addEventListener('fullscreenchange', read);
+            document.addEventListener('webkitfullscreenchange', read);
+            var poll = setInterval(read, 400);
+            read();
+            return function () {
+              document.removeEventListener('fullscreenchange', read);
+              document.removeEventListener('webkitfullscreenchange', read);
+              clearInterval(poll);
+            };
+          }, []);
+          // Push the SAVED preference into the scene whenever it changes, and once the
+          // scene exists — entering fullscreen must honour a remembered "keep the
+          // panel" instead of always starting hidden. Depends on galaxySceneReady
+          // because the canvas helpers do not exist before the scene is built.
+          React.useEffect(function () {
+            var cv = galaxyCanvasActive.current;
+            if (cv && cv._galaxySetFullscreenSidebar) cv._galaxySetFullscreenSidebar(!galaxyFullscreenPanel);
+          }, [galaxyFullscreenPanel, galaxySceneReady]);
           var _galaxyCameraFeedback = React.useState({ angle: 'angled', zoom: 100, zoomPosition: 0, fieldHeight: 0, regime: 'structure' });
           var galaxyCameraFeedback = _galaxyCameraFeedback[0];
           var setGalaxyCameraFeedback = _galaxyCameraFeedback[1];
@@ -9415,7 +9459,11 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("button", { type: "button", "data-control-caption": __alloT('stem.galaxy.caption_labels', 'Labels'), title: galaxyHudHidden ? __alloT('stem.galaxy.camera_show_labels', 'Show simulation labels') : __alloT('stem.galaxy.camera_hide_labels', 'Hide simulation labels'), "aria-label": galaxyHudHidden ? __alloT('stem.galaxy.camera_show_labels', 'Show simulation labels') : __alloT('stem.galaxy.camera_hide_labels', 'Hide simulation labels'), "aria-pressed": !galaxyHudHidden, onClick: function () { var nextHidden = !galaxyHudHidden; upd('galaxyHudHidden', nextHidden); var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetHudHidden) cv._galaxySetHudHidden(nextHidden); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-slate-950/75 text-base font-black text-white shadow-lg backdrop-blur-md transition-colors hover:border-indigo-300/50 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950" }, galaxyHudHidden ? "◫" : "◩"),
                   React.createElement("button", { type: "button", "data-control-caption": galaxyTourActive ? __alloT('stem.galaxy.caption_stop', 'Stop') : __alloT('stem.galaxy.caption_tour', 'Tour'), disabled: galaxyReducedMotion, title: galaxyReducedMotion ? __alloT('stem.galaxy.camera_tour_disabled', 'Cinematic tour disabled by reduced-motion preference') : galaxyTourActive ? __alloT('stem.galaxy.camera_stop_tour', 'Stop cinematic tour') : __alloT('stem.galaxy.camera_start_tour', 'Start cinematic tour'), "aria-label": galaxyReducedMotion ? __alloT('stem.galaxy.camera_tour_disabled', 'Cinematic tour disabled by reduced-motion preference') : galaxyTourActive ? __alloT('stem.galaxy.camera_stop_tour', 'Stop cinematic tour') : __alloT('stem.galaxy.camera_start_tour', 'Start cinematic tour'), "aria-describedby": "galaxy-motion-note", "aria-pressed": galaxyTourActive, onClick: function () { var nextTour = !galaxyTourActive; upd('galaxyTourActive', nextTour); var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetTour) cv._galaxySetTour(nextTour); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border text-base font-black shadow-lg backdrop-blur-md transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-fuchsia-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-60 " + (galaxyTourActive ? "border-fuchsia-300/50 bg-fuchsia-400/20 text-fuchsia-100" : "border-white/10 bg-slate-950/75 text-white hover:border-fuchsia-300/50 hover:bg-slate-900") }, galaxyTourActive ? "■" : "▶"),
                   React.createElement("button", { type: "button", "data-galaxy-focus-enter": "true", "data-control-caption": __alloT('stem.galaxy.caption_focus', 'Focus'), disabled: !galaxySceneReady, title: __alloT('stem.galaxy.focus_title', 'Focus view — hide interface (H)'), "aria-label": __alloT('stem.galaxy.focus_title', 'Focus view — hide interface (H)'), "aria-keyshortcuts": "H", onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetFocusView) cv._galaxySetFocusView(true); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-300/40 bg-slate-950/85 text-base font-black text-cyan-100 shadow-lg backdrop-blur-md disabled:opacity-40" }, "◌"),
-                  React.createElement("button", { type: "button", "data-control-caption": __alloT('stem.galaxy.caption_fullscreen', 'Full'), title: __alloT('stem.galaxy.camera_fullscreen', 'Toggle fullscreen'), 'aria-label': __alloT('stem.galaxy.camera_fullscreen', 'Toggle fullscreen'), onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyToggleFullscreen) cv._galaxyToggleFullscreen(); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-slate-950/75 text-base font-black text-white shadow-lg backdrop-blur-md transition-colors hover:border-indigo-300/50 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950" }, "⛶")
+                  React.createElement("button", { type: "button", "data-control-caption": __alloT('stem.galaxy.caption_fullscreen', 'Full'), title: __alloT('stem.galaxy.camera_fullscreen', 'Toggle fullscreen'), 'aria-label': __alloT('stem.galaxy.camera_fullscreen', 'Toggle fullscreen'), onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyToggleFullscreen) cv._galaxyToggleFullscreen(); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-slate-950/75 text-base font-black text-white shadow-lg backdrop-blur-md transition-colors hover:border-indigo-300/50 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950" }, "⛶"),
+                  // Fullscreen no longer has to mean "lose the settings". Only useful
+                  // while fullscreen, so it is not shown otherwise — an always-present
+                  // button that does nothing on the normal page is worse than none.
+                  galaxyIsFullscreen && React.createElement("button", { type: "button", "data-galaxy-fullscreen-panel": "true", "data-control-caption": galaxyFullscreenPanel ? __alloT('stem.galaxy.caption_hide_panel', 'Hide') : __alloT('stem.galaxy.caption_show_panel', 'Panel'), title: galaxyFullscreenPanel ? __alloT('stem.galaxy.fullscreen_hide_panel', 'Hide the settings panel') : __alloT('stem.galaxy.fullscreen_show_panel', 'Show the settings panel'), "aria-label": galaxyFullscreenPanel ? __alloT('stem.galaxy.fullscreen_hide_panel', 'Hide the settings panel') : __alloT('stem.galaxy.fullscreen_show_panel', 'Show the settings panel'), "aria-pressed": galaxyFullscreenPanel, onClick: function () { var next = !galaxyFullscreenPanel; upd('galaxyFullscreenPanel', next); var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetFullscreenSidebar) cv._galaxySetFullscreenSidebar(!next); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border text-base font-black shadow-lg backdrop-blur-md transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 " + (galaxyFullscreenPanel ? "border-cyan-300/40 bg-cyan-400/20 text-cyan-100" : "border-white/10 bg-slate-950/75 text-white hover:bg-slate-900") }, "▤")
                 ),
                 React.createElement("button", { type: "button", "data-galaxy-focus-exit": "true", onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetFocusView) cv._galaxySetFocusView(false); } }, __alloT('stem.galaxy.focus_show_controls', 'Show controls · Esc')),
                 // Compact spectral legend — the letters "O B A F G K M" mean nothing
