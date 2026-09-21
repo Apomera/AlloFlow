@@ -4359,6 +4359,40 @@
             var rimLight = new THREE.PointLight(0xa78bfa, 1.3, 22);
             rimLight.position.set(-5, 2, -5);
             scene.add(rimLight);
+            // Soft contact shadows: the magnets previously floated over the grid
+            // with no cue that they sit ON a plane, which made the drag gesture
+            // read as ambiguous depth. A single shadow-casting key light plus a
+            // shadow-only catcher plane fixes the grounding without adding a
+            // visible floor that would compete with the field lines.
+            // PCFSoft + a tight ortho frustum keeps this cheap on a Chromebook.
+            try {
+              renderer.shadowMap.enabled = true;
+              renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+              keyLight.castShadow = true;
+              var shadowSide = magLowPower() ? 512 : 1024;
+              keyLight.shadow.mapSize.width = shadowSide;
+              keyLight.shadow.mapSize.height = shadowSide;
+              keyLight.shadow.camera.near = 1;
+              keyLight.shadow.camera.far = 26;
+              keyLight.shadow.camera.left = -6; keyLight.shadow.camera.right = 6;
+              keyLight.shadow.camera.top = 6; keyLight.shadow.camera.bottom = -6;
+              keyLight.shadow.bias = -0.0012;
+              keyLight.shadow.radius = 2;
+              var shadowCatcher = new THREE.Mesh(
+                new THREE.PlaneGeometry(14, 14),
+                new THREE.ShadowMaterial({ opacity: 0.34 })
+              );
+              shadowCatcher.rotation.x = -Math.PI / 2;
+              // The magnets are CENTRED on y=0 and are 0.66 tall, so the grid
+              // plane cuts through them: a catcher at y=0 would put a hard
+              // shadow edge under a bisected box. The catcher goes below the
+              // magnet's half-height instead, so the shadow reads as the
+              // scene's floor and gives the drag gesture a depth reference.
+              // Magnets can also be dragged in x/z only, so this stays valid.
+              shadowCatcher.position.y = -0.34;
+              shadowCatcher.receiveShadow = true;
+              scene.add(shadowCatcher);
+            } catch (shadowError) {}
             var grid = new THREE.GridHelper(9, 18, 0x64748b, 0x334155);
             grid.material.transparent = true;
             grid.material.opacity = 0.34;
@@ -4442,6 +4476,7 @@
                 south.position.x = -0.5;
                 north.userData.magnetIndex = index;
                 south.userData.magnetIndex = index;
+                north.castShadow = true; south.castShadow = true;
                 group.add(north);
                 group.add(south);
                 // One bright stripe marks physical north; two mark physical south.
@@ -5763,6 +5798,29 @@
             scene.add(new THREE.HemisphereLight(0xdbeafe, 0x172554, 1.2));
             var keyLight = new THREE.DirectionalLight(0xffffff, 1.25); keyLight.position.set(5, 8, 6); scene.add(keyLight);
             var rimLight = new THREE.PointLight(0xf59e0b, 1.2, 20); rimLight.position.set(-4, 2, 5); scene.add(rimLight);
+            // Grounding shadow for the coil assembly. The coil is CENTRED on the
+            // axis and its radius is user-driven (0.5-1.667 scene units from the
+            // 1.5-5cm slider), so there is no single "underside" to sit beneath.
+            // The catcher therefore goes just below the largest reachable radius,
+            // which keeps the shadow on-screen and stable while the student
+            // scrubs the radius rather than jumping as the coil resizes.
+            try {
+              renderer.shadowMap.enabled = true;
+              renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+              keyLight.castShadow = true;
+              var electroShadowSide = magLowPower() ? 512 : 1024;
+              keyLight.shadow.mapSize.width = electroShadowSide;
+              keyLight.shadow.mapSize.height = electroShadowSide;
+              keyLight.shadow.camera.near = 1; keyLight.shadow.camera.far = 26;
+              keyLight.shadow.camera.left = -6; keyLight.shadow.camera.right = 6;
+              keyLight.shadow.camera.top = 6; keyLight.shadow.camera.bottom = -6;
+              keyLight.shadow.bias = -0.0012; keyLight.shadow.radius = 2;
+              var electroCatcher = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.ShadowMaterial({ opacity: 0.3 }));
+              electroCatcher.rotation.x = -Math.PI / 2;
+              electroCatcher.position.y = -1.72;
+              electroCatcher.receiveShadow = true;
+              scene.add(electroCatcher);
+            } catch (shadowError) {}
             var grid = new THREE.GridHelper(10, 20, 0x64748b, 0x334155); grid.material.transparent = true; grid.material.opacity = 0.28; scene.add(grid);
             var axes = new THREE.AxesHelper(4); axes.material.transparent = true; axes.material.opacity = 0.45; scene.add(axes);
             var dynamicGroup = new THREE.Group(); scene.add(dynamicGroup);
@@ -5793,7 +5851,21 @@
                 points.push(new THREE.Vector3(-state.length / 2 + t * state.length, Math.cos(angle) * state.radius, Math.sin(angle) * state.radius));
               }
               var curve = new THREE.CatmullRomCurve3(points);
-              var wire = new THREE.Mesh(new THREE.TubeGeometry(curve, samples, 0.035, 8, false), new THREE.MeshStandardMaterial({ color: state.current > 0 ? 0xf59e0b : 0x64748b, emissive: 0xf59e0b, emissiveIntensity: state.current > 0 ? 0.18 : 0, roughness: 0.42, metalness: 0.55 }));
+              // The coil's glow now TRACKS the current rather than being a flat
+              // on/off 0.18: the slider runs 0-6 A, so emissive ramps across that
+              // range and the wire visibly brightens as the student turns it up.
+              // This is the same quantity the field readout and B = mu*n*I graph
+              // already report, so the glow is another view of the stated model,
+              // not a new claim. Capped so the wire never blows out under bloom.
+              var currentFraction = Math.max(0, Math.min(1, (Number(state.current) || 0) / 6));
+              var wireMat = new THREE.MeshStandardMaterial({
+                color: state.current > 0 ? 0xf59e0b : 0x64748b,
+                emissive: 0xf59e0b,
+                emissiveIntensity: state.current > 0 ? 0.12 + currentFraction * 0.66 : 0,
+                roughness: 0.42, metalness: 0.55
+              });
+              var wire = new THREE.Mesh(new THREE.TubeGeometry(curve, samples, 0.035, 8, false), wireMat);
+              wire.castShadow = true;
               dynamicGroup.add(wire);
               if (state.current > 0) {
                 [0.14, 0.36, 0.58, 0.80].forEach(function (t) {
@@ -5804,7 +5876,7 @@
               if (state.material !== 'air') {
                 var coreColor = state.material === 'soft' ? 0x94a3b8 : 0x64748b;
                 var core = new THREE.Mesh(new THREE.CylinderGeometry(state.radius * 0.53, state.radius * 0.53, state.length * 1.12, 28), new THREE.MeshStandardMaterial({ color: coreColor, roughness: 0.34, metalness: 0.72, transparent: true, opacity: 0.86 }));
-                core.rotation.z = Math.PI / 2; dynamicGroup.add(core);
+                core.rotation.z = Math.PI / 2; core.castShadow = true; dynamicGroup.add(core);
               } else {
                 var airCore = new THREE.Mesh(new THREE.CylinderGeometry(state.radius * 0.52, state.radius * 0.52, state.length * 1.04, 20, 1, true), new THREE.MeshBasicMaterial({ color: 0x64748b, wireframe: true, transparent: true, opacity: 0.16 }));
                 airCore.rotation.z = Math.PI / 2; dynamicGroup.add(airCore);
@@ -7518,6 +7590,27 @@
             var keyLight = new THREE.DirectionalLight(0xffffff, 1.25); keyLight.position.set(5, 8, 7); scene.add(keyLight);
             var rimLight = new THREE.PointLight(0x38bdf8, 1.0, 22); rimLight.position.set(-5, 2, 5); scene.add(rimLight);
             var grid = new THREE.GridHelper(11, 22, 0x64748b, 0x334155); grid.material.transparent = true; grid.material.opacity = 0.22; grid.position.y = -2.25; scene.add(grid);
+            // The motor has a real floor (the grid at y=-2.25), so a shadow
+            // under the rotor and magnets grounds the whole assembly and makes
+            // the rotation read as a solid object turning in space rather than
+            // a flat diagram spinning. Shadow-only material: no visible plane.
+            try {
+              renderer.shadowMap.enabled = true;
+              renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+              keyLight.castShadow = true;
+              var motorShadowSide = magLowPower() ? 512 : 1024;
+              keyLight.shadow.mapSize.width = motorShadowSide;
+              keyLight.shadow.mapSize.height = motorShadowSide;
+              keyLight.shadow.camera.near = 1; keyLight.shadow.camera.far = 28;
+              keyLight.shadow.camera.left = -7; keyLight.shadow.camera.right = 7;
+              keyLight.shadow.camera.top = 7; keyLight.shadow.camera.bottom = -7;
+              keyLight.shadow.bias = -0.0012; keyLight.shadow.radius = 2;
+              var motorCatcher = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), new THREE.ShadowMaterial({ opacity: 0.32 }));
+              motorCatcher.rotation.x = -Math.PI / 2;
+              motorCatcher.position.y = -2.24;
+              motorCatcher.receiveShadow = true;
+              scene.add(motorCatcher);
+            } catch (shadowError) {}
             var dynamicGroup = new THREE.Group(); scene.add(dynamicGroup);
             var liveState = cv._motor3dState || currentMotor3DState();
             var resizeObserver = null, disposed = false, liveSignature = '';
@@ -7550,7 +7643,7 @@
               [-1, 1].forEach(function (side) {
                 var isNorth = side === -state.fieldDirection;
                 var magnet = new THREE.Mesh(new THREE.BoxGeometry(1.15, 3.5, 3.0), new THREE.MeshStandardMaterial({ color: isNorth ? 0xef4444 : 0x2563eb, roughness: 0.42, metalness: 0.3 }));
-                magnet.position.x = side * 3.35; dynamicGroup.add(magnet);
+                magnet.position.x = side * 3.35; magnet.castShadow = true; dynamicGroup.add(magnet);
                 addPoleMark(side * 2.76, isNorth);
               });
               var fieldStart = state.fieldDirection > 0 ? -2.62 : 2.62;
@@ -7560,7 +7653,7 @@
               rotorGroup = new THREE.Group(); dynamicGroup.add(rotorGroup);
               var loopPoints = [new THREE.Vector3(0, -1.28, -1.08), new THREE.Vector3(0, 1.28, -1.08), new THREE.Vector3(0, 1.28, 1.08), new THREE.Vector3(0, -1.28, 1.08)];
               var loopCurve = new THREE.CatmullRomCurve3(loopPoints, true, 'catmullrom', 0.05);
-              var loop = new THREE.Mesh(new THREE.TubeGeometry(loopCurve, 72, 0.065, 10, true), new THREE.MeshStandardMaterial({ color: state.current > 0 ? 0xf59e0b : 0x64748b, emissive: 0xf59e0b, emissiveIntensity: state.current > 0 ? 0.18 : 0, roughness: 0.38, metalness: 0.62 })); rotorGroup.add(loop);
+              var loop = new THREE.Mesh(new THREE.TubeGeometry(loopCurve, 72, 0.065, 10, true), new THREE.MeshStandardMaterial({ color: state.current > 0 ? 0xf59e0b : 0x64748b, emissive: 0xf59e0b, emissiveIntensity: state.current > 0 ? 0.18 : 0, roughness: 0.38, metalness: 0.62 })); loop.castShadow = true; rotorGroup.add(loop);
               var shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 4.7, 18), new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.28, metalness: 0.82 })); rotorGroup.add(shaft);
               [0, Math.PI].forEach(function (rotation, index) {
                 var halfRing = new THREE.Mesh(new THREE.TorusGeometry(0.40, 0.11, 9, 24, Math.PI), new THREE.MeshStandardMaterial({ color: index ? 0xb45309 : 0xf59e0b, roughness: 0.32, metalness: 0.72 }));
@@ -9638,6 +9731,38 @@
             var sunLight = new THREE.DirectionalLight(0xfff7d6, 1.35); sunLight.position.set(-8, 3, 4); scene.add(sunLight);
             var rimLight = new THREE.PointLight(0x38bdf8, 0.9, 22); rimLight.position.set(4, 3, 7); scene.add(rimLight);
             var dynamicGroup = new THREE.Group(); scene.add(dynamicGroup);
+            // A starfield behind the magnetosphere. This sits OUTSIDE
+            // dynamicGroup — that group is cleared and rebuilt on every state
+            // change, and the stars never change — so it is built once and
+            // disposed with the scene. Deterministic positions (a seeded LCG,
+            // not Math.random) so the sky is the same on every visit and the
+            // SSR/golden surface stays stable.
+            var starField = null;
+            try {
+              var starCount = magLowPower() ? 260 : 620;
+              var starPos = new Float32Array(starCount * 3);
+              var starSeed = 0x5f3a91;
+              var starRand = function () { starSeed = (starSeed * 1664525 + 1013904223) >>> 0; return starSeed / 4294967296; };
+              for (var si = 0; si < starCount; si++) {
+                // Spread on a shell well outside the camera's maxDistance (24)
+                // so stars never intersect the model or the boundary surface.
+                var su = starRand() * 2 - 1, sth = starRand() * Math.PI * 2;
+                var sr = 46 + starRand() * 10, sp = Math.sqrt(Math.max(0, 1 - su * su));
+                starPos[si * 3] = sr * sp * Math.cos(sth);
+                starPos[si * 3 + 1] = sr * su;
+                starPos[si * 3 + 2] = sr * sp * Math.sin(sth);
+              }
+              var starGeo = new THREE.BufferGeometry();
+              starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+              starField = new THREE.Points(starGeo, new THREE.PointsMaterial({
+                color: 0xdbeafe, size: 0.42, sizeAttenuation: true,
+                transparent: true, opacity: 0.72, depthWrite: false
+              }));
+              starField.frustumCulled = false;
+              // The scene fog would otherwise swallow the stars entirely at r=46.
+              starField.material.fog = false;
+              scene.add(starField);
+            } catch (starError) { starField = null; }
             var liveState = cv._earth3dState || currentEarth3DState();
             var resizeObserver = null, disposed = false, liveSignature = '', animationFrame = 0, animatedParticles = [], animatedWind = [];
             function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
@@ -9664,6 +9789,16 @@
               clearDynamic();
               var sun = new THREE.Mesh(new THREE.SphereGeometry(0.58, 24, 16), new THREE.MeshBasicMaterial({ color: 0xfbbf24 })); sun.position.set(-8.4, 4.1, -2.8); dynamicGroup.add(sun);
               var sunHalo = new THREE.Mesh(new THREE.SphereGeometry(0.82, 20, 14), new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.16 })); sunHalo.position.copy(sun.position); dynamicGroup.add(sunHalo);
+              // Two more additive corona shells. Under bloom the sun stops
+              // being a flat yellow disc and reads as the scene's light source,
+              // which is the thing driving the solar wind the tool teaches.
+              [{ r: 1.15, o: 0.085, c: 0xf59e0b }, { r: 1.62, o: 0.045, c: 0xfb923c }].forEach(function (shell) {
+                var corona = new THREE.Mesh(new THREE.SphereGeometry(shell.r, 18, 12), new THREE.MeshBasicMaterial({
+                  color: shell.c, transparent: true, opacity: shell.o,
+                  blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.BackSide
+                }));
+                corona.position.copy(sun.position); dynamicGroup.add(corona);
+              });
               var sunGlow = new THREE.PointLight(0xfbbf24, 0.7, 16); sunGlow.position.copy(sun.position); dynamicGroup.add(sunGlow);
               var earth = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 24), new THREE.MeshStandardMaterial({ color: 0x1d4ed8, emissive: 0x082f49, emissiveIntensity: 0.32, roughness: 0.72, metalness: 0.06 })); dynamicGroup.add(earth);
               var atmosphere = new THREE.Mesh(new THREE.SphereGeometry(1.06, 32, 20), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.12, side: THREE.DoubleSide })); dynamicGroup.add(atmosphere);
@@ -9763,7 +9898,11 @@
               earthPack.disposed = true;
               magDisposeComposer(earthPack);
               cv.removeEventListener('webglcontextlost', onContextLost); controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
-              if (animationFrame) window.cancelAnimationFrame(animationFrame); animationFrame = 0; clearDynamic(); renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); cv._earth3dInit = false; cv._earth3dUpdate = null; cv._earth3dCleanup = null;
+              if (animationFrame) window.cancelAnimationFrame(animationFrame); animationFrame = 0; clearDynamic();
+              // The starfield lives on the scene, NOT in dynamicGroup, so
+              // clearDynamic() never touches it — dispose it explicitly.
+              if (starField) { try { scene.remove(starField); if (starField.geometry) starField.geometry.dispose(); if (starField.material) starField.material.dispose(); } catch (e) {} starField = null; }
+              renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); cv._earth3dInit = false; cv._earth3dUpdate = null; cv._earth3dCleanup = null;
             }
             cv.addEventListener('webglcontextlost', onContextLost); controls.addEventListener('change', renderScene);
             if (typeof ResizeObserver !== 'undefined') { resizeObserver = new ResizeObserver(renderScene); resizeObserver.observe(cv); } else window.addEventListener('resize', renderScene, { passive: true });
