@@ -2894,7 +2894,17 @@
             onPointerUp: function () { dragRef.current = null; },
             onPointerCancel: function () { dragRef.current = null; }
           },
-            h('div', { ref: cityViewerAttach, className: 'absolute inset-0' }),
+            h('div', {
+              ref: cityViewerAttach,
+              className: 'absolute inset-0',
+              role: 'img',
+              'aria-label': t('stem.citylab.model_description',
+                'Three-dimensional model of the town plan: each parcel is massed as a '
+                + 'block whose height follows its zoning, with flood exposure marked on '
+                + 'the parcel itself and water sheets showing the mapped flood line. '
+                + 'The map and the parcel table below show the same plan, and every '
+                + 'camera move has a button under Move the camera.')
+            }),
             glStatus === 'loading'
               ? h('p', { className: 'absolute inset-0 flex items-center justify-center text-[0.6875rem]',
                   style: { color: dim } }, t('stem.citylab.building_the_model', 'Building the model...'))
