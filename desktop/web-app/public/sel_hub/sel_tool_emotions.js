@@ -338,34 +338,34 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   var SCENARIOS = {
     elementary: [
-      { situation: 'Your best friend shares their lunch with you.', likely: ['happy', 'grateful', 'loved'], family: 'happy' },
-      { situation: 'You can\'t find your favorite toy anywhere.', likely: ['sad', 'worried', 'frustrated'], family: 'sad' },
-      { situation: 'Someone cuts in front of you in line.', likely: ['angry', 'annoyed', 'frustrated'], family: 'angry' },
-      { situation: 'You hear a loud noise in the dark.', likely: ['scared', 'startled', 'nervous'], family: 'scared' },
-      { situation: 'Your teacher says you got the highest grade!', likely: ['surprised', 'proud', 'happy'], family: 'surprised' },
-      { situation: 'You see someone being mean to an animal.', likely: ['disgusted', 'angry', 'sad'], family: 'disgusted' },
-      { situation: 'It\'s your birthday and everyone forgot.', likely: ['sad', 'lonely', 'disappointed'], family: 'sad' },
-      { situation: 'You\'re about to go on stage for a play.', likely: ['nervous', 'excited', 'scared'], family: 'scared' }
+      { _k: 'sel.emotions.scen_elementary_your_best_friend_shares_their_lunc', situation: 'Your best friend shares their lunch with you.', likely: ['happy', 'grateful', 'loved'], family: 'happy' },
+      { _k: 'sel.emotions.scen_elementary_you_can_t_find_your_favorite_toy_a', situation: 'You can\'t find your favorite toy anywhere.', likely: ['sad', 'worried', 'frustrated'], family: 'sad' },
+      { _k: 'sel.emotions.scen_elementary_someone_cuts_in_front_of_you_in_li', situation: 'Someone cuts in front of you in line.', likely: ['angry', 'annoyed', 'frustrated'], family: 'angry' },
+      { _k: 'sel.emotions.scen_elementary_you_hear_a_loud_noise_in_the_dark', situation: 'You hear a loud noise in the dark.', likely: ['scared', 'startled', 'nervous'], family: 'scared' },
+      { _k: 'sel.emotions.scen_elementary_your_teacher_says_you_got_the_high', situation: 'Your teacher says you got the highest grade!', likely: ['surprised', 'proud', 'happy'], family: 'surprised' },
+      { _k: 'sel.emotions.scen_elementary_you_see_someone_being_mean_to_an_a', situation: 'You see someone being mean to an animal.', likely: ['disgusted', 'angry', 'sad'], family: 'disgusted' },
+      { _k: 'sel.emotions.scen_elementary_it_s_your_birthday_and_everyone_fo', situation: 'It\'s your birthday and everyone forgot.', likely: ['sad', 'lonely', 'disappointed'], family: 'sad' },
+      { _k: 'sel.emotions.scen_elementary_you_re_about_to_go_on_stage_for_a_', situation: 'You\'re about to go on stage for a play.', likely: ['nervous', 'excited', 'scared'], family: 'scared' }
     ],
     middle: [
-      { situation: 'Your friend group is hanging out without you — you found out through social media.', likely: ['left out', 'jealous', 'hurt', 'angry'], family: 'sad' },
-      { situation: 'You studied hard and aced a test you were worried about.', likely: ['proud', 'relieved', 'confident'], family: 'happy' },
-      { situation: 'Someone shares a rumor about you that isn\'t true.', likely: ['angry', 'hurt', 'embarrassed', 'betrayed'], family: 'angry' },
-      { situation: 'You have a huge project due tomorrow and you haven\'t started.', likely: ['anxious', 'overwhelmed', 'panicked'], family: 'scared' },
-      { situation: 'A classmate you don\'t know well gives you a genuine compliment.', likely: ['surprised', 'happy', 'shy'], family: 'surprised' },
-      { situation: 'You see someone cheating on a test while you studied hard.', likely: ['angry', 'disgusted', 'frustrated'], family: 'disgusted' },
-      { situation: 'Your parents are arguing loudly downstairs.', likely: ['scared', 'worried', 'helpless', 'sad'], family: 'scared' },
-      { situation: 'You make the team / get the part you tried out for.', likely: ['excited', 'proud', 'relieved', 'grateful'], family: 'happy' }
+      { _k: 'sel.emotions.scen_middle_your_friend_group_is_hanging_out_w', situation: 'Your friend group is hanging out without you — you found out through social media.', likely: ['left out', 'jealous', 'hurt', 'angry'], family: 'sad' },
+      { _k: 'sel.emotions.scen_middle_you_studied_hard_and_aced_a_test_y', situation: 'You studied hard and aced a test you were worried about.', likely: ['proud', 'relieved', 'confident'], family: 'happy' },
+      { _k: 'sel.emotions.scen_middle_someone_shares_a_rumor_about_you_t', situation: 'Someone shares a rumor about you that isn\'t true.', likely: ['angry', 'hurt', 'embarrassed', 'betrayed'], family: 'angry' },
+      { _k: 'sel.emotions.scen_middle_you_have_a_huge_project_due_tomorr', situation: 'You have a huge project due tomorrow and you haven\'t started.', likely: ['anxious', 'overwhelmed', 'panicked'], family: 'scared' },
+      { _k: 'sel.emotions.scen_middle_a_classmate_you_don_t_know_well_gi', situation: 'A classmate you don\'t know well gives you a genuine compliment.', likely: ['surprised', 'happy', 'shy'], family: 'surprised' },
+      { _k: 'sel.emotions.scen_middle_you_see_someone_cheating_on_a_test', situation: 'You see someone cheating on a test while you studied hard.', likely: ['angry', 'disgusted', 'frustrated'], family: 'disgusted' },
+      { _k: 'sel.emotions.scen_middle_your_parents_are_arguing_loudly_do', situation: 'Your parents are arguing loudly downstairs.', likely: ['scared', 'worried', 'helpless', 'sad'], family: 'scared' },
+      { _k: 'sel.emotions.scen_middle_you_make_the_team_get_the_part_you', situation: 'You make the team / get the part you tried out for.', likely: ['excited', 'proud', 'relieved', 'grateful'], family: 'happy' }
     ],
     high: [
-      { situation: 'You receive a rejection letter from a college you really wanted to attend.', likely: ['disappointed', 'sad', 'anxious', 'resigned'], family: 'sad' },
-      { situation: 'A close friend comes to you for help with a serious personal problem.', likely: ['concerned', 'empathetic', 'valued', 'overwhelmed'], family: 'scared' },
-      { situation: 'You discover a teacher graded you unfairly compared to others.', likely: ['indignant', 'frustrated', 'disrespected'], family: 'angry' },
-      { situation: 'You stand up for someone being bullied and others join you.', likely: ['proud', 'empowered', 'nervous', 'fulfilled'], family: 'happy' },
-      { situation: 'Your social media post gets a lot of negative comments.', likely: ['hurt', 'anxious', 'embarrassed', 'angry'], family: 'sad' },
-      { situation: 'You witness someone being treated differently because of their identity.', likely: ['angry', 'disgusted', 'sad', 'motivated'], family: 'disgusted' },
-      { situation: 'You complete a challenging project you almost gave up on.', likely: ['accomplished', 'proud', 'relieved', 'empowered'], family: 'happy' },
-      { situation: 'A relationship you valued ends unexpectedly.', likely: ['grief', 'confused', 'hurt', 'rejected'], family: 'sad' }
+      { _k: 'sel.emotions.scen_high_you_receive_a_rejection_letter_fro', situation: 'You receive a rejection letter from a college you really wanted to attend.', likely: ['disappointed', 'sad', 'anxious', 'resigned'], family: 'sad' },
+      { _k: 'sel.emotions.scen_high_a_close_friend_comes_to_you_for_he', situation: 'A close friend comes to you for help with a serious personal problem.', likely: ['concerned', 'empathetic', 'valued', 'overwhelmed'], family: 'scared' },
+      { _k: 'sel.emotions.scen_high_you_discover_a_teacher_graded_you_', situation: 'You discover a teacher graded you unfairly compared to others.', likely: ['indignant', 'frustrated', 'disrespected'], family: 'angry' },
+      { _k: 'sel.emotions.scen_high_you_stand_up_for_someone_being_bul', situation: 'You stand up for someone being bullied and others join you.', likely: ['proud', 'empowered', 'nervous', 'fulfilled'], family: 'happy' },
+      { _k: 'sel.emotions.scen_high_your_social_media_post_gets_a_lot_', situation: 'Your social media post gets a lot of negative comments.', likely: ['hurt', 'anxious', 'embarrassed', 'angry'], family: 'sad' },
+      { _k: 'sel.emotions.scen_high_you_witness_someone_being_treated_', situation: 'You witness someone being treated differently because of their identity.', likely: ['angry', 'disgusted', 'sad', 'motivated'], family: 'disgusted' },
+      { _k: 'sel.emotions.scen_high_you_complete_a_challenging_project', situation: 'You complete a challenging project you almost gave up on.', likely: ['accomplished', 'proud', 'relieved', 'empowered'], family: 'happy' },
+      { _k: 'sel.emotions.scen_high_a_relationship_you_valued_ends_une', situation: 'A relationship you valued ends unexpectedly.', likely: ['grief', 'confused', 'hurt', 'rejected'], family: 'sad' }
     ]
   };
 
@@ -515,28 +515,28 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   var EMPATHY_SCENARIOS = {
     elementary: [
-      { situation: 'A new kid starts at your school. They don\'t know anyone and sit alone at lunch.', person: 'the new kid', likely: ['lonely', 'scared', 'nervous', 'shy'], family: 'scared' },
-      { situation: 'Your classmate\'s drawing wins the art contest after they worked really hard.', person: 'your classmate', likely: ['proud', 'happy', 'surprised', 'excited'], family: 'happy' },
-      { situation: 'Someone accidentally breaks their friend\'s favorite pencil.', person: 'the person who broke it', likely: ['guilty', 'worried', 'embarrassed'], family: 'sad' },
-      { situation: 'A kid gets picked last for teams at recess again.', person: 'the kid picked last', likely: ['sad', 'left out', 'angry', 'embarrassed'], family: 'sad' },
-      { situation: 'Your friend\'s pet hamster got sick and might not get better.', person: 'your friend', likely: ['sad', 'scared', 'worried'], family: 'sad' },
-      { situation: 'A student gets called on in class and gives the wrong answer. Some kids giggle.', person: 'the student', likely: ['embarrassed', 'ashamed', 'angry', 'hurt'], family: 'disgusted' }
+      { _k: 'sel.emotions.emp_elementary_a_new_kid_starts_at_your_school_th', situation: 'A new kid starts at your school. They don\'t know anyone and sit alone at lunch.', person: 'the new kid', likely: ['lonely', 'scared', 'nervous', 'shy'], family: 'scared' },
+      { _k: 'sel.emotions.emp_elementary_your_classmate_s_drawing_wins_the_', situation: 'Your classmate\'s drawing wins the art contest after they worked really hard.', person: 'your classmate', likely: ['proud', 'happy', 'surprised', 'excited'], family: 'happy' },
+      { _k: 'sel.emotions.emp_elementary_someone_accidentally_breaks_their_', situation: 'Someone accidentally breaks their friend\'s favorite pencil.', person: 'the person who broke it', likely: ['guilty', 'worried', 'embarrassed'], family: 'sad' },
+      { _k: 'sel.emotions.emp_elementary_a_kid_gets_picked_last_for_teams_a', situation: 'A kid gets picked last for teams at recess again.', person: 'the kid picked last', likely: ['sad', 'left out', 'angry', 'embarrassed'], family: 'sad' },
+      { _k: 'sel.emotions.emp_elementary_your_friend_s_pet_hamster_got_sick', situation: 'Your friend\'s pet hamster got sick and might not get better.', person: 'your friend', likely: ['sad', 'scared', 'worried'], family: 'sad' },
+      { _k: 'sel.emotions.emp_elementary_a_student_gets_called_on_in_class_', situation: 'A student gets called on in class and gives the wrong answer. Some kids giggle.', person: 'the student', likely: ['embarrassed', 'ashamed', 'angry', 'hurt'], family: 'disgusted' }
     ],
     middle: [
-      { situation: 'A classmate posts a group photo on social media, but one friend was deliberately cropped out.', person: 'the cropped-out friend', likely: ['hurt', 'rejected', 'angry', 'confused'], family: 'sad' },
-      { situation: 'A student shares a personal poem in class and the room goes totally silent.', person: 'the student', likely: ['vulnerable', 'anxious', 'brave', 'exposed'], family: 'scared' },
-      { situation: 'Your teammate makes a mistake that costs the game, and other players yell at them.', person: 'the teammate', likely: ['ashamed', 'angry', 'helpless', 'frustrated'], family: 'sad' },
-      { situation: 'A friend just found out they\'re moving to a different city next month.', person: 'your friend', likely: ['sad', 'scared', 'anxious', 'angry'], family: 'sad' },
-      { situation: 'Someone notices a classmate eating alone every day and decides to sit with them.', person: 'the classmate who was alone', likely: ['surprised', 'grateful', 'relieved', 'happy'], family: 'happy' },
-      { situation: 'A student works incredibly hard on a project but gets a lower grade than someone who barely tried.', person: 'the hard-working student', likely: ['frustrated', 'resentful', 'disappointed', 'angry'], family: 'angry' }
+      { _k: 'sel.emotions.emp_middle_a_classmate_posts_a_group_photo_on', situation: 'A classmate posts a group photo on social media, but one friend was deliberately cropped out.', person: 'the cropped-out friend', likely: ['hurt', 'rejected', 'angry', 'confused'], family: 'sad' },
+      { _k: 'sel.emotions.emp_middle_a_student_shares_a_personal_poem_i', situation: 'A student shares a personal poem in class and the room goes totally silent.', person: 'the student', likely: ['vulnerable', 'anxious', 'brave', 'exposed'], family: 'scared' },
+      { _k: 'sel.emotions.emp_middle_your_teammate_makes_a_mistake_that', situation: 'Your teammate makes a mistake that costs the game, and other players yell at them.', person: 'the teammate', likely: ['ashamed', 'angry', 'helpless', 'frustrated'], family: 'sad' },
+      { _k: 'sel.emotions.emp_middle_a_friend_just_found_out_they_re_mo', situation: 'A friend just found out they\'re moving to a different city next month.', person: 'your friend', likely: ['sad', 'scared', 'anxious', 'angry'], family: 'sad' },
+      { _k: 'sel.emotions.emp_middle_someone_notices_a_classmate_eating', situation: 'Someone notices a classmate eating alone every day and decides to sit with them.', person: 'the classmate who was alone', likely: ['surprised', 'grateful', 'relieved', 'happy'], family: 'happy' },
+      { _k: 'sel.emotions.emp_middle_a_student_works_incredibly_hard_on', situation: 'A student works incredibly hard on a project but gets a lower grade than someone who barely tried.', person: 'the hard-working student', likely: ['frustrated', 'resentful', 'disappointed', 'angry'], family: 'angry' }
     ],
     high: [
-      { situation: 'A student comes out to their friend group and the room goes quiet before anyone responds.', person: 'the student who came out', likely: ['vulnerable', 'anxious', 'brave', 'terrified'], family: 'scared' },
-      { situation: 'Someone discovers their close friend has been talking about them behind their back.', person: 'the person who found out', likely: ['betrayed', 'hurt', 'angry', 'confused'], family: 'angry' },
-      { situation: 'A peer gives up a leadership position to help another student who needs the experience more.', person: 'the peer who stepped aside', likely: ['conflicted', 'proud', 'generous', 'wistful'], family: 'happy' },
-      { situation: 'A student with a learning disability gets accommodations, and others complain it\'s "unfair."', person: 'the student with the disability', likely: ['ashamed', 'frustrated', 'angry', 'isolated'], family: 'angry' },
-      { situation: 'After a school incident, a student who witnessed it keeps replaying it in their mind.', person: 'the witness', likely: ['anxious', 'helpless', 'overwhelmed'], family: 'scared' },
-      { situation: 'A graduating senior realizes they might never see some of their friends regularly again.', person: 'the senior', likely: ['nostalgic', 'sad', 'grateful', 'anxious'], family: 'sad' }
+      { _k: 'sel.emotions.emp_high_a_student_comes_out_to_their_frien', situation: 'A student comes out to their friend group and the room goes quiet before anyone responds.', person: 'the student who came out', likely: ['vulnerable', 'anxious', 'brave', 'terrified'], family: 'scared' },
+      { _k: 'sel.emotions.emp_high_someone_discovers_their_close_frie', situation: 'Someone discovers their close friend has been talking about them behind their back.', person: 'the person who found out', likely: ['betrayed', 'hurt', 'angry', 'confused'], family: 'angry' },
+      { _k: 'sel.emotions.emp_high_a_peer_gives_up_a_leadership_posit', situation: 'A peer gives up a leadership position to help another student who needs the experience more.', person: 'the peer who stepped aside', likely: ['conflicted', 'proud', 'generous', 'wistful'], family: 'happy' },
+      { _k: 'sel.emotions.emp_high_a_student_with_a_learning_disabili', situation: 'A student with a learning disability gets accommodations, and others complain it\'s "unfair."', person: 'the student with the disability', likely: ['ashamed', 'frustrated', 'angry', 'isolated'], family: 'angry' },
+      { _k: 'sel.emotions.emp_high_after_a_school_incident_a_student_', situation: 'After a school incident, a student who witnessed it keeps replaying it in their mind.', person: 'the witness', likely: ['anxious', 'helpless', 'overwhelmed'], family: 'scared' },
+      { _k: 'sel.emotions.emp_high_a_graduating_senior_realizes_they_', situation: 'A graduating senior realizes they might never see some of their friends regularly again.', person: 'the senior', likely: ['nostalgic', 'sad', 'grateful', 'anxious'], family: 'sad' }
     ]
   };
 
@@ -18356,31 +18356,31 @@ var EMOTION_JOURNAL_TEMPLATES = [
       // ══════════════════════════════════════════════════════════
       var heroBand = (function() {
         var TAB_META = {
-          wheel:     { accent: '#3b82f6', soft: 'rgba(59,130,246,0.14)',  icon: '\uD83C\uDF08', title: 'Emotion Wheel \u2014 28 feelings, more precision',     hint: 'Plutchik\u2019s 1980 wheel of 8 primaries; Robert Feldman\u2019s nuance map adds intermediates. Naming a feeling specifically (\u201Cresentful\u201D vs \u201Cmad\u201D) reduces amygdala reactivity \u2014 Lieberman 2007 fMRI \u201Caffect labeling.\u201D' },
-          checkin:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  icon: '\uD83D\uDCDD', title: 'Check-In \u2014 daily 1-minute pulse',                  hint: 'Mood + intensity + brief context = the data set. Over weeks, patterns emerge: which days, which classes, which sleep amounts shift mood. Self-tracking IS the intervention. RULER + Yale CSEI evidence base.' },
-          faces:     { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)',  icon: '\uD83D\uDE04', title: 'Face Reader \u2014 Ekman\u2019s 7 universal emotions',  hint: 'Anger, fear, disgust, surprise, sadness, happiness, contempt. Paul Ekman 1971 cross-cultural studies showed these are read the same in remote tribes as in Manhattan. Micro-expressions last 1/15\u20131/25 of a second.' },
-          scenarios: { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)',  icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 \u201CWhat would YOU feel?\u201D',     hint: 'Theory-of-mind practice. Predict + reason + check. The same triggering event lands very different on different people, depending on history + interpretation \u2014 a core CBT insight (Beck 1960s).' },
-          detective:  { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.14)',  icon: '\uD83D\uDD0E', title: 'Emotion Detective \u2014 read the whole signal', hint: 'Practice family, intensity, blend, body cue, and next-step strategy. There is no single universal answer; the skill is noticing and checking.' },
-          journal:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',   icon: '\uD83D\uDCD3', title: 'Journal \u2014 expressive writing as research',         hint: 'Pennebaker\u2019s 1986 expressive-writing studies: 15-20 min, 3-4 days, about something difficult \u2192 measurable physical + mental health gains 6 months later. The mechanism appears to be turning chaos into narrative.' },
-          mixer:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)',  icon: '\uD83E\uDDEA', title: 'Mixer \u2014 emotions blend, they don\u2019t replace',  hint: 'Joy + trust = love. Fear + surprise = awe. Disgust + anger = contempt. Most real moments are blends, not pure feelings. The mixer makes that visible \u2014 your gut already knows; the wheel just gives you the words.' },
-          history:   { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',   icon: '\uD83D\uDCCA', title: 'History \u2014 30 days of you',                          hint: 'Your check-ins as a chart. Look for triggers (school day vs weekend, before vs after lunch, before vs after sleep). Patterns you can SHOW someone (counselor, parent) are 10\u00d7 more useful than \u201CI just feel bad sometimes.\u201D' },
-          plutchik:       { accent: '#fde047', soft: 'rgba(253,224,71,0.14)',  icon: '\uD83C\uDF38', title: 'Plutchik Wheel \u2014 8 primaries \u00d7 3 intensities',     hint: 'Robert Plutchik (1980) mapped 8 primary emotions on a wheel \u2014 each with three intensity steps and adjacent dyads that blend (joy+trust=love; fear+surprise=awe; disgust+anger=contempt). Click any petal to explore.' },
-          face_builder:   { accent: '#fb923c', soft: 'rgba(251,146,60,0.14)',  icon: '\uD83C\uDFA8', title: 'Face Builder \u2014 compose expressions with sliders',  hint: 'Drag brow tilt, eye openness, mouth, jaw, and cheek lift to build a face. The reading is based on Ekman & Friesen FACS framework. Real (Duchenne) smiles need the cheek lift, not just the mouth.' },
-          micro:          { accent: '#f43f5e', soft: 'rgba(244,63,94,0.14)',   icon: '\uD83D\uDD0D', title: 'Microexpression Spotter \u2014 read the face',          hint: 'Read the face description and guess the emotion. Microexpressions reveal feelings \u2014 not lies. Be gentle: facial expressions do not always match internal experience for autistic, alexithymic, or trauma-affected people.' },
-          empathy_mirror: { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.14)',  icon: '\uD83E\uDEDE', title: 'Empathy Mirror \u2014 predict the character arc',       hint: 'Read a multi-character story, predict what the character is feeling, then reveal the full emotional arc. Theory-of-mind practice (Premack & Woodruff, 1978) builds the neural machinery used in real empathic moments.' },
-          nameit:         { accent: '#14b8a6', soft: 'rgba(20,184,166,0.14)',  icon: '\u2728',         title: 'Name It to Tame It \u2014 guided naming practice',      hint: 'Naming an emotion shrinks it. Lieberman et al. 2007 fMRI: affect labeling reduces amygdala activation. Multi-step guided prompts for when you cannot quite find the word.' },
-          bodymap:        { accent: '#ef4444', soft: 'rgba(239,68,68,0.14)',   icon: '\uD83E\uDEC0', title: 'Body Map \u2014 where emotions live in the body',       hint: 'Nummenmaa et al. (2014) PNAS mapped where 14 emotions are felt in the body across cultures. Pick an emotion to see the heat map; click any region for what tends to show up there and how to ground via the body.' },
-          weather:        { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)',   icon: '\uD83C\uDF26\uFE0F', title: 'Emotion Weather \u2014 they come, intensify, and pass',  hint: 'Sun, rain, thunderstorm, fog, snow. Emotions move through us like weather: none of them is permanent, and trying to stop weather does not work. The metaphor helps you let feelings move without fighting them.' },
-          iceberg:        { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)',  icon: '\uD83E\uDDCA', title: 'Emotion Iceberg \u2014 what is under the visible feeling', hint: 'Anger often covers hurt. People-pleasing often covers fear of rejection. The visible 10% above the waterline is usually protecting a much larger 90% below. Click hidden emotions to reveal what they might be saying.' },
-          volcano:        { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',   icon: '\uD83C\uDF0B', title: 'Anger Volcano \u2014 stage-by-stage map',                hint: 'Anger builds in stages \u2014 annoyance, frustration, anger, about-to-erupt, erupted. Spotting which stage you are in BEFORE the eruption is the regulation skill. Slide to see body cues, thought cues, and what to do at each stage.' },
-          vocab:          { accent: '#06b6d4', soft: 'rgba(6,182,212,0.14)',   icon: '\uD83D\uDCDA', title: 'Vocabulary Explorer \u2014 200+ emotion words',         hint: 'Filter by family, valence, and arousal. Includes body sensations, common triggers, opposites, similar words, and coping hints. Includes neurodivergent-validated entries (meltdown, shutdown, RSD, alexithymia placeholder) and somatic-first labels.' },
-          atlas:          { accent: '#84cc16', soft: 'rgba(132,204,22,0.14)',  icon: '\uD83C\uDF0D', title: 'Cultural Atlas \u2014 untranslatable emotion words',    hint: '49 emotion words from world cultures with no English equivalent. Saudade (Portuguese), Hygge (Danish), Yugen (Japanese), Mudita (Sanskrit), Hozho (Din\u00E9). Inspired by Tim Lomas positive lexicography.' },
-          compounds:      { accent: '#a78bfa', soft: 'rgba(167,139,250,0.14)', icon: '\uD83E\uDDEC', title: 'Compound Emotions \u2014 blends and dyads',                hint: 'Most feelings are blends. Plutchik primary dyads (love=joy+trust), self-conscious emotions (Tracy & Robins: shame, pride, guilt), moral emotions (Haidt), and existential emotions (Brown Atlas of the Heart).' },
-          strategies:     { accent: '#f97316', soft: 'rgba(249,115,22,0.14)',  icon: '\uD83C\uDFAF', title: 'Strategy Bridge \u2014 emotion to coping toolkit',       hint: 'For each emotion at each intensity, body-first / thought-first / connection strategies that actually help. What works for annoyed is different from what works for rage \u2014 the bridge tells you which.' },
-          validation:     { accent: '#5eead4', soft: 'rgba(94,234,212,0.14)',  icon: '\uD83D\uDCAC', title: 'Validation Phrases \u2014 what to say (and not)',       hint: '112 scripted validation phrases for 14 emotional states. Validation = I see you, you make sense, you are not alone. Each entry includes what NOT to say (no toxic positivity).' },
-          coreg:          { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)',  icon: '\uD83E\uDD1D', title: 'Help a Friend \u2014 coregulation guides',               hint: '30 scenarios for helping someone whose nervous system is overwhelmed \u2014 friend panic attack, sibling meltdown, friend grief, online friend in crisis. Includes what NOT to do (commonly backfires) and specific scripts.' },
-          arc:            { accent: '#06b6d4', soft: 'rgba(6,182,212,0.14)',   icon: '\uD83D\uDCC8', title: 'Mood Arc \u2014 your last 14 check-ins as a chart',     hint: 'Line chart of recent check-ins, dot color = emotion family, height = intensity. Patterns to look for: days of week, before vs after sleep, around tests or social events. Bring this to a counselor or trusted adult.' },
-          color:          { accent: '#f472b6', soft: 'rgba(244,114,182,0.14)', icon: '\uD83C\uDFA8', title: 'Color & Mood Tuner \u2014 pick a color for your feeling', hint: 'Adams & Osgood (1973) and Palmer & Schloss (2010) found color-emotion associations are remarkably consistent across cultures. Drag hue, saturation, and lightness to see how the emotional read shifts. Your color for YOUR feeling is more accurate than any wheel.' }
+          wheel:     { accent: '#3b82f6', soft: 'rgba(59,130,246,0.14)',  icon: '\uD83C\uDF08', title: __alloT('sel.emotions.tab_wheel_title', 'Emotion Wheel \u2014 28 feelings, more precision'),     hint: __alloT('sel.emotions.tab_wheel_hint', 'Plutchik\u2019s 1980 wheel of 8 primaries; Robert Feldman\u2019s nuance map adds intermediates. Naming a feeling specifically (\u201Cresentful\u201D vs \u201Cmad\u201D) reduces amygdala reactivity \u2014 Lieberman 2007 fMRI \u201Caffect labeling.\u201D') },
+          checkin:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  icon: '\uD83D\uDCDD', title: __alloT('sel.emotions.tab_checkin_title', 'Check-In \u2014 daily 1-minute pulse'),                  hint: __alloT('sel.emotions.tab_checkin_hint', 'Mood + intensity + brief context = the data set. Over weeks, patterns emerge: which days, which classes, which sleep amounts shift mood. Self-tracking IS the intervention. RULER + Yale CSEI evidence base.') },
+          faces:     { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)',  icon: '\uD83D\uDE04', title: __alloT('sel.emotions.tab_faces_title', 'Face Reader \u2014 Ekman\u2019s 7 universal emotions'),  hint: __alloT('sel.emotions.tab_faces_hint', 'Anger, fear, disgust, surprise, sadness, happiness, contempt. Paul Ekman 1971 cross-cultural studies showed these are read the same in remote tribes as in Manhattan. Micro-expressions last 1/15\u20131/25 of a second.') },
+          scenarios: { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)',  icon: '\uD83C\uDFAD', title: __alloT('sel.emotions.tab_scenarios_title', 'Scenarios \u2014 \u201CWhat would YOU feel?\u201D'),     hint: __alloT('sel.emotions.tab_scenarios_hint', 'Theory-of-mind practice. Predict + reason + check. The same triggering event lands very different on different people, depending on history + interpretation \u2014 a core CBT insight (Beck 1960s).') },
+          detective:  { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.14)',  icon: '\uD83D\uDD0E', title: __alloT('sel.emotions.tab_detective_title', 'Emotion Detective \u2014 read the whole signal'), hint: __alloT('sel.emotions.tab_detective_hint', 'Practice family, intensity, blend, body cue, and next-step strategy. There is no single universal answer; the skill is noticing and checking.') },
+          journal:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',   icon: '\uD83D\uDCD3', title: __alloT('sel.emotions.tab_journal_title', 'Journal \u2014 expressive writing as research'),         hint: __alloT('sel.emotions.tab_journal_hint', 'Pennebaker\u2019s 1986 expressive-writing studies: 15-20 min, 3-4 days, about something difficult \u2192 measurable physical + mental health gains 6 months later. The mechanism appears to be turning chaos into narrative.') },
+          mixer:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)',  icon: '\uD83E\uDDEA', title: __alloT('sel.emotions.tab_mixer_title', 'Mixer \u2014 emotions blend, they don\u2019t replace'),  hint: __alloT('sel.emotions.tab_mixer_hint', 'Joy + trust = love. Fear + surprise = awe. Disgust + anger = contempt. Most real moments are blends, not pure feelings. The mixer makes that visible \u2014 your gut already knows; the wheel just gives you the words.') },
+          history:   { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',   icon: '\uD83D\uDCCA', title: __alloT('sel.emotions.tab_history_title', 'History \u2014 30 days of you'),                          hint: __alloT('sel.emotions.tab_history_hint', 'Your check-ins as a chart. Look for triggers (school day vs weekend, before vs after lunch, before vs after sleep). Patterns you can SHOW someone (counselor, parent) are 10\u00d7 more useful than \u201CI just feel bad sometimes.\u201D') },
+          plutchik:       { accent: '#fde047', soft: 'rgba(253,224,71,0.14)',  icon: '\uD83C\uDF38', title: __alloT('sel.emotions.tab_plutchik_title', 'Plutchik Wheel \u2014 8 primaries \u00d7 3 intensities'),     hint: __alloT('sel.emotions.tab_plutchik_hint', 'Robert Plutchik (1980) mapped 8 primary emotions on a wheel \u2014 each with three intensity steps and adjacent dyads that blend (joy+trust=love; fear+surprise=awe; disgust+anger=contempt). Click any petal to explore.') },
+          face_builder:   { accent: '#fb923c', soft: 'rgba(251,146,60,0.14)',  icon: '\uD83C\uDFA8', title: __alloT('sel.emotions.tab_face_builder_title', 'Face Builder \u2014 compose expressions with sliders'),  hint: __alloT('sel.emotions.tab_face_builder_hint', 'Drag brow tilt, eye openness, mouth, jaw, and cheek lift to build a face. The reading is based on Ekman & Friesen FACS framework. Real (Duchenne) smiles need the cheek lift, not just the mouth.') },
+          micro:          { accent: '#f43f5e', soft: 'rgba(244,63,94,0.14)',   icon: '\uD83D\uDD0D', title: __alloT('sel.emotions.tab_micro_title', 'Microexpression Spotter \u2014 read the face'),          hint: __alloT('sel.emotions.tab_micro_hint', 'Read the face description and guess the emotion. Microexpressions reveal feelings \u2014 not lies. Be gentle: facial expressions do not always match internal experience for autistic, alexithymic, or trauma-affected people.') },
+          empathy_mirror: { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.14)',  icon: '\uD83E\uDEDE', title: __alloT('sel.emotions.tab_empathy_mirror_title', 'Empathy Mirror \u2014 predict the character arc'),       hint: __alloT('sel.emotions.tab_empathy_mirror_hint', 'Read a multi-character story, predict what the character is feeling, then reveal the full emotional arc. Theory-of-mind practice (Premack & Woodruff, 1978) builds the neural machinery used in real empathic moments.') },
+          nameit:         { accent: '#14b8a6', soft: 'rgba(20,184,166,0.14)',  icon: '\u2728',         title: __alloT('sel.emotions.tab_nameit_title', 'Name It to Tame It \u2014 guided naming practice'),      hint: __alloT('sel.emotions.tab_nameit_hint', 'Naming an emotion shrinks it. Lieberman et al. 2007 fMRI: affect labeling reduces amygdala activation. Multi-step guided prompts for when you cannot quite find the word.') },
+          bodymap:        { accent: '#ef4444', soft: 'rgba(239,68,68,0.14)',   icon: '\uD83E\uDEC0', title: __alloT('sel.emotions.tab_bodymap_title', 'Body Map \u2014 where emotions live in the body'),       hint: __alloT('sel.emotions.tab_bodymap_hint', 'Nummenmaa et al. (2014) PNAS mapped where 14 emotions are felt in the body across cultures. Pick an emotion to see the heat map; click any region for what tends to show up there and how to ground via the body.') },
+          weather:        { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)',   icon: '\uD83C\uDF26\uFE0F', title: __alloT('sel.emotions.tab_weather_title', 'Emotion Weather \u2014 they come, intensify, and pass'),  hint: __alloT('sel.emotions.tab_weather_hint', 'Sun, rain, thunderstorm, fog, snow. Emotions move through us like weather: none of them is permanent, and trying to stop weather does not work. The metaphor helps you let feelings move without fighting them.') },
+          iceberg:        { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)',  icon: '\uD83E\uDDCA', title: __alloT('sel.emotions.tab_iceberg_title', 'Emotion Iceberg \u2014 what is under the visible feeling'), hint: __alloT('sel.emotions.tab_iceberg_hint', 'Anger often covers hurt. People-pleasing often covers fear of rejection. The visible 10% above the waterline is usually protecting a much larger 90% below. Click hidden emotions to reveal what they might be saying.') },
+          volcano:        { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',   icon: '\uD83C\uDF0B', title: __alloT('sel.emotions.tab_volcano_title', 'Anger Volcano \u2014 stage-by-stage map'),                hint: __alloT('sel.emotions.tab_volcano_hint', 'Anger builds in stages \u2014 annoyance, frustration, anger, about-to-erupt, erupted. Spotting which stage you are in BEFORE the eruption is the regulation skill. Slide to see body cues, thought cues, and what to do at each stage.') },
+          vocab:          { accent: '#06b6d4', soft: 'rgba(6,182,212,0.14)',   icon: '\uD83D\uDCDA', title: __alloT('sel.emotions.tab_vocab_title', 'Vocabulary Explorer \u2014 200+ emotion words'),         hint: __alloT('sel.emotions.tab_vocab_hint', 'Filter by family, valence, and arousal. Includes body sensations, common triggers, opposites, similar words, and coping hints. Includes neurodivergent-validated entries (meltdown, shutdown, RSD, alexithymia placeholder) and somatic-first labels.') },
+          atlas:          { accent: '#84cc16', soft: 'rgba(132,204,22,0.14)',  icon: '\uD83C\uDF0D', title: __alloT('sel.emotions.tab_atlas_title', 'Cultural Atlas \u2014 untranslatable emotion words'),    hint: __alloT('sel.emotions.tab_atlas_hint', '49 emotion words from world cultures with no English equivalent. Saudade (Portuguese), Hygge (Danish), Yugen (Japanese), Mudita (Sanskrit), Hozho (Din\u00E9). Inspired by Tim Lomas positive lexicography.') },
+          compounds:      { accent: '#a78bfa', soft: 'rgba(167,139,250,0.14)', icon: '\uD83E\uDDEC', title: __alloT('sel.emotions.tab_compounds_title', 'Compound Emotions \u2014 blends and dyads'),                hint: __alloT('sel.emotions.tab_compounds_hint', 'Most feelings are blends. Plutchik primary dyads (love=joy+trust), self-conscious emotions (Tracy & Robins: shame, pride, guilt), moral emotions (Haidt), and existential emotions (Brown Atlas of the Heart).') },
+          strategies:     { accent: '#f97316', soft: 'rgba(249,115,22,0.14)',  icon: '\uD83C\uDFAF', title: __alloT('sel.emotions.tab_strategies_title', 'Strategy Bridge \u2014 emotion to coping toolkit'),       hint: __alloT('sel.emotions.tab_strategies_hint', 'For each emotion at each intensity, body-first / thought-first / connection strategies that actually help. What works for annoyed is different from what works for rage \u2014 the bridge tells you which.') },
+          validation:     { accent: '#5eead4', soft: 'rgba(94,234,212,0.14)',  icon: '\uD83D\uDCAC', title: __alloT('sel.emotions.tab_validation_title', 'Validation Phrases \u2014 what to say (and not)'),       hint: __alloT('sel.emotions.tab_validation_hint', '112 scripted validation phrases for 14 emotional states. Validation = I see you, you make sense, you are not alone. Each entry includes what NOT to say (no toxic positivity).') },
+          coreg:          { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)',  icon: '\uD83E\uDD1D', title: __alloT('sel.emotions.tab_coreg_title', 'Help a Friend \u2014 coregulation guides'),               hint: __alloT('sel.emotions.tab_coreg_hint', '30 scenarios for helping someone whose nervous system is overwhelmed \u2014 friend panic attack, sibling meltdown, friend grief, online friend in crisis. Includes what NOT to do (commonly backfires) and specific scripts.') },
+          arc:            { accent: '#06b6d4', soft: 'rgba(6,182,212,0.14)',   icon: '\uD83D\uDCC8', title: __alloT('sel.emotions.tab_arc_title', 'Mood Arc \u2014 your last 14 check-ins as a chart'),     hint: __alloT('sel.emotions.tab_arc_hint', 'Line chart of recent check-ins, dot color = emotion family, height = intensity. Patterns to look for: days of week, before vs after sleep, around tests or social events. Bring this to a counselor or trusted adult.') },
+          color:          { accent: '#f472b6', soft: 'rgba(244,114,182,0.14)', icon: '\uD83C\uDFA8', title: __alloT('sel.emotions.tab_color_title', 'Color & Mood Tuner \u2014 pick a color for your feeling'), hint: __alloT('sel.emotions.tab_color_hint', 'Adams & Osgood (1973) and Palmer & Schloss (2010) found color-emotion associations are remarkably consistent across cultures. Drag hue, saturation, and lightness to see how the emotional read shifts. Your color for YOUR feeling is more accurate than any wheel.') }
         };
         var meta = TAB_META[activeTab] || TAB_META.wheel;
         return h('div', {
@@ -19273,7 +19273,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                 'Empathy Scenario ' + ((empathyIdx % empScens.length) + 1) + ' of ' + empScens.length
               ),
               h('p', { style: { fontSize: 15, color: P.text, lineHeight: 1.6, fontStyle: 'italic' } },
-                '"' + currentEmpathy.situation + '"'
+                '"' + __alloT(currentEmpathy._k + '_situation', currentEmpathy.situation) + '"'
               )
             ),
 
@@ -19281,8 +19281,10 @@ var EMOTION_JOURNAL_TEMPLATES = [
             h('div', { style: { padding: 12, borderRadius: 10, background: '#ec489912', border: '1px solid #ec489922', marginBottom: 16, textAlign: 'center' } },
               h('p', { style: { fontSize: 13, fontWeight: 700, color: '#ec4899', margin: 0 } },
                 band === 'elementary'
-                  ? 'How do you think ' + currentEmpathy.person + ' feels?'
-                  : 'What is ' + currentEmpathy.person + ' most likely feeling?'
+                  ? __alloT('sel.emotions.emp_ask_elementary', 'How do you think %s feels?')
+                      .replace('%s', __alloT(currentEmpathy._k + '_person', currentEmpathy.person))
+                  : __alloT('sel.emotions.emp_ask', 'What is %s most likely feeling?')
+                      .replace('%s', __alloT(currentEmpathy._k + '_person', currentEmpathy.person))
               )
             ),
 
@@ -19322,20 +19324,24 @@ var EMOTION_JOURNAL_TEMPLATES = [
             empathyRevealed && h('div', null,
               h('div', { style: { padding: 20, borderRadius: 14, background: '#ec489918', border: '1px solid #ec489944', marginBottom: 16 } },
                 h('p', { style: { fontSize: 11, fontWeight: 700, color: '#ec4899', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 } },
-                  currentEmpathy.person + ' might feel:'
+                  __alloT('sel.emotions.emp_might_feel', '%s might feel:')
+                    .replace('%s', __alloT(currentEmpathy._k + '_person', currentEmpathy.person))
                 ),
                 h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 12 } },
                   currentEmpathy.likely.map(function(word) {
-                    return h('span', { key: word, style: { padding: '4px 12px', borderRadius: 20, background: P.card, border: ('1px solid ' + P.border), color: P.text3, fontSize: 12, textTransform: 'capitalize' } }, word);
+                    return h('span', { key: word, style: { padding: '4px 12px', borderRadius: 20, background: P.card, border: ('1px solid ' + P.border), color: P.text3, fontSize: 12, textTransform: 'capitalize' } }, _feelWord(word));
                   })
                 ),
                 empathyAnswer === currentEmpathy.family
                   ? h('p', { style: { fontSize: 13, color: '#22c55e', fontWeight: 600 } },
-                      '\u2705 ' + (band === 'elementary' ? 'Great empathy! You understood how they might feel!' : 'Strong perspective-taking! You identified their likely emotional state.')
+                      '\u2705 ' + (band === 'elementary'
+                        ? __alloT('sel.emotions.emp_right_elementary', 'Great empathy! You understood how they might feel!')
+                        : __alloT('sel.emotions.emp_right', 'Strong perspective-taking! You identified their likely emotional state.'))
                     )
                   : h('p', { style: { fontSize: 13, color: '#f59e0b' } },
-                      '\uD83D\uDCA1 ' + (band === 'elementary' ? 'That\'s a thoughtful guess! Empathy means trying to understand \u2014 even when we guess differently.' :
-                      'Different perspective, but the effort to understand matters most. Empathy is a skill that grows with practice.')
+                      '\uD83D\uDCA1 ' + (band === 'elementary'
+                        ? __alloT('sel.emotions.emp_wrong_elementary', 'That\'s a thoughtful guess! Empathy means trying to understand \u2014 even when we guess differently.')
+                        : __alloT('sel.emotions.emp_wrong', 'Different perspective, but the effort to understand matters most. Empathy is a skill that grows with practice.'))
                     ),
                 h('p', { style: { fontSize: 12, color: P.textMuted, marginTop: 8, lineHeight: 1.5 } },
                   band === 'elementary'
@@ -19375,7 +19381,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
               'Scenario ' + ((scenarioIdx % scens.length) + 1) + ' of ' + scens.length
             ),
             h('p', { style: { fontSize: 15, color: P.text, lineHeight: 1.6, fontStyle: 'italic' } },
-              '"' + currentScenario.situation + '"'
+              '"' + __alloT(currentScenario._k + '_situation', currentScenario.situation) + '"'
             )
           ),
 
@@ -19418,31 +19424,48 @@ var EMOTION_JOURNAL_TEMPLATES = [
           scenarioRevealed && h('div', null,
             h('div', { style: { padding: 20, borderRadius: 14, background: '#3b82f618', border: '1px solid #3b82f644', marginBottom: 16 } },
               h('p', { style: { fontSize: 11, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 } },
-                'Common responses:'
+                __alloT('sel.emotions.scen_common_responses', 'Common responses:')
               ),
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 12 } },
                 currentScenario.likely.map(function(word) {
-                  return h('span', { key: word, style: { padding: '4px 12px', borderRadius: 20, background: P.card, border: ('1px solid ' + P.border), color: P.text3, fontSize: 12, textTransform: 'capitalize' } }, word);
+                  return h('span', { key: word, style: { padding: '4px 12px', borderRadius: 20, background: P.card, border: ('1px solid ' + P.border), color: P.text3, fontSize: 12, textTransform: 'capitalize' } }, _feelWord(word));
                 })
               ),
               scenarioAnswer === currentScenario.family
                 ? h('p', { style: { fontSize: 13, color: '#22c55e', fontWeight: 600 } },
-                    '\u2705 ' + (band === 'elementary' ? 'You picked the same family! Great emotional awareness!' : 'Your response aligns with common reactions!')
+                    '\u2705 ' + (band === 'elementary'
+                      ? __alloT('sel.emotions.scen_right_elementary', 'You picked the same family! Great emotional awareness!')
+                      : __alloT('sel.emotions.scen_right', 'Your response aligns with common reactions!'))
                   )
                 : h('p', { style: { fontSize: 13, color: '#f59e0b' } },
-                    '\uD83D\uDCA1 ' + (band === 'elementary' ? 'Different people feel different things \u2014 and that\'s okay! There\'s no wrong answer.' :
-                    'Everyone reacts differently. Your response is valid \u2014 emotional responses are personal.')
+                    '\uD83D\uDCA1 ' + (band === 'elementary'
+                      ? __alloT('sel.emotions.scen_wrong_elementary', 'Different people feel different things \u2014 and that\'s okay! There\'s no wrong answer.')
+                      : __alloT('sel.emotions.scen_wrong', 'Everyone reacts differently. Your response is valid \u2014 emotional responses are personal.'))
                   ),
               h('p', { style: { fontSize: 12, color: P.textMuted, marginTop: 8, lineHeight: 1.5 } },
-                band === 'elementary' ? 'Many people might feel ' + currentScenario.likely.slice(0, 3).join(', ') + ' in this situation. Did you think of a different feeling? That\'s okay too!' :
-                band === 'middle' ? 'This situation commonly triggers ' + currentScenario.likely.join(', ') + '. Notice: most situations produce multiple emotions at once.' :
-                'Common affective responses include ' + currentScenario.likely.join(', ') + '. Note the complexity \u2014 real emotional experiences are rarely mono-dimensional.'
+                (function() {
+                  var list = function(arr) {
+                    return arr.map(function(w) { return _feelWord(w); }).join(', ');
+                  };
+                  var sentence = band === 'elementary'
+                    ? __alloT('sel.emotions.scen_summary_elementary',
+                        'Many people might feel %s in this situation. Did you think of a different feeling? That\'s okay too!')
+                    : band === 'middle'
+                    ? __alloT('sel.emotions.scen_summary_middle',
+                        'This situation commonly triggers %s. Notice: most situations produce multiple emotions at once.')
+                    : __alloT('sel.emotions.scen_summary_high',
+                        'Common affective responses include %s. Note the complexity \u2014 real emotional experiences are rarely mono-dimensional.');
+                  var words = band === 'elementary'
+                    ? list(currentScenario.likely.slice(0, 3))
+                    : list(currentScenario.likely);
+                  return sentence.replace('%s', words);
+                })()
               )
             ),
             currentScenario.likely.length > 2 && !earnedBadges['mixed_feelings'] && h('button', { 'aria-label': 'I see there can be mixed emotions!',
-              onClick: function() { tryAwardBadge('mixed_feelings'); addToast('You noticed that situations can cause mixed feelings!', 'success'); },
+              onClick: function() { tryAwardBadge('mixed_feelings'); addToast(__alloT('sel.emotions.scen_mixed_toast', 'You noticed that situations can cause mixed feelings!'), 'success'); },
               style: { width: '100%', padding: '10px 0', borderRadius: 8, border: ('1px solid ' + P.border), background: P.card, color: P.textMuted, fontWeight: 600, fontSize: 12, cursor: 'pointer', marginBottom: 12 }
-            }, '\uD83C\uDF00 I see \u2014 there can be mixed emotions!'),
+            }, '\uD83C\uDF00 ' + __alloT('sel.emotions.scen_mixed_badge', 'I see \u2014 there can be mixed emotions!')),
             h('button', { 'aria-label': 'Next Scenario',
               onClick: function() { upd({ scenarioIdx: scenarioIdx + 1, scenarioAnswer: null, scenarioRevealed: false }); },
               style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
