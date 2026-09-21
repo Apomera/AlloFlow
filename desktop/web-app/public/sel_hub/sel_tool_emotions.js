@@ -581,27 +581,27 @@ window.SelHub = window.SelHub || {
   // ── Achievement Badges ──
   // ══════════════════════════════════════════════════════════════
   var BADGES = [
-    { id: 'first_checkin',     icon: '\uD83C\uDF1F', name: 'Emotion Check',       desc: 'Log your first emotion check-in' },
-    { id: 'checkin_5',         icon: '\u2B50',       name: 'Self-Aware',           desc: 'Complete 5 emotion check-ins' },
-    { id: 'checkin_20',        icon: '\uD83C\uDFC6', name: 'Emotion Expert',       desc: 'Complete 20 emotion check-ins' },
-    { id: 'wheel_explorer',    icon: '\uD83C\uDF08', name: 'Wheel Explorer',       desc: 'Explore all 6 emotion families' },
-    { id: 'vocab_10',          icon: '\uD83D\uDCDA', name: 'Word Builder',         desc: 'Learn 10 emotion vocabulary words' },
-    { id: 'vocab_30',          icon: '\uD83E\uDDE0', name: 'Emotion Scholar',      desc: 'Learn 30 emotion vocabulary words' },
-    { id: 'face_5',            icon: '\uD83D\uDE04', name: 'Face Reader',          desc: 'Correctly identify 5 facial expressions' },
-    { id: 'face_streak_5',     icon: '\uD83D\uDD25', name: 'Streak Spotter',       desc: 'Get 5 face matches in a row' },
-    { id: 'scenario_5',        icon: '\uD83C\uDFAD', name: 'Scenario Thinker',     desc: 'Respond to 5 emotion scenarios' },
-    { id: 'journal_3',         icon: '\uD83D\uDCD3', name: 'Reflective Writer',    desc: 'Write 3 emotion journal entries' },
-    { id: 'journal_10',        icon: '\u270D\uFE0F', name: 'Journal Master',       desc: 'Write 10 emotion journal entries' },
-    { id: 'ai_coach',          icon: '\u2728',       name: 'Coached',              desc: 'Get advice from the AI Emotion Coach' },
-    { id: 'intensity_range',   icon: '\uD83D\uDCCA', name: 'Range Finder',         desc: 'Log emotions at 3 different intensity levels' },
-    { id: 'mixed_feelings',    icon: '\uD83C\uDF00', name: 'Complex Feeler',       desc: 'Identify mixed emotions in a scenario' },
-    { id: 'all_families',      icon: '\uD83C\uDFA8', name: 'Full Spectrum',        desc: 'Check in with all 6 emotion families' },
-    { id: 'body_map',          icon: '\uD83E\uDEC0', name: 'Body Mapper',          desc: 'Explore where an emotion lives in your body' },
-    { id: 'quiz_10',           icon: '\uD83E\uDDE9', name: 'Vocab Whiz',           desc: 'Answer 10 vocab quiz questions correctly' },
-    { id: 'body_lang_5',       icon: '\uD83D\uDD0D', name: 'Body Language Pro',    desc: 'Read 5 body language descriptions correctly' },
-    { id: 'empathy_5',         icon: '\uD83E\uDD1D', name: 'Empathy Champion',     desc: 'Complete 5 empathy perspective scenarios' },
-    { id: 'mixer_3',           icon: '\uD83E\uDDEA', name: 'Emotion Chemist',      desc: 'Discover 3 emotion mixes' },
-    { id: 'calendar_week',     icon: '\uD83D\uDCC5', name: 'Week Tracker',         desc: 'Check in on 7 different days' }
+    { _k: 'sel.emotions.badge_first_checkin', id: 'first_checkin',     icon: '\uD83C\uDF1F', name: 'Emotion Check',       desc: 'Log your first emotion check-in' },
+    { _k: 'sel.emotions.badge_checkin_5', id: 'checkin_5',         icon: '\u2B50',       name: 'Self-Aware',           desc: 'Complete 5 emotion check-ins' },
+    { _k: 'sel.emotions.badge_checkin_20', id: 'checkin_20',        icon: '\uD83C\uDFC6', name: 'Emotion Expert',       desc: 'Complete 20 emotion check-ins' },
+    { _k: 'sel.emotions.badge_wheel_explorer', id: 'wheel_explorer',    icon: '\uD83C\uDF08', name: 'Wheel Explorer',       desc: 'Explore all 6 emotion families' },
+    { _k: 'sel.emotions.badge_vocab_10', id: 'vocab_10',          icon: '\uD83D\uDCDA', name: 'Word Builder',         desc: 'Learn 10 emotion vocabulary words' },
+    { _k: 'sel.emotions.badge_vocab_30', id: 'vocab_30',          icon: '\uD83E\uDDE0', name: 'Emotion Scholar',      desc: 'Learn 30 emotion vocabulary words' },
+    { _k: 'sel.emotions.badge_face_5', id: 'face_5',            icon: '\uD83D\uDE04', name: 'Face Reader',          desc: 'Correctly identify 5 facial expressions' },
+    { _k: 'sel.emotions.badge_face_streak_5', id: 'face_streak_5',     icon: '\uD83D\uDD25', name: 'Streak Spotter',       desc: 'Get 5 face matches in a row' },
+    { _k: 'sel.emotions.badge_scenario_5', id: 'scenario_5',        icon: '\uD83C\uDFAD', name: 'Scenario Thinker',     desc: 'Respond to 5 emotion scenarios' },
+    { _k: 'sel.emotions.badge_journal_3', id: 'journal_3',         icon: '\uD83D\uDCD3', name: 'Reflective Writer',    desc: 'Write 3 emotion journal entries' },
+    { _k: 'sel.emotions.badge_journal_10', id: 'journal_10',        icon: '\u270D\uFE0F', name: 'Journal Master',       desc: 'Write 10 emotion journal entries' },
+    { _k: 'sel.emotions.badge_ai_coach', id: 'ai_coach',          icon: '\u2728',       name: 'Coached',              desc: 'Get advice from the AI Emotion Coach' },
+    { _k: 'sel.emotions.badge_intensity_range', id: 'intensity_range',   icon: '\uD83D\uDCCA', name: 'Range Finder',         desc: 'Log emotions at 3 different intensity levels' },
+    { _k: 'sel.emotions.badge_mixed_feelings', id: 'mixed_feelings',    icon: '\uD83C\uDF00', name: 'Complex Feeler',       desc: 'Identify mixed emotions in a scenario' },
+    { _k: 'sel.emotions.badge_all_families', id: 'all_families',      icon: '\uD83C\uDFA8', name: 'Full Spectrum',        desc: 'Check in with all 6 emotion families' },
+    { _k: 'sel.emotions.badge_body_map', id: 'body_map',          icon: '\uD83E\uDEC0', name: 'Body Mapper',          desc: 'Explore where an emotion lives in your body' },
+    { _k: 'sel.emotions.badge_quiz_10', id: 'quiz_10',           icon: '\uD83E\uDDE9', name: 'Vocab Whiz',           desc: 'Answer 10 vocab quiz questions correctly' },
+    { _k: 'sel.emotions.badge_body_lang_5', id: 'body_lang_5',       icon: '\uD83D\uDD0D', name: 'Body Language Pro',    desc: 'Read 5 body language descriptions correctly' },
+    { _k: 'sel.emotions.badge_empathy_5', id: 'empathy_5',         icon: '\uD83E\uDD1D', name: 'Empathy Champion',     desc: 'Complete 5 empathy perspective scenarios' },
+    { _k: 'sel.emotions.badge_mixer_3', id: 'mixer_3',           icon: '\uD83E\uDDEA', name: 'Emotion Chemist',      desc: 'Discover 3 emotion mixes' },
+    { _k: 'sel.emotions.badge_calendar_week', id: 'calendar_week',     icon: '\uD83D\uDCC5', name: 'Week Tracker',         desc: 'Check in on 7 different days' }
   ];
   // ── Extended Emotion Vocabulary Library ──
   // 200+ emotion words with deep schema per Plutchik + Russell + Barrett models
@@ -18012,6 +18012,16 @@ var EMOTION_JOURNAL_TEMPLATES = [
         if (typeof text !== 'string') return '';
         return fam._k ? __alloT(fam._k + '_desc_' + b, text) : text;
       };
+      // BADGES rows can also arrive from toolData, so both helpers fall
+      // back when _k is absent.
+      var _badgeName = function (b) {
+        if (!b) return '';
+        return b._k ? __alloT(b._k + '_name', b.name) : (b.name || '');
+      };
+      var _badgeDesc = function (b) {
+        if (!b) return '';
+        return b._k ? __alloT(b._k + '_desc', b.desc) : (b.desc || '');
+      };
       var _emoWord = function (id) {
         if (!id) return id;
         var label = String(id).charAt(0).toUpperCase() + String(id).slice(1);
@@ -18279,8 +18289,10 @@ var EMOTION_JOURNAL_TEMPLATES = [
         if (badge) {
           upd('showBadgePopup', badgeId);
           if (soundEnabled) sfxBadge();
-          addToast(badge.icon + ' Badge earned: ' + badge.name + '!', 'success');
-          if (announceToSR) announceToSR('Badge earned: ' + badge.name);
+          addToast(badge.icon + ' ' + __alloT('sel.emotions.badge_toast', 'Badge earned: %s!')
+            .replace('%s', _badgeName(badge)), 'success');
+          if (announceToSR) announceToSR(__alloT('sel.emotions.badge_announce', 'Badge earned: %s')
+            .replace('%s', _badgeName(badge)));
           awardXP(25);
         }
       }
@@ -18293,31 +18305,31 @@ var EMOTION_JOURNAL_TEMPLATES = [
       // ── Tab Bar ──
       // ══════════════════════════════════════════════════════════
       var tabs = [
-        { id: 'wheel',     label: '\uD83C\uDF08 Emotion Wheel' },
-        { id: 'plutchik',  label: '\uD83C\uDF38 Plutchik Wheel' },
-        { id: 'checkin',   label: '\uD83D\uDCDD Check-In' },
-        { id: 'faces',     label: '\uD83D\uDE04 Face Reader' },
-        { id: 'face_builder', label: '\uD83C\uDFA8 Face Builder' },
-        { id: 'micro',     label: '\uD83D\uDD0D Microexpressions' },
-        { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' },
-        { id: 'detective', label: '\uD83D\uDD0E Detective' },
-        { id: 'empathy_mirror', label: '\uD83E\uDE9E Empathy Mirror' },
-        { id: 'journal',   label: '\uD83D\uDCD3 Journal' },
-        { id: 'mixer',     label: '\uD83E\uDDEA Mixer' },
-        { id: 'nameit',    label: '\u2728 Name It' },
-        { id: 'bodymap',   label: '\uD83E\uDEC0 Body Map' },
-        { id: 'weather',   label: '\uD83C\uDF26\uFE0F Weather' },
-        { id: 'iceberg',   label: '\uD83E\uDDCA Iceberg' },
-        { id: 'volcano',   label: '\uD83C\uDF0B Anger Volcano' },
-        { id: 'vocab',     label: '\uD83D\uDCDA Vocabulary' },
-        { id: 'atlas',     label: '\uD83C\uDF0D Cultural Atlas' },
-        { id: 'compounds', label: '\uD83E\uDDEC Compounds' },
-        { id: 'strategies',label: '\uD83C\uDFAF Strategies' },
-        { id: 'validation',label: '\uD83D\uDCAC Validation' },
-        { id: 'coreg',     label: '\uD83E\uDD1D Help a Friend' },
-        { id: 'arc',       label: '\uD83D\uDCC8 Mood Arc' },
-        { id: 'color',     label: '\uD83C\uDFA8 Color Tuner' },
-        { id: 'history',   label: '\uD83D\uDCCA History' }
+        { id: 'wheel', label: '\uD83C\uDF08 ' + __alloT('sel.emotions.tabbar_wheel', 'Emotion Wheel') },
+        { id: 'plutchik', label: '\uD83C\uDF38 ' + __alloT('sel.emotions.tabbar_plutchik', 'Plutchik Wheel') },
+        { id: 'checkin', label: '\uD83D\uDCDD ' + __alloT('sel.emotions.tabbar_checkin', 'Check-In') },
+        { id: 'faces', label: '\uD83D\uDE04 ' + __alloT('sel.emotions.tabbar_faces', 'Face Reader') },
+        { id: 'face_builder', label: '\uD83C\uDFA8 ' + __alloT('sel.emotions.tabbar_face_builder', 'Face Builder') },
+        { id: 'micro', label: '\uD83D\uDD0D ' + __alloT('sel.emotions.tabbar_micro', 'Microexpressions') },
+        { id: 'scenarios', label: '\uD83C\uDFAD ' + __alloT('sel.emotions.tabbar_scenarios', 'Scenarios') },
+        { id: 'detective', label: '\uD83D\uDD0E ' + __alloT('sel.emotions.tabbar_detective', 'Detective') },
+        { id: 'empathy_mirror', label: '\uD83E\uDE9E ' + __alloT('sel.emotions.tabbar_empathy_mirror', 'Empathy Mirror') },
+        { id: 'journal', label: '\uD83D\uDCD3 ' + __alloT('sel.emotions.tabbar_journal', 'Journal') },
+        { id: 'mixer', label: '\uD83E\uDDEA ' + __alloT('sel.emotions.tabbar_mixer', 'Mixer') },
+        { id: 'nameit', label: '\u2728 ' + __alloT('sel.emotions.tabbar_nameit', 'Name It') },
+        { id: 'bodymap', label: '\uD83E\uDEC0 ' + __alloT('sel.emotions.tabbar_bodymap', 'Body Map') },
+        { id: 'weather', label: '\uD83C\uDF26\uFE0F ' + __alloT('sel.emotions.tabbar_weather', 'Weather') },
+        { id: 'iceberg', label: '\uD83E\uDDCA ' + __alloT('sel.emotions.tabbar_iceberg', 'Iceberg') },
+        { id: 'volcano', label: '\uD83C\uDF0B ' + __alloT('sel.emotions.tabbar_volcano', 'Anger Volcano') },
+        { id: 'vocab', label: '\uD83D\uDCDA ' + __alloT('sel.emotions.tabbar_vocab', 'Vocabulary') },
+        { id: 'atlas', label: '\uD83C\uDF0D ' + __alloT('sel.emotions.tabbar_atlas', 'Cultural Atlas') },
+        { id: 'compounds', label: '\uD83E\uDDEC ' + __alloT('sel.emotions.tabbar_compounds', 'Compounds') },
+        { id: 'strategies', label: '\uD83C\uDFAF ' + __alloT('sel.emotions.tabbar_strategies', 'Strategies') },
+        { id: 'validation', label: '\uD83D\uDCAC ' + __alloT('sel.emotions.tabbar_validation', 'Validation') },
+        { id: 'coreg', label: '\uD83E\uDD1D ' + __alloT('sel.emotions.tabbar_coreg', 'Help a Friend') },
+        { id: 'arc', label: '\uD83D\uDCC8 ' + __alloT('sel.emotions.tabbar_arc', 'Mood Arc') },
+        { id: 'color', label: '\uD83C\uDFA8 ' + __alloT('sel.emotions.tabbar_color', 'Color Tuner') },
+        { id: 'history', label: '\uD83D\uDCCA ' + __alloT('sel.emotions.tabbar_history', 'History') }
       ];
 
       var tabBar = h('div', {
@@ -18497,7 +18509,8 @@ var EMOTION_JOURNAL_TEMPLATES = [
             ref: badgeDialogRef,
             role: 'alertdialog',
             'aria-modal': 'true',
-            'aria-label': 'Badge earned: ' + popBadge.name,
+            'aria-label': __alloT('sel.emotions.badge_announce', 'Badge earned: %s')
+              .replace('%s', _badgeName(popBadge)),
             tabIndex: -1,
             // Escape closes it. The 3s auto-dismiss this replaced was a WCAG 2.2.1
             // failure: three seconds is the whole interaction for anyone reading
@@ -18522,8 +18535,8 @@ var EMOTION_JOURNAL_TEMPLATES = [
             },
               h('div', { style: { fontSize: 56, marginBottom: 12 } }, popBadge.icon),
               h('p', { style: { fontSize: 11, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
-              h('h3', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 20 } }, popBadge.name),
-              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13 } }, popBadge.desc),
+              h('h3', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 20 } }, _badgeName(popBadge)),
+              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13 } }, _badgeDesc(popBadge)),
               h('p', { style: { margin: '12px 0 0 0', color: '#3b82f6', fontSize: 12, fontWeight: 700 } }, '+25 XP'),
               h('button', {
                 type: 'button',
@@ -18546,12 +18559,13 @@ var EMOTION_JOURNAL_TEMPLATES = [
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 } },
               BADGES.map(function(badge) {
                 var earned = !!earnedBadges[badge.id];
-                return h('div', {                   key: badge.id, title: badge.name + ': ' + badge.desc,
+                return h('div', {                   key: badge.id,
+                  title: _badgeName(badge) + ': ' + _badgeDesc(badge),
                   style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : P.card, border: '1px solid ' + (earned ? '#3b82f6' : P.border), opacity: earned ? 1 : 0.4 }
                 },
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
-                  h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : P.textMuted } }, badge.name),
-                  h('div', { style: { fontSize: 11, color: earned ? '#cbd5e1' : P.textMuted, marginTop: 2 } }, badge.desc)
+                  h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : P.textMuted } }, _badgeName(badge)),
+                  h('div', { style: { fontSize: 11, color: earned ? '#cbd5e1' : P.textMuted, marginTop: 2 } }, _badgeDesc(badge))
                 );
               })
             ),
