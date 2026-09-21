@@ -12672,7 +12672,88 @@ var evidenceRoute = [
       function renderRecords() {
         var recCards = RECORDS.map(function (r) { return panel([el('div', { key: 't', style: { fontSize: 12, fontWeight: 700, color: T.text, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 } }, r.title), el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 4 } }, r.holder), el('div', { key: 'd', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, __alloT('stem.dinolab.' + (r.id) + '_detail', r.detail))], { key: r.id }); });
         var people = PEOPLE.map(function (p) { return el('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: T.deeper, border: '1px solid ' + T.border, marginBottom: 8 } }, el('div', { style: { fontWeight: 700, fontSize: 13 } }, p.name, el('span', { style: { fontSize: 11, color: T.soft, fontWeight: 400, marginLeft: 6 } }, p.years)), el('div', { style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5, marginTop: 2 } }, p.did)); });
-        return el('div', null, sectionTitle('🏆', 'Record holders', 'Biggest, smallest, strongest. Many of these are best estimates, since the very largest animals are known from incomplete skeletons.'), el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 16 } }, recCards), panel([el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 8 } }, '👥 People who built the science'), el('div', { key: 'p' }, people)]));
+        var recQ = RECORDS[modIndex(d.recordIdx, RECORDS.length)];
+        var recPicked = d.recordPicked == null ? null : String(d.recordPicked);
+        var recAnswered = !!d.recordAnswered;
+        // Three other holders plus the right one, chosen deterministically from
+        // the record's own position so the options do not reshuffle on every
+        // keystroke elsewhere in the tool.
+        var recOthers = RECORDS.filter(function (r) { return r.holder !== recQ.holder; });
+        var recBase = modIndex(d.recordIdx, RECORDS.length);
+        var recOptions = [recQ.holder];
+        for (var ro = 0; ro < recOthers.length && recOptions.length < 4; ro++) {
+          var cand = recOthers[(recBase * 5 + ro * 3) % recOthers.length].holder;
+          if (recOptions.indexOf(cand) === -1) recOptions.push(cand);
+        }
+        recOptions.sort();
+        function recPick(name) {
+          if (recAnswered) return;
+          upd({ recordPicked: name, recordAnswered: true });
+        }
+        function recNext() {
+          upd({
+            recordIdx: (recBase + 1) % RECORDS.length,
+            recordPicked: null,
+            recordAnswered: false
+          });
+        }
+        var recChallenge = panel([
+          el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 6 } },
+            '🎯 Call it before you look'),
+          el('p', { key: 'p', style: { margin: '0 0 10px', color: T.soft, fontSize: 13, lineHeight: 1.5 } },
+            'Records move as new bones come out of the ground. Commit to an answer, then read what the estimate actually says.'),
+          el('div', {
+            key: 'q', role: 'status',
+            style: {
+              padding: 10, borderRadius: 8, background: T.deeper,
+              border: '1px solid ' + T.border, marginBottom: 10,
+              fontSize: 14, fontWeight: 700, color: T.text
+            }
+          }, recQ.title + '?'),
+          el('div', {
+            key: 'c',
+            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 }
+          }, recOptions.map(function (name) {
+            var isRight = name === recQ.holder;
+            var isPicked = recPicked === name;
+            var bg = T.panel;
+            if (recAnswered && isRight) bg = 'rgba(34,197,94,0.28)';
+            else if (recAnswered && isPicked) bg = 'rgba(245,158,11,0.28)';
+            return el('button', {
+              key: name, type: 'button',
+              'aria-disabled': recAnswered ? 'true' : undefined,
+              'aria-label': name + (recAnswered
+                ? (isRight ? '. Correct answer.' : (isPicked ? '. You chose this. Not the record holder.' : ''))
+                : '. Choose this dinosaur.'),
+              onClick: function () { recPick(name); },
+              style: {
+                minHeight: 44, padding: '9px 10px', borderRadius: 8,
+                border: '1px solid ' + (recAnswered && isRight ? 'rgba(34,197,94,0.75)' : T.border),
+                background: bg, color: T.text, fontSize: 13, fontWeight: 700,
+                cursor: recAnswered ? 'default' : 'pointer', textAlign: 'left'
+              }
+            }, name);
+          })),
+          recAnswered ? el('div', {
+            key: 'f', role: 'status',
+            style: { marginTop: 10, fontSize: 13, color: T.soft, lineHeight: 1.55 }
+          },
+            (recPicked === recQ.holder ? '✓ ' : '→ ') + recQ.holder + '. ',
+            recQ.detail,
+            el('div', { style: { marginTop: 8 } },
+              el('button', {
+                type: 'button', onClick: recNext,
+                style: {
+                  minHeight: 44, padding: '9px 14px', borderRadius: 8,
+                  border: '1px solid ' + T.border, background: T.deeper,
+                  color: T.text, fontSize: 13, fontWeight: 700, cursor: 'pointer'
+                }
+              }, 'Next record →'))
+          ) : null
+        ], { marginBottom: 12 });
+
+        return el('div', null, sectionTitle('🏆', 'Record holders', 'Biggest, smallest, strongest. Many of these are best estimates, since the very largest animals are known from incomplete skeletons.'),
+          recChallenge, el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 16 } }, recCards), panel([el('div', { key: 'h', style: { fontWeight: 800, fontSize: 14, marginBottom: 8 } }, '👥 People who built the science'), el('div', { key: 'p' }, people)]));
       }
 
       function renderQuiz() {
