@@ -209,6 +209,83 @@ describe('every quest can actually be earned', () => {
   });
 });
 
+describe('a malformed save cannot buy a quest', () => {
+  // `(d.x || []).length >= 3` is not a type guard. A STRING has .length, so a
+  // corrupted save holding "aaaaaaaaaa" used to satisfy every list check in the
+  // table and hand over 19 of the 25 quests with no work done. Saved tool state
+  // is attacker-adjacent here: it round-trips through storage and sync, and the
+  // student's own progress is what it decides.
+  const HOSTILE = [
+    ['a long string', 'aaaaaaaaaaaaaaaa'],
+    ['a number', 123456],
+    ['an object with many keys', { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6 }],
+    ['true', true],
+  ];
+
+  // Flags the checks also read, set true so only the LIST value is in question.
+  const FLAGS = {
+    cmpRevealed: true, doseWeighted: true, shelterUsed: true, protectUsed: true,
+    heldCritical: true, reactorRun: true, datedOnce: true, doseEstimated: true,
+    countPrecise: true,
+  };
+
+  // Load ONCE. Reloading inside the loop below would re-read a 450 KB file
+  // about eighty times and turn a millisecond check into the slowest test here.
+  let cached = null;
+  function hooks() {
+    if (!cached) {
+      resetStemLab();
+      cached = loadTool('stem_lab/stem_tool_nuclearlab.js', 'nuclearLab').questHooks;
+    }
+    return cached;
+  }
+
+  const listKeys = [...new Set(
+    [...SRC.matchAll(/nkQuestList\(d\.([A-Za-z0-9_]+)\)/g)].map((m) => m[1]),
+  )];
+
+  it('routes every list read in questHooks through the array guard', () => {
+    // If a new hook is written with the old idiom, this catches it before the
+    // behaviour test below has to.
+    const hooksBlock = SRC.slice(SRC.indexOf('questHooks:'), SRC.indexOf('render: function (ctx)'));
+    const unguarded = [...hooksBlock.matchAll(/\(d\.([A-Za-z0-9_]+) \|\| \[\]\)\.length/g)]
+      .map((m) => m[1]);
+    expect(unguarded, 'these read a saved list without checking it is an array').toEqual([]);
+    expect(listKeys.length, 'no guarded list reads found — did the helper get renamed?')
+      .toBeGreaterThanOrEqual(15);
+  });
+
+  it('awards nothing when a saved list is the wrong type', () => {
+    const granted = [];
+    for (const key of listKeys) {
+      for (const [label, value] of HOSTILE) {
+        const data = Object.assign({}, FLAGS, { [key]: value });
+        // Only judge hooks that actually READ this key. The flag block above
+        // legitimately satisfies boolean-only hooks (datedOnce, heldCritical),
+        // and counting those as 'bought' would be my test lying, not the tool.
+        const relevant = hooks().filter((h) => new RegExp('\b' + key + '\b').test(String(h.check)));
+        for (const hook of relevant) {
+          let out;
+          try {
+            out = hook.check(data);
+          } catch (err) {
+            granted.push(`${hook.id} THREW on ${key}=${label}: ${err.message}`);
+            continue;
+          }
+          if (out === true) granted.push(`${hook.id} awarded on ${key}=${label}`);
+        }
+      }
+    }
+    expect(granted, 'a malformed save bought progress:\n  ' + granted.join('\n  ')).toEqual([]);
+  });
+
+  it('still awards a quest for a real array', () => {
+    // The guard must not be so strict that genuine progress stops counting.
+    const compare = hooks().find((q) => q.id === 'nk_compare');
+    expect(compare.check({ cmpRevealed: true, cmpSeen: ['Coal', 'Oil', 'Nuclear', 'Solar'] })).toBe(true);
+  });
+});
+
 describe('no quest is granted for free', () => {
   // The mirror image of the block above, and the failure it was written for.
   // "Hold a chain reaction critical" was awarded on MOUNT: the rod slider

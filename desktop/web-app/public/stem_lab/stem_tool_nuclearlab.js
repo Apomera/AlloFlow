@@ -452,6 +452,14 @@
 
   // Knuth for small means; the normal approximation above 30, where it is
   // indistinguishable and does not loop λ times.
+  // A saved list that is not an array must count as EMPTY, never as its own
+  // length. `(d.x || []).length` LOOKS like a guard and is not: a string has
+  // .length, so a corrupted save holding ten characters satisfied every
+  // >= 3/4/5 check in questHooks and handed the learner 19 of the 25 quests
+  // without touching the tool. Numbers, booleans and objects fall to 0 here
+  // rather than throwing.
+  function nkQuestList(value) { return Array.isArray(value) ? value : []; }
+
   function nkPoisson(lam) {
     if (!(lam > 0)) return 0;
     if (lam < 30) {
@@ -1307,58 +1315,58 @@
 
     questHooks: [
       { id: 'nk_decay', label: 'Run three isotopes through their half-lives', icon: '⏳',
-        check: function (d) { return !!(d && (d.isoTried || []).length >= 3); } },
+        check: function (d) { return !!(d && nkQuestList(d.isoTried).length >= 3); } },
       { id: 'nk_dating', label: 'Date a sample with carbon-14', icon: '🦴',
         check: function (d) { return !!(d && d.datedOnce); } },
       { id: 'nk_shield', label: 'Shield all four kinds of radiation', icon: '🛡️',
-        check: function (d) { return !!(d && (d.radTried || []).length >= 4); } },
+        check: function (d) { return !!(d && nkQuestList(d.radTried).length >= 4); } },
       { id: 'nk_criticality', label: 'Hold a chain reaction critical', icon: '⚛️',
         check: function (d) { return !!(d && d.heldCritical); } },
       { id: 'nk_operate', label: 'Complete a reactor scenario', icon: '🎛️',
         check: function (d) { return !!(d && d.reactorRun); } },
       { id: 'nk_chain', label: 'Follow four steps of the uranium chain', icon: '⛓️',
-        check: function (d) { return !!(d && (d.chainSeen || []).length >= 4); } },
+        check: function (d) { return !!(d && nkQuestList(d.chainSeen).length >= 4); } },
       { id: 'nk_enrich', label: 'Compare three enrichment levels', icon: '🔢',
-        check: function (d) { return !!(d && (d.enrSeen || []).length >= 3); } },
+        check: function (d) { return !!(d && nkQuestList(d.enrSeen).length >= 3); } },
       { id: 'nk_binding', label: 'Work out three reactions from the curve', icon: '⛰️',
-        check: function (d) { return !!(d && (d.reactionsSeen || []).length >= 3); } },
+        check: function (d) { return !!(d && nkQuestList(d.reactionsSeen).length >= 3); } },
       { id: 'nk_mydose', label: 'Estimate your own annual dose', icon: '🧮',
         check: function (d) { return !!(d && d.doseEstimated); } },
       { id: 'nk_dose', label: 'Compare five doses on the ladder', icon: '📏',
-        check: function (d) { return !!(d && (d.dosesSeen || []).length >= 5); } },
+        check: function (d) { return !!(d && nkQuestList(d.dosesSeen).length >= 5); } },
       { id: 'nk_ponder', label: 'Work out three of the lab\'s own questions, then check', icon: '🤔',
-        check: function (d) { return !!(d && (d.ponderSeen || []).length >= 3); } },
+        check: function (d) { return !!(d && nkQuestList(d.ponderSeen).length >= 3); } },
       { id: 'nk_lowdose', label: 'Run one exposure through three risk models', icon: '📉',
-        check: function (d) { return !!(d && (d.riskModelsTried || []).length >= 3); } },
+        check: function (d) { return !!(d && nkQuestList(d.riskModelsTried).length >= 3); } },
       { id: 'nk_collective', label: 'Find where the collective-dose sum stops meaning anything', icon: '➗',
-        check: function (d) { return !!(d && (d.ldCasesTried || []).length >= 3); } },
+        check: function (d) { return !!(d && nkQuestList(d.ldCasesTried).length >= 3); } },
       { id: 'nk_weighting', label: 'Weight the same joule three ways', icon: '⚖️',
-        check: function (d) { return !!(d && d.doseWeighted && (d.wrTried || []).length >= 3); } },
+        check: function (d) { return !!(d && d.doseWeighted && nkQuestList(d.wrTried).length >= 3); } },
       { id: 'nk_biohalf', label: 'Compare four nuclides inside a body', icon: '🫀',
-        check: function (d) { return !!(d && (d.bioSeen || []).length >= 4); } },
+        check: function (d) { return !!(d && nkQuestList(d.bioSeen).length >= 4); } },
       { id: 'nk_paths', label: 'Complete two question routes through the lab', icon: '🧭',
         check: function (d) {
           var paths = d && Array.isArray(d.pathsCompleted) ? d.pathsCompleted : [];
           return paths.filter(function (id, i) { return paths.indexOf(id) === i; }).length >= 2;
         } },
       { id: 'nk_shelter', label: 'Find where shelter beats evacuation, and where it stops', icon: '🏠',
-        check: function (d) { return !!(d && d.shelterUsed && (d.shSeen || []).length >= 3); } },
+        check: function (d) { return !!(d && d.shelterUsed && nkQuestList(d.shSeen).length >= 3); } },
       { id: 'nk_protect', label: 'Work out a stay time with all three levers', icon: '⏱️',
-        check: function (d) { return !!(d && d.protectUsed && (d.ptTried || []).length >= 2); } },
+        check: function (d) { return !!(d && d.protectUsed && nkQuestList(d.ptTried).length >= 2); } },
       { id: 'nk_count', label: 'Take a count you could defend — better than ±5%', icon: '🔬',
         check: function (d) { return !!(d && d.countPrecise); } },
       { id: 'nk_invsq', label: 'Measure the same source at three distances', icon: '📐',
-        check: function (d) { return !!(d && (d.cdDistTried || []).length >= 3); } },
+        check: function (d) { return !!(d && nkQuestList(d.cdDistTried).length >= 3); } },
       { id: 'nk_incidents', label: 'Read all three accidents in full', icon: '📋',
-        check: function (d) { return !!(d && (d.incidentsRead || []).length >= 3); } },
+        check: function (d) { return !!(d && nkQuestList(d.incidentsRead).length >= 3); } },
       { id: 'nk_reactors', label: 'Compare three reactor designs', icon: '🏭',
-        check: function (d) { return !!(d && (d.reactorsSeen || []).length >= 3); } },
+        check: function (d) { return !!(d && nkQuestList(d.reactorsSeen).length >= 3); } },
       { id: 'nk_waste', label: 'Work through the waste question', icon: '🗄️',
-        check: function (d) { return !!(d && (d.wasteSeen || []).length >= 3); } },
+        check: function (d) { return !!(d && nkQuestList(d.wasteSeen).length >= 3); } },
       { id: 'nk_compare', label: 'Predict the death ranking, then check it against the data', icon: '⚖️',
-        check: function (d) { return !!(d && d.cmpRevealed && (d.cmpSeen || []).length >= 4); } },
+        check: function (d) { return !!(d && d.cmpRevealed && nkQuestList(d.cmpSeen).length >= 4); } },
       { id: 'nk_evidence', label: 'Master all five evidence verdicts', icon: '🔎',
-        check: function (d) { return !!(d && (d.evidenceMastered || []).length >= EVIDENCE_CLAIMS.length); } }
+        check: function (d) { return !!(d && nkQuestList(d.evidenceMastered).length >= EVIDENCE_CLAIMS.length); } }
     ],
 
     render: function (ctx) {
