@@ -149,13 +149,16 @@ afterEach(async () => {
   delete globalThis.IS_REACT_ACT_ENVIRONMENT;
 });
 
-// These two tests run a full multi-step pigment/water simulation. Measured on
-// an otherwise-quiet box they take 3167ms and 4547ms -- against vitest's 5000ms
-// default that is a 9% margin, and they failed intermittently under normal
-// machine load (other sessions routinely run 30+ node processes here). The work
-// is legitimate, so the budget is stated explicitly rather than left to default.
-// If either starts timing out at this value, the simulation got slower -- profile
-// it; do not simply raise the number.
+// Every test here mounts the watercolor engine and runs a real multi-step
+// pigment/water simulation. On a quiet box the spread is wide -- 464ms at the
+// fast end, 7310ms at the slow -- but under load (other sessions routinely run
+// 20-30 node processes here) even the fast ones stall: the 1161ms "deposits
+// water and pigment" test blew the 5000ms default once, a 4.3x blowup. That is
+// the worker stalling, not the test getting slower, so EVERY test in the file
+// carries the budget rather than just whichever two crossed the line first.
+//
+// If one times out at this value on a QUIET box, the simulation got slower --
+// profile it; do not simply raise the number.
 const WATERCOLOR_SIM_TIMEOUT_MS = 20000;
 
 describe('Art Studio watercolor simulation engine', () => {
@@ -189,7 +192,7 @@ describe('Art Studio watercolor simulation engine', () => {
     expect(engine.captureState().pigmentDensity.some((value) => value > 0)).toBe(false);
     expect(engine.redo()).toBe(true);
     expect(engine.captureState().pigmentDensity.some((value) => value > 0)).toBe(true);
-  });
+  }, WATERCOLOR_SIM_TIMEOUT_MS);
 
   it('gives flat, mop, and rigger brushes materially different footprints', async () => {
     const { engine } = await mountWatercolor();
@@ -213,7 +216,7 @@ describe('Art Studio watercolor simulation engine', () => {
     expect(mop.width * mop.height).toBeGreaterThan(flat.width * flat.height);
     expect(rigger.width).toBeGreaterThan(rigger.height * 2);
     expect(rigger.height).toBeLessThan(flat.height);
-  });
+  }, WATERCOLOR_SIM_TIMEOUT_MS);
 
   it('captures clean artwork before repainting screen-only flow diagnostics', async () => {
     const { canvas, engine } = await mountWatercolor();
@@ -227,7 +230,7 @@ describe('Art Studio watercolor simulation engine', () => {
     expect(snapshot).toMatch(/^data:image\/png/);
     expect(strokesAtCapture).toBe(0);
     expect(mainContext.stroke).toHaveBeenCalled();
-  });
+  }, WATERCOLOR_SIM_TIMEOUT_MS);
 
   it('lets high-mobility color channels travel ahead of low-mobility channels', async () => {
     const { engine } = await mountWatercolor();
@@ -263,7 +266,7 @@ describe('Art Studio watercolor simulation engine', () => {
 
     expect(separated.pigmentMobilityRMass.some((value) => value > 0)).toBe(true);
     expect(redSpread).toBeGreaterThan(blueSpread * 1.1);
-  });
+  }, WATERCOLOR_SIM_TIMEOUT_MS);
 
   it('rewets low-staining dry pigment more readily while conserving pigment mass', async () => {
     const { engine } = await mountWatercolor();
@@ -303,7 +306,7 @@ describe('Art Studio watercolor simulation engine', () => {
     expect(lowStaining.mobileMass).toBeGreaterThan(highStaining.mobileMass * 2);
     expect(lowStaining.conservedMass).toBeCloseTo(lowStaining.dryMass, 4);
     expect(highStaining.conservedMass).toBeCloseTo(highStaining.dryMass, 4);
-  });
+  }, WATERCOLOR_SIM_TIMEOUT_MS);
 
   it('retains more water and bloom under humid low-airflow studio conditions', async () => {
     const { engine } = await mountWatercolor();

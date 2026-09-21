@@ -8162,11 +8162,11 @@ const d = labToolData.artStudio || {};
                   finishImport();
                 }
                 if (Number(file.size) > 1024 * 1024) {
-                  rejectImport('That sculpture file is over the 1 MB import limit.');
+                  rejectImport(__alloT('stem.artstudio.toast_sculpture_file_over_import_limit', 'That sculpture file is over the 1 MB import limit.'));
                   return;
                 }
                 if (!window.FileReader) {
-                  rejectImport('This browser cannot read sculpture model files.');
+                  rejectImport(__alloT('stem.artstudio.toast_browser_cannot_read_sculpture_files', 'This browser cannot read sculpture model files.'));
                   return;
                 }
                 var reader = new window.FileReader();
@@ -8181,10 +8181,10 @@ const d = labToolData.artStudio || {};
                     if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_sculpture_model_imported', 'Sculpture model imported.'), 'success');
                     finishImport();
                   } catch (e) {
-                    rejectImport('That file is not a valid Sculpture JSON model.');
+                    rejectImport(__alloT('stem.artstudio.toast_not_a_valid_sculpture_json', 'That file is not a valid Sculpture JSON model.'));
                   }
                 };
-                reader.onerror = function() { rejectImport('Unable to read that sculpture model file.'); };
+                reader.onerror = function() { rejectImport(__alloT('stem.artstudio.toast_unable_to_read_sculpture_file', 'Unable to read that sculpture model file.')); };
                 reader.readAsText(file);
               };
               var placeDroppedShape = function(event) {
@@ -13220,9 +13220,45 @@ const d = labToolData.artStudio || {};
 
                       onChange: function(e) {
 
-                        var file = e.target.files && e.target.files[0];
+                        var inputEl = e.target;
+
+                        var file = inputEl.files && inputEl.files[0];
 
                         if (!file) return;
+
+                        // Without these, a file the browser cannot decode gave the student
+
+                        // NO feedback at all, and re-picking the same file did nothing
+
+                        // because the input still held it.
+
+                        var clearDepthInput = function () { try { inputEl.value = ''; } catch (err) {} };
+
+                        var rejectDepth = function (message) {
+
+                          if (typeof announceToSR === 'function') announceToSR(message);
+
+                          if (typeof addToast === 'function') addToast(message, 'error');
+
+                          clearDepthInput();
+
+                        };
+
+                        if (Number(file.size) > 5 * 1024 * 1024) {
+
+                          rejectDepth(__alloT('stem.artstudio.toast_depth_map_over_import_limit', 'That image is over the 5 MB import limit.'));
+
+                          return;
+
+                        }
+
+                        if (!window.FileReader) {
+
+                          rejectDepth(__alloT('stem.artstudio.toast_browser_cannot_read_image_files', 'This browser cannot read image files.'));
+
+                          return;
+
+                        }
 
                         var reader = new FileReader();
 
@@ -13236,6 +13272,8 @@ const d = labToolData.artStudio || {};
 
                             var ctx = c.getContext('2d');
 
+                            if (!ctx) { rejectDepth(__alloT('stem.artstudio.toast_cannot_read_image_here', 'This browser cannot process that image here.')); return; }
+
                             ctx.drawImage(img, 0, 0, 400, 400);
 
                             var imgData = ctx.getImageData(0, 0, 400, 400);
@@ -13244,9 +13282,23 @@ const d = labToolData.artStudio || {};
 
                             if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_depth_map_uploaded', '\uD83D\uDCF8 Depth map uploaded!'), 'success');
 
+                            clearDepthInput();
+
+                          };
+
+                          img.onerror = function() {
+
+                            rejectDepth(__alloT('stem.artstudio.toast_could_not_read_that_image', 'Could not read that image. Try a PNG or JPG file.'));
+
                           };
 
                           img.src = ev.target.result;
+
+                        };
+
+                        reader.onerror = function() {
+
+                          rejectDepth(__alloT('stem.artstudio.toast_unable_to_read_that_file', 'Unable to read that file.'));
 
                         };
 

@@ -1,7 +1,7 @@
 {
   "note": "Per-file count of addToast CALL SITES whose message holds English with no translation key. RATCHET: may only go down. Re-baseline with --update after removing some; an increase needs --allow-increase.",
   "set": "2026-09-21",
-  "total": 2949,
+  "total": 2948,
   "files": {
     "admin_hub_module.js": 13,
     "adventure_handlers_module.js": 13,
@@ -185,7 +185,7 @@
     "sel_hub/sel_tool_decisions.js": 12,
     "sel_hub/sel_tool_digitalwellbeing.js": 6,
     "sel_hub/sel_tool_ecomap.js": 2,
-    "sel_hub/sel_tool_emotions.js": 4,
+    "sel_hub/sel_tool_emotions.js": 3,
     "sel_hub/sel_tool_ethicalreasoning.js": 5,
     "sel_hub/sel_tool_execfunction.js": 3,
     "sel_hub/sel_tool_genogram.js": 1,
