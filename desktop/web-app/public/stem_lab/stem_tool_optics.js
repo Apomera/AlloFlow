@@ -2362,7 +2362,7 @@
         _opticsMaskOutcomeRows('reflection', rows, _opticsPredictionRevealed('reflection', state)).map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '40% 60%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
-            h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
+            h('span', { 'data-op-masked': r[1] === OPTICS_MASKED_VALUE ? 'true' : undefined, style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
           );
         })
       ),
@@ -3885,7 +3885,7 @@
         _opticsMaskOutcomeRows('refraction', rows, _opticsPredictionRevealed('refraction', state)).map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '50% 50%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
-            h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
+            h('span', { 'data-op-masked': r[1] === OPTICS_MASKED_VALUE ? 'true' : undefined, style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
           );
         })
       ),
@@ -5310,7 +5310,7 @@
         _opticsMaskOutcomeRows('lenses', rows, _opticsPredictionRevealed('lenses', state)).map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '40% 60%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
-            h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
+            h('span', { 'data-op-masked': r[1] === OPTICS_MASKED_VALUE ? 'true' : undefined, style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
           );
         })
       ),
@@ -6878,7 +6878,7 @@
         _opticsMaskOutcomeRows('interference', rows, _opticsPredictionRevealed('interference', state)).map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '50% 50%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
-            h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
+            h('span', { 'data-op-masked': r[1] === OPTICS_MASKED_VALUE ? 'true' : undefined, style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
           );
         })
       ),
@@ -7425,7 +7425,7 @@
         _opticsMaskOutcomeRows('diffraction', rows, _opticsPredictionRevealed('diffraction', state)).map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '40% 60%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
-            h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
+            h('span', { 'data-op-masked': r[1] === OPTICS_MASKED_VALUE ? 'true' : undefined, style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
           );
         })
       ),
@@ -8467,7 +8467,7 @@
         _opticsMaskOutcomeRows('polarization', rows, _opticsPredictionRevealed('polarization', state)).map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '40% 60%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
-            h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
+            h('span', { 'data-op-masked': r[1] === OPTICS_MASKED_VALUE ? 'true' : undefined, style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
           );
         })
       ),
@@ -8721,6 +8721,9 @@
     if (!setups || typeof setups !== 'object' || Array.isArray(setups)) return false;
     return setups[tab] === _opticsSetupKey(tab, state);
   }
+  // One definition of the masked value, so a test cannot hold its own copy of
+  // the string and keep passing after the copy here changes.
+  var OPTICS_MASKED_VALUE = '— predict first';
   // Mask the outcome rows in place, keeping the row order and count so the
   // table does not reflow when the answer is revealed.
   function _opticsMaskOutcomeRows(tab, rows, revealed) {
@@ -8729,7 +8732,7 @@
     if (!hide || !Array.isArray(rows)) return rows;
     return rows.map(function (r) {
       if (!Array.isArray(r) || hide.indexOf(r[0]) === -1) return r;
-      return [r[0], '— predict first'];
+      return [r[0], OPTICS_MASKED_VALUE];
     });
   }
   function _opticsTrialRecord(tab, state, preview) {
