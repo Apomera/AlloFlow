@@ -7553,23 +7553,60 @@
                     return React.createElement("button", {
                       'aria-label': 'Auto-generate smart quests based on selected tools',
                       onClick: function() {
+                        // Spread the quests ACROSS the selection.
+                        //
+                        // This used to take XP quests from selectedTools.slice(0, 2)
+                        // and then keep only hookQuests.slice(0, 3) off a list built
+                        // two-per-tool in selection order. Both windows landed on the
+                        // same first two tools, so a six-tool station got six quests
+                        // that between them covered TWO tools \u2014 the other four were
+                        // ignored entirely, even though the button had just counted
+                        // their hooks in its own "(N available)" label.
+                        //
+                        // Round-robin instead: one hook quest per tool before any
+                        // tool gets a second. Every selected tool that has hooks now
+                        // contributes, and the teacher can still delete what they do
+                        // not want.
                         var autoQuests = [];
-                        // Add 1 XP quest per tool
-                        selectedTools.slice(0, 2).forEach(function(tid) {
+                        var MAX_HOOK_QUESTS = 4;
+                        var MAX_XP_QUESTS = 2;
+                        var toolsWithHooks = selectedTools.filter(function(tid) { return _getToolQuestHooks(tid).length > 0; });
+                        var hookQuests = [];
+                        for (var round = 0; round < 2 && hookQuests.length < MAX_HOOK_QUESTS; round++) {
+                          for (var ti = 0; ti < toolsWithHooks.length && hookQuests.length < MAX_HOOK_QUESTS; ti++) {
+                            var tid2 = toolsWithHooks[ti];
+                            var hooks2 = _getToolQuestHooks(tid2);
+                            var pick = hooks2[round];
+                            if (!pick || !pick.id) continue;
+                            hookQuests.push({
+                              type: 'toolQuest', toolId: tid2,
+                              // A hook that ships no label would otherwise render an
+                              // empty quest row in the HUD.
+                              label: pick.label || pick.name || _questAutoLabel('toolQuest', tid2, {}),
+                              params: { hookId: pick.id }
+                            });
+                          }
+                        }
+                        // XP quests cover tools the hook pass could not reach, so a
+                        // tool without hooks still gets something.
+                        var covered = {};
+                        hookQuests.forEach(function(q) { covered[q.toolId] = true; });
+                        var xpCandidates = selectedTools.filter(function(tid) { return !covered[tid]; });
+                        if (xpCandidates.length === 0) xpCandidates = selectedTools;
+                        xpCandidates.slice(0, MAX_XP_QUESTS).forEach(function(tid) {
                           autoQuests.push({ type: 'xpThreshold', toolId: tid, label: _questAutoLabel('xpThreshold', tid, { threshold: 40 }), params: { threshold: 40 } });
                         });
-                        // Add best tool-specific hooks (up to 3)
-                        var hookQuests = [];
-                        selectedTools.forEach(function(tid) {
-                          var hooks = _getToolQuestHooks(tid);
-                          if (hooks.length > 0) hookQuests.push({ type: 'toolQuest', toolId: tid, label: hooks[0].label, params: { hookId: hooks[0].id } });
-                          if (hooks.length > 1) hookQuests.push({ type: 'toolQuest', toolId: tid, label: hooks[1].label, params: { hookId: hooks[1].id } });
-                        });
-                        autoQuests = autoQuests.concat(hookQuests.slice(0, 3));
+                        autoQuests = autoQuests.concat(hookQuests);
                         // Add a reflection
                         autoQuests.push({ type: 'freeResponse', toolId: null, label: t('stem.tools_menu.what_did_you_learn') || 'What did you learn?', params: { prompt: 'What was the most interesting thing you discovered today?', minLength: 30 } });
                         _setStationQuests(autoQuests);
-                        if (addToast) addToast('\uD83E\uDD16 Smart quests generated! ' + autoQuests.length + ' quests based on your tools.', 'success');
+                        // Say how many TOOLS are covered, not just how many quests
+                        // exist \u2014 the old wording ("based on your tools") was the
+                        // part that was untrue.
+                        var toolsCovered = {};
+                        autoQuests.forEach(function(q) { if (q.toolId) toolsCovered[q.toolId] = true; });
+                        var nTools = Object.keys(toolsCovered).length;
+                        if (addToast) addToast('\uD83E\uDD16 ' + autoQuests.length + ' quests generated across ' + nTools + ' of your ' + selectedTools.length + ' tools.', 'success');
                       },
                       className: "w-full mb-1.5 py-2 rounded-lg text-[10px] font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-600 hover:to-indigo-600 transition-all shadow-sm"
                     }, "\uD83E\uDD16 Auto-Generate Smart Quests (" + totalHooksAvailable + " available)");
