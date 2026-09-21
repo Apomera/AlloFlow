@@ -160,6 +160,17 @@ function accessibleName(node) {
   return String(node?.getAttribute('aria-label') || node?.textContent || '').replace(/\s+/g, ' ').trim();
 }
 
+// Every test here drives a real IndexedDB round-trip. On a quiet box the
+// slowest is 1751ms, but under load (other sessions routinely run 20-30 node
+// processes here) one blew the 5000ms default -- and because the tests share a
+// database fixture, that single timeout cascaded into SIX more failures at
+// ~110ms each, which read as seven separate defects. All nine pass in
+// isolation. State the budget so a stall cannot masquerade as a broken suite.
+//
+// If one times out at this value on a QUIET box, persistence genuinely got
+// slower -- profile it; do not simply raise the number.
+const STUDY_PERSISTENCE_TIMEOUT_MS = 20000;
+
 describe('Art Studio durable study persistence', () => {
   let config;
   let host;
@@ -284,7 +295,7 @@ describe('Art Studio durable study persistence', () => {
     });
     expect(database.data.get('studies').size).toBe(1);
     expect(host.textContent).toContain('Saved for this profile on this device.');
-  });
+  }, STUDY_PERSISTENCE_TIMEOUT_MS);
 
   it('hydrates saved studies once, without duplicates, for the matching profile only', async () => {
     await mount({ profileId: 'learner-a' });
@@ -301,7 +312,7 @@ describe('Art Studio durable study persistence', () => {
     await mount({ profileId: 'learner-a' });
     expect(latestSnapshots).toHaveLength(1);
     expect(latestSnapshots[0].id).toBe(saved.id);
-  });
+  }, STUDY_PERSISTENCE_TIMEOUT_MS);
 
   it('archives and restores the same durable study row for the matching profile', async () => {
     await mount({ profileId: 'learner-a' });
@@ -336,7 +347,7 @@ describe('Art Studio durable study persistence', () => {
 
     await mount({ profileId: 'learner-b' });
     expect(latestSnapshots).toHaveLength(0);
-  });
+  }, STUDY_PERSISTENCE_TIMEOUT_MS);
 
   it('persists lightweight project progress and the guide preference per learner', async () => {
     await mount({
@@ -428,7 +439,7 @@ describe('Art Studio durable study persistence', () => {
     expect(latestToolData.artStudio.studioGuideWording).not.toBe('simple');
     await mount({ profileId: 'learner-a' });
     expect(latestToolData.artStudio.studioGuideWording).toBe('simple');
-  });
+  }, STUDY_PERSISTENCE_TIMEOUT_MS);
 
   it('persists independent Thread Kits for multiple project runs', async () => {
     const runA = {
@@ -469,7 +480,7 @@ describe('Art Studio durable study persistence', () => {
       schemaVersion: 2,
       runs: [runA, runB],
     });
-  });
+  }, STUDY_PERSISTENCE_TIMEOUT_MS);
 
   it('falls back to session-only studies when IndexedDB is unavailable', async () => {
     Object.defineProperty(globalThis, 'indexedDB', { configurable: true, writable: true, value: undefined });
@@ -481,7 +492,7 @@ describe('Art Studio durable study persistence', () => {
     expect(latestSnapshots).toHaveLength(1);
     expect(latestSnapshots[0].tool).toBe('artStudio');
     expect(host.textContent).toContain('Session only \u2014 keep this tab open to keep these studies.');
-  });
+  }, STUDY_PERSISTENCE_TIMEOUT_MS);
 
   it('hydrates once even when host setter wrappers change during ordinary rerenders', async () => {
     await mount({ profileId: 'learner-a' });
@@ -490,7 +501,7 @@ describe('Art Studio durable study persistence', () => {
     await saveStudy();
     expect(database.stats.getAll).toBe(1);
     expect(database.stats.open).toBe(1);
-  });
+  }, STUDY_PERSISTENCE_TIMEOUT_MS);
 
   it('adopts a legacy unscoped study into the first active profile', async () => {
     const legacyStudy = {
@@ -518,7 +529,7 @@ describe('Art Studio durable study persistence', () => {
     expect(stored).toHaveLength(1);
     expect(stored[0].record.id).toBe('legacy-study-1');
     expect(stored[0].scope).toBe('profile:learner-a');
-  });
+  }, STUDY_PERSISTENCE_TIMEOUT_MS);
 
   it('replaces scoped workflow state during a live learner switch', async () => {
     function SwitchingHarness({ profileId }) {
@@ -587,5 +598,5 @@ describe('Art Studio durable study persistence', () => {
       studioLastCompletedThreadId: 'tiny-night-world',
     });
     expect(database.data.get('workflow').get('profile:learner-b::workflow').workflow.studioThreadRunId).toBe('b-thread-run');
-  });
+  }, STUDY_PERSISTENCE_TIMEOUT_MS);
 });
