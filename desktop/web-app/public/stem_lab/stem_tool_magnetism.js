@@ -6009,10 +6009,63 @@
                 addArrow(new THREE.Vector3(x, y, z), field, level > 0.55 ? 0xf43f5e : 0x38bdf8, 0.24 + level * 0.72, 0.38 + level * 0.5);
               }); }); });
             }
+            // The solenoid's field lines get the same treatment the bar-magnet
+            // field studio got: a tapered tube instead of a 1px line, so the
+            // line itself carries |B| in its RADIUS and in a colour ramp
+            // instead of being uniform everywhere and leaving the single
+            // mid-line arrow to say everything about strength.
+            //
+            // Strength is normalised against THIS scene's own sampled maximum
+            // (what buildVectors already does), not the field studio's
+            // fieldLevel — that helper is scoped to the other scene and uses a
+            // different normalisation, so borrowing it would make these tubes
+            // disagree with the arrows sitting right beside them.
+            function addSolenoidTube(points, state, maxMagnitude) {
+              var lowPower = magLowPower();
+              var curve = new THREE.CatmullRomCurve3(points);
+              var tubular = Math.max(8, Math.min(lowPower ? 64 : 128, Math.floor(points.length * 0.9)));
+              var radial = lowPower ? 4 : 6;
+              // getPointAt (arc-length), NOT getPoint: TubeGeometry builds its
+              // rings on the arc-length parameterization, so getPoint's centres
+              // sit off the real tube axis and the taper skews.
+              var levels = [], centres = [];
+              for (var t = 0; t <= tubular; t++) {
+                var pt = curve.getPointAt(t / tubular);
+                // One non-finite sample makes a ring's radius NaN, which
+                // poisons the whole buffer's bounding sphere and blanks the
+                // scene — refuse to build the tube rather than ship a hole.
+                if (!pt || !isFinite(pt.x) || !isFinite(pt.y) || !isFinite(pt.z)) return;
+                centres.push(pt);
+                var b = solenoidFieldAt3D(pt.x, pt.y, pt.z, state);
+                var mag = Math.hypot(b.x, b.y, b.z);
+                var lvl = isFinite(mag) && maxMagnitude > 0 ? Math.sqrt(Math.min(1, mag / maxMagnitude)) : 0;
+                levels.push(isFinite(lvl) ? lvl : 0);
+              }
+              var geometry = new THREE.TubeGeometry(curve, tubular, 1, radial, false);
+              var pos = geometry.attributes.position;
+              var cool = new THREE.Color(0x38bdf8), hot = new THREE.Color(0xf43f5e);
+              var colors = new Float32Array(pos.count * 3), tmp = new THREE.Color();
+              for (var i = 0; i < pos.count; i++) {
+                var ringIndex = Math.min(levels.length - 1, Math.floor(i / (radial + 1)));
+                var level = levels[ringIndex], centre = centres[ringIndex];
+                var rr = 0.011 + level * 0.05;
+                pos.setXYZ(i, centre.x + (pos.getX(i) - centre.x) * rr, centre.y + (pos.getY(i) - centre.y) * rr, centre.z + (pos.getZ(i) - centre.z) * rr);
+                tmp.copy(cool).lerp(hot, level);
+                colors[i * 3] = tmp.r; colors[i * 3 + 1] = tmp.g; colors[i * 3 + 2] = tmp.b;
+              }
+              pos.needsUpdate = true;
+              geometry.computeVertexNormals();
+              geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+              dynamicGroup.add(new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.86 })));
+            }
             function buildLines(state) {
               if (!state.lines || state.current <= 0) return;
               var direction = state.currentDir * state.windingDir > 0 ? 1 : -1;
               var northX = direction * state.length * 0.58;
+              // Trace first, then colour: one pass finds this scene's strength
+              // scale so every tube is measured against the same maximum
+              // instead of against its own.
+              var traces = [], peak = 1e-9;
               for (var ring = 0; ring < 2; ring++) {
                 for (var i = 0; i < 8; i++) {
                   var angle = i / 8 * Math.PI * 2 + ring * Math.PI / 8;
@@ -6020,12 +6073,19 @@
                   var seed = { x: northX, y: Math.cos(angle) * r, z: Math.sin(angle) * r };
                   var traced = traceSolenoidLine3D(seed, state, 1, { step: 0.11, maxSteps: 210, bound: 7 });
                   if (traced.length < 3) continue;
-                  var points = traced.map(function (p) { return new THREE.Vector3(p.x, p.y, p.z); });
-                  dynamicGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: 0xf43f5e, transparent: true, opacity: 0.5 })));
-                  var mi = Math.min(points.length - 1, Math.max(1, Math.floor(points.length * 0.46))), mp = points[mi];
-                  addArrow(mp, solenoidFieldAt3D(mp.x, mp.y, mp.z, state), 0xfbbf24, 0.32, 0.88);
+                  traces.push(traced.map(function (p) { return new THREE.Vector3(p.x, p.y, p.z); }));
+                  for (var k = 0; k < traced.length; k += 6) {
+                    var bb = solenoidFieldAt3D(traced[k].x, traced[k].y, traced[k].z, state);
+                    var mm = Math.hypot(bb.x, bb.y, bb.z);
+                    if (isFinite(mm) && mm > peak) peak = mm;
+                  }
                 }
               }
+              traces.forEach(function (points) {
+                addSolenoidTube(points, state, peak);
+                var mi = Math.min(points.length - 1, Math.max(1, Math.floor(points.length * 0.46))), mp = points[mi];
+                addArrow(mp, solenoidFieldAt3D(mp.x, mp.y, mp.z, state), 0xfbbf24, 0.32, 0.88);
+              });
             }
             function buildProbe(state) {
               var origin = new THREE.Vector3(state.probe.x, state.probe.y, state.probe.z);

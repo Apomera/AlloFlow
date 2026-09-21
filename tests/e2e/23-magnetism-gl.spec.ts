@@ -357,6 +357,51 @@ test.describe('magnetism — 3D visual pass', () => {
       .toBeGreaterThan(quietOval);
   });
 
+  test('the electromagnet field lines are tubes too, not 1px lines', async ({ page }) => {
+    // Same upgrade as the field studio, on the solenoid's traced lines. Count
+    // the CONSTRUCTION rather than walking a scene graph the tool closes over:
+    // a graph walk would pass vacuously on an empty result.
+    //
+    // The electromagnet needs current > 0 to draw any line at all (buildLines
+    // early-returns on state.current <= 0), so the mount sets one.
+    await page.goto(`${harness.url}/__harness`);
+    await page.waitForFunction(
+      () => !!(window as any).StemLab?._registry?.magnetism, null, { timeout: 30000 });
+    await page.evaluate(() => {
+      const T = (window as any).THREE, w = window as any;
+      // Count only tubes that CARRY A COLOUR ATTRIBUTE. Counting
+      // vertexColors materials alone is not enough: the PMREM environment
+      // builds a vertex-coloured gradient box on every scene, and the coil
+      // wire is itself a TubeGeometry — so either signal on its own stays
+      // green with the field lines reverted to flat. (It did.)
+      w.__tally = { tubes: 0, colouredTubes: 0 };
+      const Tube = T.TubeGeometry;
+      T.TubeGeometry = function (...a: any[]) {
+        const g = new Tube(...a);
+        w.__tally.tubes++;
+        // The field tubes get setAttribute('color', ...) right after
+        // construction; the coil wire never does.
+        const setAttr = g.setAttribute.bind(g);
+        g.setAttribute = function (name: string, attr: any) {
+          if (name === 'color') w.__tally.colouredTubes++;
+          return setAttr(name, attr);
+        };
+        return g;
+      };
+      T.TubeGeometry.prototype = Tube.prototype;
+    });
+    await page.evaluate(() => (window as any).__mount({
+      magnetism: { tab: 'electro', electroView: '3d', current: 4, turns: 60, electro3dLines: true },
+    }));
+    await page.waitForSelector('#wrap canvas', { timeout: 30000 });
+    await page.waitForTimeout(1500);
+
+    const tally = await page.evaluate(() => (window as any).__tally);
+    expect(tally.tubes, 'electromagnet built no TubeGeometry at all').toBeGreaterThan(0);
+    expect(tally.colouredTubes, 'no tube carries a colour attribute — the field lines are still flat')
+      .toBeGreaterThan(0);
+  });
+
   test('releases its GL context on unmount', async ({ page }) => {
     await harness.mount(page, FIELD_3D);
     await page.evaluate(() => (window as any).__magProbe());
