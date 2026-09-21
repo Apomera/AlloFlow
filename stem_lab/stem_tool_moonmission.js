@@ -425,6 +425,439 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   }
 
   // ═══════════════════════════════════════════════════════════════
+  // 3D POWERED DESCENT  (mmBuildDescent3D)
+  // ═══════════════════════════════════════════════════════════════
+  // The landing is the mission's one graded piloting task, and it teaches the
+  // one idea a side-on view cannot show: a lander has no sideways thruster
+  // worth the name — it TILTS and points its main engine, so the burn that
+  // holds you up is the same burn that pushes you across. Flat elevation hid
+  // that trade entirely.
+  //
+  // This is an OVERLAY, deliberately. The 2D canvas keeps every verified
+  // behaviour — physics, grading, callouts, the dataset.descent* pins the
+  // tests read, the 1202 alarm, the control pads — and only the WORLD it used
+  // to paint moves to WebGL behind it. Nothing already proven is re-proven.
+  //
+  // Returns null on any failure, and the caller treats null as "keep painting
+  // the 2D world", which is why that world is skipped by a flag rather than
+  // deleted outright.
+  function mmBuildDescent3D(THREE, hostEl, opts) {
+    if (!THREE || !hostEl) return null;
+    var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var lowPower = reduce || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+    var W = Math.max(1, (opts && opts.width) || hostEl.offsetWidth || 500);
+    var H = Math.max(1, (opts && opts.height) || hostEl.offsetHeight || 420);
+
+    // The GL canvas sits UNDER the 2D HUD canvas and is decorative: the HUD
+    // above it already carries the accessible name and role=application, and
+    // the callout strip carries the flight state as text. A second labelled
+    // canvas would only add a duplicate stop for a screen reader.
+    var glCv = document.createElement('canvas');
+    glCv.setAttribute('aria-hidden', 'true');
+    glCv.setAttribute('data-descent-gl', 'true');
+    glCv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0';
+
+    var renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas: glCv, antialias: !lowPower, alpha: false });
+    } catch (e) {
+      console.error('[MoonMission descent] WebGLRenderer creation failed:', e);
+      return null;
+    }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lowPower ? 1 : 2));
+    renderer.setSize(W, H, false);
+    renderer.setClearColor(0x000005);
+    try { renderer.outputEncoding = THREE.sRGBEncoding; } catch (_encErr) {}
+
+    var scene = new THREE.Scene();
+    // Explicit black: without it the page background showed through wherever the
+    // terrain did not cover, and lunar sky read navy instead of empty.
+    scene.background = new THREE.Color(0x000003);
+    var camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 14000);
+
+    // ── Starfield ──
+    // Points rather than a textured shell: this camera looks steeply down, and
+    // an equirectangular sky map stretches worst exactly at the pole it would
+    // be staring through.
+    var starGeo = new THREE.BufferGeometry();
+    var starN = lowPower ? 420 : 900;
+    var starPos = new Float32Array(starN * 3);
+    var sRng = _seededRand(7919);
+    for (var si = 0; si < starN; si++) {
+      // Upper hemisphere only — below the horizon belongs to regolith.
+      var su = sRng.next() * 2 - 1, sth = sRng.next() * Math.PI * 2;
+      var sr2 = Math.sqrt(Math.max(0, 1 - su * su));
+      // Inside the camera's far plane at every altitude, or the shell is clipped
+      // away exactly when the camera trucks back and the sky should be fullest.
+      starPos[si * 3] = Math.cos(sth) * sr2 * 1800;
+      starPos[si * 3 + 1] = Math.abs(su) * 1800;
+      starPos[si * 3 + 2] = Math.sin(sth) * sr2 * 1800;
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    var starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 5.5, sizeAttenuation: false, depthWrite: false });
+    var stars = new THREE.Points(starGeo, starMat);
+    scene.add(stars);
+
+    // ── Regolith heightfield ──
+    // A genuinely displaced plane, so craters have rims that catch the sun and
+    // cast shadow across their own floors. The 2D view drew craters as flat
+    // grey discs, which read as stains rather than holes.
+    // ONE ground mesh, not two. An inner detail plane plus a distant skirt looked
+    // reasonable in code and produced hard stair-step terracing on screen: the two
+    // displaced surfaces INTERSECT rather than merely overlap, so no y-offset can
+    // separate them. A single wide heightfield with radially graded detail has no
+    // seam to fight, and costs less than the two planes did together.
+    var TERRAIN_SPAN = 16000;
+    var seg = lowPower ? 150 : 230;
+    var terGeo = new THREE.PlaneGeometry(TERRAIN_SPAN, TERRAIN_SPAN, seg, seg);
+    terGeo.rotateX(-Math.PI / 2);
+    // Seeded crater field, so the same landing site greets every retry and a
+    // student can actually learn the terrain they are aiming at.
+    var cRng = _seededRand(19690720);   // 1969-07-20
+    var craters = [];
+    // Small craters clustered where the lander actually comes down, large ones
+    // spread across the whole field. A power law on size, because real crater
+    // counts rise steeply as diameter falls: many small, a few huge.
+    for (var ci = 0; ci < 260; ci++) {
+      var cScale = Math.pow(cRng.next(), 2.1);
+      // Concentrate the small craters near the landing point and let the big ones
+      // range out to the horizon, so detail sits where the camera actually looks.
+      var spread = 0.06 + Math.pow(cRng.next(), 0.7) * 0.94;
+      craters.push({
+        x: (cRng.next() - 0.5) * TERRAIN_SPAN * spread,
+        z: (cRng.next() - 0.5) * TERRAIN_SPAN * spread,
+        r: 16 + cScale * 620,
+        d: 2.5 + cScale * 74
+      });
+    }
+    var terPos = terGeo.attributes.position;
+    for (var vi = 0; vi < terPos.count; vi++) {
+      var vx = terPos.getX(vi), vz = terPos.getZ(vi);
+      // Rolling mare relief under the craters.
+      var hgt = Math.sin(vx * 0.0042) * 7 + Math.cos(vz * 0.0035) * 6
+              + Math.sin((vx + vz) * 0.0011) * 11
+              + Math.sin(vx * 0.00038) * 46 + Math.cos(vz * 0.00029) * 38;
+      for (var cj = 0; cj < craters.length; cj++) {
+        var cr = craters[cj];
+        var dxc = vx - cr.x, dzc = vz - cr.z;
+        var dist = Math.sqrt(dxc * dxc + dzc * dzc);
+        if (dist < cr.r * 1.35) {
+          var tq = dist / cr.r;
+          // Bowl inside, raised ejecta rim just outside. The rim is what makes
+          // a crater legible under a low sun — without it the bowl reads flat.
+          if (tq < 1) hgt -= cr.d * (1 - tq * tq) * 0.85;
+          else hgt += cr.d * 0.32 * (1 - (tq - 1) / 0.35);
+        }
+      }
+      terPos.setY(vi, hgt);
+    }
+    terGeo.computeVertexNormals();
+    // Lunar albedo is about 0.12 — darker than worn asphalt. Photographs read
+    // bright only because the Moon sits against pure black with no atmosphere to
+    // haze it. Painting the regolith light made the whole scene milky and, worse,
+    // pushed it over the bloom threshold so the landing site washed out.
+    var terMat = new THREE.MeshStandardMaterial({ color: 0x565149, roughness: 1.0, metalness: 0.0 });
+    var terrain = new THREE.Mesh(terGeo, terMat);
+    terrain.receiveShadow = !lowPower;
+    scene.add(terrain);
+
+
+
+    // ── Lighting: a low, hard sun and a weak regolith bounce ──
+    // Apollo landed near lunar dawn precisely so shadows would be long and the
+    // relief readable from the window. Same reason here.
+    // Vacuum: almost nothing fills the shadows except regolith bounce, so the
+    // ambient terms stay very low and the shadows stay genuinely dark.
+    scene.add(new THREE.AmbientLight(0x141419, 0.28));
+    scene.add(new THREE.HemisphereLight(0x05050a, 0x2a251e, 0.3));
+    var sun = new THREE.DirectionalLight(0xfff6e0, 1.35);
+    // Low sun angle, as Apollo deliberately chose: long shadows are what make
+    // relief readable on a surface with almost no colour variation to go by.
+    sun.position.set(-700, 260, 360);
+    if (!lowPower) {
+      sun.castShadow = true;
+      sun.shadow.mapSize.width = 1024; sun.shadow.mapSize.height = 1024;
+      sun.shadow.camera.near = 1; sun.shadow.camera.far = 1400;
+      sun.shadow.camera.left = -60; sun.shadow.camera.right = 60;
+      sun.shadow.camera.top = 60; sun.shadow.camera.bottom = -60;
+      sun.shadow.bias = -0.0015;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    }
+    scene.add(sun);
+    scene.add(sun.target);
+
+    // ── Lunar Module ──
+    // Built to the proportions the 2D art was reaching for: octagonal descent
+    // stage in gold foil, canted ascent stage, four splayed legs.
+    var lm = new THREE.Group();
+    var goldMat = new THREE.MeshStandardMaterial({ color: 0xc9a04a, metalness: 0.55, roughness: 0.52 });
+    var silverMat = new THREE.MeshStandardMaterial({ color: 0xcfd3d8, metalness: 0.5, roughness: 0.44 });
+    var darkMat = new THREE.MeshStandardMaterial({ color: 0x2f3338, metalness: 0.3, roughness: 0.8 });
+
+    var descentStage = new THREE.Mesh(new THREE.CylinderGeometry(2.05, 2.05, 1.65, 8), goldMat);
+    descentStage.position.y = 0.82;
+    lm.add(descentStage);
+
+    var ascentStage = new THREE.Mesh(new THREE.CylinderGeometry(1.32, 1.62, 1.72, 8), silverMat);
+    ascentStage.position.y = 2.5;
+    lm.add(ascentStage);
+
+    var hatch = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.96, 0.12), darkMat);
+    hatch.position.set(0, 2.36, 1.58);
+    lm.add(hatch);
+
+    // Triangular windows, canted down: the LM's forward windows point at the
+    // landing site, which is the whole reason they were shaped that way.
+    var winMat = new THREE.MeshStandardMaterial({ color: 0x16212e, metalness: 0.6, roughness: 0.25 });
+    for (var wsign = -1; wsign <= 1; wsign += 2) {
+      var win = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.34, 0.1), winMat);
+      win.position.set(wsign * 0.5, 3.0, 1.5);
+      win.rotation.x = -0.42;
+      lm.add(win);
+    }
+
+    var bell = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.78, 1.15, 14, 1, true),
+      new THREE.MeshStandardMaterial({ color: 0x4a4038, metalness: 0.65, roughness: 0.5, side: THREE.DoubleSide }));
+    bell.position.y = -0.55;
+    lm.add(bell);
+
+    var legMat = new THREE.MeshStandardMaterial({ color: 0x9aa0a6, metalness: 0.55, roughness: 0.45 });
+    for (var li = 0; li < 4; li++) {
+      var ang = (li / 4) * Math.PI * 2 + Math.PI / 4;
+      var lx = Math.cos(ang), lz = Math.sin(ang);
+      // A landing leg leans OUT and DOWN. Build it by pointing an explicit
+      // direction vector rather than composing Euler angles by hand: the axis
+      // signs for "out along +x" and "out along +z" are not mirror images, and
+      // getting one wrong splays the pads upward like spider legs.
+      var footR = 3.3, footY = -2.05, hipR = 1.9, hipY = -0.15;
+      var legVec = new THREE.Vector3(lx * (footR - hipR), footY - hipY, lz * (footR - hipR));
+      var legLen = legVec.length();
+      var strut = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, legLen, 6), legMat);
+      // A cylinder's own axis is +y; point that axis down the leg vector.
+      strut.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), legVec.clone().normalize());
+      strut.position.set(
+        lx * (hipR + (footR - hipR) * 0.5),
+        hipY + (footY - hipY) * 0.5,
+        lz * (hipR + (footR - hipR) * 0.5)
+      );
+      lm.add(strut);
+      var pad = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.5, 0.12, 12), legMat);
+      pad.position.set(lx * footR, footY, lz * footR);
+      lm.add(pad);
+      // Contact probe: the rod that tripped the CONTACT LIGHT a moment before the
+      // pads themselves touched. It hangs straight down from the pad.
+      var probe = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 1.4, 4), darkMat);
+      probe.position.set(lx * footR, footY - 0.72, lz * footR);
+      lm.add(probe);
+    }
+    if (!lowPower) {
+      lm.traverse(function (o) { if (o.isMesh) o.castShadow = true; });
+    }
+    scene.add(lm);
+
+    // ── Exhaust plume ──
+    // Additive cone plus a bright core. In vacuum there is no air to billow
+    // against, so the plume stays tight and hard-edged instead of mushrooming.
+    var plumeGrp = new THREE.Group();
+    var plumeMat = new THREE.MeshBasicMaterial({
+      color: 0xff7a1e, transparent: true, opacity: 0.42,
+      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
+    });
+    var plume = new THREE.Mesh(new THREE.ConeGeometry(0.62, 4.2, 14, 1, true), plumeMat);
+    plume.position.y = -2.1; plume.rotation.x = Math.PI;
+    plumeGrp.add(plume);
+    var coreMat = new THREE.MeshBasicMaterial({
+      color: 0xfff2c4, transparent: true, opacity: 0.85,
+      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
+    });
+    var plumeCore = new THREE.Mesh(new THREE.ConeGeometry(0.26, 2.5, 12, 1, true), coreMat);
+    plumeCore.position.y = -1.25; plumeCore.rotation.x = Math.PI;
+    plumeGrp.add(plumeCore);
+    plumeGrp.position.y = -1.1;
+    lm.add(plumeGrp);
+
+    // ── Blown dust ──
+    // The detail every Apollo landing film is remembered for: below roughly
+    // 30 m the plume sheets regolith outward in flat radial streaks. With no
+    // air it does not billow or hang — it leaves ballistically and is gone.
+    var dustN = lowPower ? 90 : 220;
+    var dustGeo = new THREE.BufferGeometry();
+    var dustPos = new Float32Array(dustN * 3);
+    var dustSeed = [];
+    for (var di = 0; di < dustN; di++) {
+      dustSeed.push({ a: Math.random() * Math.PI * 2, sp: 14 + Math.random() * 46, t: Math.random() });
+      dustPos[di * 3] = 0; dustPos[di * 3 + 1] = -9999; dustPos[di * 3 + 2] = 0;
+    }
+    dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+    var dustMat = new THREE.PointsMaterial({
+      color: 0xbcb2a0, size: 1.5, transparent: true, opacity: 0.0,
+      depthWrite: false, sizeAttenuation: true
+    });
+    var dust = new THREE.Points(dustGeo, dustMat);
+    scene.add(dust);
+
+    // ── Bloom (guarded, house pattern) ──
+    var composer = null;
+    (function setupBloom() {
+      if (window.AlloPostFXEnabled === false) return;
+      var ensure = function (cb) {
+        if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+        var urls = [
+          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
+          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
+          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
+          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
+          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
+          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+        ];
+        var i = 0;
+        (function nextScript() {
+          if (i >= urls.length) { cb(); return; }
+          var s = document.createElement('script');
+          s.src = urls[i]; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
+          document.head.appendChild(s);
+        })();
+      };
+      ensure(function () {
+        try {
+          var T = window.THREE;
+          if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass) return;
+          var res = lowPower ? 0.5 : 1;
+          var c = new T.EffectComposer(renderer);
+          c.addPass(new T.RenderPass(scene, camera));
+          // Only the plume and the sunlit rims should glow. A lower threshold
+          // blooms the regolith too, washing out the landing site exactly when
+          // a student most needs to read the ground they are dropping onto.
+          c.addPass(new T.UnrealBloomPass(
+            new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H * res))),
+            lowPower ? 0.5 : 0.7, 0.4, 0.92));
+          composer = c;
+        } catch (e) { composer = null; }
+      });
+    })();
+
+    hostEl.appendChild(glCv);
+
+    var disposed = false;
+
+    // ── Per-frame update ──
+    // Driven entirely by the 2D loop's own physics: this owns no state that
+    // could ever disagree with the graded simulation.
+    function update(s) {
+      if (disposed) return;
+      var alt = Math.max(0, s.alt);
+      var tilt = s.tilt || 0;
+      var thrust = s.thrust || 0;
+      var burning = thrust > 0.1 && s.fuel > 0;
+
+      // The lander holds a fixed world point and the GROUND moves, so craters
+      // stream past under lateral drift the way they really would from the
+      // window — and a student can see drift they are not correcting.
+      // Logarithmic, not linear. A linear map spends the whole descent so high
+      // that only the coarse skirt is in frame; compressed this way, 15 km still
+      // reads as "very high" while the last 200 m — the part actually flown —
+      // gets most of the visual range.
+      var altUnits = 2.2 + 96 * Math.log(1 + alt / 60) / Math.log(1 + 15000 / 60);
+      lm.position.set(0, altUnits, 0);
+      lm.rotation.z = -tilt;
+      var wrap = TERRAIN_SPAN / 24;
+      terrain.position.x = -((s.groundX || 0) % wrap);
+      terrain.position.z = -((s.groundZ || 0) % wrap);
+
+      sun.target.position.copy(lm.position);
+      sun.position.set(lm.position.x - 700, lm.position.y + 260, lm.position.z + 360);
+
+      // Plume length tracks throttle, with a little chug so a held burn never
+      // looks like a static decal pasted under the engine.
+      plumeGrp.visible = burning;
+      if (burning) {
+        var chug = 0.9 + Math.sin(s.tick * 0.55) * 0.07 + Math.random() * 0.05;
+        plume.scale.set(0.7 + thrust * 0.5, (0.45 + thrust * 1.15) * chug, 0.7 + thrust * 0.5);
+        plumeCore.scale.set(0.7 + thrust * 0.4, (0.45 + thrust * 1.0) * chug, 0.7 + thrust * 0.4);
+        plumeMat.opacity = 0.3 + thrust * 0.3;
+        coreMat.opacity = 0.6 + thrust * 0.3;
+      }
+
+      // Dust: only close in, only under thrust, strengthening as you descend.
+      var dustStrength = (burning && alt < 30) ? (1 - alt / 30) : 0;
+      dustMat.opacity = dustStrength * 0.55;
+      if (dustStrength > 0) {
+        var dp = dustGeo.attributes.position;
+        for (var k = 0; k < dustN; k++) {
+          var sd = dustSeed[k];
+          sd.t += 0.016 + thrust * 0.012;
+          if (sd.t > 1) { sd.t = 0; sd.a = Math.random() * Math.PI * 2; }
+          var rad = sd.t * sd.sp;
+          // Downrange bias, because the plume points where the vehicle tilts.
+          dp.setXYZ(k,
+            Math.cos(sd.a) * rad + Math.sin(tilt) * rad * 0.5,
+            0.25 + sd.t * 0.7,
+            Math.sin(sd.a) * rad);
+        }
+        dp.needsUpdate = true;
+      }
+
+      // ── Camera ──
+      // A chase view that trucks back as altitude grows, so the lander keeps a
+      // near-constant screen size while the ground scale changes under it.
+      // High up you read the approach; near the surface you read the touchdown.
+      // Framed off the COMPRESSED altitude, so the lander keeps a readable screen
+      // size all the way down instead of shrinking to a speck for most of the run.
+      var back = 12 + altUnits * 0.42;
+      var up = 4 + altUnits * 0.30;
+      camera.position.set(lm.position.x + back * 0.34, lm.position.y + up, lm.position.z + back);
+      // Look progressively further ahead of the vehicle as height grows, so high
+      // up you read the approach and low down you read the touchdown point.
+      camera.lookAt(lm.position.x, Math.max(0, lm.position.y - 2 - altUnits * 0.22), lm.position.z);
+
+      // Stars ride the camera so they never parallax — at this range they are
+      // effectively at infinity, and drifting them would read as tumbling.
+      stars.position.copy(camera.position);
+
+      try {
+        if (composer) composer.render();
+        else renderer.render(scene, camera);
+      } catch (_rErr) {
+        try { renderer.render(scene, camera); } catch (_r2Err) {}
+      }
+    }
+
+    function resize(nw, nh) {
+      if (disposed || !nw || !nh) return;
+      W = nw; H = nh;
+      camera.aspect = nw / nh;
+      camera.updateProjectionMatrix();
+      renderer.setSize(nw, nh, false);
+      if (composer && composer.setSize) { try { composer.setSize(nw, nh); } catch (_cErr) {} }
+    }
+
+    function dispose() {
+      if (disposed) return;
+      disposed = true;
+      try {
+        scene.traverse(function (o) {
+          if (o.geometry && o.geometry.dispose) o.geometry.dispose();
+          if (o.material) {
+            var mats = Array.isArray(o.material) ? o.material : [o.material];
+            mats.forEach(function (m) { if (m && m.dispose) m.dispose(); });
+          }
+        });
+        if (composer && composer.dispose) composer.dispose();
+        renderer.dispose();
+        // Free the drawing buffer outright: Retry Landing builds a whole new
+        // scene, and browsers cap simultaneous WebGL contexts hard.
+        var gl = renderer.getContext && renderer.getContext();
+        var lose = gl && gl.getExtension && gl.getExtension('WEBGL_lose_context');
+        if (lose) lose.loseContext();
+      } catch (_dErr) {}
+      if (glCv.parentElement) glCv.parentElement.removeChild(glCv);
+    }
+
+    return { update: update, resize: resize, dispose: dispose, canvas: glCv };
+  }
+
+  // ═══════════════════════════════════════════════════════════════
   // END SHARED HELPERS
   // ═══════════════════════════════════════════════════════════════
 
@@ -2770,7 +3203,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   cvEl._descentInit = true;
                   var ctx = cvEl.getContext('2d');
                   var W = cvEl.offsetWidth || 500, H = cvEl.offsetHeight || 420;
-                  cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== H)) { W = nw; H = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
+                  cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== H)) { W = nw; H = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); if (d3) d3.resize(nw, nh); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
                   var tick = 0;
                   var alt = 15000; // meters
                   var vVel = -20; // vertical velocity (negative = descending)
@@ -2792,6 +3225,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   // you across. The LM used to slide laterally bolt upright, like a lift,
                   // which hides the one idea the descent is actually teaching.
                   var tilt = 0;
+                  // Ground track. The physics only ever knew a horizontal SPEED;
+                  // nothing integrated it into a position, because a fixed side-on
+                  // view had nowhere to put one. The 3D ground needs it to slide.
+                  var groundX = 0, groundZ = 0;
+                  // The 3D scene, when it is available. Null means WebGL was refused
+                  // or Three never loaded, and the 2D world below keeps painting.
+                  var d3 = null;
+                  var d3Failed = false;
+                  var d3Ready = false;   // Three is present; the loop attaches on its next frame
 
                   // Controls
                   var keys = {};
@@ -2856,6 +3298,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
                   function drawDescent() {
                     tick++;
+                    // Attach here rather than in the ref: by the first frame React has
+                    // committed and the canvas is really in the document.
+                    if (d3Ready && !d3 && !d3Failed) bootDescent3D(window.THREE);
                     ctx.clearRect(0, 0, W, H);
 
                     if (!landed && !crashed) {
@@ -2885,6 +3330,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       if (cvEl.dataset.descentFuel !== String(_dsF)) cvEl.dataset.descentFuel = String(_dsF);
                       var _dsT = thrust.toFixed(2);
                       if (cvEl.dataset.descentThrust !== _dsT) cvEl.dataset.descentThrust = _dsT;
+
+                      // Integrate the ground track the 3D terrain slides along. Scaled
+                      // to the same 0.02 m-to-unit budget the lander altitude uses, so
+                      // crater drift and descent rate stay in the same world.
+                      groundX += hVel * 0.008;
+                      groundZ += Math.abs(vVel) * 0.002;
 
                       // Band-gated callouts, in the shape Apollo actually used: how high,
                       // how fast down. Bands rather than a live number, so a screen reader
@@ -2946,6 +3397,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       }
                     }
 
+                    // ── World ──
+                    // With the 3D scene live the canvas holds only the HUD, so it must
+                    // be CLEARED rather than filled: a fill would paint over the WebGL
+                    // canvas behind it and hide the very thing it was added for.
+                    if (d3) {
+                      // clearRect, not a fill: the opaque fill below doubled as this
+                      // loop's frame clear, and with the 3D scene behind the HUD the
+                      // canvas has to end up TRANSPARENT rather than black.
+                      ctx.clearRect(0, 0, W, H);
+                      d3.update({
+                        alt: alt, tilt: tilt, thrust: thrust, fuel: fuel,
+                        groundX: groundX, groundZ: groundZ, tick: tick
+                      });
+                    }
+                    if (!d3) {
                     // Background: black space + Moon surface below
                     ctx.fillStyle = '#000005';
                     ctx.fillRect(0, 0, W, H);
@@ -3080,6 +3546,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       }
                       ctx.globalAlpha = 1;
                     }
+                    }   // ── end of the 2D world fallback ──
 
                     // HUD
                     ctx.fillStyle = 'rgba(0,0,0,0.6)';
@@ -3121,10 +3588,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.textAlign = 'center';
                       ctx.fillStyle = '#fbbf24';
                       ctx.font = 'bold 12px monospace';
-                      ctx.fillText('\u26A0 PROGRAM ALARM 1202 \u2014 EXECUTIVE OVERFLOW', W * 0.5, H * 0.15);
+                      // Kept clear of the landed/crashed banners below (H*0.18 and
+                      // H*0.20): with both up at once the two texts overprinted and
+                      // neither could be read.
+                      ctx.fillText('\u26A0 PROGRAM ALARM 1202 \u2014 EXECUTIVE OVERFLOW', W * 0.5, H * 0.07);
                       ctx.font = '9px system-ui';
                       ctx.fillStyle = '#94a3b8';
-                      ctx.fillText('(Same alarm Armstrong got \u2014 computer overloaded but mission continues!)', W * 0.5, H * 0.19);
+                      ctx.fillText('(Same alarm Armstrong got \u2014 computer overloaded but mission continues!)', W * 0.5, H * 0.11);
                     }
 
                     // Landed!
@@ -3182,13 +3652,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.fillText('Impact V: ' + Math.abs(vVel).toFixed(1) + ' m/s (limit: 3 m/s) \u2014 use "Retry Landing" below', W * 0.5, H * 0.26);
                     }
 
-                    drawVignette(ctx, W, H, 0.2);
+                    if (!d3) drawVignette(ctx, W, H, 0.2);
                     if (!landed && !crashed && document.contains(cvEl)) requestAnimationFrame(drawDescent);
                     else {
                       // One more frame render for final state
                       if (document.contains(cvEl)) setTimeout(function() { drawDescent(); }, 100);   // stop re-rendering the frozen frame forever after unmount
                     }
                   }
+                  // ── Bring up the 3D world behind the HUD ──
+                  // The HUD canvas must go transparent for the WebGL canvas beneath it
+                  // to show through; it is opaque black by default.
+                  function bootDescent3D(THREE) {
+                    if (d3 || d3Failed || !document.contains(cvEl)) return;
+                    var host = cvEl.parentElement;
+                    if (!host) { d3Failed = true; return; }
+                    // inset:0 resolves against the nearest POSITIONED ancestor. Without
+                    // this the GL canvas escaped the 840x420 flight view and stretched
+                    // across the whole page, rendering the scene off-frame.
+                    var hostPos = '';
+                    try { hostPos = window.getComputedStyle(host).position; } catch (_gsErr) {}
+                    if (!hostPos || hostPos === 'static') host.style.position = 'relative';
+                    // Size from the HUD canvas's own box, so the two layers cannot
+                    // disagree about how big the flight view is.
+                    var hudBox = cvEl.getBoundingClientRect();
+                    var built = null;
+                    try {
+                      built = mmBuildDescent3D(THREE, host, {
+                        width: Math.round(hudBox.width) || W,
+                        height: Math.round(hudBox.height) || H
+                      });
+                    } catch (e) {
+                      console.error('[MoonMission descent] 3D scene failed, staying 2D:', e);
+                    }
+                    if (!built) { d3Failed = true; return; }
+                    d3 = built;
+                    cvEl.style.background = 'transparent';
+                    cvEl.style.position = 'relative';
+                    cvEl.style.zIndex = '1';
+                    cvEl.dataset.descent3d = 'on';
+                  }
+
+                  // Teardown rides the same ResizeObserver element the loop already
+                  // owns. React drops the wrapper on Retry Landing and on leaving the
+                  // phase, so a MutationObserver on the parent is the one signal that
+                  // fires for both without a second lifecycle to keep in step.
+                  if (typeof MutationObserver === 'function' && cvEl.parentElement && cvEl.parentElement.parentElement) {
+                    var _d3Watch = new MutationObserver(function() {
+                      if (!document.contains(cvEl)) {
+                        if (d3) { try { d3.dispose(); } catch (_dspErr) {} d3 = null; }
+                        _d3Watch.disconnect();
+                      }
+                    });
+                    _d3Watch.observe(cvEl.parentElement.parentElement, { childList: true, subtree: true });
+                  }
+
+                  // Three may already be on the page, or may still be loading. Either
+                  // way the BOOT itself waits for the first animation frame (see
+                  // drawDescent): a ref fires during React's commit, when the canvas is
+                  // not yet in the document, and an attach attempted there silently
+                  // does nothing.
+                  if (window.THREE) d3Ready = true;
+                  else if (window.StemLab && window.StemLab.ensureThree) {
+                    window.StemLab.ensureThree({ orbit: false })
+                      .then(function() { d3Ready = !!window.THREE; if (!d3Ready) d3Failed = true; })
+                      .catch(function() { d3Failed = true; console.error('[MoonMission descent] Three.js failed to load, staying 2D'); });
+                  } else { d3Failed = true; }
+
                   drawDescent();
                 }
               })
