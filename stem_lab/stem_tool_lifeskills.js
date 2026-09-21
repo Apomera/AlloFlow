@@ -792,6 +792,28 @@ window.StemLab = window.StemLab || {
   ];
 
   // ── Helper Functions ──
+  // Last-resort copy for a host that publishes no StemLab.writeClipboard. Must run
+  // synchronously inside the click: execCommand needs the gesture's transient
+  // activation, so never await anything before calling this.
+  function lifeSkillsCopyViaExecCommand(value) {
+    var focused = null, area = null, ok = false;
+    try {
+      focused = document.activeElement;
+      area = document.createElement('textarea');
+      area.value = value == null ? '' : String(value);
+      area.setAttribute('readonly', '');
+      area.setAttribute('aria-hidden', 'true');
+      area.style.cssText = 'position:fixed;left:-9999px;top:0';
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      ok = !!(document.execCommand && document.execCommand('copy'));
+    } catch (execError) { ok = false; }
+    try { if (area && area.parentNode) area.parentNode.removeChild(area); } catch (removeError) {}
+    try { if (focused && focused !== document.body && typeof focused.focus === 'function') focused.focus(); } catch (focusError) {}
+    return ok;
+  }
+
   // Recipes are measured with cups and spoons, not decimals. Showing 2.25 cups as
   // "2.3" misreported the recipe at its OWN scale, and "0.38 cup" is not something
   // a measuring cup can do. Snap to the fractions real kitchen tools have; fall
@@ -3508,20 +3530,38 @@ window.StemLab = window.StemLab || {
         var packet = buildInterviewPrepPacket();
         updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Interview prep packet ready to copy.', interviewPacketSavedAt: Date.now() });
         checkBadge('interviewPacketBuilder');
+        // The guard used to be `if (navigator.clipboard.writeText)`, which tests the
+        // WRONG thing: where the Clipboard API is absent entirely (an http: origin,
+        // an older browser, some webviews) it gave up with "Clipboard unavailable"
+        // without ever trying execCommand -- which StemLab.writeClipboard would have
+        // done. Gemini Canvas is the other half of this: it exposes the API and then
+        // refuses it by permissions policy, so presence proves nothing either way.
+        // Call the house helper unconditionally and let it choose the route
+        // (alloCopyText -> Clipboard API -> execCommand on a hidden textarea).
+        function copyFailed() {
+          updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Clipboard was blocked. Select the packet preview text to copy it.', interviewPacketSavedAt: Date.now() });
+          announceToSR(__alloT('stem.lifeskills.sr_clipboard_blocked', 'Clipboard blocked'));
+        }
+        function copyWorked() {
+          updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Interview prep packet copied to clipboard.', interviewPacketSavedAt: Date.now() });
+          announceToSR(__alloT('stem.lifeskills.sr_interview_prep_packet_copied', 'Interview prep packet copied'));
+        }
         try {
-          if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) {
-            (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(packet).then(function() {
-              updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Interview prep packet copied to clipboard.', interviewPacketSavedAt: Date.now() });
-              announceToSR(__alloT('stem.lifeskills.sr_interview_prep_packet_copied', 'Interview prep packet copied'));
-            }).catch(function() {
-              updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Clipboard was blocked. Select the packet preview text to copy it.', interviewPacketSavedAt: Date.now() });
-              announceToSR(__alloT('stem.lifeskills.sr_clipboard_blocked', 'Clipboard blocked'));
+          if (window.StemLab && typeof window.StemLab.writeClipboard === 'function') {
+            Promise.resolve(window.StemLab.writeClipboard(packet)).then(copyWorked, copyFailed);
+            return;
+          }
+          // No host helper: same order by hand, still synchronous inside the click
+          // so execCommand keeps the gesture's transient activation.
+          if (window.navigator && window.navigator.clipboard && typeof window.navigator.clipboard.writeText === 'function') {
+            Promise.resolve(window.navigator.clipboard.writeText(packet)).then(copyWorked, function() {
+              if (lifeSkillsCopyViaExecCommand(packet)) copyWorked(); else copyFailed();
             });
             return;
           }
+          if (lifeSkillsCopyViaExecCommand(packet)) { copyWorked(); return; }
         } catch(e) {}
-        updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Clipboard unavailable. Select the packet preview text to copy it.', interviewPacketSavedAt: Date.now() });
-        announceToSR(__alloT('stem.lifeskills.sr_clipboard_unavailable', 'Clipboard unavailable'));
+        copyFailed();
       }
 
       function downloadInterviewPrepPacket() {
