@@ -6345,6 +6345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // A small independent component updates readings without restarting the driving loop.
   function ParkingPracticeReadout(props) {
     var h = props.h, React = props.React;
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     var state = React.useState(function() { return parkingPracticeMetrics(props.carRef.current, props.scenario); });
     var readings = state[0], setReadings = state[1];
     React.useEffect(function() {
@@ -6352,9 +6353,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       return function() { clearInterval(timer); };
     }, [props.carRef, props.scenario]);
     var metric = function(label, value, hint, wide) { return h('div', { key: label, style: wide ? { gridColumn: '1 / -1' } : undefined }, h('dt', null, label), h('dd', null, value), h('small', null, hint)); };
-    return h('section', { className: 'rr-parking-readout', 'aria-label': 'Live parking measurements' },
+    return h('section', { className: 'rr-parking-readout', 'aria-label': t('stem.roadready.live_parking_measurements','Live parking measurements') },
       h('h3', null, 'Check your position'),
-      h('div', { className: 'rr-parking-response', 'aria-label': 'Car response' },
+      h('div', { className: 'rr-parking-response', 'aria-label': t('stem.roadready.car_response','Car response') },
         h('strong', null, readings.motionLabel + ' · ' + (readings.secured ? 'P' : readings.driveGear)),
         readings.controlNotice && h('span',{role:'status'},readings.controlNotice),
         h('span', null, 'Front wheels · ' + (Math.abs(readings.steeringDegrees) < 1 ? 'Straight' : (readings.steeringDegrees < 0 ? 'Left ' : 'Right ') + Math.round(Math.abs(readings.steeringDegrees)) + '°')),
@@ -6374,12 +6375,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   function ParkingPracticeReview(props) {
     var h = props.h, ref = props.React.useRef(null);
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     props.React.useEffect(function() { if (ref.current) ref.current.focus(); }, []);
     var message = props.hits === 0
       ? 'You parked without contact. Repeat with clearance guides hidden, or try a tighter space when you feel ready.'
       : 'You secured the car after ' + props.hits + (props.hits === 1 ? ' contact.' : ' contacts.') + ' Try again with guides: stop and check both ends before each correction.';
     var button = function(label, action) { return h('button', { type: 'button', onClick: action, style: { minHeight: '44px', padding: '8px 12px', border: '1px solid #64748b', borderRadius: '8px', background: '#1e293b', color: '#fff', cursor: 'pointer' } }, label); };
-    return h('section', { ref: ref, tabIndex: -1, 'aria-label': 'Parking practice review', className: 'rr-parking-coach', style: { borderColor: 'var(--rr-cyan, #22d3ee)' } },
+    return h('section', { ref: ref, tabIndex: -1, 'aria-label': t('stem.roadready.parking_practice_review','Parking practice review'), className: 'rr-parking-coach', style: { borderColor: 'var(--rr-cyan, #22d3ee)' } },
       h('h3', null, 'Choose your next practice'),
       h('p', null, message),
       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
@@ -6413,6 +6415,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   function ParkingPracticeControls(props) {
     var React = props.React, h = props.h, keysRef = props.keysRef, onReset = props.onReset, secure = props.secure;
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     var readState = function() {
       var car = props.carRef.current;
       return [!!car.practicePaused, !!car.settingsPaused, !!props.doneRef.current, !!car.requireParkingNeutral].map(Number).join('') + '|' + (car.driveGear || 'D') + '|' + (car.controlNotice || '');
@@ -6444,7 +6447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       hold('w', 'Forward'), hold('s', 'Reverse'), hold('a', 'Steer left'), hold('d', 'Steer right'), hold(' ', 'Brake'),
       h('button', { type: 'button', disabled: settings || finished, onClick: function() { keysRef.current._pausePractice = true; }, style: buttonStyle(settings || finished, false) }, finished ? 'Practice complete' : paused ? 'Resume practice' : 'Pause practice'),
       !props.hideReset ? h('button', { type: 'button', onClick: onReset, style: buttonStyle(false, false) }, 'Reset practice') : null,
-      props.showStatus ? h('p', { role: 'status', 'aria-label': 'Driving state', style: { flexBasis: '100%', margin: 0, fontSize: '14px', lineHeight: 1.5 } }, finished ? 'Practice complete' : settings ? 'Controls open · Practice paused' : paused ? 'Practice paused' : waiting ? 'Release the driving controls to continue.' : flags.split('|')[2] || ((flags.split('|')[1] === 'R' ? 'Reverse' : 'Drive') + ' selected · ' + flags.split('|')[1])) : null,
+      props.showStatus ? h('p', { role: 'status', 'aria-label': t('stem.roadready.driving_state','Driving state'), style: { flexBasis: '100%', margin: 0, fontSize: '14px', lineHeight: 1.5 } }, finished ? 'Practice complete' : settings ? 'Controls open · Practice paused' : paused ? 'Practice paused' : waiting ? 'Release the driving controls to continue.' : flags.split('|')[2] || ((flags.split('|')[1] === 'R' ? 'Reverse' : 'Drive') + ' selected · ' + flags.split('|')[1])) : null,
       secure ? h('button', { type: 'button', disabled: inactive || waiting, onClick: function() { keysRef.current._securePark = true; }, style: buttonStyle(inactive || waiting, true) }, finished ? 'Parking secured' : 'Park + parking brake') : null
     );
   }
@@ -6508,6 +6511,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // -10 per boundary breach. Score persists to d.parkingBest[id] via lsSet.
   function ScenarioParkingMode(props) {
     var React = props.React;
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     var h = props.h;
     var useState = React.useState;
     var useEffect = React.useEffect;
@@ -6705,10 +6709,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     return h('div', { style: { padding: '14px', maxWidth: '760px', margin: '0 auto' } },
       h('button', { onClick: props.onExit, style: { fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, marginBottom: '8px' } }, '← Menu'),
-      h(RoadReadyControlSettings,{React:React}),
-      h(RoadReadyInputHint,{React:React}),
-      scn.curb.x > 0 ? h(ParkingPracticeReadout, { h: h, React: React, carRef: carRef, scenario: scn }) : null,
-      h(ParkingPracticeControls, { h: h, React: React, keysRef: keysRef, carRef: carRef, doneRef: doneRef, onReset: resetCar, secure: !!scn.curb.x }),
+      h(RoadReadyControlSettings,{React:React, t: t}),
+      h(RoadReadyInputHint,{React:React, t: t}),
+      scn.curb.x > 0 ? h(ParkingPracticeReadout, { h: h, React: React, carRef: carRef, scenario: scn, t: t }) : null,
+      h(ParkingPracticeControls, { h: h, React: React, keysRef: keysRef, carRef: carRef, doneRef: doneRef, onReset: resetCar, secure: !!scn.curb.x, t: t }),
       h('div', { 'data-allo-fs-stage': 'true', style: { position: 'relative', background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, #1e293b)' } },
         h('button', {
           type: 'button',
@@ -6739,24 +6743,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   }
   function RoadReadyInputHint(props){
     var React=props.React,h=React.createElement,refresh=React.useState(0);
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     React.useEffect(function(){return window.StemInput?window.StemInput.subscribe(function(){refresh[1](function(n){return n+1;});}):undefined;},[]);
     var api=window.StemInput;if(!api)return null;var mode=api.preferences().mode;
     var label=function(code){var value=api.keyLabel('roadReady',code);return value===' '?'Space':String(value).toUpperCase();};
-    return h('p',{className:'rr-parking-key-help','aria-label':'Current control bindings'},mode==='controller'?
+    return h('p',{className:'rr-parking-key-help','aria-label':t('stem.roadready.current_control_bindings','Current control bindings')},mode==='controller'?
       'Steer: '+api.bindingLabel('roadReady','steer')+' · Move: '+api.bindingLabel('roadReady','throttle')+' · Brake: '+api.bindingLabel('roadReady','brake')+' · Drive/Reverse: '+api.bindingLabel('roadReady','drive')+' / '+api.bindingLabel('roadReady','reverse')+(props.maneuver?'':' · Park: '+api.bindingLabel('roadReady','park'))+' · Pause: '+api.bindingLabel('roadReady','pause'):
       'Move: '+label('KeyW')+' / '+label('KeyS')+' · Steer: '+label('KeyA')+' / '+label('KeyD')+' · Brake: '+label(props.driving?'KeyS':'Space')+' · Reset: '+label('KeyR')+(props.maneuver?'':' · Park: '+label('KeyP')));
   }
 
   function RoadReadyControlSettings(props) {
     var React=props.React,h=React.createElement,state=React.useState(false),open=state[0],setOpen=state[1];
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     if(!window.StemInput)return null;
     return h('div',{style:props.floating?{position:'absolute',top:'12px',right:'12px',zIndex:360,maxWidth:'calc(100% - 24px)'}:{margin:'10px 0'}},
       h('button',{type:'button',onClick:function(){if(props.onOpen)props.onOpen();setOpen(!open);},style:{minHeight:'44px',padding:'8px 12px',border:'1px solid #64748b',borderRadius:'8px',background:'#0f172a',color:'#fff'}},'Controls'),
-      open&&h('div',{style:props.floating?{position:'fixed',inset:'5%',zIndex:1000,overflow:'auto'}:{}},h(window.StemInput.Panel,{React:React,toolId:'roadReady',onClose:function(){setOpen(false);}}),props.floating&&h('p',{style:{padding:'12px',background:'#0f172a',color:'#fff'},'aria-label':'Driving controller guide'},'Shoulder checks: '+window.StemInput.bindingLabel('roadReady','lookLeft')+' / '+window.StemInput.bindingLabel('roadReady','lookRight')+'. Hold for the cockpit shoulder view; release to return. Drive: '+window.StemInput.bindingLabel('roadReady','drive')+' · Reverse: '+window.StemInput.bindingLabel('roadReady','reverse')+' · Park: '+window.StemInput.bindingLabel('roadReady','park')+'. Stop before shifting.')));
+      open&&h('div',{style:props.floating?{position:'fixed',inset:'5%',zIndex:1000,overflow:'auto'}:{}},h(window.StemInput.Panel,{React:React,toolId:'roadReady',onClose:function(){setOpen(false);}}),props.floating&&h('p',{style:{padding:'12px',background:'#0f172a',color:'#fff'},'aria-label':t('stem.roadready.driving_controller_guide','Driving controller guide')},'Shoulder checks: '+window.StemInput.bindingLabel('roadReady','lookLeft')+' / '+window.StemInput.bindingLabel('roadReady','lookRight')+'. Hold for the cockpit shoulder view; release to return. Drive: '+window.StemInput.bindingLabel('roadReady','drive')+' · Reverse: '+window.StemInput.bindingLabel('roadReady','reverse')+' · Park: '+window.StemInput.bindingLabel('roadReady','park')+'. Stop before shifting.')));
   }
 
   function ParkingMode(props) {
     var React = props.React;
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     var h = props.h;
     var useState = React.useState;
     var useEffect = React.useEffect;
@@ -6956,30 +6963,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       h('button', { onClick: props.onExit, className: 'rr-back-link' }, '← Parking practice'),
       h('div', { className: 'rr-lesson-eyebrow' }, 'Maneuver practice · Training car'),
       h('h2', { ref: headingRef, tabIndex: -1 }, 'Parallel parking'),
-      h(RoadReadyControlSettings,{React:React}),
+      h(RoadReadyControlSettings,{React:React, t: t}),
       h('p', { className: 'rr-parking-intro' }, 'Learn to parallel park between two cars. Follow the instructor one step at a time, using the live clearances to guide small, slow adjustments.'),
       h('div', { className: 'rr-parking-workspace' },
         h('div', { className: 'rr-parking-scene' },
           h('div', { className: 'rr-parking-scene-heading' }, 'Practice space', h('span', null, 'Score ' + st.score + '/100 · Contacts ' + st.hits)),
-          h('canvas', { ref: canvasRef, role: 'img', 'aria-label': 'Top-down parallel parking scene with the learner car, two parked cars, a right-hand curb, and the target space. Traffic travels toward the top of the scene.' }),
+          h('canvas', { ref: canvasRef, role: 'img', 'aria-label': t('stem.roadready.top_down_parallel_parking_scene_with_the_lea','Top-down parallel parking scene with the learner car, two parked cars, a right-hand curb, and the target space. Traffic travels toward the top of the scene.') }),
           h(ParkingClearanceToggle, { h: h, React: React, guidesRef: guidesRef, resetToken: st }),
-          h('div', { className: 'rr-parking-legend', 'aria-label': 'Scene legend' }, h('span', null, 'Your car'), h('span', null, 'Target space')),
-          window.StemInput ? h(RoadReadyInputHint,{React:React}) : h('p', { className: 'rr-parking-key-help' }, 'Keyboard: W/↑ forward, S/↓ reverse, A/D or arrows steer, Space brake, R reset.')
+          h('div', { className: 'rr-parking-legend', 'aria-label': t('stem.roadready.scene_legend','Scene legend') }, h('span', null, 'Your car'), h('span', null, 'Target space')),
+          window.StemInput ? h(RoadReadyInputHint,{React:React, t: t}) : h('p', { className: 'rr-parking-key-help' }, 'Keyboard: W/↑ forward, S/↓ reverse, A/D or arrows steer, Space brake, R reset.')
         ),
         h('div', { className: 'rr-parking-sidebar' },
-          h('section', { className: 'rr-parking-coach', 'aria-label': 'Parking instructor' },
+          h('section', { className: 'rr-parking-coach', 'aria-label': t('stem.roadready.parking_instructor','Parking instructor') },
             h('h3', null, st.parked ? 'Maneuver complete' : 'Your next move'),
-            h('p', { className: 'rr-parking-step', 'aria-label': 'Current parking step', style: { fontWeight: 700, color: 'var(--rr-blue, #60a5fa)' } }, st.parked ? 'All 5 steps complete' : 'Step ' + (stepRef.current + 1) + ' of 5 · ' + STEP_TITLES[stepRef.current]),
+            h('p', { className: 'rr-parking-step', 'aria-label': t('stem.roadready.current_parking_step','Current parking step'), style: { fontWeight: 700, color: 'var(--rr-blue, #60a5fa)' } }, st.parked ? 'All 5 steps complete' : 'Step ' + (stepRef.current + 1) + ' of 5 · ' + STEP_TITLES[stepRef.current]),
             h('p', { 'aria-live': 'polite', 'aria-atomic': 'true' }, feedbackText),
             h('small', null, 'Maine: finish parallel within 18 inches of the curb, with at least 2 feet to cars ahead and behind. Check for traffic and cyclists before opening a door.')
           ),
-          st.parked ? h(ParkingPracticeReview, { h: h, React: React, hits: st.hits, onRetry: function(showGuides) { guidesRef.current = showGuides; resetCar(); }, onNext: props.onNextPractice }) : null,
-          h(ParkingPracticeControls, { h: h, React: React, keysRef: keysRef, carRef: carRef, doneRef: doneRef, onReset: resetCar, secure: true }),
-          h(ParkingPracticeReadout, { h: h, React: React, carRef: carRef, scenario: practiceScenario }),
+          st.parked ? h(ParkingPracticeReview, { h: h, React: React, hits: st.hits, onRetry: function(showGuides) { guidesRef.current = showGuides; resetCar(); }, onNext: props.onNextPractice, t: t }) : null,
+          h(ParkingPracticeControls, { h: h, React: React, keysRef: keysRef, carRef: carRef, doneRef: doneRef, onReset: resetCar, secure: true, t: t }),
+          h(ParkingPracticeReadout, { h: h, React: React, carRef: carRef, scenario: practiceScenario, t: t }),
           h('details', { className: 'rr-parking-walkthrough', style: { margin: '12px 0', borderTop: '1px solid #475569', paddingTop: '8px' } },
               h('summary', { style: { cursor: 'pointer', minHeight: '44px', display: 'list-item', padding: '10px 0', fontWeight: 700 } }, 'Preview the 5-step parking guide'),
               h('p', null, 'Left and right describe the steering wheel. In reverse, the rear turns toward the side you steer; the front swings the other way. Watch both ends of the car. White rear lights indicate Reverse is selected, even when stopped; red brake lights indicate braking.'),
-              h('ol', { 'aria-label': 'Parallel parking steps', style: { paddingLeft: '24px', margin: '12px 0' } },
+              h('ol', { 'aria-label': t('stem.roadready.parallel_parking_steps','Parallel parking steps'), style: { paddingLeft: '24px', margin: '12px 0' } },
                 STEP_TITLES.map(function(title, index) {
                   return h('li', { key: title, 'aria-current': !st.parked && stepRef.current === index ? 'step' : undefined,
                     style: { marginBottom: '12px', padding: '6px', borderRadius: '6px', background: !st.parked && stepRef.current === index ? '#1e3a5f' : 'transparent' } },
@@ -7025,15 +7032,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   function ManeuverDrillSummary(props) {
     var h = props.h;
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     return h('div', { className: 'rr-maneuver-summary', style: { marginBottom: '12px' } },
       h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 16px', justifyContent: 'space-between' } },
         h('h2', { style: { margin: 0, fontSize: '20px', lineHeight: 1.3 } }, props.title),
         h('button', { type: 'button', onClick: props.onReset, style: { minHeight: '44px', padding: '8px 14px', borderRadius: '8px', border: '1px solid #64748b', background: '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '14px' } }, 'Reset practice')),
-      h('div', { role: 'status', 'aria-label': 'Practice progress', style: { display: 'flex', flexWrap: 'wrap', gap: '4px 16px', marginTop: '8px', fontSize: '14px', lineHeight: 1.5 } },
+      h('div', { role: 'status', 'aria-label': t('stem.roadready.practice_progress','Practice progress'), style: { display: 'flex', flexWrap: 'wrap', gap: '4px 16px', marginTop: '8px', fontSize: '14px', lineHeight: 1.5 } },
         h('strong', null, 'Score ' + props.score + '/100'),
         h('span', null, 'Contacts ' + props.hits),
         h('span', null, props.done ? 'Practice complete' : props.progress)),
-      window.StemInput ? h(RoadReadyInputHint, { React: props.React, maneuver: true }) : h('p', { style: { margin: '8px 0 0', fontSize: '13px', lineHeight: 1.5 } }, 'WASD or arrows to drive · Space to brake · R to reset')
+      window.StemInput ? h(RoadReadyInputHint, { React: props.React, maneuver: true, t: t }) : h('p', { style: { margin: '8px 0 0', fontSize: '13px', lineHeight: 1.5 } }, 'WASD or arrows to drive · Space to brake · R to reset')
     );
   }
 
@@ -7117,6 +7125,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   function ThreePointMode(props) {
     var React = props.React;
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     var h = props.h;
     var useEffect = React.useEffect;
     var useRef = React.useRef;
@@ -7267,14 +7276,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     return h('div', { style: { padding: '14px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
       h('button', { onClick: props.onExit, style: { marginBottom: '10px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
-      h(ManeuverDrillSummary, { h: h, React: React, title: '3-point turn', score: stVal.score, hits: stVal.hits, done: stVal.done, progress: 'Step ' + Math.min(3, stageRef.current + 1) + ' of 3', onReset: resetCar }),
+      h(ManeuverDrillSummary, { h: h, React: React, title: t('stem.roadready.3_point_turn',"3-point turn"), score: stVal.score, hits: stVal.hits, done: stVal.done, progress: 'Step ' + Math.min(3, stageRef.current + 1) + ' of 3', onReset: resetCar, t: t }),
       h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '10px', border: '1px solid #ec4899' } },
         h('canvas', { ref: canvasRef, role: 'img', 'aria-label': __alloRRT('stem.roadready.a11y_top_down_2d_three_point_turn_scene_a_narrow_roa', 'Top-down 2D three-point turn scene: a narrow road with curbs on both sides and your car. The scene updates as you drive forward, reverse, and pull forward again to reverse direction across three moves.'), style: { width: '100%', height: 'auto', aspectRatio: '650 / 480', display: 'block', borderRadius: '8px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))' } })
       ),
       h(ThreePointLiveCoach, { h: h, React: React, carRef: carRef, stageRef: stageRef, doneRef: doneRef }),
-      h(ParkingPracticeControls, { h: h, React: React, keysRef: keysRef, carRef: carRef, doneRef: doneRef, onReset: resetCar, label: 'Driving controls', hideReset: true, showStatus: true }),
-      h(RoadReadyControlSettings, { React: React }),
-      h('div', { role: 'region', 'aria-label': 'Driving instructor', style: { marginTop: '10px', padding: '12px', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
+      h(ParkingPracticeControls, { h: h, React: React, keysRef: keysRef, carRef: carRef, doneRef: doneRef, onReset: resetCar, label: 'Driving controls', hideReset: true, showStatus: true, t: t }),
+      h(RoadReadyControlSettings, { React: React, t: t }),
+      h('div', { role: 'region', 'aria-label': t('stem.roadready.driving_instructor',"Driving instructor"), style: { marginTop: '10px', padding: '12px', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
         h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ec4899', textTransform: 'uppercase', marginBottom: '6px' } }, '👨‍🏫 Instructor'),
         h('div', { style: { fontSize: '14px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.55' } }, fbText),
         h('div', { style: { marginTop: '8px', fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, 'Practice on this empty training road. Check for traffic before each move, stop before changing direction, and keep the whole car clear of both curbs.')
@@ -7382,6 +7391,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   function BackingDrillMode(props) {
     var React = props.React;
+    var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     var h = props.h;
     var useEffect = React.useEffect;
     var useRef = React.useRef;
@@ -7530,14 +7540,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     return h('div', { style: { padding: '14px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
       h('button', { onClick: props.onExit, style: { marginBottom: '10px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
-      h(ManeuverDrillSummary, { h: h, React: React, title: 'Straight backing', score: stVal.score, hits: stVal.conesHit, done: stVal.done, progress: 'Reverse straight, then stop', onReset: resetCar }),
+      h(ManeuverDrillSummary, { h: h, React: React, title: t('stem.roadready.straight_backing',"Straight backing"), score: stVal.score, hits: stVal.conesHit, done: stVal.done, progress: 'Reverse straight, then stop', onReset: resetCar, t: t }),
       h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '10px', border: '1px solid #a3a3a3' } },
         h('canvas', { ref: canvasRef, role: 'img', 'aria-label': __alloRRT('stem.roadready.a11y_top_down_2d_straight_backing_drill_scene_your_c', 'Top-down 2D straight backing drill scene: your car, a lane marked by cones on the left and right, and a target line behind your starting position. The scene updates as you reverse in a straight line between the cones with WASD or arrow keys.'), style: { width: '100%', height: 'auto', aspectRatio: '600 / 480', display: 'block', borderRadius: '8px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))' } })
       ),
       h(BackingLiveCoach, { h: h, React: React, carRef: carRef, doneRef: doneRef }),
-      h(ParkingPracticeControls, { h: h, React: React, keysRef: keysRef, carRef: carRef, doneRef: doneRef, onReset: resetCar, label: 'Driving controls', hideReset: true, showStatus: true }),
-      h(RoadReadyControlSettings, { React: React }),
-      h('div', { role: 'region', 'aria-label': 'Driving instructor', style: { marginTop: '10px', padding: '12px', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
+      h(ParkingPracticeControls, { h: h, React: React, keysRef: keysRef, carRef: carRef, doneRef: doneRef, onReset: resetCar, label: 'Driving controls', hideReset: true, showStatus: true, t: t }),
+      h(RoadReadyControlSettings, { React: React, t: t }),
+      h('div', { role: 'region', 'aria-label': t('stem.roadready.driving_instructor_2','Driving instructor'), style: { marginTop: '10px', padding: '12px', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
         h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #a3a3a3))', textTransform: 'uppercase', marginBottom: '6px' } }, '👨‍🏫 Instructor'),
         h('div', { style: { fontSize: '14px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.55' } }, fbText),
         h('div', { style: { marginTop: '6px', fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, // Name the controls, as the parking drills do. This tip mentioned only R, so a
@@ -29328,7 +29338,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('p', { className: 'rr-lesson-intro' }, 'One drive. One skill to work on. Start with Residential Street, then explore maneuvers and changing conditions at your own pace.'),
           h('section', { className: 'rr-vehicle-picker', 'aria-labelledby': 'rr-vehicle-heading' },
             h('h3', { id: 'rr-vehicle-heading' }, 'Your practice vehicle'),
-            h('div', { className: 'rr-vehicle-options', role: 'group', 'aria-label': 'Practice vehicle' },
+            h('div', { className: 'rr-vehicle-options', role: 'group', 'aria-label': __alloT('stem.roadready.practice_vehicle','Practice vehicle') },
               VEHICLES.map(function(v) {
                 var sel = v.id === selectedVehicle;
                 return h('button', { key: v.id, 'aria-pressed': sel, onClick: function() { upd('vehicle', v.id); } },
@@ -29398,7 +29408,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         ];
         return h('div', { 'data-rr-view': 'scenarioBriefing', className: 'rr-lesson-shell', style: { maxWidth: '860px' } },
           h('button', { className: 'rr-back-link', onClick: function() { upd('view', 'scenarioSelect'); } }, '← Scenarios'),
-          h('ol', { className: 'rr-briefing-steps', 'aria-label': 'Practice steps' },
+          h('ol', { className: 'rr-briefing-steps', 'aria-label': __alloT('stem.roadready.practice_steps','Practice steps') },
             h('li', null, h('span', { 'aria-hidden': 'true' }, '1'), 'Choose'),
             h('li', { 'aria-current': 'step' }, h('span', { 'aria-hidden': 'true' }, '2'), 'Prepare'),
             h('li', null, h('span', { 'aria-hidden': 'true' }, '3'), 'Practice')
@@ -29540,7 +29550,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Three.js WebGL canvas (behind). role=img + aria-label so SR users
           // hear what the 3D scene contains; the HUD canvas above carries the
           // live driving data + controls reference.
-          h(RoadReadyControlSettings,{React:React,floating:true,onOpen:function(){if(!pausedRef.current)togglePause();}}),
+          h(RoadReadyControlSettings,{React:React,floating:true,onOpen:function(){if(!pausedRef.current)togglePause();}, t: __alloT}),
           webglError
             ? h('div', {
                 style: {
@@ -36646,7 +36656,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               upd('badges', pkBadges);
               unlockBadge('Park Master');
             }
-          }
+          }, t: __alloT
         });
       }
 
@@ -36661,13 +36671,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               upd('badges', tpBadges);
               unlockBadge('K-Turn Pro');
             }
-          }
+          }, t: __alloT
         });
       }
 
       // ── BACKING DRILL (2D) ──
       if (view === 'backingDrill') {
-        return h(BackingDrillMode, { key: 'backing-mode', h: h, React: React, onExit: function() { upd('view', 'menu'); } });
+        return h(BackingDrillMode, { key: 'backing-mode', h: h, React: React, onExit: function() { upd('view', 'menu'); }, t: __alloT });
       }
 
       // ── ADDITIONAL PARKING SCENARIOS (data-driven) ──
@@ -36687,22 +36697,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         };
       };
       if (view === 'tightParallel') {
-        return h(ScenarioParkingMode, { key: 'tight-parallel-mode', React: React, h: h, scenario: PARKING_SCENARIOS.tightParallel, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('tightParallel') });
+        return h(ScenarioParkingMode, { key: 'tight-parallel-mode', React: React, h: h, scenario: PARKING_SCENARIOS.tightParallel, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('tightParallel'), t: __alloT });
       }
       if (view === 'angleBack') {
-        return h(ScenarioParkingMode, { key: 'angle-back-mode', React: React, h: h, scenario: PARKING_SCENARIOS.angleBack, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('angleBack') });
+        return h(ScenarioParkingMode, { key: 'angle-back-mode', React: React, h: h, scenario: PARKING_SCENARIOS.angleBack, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('angleBack'), t: __alloT });
       }
       if (view === 'obstacleBack') {
-        return h(ScenarioParkingMode, { key: 'obstacle-back-mode', React: React, h: h, scenario: PARKING_SCENARIOS.obstacleBack, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('obstacleBack') });
+        return h(ScenarioParkingMode, { key: 'obstacle-back-mode', React: React, h: h, scenario: PARKING_SCENARIOS.obstacleBack, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('obstacleBack'), t: __alloT });
       }
       if (view === 'uTurnNarrow') {
-        return h(ScenarioParkingMode, { key: 'uturn-narrow-mode', React: React, h: h, scenario: PARKING_SCENARIOS.uTurnNarrow, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('uTurnNarrow') });
+        return h(ScenarioParkingMode, { key: 'uturn-narrow-mode', React: React, h: h, scenario: PARKING_SCENARIOS.uTurnNarrow, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('uTurnNarrow'), t: __alloT });
       }
       if (view === 'hydrantParallel') {
-        return h(ScenarioParkingMode, { key: 'hydrant-parallel-mode', React: React, h: h, scenario: PARKING_SCENARIOS.hydrantParallel, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('hydrantParallel') });
+        return h(ScenarioParkingMode, { key: 'hydrant-parallel-mode', React: React, h: h, scenario: PARKING_SCENARIOS.hydrantParallel, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('hydrantParallel'), t: __alloT });
       }
       if (view === 'hillUphill') {
-        return h(ScenarioParkingMode, { key: 'hill-uphill-mode', React: React, h: h, scenario: PARKING_SCENARIOS.hillUphill, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('hillUphill') });
+        return h(ScenarioParkingMode, { key: 'hill-uphill-mode', React: React, h: h, scenario: PARKING_SCENARIOS.hillUphill, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('hillUphill'), t: __alloT });
       }
 
       // ── PARKING MENU (hub for all 9 scenarios) ──

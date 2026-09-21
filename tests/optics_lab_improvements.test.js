@@ -91,7 +91,10 @@ describe('Optics Lab improvement regressions', () => {
     expect(source).toContain("var polStageLine = 'I\\u2080 100.0% \\u2192 P\\u2081 '");
     expect(source).toContain('var polProjectionLine = useP3');
     expect(source).toContain("'data-op-polarization-3d-host': 'true'");
-    expect(source).toContain("'aria-roledescription': 'interactive 3D model'");
+    // Went through the translator on 2026-09-21: a bare literal has no key, so no
+    // translator is ever shown it and it ships English in all 63 packs. Assert both
+    // halves — the key, and the English a screen reader falls back to.
+    expect(source).toContain("'aria-roledescription': __alloT('stem.optics.interactive_3d_model','interactive 3D model')");
     expect(source).toContain("'data-after-p1': afterP1.toFixed(6)");
     expect(source).toContain("'data-p2-relative-transmission': polP2Transmission.toFixed(6)");
     expect(source).toContain("'data-op-polarization-stage-trail': 'true'");

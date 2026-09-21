@@ -1,0 +1,18 @@
+{
+  "stem.roadready.live_parking_measurements": "Live parking measurements",
+  "stem.roadready.car_response": "Car response",
+  "stem.roadready.parking_practice_review": "Parking practice review",
+  "stem.roadready.driving_state": "Driving state",
+  "stem.roadready.current_control_bindings": "Current control bindings",
+  "stem.roadready.driving_controller_guide": "Driving controller guide",
+  "stem.roadready.top_down_parallel_parking_scene_with_the_lea": "Top-down parallel parking scene with the learner car, two parked cars, a right-hand curb, and the target space. Traffic travels toward the top of the scene.",
+  "stem.roadready.scene_legend": "Scene legend",
+  "stem.roadready.parking_instructor": "Parking instructor",
+  "stem.roadready.current_parking_step": "Current parking step",
+  "stem.roadready.parallel_parking_steps": "Parallel parking steps",
+  "stem.roadready.practice_progress": "Practice progress",
+  "stem.roadready.driving_instructor_2": "Driving instructor",
+  "stem.roadready.practice_vehicle": "Practice vehicle",
+  "stem.roadready.practice_steps": "Practice steps",
+  "stem.roadready.maine_handbook_rules": "Read the Maine BMV rules of the road ↗"
+}

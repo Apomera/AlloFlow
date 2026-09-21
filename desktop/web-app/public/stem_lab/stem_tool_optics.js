@@ -1614,7 +1614,7 @@
             style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
           }, h('span', { 'aria-hidden': 'true' }, '⛶')),
           h('div', {
-            ref: opticsMirrorGlRef, role: 'group', tabIndex: 0, 'aria-roledescription': 'interactive 3D model',
+            ref: opticsMirrorGlRef, role: 'group', tabIndex: 0, 'aria-roledescription': __alloT('stem.optics.interactive_3d_model','interactive 3D model'),
             'data-a11y-static': 'true', 'data-op-mirror-3d-host': 'true',
             'aria-label': mirrorGlAlt + ' Drag or use arrow keys to orbit; use the mouse wheel, plus, or minus to zoom. Press zero to reset the camera.',
             'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',
@@ -1939,7 +1939,7 @@
       h('svg', {
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
         className: 'opticslab-core-svg',
-        role: 'group', 'aria-roledescription': 'interactive ray diagram',
+        role: 'group', 'aria-roledescription': __alloT('stem.optics.interactive_ray_diagram','interactive ray diagram'),
         'aria-label': 'Mirror ray diagram. ' + mt + ' mirror' + (mt !== 'plane' ? ', f = ' + (f).toFixed(1) + ' cm' : '') + ', object at ' + d_o.toFixed(1) + ' cm. ' + _mirrorVT + '. ' + mirrorPathSummary + ' Sampling screen at ' + screenCm.toFixed(1) + ' cm. ' + screenStatus,
         style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, maxWidth: 460 }
       },
@@ -3173,7 +3173,7 @@
           h('div', {
             ref: opticsRefractionGlRef, role: 'group', 'data-a11y-static': 'true',
             tabIndex: 0, 'data-op-focusable': 'true', 'data-op-refraction-3d-control': 'true',
-            'aria-roledescription': 'interactive 3D model',
+            'aria-roledescription': __alloT('stem.optics.interactive_3d_model_2','interactive 3D model'),
             'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',
             'aria-label': refraction3DAlt + ' Drag or use arrow keys to orbit. Use the mouse wheel, plus, or minus to zoom. Press zero to reset the camera.',
             style: { position: 'absolute', inset: 0 },
@@ -3329,7 +3329,7 @@
             role: 'group', tabIndex: 0, 'data-op-focusable': 'true',
             'data-a11y-static': 'true',
             'data-op-snell-window-3d-host': 'true',
-            'aria-roledescription': 'interactive 3D model',
+            'aria-roledescription': __alloT('stem.optics.interactive_3d_model_3','interactive 3D model'),
             'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',
             'aria-label': windowAlt + ' Drag or use the arrow keys to orbit, use the mouse wheel or plus and minus keys to zoom, and press 0 to reset the view.',
             style: { position: 'absolute', inset: 0 },
@@ -3512,7 +3512,7 @@
       h('svg', {
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
         className: 'opticslab-core-svg',
-        role: 'group', 'aria-roledescription': 'interactive ray diagram',
+        role: 'group', 'aria-roledescription': __alloT('stem.optics.interactive_ray_diagram_2','interactive ray diagram'),
         'aria-label': 'Refraction diagram. n1=' + n1 + ', n2=' + n2 + ', incident angle=' + theta1Deg.toFixed(1) + '°.' + (isTIR ? ' Total internal reflection.' : ' Refraction angle=' + radToDeg(theta2).toFixed(1) + '°.') + ' Interface power: ' + energySplitText,
         style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, maxWidth: 460 }
       },
@@ -4639,7 +4639,7 @@
         },
           h('div', {
             ref: opticsLensGlRef,
-            role: 'group', tabIndex: 0, 'aria-roledescription': 'interactive 3D model',
+            role: 'group', tabIndex: 0, 'aria-roledescription': __alloT('stem.optics.interactive_3d_model_4','interactive 3D model'),
             'data-a11y-static': 'true', 'data-op-lens-3d-host': 'true',
             'aria-label': lensGlAlt + ' Drag or use arrow keys to orbit; use the mouse wheel, plus, or minus to zoom. Press zero to reset the camera.',
             'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',
@@ -4869,7 +4869,7 @@
       h('svg', {
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
         className: 'opticslab-core-svg',
-        role: 'group', 'aria-roledescription': 'interactive ray diagram',
+        role: 'group', 'aria-roledescription': __alloT('stem.optics.interactive_ray_diagram_3','interactive ray diagram'),
         'aria-label': lt + ' lens, f = ' + f.toFixed(1) + ' cm, object distance ' + d_o.toFixed(1) + ' cm.'
           + (atFocal
             ? ' Object is at the focal plane; outgoing rays are parallel and the image is at infinity.'
@@ -6649,7 +6649,7 @@
       h('svg', {
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
         className: 'opticslab-core-svg',
-        role: 'group', 'aria-roledescription': 'interactive interference bench',
+        role: 'group', 'aria-roledescription': __alloT('stem.optics.interactive_interference_bench','interactive interference bench'),
         'aria-label': "Young's double-slit interference. " + (_opticsWaveModel('interference', state) === 'fresnel' ? 'Fresnel near-field' : 'Fraunhofer far-field')
           + ' propagation, wavelength ' + lambdaNm + ' nm, slit separation ' + d_mm + ' mm, screen ' + L_m + ' m. Fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' mm.',
         style: { background: '#000', borderRadius: 8, maxWidth: 460 }
@@ -7145,7 +7145,7 @@
       h('svg', {
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
         className: 'opticslab-core-svg',
-        role: 'group', 'aria-roledescription': 'interactive diffraction bench',
+        role: 'group', 'aria-roledescription': __alloT('stem.optics.interactive_diffraction_bench','interactive diffraction bench'),
         'aria-label': 'Diffraction pattern: ' + mode + ' using '
           + (_opticsWaveModel('diffraction', state) === 'fresnel' ? 'Fresnel near-field' : 'Fraunhofer far-field')
           + ' propagation at λ=' + lambdaNm + ' nm.' + (mode === 'grating'
@@ -8096,7 +8096,7 @@
       }, h),
       h('div', {
         role: 'group', tabIndex: 0, 'data-op-focusable': 'true',
-        'aria-roledescription': 'interactive 3D model',
+        'aria-roledescription': __alloT('stem.optics.interactive_3d_model_5','interactive 3D model'),
         'data-op-polarization-3d-host': 'true',
         'aria-label': __alloT('stem.optics.a11y_polarization_3d_model_drag_or_use_arrow_keys_to', 'Polarization 3D model. Drag or use arrow keys to orbit; use the mouse wheel, plus, or minus to zoom. Press zero to reset the camera.'),
         'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',
@@ -8966,7 +8966,7 @@
     }
     var polyline = model.points.map(function(point) { return px(point.x).toFixed(1) + ',' + py(point.y).toFixed(1); }).join(' ');
     var chartLabel = name.replace(/-/g, ' ') + ' evidence plot with ' + model.points.length + ' finite trials. Select a point to restore its setup.';
-    return h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'group', 'aria-roledescription': 'evidence plot', 'aria-label': chartLabel },
+    return h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'group', 'aria-roledescription': __alloT('stem.optics.evidence_plot','evidence plot'), 'aria-label': chartLabel },
       h('title', null, chartLabel),
       [0, .5, 1].map(function(frac, index) {
         var x = left + frac * (W - left - right);
@@ -12027,7 +12027,7 @@
           },
           'data-op-focusable': 'true',
           'aria-label': 'Your prediction for the ' + tab + ' experiment',
-          placeholder: 'I predict that ...',
+          placeholder: __alloT('stem.optics.i_predict_that','I predict that ...'),
           style: { display: 'block', width: '100%', minHeight: 48, boxSizing: 'border-box', resize: 'vertical', padding: '7px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, lineHeight: 1.45 }
         }),
         h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 6 } },
@@ -12119,7 +12119,7 @@
             upd('opObservationDrafts', nextDrafts);
           },
           'data-op-focusable': 'true', 'aria-label': 'Your observation for the ' + tab + ' experiment',
-          placeholder: 'I observed that ... because the diagram/calculation showed ...',
+          placeholder: __alloT('stem.optics.i_observed_that_because_the_diagram_calculat','I observed that ... because the diagram/calculation showed ...'),
           style: { width: '100%', minHeight: 48, boxSizing: 'border-box', resize: 'vertical', padding: '7px 8px', background: 'var(--allo-stem-deeper, #0b1220)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, lineHeight: 1.45 }
         }),
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginTop: 6 } },

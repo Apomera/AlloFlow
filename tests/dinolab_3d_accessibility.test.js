@@ -18,7 +18,11 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
   it('supports focused keyboard rotation with live status and cleanup', () => {
     const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_dinolab.js'), 'utf8').replace(/\r\n/g, '\n');
     expect(source).toContain("tabIndex: 0, role: 'application'");
-    expect(source).toContain("'aria-roledescription': 'Interactive 3D dinosaur reconstruction'");
+    // Went through the translator on 2026-09-21: a bare literal has no key, so no
+    // translator is ever shown it and it ships English in all 63 packs. Assert both
+    // halves — the key, and the English a screen reader falls back to. (The DOM
+    // queries further down still match on the English, via that fallback.)
+    expect(source).toContain("'aria-roledescription': __alloT('stem.dinolab.interactive_3d_dinosaur_reconstruction','Interactive 3D dinosaur reconstruction')");
     expect(source).toContain("'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown PageUp PageDown A D Home'");
     expect(source).toContain("key === 'ArrowLeft'");
     expect(source).toContain("key === 'ArrowRight'");

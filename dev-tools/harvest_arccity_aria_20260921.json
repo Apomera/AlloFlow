@@ -1,0 +1,12 @@
+{
+  "stem.arccity.shot_replay_navigation": "Shot replay navigation",
+  "stem.arccity.battle_opponent": "Battle opponent",
+  "stem.arccity.battle_arena": "Battle arena",
+  "stem.arccity.trajectory_preview_rule": "Trajectory preview rule",
+  "stem.arccity.persistent_trail_collision_rule": "Persistent trail collision rule",
+  "stem.arccity.cpu_strategy": "CPU strategy",
+  "stem.arccity.match_statistics": "Match statistics",
+  "stem.arccity.target_circuit": "Target circuit",
+  "stem.arccity.shot_loadout": "Shot loadout",
+  "stem.arccity.circuit_clash_battle_log_newest_first": "Circuit Clash battle log, newest first"
+}

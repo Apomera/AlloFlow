@@ -2760,6 +2760,9 @@
         progress: function (d) { return Math.min(5, ((d && d.badges) || []).length) + '/5'; } }
     ],
     render: function (ctx) {
+      // This tool had no translator at all: every string it speaks was a bare
+      // literal with no key, so no translator was ever shown them.
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx && ctx.React;
       if (!React) { return null; }
       var h = React.createElement;
@@ -3621,7 +3624,7 @@
               style: { cursor: 'grab' }, 'aria-hidden': 'true',
               onPointerDown: function (e) { startHandleDrag(e, function (wx, wy) { return parabolaVertexParams(wx, wy, level); }); }
             }));
-            handleEls.push(h('text', { key: 'vhl', x: sx(P.h) + 12, y: sy(P.k) - 8, fill: HANDLE, fontSize: 11, 'aria-hidden': 'true' }, t('stem.arccity.vertex_h_k', 'vertex (h, k)')));
+            handleEls.push(h('text', { key: 'vhl', x: sx(P.h) + 12, y: sy(P.k) - 8, fill: HANDLE, fontSize: 11, 'aria-hidden': 'true' }, __alloT('stem.arccity.vertex_h_k', 'vertex (h, k)')));
           } else if (level.family === 'line' && level.params.b && level.params.b.locked) {
             var xH = level.node.x, yH = fnY('line', P, xH);
             handleEls.push(h('circle', {
@@ -3666,7 +3669,7 @@
               style: { cursor: 'grab' }, 'aria-hidden': 'true',
               onPointerDown: function (e) { startHandleDrag(e, function (wx, wy) { return sineCrestParams(wx, wy, level, P.b, P.k); }); }
             }));
-            if (crestOk) handleEls.push(h('text', { key: 'shl', x: sx(xc) + 12, y: sy(yc) - 8, fill: HANDLE, fontSize: 11,'aria-hidden': 'true' }, t('stem.arccity.crest_drag_onto_a_window', 'crest — drag onto a window')));
+            if (crestOk) handleEls.push(h('text', { key: 'shl', x: sx(xc) + 12, y: sy(yc) - 8, fill: HANDLE, fontSize: 11,'aria-hidden': 'true' }, __alloT('stem.arccity.crest_drag_onto_a_window', 'crest — drag onto a window')));
           }
         }
 
@@ -4579,7 +4582,7 @@
                   : h('p', { key: 'unchanged', style: { margin: '4px 0' } }, 'Equation parameters were unchanged.'))
                 : h('p', { key: 'first', style: { margin: '4px 0' } }, battleReplayComparisonData.summary),
               battleReplayComparisonData.comparable ? h('p', { key: 'comparison-outcome', style: { margin: '4px 0 0', opacity: 0.82 } }, battleReplayComparisonData.outcomeText) : null)),
-          h('div', { key: 'controls', role: 'group', 'aria-label': 'Shot replay navigation', style: { display: 'flex', gap: 8, marginTop: 8 } },
+          h('div', { key: 'controls', role: 'group', 'aria-label': __alloT('stem.arccity.shot_replay_navigation','Shot replay navigation'), style: { display: 'flex', gap: 8, marginTop: 8 } },
             h('button', { key: 'battle-replay-prev', type: 'button', disabled: battleReplay.index === 0, 'aria-controls': 'arc-battle-replay-frame', onClick: function () { setBattleReplay(battleReplay.index - 1); }, style: { padding: '6px 9px', borderRadius: 8, border: '1px solid ' + GRID, background: 'transparent', color: INK, opacity: battleReplay.index === 0 ? 0.5 : 1 } }, 'Previous shot'),
             h('button', { key: 'battle-replay-next', type: 'button', disabled: battleReplay.index === battleReplay.total - 1, 'aria-controls': 'arc-battle-replay-frame', onClick: function () { setBattleReplay(battleReplay.index + 1); }, style: { padding: '6px 9px', borderRadius: 8, border: '1px solid ' + GRID, background: 'transparent', color: INK, opacity: battleReplay.index === battleReplay.total - 1 ? 0.5 : 1 } }, 'Next shot'))
         ) : null;
@@ -4623,43 +4626,43 @@
           h('details', { key: 'battle-options', className: 'arc-battle-options', style: { marginBottom: 10, padding: '5px 10px 9px', border: '1px solid ' + GRID, borderRadius: 9, color: INK } },
             h('summary', { key: 'battle-options-summary', 'aria-label': 'Match options. Current setup: ' + battleSetupSummary }, 'Match options'),
             h('div', { key: 'current-setup', className: 'arc-battle-secondary', style: { margin: '0 0 9px', opacity: 0.78 } }, 'Current setup: ' + battleSetupSummary),
-          h('div', { key: 'battle-mode', className: 'arc-battle-option-group', role: 'group', 'aria-label': 'Battle opponent', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
+          h('div', { key: 'battle-mode', className: 'arc-battle-option-group', role: 'group', 'aria-label': __alloT('stem.arccity.battle_opponent','Battle opponent'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
             h('button', { key: 'cpu', type: 'button', 'aria-pressed': battle.mode === 'cpu', onClick: function () { setBattleMode('cpu'); }, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid ' + (battle.mode === 'cpu' ? BEAM : GRID), background: battle.mode === 'cpu' ? 'rgba(34,211,238,0.14)' : 'transparent', color: INK, fontWeight: 700 } }, 'Solo vs CPU'),
             h('button', { key: 'hotseat', type: 'button', 'aria-pressed': battle.mode === 'hotseat', onClick: function () { setBattleMode('hotseat'); }, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid ' + (battle.mode === 'hotseat' ? BEAM : GRID), background: battle.mode === 'hotseat' ? 'rgba(34,211,238,0.14)' : 'transparent', color: INK, fontWeight: 700 } }, 'Two-player hot-seat'),
             h('button', { key: 'toggle-3d', type: 'button', 'aria-pressed': !!S.battle3d, onClick: toggleBattle3D, style: { marginLeft: 'auto', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + GRID, background: S.battle3d ? 'rgba(244,114,182,0.13)' : 'transparent', color: INK, fontWeight: 700 } }, S.battle3d ? 'Hide 3D arena' : 'Show 3D arena')),
-          h('div', { key: 'battle-arena', className: 'arc-battle-option-group', role: 'group', 'aria-label': 'Battle arena', style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 5 } },
+          h('div', { key: 'battle-arena', className: 'arc-battle-option-group', role: 'group', 'aria-label': __alloT('stem.arccity.battle_arena','Battle arena'), style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 5 } },
             h('span', { key: 'label', style: { color: INK, fontSize: 12, fontWeight: 800 } }, 'Arena:'),
             Object.keys(BATTLE_ARENAS).map(function (arenaId) {
               var arenaOption = BATTLE_ARENAS[arenaId], active = battle.arena === arenaId;
               return h('button', { key: 'battle-arena-' + arenaId, type: 'button', 'aria-pressed': active, onClick: function () { setBattleArena(arenaId); }, style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (active ? '#a78bfa' : GRID), background: active ? 'rgba(167,139,250,0.14)' : 'transparent', color: INK } }, arenaOption.title);
             })),
           h('div', { key: 'battle-arena-blurb', style: { color: INK, fontSize: 11, opacity: 0.72, marginBottom: 8 } }, battleArenaConfig.blurb),
-          h('div', { key: 'battle-assist', className: 'arc-battle-option-group', role: 'group', 'aria-label': 'Trajectory preview rule', style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
+          h('div', { key: 'battle-assist', className: 'arc-battle-option-group', role: 'group', 'aria-label': __alloT('stem.arccity.trajectory_preview_rule','Trajectory preview rule'), style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
             h('span', { key: 'label', style: { color: INK, fontSize: 12, fontWeight: 800 } }, 'Aim rule:'),
             h('button', { key: 'battle-assist-guided', type: 'button', 'aria-pressed': battle.assist === 'guided', onClick: function () { setBattleAssist('guided'); }, style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (battle.assist === 'guided' ? BEAM : GRID), background: battle.assist === 'guided' ? 'rgba(34,211,238,0.14)' : 'transparent', color: INK } }, 'Guided preview'),
             h('button', { key: 'battle-assist-challenge', type: 'button', 'aria-pressed': battle.assist === 'challenge', onClick: function () { setBattleAssist('challenge'); }, style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (battle.assist === 'challenge' ? '#facc15' : GRID), background: battle.assist === 'challenge' ? 'rgba(250,204,21,0.12)' : 'transparent', color: INK } }, 'Predict then fire')),
-          battle.mode === 'hotseat' ? h('div', { key: 'battle-trail-rule', className: 'arc-battle-option-group', role: 'group', 'aria-label': 'Persistent trail collision rule', style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
+          battle.mode === 'hotseat' ? h('div', { key: 'battle-trail-rule', className: 'arc-battle-option-group', role: 'group', 'aria-label': __alloT('stem.arccity.persistent_trail_collision_rule','Persistent trail collision rule'), style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
             h('span', { key: 'label', style: { color: INK, fontSize: 12, fontWeight: 800 } }, 'Trail rule:'),
             h('button', { key: 'battle-trails-visual', type: 'button', 'aria-pressed': battle.trailRule === 'visual', onClick: function () { setBattleTrailRule('visual'); }, style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (battle.trailRule === 'visual' ? BEAM : GRID), background: battle.trailRule === 'visual' ? 'rgba(34,211,238,0.14)' : 'transparent', color: INK } }, 'Visual only'),
             h('button', { key: 'battle-trails-walls', type: 'button', 'aria-pressed': battle.trailRule === 'walls', onClick: function () { setBattleTrailRule('walls'); }, style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (battle.trailRule === 'walls' ? '#ef4444' : GRID), background: battle.trailRule === 'walls' ? 'rgba(239,68,68,0.12)' : 'transparent', color: INK } }, 'Trail walls'),
             h('span', { key: 'note', style: { color: INK, fontSize: 11, opacity: 0.72 } }, battle.trailRule === 'walls' ? 'Failed opposing trails block later shots.' : 'Trails show history without blocking.')) : null,
-          battle.mode === 'cpu' ? h('div', { key: 'battle-cpu-level', className: 'arc-battle-option-group', role: 'group', 'aria-label': 'CPU strategy', style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
+          battle.mode === 'cpu' ? h('div', { key: 'battle-cpu-level', className: 'arc-battle-option-group', role: 'group', 'aria-label': __alloT('stem.arccity.cpu_strategy','CPU strategy'), style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
             h('span', { key: 'label', style: { color: INK, fontSize: 12, fontWeight: 800 } }, 'CPU strategy:'),
             h('button', { key: 'cpu-level-practice', type: 'button', 'aria-pressed': battle.cpuLevel === 'practice', onClick: function () { setBattleCpuLevel('practice'); }, style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (battle.cpuLevel === 'practice' ? '#f472b6' : GRID), background: battle.cpuLevel === 'practice' ? 'rgba(244,114,182,0.13)' : 'transparent', color: INK } }, 'Practice probe'),
             h('button', { key: 'cpu-level-standard', type: 'button', 'aria-pressed': battle.cpuLevel === 'standard', onClick: function () { setBattleCpuLevel('standard'); }, style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (battle.cpuLevel === 'standard' ? '#f472b6' : GRID), background: battle.cpuLevel === 'standard' ? 'rgba(244,114,182,0.13)' : 'transparent', color: INK } }, 'Standard solver')) : null),
           h('div', { key: 'score', className: 'arc-battle-score', style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 7 } }, battleShieldCard(0), battleShieldCard(1)),
-          h('div', { key: 'battle-stats', className: 'arc-battle-secondary', 'aria-label': 'Match statistics', style: { display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 10, color: INK, fontSize: 11, opacity: 0.82 } }, [0, 1].map(function (seat) {
+          h('div', { key: 'battle-stats', className: 'arc-battle-secondary', 'aria-label': __alloT('stem.arccity.match_statistics','Match statistics'), style: { display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 10, color: INK, fontSize: 11, opacity: 0.82 } }, [0, 1].map(function (seat) {
             var stat = battle.stats[seat], accuracy = stat.shots ? Math.round(stat.captures / stat.shots * 100) : 0;
             return h('span', { key: 'battle-stat-' + seat }, battlePlayerLabel(battle, seat) + ': ' + stat.captures + ' captures / ' + stat.shots + ' shots (' + accuracy + '%)');
           })),
           S.battle3d ? h(ArcCityBattle3D, { key: 'battle3d-' + battle.arena + '-' + THEME, React: React, battle: battle, theme: THEME }) : null,
           battleSvg,
           h('div', { key: 'turn', role: 'status', style: { margin: '10px 0', padding: '8px 10px', borderRadius: 8, background: battle.status === 'won' ? 'rgba(52,211,153,0.14)' : (battleHandoff ? 'rgba(250,204,21,0.11)' : 'rgba(148,163,184,0.09)'), color: INK, fontWeight: 800, fontSize: 13 } }, battle.status === 'won' ? battlePlayerLabel(battle, battle.winner) + ' won in round ' + battle.round + '.' : (battleHandoff ? 'Pass the device to ' + battlePlayerLabel(battle, battleSeat) + '. Controls remain hidden until they confirm.' : 'Round ' + battle.round + ' — ' + battlePlayerLabel(battle, battleSeat) + ' turn')),
-          h('div', { key: 'lane-group', className: 'arc-battle-lanes', role: 'group', 'aria-label': 'Target circuit', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 12 } }, battleLaneMeta.map(function (meta, laneNo) {
+          h('div', { key: 'lane-group', className: 'arc-battle-lanes', role: 'group', 'aria-label': __alloT('stem.arccity.target_circuit','Target circuit'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 12 } }, battleLaneMeta.map(function (meta, laneNo) {
             var selected = laneNo === battleLaneIndex, available = battle.shields[battleDefender][laneNo];
             return h('button', { key: 'lane-' + laneNo, type: 'button', disabled: battleLocked || !available, 'aria-pressed': selected, onClick: function () { setBattleLane(laneNo); }, style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + (selected ? meta.color : GRID), background: selected ? 'rgba(34,211,238,0.11)' : 'transparent', color: INK, opacity: !available ? 0.48 : (battleLocked ? 0.55 : 1), fontWeight: selected ? 800 : 600, cursor: battleLocked || !available ? 'not-allowed' : 'pointer' } }, meta.short + (available ? ' relay' : ' captured'));
           })),
-          !battleHandoff && battle.trailRule === 'walls' && battle.status !== 'won' ? h('div', { key: 'battle-weapon', className: 'arc-battle-loadout', role: 'group', 'aria-label': 'Shot loadout', style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
+          !battleHandoff && battle.trailRule === 'walls' && battle.status !== 'won' ? h('div', { key: 'battle-weapon', className: 'arc-battle-loadout', role: 'group', 'aria-label': __alloT('stem.arccity.shot_loadout','Shot loadout'), style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
             h('span', { key: 'label', style: { color: INK, fontSize: 12, fontWeight: 800 } }, 'Loadout:'),
             h('button', { key: 'battle-weapon-standard', type: 'button', 'aria-pressed': battleWeapon === 'standard', onClick: function () { setBattleWeapon('standard'); }, style: { padding: '6px 9px', borderRadius: 8, border: '1px solid ' + (battleWeapon === 'standard' ? BEAM : GRID), background: battleWeapon === 'standard' ? 'rgba(34,211,238,0.14)' : 'transparent', color: INK } }, 'Standard trail'),
             h('button', { key: 'battle-weapon-phase', type: 'button', disabled: battle.phaseCharges[battleSeat] < 1, 'aria-pressed': battleWeapon === 'phase', onClick: function () { setBattleWeapon('phase'); }, style: { padding: '6px 9px', borderRadius: 8, border: '1px solid ' + (battleWeapon === 'phase' ? '#ffffff' : GRID), background: battleWeapon === 'phase' ? 'rgba(255,255,255,0.14)' : 'transparent', color: INK, opacity: battle.phaseCharges[battleSeat] > 0 ? 1 : 0.5 } }, 'Phase pulse (' + battle.phaseCharges[battleSeat] + ')'),
@@ -4676,7 +4679,7 @@
           h('div', { key: 'preview-readout', className: 'arc-battle-secondary', style: { marginTop: 9, color: battlePreviewVisible && battlePreviewResult.result === 'hit' ? NODE_ON : PAL.warn, fontSize: 12 } }, battle.status === 'won' ? 'Match complete. Choose Rematch to keep these rules.' : (battleHandoff ? 'Hot-seat handoff pending. No equation or trajectory is visible.' : (battle.mode === 'cpu' && battleSeat === 1 ? 'CPU controls and trajectory are hidden. Run the CPU turn when ready.' : (battlePreviewVisible ? 'Prediction: ' + describeResult(battleLevel, battlePreviewResult, 1) : 'Challenge aim: trajectory and result stay hidden until Fire.')))),
           battleRecapPanel,
           h('h3', { key: 'log-title', style: { color: INK, fontSize: 14, margin: '14px 0 5px' } }, 'Battle log'),
-          h('ol', { key: 'battle-log', 'aria-label': 'Circuit Clash battle log, newest first', style: { margin: 0, paddingLeft: 22, color: INK, fontSize: 12, lineHeight: 1.5 } }, battle.log.map(function (entry, logIndex) { return h('li', { key: 'blog-' + battle.shots + '-' + logIndex }, entry); })));
+          h('ol', { key: 'battle-log', 'aria-label': __alloT('stem.arccity.circuit_clash_battle_log_newest_first','Circuit Clash battle log, newest first'), style: { margin: 0, paddingLeft: 22, color: INK, fontSize: 12, lineHeight: 1.5 } }, battle.log.map(function (entry, logIndex) { return h('li', { key: 'blog-' + battle.shots + '-' + logIndex }, entry); })));
 
         var body = view === 'teacher'
           ? teacherPanel
