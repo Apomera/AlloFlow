@@ -22,10 +22,20 @@ const PATHS = [
 ];
 const src = readFileSync(PATHS[0], 'utf8');
 
+// `var labels = [` occurs TWICE in this tool. The first is the investigation
+// step list (Predict / Observe storm / Trace water); the second is the water
+// cycle stage labels this suite is about. `indexOf` returns the first, so the
+// region was a 1.2 MB slab starting in the wrong block and ending before the
+// label painting code ever began -- every pin below then looked for chip
+// drawing in a region that could not contain it.
+//
+// A duplicated anchor is exactly the failure tests/helpers/anchored_slice.js
+// exists for: the guards above passed, because both anchors were FOUND. Found
+// is not the same as unambiguous.
 function labelRegion(text) {
-  const start = text.indexOf('var labels = [');
-  const end = text.indexOf('CLIMATE LAB', start);
+  const start = text.indexOf("var labels = [\n");
   expect(start, 'stage label block present').toBeGreaterThan(-1);
+  const end = text.indexOf('CLIMATE LAB', start);
   expect(end, 'stage label block bounded').toBeGreaterThan(start);
   return text.slice(start, end);
 }
