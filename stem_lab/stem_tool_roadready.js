@@ -36304,7 +36304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#8b5cf6', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.key_insights', '🔑 Key Insights')),
             h('div', null, '• ', h('b', null, __alloT('stem.roadready.cd_a', 'Cd × A')), __alloT('stem.roadready.is_the_single_number_that_determines_d', ' is the single number that determines drag. Lower = less fuel wasted. The EV (0.53) beats the truck (1.34) by 2.5×.')),
             h('div', null, '• ', h('b', null, __alloT('stem.roadready.mass', 'Mass')), __alloT('stem.roadready.determines_braking_distance_heavier_sl', ' determines braking distance (heavier = slower to stop) and rolling resistance. The school bus is 7.6× heavier than the sedan.')),
-            h('div', null, '• ', h('b', null, __alloT('stem.roadready.stopping_distance', 'Stopping distance')), __alloT('stem.roadready.example_at_55_mph_sedan_200_ft_school_', ' example at 55 mph: sedan ~200 ft, school bus ~480 ft (on dry). Physics is non-negotiable.')),
+            h('div', null, '• ', h('b', null, __alloT('stem.roadready.stopping_distance', 'Stopping distance')), __alloT('stem.roadready.example_at_55_mph_sedan_200_ft_school_', ' example at 55 mph on dry pavement: a sedan needs about 260 ft to stop — 120 ft of that is just reacting — while a loaded bus or truck needs closer to 390 ft. Physics is non-negotiable.')),
             h('div', null, __alloT('stem.roadready.hybrid_city_highway_mpg_because_regene', '• Hybrid city > highway MPG because regenerative braking recovers energy in stop-and-go. Gas cars do the opposite.'))
           )
         );

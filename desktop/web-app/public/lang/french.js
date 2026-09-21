@@ -71955,7 +71955,7 @@
       "every_year_roadside_workers_and_respon": "Every year roadside workers and responders die on Maine shoulders because drivers don't move over. The law exists because \"rubbernecking at 65 mph\" kills people.",
       "everyone_out_run_at_a_45_angle_toward_": "Everyone OUT. Run AT A 45° ANGLE TOWARD the oncoming train. Debris from an impact launches FORWARD in the train's direction of travel — running toward the train puts you behind the debris field.",
       "everything_they_don_t_teach_you_in_dri": "Everything they don't teach you in driver's ed — the money, the negotiation, the traps.",
-      "example_at_55_mph_sedan_200_ft_school_": " example at 55 mph: sedan ~200 ft, school bus ~480 ft (on dry). Physics is non-negotiable.",
+      "example_at_55_mph_sedan_200_ft_school_": " example at 55 mph on dry pavement: a sedan needs about 260 ft to stop — 120 ft of that is just reacting — while a loaded bus or truck needs closer to 390 ft. Physics is non-negotiable.",
       "exchange_info": "Exchange Info",
       "executive_function_planning_the_drive": "Executive function — planning the drive",
       "explain_why_does_v_dominate_stopping_d": "Explain: why does v² dominate stopping distance? What surprised you about grade?",

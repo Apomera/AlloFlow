@@ -73149,7 +73149,7 @@
       "mass": "Mass",
       "determines_braking_distance_heavier_sl": " determines braking distance (heavier = slower to stop) and rolling resistance. The school bus is 7.6× heavier than the sedan.",
       "stopping_distance": "Stopping distance",
-      "example_at_55_mph_sedan_200_ft_school_": " example at 55 mph: sedan ~200 ft, school bus ~480 ft (on dry). Physics is non-negotiable.",
+      "example_at_55_mph_sedan_200_ft_school_": " example at 55 mph on dry pavement: a sedan needs about 260 ft to stop — 120 ft of that is just reacting — while a loaded bus or truck needs closer to 390 ft. Physics is non-negotiable.",
       "hybrid_city_highway_mpg_because_regene": "• Hybrid city > highway MPG because regenerative braking recovers energy in stop-and-go. Gas cars do the opposite.",
       "menu_55": "← Menu",
       "emergency_vehicle_response_drill": "Emergency Vehicle Response Drill",

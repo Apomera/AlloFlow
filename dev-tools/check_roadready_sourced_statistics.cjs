@@ -140,6 +140,20 @@ const CLAIMS = [
       'adult 275-day refusal suspension under §2521',
   },
   {
+    label: 'sedan stopping distance at 55 mph (must match the tool\'s own model)',
+    re: /a sedan needs about (\d{3}) ft to stop/,
+    min: 255, max: 268,
+    source: 'Derived from the tool\'s own stoppingDistance(): mu 0.72, 1.5 s reaction = 261 ft. ' +
+      'The card previously said ~200 ft, which the model does not produce at any reaction time.',
+  },
+  {
+    label: 'heavy-vehicle stopping distance at 55 mph',
+    re: /a loaded bus or truck needs closer to (\d{3}) ft/,
+    min: 370, max: 410,
+    source: 'FMCSA ~390 ft at 55 mph for a loaded heavy vehicle. The card previously said 480 ft, ' +
+      'which implies mu 0.28 — a WET-road value for a claim explicitly about dry pavement.',
+  },
+  {
     label: 'all-season rubber stiffening threshold',
     re: /All-season rubber starts stiffening below about (\d{2})°F/,
     min: 45, max: 45,
