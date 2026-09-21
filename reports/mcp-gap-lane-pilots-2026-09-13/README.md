@@ -64,7 +64,16 @@ Finding 6 was fixed the same day (pipeline `_auditSliceRangeBounds` bounds the a
 
 **What the client did.** The two slice audits were answered from the rendered pages (both 95: born-digital, tagged, descriptive links, tagged lists; one moderate non-text contrast finding for the pale mint chart series). The structured extraction reproduced all five pages as 53 blocks with the four charts as described images. HTML audits were answered from measurements (`tools/html_facts.cjs` extracts each section, computes heading order, landmarks, alt, tables, links, lists, controls and inline-style contrast; `tools/compose_audit.cjs` turns the facts into the reply). Fix passes were answered with `tools/fix_nces.cjs`, an idempotent string fixer.
 
-**Pipeline observations from this run (new):**
+**Pipeline observations from this run (new).** All six were closed in `0309732e9` later the same
+evening, after this section was written; verified again 2026-09-21 against
+`doc_pipeline_source.jsx`. They are kept here as the record of what the run found, not as open
+work. Per item: (1) the injected toolbar now satisfies Label in Name — `Pick extracted` /
+"Pick extracted image from this document", `Generate (AI)` / "Generate (AI) illustration from the
+description"; (2) the teal control is `#0f766e` (white on it is 4.76:1) and the `#64748b`-on-
+`#f1f5f9` hint is gone from that block; (3) `aria-hidden` is no longer set on spans that contain a
+link; (4) the chart table is emitted with a `<caption>` naming the chart it was read from; (5) and
+(6) were client-side and needed no pipeline change.
+
 
 1. **The candidate gate rejects any chunk whose form-control names change, and that strands an IBM failure the pipeline itself created.** The image placeholder toolbar the pipeline injects carries buttons whose `aria-label` does not contain the visible text (`Pick extracted` / `Pick from extracted images`, `✨ Generate (AI)` / `Generate an AI illustration from the description`). IBM Equal Access fails them (`label_name_visible`, 4 nodes). Pass 1 chunks 2 and 5 renamed the labels and were rejected `form-state-changed`, which also discarded the chunks' other fixes. The only remaining Equal Access failure at the end is this one, and it is what holds the headline at 76 while the AI layer is at 95 and axe at 100. The fix belongs at generation time: make the injected labels start with the visible text.
 2. **Two more injected-UI contrast defects:** the 11 px placeholder hint (`#64748b` on the `#f1f5f9` box, 4.34:1) and the teal Generate control (white on `#0d9488`, 3.74:1). Both were fixed by the client in pass 2 by changing the inline colours; the deterministic contrast fixer had reported `Fixed 0` for them in pass 1.
