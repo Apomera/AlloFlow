@@ -823,6 +823,43 @@ Registry discovery does not turn this into a remote connector: it remains the sa
 Desktop extension, and documents stay local unless the user deliberately invokes a Gemini-dependent
 tool.
 
+## Comparing providers before you trust one
+
+The prompts in this pipeline were written and tuned against Gemini. Nothing establishes that they
+hold on Claude, GPT, or a local vision model, so before relying on a different backend for real
+documents, run the benchmark against it and compare the report to a Gemini baseline.
+
+```bash
+# 1. Baseline, on whatever this machine is already configured for
+node dev-tools/benchmark_document_remediation.cjs --mode local --trials 3 --out-dir runs/bench-baseline
+
+# 2. The candidate provider. Any backend from "Answering with a model other than Gemini" works;
+#    a local one keeps every document on this machine.
+ALLOFLOW_MCP_MODEL_BACKEND=ollama ALLOFLOW_MCP_MODEL_NAME=minicpm-v   node dev-tools/benchmark_document_remediation.cjs --mode local --trials 3 --out-dir runs/bench-ollama
+
+# 3. Compare. Each report names its provider in the first lines.
+head -6 runs/bench-baseline/benchmark-report.md runs/bench-ollama/benchmark-report.md
+```
+
+The out-dir must be empty or absent. Each report records the resolved backend, model, vision model
+and base URL, and whether the provider is cloud or local; it records where a key came from
+(`env:ANTHROPIC_API_KEY`) and never the key itself.
+
+Read the **Readiness** column, not just the pass count. A provider that completes every trial while
+moving documents from `review-required` to `blocked`, or that stops producing `afterScore` at all,
+is worse than the baseline even at 7/7. `--mode local` exercises the portable and scripted cases
+without sending anything to a cloud provider; `--mode live` is the only mode that transmits
+documents, and it is opt-in per run.
+
+A backend that is configured but not listening is reported honestly rather than silently skipped:
+the transport raises a network error, retries, and the pipeline then refuses with
+`BaselineAuditRequiredError` instead of scoring a document it never audited. If you see that, start
+the model server — do not read the failure as a prompt-quality result.
+
+Scripted and portable cases measure plumbing, timing and the honesty gates. They do **not** measure
+remediation quality against human judgement; only the calibration corpus in
+`tests/fixtures/pdf_calibration/` does that, and it needs a human reviewer.
+
 ## Tests
 
 `npm run verify:mcp-parity` runs the capability regression gate plus protocol, validation, direct
