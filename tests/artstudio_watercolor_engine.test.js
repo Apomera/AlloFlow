@@ -149,6 +149,15 @@ afterEach(async () => {
   delete globalThis.IS_REACT_ACT_ENVIRONMENT;
 });
 
+// These two tests run a full multi-step pigment/water simulation. Measured on
+// an otherwise-quiet box they take 3167ms and 4547ms -- against vitest's 5000ms
+// default that is a 9% margin, and they failed intermittently under normal
+// machine load (other sessions routinely run 30+ node processes here). The work
+// is legitimate, so the budget is stated explicitly rather than left to default.
+// If either starts timing out at this value, the simulation got slower -- profile
+// it; do not simply raise the number.
+const WATERCOLOR_SIM_TIMEOUT_MS = 20000;
+
 describe('Art Studio watercolor simulation engine', () => {
   it('deposits water and pigment and restores compact undo/redo states', async () => {
     const { engine } = await mountWatercolor();
@@ -323,7 +332,7 @@ describe('Art Studio watercolor simulation engine', () => {
 
     expect(sum(humid.water)).toBeGreaterThan(sum(dry.water) * 1.15);
     expect(sum(humid.bloom)).toBeGreaterThan(sum(dry.bloom));
-  });
+  }, WATERCOLOR_SIM_TIMEOUT_MS);
 
   it('models sizing-driven surface retention, fiber fixation, and adjustable bloom response', async () => {
     const { engine } = await mountWatercolor();
@@ -367,5 +376,5 @@ describe('Art Studio watercolor simulation engine', () => {
     const bloomResistant = engine.captureState();
 
     expect(sum(bloomResponsive.bloom)).toBeGreaterThan(sum(bloomResistant.bloom));
-  });
+  }, WATERCOLOR_SIM_TIMEOUT_MS);
 });
