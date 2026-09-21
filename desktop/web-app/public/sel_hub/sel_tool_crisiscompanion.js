@@ -1403,6 +1403,21 @@ window.SelHub = window.SelHub || {
     color: 'teal',
     category: 'peer-support',
     render: function(ctx) {
+      // ── i18n ──────────────────────────────────────────────────────────────
+      // The same shim 106 STEM tools use. Two things it must do, both learned
+      // the hard way:
+      //   • carry the English literal, because the SEL shell's own fallback
+      //     ECHOES THE KEY (sel_hub_module.js:2114) — a missing pack entry
+      //     would otherwise show `sel.crisiscompanion.x` to a student in crisis;
+      //   • live HERE, in render, not at module scope. CRISIS_RESOURCES is
+      //     built once at load; translating it there would freeze the language
+      //     at first paint and ignore a mid-session language switch.
+      var __alloT = function (key, fallback) {
+        var fn = (ctx && typeof ctx.t === 'function') ? ctx.t : null;
+        var value = null;
+        if (fn) { try { value = fn(key, fallback); } catch (e) { value = null; } }
+        return (value == null) ? (fallback != null ? fallback : key) : value;
+      };
       // ── Host theme remap (consumes ctx.theme) — canonical SEL light-base pattern ──
       var _ccCTheme = (ctx && ctx.theme) || {};
       var _ccCHC = !!_ccCTheme.isContrast, _ccCDark = !_ccCHC && !!_ccCTheme.isDark;
@@ -2429,8 +2444,8 @@ window.SelHub = window.SelHub || {
           return h('div', { key: r.id, style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderLeft: '6px solid ' + TEAL, borderRadius: '12px', padding: '14px 16px', marginBottom: '10px' } },
             h('div', { style: { fontSize: '15px', fontWeight: 800, color: TEAL_DARK, marginBottom: '4px' } }, r.label),
             h('div', { style: { fontSize: '14px', color: SLATE_TEXT, fontFamily: 'monospace', fontWeight: 700, marginBottom: '8px' } }, r.contact),
-            h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.6, margin: '0 0 6px' } }, h('strong', null, 'Who: '), r.who),
-            h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.6, margin: '0 0 6px' } }, h('strong', null, 'What: '), r.what),
+            h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.6, margin: '0 0 6px' } }, h('strong', null, __alloT('sel.crisiscompanion.label_who', 'Who: ')), __alloT('sel.crisiscompanion.res_' + r.id + '_who', r.who)),
+            h('p', { style: { fontSize: '13px', color: SLATE_TEXT, lineHeight: 1.6, margin: '0 0 6px' } }, h('strong', null, __alloT('sel.crisiscompanion.label_what', 'What: ')), __alloT('sel.crisiscompanion.res_' + r.id + '_what', r.what)),
             h('p', { style: { fontSize: '13px', color: TEAL_DARK, lineHeight: 1.6, margin: '0 0 6px', background: _ccC(TEAL_LIGHT), padding: '8px 10px', borderRadius: '6px' } },
               h('strong', null, 'What to say: '), r.script),
             r.url && h('div', { style: { fontSize: '12px', color: _ccC('#0369a1'), fontFamily: 'monospace' } }, '🔗 ', r.url)

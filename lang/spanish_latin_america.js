@@ -88903,5 +88903,37 @@
   "catalog_not_started": "Sin empezar",
   "catalog_in_progress": "En curso",
   "catalog_completed": "Completado",
-  "catalog_all_guidelines": "Todas las pautas"
+  "catalog_all_guidelines": "Todas las pautas",
+  "sel": {
+    "crisiscompanion": {
+      "label_who": "Para quién: ",
+      "label_what": "Qué ofrece: ",
+      "res_988_who": "Cualquier persona en EE. UU., incluidos los jóvenes preocupados por un amigo",
+      "res_988_what": "Gratuito, confidencial, 24/7. Consejeros de crisis capacitados. Te conecta con servicios locales si hace falta.",
+      "res_crisistext_who": "Cualquier persona en EE. UU., Canadá, el Reino Unido o Irlanda (los códigos varían según el país). Escribir por mensaje va bien si no quieres hablar en voz alta.",
+      "res_crisistext_what": "Gratuito, confidencial, 24/7. Te responde una persona real, un consejero capacitado. La espera promedio es de menos de 5 minutos.",
+      "res_trevor_who": "Jóvenes LGBTQ+ y las amistades que los apoyan (EE. UU.)",
+      "res_trevor_what": "Gratuito, confidencial, 24/7. Capacitación específica para crisis de jóvenes LGBTQ+. Los jóvenes LGBTQ+ enfrentan tasas más altas de pensamientos suicidas; este recurso está hecho para esa realidad.",
+      "res_911_who": "Cuando alguien corre peligro físico inmediato en este momento (EE. UU.)",
+      "res_911_what": "Para emergencias activas: alguien se está haciendo daño, ha tomado algo o está en peligro ahora mismo. Envía policía, bomberos y servicios médicos de emergencia.",
+      "res_211_who": "Cualquier persona en EE. UU. o Canadá. Te dirige automáticamente a los servicios de tu zona según tu código de área.",
+      "res_211_what": "Gratuito, confidencial, 24/7. Te conecta con servicios locales de crisis de salud mental, ayuda alimentaria, vivienda, apoyo familiar y cientos de otros programas comunitarios. Lo gestionan United Way y organizaciones locales sin fines de lucro. Es distinto del 988: el 211 es la línea más amplia de servicios comunitarios.",
+      "res_namilocator_who": "Cualquier persona en EE. UU. Escribe tu código postal y verás tu sede local de NAMI.",
+      "res_namilocator_what": "Cada estado tiene al menos una sede de NAMI y muchos tienen varias. Las sedes locales ofrecen grupos gratuitos de apoyo familiar, programas de recuperación dirigidos por pares, clases de formación (Family-to-Family y Ending the Silence en las escuelas) y líneas de apoyo. Línea de ayuda de NAMI: 1-800-950-6264.",
+      "res_samhsa_who": "Cualquier persona en EE. UU. que busque atención continua de salud mental o de consumo de sustancias",
+      "res_samhsa_what": "Base de datos federal con unos 13,000 centros de tratamiento: terapia, psiquiatría, tratamiento intensivo ambulatorio, residencial y de diagnóstico dual. Puedes filtrar por código postal, por el seguro que tengas, por idioma y por los servicios que ofrecen. SAMHSA también tiene una línea nacional 24/7 (1-800-662-4357) que da referencias gratuitas.",
+      "res_befrienders_who": "Cualquier persona fuera de EE. UU. que busque apoyo en crisis en su propio país",
+      "res_befrienders_what": "Una red mundial de centros de apoyo emocional con voluntarios en más de 30 países. Escribe tu país en el sitio y obtendrás los números de ayuda y las opciones de chat de tu zona. La mayoría de las sedes son gratuitas, confidenciales y funcionan 24/7.",
+      "res_iasp_who": "Cualquier persona fuera de EE. UU. Directorio mundial y completo de líneas de crisis.",
+      "res_iasp_what": "IASP mantiene la lista internacional más completa de líneas de crisis para la prevención del suicidio. Se puede buscar por país, con opciones de teléfono, mensajes de texto y chat en línea. Suele ser el mejor punto de partida si Befrienders no tiene tu país en la lista.",
+      "res_mainecrisis_who": "Cualquier persona en Maine. Conecta con los servicios de crisis de todo el estado.",
+      "res_mainecrisis_what": "Gratuito, confidencial, 24/7. Consejeros que están en Maine. Lo opera The Opportunity Alliance para el sur de Maine, junto con otros proveedores regionales en todo el estado. Pueden enviar equipos móviles de crisis locales cuando hace falta.",
+      "res_opportunityalliance_who": "Niños, adolescentes, familias y adultos del condado de Cumberland y de todo Maine",
+      "res_opportunityalliance_what": "Dirige el equipo de Respuesta Móvil de Crisis del condado de Cumberland: las personas que de verdad acuden a donde estás cuando el 1-888-568-1112 las envía en Portland y las comunidades cercanas. También ofrece Servicios de Salud Conductual Infantil, salud conductual a domicilio, apoyo familiar y la base del 211 Maine para el sur del estado.",
+      "res_namimaine_who": "Cualquier persona en Maine que busque información, apoyo o referencias de salud mental",
+      "res_namimaine_what": "No es una línea de crisis, sino un buen recurso de horario diurno para orientarte dentro de los sistemas de salud mental, el apoyo entre pares y los programas locales. También dirige el programa escolar Ending the Silence, con presentadores de edad estudiantil que enseñan sobre la enfermedad mental directamente en las aulas de secundaria y preparatoria.",
+      "res_school_who": "Todas las escuelas públicas de EE. UU. tienen consejeros capacitados; la mayoría de las escuelas secundarias y preparatorias también tienen un psicólogo escolar",
+      "res_school_what": "Están capacitados para esto. Están obligados a mantener la confidencialidad, salvo cuando hay un riesgo para tu seguridad. Pueden conectarte con atención fuera de la escuela, hablar con tus padres contigo presente y acompañarte durante todo el proceso."
+    }
+  }
 }
