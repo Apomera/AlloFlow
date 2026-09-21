@@ -3468,7 +3468,7 @@ var SOCIAL_MEDIA_RESEARCH = [
     {
       id: 'smr1',
       finding: 'Heavy use linked to depression',
-      research: 'Multiple longitudinal studies show 3+ hours daily increases depression risk, especially in teen girls',
+      research: 'Some studies report a link between heavy social media use and depression, especially for teen girls \u2014 but the size of that link is genuinely disputed (Orben & Przybylski, 2019, put screen time at under 1% of the variation in well-being), and it is not settled which way the causation runs',
       implications: 'Limit use, especially evening',
       practicalApplication: 'Set time limits, especially on image-based platforms'
     },

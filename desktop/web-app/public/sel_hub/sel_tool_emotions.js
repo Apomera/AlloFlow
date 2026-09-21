@@ -13209,7 +13209,7 @@ window.SelHub = window.SelHub || {
       ],
       thoughtFirstStrategies: [
         { name: 'Other-Focus', steps: ['Ask others questions, listen', 'Take attention off your own performance', 'Be curious'], whyForThisEmotion: 'Self-focus fuels social anxiety; other-focus dissolves it.' },
-        { name: 'Spotlight Effect Check', steps: ['Remind: people notice you far less than you think (Gilovich)', 'They are worried about themselves', 'You are mostly invisible'], whyForThisEmotion: 'Spotlight effect research shows we overestimate observers by ~50%.' },
+        { name: 'Spotlight Effect Check', steps: ['Remind: people notice you far less than you think (Gilovich)', 'They are worried about themselves', 'You are mostly invisible'], whyForThisEmotion: 'Spotlight effect research (Gilovich) shows we consistently overestimate how much others notice us \u2014 the exact size varies by situation.' },
         { name: 'Mistake Quota', steps: ['Plan to make 3 small mistakes on purpose today', 'Notice nothing happens', 'Lower the stakes'], whyForThisEmotion: 'Deliberate imperfection breaks the perfection trap.' },
         { name: 'Post-Event Worry Block', steps: ['When replaying after, say, \'Not now, worry window is at 7pm\'', 'Postpone the replay', 'Mostly forget by then'], whyForThisEmotion: 'Post-event processing (PEP) maintains social anxiety; postponement breaks it.' }
       ],

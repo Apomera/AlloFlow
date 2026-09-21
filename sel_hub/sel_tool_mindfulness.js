@@ -9508,7 +9508,7 @@ var VISUAL_ANCHORS = [
         'Body-image distress — if mirrors are hard today, do the practice with eyes closed.'
       ],
       pairsWithScripts: ['body_scan_full', 'identity_check_in', 'compassion_for_body'],
-      research: 'Enclothed cognition research shows clothing choices affect mood, focus, and self-perception (Adam & Galinsky, 2012).'
+      research: 'Many people notice that what they wear changes how they feel \u2014 that experience is worth paying attention to. The lab-coat study behind the term \"enclothed cognition\" (Adam & Galinsky, 2012) failed a high-powered replication, so treat this as a personal observation to test, not an established finding.'
     },
     {
       id: 'morning_breakfast_bite',
@@ -12046,7 +12046,7 @@ var VISUAL_ANCHORS = [
         'Anxiety — the softness helps.'
       ],
       pairsWithScripts: ['evening_wind_down', 'body_scan_full', 'transition_pause'],
-      research: 'Enclothed cognition affects mood and behavior (Adam & Galinsky, 2012).'
+      research: 'Clothing may change how you feel; the original enclothed-cognition study (Adam & Galinsky, 2012) did not replicate, so this is a personal experiment, not settled science.'
     },
     {
       id: 'evening_three_things',
@@ -12476,7 +12476,7 @@ var VISUAL_ANCHORS = [
       ],
       classroomFriendly: true,
       visibleness: 'subtle',
-      research: 'Postural studies show even brief mindful standing reduces self-reported stress (Carney et al., 2010, expansive posture).'
+      research: 'Standing tall may shift how you FEEL in the moment; the sense of steadiness is real and worth using. The expansive-posture study often cited here (Carney et al., 2010) did not hold up — Ranehill et al. (2015) found no hormonal or behavioural effect and the first author publicly withdrew support for it in 2016. Only the felt-confidence part replicated.'
     },
     {
       id: 'tree_pose',
