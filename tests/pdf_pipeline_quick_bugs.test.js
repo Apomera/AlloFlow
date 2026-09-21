@@ -339,8 +339,12 @@ describe("B6b: a sliced audit honours the caller\'s page range (2026-09-13 NCES 
   const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
   it('threads options.pageRange from the audit entry point into both slice call sites', () => {
     expect(dp).toMatch(/const _auditPageRange = \(options && Array\.isArray\(options\.pageRange\) && options\.pageRange\.length === 2\) \? options\.pageRange : null;/);
-    expect(dp.match(/_auditPdfInSlices\(base64Data, auditPrompt, _auditCancelled, _auditPageRange\)/g)).toHaveLength(2);
-    expect(dp).toMatch(/const _auditPdfInSlices = async \(base64Data, auditPromptBase, shouldCancel, pageRange\) =>/);
+    // Arity-agnostic: the contract is that BOTH call sites forward _auditPageRange in the
+    // pageRange position, not how many parameters the helper has gained since. Pinning the
+    // exact 4-arg call went red when an abort `signal` was added as a 5th parameter, which
+    // strengthened the helper rather than breaking it.
+    expect(dp.match(/_auditPdfInSlices\(base64Data, auditPrompt, _auditCancelled, _auditPageRange\b/g)).toHaveLength(2);
+    expect(dp).toMatch(/const _auditPdfInSlices = async \(base64Data, auditPromptBase, shouldCancel, pageRange\b/);
   });
   it('bounds the slice ranges to the requested pages and falls back to the whole document on a bad range', () => {
     expect(dp).toMatch(/const _rangeIdx = _auditSliceRangeBounds\(totalPages, pageRange\);/);
@@ -361,7 +365,9 @@ describe('B6: large-document page-slice audit (chunk-first router + reactive fal
   // ── Source-pins: the design is present and the safety net is preserved ──
   it('defines the _auditPdfInSlices helper + tunable threshold constants', () => {
     // Gained a shouldCancel callback so a slice run can bail between slices.
-    expect(dp).toMatch(/const _auditPdfInSlices = async \(base64Data, auditPromptBase, shouldCancel, pageRange\)/); // pageRange added 2026-09-13 (bounded slices)
+    // Arity-agnostic on purpose — see the B6b note above. pageRange added 2026-09-13
+    // (bounded slices); an abort `signal` followed it as a 5th parameter.
+    expect(dp).toMatch(/const _auditPdfInSlices = async \(base64Data, auditPromptBase, shouldCancel, pageRange\b/);
     expect(dp).toMatch(/_AUDIT_SLICE_BYTES_KB = 9000/);
     expect(dp).toMatch(/_AUDIT_SLICE_PAGES\b\s*=\s*20/);
     expect(dp).toMatch(/_AUDIT_SLICE_MAX\s*=\s*40/);

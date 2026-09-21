@@ -28,6 +28,24 @@ const { Script } = require('vm');
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * The single definition of the simple-IIFE wrapper output. `build()` below and
+ * build.js's own compile table BOTH go through this, so a module compiled by the
+ * deploy path is byte-identical to one compiled by its per-module build script.
+ * Before this was shared, build.js carried a second copy of the wrapper that
+ * omitted `footer` entirely and skipped the source trim, so every deploy that
+ * touched doc_pipeline_module.js silently truncated the RemediationReview block
+ * (~13 KB) and the next real rebuild put it back.
+ */
+function wrapSimpleIife({ source, guardKey, footer = '' }) {
+  return (
+`(function(){"use strict";
+if(window.AlloModules&&window.AlloModules.${guardKey}){console.log("[CDN] ${guardKey} already loaded, skipping"); return;}
+${source.trim()}
+${footer ? footer.trim() + '\n' : ''}})();
+`);
+}
+
 function build({ name, guardKey, footer = '', logTag, writeFile = writeBuildFile }) {
   const ROOT = __dirname;
   const SOURCE = path.join(ROOT, name + '_source.jsx');
@@ -42,12 +60,7 @@ function build({ name, guardKey, footer = '', logTag, writeFile = writeBuildFile
 
   const source = fs.readFileSync(SOURCE, 'utf-8');
 
-  const outputCode =
-`(function(){"use strict";
-if(window.AlloModules&&window.AlloModules.${guardKey}){console.log("[CDN] ${guardKey} already loaded, skipping"); return;}
-${source.trim()}
-${footer ? footer.trim() + '\n' : ''}})();
-`;
+  const outputCode = wrapSimpleIife({ source, guardKey, footer });
 
   writeFile(OUTPUT, outputCode, 'utf-8');
   try {
@@ -73,7 +86,7 @@ ${footer ? footer.trim() + '\n' : ''}})();
   console.log('[' + tag + '] Synced to ' + DEPLOY_OUT);
 }
 
-module.exports = { build };
+module.exports = { build, wrapSimpleIife };
 
 function writeBuildFile(file, contents, encoding) {
   const temporary = file + ".build-" + process.pid + ".tmp";

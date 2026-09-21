@@ -1842,19 +1842,19 @@ const COMPILE_PAIRS = [
         modPath: path.join(ROOT, 'doc_pipeline_module.js'),
         publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'doc_pipeline_module.js'),
         wrap(src) {
-            // Idempotency guard + IIFE. Source.jsx already contains its own
-            // window.AlloModules registration, so the footer only needs to close
-            // the IIFE. Matches the hand-compiled output users have been producing.
-            // Match the bash one-liner output byte-for-byte so recompiling an
-            // already-compiled module produces no diff. Source.jsx typically
-            // ends with its own trailing newline; we just append the footer.
-            const trailingNewline = src.endsWith('\n') ? '' : '\n';
-            return (
-                '(function(){"use strict";\n'
-                + 'if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}\n'
-                + src + trailingNewline
-                + '})();\n'
-            );
+            // Delegate to the SAME wrapper _build_doc_pipeline_module.js uses, so a
+            // module compiled by this deploy path is byte-identical to one compiled by
+            // the per-module build script (tests/doc_pipeline_build_parity.test.js pins
+            // exactly that). This used to be a second, hand-maintained copy of the
+            // wrapper that omitted the remediation_review_helpers.js footer, so every
+            // deploy touching doc_pipeline_module.js truncated the ~13 KB
+            // AlloModules.RemediationReview block and the next real rebuild restored it
+            // — the artifact oscillated and the parity gate stayed red.
+            return require('./_build_simple_iife_module.js').wrapSimpleIife({
+                source: src,
+                guardKey: 'DocPipelineModule',
+                footer: fs.readFileSync(path.join(ROOT, 'remediation_review_helpers.js'), 'utf-8'),
+            });
         },
     },
     {
