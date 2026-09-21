@@ -2470,7 +2470,17 @@
           if (!tool || !tool.render) return null;
           var rendered;
           try { rendered = tool.render(ctx); }
-          catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
+          catch(e) {
+            console.error('[StemLab] Error rendering ' + id, e);
+            // A crash and a deliberate `return null` both used to arrive here
+            // as a bare null, which the bridge rendered as an EMPTY PANEL: no
+            // message, no retry, no explanation. 146 tools contain `return
+            // null` somewhere, so the bridge cannot tell the two apart on its
+            // own — record the failure so it can.
+            this._lastRenderError = { id: id, message: (e && e.message) || String(e), at: Date.now() };
+            return null;
+          }
+          this._lastRenderError = null;
           if (rendered == null) return null;
           // ── Keyless-list guard ──
           // If a tool's render() returns a BARE ARRAY (fragment-style, e.g.
@@ -3248,16 +3258,36 @@
 
       // ── STEAM Lab XP System (per-activity cap: 100 XP) ──
       var stemXpData = (labToolData && labToolData._stemXP) || {};
-      function awardStemXP(activityId, points, reason) {
+      // onCredited(pts) is optional and fires with the amount ACTUALLY credited
+      // (0 when the cap refused it), for callers that word their own message.
+      function awardStemXP(activityId, points, reason, onCredited) {
+        // The amount the learner is TOLD must be the amount actually CREDITED.
+        //
+        // This used to compute the announced figure out here from a render-time
+        // snapshot, while the credit was computed inside the updater from fresh
+        // `prev`. Two awards batched in one tick near the 100 cap both read the
+        // same stale snapshot, so an activity at 80 that received 15 + 15
+        // announced "+15" twice and credited 20. ctx.awardXP is exposed to
+        // every tool, so batched awards are ordinary.
+        //
+        // The updater stays pure — it only records what it did — and the
+        // feedback below reads that real number.
         var _awardedPts = Math.min(points, Math.max(0, 100 - getStemXP(activityId)));
-        if (_awardedPts <= 0) return;
+        if (_awardedPts <= 0) {
+          // Callers that describe the award themselves still need to hear that
+          // nothing landed, or they keep promising XP the cap already refused.
+          if (typeof onCredited === 'function') { try { onCredited(0); } catch (_) {} }
+          return;
+        }
+        var _creditedRef = { pts: 0 };
         setLabToolData(function (prev) {
           var xpState = Object.assign({}, (prev && prev._stemXP) || {});
           var actData = Object.assign({}, xpState[activityId] || { earned: 0, log: [] });
           var cap = 100;
           var canEarn = Math.max(0, cap - actData.earned);
           var awarded = Math.min(points, canEarn);
-          if (awarded <= 0) return prev;
+          if (awarded <= 0) { _creditedRef.pts = 0; return prev; }
+          _creditedRef.pts = awarded;
           actData.earned += awarded;
           actData.log = (actData.log || []).concat([{
             pts: awarded, reason: reason || 'Activity', ts: Date.now()
@@ -3271,25 +3301,36 @@
           xpState._total = total;
           return Object.assign({}, prev, { _stemXP: xpState });
         });
-        if (addToast) addToast(t('stem.common.u2b50') + _awardedPts + ' XP: ' + (reason || 'STEM activity') + '!', 'success');
-        announceToSR('Earned ' + _awardedPts + ' XP for ' + (reason || 'STEM activity'));
-        // ── XP Chime (ascending two-note) ──
-        stemBeep(523, 0.08, 0.10); // C5
-        setTimeout(function () { stemBeep(659, 0.12, 0.10); }, 80); // E5
-        // ── Floating +XP Popup ──
-        if (!_reduceMotion) {
-          _stemXpPopupCounter.current += 1;
-          var popupId = _stemXpPopupCounter.current;
-          _stemXpPopups.current = _stemXpPopups.current.concat([{ id: popupId, pts: _awardedPts, ts: Date.now() }]);
-          _setXpPopupTick(function (t) { return t + 1; });
-          setTimeout(function () {
-            _stemXpPopups.current = _stemXpPopups.current.filter(function (p) { return p.id !== popupId; });
+        // Feedback runs after the updater has been applied, so _creditedRef
+        // holds the real award. setTimeout(0) rather than the synchronous path
+        // because React may defer the updater; a 0ms timer lands after the
+        // commit in every mode.
+        setTimeout(function () {
+          var pts = _creditedRef.pts;
+          if (typeof onCredited === 'function') { try { onCredited(pts); } catch (_) {} }
+          // The cap absorbed it entirely — a batched sibling award got there
+          // first. Staying silent is right: nothing was earned.
+          if (pts <= 0) return;
+          if (addToast) addToast(t('stem.common.u2b50') + pts + ' XP: ' + (reason || 'STEM activity') + '!', 'success');
+          announceToSR('Earned ' + pts + ' XP for ' + (reason || 'STEM activity'));
+          // ── XP Chime (ascending two-note) ──
+          stemBeep(523, 0.08, 0.10); // C5
+          setTimeout(function () { stemBeep(659, 0.12, 0.10); }, 80); // E5
+          // ── Floating +XP Popup ──
+          if (!_reduceMotion) {
+            _stemXpPopupCounter.current += 1;
+            var popupId = _stemXpPopupCounter.current;
+            _stemXpPopups.current = _stemXpPopups.current.concat([{ id: popupId, pts: pts, ts: Date.now() }]);
             _setXpPopupTick(function (t) { return t + 1; });
-          }, 1400);
-        }
-        // ── Badge Pulse ──
-        _setXpBadgePulse(true);
-        setTimeout(function () { _setXpBadgePulse(false); }, 600);
+            setTimeout(function () {
+              _stemXpPopups.current = _stemXpPopups.current.filter(function (p) { return p.id !== popupId; });
+              _setXpPopupTick(function (t) { return t + 1; });
+            }, 1400);
+          }
+          // ── Badge Pulse ──
+          _setXpBadgePulse(true);
+          setTimeout(function () { _setXpBadgePulse(false); }, 600);
+        }, 0);
       }
       function getStemXP(activityId) {
         return (stemXpData[activityId] && stemXpData[activityId].earned) || 0;
@@ -3487,6 +3528,31 @@
       });
       var [_activeStationId, _setActiveStationId] = React.useState(null);
 
+      // Persist stations and SAY SO WHEN IT FAILS.
+      //
+      // Two of the three station writes had no try/catch at all, inside click
+      // handlers. A throw (quota full, private mode, a locked school profile)
+      // landed AFTER _setSavedStations, so the station appeared in the list,
+      // the builder never closed, no toast fired, and the work was gone on
+      // reload — which reads to a teacher as "the Save button did nothing", so
+      // they press it again and make a duplicate.
+      //
+      // Returns true on success. Callers must only close the builder and clear
+      // the form when it returns true, so a failed save leaves the filled-in
+      // form on screen to retry or copy from.
+      function _persistStations(next, failureMessage) {
+        try {
+          localStorage.setItem('alloflow_stem_stations', JSON.stringify(next));
+          return true;
+        } catch (e) {
+          console.warn('[StationBuilder] stations not saved:', (e && e.message) || e);
+          var msg = failureMessage || 'This device would not save your station. It is still on screen — write down the tools you picked before you close this page.';
+          if (typeof addToast === 'function') addToast(msg, 'error');
+          if (typeof announceToSR === 'function') announceToSR(msg);
+          return false;
+        }
+      }
+
       // ═══ QUEST SYSTEM ═══
       var [_stationQuests, _setStationQuests] = React.useState([]);
       var [_questPickerOpen, _setQuestPickerOpen] = React.useState(false);
@@ -3496,6 +3562,29 @@
       var [_questHudCollapsed, _setQuestHudCollapsed] = React.useState(false);
       var [_showXpPanel, _setShowXpPanel] = React.useState(false);
       var [_questFreeResponseOpen, _setQuestFreeResponseOpen] = React.useState(null); // qid of expanded free response
+
+      // Live mirrors of the overlay state for the global Escape handler.
+      // That listener is re-bound only when [stemLabTool, stemLabTab,
+      // _showKeyHelp] change, so reading these values directly would capture
+      // a stale render and close the wrong layer.
+      var _showControlsRef = React.useRef(false);
+      var _showKeyHelpRef = React.useRef(false);
+      var _showXpPanelRef = React.useRef(false);
+      var _showStationBuilderRef = React.useRef(false);
+      var _stationBuilderDirtyRef = React.useRef(false);
+      _showControlsRef.current = _showControls;
+      _showKeyHelpRef.current = _showKeyHelp;
+      _showXpPanelRef.current = _showXpPanel;
+      _showStationBuilderRef.current = _showStationBuilder;
+      // "Dirty" is any field the teacher actually filled in. The time estimate
+      // defaults to '20' and is not on its own evidence of work.
+      _stationBuilderDirtyRef.current = !!(
+        (_stationName && _stationName.trim()) ||
+        (_stationNote && _stationNote.trim()) ||
+        _stationGrade ||
+        (_stationQuests && _stationQuests.length) ||
+        Object.keys(_stationTools || {}).some(function (k) { return _stationTools[k]; })
+      );
 
       // Quest progress persistence
       React.useEffect(function() {
@@ -3529,10 +3618,28 @@
               }
               var totalBonus = 10 + streakBonus;
               var streakMsg = streakBonus > 0 ? ' \uD83D\uDD25 Streak bonus +' + streakBonus + '!' : '';
-              if (addToast) addToast('\uD83C\uDFC6 Quest complete: ' + q.label + ' (+' + totalBonus + ' XP)' + streakMsg, 'success');
+              // Every quest bonus in the app shares one activity id
+              // ('questBonus'), which is capped at 100 like any other. A
+              // station with eight or more quests therefore stopped paying out
+              // while each toast still promised "+10 XP" \u2014 150 announced
+              // against 100 credited over twelve quests. The quest is still
+              // complete and still celebrated; only the XP clause is dropped
+              // once the cap has nothing left to give.
+              (function (label, bonus, streakText) {
+                var _questLabel = label;
+                var _announce = function (credited) {
+                  var xpPart = credited > 0 ? ' (+' + credited + ' XP)' : '';
+                  var streakPart = credited > 0 ? streakText : '';
+                  if (addToast) addToast('\uD83C\uDFC6 Quest complete: ' + _questLabel + xpPart + streakPart, 'success');
+                };
+                if (typeof awardStemXP === 'function') {
+                  awardStemXP('questBonus', bonus, 'Quest: ' + _questLabel + (streakBonus ? ' (streak)' : ''), _announce);
+                } else {
+                  _announce(0);
+                }
+              })(q.label, totalBonus, streakMsg);
               if (typeof announceToSR === 'function') announceToSR('Quest completed: ' + q.label);
               if (typeof stemCelebrate === 'function') stemCelebrate();
-              if (typeof awardStemXP === 'function') awardStemXP('questBonus', totalBonus, 'Quest: ' + q.label + (streakBonus ? ' (streak)' : ''));
             }
           });
           _setQuestProgress(updated);
@@ -3587,7 +3694,43 @@
       function _getToolQuestHooks(toolId) {
         if (!toolId || !window.StemLab || !window.StemLab._registry) return [];
         var toolConfig = window.StemLab._registry[toolId];
-        return (toolConfig && toolConfig.questHooks) || [];
+        var hooks = (toolConfig && toolConfig.questHooks) || [];
+        return Array.isArray(hooks) ? hooks : [];
+      }
+
+      // A questHook belongs to a TOOL PLUGIN — 119 separate files declare them,
+      // with over a thousand check() functions between them, most of which
+      // dereference their argument directly (`function(u){ return u.compAdded
+      // >= 1; }`). They were called raw from two places:
+      //
+      //   _getQuestDisplay   — runs during RENDER of the Quest HUD. One throw
+      //                        there unmounts the React tree, so a single bad
+      //                        hook in any one plugin blanked the WHOLE STEAM
+      //                        Lab, not just its own quest row. Nothing inside
+      //                        the hub catches it; the host's ErrorBoundary
+      //                        does not wrap the hub.
+      //   _evaluateQuests    — runs in an effect. A throw there stopped quest
+      //                        auto-completion for the entire station, so
+      //                        quests AFTER the bad one never completed even
+      //                        though their own hooks were fine.
+      //
+      // The hub cannot vet 1183 plugin functions, so it must not trust any of
+      // them. A hook that throws is treated as "not satisfied yet" and logged
+      // once per hook, which degrades one quest instead of the session.
+      var _questHookWarned = {};
+      function _safeQuestHookCall(hook, which, state, fallback, toolId) {
+        var fn = hook && hook[which];
+        if (typeof fn !== 'function') return fallback;
+        try {
+          return fn(state);
+        } catch (e) {
+          var key = (toolId || '?') + '.' + ((hook && hook.id) || '?') + '.' + which;
+          if (!_questHookWarned[key]) {
+            _questHookWarned[key] = true;
+            console.warn('[QuestSystem] questHook ' + key + ' threw; treating as incomplete:', (e && e.message) || e);
+          }
+          return fallback;
+        }
       }
 
       // Resolve where a tool keeps its quest-visible state. Most tools store it
@@ -3669,10 +3812,11 @@
             case 'toolQuest':
               // Tool-specific quest — look up the hook's check function
               var hooks = _getToolQuestHooks(q.toolId);
-              var hook = hooks.find(function(h) { return h.id === q.params.hookId; });
+              var hook = hooks.find(function(h) { return h && h.id === q.params.hookId; });
               if (hook && hook.check) {
                 var toolState2 = _getToolQuestState(q.toolId, toolData);
-                complete = hook.check(toolState2);
+                // A throwing hook must not stop the quests after it.
+                complete = !!_safeQuestHookCall(hook, 'check', toolState2, false, q.toolId);
               }
               break;
           }
@@ -3726,12 +3870,20 @@
             return { done: false, text: len + '/' + minL + ' chars', pct: Math.min(100, len / minL * 100) };
           case 'toolQuest':
             var hooks2 = _getToolQuestHooks(quest.toolId);
-            var hook2 = hooks2.find(function(h2) { return h2.id === quest.params.hookId; });
+            var hook2 = hooks2.find(function(h2) { return h2 && h2.id === quest.params.hookId; });
             if (hook2 && hook2.progress) {
               var ts2 = _getToolQuestState(quest.toolId, toolData);
-              var progText = hook2.progress(ts2);
-              var isDone2 = hook2.check ? hook2.check(ts2) : false;
-              return { done: isDone2, text: progText, pct: isDone2 ? 100 : 50 };
+              // This runs during render. An unguarded throw here took the whole
+              // Lab down, so both calls go through the safe wrapper and a
+              // failing hook degrades to the same text as a missing one.
+              var isDone2 = !!_safeQuestHookCall(hook2, 'check', ts2, false, quest.toolId);
+              var progText = _safeQuestHookCall(hook2, 'progress', ts2, null, quest.toolId);
+              // A hook may also return something React cannot render (an
+              // object, or nothing at all). Keep the row rendering either way.
+              if (progText === null || progText === undefined || typeof progText === 'object') {
+                progText = isDone2 ? 'Complete' : 'In progress';
+              }
+              return { done: isDone2, text: String(progText), pct: isDone2 ? 100 : 50 };
             }
             return { done: false, text: 'In progress', pct: 25 };
           default:
@@ -3749,7 +3901,9 @@
           if (!existing) {
             var updated = _savedStations.concat([props.activeStation]);
             _setSavedStations(updated);
-            try { localStorage.setItem('alloflow_stem_stations', JSON.stringify(updated)); } catch (e) {}
+            // The station is usable this session either way, so failing to
+            // cache it is not worth a toast — but it must not be silent.
+            _persistStations(updated, 'This device would not save this station for next time. It still works right now.');
           }
           // Clear the prop so re-opening STEAM Lab without a station click doesn't re-trigger
           if (typeof props.setActiveStation === 'function') props.setActiveStation(null);
@@ -3862,8 +4016,56 @@
       // ── Keyboard Accessibility ──
       React.useEffect(function () {
         function handleKeyDown(e) {
-          // Escape to close STEAM Lab
+          // Escape closes the INNERMOST thing that is open.
+          //
+          // This used to test only `stemLabTool`, so with no tool open Escape
+          // closed the whole Lab no matter what was layered on top. A teacher
+          // part-way through the station builder — name, grade, tools, quests,
+          // note, none of it persisted until Save — lost all of it to one
+          // keypress, with no confirm. The keyboard help panel even documented
+          // that as correct, rendering "Esc: Close STEAM Lab" while itself
+          // being the thing on screen.
+          //
+          // Order runs outermost-last: overlays, then the open tool, then the
+          // Lab. State is read through refs because this listener is bound
+          // once per [stemLabTool, stemLabTab, _showKeyHelp] change — reading
+          // the overlay state directly would close over a stale value.
           if (e.key === 'Escape') {
+            if (_showControlsRef.current) {
+              e.preventDefault();
+              _setShowControls(false);
+              announceToSR('Control settings closed');
+              return;
+            }
+            if (_showKeyHelpRef.current) {
+              e.preventDefault();
+              _setShowKeyHelp(false);
+              announceToSR('Keyboard help hidden');
+              return;
+            }
+            if (_showXpPanelRef.current) {
+              e.preventDefault();
+              _setShowXpPanel(false);
+              announceToSR('XP panel closed');
+              return;
+            }
+            if (_showStationBuilderRef.current) {
+              e.preventDefault();
+              // Only interrupt when there is actually work to lose. An empty
+              // builder closes straight away; a filled-in one asks first.
+              if (_stationBuilderDirtyRef.current) {
+                var _keep = typeof window.confirm === 'function'
+                  ? !window.confirm('Discard this station? The tools, quests and notes you picked will be lost.')
+                  : false;
+                if (_keep) return;
+              }
+              _setShowStationBuilder(false);
+              _setStationName(''); _setStationGrade(''); _setStationNote('');
+              _setStationTools({}); _setStationTimeEst('20');
+              _setStationQuests([]); _setQuestPickerOpen(false);
+              announceToSR('Station builder closed');
+              return;
+            }
             // If a tool is open, close the tool first
             if (stemLabTool) {
               e.preventDefault();
@@ -5433,7 +5635,7 @@
           ),
           React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'auto 1fr auto 1fr', gap: '4px 16px', fontSize: 12 } },
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Esc"),
-            React.createElement("span", { style: { color: _pal.textMuted } }, stemLabTool ? "Close tool / Close lab" : "Close STEAM Lab"),
+            React.createElement("span", { style: { color: _pal.textMuted } }, "Close this panel, then the tool, then the lab"),
 
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Alt+B"),
             React.createElement("span", { style: { color: _pal.textMuted } }, "Back to tool grid"),
@@ -5450,7 +5652,19 @@
           className: "relative",
           style: { borderBottom: '2px solid ' + _pal.border }
         },
-          React.createElement("div", { className: "p-4 max-w-4xl mx-auto", style: { background: 'linear-gradient(135deg, #fffbeb, #fef3c7, #fffbeb)' } },
+          // The cream gradient is an INLINE style, which the dark/contrast CSS
+          // remap cannot reach — but the text on it is `.text-amber-800`, which
+          // the remap DOES rewrite to #fcd34d. The result in dark mode was pale
+          // yellow on cream at 1.29:1, and 1.38:1 in high contrast, on a panel
+          // one click from the always-visible XP badge. The background has to
+          // follow the theme here, because only JS can see the theme inline.
+          React.createElement("div", { className: "p-4 max-w-4xl mx-auto", style: {
+            background: isContrast
+              ? '#000000'
+              : isDark
+                ? 'linear-gradient(135deg, #1e293b, #292524, #1e293b)'
+                : 'linear-gradient(135deg, #fffbeb, #fef3c7, #fffbeb)'
+          } },
             React.createElement("div", { className: "flex items-center gap-2 mb-3" },
               React.createElement("span", { style: { fontSize: '20px', filter: 'drop-shadow(0 0 4px rgba(255,200,0,0.7))' } }, "\u2B50"),
               React.createElement("h4", { className: "text-sm font-black text-amber-800" }, "STEAM Lab XP Progress"),
@@ -7339,23 +7553,60 @@
                     return React.createElement("button", {
                       'aria-label': 'Auto-generate smart quests based on selected tools',
                       onClick: function() {
+                        // Spread the quests ACROSS the selection.
+                        //
+                        // This used to take XP quests from selectedTools.slice(0, 2)
+                        // and then keep only hookQuests.slice(0, 3) off a list built
+                        // two-per-tool in selection order. Both windows landed on the
+                        // same first two tools, so a six-tool station got six quests
+                        // that between them covered TWO tools \u2014 the other four were
+                        // ignored entirely, even though the button had just counted
+                        // their hooks in its own "(N available)" label.
+                        //
+                        // Round-robin instead: one hook quest per tool before any
+                        // tool gets a second. Every selected tool that has hooks now
+                        // contributes, and the teacher can still delete what they do
+                        // not want.
                         var autoQuests = [];
-                        // Add 1 XP quest per tool
-                        selectedTools.slice(0, 2).forEach(function(tid) {
+                        var MAX_HOOK_QUESTS = 4;
+                        var MAX_XP_QUESTS = 2;
+                        var toolsWithHooks = selectedTools.filter(function(tid) { return _getToolQuestHooks(tid).length > 0; });
+                        var hookQuests = [];
+                        for (var round = 0; round < 2 && hookQuests.length < MAX_HOOK_QUESTS; round++) {
+                          for (var ti = 0; ti < toolsWithHooks.length && hookQuests.length < MAX_HOOK_QUESTS; ti++) {
+                            var tid2 = toolsWithHooks[ti];
+                            var hooks2 = _getToolQuestHooks(tid2);
+                            var pick = hooks2[round];
+                            if (!pick || !pick.id) continue;
+                            hookQuests.push({
+                              type: 'toolQuest', toolId: tid2,
+                              // A hook that ships no label would otherwise render an
+                              // empty quest row in the HUD.
+                              label: pick.label || pick.name || _questAutoLabel('toolQuest', tid2, {}),
+                              params: { hookId: pick.id }
+                            });
+                          }
+                        }
+                        // XP quests cover tools the hook pass could not reach, so a
+                        // tool without hooks still gets something.
+                        var covered = {};
+                        hookQuests.forEach(function(q) { covered[q.toolId] = true; });
+                        var xpCandidates = selectedTools.filter(function(tid) { return !covered[tid]; });
+                        if (xpCandidates.length === 0) xpCandidates = selectedTools;
+                        xpCandidates.slice(0, MAX_XP_QUESTS).forEach(function(tid) {
                           autoQuests.push({ type: 'xpThreshold', toolId: tid, label: _questAutoLabel('xpThreshold', tid, { threshold: 40 }), params: { threshold: 40 } });
                         });
-                        // Add best tool-specific hooks (up to 3)
-                        var hookQuests = [];
-                        selectedTools.forEach(function(tid) {
-                          var hooks = _getToolQuestHooks(tid);
-                          if (hooks.length > 0) hookQuests.push({ type: 'toolQuest', toolId: tid, label: hooks[0].label, params: { hookId: hooks[0].id } });
-                          if (hooks.length > 1) hookQuests.push({ type: 'toolQuest', toolId: tid, label: hooks[1].label, params: { hookId: hooks[1].id } });
-                        });
-                        autoQuests = autoQuests.concat(hookQuests.slice(0, 3));
+                        autoQuests = autoQuests.concat(hookQuests);
                         // Add a reflection
                         autoQuests.push({ type: 'freeResponse', toolId: null, label: t('stem.tools_menu.what_did_you_learn') || 'What did you learn?', params: { prompt: 'What was the most interesting thing you discovered today?', minLength: 30 } });
                         _setStationQuests(autoQuests);
-                        if (addToast) addToast('\uD83E\uDD16 Smart quests generated! ' + autoQuests.length + ' quests based on your tools.', 'success');
+                        // Say how many TOOLS are covered, not just how many quests
+                        // exist \u2014 the old wording ("based on your tools") was the
+                        // part that was untrue.
+                        var toolsCovered = {};
+                        autoQuests.forEach(function(q) { if (q.toolId) toolsCovered[q.toolId] = true; });
+                        var nTools = Object.keys(toolsCovered).length;
+                        if (addToast) addToast('\uD83E\uDD16 ' + autoQuests.length + ' quests generated across ' + nTools + ' of your ' + selectedTools.length + ' tools.', 'success');
                       },
                       className: "w-full mb-1.5 py-2 rounded-lg text-[10px] font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-600 hover:to-indigo-600 transition-all shadow-sm"
                     }, "\uD83E\uDD16 Auto-Generate Smart Quests (" + totalHooksAvailable + " available)");
@@ -7619,8 +7870,11 @@
                     })
                   };
                   var updated = _savedStations.concat([station]);
+                  // Write FIRST. On failure the form stays open and filled in,
+                  // so the teacher can retry or copy their picks out, instead
+                  // of a station that shows in the list and dies on reload.
+                  if (!_persistStations(updated, 'This device would not save "' + station.name + '". The form is still filled in — note your tools before you close this page.')) return;
                   _setSavedStations(updated);
-                  localStorage.setItem('alloflow_stem_stations', JSON.stringify(updated));
                   _setShowStationBuilder(false);
                   _setStationName(''); _setStationGrade(''); _setStationNote(''); _setStationTools({}); _setStationTimeEst('20');
                   _setStationQuests([]); _setQuestPickerOpen(false);
@@ -7667,8 +7921,10 @@
                     React.createElement("button", { "aria-label": "Delete station: " + st.name,
                       onClick: function() {
                         var filtered = _savedStations.filter(function(s) { return s.id !== st.id; });
+                        // Same order as save: an unwritten delete would drop the
+                        // station from the list and bring it back on reload.
+                        if (!_persistStations(filtered, 'This device would not save the change, so "' + st.name + '" was not deleted.')) return;
                         _setSavedStations(filtered);
-                        localStorage.setItem('alloflow_stem_stations', JSON.stringify(filtered));
                         if (_activeStationId === st.id) _setActiveStationId(null);
                       },
                       className: "text-[10px] font-bold text-red-400 hover:text-red-600"
@@ -8509,7 +8765,21 @@
                 // Set rendering flag so any setState calls during render get deferred via setTimeout(0)
                 pluginCtx._renderingFlag.current = true;
                 try {
-                  return window.StemLab.renderTool(props._toolId, pluginCtx);
+                  var _out = window.StemLab.renderTool(props._toolId, pluginCtx);
+                  // renderTool swallows a plugin render crash and returns null,
+                  // which React draws as an empty panel — the learner sees a
+                  // blank tool and is told nothing. The surrounding try/catch
+                  // never covered this: React.createElement does not invoke the
+                  // component, so the plugin's render runs later, outside it.
+                  // Show the same error card the LOAD failure path uses, with
+                  // its retry and "All tools" buttons.
+                  if (_out == null) {
+                    var _err = window.StemLab._lastRenderError;
+                    if (_err && _err.id === props._toolId && typeof props._onRenderError === 'function') {
+                      return props._onRenderError(_err.message);
+                    }
+                  }
+                  return _out;
                 } finally {
                   pluginCtx._renderingFlag.current = false;
                 }
@@ -8533,7 +8803,14 @@
               _ctx.stemLabTab || '',
               _modeTd.subtool || _modeTd.tab || _modeTd.mode || _modeTd.activeTab || _modeTd.activeSubtool || ''
             ].join(':');
-            return React.createElement(window.__stemPluginComponents[stemLabTool], { key: 'plugin-' + _modeSig, _toolId: stemLabTool, _ctx: _ctx });
+            return React.createElement(window.__stemPluginComponents[stemLabTool], {
+              key: 'plugin-' + _modeSig,
+              _toolId: stemLabTool,
+              _ctx: _ctx,
+              // Lets the bridge surface a render crash as the same card the
+              // LOAD failure path shows, instead of an unexplained blank panel.
+              _onRenderError: _renderStemPluginLoadError
+            });
           } catch(e) {
             console.error('[StemLab] Plugin fallback error for ' + stemLabTool, e);
             return React.createElement('div', { style: { padding: 40, textAlign: 'center', color: '#ef4444' } },
