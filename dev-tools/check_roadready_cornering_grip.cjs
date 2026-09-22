@@ -84,19 +84,52 @@ if (KNEE < 4.0 || KNEE > 7.5) {
 
 const G = 9.81;
 const MPH = 2.23694;
-// Sedan wheelbase, as the tool derives it: footprint length * 0.6, clamped.
-const SEDAN_LEN = (() => {
-  const m = src.match(/car:\s*\{[^}]*length:\s*([\d.]+)/);
-  return m ? Number(m[1]) : 4.5;
-})();
-const L = Math.max(2.4, Math.min(6.5, SEDAN_LEN * 0.6));
+// Use the tool's OWN drivingSteeringGeometry() rather than a hand copy of it.
+// This gate used to re-implement ratio / wheelAngle / yawRate / lateral line
+// for line, which meant it could not see a change to the real function -- and
+// its wheelbase came from a regex with a SILENT `: 4.5` fallback, so a moved
+// vehicle table would have left it checking a made-up car.
+//
+// Demonstrated cost of the copy-the-formula pattern (2026-09-21): dropping the
+// factor of 2 from stoppingDistance() left all six RoadReady physics gates
+// green while 14 vitest tests went red.
+const { loadRoadReady } = require('./roadready_model.cjs');
+let MODEL;
+try {
+  MODEL = loadRoadReady(['drivingSteeringGeometry', 'frictionCoef']);
+} catch (e) {
+  console.error('\n✗ check_roadready_cornering_grip FAILED\n');
+  console.error('  • ' + e.message + '\n');
+  process.exit(1);
+}
 
 const geometry = (v, steer) => {
-  const ratio = NUM / (1 + Math.pow(Math.abs(v) / KNEE, 2));
-  const wa = Math.max(-0.7, Math.min(0.7, steer)) * ratio;
-  const yaw = (v * Math.tan(wa)) / L;
-  return { wheelAngle: wa, yawRate: yaw, lateral: Math.abs(v * yaw) };
+  const g = MODEL.drivingSteeringGeometry(v, steer, 'sedan');
+  return { wheelAngle: g.wheelAngle, yawRate: g.yawRate,
+           lateral: Math.abs(v * g.yawRate) };
 };
+
+// Cross-check the regex-read constants against the loaded model. A mismatch
+// means an anchor is stale or the formula changed shape, which would otherwise
+// surface as a confusing pile of band failures below.
+{
+  // steering is clamped to +/-0.7 BEFORE the ratio is applied, so an input of
+  // 1 behaves as 0.7. Getting this wrong made the cross-check itself fail on a
+  // correct tool -- the clamp is part of the model, not a detail to skip.
+  const probe = MODEL.drivingSteeringGeometry(30, 1, 'sedan');
+  const expectedRatio = NUM / (1 + Math.pow(30 / KNEE, 2));
+  const expectedWa = Math.max(-0.7, Math.min(0.7, 1)) * expectedRatio;
+  if (Math.abs(probe.wheelAngle - expectedWa) > 1e-6) {
+    errors.push('drivingSteeringGeometry(30, 1) gives wheelAngle ' +
+      probe.wheelAngle.toFixed(4) + ' rad, but the numerator ' + NUM + ' and knee ' + KNEE +
+      ' read from source predict ' + expectedWa.toFixed(4) + '. The steering formula has ' +
+      'changed shape -- re-derive the grip bands against it.');
+  }
+  if (!Number.isFinite(probe.yawRate) || probe.yawRate <= 0) {
+    errors.push('drivingSteeringGeometry(30, 1) returned a non-positive yaw rate (' +
+      probe.yawRate + ') -- the model cannot turn, so the grip checks below are vacuous.');
+  }
+}
 
 const MAX_STEER = INPUT_SCALE;
 
