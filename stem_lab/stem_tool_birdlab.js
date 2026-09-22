@@ -17201,7 +17201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 // Find counter
                 h('div', { className: 'text-center flex-shrink-0' },
                   h('div', { className: 'text-3xl font-black text-emerald-700 tracking-tight' }, foundCount + ' / ' + totalBirds),
-                  h('div', { className: 'text-[0.625rem] uppercase tracking-wider text-slate-700' }, __alloT('stem.birdlab.birds_found', 'birds found'))
+                  h('div', { className: 'text-[0.625rem] uppercase tracking-wider text-slate-700' }, __alloT('stem.birdlab.birds_found_caption', 'birds found'))
                 ),
                 foundCount > 0 && h('button', {
                   type: 'button',
@@ -18928,8 +18928,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             bestStreak: nextBest
           }));
           announce(correct
-            ? ('Correct: ' + listenState.target.species + (nextStreak > 1 ? '. Streak ' + nextStreak : ''))
-            : ('Not quite — answer was ' + listenState.target.species)
+            ? __alloFill(__alloT('stem.birdlab.sr_correct_value1', 'Correct: {value1}'), { value1: listenState.target.species })
+              + (nextStreak > 1 ? __alloFill(__alloT('stem.birdlab.sr_streak_value1', '. Streak {value1}'), { value1: nextStreak }) : '')
+            : __alloFill(__alloT('stem.birdlab.sr_not_quite_answer_was_value1', 'Not quite — answer was {value1}'), { value1: listenState.target.species })
           );
         }
         function toggleTonePlayback(id, call) {
@@ -18937,7 +18938,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             // Stop
             if (__birdAudioStop) { try { __birdAudioStop(); } catch (_) {} __birdAudioStop = null; }
             setPlayingId(null);
-            announce('Stopped');
+            announce(__alloT('stem.birdlab.sr_stopped', 'Stopped'));
             return;
           }
           // Stop any other + start this
@@ -18952,6 +18953,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var quizIdx = quizIdx_state[0], setQuizIdx = quizIdx_state[1];
         var quizPicks_state = useState({});
         var quizPicks = quizPicks_state[0], setQuizPicks = quizPicks_state[1];
+        // Which questions have had their mnemonic hint spent. Answering a
+        // question opens its hint too, so the reveal panel still teaches the
+        // words that make the call memorable.
+        var quizHints_state = useState({});
+        var quizHints = quizHints_state[0], setQuizHints = quizHints_state[1];
+        function revealQuizHint(qi) {
+          if (quizHints[qi]) return;
+          var next = Object.assign({}, quizHints);
+          next[qi] = true;
+          setQuizHints(next);
+          announce(__alloT('stem.birdlab.sr_mnemonic_hint_shown', 'Mnemonic hint shown'));
+        }
         var quizPool_state = useState(function() {
           // Build a shuffled quiz pool of 8 calls
           var pool = FAMOUS_CALLS.slice();
@@ -18968,7 +18981,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           var nq = Object.assign({}, quizPicks); nq[qi] = choice;
           setQuizPicks(nq);
           var current = quizPool[qi];
-          announce(choice === current.species ? 'Correct: ' + current.species : 'Not quite — answer was ' + current.species);
+          announce(choice === current.species
+            ? __alloFill(__alloT('stem.birdlab.sr_correct_value1', 'Correct: {value1}'), { value1: current.species })
+            : __alloFill(__alloT('stem.birdlab.sr_not_quite_answer_was_value1', 'Not quite — answer was {value1}'), { value1: current.species }));
         }
         function restartQuiz() {
           var pool = FAMOUS_CALLS.slice();
@@ -18979,6 +18994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           setQuizPool(pool.slice(0, 8));
           setQuizIdx(0);
           setQuizPicks({});
+          setQuizHints({});
           announce(__alloT('stem.birdlab.sr_quiz_reset', 'Quiz reset'));
         }
 
@@ -19150,7 +19166,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         h('button', {
                           onClick: function() { toggleTonePlayback(c.id, c); },
                           'aria-pressed': isPlaying ? 'true' : 'false',
-                          'aria-label': (isPlaying ? 'Stop tone sketch' : 'Play tone sketch') + ' for ' + c.species,
+                          'aria-label': __alloFill(isPlaying
+                            ? __alloT('stem.birdlab.stop_tone_sketch_for_value1', 'Stop tone sketch for {value1}')
+                            : __alloT('stem.birdlab.play_tone_sketch_for_value1', 'Play tone sketch for {value1}'), { value1: c.species }),
                           className: 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.6875rem] font-bold transition focus:outline-none focus:ring-2 ring-violet-500/40 ' +
                             (isPlaying
                               ? 'bg-rose-600 text-white border-2 border-rose-700 hover:bg-rose-700 active:scale-[0.97]'
@@ -19158,7 +19176,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                           title: __alloT('stem.birdlab.synthesized_rhythm_not_a_real_recordin', 'Synthesized rhythm, not a real recording. Use Merlin Bird ID for actual audio.')
                         },
                           h('span', { 'aria-hidden': true, style: { fontSize: 10 } }, isPlaying ? '■' : '▶'),
-                          isPlaying ? 'Stop' : 'Play tone'
+                          isPlaying ? __alloT('stem.birdlab.stop', 'Stop') : __alloT('stem.birdlab.play_tone', 'Play tone')
                         )
                       ),
                       h('p', { className: 'text-sm text-slate-800 italic mb-1.5' }, c.mnemonic),
@@ -19191,7 +19209,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             mode === 'quiz' && h('div', { className: 'space-y-4' },
               h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
                 h('div', { className: 'text-sm text-slate-700' },
-                  h('strong', null, 'Question ' + Math.min(quizIdx + 1, quizPool.length) + ' of ' + quizPool.length),
+                  h('strong', null, __alloFill(__alloT('stem.birdlab.question_value1_of_value2', 'Question {value1} of {value2}'), { value1: Math.min(quizIdx + 1, quizPool.length), value2: quizPool.length })),
                   __alloT('stem.birdlab.score', ' · Score: '), h('strong', null, quizScore + ' / ' + quizAnswered)
                 ),
                 h('button', {
@@ -19207,11 +19225,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 return h('div', { className: 'bg-white rounded-2xl border-2 border-violet-300 shadow p-5 space-y-4' },
                   h('div', { className: 'p-4 bg-slate-100 border-l-4 border-violet-500 rounded-lg' },
                     h('div', { className: 'flex items-center justify-between gap-2 mb-1 flex-wrap' },
-                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-700' }, __alloT('stem.birdlab.match_this_call_to_the_species', 'Match this call to the species')),
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-700' }, __alloT('stem.birdlab.play_this_call_and_name_the_species', 'Play this call and name the species')),
                       h('button', {
                         onClick: function() { toggleTonePlayback(quizPlayId, current); },
                         'aria-pressed': isQuizPlaying ? 'true' : 'false',
-                        'aria-label': (isQuizPlaying ? 'Stop tone sketch' : 'Play tone sketch'),
+                        'aria-label': isQuizPlaying
+                          ? __alloT('stem.birdlab.stop_tone_sketch_for_this_question', 'Stop tone sketch for this question')
+                          : __alloT('stem.birdlab.play_tone_sketch_for_this_question', 'Play tone sketch for this question'),
                         className: 'inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition focus:outline-none focus:ring-2 ring-violet-500/40 ' +
                           (isQuizPlaying
                             ? 'bg-rose-600 text-white border-2 border-rose-700 hover:bg-rose-700 active:scale-[0.97]'
@@ -19219,17 +19239,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         title: __alloT('stem.birdlab.synthesized_rhythm_only_not_a_real_rec', 'Synthesized rhythm only — not a real recording.')
                       },
                         h('span', { 'aria-hidden': true }, isQuizPlaying ? '■' : '▶'),
-                        isQuizPlaying ? 'Stop' : 'Play tone'
+                        isQuizPlaying ? __alloT('stem.birdlab.stop', 'Stop') : __alloT('stem.birdlab.play_tone', 'Play tone')
                       )
                     ),
-                    h('p', { className: 'text-base text-slate-800 italic mb-2' }, current.mnemonic),
-                    // Rhythm strip — gives a second visual cue beyond just the words
-                    h('div', { className: 'p-2 bg-white border border-violet-300 rounded-lg mb-2' },
-                      h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-violet-700 mb-1' }, __alloT('stem.birdlab.rhythm_pattern', '🎵 Rhythm pattern')),
-                      songRhythmStrip(current, '#7c3aed')
+                    // The mnemonic and the description NAME the bird ("who
+                    // cooks for you" is the Barred Owl, and the description says
+                    // "the signature owl of eastern forests"), so printing them
+                    // beside four species names made this a reading test rather
+                    // than a listening one. The prompt is now the sketch itself:
+                    // play it, read the spectrogram, use the habitat. The
+                    // mnemonic is a hint the student can choose to spend, and it
+                    // opens automatically once they have answered.
+                    h('div', { className: 'p-2 bg-white border border-violet-300 rounded-lg mb-2', 'data-birdlab-quiz-spectrogram': 'true' },
+                      h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-cyan-800 mb-1' }, __alloT('stem.birdlab.spectrogram_and_rhythm', '🎵 Spectrogram and rhythm')),
+                      songSpectrogram(current, '#22d3ee', isQuizPlaying, { hideSyllables: picked == null }),
+                      h('div', { className: 'mt-1.5 pt-1.5 border-t border-violet-100' }, songRhythmStrip(current, '#7c3aed'))
                     ),
-                    h('p', { className: 'text-sm text-slate-700' }, current.description),
-                    h('p', { className: 'text-xs text-slate-700 mt-1' }, h('strong', null, 'Habitat: '), current.habitat)
+                    h('p', { className: 'text-xs text-slate-700 mt-1' }, h('strong', null, __alloT('stem.birdlab.habitat_label', 'Habitat: ')), current.habitat),
+                    // Mnemonic hint — collapsed until asked for, then open for good
+                    (function() {
+                      var hintOpen = picked != null || quizHints[quizIdx] === true;
+                      if (!hintOpen) {
+                        return h('button', {
+                          onClick: function() { revealQuizHint(quizIdx); },
+                          'data-birdlab-quiz-hint': 'closed',
+                          className: 'mt-2 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-violet-800 border-2 border-violet-300 hover:border-violet-500 transition focus:outline-none focus:ring-2 ring-violet-500/40'
+                        },
+                          h('span', { 'aria-hidden': true }, '💡'),
+                          __alloT('stem.birdlab.show_the_mnemonic_hint', 'Show the mnemonic (hint)')
+                        );
+                      }
+                      return h('p', {
+                        className: 'text-base text-slate-800 italic mt-2',
+                        'data-birdlab-quiz-hint': 'open'
+                      }, current.mnemonic);
+                    })()
                   ),
                   h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.birdlab.species_choices', 'Species choices'), className: 'space-y-2' },
                     currentChoices.map(function(choice) {
@@ -19254,7 +19298,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     className: 'p-3 rounded-lg ' + (picked === current.species ? 'bg-emerald-50 border border-emerald-300 text-emerald-900' : 'bg-amber-50 border border-amber-300 text-amber-900'),
                     'aria-live': 'polite'
                   },
-                    h('strong', null, picked === current.species ? '✓ Correct — ' : '⚠ Answer was '),
+                    h('strong', null, picked === current.species
+                      ? __alloT('stem.birdlab.correct_dash', '✓ Correct — ')
+                      : __alloT('stem.birdlab.answer_was', '⚠ Answer was ')),
                     current.species, '. ',
                     h('span', { className: 'text-slate-800' }, current.tip)
                   ),
@@ -19381,7 +19427,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     onClick: function() {
                       // Reset score
                       setListenState(newListenRound({ score: 0, attempts: 0, streak: 0, bestStreak: 0 }));
-                      announce('Reset');
+                      announce(__alloT('stem.birdlab.sr_reset', 'Reset'));
                     },
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 text-slate-800 hover:bg-slate-300 transition focus:outline-none focus:ring-2 ring-slate-400 active:scale-[0.97]'
                   }, __alloT('stem.birdlab.reset_score', '🔄 Reset score'))
@@ -19392,8 +19438,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     h('div', { className: 'text-xs font-bold uppercase tracking-widest text-violet-700 mb-2' }, __alloT('stem.birdlab.listen_and_identify', '🎧 Listen and identify')),
                     h('p', { className: 'text-sm text-slate-700 mb-4' },
                       revealed
-                        ? 'Replay any number of times. Click ↻ Next call when ready.'
-                        : 'Press play to hear the synthesized rhythm. Pick the species you think it is.'),
+                        ? __alloT('stem.birdlab.replay_any_number_of_times', 'Replay any number of times. Click ↻ Next call when ready.')
+                        : __alloT('stem.birdlab.press_play_to_hear_the_synthesized', 'Press play to hear the synthesized rhythm. Pick the species you think it is.')),
                     // Big play button
                     h('button', {
                       onClick: function() { toggleTonePlayback(listenPlayId, lt.target); },
@@ -19403,7 +19449,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       style: {
                         width: 88, height: 88, fontSize: 28,
                         background: isListenPlaying ? 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)' : 'linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%)',
-                        color: 'var(--allo-stem-text, #ffffff)',
+                        // The gradient is fixed (deep rose / deep violet), so the
+                        // glyph ink is fixed light too. Reading --allo-stem-text
+                        // here put a dark glyph on dark violet in light theme.
+                        color: '#ffffff',
                         border: isListenPlaying ? '3px solid #be123c' : '3px solid #5b21b6',
                         boxShadow: isListenPlaying
                           ? '0 0 0 6px rgba(244,63,94,0.18), 0 8px 18px rgba(190,18,60,0.35)'
@@ -19411,7 +19460,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       }
                     }, isListenPlaying ? '■' : '▶'),
                     h('div', { className: 'text-[0.6875rem] mt-2 text-slate-700 italic' },
-                      isListenPlaying ? '🎶 Playing rhythm sketch…' : 'Synthesized rhythm only — open Merlin for the real call.')
+                      isListenPlaying
+                        ? __alloT('stem.birdlab.playing_rhythm_sketch', '🎶 Playing rhythm sketch…')
+                        : __alloT('stem.birdlab.synthesized_rhythm_only_open_merlin', 'Synthesized rhythm only — open Merlin for the real call.'))
                   ),
                   // Visual + text alternative to the audio: the same sketch the
                   // play button voices, drawn without its syllable labels so the
@@ -19420,8 +19471,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-cyan-800 mb-1' }, __alloT('stem.birdlab.spectrogram_of_the_hidden_call', 'Spectrogram of the hidden call')),
                     songSpectrogram(lt.target, '#22d3ee', isListenPlaying, { hideSyllables: !revealed })
                   ),
-                  // Choices
-                  h('div', { className: 'space-y-2' },
+                  // Choices. These carry role="radio", so they need a
+                  // radiogroup parent with an accessible name - orphan radios
+                  // are announced without their set, and axe flags them.
+                  h('div', {
+                    role: 'radiogroup',
+                    'aria-label': __alloT('stem.birdlab.species_choices_listen', 'Which species made this call?'),
+                    className: 'space-y-2'
+                  },
                     lt.choices.map(function(choice) {
                       var sel = lt.picked === choice;
                       var revealCorrect = revealed && choice === lt.target.species;
@@ -19453,7 +19510,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     h('div', { className: 'flex items-center gap-2 mb-2' },
                       h('span', { 'aria-hidden': true, style: { fontSize: 22 } }, correct ? '✓' : '⚠'),
                       h('span', { className: 'font-black', style: { color: correct ? '#065f46' : '#78350f' } },
-                        correct ? 'Correct!' : 'The answer was ' + lt.target.species + '.')
+                        correct
+                          ? __alloT('stem.birdlab.correct_exclaim', 'Correct!')
+                          : __alloFill(__alloT('stem.birdlab.the_answer_was_value1', 'The answer was {value1}.'), { value1: lt.target.species }))
                     ),
                     h('p', { className: 'text-sm italic text-slate-800 mb-1' }, lt.target.mnemonic),
                     h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-1' },

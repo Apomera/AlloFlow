@@ -344,3 +344,110 @@ describe('BirdLab tone sketch audio (fake Web Audio)', () => {
     for (const s of scheduled) expect(s.type).toBe('sawtooth');
   });
 });
+
+// ── Match the Song must be a LISTENING test ──
+// The prompt used to print the mnemonic ("Who cooks for you?") and the
+// description ("the signature owl of eastern forests") directly above four
+// species names, so the answer was readable without ever pressing play.
+describe('BirdLab Match the Song (mounted)', () => {
+  let api;
+  afterEach(() => { if (api) api.teardown(); api = null; });
+
+  function openQuiz() {
+    api = mountBirdLab({ view: 'calls' });
+    const tab = [...api.host.querySelectorAll('button[role="tab"]')].find((b) => /Match the Song/.test(b.textContent));
+    expect(tab).toBeTruthy();
+    api.click(tab);
+  }
+
+  // The prompt panel is everything above the answer radiogroup.
+  function promptText() {
+    const group = api.host.querySelector('[role="radiogroup"]');
+    const panel = api.host.querySelector('[data-birdlab-quiz-spectrogram]').closest('div.p-4');
+    expect(group).toBeTruthy();
+    expect(panel).toBeTruthy();
+    return panel.textContent;
+  }
+
+  function currentMnemonic() {
+    const p = window.__alloBirdLabPure;
+    const shape = api.host.querySelector('[data-birdlab-quiz-spectrogram] .birdlab-call-sketch');
+    const desc = shape.querySelector('.birdlab-call-sketch-desc').textContent;
+    const hits = p.FAMOUS_CALLS.filter((c) => 'Sounds like: ' + p.describeCall(c).text === desc);
+    expect(hits.length, 'sound description matched no call').toBeGreaterThan(0);
+    return hits.map((c) => c.mnemonic);
+  }
+
+  it('does not print the mnemonic or the description in the unanswered prompt', () => {
+    openQuiz();
+    const before = promptText();
+    for (const m of currentMnemonic()) {
+      const words = m.replace(/^["']|["']$/g, '').slice(0, 12);
+      expect(before, 'prompt leaks the mnemonic: ' + words).not.toContain(words);
+    }
+    // The species descriptions name the bird outright; none may appear.
+    const p = window.__alloBirdLabPure;
+    for (const c of p.FAMOUS_CALLS) expect(before).not.toContain(c.description.slice(0, 25));
+    // ...and the spectrogram is drawn without syllable labels
+    const sketch = api.host.querySelector('[data-birdlab-quiz-spectrogram] .birdlab-call-sketch');
+    expect(sketch.querySelectorAll('svg text').length).toBe(4); // 2 ticks + high + low
+    // The habitat clue stays: it is a legitimate field cue, not the answer.
+    expect(before).toContain('Habitat:');
+  });
+
+  it('offers the mnemonic as a hint the student spends, and opens it on answering', () => {
+    openQuiz();
+    const hintBtn = api.host.querySelector('[data-birdlab-quiz-hint="closed"]');
+    expect(hintBtn).toBeTruthy();
+    const expected = currentMnemonic();
+    api.click(hintBtn);
+    const opened = api.host.querySelector('[data-birdlab-quiz-hint="open"]');
+    expect(opened).toBeTruthy();
+    expect(expected).toContain(opened.textContent);
+    expect(api.host.querySelector('[data-birdlab-quiz-hint="closed"]')).toBeNull();
+  });
+
+  it('answering reveals the mnemonic and the syllable labels', () => {
+    openQuiz();
+    expect(api.host.querySelector('[data-birdlab-quiz-hint="closed"]')).toBeTruthy();
+    api.click(api.host.querySelector('[role="radiogroup"] button[role="radio"]'));
+    const opened = api.host.querySelector('[data-birdlab-quiz-hint="open"]');
+    expect(opened).toBeTruthy();
+    expect(currentMnemonic()).toContain(opened.textContent);
+    const sketch = api.host.querySelector('[data-birdlab-quiz-spectrogram] .birdlab-call-sketch');
+    expect(sketch.querySelectorAll('svg text').length).toBeGreaterThan(4);
+  });
+});
+
+describe('BirdLab call trainer accessibility and theming', () => {
+  let api;
+  afterEach(() => { if (api) api.teardown(); api = null; });
+
+  it('every role=radio sits inside a named radiogroup, in both graded modes', () => {
+    for (const modeLabel of [/Match the Song/, /Listen/]) {
+      api = mountBirdLab({ view: 'calls' });
+      api.click([...api.host.querySelectorAll('button[role="tab"]')].find((b) => modeLabel.test(b.textContent)));
+      const radios = [...api.host.querySelectorAll('[role="radio"]')];
+      expect(radios.length, String(modeLabel)).toBeGreaterThan(0);
+      for (const r of radios) {
+        const group = r.closest('[role="radiogroup"]');
+        expect(group, String(modeLabel) + ': orphan radio').toBeTruthy();
+        expect((group.getAttribute('aria-label') || '').length).toBeGreaterThan(0);
+      }
+      api.teardown();
+      api = null;
+    }
+  });
+
+  it('the Listen play glyph is fixed light ink, not a theme token, on its fixed gradient', () => {
+    api = mountBirdLab({ view: 'calls' });
+    api.click([...api.host.querySelectorAll('button[role="tab"]')].find((b) => /Listen/.test(b.textContent)));
+    const play = [...api.host.querySelectorAll('button')].find((b) => /Play tone sketch for the hidden species/.test(b.getAttribute('aria-label') || ''));
+    expect(play).toBeTruthy();
+    const style = play.getAttribute('style') || '';
+    expect(style).toMatch(/linear-gradient/);
+    // A theme ink on a fixed dark gradient is dark-on-dark in light theme.
+    expect(style).not.toContain('--allo-stem-text');
+    expect(play.style.color).toBe('rgb(255, 255, 255)');
+  });
+});
