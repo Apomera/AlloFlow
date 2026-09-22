@@ -470,3 +470,38 @@ describe('the panel warns before the press', () => {
     expect(html).not.toContain('sweeps no solid at all');
   });
 });
+
+describe('geoChallengeGuidance survives a malformed saved challenge', () => {
+  // `challenge` comes out of PERSISTED state, so its dims are INPUT: a student
+  // can hand-edit a project file or carry one across versions. The guard was
+  // `challenge.dims || {}`, which only replaces a MISSING object — a stored
+  // string, object or negative number went straight into the solver and the
+  // hint rendered "Total NaN − bases NaN = NaN". The hint is what a stuck
+  // student opens, so it is the worst surface in the tab to print NaN on.
+  //
+  // Every other path normalises first (geoNormalizeShapeDims coerces with
+  // Number(), falls back on !isFinite, and clamps to the slider's own range).
+  const hostile = [
+    ['string dims', { shapeId: 'box', type: 'lateralArea', dims: { w: 'abc', h: 'abc', d: 'abc' } }],
+    ['object dims', { shapeId: 'box', type: 'lateralArea', dims: { w: {}, h: {}, d: {} } }],
+    ['negative dims', { shapeId: 'cone', type: 'lateralArea', dims: { r: -5, h: -5 } }],
+    ['null dims', { shapeId: 'cone', type: 'volume', dims: { r: null, h: null } }],
+    ['array for the whole bag', { shapeId: 'sphere', type: 'surfaceArea', dims: [] }],
+    ['missing dims entirely', { shapeId: 'cylinder', type: 'volume' }],
+  ];
+
+  it.each(hostile)('prints no NaN for %s', (_label, challenge) => {
+    const text = String(P.geoChallengeGuidance(Object.assign({ answer: 1 }, challenge), true));
+    expect(text).not.toMatch(/NaN/);
+    // Not just "no NaN" — a blank hint would also pass that. The student must
+    // still be given a worked number to compare against.
+    expect(text).toMatch(/\d/);
+  });
+
+  it('still reports the real numbers for a well-formed challenge', () => {
+    const text = String(P.geoChallengeGuidance(
+      { shapeId: 'box', type: 'lateralArea', dims: { w: 3, h: 3, d: 3 }, answer: 36 }, true));
+    expect(text).toContain('36');
+    expect(text).not.toMatch(/NaN/);
+  });
+});
