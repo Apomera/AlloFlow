@@ -77,9 +77,43 @@ if (DRY_MU === null || NIGHT_RT === null) {
   process.exit(1);
 }
 
-const brakingFt = (mph) => ((mph * MPH_TO_MS) ** 2 / (2 * DRY_MU * 9.81)) * FT_PER_M;
-const reactionFt = (mph, rt) => mph * MPH_TO_MS * rt * FT_PER_M;
-const totalFt = (mph, rt) => brakingFt(mph) + reactionFt(mph, rt);
+// Use the tool's OWN stoppingDistance() rather than re-deriving v^2/(2*mu*g)
+// here. This gate used to carry a private copy of the formula, which meant a
+// change to the real function -- dropping the factor of 2, say -- left it
+// green while the tool doubled every braking distance it showed a student.
+// See dev-tools/roadready_model.cjs for the demonstration.
+const { loadRoadReady } = require('./roadready_model.cjs');
+
+let RR;
+try {
+  RR = loadRoadReady(['stoppingDistance']);
+} catch (e) {
+  console.error('\n✗ check_roadready_night_vision_model FAILED\n');
+  console.error('  • ' + e.message + '\n');
+  process.exit(1);
+}
+
+const brakingFt = (mph) => RR.stoppingDistance(mph, 'clear', 1.5).braking_ft;
+const reactionFt = (mph, rt) => RR.stoppingDistance(mph, 'clear', rt).reaction_ft;
+const totalFt = (mph, rt) => RR.stoppingDistance(mph, 'clear', rt).total_ft;
+
+// Cross-check the regex-read constants against the loaded model. A mismatch
+// means the formula changed SHAPE (not just its inputs), which the prose
+// comparisons below would otherwise report as many confusing failures.
+{
+  const probe = RR.stoppingDistance(60, 'clear', 1.5);
+  const expected = ((60 * MPH_TO_MS) ** 2 / (2 * DRY_MU * 9.81)) * FT_PER_M;
+  if (Math.abs(probe.braking_ft - expected) > 0.5) {
+    errors.push('the loaded stoppingDistance() disagrees with the constants read from ' +
+      'source: braking at 60 mph is ' + probe.braking_ft.toFixed(1) + ' ft from the ' +
+      'function but ' + expected.toFixed(1) + ' ft from mu=' + DRY_MU + '. The formula ' +
+      'has changed shape -- re-derive the night figures against it.');
+  }
+  if (Math.abs(probe.mu - DRY_MU) > 1e-9) {
+    errors.push('frictionCoef dry mu is ' + probe.mu + ' from the function but ' +
+      DRY_MU + ' by regex -- the regex anchor is stale.');
+  }
+}
 
 // ── A. night reaction time ───────────────────────────────────────────────────
 if (NIGHT_RT === null) {
