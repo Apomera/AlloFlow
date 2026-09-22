@@ -80060,14 +80060,14 @@
     "generate_memory_aid": "Make a memory aid",
     "generate_memory_aid_hint": "Generate a Memory Aid Studio resource from the current content",
     "generate_memory_aid_ready": "Memory Aid Studio ready.",
-    "rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
+    "rebuild_lesson_step_complete": "Schritt {step} wurde neu erstellt.",
     "rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
     "rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
-    "rebuild_lesson_step_working": "Rebuilding the selected lesson step...",
-    "run_lesson_blueprint_complete": "The lesson plan finished generating.",
+    "rebuild_lesson_step_working": "Der ausgewählte Schritt wird neu erstellt...",
+    "run_lesson_blueprint_complete": "Der Unterrichtsplan ist fertig erstellt.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generating the reviewed lesson plan..."
+    "run_lesson_blueprint_working": "Der geprüfte Unterrichtsplan wird erstellt..."
   },
   "palette": {
     "aria": "AlloFlow-Befehlspalette",

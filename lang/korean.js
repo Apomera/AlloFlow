@@ -80050,14 +80050,14 @@
     "generate_memory_aid": "Make a memory aid",
     "generate_memory_aid_hint": "Generate a Memory Aid Studio resource from the current content",
     "generate_memory_aid_ready": "Memory Aid Studio ready.",
-    "rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
+    "rebuild_lesson_step_complete": "{step}단계를 다시 만들었습니다.",
     "rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
     "rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
-    "rebuild_lesson_step_working": "Rebuilding the selected lesson step...",
-    "run_lesson_blueprint_complete": "The lesson plan finished generating.",
+    "rebuild_lesson_step_working": "선택한 단계를 다시 만드는 중입니다...",
+    "run_lesson_blueprint_complete": "수업 계획 생성이 완료되었습니다.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generating the reviewed lesson plan..."
+    "run_lesson_blueprint_working": "검토된 수업 계획을 생성하는 중입니다..."
   },
   "palette": {
     "aria": "AlloFlow 명령 팔레트",
