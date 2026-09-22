@@ -2022,10 +2022,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return worldUnitsToMeters(Math.max(0, distanceWorldUnits)) / speedMps;
   }
   function recommendedFollowingMeters(speedMps, weather, multiplier) {
-    var seconds = 3;
-    if (weather === 'rain') seconds = 4;
-    if (weather === 'snow' || weather === 'fog') seconds = 6;
-    if (weather === 'ice') seconds = 8;
+    // Same seconds table as safeFollowingFeet(), via one shared function.
+    // These two drifted: ice was here and missing there.
+    var seconds = followingSecondsFor(weather);
     return 2.5 + Math.max(0, speedMps) * seconds * (multiplier || 1);
   }
   // Crossing checks must ignore finite-map wrap/teleport jumps. A physical
@@ -2534,11 +2533,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   }
 
   // Safe following distance in feet, 3-second rule plus weather bonus.
+  //
+  // The seconds table MUST match recommendedFollowingMeters(), which is the
+  // same rule in metres for the drive loop. It did not: ice was missing here,
+  // so it fell through to the DRY 3 seconds while the metres version correctly
+  // used 8. The Stopping Distance Lab lets a student pick Ice, and at 55 mph
+  // it told them 242 ft was a safe gap -- the identical number it gives for
+  // dry pavement -- on a surface where stopping takes 1,132 ft.
   function safeFollowingFeet(v_mph, weather) {
-    var sec = 3;
-    if (weather === 'rain') sec = 4;
-    if (weather === 'snow' || weather === 'fog') sec = 6;
-    return v_mph * 1.467 * sec; // 1 mph = 1.467 ft/s
+    return v_mph * 1.467 * followingSecondsFor(weather); // 1 mph = 1.467 ft/s
+  }
+
+  // One table, two callers. Keeping the seconds in a single function is what
+  // stops the two from drifting apart again.
+  function followingSecondsFor(weather) {
+    if (weather === 'rain') return 4;
+    if (weather === 'snow' || weather === 'fog') return 6;
+    if (weather === 'ice') return 8;
+    return 3;
   }
 
   // ─────────────────────────────────────────────────────────

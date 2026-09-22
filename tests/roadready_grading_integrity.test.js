@@ -139,6 +139,50 @@ describe('RoadReady AI-caused crash accounting', () => {
 // criteria measuring one thing, and the authored target dead configuration.
 // Two of the labels also promised something distance never measured:
 // "Complete the maneuver area at walking speed" ticked at 80 mph.
+// Two functions implement the SAME following-distance rule: safeFollowingFeet
+// for the Stopping Distance Lab, recommendedFollowingMeters for the drive
+// loop. They carried separate seconds tables and drifted -- ice was in one and
+// missing from the other, so it fell through to the DRY 3 seconds.
+describe('RoadReady following-distance rule', () => {
+  const impliedSecondsFeet = (mph, w) => RR.safeFollowingFeet(mph, w) / (mph * 1.467);
+  const impliedSecondsMeters = (mps, w) =>
+    (RR.recommendedFollowingMeters(mps, w, 1) - 2.5) / mps;
+
+  it('uses one seconds table for both callers', () => {
+    for (const w of ['clear', 'dry', 'rain', 'snow', 'fog', 'ice', 'nonsense']) {
+      expect(impliedSecondsFeet(55, w)).toBeCloseTo(impliedSecondsMeters(24.587, w), 2);
+    }
+  });
+
+  it('does not give ice the dry-pavement gap', () => {
+    // The lab lets a student select Ice. At 55 mph it used to show 242 ft --
+    // the identical number it gives for dry pavement -- on a surface where
+    // the tool's own model says stopping takes over 1,100 ft.
+    expect(impliedSecondsFeet(55, 'ice')).toBeCloseTo(8, 2);
+    expect(RR.safeFollowingFeet(55, 'ice')).toBeGreaterThan(RR.safeFollowingFeet(55, 'clear'));
+    expect(RR.safeFollowingFeet(55, 'ice')).toBeGreaterThan(RR.safeFollowingFeet(55, 'snow'));
+  });
+
+  it('orders the gap by how slippery the surface is', () => {
+    // Monotonic in grip: every step down in mu must not shorten the gap.
+    const order = ['clear', 'rain', 'snow', 'ice'];
+    const gaps = order.map((w) => RR.safeFollowingFeet(55, w));
+    for (let i = 1; i < gaps.length; i += 1) {
+      expect(gaps[i]).toBeGreaterThanOrEqual(gaps[i - 1]);
+    }
+  });
+
+  it('covers every weather the Stopping Distance Lab offers', () => {
+    // The lab's selector is the reachable input set. A weather it offers but
+    // the rule does not know falls through to the dry default silently.
+    const LAB_WEATHERS = ['dry', 'rain', 'snow', 'ice'];
+    const dryGap = RR.safeFollowingFeet(55, 'dry');
+    const unhandled = LAB_WEATHERS.filter(
+      (w) => w !== 'dry' && RR.safeFollowingFeet(55, w) === dryGap);
+    expect(unhandled).toEqual([]);
+  });
+});
+
 describe('RoadReady mission habit criteria', () => {
   const driveStats = {
     safetyScore: 100, efficiencyScore: 100, crashes: 0, aiCausedCrashes: 0,
