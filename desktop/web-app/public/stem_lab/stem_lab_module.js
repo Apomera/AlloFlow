@@ -654,16 +654,21 @@
         if (!el) return;
         el.__alloFsOn = false;
         _stemFsNotify(el, false);
-        var s = el.style, saved = el.__alloFsSaved || {};
-        Object.keys(_stemFsProps).forEach(function(p) { if (saved[p]) s.setProperty(p, saved[p]); else s.removeProperty(p); });
+        var s = el.style, saved = el.__alloFsSaved || {}, savedPri = el.__alloFsSavedPri || {};
+        // Restore the PRIORITY too. getPropertyValue returns the value alone, so a
+        // stage that carried `height: 400px !important` inline came back as a plain
+        // `height: 400px` after one fullscreen round-trip - still the right number,
+        // but no longer winning against the rule it was written to beat. Whatever
+        // that !important was holding off then silently takes over.
+        Object.keys(_stemFsProps).forEach(function(p) { if (saved[p]) s.setProperty(p, saved[p], savedPri[p] || ''); else s.removeProperty(p); });
         try { if (el.__alloFsEsc) document.removeEventListener('keydown', el.__alloFsEsc); } catch (e) {}
         try { window.dispatchEvent(new Event('resize')); } catch (e) {}
       };
       var _stemFsEnter = function(el) {
-        el.__alloFsSaved = {}; el.__alloFsOn = true;
+        el.__alloFsSaved = {}; el.__alloFsSavedPri = {}; el.__alloFsOn = true;
         _stemFsNotify(el, true);
         var s = el.style;
-        Object.keys(_stemFsProps).forEach(function(p) { el.__alloFsSaved[p] = s.getPropertyValue(p); s.setProperty(p, _stemFsProps[p], 'important'); });
+        Object.keys(_stemFsProps).forEach(function(p) { el.__alloFsSaved[p] = s.getPropertyValue(p); el.__alloFsSavedPri[p] = s.getPropertyPriority(p); s.setProperty(p, _stemFsProps[p], 'important'); });
         // The Escape handler is removed by _stemFsExit, but a tool can unmount
         // while still in CSS fullscreen (the hub's "all tools" button does not
         // exit first), and then nothing removes it: the handler stays on the
