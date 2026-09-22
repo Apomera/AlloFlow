@@ -560,3 +560,101 @@ describe('Aquarium plant flex', () => {
     expect(rigged(cheap).length).toBe(0);
   });
 });
+
+describe('Aquarium visible condition cues', () => {
+  const lit = { light: { installed: true, on: true, intensity: 1 }, filter: { installed: true, on: true, intensity: 1 } };
+  const clean = { dissolvedO2: 7.5, ammonia: 0, nitrite: 0 };
+  const swimmers = [resident('neon', 0), resident('guppy', 1)];
+  const withCondition = (patch) => swimmers.map(f => ({ ...f, ...patch }));
+  const firstTracked = group => { let mat = null; group.traverse(n => { if (!mat && n.material && n.material.userData && n.material.userData.symptomTracked) mat = n.material; }); return mat; };
+
+  it('drains colour and clamps fins as stress rises, and restores them when it passes', () => {
+    const h = harness({ fish: withCondition({ stress: 0, health: 100 }), equipment: lit, model: { daylight: true, chemistry: clean }, appearance: { quality: 'medium' } });
+    settle(h, 6);
+    const body = h.root('residents').children[0];
+    const swatch = firstTracked(body);
+    expect(swatch).toBeTruthy();
+    const healthy = swatch.color.clone();
+    expect(body.userData.conditionColourFade).toBe(0);
+    expect(body.userData.finClampCue).toBe(0);
+
+    h.update({ fish: withCondition({ stress: 95, health: 100 }) });settle(h, 6);
+    const stressedBody = h.root('residents').children[0];
+    expect(stressedBody.userData.conditionColourFade).toBeGreaterThan(0.3);
+    expect(stressedBody.userData.finClampCue).toBeGreaterThan(0.3);
+    expect(firstTracked(stressedBody).color.equals(healthy)).toBe(false);
+
+    // Recovery must return the original pigment, not a progressively greyer one.
+    h.update({ fish: withCondition({ stress: 0, health: 100 }) });settle(h, 6);
+    const recovered = h.root('residents').children[0];
+    expect(recovered.userData.conditionColourFade).toBe(0);
+    const back = firstTracked(recovered).color;
+    expect(back.r).toBeCloseTo(healthy.r, 5);
+    expect(back.g).toBeCloseTo(healthy.g, 5);
+    expect(back.b).toBeCloseTo(healthy.b, 5);
+  });
+
+  it('does not compound the fade when stress holds steady across many frames', () => {
+    const h = harness({ fish: withCondition({ stress: 80, health: 40 }), equipment: lit, model: { daylight: true, chemistry: clean }, appearance: { quality: 'medium' } });
+    settle(h, 6);
+    const swatch = firstTracked(h.root('residents').children[0]).color.clone();
+    settle(h, 120);
+    const later = firstTracked(h.root('residents').children[0]).color;
+    expect(later.r).toBeCloseTo(swatch.r, 6);
+    expect(later.g).toBeCloseTo(swatch.g, 6);
+    expect(later.b).toBeCloseTo(swatch.b, 6);
+  });
+
+  it('draws swimmers toward the surface on low oxygen or high ammonia, and leaves bottom dwellers alone', () => {
+    const bottomFish = { ...resident('bristlenose', 2), zone: 'bottom', locomotion: 'crawl' };
+    const stock = [...withCondition({ stress: 10, health: 90 }), bottomFish];
+    const h = harness({ fish: stock, equipment: lit, model: { daylight: true, chemistry: clean }, appearance: { quality: 'medium' } });
+    settle(h, 30);
+    const heights = () => {
+      const out = { swimmers: [], bottom: [] };
+      for (const g of h.root('residents').children) (g.userData.bottom || g.userData.stationary ? out.bottom : out.swimmers).push(g.position.y);
+      return out;
+    };
+    expect(h.root('residents').children.some(g => g.userData.bottom)).toBe(true);
+    const calm = heights();
+    const calmSwim = calm.swimmers.reduce((a, b) => a + b, 0) / calm.swimmers.length;
+
+    for (const bad of [{ dissolvedO2: 1.5, ammonia: 0, nitrite: 0 }, { dissolvedO2: 7.5, ammonia: 2.8, nitrite: 0 }, { dissolvedO2: 7.5, ammonia: 0, nitrite: 2.6 }]) {
+      h.update({ model: { daylight: true, chemistry: bad } });settle(h, 30);
+      const sick = heights();
+      const sickSwim = sick.swimmers.reduce((a, b) => a + b, 0) / sick.swimmers.length;
+      expect(sickSwim).toBeGreaterThan(calmSwim);
+      // A bottom dweller stays on the bottom. Comparing it to the swimmers is
+      // too weak - one lifted halfway up the tank is still below them.
+      expect(sick.bottom.length).toBeGreaterThan(0);
+      const calmBottom = Math.max(...calm.bottom);
+      expect(Math.max(...sick.bottom)).toBeLessThan(calmBottom + 0.25);
+      h.update({ model: { daylight: true, chemistry: clean } });settle(h, 30);
+    }
+  });
+
+  it('reads no distress at all when the water has not been measured', () => {
+    const h = harness({ fish: withCondition({ stress: 0, health: 100 }), equipment: lit, model: { daylight: true, chemistry: { dissolvedO2: null, ammonia: null, nitrite: null } }, appearance: { quality: 'medium' } });
+    settle(h, 8);
+    // Unknown chemistry must not invent a symptom.
+    expect(h.root('environment').userData.surfaceDistressCue).toBe(0);
+  });
+
+  it('clouds the water for a bloom and greens it for algae, from the same clean baseline', () => {
+    const h = harness({ fish: [], equipment: lit, model: { daylight: true, chemistry: clean }, appearance: { quality: 'medium' } });
+    h.flush();
+    const cue = () => h.root('environment').userData.clarityCue;
+    expect(cue()).toEqual({ algae: 0, bloom: 0 });
+
+    h.update({ algaeLevel: 85 });h.flush();
+    expect(cue().algae).toBeGreaterThan(0.5);
+    expect(cue().bloom).toBe(0);
+
+    h.update({ algaeLevel: 0, model: { daylight: true, chemistry: { dissolvedO2: 7.5, ammonia: 2.6, nitrite: 0 } } });h.flush();
+    expect(cue().algae).toBe(0);
+    expect(cue().bloom).toBeGreaterThan(0.5);
+
+    h.update({ model: { daylight: true, chemistry: clean } });h.flush();
+    expect(cue()).toEqual({ algae: 0, bloom: 0 });
+  });
+});

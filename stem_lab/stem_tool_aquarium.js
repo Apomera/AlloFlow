@@ -11844,6 +11844,9 @@ window.StemLab = window.StemLab || {
     var persistentTextures = [], fishById = {}, plantById = {}, habitatSignature = '', overlaySignature = '', currentMood = '';
     // Scratch objects for per-frame contact-shadow orientation (avoids allocating
     // a quaternion per resident per frame).
+    // Desaturated grey-tan that stressed/ailing fish fade toward, matching the
+    // sallow tone unhealthy plants already use.
+    var symptomPallor=new THREE.Color(0x93897a).convertSRGBToLinear();
     var shadowWorldQuat=new THREE.Quaternion();
     var shadowFlatQuat=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2);
     function clamp(value, low, high) { return Math.max(low, Math.min(high, value)); }
@@ -12298,6 +12301,42 @@ window.StemLab = window.StemLab || {
     // rigid signpost: displacement grows with height above the plant's own base.
     // Built once per plant and reused every frame; geometries shared between
     // plants are cached by uuid so a repeated buffer is only rigged once.
+    // Visible condition cues. The curriculum teaches clamped fins and lost
+    // colour as the first-line signs a learner should NOTICE and then confirm
+    // with a water test, so the view has to show them. Every value here is a
+    // presentation cue driven by the model's own stress/vitality numbers - it
+    // diagnoses nothing and measures nothing.
+    function buildSymptomRig(group){
+      var swatches=[];
+      group.traverse(function(node){
+        if(!node.material)return;
+        (Array.isArray(node.material)?node.material:[node.material]).forEach(function(mat){
+          if(!mat||!mat.color||mat.userData&&mat.userData.symptomTracked)return;
+          mat.userData=mat.userData||{};mat.userData.symptomTracked=true;
+          swatches.push({material:mat,healthy:mat.color.clone()});
+        });
+      });
+      return swatches.length?{swatches:swatches,applied:-1}:null;
+    }
+
+    // Stress and poor vitality both drain colour; the curriculum calls this
+    // "loss of color overnight = stress, not pigment disease".
+    function applySymptomColour(group,data){
+      var rig=group.userData.symptomRig;
+      if(!rig)return;
+      var stress=clamp(data.stress||0,0,100)/100;
+      var ailing=data.health===null?0:clamp((60-data.health)/60,0,1);
+      var fade=clamp(stress*.55+ailing*.62,0,.82);
+      // Only repaint when it actually changes, so a calm tank costs nothing.
+      if(Math.abs(fade-rig.applied)<.01)return;
+      rig.applied=fade;
+      rig.swatches.forEach(function(swatch){
+        swatch.material.color.copy(swatch.healthy);
+        if(fade>0)swatch.material.color.lerp(symptomPallor,fade);
+      });
+      group.userData.conditionColourFade=+fade.toFixed(3);
+    }
+
     function buildPlantFlexRig(group){
       if(appearanceOptions().quality==='low')return null;
       var entries=[],lowest=Infinity,highest=-Infinity,seen={};
@@ -13328,6 +13367,8 @@ window.StemLab = window.StemLab || {
       group.traverse(function(node){node.userData.fishInstanceId=fish.instanceId||fish.id;});
       var usedFishMaterials=new Set();group.traverse(function(node){if(node.material)(Array.isArray(node.material)?node.material:[node.material]).forEach(function(mat){usedFishMaterials.add(mat);});});
       fishMaterials.forEach(function(mat){if(!usedFishMaterials.has(mat))mat.dispose();});
+      group.userData.symptomRig=buildSymptomRig(group);
+      group.userData.conditionCueNote='Colour fade, fin clamping and surface hanging are illustrative cues from modeled stress and vitality; they are not a diagnosis, a measurement, or a species-specific symptom.';
       creatureRoot.add(group);updateFishState(group,fish,index,true);return group;
     }
 
@@ -13611,7 +13652,11 @@ window.StemLab = window.StemLab || {
       var active=light.installed?light.on:daylight===null?options.lighting!=='night':daylight;
       var output=active?light.intensity:0;
       var mood=active?(typeof options.lighting==='string'?options.lighting:'day'):'night';
-      var moodKey=JSON.stringify([!!options.saltwater,mood,output,appearance.lightIntensity,appearance.backdrop,appearance.waterShimmer]);
+      var moodChem=(options.model&&options.model.chemistry)||{};
+      var moodKey=JSON.stringify([!!options.saltwater,mood,output,appearance.lightIntensity,appearance.backdrop,appearance.waterShimmer,
+        Math.round(clamp(Number(options.algaeLevel)||0,0,100)),
+        typeof moodChem.ammonia==='number'?Math.round(moodChem.ammonia*20):null,
+        typeof moodChem.nitrite==='number'?Math.round(moodChem.nitrite*20):null]);
       if(moodKey!==currentMood){
         currentMood=moodKey;var night=!active||mood==='night',blue=mood==='blue',marine=!!options.saltwater,gain=appearance.lightIntensity;
         scene.background.set(night?0x071320:marine?0x071f35:0x081f27);scene.fog.color.copy(scene.background);
@@ -13620,7 +13665,19 @@ window.StemLab = window.StemLab || {
         fillLight.color.set(marine?0x4badff:0x6cdad0);fillLight.intensity=(night?.2:blue?.54:.32)*gain;
         rimLight.intensity=night?.15:.36*gain;renderer.toneMappingExposure=night?.86:1.02;
         backMaterial.color.set(appearance.backdrop==='black'?0x07100f:marine?0xb2d4ef:0xc8dfd8).convertSRGBToLinear();
-        waterMaterial.color.set(marine?0x62a8de:0x79c6b6);waterMaterial.opacity=night?.045:.025;
+        // Clarity follows the modeled load: a bacterial bloom whitens and
+        // thickens the water, heavy algae greens it. Presentation only - it is
+        // not a turbidity measurement and does not diagnose a bloom.
+        var clarityAlgae=clamp(Number(options.algaeLevel)||0,0,100)/100;
+        var clarityAmmonia=typeof (options.model&&options.model.chemistry||{}).ammonia==='number'?clamp(((options.model.chemistry.ammonia)-.4)/2.2,0,1):0;
+        var clarityNitrite=typeof (options.model&&options.model.chemistry||{}).nitrite==='number'?clamp(((options.model.chemistry.nitrite)-.4)/2.2,0,1):0;
+        var bloomCue=clamp(Math.max(clarityAmmonia,clarityNitrite),0,1);
+        var waterTint=new THREE.Color(marine?0x62a8de:0x79c6b6);
+        if(clarityAlgae>0)waterTint.lerp(new THREE.Color(0x7fae4e),clarityAlgae*.6);
+        if(bloomCue>0)waterTint.lerp(new THREE.Color(0xd8e4e0),bloomCue*.7);
+        waterMaterial.color.copy(waterTint);
+        waterMaterial.opacity=(night?.045:.025)+clarityAlgae*.055+bloomCue*.085;
+        environmentRoot.userData.clarityCue={algae:+clarityAlgae.toFixed(3),bloom:+bloomCue.toFixed(3)};
         surfaceMaterial.color.set(blue?0x71b8ee:0xc5f1dd);surfaceMaterial.opacity=night?.025:.075*output;waterline.material.opacity=night?.07:.18;
         causticMaterial.userData=causticMaterial.userData||{};causticMaterial.userData.baseOpacity=night?0:(blue?.11:.16)*output*appearance.waterShimmer;causticMaterial.opacity=causticMaterial.userData.baseOpacity;causticFloor.visible=causticMaterial.opacity>0;environmentRoot.userData.waterShimmer=appearance.waterShimmer;
         // Atmosphere follows the same mood the water does: shafts only exist
@@ -13786,6 +13843,15 @@ window.StemLab = window.StemLab || {
       animationFrame=0;if(!isVisible())return;
       var moving=!(reducedMotion||options.reducedMotion||options.paused),dt=lastTime===null?0:clamp((now-lastTime)/1000,0,.05);lastTime=now;
       if(moving){motionTime+=dt;if(Number.isFinite(feedingAge))feedingAge+=dt;}
+      // "Gasping at surface = ammonia poisoning, not gill disease" is the first
+      // thing this tool teaches about reading a tank, so low oxygen and high
+      // ammonia/nitrite draw fish toward the surface. Illustrative cue only.
+      var chem=(options.model&&options.model.chemistry)||{};
+      var lowOxygen=typeof chem.dissolvedO2==='number'?clamp((5.5-chem.dissolvedO2)/3.5,0,1):0;
+      var ammoniaLoad=typeof chem.ammonia==='number'?clamp((chem.ammonia-.25)/1.75,0,1):0;
+      var nitriteLoad=typeof chem.nitrite==='number'?clamp((chem.nitrite-.25)/1.75,0,1):0;
+      var surfaceDistressCue=clamp(Math.max(lowOxygen,ammoniaLoad,nitriteLoad),0,1);
+      environmentRoot.userData.surfaceDistressCue=+surfaceDistressCue.toFixed(3);
       var quality=appearanceOptions().quality,frameInterval=quality==='low'?42:quality==='high'?22:32;
       if(!moving||needsRender||now-lastRender>=frameInterval){
         if(moving){
@@ -13808,6 +13874,12 @@ window.StemLab = window.StemLab || {
                 tx=tx*(1-interest)+feedX*interest;tz=tz*(1-interest)+feedZ*interest;ty=ty*(1-interest)+foodY*interest;
                 dx=tx-group.position.x;dz=tz-group.position.z;
               }
+            }
+            // Bottom dwellers and sessile organisms do not hang at the surface.
+            if(surfaceDistressCue>0&&!data.bottom&&!data.stationary){
+              var gaspPull=surfaceDistressCue*clamp(.45+(data.stress||0)/220,0,1);
+              var gaspY=waterTop()-.16-data.bodyMaxY;
+              ty=ty*(1-gaspPull)+gaspY*gaspPull;
             }
             tx=clamp(tx,-data.boundX,data.boundX);tz=clamp(tz,-data.boundZ,data.boundZ);ty=clamp(ty,data.minY,data.maxY);
             var ease=Math.min(1,.07+dt*3);group.position.x+=(tx-group.position.x)*ease;group.position.z+=(tz-group.position.z)*ease;group.position.y+=(ty-group.position.y)*ease;
@@ -13833,7 +13905,13 @@ window.StemLab = window.StemLab || {
               for(var v=0;v<positions.count;v++){var weight=tissue.weights[v],phase=tissue.phases[v],wave=Math.sin(motionTime*.85+phase),cross=Math.cos(motionTime*.63+phase*.8);positions.setXYZ(v,tissue.rest[v*3]+amplitude*weight*wave,tissue.rest[v*3+1],tissue.rest[v*3+2]+amplitude*.65*weight*cross);}
               positions.needsUpdate=true;tissue.mesh.geometry.computeVertexNormals();tissue.mesh.geometry.computeBoundingBox();tissue.mesh.geometry.computeBoundingSphere();data.tissueFlowOutput=filterFlow.on?filterFlow.intensity:0;
             }
-            if(data.tail)data.tail.rotation.y=Math.sin(motionTime*(data.speed*18+3)+data.phase)*(data.shape==='pufferfish'?.075:data.shape==='betta'?.10:data.shape==='angelfish'?.13:data.shape==='tang'?.15:data.shape==='clownfish'?.14:.16+data.activityHealth*.0009);
+            applySymptomColour(group,data);
+            // Clamped fins: held tight to the body rather than spread. Scales
+            // the existing stroke amplitude, so every species keeps its own gait.
+            var clampCue=clamp((data.stress||0)/100,0,1)*.62+(data.health===null?0:clamp((55-data.health)/55,0,1))*.5;
+            var finSpread=clamp(1-clampCue,.22,1);
+            data.finClampCue=+clampCue.toFixed(3);
+            if(data.tail)data.tail.rotation.y=Math.sin(motionTime*(data.speed*18+3)+data.phase)*(data.shape==='pufferfish'?.075:data.shape==='betta'?.10:data.shape==='angelfish'?.13:data.shape==='tang'?.15:data.shape==='clownfish'?.14:.16+data.activityHealth*.0009)*clamp(1-(data.finClampCue||0)*.55,.35,1);
             if(group.bettaMembranes)group.bettaMembranes.forEach(function(tissue,index){
               var geometry=tissue.mesh.geometry,positions=geometry.attributes.position;
               for(var v=0;v<positions.count;v++){var x=tissue.rest[v*3],y=tissue.rest[v*3+1],wave=Math.sin(motionTime*3.3+data.phase+index*.8-x*5+y*3)*.75+Math.sin(motionTime*5.2+data.phase+x*10)*.25;positions.setZ(v,tissue.rest[v*3+2]+.026*tissue.weights[v]*wave);}
@@ -13841,12 +13919,12 @@ window.StemLab = window.StemLab || {
             });
             (data.mudskipperPectorals||[]).forEach(function(paddle){paddle.rotation.y=paddle.userData.side*Math.sin(motionTime*(1.5+data.activityHealth*.004)+data.phase)*.065;});
             (data.fins||[]).forEach(function(fin,index){
-              if(fin.userData.clownPectoral)fin.rotation.y=fin.userData.baseYaw+fin.userData.side*Math.sin(motionTime*5.8+data.phase)*.17;
-              else if(fin.userData.tangPectoral)fin.rotation.y=fin.userData.baseYaw+fin.userData.side*Math.sin(motionTime*5.6+data.phase)*.13;
-              else if(fin.userData.angelPectoral)fin.rotation.y=fin.userData.baseYaw+fin.userData.side*Math.sin(motionTime*5+data.phase)*.10;
-              else if(fin.userData.bettaPectoral)fin.rotation.y=fin.userData.baseYaw+fin.userData.side*Math.sin(motionTime*7+data.phase)*.18;
-              else if(fin.userData.goldfishPaddle){var pelvic=fin.userData.pelvic;fin.rotation.y=fin.userData.baseYaw+fin.userData.side*Math.sin(motionTime*4.2+data.phase+(pelvic?.6:0))*(pelvic?.07:.12);}
-              else{var scull=fin.userData.pufferScull===true;fin.rotation.y=(fin.userData.baseYaw||0)+Math.sin(motionTime*(scull?7.2:4.5)+data.phase+index)*(scull?.18:.11);}
+              if(fin.userData.clownPectoral)fin.rotation.y=fin.userData.baseYaw+fin.userData.side*Math.sin(motionTime*5.8+data.phase)*.17*finSpread;
+              else if(fin.userData.tangPectoral)fin.rotation.y=fin.userData.baseYaw+fin.userData.side*Math.sin(motionTime*5.6+data.phase)*.13*finSpread;
+              else if(fin.userData.angelPectoral)fin.rotation.y=fin.userData.baseYaw+fin.userData.side*Math.sin(motionTime*5+data.phase)*.10*finSpread;
+              else if(fin.userData.bettaPectoral)fin.rotation.y=fin.userData.baseYaw+fin.userData.side*Math.sin(motionTime*7+data.phase)*.18*finSpread;
+              else if(fin.userData.goldfishPaddle){var pelvic=fin.userData.pelvic;fin.rotation.y=fin.userData.baseYaw+fin.userData.side*Math.sin(motionTime*4.2+data.phase+(pelvic?.6:0))*(pelvic?.07:.12)*finSpread;}
+              else{var scull=fin.userData.pufferScull===true;fin.rotation.y=(fin.userData.baseYaw||0)+Math.sin(motionTime*(scull?7.2:4.5)+data.phase+index)*(scull?.18:.11)*finSpread;}
             });
           });
           var flow=equipmentState('filter');var sway=.013+(flow.on?flow.intensity*.018:0);
