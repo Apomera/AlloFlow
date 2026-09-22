@@ -14080,6 +14080,7 @@ window.SelHub = window.SelHub || {
   // Multi-step prompts for emotional naming practice (per Dan Siegel research)
   var NAME_IT_PROMPTS = [
     {
+      _k: 'sel.emotions.ni_body_sensation_first',
       id: 'body_sensation_first',
       forBand: 'all',
       trigger: 'When you notice a sensation in your body but cannot name a feeling',
@@ -14097,6 +14098,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel, D. (2010) Mindsight; Lieberman et al. (2007) Putting feelings into words: affect labeling disrupts amygdala activity.'
     },
     {
+      _k: 'sel.emotions.ni_vague_feeling_first',
       id: 'vague_feeling_first',
       forBand: 'all',
       trigger: 'When you feel weird, off, or not-yourself but cannot pinpoint why',
@@ -14114,6 +14116,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); Lieberman et al. (2007); Barrett (2017) on emotional granularity.'
     },
     {
+      _k: 'sel.emotions.ni_strong_feeling_first',
       id: 'strong_feeling_first',
       forBand: 'all',
       trigger: 'When the feeling is huge, fills your whole body or mind, and is hard to think through',
@@ -14131,6 +14134,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); Bolte Taylor (2008); DBT TIPP (Linehan, 1993).'
     },
     {
+      _k: 'sel.emotions.ni_mixed_feeling_first',
       id: 'mixed_feeling_first',
       forBand: 'all',
       trigger: 'When you feel more than one thing at once, and they seem to contradict',
@@ -14147,6 +14151,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); Larsen, McGraw & Cacioppo (2001) on mixed emotions; ACT acceptance (Hayes).'
     },
     {
+      _k: 'sel.emotions.ni_trigger_based',
       id: 'trigger_based',
       forBand: 'all',
       trigger: 'Something just happened (text, look, comment, news), and you are reacting',
@@ -14164,6 +14169,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); trauma triggers (van der Kolk, 2014); affect labeling (Lieberman, 2007).'
     },
     {
+      _k: 'sel.emotions.ni_end_of_day_reflection',
       id: 'end_of_day_reflection',
       forBand: 'all',
       trigger: 'At the end of your day, before sleep or in a quiet moment',
@@ -14180,6 +14186,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); Barrett (2017) How Emotions Are Made; expressive writing (Pennebaker, 1986).'
     },
     {
+      _k: 'sel.emotions.ni_after_a_conflict',
       id: 'after_a_conflict',
       forBand: 'all',
       trigger: 'After a fight, hard conversation, or break in connection',
@@ -14197,6 +14204,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); Gottman repair work; NVC (Rosenberg, 2003).'
     },
     {
+      _k: 'sel.emotions.ni_after_a_success',
       id: 'after_a_success',
       forBand: 'all',
       trigger: 'After accomplishing something meaningful, big or small',
@@ -14213,6 +14221,7 @@ window.SelHub = window.SelHub || {
       research: 'Bryant & Veroff (2007) on savoring; Seligman positive psychology; capitalization (Gable, 2004).'
     },
     {
+      _k: 'sel.emotions.ni_after_alone_all_day',
       id: 'after_alone_all_day',
       forBand: 'all',
       trigger: 'After being alone for many hours or a full day',
@@ -14229,6 +14238,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); solitude research (Long & Averill, 2003); loneliness (Cacioppo, 2008).'
     },
     {
+      _k: 'sel.emotions.ni_after_hard_conversation',
       id: 'after_hard_conversation',
       forBand: 'all',
       trigger: 'After a heavy or vulnerable conversation (therapy, hard talk, disclosure)',
@@ -14244,6 +14254,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); affective neuroscience and recovery (Davidson, 2012).'
     },
     {
+      _k: 'sel.emotions.ni_before_sleep',
       id: 'before_sleep',
       forBand: 'all',
       trigger: 'When you are in bed but mind will not settle',
@@ -14259,6 +14270,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); cognitive shuffle (Beaudoin); sleep and emotion (Walker, 2017).'
     },
     {
+      _k: 'sel.emotions.ni_upon_waking',
       id: 'upon_waking',
       forBand: 'all',
       trigger: 'In the first minutes of waking, before phone or full thought',
@@ -14274,6 +14286,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); cortisol awakening response (Fries et al., 2009); phone use and stress.'
     },
     {
+      _k: 'sel.emotions.ni_before_big_event',
       id: 'before_big_event',
       forBand: 'all',
       trigger: 'In the hour before a presentation, game, performance, test, or hard meeting',
@@ -14290,6 +14303,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); excitement reappraisal (Brooks, 2014); power posing meta-analysis (Cuddy).'
     },
     {
+      _k: 'sel.emotions.ni_after_big_event',
       id: 'after_big_event',
       forBand: 'all',
       trigger: 'After a presentation, game, test, performance, or major moment',
@@ -14306,6 +14320,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); cortisol recovery (McEwen, 2007); athletic recovery science.'
     },
     {
+      _k: 'sel.emotions.ni_cant_figure_out_whats_wrong',
       id: 'cant_figure_out_whats_wrong',
       forBand: 'all',
       trigger: 'When you know something is off but cannot identify what',
@@ -14322,6 +14337,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); interoception (Craig, 2009); basic needs and mood (HALT in addiction work).'
     },
     {
+      _k: 'sel.emotions.ni_should_feel_different',
       id: 'should_feel_different',
       forBand: 'all',
       trigger: 'When everyone says you should feel one way, but you feel another',
@@ -14338,6 +14354,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); authenticity research (Wood et al., 2008); emotion suppression cost (Gross, 2002).'
     },
     {
+      _k: 'sel.emotions.ni_fine_but_not',
       id: 'fine_but_not',
       forBand: 'all',
       trigger: 'When you keep saying \'fine\' but suspect you are not',
@@ -14353,6 +14370,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); emotional labor (Hochschild, 1983); authenticity (Wood et al., 2008).'
     },
     {
+      _k: 'sel.emotions.ni_grief_wave_naming',
       id: 'grief_wave_naming',
       forBand: 'all',
       trigger: 'When grief comes in a wave, especially long after the loss',
@@ -14369,6 +14387,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); continuing bonds (Klass, 1996); grief waves (Bonanno, 2009).'
     },
     {
+      _k: 'sel.emotions.ni_proud_but_uncomfortable',
       id: 'proud_but_uncomfortable',
       forBand: 'all',
       trigger: 'When you achieved something but feel weird about being proud of it',
@@ -14385,6 +14404,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); authentic vs hubristic pride (Tracy & Robins, 2007); intergenerational scripts.'
     },
     {
+      _k: 'sel.emotions.ni_jealous_not_wanting_to_be',
       id: 'jealous_not_wanting_to_be',
       forBand: 'all',
       trigger: 'When you feel jealous of someone you actually like or love',
@@ -14401,6 +14421,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); benign vs malicious envy (Van de Ven, 2009); social comparison.'
     },
     {
+      _k: 'sel.emotions.ni_shame_spiral_check',
       id: 'shame_spiral_check',
       forBand: 'all',
       trigger: 'When you suspect you are in a shame spiral (everything wrong, you are the problem)',
@@ -14417,6 +14438,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); Brown (2006) on shame; self-compassion (Neff, 2003).'
     },
     {
+      _k: 'sel.emotions.ni_numb_wants_to_feel',
       id: 'numb_wants_to_feel',
       forBand: 'all',
       trigger: 'When you have been numb and want to come back to feeling',
@@ -14433,6 +14455,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); dorsal vagal shutdown (Porges, 2011); somatic experiencing (Levine).'
     },
     {
+      _k: 'sel.emotions.ni_overwhelm_shutting_down',
       id: 'overwhelm_shutting_down',
       forBand: 'all',
       trigger: 'When you are so overwhelmed you cannot do anything',
@@ -14450,6 +14473,7 @@ window.SelHub = window.SelHub || {
       research: 'Siegel (2010); cognitive load theory (Sweller); dorsal vagal (Porges).'
     },
     {
+      _k: 'sel.emotions.ni_neurodivergent_body_first',
       id: 'neurodivergent_body_first',
       forBand: 'all',
       trigger: 'For autistic / alexithymic users: when words for feelings do not come',
@@ -14467,6 +14491,7 @@ window.SelHub = window.SelHub || {
       research: 'Bird & Cook (2013) alexithymia; Siegel (2010); interoception (Craig, 2009); autism and emotion (Mazefsky, 2014).'
     },
     {
+      _k: 'sel.emotions.ni_trauma_safety_first',
       id: 'trauma_safety_first',
       forBand: 'all',
       trigger: 'For trauma-affected users: when emotion check-ins feel unsafe',
@@ -18053,6 +18078,24 @@ var EMOTION_JOURNAL_TEMPLATES = [
             ? __alloT(em._k + '_' + field + '_' + i, v) : v;
         });
       };
+      // NAME_IT_PROMPTS rows can also arrive from toolData, so each
+      // helper falls back when _k is absent.
+      var _niText = function (p, field) {
+        if (!p) return '';
+        var v = p[field];
+        if (typeof v !== 'string') return '';
+        return p._k ? __alloT(p._k + '_' + field, v) : v;
+      };
+      var _niStepText = function (p, i, v) {
+        if (typeof v !== 'string') return '';
+        return (p && p._k) ? __alloT(p._k + '_s' + i + '_prompt', v) : v;
+      };
+      // The chip LABEL only. The value stays English, because niAnswers
+      // persists it and 21043 compares it back with ===.
+      var _niOpt = function (p, i, j, v) {
+        if (typeof v !== 'string') return '';
+        return (p && p._k) ? __alloT(p._k + '_s' + i + '_opt' + j, v) : v;
+      };
       var _emoWord = function (id) {
         if (!id) return id;
         var label = String(id).charAt(0).toUpperCase() + String(id).slice(1);
@@ -20998,13 +21041,13 @@ if (activeTab === 'nameit') {
   var niStep = d.niStep || 0;
   var niAnswers = d.niAnswers || {};
   if (typeof NAME_IT_PROMPTS === 'undefined' || !NAME_IT_PROMPTS.length) {
-    nameItContent = h('div', { style: { padding: 40, textAlign: 'center', color: P.textMuted } }, 'Name-It-To-Tame-It guided prompts are loading. Check back soon.');
+    nameItContent = h('div', { style: { padding: 40, textAlign: 'center', color: P.textMuted } }, __alloT('sel.emotions.ni_loading', 'Name-It-To-Tame-It guided prompts are loading. Check back soon.'));
   } else if (!niPromptId) {
     var available = NAME_IT_PROMPTS.filter(function(p) { return !p.forBand || p.forBand === band || p.forBand === 'all'; });
     nameItContent = h('div', { style: { padding: '0 12px 24px' } },
       h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
         h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: ST('#fbbf24') } }, 'Name It to Tame It: '),
+          h('strong', { style: { color: ST('#fbbf24') } }, __alloT('sel.emotions.ni_heading', 'Name It to Tame It: ')),
           'Naming an emotion shrinks it. The fMRI research (Lieberman et al., 2007) shows affect labeling reduces amygdala activation. Pick a starting point that fits how you feel right now.'
         )
       ),
@@ -21014,58 +21057,60 @@ if (activeTab === 'nameit') {
             onClick: function() { upd({ niPromptId: p.id, niStep: 0, niAnswers: {} }); if (soundEnabled) sfxClick(); },
             style: { padding: 14, borderRadius: 10, background: P.card, border: ('1px solid ' + P.borderDim), color: P.text, fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'left' }
           },
-            h('div', { style: { color: ST('#fbbf24'), fontSize: 11, textTransform: 'uppercase', fontWeight: 700, marginBottom: 4 } }, 'When'),
-            h('div', null, p.trigger)
+            h('div', { style: { color: ST('#fbbf24'), fontSize: 11, textTransform: 'uppercase', fontWeight: 700, marginBottom: 4 } }, __alloT('sel.emotions.ni_when', 'When')),
+            h('div', null, _niText(p, 'trigger'))
           );
         })
       )
     );
   } else {
     var prompt = NAME_IT_PROMPTS.find(function(p) { return p.id === niPromptId; });
-    if (!prompt) { upd({ niPromptId: null }); nameItContent = h('div', null, 'Loading...'); }
+    if (!prompt) { upd({ niPromptId: null }); nameItContent = h('div', null, __alloT('sel.emotions.ni_loading_short', 'Loading...')); }
     else {
       var steps = prompt.steps || [];
       var isLast = niStep >= steps.length - 1;
       var step = steps[niStep];
       nameItContent = h('div', { style: { padding: '0 12px 24px' } },
         h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
-          h('div', { style: { color: P.textMuted, fontSize: 11, marginBottom: 4 } }, 'Step ' + (niStep + 1) + ' of ' + steps.length),
+          h('div', { style: { color: P.textMuted, fontSize: 11, marginBottom: 4 } },
+            __alloT('sel.emotions.ni_step_of', 'Step %1 of %2')
+              .replace('%1', String(niStep + 1)).replace('%2', String(steps.length))),
           h('div', { style: { height: 6, borderRadius: 3, background: P.bg, overflow: 'hidden' } },
             h('div', { style: { height: '100%', width: ((niStep + 1) / steps.length * 100) + '%', background: '#5eead4', transition: 'width 0.3s' } })
           )
         ),
         step ? h('div', { style: { padding: 18, borderRadius: 12, background: '#042f2e', border: '1px solid #14b8a6' } },
-          h('p', { style: { margin: 0, color: ST('#f0fdfa'), fontSize: 16, lineHeight: 1.6, fontWeight: 500 } }, step.prompt),
+          h('p', { style: { margin: 0, color: ST('#f0fdfa'), fontSize: 16, lineHeight: 1.6, fontWeight: 500 } }, _niStepText(prompt, niStep, step.prompt)),
           step.options && step.options.length ? h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 } },
-            step.options.map(function(opt) {
+            step.options.map(function(opt, optIdx) {
               return h('button', { key: opt,
                 onClick: function() { var n = Object.assign({}, niAnswers); n[niStep] = opt; upd({ niAnswers: n }); if (soundEnabled) sfxClick(); },
                 style: { padding: '6px 12px', borderRadius: 16, border: '1px solid ' + (niAnswers[niStep] === opt ? '#5eead4' : P.borderDim), background: niAnswers[niStep] === opt ? '#14b8a655' : P.card, color: niAnswers[niStep] === opt ? '#5eead4' : P.text2, fontSize: 12, cursor: 'pointer' }
-              }, opt);
+              }, _niOpt(prompt, niStep, optIdx, opt));
             })
           ) : null,
-          step.invitesAnswer ? h('textarea', { 'aria-label': step.prompt, rows: 3, value: niAnswers[niStep] || '',
+          step.invitesAnswer ? h('textarea', { 'aria-label': _niStepText(prompt, niStep, step.prompt), rows: 3, value: niAnswers[niStep] || '',
             onChange: function(e) { var n = Object.assign({}, niAnswers); n[niStep] = e.target.value; upd({ niAnswers: n }); },
-            placeholder: 'Take your time...',
+            placeholder: __alloT('sel.emotions.ni_placeholder', 'Take your time...'),
             style: { width: '100%', marginTop: 10, padding: 10, borderRadius: 8, border: ('1px solid ' + P.borderDim), background: P.bg, color: P.text3, fontSize: 13, lineHeight: 1.5, fontFamily: 'inherit', resize: 'vertical' }
           }) : null
         ) : null,
         isLast ? h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: P.bg, border: '1px solid #5eead4' } },
-          h('div', { style: { color: ST('#5eead4'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Closing insight'),
-          h('p', { style: { margin: 0, color: P.text3, fontSize: 13, lineHeight: 1.6 } }, prompt.closingInsight),
-          prompt.followUp ? h('p', { style: { margin: '8px 0 0', color: ST('#5eead4'), fontSize: 12, fontStyle: 'italic' } }, prompt.followUp) : null
+          h('div', { style: { color: ST('#5eead4'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, __alloT('sel.emotions.ni_closing_label', 'Closing insight')),
+          h('p', { style: { margin: 0, color: P.text3, fontSize: 13, lineHeight: 1.6 } }, _niText(prompt, 'closingInsight')),
+          prompt.followUp ? h('p', { style: { margin: '8px 0 0', color: ST('#5eead4'), fontSize: 12, fontStyle: 'italic' } }, _niText(prompt, 'followUp')) : null
         ) : null,
         h('div', { style: { marginTop: 14, display: 'flex', justifyContent: 'space-between', gap: 10 } },
           h('button', { disabled: niStep === 0, onClick: function() { upd({ niStep: niStep - 1 }); if (soundEnabled) sfxClick(); },
             style: { padding: '8px 16px', borderRadius: 6, border: ('1px solid ' + P.borderDim), background: P.bg, color: niStep === 0 ? P.borderDim : P.textMuted, fontSize: 13, cursor: niStep === 0 ? 'not-allowed' : 'pointer' }
-          }, '← Back'),
+          }, '← ' + __alloT('sel.emotions.ni_back', 'Back')),
           isLast ?
-            h('button', { onClick: function() { upd({ niPromptId: null, niStep: 0 }); if (soundEnabled) sfxBadge(); addToast && addToast('Practice complete! Naming what you feel is a powerful skill.', 'success'); },
+            h('button', { onClick: function() { upd({ niPromptId: null, niStep: 0 }); if (soundEnabled) sfxBadge(); addToast && addToast(__alloT('sel.emotions.ni_complete_toast', 'Practice complete! Naming what you feel is a powerful skill.'), 'success'); },
               style: { padding: '8px 18px', borderRadius: 6, border: 'none', background: '#5eead4', color: P.bg, fontSize: 13, fontWeight: 700, cursor: 'pointer' }
-            }, 'Finish ✓') :
+            }, __alloT('sel.emotions.ni_finish', 'Finish') + ' ✓') :
             h('button', { onClick: function() { upd({ niStep: niStep + 1 }); if (soundEnabled) sfxClick(); },
               style: { padding: '8px 16px', borderRadius: 6, border: 'none', background: '#1d4ed8', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
-            }, 'Next →')
+            }, __alloT('sel.emotions.ni_next', 'Next') + ' →')
         )
       );
     }
