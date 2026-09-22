@@ -5372,7 +5372,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the notes tab (sn
 <div style="font-size:13.5px;font-weight:800;color:var(--allo-stem-text, #f1f5f9);margin-bottom:6px">❌ Myth: All the famous dinosaurs lived at the same time.</div>
 <div style="font-size:13px;margin-bottom:6px;line-height:1.5">
 <strong style="color:var(--allo-stem-text, #f1f5f9)">✅ Reality: </strong>They are spread across more than 150 million years. Many never met.</div>
-<div style="font-size:12.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.5">Stegosaurus is closer in time to us than to T. rex.</div>
+<div style="font-size:12.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.5">T. rex is closer in time to us than to Stegosaurus — about 84 million years separate those two.</div>
 </div>
 <div style="background:var(--allo-stem-panel, #1e293b);border:1px solid var(--allo-stem-border, #334155);border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,0.28);padding:14px;color:var(--allo-stem-text, #f1f5f9)">
 <div style="font-size:13.5px;font-weight:800;color:var(--allo-stem-text, #f1f5f9);margin-bottom:6px">❌ Myth: All dinosaurs were huge.</div>
