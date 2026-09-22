@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-09-21T20:22:30.234Z
+Generated: 2026-09-22T11:03:11.027Z
 
 ## Scope
 
@@ -63,12 +63,12 @@ Generated: 2026-09-21T20:22:30.234Z
 | `bakingScience` Baking Lab | science | standard | 16 | 0 | 0 | 0 | 0 | 0 |  |
 | `base10` Math Manipulatives | math | standard | 34 | 2 | 0 | 0 | 0 | 0 |  |
 | `beehive` Beehive Simulator | science | standard | 119 | 31 | 1 | 0 | 0 | 0 |  |
-| `behaviorLab` Behavior Lab | science | standard | 19 | 5 | 0 | 0 | 0 | 0 |  |
+| `behaviorLab` Behavior Lab | science | standard | 21 | 5 | 0 | 0 | 0 | 0 |  |
 | `bikeLab` BikeLab: Physics & Repair | life-skills | standard | 11 | 0 | 0 | 0 | 0 | 0 |  |
 | `birdLab` BirdLab — I-Spy Ornithology | science | standard | 127 | 1 | 0 | 0 | 0 | 0 |  |
 | `brainAtlas` Brain Atlas Explorer | science | standard | 71 | 1 | 1 | 0 | 0 | 0 |  |
 | `bridgeLab` Bridge Engineering Lab | science | standard | 26 | 9 | 0 | 0 | 0 | 0 |  |
-| `butterfly` Butterfly Habitat Lab | science | standard | 29 | 6 | 1 | 0 | 0 | 0 |  |
+| `butterfly` Butterfly Habitat Lab | science | standard | 30 | 6 | 1 | 0 | 0 | 0 |  |
 | `calculus` Calculus | math | standard | 30 | 9 | 0 | 0 | 0 | 0 |  |
 | `cell` Cell Simulator | science | standard | 44 | 3 | 12 | 0 | 0 | 0 |  |
 | `cellAtlasLab` Cell Atlas Lab | biology | standard | 23 | 0 | 0 | 0 | 0 | 0 |  |
