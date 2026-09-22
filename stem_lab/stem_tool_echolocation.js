@@ -983,6 +983,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             cave3dEngineRef.current = null;
             return;
           }
+          // A context lost AFTER init used to leave the cave black with no error state
+          // and no way back. preventDefault is required or the context can never be
+          // restored; then mirror the catch above — raise the SAME error the creation
+          // path uses and null the engine ref, so the panel's Retry rebuilds rather
+          // than reusing a dead engine.
+          if (!cnv._echoLossBound) {
+            cnv._echoLossBound = true;
+            cnv.addEventListener('webglcontextlost', function (ev) {
+              // StemLab.releaseGl force-loses a canvas that has left the page; that
+              // is our own teardown (leaving the cave tab), not a failure.
+              if (!cnv.isConnected) return;
+              ev.preventDefault();
+              console.warn('[Echolocation] WebGL context lost — offering Retry');
+              cave3dEngineRef.current = null;
+              setWebglError(true);
+            });
+          }
           eng.renderer.setSize(container.clientWidth, container.clientHeight);
           eng.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 

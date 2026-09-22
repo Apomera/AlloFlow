@@ -1139,6 +1139,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           }, 0);
           return;
         }
+        // A context lost AFTER init used to leave the navigator black with no error
+        // state and no way back. preventDefault is required or the context can never be
+        // restored; then raise the SAME state creation failure uses, which renders the
+        // panel with its Retry 3D Mode button.
+        //
+        // StemLab.releaseGl force-loses the canvas one tick after teardown removes it,
+        // so every restart (New Layout, environment, view mode, difficulty) fires this
+        // event too. Only a loss on a canvas still in the page is a real failure.
+        if (renderer.domElement && !renderer.domElement._etLossBound) {
+          renderer.domElement._etLossBound = true;
+          renderer.domElement.addEventListener('webglcontextlost', function (ev) {
+            if (!ev.target || !ev.target.isConnected) return;   // our own releaseGl
+            ev.preventDefault();
+            console.warn('[EchoTrainer] WebGL context lost — offering Retry 3D Mode');
+            setTimeout(function () { upd('webglError', true); }, 0);
+          });
+        }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         var container = mountRef.current;
         var rw = container.clientWidth || 700; var rh = container.clientHeight || 450;

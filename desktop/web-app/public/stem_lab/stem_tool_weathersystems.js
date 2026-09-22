@@ -4475,6 +4475,21 @@ function openImmersiveTourStep(stepId) {
           update({ immersiveRenderError: 'WebGL could not start. The Canvas 2D map remains available.' });
           return undefined;
         }
+        // A context lost AFTER init used to leave the immersive view black with no
+        // message. preventDefault is required or the context can never be restored;
+        // then reuse the SAME state the creation-failure catch above sets, which raises
+        // the "3D view unavailable" alert and points at the Canvas 2D map.
+        if (!canvas._wsLossBound) {
+          canvas._wsLossBound = true;
+          canvas.addEventListener('webglcontextlost', function (ev) {
+            // StemLab.releaseGl force-loses a canvas that has left the page; that is
+            // our own teardown (leaving the immersive tab), not a failure.
+            if (!canvas.isConnected) return;
+            ev.preventDefault();
+            console.warn('[WeatherSystems] WebGL context lost — falling back to the Canvas 2D map');
+            update({ immersiveRenderError: 'WebGL stopped unexpectedly. The Canvas 2D map remains available.' });
+          });
+        }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, profile.pixelRatio));
         renderer.setSize(width, height, false);
         if (THREE.SRGBColorSpace) renderer.outputColorSpace = THREE.SRGBColorSpace;
