@@ -593,6 +593,35 @@ for (const r of RETIRED) {
   if (r.re.test(src)) errors.push(r.note + ' is back in the source');
 }
 
+// -- Coverage: every statute the TOOL cites must be pinned somewhere in this
+// file. On 2026-09-21 I committed a message claiming the statute audit was
+// complete while §2308 was still cited and unpinned; the claim was only
+// caught by diffing the two lists by hand afterwards. A claim about coverage
+// belongs in the gate, not in a commit message.
+//
+// A citation counts as covered if the section number appears anywhere here --
+// in a regex, a label or a source note -- since a deliberate "verified, no
+// pin needed" decision is recorded as a source note. That makes this a
+// prompt to decide, not a demand for a range check on every section.
+const SECTION_RE = /§\d+(?:-[A-Z])?/g;
+const citedSections = new Set(src.match(SECTION_RE) || []);
+const selfText = fs.readFileSync(__filename, 'utf8');
+// Strip this block before scanning it. Belt-and-braces: nothing in here
+// names a real section today, and removing the strip still catches an
+// unpinned citation (verified). It matters only if someone later writes a
+// literal section number into this block -- an example in a comment, say --
+// which would then mark that section covered without pinning anything.
+const gateText = selfText.replace(/const SECTION_RE[\s\S]*?const uncovered[^;]*;/, '');
+const coveredSections = new Set(gateText.match(SECTION_RE) || []);
+const uncovered = [...citedSections].filter((x) => !coveredSections.has(x)).sort();
+if (uncovered.length) {
+  errors.push('statutes cited by the tool but not mentioned anywhere in this gate: ' +
+    uncovered.join(', ') + '\n      Verify each against the statute itself (check it is not ' +
+    'REPEALED -- two of this tool\'s citations were), then either pin a value or record a ' +
+    '"verified, no pin needed" source note. Do not claim audit coverage in a commit message ' +
+    'that this check cannot back up.');
+}
+
 if (errors.length) {
   console.error('\n✗ check_roadready_sourced_statistics FAILED\n');
   for (const e of errors) console.error('  • ' + e);
