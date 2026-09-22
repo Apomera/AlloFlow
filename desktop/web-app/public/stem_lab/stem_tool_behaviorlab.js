@@ -4049,6 +4049,7 @@ dataRef.current = d;
                     background: 'rgba(255,255,255,0.06)',
                     border: '1px solid var(--bl-border)',
                     borderRadius: 8, padding: '6px 10px',
+                    minWidth: 44, minHeight: 44,
                     cursor: 'pointer', color: 'var(--bl-text)', fontSize: 14, flexShrink: 0
                   }
                 }, '\u2190'),
@@ -4219,7 +4220,11 @@ dataRef.current = d;
 
                       style: {
 
-                        padding: '2px 9px', borderRadius: '999rem', cursor: 'pointer',
+                        // WCAG 2.5.5: a 22px-tall chip is half the 44px floor, and
+                        // this pair is the control a learner who needs the plain
+                        // wording has to hit — on a phone, with the chart and the
+                        // chamber competing for the same thumb.
+                        minHeight: 44, padding: '2px 12px', borderRadius: '999rem', cursor: 'pointer',
 
                         fontSize: 10, fontWeight: 700, lineHeight: 1.6,
 
@@ -4476,36 +4481,36 @@ dataRef.current = d;
                   React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 } },
                     ['CRF', 'FR3', 'VR5', 'FI30', 'VI30'].map(function(sch) {
                       var active = iq.schedule === sch;
-                      return React.createElement("button", { key: sch, onClick: function() { setKey('schedule', sch); }, style: { padding: '3px 8px', fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid ' + (active ? sm.color : '#1e293b'), background: active ? sm.color : '#0a0a1a', color: active ? '#000' : '#94a3b8', cursor: 'pointer' } }, sch);
+                      return React.createElement("button", { key: sch, onClick: function() { setKey('schedule', sch); }, style: { minHeight: 44, minWidth: 44, padding: '3px 10px', fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid ' + (active ? sm.color : '#1e293b'), background: active ? sm.color : '#0a0a1a', color: active ? '#000' : '#94a3b8', cursor: 'pointer' } }, sch);
                     })
                   ),
                   React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 8 } },
                     React.createElement("label", { style: { fontSize: 10 } },
                       React.createElement("div", { style: { marginBottom: 2 } }, __alloT('stem.behaviorlab.strength', 'Strength '), React.createElement("span", { style: { color: sm.color, fontFamily: 'monospace' } }, iq.reinforcerStrength)),
-                      React.createElement("input", { type: 'range', min: 1, max: 10, step: 1, value: iq.reinforcerStrength, onChange: function(e) { setKey('reinforcerStrength', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                      React.createElement("input", { type: 'range', min: 1, max: 10, step: 1, value: iq.reinforcerStrength, onChange: function(e) { setKey('reinforcerStrength', parseInt(e.target.value, 10)); }, style: { width: '100%', height: 44 } })
                     ),
                     React.createElement("label", { style: { fontSize: 10 } },
                       React.createElement("div", { style: { marginBottom: 2 } }, __alloT('stem.behaviorlab.alternative', 'Alternative '), React.createElement("span", { style: { color: sm.color, fontFamily: 'monospace' } }, iq.alternativeReward)),
-                      React.createElement("input", { type: 'range', min: 0, max: 10, step: 1, value: iq.alternativeReward, onChange: function(e) { setKey('alternativeReward', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                      React.createElement("input", { type: 'range', min: 0, max: 10, step: 1, value: iq.alternativeReward, onChange: function(e) { setKey('alternativeReward', parseInt(e.target.value, 10)); }, style: { width: '100%', height: 44 } })
                     ),
                     React.createElement("label", { style: { fontSize: 10 } },
                       React.createElement("div", { style: { marginBottom: 2 } }, __alloT('stem.behaviorlab.ext_time', 'Ext time '), React.createElement("span", { style: { color: sm.color, fontFamily: 'monospace' } }, iq.extinctionTime)),
-                      React.createElement("input", { type: 'range', min: 0, max: 30, step: 1, value: iq.extinctionTime, onChange: function(e) { setKey('extinctionTime', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                      React.createElement("input", { type: 'range', min: 0, max: 30, step: 1, value: iq.extinctionTime, onChange: function(e) { setKey('extinctionTime', parseInt(e.target.value, 10)); }, style: { width: '100%', height: 44 } })
                     )
                   ),
                   React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 6 } },
                     React.createElement("button", { onClick: function() {
                       var t = new Date().toISOString().slice(11, 19);
                       setIQ({ log: iq.log.concat([{ t: t, s: iq.schedule, str: iq.reinforcerStrength, alt: iq.alternativeReward, ext: iq.extinctionTime, p: persistence.toFixed(1), state: sm.label }]) });
-                    }, style: { flex: 1, padding: 4, fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.behaviorlab.log', '\uD83D\uDCCB Log')),
-                    React.createElement("button", { onClick: function() { setIQ({ schedule: 'FR3', reinforcerStrength: 5, alternativeReward: 3, extinctionTime: 5 }); }, style: { padding: '4px 8px', fontSize: 10, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.behaviorlab.reset', 'Reset'))
+                    }, style: { flex: 1, minHeight: 44, padding: 4, fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.behaviorlab.log', '\uD83D\uDCCB Log')),
+                    React.createElement("button", { onClick: function() { setIQ({ schedule: 'FR3', reinforcerStrength: 5, alternativeReward: 3, extinctionTime: 5 }); }, style: { minHeight: 44, minWidth: 44, padding: '4px 10px', fontSize: 10, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.behaviorlab.reset', 'Reset'))
                   ),
                   iq.log.length > 0 && React.createElement("div", { style: { maxHeight: 60, overflow: 'auto', padding: 4, borderRadius: 4, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 6, fontSize: 9, fontFamily: 'monospace', lineHeight: 1.4 } },
                     iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' \u00B7 ' + e.s + ' str' + e.str + ' alt' + e.alt + ' \u2192 ' + e.p); })
                   ),
                   React.createElement("label", { htmlFor: 'behaviorlab-hypothesis', style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 3 } }, __alloT('stem.behaviorlab.your_hypothesis_why_does_vr_resist_ext', 'Your hypothesis (why does VR resist extinction so much?)')),
-                  React.createElement("textarea", { id: 'behaviorlab-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.behaviorlab.e_g_vr_makes_every_action_potentially_', 'e.g., VR makes every action potentially the rewarded one \u2014 extinction never feels conclusive...'), style: { width: '100%', padding: 4, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
-                  !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 8px', fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 6 } }, __alloT('stem.behaviorlab.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck \u2014 show open questions")),
+                  React.createElement("textarea", { id: 'behaviorlab-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.behaviorlab.e_g_vr_makes_every_action_potentially_', 'e.g., VR makes every action potentially the rewarded one \u2014 extinction never feels conclusive...'), style: { width: '100%', minHeight: 44, padding: 6, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
+                  !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { minHeight: 44, padding: '4px 10px', fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 6 } }, __alloT('stem.behaviorlab.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck \u2014 show open questions")),
                   iq.stuckRevealed && React.createElement("div", { style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 10, marginBottom: 6, lineHeight: 1.5 } },
                     React.createElement("div", { style: { fontWeight: 700, color: sm.color, marginBottom: 3 } }, __alloT('stem.behaviorlab.open_questions_no_answer_key', 'Open questions (no answer key)')),
                     React.createElement("ul", { style: { margin: 0, paddingLeft: 14 } },
@@ -4516,7 +4521,7 @@ dataRef.current = d;
                     )
                   ),
                   React.createElement("label", { style: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, cursor: 'pointer', marginBottom: 4 } },
-                    React.createElement("input", { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                    React.createElement("input", { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, style: { width: 24, height: 24, flexShrink: 0 } }),
                     React.createElement("span", null, __alloT('stem.behaviorlab.i_can_explain_why_this_schedule_streng', 'I can explain why this schedule + strength + alternative yields this persistence band.'))
                   ),
                   iq.understood && React.createElement("textarea", { id: 'behaviorlab-explanation', 'aria-label': __alloT('stem.behaviorlab.explanation_label', 'Explain your prediction'), value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.behaviorlab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 4, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
