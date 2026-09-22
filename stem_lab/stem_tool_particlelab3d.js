@@ -452,8 +452,39 @@
       var h = React.createElement;
       var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
       var bucket = (ctx.toolData && ctx.toolData.particleLab3d) || {};
-      var prefersReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      var _motionState = useState(function () {
+        try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; }
+      });
+      var prefersReducedMotion = _motionState[0], setPrefersReducedMotion = _motionState[1];
+      // Live reduced-motion preference. The scene-build effect below captures its
+      // value once per build, and its deps do not include this preference, so the
+      // frame loop reads the REF instead: turning the preference on mid-lesson
+      // settles the motion on the next frame without rebuilding the scene.
+      var motionRef = useRef(prefersReducedMotion);
+      motionRef.current = prefersReducedMotion;
       var canvasRef = useRef(null), stageRef = useRef(null), rendererRef = useRef(null), runtimeRef = useRef(null), frameRef = useRef(null), settingsRef = useRef(null), replaySnapshotRef = useRef(null), keysDialogRef = useRef(null), keysCloseRef = useRef(null), keysOpenerRef = useRef(null);
+      // Subscribe once. addEventListener where it exists, the deprecated
+      // addListener as a fallback: Safari < 14 and the older classroom iPads do
+      // not have the modern one on a MediaQueryList. Removed on unmount so a
+      // tool switch does not leave a dead handler behind.
+      useEffect(function () {
+        var query = null;
+        try { query = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null; } catch (e) { query = null; }
+        if (!query) return undefined;
+        function onChange(event) { setPrefersReducedMotion(!!(event && event.matches)); }
+        // Re-read on mount in case it flipped between the initial render and here.
+        setPrefersReducedMotion(!!query.matches);
+        try {
+          if (typeof query.addEventListener === 'function') query.addEventListener('change', onChange);
+          else if (typeof query.addListener === 'function') query.addListener(onChange);
+        } catch (e) { return undefined; }
+        return function () {
+          try {
+            if (typeof query.removeEventListener === 'function') query.removeEventListener('change', onChange);
+            else if (typeof query.removeListener === 'function') query.removeListener(onChange);
+          } catch (e) {}
+        };
+      }, []);
       function restoreOneOf(value, allowed, fallback) { return allowed.indexOf(value) >= 0 ? value : fallback; }
       function restoreNumber(value, min, max, fallback) { var n = Number(value); return isFinite(n) ? clamp(n, min, max) : fallback; }
       // A saved project is INPUT. `|| ''` only catches the falsy cases, so a
@@ -656,7 +687,7 @@
         var palette = palettes[preset] || palettes.gas;
         var palettePrimaryColor = new THREE.Color(palette.primary), paletteSecondaryColor = new THREE.Color(palette.secondary), hotPrimaryColor = new THREE.Color(0xff6b35), hotSecondaryColor = new THREE.Color(0xff3d81);
         var coldSpeedColor = new THREE.Color(0x22d3ee), midSpeedColor = new THREE.Color(0xa78bfa), hotSpeedColor = new THREE.Color(0xfb4d3d), liveSpeedColor = new THREE.Color();
-        var reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        var reducedMotion = !!motionRef.current;
         var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
         rendererRef.current = renderer;
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, qualityProfile.pixelRatio));
@@ -867,6 +898,12 @@
           if (flatFrameKey !== flatKey) { flatFrameKey = flatKey; var flatAspect = w / hh, flatSpan = liveBoxSize * 0.66 / Math.min(1, flatAspect); flatCamera.left = -flatSpan * flatAspect; flatCamera.right = flatSpan * flatAspect; flatCamera.top = flatSpan; flatCamera.bottom = -flatSpan; flatCamera.updateProjectionMatrix(); }
         }
         function animate(now) {
+          // Re-read per frame, not once per scene build: this effect's deps do not
+          // include the motion preference, so a value captured at build time kept the
+          // stars turning and the spheres breathing until the learner changed quality
+          // or reloaded. Refreshing the existing local here means every gate below
+          // keeps its exact wording and settles on the next frame.
+          reducedMotion = !!motionRef.current;
           frameRef.current = requestAnimationFrame(animate); resize(); var flat = settingsRef.current.viewMode === 'flat'; activeCamera = flat ? flatCamera : camera; controls.enabled = !flat && touchGateEnabled; stars.visible = !flat; var elapsed = Math.min(0.05, (now - clock) / 1000); clock = now;
           var nextAssayConditionKey = [settingsRef.current.preset, settingsRef.current.membrane, settingsRef.current.permeability, settingsRef.current.membraneSelectivity].join('|'); if (nextAssayConditionKey !== assayConditionKey) { assayConditionKey = nextAssayConditionKey; assayPassedA = 0; assayPassedB = 0; assayBlockedA = 0; assayBlockedB = 0; }
           var cameraTracer = particles[settingsRef.current.selectedParticle] || particles[0];
