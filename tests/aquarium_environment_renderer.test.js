@@ -658,3 +658,68 @@ describe('Aquarium visible condition cues', () => {
     expect(cue()).toEqual({ algae: 0, bloom: 0 });
   });
 });
+
+describe('Aquarium equipment status cues', () => {
+  const dev = (patch) => ({ installed: true, on: true, intensity: 1, condition: 100, fault: '', ...patch });
+  const rig = (heater) => ({ light: dev({}), filter: dev({}), heater: dev(heater) });
+  const statusOf = h => h.root('equipment').getObjectByName('equipment-heater').userData.equipmentStatusCue;
+  const pipOf = h => {
+    // The indicator is the emissive sphere on the device.
+    let found = null;
+    h.root('equipment').getObjectByName('equipment-heater').traverse(n => {
+      if (!found && n.material && n.material.emissive && n.geometry && n.geometry.type === 'SphereGeometry') found = n;
+    });
+    return found;
+  };
+
+  it('tells a failed device apart from a switched-off one', () => {
+    // Both report on:false - a fault zeroes output - so before this they were
+    // pixel-identical, and "my heater is broken" looked like "I turned it off".
+    const off = harness({ equipment: rig({ on: false, intensity: 0 }), model: { daylight: true } });
+    expect(statusOf(off)).toBe('off');
+    const offColour = pipOf(off).material.color.getHexString();
+
+    const failed = harness({ equipment: rig({ on: false, intensity: 0, fault: 'burnt out' }), model: { daylight: true } });
+    expect(statusOf(failed)).toBe('offline');
+    expect(pipOf(failed).material.color.getHexString()).not.toBe(offColour);
+    // An alert the learner cannot see is not an alert.
+    expect(pipOf(failed).scale.x).toBeGreaterThan(pipOf(off).scale.x);
+  });
+
+  it('flags wear at the same threshold the simulation counts as needing service', () => {
+    // The tool counts condition <= 25 (without a fault) as needing service.
+    const ok = harness({ equipment: rig({ condition: 26, intensity: .26 }), model: { daylight: true } });
+    expect(statusOf(ok)).toBe('running');
+    const worn = harness({ equipment: rig({ condition: 25, intensity: .25 }), model: { daylight: true } });
+    expect(statusOf(worn)).toBe('needs-service');
+    expect(pipOf(worn).material.color.getHexString()).not.toBe(pipOf(ok).material.color.getHexString());
+  });
+
+  it('reports a fault ahead of wear, and leaves a healthy device unchanged', () => {
+    const both = harness({ equipment: rig({ on: false, intensity: 0, condition: 5, fault: 'jammed' }), model: { daylight: true } });
+    expect(statusOf(both)).toBe('offline');
+    const healthy = harness({ equipment: rig({}), model: { daylight: true } });
+    expect(statusOf(healthy)).toBe('running');
+    // A healthy tank must look exactly as it did before this cue existed.
+    expect(healthy.root('equipment').getObjectByName('equipment-heater').userData.equipmentStatusScale).toBe(1);
+  });
+
+  it('does not invent a warning for a device with no condition reported', () => {
+    // Callers may omit condition/fault entirely. Unknown must read as healthy,
+    // not as wear - the same rule as unmeasured water chemistry.
+    const h = harness({ equipment: { light: { installed: true, on: true, intensity: 1 }, filter: { installed: true, on: true, intensity: 1 }, heater: { installed: true, on: true, intensity: 1 } }, model: { daylight: true } });
+    expect(statusOf(h)).toBe('running');
+    expect(h.root('equipment').getObjectByName('equipment-heater').userData.equipmentStatusScale).toBe(1);
+  });
+
+  it('re-reads the status when condition or fault changes on a live device', () => {
+    const h = harness({ equipment: rig({}), model: { daylight: true } });
+    expect(statusOf(h)).toBe('running');
+    h.update({ equipment: rig({ condition: 12, intensity: .12 }) });h.flush();
+    expect(statusOf(h)).toBe('needs-service');
+    h.update({ equipment: rig({ on: false, intensity: 0, fault: 'seized' }) });h.flush();
+    expect(statusOf(h)).toBe('offline');
+    h.update({ equipment: rig({}) });h.flush();
+    expect(statusOf(h)).toBe('running');
+  });
+});

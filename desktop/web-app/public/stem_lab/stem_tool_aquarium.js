@@ -13538,7 +13538,16 @@ window.StemLab = window.StemLab || {
           group.name='equipment-'+id;group.userData.equipmentId=id;
           group.userData.installed=true;group.userData.on=state.on;group.userData.output=state.on?state.intensity:0;group.userData.equipmentType=state.type;group.userData.condition=state.condition;group.userData.fault=state.fault;
           var housing=material(0x23383d,{roughness:.38,metalness:.2}),rubber=material(0x141f22,{roughness:.88});
-          var indicator=material(state.on?0x72d49b:0x735b4a,{emissive:state.on?0x215738:0,emissiveIntensity:.65,roughness:.35});
+          var faulted=!!(state.fault&&String(state.fault).length);
+          var worn=!faulted&&typeof state.condition==='number'&&state.condition<=25;
+          var statusCue=faulted?'offline':worn?'needs-service':state.on?'running':'off';
+          var indicatorColour=faulted?0xd4563f:worn?0xd9a441:state.on?0x72d49b:0x735b4a;
+          var indicatorGlow=faulted?0x5e1b12:worn?0x5c3f10:state.on?0x215738:0;
+          var indicator=material(indicatorColour,{emissive:indicatorGlow,emissiveIntensity:faulted?.9:worn?.75:.65,roughness:.35});
+          var statusScale=faulted?2.2:worn?1.7:1;
+          group.userData.equipmentStatusCue=statusCue;
+          group.userData.equipmentStatusScale=statusScale;
+          group.userData.statusCueNote='Indicator colour is an illustrative status cue from modeled condition and fault state; it does not diagnose the fault or measure wear.';
           if(key==='filter'){
             group.position.set(tankSize.width/2-.72,Math.max(0,tankSize.height-5.2),-tankSize.depth/2+.63);
             if(/sponge/.test(state.type.toLowerCase())){
@@ -13552,14 +13561,14 @@ window.StemLab = window.StemLab || {
               for(var slit=0;slit<5;slit++)mesh(new THREE.BoxGeometry(.38,.025,.015),rubber,group,0,2.4+slit*.18,.278);
             }
             curve(group,[[0,3.8,0],[0,4.38,.05],[-.25,4.51,.18],[-.62,4.51,.25]],.09,housing,12);
-            sphere(group,indicator,.25,3.48,.29,.042);
+            sphere(group,indicator,.25,3.48,.29,.042*statusScale);
           }else if(key==='heater'){
             group.position.set(-tankSize.width/2+.65,Math.max(-.7,tankSize.height-5.2),-tankSize.depth/2+.55);
             mesh(new THREE.CylinderGeometry(.1,.1,2.72,12),new THREE.MeshPhongMaterial({color:0xa6cac8,transparent:true,opacity:.55,shininess:100}),group,0,2.34,0);
             mesh(new THREE.CylinderGeometry(.057,.057,2.1,10),material(0x70685a,{metalness:.6,roughness:.35}),group,0,2.15,0);
             for(var coil=0;coil<10;coil++)mesh(new THREE.TorusGeometry(.06,.01,5,14),housing,group,0,1.32+coil*.16,0).rotation.x=Math.PI/2;
             mesh(new THREE.CylinderGeometry(.13,.13,.32,12),housing,group,0,3.85,0);
-            sphere(group,indicator,0,3.79,.12,.035);
+            sphere(group,indicator,0,3.79,.12,.035*statusScale);
             [1.25,3.1].forEach(function(y){sphere(group,rubber,0,y,-.13,.19,.12,.06,10);});
             curve(group,[[0,4,0],[.02,4.9,-.03],[.14,5.6,-.21],[.4,5.72,-.5]],.025,rubber,12);
           }else if(key==='aerator'){
