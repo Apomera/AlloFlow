@@ -21434,7 +21434,7 @@ if (activeTab === 'compounds') {
           return h('button', { key: c,
             onClick: function() { upd({ cmpCategory: c }); if (soundEnabled) sfxClick(); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : P.borderDim), background: sel ? '#fbbf2433' : P.card, color: sel ? '#fde68a' : P.text2, fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
-          }, c);
+          }, __alloT('sel.emotions.cmp_cat_' + c, c));
         })
       ),
       h('input', { type: 'search', 'aria-label': __alloT('sel.emotions.cmp_search_label', 'Search compound emotions'), placeholder: '🔎 ' + __alloT('sel.emotions.cmp_search_ph', 'Search...'), value: d.cmpSearch || '',

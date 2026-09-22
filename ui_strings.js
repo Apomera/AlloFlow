@@ -107256,6 +107256,8 @@
       "cmp_awe_unhelpfulNext_2": "try to explain it down to nothing",
       "cmp_body_prefix": "Body: %s",
       "cmp_cat_aesthetic": "aesthetic",
+"cmp_cat_all": "all",
+"cmp_cat_negative": "negative",
       "cmp_cat_complex": "complex",
       "cmp_cat_moral": "moral",
       "cmp_cat_positive": "positive",

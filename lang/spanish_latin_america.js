@@ -89842,6 +89842,8 @@
       "cmp_awe_unhelpfulNext_2": "tratar de explicarlo hasta dejarlo en nada",
       "cmp_body_prefix": "Cuerpo: %s",
       "cmp_cat_aesthetic": "estética",
+"cmp_cat_all": "todas",
+"cmp_cat_negative": "negativa",
       "cmp_cat_complex": "compleja",
       "cmp_cat_moral": "moral",
       "cmp_cat_positive": "positiva",
