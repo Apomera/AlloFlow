@@ -2393,6 +2393,72 @@ describe('rrPracticeFocusFor', () => {
   });
 });
 
+describe('permit bank translation', () => {
+  // A translator that marks every string, so a missed site is visible.
+  const mark = (key, fallback) => `[${key}]${fallback}`;
+  const identity = (key, fallback) => fallback;
+
+  it('translates question, choices and explanation without touching the answer key', () => {
+    const original = RR.PERMIT_BANK[0];
+    const translated = RR.rrTranslatePermitQuestion(original, 0, mark);
+    expect(translated.q).toBe(`[stem.roadready.permit_q0_q]${original.q}`);
+    expect(translated.a).toHaveLength(original.a.length);
+    translated.a.forEach((choice, j) => {
+      expect(choice).toBe(`[stem.roadready.permit_q0_a${j}]${original.a[j]}`);
+    });
+    expect(translated.exp).toBe(`[stem.roadready.permit_q0_exp]${original.exp}`);
+    // The index of the right answer must not move: translation renames the
+    // options, it does not reorder them.
+    expect(translated.correct).toBe(original.correct);
+    expect(translated.category).toBe(original.category);
+    // and the source data is untouched
+    expect(original.q.startsWith('[')).toBe(false);
+  });
+
+  it('is a no-op without a usable translator, so English never regresses', () => {
+    const q = RR.PERMIT_BANK[3];
+    expect(RR.rrTranslatePermitQuestion(q, 3, null)).toBe(q);
+    expect(RR.rrTranslatePermitQuestion(q, 3, undefined)).toBe(q);
+    expect(RR.rrTranslatePermitQuestion(q, -1, mark)).toBe(q);
+    expect(RR.rrTranslatePermitQuestion(q, 3, identity)).toMatchObject({ q: q.q, correct: q.correct });
+  });
+
+  it('localizes the whole bank in place, preserving order and length', () => {
+    const bank = RR.rrLocalizedPermitBank(mark);
+    expect(bank).toHaveLength(RR.PERMIT_BANK.length);
+    // Index-keyed records (flashcard history, mastery) depend on position.
+    bank.forEach((q, i) => {
+      expect(q.q).toBe(`[stem.roadready.permit_q${i}_q]${RR.PERMIT_BANK[i].q}`);
+      expect(q.correct).toBe(RR.PERMIT_BANK[i].correct);
+      expect(q.category).toBe(RR.PERMIT_BANK[i].category);
+    });
+  });
+
+  it('keeps the right answer correct through a translated build + shuffle', () => {
+    // The real failure this guards: translate, then shuffle, and the `correct`
+    // index must still point at the same TEXT it did before.
+    const bank = RR.rrLocalizedPermitBank(mark);
+    for (const source of [bank[0], bank[7], bank[42]]) {
+      const answerText = source.a[source.correct];
+      for (let i = 0; i < 20; i += 1) {
+        const shuffled = RR.shuffleAnswers(source);
+        expect(shuffled.a[shuffled.correct]).toBe(answerText);
+        expect(shuffled.a.slice().sort()).toEqual(source.a.slice().sort());
+      }
+    }
+  });
+
+  it('builds a translated test through every builder', () => {
+    for (const test of [RR.buildRandomTest(mark), RR.buildCategoryTest('signs', mark), RR.buildWeakTest({}, mark)]) {
+      expect(test.length).toBeGreaterThan(0);
+      for (const q of test) {
+        expect(q.q).toContain('[stem.roadready.permit_q');
+        expect(q.a[q.correct]).toBeTruthy();
+      }
+    }
+  });
+});
+
 describe('rrNextStepFor', () => {
   const repeat = (type, n, severity = 1) =>
     Array.from({ length: n }, (_, i) => ({ type, t: i * 10, severity, speedMph: 30, mu: 0.72 }));

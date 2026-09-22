@@ -166,7 +166,7 @@ describe('RoadReady SVG alternatives', () => {
     expect(braking.getAttribute('aria-label')).toContain('1500 kilograms');
   });
 
-  it('classifies all 38 source SVG declarations and preserves deploy parity', () => {
+  it('classifies all 39 source SVG declarations and preserves deploy parity', () => {
     const source = readFileSync(SOURCE, 'utf8');
     const lines = source.split(/\r?\n/);
     const declarationLines = [];
@@ -183,7 +183,7 @@ describe('RoadReady SVG alternatives', () => {
       ).toBe(true);
     }
 
-    expect(declarationLines).toHaveLength(38);
+    expect(declarationLines).toHaveLength(39);
     expect(readFileSync(DEPLOY, 'utf8')).toBe(source);
   });
 });

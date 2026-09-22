@@ -209,6 +209,12 @@ describe('RoadReady mission habit criteria', () => {
     skidSeconds: 0, hydroplaneSeconds: 0,
   };
   // stats.maxSpeed is stored in METRES PER SECOND, not mph.
+  // Achievement ids need the fuller stats shape (economy, yields, signals).
+  const badgeStats = {
+    ...driveStats, speedViolations: 0, wildlifeHit: 0,
+    mpgSum: 300, mpgSamples: 10, fuelUsed: 1,
+  };
+
   const atPeakMph = (mph, scenarioId) =>
     RR.rrScenarioMissionStatus({ ...driveStats, maxSpeed: mph / 2.23694 }, 600, scenarioId);
   const habitMet = (mph, scenarioId) =>
@@ -300,6 +306,108 @@ describe('RoadReady mission habit criteria', () => {
     const rain = RR.rrScenarioMissionStatus(driveStats, 600, 'rain').mission;
     expect(rain.habitHydroplaneMax).toBe(1);
     expect(RR.rrScenarioMissionStatus(driveStats, 600, 'snow').mission.habitHardBrakeMax).toBe(1);
+  });
+
+  it('does not let the speedometer margin swallow the work-zone standard', () => {
+    // secondsOverLimit is NOT a measure of being at the limit: it only accrues
+    // above limit + speedingThresholds(limit).violation, a deliberate 3-8 mph
+    // speedometer-error margin. A habit checking only that counter tolerates
+    // the whole margin indefinitely -- so a student could drive the entire
+    // construction mission at 41.9 mph in a 35 zone with secondsOverLimit at 0
+    // and pass, while the tool's own Help Hub teaches that Maine DOUBLES the
+    // fine for work-zone speeding.
+    const at = (mph, id) => RR.rrScenarioMissionStatus(
+      { ...driveStats, maxSpeed: mph / 2.23694, secondsOverLimit: 0 }, 600, id)
+      .criteria.find((c) => c.id === 'habit').met;
+    expect(at(38, 'construction')).toBe(true);   // at the cap
+    expect(at(39, 'construction')).toBe(false);
+    expect(at(42, 'construction')).toBe(false);  // used to pass
+    expect(at(17, 'school_zone')).toBe(true);
+    expect(at(18, 'school_zone')).toBe(false);   // used to pass
+  });
+
+  it('keeps the seconds-over-limit check working alongside the peak cap', () => {
+    // The two standards are independent: a learner can fail on sustained
+    // overspeed even with a legal peak, and vice versa.
+    const legalPeak = { ...driveStats, maxSpeed: 15 / 2.23694 };
+    const habit = (over) => RR.rrScenarioMissionStatus(
+      { ...legalPeak, secondsOverLimit: over }, 600, 'school_zone')
+      .criteria.find((c) => c.id === 'habit').met;
+    expect(habit(1)).toBe(true);
+    expect(habit(1.5)).toBe(false);
+  });
+
+  it('leaves scenarios without an authored cap unchanged', () => {
+    // The cap is opt-in. Adding it globally would impose a standard those
+    // labels never stated -- the generic `speed` criterion already covers
+    // the posted limit for them.
+    for (const id of ['downtown', 'rural', 'night']) {
+      const st = RR.rrScenarioMissionStatus(
+        { ...driveStats, maxSpeed: 80 / 2.23694 }, 600, id);
+      expect(st.mission.habitSpeedCapMph).toBeUndefined();
+      expect(st.criteria.find((c) => c.id === 'habit').met).toBe(true);
+    }
+  });
+
+  it('does not fail a mission for a crash the AI caused', () => {
+    // The mission's `safety` criterion checked raw `crashes`, while both
+    // graders subtract aiCausedCrashes. For identical stats the road test
+    // PASSED a learner rear-ended by a tailgating AI car and the mission
+    // FAILED them -- two verdicts on one event.
+    const safetyMet = (over) => RR.rrScenarioMissionStatus(
+      { ...driveStats, ...over }, 600, 'residential')
+      .criteria.find((c) => c.id === 'safety').met;
+    expect(safetyMet({ crashes: 1, aiCausedCrashes: 1 })).toBe(true);
+    expect(safetyMet({ crashes: 3, aiCausedCrashes: 3 })).toBe(true);
+    expect(safetyMet({ crashes: 1, aiCausedCrashes: 0 })).toBe(false);
+    expect(safetyMet({ crashes: 4, aiCausedCrashes: 2 })).toBe(false);
+  });
+
+  it('fails the mission CLOSED when the crash counters diverge', () => {
+    // Same rule as the graders: an aiCausedCrashes larger than crashes means
+    // the bookkeeping is broken, so it must not exonerate anyone.
+    const safetyMet = (over) => RR.rrScenarioMissionStatus(
+      { ...driveStats, ...over }, 600, 'residential')
+      .criteria.find((c) => c.id === 'safety').met;
+    expect(safetyMet({ crashes: 2, aiCausedCrashes: 99 })).toBe(false);
+    // The guard's real work is at crashes: 0. Without it the subtraction goes
+    // NEGATIVE, which is !== 0, so a learner who crashed not once would fail
+    // on a corrupt counter. Asserting only the crashes: 2 case is vacuous --
+    // 2 - 99 is nonzero either way, so it cannot tell the two apart.
+    expect(safetyMet({ crashes: 0, aiCausedCrashes: 5 })).toBe(true);
+    expect(safetyMet({ crashes: 0, aiCausedCrashes: 0 })).toBe(true);
+  });
+
+  it('keeps the no_crash badge consistent with the grade beside it', () => {
+    // Fourth surface reading crash counts. It used raw `crashes`, so a learner
+    // rear-ended by AI lost no_crash while KEEPING a_plus and safety_star from
+    // the same drive -- the badge row contradicting the grade next to it.
+    const badges = (over) => RR.rrDriveAchievementIds(
+      { ...badgeStats, ...over }, { elapsedSec: 600 }) || [];
+    expect(badges({ crashes: 1, aiCausedCrashes: 1 })).toContain('no_crash');
+    expect(badges({ crashes: 1, aiCausedCrashes: 1 })).toContain('a_plus');
+    expect(badges({ crashes: 1, aiCausedCrashes: 0 })).not.toContain('no_crash');
+    // Same fail-closed boundary as everywhere else: a corrupt counter must not
+    // take the badge from a learner who crashed not once.
+    expect(badges({ crashes: 0, aiCausedCrashes: 5 })).toContain('no_crash');
+  });
+
+  it('gives the mission and the road test the same verdict on one event', () => {
+    // Whatever the rule is, a student must not be told two different things
+    // about the same drive by two surfaces of the same tool.
+    const CASES = [
+      { crashes: 0, aiCausedCrashes: 0 }, { crashes: 1, aiCausedCrashes: 0 },
+      { crashes: 1, aiCausedCrashes: 1 }, { crashes: 3, aiCausedCrashes: 3 },
+      { crashes: 4, aiCausedCrashes: 2 }, { crashes: 2, aiCausedCrashes: 99 },
+    ];
+    for (const over of CASES) {
+      const stats = { ...driveStats, ...over };
+      const missionSafe = RR.rrScenarioMissionStatus(stats, 600, 'residential')
+        .criteria.find((c) => c.id === 'safety').met;
+      const roadTestPassed = RR.roadTestOutcome(
+        { durationSec: 240, score: 95, startedAtSim: 0 }, stats, 300).passed;
+      expect(missionSafe).toBe(roadTestPassed);
+    }
   });
 
   it('gives every scenario a habit its own label can fail', () => {

@@ -1634,7 +1634,15 @@ describe('RoadReady rules-of-road content', () => {
       expect(dashEntries.length).toBe(10);
 
       for (const id of WARNING_LIGHT_IDS) {
-        const light = windowAfter(gameBlock, `id: '${id}'`, 850);
+        // Bound each light by the NEXT light's id, not by a character count.
+        // A fixed window was sized to the English text, so wrapping the answer
+        // copy for translation pushed correctIdx out of it; widening the count
+        // then let the window reach into the following entry and borrow ITS
+        // fields, which made this assertion pass with the field deleted.
+        const from = gameBlock.indexOf(`id: '${id}'`);
+        expect(from).toBeGreaterThanOrEqual(0);
+        const nextId = gameBlock.slice(from + 1).search(/\bid: '[a-z_]+'/);
+        const light = gameBlock.slice(from, nextId === -1 ? undefined : from + 1 + nextId);
 
         expect(light).toContain('name:');
         expect(light).toContain('correct:');
