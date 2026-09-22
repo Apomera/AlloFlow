@@ -1832,7 +1832,13 @@ describe('RoadReady rules-of-road content', () => {
         'curbing or another physical barrier',
         'limited-access/loading-zone exception',
         'Passing a stopped school bus with red flashers violates Maine §2308',
-        'First offense: Class E crime with a $250 minimum fine',
+        // The in-sim toast now carries the 2nd-offence consequence too, not just
+        // the first-offence fine. The Penalties card already stated the
+        // suspension; the toast is where a student actually meets the rule,
+        // mid-drive, and "First offense: ..." alone left the reader to assume a
+        // second offence is merely a larger fine.
+        'First offense: Class E crime, $250 minimum fine',
+        'Second within 3 years: a mandatory 30-day licence suspension',
         'A 2nd offense within 3 years carries a mandatory 30-day license suspension',
         'Continue with normal caution — the barrier separates the roadways',
         'Paint-only lanes are undivided — both directions stop',

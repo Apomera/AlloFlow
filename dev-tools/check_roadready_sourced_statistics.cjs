@@ -140,6 +140,36 @@ const CLAIMS = [
       'adult 275-day refusal suspension under §2521',
   },
   {
+    label: 'Maine school-bus passing minimum fine (§2308)',
+    re: /Class E crime, \$(\d{3}) minimum fine/,
+    min: 250, max: 250,
+    source: 'Maine 29-A §2308(6): a violation of subsection 2 is a Class E crime punishable ' +
+      'by a $250 MINIMUM fine for the first offence.',
+  },
+  {
+    label: 'Maine school-bus 2nd-offence suspension (§2308)',
+    // The toast said "First offense: ..." and then never said what a second
+    // offence costs -- a dangling qualifier that invites the reader to assume
+    // it is just a bigger fine. It is a mandatory licence suspension.
+    re: /Second within 3 years: a mandatory (\d{2})-day licence suspension/,
+    min: 30, max: 30,
+    source: 'Maine 29-A §2308(6): mandatory 30-day suspension for a 2nd offence occurring ' +
+      'within 3 years of the first.',
+  },
+  {
+    label: 'Maine school-bus stop exception requires a PHYSICAL barrier (§2308)',
+    // §2308(3) exempts opposite-direction traffic only where the roadway is
+    // separated by curbing or other physical barrier, or on a limited-access
+    // highway with the bus in a loading zone. Paint-only lanes are NOT
+    // separated. Softening this to "a divided road" would exempt every
+    // centre-line road in the state. Presence check on the paint clause.
+    re: /Paint-only lanes are undivided/,
+    min: null, max: null,
+    source: 'Maine 29-A §2308(3): the exception needs curbing or other PHYSICAL barrier, or ' +
+      'a limited-access highway where pedestrians may not cross and the bus is in a loading ' +
+      'zone. A painted centre line does not separate a roadway.',
+  },
+  {
     label: 'Maine pedestrian yield keeps the statutory phrasing (§2056)',
     // "visible intent to enter" is §2056(4)'s own language, not a paraphrase.
     // It is the whole point of the rule: the duty attaches BEFORE the

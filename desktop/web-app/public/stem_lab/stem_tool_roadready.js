@@ -15063,7 +15063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               statsRef.current.safetyScore -= 25;
               statsRef.current.majorViolations = (statsRef.current.majorViolations || 0) + 1;
               addToast('🚨 ILLEGAL PASS of school bus with red flashers! -25');
-              eventToastRef.current = { msg: '🚨 Passing a stopped school bus with red flashers violates Maine §2308. First offense: Class E crime with a $250 minimum fine.', until: timeRef.current + 6 };
+              eventToastRef.current = { msg: '🚨 Passing a stopped school bus with red flashers violates Maine §2308. First offense: Class E crime, $250 minimum fine. Second within 3 years: a mandatory 30-day licence suspension.', until: timeRef.current + 6 };
               speak('You passed a stopped school bus. That violates Maine law.');
             }
             bus._playerBusPreviousAhead = busAhead;
