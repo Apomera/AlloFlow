@@ -8903,7 +8903,7 @@
           function _renderStemPluginLoadError(message) {
             return React.createElement('div', {
               role: 'region',
-              'aria-label': _pluginMeta.label + ' load error',
+              'aria-label': _pluginMeta.label + (t('stem.tools_menu.plugin_load_error_suffix') || ' load error'),
               className: 'max-w-xl mx-auto my-8 rounded-2xl border-2 border-orange-400 bg-white p-6 text-center text-slate-800'
             },
               React.createElement('div', { 'aria-hidden': 'true', className: 'text-4xl mb-2' }, _pluginMeta.icon),
@@ -8913,12 +8913,12 @@
                 type: 'button', onClick: _retryCurrentStemPlugin,
                 'data-stem-plugin-retry': 'true',
                 className: 'mx-1 px-4 py-2 rounded-xl bg-indigo-600 text-white font-black text-sm',
-                'aria-label': 'Retry loading ' + _pluginMeta.label
+                'aria-label': (t('stem.tools_menu.plugin_retry_loading_prefix') || 'Retry loading ') + _pluginMeta.label
               }, 'Retry'),
               React.createElement('button', {
                 type: 'button', onClick: _backFromStemPluginError,
                 className: 'mx-1 px-4 py-2 rounded-xl border border-slate-400 font-black text-sm',
-                'aria-label': 'Back to all STEAM Lab tools'
+                'aria-label': t('stem.tools_menu.plugin_back_to_all_tools') || 'Back to all STEAM Lab tools'
               }, 'All tools')
             );
           }

@@ -708,6 +708,11 @@
 
   function ButterflyLab(props) {
     var ctx=props.ctx,R=ctx.React,h=R.createElement;
+    // This tool had NO translator: every accessible name shipped English in
+    // all 63 packs, and for the flight canvas the aria-label is the only
+    // description a screen-reader user gets. ctx.t is the host contract every
+    // other STEM tool uses; honour its 2-arg fallback form.
+    var bfT=function(k,fb){var v;try{v=(typeof ctx.t==='function')?ctx.t('stem.butterfly.'+k,fb):null;}catch(e){v=null;}return (v==null)?fb:v;};
     var stateRef=R.useRef(null);if(!stateRef.current)stateRef.current=freshState((ctx.toolData||{}).butterfly);
     var s=stateRef.current,api=R.useRef(null),stage=R.useRef(null),map=R.useRef(null),keys=R.useRef({});
     var pair=R.useState(0),refresh=pair[1];
@@ -844,25 +849,25 @@
       onPointerDown:function(e){if(s.paused)return;e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);keys.current[key]=true;},
       onPointerUp:function(){delete keys.current[key];},onPointerCancel:function(){delete keys.current[key];},onLostPointerCapture:function(){delete keys.current[key];},
       onKeyDown:function(e){if((e.key===' '||e.key==='Enter')&&!s.paused){e.preventDefault();keys.current[key]=true;}},onKeyUp:function(){delete keys.current[key];},onBlur:function(){delete keys.current[key];}});}
-    return h('section',{className:'bfl','data-butterfly-root':true,'data-dark':!!ctx.isDark,'data-contrast':!!ctx.isContrast,'aria-label':'Butterfly Habitat Lab'},
+    return h('section',{className:'bfl','data-butterfly-root':true,'data-dark':!!ctx.isDark,'data-contrast':!!ctx.isContrast,'aria-label':bfT('a11y_butterfly_habitat_lab',"Butterfly Habitat Lab")},
       h('style',null,CSS),
       h('header',{className:'bf-header'},h('div',null,h('div',{className:'bf-eyebrow'},'Field study 01 · Mid-Atlantic, North America · Summer'),h('h2',null,'A meadow through butterfly eyes'),h('p',null,'Fly as a monarch. Follow the flowers, investigate the leaves, and discover what makes a habitat support more than one stage of life.')),h('span',{className:'bf-mark','aria-hidden':true},'🦋')),
       h('div',{className:'bf-layout'},h('div',null,
-        h('div',{className:'bf-stage',ref:stage,role:'region',tabIndex:0,'aria-label':'Butterfly flight area. Arrow keys or W A S D to move, E to rise, Q to lower, Space to pause.','data-bf-paused':String(s.paused),'data-bf-renderer':mapMode?'map':renderer,'data-bf-landed':s.landed||'','data-bf-design':s.restoration.design},
+        h('div',{className:'bf-stage',ref:stage,role:'region',tabIndex:0,'aria-label':bfT('a11y_butterfly_flight_area_arrow_keys_or_w_a_s_d_to_move_',"Butterfly flight area. Arrow keys or W A S D to move, E to rise, Q to lower, Space to pause."),'data-bf-paused':String(s.paused),'data-bf-renderer':mapMode?'map':renderer,'data-bf-landed':s.landed||'','data-bf-design':s.restoration.design},
           h('canvas',{className:'bf-map',ref:map,'aria-hidden':true}),
-          landed?h('div',{className:'bf-lens-tools',role:'group','aria-label':'Field lens controls'},button('Flowers',function(){chooseLens('flowers');},{'aria-pressed':lens==='flowers'}),button('Leaves',function(){chooseLens('leaves');},{'aria-pressed':lens==='leaves'}),button('Wide view',function(){chooseLens(null);},{'aria-pressed':!lens})):null,
+          landed?h('div',{className:'bf-lens-tools',role:'group','aria-label':bfT('a11y_field_lens_controls',"Field lens controls")},button('Flowers',function(){chooseLens('flowers');},{'aria-pressed':lens==='flowers'}),button('Leaves',function(){chooseLens('leaves');},{'aria-pressed':lens==='leaves'}),button('Wide view',function(){chooseLens(null);},{'aria-pressed':!lens})):null,
           h('div',{className:'bf-overlay','aria-hidden':true},h('div',{className:'bf-scene-badge'},mapMode||renderer==='map'?'HABITAT MAP · SAME EXPLORATION':'MONARCH HABITAT · SUMMER MEADOW'),h('div',{className:'bf-scene-bottom'+(detail?' bf-lens-caption':'')},detail?h('div',{className:'bf-eyebrow'},'Field lens · '+detail.species):null,h('strong',null,detail?detail.part:landed?'Landed · '+landed.name:s.target?'Guided flight · '+patch(s.target,s).name:s.paused?'Ready when you are':'Exploring the meadow'),h('small',null,detail?(detail.present?'Resource present':'Resource absent')+' · '+(detail.kind==='flowers'?'Adult nectar':'Monarch host leaves'):landed?(recorded?'Evidence recorded. Look closer, or choose your next habitat.':'Compare flowers and leaves above, then examine this patch.'):near.distance<=14?'Within landing range · Land here to investigate':near.plant.name+' · '+Math.round(near.distance)+' scene units away')))),
         h('div',{className:'bf-toolbar'},button(s.paused?'Take flight':'Pause flight',toggle,{className:'bf-primary','data-bf-play':true}),button(landed?'Lift off':'Land here',landing,{disabled:!landed&&near.distance>14}),button('Examine patch',examine,{disabled:!landed}),h('span',{className:'bf-spacer'}),button('Map',function(){setMapMode(!mapMode);},{'aria-pressed':mapMode}),button(view==='follow'?'Meadow view':'Follow view',function(){closeLens();setView(view==='follow'?'meadow':'follow');},{disabled:mapMode||renderer!=='three'})),
         h('div',{className:'bf-status',role:'status','aria-live':'polite'},h('p',null,message)),
-        detail?h('section',{className:'bf-field-card','aria-label':'Field lens reading'},h('div',{className:'bf-field-head'},h('div',{className:'bf-eyebrow'},detail.kind==='flowers'?'Flower lens · Adult stage':'Leaf lens · Caterpillar stage'),h('span',{className:'bf-resource-tag'},detail.present?'Resource present':'Resource absent')),h('h3',null,detail.title),h('p',null,detail.note),h('p',{className:'bf-help'},(mapMode||renderer==='map'?'The outlined map patch is the habitat being studied. ':'The ring points to a part of the illustrative plant model. ')+(recorded?'Evidence is already in your journal or planting comparisons.':'Use Examine patch to record this visit.'))):null,
+        detail?h('section',{className:'bf-field-card','aria-label':bfT('a11y_field_lens_reading',"Field lens reading")},h('div',{className:'bf-field-head'},h('div',{className:'bf-eyebrow'},detail.kind==='flowers'?'Flower lens · Adult stage':'Leaf lens · Caterpillar stage'),h('span',{className:'bf-resource-tag'},detail.present?'Resource present':'Resource absent')),h('h3',null,detail.title),h('p',null,detail.note),h('p',{className:'bf-help'},(mapMode||renderer==='map'?'The outlined map patch is the habitat being studied. ':'The ring points to a part of the illustrative plant model. ')+(recorded?'Evidence is already in your journal or planting comparisons.':'Use Examine patch to record this visit.'))):null,
         h('p',{className:'bf-help'},'Focus the scene to fly with W A S D or arrows. E / Q change height. Space pauses. Guided travel and the buttons below also work with keyboard or touch.'),
-        h('div',{className:'bf-touch',role:'group','aria-label':'Flight direction controls'},hold('← Left','left'),hold('↑ Forward','forward'),hold('↓ Back','back'),hold('→ Right','right'),hold('Rise','rise'),hold('Lower','lower')),
+        h('div',{className:'bf-touch',role:'group','aria-label':bfT('a11y_flight_direction_controls',"Flight direction controls")},hold('← Left','left'),hold('↑ Forward','forward'),hold('↓ Back','back'),hold('→ Right','right'),hold('Rise','rise'),hold('Lower','lower')),
         renderer==='map'?h('p',{className:'bf-help'},'3D is unavailable. All habitat visits and journal activities work on this map. ',button('Retry 3D',function(){setRetry(retry+1);})):null
       ),h('aside',{className:'bf-aside'},
-        h('section',{className:'bf-panel','aria-label':'Habitat destinations'},h('div',{className:'bf-eyebrow'},'Choose a place to explore'),h('h3',null,'Explore, then redesign.'),h('p',{className:'bf-help'},'Visit the three reference patches and your restoration plot.'),habitats(s).map(function(p,i){return h('button',{type:'button',key:p.id,className:'bf-destination','aria-pressed':s.target===p.id,onClick:function(){travel(p.id);}},h('span',null,(evidenceRecorded(s,p)?'✓ ':('0'+(i+1)+' · '))+p.name),h('small',null,p.latin));}),h('div',{className:'bf-meter'},h('label',null,'Flight energy · '+Math.round(s.energy)+'%',h('meter',{min:0,max:100,value:s.energy})),h('p',null,'A simplified activity meter. Examine a flowering patch to replenish it.'))),
-        h('section',{className:'bf-panel','aria-label':'Field journal'},h('div',{className:'bf-eyebrow'},'Reference field journal'),h('h3',null,remaining+' of 3 patches investigated'),h('div',{className:'bf-progress','aria-hidden':true},PLANTS.map(function(p){return h('i',{key:p.id,'data-done':s.observations.indexOf(p.id)>=0});})),
+        h('section',{className:'bf-panel','aria-label':bfT('a11y_habitat_destinations',"Habitat destinations")},h('div',{className:'bf-eyebrow'},'Choose a place to explore'),h('h3',null,'Explore, then redesign.'),h('p',{className:'bf-help'},'Visit the three reference patches and your restoration plot.'),habitats(s).map(function(p,i){return h('button',{type:'button',key:p.id,className:'bf-destination','aria-pressed':s.target===p.id,onClick:function(){travel(p.id);}},h('span',null,(evidenceRecorded(s,p)?'✓ ':('0'+(i+1)+' · '))+p.name),h('small',null,p.latin));}),h('div',{className:'bf-meter'},h('label',null,'Flight energy · '+Math.round(s.energy)+'%',h('meter',{min:0,max:100,value:s.energy})),h('p',null,'A simplified activity meter. Examine a flowering patch to replenish it.'))),
+        h('section',{className:'bf-panel','aria-label':bfT('a11y_field_journal',"Field journal")},h('div',{className:'bf-eyebrow'},'Reference field journal'),h('h3',null,remaining+' of 3 patches investigated'),h('div',{className:'bf-progress','aria-hidden':true},PLANTS.map(function(p){return h('i',{key:p.id,'data-done':s.observations.indexOf(p.id)>=0});})),
           remaining?h('ul',{className:'bf-journal'},s.observations.map(function(id){var p=patch(id);return h('li',{key:id},h('strong',null,p.name),h('p',null,p.note));})):h('p',{className:'bf-help'},'Record the three reference patches here. Your restoration comparisons appear in the design activity below.')))),
-      h('section',{className:'bf-panel bf-design','aria-label':'Habitat design activity'},
+      h('section',{className:'bf-panel bf-design','aria-label':bfT('a11y_habitat_design_activity',"Habitat design activity")},
         h('div',{className:'bf-design-head'},h('div',null,h('div',{className:'bf-eyebrow'},'Your next investigation · Predict → Plant → Observe'),h('h3',null,'What could this patch become?'),h('p',{className:'bf-help'},'Redesign the fourth patch and test what it offers a monarch. Each plan shows an established summer planting in bloom; real plants need time to grow.')),h('span',{className:'bf-design-current'},'In the meadow: '+design(s.restoration.design).short)),
         h('div',{className:'bf-design-steps'},h('fieldset',null,h('legend',null,'1. Choose a planting plan'),h('div',{className:'bf-design-choices'},DESIGNS.map(function(d){return button(h(R.Fragment,null,d.name,h('small',null,d.detail)),function(){setPlan(d.id);setGuess('');},{key:d.id,'aria-pressed':plan===d.id});}))),
           h('div',null,h('label',null,'2. Predict the resources available',h('select',{value:guess,onChange:function(e){setGuess(e.target.value);}},h('option',{value:''},'Choose your prediction'),PREDICTIONS.map(function(p){return h('option',{key:p.id,value:p.id},p.label);}))),
@@ -871,7 +876,7 @@
         h('p',{className:'bf-design-feedback'},designFeedback),
         h('table',{className:'bf-comparison'},h('caption',null,'Your planting comparisons · '+s.restoration.trials.length+' of 3 examined'),h('thead',null,h('tr',null,h('th',{scope:'col'},'Established plan'),h('th',{scope:'col'},'Adult nectar'),h('th',{scope:'col'},'Caterpillar host leaves'))),h('tbody',null,DESIGNS.map(function(d){var trial=s.restoration.trials.find(function(t){return t.design===d.id;});return h('tr',{key:d.id,'data-design-record':d.id},h('th',{scope:'row'},d.short),h('td',null,trial?(d.nectar?'Present':'Absent'):'Not examined',trial?h('span',null,'Predicted: '+prediction(trial.prediction).label):null),h('td',null,trial?(d.host?'Present':'Absent'):'Not examined'));}))),
         h('p',{className:'bf-help'},'Each row keeps your latest examined plan. Resource availability is one part of habitat quality; this comparison does not estimate butterfly numbers or survival.')),
-      h('section',{className:'bf-panel bf-cycle','aria-label':'Life cycle investigation','data-bf-cycle-patch':s.lifecycle.patch||'','data-bf-cycle-stage':s.lifecycle.stage||''},
+      h('section',{className:'bf-panel bf-cycle','aria-label':bfT('a11y_life_cycle_investigation',"Life cycle investigation"),'data-bf-cycle-patch':s.lifecycle.patch||'','data-bf-cycle-stage':s.lifecycle.stage||''},
         h('div',{className:'bf-cycle-head'},h('div',null,h('div',{className:'bf-eyebrow'},'Follow a generation · Predict → Lay → Observe'),h('h3',null,'What happens to the next generation here?'),h('p',{className:'bf-help'},'You fly the adult. Place eggs on a patch you have already examined, then follow the generation one stage at a time and see how far it gets.')),
           h('span',{className:'bf-cycle-current'},!cycleSite?'No generation started':s.lifecycle.stage?'Generation at: '+cycleSite.name:'Last followed: '+cycleSite.name)),
         h('div',{className:'bf-cycle-steps'},
@@ -914,7 +919,7 @@
               h('td',null,b?outcome(b.prediction).label:'Not followed'),
               h('td',null,b?outcome(b.result).label:'Not followed',b?h('span',null,b.prediction===b.result?'Matched your prediction':'Differed from your prediction'):null));}))),
         h('p',{className:'bf-help'},'Stages are developmental steps, not a timed simulation. This activity shows whether a patch offers what each stage needs; it does not model how many eggs survive, weather, predators, or disease.')),
-      h('section',{className:'bf-panel bf-season','aria-label':'Mowing and timing investigation','data-bf-season-patch':seasonSite||'','data-bf-season-mowing':mowPlan},
+      h('section',{className:'bf-panel bf-season','aria-label':bfT('a11y_mowing_and_timing_investigation',"Mowing and timing investigation"),'data-bf-season-patch':seasonSite||'','data-bf-season-mowing':mowPlan},
         h('div',{className:'bf-season-head'},h('div',null,h('div',{className:'bf-eyebrow'},'Time the mowing · Predict → Run → Compare'),h('h3',null,'Does it matter WHEN the patch is cut?'),
           h('p',{className:'bf-help'},'A patch can hold the right plants and still lose the generation, if it is cut before a stage gets to use them. Run one patch under different mowing plans and compare.')),
           h('span',{className:'bf-season-current'},'Plan: '+mowing(mowPlan).short)),
@@ -934,7 +939,7 @@
             h('div',{className:'bf-season-actions'},
               button('Run the season',startSeason,{className:'bf-primary',disabled:!seasonSite||!seasonGuess})),
             h('p',{className:'bf-help'},seasonSite?'Running a season does not change the plants. It only asks whether the plot is still standing when each stage needs it.':'Examine a patch in the meadow first. You can only run a season where you know what is growing.'))),
-        seasonView?h('ol',{className:'bf-weeks','aria-label':'Stage by stage through the season'},seasonView.steps.map(function(x){
+        seasonView?h('ol',{className:'bf-weeks','aria-label':bfT('a11y_stage_by_stage_through_the_season',"Stage by stage through the season")},seasonView.steps.map(function(x){
           var state=x.cleared?'cleared':!x.standing?'cut':'missing';
           return h('li',{key:x.id,'data-state':state,'data-stage':x.id},
             h('b',null,'Week '+x.week),h('strong',null,x.name),
@@ -956,7 +961,7 @@
         timingPairs(s).length?h('p',{className:'bf-help','data-bf-timing-pair':'1'},'You have run the same patch under two mowing plans and got two different results. That comparison is what shows timing mattered, not the plants alone.'):null,
         h('p',{className:'bf-help'},'Weeks order the stages for one generation; they are not a measured calendar, and real mowing dates vary by region and species. This activity models whether plants are present and still standing — not how many monarchs survive.')),
       h('div',{className:'bf-bottom'},h('section',{className:'bf-panel'},h('div',{className:'bf-eyebrow'},'One species · changing needs'),h('h3',null,'A life beyond the wings'),h('div',{className:'bf-life'},STAGES.map(function(st){return h('span',{key:st.id},h('b',null,st.ordinal+' · '+st.name),st.id==='egg'?'On milkweed':st.id==='caterpillar'?'Milkweed leaves':st.id==='chrysalis'?'Metamorphosis':'Flower nectar');})),h('p',{className:'bf-help'},'You play the adult stage. Follow a generation in the investigation above to see which patches can support the other three.')),
-        h('section',{className:'bf-panel bf-question','aria-label':'Habitat evidence question','data-bf-claim':pickedClaim||''},h('div',{className:'bf-eyebrow'},'Make sense of your evidence'),h('h3',null,'Which claim does your evidence support?'),
+        h('section',{className:'bf-panel bf-question','aria-label':bfT('a11y_habitat_evidence_question',"Habitat evidence question"),'data-bf-claim':pickedClaim||''},h('div',{className:'bf-eyebrow'},'Make sense of your evidence'),h('h3',null,'Which claim does your evidence support?'),
           h('p',{className:'bf-help'},'Choose a claim. The lab does not tell you which is right on its own authority — it shows you which of your own records bear on it.'),
           CLAIMS.map(function(c){return button(c.label,function(){setPickedClaim(c.id);setAnswer('');},{key:c.id,'aria-pressed':pickedClaim===c.id});}),
           verdict?h('div',{className:'bf-verdict','data-bf-tested':String(verdict.tested)},
@@ -965,7 +970,7 @@
               h('ul',{className:'bf-evidence'},verdict.evidence.lines.map(function(line,i){return h('li',{key:i,'data-evidence':line.kind},line.text);}))
             ):h('p',{className:'bf-help'},'You have not recorded anything yet. Examine a patch to begin.')):null,
           h('div',{role:'status','aria-live':'polite'},answer||(verdict?verdict.verdict+' '+verdict.why:'')))),
-      h('details',{className:'bf-panel bf-glossary','aria-label':'Glossary'},
+      h('details',{className:'bf-panel bf-glossary','aria-label':bfT('a11y_glossary',"Glossary")},
         h('summary',null,'Glossary \u00b7 ' + GLOSSARY.length + ' words used in this lab'),
         h('p',{className:'bf-help'},'Each entry says what the word means in general, then how this lab uses it.'),
         h('dl',null,GLOSSARY.map(function(g){
@@ -974,13 +979,13 @@
             h('dd',null,g.definition),
             h('dd',{className:'bf-gloss-here'},g.here));
         }))),
-      h('section',{className:'bf-panel bf-report','aria-label':'Field report','data-bf-report-copied':copyState||''},
+      h('section',{className:'bf-panel bf-report','aria-label':bfT('a11y_field_report',"Field report"),'data-bf-report-copied':copyState||''},
         h('div',{className:'bf-report-head'},h('div',null,h('div',{className:'bf-eyebrow'},'Take your evidence with you'),h('h3',null,'Field report'),
           h('p',{className:'bf-help'},reportEmpty?'Once you have examined a patch, compared a planting, followed a generation or run a season, your records collect here as text you can copy.':'Everything you have recorded, as plain text. Nothing here is inferred — it lists only what you did.')),
           h('div',{className:'bf-report-actions'},
             button(copyState==='ok'?'✓ Report copied':'Copy my field report',copyReport,{className:'bf-primary',disabled:reportEmpty}))),
-        reportEmpty?null:h('pre',{'data-bf-report':'1',tabIndex:0,'aria-label':'Field report text'},reportText),
-        copyState==='fail'?h('textarea',{readOnly:true,value:reportText,rows:10,'aria-label':'Field report text to copy manually',
+        reportEmpty?null:h('pre',{'data-bf-report':'1',tabIndex:0,'aria-label':bfT('a11y_field_report_text',"Field report text")},reportText),
+        copyState==='fail'?h('textarea',{readOnly:true,value:reportText,rows:10,'aria-label':bfT('a11y_field_report_text_to_copy_manually',"Field report text to copy manually"),
           onFocus:function(e){e.target.select();},onCopy:function(){setCopyState('ok');}}):null),
       h('details',{className:'bf-sources'},h('summary',null,'Science notes & sources'),h('p',null,'Species: monarch (Danaus plexippus). This summer scene represents a Mid-Atlantic habitat investigation. Plants and wing patterns are illustrative and enlarged. Guided routes, flight speed, distances, and energy are teaching choices, not field measurements. The generation you follow is a teaching model of one outcome, not a population simulation: it turns on whether milkweed is present, and it deliberately leaves out weather, predators, parasites, disease, how many eggs are laid, and how many survive — all of which matter in a real meadow, where most eggs do not reach adulthood even on good milkweed. Real development also takes weeks and depends on temperature; the stages here advance when you choose, in a fixed order. Other butterfly species can have different host plants.'),h('ul',null,
         h('li',null,h('a',{href:'https://www.xerces.org/publications/plant-lists/monarch-nectar-plants-mid-atlantic',target:'_blank',rel:'noopener noreferrer'},'Xerces Society · Regional nectar plants and milkweed hosts')),
