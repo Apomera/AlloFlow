@@ -96,6 +96,18 @@ window.StemLab = window.StemLab || {
          the two. Only in fullscreen with the panel shown: on the normal page the
          workspace keeps its responsive Tailwind template untouched. */
       [data-galaxy-workspace][data-galaxy-fullscreen=true][data-galaxy-sidebar=shown] { grid-template-columns: minmax(0, 1fr) 10px var(--galaxy-panel-w, 360px) !important; gap: 0 !important; }
+      /* Below ~820px a side-by-side split has nothing to give: at 390px the 240px
+         minimum panel left the scene a 140px-wide sliver AND froze the handle,
+         because the min and the 60% max meet there. Stack instead — scene on top,
+         controls under it — which is what the tool does outside fullscreen anyway. */
+      @media (max-width: 819px) {
+        [data-galaxy-workspace][data-galaxy-fullscreen=true][data-galaxy-sidebar=shown] { grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: minmax(160px, 1fr) auto !important; grid-auto-rows: auto !important; overflow-y: auto !important; }
+        [data-galaxy-workspace][data-galaxy-fullscreen=true][data-galaxy-sidebar=shown] > [data-galaxy-stage] { height: 100% !important; min-height: 160px !important; }
+        [data-galaxy-workspace][data-galaxy-fullscreen=true][data-galaxy-sidebar=shown] > [data-galaxy-controls] { height: auto !important; max-height: 55vh !important; }
+        /* A vertical drag handle cannot resize a stacked layout, and a control that
+           does nothing is worse than none. */
+        [data-galaxy-workspace][data-galaxy-fullscreen=true][data-galaxy-sidebar=shown] > [data-galaxy-panel-resizer] { display: none !important; }
+      }
       [data-galaxy-panel-resizer] { display: none; }
       [data-galaxy-workspace][data-galaxy-fullscreen=true][data-galaxy-sidebar=shown] > [data-galaxy-panel-resizer] { display: flex; align-items: center; justify-content: center; height: 100%; padding: 0; border: 0; background: #0f172a; cursor: col-resize; touch-action: none; }
       [data-galaxy-panel-resizer]::before { content: ''; width: 2px; height: 46px; border-radius: 2px; background: #64748b; transition: background .15s; }
