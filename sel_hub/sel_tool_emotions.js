@@ -18696,14 +18696,14 @@ var EMOTION_JOURNAL_TEMPLATES = [
               ),
               h('button', { 'aria-label': 'Next Question',
                 onClick: function() { generateQuiz(); },
-                style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#6d28d9', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
               }, 'Next Question \u2192')
             ),
 
             // Start quiz if no question loaded
             !quizDef && h('button', { 'aria-label': 'Start Quiz!',
               onClick: function() { generateQuiz(); },
-              style: { display: 'block', margin: '20px auto', padding: '14px 32px', borderRadius: 10, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+              style: { display: 'block', margin: '20px auto', padding: '14px 32px', borderRadius: 10, border: 'none', background: '#6d28d9', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
             }, 'Start Quiz!')
           );
         }
@@ -19040,7 +19040,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
               });
               if (Object.keys(intensities).length >= 3) tryAwardBadge('intensity_range');
             },
-            style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }
+            style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: '#1d4ed8', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }
           }, checkinStrategy ? '\u2705 Save Feeling + Next Step' : '\u2705 Log This Feeling'),
 
           // Body Sensations Map (shows when a family is selected)
@@ -19194,7 +19194,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                     onClick: function() {
                       upd({ faceIdx: faceIdx + 1, faceRevealed: null });
                     },
-                    style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                    style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: '#1d4ed8', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
                   }, 'Next Face \u2192')
                 )
           );
@@ -19361,7 +19361,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                   if (soundEnabled) sfxReveal();
                   awardXP(15);
                 },
-                style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#ec4899', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#be185d', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
               }, 'See Their Perspective \u2192')
             ),
 
@@ -19398,7 +19398,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
               ),
               h('button', { 'aria-label': 'Next Empathy Scenario',
                 onClick: function() { upd({ empathyIdx: empathyIdx + 1, empathyAnswer: null, empathyRevealed: false }); },
-                style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#ec4899', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#be185d', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
               }, 'Next Empathy Scenario \u2192')
             )
           );
@@ -19461,7 +19461,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                 if (soundEnabled) sfxReveal();
                 awardXP(10);
               },
-              style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+              style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#1d4ed8', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
             }, 'See What Others Feel \u2192')
           ),
 
@@ -19513,7 +19513,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
             }, '\uD83C\uDF00 ' + __alloT('sel.emotions.scen_mixed_badge', 'I see \u2014 there can be mixed emotions!')),
             h('button', { 'aria-label': 'Next Scenario',
               onClick: function() { upd({ scenarioIdx: scenarioIdx + 1, scenarioAnswer: null, scenarioRevealed: false }); },
-              style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+              style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#1d4ed8', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
             }, 'Next Scenario \u2192')
           )
         );
@@ -19795,7 +19795,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                   if (newEntries.length >= 3) tryAwardBadge('journal_3');
                   if (newEntries.length >= 10) tryAwardBadge('journal_10');
                 },
-                style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#1d4ed8', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCBE Save Entry'),
 
               callGemini && journalDraft.trim().length > 10 && h('button', {
@@ -19849,7 +19849,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                   });
                 },
                 disabled: journalAiLoading,
-                style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 13, cursor: journalAiLoading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }
+                style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#6d28d9', color: '#fff', fontWeight: 700, fontSize: 13, cursor: journalAiLoading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }
               },
                 Sparkles ? h(Sparkles, { size: 14 }) : '\u2728',
                 journalAiLoading ? 'Thinking...' : 'Ask AI Coach'
@@ -20904,7 +20904,7 @@ if (activeTab === 'arc') {
       h('h3', { style: { color: P.text, fontSize: 18, fontWeight: 700, marginBottom: 8 } }, 'No mood data yet'),
       h('p', { style: { color: P.textMuted, fontSize: 13, lineHeight: 1.5 } }, 'Check in with your emotions on the Check-In tab. Your last 14 days of check-ins will show up here as a chart you can share with a counselor or trusted adult.'),
       h('button', { onClick: function() { upd('activeTab', 'checkin'); if (soundEnabled) sfxClick(); },
-        style: { marginTop: 14, padding: '8px 18px', borderRadius: 6, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+        style: { marginTop: 14, padding: '8px 18px', borderRadius: 6, border: 'none', background: '#1d4ed8', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, 'Go check in now')
     );
   } else {
@@ -21064,7 +21064,7 @@ if (activeTab === 'nameit') {
               style: { padding: '8px 18px', borderRadius: 6, border: 'none', background: '#5eead4', color: P.bg, fontSize: 13, fontWeight: 700, cursor: 'pointer' }
             }, 'Finish ✓') :
             h('button', { onClick: function() { upd({ niStep: niStep + 1 }); if (soundEnabled) sfxClick(); },
-              style: { padding: '8px 16px', borderRadius: 6, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+              style: { padding: '8px 16px', borderRadius: 6, border: 'none', background: '#1d4ed8', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
             }, 'Next →')
         )
       );
@@ -21322,7 +21322,7 @@ if (activeTab === 'empathy_mirror') {
             style: { padding: '8px 14px', borderRadius: 6, border: ('1px solid ' + P.borderDim), background: P.bg, color: P.textMuted, fontSize: 13, cursor: 'pointer' }
           }, '← Previous story'),
           h('button', { onClick: function() { upd({ emIdx: (emIdx + 1) % stories.length, emRevealed: false, emGuess: null }); if (soundEnabled) sfxClick(); },
-            style: { padding: '8px 14px', borderRadius: 6, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+            style: { padding: '8px 14px', borderRadius: 6, border: 'none', background: '#1d4ed8', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
           }, 'Next story →')
         )
       ) : h('div', { style: { padding: 20, textAlign: 'center', color: P.textMuted } }, 'No stories for your grade level yet.')
@@ -21395,7 +21395,7 @@ if (activeTab === 'micro') {
             style: { padding: '8px 14px', borderRadius: 6, border: ('1px solid ' + P.borderDim), background: P.bg, color: P.textMuted, fontSize: 13, cursor: 'pointer' }
           }, '← Previous'),
           h('button', { onClick: function() { upd({ miIdx: (miIdx + 1) % MICROEXPRESSIONS.length, miRevealed: false, miGuess: null }); if (soundEnabled) sfxClick(); },
-            style: { padding: '8px 14px', borderRadius: 6, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+            style: { padding: '8px 14px', borderRadius: 6, border: 'none', background: '#1d4ed8', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
           }, 'Next →')
         )
       )
@@ -21743,7 +21743,7 @@ if (activeTab === 'strategies') {
                 h('p', { style: { margin: '4px 0 0', color: P.text2, fontSize: 13 } }, e.shortDesc)
               ),
               h('button', { onClick: function() { upd({ stOpen: isOpen ? null : e.id }); if (soundEnabled) sfxClick(); },
-                style: { padding: '5px 12px', borderRadius: 6, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '5px 12px', borderRadius: 6, border: 'none', background: '#1d4ed8', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, isOpen ? 'Close' : 'See strategies')
             ),
             isOpen ? h('div', { style: { marginTop: 12 } },

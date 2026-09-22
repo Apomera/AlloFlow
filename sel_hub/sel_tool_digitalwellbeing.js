@@ -4736,7 +4736,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
               onClick: tap,
               style: {
                 width: 90, height: 90, borderRadius: 18,
-                background: '#a855f7', color: '#fff', border: 'none',
+                background: '#7e22ce', color: '#fff', border: 'none',
                 fontSize: 14, fontWeight: 800, cursor: 'pointer',
                 boxShadow: '0 6px 18px rgba(168,85,247,0.35)'
               }
@@ -4914,7 +4914,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
               'That was about four minutes of choice instead of three hours of autopilot. Tomorrow you will not have undone the scrolling, but you broke the loop, which is the whole point. Sleep well.'),
             h('button', {
               onClick: function() { upd({ dsActive: false, dsStep: 0, dsDone: {} }); tryAwardBadge('doom_reset', 'Loop Breaker'); },
-              style: { marginTop: 12, padding: '8px 14px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
+              style: { marginTop: 12, padding: '8px 14px', background: '#047857', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
             }, 'Close')
           );
         }
@@ -5071,7 +5071,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
                     boxShadow: committed ? '0 2px 6px rgba(5, 150, 105, 0.25)' : '0 2px 6px rgba(6, 182, 212, 0.20)'
                   } }, s.icon),
                   h('span', { style: { flex: 1 } }, s.title),
-                  committed && h('span', { style: { fontSize: 11, color: '#fff', background: '#10b981', fontWeight: 700,
+                  committed && h('span', { style: { fontSize: 11, color: '#fff', background: '#047857', fontWeight: 700,
                     borderRadius: 12, padding: '3px 9px', letterSpacing: 0.3 } }, '✓ Committed'),
                   h('span', { 'aria-hidden': 'true', style: { color: _dwC('#64748b'), fontSize: 18 } }, expanded ? '▾' : '▸')
                 ),
@@ -5534,11 +5534,11 @@ var EDUCATOR_GUIDES_DIGITAL = [
                 } }, sel ? '✓' : ''),
                 h('span', { style: { flex: 1 } }, opt.text),
                 submitted && opt.correct && h('span', { style: {
-                  fontSize: 10, color: '#fff', background: '#10b981', fontWeight: 800,
+                  fontSize: 10, color: '#fff', background: '#047857', fontWeight: 800,
                   padding: '2px 6px', borderRadius: 4, letterSpacing: 0.5, flexShrink: 0
                 } }, 'CORRECT'),
                 submitted && !opt.correct && sel && h('span', { style: {
-                  fontSize: 10, color: '#fff', background: '#ef4444', fontWeight: 800,
+                  fontSize: 10, color: '#fff', background: '#b91c1c', fontWeight: 800,
                   padding: '2px 6px', borderRadius: 4, letterSpacing: 0.5, flexShrink: 0
                 } }, 'TRAP')
               );
@@ -5599,7 +5599,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
                     onClick: function() {
                       upd({ stIdx: 0, stPicked: {}, stSubmitted: {}, stScore: 0 });
                     },
-                    style: { padding: '8px 14px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                    style: { padding: '8px 14px', background: '#047857', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
                   }, 'Reset and try again')
           )
         );
@@ -5778,7 +5778,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
                 tryAwardBadge('crisis_aware', 'Knows the Numbers');
                 if (announceToSR) announceToSR('Crisis resources reviewed.');
               },
-              style: { padding: '8px 14px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700, cursor: 'pointer' }
+              style: { padding: '8px 14px', background: '#047857', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700, cursor: 'pointer' }
             }, 'I have looked at these resources')
           )
         );
@@ -6035,7 +6035,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
                 }, 'Next myth →')
               : h('button', {
                   onClick: function() { upd('aicSection', 'syc'); tryAwardBadge('aic_myths', 'Sees Through It'); },
-                  style: { padding: '8px 14px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                  style: { padding: '8px 14px', background: '#047857', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
                 }, 'Continue: the Sycophancy Problem →')
           )
         );
@@ -6130,7 +6130,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
             !aicSycRevealed
               ? h('button', {
                   onClick: function() { upd('aicSycRevealed', true); if (announceToSR) announceToSR('Friend response revealed'); },
-                  style: { padding: '8px 14px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                  style: { padding: '8px 14px', background: '#047857', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
                 }, 'Reveal what a real friend would say')
               : aicSycIdx < AI_SYCOPHANCY_EXAMPLES.length - 1
                 ? h('button', {
@@ -6165,7 +6165,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                       h('span', { 'aria-hidden': 'true', style: {
                         width: 24, height: 24, borderRadius: '50%',
-                        background: '#10b981', color: '#fff',
+                        background: '#047857', color: '#fff',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 13, fontWeight: 800
                       } }, '✓'),

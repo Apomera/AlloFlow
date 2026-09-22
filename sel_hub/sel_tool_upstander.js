@@ -8619,7 +8619,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                           if (soundOn) sfxBrave();
                           tryAwardBadge('self_care', 15);
                         },
-                        style: { padding: '8px 14px', background: '#059669', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                        style: { padding: '8px 14px', background: '#047857', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
                       }, 'Done — close')
                 )
               )
@@ -8706,7 +8706,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                           upd({ whStep: 0, whOpen: false });
                           tryAwardBadge('healed_witness', 20);
                         },
-                        style: { padding: '8px 14px', background: '#059669', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                        style: { padding: '8px 14px', background: '#047857', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
                       }, 'Done — close')
                 )
               )
@@ -9069,7 +9069,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                   h('button', {
                     onClick: function() { if (window.print) window.print(); },
                     'aria-label': 'Print certificate',
-                    style: { padding: '8px 14px', background: '#ca8a04', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 12 }
+                    style: { padding: '8px 14px', background: '#854d0e', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 12 }
                   }, '\uD83D\uDDA8\uFE0F Print certificate'),
                   h('button', { onClick: function() { upd('pledgeSaved', false); },
                     style: { padding: '8px 14px', background: 'transparent', color: _upC('#78350f'), border: '1px solid #ca8a04', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 12 }

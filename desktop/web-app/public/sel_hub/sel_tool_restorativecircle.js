@@ -1386,7 +1386,7 @@ window.SelHub = window.SelHub || {
               return h('div', { key: i, className: 'flex items-center' },
                 h('div', {
                   className: 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ' +
-                    (isComplete ? 'bg-emerald-700 text-white' : isCurrent ? 'bg-amber-700 text-white ring-2 ring-amber-300' : 'bg-slate-200 text-slate-300')
+                    (isComplete ? 'bg-emerald-700 text-white' : isCurrent ? 'bg-amber-700 text-white ring-2 ring-amber-300' : 'bg-slate-200 text-slate-700')
                 }, isComplete ? '\u2713' : (i + 1)),
                 i < HARM_REPAIR_STEPS.length - 1 && h('div', { className: 'w-4 h-0.5 ' + (isComplete ? 'bg-emerald-400' : 'bg-slate-200') })
               );
@@ -1912,7 +1912,7 @@ window.SelHub = window.SelHub || {
                   },
                   disabled: isAdded,
                   className: 'px-3 py-1.5 rounded-full text-xs font-bold transition-all ' +
-                    (isAdded ? 'bg-emerald-100 text-emerald-600 cursor-default' : 'bg-white text-slate-600 border border-slate-400 hover:border-amber-400 hover:bg-amber-50')
+                    (isAdded ? 'bg-emerald-100 text-emerald-800 cursor-default' : 'bg-white text-slate-600 border border-slate-400 hover:border-amber-400 hover:bg-amber-50')
                 }, (isAdded ? '\u2713 ' : '+ ') + sug);
               })
             )
@@ -2176,7 +2176,7 @@ window.SelHub = window.SelHub || {
               incrementBadgeStat('questionsUsed', 1);
               ctx.awardXP(3);
             },
-            className: 'w-full px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-sm font-bold hover:from-amber-600 hover:to-orange-600 transition-all'
+            className: 'w-full px-4 py-3 bg-gradient-to-r from-amber-700 to-orange-700 text-white rounded-xl text-sm font-bold hover:from-amber-800 hover:to-orange-800 transition-all'
           }, '\uD83C\uDFB2 Random Question'),
 
           // Display random question
@@ -2447,7 +2447,7 @@ window.SelHub = window.SelHub || {
           // Reset button
           h('button', { 'aria-label': 'Start New Empathy Map',
             onClick: function() { updMulti({ empathyData: {}, empathyAnalysis: null, personAName: '', personBName: '', empathyPerson: 'personA' }); addToast('Empathy map cleared', 'info'); },
-            className: 'w-full px-4 py-2 bg-slate-100 text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors'
+            className: 'w-full px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors'
           }, '\uD83D\uDD04 Start New Empathy Map')
         ),
 
@@ -2511,7 +2511,7 @@ window.SelHub = window.SelHub || {
                       key: i,
                       onClick: function() { upd('compareScenarioIdx', i); },
                       className: 'px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ' +
-                        (compareScenarioIdx === i ? 'bg-amber-700 text-white' : hasRating ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-600 hover:bg-amber-100')
+                        (compareScenarioIdx === i ? 'bg-amber-700 text-white' : hasRating ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600 hover:bg-amber-100')
                     }, sc.emoji + ' ' + (i + 1));
                   })
                 ),

@@ -935,7 +935,7 @@ window.SelHub = window.SelHub || {
               h('button', {
                 onClick: function() { upd({ pomoStart: Date.now(), pomoMode: 'break' }); if (soundOn) sfxStart(); },
                 'aria-label': 'Start 5-minute break',
-                style: { padding: '10px 18px', background: '#16a34a', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }
+                style: { padding: '10px 18px', background: '#15803d', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }
               }, '☕ Start break (5)')
             ) : h('button', {
               onClick: function() { upd('pomoStart', 0); if (pomoDone) { if (soundOn) sfxDone(); if (awardXP) awardXP(pomoMode === 'work' ? 15 : 5, 'Pomodoro done.'); } },

@@ -1773,7 +1773,7 @@ window.SelHub = window.SelHub || {
         h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
           backBtn,
           recording
-            ? h('button', { onClick: function() { if (_crT.timer) { clearInterval(_crT.timer); _crT.timer = null; } _crT.rec.stop(); }, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#ef4444', color: '#fff' } }, '⏹ Stop & watch back')
+            ? h('button', { onClick: function() { if (_crT.timer) { clearInterval(_crT.timer); _crT.timer = null; } _crT.rec.stop(); }, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#b91c1c', color: '#fff' } }, '⏹ Stop & watch back')
             : h('button', { onClick: startRec, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#f59e0b', color: '#1e293b' } }, '⏺ Action!')));
     }
 

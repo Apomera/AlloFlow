@@ -948,7 +948,7 @@ window.SelHub = window.SelHub || {
 
         // Header
         h('div', { className: 'flex items-center gap-3' },
-          h('button', Object.assign({ 'aria-label': 'Back to SEL Hub', className: 'p-2 rounded-full hover:bg-cyan-100 text-cyan-600 transition-colors' }, ctx.a11yClick(function() { ctx.setSelHubTool(null); })), h(ArrowLeft, { size: 20 })),
+          h('button', Object.assign({ 'aria-label': 'Back to SEL Hub', className: 'p-2 rounded-full hover:bg-cyan-100 text-cyan-800 transition-colors' }, ctx.a11yClick(function() { ctx.setSelHubTool(null); })), h(ArrowLeft, { size: 20 })),
           h('div', { className: 'flex-1' },
             h('h2', { className: 'text-xl font-black text-slate-100' }, '\uD83C\uDF0D Culture Explorer'),
             h('p', { className: 'text-xs text-slate-300' }, 'Every culture holds wisdom. What will you discover?')
@@ -1137,7 +1137,7 @@ window.SelHub = window.SelHub || {
             WORLD_MAP_DATA[mapRegion].highlights.map(function(hl, idx) {
               var depthLabel = gradeBand === 'high' ? 'Historical Significance' : gradeBand === 'middle' ? 'Cultural Context' : 'Fun Fact';
               return h('div', {  key: idx, className: 'bg-white rounded-2xl border border-slate-400 overflow-hidden' },
-                h('div', {  className: 'px-4 py-3 bg-gradient-to-r from-cyan-600 to-teal-600 text-white' },
+                h('div', {  className: 'px-4 py-3 bg-gradient-to-r from-cyan-700 to-teal-700 text-white' },
                   h('h4', { className: 'font-bold' }, hl.name)
                 ),
                 h('div', {  className: 'p-4 space-y-3' },
@@ -1236,7 +1236,7 @@ window.SelHub = window.SelHub || {
                 ),
                 h('button', { 'aria-label': 'Toggle option', onClick: function() { toggleRecipeTry(recipe.id); },
                   className: 'w-full px-4 py-2.5 rounded-lg text-sm font-bold transition-all ' +
-                    (wantToTry ? 'bg-amber-100 border-2 border-amber-600 text-amber-700 hover:bg-amber-200' : 'bg-amber-700 text-white hover:bg-amber-600')
+                    (wantToTry ? 'bg-amber-100 border-2 border-amber-600 text-amber-700 hover:bg-amber-200' : 'bg-amber-700 text-white hover:bg-amber-800')
                 }, wantToTry ? '\u2764\uFE0F On My List!' : '\uD83D\uDE0B I Want to Try This!')
               )
             );
@@ -1480,7 +1480,7 @@ window.SelHub = window.SelHub || {
                 h('button', { onClick: function() { upd('calendarEventExpanded', isEventExpanded ? null : ei); },
                   className: 'w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors'
                 },
-                  h('div', {  className: 'w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-sm font-bold text-rose-600 shrink-0' }, String(ei + 1)),
+                  h('div', {  className: 'w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-sm font-bold text-rose-800 shrink-0' }, String(ei + 1)),
                   h('div', {  className: 'flex-1' },
                     h('div', {  className: 'text-sm font-bold text-slate-800' }, event.name),
                     h('div', {  className: 'text-xs text-slate-600' }, event.origin)
@@ -1863,7 +1863,7 @@ window.SelHub = window.SelHub || {
                   } else if (answered && isChosen && !isCorrect) {
                     btnClass += 'bg-red-100 border-red-400 text-red-800';
                   } else if (answered) {
-                    btnClass += 'bg-slate-50 border-slate-200 text-slate-400';
+                    btnClass += 'bg-slate-50 border-slate-200 text-slate-600';
                   } else {
                     btnClass += 'bg-white border-slate-200 text-slate-700 hover:border-cyan-600 hover:bg-cyan-50';
                   }
@@ -1966,7 +1966,7 @@ window.SelHub = window.SelHub || {
                       if (announceToSR) announceToSR('Reflection saved for: ' + jp.prompt);
                       checkBadges({ journalPromptsCompleted: newCompleted, journalCount: newCount });
                     },
-                    className: 'mt-1 px-3 py-1.5 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-600 transition-colors'
+                    className: 'mt-1 px-3 py-1.5 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-colors'
                   }, '\uD83D\uDCBE Save Reflection')
                 );
               })
