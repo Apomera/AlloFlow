@@ -6999,6 +6999,142 @@ dataRef.current = d;
               )
             ),
 
+            // Measurement methods
+            // Which measure to take is a decision the tool otherwise left implicit:
+            // it teaches reading a cumulative record without ever saying that a
+            // record is one choice among several, or that partial-interval
+            // recording systematically OVERSTATES how often a behaviour happens
+            // (and whole-interval understates it). That bias is the reason two
+            // observers can watch the same child and file contradictory data.
+            React.createElement("div", {
+
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(56,189,248,0.2)' }, glass)
+
+            },
+
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+
+                React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, blT('stem.behaviorlab.measurement_methods_n', '\uD83D\uDCCF Measurement methods ({n})', { n: MEASUREMENT_METHODS.length })),
+
+                React.createElement("button", { onClick: function() { upd('blShowMeasurement', !d.blShowMeasurement); },
+
+                  className: "transition-colors text-[0.6875rem] text-sky-400 hover:text-sky-300"
+
+                }, d.blShowMeasurement ? __alloT('stem.behaviorlab.hide', 'Hide') : __alloT('stem.behaviorlab.browse_arrow', 'Browse \u2192'))
+
+              ),
+
+              d.blShowMeasurement && React.createElement("div", null,
+
+                React.createElement("p", { className: "text-[0.6875rem] mb-2", style: { color: 'var(--bl-muted)', lineHeight: 1.5 } },
+
+                  __alloT('stem.behaviorlab.measurement_intro', 'The record you have been reading is one way to measure a behaviour. Which one you pick changes the number you get \u2014 so pick it before you collect, not after.')),
+
+                React.createElement("div", { className: "space-y-1.5" },
+
+                  MEASUREMENT_METHODS.map(function(mm, mmi) {
+
+                    var mmActive = d.blMeasurementIdx === mmi;
+
+                    return React.createElement("div", { key: mmi, role: "button", tabIndex: 0,
+
+                      'aria-expanded': mmActive ? 'true' : 'false',
+
+                      onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); upd('blMeasurementIdx', mmActive ? null : mmi); } },
+
+                      onClick: function() { upd('blMeasurementIdx', mmActive ? null : mmi); },
+
+                      className: "cursor-pointer rounded-lg p-2 border transition-all " + (mmActive ? 'bg-slate-700 border-sky-500/50' : 'transition-colors bg-slate-800/40 border-slate-700/40 hover:bg-slate-700/40'),
+
+                      style: { minHeight: 44 }
+
+                    },
+
+                      React.createElement("div", { className: "text-[0.6875rem] font-bold " + (mmActive ? 'text-sky-300' : 'text-slate-100') }, mm.name),
+
+                      mmActive && React.createElement("div", { className: "mt-1 space-y-1" },
+
+                        React.createElement("div", { className: "text-[0.6875rem] text-slate-200" }, mm.def),
+
+                        React.createElement("div", { className: "text-[0.6875rem] text-sky-200 italic" }, mm.example),
+
+                        mm.when && React.createElement("div", { className: "text-[0.6875rem]", style: { color: 'var(--bl-muted)' } },
+
+                          React.createElement("strong", null, __alloT('stem.behaviorlab.measurement_use_when', 'Use when: ')), mm.when)
+
+                      )
+
+                    );
+
+                  })
+
+                )
+
+              )
+
+            ),
+
+            // Practice standards
+            // The intro states the scope boundary in prose. This gives the same
+            // boundary the structure a trainee can actually look things up in:
+            // Least Restrictive and Competence are the two a confident untrained
+            // user is most likely to cross.
+            React.createElement("div", {
+
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(244,114,182,0.2)' }, glass)
+
+            },
+
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+
+                React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, blT('stem.behaviorlab.practice_standards_n', '\u2696\uFE0F Practice standards ({n})', { n: ABA_ETHICS.length })),
+
+                React.createElement("button", { onClick: function() { upd('blShowEthics', !d.blShowEthics); },
+
+                  className: "transition-colors text-[0.6875rem] text-pink-400 hover:text-pink-300"
+
+                }, d.blShowEthics ? __alloT('stem.behaviorlab.hide', 'Hide') : __alloT('stem.behaviorlab.browse_arrow', 'Browse \u2192'))
+
+              ),
+
+              d.blShowEthics && React.createElement("div", null,
+
+                React.createElement("p", { className: "text-[0.6875rem] mb-2", style: { color: 'var(--bl-muted)', lineHeight: 1.5 } },
+
+                  __alloT('stem.behaviorlab.ethics_intro', 'These are the standards the practice holds itself to. They are not a qualification \u2014 running an assessment or writing a plan is supervised professional work.')),
+
+                React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+
+                  ABA_ETHICS.map(function(et, eti) {
+
+                    return React.createElement("div", { key: eti,
+
+                      className: "rounded-xl p-2.5 border",
+
+                      style: { borderColor: 'rgba(244,114,182,0.25)', background: 'rgba(244,114,182,0.06)' }
+
+                    },
+
+                      React.createElement("div", { className: "flex items-center gap-1 mb-1" },
+
+                        React.createElement("span", { className: "text-base", 'aria-hidden': 'true' }, et.icon),
+
+                        React.createElement("span", { className: "text-[0.6875rem] font-black text-pink-200" }, et.name)
+
+                      ),
+
+                      React.createElement("div", { className: "text-[0.6875rem] text-slate-200 leading-relaxed" }, et.desc)
+
+                    );
+
+                  })
+
+                )
+
+              )
+
+            ),
+
             // \u2500\u2500 Contingency diagram \u2500\u2500
 
 
