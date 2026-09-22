@@ -478,6 +478,53 @@ test.describe('magnetism — 3D visual pass', () => {
       .toBeGreaterThan(0);
   });
 
+  test('reduced motion turned on MID-SESSION stops the animation', async ({ page }) => {
+    // The tool read prefers-reduced-motion once at module load and never
+    // again, so a learner who turns it on during a lesson kept getting full
+    // animation until reload — exactly when they cannot afford it.
+    //
+    // Emulate the preference AFTER the scene is already running, which is the
+    // case the old code got wrong; starting with it on would pass either way.
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto(`${harness.url}/__harness`);
+    await page.waitForFunction(
+      () => !!(window as any).StemLab?._registry?.magnetism, null, { timeout: 30000 });
+
+    // Count rAF callbacks so we measure motion actually scheduled, rather
+    // than trusting a flag the tool sets about itself.
+    await page.evaluate(() => {
+      const w = window as any;
+      w.__rafCount = 0;
+      const raf = w.requestAnimationFrame.bind(w);
+      w.requestAnimationFrame = (cb: any) => { w.__rafCount++; return raf(cb); };
+    });
+    await page.evaluate(() => (window as any).__mount({
+      // The field studio's streamline flow starts on its own whenever the 3D
+      // scene builds field lines (buildFlow -> startFlow), so it needs no
+      // simulated interaction — unlike the charged-particle loop, which only
+      // begins from a user action and would animate nothing here.
+      magnetism: { tab: 'field', fieldView: '3d', lines: true },
+    }));
+    await page.waitForSelector('#wrap canvas', { timeout: 30000 });
+    await page.waitForTimeout(1200);
+
+    const before = await page.evaluate(() => {
+      const w = window as any; const n = w.__rafCount; w.__rafCount = 0; return n;
+    });
+    expect(before, 'scene was not animating to begin with — test proves nothing')
+      .toBeGreaterThan(0);
+
+    // Flip the preference on, the way an OS accessibility toggle would.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.waitForTimeout(1200);
+    const after = await page.evaluate(() => (window as any).__rafCount);
+
+    // Some frames may already be queued when the preference flips, so allow a
+    // small tail rather than demanding an immediate hard zero.
+    expect(after, `animation kept running after reduced motion was enabled (${after} frames vs ${before} before)`)
+      .toBeLessThan(Math.max(3, before * 0.25));
+  });
+
   test('releases its GL context on unmount', async ({ page }) => {
     await harness.mount(page, FIELD_3D);
     await page.evaluate(() => (window as any).__magProbe());

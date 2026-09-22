@@ -3285,8 +3285,38 @@
       var aiOn = !!(ctx.aiHintsEnabled && typeof callGemini === 'function');
       var labToolData = ctx.toolData;
 
+      // Read ONCE at load was not enough: this value gates 13 sites — every
+      // animation loop in the tool, the 3D low-power render paths, and
+      // scrollIntoView behaviour. A vestibular-sensitive learner who turns
+      // reduced motion ON mid-lesson kept getting full animation until the
+      // page was reloaded, which is exactly when they cannot afford it.
+      //
+      // Stay subscribed instead. Same shape the other STEM tools use
+      // (anatomy, aquarium, artstudio...): addEventListener where it exists,
+      // the deprecated addListener as a fallback because Safari < 14 and the
+      // older classroom iPads do not have the modern one on a MediaQueryList.
       var _prefersReducedMotion = false;
-      try { _prefersReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+      var _motionQuery = null;
+      try {
+        _motionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+        _prefersReducedMotion = !!(_motionQuery && _motionQuery.matches);
+      } catch (e) { _motionQuery = null; }
+      function _onMotionPreferenceChange(event) {
+        var next = !!(event && event.matches);
+        if (next === _prefersReducedMotion) return;
+        _prefersReducedMotion = next;
+        // Turning the preference ON must stop motion that is already running;
+        // the running loops each re-check _prefersReducedMotion per frame and
+        // bail, so the only thing needed here is a repaint to settle the
+        // scenes on their static frame.
+        try { magStopAllMotion(); } catch (e2) {}
+      }
+      if (_motionQuery) {
+        try {
+          if (typeof _motionQuery.addEventListener === 'function') _motionQuery.addEventListener('change', _onMotionPreferenceChange);
+          else if (typeof _motionQuery.addListener === 'function') _motionQuery.addListener(_onMotionPreferenceChange);
+        } catch (e) {}
+      }
 
       // ── Shared 3D post-processing + material helpers ───────────────────
       // Guarded bloom (the house pattern): plain render until the r128 addons
@@ -3685,7 +3715,18 @@
         }
       }, [d.tab, d.motorMode, d.motorRunning, d.motorCurrent, d.motorField, d.motorLoad, d.motorCurrentDir, d.motorFieldDir]);
       React.useEffect(function () {
-        return function () { stopMotorSpin(); };
+        return function () {
+          stopMotorSpin();
+          // The reduced-motion subscription is module-scoped, so without this
+          // it survives every tool switch and accumulates a dead handler per
+          // mount, each still holding this closure.
+          if (_motionQuery) {
+            try {
+              if (typeof _motionQuery.removeEventListener === 'function') _motionQuery.removeEventListener('change', _onMotionPreferenceChange);
+              else if (typeof _motionQuery.removeListener === 'function') _motionQuery.removeListener(_onMotionPreferenceChange);
+            } catch (e) {}
+          }
+        };
       }, []);
 
       if (!labToolData || !labToolData.magnetism) {
@@ -3720,6 +3761,21 @@
           window.cancelAnimationFrame(_motorSpinRAF);
         }
         _motorSpinRAF = null;
+      }
+
+      // Called when the reduced-motion preference flips ON mid-session.
+      // The field scene's flow loop now re-checks _prefersReducedMotion inside
+      // its frame and settles itself on a static frame; the charge, induction
+      // and motor loops are cancelled externally and have no such check, so
+      // they are stopped here or they keep animating until teardown.
+      //
+      // Declared as a function statement so it is hoisted above the listener
+      // registered earlier in this module body.
+      function magStopAllMotion() {
+        try { stopMotorSpin(); } catch (e) {}
+        if (typeof window === 'undefined' || typeof window.cancelAnimationFrame !== 'function') return;
+        if (_charge3DRAF != null) { try { window.cancelAnimationFrame(_charge3DRAF); } catch (e) {} _charge3DRAF = null; }
+        if (_induction3DRAF != null) { try { window.cancelAnimationFrame(_induction3DRAF); } catch (e) {} _induction3DRAF = null; }
       }
 
       function card(title, children, accent) {
@@ -4764,6 +4820,10 @@
               function frame(ts) {
                 _flowRAF = null;
                 if (disposed || !cv.isConnected) return;
+                // Checked per frame, not only in startFlow: the preference can
+                // flip ON while this loop is already running, and the learner
+                // who just turned it on is the one who needs it to stop now.
+                if (_prefersReducedMotion) { updateFlow(0); renderScene(); return; }
                 if (!_flowPoints) return;
                 if (_flowLast == null) _flowLast = ts;
                 // Clamp dt so a backgrounded tab does not jump the train.
