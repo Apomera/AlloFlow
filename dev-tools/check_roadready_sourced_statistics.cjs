@@ -140,6 +140,40 @@ const CLAIMS = [
       'adult 275-day refusal suspension under §2521',
   },
   {
+    label: 'Maine fire-apparatus following distance (§2066)',
+    re: /(\d{3}) ft behind fire apparatus responding to an alarm/,
+    min: 500, max: 500,
+    source: 'Maine 29-A §2066(5): may not follow within 500 feet of fire apparatus traveling ' +
+      'in response to a fire alarm. NOTE: the tool cited §2055 for this until 2026-09-21; ' +
+      '§2055 is "Animals on a public way" and has nothing to do with emergency vehicles.',
+  },
+  {
+    label: 'Maine other-emergency-vehicle following distance (§2066)',
+    // The 500 ft figure applies ONLY to fire apparatus on a call. Stating 500
+    // as though it covered every emergency vehicle is the error this pins
+    // against; the general figure is 150 ft, so both must be present.
+    re: /(\d{3}) ft behind any other emergency vehicle running its lights/,
+    min: 150, max: 150,
+    source: 'Maine 29-A §2066(5): 150 feet behind any other authorized emergency vehicle ' +
+      '(§2054(1)(B)) that is using an emergency light (§2054(1)(D)).',
+  },
+  {
+    label: 'Maine railroad-crossing slow-and-look distance (§2076)',
+    re: /by (\d{3}) ft from the nearest rail, slow to a reasonable\/proper speed/,
+    min: 100, max: 100,
+    source: 'Maine 29-A §2076(1): at 100 feet from the nearest rail, reduce speed to a ' +
+      'reasonable and proper rate, observe in each direction, proceed cautiously. This one ' +
+      'applies to EVERY driver, unlike the 15-50 ft mandatory stop in §2076(3).',
+  },
+  {
+    label: 'Maine mandatory railroad stop band, far edge (§2076)',
+    re: /stop 15-(\d{2}) ft from the nearest rail/,
+    min: 50, max: 50,
+    source: 'Maine 29-A §2076(3): stop between 50 and 15 feet from the nearest rail. Applies ' +
+      'to buses carrying passengers, chlorine loads, placarded hazmat and cargo-tank vehicles. ' +
+      'School buses are covered by §2306 by name, which is why the tool cites §§2076/2306.',
+  },
+  {
     label: 'Maine snow/ice duty weight threshold (§2093)',
     re: /a vehicle registered under ([\d,]+) lb \(bigger trucks are exempt/,
     min: 10000, max: 10000,

@@ -32534,7 +32534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'Use the shoulder to catch up with traffic flow'
             ],
             correct: 1,
-            exp: 'Wait and scan. Fire responses typically include an engine + ladder + ambulance + supervisor. Following an emergency vehicle closer than 500 ft is a violation in Maine (§2055) — and rubbernecking crashes happen exactly because someone pulled out too soon.'
+            exp: 'Wait and scan. Fire responses typically include an engine + ladder + ambulance + supervisor. Maine §2066 sets two following distances: 500 ft behind fire apparatus responding to an alarm, and 150 ft behind any other emergency vehicle running its lights. Rubbernecking crashes happen exactly because someone pulled out too soon.'
           }
         ];
         var emgState = d.emgState || {};
