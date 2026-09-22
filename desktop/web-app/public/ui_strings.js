@@ -59004,6 +59004,8 @@
       "exit_fullscreen": "Exit fullscreen banknote model (Escape)"
     },
     "moonmission": {
+      "mcc_choose_first": "Choose above: burn the correction or press on. Arrival waits for that decision.",
+      "eva_after_landing": "The moonwalk unlocks once the lander is on the surface.",
       "mission_briefing": "Mission Briefing",
       "review_your_mission_objectives_and_cre": "Review your mission objectives and crew assignment",
       "launch": "Launch",

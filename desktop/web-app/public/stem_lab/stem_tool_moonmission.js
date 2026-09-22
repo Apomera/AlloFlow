@@ -46,6 +46,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   // AUDIO SYSTEM — Immersive mission sounds
   // ═══════════════════════════════════════════════════════════════
   var _mmAnimPaused = false;   // live pause flag read by every 2D phase loop (see the header toggle)
+  var _mmProceedLock = null;   // { phase, at } of the last accepted proceed click
   var _mmSoundOff = false;     // live mute flag — see getMMAC below, and the header toggle
   var _mmAC = null;
   function getMMAC() {
@@ -1017,7 +1018,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       // advancePhase checks for eligible events before advancing. If an event
       // triggers, it shows the event modal and delays the phase transition until
       // the student makes a choice.
+      // One proceed per phase. While an event (or its outcome card) is on screen, the
+      // phase buttons stayed live: a second click paid its XP and log again and
+      // re-rolled the event, and the outcome card's Continue could later REWIND the
+      // mission. The lock also covers a double-click that lands before the render
+      // catches up.
+      var eventPending = !!(d.activeEvent || d.eventOutcome);
+      function canProceed() {
+        if (eventPending) return false;
+        var now = Date.now();
+        if (_mmProceedLock && _mmProceedLock.phase === phase && now - _mmProceedLock.at < 1000) return false;
+        _mmProceedLock = { phase: phase, at: now };
+        return true;
+      }
+      // An off-window TLI must be answered at the coast: pressing Arrive without
+      // choosing used to cost nothing at all, which beat both real options.
+      var mccPending = !!(d.tliAccuracy && !d.tliAccuracy.onTime && !d.mccChoice);
+
       function advancePhase(targetPhase) {
+        if (d.activeEvent || d.eventOutcome) return;
         var resolved = d.resolvedEvents || [];
         var eligible = MISSION_EVENTS.filter(function(evt) {
           return evt.phases.indexOf(targetPhase) >= 0
@@ -1681,8 +1700,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           ),
           h('button', {
             onClick: function() {
+              var target = d.eventPhaseTarget;
               upd('eventOutcome', null);
-              setPhase(d.eventPhaseTarget);
+              upd('eventPhaseTarget', null);
+              if (typeof target === 'number' && target > phase) setPhase(target);
             },
             className: 'w-full mt-3 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md transition-all'
           }, t('stem.moonmission.continue_mission', '\uD83D\uDE80 Continue Mission'))
@@ -2483,13 +2504,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 ),
                 h('button', {
                   'aria-label': t('stem.moonmission.proceed_to_earth_orbit_phase_after_suc', 'Proceed to Earth orbit phase after successful launch'),
-                  onClick: function() {
+                  disabled: eventPending,
+                onClick: function() {
+                  if (!canProceed()) return;
                     advancePhase(2);
                     log('\uD83D\uDE80 Launch successful! Reached Earth orbit.');
                     addXP(20);
                     if (addToast) addToast('\uD83C\uDF0D Orbit achieved! Preparing trans-lunar injection.', 'success');
                   },
-                  className: 'px-4 py-2 rounded-lg text-xs font-bold text-white bg-green-700 hover:bg-green-800 transition-colors'
+                  className: 'px-4 py-2 rounded-lg text-xs font-bold text-white bg-green-700 hover:bg-green-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
                 }, t('stem.moonmission.proceed_to_orbit', '\u2705 Proceed to Orbit'))
               )
             )
@@ -2734,7 +2757,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 'aria-label': go
                   ? t('stem.moonmission.execute_tli_in_window', 'Execute trans-lunar injection burn. You are inside the burn window.')
                   : t('stem.moonmission.execute_tli_early', 'Execute trans-lunar injection burn early, outside the burn window. This will need a mid-course correction.'),
+                disabled: eventPending,
                 onClick: function() {
+                  if (!canProceed()) return;
                   advancePhase(3);
                   upd('showQuiz', true); // Trigger quiz during coast
                   upd('tliAccuracy', { onTime: go, offByDeg: tw.offByDeg });
@@ -2750,7 +2775,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     if (typeof announceToSR === 'function') announceToSR('Trans-lunar injection executed ' + tw.offByDeg + ' degrees outside the burn window. A mid-course correction will be required.');
                   }
                 },
-                className: 'w-full py-3 rounded-xl text-sm font-bold text-white shadow-lg transition-all ' +
+                className: 'w-full py-3 rounded-xl text-sm font-bold text-white shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ' +
                   (go ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700'
                       : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700')
               }, go ? t('stem.moonmission.execute_tli_go', '\uD83D\uDE80 Execute TLI Burn \u2014 GO')
@@ -2953,14 +2978,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           })(),
           h('button', {
             'aria-label': t('stem.moonmission.arrive_at_the_moon_and_enter_lunar_orb', 'Arrive at the Moon and enter lunar orbit at 110 kilometer altitude'),
-            onClick: function() {
+            disabled: eventPending || mccPending,
+                onClick: function() {
+                  if (mccPending || !canProceed()) return;
               advancePhase(4);
               log('\uD83C\uDF15 Approaching the Moon. Preparing for lunar orbit insertion.');
               addXP(15);
               if (addToast) addToast('\uD83C\uDF15 The Moon fills the window! Preparing LOI burn.', 'success');
             },
-            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-lg'
-          }, t('stem.moonmission.arrive_at_the_moon_enter_lunar_orbit', '\uD83C\uDF15 Arrive at the Moon \u2014 Enter Lunar Orbit'))
+            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed'
+          }, t('stem.moonmission.arrive_at_the_moon_enter_lunar_orbit', '\uD83C\uDF15 Arrive at the Moon \u2014 Enter Lunar Orbit')),
+          mccPending && h('p', { className: 'mt-1 text-[0.6875rem] text-slate-600 text-center', 'data-moonmission-mcc-required': 'true' },
+            t('stem.moonmission.mcc_choose_first', 'Choose above: burn the correction or press on. Arrival waits for that decision.'))
         ),
 
         // ═══ PHASE 4: LUNAR ORBIT (Animated Canvas) ═══
@@ -3154,13 +3183,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           })(),
           h('button', {
             'aria-label': t('stem.moonmission.undock_lunar_module_eagle_from_command', 'Undock Lunar Module Eagle from Command Module Columbia and begin powered descent to the Moon surface'),
-            onClick: function() {
+            disabled: eventPending,
+                onClick: function() {
+                  if (!canProceed()) return;
               advancePhase(5);
               log('\u2B07\uFE0F Undocked from Columbia. Beginning powered descent.');
               addXP(15);
               if (addToast) addToast('\u2B07\uFE0F "The Eagle has undocked!" Beginning powered descent.', 'success');
             },
-            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-lg'
+            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed'
           }, t('stem.moonmission.undock_begin_powered_descent', '\u2B07\uFE0F Undock & Begin Powered Descent'))
         ),
 
@@ -3748,6 +3779,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     if (glc && !glc._mmLossBound) {
                       glc._mmLossBound = true;
                       glc.addEventListener('webglcontextlost', function (ev) {
+                        // releaseGl force-loses a canvas after teardown removes it; that is a
+                        // normal exit, not a failure. A real loss happens on a canvas still on the page.
+                        if (!glc.isConnected) return;
                         ev.preventDefault();
                         console.warn('[MoonMission descent] WebGL context lost — falling back to the 2D view');
                         if (d3) { try { d3.dispose(); } catch (_clErr) {} d3 = null; }
@@ -3815,14 +3849,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               }, t('stem.moonmission.retry_landing', '\ud83d\udd04 Retry Landing')),
               h('button', {
                 'aria-label': t('stem.moonmission.begin_extravehicular_activity_moonwalk', 'Begin extravehicular activity moonwalk to explore the lunar surface and collect geological samples'),
+                disabled: eventPending || !d.landingResult,
                 onClick: function() {
+                  if (!d.landingResult || !canProceed()) return;
                   advancePhase(6);
                   log('\uD83C\uDF15 "The Eagle has landed!" Preparing for EVA.');
                   addXP(30);
                   if (addToast) addToast('\uD83D\uDC68\u200D\uD83D\uDE80 "That\'s one small step..." Preparing for moonwalk!', 'success');
                 },
-                className: 'px-4 py-2 rounded-lg text-xs font-bold text-white bg-green-700 hover:bg-green-800'
-              }, t('stem.moonmission.begin_eva', '\uD83D\uDC68\u200D\uD83D\uDE80 Begin EVA'))
+                className: 'px-4 py-2 rounded-lg text-xs font-bold text-white bg-green-700 hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed'
+              }, t('stem.moonmission.begin_eva', '\uD83D\uDC68\u200D\uD83D\uDE80 Begin EVA')),
+              !d.landingResult && h('p', { className: 'w-full text-[0.6875rem] text-slate-300 text-right', 'data-moonmission-eva-locked': 'true' },
+                t('stem.moonmission.eva_after_landing', 'The moonwalk unlocks once the lander is on the surface.'))
             )
           )
         ),
@@ -3953,6 +3991,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     if (!canvasEl._evaLossBound) {
                       canvasEl._evaLossBound = true;
                       canvasEl.addEventListener('webglcontextlost', function (ev) {
+                        // releaseGl force-loses a canvas after teardown removes it; that is a
+                        // normal exit, not a failure. A real loss happens on a canvas still on the page.
+                        if (!canvasEl.isConnected) return;
                         // Without this the context can never be restored.
                         ev.preventDefault();
                         console.warn('[MoonMission EVA] WebGL context lost — offering Retry 3D Mode');
@@ -6764,7 +6805,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               ),
               h('button', {
                 'aria-label': 'End moonwalk EVA and return to Lunar Module. ' + (d.lunarSamples || []).length + ' samples collected.',
+                disabled: eventPending,
                 onClick: function() {
+                  if (!canProceed()) return;
                   // Clean up EVA canvas (Three.js, RAF, event listeners)
                   var evaCanvas = document.querySelector('[data-eva-canvas]');
                   if (evaCanvas && evaCanvas._evaCleanup) evaCanvas._evaCleanup();
@@ -6773,7 +6816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   addXP(25);
                   if (addToast) addToast('\u2B06\uFE0F EVA complete! Time to go home. Preparing lunar ascent.', 'success');
                 },
-                className: 'px-4 py-2 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700'
+                className: 'px-4 py-2 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed'
               }, t('stem.moonmission.end_eva_return_to_lm', '\u2B06\uFE0F End EVA \u2014 Return to LM'))
             )
           )
@@ -7102,7 +7145,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           })(),
           h('button', {
             'aria-label': t('stem.moonmission.fire_trans_earth_injection_burn_to_beg', 'Fire trans-Earth injection burn to begin 3-day return journey home'),
-            onClick: function() {
+            disabled: eventPending,
+                onClick: function() {
+                  if (!canProceed()) return;
               advancePhase(8);
               log('\u2B06\uFE0F Docked with Columbia. LM jettisoned.');
               addXP(15);
@@ -7113,7 +7158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               if (quizIdx < QUIZ_BANK.length) upd('showQuiz', true);
               if (addToast) addToast('\uD83C\uDF0D TEI burn complete. Heading home.', 'success');
             },
-            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg'
+            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed'
           }, t('stem.moonmission.tei_burn_head_home', '\uD83D\uDE80 TEI Burn \u2014 Head Home'))
         ),
 
@@ -7338,7 +7383,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           })(),
           h('button', {
             'aria-label': t('stem.moonmission.begin_atmospheric_re_entry_sequence_at', 'Begin atmospheric re-entry sequence at 39,900 kilometers per hour'),
-            onClick: function() {
+            disabled: eventPending,
+                onClick: function() {
+                  if (!canProceed()) return;
               var ang2 = (typeof d.entryAngle === 'number' && isFinite(d.entryAngle)) ? d.entryAngle : -6.5;
               var mag2 = Math.abs(ang2);
               var outcome = mag2 < 5.3 ? 'skip' : mag2 > 7.4 ? 'steep' : 'nominal';
@@ -7358,7 +7405,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     : 'Steep entry at ' + ang2.toFixed(1) + ' degrees. Peak deceleration will be high.');
               }
             },
-            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg'
+            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed'
           }, t('stem.moonmission.begin_re_entry_sequence', '\uD83C\uDF0A Begin Re-entry Sequence'))
         ),
 
