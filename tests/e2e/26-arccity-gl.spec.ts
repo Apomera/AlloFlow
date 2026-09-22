@@ -1049,3 +1049,67 @@ test.describe('Arc City — Circuit Clash 3D arena', () => {
     expect(errs.filter((e) => !/net::ERR|Failed to load resource/.test(e))).toEqual([]);
   });
 });
+
+/**
+ * WebGL context loss — ordinary in the field (GPU driver reset, a tab restored on a
+ * low-memory device, another page claiming contexts; browsers cap simultaneous
+ * contexts and evict the oldest).
+ *
+ * Both of this tool's WebGL surfaces already had a graceful path for the engine failing
+ * to LOAD — setStatus('unavailable') paints "3D unavailable. Continue in the complete
+ * tactical view below." over the canvas. Neither was bound to `webglcontextlost`, so a
+ * context lost AFTER init left the arena black with no message and no way back.
+ *
+ * The 3D here is explicitly OPTIONAL — the tactical 2D view carries the whole game — so
+ * the right recovery is to say so and send the student there, not to offer a retry.
+ */
+test.describe('Arc City — WebGL context loss', () => {
+  test.beforeAll(async () => { await harness.start(); });
+  test.afterAll(async () => { await harness.stop(); });
+
+  test('a lost context falls back to the tactical view instead of going black', async ({ page }) => {
+    test.setTimeout(120000);
+    const errs = trackErrors(page);
+    await harness.mount(page, { _arccity: PLAY });
+
+    // cityCanvas() waits for the loading/unavailable overlay to clear, which is the
+    // same overlay this test later expects to come BACK — so it must be awaited here,
+    // before the loss, not after.
+    await cityCanvas(page);
+
+    const before = await page.evaluate(() => {
+      const c = document.querySelector('.arc-city3d canvas') as HTMLCanvasElement | null;
+      const g: any = c && (c.getContext('webgl2') || c.getContext('webgl'));
+      return { canvas: !!c, live: !!g && !g.isContextLost() };
+    });
+    expect(before.canvas, 'no 3D canvas before the loss').toBe(true);
+    expect(before.live, 'no live GL context before the loss').toBe(true);
+
+    const killed = await page.evaluate(() => {
+      const c = document.querySelector('.arc-city3d canvas') as HTMLCanvasElement;
+      const g: any = c.getContext('webgl2') || c.getContext('webgl');
+      const ext = g && g.getExtension('WEBGL_lose_context');
+      if (!ext) return false;
+      ext.loseContext();
+      return true;
+    });
+    expect(killed, 'could not force a context loss').toBe(true);
+
+    // The student must be TOLD, and pointed at the view that still works. `.arc-city3d`
+    // is the PLAY scene, whose overlay text comes from props.unavailableText — "3D view
+    // unavailable here. The board above is the complete game." The arena surface uses
+    // different wording ("tactical view"), so match on what this surface actually says.
+    await page.waitForFunction(() => /3D view unavailable/i.test(document.body.textContent || ''),
+      null, { timeout: 15000 });
+
+    const after = await page.evaluate(() => ({
+      told: /3D view unavailable/i.test(document.body.textContent || ''),
+      pointsAt2D: /complete game/i.test(document.body.textContent || '')
+    }));
+    console.log('arccity after loss:', JSON.stringify(after));
+    expect(after.told, 'the arena went black with no explanation').toBe(true);
+    expect(after.pointsAt2D, 'nothing pointed the student at the view that still works').toBe(true);
+
+    expect(errs.filter((e) => !/net::ERR|Failed to load resource|Context Lost|context lost/i.test(e))).toEqual([]);
+  });
+});

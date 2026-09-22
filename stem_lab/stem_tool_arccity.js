@@ -1828,6 +1828,18 @@
         var camera = new THREE.PerspectiveCamera(48, 2, 0.1, 100);
         camera.position.set(11.5, 8.5, 13.5); camera.lookAt(0, 1.5, 0);
         var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+        // A context lost AFTER init used to leave the arena black with no message and
+        // no way back. preventDefault is required or the context can never be restored;
+        // then reuse the SAME 'unavailable' status the load-failure path sets, which
+        // points the student at the complete 2D tactical view.
+        if (!canvas._arcLossBound) {
+          canvas._arcLossBound = true;
+          canvas.addEventListener('webglcontextlost', function (ev) {
+            ev.preventDefault();
+            console.warn('[ArcCity] WebGL context lost — falling back to the tactical view');
+            setStatus('unavailable');
+          });
+        }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
         if ('outputEncoding' in renderer && THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
         scene.add(new THREE.HemisphereLight(0x9adfff, 0x12091f, 0.85));
@@ -2630,6 +2642,17 @@
       window.StemLab.ensureThree({ orbit: false, failMessage: 'The 3D engine could not load. The board above is the complete game.' }).then(function (THREE) {
         if (disposed || !canvas) return;
         var pack = arcBuildPlay3D(THREE, canvas, sceneRef.current);
+        // arcBuildPlay3D is module-level and cannot see React state, so the loss
+        // listener is bound here where setStatus is in scope. Same contract as the
+        // arena above: without preventDefault the context can never be restored.
+        if (!canvas._arcPlayLossBound) {
+          canvas._arcPlayLossBound = true;
+          canvas.addEventListener('webglcontextlost', function (ev) {
+            ev.preventDefault();
+            console.warn('[ArcCity play] WebGL context lost — falling back to the tactical view');
+            setStatus('unavailable');
+          });
+        }
         packRef.current = pack;
         function resize() {
           if (disposed || !canvas.parentElement) return;
