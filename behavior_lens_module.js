@@ -19073,6 +19073,100 @@ Keep it under 150 words.`);
         );
     };
 
+    // ─── IOA computation (pure) ───
+    // Definitions follow Cooper, Heron & Heward, Applied Behavior Analysis (3rd
+    // ed.), ch. 5. A value is a count for the interval or an occurrence mark
+    // ('+', 'x', 'y'/'yes' = occurred; '-', 'n'/'no', 0 = did not). Earlier
+    // versions labelled the MEAN count-per-interval as "Exact Count" (counts 3,4
+    // vs 4,4 showed 87.5%, where exact agreement is 50%), offered interval-by-
+    // interval twice under two names, padded a shorter record with zeros
+    // (inventing agreement), and reported 100% when a method had nothing to
+    // compare. Interval methods now need equal-length records, and a method with
+    // nothing to compare returns agreement: null, never 100%.
+    var IOA_METHODS = [
+        { id: 'pointbypoint', label: 'Interval-by-Interval', icon: '📍', desc: 'Point-by-point: do the observers agree on occurrence or non-occurrence in each interval?' },
+        { id: 'totalcount', label: 'Total Count', icon: '🔢', desc: 'Smaller total count ÷ larger total count' },
+        { id: 'scored', label: 'Scored-Interval', icon: '✅', desc: 'Only intervals where at least one observer scored an occurrence' },
+        { id: 'unscored', label: 'Unscored-Interval', icon: '⬜', desc: 'Only intervals where at least one observer scored a non-occurrence' },
+        { id: 'exact', label: 'Exact Count-per-Interval', icon: '🎯', desc: 'Share of intervals where both observers recorded the same count' },
+        { id: 'meancount', label: 'Mean Count-per-Interval', icon: '➗', desc: 'Average of each interval\'s smaller count ÷ larger count' },
+    ];
+    var IOA_OCCURRENCE_MARKS = { '+': 1, 'x': 1, 'y': 1, 'yes': 1, '-': 0, 'n': 0, 'no': 0 };
+    function parseIOAValue(raw) {
+        var v = String(raw == null ? '' : raw).trim().toLowerCase();
+        if (Object.prototype.hasOwnProperty.call(IOA_OCCURRENCE_MARKS, v)) return IOA_OCCURRENCE_MARKS[v];
+        return /^\d+(\.\d+)?$/.test(v) ? parseFloat(v) : null;
+    }
+    // Bulk text: commas/semicolons separate intervals (a blank between two
+    // commas is an error, not a skipped interval); with no commas, whitespace does.
+    function splitIOAList(text) {
+        var s = String(text || '').trim();
+        if (!s) return [];
+        var parts = /[,;]/.test(s) ? s.split(/[,;]/).map(function (p) { return p.trim(); }) : s.split(/\s+/);
+        if (parts.length > 1 && parts[parts.length - 1] === '') parts.pop();
+        return parts;
+    }
+    function computeIOA(method, obs1, obs2) {
+        obs1 = obs1 || []; obs2 = obs2 || [];
+        if (obs1.length === 0 || obs2.length === 0) return { error: 'empty', message: 'Enter data for both observers.' };
+        var r1 = obs1.map(parseIOAValue), r2 = obs2.map(parseIOAValue), bad = [];
+        r1.forEach(function (v, i) { if (v === null) bad.push('Observer 1, interval ' + (i + 1) + ' ("' + obs1[i] + '")'); });
+        r2.forEach(function (v, i) { if (v === null) bad.push('Observer 2, interval ' + (i + 1) + ' ("' + obs2[i] + '")'); });
+        if (bad.length) return { error: 'invalid', message: 'Not a count or occurrence mark: ' + bad.slice(0, 3).join('; ') + (bad.length > 3 ? '; …' : '') };
+        function verdict(pct, reason) {
+            if (pct === null) return { agreement: null, interpretation: 'Not applicable: ' + reason };
+            return { agreement: pct.toFixed(1), interpretation: pct >= 80 ? 'Acceptable (≥80%)' : 'Below threshold (<80%)' };
+        }
+        var sum = function (arr) { return arr.reduce(function (a, b) { return a + b; }, 0); };
+        if (method === 'totalcount') {
+            var t1 = sum(r1), t2 = sum(r2), hi = Math.max(t1, t2);
+            return Object.assign({ method: 'Total Count', observer1Total: t1, observer2Total: t2 },
+                verdict(hi > 0 ? Math.min(t1, t2) / hi * 100 : null, 'both observers recorded zero'));
+        }
+        if (r1.length !== r2.length) {
+            return { error: 'length', message: 'Observer 1 has ' + r1.length + ' intervals and Observer 2 has ' + r2.length + '. Interval methods compare the same intervals, so both records need the same number.' };
+        }
+        var n = r1.length, details = [], i;
+        if (method === 'pointbypoint' || method === 'interval') {
+            var agree = 0, counts = false;
+            for (i = 0; i < n; i++) {
+                var same = (r1[i] > 0) === (r2[i] > 0);
+                if (r1[i] > 1 || r2[i] > 1) counts = true;
+                if (same) agree++;
+                details.push({ interval: i + 1, obs1: obs1[i], obs2: obs2[i], agree: same });
+            }
+            return Object.assign({ method: 'Interval-by-Interval', totalIntervals: n, agreements: agree, disagreements: n - agree, details: details,
+                note: counts ? 'Counts were read as occurrence (any count above 0). For count data, use Exact or Mean Count-per-Interval.' : null },
+                verdict(agree / n * 100));
+        }
+        if (method === 'scored' || method === 'unscored') {
+            var occ = method === 'scored', eligible = 0, both = 0;
+            for (i = 0; i < n; i++) {
+                var s1 = (r1[i] > 0) === occ, s2 = (r2[i] > 0) === occ;
+                if (s1 || s2) eligible++;
+                if (s1 && s2) both++;
+            }
+            return Object.assign({ method: occ ? 'Scored-Interval' : 'Unscored-Interval', eligibleIntervals: eligible, bothAgreed: both },
+                verdict(eligible > 0 ? both / eligible * 100 : null, occ ? 'neither observer scored an occurrence' : 'neither observer scored a non-occurrence'));
+        }
+        if (method === 'exact' || method === 'meancount') {
+            var total = 0, exact = 0;
+            for (i = 0; i < n; i++) {
+                var big = Math.max(r1[i], r2[i]);
+                var per = big > 0 ? Math.min(r1[i], r2[i]) / big * 100 : 100;
+                total += per;
+                if (r1[i] === r2[i]) exact++;
+                details.push({ interval: i + 1, obs1: r1[i], obs2: r2[i], agree: method === 'exact' ? r1[i] === r2[i] : undefined, agreement: per.toFixed(1) });
+            }
+            return method === 'exact'
+                ? Object.assign({ method: 'Exact Count-per-Interval', totalIntervals: n, exactAgreements: exact, details: details }, verdict(exact / n * 100))
+                : Object.assign({ method: 'Mean Count-per-Interval', totalIntervals: n, details: details }, verdict(total / n));
+        }
+        return { error: 'method', message: 'Unknown IOA method: ' + method };
+    }
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensIOA = Object.freeze({ computeIOA: computeIOA, splitIOAList: splitIOAList, methods: IOA_METHODS });
+
     // ─── IOACalculator ────────────────────────────────────────────────
     // Inter-Observer Agreement Calculator with AI-Assisted Video/Audio IOA
     function IOACalculator(props) {
@@ -19232,14 +19326,7 @@ Keep it under 150 words.`);
             });
         }
 
-        var IOA_METHODS_LIST = [
-            { id: 'pointbypoint', label: 'Point-by-Point', icon: '📍', desc: 'Compare each interval: agree or disagree' },
-            { id: 'totalcount', label: 'Total Count', icon: '🔢', desc: 'Compare total frequency counts' },
-            { id: 'interval', label: 'Interval Agreement', icon: '⏱️', desc: 'Compare occurrence/non-occurrence per interval' },
-            { id: 'scored', label: 'Scored Interval', icon: '✅', desc: 'Only intervals where at least one observer scored occurrence' },
-            { id: 'unscored', label: 'Unscored Interval', icon: '⬜', desc: 'Only intervals where at least one observer scored non-occurrence' },
-            { id: 'exact', label: 'Exact Count', icon: '🎯', desc: 'Compare exact counts per interval' },
-        ];
+        var IOA_METHODS_LIST = IOA_METHODS;
 
         var IOA_SAMPLING = [
             { id: 'partial', label: 'Partial Interval', desc: 'Did behavior occur at ANY point during interval?', icon: '📊' },
@@ -19255,75 +19342,23 @@ Keep it under 150 words.`);
             return (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
         }
 
-        // Traditional IOA Calculation
+        // Traditional IOA Calculation. The grid is read directly: the Calculate
+        // button used to call syncStructuredToCSV() (a state update that lands on
+        // the NEXT render) and then read obs1Data, so every result was computed
+        // from the previous grid, one click behind the clinician's edits.
         function calcTraditionalIOA() {
-            var d1 = obs1Data.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
-            var d2 = obs2Data.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
-            if (d1.length === 0 || d2.length === 0) {
-                if (addToast) addToast(t('toasts.enter_data_both_observers'), 'error');
+            var d1 = bulkMode ? splitIOAList(obs1Data) : intervalData.map(function(r) { return String(r.obs1 || '').trim() || '0'; });
+            var d2 = bulkMode ? splitIOAList(obs2Data) : intervalData.map(function(r) { return String(r.obs2 || '').trim() || '0'; });
+            var result = computeIOA(ioaMethod, d1, d2);
+            if (result.error) {
+                if (addToast) addToast(result.error === 'empty' ? t('toasts.enter_data_both_observers') : result.message, 'error');
                 return;
             }
-            var result = {};
-            if (ioaMethod === 'totalcount') {
-                var total1 = d1.reduce(function(a, b) { return a + parseFloat(b); }, 0);
-                var total2 = d2.reduce(function(a, b) { return a + parseFloat(b); }, 0);
-                var smaller = Math.min(total1, total2);
-                var larger = Math.max(total1, total2);
-                result = { method: 'Total Count', observer1Total: total1, observer2Total: total2, agreement: larger > 0 ? ((smaller / larger) * 100).toFixed(1) : '100.0', interpretation: larger > 0 ? ((smaller / larger) * 100 >= 80 ? 'Acceptable' : 'Below threshold') : 'N/A' };
-            } else if (ioaMethod === 'pointbypoint' || ioaMethod === 'interval') {
-                var maxLen = Math.max(d1.length, d2.length);
-                var agreements = 0;
-                var details = [];
-                for (var i = 0; i < maxLen; i++) {
-                    var v1 = (d1[i] || '0').toLowerCase();
-                    var v2 = (d2[i] || '0').toLowerCase();
-                    var agree = (v1 === v2) || (parseFloat(v1) === parseFloat(v2));
-                    if (agree) agreements++;
-                    details.push({ interval: i + 1, obs1: v1, obs2: v2, agree: agree });
-                }
-                var pct = ((agreements / maxLen) * 100).toFixed(1);
-                result = { method: ioaMethod === 'pointbypoint' ? 'Point-by-Point' : 'Interval', totalIntervals: maxLen, agreements: agreements, disagreements: maxLen - agreements, agreement: pct, interpretation: parseFloat(pct) >= 80 ? 'Acceptable (≥80%)' : 'Below threshold (<80%)', details: details };
-            } else if (ioaMethod === 'scored') {
-                var maxLen2 = Math.max(d1.length, d2.length);
-                var scored1 = 0, scored2 = 0, bothScored = 0;
-                for (var j = 0; j < maxLen2; j++) {
-                    var s1 = parseFloat(d1[j] || 0) > 0;
-                    var s2 = parseFloat(d2[j] || 0) > 0;
-                    if (s1) scored1++;
-                    if (s2) scored2++;
-                    if (s1 && s2) bothScored++;
-                }
-                var totalScored = scored1 + scored2 - bothScored;
-                result = { method: 'Scored Interval', scoredByObs1: scored1, scoredByObs2: scored2, bothScored: bothScored, agreement: totalScored > 0 ? ((bothScored / totalScored) * 100).toFixed(1) : '100.0', interpretation: totalScored > 0 && (bothScored / totalScored) * 100 >= 80 ? 'Acceptable' : 'Below threshold' };
-            } else if (ioaMethod === 'unscored') {
-                var maxLen3 = Math.max(d1.length, d2.length);
-                var unscored1 = 0, unscored2 = 0, bothUnscored = 0;
-                for (var k = 0; k < maxLen3; k++) {
-                    var u1 = parseFloat(d1[k] || 0) === 0;
-                    var u2 = parseFloat(d2[k] || 0) === 0;
-                    if (u1) unscored1++;
-                    if (u2) unscored2++;
-                    if (u1 && u2) bothUnscored++;
-                }
-                var totalUnscored = unscored1 + unscored2 - bothUnscored;
-                result = { method: 'Unscored Interval', agreement: totalUnscored > 0 ? ((bothUnscored / totalUnscored) * 100).toFixed(1) : '100.0', interpretation: totalUnscored > 0 && (bothUnscored / totalUnscored) * 100 >= 80 ? 'Acceptable' : 'Below threshold' };
-            } else if (ioaMethod === 'exact') {
-                var maxLen4 = Math.max(d1.length, d2.length);
-                var exactAgree = 0;
-                var exactDetails = [];
-                for (var m = 0; m < maxLen4; m++) {
-                    var e1 = parseFloat(d1[m] || 0);
-                    var e2 = parseFloat(d2[m] || 0);
-                    var eSmall = Math.min(e1, e2);
-                    var eLarge = Math.max(e1, e2);
-                    var intAgreement = eLarge > 0 ? (eSmall / eLarge) * 100 : 100;
-                    exactAgree += intAgreement;
-                    exactDetails.push({ interval: m + 1, obs1: e1, obs2: e2, agreement: intAgreement.toFixed(1) });
-                }
-                result = { method: 'Exact Count', totalIntervals: maxLen4, agreement: (exactAgree / maxLen4).toFixed(1), interpretation: (exactAgree / maxLen4) >= 80 ? 'Acceptable' : 'Below threshold', details: exactDetails };
-            }
             setIoaResults(result);
-            if (addToast) addToast(t('toasts.ioa_calculated') + result.agreement + '% agreement', 'success');
+            if (addToast) {
+                if (result.agreement === null) addToast(result.interpretation, 'info');
+                else addToast(t('toasts.ioa_calculated') + result.agreement + '% agreement', 'success');
+            }
         }
 
         // AI Video/Audio Processing
@@ -19556,7 +19591,7 @@ Keep it under 150 words.`);
             var lines = ['IOA Report — ' + new Date().toLocaleDateString(), 'Student: ' + (studentName || 'N/A'), ''];
             if (ioaMode === 'traditional' && ioaResults) {
                 lines.push('Method: ' + ioaResults.method);
-                lines.push('Agreement: ' + ioaResults.agreement + '%');
+                lines.push('Agreement: ' + (ioaResults.agreement === null ? 'not applicable' : ioaResults.agreement + '%'));
                 lines.push('Interpretation: ' + ioaResults.interpretation);
             }
             if (ioaMode === 'ai' && ioaComparison) {
@@ -19929,9 +19964,12 @@ Keep it under 150 words.`);
             // Traditional Results
             ioaResults && ioaMode === 'traditional' && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm space-y-4' },
                 h('div', { className: 'text-center' },
-                    h('div', { className: 'text-4xl font-black ' + (parseFloat(ioaResults.agreement) >= 80 ? 'text-emerald-600' : parseFloat(ioaResults.agreement) >= 70 ? 'text-amber-600' : 'text-red-600') }, ioaResults.agreement + '%'),
+                    // agreement is null when the method had nothing to compare; show a
+                    // dash, never a percentage and never a pass/fail colour.
+                    h('div', { className: 'text-4xl font-black ' + (ioaResults.agreement === null ? 'text-slate-500' : parseFloat(ioaResults.agreement) >= 80 ? 'text-emerald-600' : parseFloat(ioaResults.agreement) >= 70 ? 'text-amber-600' : 'text-red-600') }, ioaResults.agreement === null ? '—' : ioaResults.agreement + '%'),
                     h('div', { className: 'text-xs text-slate-600 font-bold uppercase mt-1' }, ioaResults.method + ' Agreement'),
-                    h('div', { className: 'text-sm font-bold mt-2 px-3 py-1 rounded-full inline-block ' + (parseFloat(ioaResults.agreement) >= 80 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700') }, ioaResults.interpretation)
+                    h('div', { className: 'text-sm font-bold mt-2 px-3 py-1 rounded-full inline-block ' + (ioaResults.agreement === null ? 'bg-slate-100 text-slate-700' : parseFloat(ioaResults.agreement) >= 80 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700') }, ioaResults.interpretation),
+                    ioaResults.note && h('p', { className: 'text-xs text-slate-600 mt-2' }, ioaResults.note)
                 ),
                 ioaResults.details && h('details', { className: 'bg-slate-50 rounded-lg p-3' },
                     h('summary', { className: 'text-xs font-bold text-slate-600 cursor-pointer' }, 'Interval Details (' + ioaResults.details.length + ' intervals)'),
