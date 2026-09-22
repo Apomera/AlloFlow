@@ -178,9 +178,74 @@ describe('crash recovery', () => {
     h.setActive(STUDENT); h.setCoreFault('claim:after_intent');
     expect(() => h.call('claimSchoolRewardsToken', { tokenId: token.id })).toThrow(/Injected core fault/);
     h.clearCoreFault();
-    h.setRaw('ClaimTokens', 0, 1, 500);
+    h.setDataCell('ClaimTokens', 0, 1, 500);
     expect(() => h.call('claimSchoolRewardsToken', { tokenId: token.id })).toThrow(/does not match its token/);
     expect(claimLedger(h)).toHaveLength(0);
+  });
+});
+
+describe('batches', () => {
+  const OTHER = 'other.teacher@' + DOMAIN;
+  function otherStaff(h) { h.setActive(ADMIN); h.call('adminUpsertRewardsMember', { email: OTHER, displayName: 'Other', role: 'staff' }); }
+
+  it('staff list only the batches they minted with counts and unused ids; administrators see every batch; no identity leaks', () => {
+    const h = harness(); setup(h); otherStaff(h);
+    const mine = mint(h);
+    h.setActive(OTHER); const theirs = h.call('mintSchoolRewardsClaimTokens', { count: 2, points: 5, categoryId: seededCategory(h).id, reason: 'Line leader' });
+    h.setActive(STUDENT); h.call('claimSchoolRewardsToken', { tokenId: mine.tokens[0].id });
+    h.setActive(STAFF);
+    const list = h.call('listSchoolRewardsClaimBatches').batches;
+    expect(list.map(b => b.batchId)).toEqual([mine.batchId]);
+    expect(list[0]).toMatchObject({ points: 20, reason: 'Read 20 minutes at home', mine: true, counts: { unused: 2, used: 1, void: 0, expired: 0 } });
+    expect(list[0].unusedTokenIds.sort()).toEqual([mine.tokens[1].id, mine.tokens[2].id].sort());
+    expect(JSON.stringify(list)).not.toMatch(/@|studentId|ClaimedBy/i);
+    h.setActive(ADMIN);
+    expect(h.call('listSchoolRewardsClaimBatches').batches.map(b => b.batchId).sort()).toEqual([mine.batchId, theirs.batchId].sort());
+    h.setActive(CASHIER); expect(() => h.call('listSchoolRewardsClaimBatches')).toThrow(/role/);
+    h.setActive(STUDENT); expect(() => h.call('listSchoolRewardsClaimBatches')).toThrow(/role/);
+  });
+
+  it('only the minting staff member or an administrator can cancel a batch; expired codes count as expired', () => {
+    const h = harness(); setup(h); otherStaff(h);
+    const mine = mint(h);
+    h.setActive(OTHER);
+    expect(() => h.call('voidSchoolRewardsClaimBatch', { batchId: mine.batchId })).toThrow(/Only the staff member/);
+    expect(() => h.call('voidSchoolRewardsClaimBatch', { batchId: 'missing-batch-000001' })).toThrow(/could not be found/);
+    expect(claimRows(h).every(r => r.status === 'unused')).toBe(true);
+    h.setActive(ADMIN); expect(h.call('voidSchoolRewardsClaimBatch', { batchId: mine.batchId }).voided).toBe(3);
+    h.appendRaw('ClaimTokens', ['expired-token-000002', 5, seededCategory(h).id, 'Old', 'batch-old-000002', 'unused', '', '', '2000-01-01T00:00:00.000Z', '', STAFF, '2000-01-01T00:00:00.000Z']);
+    h.setActive(STAFF);
+    const old = h.call('listSchoolRewardsClaimBatches').batches.find(b => b.batchId === 'batch-old-000002');
+    expect(old.counts).toEqual({ unused: 0, used: 0, void: 0, expired: 1 });
+    expect(old.unusedTokenIds).toEqual([]);
+  });
+});
+
+describe('integrity report', () => {
+  it('is clean after mint and claim, and flags a token/ledger disagreement without changing data', () => {
+    const h = harness(); setup(h);
+    const batch = mint(h);
+    h.setActive(STUDENT); h.call('claimSchoolRewardsToken', { tokenId: batch.tokens[0].id });
+    h.setActive(ADMIN);
+    const clean = h.call('getSchoolRewardsIntegrityReport', {});
+    expect(clean).toMatchObject({ ok: true, summary: { errors: 0 }, checks: { claimTokens: true } });
+    h.setDataCell('ClaimTokens', 1, 5, 'used');            // unused token marked used with no ledger row
+    h.setDataCell('ClaimTokens', 2, 5, 'bogus');           // unknown status
+    h.setDataCell('ClaimTokens', 0, 1, 999);               // redeemed token's points no longer match its ledger row
+    const ledgerRow = h.rows('Ledger')[1]; h.appendRaw('Ledger', ledgerRow);  // token credited twice
+    const before = JSON.stringify([h.rows('ClaimTokens'), h.rows('Ledger')]);
+    const report = h.call('getSchoolRewardsIntegrityReport', {});
+    const codes = report.issues.map(i => i.code);
+    expect(report.ok).toBe(false);
+    expect(codes).toEqual(expect.arrayContaining(['CLAIM_TOKEN_LEDGER_MISSING', 'CLAIM_TOKEN_STATUS_INVALID', 'CLAIM_TOKEN_LEDGER_MISMATCH', 'DUPLICATE_CLAIM_LEDGER']));
+    expect(JSON.stringify([h.rows('ClaimTokens'), h.rows('Ledger')])).toBe(before);
+  });
+
+  it('refuses to report on a v6 repository until the claim migration runs, like every earlier schema step', () => {
+    const h = harness(); setup(h); h.simulateV6Claims(); h.setActive(ADMIN);
+    expect(() => h.call('getSchoolRewardsIntegrityReport', {})).toThrow(/ClaimTokens sheet is missing/);
+    h.call('migrateSchoolRewardsRepositoryV7');
+    expect(h.call('getSchoolRewardsIntegrityReport', {})).toMatchObject({ ok: true, checks: { claimTokens: true } });
   });
 });
 

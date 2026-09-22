@@ -1107,7 +1107,26 @@
     "creating_claim_codes_1pxi766": "Creating claim codes…",
     "claim_codes_created_e37ktp": "Claim codes created.",
     "cancelling_unused_codes_1y6v4m9": "Cancelling unused codes…",
-    "unused_codes_cancelled_16r7vr0": "Unused codes cancelled."
+    "unused_codes_cancelled_16r7vr0": "Unused codes cancelled.",
+    "coupon_title_1udox99": "Coupon title",
+    "coupon_message_19limtk": "Coupon message",
+    "print_coupons_yn2t2b": "Print coupons",
+    "preparing_coupons_zt8cnm": "Preparing coupons…",
+    "coupons_are_ready_to_print_d10cx9": "Coupons are ready to print.",
+    "qr_images_could_not_be_loaded_the_coupons_print_with_the_l_aqlxi3": "QR images could not be loaded. The coupons print with the link text instead.",
+    "open_the_link_above_with_your_school_account_6pxfbr": "Open the link above with your school account.",
+    "rewards_1yop2uj": "Rewards",
+    "scan_with_your_school_account_to_add_these_points_1o87500": "Scan with your school account to add these points.",
+    "cut_along_the_lines_each_coupon_works_once_wp93q": "Cut along the lines. Each coupon works once.",
+    "codes_ready_but_no_web_app_url_is_saved_in_setup_so_these__5c3jxp": "Codes ready, but no web app URL is saved in setup, so these coupons show the code only. Add the URL and mint again for scannable links.",
+    "unused_1djubln": "Unused",
+    "used_1t3ul74": "Used",
+    "cancelled_1a3t1vg": "Cancelled",
+    "expired_1gcie36": "Expired",
+    "reprint_unused_zkgk23": "Reprint unused",
+    "recent_code_sheets_1xxoett": "Recent code sheets",
+    "no_code_sheets_yet_igiev3": "No code sheets yet.",
+    "code_sheets_could_not_be_loaded_refresh_to_try_again_12e4s31": "Code sheets could not be loaded. Refresh to try again."
   },
   "patterns": {
     "1_available_16n661b": {

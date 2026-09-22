@@ -571,8 +571,9 @@ describe('School Rewards integration contract', () => {
 
   it('documents the backup-first v6 migration and uncertain-delivery operating boundary', () => {
     const readme = read('apps_script/school_rewards/README.md');
-    expect(readme).toContain('(schema v6)');
-    expect(readme).toContain('v4 -> v5 -> v6');
+    expect(readme).toContain('(schema v7)');
+    expect(readme).toContain('v4 -> v5 -> v6 -> v7');
+    expect(readme).toContain('migrateSchoolRewardsRepositoryV7()');
     expect(readme).toContain('migrateSchoolRewardsRepositoryV5()');
     expect(readme).toContain('migrateSchoolRewardsRepositoryV6()');
     expect(readme).toContain('A fresh `PENDING` row is an in-flight, read-only attempt');

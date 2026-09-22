@@ -211,14 +211,37 @@ function mintSchoolRewardsClaimTokens(request) {
   });
 }
 
-/** Staff void every unused code in a batch (for example a lost printout). Redeemed codes keep their ledger entries. */
+var SR_CLAIM_BATCH_LIST_LIMIT = 50;
+function claimBatchSummaries_(book, actor) {
+  var batches = {}, order = [], at = now_();
+  claimTokens_(book).forEach(function(token) {
+    if (!token.batchId || (actor.role !== 'admin' && token.createdByEmail !== actor.email)) return;
+    var batch = batches[token.batchId];
+    if (!batch) { batch = batches[token.batchId] = { batchId: token.batchId, points: token.points, categoryId: token.categoryId, reason: token.reason, expiresAt: token.expiresAt, createdAt: token.createdAt, mine: token.createdByEmail === actor.email, counts: { unused: 0, used: 0, void: 0, expired: 0 }, unusedTokenIds: [] }; order.push(batch); }
+    var status = token.status === 'unused' && claimTokenExpired_(token, at) ? 'expired' : token.status;
+    if (batch.counts.hasOwnProperty(status)) batch.counts[status]++;
+    if (status === 'unused') batch.unusedTokenIds.push(token.id);
+  });
+  order.sort(function(a, b) { return String(b.createdAt).localeCompare(String(a.createdAt)); });
+  return order.slice(0, SR_CLAIM_BATCH_LIST_LIMIT);
+}
+/** Staff see the batches they minted; administrators see every batch. Codes never carry identity, so the summary carries none either. */
+function listSchoolRewardsClaimBatches() {
+  var actor = requireRole_(['admin', 'staff']);
+  var book = book_(); requireClaimTokensReady_(book);
+  return { ok: true, batches: claimBatchSummaries_(book, actor) };
+}
+
+/** Staff void every unused code in a batch they minted (for example a lost printout); administrators may void any batch. Redeemed codes keep their ledger entries. */
 function voidSchoolRewardsClaimBatch(request) {
   var actor = requireRole_(['admin', 'staff']); request = object_(request);
   var batchId = id_(request.batchId, 'claim batch');
   return locked_(function() {
     var book = book_(); requireClaimTokensReady_(book);
-    var voided = 0;
-    claimTokens_(book).forEach(function(token) { if (token.batchId === batchId && token.status === 'unused') { token.status = 'void'; upsertClaimTokenRow_(book, token); voided++; } });
+    var voided = 0, tokens = claimTokens_(book).filter(function(token) { return token.batchId === batchId; });
+    if (!tokens.length) throw srError_('not_found', 'That code batch could not be found.');
+    if (actor.role !== 'admin' && tokens.some(function(token) { return token.createdByEmail !== actor.email; })) throw srError_('denied', 'Only the staff member who printed a code batch, or an administrator, can cancel it.');
+    tokens.forEach(function(token) { if (token.status === 'unused') { token.status = 'void'; upsertClaimTokenRow_(book, token); voided++; } });
     if (voided) appendAudit_({ event: 'CLAIM_TOKENS_VOIDED', type: 'claim_batch', id: batchId, summary: voided + ' unused claim code(s) voided' }, actor);
     return { ok: true, batchId: batchId, voided: voided };
   });
@@ -4090,11 +4113,18 @@ function buildSchoolRewardsIntegrityReport_(book, holdAgeDays, pendingAgeMinutes
       return;
     }
     if (saved.kind === 'award') expectedLedger = { id: intent.ledgerId, studentId: intent.studentId, kind: 'EARN', amount: intent.amount, reason: intent.reason, referenceType: 'award', referenceId: '', reversesId: '', actorEmail: intent.actorEmail, actorRole: intent.actorRole, at: intent.at, idempotencyKey: key, categoryId: intent.categoryId || '' };
+    if (saved.kind === 'claim') expectedLedger = { id: intent.ledgerId, studentId: intent.studentId, kind: 'EARN', amount: intent.amount, reason: intent.reason, referenceType: 'claim_token', referenceId: intent.tokenId, reversesId: '', actorEmail: intent.actorEmail, actorRole: intent.actorRole, at: intent.at, idempotencyKey: key, categoryId: intent.categoryId || '' };
     if (saved.kind === 'reverse') expectedLedger = { id: intent.ledgerId, studentId: intent.studentId, kind: 'REVERSAL', amount: intent.amount, reason: intent.reason, referenceType: 'reversal', referenceId: intent.originalId, reversesId: intent.originalId, actorEmail: intent.actorEmail, actorRole: intent.actorRole, at: intent.at, idempotencyKey: key, categoryId: intent.categoryId || '' };
     if (saved.kind === 'checkout') expectedLedger = { id: intent.ledgerId, studentId: intent.studentId, kind: 'SPEND', amount: -intent.total, reason: 'School store order', referenceType: 'order', referenceId: intent.orderId, reversesId: '', actorEmail: intent.actorEmail, actorRole: intent.actorRole, at: intent.at, idempotencyKey: key, categoryId: '' };
     if (saved.kind === 'refund') expectedLedger = { id: intent.ledgerId, studentId: intent.studentId, kind: 'REFUND', amount: intent.total, reason: intent.reason, referenceType: 'order_refund', referenceId: intent.orderId, reversesId: intent.sourceSpendId, actorEmail: intent.actorEmail, actorRole: intent.actorRole, at: intent.at, idempotencyKey: key, categoryId: '' };
     if (!expectedLedger || !actualLedger || stableJson_(actualLedger) !== stableJson_(expectedLedger)) issue('ERROR', 'JOURNAL_LEDGER_INTENT_MISMATCH', 'idempotency', key, 'Completed journal ledger row does not match its stored intent.');
 
+    if (saved.kind === 'claim') {
+      if (!result.entry || result.entry.id !== intent.ledgerId || result.points !== intent.amount || !isFinite(Number(result.balance)) || Number(result.balance) < 0) issue('ERROR', 'JOURNAL_RESULT_INTENT_MISMATCH', 'idempotency', key, 'Completed claim journal result does not match its stored intent.');
+      var claimTokenRow = book.getSheetByName('ClaimTokens') ? claimTokenById_(book, intent.tokenId) : null;
+      if (!claimTokenRow || claimTokenRow.status !== 'used' || claimTokenRow.ledgerId !== intent.ledgerId || claimTokenRow.claimedByStudentId !== intent.studentId) issue('ERROR', 'JOURNAL_SOURCE_INTENT_MISMATCH', 'idempotency', key, 'Completed claim journal token row does not match its stored intent.');
+      return;
+    }
     if (saved.kind === 'award' || saved.kind === 'reverse') {
       if (!result.entry || result.entry.id !== intent.ledgerId || (actualLedger && stableJson_(result.entry) !== stableJson_(actualLedger)) || !isFinite(Number(result.balance)) || Number(result.balance) < 0) issue('ERROR', 'JOURNAL_RESULT_INTENT_MISMATCH', 'idempotency', key, 'Completed journal result does not match its ledger intent.');
       if (saved.kind === 'reverse') {
@@ -4130,6 +4160,25 @@ function buildSchoolRewardsIntegrityReport_(book, holdAgeDays, pendingAgeMinutes
   flagDuplicateValues(orders.filter(function(order) { return order.idempotencyKey; }), function(order) { return order.idempotencyKey; }, 'DUPLICATE_ORDER_REQUEST_KEY', 'idempotency', 'One request key produced multiple order rows');
   flagDuplicateValues(holds.filter(function(hold) { return hold.idempotencyKey; }), function(hold) { return hold.idempotencyKey; }, 'DUPLICATE_HOLD_REQUEST_KEY', 'idempotency', 'One request key produced multiple point holds');
   flagDuplicateValues(ledger.filter(function(entry) { return entry.reversesId; }), function(entry) { return entry.reversesId; }, 'DUPLICATE_REVERSAL', 'ledger', 'A ledger entry is reversed more than once');
+
+  var claimTokensReady = !!book.getSheetByName('ClaimTokens');
+  if (claimTokensReady) {
+    var claimTokenRows = claimTokens_(book), claimTokenById = indexBy(claimTokenRows, 'id'), claimLedgerByToken = groupBy(ledger.filter(function(entry) { return entry.referenceType === 'claim_token'; }), function(entry) { return entry.referenceId; });
+    flagDuplicateValues(claimTokenRows, function(token) { return token.id; }, 'DUPLICATE_PRIMARY_KEY', 'claim_token', 'Claim token id appears more than once');
+    claimTokenRows.forEach(function(token) {
+      var claims = claimLedgerByToken[token.id] || [];
+      if (['unused', 'used', 'void', 'expired'].indexOf(token.status) < 0) issue('ERROR', 'CLAIM_TOKEN_STATUS_INVALID', 'claim_token', token.id, 'Claim token status is not recognized.');
+      if (!categoryById[token.categoryId]) issue('ERROR', 'CLAIM_TOKEN_CATEGORY_MISSING', 'claim_token', token.id, 'Claim token references a missing recognition category.');
+      if (claims.length > 1) issue('ERROR', 'DUPLICATE_CLAIM_LEDGER', 'claim_token', token.id, 'A claim token was credited more than once (' + claims.length + ' ledger rows).');
+      if (token.status === 'used') {
+        var claim = claims[0];
+        if (!studentById[token.claimedByStudentId]) issue('ERROR', 'CLAIM_TOKEN_STUDENT_MISSING', 'claim_token', token.id, 'Redeemed claim token references a missing student.');
+        if (!claim) issue('ERROR', 'CLAIM_TOKEN_LEDGER_MISSING', 'claim_token', token.id, 'Claim token is marked used but has no ledger row.');
+        else if (claim.id !== token.ledgerId || claim.studentId !== token.claimedByStudentId || claim.amount !== token.points || claim.kind !== 'EARN') issue('ERROR', 'CLAIM_TOKEN_LEDGER_MISMATCH', 'claim_token', token.id, 'Claim token row and its ledger row disagree.');
+      } else if (claims.length) issue('ERROR', 'CLAIM_TOKEN_UNMARKED_CLAIM', 'claim_token', token.id, 'Ledger credits a claim token that is not marked used.');
+    });
+    Object.keys(claimLedgerByToken).forEach(function(tokenId) { if (!claimTokenById[tokenId]) issue('ERROR', 'CLAIM_LEDGER_TOKEN_MISSING', 'ledger', claimLedgerByToken[tokenId][0].id, 'Ledger row references a missing claim token.'); });
+  }
 
   ledger.forEach(function(entry) {
     if (!studentById[entry.studentId]) issue('ERROR', 'LEDGER_STUDENT_MISSING', 'ledger', entry.id, 'Ledger row references a missing student.');
@@ -4416,7 +4465,7 @@ function buildSchoolRewardsIntegrityReport_(book, holdAgeDays, pendingAgeMinutes
     checks: {
       ledgerAndBalances: true, ordersLinesSpendsAndRefunds: true, inventoryBounds: true, inventoryMovementChain: true,
       holdsRequestsAndAging: true, receiptDelivery: true, identifiersAndReferences: true,
-      operationJournals: true, resilientMailDelivery: true
+      operationJournals: true, resilientMailDelivery: true, claimTokens: claimTokensReady
     },
     issues: issues
   };
