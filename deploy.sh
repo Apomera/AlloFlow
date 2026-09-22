@@ -102,6 +102,21 @@ if [[ "$CURRENT_BRANCH" != "main" ]]; then
   fi
 fi
 
+# ── Staged-set snapshot (Step 1 commits exactly this, by name) ─────
+# The index is shared by every session in this tree, and the gates below take
+# minutes. Step 1 commits only the paths staged NOW (plus the few this script
+# stages itself), by pathspec, and refuses if anything else was staged meanwhile.
+DEPLOY_TMP="$(mktemp -d)"
+trap 'rm -rf "$DEPLOY_TMP"' EXIT
+DEPLOY_STAGED="$DEPLOY_TMP/staged.lst"
+# Sorted, unquoted path list from a git --name-only style command (-z: no C-quoting).
+_af_names() { "$@" -z | tr '\0' '\n' | LC_ALL=C sort -u; }
+_af_names git diff --cached --name-only --no-renames > "$DEPLOY_STAGED"
+if [[ -s "$DEPLOY_STAGED" ]]; then
+  echo "Staged for the source commit ($(wc -l < "$DEPLOY_STAGED") path(s)):"
+  sed 's/^/  /' "$DEPLOY_STAGED"
+fi
+
 # ── Step 0.6: render-path free-variable gate ──────────────────────
 # Blocks the deploy if any *_module.js has an undeclared identifier in a hook
 # dependency array (the data / onPlayAudio / isEscaped render-crash class that
@@ -179,6 +194,7 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
     node dev-tools/_apply_docsuite_theme.cjs
     node _build_app_styles_module.js
     git add app_styles_source.jsx app_styles_module.js desktop/web-app/public/app_styles_module.js 2>/dev/null || true
+    printf '%s\n' app_styles_source.jsx app_styles_module.js desktop/web-app/public/app_styles_module.js >> "$DEPLOY_STAGED"
     node dev-tools/gen_docsuite_theme.cjs --check
   fi
   echo "  ✓ docsuite theme CSS current (new color utilities in scanned files regenerate the scoped remap — stale block = pastel-in-dark modals; self-healing since 2026-07-20)."
@@ -262,12 +278,31 @@ echo "════════════════════════�
 echo ""
 echo "=== Step 1: Source commit ==="
 SOURCE_COMMITTED=0
-if git diff --cached --quiet; then
+LC_ALL=C sort -u -o "$DEPLOY_STAGED" "$DEPLOY_STAGED"
+_af_names git diff --cached --name-only --no-renames > "$DEPLOY_TMP/staged_now.lst"
+UNEXPECTED_STAGED="$(LC_ALL=C comm -13 "$DEPLOY_STAGED" "$DEPLOY_TMP/staged_now.lst")"
+if [[ -n "$UNEXPECTED_STAGED" ]]; then
+  echo "  ✗ Refusing to commit: these were staged after deploy.sh started (another session?):"
+  printf '%s\n' "$UNEXPECTED_STAGED" | sed 's/^/      /'
+  echo "    Unstage them (git restore --staged -- <path>) or commit them yourself, then re-run."
+  exit 1
+fi
+if [[ ! -s "$DEPLOY_TMP/staged_now.lst" ]]; then
   echo "  No staged changes. Skipping source commit."
   echo "  (Will still run build + deploy + post-deploy commit.)"
 else
-  echo "  Committing with message: \"$COMMIT_MSG\""
-  git commit -m "$COMMIT_MSG"
+  # A pathspec commit takes each file's DISK content, so a staged path with
+  # further unstaged edits would commit more than was staged. Refuse instead.
+  tr '\n' '\0' < "$DEPLOY_TMP/staged_now.lst" > "$DEPLOY_TMP/staged_now.nul"
+  PARTIAL="$(_af_names git diff --name-only --no-renames | LC_ALL=C comm -12 "$DEPLOY_TMP/staged_now.lst" -)"
+  if [[ -n "$PARTIAL" ]]; then
+    echo "  ✗ Refusing to commit: staged path(s) also have unstaged edits:"
+    printf '%s\n' "$PARTIAL" | sed 's/^/      /'
+    echo "    Stage the whole file or restore the unstaged part, then re-run."
+    exit 1
+  fi
+  echo "  Committing $(wc -l < "$DEPLOY_TMP/staged_now.lst") staged path(s) by name with message: \"$COMMIT_MSG\""
+  git commit -m "$COMMIT_MSG" --pathspec-from-file="$DEPLOY_TMP/staged_now.nul" --pathspec-file-nul
   SOURCE_COMMITTED=1
   echo "  ✓ Source commit created."
 fi
@@ -290,6 +325,19 @@ echo "=== Step 3: Run build.js --mode=prod --force ==="
 # is the value the deployed AlloFlowANTI.txt SHOULD carry. Step 10 asserts it.
 BUILD_HASH=$(git rev-parse --short HEAD)
 echo "  Expected pluginCdnVersion (from HEAD): @${BUILD_HASH}"
+# Snapshot what is already dirty in the trees Steps 3-4.5 regenerate, so Step 6
+# commits only what the build wrote and leaves other sessions' in-flight files.
+GENERATED_ROOTS=(desktop/web-app/public app)
+_af_generated_dirty() {
+  git status --porcelain=v1 -z -uall --no-renames -- "${GENERATED_ROOTS[@]}" |
+  while IFS= read -r -d '' entry; do
+    p="${entry:3}"
+    if [[ -f "$p" ]]; then printf '%s\t%s\n' "$(git hash-object -- "$p")" "$p"
+    else printf 'DELETED\t%s\n' "$p"; fi
+  done | LC_ALL=C sort
+}
+_af_generated_dirty > "$DEPLOY_TMP/generated_pre.tsv"
+touch "$DEPLOY_TMP/build_started"
 node build.js --mode=prod --force
 echo "  ✓ build.js complete."
 
@@ -312,6 +360,11 @@ done
 # ── Step 4: npm run build (desktop/web-app) ──────────────────────
 echo ""
 echo "=== Step 4: npm run build (desktop/web-app) ==="
+# Both web builds (here and Step 4.5) die at Node's default heap with
+# "Ineffective mark-compacts near heap limit"; their child processes inherit this.
+if [[ "${NODE_OPTIONS:-}" != *max-old-space-size* ]]; then
+  export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--max-old-space-size=8192"
+fi
 (cd desktop/web-app && npm run build)
 echo "  ✓ npm build complete."
 
@@ -349,26 +402,49 @@ fi
 # ── Step 6: Post-deploy commit (hash refs in mirror files) ────────
 echo ""
 echo "=== Step 6: Post-deploy commit (CDN hash refs) ==="
-git add AlloFlowANTI.txt desktop/web-app/src/AlloFlowANTI.txt desktop/web-app/src/App.jsx 2>/dev/null || true
+POST_NAMED=(AlloFlowANTI.txt desktop/web-app/src/AlloFlowANTI.txt desktop/web-app/src/App.jsx)
+git add "${POST_NAMED[@]}" 2>/dev/null || true
 # Self-cleaning deploys: build.js auto-copies committed roots over the public
-# mirrors during Step 3; without this line those deterministic copies linger
-# as a dirty tree after every deploy.
-git add desktop/web-app/public/ 2>/dev/null || true
-# Cloudflare Pages serves the repository root, so the generated /app shell
-# must be committed there as well as in Firebase Hosting's public tree.
-git add app/ 2>/dev/null || true
+# mirrors during Step 3; without this those deterministic copies linger as a
+# dirty tree after every deploy. Cloudflare Pages serves the repository root, so
+# the generated /app shell must be committed there as well as in Firebase
+# Hosting's public tree. Only what Steps 3-4.5 wrote is added: a path that was
+# already dirty before the build, and that the build left alone, belongs to
+# another session and is reported instead.
+_af_generated_dirty > "$DEPLOY_TMP/generated_post.tsv"
+LC_ALL=C comm -13 "$DEPLOY_TMP/generated_pre.tsv" "$DEPLOY_TMP/generated_post.tsv" | cut -f2- > "$DEPLOY_TMP/generated.lst"
+LC_ALL=C comm -12 "$DEPLOY_TMP/generated_pre.tsv" "$DEPLOY_TMP/generated_post.tsv" | cut -f2- |
+while IFS= read -r p; do
+  if [[ -f "$p" && "$p" -nt "$DEPLOY_TMP/build_started" ]]; then
+    echo "$p" >> "$DEPLOY_TMP/generated.lst"
+    echo "  ⚠ $p was already uncommitted before the build; the build rewrote it, so it is included."
+  else
+    echo "  ↷ leaving $p (uncommitted before the build and untouched by it)."
+  fi
+done
+if [[ -s "$DEPLOY_TMP/generated.lst" ]]; then
+  echo "  Build wrote $(wc -l < "$DEPLOY_TMP/generated.lst") file(s) under ${GENERATED_ROOTS[*]}."
+  tr '\n' '\0' < "$DEPLOY_TMP/generated.lst" > "$DEPLOY_TMP/generated.nul"
+  git add --pathspec-from-file="$DEPLOY_TMP/generated.nul" --pathspec-file-nul
+fi
 # The Cloudflare CDN (alloflow-cdn.pages.dev) serves the REPO-ROOT compiled
 # modules. build.js (Step 3) recompiles the COMPILE_PAIRS each deploy but they
 # were never staged here — so doc_pipeline_module.js etc. lagged a deploy behind
 # on the CDN (only committed sporadically by other sessions). Stage them so the
 # served root module is fresh every deploy.
-git add doc_pipeline_module.js persona_ui_module.js gemini_api_module.js tts_module.js personas_module.js export_module.js brand_profile_editor_module.js view_assignment_center_module.js view_directions_result_module.js 2>/dev/null || true
+POST_MODULES=(doc_pipeline_module.js persona_ui_module.js gemini_api_module.js tts_module.js personas_module.js export_module.js brand_profile_editor_module.js view_assignment_center_module.js view_directions_result_module.js)
+git add "${POST_MODULES[@]}" 2>/dev/null || true
+# Commit only this step's paths, by name: the index is shared, so a bare commit
+# would also take whatever another session had staged.
+{ printf '%s\n' "${POST_NAMED[@]}" "${POST_MODULES[@]}"; cat "$DEPLOY_TMP/generated.lst"; } | LC_ALL=C sort -u > "$DEPLOY_TMP/post_paths.lst"
+_af_names git diff --cached --name-only --no-renames | LC_ALL=C comm -12 "$DEPLOY_TMP/post_paths.lst" - > "$DEPLOY_TMP/post_commit.lst"
 POST_COMMITTED=0
-if git diff --cached --quiet; then
+if [[ ! -s "$DEPLOY_TMP/post_commit.lst" ]]; then
   echo "  No post-deploy changes. (Hash refs were already current.)"
 else
   HASH=$(git rev-parse --short HEAD)
-  git commit -m "Post-deploy: update CDN hash refs to @${HASH}"
+  tr '\n' '\0' < "$DEPLOY_TMP/post_commit.lst" > "$DEPLOY_TMP/post_commit.nul"
+  git commit -m "Post-deploy: update CDN hash refs to @${HASH}" --pathspec-from-file="$DEPLOY_TMP/post_commit.nul" --pathspec-file-nul
   POST_COMMITTED=1
   echo "  ✓ Post-deploy commit created (hash @${HASH})."
 fi
