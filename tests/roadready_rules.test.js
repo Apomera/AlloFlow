@@ -1055,7 +1055,12 @@ describe('RoadReady rules-of-road content', () => {
         'Posted construction-speed violations can carry doubled fines.',
         'Construction speed fines',
         'Maine law doubles fines for violations of restricted construction or maintenance speed limits',
-        'Maine §2093 requires reasonable measures to prevent snow or ice from falling off vehicles under 10,000 lb.',
+        // Reworded to add what the statute actually conditions on: the
+        // infraction lands only when the falling snow or ice CAUSES damage or
+        // injury, and commercial trucks are exempt. Pinned on the substantive
+        // clause rather than the whole sentence.
+        '§2093 requires reasonable measures to prevent snow or ice falling off a vehicle registered under 10,000 lb',
+        'causes damage or injury',
         'Maine law: draw as near as practicable to the right-hand curb, clear of any intersection',
         'Maine §2054 does not list a divided-highway exception for approaching emergency vehicles',
         'Pull right, stay clear of intersections, and stop for emergency vehicles.',

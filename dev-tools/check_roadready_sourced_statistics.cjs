@@ -140,6 +140,39 @@ const CLAIMS = [
       'adult 275-day refusal suspension under §2521',
   },
   {
+    label: 'Maine snow/ice duty weight threshold (§2093)',
+    re: /a vehicle registered under ([\d,]+) lb \(bigger trucks are exempt/,
+    min: 10000, max: 10000,
+    source: 'Maine 29-A §2093: applies to vehicles with a REGISTERED WEIGHT under 10,000 lb; the ' +
+      'threshold deliberately excludes commercial trucks.',
+  },
+  {
+    label: 'Maine snow/ice first-offence fine ceiling (§2093)',
+    // Anchored on the fine alone, not on the conditional clause before it --
+    // otherwise rewording the conditional also breaks this check and the fine
+    // value itself never gets tested. Same coupling mistake as the §2081 fine.
+    re: /up to \$(\d{2}) first offence/,
+    min: 50, max: 50,
+    source: 'Maine 29-A §2093: not more than $50 first offence, $150-$250 for each subsequent.',
+  },
+  {
+    label: 'Maine snow/ice duty is conditional on damage or injury (§2093)',
+    re: /becomes a traffic infraction when what falls off actually causes damage or injury/,
+    min: null, max: null,
+    source: 'Maine 29-A §2093 is only violated when falling snow or ice CAUSES damage or injury. ' +
+      'Stating it as an unconditional duty overstates the law — clearing the car is still the ' +
+      'right advice, but for the safety reason, not because a bare roof is itself an offence.',
+  },
+  {
+    label: 'Maine leaving-the-scene charge named as a Class E crime (§2254)',
+    re: /Driving off instead is a CLASS E CRIME/,
+    min: null, max: null,
+    source: 'Maine 29-A §2254: failing to stop and leave the required information on an ' +
+      'unattended vehicle is a Class E CRIME, not a traffic infraction. The three required ' +
+      'items (name+address, registration number, circumstances) and the insurance-proof duty ' +
+      'were already stated correctly; only the charge level was missing.',
+  },
+  {
     label: 'Maine child-restraint internal-harness weight (§2081)',
     re: /age 2\+ under (\d{2}) lb in an internal-harness child restraint/,
     min: 55, max: 55,
