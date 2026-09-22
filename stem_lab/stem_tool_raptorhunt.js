@@ -427,8 +427,25 @@
 [data-rh-station] .rh-gloss-letter-mark{color:#fcd34d;font:900 17px/1 ui-monospace,Menlo,monospace;letter-spacing:-.02em;}
 [data-rh-station] .rh-gloss-letter-count{color:#94a3b8;font:800 9px/1 ui-sans-serif,system-ui;letter-spacing:.08em;}
 
+/* -- Chart data tables ----------------------------------------------------
+   The recovery trajectory plots draw their figures as SVG <text>, which the
+   chart's role="img" hides. These tables carry the same series as real data,
+   collapsed by default so the page reads the same as before when unopened. */
+[data-rh-station] .rh-traj-data{margin-top:7px;border-top:1px solid var(--rh-st-line);padding-top:6px;}
+[data-rh-station] .rh-traj-data>summary{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:3px 7px;border-radius:7px;color:#fcd34d;font:800 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;list-style:none;}
+[data-rh-station] .rh-traj-data>summary::-webkit-details-marker{display:none;}
+[data-rh-station] .rh-traj-data>summary::before{content:"\\25B8";display:inline-block;transition:transform .15s;}
+[data-rh-station] .rh-traj-data[open]>summary::before{transform:rotate(90deg);}
+[data-rh-station] .rh-traj-data>summary:hover{background:rgba(251,191,36,.14);}
+[data-rh-station] .rh-traj-data table{width:100%;margin-top:6px;border-collapse:collapse;font:600 11px/1.4 ui-sans-serif,system-ui;}
+[data-rh-station] .rh-traj-data th,[data-rh-station] .rh-traj-data td{padding:5px 8px;border-bottom:1px solid var(--rh-st-line);text-align:left;}
+[data-rh-station] .rh-traj-data thead th{color:#94a3b8;font:800 9px/1.2 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;}
+[data-rh-station] .rh-traj-data tbody th{color:#fcd34d;font-variant-numeric:tabular-nums;}
+[data-rh-station] .rh-traj-data tbody td{color:#e2e8f0;font-variant-numeric:tabular-nums;}
+[data-rh-station] .rh-traj-data tbody tr:last-child th,[data-rh-station] .rh-traj-data tbody tr:last-child td{border-bottom:0;}
+
 /* Reduced motion and forced colors: keep the structure, drop the decoration. */
-@media(prefers-reduced-motion:reduce){[data-rh-station] .rh-st-chips>button{transition:none!important;}[data-rh-station] .rh-st-chips>button:hover{transform:none!important;}}
+@media(prefers-reduced-motion:reduce){[data-rh-station] .rh-st-chips>button,[data-rh-station] .rh-traj-data>summary::before{transition:none!important;}[data-rh-station] .rh-st-chips>button:hover{transform:none!important;}}
 @media(forced-colors:active){
 [data-rh-station] .rh-st-banner,[data-rh-station] .rh-st-card,[data-rh-station] .rh-st-stats>*{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important;}
 [data-rh-station] .rh-st-banner::after{display:none;}
@@ -442,6 +459,10 @@
 [data-rh-station] .rh-gloss-index-link[data-has-terms="false"]{color:GrayText;}
 [data-rh-station] .rh-gloss-letter{border-bottom-color:CanvasText;}
 [data-rh-station] .rh-gloss-letter-mark,[data-rh-station] .rh-gloss-letter-count{color:CanvasText;}
+[data-rh-station] .rh-traj-data{border-top-color:CanvasText;}
+[data-rh-station] .rh-traj-data>summary{color:ButtonText;background:ButtonFace;}
+[data-rh-station] .rh-traj-data th,[data-rh-station] .rh-traj-data td{border-bottom-color:CanvasText;color:CanvasText;}
+[data-rh-station] .rh-traj-data thead th,[data-rh-station] .rh-traj-data tbody th{color:CanvasText;}
 }
 @container (max-width:600px){
 [data-rh-station] .rh-st-banner{padding:16px!important;}
@@ -24063,7 +24084,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             { y: 2023, p: 400, lbl: 'Critical' }
           ]
         };
-        function trajectorySvg(caseId) {
+        // Every number in these plots is drawn as SVG <text>, which role="img" hides
+        // from assistive tech -- the label replaces the subtree entirely. All five
+        // charts also shared one label, "Population trajectory plot", so a screen
+        // reader announced five identical strings carrying none of the data. Build
+        // the series into a sentence instead, and offer the same figures as a table.
+        function trajectorySummary(caseId, title) {
+          var pts = trajectories[caseId];
+          if (!pts) return '';
+          var first = pts[0], last = pts[pts.length - 1];
+          var lowest = pts.reduce(function(a, b) { return b.p < a.p ? b : a; }, pts[0]);
+          var parts = pts.map(function(pt) {
+            return pt.y + ': ' + pt.p.toLocaleString() + (pt.lbl ? ' (' + pt.lbl + ')' : '');
+          });
+          return __alloFill(
+            __alloT('stem.raptorhunt.a11y_population_trajectory',
+              '{value1} population on a log scale, {value2} to {value3}. Starts at {value4}, lowest {value5} in {value6}, ends at {value7}. Points: {value8}.'),
+            {
+              value1: title, value2: first.y, value3: last.y,
+              value4: first.p.toLocaleString(),
+              value5: lowest.p.toLocaleString(), value6: lowest.y,
+              value7: last.p.toLocaleString(),
+              value8: parts.join('; ')
+            }
+          );
+        }
+        function trajectorySvg(caseId, title) {
           var pts = trajectories[caseId];
           if (!pts) return null;
           var pw = 600, ph = 130, pad = 30;
@@ -24078,7 +24124,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           function xAt(y) { return pad + (y - yMin) / (yMax - yMin) * (pw - 2 * pad); }
           function yAt(p) { return ph - pad - (Math.log10(Math.max(1, p)) - lMin) / Math.max(0.1, (lMax - lMin)) * (ph - 2 * pad); }
           var pathD = pts.map(function(pt, i) { return (i === 0 ? 'M ' : 'L ') + xAt(pt.y).toFixed(1) + ' ' + yAt(pt.p).toFixed(1); }).join(' ');
-          return h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': __alloT('stem.raptorhunt.population_trajectory_plot_2', 'Population trajectory plot') },
+          return h('svg', { viewBox: '0 0 ' + pw + ' ' + ph, style: { width: '100%', height: 'auto' }, role: 'img', 'aria-label': trajectorySummary(caseId, title) || __alloT('stem.raptorhunt.population_trajectory_plot_2', 'Population trajectory plot') },
             h('rect', { x: 0, y: 0, width: pw, height: ph, fill: '#0f172a' }),
             // Axes
             h('line', { x1: pad, y1: ph - pad, x2: pw - pad, y2: ph - pad, stroke: '#475569', strokeWidth: 1 }),
@@ -24128,7 +24174,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 // ── NEW v0.8: Population trajectory plot ──
                 trajectories[c.id] && h('div', { className: 'bg-slate-950/60 border border-amber-700/30 rounded-lg p-2 mb-3' },
                   h('div', { className: 'text-[10px] text-amber-300 mb-1 font-bold uppercase tracking-wider' }, __alloT('stem.raptorhunt.population_trajectory_log_scale', '📈 Population trajectory (log scale)')),
-                  trajectorySvg(c.id)
+                  trajectorySvg(c.id, c.title),
+                  // The plot's own numbers live in SVG <text>, which role="img"
+                  // hides. Offer the same series as a real table so the figures can
+                  // be read, copied and compared without relying on the drawing.
+                  h('details', { className: 'rh-traj-data' },
+                    h('summary', null, __alloT('stem.raptorhunt.show_trajectory_data', 'Show the numbers')),
+                    h('table', null,
+                      h('caption', { className: 'sr-only' }, __alloFill(__alloT('stem.raptorhunt.a11y_trajectory_table_caption', '{value1} population by year'), { value1: c.title })),
+                      h('thead', null,
+                        h('tr', null,
+                          h('th', { scope: 'col' }, __alloT('stem.raptorhunt.year', 'Year')),
+                          h('th', { scope: 'col' }, __alloT('stem.raptorhunt.population', 'Population')),
+                          h('th', { scope: 'col' }, __alloT('stem.raptorhunt.milestone', 'Milestone'))
+                        )
+                      ),
+                      h('tbody', null,
+                        trajectories[c.id].map(function(pt, pi) {
+                          return h('tr', { key: pi },
+                            h('th', { scope: 'row' }, pt.y),
+                            h('td', null, pt.p.toLocaleString()),
+                            h('td', null, pt.lbl || '—')
+                          );
+                        })
+                      )
+                    )
+                  )
                 ),
                 // Crisis
                 h('div', { className: 'bg-red-900/20 border border-red-700/40 rounded-lg p-3 mb-3' },
