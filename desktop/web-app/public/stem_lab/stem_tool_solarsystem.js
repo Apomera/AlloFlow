@@ -21109,7 +21109,7 @@ const d = labToolData.solarSystem || {};
                         // usable width at every size. Fluid worlds (gas probe, ocean
                         // submersible) build no traverse panel and stay on the bottom row.
                         var tickerBottom = isFluid ? 8 : 166;
-                        ticker.style.cssText = 'position:absolute;bottom:' + tickerBottom + 'px;left:8px;right:184px;background:linear-gradient(180deg,rgba(15,23,42,0.80) 0%,rgba(7,11,24,0.90) 100%);border-radius:8px;padding:6px 12px;color:#fbbf24;font-family:sans-serif;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(251,191,36,0.35);text-align:center;transition:opacity 0.5s;box-shadow:inset 0 1px 0 rgba(251,191,36,0.20),0 0 16px rgba(251,191,36,0.08),0 4px 12px rgba(7,11,24,0.50)';
+                        ticker.style.cssText = 'position:absolute;bottom:' + tickerBottom + 'px;left:156px;right:184px;background:linear-gradient(180deg,rgba(15,23,42,0.80) 0%,rgba(7,11,24,0.90) 100%);border-radius:8px;padding:6px 12px;color:#fbbf24;font-family:sans-serif;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(251,191,36,0.35);text-align:center;transition:opacity 0.5s;box-shadow:inset 0 1px 0 rgba(251,191,36,0.20),0 0 16px rgba(251,191,36,0.08),0 4px 12px rgba(7,11,24,0.50)';
 
                         // Categorized facts with icons
 
@@ -21159,15 +21159,113 @@ const d = labToolData.solarSystem || {};
 
                         canvasEl.parentElement.appendChild(ticker);
 
-                        var factTimer = setInterval(function () {
+                        // The ticker auto-advanced every 6000ms, of which 400ms is the
+                        // fade -- a 5.6s reading window for facts up to 137 characters.
+                        // Measured against the 40 facts this tool ships: 11 of 40 exceed
+                        // that window at a typical adult 200 wpm, and 30 of 40 exceed it
+                        // at a middle-grades 150 wpm. This is a K-12 tool, so the common
+                        // case was a student who never finishes a sentence. There was
+                        // also no pause, no way back, and pointer-events:none meant it
+                        // could not even be hovered -- WCAG 2.2.2 (Pause, Stop, Hide)
+                        // requires a mechanism for auto-updating content.
+                        //
+                        // Dwell now scales with the length of the fact on screen, so
+                        // short facts stay brisk and long ones get the time they need.
+                        // The floor keeps the original pacing for the shortest entries.
+                        function factDwellMs(text) {
+                          var chars = String(text || '').length;
+                          return Math.max(6000, Math.min(16000, 2500 + chars * 80));
+                        }
 
-                          factIdx = (factIdx + 1) % scienceFacts.length;
+                        var factTimer = null;
+                        var factSwapTimer = null;
+                        var factPaused = false;
 
+                        function showFact(idx) {
+                          factIdx = ((idx % scienceFacts.length) + scienceFacts.length) % scienceFacts.length;
                           ticker.style.opacity = '0';
+                          if (factSwapTimer) clearTimeout(factSwapTimer);
+                          factSwapTimer = setTimeout(function () {
+                            ticker.innerHTML = '\uD83D\uDCA1 ' + scienceFacts[factIdx];
+                            ticker.style.opacity = '1';
+                          }, 400);
+                        }
 
-                          setTimeout(function () { ticker.innerHTML = '\uD83D\uDCA1 ' + scienceFacts[factIdx]; ticker.style.opacity = '1'; }, 400);
+                        function scheduleNextFact() {
+                          if (factTimer) clearTimeout(factTimer);
+                          factTimer = null;
+                          if (factPaused) return;
+                          factTimer = setTimeout(function () {
+                            showFact(factIdx + 1);
+                            scheduleNextFact();
+                          }, factDwellMs(scienceFacts[factIdx]));
+                        }
 
-                        }, 6000);
+                        // Under prefers-reduced-motion the rotation does not start at all:
+                        // an auto-advancing strip is exactly the kind of unrequested motion
+                        // that setting asks us to stop. The controls below still work, so
+                        // the facts stay reachable -- they just wait to be asked for.
+                        factPaused = droneReduceMotion;
+                        scheduleNextFact();
+
+                        // Pause / back / next. The ticker itself is pointer-events:none so
+                        // it never eats a drag meant for the scene; the control cluster
+                        // opts back in. It sits OUTSIDE the ticker so the bar's own
+                        // centred text stays centred on the fact, not on the leftovers.
+                        var factControls = document.createElement('div');
+                        factControls.setAttribute('data-drone-ticker-controls', 'true');
+                        factControls.setAttribute('role', 'group');
+                        factControls.setAttribute('aria-label', 'Science fact playback');
+                        factControls.style.cssText = 'position:absolute;bottom:' + tickerBottom + 'px;left:8px;display:flex;gap:4px;align-items:center;z-index:11;pointer-events:auto';
+
+                        function makeFactButton(label, aria, onClick) {
+                          var b = document.createElement('button');
+                          b.type = 'button';
+                          b.textContent = label;
+                          b.setAttribute('aria-label', aria);
+                          b.title = aria;
+                          // 44px is the touch-target floor the rest of this scene uses.
+                          b.style.cssText = 'min-width:44px;min-height:44px;padding:0 8px;border:1px solid rgba(251,191,36,0.45);border-radius:8px;background:rgba(7,11,24,0.88);color:#fbbf24;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center';
+                          b.addEventListener('click', function (ev) {
+                            ev.preventDefault();
+                            ev.stopPropagation();
+                            onClick();
+                            canvasEl.focus({ preventScroll: true });
+                          });
+                          factControls.appendChild(b);
+                          return b;
+                        }
+
+                        var factPauseButton = null;
+                        function syncFactPauseButton() {
+                          if (!factPauseButton) return;
+                          var label = factPaused ? 'Play science facts' : 'Pause science facts';
+                          factPauseButton.textContent = factPaused ? '▸' : '‖';
+                          factPauseButton.setAttribute('aria-label', label);
+                          factPauseButton.setAttribute('aria-pressed', factPaused ? 'true' : 'false');
+                          factPauseButton.title = label;
+                        }
+
+                        makeFactButton('‹', 'Previous science fact', function () {
+                          // Stepping by hand implies you want to read at your own pace.
+                          factPaused = true;
+                          showFact(factIdx - 1);
+                          scheduleNextFact();
+                          syncFactPauseButton();
+                        });
+                        factPauseButton = makeFactButton('‖', 'Pause science facts', function () {
+                          factPaused = !factPaused;
+                          scheduleNextFact();
+                          syncFactPauseButton();
+                        });
+                        makeFactButton('›', 'Next science fact', function () {
+                          factPaused = true;
+                          showFact(factIdx + 1);
+                          scheduleNextFact();
+                          syncFactPauseButton();
+                        });
+                        syncFactPauseButton();
+                        canvasEl.parentElement.appendChild(factControls);
 
 
 

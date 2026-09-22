@@ -329,4 +329,52 @@ describe('Solar System surface-ops immersive layout', () => {
     expect(calls.length, 'the helper must run at init AND on the H density cycle')
       .toBeGreaterThanOrEqual(2);
   });
+
+  it('gives the science ticker a pause control and time to be read', () => {
+    // The ticker auto-advanced on a flat 6000ms interval, 400ms of which is the
+    // fade -- a 5.6s reading window. Measured against the 40 facts this tool
+    // ships: 11 exceed it at a typical adult 200 wpm and 30 exceed it at a
+    // middle-grades 150 wpm. This is a K-12 tool. There was also no pause, no
+    // way back, and pointer-events:none meant it could not even be hovered --
+    // WCAG 2.2.2 requires a mechanism for auto-updating content.
+    const source = readFileSync(SOURCE, 'utf8');
+
+    // Dwell must scale with the text, not be a flat interval.
+    const dwell = source.match(/function factDwellMs\(text\) \{[\s\S]*?\n {24}\}/);
+    expect(dwell, 'the ticker needs a length-aware dwell').toBeTruthy();
+    expect(dwell[0], 'dwell must be derived from the length of the fact on screen')
+      .toMatch(/\.length/);
+
+    // The floor has to cover the longest fact for a middle-grades reader:
+    // 137 chars / 5.5 chars-per-word / 150 wpm = 10.0s.
+    const clamp = dwell[0].match(/Math\.max\((\d+), Math\.min\((\d+), (\d+) \+ chars \* (\d+)\)\)/);
+    expect(clamp, 'could not read the dwell clamp').toBeTruthy();
+    const [, floor, ceiling, base, perChar] = clamp.map(Number);
+    expect(base + 137 * perChar, 'the longest fact (137ch) needs ~10s at 150 wpm')
+      .toBeGreaterThanOrEqual(10000);
+    expect(ceiling, 'the ceiling must not cut the longest fact short')
+      .toBeGreaterThanOrEqual(10000);
+    expect(floor, 'short facts should keep roughly the original pacing')
+      .toBeGreaterThanOrEqual(6000);
+
+    // A pause control, reachable: the ticker is pointer-events:none, so the
+    // cluster has to opt back in or the buttons cannot be clicked at all.
+    // Built by concatenation, so take the whole statement, not the first
+    // quoted run.
+    const controls = source.match(/factControls\.style\.cssText = (.*);\n/);
+    expect(controls, 'the ticker needs a control cluster').toBeTruthy();
+    expect(controls[1], 'controls must opt back into pointer events')
+      .toMatch(/pointer-events:auto/);
+
+    expect(source, 'the pause button must expose its state to assistive tech')
+      .toMatch(/factPauseButton\.setAttribute\('aria-pressed'/);
+    expect(source, 'there must be a previous control, not just pause')
+      .toMatch(/'Previous science fact'/);
+    expect(source, 'there must be a next control').toMatch(/'Next science fact'/);
+
+    // Reduced motion should stop the rotation starting at all -- the controls
+    // keep the facts reachable, they just wait to be asked for.
+    expect(source, 'reduced motion must suppress the auto-advance')
+      .toMatch(/factPaused = droneReduceMotion;/);
+  });
 });
