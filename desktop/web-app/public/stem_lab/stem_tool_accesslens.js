@@ -464,9 +464,14 @@
       return h('div', { style: Object.assign({ background: C.panel, border: '1px solid ' + C.border, borderRadius: '12px', padding: '12px 14px' }, style || {}) }, children);
     }
 
+    // The old wording was 11px in the faintest palette colour and told the
+    // reader to 'check it against what you can observe yourself' -- advice a
+    // blind student, the headline user of this tool, cannot act on. It now
+    // names checks that do not require sight, and uses the warn palette at
+    // body size so it is legible to the low-vision students who need it.
     function aiDisclaimer() {
-      return h('div', { role: 'note', style: { fontSize: '11px', color: C.sub, marginTop: '8px', lineHeight: 1.5 } },
-        _t('stem.accessLens.disclaimer', 'AI answer; it can be wrong. Check it against what you can observe yourself.'));
+      return h('div', { role: 'note', style: { fontSize: '13px', color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '8px', padding: '8px 10px', marginTop: '8px', lineHeight: 1.5 } },
+        _t('stem.accessLens.disclaimer', 'This is an AI guess and it can be confidently wrong. It can miss things that are there and describe things that are not. Ask someone you trust, take another photo from a different angle, or check another way before you rely on it.'));
     }
 
     function speakBtn(text) {
@@ -483,6 +488,19 @@
         h('div', { style: { fontSize: '11.5px', color: C.text, lineHeight: 1.5 } },
           h('strong', null, _t('stem.accessLens.privacy_title', 'Your photo stays yours.')), ' ',
           _t('stem.accessLens.privacy_body', 'Photos are never saved by AlloFlow and are only sent to the AI when you press an Analyze button. Please point your camera at things, not at people.'))));
+
+
+      // Scene-description models miss things that are present and invent things
+      // that are not. Every mainstream tool in this category ships this warning,
+      // because a student who learns here that 'it describes what is in front of
+      // me' will use it outside the classroom. It sits in the capture panel, next
+      // to the privacy notice, so it is read BEFORE the first photo rather than
+      // under a result. role=note keeps it out of the way of repeat users.
+      kids.push(h('div', { key: 'safety', role: 'note', style: { display: 'flex', gap: '8px', alignItems: 'flex-start', background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '10px', padding: '8px 10px', marginBottom: '8px' } },
+        h('span', { 'aria-hidden': 'true', style: { fontSize: '15px' } }, '⚠️'),
+        h('div', { style: { fontSize: '13px', color: C.text, lineHeight: 1.5 } },
+          h('strong', null, _t('stem.accessLens.safety_title', 'This is for learning, not for staying safe.')), ' ',
+          _t('stem.accessLens.safety_body', 'Do not use Access Lens to cross a road, to check whether a path is clear, to identify medicine, to tell if food is safe to eat, or to read a warning label. It can miss a hazard completely. For anything where being wrong would hurt, ask a person.'))));
 
       if (camState === 'live' || camState === 'starting') {
         kids.push(h('div', { key: 'live', style: { display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' } },
