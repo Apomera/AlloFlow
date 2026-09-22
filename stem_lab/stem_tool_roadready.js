@@ -28854,8 +28854,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Stats
           drivingStats ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } },
-            h('div', { style: { color: 'var(--rr-cyan, #22d3ee)', fontWeight: 700, marginBottom: '4px' } }, 'Last drive: ' + drivingStats.scenario),
-            h('div', null, 'Safety ' + drivingStats.safetyScore + ' · Eco ' + drivingStats.efficiencyScore + ' · ' + drivingStats.avgMPG + ' MPG avg · ' + drivingStats.distance_mi + ' mi')
+            // Every field is optional: an interrupted drive, or a project file
+            // saved by an older version, can leave any of them unset, and raw
+            // concatenation printed "undefined" straight to the learner. Show
+            // only the measures that are actually present.
+            h('div', { style: { color: 'var(--rr-cyan, #22d3ee)', fontWeight: 700, marginBottom: '4px' } },
+              __alloT('stem.roadready.menu_last_drive_label', 'Last drive: {scenario}').replace('{scenario}', drivingStats.scenario || __alloT('stem.roadready.menu_last_drive_unknown_scenario', 'practice session'))),
+            (function() {
+              var parts = [];
+              var num = function(value) { return typeof value === 'number' && isFinite(value); };
+              if (num(drivingStats.safetyScore)) parts.push(__alloT('stem.roadready.menu_stat_safety', 'Safety {n}').replace('{n}', String(Math.round(drivingStats.safetyScore))));
+              if (num(drivingStats.efficiencyScore)) parts.push(__alloT('stem.roadready.menu_stat_eco', 'Eco {n}').replace('{n}', String(Math.round(drivingStats.efficiencyScore))));
+              if (num(drivingStats.avgMPG)) parts.push(__alloT('stem.roadready.menu_stat_mpg', '{n} MPG avg').replace('{n}', String(Math.round(drivingStats.avgMPG))));
+              if (num(drivingStats.distance_mi)) parts.push(__alloT('stem.roadready.menu_stat_miles', '{n} mi').replace('{n}', drivingStats.distance_mi.toFixed(1)));
+              return parts.length ? h('div', null, parts.join(' · ')) : null;
+            })()
           ) : null,
           // ── Accessibility (UDL) panel ──
           // Reduced-motion suppresses cloud drift, camera bob, skid-shake, and rumble jitter.

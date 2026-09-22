@@ -34153,7 +34153,7 @@
       "classify_this_reaction": "🧩 Classify This Reaction",
       "start": "Start",
       "start_2": "▶ Start",
-      "next": "Next",
+      "next": "Next →",
       "next_2": "➡ Next",
       "enter_chemical_formula": "🧮 Enter Chemical Formula",
       "e_g_h2o_nacl_ca_oh_2": "e.g. H2O, NaCl, Ca(OH)2",
@@ -34421,7 +34421,7 @@
       "increase_coefficient_for": "Increase coefficient for",
       "interactive_atlas": "Interactive atlas",
       "learning_path_title": "Suggested learning path",
-      "log_hydronium_activity": "log10 hydronium activity",
+      "log_hydronium_activity": "log₁₀ a(H₃O⁺)",
       "log_hydronium_short": "log₁₀ a(H₃O⁺)",
       "model_boundary": "Model boundary",
       "mute_sounds": "Mute chemistry sounds",
@@ -34468,7 +34468,7 @@
       "safety_sections": "Safety sections",
       "scroll_ph_observations": "Scrollable pH observations",
       "scroll_to_explore": "Scroll to explore →",
-      "scrollable_periodic_table": "Scrollable 18-column periodic table",
+      "scrollable_periodic_table": "Scrollable periodic table",
       "search_elements": "Search by name, symbol, or atomic number...",
       "search_elements_label": "Search elements by name, symbol, or atomic number",
       "search_sub_tools_count": "Search {count} sub-tools...",
@@ -34494,7 +34494,15 @@
       "reaction_pattern_sr": "Particle diagram of the pattern",
       "reaction_pattern_sr_note": "Each circle is an atom; touching circles are one molecule.",
       "subscript_why_body": "A subscript is part of what the substance IS: H₂O is water, H₂O₂ is hydrogen peroxide — a bleach. Change a subscript and you have changed the chemical, not balanced it. A coefficient only says how many copies of that molecule take part, so coefficients are the only numbers balancing is allowed to touch.",
-      "subscript_why_summary": "Why can’t I just change the small numbers?"
+      "subscript_why_summary": "Why can’t I just change the small numbers?",
+      "scrollable_periodic_table_aria": "Scrollable 18-column periodic table",
+      "next_aria": "Next",
+      "base_acid_ratio_aria": "Base to acid ratio",
+      "electrons_transferred_aria": "Electrons transferred",
+      "temperature_k_aria": "Temperature in kelvin",
+      "activation_energy_aria": "Activation energy in kilojoules per mole",
+      "temperature_aria": "Temperature in degrees Celsius",
+      "log_hydronium_activity_aria": "log10 hydronium activity"
     },
     "circuit": {
       "sr_circuit_cleared": "Circuit cleared.",
@@ -57589,7 +57597,11 @@
       "gl_temperature": "Temperature",
       "gl_volume": "Volume",
       "gl_vs_n2": "vs N₂",
-      "gl_which_gas": "Which gas"
+      "gl_which_gas": "Which gas",
+      "concentration_m_aria": "Concentration in moles per litre",
+      "shell_n_aria": "Principal quantum number n",
+      "molality_aria": "Molality in moles per kilogram",
+      "temperature_c_aria": "Temperature in degrees Celsius"
     },
     "money": {
       "a11y_enter": "ENTER",
@@ -72788,6 +72800,12 @@
       "compare_a_number_explain_the_tradeoff_and_na": "Compare a number, explain the tradeoff, and name a limitation."
     },
     "roadready": {
+      "menu_last_drive_label": "Last drive: {scenario}",
+      "menu_last_drive_unknown_scenario": "practice session",
+      "menu_stat_safety": "Safety {n}",
+      "menu_stat_eco": "Eco {n}",
+      "menu_stat_mpg": "{n} MPG avg",
+      "menu_stat_miles": "{n} mi",
       "next_from_your_last_drive": "From your last drive",
       "next_recommended_next": "Recommended next",
       "next_practice_this": "Practice this",
