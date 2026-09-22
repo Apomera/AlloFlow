@@ -597,7 +597,15 @@
     // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
     var t = function (k, f) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, f) : null; } catch (e) { v = null; } return (v == null) ? (f != null ? f : k) : v; };
 
-    var seed = (ctx.toolData && ctx.toolData.forge && ctx.toolData.forge.src) || SKELETON;
+    // ★`|| SKELETON` is falsy-only, so a persisted {} / [] / 42 / true passed
+    // straight through into the editor: the textarea then showed the literal
+    // "[object Object]", and the 600ms autosave wrote that corruption BACK to
+    // ctx.toolData, so it survived a reload. The validator and the sandbox both
+    // coerce defensively, so nothing crashed — it just silently replaced the
+    // author's work with garbage. Same shape as stem_tool_trajectorycomputing's
+    // `typeof d.code === 'string' ? d.code : STARTER_PROGRAM`.
+    var _persistedSrc = ctx.toolData && ctx.toolData.forge && ctx.toolData.forge.src;
+    var seed = (typeof _persistedSrc === 'string' && _persistedSrc) ? _persistedSrc : SKELETON;
     var s_door = useState('code'); var door = s_door[0], setDoor = s_door[1];
     var s_src = useState(seed); var src = s_src[0], setSrc = s_src[1];
     var s_desc = useState(''); var desc = s_desc[0], setDesc = s_desc[1];
