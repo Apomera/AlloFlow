@@ -337,6 +337,45 @@ const checks = [
     cmd: ['node', 'dev-tools/check_stem_tile_catalog.cjs', '--quiet'],
     description: 'Every registerTool(id) has a matching tile in _allStemTools (BirdLab bug class)',
   },
+  // RoadReady physics + content gates. These lived ONLY in the untracked
+  // .git/hooks/pre-commit until 2026-09-21, so they ran for whoever happened
+  // to have that hook installed and were invisible to `npm run verify` and to
+  // CI. Registering them here is what makes them real for anyone else.
+  {
+    name: 'RoadReady night-vision model',
+    cmd: ['node', 'dev-tools/check_roadready_night_vision_model.cjs', '--quiet'],
+    description: 'Night Vision screen and the night lesson share ONE physics model (screen used the 1.5s DAYTIME reaction and called 66 mph "max safe" on low beams)',
+  },
+  {
+    name: 'RoadReady sourced statistics',
+    cmd: ['node', 'dev-tools/check_roadready_sourced_statistics.cjs', '--quiet'],
+    description: '62 real-world numbers pinned to the range their citation supports, plus every cited Maine statute covered (two citations were to REPEALED sections)',
+  },
+  {
+    name: 'RoadReady vehicle dynamics',
+    cmd: ['node', 'dev-tools/check_roadready_vehicle_dynamics.cjs', '--quiet'],
+    description: 'Picking a different vehicle changes how it drives (the thrust grip cap cancelled mass, so every vehicle accelerated identically and powerKW was decorative)',
+  },
+  {
+    name: 'RoadReady cornering grip',
+    cmd: ['node', 'dev-tools/check_roadready_cornering_grip.cjs', '--quiet'],
+    description: 'Friction circle holds on dry pavement and still breaks away on ice (a 1.31g lateral asymptote vs 0.72g grip flagged a SKID on dry above ~30 mph)',
+  },
+  {
+    name: 'RoadReady hill grade',
+    cmd: ['node', 'dev-tools/check_roadready_hill_grade.cjs', '--quiet'],
+    description: 'Gravity on a slope is unscaled and hills are perceptible (a bare * 0.18 left hills pulling less than half of rolling resistance)',
+  },
+  {
+    name: 'RoadReady event detectors',
+    cmd: ['node', 'dev-tools/check_roadready_event_detectors.cjs', '--quiet'],
+    description: 'Every behaviour detector can actually FIRE at the grip and traction constants the tool itself uses (jackrabbit detection was dead; hard-brake never fired in rain/snow/ice)',
+  },
+  {
+    name: 'RoadReady stopping-distance prose',
+    cmd: ['node', 'dev-tools/check_roadready_stopping_prose.cjs', '--quiet'],
+    description: 'Every stopping distance stated in prose agrees with stoppingDistance() at that speed; exempt (speed, distance) pairs are declared, not inferred from a text window',
+  },
   {
     name: 'Lumen honesty floor',
     cmd: ['node', 'dev-tools/check_lumen_floor.cjs', '--quiet'],
