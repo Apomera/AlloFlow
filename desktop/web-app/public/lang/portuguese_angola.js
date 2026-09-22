@@ -80093,14 +80093,18 @@
     "generate_memory_aid": "Make a memory aid",
     "generate_memory_aid_hint": "Generate a Memory Aid Studio resource from the current content",
     "generate_memory_aid_ready": "Memory Aid Studio ready.",
-    "rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
+    "rebuild_lesson_step_complete": "O passo {step} foi refeito.",
     "rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
     "rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
-    "rebuild_lesson_step_working": "Rebuilding the selected lesson step...",
-    "run_lesson_blueprint_complete": "The lesson plan finished generating.",
+    "rebuild_lesson_step_working": "A refazer o passo selecionado...",
+    "run_lesson_blueprint_complete": "O plano de aula terminou de ser gerado.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generating the reviewed lesson plan..."
+    "run_lesson_blueprint_working": "A gerar o plano de aula revisto...",
+    "param_required": "{field} é obrigatório.",
+    "param_invalid": "Introduza um {field} válido.",
+    "unknown": "Comando desconhecido",
+    "plan_input_too_long": "Encurte este pedido para 12 000 caracteres ou menos. Nenhum passo foi executado."
   },
   "palette": {
     "aria": "Paleta de comandos do AlloFlow",

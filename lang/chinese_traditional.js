@@ -79972,7 +79972,11 @@
     "run_lesson_blueprint_complete": "教案已產生完畢。",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "正在產生已審閱的教案……"
+    "run_lesson_blueprint_working": "正在產生已審閱的教案……",
+    "param_required": "{field}為必填項。",
+    "param_invalid": "請輸入有效的{field}。",
+    "unknown": "未知指令",
+    "plan_input_too_long": "請將此請求縮短至 12,000 個字元以內。尚未執行任何步驟。"
   },
   "palette": {
     "aria": "AlloFlow 指令面板",

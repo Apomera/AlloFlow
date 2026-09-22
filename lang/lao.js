@@ -80052,7 +80052,11 @@
     "run_lesson_blueprint_complete": "ສ້າງແຜນການສອນແລ້ວ.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "ກຳລັງສ້າງແຜນການສອນທີ່ກວດແລ້ວ..."
+    "run_lesson_blueprint_working": "ກຳລັງສ້າງແຜນການສອນທີ່ກວດແລ້ວ...",
+    "param_required": "ຕ້ອງມີ {field}.",
+    "param_invalid": "ໃສ່ {field} ທີ່ຖືກຕ້ອງ.",
+    "unknown": "ຄຳສັ່ງທີ່ບໍ່ຮູ້ຈັກ",
+    "plan_input_too_long": "ກະລຸນາຫຍໍ້ຄຳຂໍນີ້ໃຫ້ເຫຼືອ 12,000 ຕົວອັກສອນ ຫຼື ໜ້ອຍກວ່າ. ຍັງບໍ່ໄດ້ດຳເນີນຂັ້ນຕອນໃດ."
   },
   "palette": {
     "aria": "ແຜງຄຳສັ່ງ AlloFlow",

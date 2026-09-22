@@ -80249,7 +80249,11 @@
     "run_lesson_blueprint_complete": "Ṣíṣẹ̀dá ètò ẹ̀kọ́ ti parí.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "A ń ṣẹ̀dá ètò ẹ̀kọ́ tí a ti yẹ̀wò..."
+    "run_lesson_blueprint_working": "A ń ṣẹ̀dá ètò ẹ̀kọ́ tí a ti yẹ̀wò...",
+    "param_required": "{field} ṣe pàtàkì.",
+    "param_invalid": "Tẹ {field} tó tọ́ sí i.",
+    "unknown": "Àṣẹ àìmọ̀",
+    "plan_input_too_long": "Jọ̀wọ́ kúrú ìbéèrè yìí sí 12,000 àmì ìkọ tàbí kéré sí i. Kò sí ìgbésẹ̀ kankan tí a ti ṣe."
   },
   "palette": {
     "aria": "Pátákó àṣẹ AlloFlow",

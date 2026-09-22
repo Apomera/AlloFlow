@@ -80245,7 +80245,11 @@
     "run_lesson_blueprint_complete": "Tapos nang buuin ang plano ng aralin.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Binubuo ang nasuring plano ng aralin..."
+    "run_lesson_blueprint_working": "Binubuo ang nasuring plano ng aralin...",
+    "param_required": "Kailangan ang {field}.",
+    "param_invalid": "Maglagay ng wastong {field}.",
+    "unknown": "Hindi kilalang utos",
+    "plan_input_too_long": "Paki-ikli ang kahilingang ito sa 12,000 karakter o mas kaunti. Wala pang hakbang na pinatakbo."
   },
   "palette": {
     "aria": "AlloFlow command palette",

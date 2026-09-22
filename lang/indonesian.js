@@ -80273,7 +80273,11 @@
     "run_lesson_blueprint_complete": "Rencana pelajaran selesai dibuat.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Membuat rencana pelajaran yang telah ditinjau..."
+    "run_lesson_blueprint_working": "Membuat rencana pelajaran yang telah ditinjau...",
+    "param_required": "{field} wajib diisi.",
+    "param_invalid": "Masukkan {field} yang valid.",
+    "unknown": "Perintah tidak dikenal",
+    "plan_input_too_long": "Persingkat permintaan ini menjadi 12.000 karakter atau kurang. Belum ada langkah yang dijalankan."
   },
   "palette": {
     "aria": "Palet perintah AlloFlow",

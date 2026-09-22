@@ -80251,7 +80251,11 @@
     "run_lesson_blueprint_complete": "பாடத் திட்டம் உருவாக்கப்பட்டது.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "மதிப்பாய்வு செய்யப்பட்ட பாடத் திட்டம் உருவாக்கப்படுகிறது..."
+    "run_lesson_blueprint_working": "மதிப்பாய்வு செய்யப்பட்ட பாடத் திட்டம் உருவாக்கப்படுகிறது...",
+    "param_required": "{field} தேவை.",
+    "param_invalid": "சரியான {field} உள்ளிடவும்.",
+    "unknown": "தெரியாத கட்டளை",
+    "plan_input_too_long": "இந்தக் கோரிக்கையை 12,000 எழுத்துகள் அல்லது அதற்கும் குறைவாகச் சுருக்கவும். எந்தப் படியும் இயக்கப்படவில்லை."
   },
   "palette": {
     "aria": "AlloFlow கட்டளைப் பலகை",

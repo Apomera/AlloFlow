@@ -80156,7 +80156,11 @@
     "run_lesson_blueprint_complete": "سبق کا منصوبہ بنانا مکمل ہوا۔",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "جائزہ شدہ سبق کا منصوبہ بن رہا ہے..."
+    "run_lesson_blueprint_working": "جائزہ شدہ سبق کا منصوبہ بن رہا ہے...",
+    "param_required": "{field} درکار ہے۔",
+    "param_invalid": "درست {field} درج کریں۔",
+    "unknown": "نامعلوم کمانڈ",
+    "plan_input_too_long": "براہ کرم اس درخواست کو 12,000 حروف یا اس سے کم کر دیں۔ کوئی مرحلہ نہیں چلایا گیا۔"
   },
   "palette": {
     "aria": "AlloFlow کمانڈ پیلیٹ",

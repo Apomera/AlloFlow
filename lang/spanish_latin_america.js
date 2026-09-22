@@ -83522,7 +83522,11 @@
     "run_lesson_blueprint_complete": "El plan de clase terminó de generarse.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generando el plan de clase revisado..."
+    "run_lesson_blueprint_working": "Generando el plan de clase revisado...",
+    "param_required": "{field} es obligatorio.",
+    "param_invalid": "Ingresa un {field} válido.",
+    "unknown": "Comando desconocido",
+    "plan_input_too_long": "Acorta esta solicitud a 12.000 caracteres o menos. No se ejecutó ningún paso."
   },
   "palette": {
     "aria": "Paleta de comandos de AlloFlow",
@@ -89015,7 +89019,26 @@
       "emergency_em_weather_elementary": "Tornado: ve al nivel más bajo de tu edificio, lejos de las ventanas. Métete debajo de algo firme y cúbrete la cabeza. Terremoto: TÍRATE al suelo, CÚBRETE debajo de un escritorio o una mesa y AGÁRRATE hasta que pare el temblor.",
       "emergency_em_weather_middle": "Tornado: ve a una habitación interior en el piso más bajo, lejos de las ventanas. Protégete la cabeza. Terremoto: tírate, cúbrete y agárrate. NO salgas corriendo durante el temblor. Cuando pare, revisa si hay heridos y daños. Huracán: sigue las órdenes de evacuación. Inundación: NUNCA camines ni conduzcas por agua de inundación. Conoce los fenómenos más comunes de tu zona.",
       "emergency_em_weather_practice": "¿Qué tipo de clima severo es más común donde vives? ¿Sabes adónde ir en tu casa durante ese tipo de emergencia?",
-      "emergency_em_lockdown_elementary": "Si tu escuela entra en cierre de emergencia, escucha con atención a tu maestra o maestro. Muévete rápido y en silencio al área segura que te indique. Quédate en silencio, mantente escondido y mantén la calma. Tu maestra o maestro tiene capacitación para mantenerte a salvo."
+      "emergency_em_lockdown_elementary": "Si tu escuela entra en cierre de emergencia, escucha con atención a tu maestra o maestro. Muévete rápido y en silencio al área segura que te indique. Quédate en silencio, mantente escondido y mantén la calma. Tu maestra o maestro tiene capacitación para mantenerte a salvo.",
+      "banner_741741": "Crisis Text Line — manda HOME al 741741",
+      "banner_988": "988 Línea de Prevención del Suicidio y Crisis — llama o manda un mensaje al 988",
+      "banner_adult": "Habla con una persona adulta de confianza en tu escuela",
+      "banner_title": "Tú importas. Hay ayuda disponible.",
+      "footer_741741": "Manda HOME al 741741",
+      "footer_988": "988 (llamada o mensaje)",
+      "footer_adult": "Persona adulta de confianza en la escuela",
+      "footer_trevor": "Trevor (LGBTQ+): 1-866-488-7386",
+      "modal_741741": "Manda HOME al 741741 — Crisis Text Line",
+      "modal_body": "Lo que sientes es real, y no tienes que cargar con esto por tu cuenta. Las personas de abajo tienen preparación para escuchar — no te van a juzgar, y no necesitas una razón para buscarlas. Si puedes, cuéntale hoy a una persona adulta en la que confíes, aunque se sienta difícil. Tú importas, y este momento no es toda tu historia.",
+      "modal_call_988": "Llama al 988 — Línea de Prevención del Suicidio y Crisis",
+      "modal_close": "Cerrar esto — estoy bien",
+      "modal_micro": "Si eso cambia en los próximos minutos, el 988 siempre está ahí.",
+      "modal_or_text": "o toca aquí para mandar un mensaje: ",
+      "modal_save": "Guardar lo que escribí para poder mostrárselo a alguien",
+      "modal_save_sub": "Descarga un archivo pequeño en tu dispositivo. No se envía nada a ningún lado.",
+      "modal_text_988": "Mandar mensaje al 988",
+      "modal_title": "Escribiste algo que suena muy pesado. Quiero asegurarme de que estés bien.",
+      "modal_trusted_adult": "Cuéntale ahora mismo a una persona adulta de confianza — tu mamá o tu papá, un maestro, un entrenador, alguien de la familia, o cualquier persona que te respalde."
     },
     "emotions": {
       "weather_happy_label": "Alegría = Sol radiante",

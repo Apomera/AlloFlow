@@ -80239,7 +80239,11 @@
     "run_lesson_blueprint_complete": "പാഠ പ്ലാൻ സൃഷ്ടിക്കൽ പൂർത്തിയായി.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "പരിശോധിച്ച പാഠ പ്ലാൻ സൃഷ്ടിക്കുന്നു..."
+    "run_lesson_blueprint_working": "പരിശോധിച്ച പാഠ പ്ലാൻ സൃഷ്ടിക്കുന്നു...",
+    "param_required": "{field} ആവശ്യമാണ്.",
+    "param_invalid": "സാധുവായ {field} നൽകുക.",
+    "unknown": "അജ്ഞാത കമാൻഡ്",
+    "plan_input_too_long": "ഈ അഭ്യർത്ഥന 12,000 അക്ഷരങ്ങളോ അതിൽ കുറവോ ആക്കി ചുരുക്കുക. ഒരു ഘട്ടവും പ്രവർത്തിപ്പിച്ചിട്ടില്ല."
   },
   "palette": {
     "aria": "AlloFlow കമാൻഡ് പാലറ്റ്",

@@ -80250,7 +80250,11 @@
     "run_lesson_blueprint_complete": "పాఠ ప్రణాళిక రూపొందించడం పూర్తయింది.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "సమీక్షించిన పాఠ ప్రణాళిక రూపొందుతోంది..."
+    "run_lesson_blueprint_working": "సమీక్షించిన పాఠ ప్రణాళిక రూపొందుతోంది...",
+    "param_required": "{field} అవసరం.",
+    "param_invalid": "చెల్లుబాటు అయ్యే {field} నమోదు చేయండి.",
+    "unknown": "తెలియని ఆదేశం",
+    "plan_input_too_long": "దయచేసి ఈ అభ్యర్థనను 12,000 అక్షరాలకు లేదా అంతకంటే తక్కువకు కుదించండి. ఏ దశా అమలు కాలేదు."
   },
   "palette": {
     "aria": "AlloFlow కమాండ్ పాలెట్",

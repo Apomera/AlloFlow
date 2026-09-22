@@ -80259,14 +80259,18 @@
     "generate_memory_aid": "Make a memory aid",
     "generate_memory_aid_hint": "Generate a Memory Aid Studio resource from the current content",
     "generate_memory_aid_ready": "Memory Aid Studio ready.",
-    "rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
+    "rebuild_lesson_step_complete": "Крок {step} перебудовано.",
     "rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
     "rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
-    "rebuild_lesson_step_working": "Rebuilding the selected lesson step...",
-    "run_lesson_blueprint_complete": "The lesson plan finished generating.",
+    "rebuild_lesson_step_working": "Перебудовується вибраний крок...",
+    "run_lesson_blueprint_complete": "Створення плану уроку завершено.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generating the reviewed lesson plan..."
+    "run_lesson_blueprint_working": "Створюється переглянутий план уроку...",
+    "param_required": "Поле «{field}» обов’язкове.",
+    "param_invalid": "Введіть коректне значення «{field}».",
+    "unknown": "Невідома команда",
+    "plan_input_too_long": "Скоротіть цей запит до 12 000 символів або менше. Жоден крок не виконано."
   },
   "palette": {
     "aria": "Командна палітра AlloFlow",

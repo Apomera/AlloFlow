@@ -80245,7 +80245,11 @@
     "run_lesson_blueprint_complete": "ምፍጣር መደብ ትምህርቲ ተዛዚሙ።",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "እተረኣየ መደብ ትምህርቲ ይፍጠር ኣሎ..."
+    "run_lesson_blueprint_working": "እተረኣየ መደብ ትምህርቲ ይፍጠር ኣሎ...",
+    "param_required": "{field} የድሊ።",
+    "param_invalid": "ቅኑዕ {field} ኣእቱ።",
+    "unknown": "ዘይፍለጥ ትእዛዝ",
+    "plan_input_too_long": "በጃኻ ነዚ ሕቶ ናብ 12,000 ፊደላት ወይ ካብኡ ዝወሓደ ኣሕጽሮ። ዝኾነ ስጉምቲ ኣይተሰርሐን።"
   },
   "palette": {
     "aria": "ናይ AlloFlow ናይ ትእዛዝ ፓለት",

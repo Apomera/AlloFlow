@@ -80253,7 +80253,11 @@
     "run_lesson_blueprint_complete": "Het lesplan is klaar met genereren.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Het beoordeelde lesplan wordt gegenereerd..."
+    "run_lesson_blueprint_working": "Het beoordeelde lesplan wordt gegenereerd...",
+    "param_required": "{field} is verplicht.",
+    "param_invalid": "Voer een geldig {field} in.",
+    "unknown": "Onbekende opdracht",
+    "plan_input_too_long": "Maak dit verzoek korter dan 12.000 tekens. Er zijn nog geen stappen uitgevoerd."
   },
   "palette": {
     "aria": "AlloFlow-opdrachtenpalet",

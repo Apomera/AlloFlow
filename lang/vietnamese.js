@@ -79963,7 +79963,11 @@
     "run_lesson_blueprint_complete": "Đã tạo xong kế hoạch bài học.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Đang tạo kế hoạch bài học đã duyệt..."
+    "run_lesson_blueprint_working": "Đang tạo kế hoạch bài học đã duyệt...",
+    "param_required": "{field} là bắt buộc.",
+    "param_invalid": "Nhập {field} hợp lệ.",
+    "unknown": "Lệnh không xác định",
+    "plan_input_too_long": "Vui lòng rút ngắn yêu cầu này xuống còn 12.000 ký tự hoặc ít hơn. Chưa có bước nào được chạy."
   },
   "palette": {
     "aria": "Bảng lệnh AlloFlow",

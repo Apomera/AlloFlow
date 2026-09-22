@@ -80237,7 +80237,11 @@
     "run_lesson_blueprint_complete": "પાઠ યોજના બનાવવાનું પૂર્ણ થયું.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "સમીક્ષા કરેલી યોજના બની રહી છે..."
+    "run_lesson_blueprint_working": "સમીક્ષા કરેલી યોજના બની રહી છે...",
+    "param_required": "{field} જરૂરી છે.",
+    "param_invalid": "માન્ય {field} દાખલ કરો.",
+    "unknown": "અજાણ્યો આદેશ",
+    "plan_input_too_long": "કૃપા કરીને આ વિનંતી 12,000 અક્ષર કે તેથી ઓછી કરો. કોઈ પગલું ચાલ્યું નથી."
   },
   "palette": {
     "aria": "AlloFlow આદેશ પેલેટ",

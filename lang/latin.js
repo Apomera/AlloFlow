@@ -80052,7 +80052,11 @@
     "run_lesson_blueprint_complete": "Consilium lectionis generatum est.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Consilium recognitum generatur..."
+    "run_lesson_blueprint_working": "Consilium recognitum generatur...",
+    "param_required": "{field} requiritur.",
+    "param_invalid": "Insere {field} validum.",
+    "unknown": "Mandatum ignotum",
+    "plan_input_too_long": "Quaeso hanc petitionem ad 12.000 litteras vel pauciores contrahe. Nullus gradus actus est."
   },
   "palette": {
     "aria": "AlloFlow tabula mandatorum",

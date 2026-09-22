@@ -33,11 +33,28 @@ function parseMap(src, name) {
 function extractFromSource(srcPath) {
   const src = fs.readFileSync(srcPath || SRC, 'utf8');
   const out = {};
-  // 1) Inline t('key','value') / t("key","value") fallbacks for cmd.*/palette.* literal keys.
-  const patterns = [
-    /t\(\s*'((?:cmd|palette)\.[a-z0-9_.]+)'\s*,\s*'((?:[^'\\]|\\.)*)'\s*\)/g,
-    /t\(\s*'((?:cmd|palette)\.[a-z0-9_.]+)'\s*,\s*"((?:[^"\\]|\\.)*)"\s*\)/g,
-  ];
+  // 1) Inline fallbacks for cmd.*/palette.* literal keys.
+  //
+  // Both the KEY and the VALUE may be single- or double-quoted, and the call is
+  // either t(key, english) or tx(ctx, key, english). Earlier this list held only
+  // the two single-quoted-KEY forms of t(), which hid 94 keys: 92 written as
+  // t("cmd.x", "English") and 4 reached through tx(ctx, 'cmd.x', 'English'),
+  // among them cmd.unknown and cmd.param_required. A key that never lands in the
+  // manifest is a key no translator is ever shown, and audit_cmd_hand_sources
+  // reports any hand translation of it as an orphan.
+  //
+  // Built from a matrix so adding a call form later is one entry, not four
+  // near-identical regexes. `\b` before t\( keeps tx( out of the t( patterns.
+  const KEY = '((?:cmd|palette)\\.[a-z0-9_.]+)';
+  const STR = (q) => q + '((?:[^' + q + '\\\\]|\\\\.)*)' + q;
+  const patterns = [];
+  for (const call of ['\\bt\\(\\s*', '\\btx\\(\\s*[A-Za-z_$][\\w$]*\\s*,\\s*']) {
+    for (const kq of ["'", '"']) {
+      for (const vq of ["'", '"']) {
+        patterns.push(new RegExp(call + kq + KEY + kq + '\\s*,\\s*' + STR(vq) + '\\s*\\)', 'g'));
+      }
+    }
+  }
   for (const re of patterns) {
     let m;
     while ((m = re.exec(src)) !== null) { if (!(m[1] in out)) out[m[1]] = unescape(m[2]); }

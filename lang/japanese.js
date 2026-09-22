@@ -80122,7 +80122,11 @@
     "run_lesson_blueprint_complete": "授業プランの生成が完了しました。",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "確認済みの授業プランを生成しています..."
+    "run_lesson_blueprint_working": "確認済みの授業プランを生成しています...",
+    "param_required": "{field}は必須です。",
+    "param_invalid": "有効な{field}を入力してください。",
+    "unknown": "不明なコマンド",
+    "plan_input_too_long": "このリクエストを 12,000 文字以内に短縮してください。ステップはまだ実行されていません。"
   },
   "palette": {
     "aria": "AlloFlow コマンドパレット",

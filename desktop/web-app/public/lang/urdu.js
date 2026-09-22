@@ -80149,14 +80149,18 @@
     "generate_memory_aid": "Make a memory aid",
     "generate_memory_aid_hint": "Generate a Memory Aid Studio resource from the current content",
     "generate_memory_aid_ready": "Memory Aid Studio ready.",
-    "rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
+    "rebuild_lesson_step_complete": "مرحلہ {step} دوبارہ بنانا مکمل ہوا۔",
     "rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
     "rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
-    "rebuild_lesson_step_working": "Rebuilding the selected lesson step...",
-    "run_lesson_blueprint_complete": "The lesson plan finished generating.",
+    "rebuild_lesson_step_working": "منتخب مرحلہ دوبارہ بنایا جا رہا ہے...",
+    "run_lesson_blueprint_complete": "سبق کا منصوبہ بنانا مکمل ہوا۔",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generating the reviewed lesson plan..."
+    "run_lesson_blueprint_working": "جائزہ شدہ سبق کا منصوبہ بن رہا ہے...",
+    "param_required": "{field} درکار ہے۔",
+    "param_invalid": "درست {field} درج کریں۔",
+    "unknown": "نامعلوم کمانڈ",
+    "plan_input_too_long": "براہ کرم اس درخواست کو 12,000 حروف یا اس سے کم کر دیں۔ کوئی مرحلہ نہیں چلایا گیا۔"
   },
   "palette": {
     "aria": "AlloFlow کمانڈ پیلیٹ",

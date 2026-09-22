@@ -80238,7 +80238,11 @@
     "run_lesson_blueprint_complete": "Txoj kev npaj qhia ntawv tsim tiav lawm.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Tab tom tsim txoj kev npaj uas tau tshuaj xyuas..."
+    "run_lesson_blueprint_working": "Tab tom tsim txoj kev npaj uas tau tshuaj xyuas...",
+    "param_required": "Yuav tsum muaj {field}.",
+    "param_invalid": "Sau ib qho {field} raug.",
+    "unknown": "Tsis paub cov lus txib",
+    "plan_input_too_long": "Thov txiav cov lus thov no kom tsawg dua 12,000 tus cim. Tsis tau khiav ib kauj ruam li."
   },
   "palette": {
     "aria": "AlloFlow lub khob qhia haujlwm",

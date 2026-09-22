@@ -80246,7 +80246,11 @@
     "run_lesson_blueprint_complete": "သင်ခန်းစာ အစီအစဉ် ဖန်တီးပြီးပါပြီ။",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "ပြန်လည်သုံးသပ်ထားသော အစီအစဉ်ကို ဖန်တီးနေသည်..."
+    "run_lesson_blueprint_working": "ပြန်လည်သုံးသပ်ထားသော အစီအစဉ်ကို ဖန်တီးနေသည်...",
+    "param_required": "{field} လိုအပ်သည်။",
+    "param_invalid": "မှန်ကန်သော {field} ကို ထည့်ပါ။",
+    "unknown": "မသိသော command",
+    "plan_input_too_long": "ဤတောင်းဆိုချက်ကို စာလုံး 12,000 သို့မဟုတ် ထို့အောက် တိုအောင်ပြုလုပ်ပါ။ မည်သည့်အဆင့်မျှ မလုပ်ဆောင်ရသေးပါ။"
   },
   "palette": {
     "aria": "AlloFlow အမိန့်ပေး ပါးလက်",

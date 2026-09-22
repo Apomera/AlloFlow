@@ -80727,7 +80727,11 @@
     "run_lesson_blueprint_complete": "สร้างแผนการสอนเสร็จแล้ว",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "กำลังสร้างแผนการสอนที่ตรวจแล้ว..."
+    "run_lesson_blueprint_working": "กำลังสร้างแผนการสอนที่ตรวจแล้ว...",
+    "param_required": "ต้องระบุ {field}",
+    "param_invalid": "กรอก {field} ที่ถูกต้อง",
+    "unknown": "คำสั่งที่ไม่รู้จัก",
+    "plan_input_too_long": "โปรดย่อคำขอนี้ให้เหลือไม่เกิน 12,000 ตัวอักษร ยังไม่มีขั้นตอนใดถูกดำเนินการ"
   },
   "palette": {
     "aria": "แผงคำสั่ง AlloFlow",

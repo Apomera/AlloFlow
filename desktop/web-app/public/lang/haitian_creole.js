@@ -81244,14 +81244,18 @@
     "generate_memory_aid": "Make a memory aid",
     "generate_memory_aid_hint": "Generate a Memory Aid Studio resource from the current content",
     "generate_memory_aid_ready": "Memory Aid Studio ready.",
-    "rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
+    "rebuild_lesson_step_complete": "Fini rebati etap {step} la.",
     "rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
     "rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
-    "rebuild_lesson_step_working": "Rebuilding the selected lesson step...",
-    "run_lesson_blueprint_complete": "The lesson plan finished generating.",
+    "rebuild_lesson_step_working": "Ap rebati etap ou chwazi a...",
+    "run_lesson_blueprint_complete": "Plan leson an fini jenere.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generating the reviewed lesson plan..."
+    "run_lesson_blueprint_working": "Ap jenere plan leson an ki revize a...",
+    "param_required": "{field} obligatwa.",
+    "param_invalid": "Antre yon {field} ki valab.",
+    "unknown": "Kòmand enkoni",
+    "plan_input_too_long": "Tanpri rakousi demann sa a a 12,000 karaktè oswa mwens. Okenn etap pa t kouri."
   },
   "palette": {
     "aria": "Palèt kòmand AlloFlow",

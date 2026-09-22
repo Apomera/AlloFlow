@@ -80072,7 +80072,11 @@
     "run_lesson_blueprint_complete": "Создание плана урока завершено.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Создаётся проверенный план урока..."
+    "run_lesson_blueprint_working": "Создаётся проверенный план урока...",
+    "param_required": "Поле «{field}» обязательно.",
+    "param_invalid": "Введите корректное значение «{field}».",
+    "unknown": "Неизвестная команда",
+    "plan_input_too_long": "Сократите этот запрос до 12 000 символов или меньше. Ни один шаг не был выполнен."
   },
   "palette": {
     "aria": "Командная палитра AlloFlow",

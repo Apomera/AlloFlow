@@ -80238,7 +80238,11 @@
     "run_lesson_blueprint_complete": "Kurema umugambi w'isomo vyarangiye.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Kurema umugambi w'isomo wasuzumwe..."
+    "run_lesson_blueprint_working": "Kurema umugambi w'isomo wasuzumwe...",
+    "param_required": "{field} irakenewe.",
+    "param_invalid": "Andika {field} yemewe.",
+    "unknown": "Itegeko ritazwi",
+    "plan_input_too_long": "Turagusaba kugabanya iyi ndomo ngo igere ku ndome 12.000 canke munsi. Nta ntambwe yakozwe."
   },
   "palette": {
     "aria": "Urutonde rw'amategeko rwa AlloFlow",

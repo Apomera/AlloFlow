@@ -79673,7 +79673,11 @@
     "run_lesson_blueprint_complete": "plan တ့ထီၣ်ဝံၤလံ.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "တ့ထီၣ် plan လၢပှၤကွၢ်ဘၣ်ဝဲအံၤ..."
+    "run_lesson_blueprint_working": "တ့ထီၣ် plan လၢပှၤကွၢ်ဘၣ်ဝဲအံၤ...",
+    "param_required": "{field} လိၣ်ဝဲ.",
+    "param_invalid": "ထၢနုာ် {field} လၢအဘၣ်.",
+    "unknown": "တၢ်မၤလိာ်လၢတသ့ၣ်ညါဘၣ်",
+    "plan_input_too_long": "ဝံသးစူၤမၤဖုၣ်လီၤတၢ်ဃ့ထီၣ်အံၤဆူလံာ်မဲာ်ဖျၢၣ် 12,000 မ့တမ့ၢ်စှၤန့ၢ်အန့ၣ်. တဆီတဘျီဒံးဘၣ်တၢ်မၤအီၤဘၣ်."
   },
   "palette": {
     "aria": "AlloFlow တၢ်ပၢအလီၢ်",

@@ -80236,7 +80236,11 @@
     "run_lesson_blueprint_complete": "Gukora gahunda y'isomo byarangiye.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Gukora gahunda y'isomo yasuzumwe..."
+    "run_lesson_blueprint_working": "Gukora gahunda y'isomo yasuzumwe...",
+    "param_required": "{field} irakenewe.",
+    "param_invalid": "Andika {field} yemewe.",
+    "unknown": "Itegeko ritazwi",
+    "plan_input_too_long": "Nyamuneka gabanya iyi nyandiko ugere ku nyuguti 12.000 cyangwa munsi. Nta ntambwe yakozwe."
   },
   "palette": {
     "aria": "Urutonde rw’amategeko rwa AlloFlow",

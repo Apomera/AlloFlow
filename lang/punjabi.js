@@ -80246,7 +80246,11 @@
     "run_lesson_blueprint_complete": "ਪਾਠ ਯੋਜਨਾ ਬਣਾਉਣਾ ਪੂਰਾ ਹੋਇਆ।",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "ਸਮੀਖਿਆ ਕੀਤੀ ਪਾਠ ਯੋਜਨਾ ਬਣ ਰਹੀ ਹੈ..."
+    "run_lesson_blueprint_working": "ਸਮੀਖਿਆ ਕੀਤੀ ਪਾਠ ਯੋਜਨਾ ਬਣ ਰਹੀ ਹੈ...",
+    "param_required": "{field} ਲੋੜੀਂਦਾ ਹੈ।",
+    "param_invalid": "ਵੈਧ {field} ਦਰਜ ਕਰੋ।",
+    "unknown": "ਅਣਜਾਣ ਕਮਾਂਡ",
+    "plan_input_too_long": "ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਬੇਨਤੀ ਨੂੰ 12,000 ਅੱਖਰਾਂ ਜਾਂ ਘੱਟ ਕਰੋ। ਕੋਈ ਕਦਮ ਨਹੀਂ ਚਲਾਇਆ ਗਿਆ।"
   },
   "palette": {
     "aria": "AlloFlow ਕਮਾਂਡ ਪੈਲੇਟ",

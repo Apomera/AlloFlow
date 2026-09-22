@@ -80266,7 +80266,11 @@
     "run_lesson_blueprint_complete": "Створення плану уроку завершено.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Створюється переглянутий план уроку..."
+    "run_lesson_blueprint_working": "Створюється переглянутий план уроку...",
+    "param_required": "Поле «{field}» обов’язкове.",
+    "param_invalid": "Введіть коректне значення «{field}».",
+    "unknown": "Невідома команда",
+    "plan_input_too_long": "Скоротіть цей запит до 12 000 символів або менше. Жоден крок не виконано."
   },
   "palette": {
     "aria": "Командна палітра AlloFlow",

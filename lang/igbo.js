@@ -80249,7 +80249,11 @@
     "run_lesson_blueprint_complete": "Emechara imepụta atụmatụ nkuzi.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Na-emepụta atụmatụ nkuzi a nyochara..."
+    "run_lesson_blueprint_working": "Na-emepụta atụmatụ nkuzi a nyochara...",
+    "param_required": "Achọrọ {field}.",
+    "param_invalid": "Tinye {field} ziri ezi.",
+    "unknown": "Iwu a na-amaghị",
+    "plan_input_too_long": "Biko belata arịrịọ a ka ọ bụrụ mkpụrụedemede 12,000 ma ọ bụ ntakịrị. A gbaghị nzọụkwụ ọ bụla."
   },
   "palette": {
     "aria": "Palette iwu AlloFlow",

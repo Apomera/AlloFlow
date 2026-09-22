@@ -80242,14 +80242,18 @@
     "generate_memory_aid": "Make a memory aid",
     "generate_memory_aid_hint": "Generate a Memory Aid Studio resource from the current content",
     "generate_memory_aid_ready": "Memory Aid Studio ready.",
-    "rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
+    "rebuild_lesson_step_complete": "A ti tún ìgbésẹ̀ {step} kọ́ tán.",
     "rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
     "rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
-    "rebuild_lesson_step_working": "Rebuilding the selected lesson step...",
-    "run_lesson_blueprint_complete": "The lesson plan finished generating.",
+    "rebuild_lesson_step_working": "A ń tún ìgbésẹ̀ tí o yàn kọ́...",
+    "run_lesson_blueprint_complete": "Ṣíṣẹ̀dá ètò ẹ̀kọ́ ti parí.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generating the reviewed lesson plan..."
+    "run_lesson_blueprint_working": "A ń ṣẹ̀dá ètò ẹ̀kọ́ tí a ti yẹ̀wò...",
+    "param_required": "{field} ṣe pàtàkì.",
+    "param_invalid": "Tẹ {field} tó tọ́ sí i.",
+    "unknown": "Àṣẹ àìmọ̀",
+    "plan_input_too_long": "Jọ̀wọ́ kúrú ìbéèrè yìí sí 12,000 àmì ìkọ tàbí kéré sí i. Kò sí ìgbésẹ̀ kankan tí a ti ṣe."
   },
   "palette": {
     "aria": "Pátákó àṣẹ AlloFlow",

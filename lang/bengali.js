@@ -80264,7 +80264,11 @@
     "run_lesson_blueprint_complete": "পাঠ পরিকল্পনা তৈরি সম্পন্ন হয়েছে।",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "পর্যালোচিত পরিকল্পনা তৈরি করা হচ্ছে..."
+    "run_lesson_blueprint_working": "পর্যালোচিত পরিকল্পনা তৈরি করা হচ্ছে...",
+    "param_required": "{field} আবশ্যক।",
+    "param_invalid": "একটি বৈধ {field} লিখুন।",
+    "unknown": "অজানা কমান্ড",
+    "plan_input_too_long": "অনুগ্রহ করে এই অনুরোধটি 12,000 অক্ষর বা তার কম করুন। কোনো ধাপ চালানো হয়নি।"
   },
   "palette": {
     "aria": "AlloFlow কমান্ড প্যালেট",

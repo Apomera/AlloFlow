@@ -79677,7 +79677,11 @@
     "run_lesson_blueprint_complete": "Cawnpiaknak plan ser a dih cang.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Plan zohkhenhmi kha ser lio..."
+    "run_lesson_blueprint_working": "Plan zohkhenhmi kha ser lio...",
+    "param_required": "{field} a herh.",
+    "param_invalid": "{field} a dikmi kha chiah.",
+    "unknown": "Thupek hngalh lomi",
+    "plan_input_too_long": "Hi hlatlangmi hi cafang 12,000 ah asiloah a tlawmdeuh in tuah. Laa pakhat hman tuah a si lo."
   },
   "palette": {
     "aria": "AlloFlow command palette",

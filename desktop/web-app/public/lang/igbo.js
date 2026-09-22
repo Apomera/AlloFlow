@@ -80242,14 +80242,18 @@
     "generate_memory_aid": "Make a memory aid",
     "generate_memory_aid_hint": "Generate a Memory Aid Studio resource from the current content",
     "generate_memory_aid_ready": "Memory Aid Studio ready.",
-    "rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
+    "rebuild_lesson_step_complete": "Emechara iwughachi nzọụkwụ {step}.",
     "rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
     "rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
-    "rebuild_lesson_step_working": "Rebuilding the selected lesson step...",
-    "run_lesson_blueprint_complete": "The lesson plan finished generating.",
+    "rebuild_lesson_step_working": "Na-ewughachi nzọụkwụ a họpụtara...",
+    "run_lesson_blueprint_complete": "Emechara imepụta atụmatụ nkuzi.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generating the reviewed lesson plan..."
+    "run_lesson_blueprint_working": "Na-emepụta atụmatụ nkuzi a nyochara...",
+    "param_required": "Achọrọ {field}.",
+    "param_invalid": "Tinye {field} ziri ezi.",
+    "unknown": "Iwu a na-amaghị",
+    "plan_input_too_long": "Biko belata arịrịọ a ka ọ bụrụ mkpụrụedemede 12,000 ma ọ bụ ntakịrị. A gbaghị nzọụkwụ ọ bụla."
   },
   "palette": {
     "aria": "Palette iwu AlloFlow",

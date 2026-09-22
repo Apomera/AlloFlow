@@ -80057,7 +80057,11 @@
     "run_lesson_blueprint_complete": "수업 계획 생성이 완료되었습니다.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "검토된 수업 계획을 생성하는 중입니다..."
+    "run_lesson_blueprint_working": "검토된 수업 계획을 생성하는 중입니다...",
+    "param_required": "{field}은(는) 필수입니다.",
+    "param_invalid": "올바른 {field}을(를) 입력하세요.",
+    "unknown": "알 수 없는 명령",
+    "plan_input_too_long": "이 요청을 12,000자 이하로 줄여 주세요. 아직 실행된 단계가 없습니다."
   },
   "palette": {
     "aria": "AlloFlow 명령 팔레트",

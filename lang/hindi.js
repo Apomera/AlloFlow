@@ -80057,7 +80057,11 @@
     "run_lesson_blueprint_complete": "पाठ योजना बनाना पूरा हुआ।",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "समीक्षित पाठ योजना बनाई जा रही है..."
+    "run_lesson_blueprint_working": "समीक्षित पाठ योजना बनाई जा रही है...",
+    "param_required": "{field} आवश्यक है।",
+    "param_invalid": "मान्य {field} दर्ज करें।",
+    "unknown": "अज्ञात कमांड",
+    "plan_input_too_long": "कृपया इस अनुरोध को 12,000 वर्ण या उससे कम करें। कोई चरण नहीं चलाया गया।"
   },
   "palette": {
     "aria": "AlloFlow कमांड पैलेट",

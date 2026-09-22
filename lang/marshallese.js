@@ -79683,7 +79683,11 @@
     "run_lesson_blueprint_complete": "Ejeṃḷọk an kōṃṃan plan in katak eo.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Ej kōṃṃan plan in katak eo eṃōj etale..."
+    "run_lesson_blueprint_working": "Ej kōṃṃan plan in katak eo eṃōj etale...",
+    "param_required": "Aikuj {field}.",
+    "param_invalid": "Je juon {field} ejiṃwe.",
+    "unknown": "Kien eo jaje kake",
+    "plan_input_too_long": "Jouj im kadikḷọk kajjitōk in ñan 12,000 leta ak dikḷọk. Ejjeḷọk step eṃōj an jerbal."
   },
   "palette": {
     "aria": "AlloFlow command palette",

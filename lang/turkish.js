@@ -80257,7 +80257,11 @@
     "run_lesson_blueprint_complete": "Ders planının oluşturulması tamamlandı.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "İncelenen ders planı oluşturuluyor..."
+    "run_lesson_blueprint_working": "İncelenen ders planı oluşturuluyor...",
+    "param_required": "{field} zorunludur.",
+    "param_invalid": "Geçerli bir {field} gir.",
+    "unknown": "Bilinmeyen komut",
+    "plan_input_too_long": "Lütfen bu isteği 12.000 karaktere veya daha aza kısalt. Henüz hiçbir adım çalıştırılmadı."
   },
   "palette": {
     "aria": "AlloFlow komut paleti",

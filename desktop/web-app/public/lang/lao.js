@@ -80045,14 +80045,18 @@
     "generate_memory_aid": "Make a memory aid",
     "generate_memory_aid_hint": "Generate a Memory Aid Studio resource from the current content",
     "generate_memory_aid_ready": "Memory Aid Studio ready.",
-    "rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
+    "rebuild_lesson_step_complete": "ສ້າງຂັ້ນຕອນ {step} ຄືນໃໝ່ແລ້ວ.",
     "rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
     "rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
-    "rebuild_lesson_step_working": "Rebuilding the selected lesson step...",
-    "run_lesson_blueprint_complete": "The lesson plan finished generating.",
+    "rebuild_lesson_step_working": "ກຳລັງສ້າງຂັ້ນຕອນທີ່ເລືອກຄືນໃໝ່...",
+    "run_lesson_blueprint_complete": "ສ້າງແຜນການສອນແລ້ວ.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generating the reviewed lesson plan..."
+    "run_lesson_blueprint_working": "ກຳລັງສ້າງແຜນການສອນທີ່ກວດແລ້ວ...",
+    "param_required": "ຕ້ອງມີ {field}.",
+    "param_invalid": "ໃສ່ {field} ທີ່ຖືກຕ້ອງ.",
+    "unknown": "ຄຳສັ່ງທີ່ບໍ່ຮູ້ຈັກ",
+    "plan_input_too_long": "ກະລຸນາຫຍໍ້ຄຳຂໍນີ້ໃຫ້ເຫຼືອ 12,000 ຕົວອັກສອນ ຫຼື ໜ້ອຍກວ່າ. ຍັງບໍ່ໄດ້ດຳເນີນຂັ້ນຕອນໃດ."
   },
   "palette": {
     "aria": "ແຜງຄຳສັ່ງ AlloFlow",

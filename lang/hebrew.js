@@ -80281,7 +80281,11 @@
     "run_lesson_blueprint_complete": "יצירת מערך השיעור הסתיימה.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "יוצר את מערך השיעור שנבדק..."
+    "run_lesson_blueprint_working": "יוצר את מערך השיעור שנבדק...",
+    "param_required": "{field} הוא שדה חובה.",
+    "param_invalid": "יש להזין {field} תקין.",
+    "unknown": "פקודה לא מוכרת",
+    "plan_input_too_long": "יש לקצר את הבקשה ל־12,000 תווים או פחות. לא בוצע אף שלב."
   },
   "palette": {
     "aria": "לוח הפקודות של AlloFlow",

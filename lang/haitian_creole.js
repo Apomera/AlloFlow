@@ -81251,7 +81251,11 @@
     "run_lesson_blueprint_complete": "Plan leson an fini jenere.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Ap jenere plan leson an ki revize a..."
+    "run_lesson_blueprint_working": "Ap jenere plan leson an ki revize a...",
+    "param_required": "{field} obligatwa.",
+    "param_invalid": "Antre yon {field} ki valab.",
+    "unknown": "Kòmand enkoni",
+    "plan_input_too_long": "Tanpri rakousi demann sa a a 12,000 karaktè oswa mwens. Okenn etap pa t kouri."
   },
   "palette": {
     "aria": "Palèt kòmand AlloFlow",

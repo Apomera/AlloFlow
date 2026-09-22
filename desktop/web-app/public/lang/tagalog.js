@@ -80238,14 +80238,18 @@
     "generate_memory_aid": "Make a memory aid",
     "generate_memory_aid_hint": "Generate a Memory Aid Studio resource from the current content",
     "generate_memory_aid_ready": "Memory Aid Studio ready.",
-    "rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
+    "rebuild_lesson_step_complete": "Tapos nang buuin muli ang hakbang {step}.",
     "rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
     "rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
-    "rebuild_lesson_step_working": "Rebuilding the selected lesson step...",
-    "run_lesson_blueprint_complete": "The lesson plan finished generating.",
+    "rebuild_lesson_step_working": "Binubuo muli ang napiling hakbang...",
+    "run_lesson_blueprint_complete": "Tapos nang buuin ang plano ng aralin.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generating the reviewed lesson plan..."
+    "run_lesson_blueprint_working": "Binubuo ang nasuring plano ng aralin...",
+    "param_required": "Kailangan ang {field}.",
+    "param_invalid": "Maglagay ng wastong {field}.",
+    "unknown": "Hindi kilalang utos",
+    "plan_input_too_long": "Paki-ikli ang kahilingang ito sa 12,000 karakter o mas kaunti. Wala pang hakbang na pinatakbo."
   },
   "palette": {
     "aria": "AlloFlow command palette",

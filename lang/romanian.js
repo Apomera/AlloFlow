@@ -80301,7 +80301,11 @@
     "run_lesson_blueprint_complete": "Generarea planului de lecție s-a încheiat.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Se generează planul de lecție revizuit..."
+    "run_lesson_blueprint_working": "Se generează planul de lecție revizuit...",
+    "param_required": "{field} este obligatoriu.",
+    "param_invalid": "Introdu un {field} valid.",
+    "unknown": "Comandă necunoscută",
+    "plan_input_too_long": "Scurtează această solicitare la 12.000 de caractere sau mai puțin. Niciun pas nu a fost executat."
   },
   "palette": {
     "aria": "Paleta de comenzi AlloFlow",

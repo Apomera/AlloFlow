@@ -80259,14 +80259,18 @@
     "generate_memory_aid": "Make a memory aid",
     "generate_memory_aid_hint": "Generate a Memory Aid Studio resource from the current content",
     "generate_memory_aid_ready": "Memory Aid Studio ready.",
-    "rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
+    "rebuild_lesson_step_complete": "Kuandaa upya hatua ya {step} kumekamilika.",
     "rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
     "rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
-    "rebuild_lesson_step_working": "Rebuilding the selected lesson step...",
-    "run_lesson_blueprint_complete": "The lesson plan finished generating.",
+    "rebuild_lesson_step_working": "Inaandaa upya hatua uliyochagua...",
+    "run_lesson_blueprint_complete": "Kutengeneza mpango wa somo kumekamilika.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generating the reviewed lesson plan..."
+    "run_lesson_blueprint_working": "Inatengeneza mpango wa somo uliopitiwa...",
+    "param_required": "{field} inahitajika.",
+    "param_invalid": "Weka {field} sahihi.",
+    "unknown": "Amri isiyojulikana",
+    "plan_input_too_long": "Tafadhali fupisha ombi hili hadi herufi 12,000 au chini. Hakuna hatua iliyotekelezwa."
   },
   "palette": {
     "aria": "Paleti ya amri ya AlloFlow",

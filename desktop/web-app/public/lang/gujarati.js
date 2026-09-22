@@ -80230,14 +80230,18 @@
     "generate_memory_aid": "Make a memory aid",
     "generate_memory_aid_hint": "Generate a Memory Aid Studio resource from the current content",
     "generate_memory_aid_ready": "Memory Aid Studio ready.",
-    "rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
+    "rebuild_lesson_step_complete": "પગલું {step} ફરી બનાવવાનું પૂર્ણ થયું.",
     "rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
     "rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
-    "rebuild_lesson_step_working": "Rebuilding the selected lesson step...",
-    "run_lesson_blueprint_complete": "The lesson plan finished generating.",
+    "rebuild_lesson_step_working": "પસંદ કરેલું પગલું ફરી બનાવાઈ રહ્યું છે...",
+    "run_lesson_blueprint_complete": "પાઠ યોજના બનાવવાનું પૂર્ણ થયું.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generating the reviewed lesson plan..."
+    "run_lesson_blueprint_working": "સમીક્ષા કરેલી યોજના બની રહી છે...",
+    "param_required": "{field} જરૂરી છે.",
+    "param_invalid": "માન્ય {field} દાખલ કરો.",
+    "unknown": "અજાણ્યો આદેશ",
+    "plan_input_too_long": "કૃપા કરીને આ વિનંતી 12,000 અક્ષર કે તેથી ઓછી કરો. કોઈ પગલું ચાલ્યું નથી."
   },
   "palette": {
     "aria": "AlloFlow આદેશ પેલેટ",

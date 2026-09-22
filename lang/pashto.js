@@ -80157,7 +80157,11 @@
     "run_lesson_blueprint_complete": "د درس پلان جوړول بشپړ شول.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "کتل شوی د درس پلان جوړېږي..."
+    "run_lesson_blueprint_working": "کتل شوی د درس پلان جوړېږي...",
+    "param_required": "{field} اړین دی.",
+    "param_invalid": "یو سم {field} دننه کړئ.",
+    "unknown": "ناڅرګنده کمانډ",
+    "plan_input_too_long": "مهرباني وکړئ دا غوښتنه ۱۲٬۰۰۰ تورو یا لږو ته لنډه کړئ. هیڅ مرحله نه ده پرمخ وړل شوې."
   },
   "palette": {
     "aria": "د AlloFlow د امر پالیټ",

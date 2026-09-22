@@ -80245,7 +80245,11 @@
     "run_lesson_blueprint_complete": "ዕቅዱ መፈጠሩ ተጠናቅቋል።",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "የተገመገመውን ዕቅድ በመፍጠር ላይ..."
+    "run_lesson_blueprint_working": "የተገመገመውን ዕቅድ በመፍጠር ላይ...",
+    "param_required": "{field} ያስፈልጋል።",
+    "param_invalid": "ትክክለኛ {field} ያስገቡ።",
+    "unknown": "ያልታወቀ ትእዛዝ",
+    "plan_input_too_long": "እባክዎ ይህን ጥያቄ ወደ 12,000 ቁምፊ ወይም ከዚያ በታች ያሳጥሩ። ምንም ደረጃ አልተሠራም።"
   },
   "palette": {
     "aria": "የAlloFlow ትዕዛዝ ፓሌት",

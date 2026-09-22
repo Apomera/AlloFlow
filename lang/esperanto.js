@@ -80237,7 +80237,11 @@
     "run_lesson_blueprint_complete": "La lecionplano finis generiĝi.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generas la reviziitan planon..."
+    "run_lesson_blueprint_working": "Generas la reviziitan planon...",
+    "param_required": "{field} estas deviga.",
+    "param_invalid": "Enigu validan {field}.",
+    "unknown": "Nekonata komando",
+    "plan_input_too_long": "Bonvolu mallongigi ĉi tiun peton al 12 000 signoj aŭ malpli. Neniu paŝo estis plenumita."
   },
   "palette": {
     "aria": "AlloFlow komandopaletro",

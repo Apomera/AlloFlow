@@ -80100,7 +80100,11 @@
     "run_lesson_blueprint_complete": "O plano de aula terminou de ser gerado.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "A gerar o plano de aula revisto..."
+    "run_lesson_blueprint_working": "A gerar o plano de aula revisto...",
+    "param_required": "{field} é obrigatório.",
+    "param_invalid": "Introduza um {field} válido.",
+    "unknown": "Comando desconhecido",
+    "plan_input_too_long": "Encurte este pedido para 12 000 caracteres ou menos. Nenhum passo foi executado."
   },
   "palette": {
     "aria": "Paleta de comandos do AlloFlow",

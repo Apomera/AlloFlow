@@ -80239,14 +80239,18 @@
     "generate_memory_aid": "Make a memory aid",
     "generate_memory_aid_hint": "Generate a Memory Aid Studio resource from the current content",
     "generate_memory_aid_ready": "Memory Aid Studio ready.",
-    "rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
+    "rebuild_lesson_step_complete": "चरण {step} पुनर्निर्माण पूरा भयो।",
     "rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
     "rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
-    "rebuild_lesson_step_working": "Rebuilding the selected lesson step...",
-    "run_lesson_blueprint_complete": "The lesson plan finished generating.",
+    "rebuild_lesson_step_working": "छानिएको चरण पुनर्निर्माण हुँदैछ...",
+    "run_lesson_blueprint_complete": "पाठ योजना सिर्जना पूरा भयो।",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generating the reviewed lesson plan..."
+    "run_lesson_blueprint_working": "समीक्षा गरिएको पाठ योजना सिर्जना हुँदैछ...",
+    "param_required": "{field} आवश्यक छ।",
+    "param_invalid": "मान्य {field} प्रविष्ट गर्नुहोस्।",
+    "unknown": "अज्ञात कमाण्ड",
+    "plan_input_too_long": "कृपया यो अनुरोधलाई 12,000 वर्ण वा कम बनाउनुहोस्। कुनै चरण चलाइएको छैन।"
   },
   "palette": {
     "aria": "AlloFlow कमाण्ड प्यालेट",

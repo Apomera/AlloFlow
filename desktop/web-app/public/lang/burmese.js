@@ -80239,14 +80239,18 @@
     "generate_memory_aid": "Make a memory aid",
     "generate_memory_aid_hint": "Generate a Memory Aid Studio resource from the current content",
     "generate_memory_aid_ready": "Memory Aid Studio ready.",
-    "rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
+    "rebuild_lesson_step_complete": "အဆင့် {step} ကို ပြန်တည်ဆောက်ပြီးပါပြီ။",
     "rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
     "rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
-    "rebuild_lesson_step_working": "Rebuilding the selected lesson step...",
-    "run_lesson_blueprint_complete": "The lesson plan finished generating.",
+    "rebuild_lesson_step_working": "ရွေးချယ်ထားသော အဆင့်ကို ပြန်တည်ဆောက်နေသည်...",
+    "run_lesson_blueprint_complete": "သင်ခန်းစာ အစီအစဉ် ဖန်တီးပြီးပါပြီ။",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generating the reviewed lesson plan..."
+    "run_lesson_blueprint_working": "ပြန်လည်သုံးသပ်ထားသော အစီအစဉ်ကို ဖန်တီးနေသည်...",
+    "param_required": "{field} လိုအပ်သည်။",
+    "param_invalid": "မှန်ကန်သော {field} ကို ထည့်ပါ။",
+    "unknown": "မသိသော command",
+    "plan_input_too_long": "ဤတောင်းဆိုချက်ကို စာလုံး 12,000 သို့မဟုတ် ထို့အောက် တိုအောင်ပြုလုပ်ပါ။ မည်သည့်အဆင့်မျှ မလုပ်ဆောင်ရသေးပါ။"
   },
   "palette": {
     "aria": "AlloFlow အမိန့်ပေး ပါးလက်",

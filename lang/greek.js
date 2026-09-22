@@ -80274,7 +80274,11 @@
     "run_lesson_blueprint_complete": "Η δημιουργία του σχεδίου μαθήματος ολοκληρώθηκε.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Δημιουργία του αναθεωρημένου σχεδίου μαθήματος..."
+    "run_lesson_blueprint_working": "Δημιουργία του αναθεωρημένου σχεδίου μαθήματος...",
+    "param_required": "Το πεδίο {field} είναι υποχρεωτικό.",
+    "param_invalid": "Εισαγάγετε έγκυρο {field}.",
+    "unknown": "Άγνωστη εντολή",
+    "plan_input_too_long": "Συντομεύστε αυτό το αίτημα σε 12.000 χαρακτήρες ή λιγότερους. Δεν εκτελέστηκε κανένα βήμα."
   },
   "palette": {
     "aria": "Παλέτα εντολών AlloFlow",

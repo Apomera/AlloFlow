@@ -80067,7 +80067,11 @@
     "run_lesson_blueprint_complete": "Der Unterrichtsplan ist fertig erstellt.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Der geprüfte Unterrichtsplan wird erstellt..."
+    "run_lesson_blueprint_working": "Der geprüfte Unterrichtsplan wird erstellt...",
+    "param_required": "{field} ist erforderlich.",
+    "param_invalid": "Gib ein gültiges {field} ein.",
+    "unknown": "Unbekannter Befehl",
+    "plan_input_too_long": "Bitte kürze diese Anfrage auf höchstens 12.000 Zeichen. Es wurden noch keine Schritte ausgeführt."
   },
   "palette": {
     "aria": "AlloFlow-Befehlspalette",

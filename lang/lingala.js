@@ -80241,7 +80241,11 @@
     "run_lesson_blueprint_complete": "Plan ya liteya esili kosalama.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Kosala plan ya liteya batali..."
+    "run_lesson_blueprint_working": "Kosala plan ya liteya batali...",
+    "param_required": "{field} esengeli.",
+    "param_invalid": "Koma {field} ya solo.",
+    "unknown": "Motindo eyebani te",
+    "plan_input_too_long": "Svp kokitisa bosenga oyo tii na balɛtrɛ 12 000 to moke. Litambe moko te esalemi."
   },
   "palette": {
     "aria": "Palette ya mitindo ya AlloFlow",

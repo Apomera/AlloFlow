@@ -80274,14 +80274,18 @@
     "generate_memory_aid": "Make a memory aid",
     "generate_memory_aid_hint": "Generate a Memory Aid Studio resource from the current content",
     "generate_memory_aid_ready": "Memory Aid Studio ready.",
-    "rebuild_lesson_step_complete": "Finished rebuilding step {step}.",
+    "rebuild_lesson_step_complete": "הבנייה מחדש של שלב {step} הסתיימה.",
     "rebuild_lesson_step_failed": "The selected step did not finish. Review its status before retrying.",
     "rebuild_lesson_step_partial": "Some versions of step {step} finished. Review the failed versions before retrying.",
-    "rebuild_lesson_step_working": "Rebuilding the selected lesson step...",
-    "run_lesson_blueprint_complete": "The lesson plan finished generating.",
+    "rebuild_lesson_step_working": "בונה מחדש את השלב שנבחר...",
+    "run_lesson_blueprint_complete": "יצירת מערך השיעור הסתיימה.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Generating the reviewed lesson plan..."
+    "run_lesson_blueprint_working": "יוצר את מערך השיעור שנבדק...",
+    "param_required": "{field} הוא שדה חובה.",
+    "param_invalid": "יש להזין {field} תקין.",
+    "unknown": "פקודה לא מוכרת",
+    "plan_input_too_long": "יש לקצר את הבקשה ל־12,000 תווים או פחות. לא בוצע אף שלב."
   },
   "palette": {
     "aria": "לוח הפקודות של AlloFlow",

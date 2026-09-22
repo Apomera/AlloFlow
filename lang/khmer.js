@@ -80254,7 +80254,11 @@
     "run_lesson_blueprint_complete": "ផែនការមេរៀនបង្កើតរួចរាល់។",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "កំពុងបង្កើតផែនការមេរៀនដែលបានពិនិត្យ..."
+    "run_lesson_blueprint_working": "កំពុងបង្កើតផែនការមេរៀនដែលបានពិនិត្យ...",
+    "param_required": "{field} គឺចាំបាច់។",
+    "param_invalid": "បញ្ចូល {field} ដែលត្រឹមត្រូវ។",
+    "unknown": "ពាក្យបញ្ជាមិនស្គាល់",
+    "plan_input_too_long": "សូមបង្រួមសំណើនេះឱ្យនៅត្រឹម 12,000 តួអក្សរ ឬតិចជាង។ មិនទាន់មានជំហានណាត្រូវបានដំណើរការទេ។"
   },
   "palette": {
     "aria": "ផ្ទាំងពាក្យបញ្ជា AlloFlow",

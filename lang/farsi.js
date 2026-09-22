@@ -80192,7 +80192,11 @@
     "run_lesson_blueprint_complete": "تولید برنامهٔ درسی به پایان رسید.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "در حال تولید برنامهٔ بازبینی‌شده..."
+    "run_lesson_blueprint_working": "در حال تولید برنامهٔ بازبینی‌شده...",
+    "param_required": "{field} الزامی است.",
+    "param_invalid": "یک {field} معتبر وارد کن.",
+    "unknown": "فرمان ناشناخته",
+    "plan_input_too_long": "لطفاً این درخواست را به ۱۲٬۰۰۰ کاراکتر یا کمتر کوتاه کن. هیچ مرحله‌ای اجرا نشده است."
   },
   "palette": {
     "aria": "پنل فرمان AlloFlow",

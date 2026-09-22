@@ -80235,7 +80235,11 @@
     "run_lesson_blueprint_complete": "ಪಾಠ ಯೋಜನೆ ರಚನೆ ಪೂರ್ಣಗೊಂಡಿದೆ.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "ಪರಿಶೀಲಿಸಿದ ಪಾಠ ಯೋಜನೆ ರಚಿಸಲಾಗುತ್ತಿದೆ..."
+    "run_lesson_blueprint_working": "ಪರಿಶೀಲಿಸಿದ ಪಾಠ ಯೋಜನೆ ರಚಿಸಲಾಗುತ್ತಿದೆ...",
+    "param_required": "{field} ಅಗತ್ಯವಿದೆ.",
+    "param_invalid": "ಮಾನ್ಯವಾದ {field} ನಮೂದಿಸಿ.",
+    "unknown": "ಅಪರಿಚಿತ ಆದೇಶ",
+    "plan_input_too_long": "ದಯವಿಟ್ಟು ಈ ವಿನಂತಿಯನ್ನು 12,000 ಅಕ್ಷರಗಳಿಗೆ ಅಥವಾ ಕಡಿಮೆಗೆ ಚಿಕ್ಕದಾಗಿಸಿ. ಯಾವುದೇ ಹಂತ ಚಲಾಯಿಸಲಾಗಿಲ್ಲ."
   },
   "palette": {
     "aria": "AlloFlow ಆದೇಶ ಪ್ಯಾಲೆಟ್",

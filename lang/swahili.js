@@ -80266,7 +80266,11 @@
     "run_lesson_blueprint_complete": "Kutengeneza mpango wa somo kumekamilika.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Inatengeneza mpango wa somo uliopitiwa..."
+    "run_lesson_blueprint_working": "Inatengeneza mpango wa somo uliopitiwa...",
+    "param_required": "{field} inahitajika.",
+    "param_invalid": "Weka {field} sahihi.",
+    "unknown": "Amri isiyojulikana",
+    "plan_input_too_long": "Tafadhali fupisha ombi hili hadi herufi 12,000 au chini. Hakuna hatua iliyotekelezwa."
   },
   "palette": {
     "aria": "Paleti ya amri ya AlloFlow",

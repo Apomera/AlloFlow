@@ -79683,7 +79683,11 @@
     "run_lesson_blueprint_complete": "Plan otyeko cwece.",
     "run_lesson_blueprint_incomplete": "The lesson plan is not complete. Review its progress and retryable rows.",
     "run_lesson_blueprint_no_result": "The lesson plan did not return a completion result. Check its progress before retrying.",
-    "run_lesson_blueprint_working": "Cweyo plan ma giyubo..."
+    "run_lesson_blueprint_working": "Cweyo plan ma giyubo...",
+    "param_required": "{field} mite.",
+    "param_invalid": "Ket {field} ma atir.",
+    "unknown": "Cik ma pe ngene",
+    "plan_input_too_long": "Tim ber idwok kwayo man i nyig coc 12,000 onyo matidi. Pe gitiyo ki laa mo keken."
   },
   "palette": {
     "aria": "Palette me cik me AlloFlow",
