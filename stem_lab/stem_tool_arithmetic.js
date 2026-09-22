@@ -778,8 +778,19 @@
                 var w = 340 * part.col / right, ht = 200 * part.row / left;
                 return h('g', { key: part.label },
                   h('rect', { x: 10 + 340 * part.x / right, y: 10 + 200 * part.y / left, width: w, height: ht, fill: ['#ddd6fe','#c4b5fd','#a78bfa','#ede9fe'][i], stroke: '#4c1d95', strokeWidth: 1, 'data-partial-product': part.row * part.col }),
-                  w >= 22 && ht >= 22 && h('text', { x: 10 + 340 * (part.x + part.col / 2) / right, y: 10 + 200 * (part.y + part.row / 2) / left, textAnchor: 'middle', dominantBaseline: 'central', fill: '#0f172a', fontSize: 16, fontWeight: 800 }, part.label));
-              }))), h('div', { className: 'rounded-lg p-3 text-sm', style: { background: '#f5f3ff' } }, partials.map(function(part) { return h('p', { key: part.label }, part.label + ': ' + part.row + ' × ' + part.col + ' = ' + part.row * part.col); }),
+                  (function() {
+                    var cx = 10 + 340 * (part.x + part.col / 2) / right, cy = 10 + 200 * (part.y + part.row / 2) / left;
+                    if (w >= 22 && ht >= 22) {
+                      return h('text', { x: cx, y: cy, textAnchor: 'middle', dominantBaseline: 'central', fill: '#0f172a', fontSize: 16, fontWeight: 800, 'data-partial-label': part.label }, part.label);
+                    }
+                    var right_edge = 10 + 340 * (part.x + part.col) / right;
+                    var outside = right_edge + 6 <= 348;
+                    var lx = outside ? right_edge + 6 : 10 + 340 * part.x / right - 6;
+                    return h('g', { key: 'lead-' + part.label },
+                      h('line', { x1: outside ? right_edge : 10 + 340 * part.x / right, y1: cy, x2: lx, y2: cy, stroke: '#4c1d95', strokeWidth: 1 }),
+                      h('text', { x: outside ? lx + 2 : lx - 2, y: cy, textAnchor: outside ? 'start' : 'end', dominantBaseline: 'central', fill: '#0f172a', fontSize: 12, fontWeight: 800, 'data-partial-label': part.label }, part.label));
+                  })());
+              }))), h('div', { className: 'rounded-lg p-3 text-sm', style: { background: isContrast ? '#000000' : (isDark ? '#2e1065' : '#f5f3ff'), color: isContrast ? '#ffffff' : (isDark ? '#ede9fe' : '#1e1b4b'), border: isContrast ? '1px solid #ffffff' : 'none' } }, partials.map(function(part) { return h('p', { key: part.label }, part.label + ': ' + part.row + ' × ' + part.col + ' = ' + part.row * part.col); }),
                 h('p', { className: 'font-bold mt-2' }, partials.map(function(part) { return part.row * part.col; }).join(' + ') + ' = ' + left * right)))
           );
         }
