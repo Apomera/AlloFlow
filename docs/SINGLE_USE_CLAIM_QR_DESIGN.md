@@ -161,3 +161,35 @@ for a receipt, the wrong one for a mailed reward).
    `currentActor_()` currently has no notion of beyond `scheduledAdminActor_`.
 3. **Expiry default?** A never-expiring bearer token printed on paper is a
    permanent liability if the paper is photographed.
+
+---
+
+## 9. Addendum — the wider Apps Script estate (2026-09-22)
+
+A repo-wide sweep after the note was written turned up **six** Apps Script
+projects, not one. Worth recording, because it changes where this pattern
+could be reused and it corrects a wrong first impression of the locking.
+
+| project | Code.gs | `idempotencyKey` | `LockService` |
+|---|---|---|---|
+| educator_evaluation | 6,216 | 0 | 20 |
+| school_rewards | 4,625 | **74** | 1 |
+| session_mailbox | 3,039 | 0 | 11 |
+| educator_evaluation_share | 1,089 | 0 | 0 |
+| walkthrough_records | 291 | 0 | 0 |
+| leadership_hub_backup | 133 | 0 | 0 |
+
+★ The `LockService: 1` for school_rewards reads like the weakest locking of
+the three and is in fact the strongest: it defines the lock **once** in
+`locked_()` and calls that wrapper at **69** sites, where the others take
+the lock inline. Counting the API call rather than its use would have
+inverted the conclusion.
+
+**school_rewards is the only project with idempotency at all.** So this
+design reuses a facility that exists nowhere else — and if a single-use
+claim is ever wanted against session_mailbox or educator_evaluation, the
+replay-safety would have to be built there first, which is the expensive
+part this note gets for free.
+
+(Also for the record: a loose `.gs` grep matches minified JS like
+`.gs=function` in every `--help-*.html`. Those are not Apps Script.)
