@@ -1779,6 +1779,19 @@ dataRef.current = d;
 
           };
 
+          // Echoes the learner's Level 3 prediction back to them while the
+          // extinction phase runs, so the banner names what they committed to
+          // rather than naming the answer.
+          var BL_EXT_PREDICTION_LABEL = function (p) {
+
+            if (p === 'drop') return __alloT('stem.behaviorlab.ext_predict_drop', 'Drop off right away');
+
+            if (p === 'same') return __alloT('stem.behaviorlab.ext_predict_same', 'Stay about the same');
+
+            return __alloT('stem.behaviorlab.ext_predict_burst', 'Speed up, then fade');
+
+          };
+
 
           var ACTION_COLORS = {
 
@@ -4024,6 +4037,8 @@ dataRef.current = d;
 
                       upd('blExtinctionPhase', false);
 
+                      upd('blExtPrediction', null);
+
                       upd('blScheduleCount', 0);
                       upd('blFrPresses', 0);
 
@@ -4292,6 +4307,8 @@ dataRef.current = d;
                   upd('blMouseY', 180);
 
                   upd('blExtinctionPhase', false);
+
+                  upd('blExtPrediction', null);
 
                   upd('blScheduleCount', 0);
                   upd('blFrPresses', 0);
@@ -4643,6 +4660,34 @@ dataRef.current = d;
 
               ),
 
+              // ── Level 3: what you predicted vs what the record shows ──
+              // The prediction is only worth taking if the tool closes the loop on
+              // it. Being wrong here is the point: the clinical failure mode is
+              // reading a burst as "the plan is not working" and giving in, which
+              // reinforces the behaviour on a thinner, more persistent schedule.
+              // Named, not scored.
+              blLevel === 3 && d.blExtPrediction && React.createElement("div", {
+
+                className: "rounded-xl p-3 mb-3",
+
+                style: { background: 'rgba(127,29,29,0.20)', border: '1px solid rgba(239,68,68,0.35)' }
+
+              },
+
+                React.createElement("p", { className: "text-xs font-bold mb-1", style: { color: '#fca5a5' } },
+
+                  blT('stem.behaviorlab.ext_debrief_you_said', 'You predicted: {p}', { p: BL_EXT_PREDICTION_LABEL(d.blExtPrediction) })),
+
+                React.createElement("p", { className: "text-xs text-slate-100", style: { lineHeight: 1.5 } },
+
+                  d.blExtPrediction === 'burst'
+
+                    ? __alloT('stem.behaviorlab.ext_debrief_right', 'That is what the record shows — responding climbed before it fell. That rise is the extinction burst. In a classroom it is the moment a plan looks like it is failing, and it is the moment giving in teaches the behaviour to persist much harder.')
+
+                    : __alloT('stem.behaviorlab.ext_debrief_surprise', 'The record shows something else: responding climbed BEFORE it fell. That rise is the extinction burst, and most people expect the drop you predicted. In a classroom it is the moment a plan looks like it is failing — and giving in during the burst teaches the behaviour to persist much harder.'))
+
+              ),
+
               // Vocab list
 
               React.createElement("div", { className: "bg-slate-900/40 rounded-xl p-3 border border-slate-700/30 mb-3" },
@@ -4774,6 +4819,8 @@ dataRef.current = d;
                   upd('blWeights', Object.assign({}, defaultWeights));
 
                   upd('blExtinctionPhase', false);
+
+                  upd('blExtPrediction', null);
 
                   // Reset quiz state for next level
 
@@ -5087,21 +5134,59 @@ dataRef.current = d;
 
               // Level 3: extinction trigger
 
-              blLevel === 3 && !blExtinctionPhase && blLevelScore >= 5 && React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.start_extinction', "Start Extinction"),
+              blLevel === 3 && !blExtinctionPhase && blLevelScore >= 5 && !d.blExtPrediction && React.createElement("div", {
 
-                onClick: function () {
+                className: "flex-1", style: { padding: 10, borderRadius: 12, background: 'rgba(127,29,29,0.20)', border: '1px solid rgba(239,68,68,0.35)' }
 
-                  upd('blExtinctionPhase', true);
+              },
 
-                  upd('blExtinctionStart', blTick);
+                React.createElement("p", { style: { margin: '0 0 6px', fontSize: 11, fontWeight: 800, color: '#fca5a5' } },
 
-                  if (addToast) addToast(__alloT('stem.behaviorlab.toast_extinction_started', '\uD83D\uDEAB Extinction phase started. Do NOT deliver food.'), 'info');
+                  __alloT('stem.behaviorlab.ext_predict_q', 'Before you stop: you are about to stop reinforcing. What will the lever pressing do FIRST?')),
 
-                },
+                React.createElement("div", { role: "group", "aria-label": __alloT('stem.behaviorlab.ext_predict_group', 'Predict what happens first'), style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
 
-                className: "flex-1 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition-colors shadow-md active:scale-[0.97]"
+                  [
 
-              }, __alloT('stem.behaviorlab.start_extinction_2', "\uD83D\uDEAB Start Extinction")),
+                    ['drop', __alloT('stem.behaviorlab.ext_predict_drop', 'Drop off right away')],
+
+                    ['burst', __alloT('stem.behaviorlab.ext_predict_burst', 'Speed up, then fade')],
+
+                    ['same', __alloT('stem.behaviorlab.ext_predict_same', 'Stay about the same')]
+
+                  ].map(function (opt) {
+
+                    return React.createElement("button", {
+
+                      key: opt[0], type: "button",
+
+                      onClick: function () {
+
+                        upd('blExtPrediction', opt[0]);
+
+                        upd('blExtinctionPhase', true);
+
+                        upd('blExtinctionStart', blTick);
+
+                        if (announceToSR) announceToSR(__alloT('stem.behaviorlab.sr_ext_started', 'Prediction recorded. Extinction started. Do not deliver food.'));
+
+                        if (addToast) addToast(__alloT('stem.behaviorlab.toast_extinction_started', '\uD83D\uDEAB Extinction phase started. Do NOT deliver food.'), 'info');
+
+                      },
+
+                      className: "px-3 py-2 rounded-xl bg-red-600 text-white font-bold text-xs hover:bg-red-700 transition-colors shadow-md active:scale-[0.97]"
+
+                    }, opt[1]);
+
+                  })
+
+                ),
+
+                React.createElement("p", { style: { margin: '6px 0 0', fontSize: 9, fontStyle: 'italic', color: 'var(--bl-muted)' } },
+
+                  __alloT('stem.behaviorlab.ext_predict_note', 'Your answer is not scored. Picking one starts the extinction phase so you can watch what actually happens.'))
+
+              ),
 
               blLevel === 3 && blExtinctionPhase && React.createElement("div", {
 
@@ -5109,7 +5194,11 @@ dataRef.current = d;
 
                 style: { background: 'rgba(127,29,29,0.35)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 12 }
 
-              }, __alloT('stem.behaviorlab.extinction_in_progress_watch_the_burst', "\u23F3 Extinction in progress... watch the burst!")),
+              }, d.blExtPrediction
+
+                  ? blT('stem.behaviorlab.extinction_watching', '\u23F3 Extinction running \u2014 you predicted: {p}. Watch the record.', { p: BL_EXT_PREDICTION_LABEL(d.blExtPrediction) })
+
+                  : __alloT('stem.behaviorlab.extinction_in_progress', "\u23F3 Extinction in progress\u2026 watch the response record.")),
 
               // Level 6: sandbox target selector
 
