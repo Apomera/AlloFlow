@@ -8490,6 +8490,7 @@ window.StemLab = window.StemLab || {
               tailSegments: [],
               bodyBaseScale: null,
               neckBaseScale: null,
+              neckBaseRotation: null,
               tailBaseRotation: null,
               phase: String(dn.id || '').length * 0.47
             };
@@ -9121,6 +9122,7 @@ window.StemLab = window.StemLab || {
               if (neckMeshes.length) {
                 idleMotion.neck = neckMeshes[0];
                 idleMotion.neckBaseScale = neckMeshes[0].scale.clone();
+                idleMotion.neckBaseRotation = neckMeshes[0].rotation.clone();
                 idleMotion.neckContour = neckContours[0] || null;
                 neckMeshes.slice(1).forEach(function (neckMesh, neckIndex) { idleMotion.breathingMeshes.push({ mesh: neckMesh, contour: neckContours[neckIndex + 1] || null, baseScale: neckMesh.scale.clone(), crossSection: neckIndex < 2 }); });
               }
@@ -11096,6 +11098,13 @@ window.StemLab = window.StemLab || {
                     idleMotion.neck.scale.x = idleMotion.neckBaseScale.x;
                     idleMotion.neck.scale.z = idleMotion.neckBaseScale.z * (1 + breathAmount * 0.014);
                     if (idleMotion.neckContour) idleMotion.neckContour.scale.copy(idleMotion.neck.scale);
+                    if (idleMotion.neckBaseRotation) {
+                      var lookY = Math.sin(idleTime * 0.31 + idleMotion.phase * 1.3) * 0.085;
+                      var lookX = Math.sin(idleTime * 0.23 + idleMotion.phase * 0.6) * 0.045;
+                      idleMotion.neck.rotation.y = idleMotion.neckBaseRotation.y + lookY;
+                      idleMotion.neck.rotation.x = idleMotion.neckBaseRotation.x + lookX;
+                      if (idleMotion.neckContour) idleMotion.neckContour.rotation.copy(idleMotion.neck.rotation);
+                    }
                   }
                   idleMotion.breathingMeshes.forEach(function (breathingEntry, breathingIndex) {
                     var localBreath = breathAmount * (0.006 + (breathingIndex % 3) * 0.002);
