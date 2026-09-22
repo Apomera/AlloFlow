@@ -28300,6 +28300,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var confidenceMap = rh.mysteryConfidence && typeof rh.mysteryConfidence === 'object' ? rh.mysteryConfidence : {};
         var c = MYSTERY_CASES.cases[caseIdx];
         var visual = MYSTERY_VISUALS[caseIdx];
+
+        // The suspects used to render in authored order, and the answer is the
+        // first option in 11 of the 12 cases -- always pressing A scored 9/12
+        // without reading a single clue. (The repo's position-bias gate passes
+        // this tool because a DIFFERENT quiz here, Anatomy, does shuffle; that
+        // credit never applied to these cases.)
+        //
+        // Order by a per-case hash rather than Math.random: guesses are stored
+        // as an index into possibleSpecies and persist across sessions, so a
+        // fresh order on every render would make a saved answer point at a
+        // different bird. This is stable for a given case and independent of
+        // the authored position. displayOrder[n] is the real index shown at
+        // slot n, so stored guesses and the answer key keep their meaning.
+        var displayOrder = (function() {
+          var order = c.possibleSpecies.map(function(_, i) { return i; });
+          // Seed from the case's own number (these have no id field), so each case
+          // permutes differently and keeps its order if the array is resorted.
+          //
+          // The generator matters here. A plain LCG seeded from a short key barely
+          // advances between cases: an earlier attempt produced only four distinct
+          // permutations over the twelve cases -- two of them the identity -- and
+          // still left the answer in slot A eight times. splitmix32 avalanches, so
+          // consecutive case numbers give unrelated orders.
+          var state = ((c.number == null ? caseIdx : c.number) * 2654435761) >>> 0;
+          function nextRandom() {
+            state = (state + 0x9E3779B9) >>> 0;
+            var z = state;
+            z = (Math.imul(z ^ (z >>> 16), 0x21F0AAAD)) >>> 0;
+            z = (Math.imul(z ^ (z >>> 15), 0x735A2D97)) >>> 0;
+            return (z ^ (z >>> 15)) >>> 0;
+          }
+          for (var i = order.length - 1; i > 0; i--) {
+            var j = nextRandom() % (i + 1);
+            var tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+          }
+          return order;
+        })();
+
         var rawGuess = guessMap[caseIdx];
         var selectedGuess = rawGuess == null ? null : Number(rawGuess);
         if (!isFinite(selectedGuess) || selectedGuess < 0 || selectedGuess >= c.possibleSpecies.length) selectedGuess = null;
@@ -28581,10 +28619,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', null,
               h('div', { className: 'rh-mystery-section-head' }, h('div', null, h('div', { className: 'rh-mystery-section-kicker' }, 'Four plausible suspects'), h('h3', { id: 'rh-mystery-decision-title' }, 'Commit to an identification')), h('span', null, selectedGuess == null ? 'No suspect selected' : 'Suspect ' + String.fromCharCode(65 + selectedGuess) + ' selected')),
               h('div', { className: 'rh-mystery-suspect-grid', role: 'group', 'aria-label': __alloT('stem.raptorhunt.a11y_choose_the_most_likely_raptor_species', 'Choose the most likely raptor species') },
-                c.possibleSpecies.map(function(species, index) {
+                // slot = where it appears (fixes the A/B/C/D letter); index = the
+                // real position in possibleSpecies, which is what a guess stores.
+                displayOrder.map(function(index, slot) {
                   return h('button', { key: index, type: 'button', className: 'rh-mystery-suspect', onClick: function() { chooseSuspect(index); }, disabled: submitted, 'aria-pressed': selectedGuess === index, 'data-mystery-suspect': index, 'data-answer': answerState(index) },
-                    h('span', { className: 'rh-mystery-suspect-code' }, String.fromCharCode(65 + index)),
-                    h('span', { className: 'rh-mystery-suspect-label' }, species)
+                    h('span', { className: 'rh-mystery-suspect-code' }, String.fromCharCode(65 + slot)),
+                    h('span', { className: 'rh-mystery-suspect-label' }, c.possibleSpecies[index])
                   );
                 })
               )
