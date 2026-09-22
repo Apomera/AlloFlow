@@ -665,9 +665,28 @@
         try { window.dispatchEvent(new Event('resize')); } catch (e) {}
       };
       var _stemFsEnter = function(el) {
-        el.__alloFsSaved = {}; el.__alloFsSavedPri = {}; el.__alloFsOn = true;
+        // Entering twice without an exit between is the trap here. The second call
+        // used to re-snapshot the styles - saving the FILL-FRAME values (100vh,
+        // fixed) as if they were the element's originals - so the stage could never
+        // be restored and stayed fullscreen for good, Escape included. It also
+        // overwrote __alloFsEsc, orphaning the first keydown listener where nothing
+        // could ever remove it. A re-entry now only re-asserts the styles: the
+        // original snapshot and the existing handler are left alone.
+        // Keyed on the SNAPSHOT, not on __alloFsOn. The flag lives on the DOM node
+        // and a tool that re-renders can present a node whose flag reads false while
+        // the fill-frame styles are still applied; trusting the flag alone would let
+        // exactly the re-snapshot this guards against happen anyway.
+        var reentry = !!el.__alloFsSaved && el.style.getPropertyValue('position') === 'fixed'
+          && el.style.getPropertyPriority('position') === 'important';
+        if (!reentry) { el.__alloFsSaved = {}; el.__alloFsSavedPri = {}; }
+        el.__alloFsOn = true;
         _stemFsNotify(el, true);
         var s = el.style;
+        if (reentry) {
+          Object.keys(_stemFsProps).forEach(function(p) { s.setProperty(p, _stemFsProps[p], 'important'); });
+          try { window.dispatchEvent(new Event('resize')); } catch (e) {}
+          return;
+        }
         Object.keys(_stemFsProps).forEach(function(p) { el.__alloFsSaved[p] = s.getPropertyValue(p); el.__alloFsSavedPri[p] = s.getPropertyPriority(p); s.setProperty(p, _stemFsProps[p], 'important'); });
         // The Escape handler is removed by _stemFsExit, but a tool can unmount
         // while still in CSS fullscreen (the hub's "all tools" button does not

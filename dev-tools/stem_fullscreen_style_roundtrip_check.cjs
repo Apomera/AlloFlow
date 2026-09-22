@@ -96,6 +96,40 @@ async function run(chromium, mod, label) {
         JSON.stringify(s.before.posPri) + ' -> ' + JSON.stringify(s.after.posPri));
       ok('plain stage restored too', p.after.h === p.before.h, p.before.h + ' -> ' + p.after.h);
     }
+    // ── Re-entry ─────────────────────────────────────────────────────────
+    // Entering the fill-frame twice without an exit between. A tool that re-renders
+    // can hand over a node whose __alloFsOn flag reads false while the fill-frame
+    // styles are still on it. The second enter used to re-snapshot, saving 100vh and
+    // fixed as if they were the element's ORIGINALS - after that no exit could ever
+    // restore it and the stage stayed fullscreen for good, Escape included. It also
+    // overwrote the stored Escape handler, orphaning the first listener.
+    const reentry = await pg.evaluate(() => {
+      const el = document.createElement('div');
+      el.style.height = '400px'; el.style.position = 'relative';
+      document.body.appendChild(el);
+      let keydowns = 0;
+      const rAdd = document.addEventListener.bind(document);
+      const rRem = document.removeEventListener.bind(document);
+      document.addEventListener = function (t, f, o) { if (t === 'keydown') keydowns++; return rAdd(t, f, o); };
+      document.removeEventListener = function (t, f, o) { if (t === 'keydown') keydowns--; return rRem(t, f, o); };
+      const before = { h: el.style.getPropertyValue('height'), p: el.style.getPropertyValue('position') };
+      window.__alloStemFS(el);      // enter
+      el.__alloFsOn = false;        // a re-render presents a node that looks fresh
+      window.__alloStemFS(el);      // enter again
+      window.__alloStemFS(el);      // one exit
+      const after = { h: el.style.getPropertyValue('height'), p: el.style.getPropertyValue('position') };
+      document.addEventListener = rAdd; document.removeEventListener = rRem;
+      el.remove();
+      return { before, after, keydowns };
+    });
+    ok('re-entry does not corrupt the style snapshot',
+      reentry.after.h === reentry.before.h && reentry.after.p === reentry.before.p,
+      'height ' + JSON.stringify(reentry.before.h) + ' -> ' + JSON.stringify(reentry.after.h)
+        + ', position ' + JSON.stringify(reentry.before.p) + ' -> ' + JSON.stringify(reentry.after.p)
+        + ' (the stage can no longer be un-fullscreened)');
+    ok('re-entry does not orphan an Escape listener', reentry.keydowns === 0,
+      reentry.keydowns + ' keydown listener(s) left on document');
+
     // ── Binding lifecycle ────────────────────────────────────────────────
     // __alloStemFsBind registers a MutationObserver and two document listeners per
     // button, and sweeps them when a binding dies. A tool that re-renders in place
@@ -194,11 +228,22 @@ async function run(chromium, mod, label) {
     sweepRed = !(await run(chromium, brokenSweep, 'MUTATED (sweep ignores the button)'));
   }
 
-  const bothRed = !mutated && sweepRed === true;
-  console.log('\nselftest: ' + (bothRed ? 'PASS — the gate goes red on both real defects'
+  console.log('\n=== selftest: re-snapshotting on re-entry ===');
+  const reMarker = "var reentry = !!el.__alloFsSaved && el.style.getPropertyValue('position') === 'fixed'";
+  let reRed = null;
+  if (mod.indexOf(reMarker) < 0) {
+    console.log('SELFTEST INCONCLUSIVE — re-entry guard not found; update the marker.');
+  } else {
+    const brokenRe = mod.replace(reMarker, 'var reentry = false && !!el.__alloFsSaved');
+    reRed = !(await run(chromium, brokenRe, 'MUTATED (re-entry re-snapshots)'));
+  }
+
+  const allRed = !mutated && sweepRed === true && reRed === true;
+  console.log('\nselftest: ' + (allRed ? 'PASS — the gate goes red on all three real defects'
     : 'FAIL — a reinstated defect left the gate green'
       + (mutated ? ' [priority]' : '') + (sweepRed === false ? ' [sweep]' : '')
-      + (sweepRed === null ? ' [sweep inconclusive]' : '')));
+      + (sweepRed === null ? ' [sweep inconclusive]' : '')
+      + (reRed === false ? ' [re-entry]' : '') + (reRed === null ? ' [re-entry inconclusive]' : '')));
   console.log(live ? 'live helper: OK' : 'live helper: FAILURES above');
-  process.exit(bothRed && live ? 0 : 1);
+  process.exit(allRed && live ? 0 : 1);
 })();
