@@ -75,13 +75,38 @@ const PROSE = /[A-Za-z]{2,}/;
 function scan(src) {
   const ast = acorn.parse(src, { ecmaVersion: 2020, locations: true });
   const hits = [];
+  // A tool may wrap the translator to save repeating a key prefix, e.g.
+  //   function sculptLabel(key, fallback) { return t('stem.geosandbox.studio_' + key, fallback); }
+  // Those calls ARE a translation boundary, but a fixed T_FNS list cannot see
+  // it, so both the key and the English fallback were reported as hardcoded —
+  // 76 of geoSandbox's 90 findings were this one wrapper, which buries the
+  // real ones. Discover any local function whose whole body is `return
+  // <known-t>(...)` and treat it as a boundary too. Deliberately narrow: the
+  // body must be a single return of a direct call to an ALREADY-known
+  // translator, so a helper that merely mentions t() is not swept in.
+  const localT = new Set();
+  (function findWrappers(n) {
+    if (!n || typeof n.type !== 'string') return;
+    if (n.type === 'FunctionDeclaration' && n.id && n.body && n.body.body && n.body.body.length === 1) {
+      const only = n.body.body[0];
+      if (only.type === 'ReturnStatement' && only.argument && only.argument.type === 'CallExpression') {
+        const inner = only.argument.callee;
+        if (inner && inner.type === 'Identifier' && T_FNS.has(inner.name)) localT.add(n.id.name);
+      }
+    }
+    for (const k of Object.keys(n)) {
+      const v = n[k];
+      if (Array.isArray(v)) v.forEach(findWrappers);
+      else if (v && typeof v.type === 'string') findWrappers(v);
+    }
+  })(ast);
   const visit = (node, inT, attr, props) => {
     if (!node || typeof node.type !== 'string') return;
 
     if (node.type === 'CallExpression') {
       const c = node.callee;
       const name = c && (c.name || (c.property && c.property.name));
-      const isT = T_FNS.has(name);
+      const isT = T_FNS.has(name) || localT.has(name);
       const isFill = FILL_FNS.has(name);
       const isH = (name === 'h' || name === 'createElement');
       visit(c, inT, attr, props);
