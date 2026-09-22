@@ -377,4 +377,44 @@ describe('Solar System surface-ops immersive layout', () => {
     expect(source, 'reduced motion must suppress the auto-advance')
       .toMatch(/factPaused = droneReduceMotion;/);
   });
+
+  it('keeps the reduced-motion flag live instead of frozen at scene build', () => {
+    // droneReduceMotion was read once at scene build and never refreshed, so a
+    // student who turned the OS setting on mid-session kept the full camera
+    // jolt, dust, twinkle and kelp sway until the scene was rebuilt. 15 of its
+    // 28 sites are read per frame (8 directly inside animate3dV2, 7 more in
+    // helpers the loop calls every frame), so reassigning the flag fixes them
+    // all; the other 13 are scene-BUILD decisions that cannot change without a
+    // rebuild. Verified in Chromium: with the preference flipped at runtime the
+    // in-loop chase FOV goes from climbing with speed (68.1 -> 69.7) to pinned
+    // at exactly 70.0.
+    const source = readFileSync(SOURCE, 'utf8');
+
+    expect(source, 'the drone scene must hold its media query to subscribe to it')
+      .toMatch(/var droneMotionQuery = null;/);
+
+    const handler = source.match(/var onDroneMotionChange = function \(event\) \{[\s\S]*?\n {24}\};/);
+    expect(handler, 'the scene needs a reduced-motion change handler').toBeTruthy();
+    expect(handler[0], 'the handler must REASSIGN the flag the render loop reads')
+      .toMatch(/droneReduceMotion = /);
+
+    // Both subscribe forms: addEventListener is modern, addListener is the only
+    // one Safari < 14 has, and this ships to school iPads.
+    expect(source, 'must subscribe via addEventListener')
+      .toMatch(/droneMotionQuery\.addEventListener\('change', onDroneMotionChange\)/);
+    expect(source, 'must fall back to addListener for older Safari')
+      .toMatch(/droneMotionQuery\.addListener\(onDroneMotionChange\)/);
+
+    // A listener that outlives the scene closes over a dead scene's timers.
+    expect(source, 'the listener must be removed on teardown')
+      .toMatch(/removeEventListener\('change', canvasEl\._droneMotionHandler\)/);
+
+    // The ticker owns its own timer, so it has to be told rather than polling.
+    const sync = source.match(/function syncFactMotionPreference\(\) \{[\s\S]*?\n {24}\}/);
+    expect(sync, 'the ticker needs a motion-preference hook').toBeTruthy();
+    // It may only claim ownership of a pause it actually caused -- claiming one
+    // the student had already set made the later OFF transition resume it.
+    expect(sync[0], 'must not claim a pause the student set by hand')
+      .toMatch(/if \(!factPaused\) factPausedByMotionPref = true;/);
+  });
 });

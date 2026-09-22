@@ -16811,8 +16811,41 @@ const d = labToolData.solarSystem || {};
                         // later, which would null the rig back out after it was built.
                         var subLightRig = null;
 
+                        // Read ONCE at scene build and never refreshed, this flag gated 28
+                        // sites and went stale the moment the OS setting changed: a student
+                        // who turned reduced motion on mid-session kept the full camera
+                        // jolt, dust, twinkle and kelp sway until the scene was rebuilt.
+                        //
+                        // Reassigning it on the media query's own change event fixes the 15
+                        // sites that are read per-frame -- 8 directly inside animate3dV2 and
+                        // 7 more in roverDamping / updateSampleSurvey / updateDroneSampling
+                        // / updateRoverTraverseMission, all of which the loop calls every
+                        // frame. The other 13 are scene-BUILD decisions (particle counts,
+                        // instanced-mesh capacity, geometry) that genuinely cannot change
+                        // without rebuilding the scene, so they keep whatever was true at
+                        // load. Honest partial coverage beats a flag that is always stale.
                         var droneReduceMotion = false;
-                        try { droneReduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+                        var droneMotionQuery = null;
+                        try {
+                          droneMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+                          droneReduceMotion = !!(droneMotionQuery && droneMotionQuery.matches);
+                        } catch (e) {}
+                        var onDroneMotionChange = function (event) {
+                          droneReduceMotion = !!(event && typeof event.matches === 'boolean'
+                            ? event.matches
+                            : (droneMotionQuery && droneMotionQuery.matches));
+                          // The ticker owns its own timer, so it has to be told; everything
+                          // else re-reads the flag on its next frame.
+                          if (typeof syncFactMotionPreference === 'function') syncFactMotionPreference();
+                        };
+                        if (droneMotionQuery) {
+                          // addEventListener is the modern form; addListener is the only one
+                          // Safari < 14 has, and this ships to school iPads.
+                          if (droneMotionQuery.addEventListener) droneMotionQuery.addEventListener('change', onDroneMotionChange);
+                          else if (droneMotionQuery.addListener) droneMotionQuery.addListener(onDroneMotionChange);
+                          canvasEl._droneMotionQuery = droneMotionQuery;
+                          canvasEl._droneMotionHandler = onDroneMotionChange;
+                        }
 
                         var camera = new THREE.PerspectiveCamera(70, W / H, 0.1, 500);
 
@@ -21208,6 +21241,29 @@ const d = labToolData.solarSystem || {};
                         factPaused = droneReduceMotion;
                         scheduleNextFact();
 
+                        // Called when the OS reduced-motion setting changes. Turning the
+                        // preference ON always stops the rotation. Turning it OFF resumes
+                        // only if WE were the one holding it -- if the student pressed
+                        // pause themselves, that choice outranks the OS setting and we
+                        // leave it alone rather than silently restarting motion on them.
+                        var factPausedByMotionPref = droneReduceMotion;
+                        function syncFactMotionPreference() {
+                          if (droneReduceMotion) {
+                            // Only claim ownership of the pause if the ticker was actually
+                            // RUNNING. Claiming it while the student already had it paused
+                            // made the later OFF transition resume something they had
+                            // stopped by hand.
+                            if (!factPaused) factPausedByMotionPref = true;
+                            factPaused = true;
+                          } else if (factPausedByMotionPref) {
+                            // Only auto-resume what WE paused, and only once.
+                            factPausedByMotionPref = false;
+                            factPaused = false;
+                          }
+                          scheduleNextFact();
+                          syncFactPauseButton();
+                        }
+
                         // Pause / back / next. The ticker itself is pointer-events:none so
                         // it never eats a drag meant for the scene; the control cluster
                         // opts back in. It sits OUTSIDE the ticker so the bar's own
@@ -21246,19 +21302,24 @@ const d = labToolData.solarSystem || {};
                           factPauseButton.title = label;
                         }
 
+                        // Any manual press makes the pause state the student's own, so a
+                        // later reduced-motion change must not override it.
                         makeFactButton('‹', 'Previous science fact', function () {
                           // Stepping by hand implies you want to read at your own pace.
+                          factPausedByMotionPref = false;
                           factPaused = true;
                           showFact(factIdx - 1);
                           scheduleNextFact();
                           syncFactPauseButton();
                         });
                         factPauseButton = makeFactButton('‖', 'Pause science facts', function () {
+                          factPausedByMotionPref = false;
                           factPaused = !factPaused;
                           scheduleNextFact();
                           syncFactPauseButton();
                         });
                         makeFactButton('›', 'Next science fact', function () {
+                          factPausedByMotionPref = false;
                           factPaused = true;
                           showFact(factIdx + 1);
                           scheduleNextFact();
@@ -25756,6 +25817,17 @@ const d = labToolData.solarSystem || {};
                           if (canvasEl._droneFullscreenObserver) {
                             try { canvasEl._droneFullscreenObserver.disconnect(); } catch (e) {}
                             canvasEl._droneFullscreenObserver = null;
+                          }
+                          // The reduced-motion listener closes over this scene's flag and
+                          // its ticker timers, so it has to go with the scene or every
+                          // planet change leaves another one attached to a dead closure.
+                          if (canvasEl._droneMotionQuery && canvasEl._droneMotionHandler) {
+                            try {
+                              if (canvasEl._droneMotionQuery.removeEventListener) canvasEl._droneMotionQuery.removeEventListener('change', canvasEl._droneMotionHandler);
+                              else if (canvasEl._droneMotionQuery.removeListener) canvasEl._droneMotionQuery.removeListener(canvasEl._droneMotionHandler);
+                            } catch (e) {}
+                            canvasEl._droneMotionQuery = null;
+                            canvasEl._droneMotionHandler = null;
                           }
                           if (droneRO) { try { droneRO.disconnect(); } catch (e) {} }
 
