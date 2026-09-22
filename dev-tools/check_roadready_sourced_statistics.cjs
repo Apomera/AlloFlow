@@ -140,6 +140,29 @@ const CLAIMS = [
       'adult 275-day refusal suspension under §2521',
   },
   {
+    label: 'Maine pedestrian yield keeps the statutory phrasing (§2056)',
+    // "visible intent to enter" is §2056(4)'s own language, not a paraphrase.
+    // It is the whole point of the rule: the duty attaches BEFORE the
+    // pedestrian is in the road, so a rewording to "is in the crosswalk"
+    // would teach a materially weaker duty. Presence check.
+    re: /showing visible intent to enter/,
+    min: null, max: null,
+    source: 'Maine 29-A §2056(4): yield to a pedestrian crossing within a marked crosswalk ' +
+      'OR who has shown visible intent to enter it. §2056(7) also forbids overtaking a ' +
+      'vehicle stopped to let a pedestrian cross.',
+  },
+  {
+    label: 'Maine crossing-guard signal is binding but not overriding (§2091-A)',
+    // Both halves matter and both are the statute's: the driver must obey the
+    // guard, AND the guard cannot override a lighted signal. Teaching only
+    // the first half tells a student to run a red light on a guard's wave.
+    re: /may not contradict or override a lighted traffic or pedestrian signal/,
+    min: null, max: null,
+    source: 'Maine 29-A §2091-A: an operator shall obey a hand signal or handheld traffic ' +
+      'control device of a qualified school crossing guard; §2091-A(4) a guard may not ' +
+      'contradict or override a lighted traffic control or pedestrian control device.',
+  },
+  {
     label: 'Maine headlight visibility threshold (§2067)',
     re: /visibility is under ([\d,]+) ft due to unfavorable conditions/,
     min: 1000, max: 1000,
