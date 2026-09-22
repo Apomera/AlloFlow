@@ -162,12 +162,54 @@ function makeCtx(store) {
   return new Proxy(base, { get: function (o, p) { return (p in o) ? o[p] : noop; } });
 }
 
+// ★This used to ALWAYS scan stem_lab/ and silently ignore any path argument, so
+// `check_stem_render.cjs <some/candidate.js>` returned exit 0 having never read
+// that file. Proven both ways: the same deliberately-crashing tool exits 1 from
+// inside stem_lab/ and 0 from outside it. That matters beyond a confusing CLI —
+// Tool Forge tells submitters this gate is "the gate of record at
+// submit/publish", and a maintainer reviewing a candidate plugin (fetched from
+// the submission queue, so NOT in stem_lab/) had no way to render-test it.
+// Named files now win; the directory sweep stays the default, so every existing
+// caller — verify:gate, the CI job, package.json — is unaffected.
 const dir = path.join(ROOT, 'stem_lab');
-const files = fs.readdirSync(dir).filter(function (f) { return /^stem_tool_.*\.js$/.test(f); });
+const fileArgs = process.argv.slice(2).filter(function (a) { return !a.startsWith('--'); });
+const targets = fileArgs.length
+  ? fileArgs.map(function (f) { return path.resolve(ROOT, f); })
+  : fs.readdirSync(dir)
+      .filter(function (f) { return /^stem_tool_.*\.js$/.test(f); })
+      .map(function (f) { return path.join(dir, f); });
+const files = targets.map(function (p) { return path.basename(p); });
+// ★Every tool guards with `if (!window.StemLab || !window.StemLab.registerTool)
+// return;`, and 108 of them then self-install the shim — so a full-directory
+// sweep works only because whichever file loads first happens to create it.
+// Load ONE file alone (a Forge candidate, say) and nothing registers: the run
+// reported "1 tool file(s), 0 registered" and exited 0, which reads as a pass.
+// The host provides this registry in the real app, so the harness provides it
+// too rather than asking authored plugins to carry a bootstrap they should not
+// need. A file that self-installs still wins — `||` keeps its version.
+if (!window.StemLab) {
+  window.StemLab = {
+    _registry: {}, _order: [],
+    registerTool: function (id, config) {
+      config.id = id;
+      config.ready = config.ready !== false;
+      this._registry[id] = config;
+      if (this._order.indexOf(id) === -1) this._order.push(id);
+    },
+    isRegistered: function (id) { return !!this._registry[id]; },
+    renderTool: function (id, ctx) {
+      const tool = this._registry[id];
+      if (!tool || !tool.render) return null;
+      return tool.render(ctx);
+    }
+  };
+}
+
 const loadErrors = [];
-files.forEach(function (f) {
+targets.forEach(function (p) {
+  const f = path.basename(p);
   try {
-    const src = fs.readFileSync(path.join(dir, f), 'utf8');
+    const src = fs.readFileSync(p, 'utf8');
     new Function(src)(); // eslint-disable-line no-new-func
   } catch (e) {
     loadErrors.push({ file: f, error: (e && e.message) || String(e) });

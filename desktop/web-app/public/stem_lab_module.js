@@ -654,16 +654,40 @@
         if (!el) return;
         el.__alloFsOn = false;
         _stemFsNotify(el, false);
-        var s = el.style, saved = el.__alloFsSaved || {};
-        Object.keys(_stemFsProps).forEach(function(p) { if (saved[p]) s.setProperty(p, saved[p]); else s.removeProperty(p); });
+        var s = el.style, saved = el.__alloFsSaved || {}, savedPri = el.__alloFsSavedPri || {};
+        // Restore the PRIORITY too. getPropertyValue returns the value alone, so a
+        // stage that carried `height: 400px !important` inline came back as a plain
+        // `height: 400px` after one fullscreen round-trip - still the right number,
+        // but no longer winning against the rule it was written to beat. Whatever
+        // that !important was holding off then silently takes over.
+        Object.keys(_stemFsProps).forEach(function(p) { if (saved[p]) s.setProperty(p, saved[p], savedPri[p] || ''); else s.removeProperty(p); });
         try { if (el.__alloFsEsc) document.removeEventListener('keydown', el.__alloFsEsc); } catch (e) {}
         try { window.dispatchEvent(new Event('resize')); } catch (e) {}
       };
       var _stemFsEnter = function(el) {
-        el.__alloFsSaved = {}; el.__alloFsOn = true;
+        // Entering twice without an exit between is the trap here. The second call
+        // used to re-snapshot the styles - saving the FILL-FRAME values (100vh,
+        // fixed) as if they were the element's originals - so the stage could never
+        // be restored and stayed fullscreen for good, Escape included. It also
+        // overwrote __alloFsEsc, orphaning the first keydown listener where nothing
+        // could ever remove it. A re-entry now only re-asserts the styles: the
+        // original snapshot and the existing handler are left alone.
+        // Keyed on the SNAPSHOT, not on __alloFsOn. The flag lives on the DOM node
+        // and a tool that re-renders can present a node whose flag reads false while
+        // the fill-frame styles are still applied; trusting the flag alone would let
+        // exactly the re-snapshot this guards against happen anyway.
+        var reentry = !!el.__alloFsSaved && el.style.getPropertyValue('position') === 'fixed'
+          && el.style.getPropertyPriority('position') === 'important';
+        if (!reentry) { el.__alloFsSaved = {}; el.__alloFsSavedPri = {}; }
+        el.__alloFsOn = true;
         _stemFsNotify(el, true);
         var s = el.style;
-        Object.keys(_stemFsProps).forEach(function(p) { el.__alloFsSaved[p] = s.getPropertyValue(p); s.setProperty(p, _stemFsProps[p], 'important'); });
+        if (reentry) {
+          Object.keys(_stemFsProps).forEach(function(p) { s.setProperty(p, _stemFsProps[p], 'important'); });
+          try { window.dispatchEvent(new Event('resize')); } catch (e) {}
+          return;
+        }
+        Object.keys(_stemFsProps).forEach(function(p) { el.__alloFsSaved[p] = s.getPropertyValue(p); el.__alloFsSavedPri[p] = s.getPropertyPriority(p); s.setProperty(p, _stemFsProps[p], 'important'); });
         // The Escape handler is removed by _stemFsExit, but a tool can unmount
         // while still in CSS fullscreen (the hub's "all tools" button does not
         // exit first), and then nothing removes it: the handler stays on the
@@ -750,18 +774,27 @@
           };
           btn.__alloFsRelease = release;
           window.__alloStemFsBindings = window.__alloStemFsBindings || [];
-          window.__alloStemFsBindings.push({ stage: stage, release: release });
+          // The BUTTON is recorded as well as the stage. A tool that re-renders in
+          // place hands over a fresh button node while keeping the same stage, and a
+          // sweep that only asks about the stage never collects those: twelve
+          // re-renders left twelve live observers and twenty-four document listeners,
+          // every one of them still running sync() on each fullscreenchange to write
+          // aria-pressed onto a button that had already left the page.
+          window.__alloStemFsBindings.push({ stage: stage, btn: btn, release: release });
           // Sweep bindings whose stage has left the document. Cheap, and it
           // runs only when a new binding is made, so an idle session does no
           // work. isConnected is the one reliable signal here: the hub cannot
           // know when a plugin's own subtree unmounts.
           if (window.__alloStemFsBindings.length > 1) {
-            // Only a stage the DOM reports as detached is released. The stage
-            // being bound right now is connected by definition, so it needs no
-            // special case; and an environment where isConnected is undefined
-            // keeps everything, which is the safe direction.
+            // A binding is dead once EITHER end has left the document: the stage on a
+            // tool switch, the button on a re-render in place. Checking only the stage
+            // missed the second case entirely. An environment where isConnected is
+            // undefined keeps everything, which is the safe direction, and the pair
+            // being bound right now is connected by definition so it needs no special
+            // case.
             window.__alloStemFsBindings = window.__alloStemFsBindings.filter(function (b) {
-              var gone = b.stage && b.stage.isConnected === false;
+              var gone = (b.stage && b.stage.isConnected === false)
+                || (b.btn && b.btn.isConnected === false);
               if (gone) { try { b.release(); } catch (e) {} }
               return !gone;
             });
@@ -8617,7 +8650,7 @@
             React.createElement('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', marginBottom: 16 } }, 'If this persists, the plugin may have failed to load from CDN.'),
             React.createElement('button', {
               onClick: function() { setStemLabTool(null); },
-              style: { marginTop: 16, padding: '8px 20px', borderRadius: 8, background: '#3b82f6', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
+              style: { marginTop: 16, padding: '8px 20px', borderRadius: 8, background: '#1d4ed8', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
             }, '\u2190 Back to Tools')
           );
         })(),
@@ -9288,7 +9321,7 @@
               React.createElement('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', marginBottom: 16 } }, e.message || 'Unknown error'),
               React.createElement('button', {
                 onClick: function() { setStemLabTool(null); },
-                style: { padding: '8px 20px', borderRadius: 8, background: '#3b82f6', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
+                style: { padding: '8px 20px', borderRadius: 8, background: '#1d4ed8', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
               }, '← Back to Tools')
             );
           }
