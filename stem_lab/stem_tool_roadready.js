@@ -75,9 +75,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     if (document.getElementById('allo-rr-accent-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-rr-accent-css';
-    st.textContent = ':root, .theme-default{--rr-cyan:#0e7490;--rr-cyan-ink:#ffffff;--rr-violet:#6d28d9;--rr-amber:#92400e;--rr-blue:#1d4ed8;}'
-      + '.theme-dark{--rr-cyan:#22d3ee;--rr-cyan-ink:#082f49;--rr-violet:#a78bfa;--rr-amber:#fbbf24;--rr-blue:#60a5fa;}'
-      + '.theme-contrast{--rr-cyan:#ffff00;--rr-cyan-ink:#000000;--rr-violet:#ffff00;--rr-amber:#ffff00;--rr-blue:#ffff00;}';
+    st.textContent = ':root, .theme-default{--rr-cyan:#0e7490;--rr-cyan-ink:#ffffff;--rr-violet:#6d28d9;--rr-amber:#92400e;--rr-blue:#1d4ed8;--rr-green:#15803d;--rr-red:#b91c1c;--rr-orange:#c2410c;--rr-pink:#be185d;}'
+      + '.theme-dark{--rr-cyan:#22d3ee;--rr-cyan-ink:#082f49;--rr-violet:#a78bfa;--rr-amber:#fbbf24;--rr-blue:#60a5fa;--rr-green:#4ade80;--rr-red:#fca5a5;--rr-orange:#fdba74;--rr-pink:#f9a8d4;}'
+      + '.theme-contrast{--rr-cyan:#ffff00;--rr-cyan-ink:#000000;--rr-violet:#ffff00;--rr-amber:#ffff00;--rr-blue:#ffff00;--rr-green:#ffff00;--rr-red:#ffff00;--rr-orange:#ffff00;--rr-pink:#ffff00;}';
     if (document.head) document.head.appendChild(st);
   })();
 
@@ -467,49 +467,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     },
     {
       category: 'Warning',
-      color: '#fcd34d',
+      color: 'var(--rr-amber, #fbbf24)',
       colorName: 'Yellow diamond',
       meaning: 'MIGHT happen. Curves, intersections, pedestrians, animals ahead.',
       examples: ['Curve ahead', 'Pedestrian crossing', 'Deer crossing', 'Slippery when wet', 'Two-way traffic ahead']
     },
     {
       category: 'Construction',
-      color: '#f97316',
+      color: 'var(--rr-orange, #fdba74)',
       colorName: 'Orange diamond',
       meaning: 'Temporary — work zone. Posted construction-speed violations can carry doubled fines.',
       examples: ['Road work ahead', 'Flagger ahead', 'Lane closed', 'Detour', 'Workers present']
     },
     {
       category: 'School Zone',
-      color: '#ccff00',
+      color: 'var(--rr-green, #4ade80)',
       colorName: 'Fluorescent yellow-green pentagon',
       meaning: 'School area or crossing. Obey posted/active school-zone speed and watch for children.',
       examples: ['School crossing', 'School zone ahead', 'School bus stop ahead']
     },
     {
       category: 'Guide',
-      color: '#10b981',
+      color: 'var(--rr-green, #4ade80)',
       colorName: 'Green rectangle',
       meaning: 'Directions, destinations, distances.',
       examples: ['Exit 23 — Portland', 'Next services 12 mi', 'Rest area 3 mi']
     },
     {
       category: 'Services',
-      color: '#2563eb',
+      color: 'var(--rr-blue, #60a5fa)',
       colorName: 'Blue rectangle',
       meaning: 'Motorist services — gas, food, lodging, hospitals.',
       examples: ['H (Hospital)', 'Gas', 'Food', 'Lodging', 'Rest stop']
     },
     {
       category: 'Recreation',
-      color: '#92400e',
+      color: 'var(--rr-amber, #fbbf24)',
       colorName: 'Brown rectangle',
       meaning: 'Parks, campgrounds, scenic areas, historic sites.',
       examples: ['State park', 'Scenic overlook', 'Acadia N.P. 8 mi']
     },
     {
       category: 'Railroad',
-      color: '#fef3c7',
+      color: 'var(--rr-amber, #fbbf24)',
       colorName: 'Yellow circle (advance) + white X (at crossing)',
       meaning: 'Tracks ahead or at crossing. Maine §2076: slow and look both ways; stop when signals, gates, a flagger, a train, or law requires.',
       examples: ['RR Crossing advance', 'Crossbuck X at tracks', 'Multi-track warning']
@@ -972,9 +972,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var outcome = function(id, label, count, evidence, action, priorityAt, verified) {
       var status = count <= 0 ? 'clear' : count >= priorityAt ? 'priority' : 'review';
       var statusMeta = status === 'clear'
-        ? { label: 'ON TRACK', color: '#4ade80' }
+        ? { label: 'ON TRACK', color: 'var(--rr-green, #4ade80)' }
         : status === 'priority'
-          ? { label: 'PRACTICE NEXT', color: '#f87171' }
+          ? { label: 'PRACTICE NEXT', color: 'var(--rr-red, #fca5a5)' }
           : { label: 'REVIEW', color: 'var(--rr-amber, #fbbf24)' };
       return {
         id: id,
@@ -1062,42 +1062,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var distance = Number(input.signalDistanceFt);
     var distanceText = isFinite(distance) && distance > 0 ? (' in ' + Math.round(distance) + ' ft') : '';
     if (input.laneSide) {
-      return { kind: 'urgent', title: 'RETURN TO LANE', detail: input.laneSide === 'left' ? 'Move right of the centerline.' : 'Move back inside the white edge line.', color: '#ef4444' };
+      return { kind: 'urgent', title: 'RETURN TO LANE', detail: input.laneSide === 'left' ? 'Move right of the centerline.' : 'Move back inside the white edge line.', color: 'var(--rr-red, #fca5a5)' };
     }
     var stoppedAtLine = Math.abs(speed) <= 0.1 && input.signalDistanceFt != null &&
       isFinite(distance) && distance >= 0 && distance <= 6;
     if (stoppedAtLine && signal === 'red') {
-      return { kind: 'caution', title: 'HOLD AT RED', detail: 'Keep the crosswalk clear. Wait for your signal; check traffic and pedestrians before moving.', color: '#f59e0b' };
+      return { kind: 'caution', title: 'HOLD AT RED', detail: 'Keep the crosswalk clear. Wait for your signal; check traffic and pedestrians before moving.', color: 'var(--rr-amber, #fbbf24)' };
     }
     if (stoppedAtLine && signal === 'stop') {
-      return { kind: 'caution', title: 'SCAN AND YIELD', detail: 'Look left, right, then left. Yield to pedestrians and traffic with priority; go only when clear.', color: '#f59e0b' };
+      return { kind: 'caution', title: 'SCAN AND YIELD', detail: 'Look left, right, then left. Yield to pedestrians and traffic with priority; go only when clear.', color: 'var(--rr-amber, #fbbf24)' };
     }
     if (signal === 'red' || signal === 'stop') {
-      return { kind: 'urgent', title: 'STOP AHEAD', detail: 'Stop before the marked line' + distanceText + '.', color: '#ef4444' };
+      return { kind: 'urgent', title: 'STOP AHEAD', detail: 'Stop before the marked line' + distanceText + '.', color: 'var(--rr-red, #fca5a5)' };
     }
     if (gap != null && isFinite(gap) && gap < requiredGap) {
-      return { kind: gap < Math.max(2, requiredGap - 1) ? 'urgent' : 'caution', title: 'ADD FOLLOWING SPACE', detail: gap.toFixed(1) + 's gap — aim for ' + requiredGap + '+ seconds.', color: gap < Math.max(2, requiredGap - 1) ? '#ef4444' : '#f59e0b' };
+      return { kind: gap < Math.max(2, requiredGap - 1) ? 'urgent' : 'caution', title: 'ADD FOLLOWING SPACE', detail: gap.toFixed(1) + 's gap — aim for ' + requiredGap + '+ seconds.', color: gap < Math.max(2, requiredGap - 1) ? 'var(--rr-red, #fca5a5)' : 'var(--rr-amber, #fbbf24)' };
     }
     if (limit > 0 && speed > limit + 8) {
-      return { kind: 'urgent', title: 'SLOW DOWN', detail: Math.round(speed) + ' mph in a ' + Math.round(limit) + ' mph zone.', color: '#ef4444' };
+      return { kind: 'urgent', title: 'SLOW DOWN', detail: Math.round(speed) + ' mph in a ' + Math.round(limit) + ' mph zone.', color: 'var(--rr-red, #fca5a5)' };
     }
     if (signal === 'flashing_yellow') {
-      return { kind: 'caution', title: 'YIELD BEFORE TURNING', detail: 'Flashing yellow arrow: yield to oncoming traffic and pedestrians.', color: '#f59e0b' };
+      return { kind: 'caution', title: 'YIELD BEFORE TURNING', detail: 'Flashing yellow arrow: yield to oncoming traffic and pedestrians.', color: 'var(--rr-amber, #fbbf24)' };
     }
     if (signal === 'yellow') {
-      return { kind: 'caution', title: 'PREPARE TO STOP', detail: 'Yellow signal' + distanceText + ' — stop if you safely can.', color: '#f59e0b' };
+      return { kind: 'caution', title: 'PREPARE TO STOP', detail: 'Yellow signal' + distanceText + ' — stop if you safely can.', color: 'var(--rr-amber, #fbbf24)' };
     }
     if (limit > 0 && speed > limit + 3) {
-      return { kind: 'caution', title: 'EASE OFF THE GAS', detail: Math.round(speed) + ' mph — posted limit is ' + Math.round(limit) + '.', color: '#f59e0b' };
+      return { kind: 'caution', title: 'EASE OFF THE GAS', detail: Math.round(speed) + ' mph — posted limit is ' + Math.round(limit) + '.', color: 'var(--rr-amber, #fbbf24)' };
     }
     if (signal === 'green' && input.turnIntent === 'left') {
-      return { kind: 'caution', title: 'YIELD BEFORE TURNING', detail: 'A round green light does not protect a left turn. Yield to oncoming traffic and pedestrians.', color: '#f59e0b' };
+      return { kind: 'caution', title: 'YIELD BEFORE TURNING', detail: 'A round green light does not protect a left turn. Yield to oncoming traffic and pedestrians.', color: 'var(--rr-amber, #fbbf24)' };
     }
     if (signal === 'green') {
-      return { kind: 'good', title: 'CHECK BEFORE PROCEEDING', detail: 'Green is permission to go when clear. Scan the crosswalk and leave room beyond the intersection.', color: '#4ade80' };
+      return { kind: 'good', title: 'CHECK BEFORE PROCEEDING', detail: 'Green is permission to go when clear. Scan the crosswalk and leave room beyond the intersection.', color: 'var(--rr-green, #4ade80)' };
     }
     if (signal === 'green_arrow') {
-      return { kind: 'good', title: 'PROTECTED TURN', detail: 'Follow the arrow only when the path is clear. Check the crosswalk, then turn smoothly.', color: '#4ade80' };
+      return { kind: 'good', title: 'PROTECTED TURN', detail: 'Follow the arrow only when the path is clear. Check the crosswalk, then turn smoothly.', color: 'var(--rr-green, #4ade80)' };
     }
     return { kind: 'good', title: 'SAFE BUFFER', detail: limit > 0 ? 'Keep scanning ahead · ' + Math.round(limit) + ' mph limit.' : 'Keep scanning ahead and leave yourself an out.', color: 'var(--rr-cyan, #22d3ee)' };
   }
@@ -1451,7 +1451,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var safety = Math.max(0, Math.min(100, Number(stats.safetyScore) || 0));
     var eco = Math.max(0, Math.min(100, Number(stats.efficiencyScore) || 0));
     var weighted = Math.round(safety * 0.8 + eco * 0.2);
-    var crashes = Math.max(0, (Number(stats.crashes) || 0) - (Number(stats.aiCausedCrashes) || 0));
+    // Credit for AI-caused crashes is capped at the recorded total -- see the
+    // note in roadTestOutcome. An inflated aiCausedCrashes must not be able to
+    // subtract away a learner's own crashes.
+    var recorded = Math.max(0, Number(stats.crashes) || 0);
+    var aiCaused = Math.max(0, Number(stats.aiCausedCrashes) || 0);
+    var crashes = Math.max(0, recorded - (aiCaused > recorded ? 0 : aiCaused));
     var major = Math.max(0, Number(stats.majorViolations) || 0);
     var vulnerableStrike = Math.max(0, Number(stats.childStrike) || 0);
     var wrongSide = Math.max(0, Number(stats.wrongSideViolations) || 0);
@@ -1638,7 +1643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var urgent = seconds != null && seconds < Math.max(2, target - 1);
     var short = seconds != null && seconds < target;
     return { seconds: seconds, target: target,
-      color: urgent ? '#ef4444' : short ? '#f59e0b' : '#4ade80',
+      color: urgent ? 'var(--rr-red, #fca5a5)' : short ? 'var(--rr-amber, #fbbf24)' : 'var(--rr-green, #4ade80)',
       action: short ? 'Increase gap' : 'Keep scanning',
       fraction: seconds == null ? 0 : Math.min(1, seconds / (target * 1.5)),
       distanceFeet: seconds == null ? null : Math.round(worldUnitsToFeet(gap)) };
@@ -1916,7 +1921,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var distanceMeters = Math.max(0, Number(stats.distance) || 0);
     var recordedCrashes = Math.max(0, Number(stats.crashes) || 0);
     var aiCausedCrashes = Math.max(0, Number(stats.aiCausedCrashes) || 0);
-    var learnerFaultCrashes = Math.max(0, recordedCrashes - aiCausedCrashes);
+    // aiCausedCrashes must never exceed recordedCrashes: every site that
+    // increments it also increments crashes. If it does exceed, the counters
+    // have diverged (a new crash site incremented only one of them) and
+    // Math.max(0, ...) would silently absorb the excess -- which is how two AI
+    // rear-ends once erased two genuine at-fault crashes and the road test
+    // reported PASSED. Cap the credit at the recorded total instead, so a
+    // divergence can only ever cost the learner nothing, never exonerate them.
+    // If aiCausedCrashes EXCEEDS recordedCrashes the two counters have
+    // diverged, and the AI figure cannot be trusted to exonerate anyone --
+    // so credit nothing. Clamping to recordedCrashes instead would hand the
+    // learner full credit on the strength of the broken counter, which is how
+    // two AI rear-ends once erased two genuine at-fault crashes and the road
+    // test reported PASSED. Fail closed: a bookkeeping bug must not pass a
+    // student who crashed.
+    var countersDiverged = aiCausedCrashes > recordedCrashes;
+    var creditedAiCrashes = countersDiverged ? 0 : aiCausedCrashes;
+    var learnerFaultCrashes = Math.max(0, recordedCrashes - creditedAiCrashes);
     var majorViolations = Math.max(0, Number(stats.majorViolations) || 0);
     var vulnerableRoadUserStrikes = Math.max(0, Number(stats.childStrike) || 0);
     var wrongSideViolations = Math.max(0, Number(stats.wrongSideViolations) || 0);
@@ -5779,9 +5800,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // In a typical 5 min drive, you'll see 0-1 emergency vehicles
     if (Math.random() > 0.005) return null;
     var types = [
-      { kind: 'ambulance', icon: '🚑', color: '#ef4444', sirenFreq: 800, lightColor1: 0xff0000, lightColor2: 0xffffff, bodyColor: 0xffffff },
-      { kind: 'firetruck', icon: '🚒', color: '#f97316', sirenFreq: 600, lightColor1: 0xff0000, lightColor2: 0xff4400, bodyColor: 0xcc2200 },
-      { kind: 'police', icon: '🚓', color: '#3b82f6', sirenFreq: 1000, lightColor1: 0xff0000, lightColor2: 0x0044ff, bodyColor: 0x111111 }
+      { kind: 'ambulance', icon: '🚑', color: 'var(--rr-red, #fca5a5)', sirenFreq: 800, lightColor1: 0xff0000, lightColor2: 0xffffff, bodyColor: 0xffffff },
+      { kind: 'firetruck', icon: '🚒', color: 'var(--rr-orange, #fdba74)', sirenFreq: 600, lightColor1: 0xff0000, lightColor2: 0xff4400, bodyColor: 0xcc2200 },
+      { kind: 'police', icon: '🚓', color: 'var(--rr-blue, #60a5fa)', sirenFreq: 1000, lightColor1: 0xff0000, lightColor2: 0x0044ff, bodyColor: 0x111111 }
     ];
     return types[Math.floor(Math.random() * types.length)];
   }
@@ -5933,8 +5954,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       hint: 'A tight 20 ft curb space. Leave at least 2 ft to each parked car and finish within 18 inches of the curb.',
       startCar:  { x: 145.7, y: 105, heading: -Math.PI / 2 },
       obstacles: [
-        { x: 103, y: 80, w: 24, h: 50, label: 'FRONT', color: '#7c3aed' },
-        { x: 103, y: 197, w: 24, h: 50, label: 'REAR',  color: '#dc2626' }
+        { x: 103, y: 80, w: 24, h: 50, label: 'FRONT', color: 'var(--rr-violet, #a78bfa)' },
+        { x: 103, y: 197, w: 24, h: 50, label: 'REAR',  color: 'var(--rr-red, #fca5a5)' }
       ],
       slot:    { x: 115, y: 163.5, w: 30, h: 67, requiredHeadingDeg: 270, headingTolDeg: 12 },
       curb:    { x: 100, edgeColor: '#fbbf24' },
@@ -5950,8 +5971,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       startCar:  { x: 100, y: 250, heading: 0 },
       // Two angled parked cars flanking the slot
       obstacles: [
-        { x: 340, y: 200, w: 50, h: 90, label: 'CAR L', color: '#7c3aed', rotateDeg: 45 },
-        { x: 470, y: 200, w: 50, h: 90, label: 'CAR R', color: '#dc2626', rotateDeg: 45 }
+        { x: 340, y: 200, w: 50, h: 90, label: 'CAR L', color: 'var(--rr-violet, #a78bfa)', rotateDeg: 45 },
+        { x: 470, y: 200, w: 50, h: 90, label: 'CAR R', color: 'var(--rr-red, #fca5a5)', rotateDeg: 45 }
       ],
       slot:    { x: 405, y: 240, w: 65, h: 100, requiredHeadingDeg: 45, headingTolDeg: 18 },
       curb:    { x: 0, edgeColor: 'transparent' },
@@ -5969,7 +5990,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       hint: '50 ft straight reverse. A parked car is offset 4 ft into your lane — stay clear of it AND inside the marked corridor.',
       startCar:  { x: 200, y: 80, heading: -Math.PI / 2 },
       obstacles: [
-        { x: 250, y: 280, w: 50, h: 100, label: 'PARKED', color: '#dc2626' }
+        { x: 250, y: 280, w: 50, h: 100, label: 'PARKED', color: 'var(--rr-red, #fca5a5)' }
       ],
       slot:    { x: 200, y: 480, w: 80, h: 60, requiredHeadingDeg: 270, headingTolDeg: 15 },
       curb:    { x: 0, edgeColor: 'transparent' },
@@ -6003,9 +6024,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       hint: 'Park in the legal portion of the long curb space while remaining at least 10 ft from the hydrant.',
       startCar:  { x: 145.7, y: 65, heading: -Math.PI / 2 },
       obstacles: [
-        { x: 103, y: 40, w: 24, h: 50, label: 'FRONT', color: '#7c3aed' },
-        { x: 103, y: 330, w: 24, h: 50, label: 'REAR',  color: '#dc2626' },
-        { x: 88, y: 170, w: 10, h: 18, label: 'H', color: '#b91c1c', isHydrant: true }
+        { x: 103, y: 40, w: 24, h: 50, label: 'FRONT', color: 'var(--rr-violet, #a78bfa)' },
+        { x: 103, y: 330, w: 24, h: 50, label: 'REAR',  color: 'var(--rr-red, #fca5a5)' },
+        { x: 88, y: 170, w: 10, h: 18, label: 'H', color: 'var(--rr-red, #fca5a5)', isHydrant: true }
       ],
       slot:    { x: 115, y: 270, w: 30, h: 65, requiredHeadingDeg: 270, headingTolDeg: 12 },
       curb:    { x: 100, edgeColor: '#fbbf24' },
@@ -6020,8 +6041,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       hint: 'Park uphill within 18 inches of the curb. Turn the wheels away, then select Park and set the parking brake.',
       startCar:  { x: 145.7, y: 95, heading: -Math.PI / 2 },
       obstacles: [
-        { x: 103, y: 70, w: 24, h: 50, label: 'FRONT', color: '#7c3aed' },
-        { x: 103, y: 205, w: 24, h: 50, label: 'REAR',  color: '#dc2626' }
+        { x: 103, y: 70, w: 24, h: 50, label: 'FRONT', color: 'var(--rr-violet, #a78bfa)' },
+        { x: 103, y: 205, w: 24, h: 50, label: 'REAR',  color: 'var(--rr-red, #fca5a5)' }
       ],
       slot:    { x: 115, y: 167.5, w: 30, h: 75, requiredHeadingDeg: 270, headingTolDeg: 12 },
       curb:    { x: 100, edgeColor: '#fbbf24' },
@@ -6451,7 +6472,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }, [props.carRef, props.doneRef]);
     var paused = flags[0] === '1', settings = flags[1] === '1', finished = flags[2] === '1', waiting = flags[3] === '1';
     var inactive = paused || settings || finished;
-    var buttonStyle = function(disabled, primary) { return { minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #64748b', background: primary ? '#0e7490' : '#1e293b', color: '#fff', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.55 : 1 }; };
+    var buttonStyle = function(disabled, primary) { return { minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #64748b', background: primary ? '#0e7490' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.55 : 1 }; };
     var hold = function(key, label) {
       return h('button', { key: key, type: 'button', disabled: inactive, 'aria-label': label, 'data-stem-touch-controls': 'true',
         onPointerDown: function(e) { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); keysRef.current[key] = true; },
@@ -7295,7 +7316,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       return function() { if (animRef.current) cancelAnimationFrame(animRef.current); };
     }, []);
 
-    return h('div', { style: { padding: '14px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+    return h('div', { style: { padding: '14px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
       h('button', { onClick: props.onExit, style: { marginBottom: '10px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
       h(ManeuverDrillSummary, { h: h, React: React, title: t('stem.roadready.3_point_turn',"3-point turn"), score: stVal.score, hits: stVal.hits, done: stVal.done, progress: 'Step ' + Math.min(3, stageRef.current + 1) + ' of 3', onReset: resetCar, t: t }),
       h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '10px', border: '1px solid #ec4899' } },
@@ -7305,7 +7326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       h(ParkingPracticeControls, { h: h, React: React, keysRef: keysRef, carRef: carRef, doneRef: doneRef, onReset: resetCar, label: 'Driving controls', hideReset: true, showStatus: true, t: t }),
       h(RoadReadyControlSettings, { React: React, t: t }),
       h('div', { role: 'region', 'aria-label': t('stem.roadready.driving_instructor',"Driving instructor"), style: { marginTop: '10px', padding: '12px', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
-        h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ec4899', textTransform: 'uppercase', marginBottom: '6px' } }, '👨‍🏫 Instructor'),
+        h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--rr-pink, #f9a8d4)', textTransform: 'uppercase', marginBottom: '6px' } }, '👨‍🏫 Instructor'),
         h('div', { style: { fontSize: '14px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.55' } }, fbText),
         h('div', { style: { marginTop: '8px', fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, 'Practice on this empty training road. Check for traffic before each move, stop before changing direction, and keep the whole car clear of both curbs.')
       )
@@ -7559,7 +7580,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       return function() { if (animRef.current) cancelAnimationFrame(animRef.current); };
     }, []);
 
-    return h('div', { style: { padding: '14px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+    return h('div', { style: { padding: '14px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
       h('button', { onClick: props.onExit, style: { marginBottom: '10px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
       h(ManeuverDrillSummary, { h: h, React: React, title: t('stem.roadready.straight_backing',"Straight backing"), score: stVal.score, hits: stVal.conesHit, done: stVal.done, progress: 'Reverse straight, then stop', onReset: resetCar, t: t }),
       h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '10px', border: '1px solid #a3a3a3' } },
@@ -8011,6 +8032,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           try {
             // Try Window scroll (AlloFlow canvas typically scrolls here).
             if (typeof window !== 'undefined' && window.scrollTo) window.scrollTo({ top: 0, behavior: reducedMotionRef.current ? 'auto' : 'smooth' });
+          } catch(_) {}
+          // Move focus with the view. Every view root is keyed on the view name,
+          // so the tile a keyboard or screen-reader user activated unmounts and
+          // focus falls to <body>: the next Tab restarts from the top of the
+          // page and nothing is announced. Focus the new view's first heading
+          // (tabIndex -1 so it is programmatically focusable without joining
+          // the tab order). The driving view manages its own focus (its
+          // overlays autoFocus), so leave it alone.
+          try {
+            if (view !== 'driving' && typeof document !== 'undefined') {
+              var rrLive = document.getElementById('allo-live-roadready');
+              var rrRoot = rrLive ? rrLive.parentNode : null;
+              var rrHeading = rrRoot ? rrRoot.querySelector('h1, h2, h3') : null;
+              if (rrHeading && rrHeading.focus) {
+                if (!rrHeading.hasAttribute('tabindex')) rrHeading.setAttribute('tabindex', '-1');
+                rrHeading.focus({ preventScroll: true });
+              }
+            }
           } catch(_) {}
         }
       }, [view]);
@@ -12090,7 +12129,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var evt = null;
                     if (lt2.id === 'school') {
                       if (Math.random() < 0.5) {
-                        evt = { kind: 'ball', icon: '⚽', warn: 'CHILD chasing ball into road!', color: '#ef4444' };
+                        evt = { kind: 'ball', icon: '⚽', warn: 'CHILD chasing ball into road!', color: 'var(--rr-red, #fca5a5)' };
                       } else {
                         evt = { kind: 'schoolbus_arm', icon: '🚌', warn: 'SCHOOL BUS stopped with RED FLASHING lights! STOP — illegal to pass!', color: 'var(--rr-amber, #fbbf24)' };
                       }
@@ -12099,13 +12138,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     } else if (lt2.id === 'market' || lt2.id === 'pharmacy' || lt2.id === 'library') {
                       evt = { kind: 'pedestrian', icon: '🚶', warn: 'PEDESTRIAN stepping off sidewalk!', color: 'var(--rr-blue, #60a5fa)' };
                     } else if (lt2.id === 'hospital') {
-                      evt = { kind: 'ambulance', icon: '🚑', warn: 'AMBULANCE exiting hospital — yield!', color: '#ef4444' };
+                      evt = { kind: 'ambulance', icon: '🚑', warn: 'AMBULANCE exiting hospital — yield!', color: 'var(--rr-red, #fca5a5)' };
                     } else if (lt2.id === 'fire') {
-                      evt = { kind: 'firetruck', icon: '🚒', warn: 'FIRE TRUCK responding — pull right!', color: '#dc2626' };
+                      evt = { kind: 'firetruck', icon: '🚒', warn: 'FIRE TRUCK responding — pull right!', color: 'var(--rr-red, #fca5a5)' };
                     } else if (lt2.id === 'farm') {
-                      evt = { kind: 'tractor', icon: '🚜', warn: 'SLOW TRACTOR entering road!', color: '#f97316' };
+                      evt = { kind: 'tractor', icon: '🚜', warn: 'SLOW TRACTOR entering road!', color: 'var(--rr-orange, #fdba74)' };
                     } else if (lt2.id === 'police') {
-                      evt = { kind: 'cruiser', icon: '🚔', warn: 'POLICE CRUISER pulling out — stay alert!', color: '#1e40af' };
+                      evt = { kind: 'cruiser', icon: '🚔', warn: 'POLICE CRUISER pulling out — stay alert!', color: 'var(--rr-blue, #60a5fa)' };
                     }
                     if (evt) {
                       var evtWorld = infiniteWorldRef.current;
@@ -13168,13 +13207,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var speedLost = plPrevSpd - Math.abs(playerCar.speed); // m/s shed over ~1s
                     var brakeCheck = plPrevSpd > 8 && Math.abs(playerCar.speed) < 2 && speedLost > 6;
                     if (brakeCheck) {
-                      // Player's fault: brake-check
+                      // Player's fault: brake-check. Counted in `crashes` and
+                      // NOT in aiCausedCrashes, so it reads as learner fault.
+                      statsRef.current.crashes = (statsRef.current.crashes || 0) + 1;
                       statsRef.current.safetyScore -= 15;
                       addToast('💥 You brake-checked — the car behind couldn\'t stop. -15 YOUR FAULT');
                       eventToastRef.current = { msg: '💥 Brake-check rear-end. Slow gradually; check your mirrors first.', until: timeRef.current + 5 };
                       speak('You were rear-ended after a sudden brake. Slow gradually next time.');
                     } else {
-                      // AI's fault: following too close
+                      // AI's fault: following too close. Both counters move.
+                      // aiCausedCrashes is subtracted FROM crashes by the two
+                      // graders, so incrementing it alone made every AI
+                      // rear-end cancel a real at-fault crash: two of these
+                      // erased two genuine learner crashes and the road test
+                      // reported PASSED. Bumping both keeps the difference
+                      // equal to the learner's own count.
+                      statsRef.current.crashes = (statsRef.current.crashes || 0) + 1;
                       if (!statsRef.current.aiCausedCrashes) statsRef.current.aiCausedCrashes = 0;
                       statsRef.current.aiCausedCrashes++;
                       // No penalty to safety (or a tiny -2 for not being defensive enough)
@@ -14508,9 +14556,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (d.emergencyDrillMode && timeRef.current > _nextDrillSpawn) {
               _nextDrillSpawn = timeRef.current + 20 + Math.random() * 15;
               var drillTypes = [
-                { kind: 'ambulance', icon: '🚑', color: '#ef4444', sirenFreq: 800, lightColor1: 0xff0000, lightColor2: 0xffffff, bodyColor: 0xffffff },
-                { kind: 'police', icon: '🚓', color: '#3b82f6', sirenFreq: 1000, lightColor1: 0xff0000, lightColor2: 0x0044ff, bodyColor: 0x111111 },
-                { kind: 'firetruck', icon: '🚒', color: '#f97316', sirenFreq: 600, lightColor1: 0xff0000, lightColor2: 0xff4400, bodyColor: 0xcc2200 }
+                { kind: 'ambulance', icon: '🚑', color: 'var(--rr-red, #fca5a5)', sirenFreq: 800, lightColor1: 0xff0000, lightColor2: 0xffffff, bodyColor: 0xffffff },
+                { kind: 'police', icon: '🚓', color: 'var(--rr-blue, #60a5fa)', sirenFreq: 1000, lightColor1: 0xff0000, lightColor2: 0x0044ff, bodyColor: 0x111111 },
+                { kind: 'firetruck', icon: '🚒', color: 'var(--rr-orange, #fdba74)', sirenFreq: 600, lightColor1: 0xff0000, lightColor2: 0xff4400, bodyColor: 0xcc2200 }
               ];
               spawn = drillTypes[Math.floor(Math.random() * drillTypes.length)];
             }
@@ -26395,13 +26443,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var warnX = hudCompact ? 116 : 10;
           var warnY = hudCompact ? H - 88 : H - 54;
           var warnIcons = [];
-          if (d && d.highBeams) warnIcons.push({ icon: '🔆', color: '#3b82f6', title: __alloT('stem.roadready.high_beams', 'High beams') });
-          if (!hudCompact && blinkerRef.current === -1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '◄', color: '#22c55e', title: __alloT('stem.roadready.left_signal', 'Left signal') });
-          if (!hudCompact && blinkerRef.current === 1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '►', color: '#22c55e', title: __alloT('stem.roadready.right_signal', 'Right signal') });
-          if (car.brake > 0.3) warnIcons.push({ icon: '🛑', color: '#ef4444', title: __alloT('stem.roadready.braking', 'Braking') });
-          if (skidRef.current && skidRef.current.active) warnIcons.push({ icon: '⚠', color: '#f59e0b', title: __alloT('stem.roadready.traction_loss', 'Traction loss') });
-          if (tireDynamicsRef.current && tireDynamicsRef.current.absActive) warnIcons.push({ icon: 'ABS', color: '#f59e0b', title: 'Anti-lock brakes active' });
-          if (tireDynamicsRef.current && tireDynamicsRef.current.hydroplaneSeverity > 0.15) warnIcons.push({ icon: '≋', color: '#38bdf8', title: 'Hydroplaning' });
+          if (d && d.highBeams) warnIcons.push({ icon: '🔆', color: 'var(--rr-blue, #60a5fa)', title: __alloT('stem.roadready.high_beams', 'High beams') });
+          if (!hudCompact && blinkerRef.current === -1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '◄', color: 'var(--rr-green, #4ade80)', title: __alloT('stem.roadready.left_signal', 'Left signal') });
+          if (!hudCompact && blinkerRef.current === 1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '►', color: 'var(--rr-green, #4ade80)', title: __alloT('stem.roadready.right_signal', 'Right signal') });
+          if (car.brake > 0.3) warnIcons.push({ icon: '🛑', color: 'var(--rr-red, #fca5a5)', title: __alloT('stem.roadready.braking', 'Braking') });
+          if (skidRef.current && skidRef.current.active) warnIcons.push({ icon: '⚠', color: 'var(--rr-amber, #fbbf24)', title: __alloT('stem.roadready.traction_loss', 'Traction loss') });
+          if (tireDynamicsRef.current && tireDynamicsRef.current.absActive) warnIcons.push({ icon: 'ABS', color: 'var(--rr-amber, #fbbf24)', title: 'Anti-lock brakes active' });
+          if (tireDynamicsRef.current && tireDynamicsRef.current.hydroplaneSeverity > 0.15) warnIcons.push({ icon: '≋', color: 'var(--rr-cyan, #22d3ee)', title: 'Hydroplaning' });
           if (scn.weather === 'fog' && !(d && d.highBeams)) warnIcons.push({ icon: '🌫', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', title: __alloT('stem.roadready.fog_low_beams_ok', 'Fog — low beams OK') });
           warnIcons.forEach(function(wi, widx) {
             gfx.fillStyle = wi.color;
@@ -28269,7 +28317,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           },
             h('div', { style: { fontSize: '80px', animation: reducedMotionRef.current ? 'none' : 'rrTourIcon 2.5s ease-in-out infinite', display: 'inline-block', marginBottom: '14px' } }, cur.icon),
             h('h2', { style: { fontSize: '26px', fontWeight: 900, marginBottom: '10px' } }, cur.title),
-            h('div', { style: { fontSize: '14px', color: '#e0e7ff', lineHeight: '1.6', marginBottom: '24px', padding: '0 10px' } }, cur.body),
+            h('div', { style: { fontSize: '14px', color: 'var(--rr-violet, #a78bfa)', lineHeight: '1.6', marginBottom: '24px', padding: '0 10px' } }, cur.body),
             // Progress dots
             h('div', { style: { display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '18px' } },
               tourSteps.map(function(_, si) {
@@ -28306,7 +28354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }
 
       if (view === 'menu') {
-        return h('div', { 'data-rr-view': view, key: view, style: { padding: '20px', maxWidth: '960px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { 'data-rr-view': view, key: view, style: { padding: '20px', maxWidth: '960px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           // Calm, road-focused header. The shared keyframes remain available to
           // reaction drills and the achievement gallery, but this menu does not
           // run decorative motion.
@@ -28355,9 +28403,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('text', { x: 249, y: 39, fill: '#0f172a', textAnchor: 'middle', fontSize: 7, fontWeight: 800 }, 'LIMIT'),
                 h('text', { x: 249, y: 60, fill: '#0f172a', textAnchor: 'middle', fontSize: 21, fontWeight: 800 }, '25')
               ),
-              h('h2', { style: { fontSize: '26px', fontWeight: 900, marginBottom: '4px', color: '#f8fafc', letterSpacing: '-0.02em' } }, 'RoadReady'),
-              h('div', { style: { fontSize: '13px', color: '#e2e8f0', fontWeight: 600 } }, __alloT('stem.roadready.driver_s_ed_automotive_science_maine_e', "Driver's Ed & Automotive Science — Maine edition")),
-              h('div', { style: { fontSize: '11px', color: '#a5b4fc', marginTop: '4px' } }, __alloT('stem.roadready.learn_the_physics_pass_the_test_drive_', "Learn the physics. Pass the test. Drive safer."))
+              h('h2', { style: { fontSize: '26px', fontWeight: 900, marginBottom: '4px', color: 'var(--allo-stem-text, #e2e8f0)', letterSpacing: '-0.02em' } }, 'RoadReady'),
+              h('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600 } }, __alloT('stem.roadready.driver_s_ed_automotive_science_maine_e', "Driver's Ed & Automotive Science — Maine edition")),
+              h('div', { style: { fontSize: '11px', color: 'var(--rr-violet, #a78bfa)', marginTop: '4px' } }, __alloT('stem.roadready.learn_the_physics_pass_the_test_drive_', "Learn the physics. Pass the test. Drive safer."))
             )
           ),
           // ── Daily driving quote ──
@@ -28372,9 +28420,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             },
               h('div', { style: { fontSize: '28px', flexShrink: 0, lineHeight: 1 } }, '💬'),
               h('div', { style: { flex: 1 } },
-                h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#fde68a', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '4px' } }, __alloT('stem.roadready.today_s_driving_thought', "Today's Driving Thought")),
-                h('div', { style: { fontSize: '13px', color: '#f8fafc', lineHeight: '1.5', fontStyle: 'italic', marginBottom: '4px' } }, '"' + q.t + '"'),
-                h('div', { style: { fontSize: '10px', color: '#cbd5e1', textAlign: 'right' } }, '— ' + q.a)
+                h('div', { style: { fontSize: '9px', fontWeight: 700, color: 'var(--rr-amber, #fbbf24)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '4px' } }, __alloT('stem.roadready.today_s_driving_thought', "Today's Driving Thought")),
+                h('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: '1.5', fontStyle: 'italic', marginBottom: '4px' } }, '"' + q.t + '"'),
+                h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'right' } }, '— ' + q.a)
               )
             );
           })(),
@@ -28424,53 +28472,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '42px' } }, '🌎'),
             h('div', null,
               h('div', { style: { fontSize: '16px', fontWeight: 900 } }, __alloT('stem.roadready.free_explore', 'Free Explore')),
-              h('div', { style: { fontSize: '12px', color: '#c4b5fd', marginTop: '2px' } }, __alloT('stem.roadready.open_sandbox_no_objectives_toggle_weat', 'Open sandbox. No objectives. Toggle weather, time, traffic live. Practice anything. Earn achievements.')),
-              h('div', { style: { fontSize: '10px', color: '#c4b5fd', marginTop: '4px' } }, Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ' achievements earned')
+              h('div', { style: { fontSize: '12px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.open_sandbox_no_objectives_toggle_weat', 'Open sandbox. No objectives. Toggle weather, time, traffic live. Practice anything. Earn achievements.')),
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '4px' } }, Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ' achievements earned')
             )
           ),
           // Structured modes
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '20px' } },
             h('button', { onClick: function() { upd('view', 'scenarioSelect'); },
-              style: { padding: '20px', borderRadius: '12px', border: '2px solid #22d3ee', background: 'linear-gradient(135deg, #0c4a6e, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '20px', borderRadius: '12px', border: '2px solid #22d3ee', background: 'linear-gradient(135deg, #0c4a6e, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '32px' } }, '🛣️'),
               h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.drive_simulator', 'Drive Simulator')),
               h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px' } }, SCENARIOS.length + ' scenarios. Real physics. Maine roads.')
             ),
             h('button', { onClick: function() { upd('view', 'permitStart'); },
-              style: { padding: '20px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '20px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '32px' } }, '📝'),
               h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.permit_test', 'Permit Test')),
-              h('div', { style: { fontSize: '11px', color: '#fcd34d', marginTop: '4px' } }, PERMIT_BANK.length + ' questions. Maine BMV format.')
+              h('div', { style: { fontSize: '11px', color: 'var(--rr-amber, #fbbf24)', marginTop: '4px' } }, PERMIT_BANK.length + ' questions. Maine BMV format.')
             ),
             h('button', { onClick: function() { upd('view', 'lessonSelect'); },
-              style: { padding: '20px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #4c1d95, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '20px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #4c1d95, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '32px' } }, '📚'),
               h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.auto_science', 'Auto Science')),
-              h('div', { style: { fontSize: '11px', color: '#ddd6fe', marginTop: '4px' } }, Object.keys(LESSONS).length + ' physics lessons')
+              h('div', { style: { fontSize: '11px', color: 'var(--rr-violet, #a78bfa)', marginTop: '4px' } }, Object.keys(LESSONS).length + ' physics lessons')
             ),
             h('button', { onClick: function() { upd('view', 'signsView'); },
-              style: { padding: '20px', borderRadius: '12px', border: '2px solid #4ade80', background: 'linear-gradient(135deg, #14532d, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '20px', borderRadius: '12px', border: '2px solid #4ade80', background: 'linear-gradient(135deg, #14532d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '32px' } }, '🪧'),
               h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.signs_signals', 'Signs & Signals')),
-              h('div', { style: { fontSize: '11px', color: '#bbf7d0', marginTop: '4px' } }, __alloT('stem.roadready.color_shape_meanings', 'Color & shape meanings'))
+              h('div', { style: { fontSize: '11px', color: 'var(--rr-green, #4ade80)', marginTop: '4px' } }, __alloT('stem.roadready.color_shape_meanings', 'Color & shape meanings'))
             ),
             h('button', { onClick: function() { upd('view', 'stoppingLab'); },
-              style: { padding: '20px', borderRadius: '12px', border: '2px solid #f87171', background: 'linear-gradient(135deg, #7f1d1d, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '20px', borderRadius: '12px', border: '2px solid #f87171', background: 'linear-gradient(135deg, #7f1d1d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '32px' } }, '🛑'),
               h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.stopping_distance_lab', 'Stopping Distance Lab')),
-              h('div', { style: { fontSize: '11px', color: '#fecaca', marginTop: '4px' } }, __alloT('stem.roadready.live_physics_v_reaction_time', 'Live physics: v, μ, reaction time'))
+              h('div', { style: { fontSize: '11px', color: 'var(--rr-red, #fca5a5)', marginTop: '4px' } }, __alloT('stem.roadready.live_physics_v_reaction_time', 'Live physics: v, μ, reaction time'))
             ),
             h('button', { onClick: function() { upd('view', 'parking'); },
-              style: { padding: '20px', borderRadius: '12px', border: '2px solid #06b6d4', background: 'linear-gradient(135deg, #164e63, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '20px', borderRadius: '12px', border: '2px solid #06b6d4', background: 'linear-gradient(135deg, #164e63, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '32px' } }, '🅿️'),
               h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.parallel_parking', 'Parallel Parking')),
-              h('div', { style: { fontSize: '11px', color: '#a5f3fc', marginTop: '4px' } }, __alloT('stem.roadready.2d_top_down_with_step_guidance', '2D top-down with step guidance'))
+              h('div', { style: { fontSize: '11px', color: 'var(--rr-cyan, #22d3ee)', marginTop: '4px' } }, __alloT('stem.roadready.2d_top_down_with_step_guidance', '2D top-down with step guidance'))
             ),
             h('button', { onClick: function() { upd('view', 'hypermilingLab'); },
-              style: { padding: '20px', borderRadius: '12px', border: '2px solid #10b981', background: 'linear-gradient(135deg, #064e3b, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '20px', borderRadius: '12px', border: '2px solid #10b981', background: 'linear-gradient(135deg, #064e3b, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '32px' } }, '🌿'),
               h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, __alloT('stem.roadready.hypermiling_lab', 'Hypermiling Lab')),
-              h('div', { style: { fontSize: '11px', color: '#bbf7d0', marginTop: '4px' } }, __alloT('stem.roadready.mpg_vs_speed_graph_beat_the_epa', 'MPG vs speed graph — beat the EPA'))
+              h('div', { style: { fontSize: '11px', color: 'var(--rr-green, #4ade80)', marginTop: '4px' } }, __alloT('stem.roadready.mpg_vs_speed_graph_beat_the_epa', 'MPG vs speed graph — beat the EPA'))
             )
           ),
           h('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', margin: '-4px 0 16px' } },
@@ -28491,115 +28539,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #38bdf8', background: 'linear-gradient(135deg, #0c4a6e, #1e3a5f)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '❄️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.maine_winter_guide', 'Maine Winter Guide')),
-              h('div', { style: { fontSize: '10px', color: '#bae6fd', marginTop: '2px' } }, __alloT('stem.roadready.moose_ice_snow_kit_tires', 'Moose, ice, snow kit, tires'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-cyan, #22d3ee)', marginTop: '2px' } }, __alloT('stem.roadready.moose_ice_snow_kit_tires', 'Moose, ice, snow kit, tires'))
             ),
             h('button', { onClick: function() { upd('view', 'neurodivergentGuide'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #4c1d95, #1e1b4b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🧠'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.neurodivergent_driver_guide', 'Neurodivergent Driver Guide')),
-              h('div', { style: { fontSize: '10px', color: '#c4b5fd', marginTop: '2px' } }, __alloT('stem.roadready.adhd_autism_sensory_anxiety_iep_504_ro', 'ADHD, autism, sensory, anxiety, IEP/504 road-test accommodations'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.adhd_autism_sensory_anxiety_iep_504_ro', 'ADHD, autism, sensory, anxiety, IEP/504 road-test accommodations'))
             ),
             h('button', { onClick: function() { upd('view', 'nightVisionIntro'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #1e1b4b, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🌃'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.night_vision_training', 'Night Vision Training')),
-              h('div', { style: { fontSize: '10px', color: '#c7d2fe', marginTop: '2px' } }, __alloT('stem.roadready.progressive_darkness_drill_sign_readin', 'Progressive darkness drill — sign reading, ped scan'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.progressive_darkness_drill_sign_readin', 'Progressive darkness drill — sign reading, ped scan'))
             ),
             h('button', { onClick: function() { upd('view', 'parentRideCheck'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f472b6', background: 'linear-gradient(135deg, #831843, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f472b6', background: 'linear-gradient(135deg, #831843, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '👨‍👧'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.parent_ride_check', 'Parent Ride Check')),
-              h('div', { style: { fontSize: '10px', color: '#fbcfe8', marginTop: '2px' } }, __alloT('stem.roadready.2_min_eval_tap_to_mark_errors', '2-min eval — tap to mark errors'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-pink, #f9a8d4)', marginTop: '2px' } }, __alloT('stem.roadready.2_min_eval_tap_to_mark_errors', '2-min eval — tap to mark errors'))
             ),
             h('button', { onClick: function() { upd('view', 'roadTestIntro'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #4ade80', background: 'linear-gradient(135deg, #14532d, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #4ade80', background: 'linear-gradient(135deg, #14532d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🪪'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.road_test_simulator', 'Road Test Simulator')),
-              h('div', { style: { fontSize: '10px', color: '#bbf7d0', marginTop: '2px' } }, __alloT('stem.roadready.full_maine_bmv_style_scored_exam', 'Full Maine BMV-style scored exam'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.full_maine_bmv_style_scored_exam', 'Full Maine BMV-style scored exam'))
             ),
             h('button', { onClick: function() { upd('view', 'logbook'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '📔'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.driving_logbook', 'Driving Logbook')),
-              h('div', { style: { fontSize: '10px', color: '#fde68a', marginTop: '2px' } }, ((d.logbook && d.logbook.length) || 0) + ' sessions logged')
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, ((d.logbook && d.logbook.length) || 0) + ' sessions logged')
             ),
             h('button', { onClick: function() { upd('view', 'defensiveList'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #60a5fa', background: 'linear-gradient(135deg, #1e3a8a, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #60a5fa', background: 'linear-gradient(135deg, #1e3a8a, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🛡️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.defensive_drills', 'Defensive Drills')),
-              h('div', { style: { fontSize: '10px', color: '#bfdbfe', marginTop: '2px' } }, __alloT('stem.roadready.short_hazard_response_scenarios', 'Short hazard-response scenarios'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-blue, #60a5fa)', marginTop: '2px' } }, __alloT('stem.roadready.short_hazard_response_scenarios', 'Short hazard-response scenarios'))
             ),
             h('button', { onClick: function() { upd('view', 'crashLab'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #7f1d1d, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #7f1d1d, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🔬'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.crash_recon_lab', 'Crash Recon Lab')),
-              h('div', { style: { fontSize: '10px', color: '#fecaca', marginTop: '2px' } }, __alloT('stem.roadready.physics_of_real_crash_types', 'Physics of real crash types'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.physics_of_real_crash_types', 'Physics of real crash types'))
             ),
             h('button', { onClick: function() { upd('view', 'lessonPath'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #14b8a6', background: 'linear-gradient(135deg, #134e4a, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #14b8a6', background: 'linear-gradient(135deg, #134e4a, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🎓'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.lesson_path', 'Lesson Path')),
-              h('div', { style: { fontSize: '10px', color: '#99f6e4', marginTop: '2px' } }, __alloT('stem.roadready.guided_1_2_3_progression', 'Guided 1→2→3 progression'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.guided_1_2_3_progression', 'Guided 1→2→3 progression'))
             ),
             h('button', { onClick: function() { upd('view', 'maintenanceGame'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f97316', background: 'linear-gradient(135deg, #7c2d12, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f97316', background: 'linear-gradient(135deg, #7c2d12, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🔧'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.maintenance_game', 'Maintenance Game')),
-              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, __alloT('stem.roadready.diagnose_dashboard_warnings', 'Diagnose dashboard warnings'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-orange, #fdba74)', marginTop: '2px' } }, __alloT('stem.roadready.diagnose_dashboard_warnings', 'Diagnose dashboard warnings'))
             ),
             h('button', { onClick: function() { upd('view', 'customize'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ec4899', background: 'linear-gradient(135deg, #831843, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ec4899', background: 'linear-gradient(135deg, #831843, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🎨'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.my_ride', 'My Ride')),
-              h('div', { style: { fontSize: '10px', color: '#fbcfe8', marginTop: '2px' } }, __alloT('stem.roadready.color_name_plate', 'Color, name, plate'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-pink, #f9a8d4)', marginTop: '2px' } }, __alloT('stem.roadready.color_name_plate', 'Color, name, plate'))
             ),
             h('button', { onClick: function() { upd('view', 'distractedLab'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #450a0a, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #450a0a, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '📱'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.distracted_driving_lab', 'Distracted Driving Lab')),
-              h('div', { style: { fontSize: '10px', color: '#fecaca', marginTop: '2px' } }, __alloT('stem.roadready.feel_the_cost_of_a_3_second_glance', 'Feel the cost of a 3-second glance'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.feel_the_cost_of_a_3_second_glance', 'Feel the cost of a 3-second glance'))
             ),
             h('button', { onClick: function() { upd('view', 'analytics'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #0ea5e9', background: 'linear-gradient(135deg, #0c4a6e, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #0ea5e9', background: 'linear-gradient(135deg, #0c4a6e, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '📈'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.progress_analytics', 'Progress Analytics')),
-              h('div', { style: { fontSize: '10px', color: '#bae6fd', marginTop: '2px' } }, __alloT('stem.roadready.charts_of_your_growth_over_time', 'Charts of your growth over time'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-cyan, #22d3ee)', marginTop: '2px' } }, __alloT('stem.roadready.charts_of_your_growth_over_time', 'Charts of your growth over time'))
             ),
             h('button', { onClick: function() { upd('view', 'emergencyHandbook'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #dc2626', background: 'linear-gradient(135deg, #7f1d1d, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #dc2626', background: 'linear-gradient(135deg, #7f1d1d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🚨'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.emergency_handbook', 'Emergency Handbook')),
-              h('div', { style: { fontSize: '10px', color: '#fecaca', marginTop: '2px' } }, __alloT('stem.roadready.what_to_do_when_things_go_wrong', 'What to do when things go wrong'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.what_to_do_when_things_go_wrong', 'What to do when things go wrong'))
             ),
             h('button', { onClick: function() { upd('view', 'driverPledge'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #84cc16', background: 'linear-gradient(135deg, #3f6212, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #84cc16', background: 'linear-gradient(135deg, #3f6212, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '📜'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.driver_s_pledge', 'Driver\'s Pledge')),
-              h('div', { style: { fontSize: '10px', color: '#d9f99d', marginTop: '2px' } }, d.pledgeSigned ? '✓ Signed' : 'Make your commitment')
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, d.pledgeSigned ? '✓ Signed' : 'Make your commitment')
             ),
             h('button', { onClick: function() { updMulti({ view: 'permitFlashcards', permitFlashIdx: 0 }); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🗂️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.permit_flashcards', 'Permit Flashcards')),
-              h('div', { style: { fontSize: '10px', color: '#fde68a', marginTop: '2px' } }, __alloT('stem.roadready.study_mode_spaced_repetition', 'Study mode — spaced repetition'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, __alloT('stem.roadready.study_mode_spaced_repetition', 'Study mode — spaced repetition'))
             ),
             h('button', { onClick: function() { updMulti({ view: 'rightOfWay', rowIdx: 0, rowAnswered: null }); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '↔️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Right-of-Way'),
-              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, __alloT('stem.roadready.18_who_goes_first_scenarios', '20 "who goes first?" scenarios'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-orange, #fdba74)', marginTop: '2px' } }, __alloT('stem.roadready.18_who_goes_first_scenarios', '20 "who goes first?" scenarios'))
             ),
             h('button', { onClick: function() { updMulti({ view: 'rulesFoundations', rulesPillar: 'rightOfWay' }); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #312e81, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #312e81, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '📚'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.rules_foundations', 'Rules Foundations')),
-              h('div', { style: { fontSize: '10px', color: '#c7d2fe', marginTop: '2px' } }, __alloT('stem.roadready.9_universal_pillars_every_driver_must_', '9 universal pillars every driver must know'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.9_universal_pillars_every_driver_must_', '9 universal pillars every driver must know'))
             ),
             h('button', { onClick: function() { upd('view', 'gdlTracker'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #10b981', background: 'linear-gradient(135deg, #064e3b, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #10b981', background: 'linear-gradient(135deg, #064e3b, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🪪'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.maine_gdl_tracker', 'Maine GDL Tracker')),
-              h('div', { style: { fontSize: '10px', color: '#a7f3d0', marginTop: '2px' } }, __alloT('stem.roadready.your_license_stage_restrictions', 'Your license stage + restrictions'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.your_license_stage_restrictions', 'Your license stage + restrictions'))
             ),
             // ── Daily Challenge: highlighted hero tile (always on top) ──
             (function() {
@@ -28608,216 +28656,216 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var doneToday = dailyState.date === today && dailyState.done;
               var streak = dailyState.streak || 0;
               return h('button', { onClick: function() { upd('view', 'dailyChallenge'); },
-                style: { padding: '16px', borderRadius: '12px', border: '2px solid ' + (doneToday ? '#4ade80' : '#fbbf24'), background: 'linear-gradient(135deg, ' + (doneToday ? '#14532d' : '#78350f') + ', #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left', position: 'relative' } },
+                style: { padding: '16px', borderRadius: '12px', border: '2px solid ' + (doneToday ? '#4ade80' : '#fbbf24'), background: 'linear-gradient(135deg, ' + (doneToday ? '#14532d' : '#78350f') + ', #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', textAlign: 'left', position: 'relative' } },
                 streak >= 3 ? h('div', { style: { position: 'absolute', top: '6px', right: '6px', background: '#b91c1c', color: '#fff', borderRadius: '10px', padding: '2px 6px', fontSize: '9px', fontWeight: 800 } }, '🔥 ' + streak) : null,
                 h('div', { style: { fontSize: '28px' } }, doneToday ? '✅' : '⭐'),
                 h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.daily_challenge', 'Daily Challenge')),
-                h('div', { style: { fontSize: '10px', color: doneToday ? '#bbf7d0' : '#fde68a', marginTop: '2px' } }, doneToday ? 'Done! Come back tomorrow' : 'One task per day · Streak: ' + streak)
+                h('div', { style: { fontSize: '10px', color: doneToday ? 'var(--rr-green, #4ade80)' : 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, doneToday ? 'Done! Come back tomorrow' : 'One task per day · Streak: ' + streak)
               );
             })(),
             h('button', { onClick: function() { updMulti({ view: 'peerPressure', ppIdx: 0, ppAnswered: null, ppScore: 0 }); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f472b6', background: 'linear-gradient(135deg, #831843, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f472b6', background: 'linear-gradient(135deg, #831843, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🙅'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.peer_pressure', 'Peer Pressure')),
-              h('div', { style: { fontSize: '10px', color: '#fbcfe8', marginTop: '2px' } }, __alloT('stem.roadready.practice_saying_no_to_friend_pressure', 'Practice saying no to "friend" pressure'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-pink, #f9a8d4)', marginTop: '2px' } }, __alloT('stem.roadready.practice_saying_no_to_friend_pressure', 'Practice saying no to "friend" pressure'))
             ),
             h('button', { onClick: function() { updMulti({ view: 'reactionTest', rtPhase: 'intro', rtTrials: [], rtMode: 'baseline' }); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #22d3ee', background: 'linear-gradient(135deg, #083344, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #22d3ee', background: 'linear-gradient(135deg, #083344, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '⚡'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.reaction_test', 'Reaction Test')),
-              h('div', { style: { fontSize: '10px', color: '#a5f3fc', marginTop: '2px' } }, __alloT('stem.roadready.your_baseline_vs_0_08_bac', 'Your baseline vs modeled impairment'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-cyan, #22d3ee)', marginTop: '2px' } }, __alloT('stem.roadready.your_baseline_vs_0_08_bac', 'Your baseline vs modeled impairment'))
             ),
             h('button', { onClick: function() { upd('view', 'cheatSheet'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #e5e7eb', background: 'linear-gradient(135deg, #475569, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #e5e7eb', background: 'linear-gradient(135deg, #475569, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '📄'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.study_cheat_sheet', 'Study Cheat Sheet')),
-              h('div', { style: { fontSize: '10px', color: '#e5e7eb', marginTop: '2px' } }, __alloT('stem.roadready.one_page_printable_summary', 'One-page printable summary'))
+              h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text, #e2e8f0)', marginTop: '2px' } }, __alloT('stem.roadready.one_page_printable_summary', 'One-page printable summary'))
             ),
             h('button', { onClick: function() { upd('view', 'seatSetup'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #8b5cf6', background: 'linear-gradient(135deg, #4c1d95, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #8b5cf6', background: 'linear-gradient(135deg, #4c1d95, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🪑'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.seat_mirror_setup', 'Seat & Mirror Setup')),
-              h('div', { style: { fontSize: '10px', color: '#ddd6fe', marginTop: '2px' } }, __alloT('stem.roadready.get_seated_like_a_pro', 'Get seated like a pro'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.get_seated_like_a_pro', 'Get seated like a pro'))
             ),
             h('button', { onClick: function() { upd('view', 'postCrash'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #dc2626', background: 'linear-gradient(135deg, #7f1d1d, #450a0a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '📞'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.post_crash_protocol', 'Post-Crash Protocol')),
-              h('div', { style: { fontSize: '10px', color: '#fecaca', marginTop: '2px' } }, __alloT('stem.roadready.first_10_minutes_after_a_crash', 'First 10 minutes after a crash'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.first_10_minutes_after_a_crash', 'First 10 minutes after a crash'))
             ),
             h('button', { onClick: function() { upd('view', 'bikeAware'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #16a34a', background: 'linear-gradient(135deg, #14532d, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #16a34a', background: 'linear-gradient(135deg, #14532d, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🚴'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.cyclist_moto_awareness', 'Cyclist & Moto Awareness')),
-              h('div', { style: { fontSize: '10px', color: '#bbf7d0', marginTop: '2px' } }, __alloT('stem.roadready.3_ft_law_shared_blind_spots', '3-ft law, shared blind spots'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.3_ft_law_shared_blind_spots', '3-ft law, shared blind spots'))
             ),
             h('button', { onClick: function() { upd('view', 'helpHub'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #06b6d4', background: 'linear-gradient(135deg, #164e63, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #06b6d4', background: 'linear-gradient(135deg, #164e63, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🧭'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.help_directory', 'Help & Directory')),
-              h('div', { style: { fontSize: '10px', color: '#a5f3fc', marginTop: '2px' } }, __alloT('stem.roadready.find_anything_in_roadready', 'Find anything in RoadReady'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-cyan, #22d3ee)', marginTop: '2px' } }, __alloT('stem.roadready.find_anything_in_roadready', 'Find anything in RoadReady'))
             ),
             h('button', { onClick: function() { upd('view', 'keyboardCheatSheet'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #64748b', background: 'linear-gradient(135deg, #334155, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #64748b', background: 'linear-gradient(135deg, #334155, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '⌨️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.keyboard_shortcuts', 'Keyboard Shortcuts')),
               h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginTop: '2px' } }, __alloT('stem.roadready.all_drive_menu_controls', 'All drive + menu controls'))
             ),
             h('button', { onClick: function() { upd('view', 'roundaboutGuide'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🔄'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.roundabout_tutorial', 'Roundabout Tutorial')),
-              h('div', { style: { fontSize: '10px', color: '#fde68a', marginTop: '2px' } }, __alloT('stem.roadready.yield_enter_exit_step_by_step', 'Yield, enter, exit — step by step'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, __alloT('stem.roadready.yield_enter_exit_step_by_step', 'Yield, enter, exit — step by step'))
             ),
             h('button', { onClick: function() { upd('view', 'vehicleCompare'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #8b5cf6', background: 'linear-gradient(135deg, #4c1d95, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #8b5cf6', background: 'linear-gradient(135deg, #4c1d95, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🔬'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.vehicle_science', 'Vehicle Science')),
-              h('div', { style: { fontSize: '10px', color: '#ddd6fe', marginTop: '2px' } }, __alloT('stem.roadready.compare_specs_cd_mass_mpg', 'Compare specs, Cd, mass, MPG'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.compare_specs_cd_mass_mpg', 'Compare specs, Cd, mass, MPG'))
             ),
             h('button', { onClick: function() { upd('view', 'threePoint'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ec4899', background: 'linear-gradient(135deg, #831843, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ec4899', background: 'linear-gradient(135deg, #831843, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '↩️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.3_point_turn', '3-Point Turn')),
-              h('div', { style: { fontSize: '10px', color: '#fbcfe8', marginTop: '2px' } }, __alloT('stem.roadready.road_test_maneuver_2d_trainer', 'Road-test maneuver, 2D trainer'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-pink, #f9a8d4)', marginTop: '2px' } }, __alloT('stem.roadready.road_test_maneuver_2d_trainer', 'Road-test maneuver, 2D trainer'))
             ),
             h('button', { onClick: function() { upd('view', 'fuelCalc'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f97316', background: 'linear-gradient(135deg, #7c2d12, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f97316', background: 'linear-gradient(135deg, #7c2d12, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '💰'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.fuel_cost_calculator', 'Fuel Cost Calculator')),
-              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, __alloT('stem.roadready.mi_annual_cost_ev_vs_gas', '$/mi, annual cost, EV vs gas'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-orange, #fdba74)', marginTop: '2px' } }, __alloT('stem.roadready.mi_annual_cost_ev_vs_gas', '$/mi, annual cost, EV vs gas'))
             ),
             h('button', { onClick: function() { upd('view', 'backingDrill'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a3a3a3', background: 'linear-gradient(135deg, #404040, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a3a3a3', background: 'linear-gradient(135deg, #404040, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🔙'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.straight_backing', 'Straight Backing')),
-              h('div', { style: { fontSize: '10px', color: '#d4d4d4', marginTop: '2px' } }, __alloT('stem.roadready.reverse_in_a_straight_line', 'Reverse in a straight line'))
+              h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '2px' } }, __alloT('stem.roadready.reverse_in_a_straight_line', 'Reverse in a straight line'))
             ),
             h('button', { onClick: function() { upd('view', 'emergencyDrill'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #7f1d1d, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #7f1d1d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🚨'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.emergency_response', 'Emergency Response')),
-              h('div', { style: { fontSize: '10px', color: '#fca5a5', marginTop: '2px' } }, __alloT('stem.roadready.practice_yielding_to_sirens', 'Practice yielding to sirens'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.practice_yielding_to_sirens', 'Practice yielding to sirens'))
             ),
             h('button', { onClick: function() { upd('view', 'intersectionGuide'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #14b8a6', background: 'linear-gradient(135deg, #134e4a, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #14b8a6', background: 'linear-gradient(135deg, #134e4a, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🚦'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.intersection_guide', 'Intersection Guide')),
-              h('div', { style: { fontSize: '10px', color: '#99f6e4', marginTop: '2px' } }, __alloT('stem.roadready.right_of_way_rules_at_every_type', 'Right-of-way rules at every type'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.right_of_way_rules_at_every_type', 'Right-of-way rules at every type'))
             ),
             h('button', { onClick: function() { upd('view', 'dashLights'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f43f5e', background: 'linear-gradient(135deg, #881337, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f43f5e', background: 'linear-gradient(135deg, #881337, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🔧'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.dashboard_lights', 'Dashboard Lights')),
-              h('div', { style: { fontSize: '10px', color: '#fda4af', marginTop: '2px' } }, __alloT('stem.roadready.warning_lights_decoded', 'Warning lights decoded'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.warning_lights_decoded', 'Warning lights decoded'))
             ),
             h('button', { onClick: function() { upd('view', 'preTrip'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #84cc16', background: 'linear-gradient(135deg, #3f6212, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #84cc16', background: 'linear-gradient(135deg, #3f6212, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '✅'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.pre_trip_check', 'Pre-Trip Check')),
-              h('div', { style: { fontSize: '10px', color: '#d9f99d', marginTop: '2px' } }, __alloT('stem.roadready.tires_lights_fluids_walk_around', 'TIRES, lights, fluids walk-around'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.tires_lights_fluids_walk_around', 'TIRES, lights, fluids walk-around'))
             ),
             h('button', { onClick: function() { upd('view', 'hazardTest'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f43f5e', background: 'linear-gradient(135deg, #9f1239, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f43f5e', background: 'linear-gradient(135deg, #9f1239, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '⚡'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.hazard_perception', 'Hazard Perception')),
-              h('div', { style: { fontSize: '10px', color: '#fda4af', marginTop: '2px' } }, __alloT('stem.roadready.timed_reaction_test_spot_the_danger', 'Timed reaction test — spot the danger'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.timed_reaction_test_spot_the_danger', 'Timed reaction test — spot the danger'))
             ),
             h('button', { onClick: function() { upd('view', 'insuranceCalc'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #06b6d4', background: 'linear-gradient(135deg, #164e63, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #06b6d4', background: 'linear-gradient(135deg, #164e63, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🛡️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.insurance_estimator', 'Insurance Estimator')),
-              h('div', { style: { fontSize: '10px', color: '#a5f3fc', marginTop: '2px' } }, __alloT('stem.roadready.how_driving_record_affects_rates', 'How driving record affects rates'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-cyan, #22d3ee)', marginTop: '2px' } }, __alloT('stem.roadready.how_driving_record_affects_rates', 'How driving record affects rates'))
             ),
             h('button', { onClick: function() { upd('view', 'maintenanceGuide'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a3a3a3', background: 'linear-gradient(135deg, #404040, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a3a3a3', background: 'linear-gradient(135deg, #404040, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🔧'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.maintenance_schedule', 'Maintenance Schedule')),
-              h('div', { style: { fontSize: '10px', color: '#d4d4d4', marginTop: '2px' } }, __alloT('stem.roadready.oil_tires_brakes_by_mileage', 'Oil, tires, brakes by mileage'))
+              h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '2px' } }, __alloT('stem.roadready.oil_tires_brakes_by_mileage', 'Oil, tires, brakes by mileage'))
             ),
             callGemini ? h('button', { onClick: function() { upd('view', 'aiCoach'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #4c1d95, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #4c1d95, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🤖'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.ai_driving_coach', 'AI Driving Coach')),
-              h('div', { style: { fontSize: '10px', color: '#ddd6fe', marginTop: '2px' } }, __alloT('stem.roadready.gemini_analyzes_your_last_drive', 'Gemini analyzes your last drive'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.gemini_analyzes_your_last_drive', 'Gemini analyzes your last drive'))
             ) : null,
             h('button', { onClick: function() { upd('view', 'postCrash'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fb923c', background: 'linear-gradient(135deg, #7c2d12, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fb923c', background: 'linear-gradient(135deg, #7c2d12, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '📋'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.after_a_crash', 'After a Crash')),
-              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, __alloT('stem.roadready.timeline_based_protocol_glove_box_expo', 'Timeline-based protocol + glove-box export'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-orange, #fdba74)', marginTop: '2px' } }, __alloT('stem.roadready.timeline_based_protocol_glove_box_expo', 'Timeline-based protocol + glove-box export'))
             ),
             h('button', { onClick: function() { upd('view', 'knowYourCar'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #e879f9', background: 'linear-gradient(135deg, #701a75, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #e879f9', background: 'linear-gradient(135deg, #701a75, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🔍'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.know_your_car', 'Know Your Car')),
-              h('div', { style: { fontSize: '10px', color: '#f0abfc', marginTop: '2px' } }, __alloT('stem.roadready.every_part_explained_engine_to_tires', 'Every part explained — engine to tires'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.every_part_explained_engine_to_tires', 'Every part explained — engine to tires'))
             ),
             h('button', { onClick: function() { upd('view', 'speedCompare'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f472b6', background: 'linear-gradient(135deg, #831843, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f472b6', background: 'linear-gradient(135deg, #831843, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🏎️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.speed_comparison', 'Speed Comparison')),
-              h('div', { style: { fontSize: '10px', color: '#fbcfe8', marginTop: '2px' } }, __alloT('stem.roadready.side_by_side_stopping_distance_at_2_sp', 'Side-by-side stopping distance at 2 speeds'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-pink, #f9a8d4)', marginTop: '2px' } }, __alloT('stem.roadready.side_by_side_stopping_distance_at_2_sp', 'Side-by-side stopping distance at 2 speeds'))
             ),
             h('button', { onClick: function() { upd('view', 'blindSpotGuide'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '👁️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.blind_spots_mirrors', 'Blind Spots & Mirrors')),
-              h('div', { style: { fontSize: '10px', color: '#fde68a', marginTop: '2px' } }, __alloT('stem.roadready.where_you_can_t_see_and_how_to_fix_it', 'Where you can\'t see — and how to fix it'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, __alloT('stem.roadready.where_you_can_t_see_and_how_to_fix_it', 'Where you can\'t see — and how to fix it'))
             ),
             h('button', { onClick: function() { upd('view', 'weatherCompare'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #38bdf8', background: 'linear-gradient(135deg, #0c4a6e, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #38bdf8', background: 'linear-gradient(135deg, #0c4a6e, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🌦️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.weather_impact_chart', 'Weather Impact Chart')),
-              h('div', { style: { fontSize: '10px', color: '#bae6fd', marginTop: '2px' } }, __alloT('stem.roadready.how_conditions_change_everything', 'How conditions change everything'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-cyan, #22d3ee)', marginTop: '2px' } }, __alloT('stem.roadready.how_conditions_change_everything', 'How conditions change everything'))
             ),
             h('button', { onClick: function() { upd('view', 'roadTrip'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #34d399', background: 'linear-gradient(135deg, #064e3b, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #34d399', background: 'linear-gradient(135deg, #064e3b, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🗺️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.road_trip_planner', 'Road Trip Planner')),
-              h('div', { style: { fontSize: '10px', color: '#a7f3d0', marginTop: '2px' } }, __alloT('stem.roadready.distance_fuel_cost_stop_planning', 'Distance, fuel cost, stop planning'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.distance_fuel_cost_stop_planning', 'Distance, fuel cost, stop planning'))
             ),
             h('button', { onClick: function() { upd('view', 'reactionTrainer'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fb923c', background: 'linear-gradient(135deg, #7c2d12, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #fb923c', background: 'linear-gradient(135deg, #7c2d12, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '⏱️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.reaction_time_test', 'Reaction Time Test')),
-              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, __alloT('stem.roadready.measure_your_actual_reaction_speed', 'Measure YOUR actual reaction speed'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-orange, #fdba74)', marginTop: '2px' } }, __alloT('stem.roadready.measure_your_actual_reaction_speed', 'Measure YOUR actual reaction speed'))
             ),
             h('button', { onClick: function() { upd('view', 'nightVision'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #1e1b4b, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🔦'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.night_vision_math', 'Night Vision Math')),
-              h('div', { style: { fontSize: '10px', color: '#ddd6fe', marginTop: '2px' } }, __alloT('stem.roadready.can_you_stop_within_your_headlights', 'Can you stop within your headlights?'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.can_you_stop_within_your_headlights', 'Can you stop within your headlights?'))
             ),
             h('button', { onClick: function() { upd('view', 'carBuying'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #10b981', background: 'linear-gradient(135deg, #064e3b, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #10b981', background: 'linear-gradient(135deg, #064e3b, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '💵'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.first_car_guide', 'First Car Guide')),
-              h('div', { style: { fontSize: '10px', color: '#a7f3d0', marginTop: '2px' } }, __alloT('stem.roadready.what_to_look_for_what_to_avoid', 'What to look for, what to avoid'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.what_to_look_for_what_to_avoid', 'What to look for, what to avoid'))
             ),
             h('button', { onClick: function() { upd('view', 'learningPath'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🎯'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.learning_path', 'Learning Path')),
-              h('div', { style: { fontSize: '10px', color: '#fde68a', marginTop: '2px' } }, __alloT('stem.roadready.step_by_step_guided_progression', 'Step-by-step guided progression'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', marginTop: '2px' } }, __alloT('stem.roadready.step_by_step_guided_progression', 'Step-by-step guided progression'))
             ),
             h('button', { onClick: function() { upd('view', 'roadTestRubric'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #14b8a6', background: 'linear-gradient(135deg, #134e4a, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #14b8a6', background: 'linear-gradient(135deg, #134e4a, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '📋'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.road_test_rubric', 'Road Test Rubric')),
-              h('div', { style: { fontSize: '10px', color: '#99f6e4', marginTop: '2px' } }, __alloT('stem.roadready.what_the_examiner_actually_grades', 'What the examiner actually grades'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-green, #4ade80)', marginTop: '2px' } }, __alloT('stem.roadready.what_the_examiner_actually_grades', 'What the examiner actually grades'))
             ),
             h('button', { onClick: function() { upd('view', 'emergencyHandbook'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #7f1d1d, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #7f1d1d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🆘'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.emergency_situations', 'Emergency Situations')),
-              h('div', { style: { fontSize: '10px', color: '#fca5a5', marginTop: '2px' } }, __alloT('stem.roadready.blowout_brake_failure_hood_flies_up', 'Blowout, brake failure, hood flies up'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px' } }, __alloT('stem.roadready.blowout_brake_failure_hood_flies_up', 'Blowout, brake failure, hood flies up'))
             ),
             h('button', { onClick: function() { upd('view', 'forceDiagram'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #312e81, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #312e81, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '📐'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.force_diagram', 'Force Diagram')),
-              h('div', { style: { fontSize: '10px', color: '#c7d2fe', marginTop: '2px' } }, __alloT('stem.roadready.live_drag_friction_thrust_vectors', 'Live drag, friction, thrust vectors'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-violet, #a78bfa)', marginTop: '2px' } }, __alloT('stem.roadready.live_drag_friction_thrust_vectors', 'Live drag, friction, thrust vectors'))
             )
           ) : null,
           // Maine facts strip
@@ -28834,7 +28882,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ),
           // ── Progress Dashboard (compact summary) ──
-          h('div', { style: { background: 'linear-gradient(135deg, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)), #1e1b4b)', borderRadius: '12px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '12px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
               h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#fff' } }, __alloT('stem.roadready.your_progress', '📊 Your Progress')),
               h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, (d.totalDrives || 0) + ' drives · ' + Object.keys(scenariosDriven).length + '/' + SCENARIOS.length + ' scenarios')
@@ -28905,11 +28953,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           h('button', {
             onClick: function() { upd('view', 'achievementGallery'); },
-            style: { width: '100%', background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '12px', padding: '14px', border: '1px solid #fbbf24', marginBottom: '12px', cursor: 'pointer', textAlign: 'left', color: '#fff' }
+            style: { width: '100%', background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '12px', padding: '14px', border: '1px solid #fbbf24', marginBottom: '12px', cursor: 'pointer', textAlign: 'left', color: '#fff' }
           },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
               h('div', { style: { fontSize: '11px', fontWeight: 800, color: 'var(--rr-amber, #fbbf24)', textTransform: 'uppercase' } }, __alloT('stem.roadready.achievements', '🏆 Achievements')),
-              h('div', { style: { fontSize: '11px', color: '#fde68a' } }, Object.keys(earnedBadges).length + ' / ' + ACHIEVEMENTS.length + ' →')
+              h('div', { style: { fontSize: '11px', color: 'var(--rr-amber, #fbbf24)' } }, Object.keys(earnedBadges).length + ' / ' + ACHIEVEMENTS.length + ' →')
             ),
             // Preview strip of most-recent 10 earned + a few unearned
             h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
@@ -29117,7 +29165,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     addToast('Export failed.');
                   }
                 },
-                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid ' + (d.lastJournal ? '#10b981' : '#334155'), background: d.lastJournal ? 'rgba(16,185,129,0.15)' : 'rgba(15,23,42,0.5)', color: d.lastJournal ? '#10b981' : '#475569', fontSize: '12px', fontWeight: 700, cursor: d.lastJournal ? 'pointer' : 'not-allowed' }
+                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid ' + (d.lastJournal ? '#10b981' : '#334155'), background: d.lastJournal ? 'rgba(16,185,129,0.15)' : 'rgba(15,23,42,0.5)', color: d.lastJournal ? 'var(--rr-green, #4ade80)' : 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '12px', fontWeight: 700, cursor: d.lastJournal ? 'pointer' : 'not-allowed' }
               }, __alloT('stem.roadready.export_journal', '📓 Export Journal')),
               h('label', {
                 style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #60a5fa', background: 'rgba(96,165,250,0.15)', color: 'var(--rr-blue, #60a5fa)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6px', maxWidth: '100%', boxSizing: 'border-box' }
@@ -29204,11 +29252,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var feTime = d.feTime || 'day';
         var feTraffic = d.feTraffic || 'medium';
         var feMap = d.feMap || 'suburban';
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu', '← Menu')),
           h('div', { style: { background: 'linear-gradient(135deg, #2e1065, #0c4a6e)', borderRadius: '14px', padding: '24px', border: '1px solid #a78bfa', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '48px' } }, '🌎'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.free_explore_2', 'Free Explore')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.free_explore_2', 'Free Explore')),
             h('div', { style: { fontSize: '12px', color: '#c4b5fd' } }, __alloT('stem.roadready.no_timer_no_score_pressure_just_drive_', 'No timer. No score pressure. Just drive, explore, and learn at your own pace.')),
             h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px' } }, __alloT('stem.roadready.all_conditions_are_changeable_mid_driv', 'All conditions are changeable mid-drive via the toolbar.'))
           ),
@@ -29219,7 +29267,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               VEHICLES.map(function(v) {
                 var sel = v.id === selectedVehicle;
                 return h('button', { key: v.id, onClick: function() { upd('vehicle', v.id); },
-                  style: { padding: '8px 12px', borderRadius: '8px', border: '1px solid ' + (sel ? '#a78bfa' : '#334155'), background: sel ? '#2e1065' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } },
+                  style: { padding: '8px 12px', borderRadius: '8px', border: '1px solid ' + (sel ? '#a78bfa' : '#334155'), background: sel ? '#2e1065' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } },
                   v.icon + ' ' + v.name);
               })
             )
@@ -29233,7 +29281,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 [['residential','🏘️ Residential'],['suburban','🏙️ Suburban'],['highway','🛣️ Highway'],['rural','🌲 Rural'],['roundabout','🔄 Roundabout']].map(function(m) {
                   var sel = m[0] === feMap;
                   return h('button', { key: m[0], onClick: function() { upd('feMap', m[0]); },
-                    style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (sel ? '#a78bfa' : '#334155'), background: sel ? '#2e1065' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700, textAlign: 'left' } }, m[1]);
+                    style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (sel ? '#a78bfa' : '#334155'), background: sel ? '#2e1065' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px', fontWeight: 700, textAlign: 'left' } }, m[1]);
                 })
               )
             ),
@@ -29245,7 +29293,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   [['clear','☀️'],['rain','🌧️'],['snow','❄️'],['fog','🌫️']].map(function(w) {
                     var sel = w[0] === feWeather;
                     return h('button', { key: w[0], onClick: function() { upd('feWeather', w[0]); },
-                      style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (sel ? '#a78bfa' : '#334155'), background: sel ? '#2e1065' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, w[1]);
+                      style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (sel ? '#a78bfa' : '#334155'), background: sel ? '#2e1065' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, w[1]);
                   })
                 ),
                 // Dynamic weather toggle — schedules realistic weather chains during the drive.
@@ -29262,7 +29310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   [['day','☀️ Day'],['night','🌙 Night']].map(function(t) {
                     var sel = t[0] === feTime;
                     return h('button', { key: t[0], onClick: function() { upd('feTime', t[0]); },
-                      style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (sel ? '#a78bfa' : '#334155'), background: sel ? '#2e1065' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, t[1]);
+                      style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (sel ? '#a78bfa' : '#334155'), background: sel ? '#2e1065' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, t[1]);
                   })
                 )
               ),
@@ -29272,7 +29320,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   [['light','🚗 Light'],['medium','🚗🚗 Medium'],['heavy','🚗🚗🚗 Heavy']].map(function(t) {
                     var sel = t[0] === feTraffic;
                     return h('button', { key: t[0], onClick: function() { upd('feTraffic', t[0]); },
-                      style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (sel ? '#a78bfa' : '#334155'), background: sel ? '#2e1065' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, t[1]);
+                      style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (sel ? '#a78bfa' : '#334155'), background: sel ? '#2e1065' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, t[1]);
                   })
                 )
               )
@@ -29282,7 +29330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Optional: attach a curated multi-stop trip. The quest system will auto-target
           // each landmark in order and issue a completion badge at the end.
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '14px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.road_trip_optional', '🗺️ Road Trip (optional)')),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-amber, #fbbf24)', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.road_trip_optional', '🗺️ Road Trip (optional)')),
             h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '8px' } }, __alloT('stem.roadready.pick_a_curated_chain_of_stops_or_leave', 'Pick a curated chain of stops, or leave blank for open exploration.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' } },
               [{ id: null, icon: '❌', name: __alloT('stem.roadready.no_trip', 'No trip'), desc: __alloT('stem.roadready.open_exploration', 'Open exploration') }].concat(TRIPS).map(function(trip) {
@@ -29290,7 +29338,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var done = trip.id && d.completedTrips && d.completedTrips[trip.id];
                 return h('button', { key: trip.id || 'none',
                   onClick: function() { upd('freeExploreTrip', trip.id); },
-                  style: { padding: '8px', borderRadius: '6px', border: '1px solid ' + (sel ? '#f59e0b' : '#334155'), background: sel ? 'rgba(245,158,11,0.15)' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', textAlign: 'left' }
+                  style: { padding: '8px', borderRadius: '6px', border: '1px solid ' + (sel ? '#f59e0b' : '#334155'), background: sel ? 'rgba(245,158,11,0.15)' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px', textAlign: 'left' }
                 },
                   h('div', { style: { fontWeight: 800, marginBottom: '2px' } }, trip.icon + ' ' + trip.name + (done ? ' ✓' : '')),
                   h('div', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '9px', lineHeight: '1.3' } }, trip.desc || ''),
@@ -29307,7 +29355,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' } },
               h('div', { style: { fontSize: '11px', fontWeight: 800, color: 'var(--rr-amber, #fbbf24)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.roadready.rideshare_mode', '🚕 Rideshare Mode')),
               h('button', { onClick: function() { upd('rideshareMode', !d.rideshareMode); },
-                style: { padding: '4px 12px', borderRadius: '6px', border: '1px solid ' + (d.rideshareMode ? '#fbbf24' : '#334155'), background: d.rideshareMode ? 'rgba(251,191,36,0.2)' : '#1e293b', color: '#fff', fontSize: '10px', fontWeight: 800, cursor: 'pointer' }
+                style: { padding: '4px 12px', borderRadius: '6px', border: '1px solid ' + (d.rideshareMode ? '#fbbf24' : '#334155'), background: d.rideshareMode ? 'rgba(251,191,36,0.2)' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '10px', fontWeight: 800, cursor: 'pointer' }
               }, d.rideshareMode ? 'ON' : 'OFF')
             ),
             h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', lineHeight: '1.5' } },
@@ -29315,7 +29363,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('b', { style: { color: 'var(--rr-amber, #fbbf24)' } }, __alloT('stem.roadready.comfort_safety_beat_speed', 'Comfort + safety beat speed.')),
               __alloT('stem.roadready.tips_scale_with_smoothness_hard_brakes', ' Tips scale with smoothness — hard brakes, jackrabbits, and skids cost stars.')
             ),
-            d.rideshareTotal ? h('div', { style: { fontSize: '10px', color: '#fde68a', marginTop: '6px' } },
+            d.rideshareTotal ? h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', marginTop: '6px' } },
               'Lifetime: ' + d.rideshareTotal.rides + ' rides · $' + (d.rideshareTotal.earnings || 0).toFixed(2) + ' earned'
             ) : null
           ),
@@ -29357,7 +29405,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { title: 'Practice a maneuver', detail: 'Work on space, positioning, and timing.', ids: ['highway', 'roundabout', 'parking', 'construction', 'downtown'] },
           { title: 'Adapt to conditions', detail: 'Bring your smooth control into more demanding drives.', ids: ['night', 'fog', 'rain', 'snow', 'dawn'] }
         ];
-        return h('div', { 'data-rr-view': 'scenarioSelect', className: 'rr-lesson-shell' },
+        return h('div', { 'data-rr-view': 'scenarioSelect', className: 'rr-lesson-shell', style: { background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px' } },
           h('button', { className: 'rr-back-link', onClick: function() { upd('view', 'menu'); } }, __alloT('stem.roadready.menu_2', '← Menu')),
           h('div', { className: 'rr-lesson-eyebrow' }, 'Road Ready / Guided practice'),
           h('h2', null, __alloT('stem.roadready.choose_your_scenario', 'Choose Your Scenario')),
@@ -29466,12 +29514,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('h3', { id: 'rr-brief-rules', style: { margin: '0 0 10px', fontSize: '17px' } }, __alloT('stem.roadready.before_you_drive', 'Before you drive: see, decide, act')),
                 h('div', { className: 'rr-rule-brief' },
                   [
-                    { cue: 'STOP', title: 'Stop means stationary', text: 'Stop before the stop line or crosswalk. Scan left, right, then left again. Yield before moving.', color: '#b91c1c' },
-                    { cue: briefingScenario.speedLimit + ' MPH', title: 'The limit is a maximum', text: 'Ease off early for bends, crossings and poor visibility. Leave more space when the road is wet or slippery.', color: '#1e40af' },
-                    { cue: 'MIRROR → SIGNAL → CHECK', title: 'Make your intention clear', text: 'Signal at least 100 feet before turning. Check mirrors and the blind spot before changing lanes; move only when clear.', color: '#115e59' }
+                    { cue: 'STOP', title: 'Stop means stationary', text: 'Stop before the stop line or crosswalk. Scan left, right, then left again. Yield before moving.', color: 'var(--rr-red, #fca5a5)' },
+                    { cue: briefingScenario.speedLimit + ' MPH', title: 'The limit is a maximum', text: 'Ease off early for bends, crossings and poor visibility. Leave more space when the road is wet or slippery.', color: 'var(--rr-blue, #60a5fa)' },
+                    { cue: 'MIRROR → SIGNAL → CHECK', title: 'Make your intention clear', text: 'Signal at least 100 feet before turning. Check mirrors and the blind spot before changing lanes; move only when clear.', color: 'var(--rr-green, #4ade80)' }
                   ].map(function(rule, index) {
                     return h('article', { key: index },
-                      h('span', { style: { display: 'inline-block', padding: '5px 8px', borderRadius: index === 0 ? '4px' : '6px', fontSize: '10px', fontWeight: 900, letterSpacing: '.035em', background: rule.color, color: '#fff' } }, rule.cue),
+                      h('span', { style: { display: 'inline-block', padding: '5px 8px', borderRadius: index === 0 ? '4px' : '6px', fontSize: '10px', fontWeight: 900, letterSpacing: '.035em', background: rule.color, color: 'var(--allo-stem-text, #e2e8f0)' } }, rule.cue),
                       h('h4', null, __alloT('stem.roadready.brief_rule_' + index + '_title', rule.title)),
                       h('p', null, __alloT('stem.roadready.brief_rule_' + index + '_text', rule.text))
                     );
@@ -29489,7 +29537,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 })
               ),
               h('div', { style: { padding: '11px 13px', borderRadius: '10px', background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.28)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: '12px', lineHeight: 1.5 } }, h('strong', { style: { color: 'var(--rr-blue, #60a5fa)' } }, 'Controls: '), briefingMission.controls),
-              d.rideAlong ? h('div', { role: briefingRideAlongSupported ? 'status' : 'alert', style: { padding: '11px 13px', borderRadius: '10px', background: briefingRideAlongSupported ? 'rgba(34,197,94,0.09)' : 'rgba(245,158,11,0.1)', border: '1px solid ' + (briefingRideAlongSupported ? 'rgba(74,222,128,0.35)' : 'rgba(251,191,36,0.45)'), color: briefingRideAlongSupported ? '#bbf7d0' : '#fde68a', fontSize: '12px', lineHeight: 1.5 } },
+              d.rideAlong ? h('div', { role: briefingRideAlongSupported ? 'status' : 'alert', style: { padding: '11px 13px', borderRadius: '10px', background: briefingRideAlongSupported ? 'rgba(34,197,94,0.09)' : 'rgba(245,158,11,0.1)', border: '1px solid ' + (briefingRideAlongSupported ? 'rgba(74,222,128,0.35)' : 'rgba(251,191,36,0.45)'), color: briefingRideAlongSupported ? 'var(--rr-green, #4ade80)' : 'var(--rr-amber, #fbbf24)', fontSize: '12px', lineHeight: 1.5 } },
                 h('strong', null, briefingRideAlongSupported ? '🎧 Ride-Along active: ' : 'Hands-on course: '),
                 briefingRideAlongSupported
                   ? 'The car buckles up, pauses for a four-second mirror scan, then steers, follows traffic, and stops for controls and hazards. You can pause or end the drive at any time.'
@@ -29677,13 +29725,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             style: { position: 'absolute', inset: 0, background: 'rgba(2,6,23,0.8)', zIndex: 32, display: 'grid', placeItems: 'center', padding: '18px', backdropFilter: 'blur(5px)' }
           },
             h('div', { className: 'rr-mission-dialog-card', style: { width: 'min(460px, 100%)', maxHeight: 'calc(100% - 12px)', overflowY: 'auto', boxSizing: 'border-box', borderRadius: '16px', padding: '22px', background: 'var(--allo-stem-panel, #0f172a)', border: '2px solid ' + (missionComplete.passed ? '#4ade80' : '#fbbf24'), boxShadow: '0 20px 60px rgba(0,0,0,0.45)' } },
-              h('div', { style: { color: missionComplete.passed ? '#4ade80' : '#fbbf24', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' } }, missionComplete.passed ? 'Mission passed' : 'Segment complete · review needed'),
-              h('h2', { id: 'rr-mission-complete-title', style: { margin: '5px 0 4px', color: '#fff', fontSize: '22px' } }, missionComplete.mission.title),
-              h('p', { id: 'rr-mission-complete-desc', style: { margin: '0 0 13px', color: '#cbd5e1', fontSize: '12px', lineHeight: 1.5 } }, 'The car is safely paused. Your debrief will show one strength and the best next practice focus.'),
+              h('div', { style: { color: missionComplete.passed ? 'var(--rr-green, #4ade80)' : 'var(--rr-amber, #fbbf24)', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' } }, missionComplete.passed ? 'Mission passed' : 'Segment complete · review needed'),
+              h('h2', { id: 'rr-mission-complete-title', style: { margin: '5px 0 4px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '22px' } }, missionComplete.mission.title),
+              h('p', { id: 'rr-mission-complete-desc', style: { margin: '0 0 13px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '12px', lineHeight: 1.5 } }, 'The car is safely paused. Your debrief will show one strength and the best next practice focus.'),
               h('div', { style: { display: 'grid', gap: '6px', marginBottom: '16px' } },
                 missionComplete.criteria.map(function(item) {
-                  return h('div', { key: item.id, style: { display: 'flex', gap: '8px', alignItems: 'center', padding: '7px 9px', borderRadius: '8px', background: item.met ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)', color: '#e2e8f0', fontSize: '12px' } },
-                    h('span', { 'aria-hidden': 'true', style: { color: item.met ? '#4ade80' : '#fbbf24', fontWeight: 900 } }, item.met ? '✓' : '△'),
+                  return h('div', { key: item.id, style: { display: 'flex', gap: '8px', alignItems: 'center', padding: '7px 9px', borderRadius: '8px', background: item.met ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px' } },
+                    h('span', { 'aria-hidden': 'true', style: { color: item.met ? 'var(--rr-green, #4ade80)' : 'var(--rr-amber, #fbbf24)', fontWeight: 900 } }, item.met ? '✓' : '△'),
                     item.label
                   );
                 })
@@ -29725,7 +29773,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // cause a re-render and the prompt would hang on screen forever.
           !beltFastened ? h('div', {
             className: 'rr-seatbelt-prompt',
-            style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '14px 22px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(127,29,29,0.95), rgba(185,28,28,0.95))', border: '2px solid #fca5a5', color: '#fff', zIndex: 28, textAlign: 'center', width: 'max-content', maxWidth: 'calc(100% - 24px)', boxSizing: 'border-box', boxShadow: '0 6px 24px rgba(239,68,68,0.5)', animation: 'none' }
+            style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '14px 22px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(127,29,29,0.95), rgba(185,28,28,0.95))', border: '2px solid #fca5a5', color: 'var(--allo-stem-text, #e2e8f0)', zIndex: 28, textAlign: 'center', width: 'max-content', maxWidth: 'calc(100% - 24px)', boxSizing: 'border-box', boxShadow: '0 6px 24px rgba(239,68,68,0.5)', animation: 'none' }
           },
             h('div', { style: { fontSize: '36px', marginBottom: '4px' } }, '🔔'),
             h('div', { style: { fontSize: '15px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.fasten_your_seatbelt', 'Fasten Your Seatbelt')),
@@ -29743,7 +29791,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ) :
           // ── Grace period banner: follows the simulation-time safety scan ──
           (rideAlongActiveUi ? rideAlongPreparingUi : graceVisible) ? h('div', {
-            style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '12px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(22,163,74,0.95), rgba(21,128,61,0.95))', border: '2px solid #4ade80', color: '#fff', zIndex: 27, textAlign: 'center', maxWidth: '420px', boxShadow: '0 6px 20px rgba(74,222,128,0.4)', animation: reducedMotionRef.current ? 'none' : 'rr-fade-in 0.5s ease-out' }
+            style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '12px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(22,163,74,0.95), rgba(21,128,61,0.95))', border: '2px solid #4ade80', color: 'var(--allo-stem-text, #e2e8f0)', zIndex: 27, textAlign: 'center', maxWidth: '420px', boxShadow: '0 6px 20px rgba(74,222,128,0.4)', animation: reducedMotionRef.current ? 'none' : 'rr-fade-in 0.5s ease-out' }
           },
             h('div', { style: { fontSize: '20px', marginBottom: '6px' } }, rideAlongActiveUi ? '🎧🪞 Ride-Along Safety Scan' : __alloT('stem.roadready.check_your_mirrors', '🪞 Check Your Mirrors')),
             h('div', { style: { fontSize: '13px', fontWeight: 700, marginBottom: '4px' } }, rideAlongActiveUi
@@ -29755,7 +29803,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             formalRideAlongPausedUi ? h('div', { style: { marginTop: '5px', fontSize: '10px', fontWeight: 800, color: '#fef3c7' } }, 'Evaluated drive · manual control') : null
           ) : null,
           startupReleasePending && !graceVisible && !rideAlongPreparingUi ? h('div', {
-            style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '12px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(120,53,15,0.97), rgba(146,64,14,0.97))', border: '2px solid #fbbf24', color: '#fff', zIndex: 27, textAlign: 'center', maxWidth: '420px', boxShadow: '0 6px 20px rgba(251,191,36,0.3)' },
+            style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '12px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(120,53,15,0.97), rgba(146,64,14,0.97))', border: '2px solid #fbbf24', color: 'var(--allo-stem-text, #e2e8f0)', zIndex: 27, textAlign: 'center', maxWidth: '420px', boxShadow: '0 6px 20px rgba(251,191,36,0.3)' },
             role: 'status', 'aria-live': 'polite'
           },
             h('div', { style: { fontSize: '18px', fontWeight: 900, marginBottom: '5px' } }, 'Release Movement Controls'),
@@ -30072,7 +30120,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── LESSON SELECT ──
       if (view === 'lessonSelect') {
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_3', '← Menu')),
           h('h3', { style: { fontSize: '18px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.automotive_science_lessons', 'Automotive Science Lessons')),
           h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '14px' } }, __alloT('stem.roadready.real_physics_behind_every_driving_deci', 'Real physics behind every driving decision.')),
@@ -30080,7 +30128,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             Object.keys(LESSONS).map(function(key) {
               var les = LESSONS[key];
               return h('button', { key: key, onClick: function() { updMulti({ view: 'lesson', lesson: key }); },
-                style: { padding: '14px', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'linear-gradient(135deg, #1e1b4b, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+                style: { padding: '14px', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
                 h('div', { style: { fontSize: '28px' } }, les.icon),
                 h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, les.title),
                 h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px' } }, les.formula)
@@ -30093,11 +30141,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ── LESSON VIEW ──
       if (view === 'lesson' && selectedLesson && LESSONS[selectedLesson]) {
         var les = LESSONS[selectedLesson];
-        return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'lessonSelect'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.lessons', '← Lessons')),
-          h('div', { style: { background: 'linear-gradient(135deg, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)), #1e1b4b)', borderRadius: '14px', padding: '24px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '14px', padding: '24px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
             h('div', { style: { fontSize: '42px', textAlign: 'center' } }, les.icon),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900, textAlign: 'center', marginBottom: '14px' } }, les.title),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900, textAlign: 'center', marginBottom: '14px' } }, les.title),
             h('p', { style: { fontSize: '13px', lineHeight: '1.7', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '14px' } }, __alloT('stem.roadready.' + (selectedLesson) + '_content', les.content)),
             h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '10px' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-cyan, #22d3ee)', textTransform: 'uppercase', marginBottom: '4px' } }, __alloT('stem.roadready.formula', 'Formula')),
@@ -30126,9 +30174,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   h('circle', { cx: sx(60), cy: sy(distFt(60, 0.4)), r: 3, fill: '#fbbf24' })
                 ),
                 h('div', { style: { display: 'flex', gap: 12, marginTop: 4, fontSize: 10, flexWrap: 'wrap' } },
-                  h('span', { style: { color: '#22c55e', fontWeight: 700 } }, __alloT('stem.roadready.dry_0_7', '— Dry (μ=0.7)')),
+                  h('span', { style: { color: 'var(--rr-green, #4ade80)', fontWeight: 700 } }, __alloT('stem.roadready.dry_0_7', '— Dry (μ=0.7)')),
                   h('span', { style: { color: 'var(--rr-amber, #fbbf24)', fontWeight: 700 } }, __alloT('stem.roadready.wet_0_4', '— Wet (μ=0.4)')),
-                  h('span', { style: { color: '#94a3b8' } }, __alloT('stem.roadready.ice_0_1_7_dry_off_this_chart', 'Ice (μ=0.1) ≈ 7× dry — off this chart.'))
+                  h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.roadready.ice_0_1_7_dry_off_this_chart', 'Ice (μ=0.1) ≈ 7× dry — off this chart.'))
                 )
               );
             })(),
@@ -30149,7 +30197,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { cat: 'regulatory', name: __alloT('stem.roadready.speed_limit', 'Speed Limit'), svg: function(){return h('svg',{'aria-hidden':'true',focusable:'false',viewBox:'0 0 100 100',width:60,height:60},h('rect',{x:10,y:10,width:80,height:80,fill:'#fff',stroke:'#000',strokeWidth:3,rx:4}),h('text',{x:50,y:30,textAnchor:'middle',fontSize:9,fontWeight:700,fill:'#000'},'SPEED'),h('text',{x:50,y:44,textAnchor:'middle',fontSize:9,fontWeight:700,fill:'#000'},'LIMIT'),h('text',{x:50,y:75,textAnchor:'middle',fontSize:24,fontWeight:900,fill:'#000'},'55'));}, meaning: 'Maximum legal speed in ideal conditions. Slower if weather, traffic, or visibility dictate.', when: 'Posted along any highway.' },
           { cat: 'regulatory', name: __alloT('stem.roadready.no_u_turn', 'No U-Turn'), svg: function(){return h('svg',{'aria-hidden':'true',focusable:'false',viewBox:'0 0 100 100',width:60,height:60},h('rect',{x:10,y:10,width:80,height:80,fill:'#fff',stroke:'#000',strokeWidth:3,rx:4}),h('path',{d:'M 30 70 L 30 45 Q 30 25 50 25 Q 70 25 70 45 L 70 60 L 80 60 L 65 75 L 50 60 L 60 60 L 60 45 Q 60 35 50 35 Q 40 35 40 45 L 40 70 Z',fill:'#000'}),h('line',{x1:15,y1:85,x2:85,y2:15,stroke:'#dc2626',strokeWidth:6}));}, meaning: 'You may not reverse direction at this point.', when: 'Busy intersections where U-turns would cause crashes.' },
           { cat: 'regulatory', name: __alloT('stem.roadready.do_not_enter', 'Do Not Enter'), svg: function(){return h('svg',{'aria-hidden':'true',focusable:'false',viewBox:'0 0 100 100',width:60,height:60},h('rect',{x:8,y:8,width:84,height:84,fill:'#dc2626',stroke:'#fff',strokeWidth:3,rx:2}),h('circle',{cx:50,cy:50,r:29,fill:'#dc2626',stroke:'#fff',strokeWidth:2}),h('rect',{x:26,y:44,width:48,height:12,fill:'#fff',rx:1}),h('text',{x:50,y:31,textAnchor:'middle',fontSize:12,fontWeight:900,fill:'#fff'},'DO NOT'),h('text',{x:50,y:75,textAnchor:'middle',fontSize:14,fontWeight:900,fill:'#fff'},'ENTER'));}, meaning: 'R5-1: traffic may not enter this roadway, ramp, or one-way street from your direction. TURN AROUND before entering.', when: 'One-way street facing the wrong way, or highway exit ramp.' },
-          { cat: 'regulatory', name: __alloT('stem.roadready.one_way', 'One Way'), svg: function(){return h('svg',{'aria-hidden':'true',focusable:'false',viewBox:'0 0 140 60',width:70,height:30},h('rect',{x:2,y:2,width:136,height:56,fill:'#000',stroke:'#fff',strokeWidth:2}),h('path',{d:'M 18 30 L 100 30 M 90 20 L 100 30 L 90 40',stroke:'#fff',strokeWidth:4,fill:'none'}),h('text',{x:115,y:36,fontSize:11,fontWeight:900,fill:'#fff'},'ONE'),h('text',{x:115,y:48,fontSize:11,fontWeight:900,fill:'#fff'},'WAY'));}, meaning: 'All traffic flows in the arrow direction only.', when: 'Downtown grid streets.' },
+          { cat: 'regulatory', name: __alloT('stem.roadready.one_way', 'One Way'), svg: function(){return h('svg',{'aria-hidden':'true',focusable:'false',viewBox:'0 0 140 60',width:70,height:30},h('rect',{x:2,y:2,width:136,height:56,fill:'#000',stroke:'#fff',strokeWidth:2}),h('path',{d:'M 18 30 L 100 30 M 90 20 L 100 30 L 90 40',stroke:'#fff',strokeWidth:4,fill:'none'}),h('text',{x:118,y:36,textAnchor:'middle',fontSize:11,fontWeight:900,fill:'#fff'},'ONE'),h('text',{x:118,y:48,textAnchor:'middle',fontSize:11,fontWeight:900,fill:'#fff'},'WAY'));}, meaning: 'All traffic flows in the arrow direction only.', when: 'Downtown grid streets.' },
           { cat: 'warning', name: __alloT('stem.roadready.curve_ahead', 'Curve Ahead'), svg: function(){return h('svg',{'aria-hidden':'true',focusable:'false',viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#fde047',stroke:'#000',strokeWidth:3}),h('path',{d:'M 30 70 Q 30 40 50 40 Q 70 40 70 25',stroke:'#000',strokeWidth:4,fill:'none'}),h('polygon',{points:'70,25 65,30 75,30',fill:'#000'}));}, meaning: 'Road curves ahead. Slow to the advisory speed.', when: 'Before every curve sharp enough to need warning.' },
           { cat: 'warning', name: __alloT('stem.roadready.pedestrian_crossing', 'Pedestrian Crossing'), svg: function(){return h('svg',{'aria-hidden':'true',focusable:'false',viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#fde047',stroke:'#000',strokeWidth:3}),h('circle',{cx:50,cy:35,r:6,fill:'#000'}),h('path',{d:'M 50 42 L 50 62 M 50 50 L 40 60 M 50 50 L 60 60 M 50 62 L 42 75 M 50 62 L 58 75',stroke:'#000',strokeWidth:3,fill:'none'}));}, meaning: 'Pedestrians may cross here. Watch and slow.', when: 'Mid-block crosswalks, near schools, parks, shopping.' },
           { cat: 'warning', name: __alloT('stem.roadready.deer_crossing', 'Deer Crossing'), svg: function(){return h('svg',{'aria-hidden':'true',focusable:'false',viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#fde047',stroke:'#000',strokeWidth:3}),h('text',{x:50,y:60,textAnchor:'middle',fontSize:36,fill:'#000'},'🦌'));}, meaning: 'Deer commonly cross here. Scan shoulders, especially at dawn/dusk.', when: 'Rural Maine roads constantly.' },
@@ -30168,11 +30216,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var shown = selCat === 'all' ? signLibrary : signLibrary.filter(function(s) { return s.cat === selCat; });
         var cats = [
           { id: 'all', label: 'All', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' },
-          { id: 'regulatory', label: __alloT('stem.roadready.regulatory', 'Regulatory'), color: '#fff' },
+          { id: 'regulatory', label: __alloT('stem.roadready.regulatory', 'Regulatory'), color: 'var(--allo-stem-text, #e2e8f0)' },
           { id: 'warning', label: __alloT('stem.roadready.warning', 'Warning'), color: 'var(--allo-stem-text, #fde047)' },
-          { id: 'construction', label: __alloT('stem.roadready.construction', 'Construction'), color: '#f97316' },
-          { id: 'school', label: __alloT('stem.roadready.school', 'School'), color: '#ccff00' },
-          { id: 'guide', label: __alloT('stem.roadready.guide', 'Guide'), color: '#1e3a8a' }
+          { id: 'construction', label: __alloT('stem.roadready.construction', 'Construction'), color: 'var(--rr-orange, #fdba74)' },
+          { id: 'school', label: __alloT('stem.roadready.school', 'School'), color: 'var(--rr-green, #4ade80)' },
+          { id: 'guide', label: __alloT('stem.roadready.guide', 'Guide'), color: 'var(--rr-blue, #60a5fa)' }
         ];
         // Quiz mode state
         var quizMode = !!d.signsQuizMode;
@@ -30213,11 +30261,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           upd('signsQuizQuestions', freshQs);
           d.signsQuizQuestions = freshQs;
         }
-        return h('div', { style: { padding: '20px', maxWidth: '920px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '920px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { updMulti({ view: 'menu', signsQuizMode: false }); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_4', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #14532d, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '16px', border: '1px solid #4ade80' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #14532d, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '16px', border: '1px solid #4ade80' } },
             h('div', { style: { fontSize: '42px' } }, '🪧'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.road_signs_reference', 'Road Signs Reference')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.road_signs_reference', 'Road Signs Reference')),
             h('div', { style: { fontSize: '12px', color: '#bbf7d0' } }, signLibrary.length + ' common signs · Recognize meaning before reading words'),
             // Mode toggle
             h('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '10px' } },
@@ -30238,7 +30286,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cats.map(function(c) {
                 var sel = c.id === selCat;
                 return h('button', { key: c.id, onClick: function() { upd('signsCat', c.id); },
-                  style: { padding: '6px 14px', borderRadius: '6px', border: '1px solid ' + (sel ? c.color : '#334155'), background: sel ? 'rgba(74,222,128,0.15)' : '#0f172a', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+                  style: { padding: '6px 14px', borderRadius: '6px', border: '1px solid ' + (sel ? c.color : '#334155'), background: sel ? 'rgba(74,222,128,0.15)' : '#0f172a', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
                 }, c.label);
               })
             ),
@@ -30266,7 +30314,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               return h('div', { style: { background: 'linear-gradient(135deg, ' + (passed ? '#14532d' : '#78350f') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (passed ? '#4ade80' : '#f59e0b') } },
                 h('div', { style: { fontSize: '56px' } }, passed ? '🎉' : '📝'),
                 h('h3', { style: { fontSize: '20px', fontWeight: 900, marginTop: '8px' } }, __alloT('stem.roadready.quiz_complete', 'Quiz Complete!')),
-                h('div', { style: { fontSize: '36px', fontWeight: 900, color: passed ? '#4ade80' : '#f59e0b', margin: '8px 0' } }, quizScore + ' / ' + totalQs),
+                h('div', { style: { fontSize: '36px', fontWeight: 900, color: passed ? 'var(--rr-green, #4ade80)' : 'var(--rr-amber, #fbbf24)', margin: '8px 0' } }, quizScore + ' / ' + totalQs),
                 h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '8px' } }, quizReverse ? '🔁 Pick-the-sign mode' : '🎯 Name-the-sign mode'),
                 h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))' } }, quizScore >= 9 ? 'Excellent!' : passed ? 'Good work — ready for the permit test.' : 'Keep studying. Switch to Browse mode to review.'),
                 h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px', flexWrap: 'wrap' } },
@@ -30274,7 +30322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     style: { padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#4ade80', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
                   }, __alloT('stem.roadready.try_again_new_shuffle', '↻ Try Again (new shuffle)')),
                   h('button', { onClick: function() { updMulti({ signsQuizReverse: !quizReverse, signsQuizIdx: 0, signsQuizScore: 0, signsQuizAnswered: null, signsQuizQuestions: null }); },
-                    style: { padding: '10px 20px', borderRadius: '8px', border: '1px solid #4ade80', background: 'transparent', color: '#4ade80', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+                    style: { padding: '10px 20px', borderRadius: '8px', border: '1px solid #4ade80', background: 'transparent', color: 'var(--rr-green, #4ade80)', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
                   }, quizReverse ? '🎯 Try Name-the-sign' : '🔁 Try Pick-the-sign')
                 )
               );
@@ -30289,14 +30337,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             return h('div', null,
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '11px' } },
                 h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, 'Question ' + (quizIdx + 1) + ' / ' + totalQs + ' · ' + (isReverse ? '🔁 Pick-the-sign' : '🎯 Name-the-sign')),
-                h('span', { style: { color: '#4ade80', fontWeight: 700 } }, 'Score: ' + quizScore)
+                h('span', { style: { color: 'var(--rr-green, #4ade80)', fontWeight: 700 } }, 'Score: ' + quizScore)
               ),
               // Prompt: sign (name-mode) or meaning text (reverse-mode)
               h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '20px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '10px', textAlign: 'center' } },
                 isReverse
-                  ? h('div', { style: { padding: '16px', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '8px', fontSize: '13px', color: '#fff', fontStyle: 'italic', lineHeight: '1.5' } }, '\u201C' + qSign.meaning + '\u201D')
+                  ? h('div', { style: { padding: '16px', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '8px', fontSize: '13px', color: 'var(--allo-stem-text, #e2e8f0)', fontStyle: 'italic', lineHeight: '1.5' } }, '\u201C' + qSign.meaning + '\u201D')
                   : h('div', { role: 'img', 'aria-label': qSign.name, style: { padding: '12px', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '8px', display: 'inline-block' } }, qSign.svg()),
-                h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '10px', color: '#fff' } },
+                h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '10px', color: 'var(--allo-stem-text, #e2e8f0)' } },
                   isReverse ? 'Which sign matches this?' : 'What does this sign mean?'
                 )
               ),
@@ -30336,7 +30384,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                           var correct = ci === correctPos;
                           updMulti({ signsQuizAnswered: ci, signsQuizScore: quizScore + (correct ? 1 : 0) });
                         },
-                        style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + bd, background: bg, color: '#fff', fontSize: '11px', cursor: answered ? 'default' : 'pointer', textAlign: 'left', lineHeight: '1.5' }
+                        style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + bd, background: bg, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', cursor: answered ? 'default' : 'pointer', textAlign: 'left', lineHeight: '1.5' }
                       }, String.fromCharCode(65 + ci) + '. ' + signLibrary[idx].meaning);
                     })
                   ),
@@ -30368,11 +30416,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var _masteredCount = Object.keys(_permitMastery).length;
         var _bankTotal = PERMIT_BANK.length;
         var _masteryPct = _bankTotal > 0 ? Math.round((_masteredCount / _bankTotal) * 100) : 0;
-        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_5', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', textAlign: 'center', border: '1px solid #fbbf24', marginBottom: '14px' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', border: '1px solid #fbbf24', marginBottom: '14px' } },
             h('div', { style: { fontSize: '40px' } }, '📝'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '6px' } }, __alloT('stem.roadready.maine_bmv_permit_test', 'Maine BMV Permit Test')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900, marginBottom: '6px' } }, __alloT('stem.roadready.maine_bmv_permit_test', 'Maine BMV Permit Test')),
             h('div', { style: { fontSize: '12px', color: '#fcd34d', marginBottom: '14px' } }, "Bank of " + PERMIT_BANK.length + " Maine-specific questions across 8 categories. Pass at 80% (16 of 20)."),
             // ── Permit Mastery summary ──
             // Shows cumulative cross-attempt progress: how many unique
@@ -30455,10 +30503,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ── PERMIT CATEGORY PICKER ──
       if (view === 'permitCategory') {
         var permitStats2 = d.permitStats || {};
-        return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'permitStart'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.permit_start', '← Permit Start')),
-          h('div', { style: { background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #fbbf24' } },
-            h('h2', { style: { fontSize: '20px', fontWeight: 900, marginBottom: '6px', textAlign: 'center' } }, __alloT('stem.roadready.practice_by_category', '📚 Practice by Category')),
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #fbbf24' } },
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900, marginBottom: '6px', textAlign: 'center' } }, __alloT('stem.roadready.practice_by_category', '📚 Practice by Category')),
             h('div', { style: { fontSize: '11px', color: '#fcd34d', marginBottom: '14px', textAlign: 'center' } }, __alloT('stem.roadready.each_category_is_padded_to_a_20_questi', 'Each category is padded to a 20-question test if the topic alone has fewer than 20 Qs.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' } },
               PERMIT_CATEGORIES.map(function(cat) {
@@ -30472,7 +30520,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   },
                   'aria-label': 'Practice ' + cat.label + ', ' + bankCount + ' questions in bank' + (pct !== null ? ', current mastery ' + pct + '%' : ''),
                   'data-rr-focusable': true,
-                  style: { padding: '12px', borderRadius: '8px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px' }
+                  style: { padding: '12px', borderRadius: '8px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px' }
                 },
                   h('span', { style: { fontSize: '20px' } }, cat.icon),
                   h('div', { style: { flex: 1 } },
@@ -30503,11 +30551,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var ans = permitState.answers[qrIdx];
             if (ans && ans.correct === false) missedReviews.push({ q: qReview, chosen: ans.chosen, idx: qrIdx });
           });
-          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
             h('div', { style: { background: 'linear-gradient(135deg, ' + (passed ? '#14532d' : '#7f1d1d') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (passed ? '#4ade80' : '#ef4444') } },
               h('div', { style: { fontSize: '64px' } }, passed ? '🎉' : '📋'),
               h('h2', { style: { fontSize: '24px', fontWeight: 900, marginBottom: '6px' } }, passed ? 'PASSED!' : 'Keep Studying'),
-              h('div', { style: { fontSize: '16px', color: passed ? '#4ade80' : '#fca5a5', marginBottom: '14px' } }, 'Score: ' + permitState.score + ' / ' + permitTotal + ' (' + Math.round(permitState.score / permitTotal * 100) + '%)'),
+              h('div', { style: { fontSize: '16px', color: passed ? 'var(--rr-green, #4ade80)' : 'var(--rr-red, #fca5a5)', marginBottom: '14px' } }, 'Score: ' + permitState.score + ' / ' + permitTotal + ' (' + Math.round(permitState.score / permitTotal * 100) + '%)'),
               h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '16px' } }, passed ? 'You would pass the real test. Keep practicing in the simulator to build real driving skills!' : 'Need ' + permitPassThreshold + '/' + permitTotal + ' (80%) to pass. Review the explanations, re-read the lessons, and try again.'),
               h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
                 h('button', { onClick: function() { upd('view', 'permitStart'); },
@@ -30560,11 +30608,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   return h('div', { key: mr.idx, style: { padding: '12px', borderRadius: '10px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
                     h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '4px' } }, 'Question ' + (mr.idx + 1)),
                     h('div', { style: { fontSize: '13px', fontWeight: 700, lineHeight: '1.5', marginBottom: '10px' } }, qm.q),
-                    h('div', { style: { fontSize: '11px', color: '#fca5a5', marginBottom: '4px', lineHeight: '1.5' } },
+                    h('div', { style: { fontSize: '11px', color: 'var(--rr-red, #fca5a5)', marginBottom: '4px', lineHeight: '1.5' } },
                       h('span', { style: { fontWeight: 700 } }, __alloT('stem.roadready.your_answer', '✗ Your answer: ')),
                       String.fromCharCode(65 + mr.chosen) + '. ' + (qm.a[mr.chosen] || '')
                     ),
-                    h('div', { style: { fontSize: '11px', color: '#86efac', marginBottom: '8px', lineHeight: '1.5' } },
+                    h('div', { style: { fontSize: '11px', color: 'var(--rr-green, #4ade80)', marginBottom: '8px', lineHeight: '1.5' } },
                       h('span', { style: { fontWeight: 700 } }, __alloT('stem.roadready.correct_answer', '✓ Correct answer: ')),
                       String.fromCharCode(65 + qm.correct) + '. ' + (qm.a[qm.correct] || '')
                     ),
@@ -30579,7 +30627,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         }
         var q = permitState.questions[permitState.index];
         var lastAns = permitState.answers[permitState.index];
-        return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           // Permit Mastery first-correct celebration (fixed-position, top of screen).
           rrCeleb && h('div', {
             role: 'status', 'aria-live': 'assertive',
@@ -30670,20 +30718,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     lsSet('roadReady.permitMastery.v1', nextMastery);
                   }
                 },
-                style: { display: 'block', width: '100%', padding: '10px 14px', marginBottom: '6px', borderRadius: '8px', border: '1px solid ' + border, background: bg, color: '#fff', cursor: showResult ? 'default' : 'pointer', textAlign: 'left', fontSize: '12px' }
+                style: { display: 'block', width: '100%', padding: '10px 14px', marginBottom: '6px', borderRadius: '8px', border: '1px solid ' + border, background: bg, color: 'var(--allo-stem-text, #e2e8f0)', cursor: showResult ? 'default' : 'pointer', textAlign: 'left', fontSize: '12px' }
               }, String.fromCharCode(65 + i) + '. ' + opt);
             }),
             // Explanation panel: always shown after answering. Wrong answers get a louder visual treatment
             // and a "WHY THIS MATTERS" header so the learner can't gloss over it.
             lastAns ? h('div', {
               style: lastAns.correct
-                ? { marginTop: '10px', padding: '10px', borderRadius: '8px', background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.3)', fontSize: '11px', color: '#a5f3fc', lineHeight: '1.5' }
-                : { marginTop: '10px', padding: '12px', borderRadius: '8px', background: 'rgba(239,68,68,0.12)', border: '2px solid #ef4444', fontSize: '12px', color: '#fecaca', lineHeight: '1.55' }
+                ? { marginTop: '10px', padding: '10px', borderRadius: '8px', background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.3)', fontSize: '11px', color: 'var(--rr-cyan, #22d3ee)', lineHeight: '1.5' }
+                : { marginTop: '10px', padding: '12px', borderRadius: '8px', background: 'rgba(239,68,68,0.12)', border: '2px solid #ef4444', fontSize: '12px', color: 'var(--rr-red, #fca5a5)', lineHeight: '1.55' }
             },
               lastAns.correct
                 ? h('span', null, h('b', null, __alloT('stem.roadready.correct', '✓ Correct. ')), q.exp)
                 : h('div', null,
-                    h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#ef4444', marginBottom: '6px', letterSpacing: '0.05em' } }, __alloT('stem.roadready.incorrect_why_this_matters', '✗ INCORRECT — WHY THIS MATTERS')),
+                    h('div', { style: { fontSize: '11px', fontWeight: 800, color: 'var(--rr-red, #fca5a5)', marginBottom: '6px', letterSpacing: '0.05em' } }, __alloT('stem.roadready.incorrect_why_this_matters', '✗ INCORRECT — WHY THIS MATTERS')),
                     h('div', null, q.exp)
                   )
             ) : null
@@ -30727,7 +30775,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: {
                 padding: '10px 24px', borderRadius: '8px', border: 'none',
                 background: ready ? '#22d3ee' : '#475569',
-                color: ready ? '#0f172a' : '#cbd5e1',
+                color: ready ? 'var(--allo-stem-text, #e2e8f0)' : 'var(--allo-stem-text-soft, #94a3b8)',
                 fontSize: '13px', fontWeight: 800,
                 cursor: ready ? 'pointer' : 'not-allowed',
                 width: '100%', opacity: ready ? 1 : 0.85
@@ -30784,7 +30832,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           else { gradeLabel = '⚠️ Fail — More Training Needed'; gradeColor = '#ef4444'; gradeXP = 5; }
         }
 
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           (function() {
             // Apply the safety-aware outcome before any result UI is rendered.
             if (!isFreeExplore) {
@@ -30813,11 +30861,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               !debriefEvidence.qualifying && !isFreeExplore ? h('div', { role: 'status', style: { padding: '8px 10px', borderRadius: '7px', background: 'rgba(148,163,184,0.12)', color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: '10px', lineHeight: 1.5, marginBottom: '10px' } }, debriefEvidence.reason) : null,
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: '8px', marginBottom: '12px' } },
                 h('div', { style: { padding: '10px', borderRadius: '8px', background: 'var(--allo-stem-deeper, #020617)' } },
-                  h('div', { style: { fontSize: '9px', fontWeight: 800, color: '#4ade80', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Strength'),
+                  h('div', { style: { fontSize: '9px', fontWeight: 800, color: 'var(--rr-green, #4ade80)', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Strength'),
                   h('div', { style: { fontSize: '11px', fontWeight: 750, marginTop: '4px', lineHeight: 1.4 } }, debriefStrength)
                 ),
                 h('div', { style: { padding: '10px', borderRadius: '8px', background: 'var(--allo-stem-deeper, #020617)' } },
-                  h('div', { style: { fontSize: '9px', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Next focus'),
+                  h('div', { style: { fontSize: '9px', fontWeight: 800, color: 'var(--rr-amber, #fbbf24)', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Next focus'),
                   h('div', { style: { fontSize: '11px', fontWeight: 800, marginTop: '4px' } }, debriefFocus.label),
                   h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '3px', lineHeight: 1.4 } }, debriefFocus.rule)
                 )
@@ -30891,7 +30939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     'aria-label': __alloT('stem.roadready.cinematic_drive_path_replay_label', 'Cinematic drive-path replay from start to end') + '. ' + events.length + ' logged events.',
                     viewBox: '0 0 ' + W + ' ' + H,
                     width: '100%', height: '200',
-                    style: { background: 'linear-gradient(135deg, #0a1628, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))' }
+                    style: { background: 'linear-gradient(135deg, #0a1628, #0f172a)', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))' }
                   },
                     // Grid lines
                     [0,1,2,3,4].map(function(gi) {
@@ -31014,7 +31062,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // ── AI Drive Reflection: personalized coaching essay from callGemini ──
             debriefDetailsOpen && callGemini ? h('div', { style: { background: 'linear-gradient(135deg, rgba(30,41,59,0.6), rgba(15,23,42,0.6))', borderRadius: '10px', padding: '14px', border: '1px solid #38bdf8', marginTop: '12px', marginBottom: '14px' } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
-                h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.roadready.ai_reflection', '🧑‍🏫 AI Reflection')),
+                h('div', { style: { fontSize: '11px', fontWeight: 800, color: 'var(--rr-cyan, #22d3ee)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.roadready.ai_reflection', '🧑‍🏫 AI Reflection')),
                 !d.lastReflection && !reflectionRef.current.inFlight ? h('button', {
                   onClick: function() {
                     if (reflectionRef.current.inFlight) return;
@@ -31090,7 +31138,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         });
                     }
                   },
-                  style: { padding: '6px 12px', borderRadius: '6px', border: '1px solid #38bdf8', background: 'rgba(56,189,248,0.2)', color: '#bae6fd', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+                  style: { padding: '6px 12px', borderRadius: '6px', border: '1px solid #38bdf8', background: 'rgba(56,189,248,0.2)', color: 'var(--rr-cyan, #22d3ee)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
                 }, __alloT('stem.roadready.generate', '✨ Generate')) : null,
                 d.lastReflection ? h('button', { onClick: function() { upd('lastReflection', null); },
                   style: { padding: '4px 8px', borderRadius: '5px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #475569))', background: 'transparent', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '10px', cursor: 'pointer' }
@@ -31142,13 +31190,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         events.forEach(function(e) { byType[e.type] = (byType[e.type] || 0) + 1; });
         var practiceFocus = rrPracticeFocusFor(events, 3);
         var ruleOutcomes = rrRuleOutcomeFor(drivingStats);
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'debrief'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.drive_debrief_2', '← Drive Debrief')),
-          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #22d3ee', marginBottom: '14px' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #22d3ee', marginBottom: '14px' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' } },
               h('div', { style: { fontSize: '36px' } }, '🎓'),
               h('div', null,
-                h('h2', { style: { fontSize: '20px', fontWeight: 900, marginBottom: '2px' } }, __alloT('stem.roadready.coaching_debrief', 'Coaching Debrief')),
+                h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900, marginBottom: '2px' } }, __alloT('stem.roadready.coaching_debrief', 'Coaching Debrief')),
                 h('div', { style: { fontSize: '11px', color: '#67e8f9' } }, drivingStats.scenario + ' · ' + drivingStats.vehicle + ' · ' + drivingStats.time)
               )
             ),
@@ -31167,7 +31215,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '10px' } },
               h('div', null,
-                h('div', { id: 'rr-rule-outcomes-title', style: { fontSize: '12px', fontWeight: 900, color: '#bfdbfe' } }, 'Rule outcomes'),
+                h('div', { id: 'rr-rule-outcomes-title', style: { fontSize: '12px', fontWeight: 900, color: 'var(--rr-blue, #60a5fa)' } }, 'Rule outcomes'),
                 h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '3px', lineHeight: '1.45' } }, 'Evidence from this drive’s recorded rule counters — not a guess based on the grade.')
               ),
               h('span', { style: { fontSize: '9px', fontWeight: 800, letterSpacing: '0.08em', color: 'var(--rr-blue, #60a5fa)', whiteSpace: 'nowrap' } }, 'RULE EVIDENCE')
@@ -31179,9 +31227,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   'aria-label': outcome.label + ': ' + outcome.statusLabel + '. ' + outcome.evidence,
                   style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: '3px 10px', padding: '8px 9px', borderRadius: '8px', background: 'rgba(2,6,23,0.42)', borderLeft: '3px solid ' + outcome.color }
                 },
-                  h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#e2e8f0' } }, outcome.label),
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, outcome.label),
                   h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '7px', whiteSpace: 'nowrap' } },
-                    outcome.verified > 0 ? h('span', { style: { fontSize: '9px', fontWeight: 800, color: '#86efac' } }, '✓ ' + outcome.verified + ' verified') : null,
+                    outcome.verified > 0 ? h('span', { style: { fontSize: '9px', fontWeight: 800, color: 'var(--rr-green, #4ade80)' } }, '✓ ' + outcome.verified + ' verified') : null,
                     h('span', { style: { fontSize: '9px', fontWeight: 900, color: outcome.color } }, outcome.statusLabel)
                   ),
                   h('div', { style: { gridColumn: '1 / -1', fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #cbd5e1))', lineHeight: '1.45' } },
@@ -31194,25 +31242,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             'aria-labelledby': 'rr-practice-focus-title',
             style: { background: 'linear-gradient(135deg, rgba(16,185,129,0.14), rgba(34,211,238,0.08))', borderRadius: '12px', padding: '14px', border: '1px solid rgba(52,211,153,0.45)', marginBottom: '14px' }
           },
-            h('div', { id: 'rr-practice-focus-title', style: { fontSize: '12px', fontWeight: 900, color: '#6ee7b7', marginBottom: '4px' } }, 'Next practice focus'),
+            h('div', { id: 'rr-practice-focus-title', style: { fontSize: '12px', fontWeight: 900, color: 'var(--rr-green, #4ade80)', marginBottom: '4px' } }, 'Next practice focus'),
             h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #a7f3d0))', marginBottom: '10px', lineHeight: '1.5' } }, 'Start with the skill that showed up most. One clear focus is easier to carry into the next drive.'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
               practiceFocus.map(function(focus, focusIdx) {
                 return h('div', { key: focus.type, style: { display: 'grid', gridTemplateColumns: '26px 1fr auto', gap: '9px', alignItems: 'start', padding: '9px 10px', borderRadius: '9px', background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(52,211,153,0.2)' } },
-                  h('div', { style: { width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: focusIdx === 0 ? '#34d399' : 'rgba(52,211,153,0.22)', color: focusIdx === 0 ? '#052e16' : '#a7f3d0', fontSize: '11px', fontWeight: 900 } }, String(focusIdx + 1)),
+                  h('div', { style: { width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: focusIdx === 0 ? '#34d399' : 'rgba(52,211,153,0.22)', color: focusIdx === 0 ? '#052e16' : 'var(--rr-green, #4ade80)', fontSize: '11px', fontWeight: 900 } }, String(focusIdx + 1)),
                   h('div', null,
                     h('div', { style: { fontSize: '12px', fontWeight: 800, color: 'var(--allo-stem-text, var(--allo-stem-text, #d1fae5))' } }, focus.label),
                     h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #a7f3d0))', lineHeight: '1.45', marginTop: '2px' } }, focus.rule),
                     h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.45', marginTop: '3px' } }, focus.advice)
                   ),
-                  h('span', { style: { fontSize: '10px', fontWeight: 800, color: '#6ee7b7', whiteSpace: 'nowrap' } }, focus.count + (focus.count === 1 ? ' moment' : ' moments'))
+                  h('span', { style: { fontSize: '10px', fontWeight: 800, color: 'var(--rr-green, #4ade80)', whiteSpace: 'nowrap' } }, focus.count + (focus.count === 1 ? ' moment' : ' moments'))
                 );
               })
             )
           ) : null,
           events.length === 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '32px', textAlign: 'center', border: '1px solid #4ade80' } },
             h('div', { style: { fontSize: '48px', marginBottom: '10px' } }, '🌟'),
-            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: '#4ade80', marginBottom: '6px' } }, __alloT('stem.roadready.clean_drive_no_coaching_moments', 'Clean drive — no coaching moments.')),
+            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: 'var(--rr-green, #4ade80)', marginBottom: '6px' } }, __alloT('stem.roadready.clean_drive_no_coaching_moments', 'Clean drive — no coaching moments.')),
             h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', lineHeight: '1.6' } }, __alloT('stem.roadready.no_hard_brakes_tailgates_speed_violati', 'No hard brakes, tailgates, speed violations, or crashes were logged. Keep it up.'))
           ) : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
             events.map(function(ev, idx) {
@@ -31251,16 +31299,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── MAINE WINTER GUIDE ──
       if (view === 'maineWinter') {
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_8', '← Menu')),
           h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, #1e3a5f)', borderRadius: '14px', padding: '20px', border: '1px solid #38bdf8', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '❄️'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.maine_winter_driving_survival_guide', 'Maine Winter Driving Survival Guide')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.maine_winter_driving_survival_guide', 'Maine Winter Driving Survival Guide')),
             h('div', { style: { fontSize: '11px', color: '#bae6fd' } }, __alloT('stem.roadready.the_skills_that_keep_mainers_alive_fro', 'The skills that keep Mainers alive from November to April.'))
           ),
           // Winter prep
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '10px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.before_you_drive', '🧊 Before You Drive')),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--rr-cyan, #22d3ee)', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.before_you_drive', '🧊 Before You Drive')),
             MAINE_RULES.winterRules.map(function(rule, i) {
               return h('div', { key: i, style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6', paddingLeft: '10px', borderLeft: '2px solid #22d3ee', marginBottom: '6px' } }, rule);
             })
@@ -31369,7 +31417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             id: 'autism',
             icon: '🌱',
             title: __alloT('stem.roadready.autism_predictability_and_novel_situat', 'Autism — predictability and novel situations'),
-            color: '#4ade80',
+            color: 'var(--rr-green, #4ade80)',
             tint: 'rgba(74,222,128,0.10)',
             challenges: 'For many autistic drivers, the rules of the road are a strength: clear, learnable, follow-able. The hard parts are the un-rule-bound things — eye contact at four-way stops, reading whether the driver waving you on actually means it, an officer pulling you over and giving instructions you have never rehearsed, sudden detours that break the planned route. Practice handles most of this, and disclosure handles a lot of the rest.',
             strategies: [
@@ -31384,7 +31432,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             id: 'anxiety',
             icon: '🌬️',
             title: __alloT('stem.roadready.anxiety_regulation_while_driving', 'Anxiety — regulation while driving'),
-            color: '#f472b6',
+            color: 'var(--rr-pink, #f9a8d4)',
             tint: 'rgba(244,114,182,0.10)',
             challenges: 'Driving anxiety is common and almost never weakness. It can be highway-specific, bridge-specific, merging-specific, or just generalized. The body responds to perceived danger with the same chemistry whether the danger is real or anticipated, which is why white-knuckling does not "use up" the anxiety. Gradual exposure does.',
             strategies: [
@@ -31404,7 +31452,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           'A quieter route option (residential rather than commercial corridor) when route choice is at the examiner\'s discretion.',
           'Permission to verbally narrate what you are doing ("checking left, signaling, merging") without it counting against you.'
         ];
-        return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_9', '← Menu')),
           h('div', { style: { background: 'linear-gradient(135deg, #4c1d95, #1e1b4b, #312e81)', borderRadius: '14px', padding: '22px', border: '1px solid #a78bfa', marginBottom: '16px', textAlign: 'center', boxShadow: '0 8px 24px rgba(76,29,149,0.3)' } },
             h('div', { style: { fontSize: '44px', marginBottom: '6px' } }, '🧠'),
@@ -31466,7 +31514,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   fontSize: '20px', flexShrink: 0, lineHeight: 1
                 }
               }, '📋'),
-              h('div', { style: { fontSize: '15px', fontWeight: 800, color: '#4ade80' } }, __alloT('stem.roadready.road_test_accommodations_you_can_reque', 'Road test accommodations you can request'))
+              h('div', { style: { fontSize: '15px', fontWeight: 800, color: 'var(--rr-green, #4ade80)' } }, __alloT('stem.roadready.road_test_accommodations_you_can_reque', 'Road test accommodations you can request'))
             ),
             h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6', marginBottom: '10px' } },
               __alloT('stem.roadready.you_do_not_have_to_go_into_the_bmv_roa', 'You do not have to go into the BMV road test cold. Maine BMV examiners can grant accommodations on request when there is a documented disability — sometimes with paperwork, sometimes just with a reasonable conversation. Common ones, the same kind a 504 plan covers in school:')),
@@ -31475,7 +31523,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 return h('li', { key: 'rt-acc-' + i, style: { marginBottom: '4px' } }, a);
               })
             ),
-            h('div', { style: { fontSize: '11px', color: '#86efac', fontStyle: 'italic', marginTop: '8px' } },
+            h('div', { style: { fontSize: '11px', color: 'var(--rr-green, #4ade80)', fontStyle: 'italic', marginTop: '8px' } },
               __alloT('stem.roadready.call_ahead_ask_what_documentation_they', 'Call ahead. Ask what documentation they need. Going in with a script and a request beats showing up unprepared.'))
           ),
           // Disclosure guidance
@@ -31499,7 +31547,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   fontSize: '20px', flexShrink: 0, lineHeight: 1
                 }
               }, '🗣️'),
-              h('div', { style: { fontSize: '15px', fontWeight: 800, color: '#93c5fd' } }, __alloT('stem.roadready.disclosure_when_how_to_whom', 'Disclosure — when, how, to whom'))
+              h('div', { style: { fontSize: '15px', fontWeight: 800, color: 'var(--rr-blue, #60a5fa)' } }, __alloT('stem.roadready.disclosure_when_how_to_whom', 'Disclosure — when, how, to whom'))
             ),
             h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.65' } },
               h('p', { style: { margin: '0 0 8px 0' } },
@@ -31527,15 +31575,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Briefing for a focused night-driving drill. Starts a 'night' scenario with the
       // d.nightVisionDrill flag so the in-drive engine can issue scan/sign prompts.
       if (view === 'nightVisionIntro') {
-        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_10', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #1e1b4b, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', border: '1px solid #818cf8', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', borderRadius: '14px', padding: '24px', border: '1px solid #818cf8', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '48px' } }, '🌃'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.night_vision_training_2', 'Night Vision Training')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.night_vision_training_2', 'Night Vision Training')),
             h('div', { style: { fontSize: '12px', color: '#c7d2fe' } }, __alloT('stem.roadready.a_focused_drill_headlights_sign_readin', 'A focused drill. Headlights, sign reading, and scanning for what the dark hides.'))
           ),
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px', fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
-            h('div', { style: { fontWeight: 800, color: '#a5b4fc', marginBottom: '6px' } }, __alloT('stem.roadready.what_you_ll_practice', 'What you\'ll practice:')),
+            h('div', { style: { fontWeight: 800, color: 'var(--rr-violet, #a78bfa)', marginBottom: '6px' } }, __alloT('stem.roadready.what_you_ll_practice', 'What you\'ll practice:')),
             h('ul', { style: { paddingLeft: '20px', margin: 0 } },
               h('li', null, __alloT('stem.roadready.reading_speed_limit_signs_at_low_light', 'Reading speed limit signs at low light from your headlight cone.')),
               h('li', null, __alloT('stem.roadready.spotting_pedestrians_and_cyclists_wear', 'Spotting pedestrians and cyclists wearing dark clothing.')),
@@ -31544,7 +31592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ),
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid #818cf8', marginBottom: '12px', fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))' } },
-            h('div', { style: { fontWeight: 800, color: '#a5b4fc', marginBottom: '6px' } }, __alloT('stem.roadready.coach_prompts_during_the_drill', '🎙️ Coach prompts during the drill:')),
+            h('div', { style: { fontWeight: 800, color: 'var(--rr-violet, #a78bfa)', marginBottom: '6px' } }, __alloT('stem.roadready.coach_prompts_during_the_drill', '🎙️ Coach prompts during the drill:')),
             h('div', null, __alloT('stem.roadready.every_25_40_seconds_your_coach_will_is', 'Every 25–40 seconds your coach will issue a scanning prompt — what speed limit is up ahead, did you spot the pedestrian, etc. Answer aloud or just notice. The drill emphasizes habit, not grading.'))
           ),
           h('button', { onClick: function() {
@@ -31562,15 +31610,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // End-of-drive summary categorizes errors and suggests a coaching priority.
       if (view === 'parentRideCheck') {
         var prScenario = d.parentRideScenario || 'suburban';
-        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_11', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #831843, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', borderRadius: '14px', padding: '24px', border: '1px solid #f472b6', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #831843, #1e293b)', borderRadius: '14px', padding: '24px', border: '1px solid #f472b6', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '48px' } }, '👨‍👧'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.parent_ride_check_2', 'Parent Ride Check')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.parent_ride_check_2', 'Parent Ride Check')),
             h('div', { style: { fontSize: '12px', color: '#fbcfe8' } }, __alloT('stem.roadready.a_2_minute_structured_eval_you_ride_al', 'A 2-minute structured eval. You ride along, tap to mark mistakes, get a clear coaching priority at the end.'))
           ),
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px', fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))' } },
-            h('div', { style: { fontWeight: 800, color: '#fbcfe8', marginBottom: '8px' } }, __alloT('stem.roadready.how_it_works', 'How it works:')),
+            h('div', { style: { fontWeight: 800, color: 'var(--rr-pink, #f9a8d4)', marginBottom: '8px' } }, __alloT('stem.roadready.how_it_works', 'How it works:')),
             h('div', { style: { lineHeight: '1.6' } },
               __alloT('stem.roadready.1_pick_a_scenario_your_learner_is_comf', '1. Pick a scenario your learner is comfortable with.'), h('br'),
               __alloT('stem.roadready.2_they_drive_you_watch', '2. They drive — you watch.'), h('br'),
@@ -31579,14 +31627,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ),
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#fbcfe8', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.choose_scenario', 'Choose scenario')),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--rr-pink, #f9a8d4)', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.choose_scenario', 'Choose scenario')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px' } },
               ['residential', 'suburban', 'highway', 'rural', 'school_zone'].map(function(sid) {
                 var sObj = SCENARIOS.find(function(x) { return x.id === sid; });
                 if (!sObj) return null;
                 var sel = sid === prScenario;
                 return h('button', { key: sid, onClick: function() { upd('parentRideScenario', sid); },
-                  style: { padding: '10px', borderRadius: '8px', border: '1px solid ' + (sel ? '#f472b6' : '#334155'), background: sel ? 'rgba(244,114,182,0.15)' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 700, textAlign: 'left' } },
+                  style: { padding: '10px', borderRadius: '8px', border: '1px solid ' + (sel ? '#f472b6' : '#334155'), background: sel ? 'rgba(244,114,182,0.15)' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '11px', fontWeight: 700, textAlign: 'left' } },
                   sObj.icon + ' ' + sObj.name
                 );
               })
@@ -31599,7 +31647,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             style: { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #db2777, #831843)', color: '#fff', fontSize: '15px', fontWeight: 900, cursor: 'pointer' }
           }, __alloT('stem.roadready.start_2_min_eval', '👨‍👧 Start 2-min Eval')),
           d.lastParentReport ? h('button', { onClick: function() { upd('view', 'parentReport'); },
-            style: { width: '100%', marginTop: '10px', padding: '10px', borderRadius: '10px', border: '1px solid #f472b6', background: 'transparent', color: '#fbcfe8', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            style: { width: '100%', marginTop: '10px', padding: '10px', borderRadius: '10px', border: '1px solid #f472b6', background: 'transparent', color: 'var(--rr-pink, #f9a8d4)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
           }, __alloT('stem.roadready.view_last_report', '📋 View Last Report')) : null
         );
       }
@@ -31613,16 +31661,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         (pr.errors || []).forEach(function(e) { byCategory[e.cat] = (byCategory[e.cat] || 0) + 1; });
         var sortedCats = Object.keys(byCategory).sort(function(a, b) { return byCategory[b] - byCategory[a]; });
         var topCat = sortedCats[0];
-        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_12', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #831843, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', borderRadius: '14px', padding: '24px', border: '1px solid #f472b6', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #831843, #1e293b)', borderRadius: '14px', padding: '24px', border: '1px solid #f472b6', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '48px' } }, '📋'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.parent_ride_check_report', 'Parent Ride Check Report')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.parent_ride_check_report', 'Parent Ride Check Report')),
             h('div', { style: { fontSize: '12px', color: '#fbcfe8' } }, pr.scenario + ' · ' + pr.durationSec + 's · ' + totalErrs + ' marked event' + (totalErrs === 1 ? '' : 's'))
           ),
           // Category breakdown bars
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#fbcfe8', textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.errors_by_category', 'Errors by Category')),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--rr-pink, #f9a8d4)', textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.errors_by_category', 'Errors by Category')),
             Object.keys(catLabels).map(function(cat) {
               var n = byCategory[cat] || 0;
               var pct = totalErrs > 0 ? Math.round(n / totalErrs * 100) : 0;
@@ -31639,8 +31687,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Coaching priority
           totalErrs > 0 ? h('div', { style: { background: 'rgba(244,114,182,0.1)', borderRadius: '12px', padding: '16px', border: '1px solid #f472b6', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#f472b6', marginBottom: '6px' } }, __alloT('stem.roadready.coaching_priority', '🎯 COACHING PRIORITY')),
-            h('div', { style: { fontSize: '13px', color: '#fce7f3', fontWeight: 700, marginBottom: '6px' } }, catLabels[topCat] + ' (' + byCategory[topCat] + ' events)'),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--rr-pink, #f9a8d4)', marginBottom: '6px' } }, __alloT('stem.roadready.coaching_priority', '🎯 COACHING PRIORITY')),
+            h('div', { style: { fontSize: '13px', color: 'var(--rr-pink, #f9a8d4)', fontWeight: 700, marginBottom: '6px' } }, catLabels[topCat] + ' (' + byCategory[topCat] + ' events)'),
             h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
               topCat === 'speed' ? 'Practice short drives where the only goal is speed-limit awareness. Cover the speedometer for 30-second stretches and have them estimate.' :
               topCat === 'signal' ? 'Drill signaling on every turn AND every lane change. Make it a verbal rule: "signal-mirror-blind spot."' :
@@ -31650,7 +31698,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               topCat === 'stop' ? 'Practice complete stops at every stop sign. Count "one-Mississippi, two-Mississippi" before moving.' :
               'Review the timestamps below with your learner.'
             )
-          ) : h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid #4ade80', marginBottom: '12px', color: '#bbf7d0' } },
+          ) : h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid #4ade80', marginBottom: '12px', color: 'var(--rr-green, #4ade80)' } },
             __alloT('stem.roadready.no_errors_marked_great_drive_keep_prac', '🌟 No errors marked! Great drive — keep practicing similar scenarios.')
           ),
           // Timeline
@@ -31683,7 +31731,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 addToast('📋 Report exported');
               } catch(_) { addToast('Export failed.'); }
             },
-            style: { width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #f472b6', background: 'rgba(244,114,182,0.1)', color: '#fbcfe8', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            style: { width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #f472b6', background: 'rgba(244,114,182,0.1)', color: 'var(--rr-pink, #f9a8d4)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
           }, __alloT('stem.roadready.export_report_markdown', '📋 Export Report (Markdown)'))
         );
       }
@@ -31693,22 +31741,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ══════════════════════════════════════════════════════════
       if (view === 'roadTestIntro') {
         var rtPretripOk = d.preTripChecks && Object.keys(d.preTripChecks).filter(function(k){return d.preTripChecks[k];}).length >= 20;
-        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { updMulti({ view: 'menu', roadTestStage: null }); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_13', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #14532d, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', border: '1px solid #4ade80', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #14532d, #0f172a)', borderRadius: '14px', padding: '24px', border: '1px solid #4ade80', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '48px' } }, '🪪'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.road_test_simulator_2', 'Road Test Simulator')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.road_test_simulator_2', 'Road Test Simulator')),
             h('div', { style: { fontSize: '12px', color: '#bbf7d0' } }, __alloT('stem.roadready.a_4_minute_scored_exam_modeled_on_the_', 'A 4-minute scored exam modeled on the Maine BMV road test. 100 pts — 90+ passes.'))
           ),
           // Stage 1: Pre-Trip
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid ' + (rtPretripOk ? '#4ade80' : '#334155'), marginBottom: '10px' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
               h('div', null,
-                h('div', { style: { fontSize: '13px', fontWeight: 800, color: rtPretripOk ? '#bbf7d0' : '#e2e8f0' } }, '1. Pre-Trip Inspection' + (rtPretripOk ? ' ✓' : '')),
+                h('div', { style: { fontSize: '13px', fontWeight: 800, color: rtPretripOk ? 'var(--rr-green, #4ade80)' : 'var(--allo-stem-text, #e2e8f0)' } }, '1. Pre-Trip Inspection' + (rtPretripOk ? ' ✓' : '')),
                 h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '2px' } }, __alloT('stem.roadready.walk_around_vehicle_check_20_items_che', 'Walk-around vehicle check. 20+ items checked required.'))
               ),
               h('button', { onClick: function() { updMulti({ view: 'preTrip', roadTestStage: 'pretrip' }); },
-                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #4ade80', background: rtPretripOk ? 'transparent' : 'rgba(74,222,128,0.15)', color: '#4ade80', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #4ade80', background: rtPretripOk ? 'transparent' : 'rgba(74,222,128,0.15)', color: 'var(--rr-green, #4ade80)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
               }, rtPretripOk ? 'Review →' : 'Start →')
             )
           ),
@@ -31725,13 +31773,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   updMulti({ roadTestStage: 'drive', freeExplore: false });
                   startDriving('suburban', selectedVehicle);
                 },
-                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #4ade80', background: rtPretripOk ? 'linear-gradient(135deg, #166534, #14532d)' : '#1e293b', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: rtPretripOk ? 'pointer' : 'not-allowed' }
+                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #4ade80', background: rtPretripOk ? 'linear-gradient(135deg, #166534, #14532d)' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', fontWeight: 700, cursor: rtPretripOk ? 'pointer' : 'not-allowed' }
               }, __alloT('stem.roadready.start_drive', 'Start Drive'))
             )
           ),
           // Scoring rubric
           h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))', fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
-            h('div', { style: { fontWeight: 700, color: '#4ade80', marginBottom: '6px' } }, __alloT('stem.roadready.scoring_rubric_maine_bmv_style', '📋 Scoring Rubric (Maine BMV style)')),
+            h('div', { style: { fontWeight: 700, color: 'var(--rr-green, #4ade80)', marginBottom: '6px' } }, __alloT('stem.roadready.scoring_rubric_maine_bmv_style', '📋 Scoring Rubric (Maine BMV style)')),
             h('div', null, __alloT('stem.roadready.starts_at_100_90_pass', '• Starts at 100. 90+ = PASS.')),
             h('div', null, __alloT('stem.roadready.speeding_5_15_over_1_per_second_max_10', '• Speeding 5-15 over: -1 per second (max -10).')),
             h('div', null, __alloT('stem.roadready.speeding_15_over_3_per_second_auto_fai', '• Speeding 15+ over: -3 per second (auto-fail at -18).')),
@@ -31741,7 +31789,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', null, '• Pass requires the full four minutes, at least 0.19 mi of evaluated driving, and no critical safety event.')
           ),
           d.lastRoadTest ? h('button', { onClick: function() { upd('view', 'roadTestResult'); },
-            style: { width: '100%', marginTop: '12px', padding: '10px', borderRadius: '10px', border: '1px solid #4ade80', background: 'transparent', color: '#bbf7d0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            style: { width: '100%', marginTop: '12px', padding: '10px', borderRadius: '10px', border: '1px solid #4ade80', background: 'transparent', color: 'var(--rr-green, #4ade80)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
           }, __alloT('stem.roadready.view_last_test_result', '📄 View Last Test Result')) : null
         );
       }
@@ -31757,14 +31805,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var rtrDurationSec = Math.max(0, Math.round(Number(rtr.durationSec) || 0));
         var rtrDurationLabel = Math.floor(rtrDurationSec / 60) + ':' + String(rtrDurationSec % 60).padStart(2, '0');
         ded.forEach(function(e) { byType[e.type] = (byType[e.type] || 0) + e.pts; });
-        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { updMulti({ view: 'menu', roadTestStage: null }); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_14', '← Menu')),
           // Big pass/fail banner
           h('div', { style: { background: rtr.passed ? 'linear-gradient(135deg, #14532d, #166534)' : 'linear-gradient(135deg, #7f1d1d, #450a0a)', borderRadius: '14px', padding: '32px', border: '2px solid ' + (rtr.passed ? '#4ade80' : '#ef4444'), marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '72px' } }, rtr.passed ? '🪪' : rtrIncomplete ? '⏱️' : rtrCritical ? '⚠️' : rtrInsufficientEvidence ? '🛣️' : '❌'),
             h('h2', { style: { fontSize: '28px', fontWeight: 900, marginBottom: '6px' } }, rtr.passed ? 'PASSED' : rtrIncomplete ? 'Incomplete — Try Again' : rtrCritical ? 'Safety Review Required' : rtrInsufficientEvidence ? 'More Driving Evidence Needed' : 'Not Yet — Try Again'),
-            h('div', { style: { fontSize: '48px', fontWeight: 900, margin: '8px 0', color: rtr.passed ? '#bbf7d0' : '#fca5a5' } }, rtr.score + ' / 100'),
-            h('div', { style: { fontSize: '12px', color: rtr.passed ? '#bbf7d0' : '#fca5a5' } }, rtr.passed
+            h('div', { style: { fontSize: '48px', fontWeight: 900, margin: '8px 0', color: rtr.passed ? 'var(--rr-green, #4ade80)' : 'var(--rr-red, #fca5a5)' } }, rtr.score + ' / 100'),
+            h('div', { style: { fontSize: '12px', color: rtr.passed ? 'var(--rr-green, #4ade80)' : 'var(--rr-red, #fca5a5)' } }, rtr.passed
               ? 'You cleared this simulator\'s 90-point bar — your rules and hazard decisions are solid. The real Maine BMV road test is scored by an examiner riding with you, on car control and observation a keyboard cannot measure.'
               : rtrIncomplete
                 ? 'Complete the full four-minute evaluated drive to earn a result. Evaluated time: ' + rtrDurationLabel + '.'
@@ -31773,7 +31821,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   : rtrInsufficientEvidence
                     ? 'The timer finished, but a valid attempt needs at least 0.19 mi of evaluated driving. This attempt recorded ' + rtrDistanceMi.toFixed(2) + ' mi.'
                     : 'Need 90+ to pass. Review the deductions below and try again.'),
-            rtr.distanceMeters != null ? h('div', { style: { marginTop: '8px', fontSize: '11px', color: '#fecaca' } }, 'Evaluated distance: ' + rtrDistanceMi.toFixed(2) + ' mi · minimum 0.19 mi') : null
+            rtr.distanceMeters != null ? h('div', { style: { marginTop: '8px', fontSize: '11px', color: 'var(--rr-red, #fca5a5)' } }, 'Evaluated distance: ' + rtrDistanceMi.toFixed(2) + ' mi · minimum 0.19 mi') : null
           ),
           // Deductions breakdown
           ded.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
@@ -31782,10 +31830,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var label = { speed: '5-15 mph over', severe_speed: '15+ mph over', no_signal: 'Unsignaled lane change', crash: 'Crash' }[t] || t;
               return h('div', { key: t, style: { display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', padding: '4px 0', borderBottom: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))' } },
                 h('span', null, label),
-                h('span', { style: { color: '#ef4444', fontWeight: 700 } }, '-' + byType[t] + ' pts')
+                h('span', { style: { color: 'var(--rr-red, #fca5a5)', fontWeight: 700 } }, '-' + byType[t] + ' pts')
               );
             })
-          ) : h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid ' + (rtrCritical ? '#ef4444' : (rtrIncomplete || rtrInsufficientEvidence) ? '#fbbf24' : '#4ade80'), marginBottom: '12px', color: rtrCritical ? '#fecaca' : (rtrIncomplete || rtrInsufficientEvidence) ? '#fef3c7' : '#bbf7d0', textAlign: 'center' } },
+          ) : h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid ' + (rtrCritical ? '#ef4444' : (rtrIncomplete || rtrInsufficientEvidence) ? '#fbbf24' : '#4ade80'), marginBottom: '12px', color: rtrCritical ? 'var(--rr-red, #fca5a5)' : (rtrIncomplete || rtrInsufficientEvidence) ? 'var(--rr-amber, #fbbf24)' : 'var(--rr-green, #4ade80)', textAlign: 'center' } },
             rtrCritical ? 'Critical safety status recorded even though no formal point deduction was logged.' :
               rtrIncomplete ? 'No deductions recorded before this attempt ended.' :
                 rtrInsufficientEvidence ? 'No deductions recorded, but the minimum evaluated distance was not reached.' :
@@ -31799,7 +31847,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               return h('div', { key: i, style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', padding: '3px 0', borderBottom: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))', display: 'flex', justifyContent: 'space-between' } },
                 h('span', { style: { fontFamily: 'monospace', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '')),
                 h('span', { style: { flex: 1, marginLeft: '10px' } }, e.detail),
-                h('span', { style: { color: '#ef4444', fontWeight: 700 } }, '-' + e.pts)
+                h('span', { style: { color: 'var(--rr-red, #fca5a5)', fontWeight: 700 } }, '-' + e.pts)
               );
             })
           ) : null,
@@ -31818,11 +31866,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var logbook = (d.logbook || []).slice().reverse(); // newest first
         var totalSec = logbook.reduce(function(s, j) { return s + (j.durationSec || 0); }, 0);
         var totalHrs = (totalSec / 3600).toFixed(1);
-        return h('div', { style: { padding: '20px', maxWidth: '860px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '860px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_15', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #fbbf24', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #fbbf24', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '📔'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.driving_logbook_2', 'Driving Logbook')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.driving_logbook_2', 'Driving Logbook')),
             // Simulator hours are counted and labelled as simulator hours. They used to
             // be printed next to "Maine needs 70 hours supervised", which reads as a
             // progress bar toward the statutory requirement. It is not one: Maine's 70
@@ -31857,15 +31905,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: { marginTop: '10px', padding: '6px 14px', borderRadius: '8px', border: 'none', background: '#10b981', color: '#052e16', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.roadready.print_log_for_parent_instructor', '🖨 Print log for parent / instructor'))
           ),
-          // Progress toward 70 hour goal
-          h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '14px' } },
-            h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '4px' } }, __alloT('stem.roadready.maine_70_hour_supervised_driving_progr', 'Maine 70-hour supervised driving progress')),
-            h('div', { style: { height: '10px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', borderRadius: '5px', overflow: 'hidden' } },
-              h('div', { style: { height: '100%', width: Math.min(100, totalSec / 3600 / 70 * 100) + '%', background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' } })
-            ),
-            // Was "X / 70 hours (N%)" — a percentage-complete against a legal requirement
-            // that simulator time cannot satisfy.
-            h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px', textAlign: 'right' } }, totalHrs + ' hours logged in the simulator')
+          // Simulator time only. There used to be a progress bar here titled
+          // "Maine 70-hour supervised driving progress" filled by simulator hours
+          // divided by 70. A progress bar is a stronger claim than any caption,
+          // and simulator time counts for zero of those hours, so the control
+          // itself is gone: no bar, no denominator, no percentage.
+          h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '14px', fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } },
+            totalHrs + ' hours logged in the simulator'
           ),
           logbook.length === 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '40px', textAlign: 'center', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '12px' } },
             __alloT('stem.roadready.no_sessions_yet_complete_a_drive_to_st', '📝 No sessions yet. Complete a drive to start your logbook.')
@@ -31951,13 +31997,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           delete ns[sc.id];
           upd(cfg.stateKey, ns);
         };
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_16', '← Menu')),
           h('div', { style: { background: 'linear-gradient(135deg, ' + cfg.gradientFrom + ', ' + cfg.gradientTo + ')', borderRadius: '14px', padding: '22px', border: '1px solid ' + cfg.borderColor, marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '48px' } }, cfg.icon),
             h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, cfg.title),
             h('div', { style: { fontSize: '12px', color: cfg.subtitleColor || '#cbd5e1' } }, cfg.subtitle + ' · ' + passed + ' / ' + cfg.scenarios.length + ' passed'),
-            allDone && passed === cfg.scenarios.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, '✓ ' + (cfg.winMessage || 'All correct.')) : null
+            allDone && passed === cfg.scenarios.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: 'var(--rr-green, #4ade80)', fontWeight: 700 } }, '✓ ' + (cfg.winMessage || 'All correct.')) : null
           ),
           h('div', { style: { marginBottom: '16px' } },
             h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, cfg.factsTitle || 'Key rules'),
@@ -31978,7 +32024,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
                 h('span', { style: { fontSize: '24px' } }, sc.icon),
                 h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
-                scState.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, __alloT('stem.roadready.passed', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, __alloT('stem.roadready.retry_2', '✗ RETRY')) : null
+                scState.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-green, #4ade80)', fontWeight: 800 } }, __alloT('stem.roadready.passed', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-red, #fca5a5)', fontWeight: 800 } }, __alloT('stem.roadready.retry_2', '✗ RETRY')) : null
               ),
               h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
@@ -31991,7 +32037,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     key: ci,
                     disabled: answered,
                     onClick: function() { if (!answered) commit(sc, ci); },
-                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: 'var(--allo-stem-text, #e2e8f0)', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
                   }, String.fromCharCode(65 + ci) + '. ' + ch);
                 })
               ),
@@ -32200,11 +32246,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         ];
         var defState = d.defensiveState || {}; // { scenarioId: { answered: idx, correct: bool } }
         var passed = Object.keys(defState).filter(function(k){return defState[k].correct;}).length;
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_17', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #1e3a8a, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #60a5fa', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #1e3a8a, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #60a5fa', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🛡️'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.defensive_driving_drills', 'Defensive Driving Drills')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.defensive_driving_drills', 'Defensive Driving Drills')),
             h('div', { style: { fontSize: '12px', color: '#bfdbfe' } }, passed + ' / ' + defScenarios.length + ' passed · Quick hazard-response scenarios')
           ),
           defScenarios.map(rrRotateScenario).map(function(sc) {
@@ -32214,7 +32260,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
                 h('span', { style: { fontSize: '24px' } }, sc.icon),
                 h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
-                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, __alloT('stem.roadready.passed_2', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, __alloT('stem.roadready.retry_4', '✗ RETRY')) : null
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-green, #4ade80)', fontWeight: 800 } }, __alloT('stem.roadready.passed_2', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-red, #fca5a5)', fontWeight: 800 } }, __alloT('stem.roadready.retry_4', '✗ RETRY')) : null
               ),
               h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
@@ -32241,7 +32287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         addToast('Not quite — see explanation');
                       }
                     },
-                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: 'var(--allo-stem-text, #e2e8f0)', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
                   }, String.fromCharCode(65 + ci) + '. ' + ch);
                 })
               ),
@@ -32363,11 +32409,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var mooseAttempted = Object.keys(mooseState).length;
         var moosePassed = Object.keys(mooseState).filter(function(k){return mooseState[k].correct;}).length;
         var allDone = mooseAttempted === MOOSE_SCENARIOS.length;
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_18', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '22px', border: '1px solid #f59e0b', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #f59e0b', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '48px' } }, '🫎'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.moose_encounter_drill', 'Moose Encounter Drill')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.moose_encounter_drill', 'Moose Encounter Drill')),
             h('div', { style: { fontSize: '12px', color: '#fcd34d' } }, 'Maine-specific · ' + moosePassed + ' / ' + MOOSE_SCENARIOS.length + ' passed'),
             allDone ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } },
               moosePassed === MOOSE_SCENARIOS.length ? '✓ All correct — drive safe out there.' : 'Complete. Review the red ones and retry.'
@@ -32394,7 +32440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
                 h('span', { style: { fontSize: '24px' } }, sc.icon),
                 h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
-                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, __alloT('stem.roadready.passed_3', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, __alloT('stem.roadready.retry_6', '✗ RETRY')) : null
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-green, #4ade80)', fontWeight: 800 } }, __alloT('stem.roadready.passed_3', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-red, #fca5a5)', fontWeight: 800 } }, __alloT('stem.roadready.retry_6', '✗ RETRY')) : null
               ),
               h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
@@ -32421,7 +32467,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         addToast('Not quite — see explanation');
                       }
                     },
-                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: 'var(--allo-stem-text, #e2e8f0)', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
                   }, String.fromCharCode(65 + ci) + '. ' + ch);
                 })
               ),
@@ -32540,11 +32586,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var emgState = d.emgState || {};
         var emgPassed = Object.keys(emgState).filter(function(k){return emgState[k].correct;}).length;
         var emgAllDone = Object.keys(emgState).length === EMG_SCENARIOS.length;
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_19', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '22px', border: '1px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '48px' } }, '🚨'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.emergency_vehicle_drill', 'Emergency Vehicle Drill')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.emergency_vehicle_drill', 'Emergency Vehicle Drill')),
             h('div', { style: { fontSize: '12px', color: '#fca5a5' } }, 'Yield + Move Over · ' + emgPassed + ' / ' + EMG_SCENARIOS.length + ' passed'),
             emgAllDone && emgPassed === EMG_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, __alloT('stem.roadready.all_correct_you_know_the_rules', '✓ All correct — you know the rules.')) : null
           ),
@@ -32567,7 +32613,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
                 h('span', { style: { fontSize: '24px' } }, sc.icon),
                 h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
-                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, __alloT('stem.roadready.passed_4', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, __alloT('stem.roadready.retry_8', '✗ RETRY')) : null
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-green, #4ade80)', fontWeight: 800 } }, __alloT('stem.roadready.passed_4', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-red, #fca5a5)', fontWeight: 800 } }, __alloT('stem.roadready.retry_8', '✗ RETRY')) : null
               ),
               h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
@@ -32594,7 +32640,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         addToast('Not quite — see explanation');
                       }
                     },
-                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: 'var(--allo-stem-text, #e2e8f0)', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
                   }, String.fromCharCode(65 + ci) + '. ' + ch);
                 })
               ),
@@ -32699,11 +32745,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var busState = d.busState || {};
         var busPassed = Object.keys(busState).filter(function(k){return busState[k].correct;}).length;
         var busAllDone = Object.keys(busState).length === BUS_SCENARIOS.length;
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_20', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #854d0e, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '22px', border: '1px solid #fbbf24', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #854d0e, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #fbbf24', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '48px' } }, '🚌'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.school_bus_stop_drill', 'School Bus Stop Drill')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.school_bus_stop_drill', 'School Bus Stop Drill')),
             h('div', { style: { fontSize: '12px', color: '#fde68a' } }, 'Maine §2308 · ' + busPassed + ' / ' + BUS_SCENARIOS.length + ' passed'),
             busAllDone && busPassed === BUS_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, __alloT('stem.roadready.all_correct_you_ll_stop_when_it_counts', '✓ All correct — you\'ll stop when it counts.')) : null
           ),
@@ -32726,7 +32772,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
                 h('span', { style: { fontSize: '24px' } }, sc.icon),
                 h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
-                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, __alloT('stem.roadready.passed_5', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, __alloT('stem.roadready.retry_10', '✗ RETRY')) : null
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-green, #4ade80)', fontWeight: 800 } }, __alloT('stem.roadready.passed_5', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-red, #fca5a5)', fontWeight: 800 } }, __alloT('stem.roadready.retry_10', '✗ RETRY')) : null
               ),
               h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
@@ -32753,7 +32799,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         addToast('Not quite — see explanation');
                       }
                     },
-                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: 'var(--allo-stem-text, #e2e8f0)', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
                   }, String.fromCharCode(65 + ci) + '. ' + ch);
                 })
               ),
@@ -32872,11 +32918,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var rrState = d.rrState || {};
         var rrPassed = Object.keys(rrState).filter(function(k){return rrState[k] && rrState[k].correct;}).length;
         var rrAllDone = Object.keys(rrState).length === RR_SCENARIOS.length;
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_21', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #1e3a8a, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '22px', border: '1px solid #60a5fa', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #1e3a8a, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #60a5fa', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '48px' } }, '🚂'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.railroad_crossing_drill', 'Railroad Crossing Drill')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.railroad_crossing_drill', 'Railroad Crossing Drill')),
             h('div', { style: { fontSize: '12px', color: '#bfdbfe' } }, 'FRA + Maine rules · ' + rrPassed + ' / ' + RR_SCENARIOS.length + ' passed'),
             rrAllDone && rrPassed === RR_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, __alloT('stem.roadready.all_correct_you_know_the_rules_that_sa', '✓ All correct — you know the rules that save lives at crossings.')) : null
           ),
@@ -32899,7 +32945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
                 h('span', { style: { fontSize: '24px' } }, sc.icon),
                 h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
-                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, __alloT('stem.roadready.passed_6', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, __alloT('stem.roadready.retry_12', '✗ RETRY')) : null
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-green, #4ade80)', fontWeight: 800 } }, __alloT('stem.roadready.passed_6', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-red, #fca5a5)', fontWeight: 800 } }, __alloT('stem.roadready.retry_12', '✗ RETRY')) : null
               ),
               h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
@@ -32926,7 +32972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         addToast('Not quite — see explanation');
                       }
                     },
-                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: 'var(--allo-stem-text, #e2e8f0)', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
                   }, String.fromCharCode(65 + ci) + '. ' + ch);
                 })
               ),
@@ -33047,11 +33093,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var winterState = d.winterState || {};
         var winterPassed = Object.keys(winterState).filter(function(k){return winterState[k] && winterState[k].correct;}).length;
         var winterAllDone = Object.keys(winterState).length === WINTER_SCENARIOS.length;
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_22', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '22px', border: '1px solid #22d3ee', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #22d3ee', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '48px' } }, '❄️'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.winter_driving_drill', 'Winter Driving Drill')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.winter_driving_drill', 'Winter Driving Drill')),
             h('div', { style: { fontSize: '12px', color: '#a5f3fc' } }, 'Ice · snow · skid recovery · ' + winterPassed + ' / ' + WINTER_SCENARIOS.length + ' passed'),
             winterAllDone && winterPassed === WINTER_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, __alloT('stem.roadready.all_correct_ready_for_your_first_maine', '✓ All correct — ready for your first Maine January.')) : null
           ),
@@ -33074,7 +33120,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
                 h('span', { style: { fontSize: '24px' } }, sc.icon),
                 h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
-                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, __alloT('stem.roadready.passed_7', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, __alloT('stem.roadready.retry_14', '✗ RETRY')) : null
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-green, #4ade80)', fontWeight: 800 } }, __alloT('stem.roadready.passed_7', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-red, #fca5a5)', fontWeight: 800 } }, __alloT('stem.roadready.retry_14', '✗ RETRY')) : null
               ),
               h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
@@ -33101,7 +33147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         addToast('Not quite — see explanation');
                       }
                     },
-                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: 'var(--allo-stem-text, #e2e8f0)', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
                   }, String.fromCharCode(65 + ci) + '. ' + ch);
                 })
               ),
@@ -33220,11 +33266,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var constrState = d.constrState || {};
         var constrPassed = Object.keys(constrState).filter(function(k){return constrState[k] && constrState[k].correct;}).length;
         var constrAllDone = Object.keys(constrState).length === CONSTR_SCENARIOS.length;
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_23', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '22px', border: '1px solid #f97316', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #f97316', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '48px' } }, '🚧'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.construction_zone_drill', 'Construction Zone Drill')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.construction_zone_drill', 'Construction Zone Drill')),
             h('div', { style: { fontSize: '12px', color: '#fed7aa' } }, 'Flaggers · merges · Move Over · ' + constrPassed + ' / ' + CONSTR_SCENARIOS.length + ' passed'),
             constrAllDone && constrPassed === CONSTR_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, __alloT('stem.roadready.all_correct_safe_in_any_work_zone', '✓ All correct — safe in any work zone.')) : null
           ),
@@ -33247,7 +33293,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
                 h('span', { style: { fontSize: '24px' } }, sc.icon),
                 h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
-                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, __alloT('stem.roadready.passed_8', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, __alloT('stem.roadready.retry_16', '✗ RETRY')) : null
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-green, #4ade80)', fontWeight: 800 } }, __alloT('stem.roadready.passed_8', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-red, #fca5a5)', fontWeight: 800 } }, __alloT('stem.roadready.retry_16', '✗ RETRY')) : null
               ),
               h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
@@ -33274,7 +33320,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         addToast('Not quite — see explanation');
                       }
                     },
-                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: 'var(--allo-stem-text, #e2e8f0)', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
                   }, String.fromCharCode(65 + ci) + '. ' + ch);
                 })
               ),
@@ -33393,11 +33439,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var gdlState = d.gdlState || {};
         var gdlPassed = Object.keys(gdlState).filter(function(k){return gdlState[k] && gdlState[k].correct;}).length;
         var gdlAllDone = Object.keys(gdlState).length === GDL_SCENARIOS.length;
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_24', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #065f46, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '22px', border: '1px solid #34d399', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #065f46, #0f172a)', borderRadius: '14px', padding: '22px', border: '1px solid #34d399', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '48px' } }, '📘'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.teen_gdl_drill', 'Teen GDL Drill')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.teen_gdl_drill', 'Teen GDL Drill')),
             h('div', { style: { fontSize: '12px', color: '#a7f3d0' } }, 'Maine Graduated License rules · ' + gdlPassed + ' / ' + GDL_SCENARIOS.length + ' passed'),
             gdlAllDone && gdlPassed === GDL_SCENARIOS.length ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: '#4ade80', fontWeight: 700 } }, __alloT('stem.roadready.all_correct_you_know_the_gdl_rules_col', '✓ All correct — you know the GDL rules cold.')) : null
           ),
@@ -33420,7 +33466,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' } },
                 h('span', { style: { fontSize: '24px' } }, sc.icon),
                 h('span', { style: { fontSize: '13px', fontWeight: 800 } }, sc.title),
-                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#4ade80', fontWeight: 800 } }, __alloT('stem.roadready.passed_9', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: '#ef4444', fontWeight: 800 } }, __alloT('stem.roadready.retry_18', '✗ RETRY')) : null
+                state.correct ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-green, #4ade80)', fontWeight: 800 } }, __alloT('stem.roadready.passed_9', '✓ PASSED')) : answered ? h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: 'var(--rr-red, #fca5a5)', fontWeight: 800 } }, __alloT('stem.roadready.retry_18', '✗ RETRY')) : null
               ),
               h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '10px', lineHeight: '1.5' } }, sc.q),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
@@ -33447,7 +33493,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         addToast('Not quite — see explanation');
                       }
                     },
-                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                    style: { padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + bd, background: bg, color: 'var(--allo-stem-text, #e2e8f0)', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
                   }, String.fromCharCode(65 + ci) + '. ' + ch);
                 })
               ),
@@ -33515,20 +33561,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         ];
         var picked = d.crashLabPicked || null;
         var pickedType = picked ? crashTypes.find(function(c){return c.id === picked;}) : null;
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { updMulti({ view: 'menu', crashLabPicked: null }); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_25', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🔬'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.crash_reconstruction_lab', 'Crash Reconstruction Lab')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.crash_reconstruction_lab', 'Crash Reconstruction Lab')),
             h('div', { style: { fontSize: '12px', color: '#fecaca' } }, __alloT('stem.roadready.pick_a_crash_type_see_the_physics_of_w', 'Pick a crash type. See the physics of what happened — and what would have prevented it.'))
           ),
           !pickedType ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' } },
             crashTypes.map(function(ct) {
               return h('button', { key: ct.id, onClick: function() { upd('crashLabPicked', ct.id); },
-                style: { padding: '16px', borderRadius: '10px', border: '1px solid #7f1d1d', background: 'linear-gradient(135deg, #450a0a, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+                style: { padding: '16px', borderRadius: '10px', border: '1px solid #7f1d1d', background: 'linear-gradient(135deg, #450a0a, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
                 h('div', { style: { fontSize: '32px' } }, ct.icon),
                 h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, ct.title),
-                h('div', { style: { fontSize: '10px', color: '#fecaca', marginTop: '4px', lineHeight: '1.4' } }, ct.desc)
+                h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', marginTop: '4px', lineHeight: '1.4' } }, ct.desc)
               );
             })
           ) : h('div', null,
@@ -33538,7 +33584,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('div', { style: { fontSize: '42px' } }, pickedType.icon),
                 h('div', null,
                   h('div', { style: { fontSize: '16px', fontWeight: 900 } }, pickedType.title),
-                  h('div', { style: { fontSize: '11px', color: '#fca5a5', marginTop: '2px', lineHeight: '1.4' } }, pickedType.desc)
+                  h('div', { style: { fontSize: '11px', color: 'var(--rr-red, #fca5a5)', marginTop: '2px', lineHeight: '1.4' } }, pickedType.desc)
                 )
               )
             ),
@@ -33552,8 +33598,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               })
             ),
             h('div', { style: { background: 'rgba(74,222,128,0.1)', borderRadius: '10px', padding: '14px', border: '1px solid #4ade80' } },
-              h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#4ade80', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.prevention', '🛡️ Prevention')),
-              h('div', { style: { fontSize: '12px', color: '#bbf7d0', lineHeight: '1.6' } }, pickedType.prevention)
+              h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--rr-green, #4ade80)', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.prevention', '🛡️ Prevention')),
+              h('div', { style: { fontSize: '12px', color: 'var(--rr-green, #4ade80)', lineHeight: '1.6' } }, pickedType.prevention)
             )
           )
         );
@@ -33580,11 +33626,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var lastBestForScenario = function(sid) {
           return driven[sid] ? (driven[sid].bestSafety || 0) : 0;
         };
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_26', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #134e4a, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #14b8a6', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #134e4a, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #14b8a6', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🎓'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.lesson_path_2', 'Lesson Path')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.lesson_path_2', 'Lesson Path')),
             h('div', { style: { fontSize: '12px', color: '#99f6e4' } }, __alloT('stem.roadready.guided_10_lesson_progression_each_unlo', 'Guided 10-lesson progression. Each unlocks when you meet the safety score on the prior.'))
           ),
           lessons.map(function(les, li) {
@@ -33603,7 +33649,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('button', {
                   disabled: !unlocked,
                   onClick: function() { updMulti({ freeExplore: false }); startDriving(les.scenarioId, selectedVehicle); },
-                  style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + (unlocked ? '#14b8a6' : '#475569'), background: unlocked ? 'rgba(20,184,166,0.2)' : '#1e293b', color: unlocked ? '#5eead4' : '#475569', fontSize: '12px', fontWeight: 700, cursor: unlocked ? 'pointer' : 'not-allowed' }
+                  style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + (unlocked ? '#14b8a6' : '#475569'), background: unlocked ? 'rgba(20,184,166,0.2)' : '#1e293b', color: unlocked ? 'var(--rr-cyan, #22d3ee)' : 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '12px', fontWeight: 700, cursor: unlocked ? 'pointer' : 'not-allowed' }
                 }, unlocked ? 'Start' : 'Locked')
               )
             );
@@ -33639,11 +33685,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         ];
         var mgState = d.maintenanceGame || {};
         var correctCt = Object.keys(mgState).filter(function(k){return mgState[k].correct;}).length;
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_27', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #f97316', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #f97316', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🔧'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.vehicle_maintenance', 'Vehicle Maintenance')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.vehicle_maintenance', 'Vehicle Maintenance')),
             h('div', { style: { fontSize: '12px', color: '#fed7aa' } }, 'Dashboard warning lights. Know what each one means — your engine depends on it. ' + correctCt + ' / ' + warningLights.length + ' correct.')
           ),
           warningLights.map(function(wl) {
@@ -33678,7 +33724,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         }
                       }
                     },
-                    style: { padding: '6px 10px', borderRadius: '5px', border: '1px solid ' + bd, background: bg, color: '#fff', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
+                    style: { padding: '6px 10px', borderRadius: '5px', border: '1px solid ' + bd, background: bg, color: 'var(--allo-stem-text, #e2e8f0)', cursor: answered ? 'default' : 'pointer', textAlign: 'left', fontSize: '11px' }
                   }, String.fromCharCode(65 + ci) + '. ' + c);
                 })
               ),
@@ -33828,11 +33874,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
         ];
         var opened = d.emergencyOpened || {};
-        return h('div', { style: { padding: '20px', maxWidth: '880px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '880px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_28', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px', border: '1px solid #dc2626' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px', border: '1px solid #dc2626' } },
             h('div', { style: { fontSize: '48px' } }, '🚨'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.emergency_handbook_2', 'Emergency Handbook')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.emergency_handbook_2', 'Emergency Handbook')),
             h('div', { style: { fontSize: '12px', color: '#fecaca' } }, __alloT('stem.roadready.read_these_before_you_need_them_in_the', 'Read these BEFORE you need them. In the moment you won\'t have time to look up.'))
           ),
           emergencies.map(function(em) {
@@ -33844,7 +33890,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   next[em.id] = !isOpen;
                   upd('emergencyOpened', next);
                 },
-                style: { width: '100%', padding: '14px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', color: '#fff' }
+                style: { width: '100%', padding: '14px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', color: 'var(--allo-stem-text, #e2e8f0)' }
               },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
                   h('span', { style: { fontSize: '30px' } }, em.icon),
@@ -33859,11 +33905,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 )
               ),
               isOpen ? h('div', { style: { padding: '0 14px 14px', borderTop: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))' } },
-                h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#4ade80', textTransform: 'uppercase', margin: '12px 0 6px 0' } }, __alloT('stem.roadready.what_to_do', '✓ What to do:')),
+                h('div', { style: { fontSize: '10px', fontWeight: 800, color: 'var(--rr-green, #4ade80)', textTransform: 'uppercase', margin: '12px 0 6px 0' } }, __alloT('stem.roadready.what_to_do', '✓ What to do:')),
                 h('ol', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.7', paddingLeft: '18px', margin: 0 } },
                   em.steps.map(function(s, si) { return h('li', { key: si, style: { marginBottom: '4px' } }, s); })
                 ),
-                h('div', { style: { marginTop: '12px', padding: '10px', borderRadius: '6px', background: 'rgba(127,29,29,0.3)', border: '1px solid #7f1d1d', fontSize: '11px', color: '#fecaca', lineHeight: '1.5' } },
+                h('div', { style: { marginTop: '12px', padding: '10px', borderRadius: '6px', background: 'rgba(127,29,29,0.3)', border: '1px solid #7f1d1d', fontSize: '11px', color: 'var(--rr-red, #fca5a5)', lineHeight: '1.5' } },
                   h('span', { style: { fontWeight: 800 } }, __alloT('stem.roadready.never', '✗ Never: ')),
                   em.never
                 )
@@ -33871,7 +33917,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             );
           }),
           // 911 reminder
-          h('div', { style: { background: 'linear-gradient(135deg, #14532d, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '10px', padding: '14px', border: '1px solid #22c55e', marginTop: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #14532d, #0f172a)', borderRadius: '10px', padding: '14px', border: '1px solid #22c55e', marginTop: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#4ade80', marginBottom: '4px' } }, __alloT('stem.roadready.in_any_real_emergency', '📞 In any real emergency')),
             h('div', { style: { fontSize: '24px', fontWeight: 900, color: '#4ade80', letterSpacing: '0.1em' } }, __alloT('stem.roadready.call_911', 'CALL 911')),
             h('div', { style: { fontSize: '11px', color: '#bbf7d0', marginTop: '4px' } }, __alloT('stem.roadready.state_your_location_first_then_the_sit', 'State your location first, then the situation. 911 dispatchers are trained — they\'ll help you think clearly.'))
@@ -33896,17 +33942,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         ];
         var pledgeSigned = !!d.pledgeSigned;
         var pledgeDate = d.pledgeSigned ? new Date(d.pledgeSigned).toLocaleDateString() : null;
-        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_29', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #3f6212, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px', border: '1px solid #84cc16' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #3f6212, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px', border: '1px solid #84cc16' } },
             h('div', { style: { fontSize: '48px' } }, '📜'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.driver_s_pledge_2', "Driver's Pledge")),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.driver_s_pledge_2', "Driver's Pledge")),
             h('div', { style: { fontSize: '12px', color: '#d9f99d' } }, __alloT('stem.roadready.research_shows_signing_a_written_pledg', 'Research shows signing a written pledge reduces teen crash rates. This is your commitment to yourself.'))
           ),
           pledgeSigned ? h('div', { style: { background: 'linear-gradient(135deg, rgba(132,204,22,0.15), rgba(101,163,13,0.15))', borderRadius: '12px', padding: '20px', border: '2px solid #84cc16', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '32px', marginBottom: '6px' } }, '✅'),
-            h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#bef264', marginBottom: '4px' } }, __alloT('stem.roadready.pledge_signed', 'Pledge Signed')),
-            h('div', { style: { fontSize: '12px', color: '#d9f99d' } }, 'Signed by ' + (d.driverName || 'you') + ' on ' + pledgeDate),
+            h('div', { style: { fontSize: '16px', fontWeight: 800, color: 'var(--rr-green, #4ade80)', marginBottom: '4px' } }, __alloT('stem.roadready.pledge_signed', 'Pledge Signed')),
+            h('div', { style: { fontSize: '12px', color: 'var(--rr-green, #4ade80)' } }, 'Signed by ' + (d.driverName || 'you') + ' on ' + pledgeDate),
             h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '8px', fontStyle: 'italic' } }, __alloT('stem.roadready.keep_your_commitment_read_it_again_any', 'Keep your commitment. Read it again any time — revisit before a long drive, or after a close call.'))
           ) : null,
           // Pledge text
@@ -33941,7 +33987,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               addToast('📜 Pledge signed. Drive like you mean it.');
               speak('Pledge signed. Thank you for committing to safe driving.');
             },
-            style: { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: d.driverName ? 'linear-gradient(135deg, #65a30d, #3f6212)' : '#1e293b', color: '#fff', fontSize: '14px', fontWeight: 900, cursor: d.driverName ? 'pointer' : 'not-allowed' }
+            style: { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: d.driverName ? 'linear-gradient(135deg, #65a30d, #3f6212)' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '14px', fontWeight: 900, cursor: d.driverName ? 'pointer' : 'not-allowed' }
           }, d.driverName ? '✍️ Sign the Pledge' : 'Set your name in My Ride first →') : h('div', { style: { display: 'flex', gap: '8px' } },
             h('button', {
               onClick: function() {
@@ -33957,7 +34003,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   addToast('📜 Pledge exported');
                 } catch(_) { addToast('Export failed'); }
               },
-              style: { flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #84cc16', background: 'rgba(132,204,22,0.15)', color: '#bef264', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+              style: { flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #84cc16', background: 'rgba(132,204,22,0.15)', color: 'var(--rr-green, #4ade80)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.roadready.export_as_markdown', '📄 Export as Markdown')),
             h('button', {
               onClick: function() { upd('pledgeSigned', null); },
@@ -33986,11 +34032,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         studyQueue.sort(function(a, b) { return b.priority - a.priority; });
         var curCard = studyQueue[fcIdx % studyQueue.length];
         var totalCorrect = Object.values(fcHistory).filter(function(r) { return r && r.correct > r.wrong; }).length;
-        return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_30', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '16px', border: '1px solid #fbbf24' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '16px', border: '1px solid #fbbf24' } },
             h('div', { style: { fontSize: '42px' } }, '🗂️'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.permit_flashcards_2', 'Permit Flashcards')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.permit_flashcards_2', 'Permit Flashcards')),
             h('div', { style: { fontSize: '12px', color: '#fde68a' } }, 'Study mode · ' + totalCorrect + ' / ' + PERMIT_BANK.length + ' mastered · Harder questions cycle back faster')
           ),
           // Progress bar
@@ -33999,7 +34045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Card
           h('style', null,
-            __alloT('stem.roadready.keyframes_rrcardflip_from_transform_ro', '@keyframes rrCardFlip { from{transform:rotateY(90deg);opacity:0} to{transform:rotateY(0);opacity:1} }')
+            '@keyframes rrCardFlip { from{transform:rotateY(90deg);opacity:0} to{transform:rotateY(0);opacity:1} }'
           ),
           h('div', Object.assign({
             key: 'card-' + fcIdx + '-' + fcFlipped,
@@ -34010,7 +34056,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             style: {
               minHeight: '260px',
               background: fcFlipped ? 'linear-gradient(135deg, #0c4a6e, #1e3a5f)' : 'linear-gradient(135deg, #fef3c7, #fde68a)',
-              color: fcFlipped ? '#e2e8f0' : '#1e293b',
+              color: fcFlipped ? 'var(--allo-stem-text, #e2e8f0)' : 'var(--allo-stem-text, #e2e8f0)',
               borderRadius: '16px',
               padding: '32px',
               border: '2px solid ' + (fcFlipped ? '#0ea5e9' : '#fbbf24'),
@@ -34021,13 +34067,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               marginBottom: '16px'
             }
           }, a11yClick(function() { upd('permitFlashFlipped', !fcFlipped); })),
-            h('div', { style: { fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', color: fcFlipped ? '#38bdf8' : '#a07830', textAlign: 'center' } }, fcFlipped ? 'Answer' : 'Question ' + (fcIdx + 1)),
+            h('div', { style: { fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', color: fcFlipped ? 'var(--rr-cyan, #22d3ee)' : 'var(--rr-amber, #fbbf24)', textAlign: 'center' } }, fcFlipped ? 'Answer' : 'Question ' + (fcIdx + 1)),
             !fcFlipped ? h('div', { style: { fontSize: '16px', fontWeight: 700, lineHeight: '1.5', textAlign: 'center' } }, curCard.q.q) :
               h('div', null,
-                h('div', { style: { fontSize: '17px', fontWeight: 800, marginBottom: '12px', color: '#4ade80', textAlign: 'center' } }, '✓ ' + curCard.q.a[curCard.q.correct]),
+                h('div', { style: { fontSize: '17px', fontWeight: 800, marginBottom: '12px', color: 'var(--rr-green, #4ade80)', textAlign: 'center' } }, '✓ ' + curCard.q.a[curCard.q.correct]),
                 h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6', padding: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '6px', borderLeft: '3px solid #38bdf8' } }, curCard.q.exp)
               ),
-            h('div', { style: { fontSize: '10px', textAlign: 'center', marginTop: '20px', color: fcFlipped ? '#94a3b8' : '#78716c', opacity: 0.7 } }, fcFlipped ? 'Tap to flip back' : 'Tap to reveal answer')
+            h('div', { style: { fontSize: '10px', textAlign: 'center', marginTop: '20px', color: fcFlipped ? 'var(--allo-stem-text-soft, #94a3b8)' : '#78716c', opacity: 0.7 } }, fcFlipped ? 'Tap to flip back' : 'Tap to reveal answer')
           ),
           // Action buttons (only when flipped)
           fcFlipped ? h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' } },
@@ -34038,7 +34084,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 next[curCard.origIdx] = { correct: rec.correct, wrong: rec.wrong + 1, lastSeen: Date.now() };
                 updMulti({ permitFlashHistory: next, permitFlashIdx: fcIdx + 1, permitFlashFlipped: false });
               },
-              style: { padding: '14px', borderRadius: '10px', border: '1px solid #ef4444', background: 'rgba(239,68,68,0.15)', color: '#fca5a5', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+              style: { padding: '14px', borderRadius: '10px', border: '1px solid #ef4444', background: 'rgba(239,68,68,0.15)', color: 'var(--rr-red, #fca5a5)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.roadready.review_again', '📖 Review Again')),
             h('button', {
               onClick: function() {
@@ -34047,7 +34093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 next[curCard.origIdx] = { correct: rec.correct + 1, wrong: rec.wrong, lastSeen: Date.now() };
                 updMulti({ permitFlashHistory: next, permitFlashIdx: fcIdx + 1, permitFlashFlipped: false });
               },
-              style: { padding: '14px', borderRadius: '10px', border: '1px solid #22c55e', background: 'rgba(34,197,94,0.15)', color: '#86efac', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+              style: { padding: '14px', borderRadius: '10px', border: '1px solid #22c55e', background: 'rgba(34,197,94,0.15)', color: 'var(--rr-green, #4ade80)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.roadready.got_it', '✅ Got It'))
           ) : h('button', {
             onClick: function() { upd('permitFlashFlipped', true); },
@@ -34075,11 +34121,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var pillarKeys = ['rightOfWay', 'laneDiscipline', 'signaling', 'passing', 'merging', 'pedestrian', 'emergency', 'railroad', 'speedAndFollowing'];
         var activePillarKey = d.rulesPillar && UNIVERSAL_RULES[d.rulesPillar] ? d.rulesPillar : 'rightOfWay';
         var activePillar = UNIVERSAL_RULES[activePillarKey];
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_31', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #312e81, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '22px', textAlign: 'center', marginBottom: '14px', border: '2px solid #818cf8' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #312e81, #0f172a)', borderRadius: '14px', padding: '22px', textAlign: 'center', marginBottom: '14px', border: '2px solid #818cf8' } },
             h('div', { style: { fontSize: '40px' } }, '📚'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900, margin: '6px 0' } }, __alloT('stem.roadready.rules_foundations_2', 'Rules Foundations')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900, margin: '6px 0' } }, __alloT('stem.roadready.rules_foundations_2', 'Rules Foundations')),
             h('div', { style: { fontSize: '12px', color: '#c7d2fe', lineHeight: '1.5' } },
               __alloT('stem.roadready.nine_universal_pillars_every_us_driver', 'Nine universal pillars every US driver must know. State rules (like Maine\'s) layer specifics on top of these.'))
           ),
@@ -34094,7 +34140,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   padding: '8px 12px', borderRadius: '8px',
                   border: '1px solid ' + (isActive ? '#818cf8' : '#334155'),
                   background: isActive ? 'rgba(129,140,248,0.25)' : '#1e293b',
-                  color: isActive ? '#fff' : '#cbd5e1',
+                  color: isActive ? 'var(--allo-stem-text, #e2e8f0)' : 'var(--allo-stem-text-soft, #94a3b8)',
                   fontSize: '11px', fontWeight: isActive ? 800 : 600,
                   cursor: 'pointer', whiteSpace: 'nowrap'
                 }
@@ -34118,9 +34164,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     background: ix % 2 ? '#020617' : '#1e293b', borderRadius: '8px',
                     borderLeft: '3px solid #818cf8' }
                 },
-                  h('div', { style: { minWidth: '28px', fontSize: '20px', fontWeight: 900, color: '#c7d2fe' } }, item.rank),
+                  h('div', { style: { minWidth: '28px', fontSize: '20px', fontWeight: 900, color: 'var(--rr-violet, #a78bfa)' } }, item.rank),
                   h('div', { style: { flex: 1 } },
-                    h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#e0e7ff', marginBottom: '4px' } }, item.who),
+                    h('div', { style: { fontSize: '12px', fontWeight: 800, color: 'var(--rr-violet, #a78bfa)', marginBottom: '4px' } }, item.who),
                     h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.55' } }, item.rule)
                   )
                 );
@@ -34134,7 +34180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     background: ix % 2 ? '#020617' : '#1e293b', borderRadius: '8px',
                     borderLeft: '3px solid #818cf8' }
                 },
-                  h('div', { style: { minWidth: '20px', fontSize: '14px', color: '#818cf8' } }, '●'),
+                  h('div', { style: { minWidth: '20px', fontSize: '14px', color: 'var(--rr-violet, #a78bfa)' } }, '●'),
                   h('div', { style: { flex: 1, fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } }, r)
                 );
               })
@@ -34307,12 +34353,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var rScore = d.rowScore || 0;
         var rAnswered = d.rowAnswered;
         if (rIdx >= rowScenarios.length) {
-          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
             h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_32', '← Menu')),
             h('div', { style: { background: 'linear-gradient(135deg, ' + (rScore >= 14 ? '#14532d' : '#78350f') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (rScore >= 14 ? '#4ade80' : '#f59e0b') } },
               h('div', { style: { fontSize: '64px' } }, rScore >= 14 ? '🏆' : '📝'),
               h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, rScore >= 14 ? 'Right-of-Way Mastered!' : 'Keep Practicing'),
-              h('div', { style: { fontSize: '40px', fontWeight: 900, color: rScore >= 14 ? '#4ade80' : '#f59e0b', margin: '10px 0' } }, rScore + ' / ' + rowScenarios.length),
+              h('div', { style: { fontSize: '40px', fontWeight: 900, color: rScore >= 14 ? 'var(--rr-green, #4ade80)' : 'var(--rr-amber, #fbbf24)', margin: '10px 0' } }, rScore + ' / ' + rowScenarios.length),
               h('button', { onClick: function() { updMulti({ rowIdx: 0, rowScore: 0, rowAnswered: null }); },
                 style: { marginTop: '12px', padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#f59e0b', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
               }, __alloT('stem.roadready.try_again', '↻ Try Again'))
@@ -34321,11 +34367,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         }
         var cur = rowScenarios[rIdx];
         var answered = rAnswered !== null && rAnswered !== undefined;
-        return h('div', { style: { padding: '20px', maxWidth: '700px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '700px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_33', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #f59e0b' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #f59e0b' } },
             h('div', { style: { fontSize: '36px' } }, '↔️'),
-            h('h2', { style: { fontSize: '18px', fontWeight: 900 } }, __alloT('stem.roadready.right_of_way_scenarios', 'Right-of-Way Scenarios')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '18px', fontWeight: 900 } }, __alloT('stem.roadready.right_of_way_scenarios', 'Right-of-Way Scenarios')),
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '11px' } },
               h('span', { style: { color: '#fed7aa' } }, 'Scenario ' + (rIdx + 1) + ' / ' + rowScenarios.length),
               h('span', { style: { color: '#4ade80', fontWeight: 700 } }, 'Score: ' + rScore)
@@ -34347,11 +34393,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var correct = ci === cur.correct;
                     updMulti({ rowAnswered: ci, rowScore: rScore + (correct ? 1 : 0) });
                   },
-                  style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + bd, background: bg, color: '#fff', fontSize: '12px', cursor: answered ? 'default' : 'pointer', textAlign: 'left', lineHeight: '1.5' }
+                  style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + bd, background: bg, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', cursor: answered ? 'default' : 'pointer', textAlign: 'left', lineHeight: '1.5' }
                 }, String.fromCharCode(65 + ci) + '. ' + c);
               })
             ),
-            answered ? h('div', { style: { marginTop: '12px', padding: '10px', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '6px', borderLeft: '3px solid #f59e0b', fontSize: '11px', color: '#fed7aa', lineHeight: '1.6' } },
+            answered ? h('div', { style: { marginTop: '12px', padding: '10px', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '6px', borderLeft: '3px solid #f59e0b', fontSize: '11px', color: 'var(--rr-orange, #fdba74)', lineHeight: '1.6' } },
               h('b', null, __alloT('stem.roadready.explanation', '✓ Explanation: ')), cur.exp
             ) : null,
             answered ? h('button', { onClick: function() { updMulti({ rowIdx: rIdx + 1, rowAnswered: null }); },
@@ -34399,14 +34445,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         else if (intermediate && intermediateRestrictionActive) stage = 'intermediate_restricted';
         else if (intermediate && !intermediateRestrictionActive) stage = 'full_license';
         var stages = {
-          unstarted: { title: __alloT('stem.roadready.start_tracking', 'Start tracking'), icon: '📅', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', desc: __alloT('stem.roadready.enter_your_birth_date_below_to_see_you', 'Enter your birth date below to see your Maine GDL stage and what\'s next.') },
+          unstarted: { title: __alloT('stem.roadready.start_tracking', 'Start tracking'), icon: '📅', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', desc: __alloT('stem.roadready.enter_your_birth_date_below_to_see_you', 'Enter your birth date above to see your Maine GDL stage and what\'s next.') },
           tooyoung: { title: 'Pre-permit', icon: '🌱', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', desc: __alloT('stem.roadready.you_must_be_15_to_apply_for_a_maine_le', 'You must be 15 to apply for a Maine learner\'s permit. Keep studying!') },
           eligible_permit: { title: __alloT('stem.roadready.eligible_to_apply_for_permit', 'Eligible to apply for permit'), icon: '📝', color: 'var(--rr-cyan, #22d3ee)', desc: __alloT('stem.roadready.you_re_15_apply_at_the_maine_bmv_pass_', 'You\'re 15+. Apply at the Maine BMV: pass the written test, vision test, $35 fee.') },
           permit_hold: { title: __alloT('stem.roadready.learner_s_permit_holding_period', 'Learner\'s Permit (holding period)'), icon: '🪪', color: 'var(--rr-amber, #fbbf24)', desc: __alloT('stem.roadready.you_must_hold_the_permit_6_months_with', 'You must hold the permit 6 months with NO violations. Keep logging practice hours!') },
           permit_waiting: { title: __alloT('stem.roadready.permit_held_6_months_waiting_to_be_16', 'Permit held 6+ months — waiting to be 16'), icon: '⏳', color: 'var(--rr-amber, #fbbf24)', desc: __alloT('stem.roadready.you_ve_cleared_the_6_month_hold_once_y', 'You\'ve cleared the 6-month hold. Once you\'re 16 AND have 70 supervised hours (including 10 night), apply for intermediate license.') },
-          eligible_intermediate: { title: __alloT('stem.roadready.eligible_for_intermediate_license', 'Eligible for intermediate license'), icon: '🔑', color: '#10b981', desc: __alloT('stem.roadready.you_re_16_with_permit_6_months_apply_f', 'You\'re 16 with permit + 6 months. Apply for intermediate license at the BMV. Road test required.') },
-          intermediate_restricted: { title: __alloT('stem.roadready.intermediate_license', 'Intermediate License'), icon: '🚗', color: '#0ea5e9', desc: __alloT('stem.roadready.you_have_a_restricted_license_see_rest', 'You have a restricted license. See restrictions below. After the 270-day restriction period, restrictions can lift if they are not extended by a violation.') },
-          full_license: { title: __alloT('stem.roadready.full_license', 'Full License!'), icon: '🎉', color: '#4ade80', desc: __alloT('stem.roadready.congratulations_you_have_a_full_maine_', 'Congratulations. You have a full Maine driver\'s license. Drive responsibly — Maine roads count on you.') }
+          eligible_intermediate: { title: __alloT('stem.roadready.eligible_for_intermediate_license', 'Eligible for intermediate license'), icon: '🔑', color: 'var(--rr-green, #4ade80)', desc: __alloT('stem.roadready.you_re_16_with_permit_6_months_apply_f', 'You\'re 16 with permit + 6 months. Apply for intermediate license at the BMV. Road test required.') },
+          intermediate_restricted: { title: __alloT('stem.roadready.intermediate_license', 'Intermediate License'), icon: '🚗', color: 'var(--rr-cyan, #22d3ee)', desc: __alloT('stem.roadready.you_have_a_restricted_license_see_rest', 'You have a restricted license. See restrictions below. After the 270-day restriction period, restrictions can lift if they are not extended by a violation.') },
+          full_license: { title: __alloT('stem.roadready.full_license', 'Full License!'), icon: '🎉', color: 'var(--rr-green, #4ade80)', desc: __alloT('stem.roadready.congratulations_you_have_a_full_maine_', 'Congratulations. You have a full Maine driver\'s license. Drive responsibly — Maine roads count on you.') }
         };
         stageInfo = stages[stage];
         // Restrictions for intermediate stage
@@ -34417,36 +34463,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { icon: '🍺', label: __alloT('stem.roadready.zero_tolerance_any_bac_license_suspens', 'Zero tolerance — any BAC = license suspension (under 21)'), active: age !== null && age < 21 }
         ];
         var totalHrs = ((d.logbook || []).reduce(function(s, j) { return s + (j.durationSec || 0); }, 0) / 3600);
-        return h('div', { style: { padding: '20px', maxWidth: '780px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '780px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_34', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #064e3b, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #10b981' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #064e3b, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #10b981' } },
             h('div', { style: { fontSize: '42px' } }, '🪪'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.maine_gdl_tracker_2', 'Maine GDL Tracker')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.maine_gdl_tracker_2', 'Maine GDL Tracker')),
             h('div', { style: { fontSize: '12px', color: '#a7f3d0' } }, __alloT('stem.roadready.graduated_driver_license_timeline_main', 'Graduated Driver License timeline — Maine specific'))
           ),
           // Input form
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '14px' } },
-            h('div', { style: { fontSize: '11px', color: '#a7f3d0', fontWeight: 700, textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.your_dates_stored_on_your_device_only', 'Your Dates (stored on your device only)')),
-            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', fontSize: '11px' } },
+            h('div', { style: { fontSize: '11px', color: 'var(--rr-green, #4ade80)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.your_dates_stored_on_your_device_only', 'Your Dates (stored on your device only)')),
+            // auto-fit, not three fixed columns: three date inputs with their
+            // native picker buttons ran 44px past the tool edge at 390px.
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '10px', fontSize: '11px' } },
               h('div', null,
                 h('label', { htmlFor: 'rr-gdl-birth-date', style: { display: 'block', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '4px' } }, __alloT('stem.roadready.birth_date', 'Birth date')),
                 h('input', { id: 'rr-gdl-birth-date', type: 'date', value: gdlBirth,
                   onChange: function(e) { upd('gdlBirthDate', e.target.value); },
-                  style: { width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', color: '#fff', fontSize: '12px' }
+                  style: { width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px' }
                 })
               ),
               h('div', null,
                 h('label', { htmlFor: 'rr-gdl-permit-date', style: { display: 'block', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '4px' } }, __alloT('stem.roadready.permit_issued', 'Permit issued')),
                 h('input', { id: 'rr-gdl-permit-date', type: 'date', value: gdlPermit,
                   onChange: function(e) { upd('gdlPermitDate', e.target.value); },
-                  style: { width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', color: '#fff', fontSize: '12px' }
+                  style: { width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px' }
                 })
               ),
               h('div', null,
                 h('label', { htmlFor: 'rr-gdl-intermediate-date', style: { display: 'block', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '4px' } }, __alloT('stem.roadready.intermediate_license_2', 'Intermediate license')),
                 h('input', { id: 'rr-gdl-intermediate-date', type: 'date', value: gdlIntermediate,
                   onChange: function(e) { upd('gdlIntermediateDate', e.target.value); },
-                  style: { width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', color: '#fff', fontSize: '12px' }
+                  style: { width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px' }
                 })
               )
             )
@@ -34465,7 +34513,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Restrictions
           birth ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '14px' } },
-            h('div', { style: { fontSize: '11px', color: '#f59e0b', fontWeight: 700, textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.your_current_restrictions', '⚠️ Your current restrictions')),
+            h('div', { style: { fontSize: '11px', color: 'var(--rr-amber, #fbbf24)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.your_current_restrictions', '⚠️ Your current restrictions')),
             restrictions.filter(function(r) { return r.active; }).length === 0 ? h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontStyle: 'italic' } }, __alloT('stem.roadready.no_active_restrictions_at_this_stage', 'No active restrictions at this stage.')) :
             restrictions.filter(function(r) { return r.active; }).map(function(r, ri) {
               return h('div', { key: ri, style: { display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '6px 0', borderBottom: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))', fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))' } },
@@ -34483,8 +34531,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // it told a student they were N% of the way to a legal requirement that
             // simulator time cannot advance at all. The bar is gone; the requirement is
             // still taught, as a separate fact rather than as a score.
-            h('div', { style: { fontSize: '11px', color: '#10b981', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.70_hour_supervised_driving_progress_fr', '📔 Simulator practice logged')),
-            h('div', { style: { fontSize: '20px', fontWeight: 800, color: '#a7f3d0' } }, totalHrs.toFixed(1) + ' hours'),
+            h('div', { style: { fontSize: '11px', color: 'var(--rr-green, #4ade80)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.70_hour_supervised_driving_progress_fr', '📔 Simulator practice logged')),
+            h('div', { style: { fontSize: '20px', fontWeight: 800, color: 'var(--rr-green, #4ade80)' } }, totalHrs.toFixed(1) + ' hours'),
             h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '8px', lineHeight: 1.5 } }, __alloT('stem.roadready.note_the_70_hour_maine_requirement_is_', 'Maine separately requires 70 hours of real supervised driving, 10 of them at night, before the road test. Simulator hours do not count toward those 70 — that log is kept with a licensed adult in a real car.'))
           ) : null
         );
@@ -34529,11 +34577,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var yesterday = localDayKey(yd); // LOCAL day, matching `today`
           isConsecutive = lastDate === today || lastDate === yesterday;
         }
-        return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_35', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '14px', border: '1px solid #fbbf24' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '14px', border: '1px solid #fbbf24' } },
             h('div', { style: { fontSize: '48px' } }, '⭐'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.daily_challenge_2', 'Daily Challenge')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.daily_challenge_2', 'Daily Challenge')),
             h('div', { style: { fontSize: '12px', color: '#fde68a' } }, new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })),
             // Streak display — show 0 when the chain is broken (last completion
             // was before yesterday); the stored streak only resets on the next
@@ -34549,7 +34597,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '12px' } },
               h('div', { style: { fontSize: '56px' } }, todayChallenge.icon),
               h('div', { style: { flex: 1 } },
-                h('div', { style: { fontSize: '10px', color: doneToday ? '#bbf7d0' : '#fbbf24', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' } }, doneToday ? '✓ Completed' : "Today's Challenge"),
+                h('div', { style: { fontSize: '10px', color: doneToday ? 'var(--rr-green, #4ade80)' : 'var(--rr-amber, #fbbf24)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' } }, doneToday ? '✓ Completed' : "Today's Challenge"),
                 h('div', { style: { fontSize: '18px', fontWeight: 900 } }, todayChallenge.title)
               )
             ),
@@ -34589,9 +34637,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   if (dAwarded) upd('badges', daily);
                   addToast('✅ Challenge marked complete!');
                 },
-                style: { padding: '12px', borderRadius: '8px', border: '1px solid #4ade80', background: 'transparent', color: '#4ade80', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '12px', borderRadius: '8px', border: '1px solid #4ade80', background: 'transparent', color: 'var(--rr-green, #4ade80)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
               }, __alloT('stem.roadready.mark_done', '✓ Mark Done'))
-            ) : h('div', { style: { marginTop: '14px', padding: '12px', background: 'rgba(74,222,128,0.1)', borderRadius: '8px', textAlign: 'center', fontSize: '12px', color: '#bbf7d0' } },
+            ) : h('div', { style: { marginTop: '14px', padding: '12px', background: 'rgba(74,222,128,0.1)', borderRadius: '8px', textAlign: 'center', fontSize: '12px', color: 'var(--rr-green, #4ade80)' } },
               __alloT('stem.roadready.you_re_done_for_today_come_back_tomorr', '🎉 You\'re done for today! Come back tomorrow for a new challenge.')
             )
           ),
@@ -34662,11 +34710,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
         ];
         var curStep = setupSteps[ssStep] || setupSteps[0];
-        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_36', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #4c1d95, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #8b5cf6' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #4c1d95, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #8b5cf6' } },
             h('div', { style: { fontSize: '42px' } }, '🪑'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.seat_mirror_setup_2', 'Seat & Mirror Setup')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.seat_mirror_setup_2', 'Seat & Mirror Setup')),
             h('div', { style: { fontSize: '12px', color: '#ddd6fe' } }, 'Step ' + (ssStep + 1) + ' of ' + setupSteps.length)
           ),
           // Progress dots
@@ -34692,10 +34740,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('h3', { style: { fontSize: '16px', fontWeight: 900, margin: 0 } }, curStep.title)
             ),
             h('div', { role: 'img', 'aria-label': curStep.title + '. ' + curStep.goal, style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '8px', padding: '12px', marginBottom: '12px' } }, curStep.svg()),
-            h('div', { style: { fontSize: '11px', color: '#c4b5fd', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' } }, __alloT('stem.roadready.goal_2', '🎯 Goal')),
-            h('div', { style: { fontSize: '13px', color: '#fff', fontWeight: 700, marginBottom: '10px' } }, curStep.goal),
+            h('div', { style: { fontSize: '11px', color: 'var(--rr-violet, #a78bfa)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' } }, __alloT('stem.roadready.goal_2', '🎯 Goal')),
+            h('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700, marginBottom: '10px' } }, curStep.goal),
             h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6', marginBottom: '10px' } }, curStep.detail),
-            h('div', { style: { padding: '10px', background: 'rgba(168,139,250,0.1)', borderRadius: '6px', borderLeft: '3px solid #8b5cf6', fontSize: '11px', color: '#ddd6fe', lineHeight: '1.5' } },
+            h('div', { style: { padding: '10px', background: 'rgba(168,139,250,0.1)', borderRadius: '6px', borderLeft: '3px solid #8b5cf6', fontSize: '11px', color: 'var(--rr-violet, #a78bfa)', lineHeight: '1.5' } },
               h('b', { style: { color: 'var(--rr-violet, #a78bfa)' } }, __alloT('stem.roadready.why_it_matters_2', '🔬 Why it matters: ')), curStep.why
             )
           ),
@@ -34798,11 +34846,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             urgent: false
           }
         ];
-        return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_37', '← Menu')),
           h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, #450a0a)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px', border: '1px solid #dc2626' } },
             h('div', { style: { fontSize: '48px' } }, '📞'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.post_crash_protocol_2', 'Post-Crash Protocol')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.post_crash_protocol_2', 'Post-Crash Protocol')),
             h('div', { style: { fontSize: '12px', color: '#fecaca' } }, __alloT('stem.roadready.the_first_10_15_minutes_after_a_crash_', 'The first 10-15 minutes after a crash shape the next 6 months. Know this cold.'))
           ),
           // Timeline phases
@@ -34811,7 +34859,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' } },
                 h('span', { style: { fontSize: '28px' } }, p.icon),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: '9px', fontWeight: 800, color: p.urgent ? '#fecaca' : '#fed7aa', textTransform: 'uppercase', letterSpacing: '0.1em' } }, p.time),
+                  h('div', { style: { fontSize: '9px', fontWeight: 800, color: p.urgent ? 'var(--rr-red, #fca5a5)' : 'var(--rr-orange, #fdba74)', textTransform: 'uppercase', letterSpacing: '0.1em' } }, p.time),
                   h('div', { style: { fontSize: '14px', fontWeight: 900 } }, p.title)
                 )
               ),
@@ -34838,7 +34886,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               addToast('📄 Protocol exported');
             } catch(_) { addToast('Export failed.'); }
           },
-            style: { width: '100%', marginTop: '12px', padding: '12px', borderRadius: '10px', border: '1px solid #dc2626', background: 'rgba(220,38,38,0.15)', color: '#fecaca', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            style: { width: '100%', marginTop: '12px', padding: '12px', borderRadius: '10px', border: '1px solid #dc2626', background: 'rgba(220,38,38,0.15)', color: 'var(--rr-red, #fca5a5)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
           }, __alloT('stem.roadready.export_as_glove_box_reference_markdown', '📄 Export as Glove-Box Reference (Markdown)'))
         );
       }
@@ -34847,11 +34895,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // BICYCLIST & MOTORCYCLIST AWARENESS
       // ══════════════════════════════════════════════════════════
       if (view === 'bikeAware') {
-        return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_38', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #14532d, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px', border: '1px solid #16a34a' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #14532d, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px', border: '1px solid #16a34a' } },
             h('div', { style: { fontSize: '48px' } }, '🚴'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.cyclist_motorcyclist_awareness', 'Cyclist & Motorcyclist Awareness')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.cyclist_motorcyclist_awareness', 'Cyclist & Motorcyclist Awareness')),
             h('div', { style: { fontSize: '12px', color: '#bbf7d0' } }, __alloT('stem.roadready.they_re_legal_vehicles_they_re_small_t', 'They\'re legal vehicles. They\'re small. They\'re vulnerable. You\'re responsible.'))
           ),
           // 3-foot law card
@@ -34899,7 +34947,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-start' } },
                   h('span', { style: { fontSize: '28px' } }, c.icon),
                   h('div', null,
-                    h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#4ade80', marginBottom: '4px' } }, c.title),
+                    h('div', { style: { fontSize: '12px', fontWeight: 800, color: 'var(--rr-green, #4ade80)', marginBottom: '4px' } }, c.title),
                     h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } }, c.body)
                   )
                 )
@@ -34908,7 +34956,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Right-hook danger illustration
           h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '16px', border: '1px solid #ef4444' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.the_right_hook_practice_avoiding_this', '⚠️ The Right-Hook — practice avoiding this')),
+            h('div', { style: { fontSize: '11px', fontWeight: 800, color: 'var(--rr-red, #fca5a5)', textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.the_right_hook_practice_avoiding_this', '⚠️ The Right-Hook — practice avoiding this')),
             h('svg', { role: 'img', focusable: 'false', 'aria-label': __alloT('stem.roadready.right_hook_diagram_label', 'Diagram showing a car turning right across a cyclist traveling straight in the bike lane'), viewBox: '0 0 400 160', width: '100%', height: 160 },
               // Road
               h('rect', { x: 0, y: 40, width: 400, height: 80, fill: '#334155' }),
@@ -34949,24 +34997,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (view === 'keyboardCheatSheet') {
         // Every drive shortcut used in RoadReady. Color-coded by category.
         var keyMap = {
-          w: { label: __alloT('stem.roadready.accel', 'Accel'), group: 'drive', color: '#22c55e' },
-          s: { label: __alloT('stem.roadready.brake', 'Brake'), group: 'drive', color: '#ef4444' },
+          w: { label: __alloT('stem.roadready.accel', 'Accel'), group: 'drive', color: 'var(--rr-green, #4ade80)' },
+          s: { label: __alloT('stem.roadready.brake', 'Brake'), group: 'drive', color: 'var(--rr-red, #fca5a5)' },
           a: { label: __alloT('stem.roadready.steer', 'Steer ←'), group: 'drive', color: 'var(--rr-blue, #60a5fa)' },
           d: { label: __alloT('stem.roadready.steer_2', 'Steer →'), group: 'drive', color: 'var(--rr-blue, #60a5fa)' },
           space: { label: __alloT('stem.roadready.pause_2', 'Pause'), group: 'meta', color: 'var(--rr-violet, #a78bfa)' },
           f: { label: __alloT('stem.roadready.drive_gear', 'Drive gear'), group: 'gear', color: 'var(--rr-amber, #fbbf24)' },
           g: { label: __alloT('stem.roadready.reverse', 'Reverse'), group: 'gear', color: 'var(--rr-amber, #fbbf24)' },
           p: { label: __alloT('stem.roadready.park', 'Park'), group: 'gear', color: 'var(--rr-amber, #fbbf24)' },
-          e: { label: __alloT('stem.roadready.left_signal_2', 'Left signal'), group: 'signal', color: '#10b981' },
-          v: { label: __alloT('stem.roadready.right_signal_2', 'Right signal'), group: 'signal', color: '#10b981' },
-          t: { label: __alloT('stem.roadready.cancel_signal', 'Cancel signal'), group: 'signal', color: '#10b981' },
-          c: { label: __alloT('stem.roadready.cycle_camera', 'Cycle camera'), group: 'view', color: '#06b6d4' },
-          l: { label: __alloT('stem.roadready.high_low_beams', 'High/low beams'), group: 'view', color: '#06b6d4' },
-          h: { label: __alloT('stem.roadready.toggle_hud', 'Toggle HUD'), group: 'view', color: '#06b6d4' },
-          k: { label: __alloT('stem.roadready.photo_2', '📸 Photo'), group: 'fun', color: '#ec4899' },
-          q: { label: __alloT('stem.roadready.horn', 'Horn'), group: 'fun', color: '#ec4899' },
-          z: { label: __alloT('stem.roadready.look_left_shoulder_check', 'Look left (shoulder check)'), group: 'sight', color: '#f59e0b' },
-          x: { label: __alloT('stem.roadready.look_right_shoulder_check', 'Look right (shoulder check)'), group: 'sight', color: '#f59e0b' }
+          e: { label: __alloT('stem.roadready.left_signal_2', 'Left signal'), group: 'signal', color: 'var(--rr-green, #4ade80)' },
+          v: { label: __alloT('stem.roadready.right_signal_2', 'Right signal'), group: 'signal', color: 'var(--rr-green, #4ade80)' },
+          t: { label: __alloT('stem.roadready.cancel_signal', 'Cancel signal'), group: 'signal', color: 'var(--rr-green, #4ade80)' },
+          c: { label: __alloT('stem.roadready.cycle_camera', 'Cycle camera'), group: 'view', color: 'var(--rr-cyan, #22d3ee)' },
+          l: { label: __alloT('stem.roadready.high_low_beams', 'High/low beams'), group: 'view', color: 'var(--rr-cyan, #22d3ee)' },
+          h: { label: __alloT('stem.roadready.toggle_hud', 'Toggle HUD'), group: 'view', color: 'var(--rr-cyan, #22d3ee)' },
+          k: { label: __alloT('stem.roadready.photo_2', '📸 Photo'), group: 'fun', color: 'var(--rr-pink, #f9a8d4)' },
+          q: { label: __alloT('stem.roadready.horn', 'Horn'), group: 'fun', color: 'var(--rr-pink, #f9a8d4)' },
+          z: { label: __alloT('stem.roadready.look_left_shoulder_check', 'Look left (shoulder check)'), group: 'sight', color: 'var(--rr-amber, #fbbf24)' },
+          x: { label: __alloT('stem.roadready.look_right_shoulder_check', 'Look right (shoulder check)'), group: 'sight', color: 'var(--rr-amber, #fbbf24)' }
         };
         // Physical key layout — rough QWERTY
         var rows = [
@@ -34975,19 +35023,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ['z','x','c','v','b','n','m']
         ];
         var legend = [
-          { group: 'drive', color: '#22c55e', label: __alloT('stem.roadready.drive_brake', 'Drive / brake') },
+          { group: 'drive', color: 'var(--rr-green, #4ade80)', label: __alloT('stem.roadready.drive_brake', 'Drive / brake') },
           { group: 'gear', color: 'var(--rr-amber, #fbbf24)', label: __alloT('stem.roadready.gears', 'Gears') },
-          { group: 'signal', color: '#10b981', label: __alloT('stem.roadready.turn_signals', 'Turn signals') },
-          { group: 'view', color: '#06b6d4', label: __alloT('stem.roadready.camera_hud', 'Camera / HUD') },
-          { group: 'sight', color: '#f59e0b', label: __alloT('stem.roadready.shoulder_check', 'Shoulder check') },
-          { group: 'fun', color: '#ec4899', label: __alloT('stem.roadready.photo_horn', 'Photo / horn') },
+          { group: 'signal', color: 'var(--rr-green, #4ade80)', label: __alloT('stem.roadready.turn_signals', 'Turn signals') },
+          { group: 'view', color: 'var(--rr-cyan, #22d3ee)', label: __alloT('stem.roadready.camera_hud', 'Camera / HUD') },
+          { group: 'sight', color: 'var(--rr-amber, #fbbf24)', label: __alloT('stem.roadready.shoulder_check', 'Shoulder check') },
+          { group: 'fun', color: 'var(--rr-pink, #f9a8d4)', label: __alloT('stem.roadready.photo_horn', 'Photo / horn') },
           { group: 'meta', color: 'var(--rr-violet, #a78bfa)', label: __alloT('stem.roadready.meta_pause', 'Meta (pause)') }
         ];
-        return h('div', { 'data-rr-view': view, key: view, style: { padding: '20px', maxWidth: '820px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { 'data-rr-view': view, key: view, style: { padding: '20px', maxWidth: '820px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_39', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #334155, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #64748b' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #334155, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #64748b' } },
             h('div', { style: { fontSize: '42px' } }, '⌨️'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.keyboard_shortcuts_2', 'Keyboard Shortcuts')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.keyboard_shortcuts_2', 'Keyboard Shortcuts')),
             h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))' } }, __alloT('stem.roadready.every_drive_control_click_any_key_to_s', 'Every drive control. Click any key to see what it does.'))
           ),
           // Legend
@@ -35001,7 +35049,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Keyboard
           h('div', { style: { background: 'linear-gradient(180deg, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)), var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '12px', padding: '20px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '14px' } },
-            h('style', null, __alloT('stem.roadready.rr_kb_key_display_inline_flex_align_it', '.rr-kb-key { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin: 3px; border-radius: 6px; background: #334155; color: #e2e8f0; font-size: 14px; font-weight: 800; font-family: monospace; border: 2px solid #475569; box-shadow: 0 3px 0 #1e293b; cursor: default; transition: transform 0.12s; position: relative; } .rr-kb-key[data-active] { box-shadow: 0 0 12px currentColor, 0 3px 0 #1e293b; transform: translateY(-1px); cursor: help; } .rr-kb-key[data-active]:hover { transform: translateY(-3px); } .rr-kb-key[data-active]::after { content: attr(data-tooltip); position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); background: #020617; color: #e2e8f0; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; border: 1px solid currentColor; } .rr-kb-key[data-active]:hover::after { opacity: 1; }')),
+            h('style', null, '.rr-kb-key { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin: 3px; border-radius: 6px; background: #334155; color: #e2e8f0; font-size: 14px; font-weight: 800; font-family: monospace; border: 2px solid #475569; box-shadow: 0 3px 0 #1e293b; cursor: default; transition: transform 0.12s; position: relative; } .rr-kb-key[data-active] { box-shadow: 0 0 12px currentColor, 0 3px 0 #1e293b; transform: translateY(-1px); cursor: help; } .rr-kb-key[data-active]:hover { transform: translateY(-3px); } .rr-kb-key[data-active]::after { content: attr(data-tooltip); position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); background: #020617; color: #e2e8f0; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; border: 1px solid currentColor; } .rr-kb-key[data-active]:hover::after { opacity: 1; }'),
             rows.map(function(row, ri) {
               return h('div', { key: ri, style: { display: 'flex', justifyContent: 'center', marginLeft: ri === 1 ? '20px' : ri === 2 ? '50px' : '0' } },
                 row.map(function(k) {
@@ -35039,7 +35087,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             })
           ),
           // Tip
-          h('div', { style: { background: 'rgba(34,211,238,0.08)', borderRadius: '8px', padding: '12px', border: '1px solid #22d3ee', marginTop: '14px', fontSize: '11px', color: '#a5f3fc', lineHeight: '1.5' } },
+          h('div', { style: { background: 'rgba(34,211,238,0.08)', borderRadius: '8px', padding: '12px', border: '1px solid #22d3ee', marginTop: '14px', fontSize: '11px', color: 'var(--rr-cyan, #22d3ee)', lineHeight: '1.5' } },
             h('b', null, __alloT('stem.roadready.gamepad_support', '💡 Gamepad support: ')), __alloT('stem.roadready.roadready_auto_detects_a_connected_gam', 'Default gamepad controls: left stick steers, right stick checks shoulders, RT accelerates, LT brakes, A sounds the horn, B changes cameras, D-pad up/down selects Drive/Reverse, D-pad left/right signals, Back/View selects Park, and Start pauses. Use Controls to view or change your bindings.')
           )
         );
@@ -35138,11 +35186,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (helpQuery && (f.name.toLowerCase() + ' ' + f.desc.toLowerCase()).indexOf(helpQuery) === -1) return false;
           return true;
         });
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_40', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #164e63, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #06b6d4' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #164e63, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #06b6d4' } },
             h('div', { style: { fontSize: '42px' }, 'aria-hidden': 'true' }, '🧭'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.help_directory_2', 'Help & Directory')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.help_directory_2', 'Help & Directory')),
             h('div', { style: { fontSize: '12px', color: '#a5f3fc' } }, features.length + ' features. Search or filter by your goal.')
           ),
           // Search
@@ -35155,7 +35203,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             goals.map(function(g) {
               var sel = g.id === helpGoal;
               return h('button', { key: g.id, onClick: function() { upd('helpGoal', g.id); },
-                style: { padding: '6px 12px', borderRadius: '8px', border: '1px solid ' + (sel ? '#06b6d4' : '#334155'), background: sel ? 'rgba(6,182,212,0.15)' : '#0f172a', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '6px 12px', borderRadius: '8px', border: '1px solid ' + (sel ? 'var(--rr-cyan, #06b6d4)' : 'var(--allo-stem-border, #334155)'), background: sel ? 'rgba(6,182,212,0.15)' : 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
               }, g.icon + ' ' + g.label);
             })
           ),
@@ -35167,7 +35215,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ) : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '10px' } },
             filtered.map(function(f) {
               return h('button', { key: f.view, onClick: function() { upd('view', f.view); },
-                style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '8px', padding: '12px', minHeight: '104px', boxSizing: 'border-box', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', gap: '10px', alignItems: 'flex-start' }
+                style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '8px', padding: '12px', minHeight: '104px', boxSizing: 'border-box', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', textAlign: 'left', display: 'flex', gap: '10px', alignItems: 'flex-start' }
               },
                 h('span', { style: { width: '32px', height: '32px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', lineHeight: 1, flexShrink: 0 } }, f.icon),
                 h('div', { style: { flex: 1, minWidth: 0 } },
@@ -35244,12 +35292,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var ppAnswered = d.ppAnswered;
         var ppScore = d.ppScore || 0;
         if (ppIdx >= ppScenarios.length) {
-          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
             h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_41', '← Menu')),
             h('div', { style: { background: 'linear-gradient(135deg, ' + (ppScore >= 6 ? '#14532d' : '#831843') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (ppScore >= 6 ? '#4ade80' : '#f472b6') } },
               h('div', { style: { fontSize: '64px' } }, ppScore >= 6 ? '💪' : '🤔'),
               h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.peer_pressure_practice_complete', 'Peer Pressure Practice Complete')),
-              h('div', { style: { fontSize: '38px', fontWeight: 900, color: ppScore >= 6 ? '#4ade80' : '#f472b6', margin: '10px 0' } }, ppScore + ' / ' + ppScenarios.length),
+              h('div', { style: { fontSize: '38px', fontWeight: 900, color: ppScore >= 6 ? 'var(--rr-green, #4ade80)' : 'var(--rr-pink, #f9a8d4)', margin: '10px 0' } }, ppScore + ' / ' + ppScenarios.length),
               h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } }, ppScore >= 6 ? 'Strong refusal skills. These exact situations will happen. You\'re ready.' : 'Review the ones you missed. The moment matters — practice the words now so they come out naturally when it counts.'),
               h('button', { onClick: function() { updMulti({ ppIdx: 0, ppAnswered: null, ppScore: 0 }); },
                 style: { marginTop: '16px', padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#f472b6', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
@@ -35260,11 +35308,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var cur = ppScenarios[ppIdx];
         var answered = ppAnswered !== null && ppAnswered !== undefined;
         var pickedChoice = answered ? cur.choices[ppAnswered] : null;
-        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_42', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #831843, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #f472b6' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #831843, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #f472b6' } },
             h('div', { style: { fontSize: '40px' } }, '🙅'),
-            h('h2', { style: { fontSize: '18px', fontWeight: 900 } }, __alloT('stem.roadready.peer_pressure_practice_2', 'Peer Pressure Practice')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '18px', fontWeight: 900 } }, __alloT('stem.roadready.peer_pressure_practice_2', 'Peer Pressure Practice')),
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '11px' } },
               h('span', { style: { color: '#fbcfe8' } }, 'Scenario ' + (ppIdx + 1) + ' / ' + ppScenarios.length),
               h('span', { style: { color: '#4ade80', fontWeight: 700 } }, 'Safe choices: ' + ppScore)
@@ -35276,8 +35324,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { display: 'flex', gap: '12px', alignItems: 'flex-start' } },
               h('div', { style: { width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(135deg, #f472b6, #be185d)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 } }, '😐'),
               h('div', { style: { flex: 1, padding: '12px 14px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', borderRadius: '12px', borderTopLeftRadius: '2px', position: 'relative' } },
-                h('div', { style: { fontSize: '10px', color: '#f472b6', fontWeight: 800, marginBottom: '4px' } }, cur.friend + ' says:'),
-                h('div', { style: { fontSize: '13px', color: '#fbcfe8', lineHeight: '1.5' } }, cur.text)
+                h('div', { style: { fontSize: '10px', color: 'var(--rr-pink, #f9a8d4)', fontWeight: 800, marginBottom: '4px' } }, cur.friend + ' says:'),
+                h('div', { style: { fontSize: '13px', color: 'var(--rr-pink, #f9a8d4)', lineHeight: '1.5' } }, cur.text)
               )
             )
           ),
@@ -35294,12 +35342,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   if (answered) return;
                   updMulti({ ppAnswered: ci, ppScore: ppScore + (c.safe ? 1 : 0) });
                 },
-                style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + bd, background: bg, color: '#fff', fontSize: '12px', cursor: answered ? 'default' : 'pointer', textAlign: 'left', lineHeight: '1.5' }
+                style: { padding: '10px 14px', borderRadius: '8px', border: '1px solid ' + bd, background: bg, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', cursor: answered ? 'default' : 'pointer', textAlign: 'left', lineHeight: '1.5' }
               }, String.fromCharCode(65 + ci) + '. ' + c.text);
             })
           ),
           answered ? h('div', { style: { marginTop: '12px', padding: '12px', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '6px', borderLeft: '3px solid ' + (pickedChoice.safe ? '#4ade80' : '#ef4444'), fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.7' } },
-            h('b', { style: { color: pickedChoice.safe ? '#4ade80' : '#fca5a5' } }, (pickedChoice.safe ? '✓ Safe choice. ' : '✗ Risky choice. ')), pickedChoice.reply
+            h('b', { style: { color: pickedChoice.safe ? 'var(--rr-green, #4ade80)' : 'var(--rr-red, #fca5a5)' } }, (pickedChoice.safe ? '✓ Safe choice. ' : '✗ Risky choice. ')), pickedChoice.reply
           ) : null,
           answered ? h('button', { onClick: function() {
               var newIdx = ppIdx + 1;
@@ -35330,11 +35378,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var colors = { red: '#ef4444', green: '#22c55e', blue: '#3b82f6', yellow: '#fbbf24' };
         var avgOf = function(arr) { if (!arr.length) return 0; return Math.round(arr.reduce(function(a,b){return a+b;},0) / arr.length); };
         if (rtPhase === 'intro') {
-          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
             h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_43', '← Menu')),
-            h('div', { style: { background: 'linear-gradient(135deg, #083344, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '1px solid #22d3ee' } },
+            h('div', { style: { background: 'linear-gradient(135deg, #083344, #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '1px solid #22d3ee' } },
               h('div', { style: { fontSize: '56px' } }, '⚡'),
-              h('h2', { style: { fontSize: '22px', fontWeight: 900, margin: '6px 0' } }, __alloT('stem.roadready.reaction_time_test_3', 'Reaction Time Test')),
+              h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900, margin: '6px 0' } }, __alloT('stem.roadready.reaction_time_test_3', 'Reaction Time Test')),
               h('div', { style: { fontSize: '12px', color: '#a5f3fc', marginBottom: '16px', lineHeight: '1.6' } }, __alloT('stem.roadready.tap_the_colored_circle_as_fast_as_you_', 'Tap the colored circle as fast as you can when it appears. 5 trials baseline, then 5 with a teaching-model impairment lag. See how seconds change stopping distance.')),
               h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', textAlign: 'left', marginBottom: '16px', fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.7' } },
                 h('b', { style: { color: 'var(--rr-cyan, #22d3ee)' } }, __alloT('stem.roadready.why_this_matters', 'Why this matters: ')),
@@ -35353,9 +35401,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // The waiting→react transition is owned by the cancellable effect
           // near the component hooks, keeping render pure and the start stamp
           // stable even under React Strict Mode.
-          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))', textAlign: 'center', minHeight: '500px' } },
+          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))', textAlign: 'center', minHeight: '500px' } },
             h('button', { onClick: function() { updMulti({ view: 'menu', rtPhase: 'intro' }); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, alignSelf: 'flex-start' } }, __alloT('stem.roadready.cancel', '← Cancel')),
-            h('div', { style: { fontSize: '12px', color: '#a5f3fc', marginBottom: '8px' } },
+            h('div', { style: { fontSize: '12px', color: 'var(--rr-cyan, #22d3ee)', marginBottom: '8px' } },
               (isBaseline ? '🧠 BASELINE TEST' : '🍺 SIMULATED IMPAIRED') + ' · Trial ' + (trialsDone + 1) + ' / 5'
             ),
             h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '20px' } }, isBaseline ? 'Sober reaction' : 'Teaching model: +280ms lag'),
@@ -35385,11 +35433,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           );
         }
         if (rtPhase === 'intro_impaired') {
-          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+          return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
             h('button', { onClick: function() { updMulti({ view: 'menu', rtPhase: 'intro' }); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_44', '← Menu')),
-            h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', textAlign: 'center', border: '1px solid #f59e0b' } },
+            h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', border: '1px solid #f59e0b' } },
               h('div', { style: { fontSize: '48px' } }, '🍺'),
-              h('h2', { style: { fontSize: '20px', fontWeight: 900, margin: '8px 0' } }, __alloT('stem.roadready.now_simulated_0_08_bac', 'Now: Modeled Impairment')),
+              h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900, margin: '8px 0' } }, __alloT('stem.roadready.now_simulated_0_08_bac', 'Now: Modeled Impairment')),
               h('div', { style: { fontSize: '13px', color: '#fde68a', marginBottom: '6px', fontWeight: 700 } }, 'Your baseline average: ' + avgOf(d.rtBaselineTrials || []) + 'ms'),
               h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '16px', lineHeight: '1.6' } }, __alloT('stem.roadready.same_test_the_simulator_will_add_280ms', 'Same test. The simulator adds ~280 ms as a teaching model for slowed reaction after drinking; real impairment varies by person, fatigue, food, and other drugs.')),
               h('button', { onClick: function() { updMulti({ rtPhase: 'waiting', rtMode: 'impaired', rtTrials: [], rtWaitUntil: Date.now() + 1500 + Math.random() * 2500, rtTargetColor: Object.keys(colors)[Math.floor(Math.random() * 4)] }); },
@@ -35406,29 +35454,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var diff = Math.max(0, impaired - baseline);
           // Extra stopping distance at 55 mph from the lag
           var extraFt = Math.round(55 * 1.467 * (diff / 1000));
-          return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+          return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
             h('button', { onClick: function() { updMulti({ view: 'menu', rtPhase: 'intro' }); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_45', '← Menu')),
-            h('div', { style: { background: 'linear-gradient(135deg, #083344, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '14px', border: '1px solid #22d3ee' } },
+            h('div', { style: { background: 'linear-gradient(135deg, #083344, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '14px', border: '1px solid #22d3ee' } },
               h('div', { style: { fontSize: '48px' } }, '⚡'),
-              h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.reaction_test_results', 'Reaction Test Results')),
+              h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.reaction_test_results', 'Reaction Test Results')),
               h('div', { style: { fontSize: '12px', color: '#a5f3fc' } }, __alloT('stem.roadready.how_much_slower_are_you_when_impaired', 'How much slower are you when impaired?'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' } },
-              h('div', { style: { background: 'linear-gradient(135deg, #14532d, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '12px', padding: '18px', textAlign: 'center', border: '2px solid #4ade80' } },
+              h('div', { style: { background: 'linear-gradient(135deg, #14532d, #0f172a)', borderRadius: '12px', padding: '18px', textAlign: 'center', border: '2px solid #4ade80' } },
                 h('div', { style: { fontSize: '28px' } }, '🧠'),
                 h('div', { style: { fontSize: '10px', color: '#bbf7d0', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' } }, __alloT('stem.roadready.baseline_sober', 'Baseline (sober)')),
                 h('div', { style: { fontSize: '36px', fontWeight: 900, color: '#4ade80' } }, baseline + 'ms')
               ),
-              h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '12px', padding: '18px', textAlign: 'center', border: '2px solid #f59e0b' } },
+              h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, #0f172a)', borderRadius: '12px', padding: '18px', textAlign: 'center', border: '2px solid #f59e0b' } },
                 h('div', { style: { fontSize: '28px' } }, '🍺'),
                 h('div', { style: { fontSize: '10px', color: '#fde68a', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' } }, __alloT('stem.roadready.impaired_0_08_bac', 'Modeled impairment')),
                 h('div', { style: { fontSize: '36px', fontWeight: 900, color: '#f59e0b' } }, impaired + 'ms')
               )
             ),
             h('div', { style: { background: 'linear-gradient(135deg, rgba(127,29,29,0.3), rgba(239,68,68,0.1))', borderRadius: '14px', padding: '20px', border: '2px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
-              h('div', { style: { fontSize: '10px', color: '#fca5a5', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' } }, __alloT('stem.roadready.difference_in_stopping_distance_at_55_', 'Difference in stopping distance at 55 mph')),
-              h('div', { style: { fontSize: '48px', fontWeight: 900, color: '#fca5a5' } }, '+' + extraFt + ' ft'),
-              h('div', { style: { fontSize: '11px', color: '#fecaca', marginTop: '4px' } }, __alloT('stem.roadready.that_s_how_much_further_your_car_trave', 'That\'s how much FURTHER your car travels before you even start braking.'))
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' } }, __alloT('stem.roadready.difference_in_stopping_distance_at_55_', 'Difference in stopping distance at 55 mph')),
+              h('div', { style: { fontSize: '48px', fontWeight: 900, color: 'var(--rr-red, #fca5a5)' } }, '+' + extraFt + ' ft'),
+              h('div', { style: { fontSize: '11px', color: 'var(--rr-red, #fca5a5)', marginTop: '4px' } }, __alloT('stem.roadready.that_s_how_much_further_your_car_trave', 'That\'s how much FURTHER your car travels before you even start braking.'))
             ),
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.7' } },
               h('div', { style: { fontWeight: 800, color: 'var(--rr-cyan, #22d3ee)', marginBottom: '6px' } }, __alloT('stem.roadready.what_you_just_felt', '🎯 What you just felt:')),
@@ -35437,7 +35485,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'In this model, that ' + extraFt + ' feet illustrates how much farther a car can travel before delayed braking starts. That can be the difference between stopping in time and reaching a pedestrian, a stopped car, or a conflict you noticed too late.'
             ),
             h('button', { onClick: function() { updMulti({ rtPhase: 'intro', rtTrials: [], rtBaselineTrials: null, rtImpairedTrials: null }); },
-              style: { width: '100%', marginTop: '14px', padding: '12px', borderRadius: '10px', border: '1px solid #22d3ee', background: 'rgba(34,211,238,0.15)', color: '#a5f3fc', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+              style: { width: '100%', marginTop: '14px', padding: '12px', borderRadius: '10px', border: '1px solid #22d3ee', background: 'rgba(34,211,238,0.15)', color: 'var(--rr-cyan, #22d3ee)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.roadready.test_again', '↻ Test Again'))
           );
         }
@@ -35448,14 +35496,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // STUDY CHEAT SHEET (printable one-page summary)
       // ══════════════════════════════════════════════════════════
       if (view === 'cheatSheet') {
-        return h('div', { style: { padding: '20px', maxWidth: '780px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '780px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('style', null,
-            __alloT('stem.roadready.media_print_body_visibility_hidden_rr_', '@media print { body * { visibility: hidden; } #rr-cheatsheet, #rr-cheatsheet * { visibility: visible; } #rr-cheatsheet { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; } .rr-nav { display: none !important; } }')
+            '@media print { body * { visibility: hidden; } #rr-cheatsheet, #rr-cheatsheet * { visibility: visible; } #rr-cheatsheet { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; } .rr-nav { display: none !important; } }'
           ),
           h('div', { className: 'rr-nav', style: { display: 'flex', justifyContent: 'space-between', marginBottom: '12px' } },
             h('button', { onClick: function() { upd('view', 'menu'); }, style: { fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_46', '← Menu')),
             h('button', { onClick: function() { window.print(); },
-              style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid #e5e7eb', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+              style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid #e5e7eb', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.roadready.print', '🖨️ Print'))
           ),
           h('div', { id: 'rr-cheatsheet', style: { background: '#fff', color: '#000', padding: '28px', borderRadius: '8px', fontSize: '11px', lineHeight: '1.5', fontFamily: '"Georgia", "Times New Roman", serif', border: '1px solid #e5e7eb' } },
@@ -35622,11 +35670,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('text', { x: pad, y: 10, fontSize: '10', fontWeight: 'bold', fill: color }, label)
           );
         };
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_47', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '16px', border: '1px solid #0ea5e9' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '16px', border: '1px solid #0ea5e9' } },
             h('div', { style: { fontSize: '42px' } }, '📈'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.progress_analytics_2', 'Progress Analytics')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.progress_analytics_2', 'Progress Analytics')),
             h('div', { style: { fontSize: '12px', color: '#bae6fd' } }, anaLog.length + ' drives logged · ' + (anaLog.reduce(function(s,j){return s+(j.durationSec||0);},0)/3600).toFixed(1) + ' total hours')
           ),
           !hasData ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '40px', textAlign: 'center', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '12px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
@@ -35634,7 +35682,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ) : h('div', null,
             // Trend charts
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
-              h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#4ade80', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.safety_score_trend', '🛡️ Safety Score Trend')),
+              h('div', { style: { fontSize: '11px', fontWeight: 800, color: 'var(--rr-green, #4ade80)', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.safety_score_trend', '🛡️ Safety Score Trend')),
               drawLineChart(safetyTrend, '#4ade80', 'Safety'),
               h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '6px', textAlign: 'right' } }, 'Latest: ' + safetyTrend[safetyTrend.length - 1] + ' · Best: ' + Math.max.apply(null, safetyTrend))
             ),
@@ -35688,7 +35736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     return h('div', { key: bi, style: { marginBottom: '6px' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '2px' } },
                         h('span', { style: { color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))' } }, b.scenario),
-                        h('span', { style: { fontWeight: 700, color: b.best >= 90 ? '#4ade80' : b.best >= 75 ? '#fbbf24' : '#ef4444' } }, b.best)
+                        h('span', { style: { fontWeight: 700, color: b.best >= 90 ? 'var(--rr-green, #4ade80)' : b.best >= 75 ? 'var(--rr-amber, #fbbf24)' : 'var(--rr-red, #fca5a5)' } }, b.best)
                       ),
                       h('div', { style: { height: '4px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', borderRadius: '2px', overflow: 'hidden' } },
                         h('div', { style: { height: '100%', width: b.best + '%', background: b.best >= 90 ? '#4ade80' : b.best >= 75 ? '#fbbf24' : '#ef4444' } })
@@ -35700,7 +35748,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ),
             // Hours by weekday
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
-              h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.when_you_practice', '📅 When You Practice')),
+              h('div', { style: { fontSize: '11px', fontWeight: 800, color: 'var(--rr-pink, #f9a8d4)', textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.when_you_practice', '📅 When You Practice')),
               h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: '6px', height: '100px' } },
                 ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(function(day, di) {
                   var mins = weekdayMin[di];
@@ -35719,7 +35767,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
                 ACHIEVEMENTS.filter(function(a) { return earnedBadges[a.id]; }).map(function(a, ai) {
                   return h('div', { key: a.id,
-                    style: { padding: '6px 10px', borderRadius: '6px', background: 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.2))', border: '1px solid #fbbf24', fontSize: '11px', color: '#fde68a', display: 'flex', alignItems: 'center', gap: '4px' }
+                    style: { padding: '6px 10px', borderRadius: '6px', background: 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.2))', border: '1px solid #fbbf24', fontSize: '11px', color: 'var(--rr-amber, #fbbf24)', display: 'flex', alignItems: 'center', gap: '4px' }
                   },
                     h('span', { style: { fontSize: '14px' } }, a.icon),
                     h('span', null, a.name)
@@ -35746,19 +35794,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { ft: 300, label: __alloT('stem.roadready.a_full_football_field', 'A full football field') },
           { ft: 528, label: __alloT('stem.roadready.1_10_of_a_mile', '1/10 of a mile') }
         ];
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_48', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #450a0a, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px', border: '1px solid #ef4444' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #450a0a, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px', border: '1px solid #ef4444' } },
             h('div', { style: { fontSize: '48px', marginBottom: '4px' } }, '📱'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.distracted_driving_lab_3', 'Distracted Driving Lab')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.distracted_driving_lab_3', 'Distracted Driving Lab')),
             h('div', { style: { fontSize: '12px', color: '#fecaca' } }, __alloT('stem.roadready.every_second_your_eyes_leave_the_road_', 'Every second your eyes leave the road, the car keeps going. Let\'s see how far.'))
           ),
           // Sliders
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '18px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '14px' } },
             h('div', { style: { marginBottom: '14px' } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '6px' } },
-                h('span', { style: { color: '#fecaca', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.roadready.your_speed', '🚗 Your speed')),
-                h('span', { style: { color: '#fff', fontWeight: 900 } }, dlSpeed + ' mph')
+                h('span', { style: { color: 'var(--rr-red, #fca5a5)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.roadready.your_speed', '🚗 Your speed')),
+                h('span', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 900 } }, dlSpeed + ' mph')
               ),
               h('input', { type: 'range', min: 15, max: 85, step: 5, value: dlSpeed,
                 'aria-label': __alloT('stem.roadready.your_speed_in_miles_per_hour', 'Your speed in miles per hour'),
@@ -35776,8 +35824,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ),
             h('div', null,
               h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '6px' } },
-                h('span', { style: { color: '#fecaca', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.roadready.glance_duration', '📱 Glance duration')),
-                h('span', { style: { color: '#fff', fontWeight: 900 } }, dlGlance + ' seconds')
+                h('span', { style: { color: 'var(--rr-red, #fca5a5)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.roadready.glance_duration', '📱 Glance duration')),
+                h('span', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 900 } }, dlGlance + ' seconds')
               ),
               h('input', { type: 'range', min: 1, max: 8, step: 0.5, value: dlGlance,
                 'aria-label': __alloT('stem.roadready.glance_away_duration_in_seconds', 'Glance away duration in seconds'),
@@ -35796,9 +35844,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Big result
           h('div', { style: { background: 'linear-gradient(135deg, rgba(127,29,29,0.5), rgba(239,68,68,0.2))', borderRadius: '14px', padding: '20px', border: '2px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
-            h('div', { style: { fontSize: '10px', color: '#fca5a5', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' } }, __alloT('stem.roadready.you_drove_blind_for', 'You drove BLIND for')),
-            h('div', { style: { fontSize: '56px', fontWeight: 900, color: '#fca5a5', lineHeight: 1, marginBottom: '4px' } }, distFt + ' ft'),
-            h('div', { style: { fontSize: '13px', color: '#fecaca' } }, '= ' + (distFt / 5280).toFixed(3) + ' miles with eyes off the road')
+            h('div', { style: { fontSize: '10px', color: 'var(--rr-red, #fca5a5)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' } }, __alloT('stem.roadready.you_drove_blind_for', 'You drove BLIND for')),
+            h('div', { style: { fontSize: '56px', fontWeight: 900, color: 'var(--rr-red, #fca5a5)', lineHeight: 1, marginBottom: '4px' } }, distFt + ' ft'),
+            h('div', { style: { fontSize: '13px', color: 'var(--rr-red, #fca5a5)' } }, '= ' + (distFt / 5280).toFixed(3) + ' miles with eyes off the road')
           ),
           // Visual to-scale road
           h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '14px' } },
@@ -35820,15 +35868,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   return h('g', { key: ri },
                     h('line', { x1: x, y1: 30, x2: x, y2: 100, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3' }),
                     h('text', { x: x, y: 20, textAnchor: 'middle', fontSize: '9', fill: '#94a3b8' }, r.ft + ' ft'),
-                    h('text', { x: x, y: 115, textAnchor: 'middle', fontSize: '8', fill: '#94a3b8' }, r.label)
+                    // Anchor the last label to its right edge: "1/10 of a mile"
+                    // centred at x=528ft ran 6px past the 720-unit canvas.
+                    h('text', { x: x, y: 115, textAnchor: x > svgW - 40 ? 'end' : 'middle', fontSize: '8', fill: '#94a3b8' }, r.label)
                   );
                 }),
                 // Glance-distance red bar
                 h('rect', { x: 0, y: 50, width: distFt * pxPerFt, height: 30, fill: 'rgba(239,68,68,0.4)' }),
                 // Car at start
-                h('g', { transform: 'translate(0 55)' },
+                // The viewBox starts at 0, so a car centred on 0 lost its left
+                // half and the centred "Eyes off" label lost 12px. Sit the car
+                // inside the canvas and anchor the label to its left edge.
+                h('g', { transform: 'translate(14 55)' },
                   h('rect', { x: -14, y: -2, width: 28, height: 14, rx: 2, fill: '#22d3ee', stroke: '#000', strokeWidth: 0.5 }),
-                  h('text', { x: 0, y: -6, textAnchor: 'middle', fontSize: '9', fill: '#22d3ee' }, __alloT('stem.roadready.eyes_off', 'Eyes off'))
+                  h('text', { x: -14, y: -6, textAnchor: 'start', fontSize: '9', fill: '#22d3ee' }, __alloT('stem.roadready.eyes_off', 'Eyes off'))
                 ),
                 // Car at end
                 h('g', { transform: 'translate(' + (distFt * pxPerFt) + ' 55)' },
@@ -35850,15 +35903,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ),
           // Interpretations
-          h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid #ef4444', fontSize: '12px', color: '#fecaca', lineHeight: '1.7' } },
-            h('div', { style: { fontWeight: 800, marginBottom: '6px', color: '#ef4444' } }, __alloT('stem.roadready.what_this_means', '🎯 What this means:')),
+          h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid #ef4444', fontSize: '12px', color: 'var(--rr-red, #fca5a5)', lineHeight: '1.7' } },
+            h('div', { style: { fontWeight: 800, marginBottom: '6px', color: 'var(--rr-red, #fca5a5)' } }, __alloT('stem.roadready.what_this_means', '🎯 What this means:')),
             distFt < 100 ? 'Still dangerous — but manageable at this low speed + short glance. Keep your eyes on the road anyway.' :
             distFt < 300 ? 'You just crossed multiple car lengths blind. That\'s the space a kid could run into.' :
             distFt < 600 ? 'More than a football field blind. Anything could happen — a car brakes, a deer enters — and you won\'t see it until it\'s too late.' :
             'Over a tenth of a mile of blind driving. This is catastrophic risk. At these combos, you are the reason crashes happen.'
           ),
           // Challenge
-          h('div', { style: { background: 'linear-gradient(135deg, #14532d, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '10px', padding: '14px', border: '1px solid #22c55e', marginTop: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #14532d, #0f172a)', borderRadius: '10px', padding: '14px', border: '1px solid #22c55e', marginTop: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#4ade80', marginBottom: '4px' } }, __alloT('stem.roadready.the_habit_that_saves_lives', '💚 The habit that saves lives')),
             h('div', { style: { fontSize: '12px', color: '#bbf7d0', lineHeight: '1.6' } }, __alloT('stem.roadready.every_notification_silence_the_phone_o', 'Every notification: silence the phone or put it in Do Not Disturb + Driving mode (automatic on most phones). The text can wait. The deer can\'t.'))
           )
@@ -35874,24 +35927,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var curPlate = d.licensePlate || '';
         var paintOptions = [
           { color: 'var(--rr-cyan, #22d3ee)', name: __alloT('stem.roadready.electric_cyan', 'Electric Cyan') },
-          { color: '#ef4444', name: __alloT('stem.roadready.fire_red', 'Fire Red') },
+          { color: 'var(--rr-red, #fca5a5)', name: __alloT('stem.roadready.fire_red', 'Fire Red') },
           { color: 'var(--rr-amber, #fbbf24)', name: __alloT('stem.roadready.maine_gold', 'Maine Gold') },
-          { color: '#22c55e', name: __alloT('stem.roadready.forest_green', 'Forest Green') },
+          { color: 'var(--rr-green, #4ade80)', name: __alloT('stem.roadready.forest_green', 'Forest Green') },
           { color: 'var(--rr-violet, #a78bfa)', name: __alloT('stem.roadready.sunset_purple', 'Sunset Purple') },
-          { color: '#f472b6', name: __alloT('stem.roadready.hot_pink', 'Hot Pink') },
-          { color: '#0f172a', name: __alloT('stem.roadready.midnight_black', 'Midnight Black') },
-          { color: '#f8fafc', name: __alloT('stem.roadready.arctic_white', 'Arctic White') },
-          { color: '#f97316', name: __alloT('stem.roadready.blaze_orange', 'Blaze Orange') },
-          { color: '#1e40af', name: __alloT('stem.roadready.navy_blue', 'Navy Blue') },
-          { color: '#7f1d1d', name: __alloT('stem.roadready.deep_burgundy', 'Deep Burgundy') },
-          { color: '#78350f', name: __alloT('stem.roadready.chestnut_brown', 'Chestnut Brown') }
+          { color: 'var(--rr-pink, #f9a8d4)', name: __alloT('stem.roadready.hot_pink', 'Hot Pink') },
+          { color: 'var(--allo-stem-text, #e2e8f0)', name: __alloT('stem.roadready.midnight_black', 'Midnight Black') },
+          { color: 'var(--allo-stem-text, #e2e8f0)', name: __alloT('stem.roadready.arctic_white', 'Arctic White') },
+          { color: 'var(--rr-orange, #fdba74)', name: __alloT('stem.roadready.blaze_orange', 'Blaze Orange') },
+          { color: 'var(--rr-blue, #60a5fa)', name: __alloT('stem.roadready.navy_blue', 'Navy Blue') },
+          { color: 'var(--rr-red, #fca5a5)', name: __alloT('stem.roadready.deep_burgundy', 'Deep Burgundy') },
+          { color: 'var(--rr-amber, #fbbf24)', name: __alloT('stem.roadready.chestnut_brown', 'Chestnut Brown') }
         ];
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_49', '← Menu')),
           // Hero with live preview
-          h('div', { style: { background: 'linear-gradient(135deg, #831843, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '16px', padding: '24px', textAlign: 'center', marginBottom: '18px', border: '1px solid #ec4899' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #831843, #0f172a)', borderRadius: '16px', padding: '24px', textAlign: 'center', marginBottom: '18px', border: '1px solid #ec4899' } },
             h('div', { style: { fontSize: '42px', marginBottom: '6px' } }, '🎨'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '8px' } }, __alloT('stem.roadready.my_ride_3', 'My Ride')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900, marginBottom: '8px' } }, __alloT('stem.roadready.my_ride_3', 'My Ride')),
             // Live SVG car preview — updates as you pick colors
             h('svg', { role: 'img', focusable: 'false', 'aria-label': __alloT('stem.roadready.custom_car_preview_label', 'Customized car preview') + ': ' + curColor + (curPlate ? ', plate ' + curPlate : ''), viewBox: '0 0 200 80', width: '200', height: '80', style: { margin: '0 auto', display: 'block', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.5))' } },
               // Body
@@ -35918,7 +35971,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Color picker
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ec4899', textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.paint_color', 'Paint Color')),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--rr-pink, #f9a8d4)', textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.paint_color', 'Paint Color')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))', gap: '8px' } },
               paintOptions.map(function(po) {
                 var sel = po.color === curColor;
@@ -35942,17 +35995,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Driver name
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ec4899', textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.driver_name_optional', 'Driver Name (optional)')),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--rr-pink, #f9a8d4)', textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.driver_name_optional', 'Driver Name (optional)')),
             h('input', { type: 'text', 'aria-label': __alloT('stem.roadready.driver_first_name_optional_stays_on_de', 'Driver first name (optional, stays on device only)'), value: curDriverName, placeholder: __alloT('stem.roadready.your_first_name', 'Your first name'),
               maxLength: 20,
               onChange: function(e) { upd('driverName', e.target.value); },
-              style: { width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', color: '#fff', fontSize: '13px' }
+              style: { width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '13px' }
             }),
             h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px' } }, __alloT('stem.roadready.shows_up_on_your_debrief_certificates_', 'Shows up on your debrief certificates and journal exports. Stays on your device only — no cloud.'))
           ),
           // License plate
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ec4899', textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.license_plate', 'License Plate')),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--rr-pink, #f9a8d4)', textTransform: 'uppercase', marginBottom: '10px' } }, __alloT('stem.roadready.license_plate', 'License Plate')),
             h('input', { type: 'text', 'aria-label': __alloT('stem.roadready.custom_license_plate_up_to_7_letters_o', 'Custom license plate (up to 7 letters or numbers)'), value: curPlate, placeholder: __alloT('stem.roadready.e_g_maine07', 'e.g. MAINE07'),
               maxLength: 7,
               onChange: function(e) { upd('licensePlate', e.target.value.toUpperCase().replace(/[^A-Z0-9 ]/g, '')); },
@@ -35983,7 +36036,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         ACHIEVEMENTS.forEach(function(ach, idx) { byTier[tierOf(idx)].push(ach); });
         var earnedCount = Object.keys(earnedBadges).length;
         var pctEarned = Math.round(earnedCount / ACHIEVEMENTS.length * 100);
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('style', null,
             '@keyframes rrGalGlow { 0%,100%{filter:drop-shadow(0 0 6px currentColor)} 50%{filter:drop-shadow(0 0 18px currentColor)} }' +
             '@keyframes rrGalRise { 0%{transform:translateY(20px);opacity:0} 100%{transform:translateY(0);opacity:1} }' +
@@ -35994,7 +36047,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Hero
           h('div', { style: { background: 'linear-gradient(135deg, #78350f, #4c1d95, #0c4a6e)', backgroundSize: '200% 200%', animation: reducedMotionRef.current ? 'none' : 'rrHeroPan 15s ease infinite', borderRadius: '16px', padding: '24px', textAlign: 'center', marginBottom: '20px', border: '1px solid #fbbf24' } },
             h('div', { style: { fontSize: '64px', animation: reducedMotionRef.current ? 'none' : 'rrHeroPulse 3s ease-in-out infinite' } }, '🏆'),
-            h('h2', { style: { fontSize: '26px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.achievement_gallery_2', 'Achievement Gallery')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '26px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.achievement_gallery_2', 'Achievement Gallery')),
             h('div', { style: { fontSize: '14px', color: '#fde68a' } }, earnedCount + ' of ' + ACHIEVEMENTS.length + ' unlocked · ' + pctEarned + '% complete'),
             // Progress ring
             h('div', { style: { marginTop: '12px', display: 'flex', justifyContent: 'center' } },
@@ -36065,8 +36118,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       h('div', { style: { position: 'absolute', inset: 0, borderRadius: '50%', background: earned ? c.bg : '#1e293b', animation: earned ? 'rrGalGlow 2.5s ease-in-out infinite' : 'none', color: c.ring } }),
                       h('div', { style: { position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', filter: earned ? 'none' : 'grayscale(1)' } }, earned ? ach.icon : '🔒')
                     ),
-                    h('div', { style: { fontSize: '11px', fontWeight: 800, color: earned ? '#fff' : '#94a3b8', marginBottom: '3px' } }, earned ? ach.name : '???'),
-                    h('div', { style: { fontSize: '9px', color: earned ? '#94a3b8' : '#475569', lineHeight: '1.4' } }, ach.desc)
+                    h('div', { style: { fontSize: '11px', fontWeight: 800, color: earned ? 'var(--allo-stem-text, #e2e8f0)' : 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '3px' } }, earned ? ach.name : '???'),
+                    h('div', { style: { fontSize: '9px', color: earned ? 'var(--allo-stem-text-soft, #94a3b8)' : 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: '1.4' } }, ach.desc)
                   );
                 })
               )
@@ -36084,11 +36137,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { step: 4, title: __alloT('stem.roadready.signal_exit', 'Signal & Exit'), icon: '➡️', desc: __alloT('stem.roadready.signal_right_as_you_approach_your_desi', 'Signal RIGHT as you approach your desired exit. Exit smoothly without stopping.'), tip: __alloT('stem.roadready.if_you_miss_your_exit_go_around_again_', 'If you miss your exit, go around again. That is the beauty of a roundabout — no penalty for looping.') },
           { step: 5, title: __alloT('stem.roadready.yield_to_peds', 'Yield to Peds'), icon: '🚶', desc: __alloT('stem.roadready.watch_for_pedestrians_in_the_crosswalk', 'Watch for pedestrians in the crosswalk at each exit splitter island. They have the right-of-way.'), tip: __alloT('stem.roadready.the_splitter_island_gives_pedestrians_', 'The splitter island gives pedestrians a safe refuge between the two traffic flows.') }
         ];
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_51', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #f59e0b', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #f59e0b', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🔄'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.roundabout_tutorial_3', 'Roundabout Tutorial')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.roundabout_tutorial_3', 'Roundabout Tutorial')),
             h('div', { style: { fontSize: '11px', color: '#fde68a' } }, __alloT('stem.roadready.roundabouts_reduce_fatal_crashes_by_90', 'Roundabouts reduce fatal crashes by 90% vs. signaled intersections. Here is how to use them.'))
           ),
           roundSteps.map(function(rs) {
@@ -36117,11 +36170,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { type: 'Left Turn', icon: '↰', rules: ['Left turners yield to oncoming straight traffic unless you have a green arrow.', 'Wait behind the stop line until a safe gap.', 'Do NOT enter the intersection to wait unless you are certain you can clear it.', 'At a steady red light, do not make a left turn unless a traffic signal specifically allows that movement.'], tip: __alloT('stem.roadready.left_turns_are_the_1_most_dangerous_co', 'Left turns are the #1 most dangerous common maneuver. NHTSA puts about 53% of CROSSING-PATH crashes — the head-on-into-turning kind — at or just after a left turn, against roughly 1% for right turns. You are crossing oncoming traffic instead of merging with it.') },
           { type: 'Pedestrian Crosswalk', icon: '🚶', rules: ['Yield to pedestrians in marked crosswalks and those showing visible intent to enter.', 'Outside marked crosswalks, pedestrians generally yield, but drivers still owe due care.', 'Do NOT pass a vehicle stopped for a pedestrian.', 'If a pedestrian is in your path, slow or stop as needed to avoid a collision.'], tip: __alloT('stem.roadready.maine_is_strict_on_this_164_fine_for_f', 'Maine §2056 is specific: marked crosswalks and visible intent matter; due care still applies everywhere.') }
         ];
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_52', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #134e4a, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #14b8a6', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #134e4a, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #14b8a6', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🚦'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.intersection_right_of_way_guide', 'Intersection Right-of-Way Guide')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.intersection_right_of_way_guide', 'Intersection Right-of-Way Guide')),
             h('div', { style: { fontSize: '11px', color: '#99f6e4' } }, __alloT('stem.roadready.who_goes_first_the_answer_for_every_ty', 'Who goes first? The answer for every type.'))
           ),
           intTypes.map(function(it) {
@@ -36142,22 +36195,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ── DASHBOARD WARNING LIGHTS ──
       if (view === 'dashLights') {
         var lights = [
-          { icon: '🔴', name: __alloT('stem.roadready.check_engine_mil', 'Check Engine (MIL)'), color: '#ef4444', severity: 'VARIES', desc: __alloT('stem.roadready.steady_emissions_issue_safe_to_drive_t', 'Steady = emissions issue, safe to drive to a shop. FLASHING = misfire, pull over immediately — catalytic converter damage.'), action: 'Steady: schedule service within a week. Flashing: pull over NOW, do not drive further.' },
-          { icon: '🔴', name: __alloT('stem.roadready.oil_pressure', 'Oil Pressure'), color: '#ef4444', severity: 'CRITICAL', desc: __alloT('stem.roadready.engine_oil_pressure_is_dangerously_low', 'Engine oil pressure is dangerously low. Continuing will destroy the engine in minutes.'), action: 'Pull over IMMEDIATELY. Turn off the engine. Check oil level. Do NOT drive if oil is low — tow it.' },
-          { icon: '🔴', name: __alloT('stem.roadready.temperature_overheating', 'Temperature / Overheating'), color: '#ef4444', severity: 'CRITICAL', desc: __alloT('stem.roadready.coolant_is_too_hot_driving_further_can', 'Coolant is too hot. Driving further can crack the head gasket ($2,000+ repair).'), action: 'Pull over. Turn off AC, turn heat on MAX (pulls heat from engine). Let it cool 30 min. Check coolant level. Tow if recurring.' },
-          { icon: '🔴', name: __alloT('stem.roadready.brake_system', 'Brake System'), color: '#ef4444', severity: 'CRITICAL', desc: __alloT('stem.roadready.brake_failure_or_very_low_brake_fluid_', 'Brake failure or very low brake fluid. Parking brake engaged also shows this light.'), action: 'If parking brake is off and this light is on: pump brakes gently, pull over at the first safe spot, tow to a shop. Do NOT drive at speed.' },
-          { icon: '🟡', name: 'ABS', color: '#f59e0b', severity: 'MODERATE', desc: __alloT('stem.roadready.anti_lock_braking_system_fault_normal_', 'Anti-lock braking system fault. Normal brakes still work, but ABS will not activate in hard stops.'), action: 'Safe to drive carefully to a shop. Avoid hard braking situations. Be extra cautious on wet/icy roads.' },
-          { icon: '🟡', name: __alloT('stem.roadready.tpms_tire_pressure', 'TPMS (Tire Pressure)'), color: '#f59e0b', severity: 'MODERATE', desc: __alloT('stem.roadready.one_or_more_tires_is_significantly_und', 'One or more tires is significantly under-inflated (usually 25%+ below spec).'), action: 'Check all 4 tires with a gauge. Inflate to the PSI on the driver door sticker (NOT the tire sidewall — that is the maximum). A $5 gauge saves tires and fuel.' },
-          { icon: '🟡', name: __alloT('stem.roadready.battery_charging', 'Battery / Charging'), color: '#f59e0b', severity: 'MODERATE', desc: __alloT('stem.roadready.alternator_not_charging_the_battery_th', 'Alternator not charging the battery. The car will run on battery power for 30-60 minutes, then die.'), action: 'Drive directly to a shop. Turn off AC, radio, heated seats — anything electrical. If the car stalls, you will lose power steering and power brakes.' },
-          { icon: '🟡', name: __alloT('stem.roadready.traction_control_tc_esc', 'Traction Control (TC/ESC)'), color: '#f59e0b', severity: 'LOW', desc: __alloT('stem.roadready.blinking_system_is_actively_working_wh', 'Blinking = system is actively working (wheels are slipping). Steady = system is OFF.'), action: 'Blinking: slow down, the road is slippery. Steady: check if you accidentally turned it off. On snow/ice, you generally want it ON.' },
-          { icon: '🔵', name: __alloT('stem.roadready.high_beam_indicator', 'High Beam Indicator'), color: '#3b82f6', severity: 'INFO', desc: __alloT('stem.roadready.high_beams_are_on_remember_to_dim_for_', 'High beams are on. Maine requires dimming for oncoming traffic and when following another vehicle.'), action: 'Press L key in the sim or the headlight stalk in a real car. Dim within 500 ft of oncoming traffic or 300 ft when following another vehicle.' },
+          { icon: '🔴', name: __alloT('stem.roadready.check_engine_mil', 'Check Engine (MIL)'), color: 'var(--rr-red, #fca5a5)', severity: 'VARIES', desc: __alloT('stem.roadready.steady_emissions_issue_safe_to_drive_t', 'Steady = emissions issue, safe to drive to a shop. FLASHING = misfire, pull over immediately — catalytic converter damage.'), action: 'Steady: schedule service within a week. Flashing: pull over NOW, do not drive further.' },
+          { icon: '🔴', name: __alloT('stem.roadready.oil_pressure', 'Oil Pressure'), color: 'var(--rr-red, #fca5a5)', severity: 'CRITICAL', desc: __alloT('stem.roadready.engine_oil_pressure_is_dangerously_low', 'Engine oil pressure is dangerously low. Continuing will destroy the engine in minutes.'), action: 'Pull over IMMEDIATELY. Turn off the engine. Check oil level. Do NOT drive if oil is low — tow it.' },
+          { icon: '🔴', name: __alloT('stem.roadready.temperature_overheating', 'Temperature / Overheating'), color: 'var(--rr-red, #fca5a5)', severity: 'CRITICAL', desc: __alloT('stem.roadready.coolant_is_too_hot_driving_further_can', 'Coolant is too hot. Driving further can crack the head gasket ($2,000+ repair).'), action: 'Pull over. Turn off AC, turn heat on MAX (pulls heat from engine). Let it cool 30 min. Check coolant level. Tow if recurring.' },
+          { icon: '🔴', name: __alloT('stem.roadready.brake_system', 'Brake System'), color: 'var(--rr-red, #fca5a5)', severity: 'CRITICAL', desc: __alloT('stem.roadready.brake_failure_or_very_low_brake_fluid_', 'Brake failure or very low brake fluid. Parking brake engaged also shows this light.'), action: 'If parking brake is off and this light is on: pump brakes gently, pull over at the first safe spot, tow to a shop. Do NOT drive at speed.' },
+          { icon: '🟡', name: 'ABS', color: 'var(--rr-amber, #fbbf24)', severity: 'MODERATE', desc: __alloT('stem.roadready.anti_lock_braking_system_fault_normal_', 'Anti-lock braking system fault. Normal brakes still work, but ABS will not activate in hard stops.'), action: 'Safe to drive carefully to a shop. Avoid hard braking situations. Be extra cautious on wet/icy roads.' },
+          { icon: '🟡', name: __alloT('stem.roadready.tpms_tire_pressure', 'TPMS (Tire Pressure)'), color: 'var(--rr-amber, #fbbf24)', severity: 'MODERATE', desc: __alloT('stem.roadready.one_or_more_tires_is_significantly_und', 'One or more tires is significantly under-inflated (usually 25%+ below spec).'), action: 'Check all 4 tires with a gauge. Inflate to the PSI on the driver door sticker (NOT the tire sidewall — that is the maximum). A $5 gauge saves tires and fuel.' },
+          { icon: '🟡', name: __alloT('stem.roadready.battery_charging', 'Battery / Charging'), color: 'var(--rr-amber, #fbbf24)', severity: 'MODERATE', desc: __alloT('stem.roadready.alternator_not_charging_the_battery_th', 'Alternator not charging the battery. The car will run on battery power for 30-60 minutes, then die.'), action: 'Drive directly to a shop. Turn off AC, radio, heated seats — anything electrical. If the car stalls, you will lose power steering and power brakes.' },
+          { icon: '🟡', name: __alloT('stem.roadready.traction_control_tc_esc', 'Traction Control (TC/ESC)'), color: 'var(--rr-amber, #fbbf24)', severity: 'LOW', desc: __alloT('stem.roadready.blinking_system_is_actively_working_wh', 'Blinking = system is actively working (wheels are slipping). Steady = system is OFF.'), action: 'Blinking: slow down, the road is slippery. Steady: check if you accidentally turned it off. On snow/ice, you generally want it ON.' },
+          { icon: '🔵', name: __alloT('stem.roadready.high_beam_indicator', 'High Beam Indicator'), color: 'var(--rr-blue, #60a5fa)', severity: 'INFO', desc: __alloT('stem.roadready.high_beams_are_on_remember_to_dim_for_', 'High beams are on. Maine requires dimming for oncoming traffic and when following another vehicle.'), action: 'Press L key in the sim or the headlight stalk in a real car. Dim within 500 ft of oncoming traffic or 300 ft when following another vehicle.' },
           { icon: '⬜', name: __alloT('stem.roadready.airbag_srs', 'Airbag (SRS)'), color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', severity: 'SAFETY', desc: __alloT('stem.roadready.airbag_system_fault_airbags_may_not_de', 'Airbag system fault. Airbags may not deploy in a crash.'), action: 'Get this diagnosed ASAP. Airbags are a critical safety system. The car is safe to drive, but you are unprotected in a crash.' }
         ];
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_53', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #881337, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #f43f5e', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #881337, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #f43f5e', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🔧'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.dashboard_warning_lights', 'Dashboard Warning Lights')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.dashboard_warning_lights', 'Dashboard Warning Lights')),
             h('div', { style: { fontSize: '11px', color: '#fda4af' } }, __alloT('stem.roadready.what_each_light_means_how_serious_it_i', 'What each light means, how serious it is, and exactly what to do.'))
           ),
           lights.map(function(lt, i) {
@@ -36170,7 +36223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('span', { style: { fontSize: '9px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', background: lt.severity === 'CRITICAL' ? '#7f1d1d' : lt.severity === 'MODERATE' ? '#78350f' : '#1e293b', color: lt.severity === 'CRITICAL' ? '#fca5a5' : lt.severity === 'MODERATE' ? '#fde68a' : '#94a3b8' } }, lt.severity)
               ),
               h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.5', marginBottom: '6px' } }, lt.desc),
-              h('div', { style: { fontSize: '10px', color: '#a5f3fc', lineHeight: '1.4', paddingLeft: '8px', borderLeft: '2px solid #22d3ee' } }, '🔧 ' + lt.action)
+              h('div', { style: { fontSize: '10px', color: 'var(--rr-cyan, #22d3ee)', lineHeight: '1.4', paddingLeft: '8px', borderLeft: '2px solid #22d3ee' } }, '🔧 ' + lt.action)
             );
           })
         );
@@ -36226,11 +36279,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var checkedCount = Object.keys(ptState).filter(function(k) { return ptState[k]; }).length;
         var pctDone = Math.round(checkedCount / totalItems * 100);
         var fromRoadTest = !!d.roadTestStage; // if launched as part of road test, show different completion CTA
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', fromRoadTest ? 'roadTestIntro' : 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← ' + (fromRoadTest ? 'Road Test' : 'Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #3f6212, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #84cc16', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #3f6212, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #84cc16', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '✅'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.pre_trip_vehicle_inspection', 'Pre-Trip Vehicle Inspection')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.pre_trip_vehicle_inspection', 'Pre-Trip Vehicle Inspection')),
             h('div', { style: { fontSize: '11px', color: '#d9f99d', marginBottom: '8px' } }, __alloT('stem.roadready.tap_each_item_as_you_complete_the_walk', 'Tap each item as you complete the walk-around. Pros do this every time.')),
             // Progress bar
             h('div', { style: { height: '8px', background: 'rgba(0,0,0,0.4)', borderRadius: '4px', overflow: 'hidden', marginTop: '8px' } },
@@ -36252,9 +36305,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     next[item.id] = !done;
                     upd('preTripChecks', next);
                   },
-                  style: { display: 'flex', alignItems: 'flex-start', gap: '8px', width: '100%', textAlign: 'left', padding: '6px 8px', borderRadius: '6px', border: 'none', background: done ? 'rgba(132,204,22,0.1)' : 'transparent', cursor: 'pointer', fontSize: '11px', color: done ? '#bef264' : '#cbd5e1', lineHeight: '1.5', marginBottom: '2px' }
+                  style: { display: 'flex', alignItems: 'flex-start', gap: '8px', width: '100%', textAlign: 'left', padding: '6px 8px', borderRadius: '6px', border: 'none', background: done ? 'rgba(132,204,22,0.1)' : 'transparent', cursor: 'pointer', fontSize: '11px', color: done ? 'var(--rr-green, #4ade80)' : 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: '1.5', marginBottom: '2px' }
                 },
-                  h('span', { style: { color: done ? '#84cc16' : '#475569', fontWeight: 700, flexShrink: 0, fontSize: '14px' } }, done ? '✅' : '☐'),
+                  h('span', { style: { color: done ? 'var(--rr-green, #4ade80)' : 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, flexShrink: 0, fontSize: '14px' } }, done ? '✅' : '☐'),
                   h('span', { style: { textDecoration: done ? 'line-through' : 'none' } }, item.t)
                 );
               })
@@ -36278,14 +36331,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   updMulti({ view: 'roadTestIntro', roadTestStage: 'drive' });
                 }
               },
-              style: { flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: pctDone >= 80 ? 'linear-gradient(135deg, #65a30d, #3f6212)' : '#1e293b', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: pctDone >= 80 ? 'pointer' : 'not-allowed', opacity: pctDone >= 80 ? 1 : 0.5 }
+              style: { flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: pctDone >= 80 ? 'linear-gradient(135deg, #65a30d, #3f6212)' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '13px', fontWeight: 800, cursor: pctDone >= 80 ? 'pointer' : 'not-allowed', opacity: pctDone >= 80 ? 1 : 0.5 }
             }, pctDone >= 80 ? (fromRoadTest ? '✅ Continue to Driving Test' : '✅ Mark Inspection Complete') : 'Check 80%+ to continue'),
             h('button', { onClick: function() { upd('preTripChecks', {}); },
               style: { padding: '12px 16px', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #475569))', background: 'transparent', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.roadready.reset_2', '↺ Reset'))
           ),
           h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))', fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '12px' } },
-            h('div', { style: { fontWeight: 700, color: '#84cc16', marginBottom: '4px' } }, __alloT('stem.roadready.why_this_matters_2', '💡 Why this matters:')),
+            h('div', { style: { fontWeight: 700, color: 'var(--rr-green, #4ade80)', marginBottom: '4px' } }, __alloT('stem.roadready.why_this_matters_2', '💡 Why this matters:')),
             __alloT('stem.roadready.maine_bmv_road_test_starts_with_a_brie', 'Maine BMV road test starts with a brief vehicle inspection. Examiners will check that signals, brakes, horn, wipers, and seat belts work. Failing this means the test is over before you even drive. Build the habit now.')
           )
         );
@@ -36293,11 +36346,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── VEHICLE COMPARISON ──
       if (view === 'vehicleCompare') {
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_54', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #4c1d95, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #8b5cf6', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #4c1d95, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #8b5cf6', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🔬'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.vehicle_science_comparison', 'Vehicle Science Comparison')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.vehicle_science_comparison', 'Vehicle Science Comparison')),
             h('div', { style: { fontSize: '11px', color: '#ddd6fe' } }, __alloT('stem.roadready.mass_drag_area_mpg_why_these_numbers_m', 'Mass, drag, area, MPG — why these numbers matter'))
           ),
           h('div', { style: { overflowX: 'auto' } },
@@ -36313,9 +36366,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 VEHICLES.map(function(v) {
                   return h('tr', { key: v.id, style: { borderBottom: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))' } },
                     h('td', { style: { padding: '8px', fontSize: '18px' } }, v.icon),
-                    h('th', { scope: 'row', style: { padding: '8px', fontWeight: 700, color: '#fff', textAlign: 'left' } }, v.name),
+                    h('th', { scope: 'row', style: { padding: '8px', fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'left' } }, v.name),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace' } }, v.mass),
-                    h('td', { style: { padding: '8px', fontFamily: 'monospace', color: v.cd <= 0.26 ? '#4ade80' : v.cd <= 0.35 ? '#fbbf24' : '#ef4444' } }, v.cd),
+                    h('td', { style: { padding: '8px', fontFamily: 'monospace', color: v.cd <= 0.26 ? 'var(--rr-green, #4ade80)' : v.cd <= 0.35 ? 'var(--rr-amber, #fbbf24)' : 'var(--rr-red, #fca5a5)' } }, v.cd),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace' } }, v.area),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace', fontWeight: 700, color: 'var(--rr-cyan, #22d3ee)' } }, (v.cd * v.area).toFixed(2)),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace' } }, v.cityMPG),
@@ -36327,7 +36380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ),
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginTop: '10px', fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#8b5cf6', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.key_insights', '🔑 Key Insights')),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-violet, #a78bfa)', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.key_insights', '🔑 Key Insights')),
             h('div', null, '• ', h('b', null, __alloT('stem.roadready.cd_a', 'Cd × A')), __alloT('stem.roadready.is_the_single_number_that_determines_d', ' is the single number that determines drag. Lower = less fuel wasted. The EV (0.53) beats the truck (1.34) by 2.5×.')),
             h('div', null, '• ', h('b', null, __alloT('stem.roadready.mass', 'Mass')), __alloT('stem.roadready.determines_braking_distance_heavier_sl', ' determines braking distance (heavier = slower to stop) and rolling resistance. The school bus is 7.6× heavier than the sedan.')),
             h('div', null, '• ', h('b', null, __alloT('stem.roadready.stopping_distance', 'Stopping distance')), __alloT('stem.roadready.example_at_55_mph_sedan_200_ft_school_', ' example at 55 mph on dry pavement: a sedan needs about 260 ft to stop — 120 ft of that is just reacting — while a loaded bus or truck needs closer to 390 ft. Physics is non-negotiable.')),
@@ -36338,16 +36391,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── EMERGENCY RESPONSE DRILL ──
       if (view === 'emergencyDrill') {
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_55', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', border: '2px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, #0f172a)', borderRadius: '14px', padding: '24px', border: '2px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '48px' } }, '🚨'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '6px' } }, __alloT('stem.roadready.emergency_vehicle_response_drill', 'Emergency Vehicle Response Drill')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900, marginBottom: '6px' } }, __alloT('stem.roadready.emergency_vehicle_response_drill', 'Emergency Vehicle Response Drill')),
             h('div', { style: { fontSize: '12px', color: '#fca5a5' } }, __alloT('stem.roadready.sirens_will_sound_frequently_practice_', 'Sirens will sound frequently. Practice the correct response every time.'))
           ),
           // The protocol
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.the_protocol_all_50_states', 'Emergency Vehicle Protocol')),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--rr-red, #fca5a5)', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.the_protocol_all_50_states', 'Emergency Vehicle Protocol')),
             [
               { step: '1. CHECK', desc: __alloT('stem.roadready.check_mirrors_to_identify_the_emergenc', 'Check mirrors to identify the emergency vehicle\'s position and direction.'), icon: '👀' },
               { step: '2. SIGNAL', desc: __alloT('stem.roadready.signal_right_to_indicate_your_intent_t', 'Signal RIGHT to indicate your intent to move over.'), icon: '➡️' },
@@ -36359,7 +36412,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               return h('div', { key: i, style: { display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '8px', paddingLeft: '8px', borderLeft: '2px solid #ef4444' } },
                 h('span', { style: { fontSize: '18px', flexShrink: 0 } }, s.icon),
                 h('div', null,
-                  h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#fca5a5' } }, s.step),
+                  h('div', { style: { fontSize: '12px', fontWeight: 800, color: 'var(--rr-red, #fca5a5)' } }, s.step),
                   h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))' } }, s.desc)
                 )
               );
@@ -36422,11 +36475,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { id: 'ice', label: __alloT('stem.roadready.ice', '🧊 Ice'), mu: 0.10 }
         ];
 
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_56', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)), #7f1d1d)', borderRadius: '14px', padding: '20px', border: '1px solid #ef4444', marginBottom: '14px' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #0f172a, #7f1d1d)', borderRadius: '14px', padding: '20px', border: '1px solid #ef4444', marginBottom: '14px' } },
             h('div', { style: { fontSize: '36px', textAlign: 'center' } }, '🛑'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900, textAlign: 'center' } }, __alloT('stem.roadready.stopping_distance_lab_3', 'Stopping Distance Lab')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900, textAlign: 'center' } }, __alloT('stem.roadready.stopping_distance_lab_3', 'Stopping Distance Lab')),
             h('div', { style: { fontSize: '11px', color: '#fecaca', textAlign: 'center', marginBottom: '14px' } }, __alloT('stem.roadready.play_with_speed_weather_and_reaction_t', 'Play with speed, weather, and reaction time. Watch the physics.'))
           ),
           // Vehicle chip — with an honesty note: the lab's stopping model is the
@@ -36443,7 +36496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '10px' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '6px' } },
               h('span', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--rr-cyan, #22d3ee)' } }, 'SPEED'),
-              h('span', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', fontFamily: 'monospace' } }, labSpeed + ' mph')
+              h('span', { style: { fontSize: '14px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'monospace' } }, labSpeed + ' mph')
             ),
             h('input', { type: 'range', min: 15, max: 90, step: 5, value: labSpeed,
               'aria-label': __alloT('stem.roadready.speed_in_miles_per_hour', 'Speed in miles per hour'),
@@ -36457,7 +36510,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '10px' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '6px' } },
               h('span', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--rr-cyan, #22d3ee)' } }, __alloT('stem.roadready.reaction_time', 'REACTION TIME')),
-              h('span', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', fontFamily: 'monospace' } }, labReaction.toFixed(1) + ' s')
+              h('span', { style: { fontSize: '14px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'monospace' } }, labReaction.toFixed(1) + ' s')
             ),
             h('input', { type: 'range', min: 0.5, max: 3, step: 0.1, value: labReaction,
               'aria-label': __alloT('stem.roadready.reaction_time_in_seconds', 'Reaction time in seconds'),
@@ -36481,7 +36534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               weatherOpts.map(function(w) {
                 var sel = w.id === labWeather;
                 return h('button', { key: w.id, onClick: function() { upd('labWeather', w.id); },
-                  style: { padding: '8px 12px', borderRadius: '8px', border: '1px solid ' + (sel ? '#22d3ee' : '#334155'), background: sel ? '#0c4a6e' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } },
+                  style: { padding: '8px 12px', borderRadius: '8px', border: '1px solid ' + (sel ? '#22d3ee' : '#334155'), background: sel ? '#0c4a6e' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } },
                   w.label + ' (μ=' + w.mu + ')');
               })
             )
@@ -36493,7 +36546,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               [['good', '✓ Good tread'], ['worn', '⚠️ Worn (-25% grip)']].map(function(t) {
                 var sel = t[0] === labTires;
                 return h('button', { key: t[0], onClick: function() { upd('labTires', t[0]); },
-                  style: { padding: '8px 12px', borderRadius: '8px', border: '1px solid ' + (sel ? '#22d3ee' : '#334155'), background: sel ? '#0c4a6e' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, t[1]);
+                  style: { padding: '8px 12px', borderRadius: '8px', border: '1px solid ' + (sel ? '#22d3ee' : '#334155'), background: sel ? '#0c4a6e' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, t[1]);
               })
             )
           ),
@@ -36506,7 +36559,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ),
             h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))', textAlign: 'center' } },
               h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', textTransform: 'uppercase', fontWeight: 700 } }, __alloT('stem.roadready.braking_distance', 'Braking Distance')),
-              h('div', { style: { fontSize: '24px', fontWeight: 900, color: '#f87171', fontFamily: 'monospace', marginTop: '4px' } }, Math.round(sd.braking_ft) + ' ft'),
+              h('div', { style: { fontSize: '24px', fontWeight: 900, color: 'var(--rr-red, #fca5a5)', fontFamily: 'monospace', marginTop: '4px' } }, Math.round(sd.braking_ft) + ' ft'),
               h('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '2px' } }, __alloT('stem.roadready.v_2_g_grows_with_v_squared', 'v² / (2·μ·g) — grows with v squared'))
             )
           ),
@@ -36527,8 +36580,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' } },
               h('div', null, h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.friction', 'Friction μ: ')), h('b', { style: { color: 'var(--rr-cyan, #22d3ee)' } }, sd.mu.toFixed(2))),
               h('div', null, h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.total_resist', 'Total resist: ')), h('b', { style: { color: 'var(--rr-cyan, #22d3ee)' } }, Math.round(resist) + ' N')),
-              h('div', null, h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.safe_follow', 'Safe follow: ')), h('b', { style: { color: '#4ade80' } }, Math.round(followFt) + ' ft')),
-              h('div', null, h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.cruise_mpg', 'Cruise MPG: ')), h('b', { style: { color: '#4ade80' } }, cruise < 999 ? cruise.toFixed(1) : '—'))
+              h('div', null, h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.safe_follow', 'Safe follow: ')), h('b', { style: { color: 'var(--rr-green, #4ade80)' } }, Math.round(followFt) + ' ft')),
+              h('div', null, h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.cruise_mpg', 'Cruise MPG: ')), h('b', { style: { color: 'var(--rr-green, #4ade80)' } }, cruise < 999 ? cruise.toFixed(1) : '—'))
             )
           ),
           // Visual: distance bar. Axis max grows with the result (min 400 ft) —
@@ -36544,16 +36597,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { position: 'relative', height: '32px', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '6px', overflow: 'hidden' } },
               h('div', { style: { position: 'absolute', left: 0, top: 0, height: '100%', width: labReactPct + '%', background: '#fbbf24' } }),
               h('div', { style: { position: 'absolute', left: labReactPct + '%', top: 0, height: '100%', width: labBrakePct + '%', background: '#ef4444' } }),
-              h('div', { style: { position: 'absolute', left: '50%', top: 0, bottom: 0, width: '1px', background: 'rgba(255,255,255,0.3)' } }),
-              h('div', { style: { position: 'absolute', left: '50%', bottom: '-14px', transform: 'translateX(-50%)', fontSize: '9px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, Math.round(labAxisMax / 2) + ' ft')
+              h('div', { style: { position: 'absolute', left: '50%', top: 0, bottom: 0, width: '1px', background: 'rgba(255,255,255,0.3)' } })
             ),
+            // The midpoint label used to hang 14px BELOW the bar while the bar
+            // clipped its overflow, so "200 ft" was never visible. It lives on
+            // the axis row now, between the two end labels.
             h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px' } },
               h('span', null, '0'),
+              h('span', null, Math.round(labAxisMax / 2) + ' ft'),
               h('span', null, labAxisMax + ' ft')
             ),
             h('div', { style: { display: 'flex', gap: '14px', fontSize: '10px', marginTop: '6px' } },
               h('span', null, h('span', { style: { color: 'var(--rr-amber, #fbbf24)' } }, '█ '), 'reaction'),
-              h('span', null, h('span', { style: { color: '#ef4444' } }, '█ '), 'braking')
+              h('span', null, h('span', { style: { color: 'var(--rr-red, #fca5a5)' } }, '█ '), 'braking')
             )
           );
           })()
@@ -36576,10 +36632,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         else if (stopDist > 50) state = 'long';
         else state = 'controlled';
         var sm = {
-          unsafe:     { label: __alloT('stem.roadready.unsafe_stopping_distance_100m', '🚨 Unsafe stopping distance (>100m)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.roadready.cannot_stop_in_time_for_typical_road_h', 'Cannot stop in time for typical road hazard.') },
-          aggressive: { label: __alloT('stem.roadready.aggressive_1g_deceleration', '⚠️ Aggressive (>1g deceleration)'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.roadready.hard_braking_risk_of_skid_abs_engageme', 'Hard braking. Risk of skid, ABS engagement.') },
-          long:       { label: __alloT('stem.roadready.long_stop_50_100m', '🟡 Long stop (50-100m)'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.roadready.acceptable_but_marginal_longer_than_ty', 'Acceptable but marginal. Longer than typical city block.') },
-          controlled: { label: __alloT('stem.roadready.controlled_stop_50m', '🟢 Controlled stop (<50m)'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.roadready.safe_deceleration_comfortable_for_pass', 'Safe deceleration. Comfortable for passengers.') }
+          unsafe:     { label: __alloT('stem.roadready.unsafe_stopping_distance_100m', '🚨 Unsafe stopping distance (>100m)'), color: 'var(--rr-red, #fca5a5)', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.roadready.cannot_stop_in_time_for_typical_road_h', 'Cannot stop in time for typical road hazard.') },
+          aggressive: { label: __alloT('stem.roadready.aggressive_1g_deceleration', '⚠️ Aggressive (>1g deceleration)'), color: 'var(--rr-orange, #fdba74)', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.roadready.hard_braking_risk_of_skid_abs_engageme', 'Hard braking. Risk of skid, ABS engagement.') },
+          long:       { label: __alloT('stem.roadready.long_stop_50_100m', '🟡 Long stop (50-100m)'), color: 'var(--rr-amber, #fbbf24)', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.roadready.acceptable_but_marginal_longer_than_ty', 'Acceptable but marginal. Longer than typical city block.') },
+          controlled: { label: __alloT('stem.roadready.controlled_stop_50m', '🟢 Controlled stop (<50m)'), color: 'var(--rr-green, #4ade80)', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.roadready.safe_deceleration_comfortable_for_pass', 'Safe deceleration. Comfortable for passengers.') }
         }[state];
         return h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: '#e0f2fe', color: '#0369a1', border: '1px solid #93c5fd', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, __alloT('stem.roadready.menu_57', '← Menu')),
@@ -36744,7 +36800,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ── PARKING MENU (hub for all 9 scenarios) ──
       if (view === 'parkingMenu') {
         var pb = d.parkingBest || {};
-        var diffColor = function(diff) { return diff === 'hard' ? '#ef4444' : diff === 'medium' ? '#f59e0b' : '#4ade80'; };
+        var diffColor = function(diff) { return diff === 'hard' ? 'var(--rr-red, #fca5a5)' : diff === 'medium' ? 'var(--rr-amber, #fbbf24)' : 'var(--rr-green, #4ade80)'; };
+        // The pill wash used to be diffColor + '22' (hex alpha), which cannot be
+        // appended to a var(). Keep a fixed translucent tint per tier instead.
+        var diffWash = function(diff) { return diff === 'hard' ? 'rgba(239,68,68,0.13)' : diff === 'medium' ? 'rgba(245,158,11,0.13)' : 'rgba(74,222,128,0.13)'; };
         var scenarioCard = function(label, icon, viewKey, difficulty, bestKey, hint) {
           var best = bestKey && typeof pb[bestKey] === 'number' && isFinite(pb[bestKey]) ? pb[bestKey] : null;
           return h('button', {
@@ -36752,20 +36811,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             onClick: function() { upd('view', viewKey); },
             'aria-label': label + ' (' + difficulty + ')' + (best !== null ? ', best score ' + best : ''),
             'data-rr-focusable': true,
-            style: { padding: '14px', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '6px' }
+            // minWidth 0: a grid track's `1fr` is minmax(auto, 1fr), and `auto`
+            // is the item's min-content. Without this the name + difficulty pill
+            // row set a min-content wider than a phone column and the tiles ran
+            // 34px past the tool edge at 390px, forcing page-wide horizontal scroll.
+            style: { padding: '14px', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 }
           },
-            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' } },
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 } },
                 h('span', { style: { fontSize: '24px' } }, icon),
                 h('span', { style: { fontSize: '13px', fontWeight: 800 } }, label)
               ),
-              h('span', { style: { padding: '2px 8px', borderRadius: '8px', background: diffColor(difficulty) + '22', border: '1px solid ' + diffColor(difficulty), fontSize: '9px', fontWeight: 800, color: diffColor(difficulty), textTransform: 'uppercase' } }, difficulty)
+              h('span', { style: { padding: '2px 8px', borderRadius: '8px', background: diffWash(difficulty), border: '1px solid ' + diffColor(difficulty), fontSize: '9px', fontWeight: 800, color: diffColor(difficulty), textTransform: 'uppercase' } }, difficulty)
             ),
             h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', lineHeight: '1.4' } }, hint),
             best !== null ? h('div', { style: { fontSize: '10px', color: 'var(--rr-amber, #fbbf24)', fontWeight: 700 } }, '🏅 Personal best: ' + best + '/100') : null
           );
         };
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, marginBottom: '12px' } }, __alloT('stem.roadready.menu_58', '← Menu')),
           h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.parking_practice', '🅿️ Parking Practice')),
           h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '16px' } }, __alloT('stem.roadready.9_scenarios_across_3_difficulty_tiers_', '9 hands-on drills in a top-down training car. Start with Standard Parallel; selected road vehicles do not change this trainer.')),
@@ -36789,38 +36852,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var fcGasPrice = d.fcGasPrice || 3.50;
         var fcElecPrice = d.fcElecPrice || 0.14;
 
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_59', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #f97316', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #f97316', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '36px' } }, '💰'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.fuel_cost_calculator_3', 'Fuel Cost Calculator')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.fuel_cost_calculator_3', 'Fuel Cost Calculator')),
             h('div', { style: { fontSize: '11px', color: '#fed7aa' } }, __alloT('stem.roadready.see_what_driving_really_costs_by_vehic', 'See what driving really costs — by vehicle, habits, and fuel type.'))
           ),
           // Inputs
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' } },
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '12px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#f97316', marginBottom: '4px' } }, __alloT('stem.roadready.annual_miles', 'ANNUAL MILES')),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-orange, #fdba74)', marginBottom: '4px' } }, __alloT('stem.roadready.annual_miles', 'ANNUAL MILES')),
               h('input', { type: 'range', min: 3000, max: 30000, step: 1000, value: fcMiles,
                 'aria-label': __alloT('stem.roadready.annual_miles_driven', 'Annual miles driven'), 'aria-valuetext': fcMiles + ' miles per year',
                 'data-rr-focusable': 'true',
                 onChange: function(e) { upd('fcMiles', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#f97316' } }),
-              h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center', fontFamily: 'monospace' } }, fcMiles.toLocaleString())
+              h('div', { style: { fontSize: '14px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center', fontFamily: 'monospace' } }, fcMiles.toLocaleString())
             ),
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '12px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#f97316', marginBottom: '4px' } }, __alloT('stem.roadready.gas_gal', 'GAS $/GAL')),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-orange, #fdba74)', marginBottom: '4px' } }, __alloT('stem.roadready.gas_gal', 'GAS $/GAL')),
               h('input', { type: 'range', min: 2, max: 6, step: 0.10, value: fcGasPrice,
                 'aria-label': __alloT('stem.roadready.gas_price_per_gallon_in_dollars', 'Gas price per gallon in dollars'), 'aria-valuetext': '$' + fcGasPrice.toFixed(2) + ' per gallon',
                 'data-rr-focusable': 'true',
                 onChange: function(e) { upd('fcGasPrice', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#f97316' } }),
-              h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center', fontFamily: 'monospace' } }, '$' + fcGasPrice.toFixed(2))
+              h('div', { style: { fontSize: '14px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center', fontFamily: 'monospace' } }, '$' + fcGasPrice.toFixed(2))
             ),
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '12px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#f97316', marginBottom: '4px' } }, __alloT('stem.roadready.electricity_kwh', 'ELECTRICITY $/kWh')),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-orange, #fdba74)', marginBottom: '4px' } }, __alloT('stem.roadready.electricity_kwh', 'ELECTRICITY $/kWh')),
               h('input', { type: 'range', min: 0.08, max: 0.35, step: 0.01, value: fcElecPrice,
                 'aria-label': __alloT('stem.roadready.electricity_price_per_kilowatt_hour_in', 'Electricity price per kilowatt-hour in dollars'), 'aria-valuetext': '$' + fcElecPrice.toFixed(2) + ' per kilowatt-hour',
                 'data-rr-focusable': 'true',
                 onChange: function(e) { upd('fcElecPrice', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#f97316' } }),
-              h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center', fontFamily: 'monospace' } }, '$' + fcElecPrice.toFixed(2))
+              h('div', { style: { fontSize: '14px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center', fontFamily: 'monospace' } }, '$' + fcElecPrice.toFixed(2))
             )
           ),
           // Results table
@@ -36846,19 +36909,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var diff = costYr - sedanCost;
                   return h('tr', { key: v.id, style: { borderBottom: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))' } },
                     h('td', { style: { padding: '8px', fontSize: '16px' } }, v.icon),
-                    h('th', { scope: 'row', style: { padding: '8px', fontWeight: 700, color: '#fff', textAlign: 'left' } }, v.name),
+                    h('th', { scope: 'row', style: { padding: '8px', fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'left' } }, v.name),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace' } }, avgMpg.toFixed(0) + (isEV ? 'e' : '')),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace' } }, isEV ? kwhYr.toFixed(0) + ' kWh' : galYr.toFixed(0)),
-                    h('td', { style: { padding: '8px', fontFamily: 'monospace', fontWeight: 700, color: costYr < sedanCost ? '#4ade80' : costYr > sedanCost * 1.2 ? '#ef4444' : '#fbbf24' } }, '$' + costYr.toFixed(0)),
+                    h('td', { style: { padding: '8px', fontFamily: 'monospace', fontWeight: 700, color: costYr < sedanCost ? 'var(--rr-green, #4ade80)' : costYr > sedanCost * 1.2 ? 'var(--rr-red, #fca5a5)' : 'var(--rr-amber, #fbbf24)' } }, '$' + costYr.toFixed(0)),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, '$' + costMi.toFixed(3)),
-                    h('td', { style: { padding: '8px', fontFamily: 'monospace', color: diff < 0 ? '#4ade80' : diff > 0 ? '#ef4444' : '#94a3b8' } }, (diff >= 0 ? '+' : '') + '$' + diff.toFixed(0))
+                    h('td', { style: { padding: '8px', fontFamily: 'monospace', color: diff < 0 ? 'var(--rr-green, #4ade80)' : diff > 0 ? 'var(--rr-red, #fca5a5)' : 'var(--allo-stem-text-soft, #94a3b8)' } }, (diff >= 0 ? '+' : '') + '$' + diff.toFixed(0))
                   );
                 })
               )
             )
           ),
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginTop: '12px', fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#f97316', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.insights', '💡 Insights')),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-orange, #fdba74)', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.insights', '💡 Insights')),
             h('div', null, __alloT('stem.roadready.the_average_american_drives_12_000_mi_', '• The average American drives ~12,000 mi/yr. At $3.50/gal in a 37-MPG sedan, that is ~$1,135/yr in fuel.')),
             h('div', null, __alloT('stem.roadready.switching_from_a_pickup_21_mpg_avg_to_', '• Switching from a pickup (21 MPG avg) to a hybrid (53 MPG avg) saves ~$'), Math.round((fcMiles / 21 - fcMiles / 53) * fcGasPrice), '/yr.'),
             h('div', null, __alloT('stem.roadready.the_ev_at', '• The EV at $'), fcElecPrice.toFixed(2), '/kWh costs ~$', Math.round(fcMiles / ((130 + 115) / 2 / 33.7) * fcElecPrice), '/yr — ', Math.round((1 - (fcMiles / ((130 + 115) / 2 / 33.7) * fcElecPrice) / ((fcMiles / 37) * fcGasPrice)) * 100), __alloT('stem.roadready.less_than_a_sedan', '% less than a sedan.')),
@@ -36895,54 +36958,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var fr65 = rollingForce(currentVehicle.mass, rollingCoef(fwh, true));
         var dragShare = fd65 / (fd65 + fr65);
 
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_60', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #064e3b, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #10b981', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #064e3b, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #10b981', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '36px' } }, '🌿'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.hypermiling_lab_3', 'Hypermiling Lab')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.hypermiling_lab_3', 'Hypermiling Lab')),
             h('div', { style: { fontSize: '11px', color: '#86efac', marginTop: '4px' } }, __alloT('stem.roadready.see_how_speed_kills_your_mpg_find_your', 'See how speed kills your MPG. Find your sweet spot.'))
           ),
           // Vehicle picker
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '12px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '10px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#10b981', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.vehicle_3', 'Vehicle')),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-green, #4ade80)', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.vehicle_3', 'Vehicle')),
             h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
               VEHICLES.map(function(v) {
                 var sel = v.id === selectedVehicle;
                 return h('button', { key: v.id, onClick: function() { upd('vehicle', v.id); },
-                  style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (sel ? '#10b981' : '#334155'), background: sel ? '#064e3b' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, v.icon + ' ' + v.name);
+                  style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (sel ? '#10b981' : '#334155'), background: sel ? '#064e3b' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, v.icon + ' ' + v.name);
               })
             )
           ),
           // Weather picker
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '12px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '14px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#10b981', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.conditions', 'Conditions')),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-green, #4ade80)', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.conditions', 'Conditions')),
             h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
               [['dry','☀️ Dry'],['rain','🌧️ Rain'],['snow','❄️ Snow']].map(function(w) {
                 var sel = w[0] === weatherChoice;
                 return h('button', { key: w[0], onClick: function() { upd('hyperWeather', w[0]); },
-                  style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (sel ? '#10b981' : '#334155'), background: sel ? '#064e3b' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, w[1]);
+                  style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (sel ? '#10b981' : '#334155'), background: sel ? '#064e3b' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, w[1]);
               })
             ),
             h('div', { style: { display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' } },
               h('button', { onClick: function() { upd('hyperWinter', !hyperWinter); },
                 'aria-pressed': hyperWinter ? 'true' : 'false',
-                style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (hyperWinter ? '#10b981' : '#334155'), background: hyperWinter ? '#064e3b' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } },
+                style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (hyperWinter ? '#10b981' : '#334155'), background: hyperWinter ? '#064e3b' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } },
                 (hyperWinter ? '✓ ' : '') + '🌨 Maine winter (−5%)'),
               h('button', { onClick: function() { upd('hyperColdStart', !hyperColdStart); },
                 'aria-pressed': hyperColdStart ? 'true' : 'false',
-                style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (hyperColdStart ? '#10b981' : '#334155'), background: hyperColdStart ? '#064e3b' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } },
+                style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (hyperColdStart ? '#10b981' : '#334155'), background: hyperColdStart ? '#064e3b' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } },
                 (hyperColdStart ? '✓ ' : '') + '🥶 Cold start (−15%)'),
               // Tire pressure: 25% rolling-coef bump models ~3 PSI low across all 4 tires
               h('button', { onClick: function() { upd('hyperTireLow', !hyperTireLow); },
                 'aria-pressed': hyperTireLow ? 'true' : 'false',
                 title: __alloT('stem.roadready.underinflated_tires_3_psi_low_across_a', 'Underinflated tires (~3 PSI low across all 4 tires) raise rolling resistance ~25%, costing roughly 3% MPG.'),
-                style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (hyperTireLow ? '#10b981' : '#334155'), background: hyperTireLow ? '#064e3b' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } },
+                style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (hyperTireLow ? '#10b981' : '#334155'), background: hyperTireLow ? '#064e3b' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } },
                 (hyperTireLow ? '✓ ' : '') + '🛞 Low tires (~−3%)'),
               // AC load: ~2.5 kW parasitic draw on the engine — bigger impact at low speed
               h('button', { onClick: function() { upd('hyperAcOn', !hyperAcOn); },
                 'aria-pressed': hyperAcOn ? 'true' : 'false',
                 title: __alloT('stem.roadready.air_conditioning_compressor_pulls_2_5_', 'Air conditioning compressor pulls ~2.5 kW. Hits hardest in city driving (10–15% MPG); tiny on the highway (~3%).'),
-                style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (hyperAcOn ? '#10b981' : '#334155'), background: hyperAcOn ? '#064e3b' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } },
+                style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (hyperAcOn ? '#10b981' : '#334155'), background: hyperAcOn ? '#064e3b' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } },
                 (hyperAcOn ? '✓ ' : '') + '❄️ A/C on (−10% city, −3% hwy)')
             ),
             // Headwind / tailwind slider
@@ -36968,7 +37031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // The chart
           h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))', marginBottom: '14px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#10b981', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.mpg_vs_speed_steady_cruise', 'MPG vs Speed (steady cruise)')),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-green, #4ade80)', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.mpg_vs_speed_steady_cruise', 'MPG vs Speed (steady cruise)')),
             h('canvas', {
               role: 'img',
               'aria-label': __alloT('stem.roadready.mpg_by_speed_chart_label', 'Miles per gallon by speed chart') + ': ' + currentVehicle.name + ' on ' + weatherChoice + ', best ' + maxMpg.toFixed(1) + ' miles per gallon at ' + bestSpeed + ' miles per hour',
@@ -37040,7 +37103,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Insights
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#10b981', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.key_insights_2', '🔬 Key Insights')),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-green, #4ade80)', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.key_insights_2', '🔬 Key Insights')),
             h('div', null, '• ', h('b', null, 'Sweet spot: ' + bestSpeed + ' mph'), ' for the ' + currentVehicle.name + ' on ' + weatherChoice + '. Drive at this speed when you can.'),
             h('div', null, __alloT('stem.roadready.at_65_mph', '• At 65 mph, '), h('b', null, Math.round(dragShare * 100) + '%'), __alloT('stem.roadready.of_your_fuel_goes_to_fighting_air_not_', ' of your fuel goes to fighting AIR, not rolling friction. That share grows with v².')),
             h('div', null, __alloT('stem.roadready.going_75_mph_instead_of_65_mph_drag_is', '• Going 75 mph instead of 65 mph: drag is '), h('b', null, ((75 / 65) * (75 / 65)).toFixed(2) + '×'), __alloT('stem.roadready.higher_most_cars_lose_15_20_mpg', ' higher. Most cars lose 15-20% MPG.')),
@@ -37053,16 +37116,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ── CRASH REPLAY ──
       if (view === 'crashReplay' && drivingStats && drivingStats.lastCrashReplay) {
         var replay = drivingStats.lastCrashReplay;
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'debrief'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.debrief', '← Debrief')),
-          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #ef4444', textAlign: 'center', marginBottom: '14px' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #ef4444', textAlign: 'center', marginBottom: '14px' } },
             h('div', { style: { fontSize: '42px' } }, '🔄'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.crash_replay_black_box_data', 'Crash Replay — Black Box Data')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.crash_replay_black_box_data', 'Crash Replay — Black Box Data')),
             h('div', { style: { fontSize: '11px', color: '#fca5a5' } }, 'Last ' + (replay.length / 60).toFixed(1) + ' seconds before impact. Speed + steering trace.')
           ),
           // Speed graph
           h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))', marginBottom: '10px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.speed_mph_over_time', 'Speed (mph) over time')),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-red, #fca5a5)', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.speed_mph_over_time', 'Speed (mph) over time')),
             h('canvas', {
               role: 'img',
               'aria-label': __alloT('stem.roadready.crash_replay_chart_label', 'Crash replay speed and steering chart') + ': final ' + (replay.length / 60).toFixed(1) + ' seconds before impact, peak speed ' + Math.max.apply(null, replay.map(function(r) { return Math.abs(r.speed) * MS_TO_MPH; })).toFixed(1) + ' miles per hour',
@@ -37111,7 +37174,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Analysis
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
-            h('div', { style: { fontWeight: 700, color: '#ef4444', marginBottom: '4px' } }, __alloT('stem.roadready.what_the_black_box_shows', '🔍 What the black box shows:')),
+            h('div', { style: { fontWeight: 700, color: 'var(--rr-red, #fca5a5)', marginBottom: '4px' } }, __alloT('stem.roadready.what_the_black_box_shows', '🔍 What the black box shows:')),
             replay.length > 20 ? h('div', null, __alloT('stem.roadready.speed_at_impact', '• Speed at impact: '), h('b', null, Math.round(Math.abs(replay[replay.length - 1].speed) * MS_TO_MPH) + ' mph')) : null,
             replay.length > 20 ? h('div', null, __alloT('stem.roadready.speed_2_seconds_before', '• Speed 2 seconds before: '), h('b', null, Math.round(Math.abs(replay[Math.max(0, replay.length - 120)].speed) * MS_TO_MPH) + ' mph')) : null,
             replay.length > 20 ? h('div', null, __alloT('stem.roadready.steering_at_impact', '• Steering at impact: '), h('b', null, (replay[replay.length - 1].steering > 0.1 ? 'turning right' : replay[replay.length - 1].steering < -0.1 ? 'turning left' : 'straight'))) : null,
@@ -37141,7 +37204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var certOutcome = drivingStats.outcome || rrDriveOutcome(drivingStats, certEvidence);
         var certEligible = certOutcome.qualifying && certOutcome.passed && Number(certOutcome.score) >= 80;
         if (!certEligible) {
-          return h('div', { style: { padding: '24px', maxWidth: '620px', margin: '0 auto', color: 'var(--allo-stem-text, #e2e8f0)' } },
+          return h('div', { style: { padding: '24px', maxWidth: '620px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, #e2e8f0)' } },
             h('button', { onClick: function() { upd('view', 'debrief'); }, style: { marginBottom: '12px', border: 'none', background: 'transparent', color: 'var(--rr-blue, #60a5fa)', fontWeight: 750, cursor: 'pointer' } }, 'Back to debrief'),
             h('div', { role: 'status', style: { padding: '18px', borderRadius: '12px', border: '1px solid #f59e0b', background: 'var(--allo-stem-panel, #1e293b)' } },
               h('h2', { style: { margin: '0 0 8px', fontSize: '18px' } }, 'Practice certificate not available yet'),
@@ -37152,7 +37215,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         return h('div', { style: { padding: '20px', maxWidth: '780px', margin: '0 auto' } },
           h('button', { onClick: function() { upd('view', 'debrief'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.back_3', '← Back')),
           h('style', null,
-            __alloT('stem.roadready.media_print_body_visibility_hidden_roa', '@media print { body * { visibility: hidden; } #roadready-certificate, #roadready-certificate * { visibility: visible; } #roadready-certificate { position: absolute; left: 0; top: 0; width: 100%; } }')
+            '@media print { body * { visibility: hidden; } #roadready-certificate, #roadready-certificate * { visibility: visible; } #roadready-certificate { position: absolute; left: 0; top: 0; width: 100%; } }'
           ),
           h('div', { id: 'roadready-certificate', style: { background: 'linear-gradient(135deg, #fefce8, #fff7ed, #fef3c7)', borderRadius: '18px', padding: '42px 40px 30px 40px', border: '4px double #fbbf24', textAlign: 'center', color: '#1e293b', position: 'relative', boxShadow: '0 20px 60px rgba(251,191,36,0.2)' } },
             // Decorative inner border
@@ -37291,12 +37354,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { desc: __alloT('stem.roadready.black_ice_your_steering_suddenly_feels', 'Black ice — your steering suddenly feels light and unresponsive.'), type: 'ice', reactionLimit: 3.0 },
           { desc: __alloT('stem.roadready.a_school_bus_ahead_activates_its_red_f', 'A school bus ahead activates its red flashing lights and stop arm extends.'), type: 'schoolBus', reactionLimit: 3.0 }
         ];
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); upd('htState', null); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_61', '← Menu')),
           !htState.active ? h('div', { style: { textAlign: 'center' } },
-            h('div', { style: { background: 'linear-gradient(135deg, #9f1239, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', border: '1px solid #f43f5e', marginBottom: '14px' } },
+            h('div', { style: { background: 'linear-gradient(135deg, #9f1239, #0f172a)', borderRadius: '14px', padding: '24px', border: '1px solid #f43f5e', marginBottom: '14px' } },
               h('div', { style: { fontSize: '48px' } }, '⚡'),
-              h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.hazard_perception_test_2', 'Hazard Perception Test')),
+              h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.hazard_perception_test_2', 'Hazard Perception Test')),
               h('div', { style: { fontSize: '12px', color: '#fda4af', marginBottom: '14px' } }, __alloT('stem.roadready.you_will_see_driving_scenarios_click_t', 'You will see driving scenarios. Click/tap as FAST as possible when you spot the hazard. Your reaction time is measured.')),
               htState.total > 0 ? h('div', { style: { fontSize: '14px', color: 'var(--rr-amber, #fbbf24)', marginBottom: '10px' } }, 'Score: ' + htState.score + '/' + htState.total + ' (' + Math.round(htState.score / htState.total * 100) + '%)') : null,
               h('button', { onClick: function() {
@@ -37347,12 +37410,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             },
               !htState.responded ? h('div', null,
                 h('div', { style: { fontSize: '64px', marginBottom: '10px' } }, '🚨'),
-                h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', marginBottom: '8px' } }, 'HAZARD!'),
+                h('div', { style: { fontSize: '16px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: '8px' } }, 'HAZARD!'),
                 h('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6', maxWidth: '500px', margin: '0 auto' } }, htState.hazard.desc),
-                h('div', { style: { fontSize: '14px', color: '#f43f5e', fontWeight: 700, marginTop: '14px', animation: 'pulse 1s infinite' } }, __alloT('stem.roadready.click_tap_now_to_brake_react', '👆 CLICK / TAP NOW to brake/react!'))
+                h('div', { style: { fontSize: '14px', color: 'var(--rr-red, #fca5a5)', fontWeight: 700, marginTop: '14px', animation: 'pulse 1s infinite' } }, __alloT('stem.roadready.click_tap_now_to_brake_react', '👆 CLICK / TAP NOW to brake/react!'))
               ) : h('div', null,
                 h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, htState.passed ? '✅' : '⏱️'),
-                h('div', { style: { fontSize: '18px', fontWeight: 800, color: htState.passed ? '#4ade80' : '#ef4444' } }, htState.passed ? 'GOOD — ' + htState.reactionTime.toFixed(2) + 's' : 'TOO SLOW — ' + htState.reactionTime.toFixed(2) + 's'),
+                h('div', { style: { fontSize: '18px', fontWeight: 800, color: htState.passed ? 'var(--rr-green, #4ade80)' : 'var(--rr-red, #fca5a5)' } }, htState.passed ? 'GOOD — ' + htState.reactionTime.toFixed(2) + 's' : 'TOO SLOW — ' + htState.reactionTime.toFixed(2) + 's'),
                 h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px' } }, 'Required: under ' + htState.hazard.reactionLimit + ' seconds'),
                 h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginTop: '8px', lineHeight: '1.5' } },
                   htState.hazard.type === 'child' ? 'Children are unpredictable. In residential areas, always scan between parked cars.' :
@@ -37397,46 +37460,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var annualPremium = Math.round(baseRate * ageFactor * recordFactor * vehFactor);
         var monthlyPremium = Math.round(annualPremium / 12);
 
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_62', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #164e63, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #06b6d4', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #164e63, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #06b6d4', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🛡️'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.insurance_cost_estimator', 'Insurance Cost Estimator')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.insurance_cost_estimator', 'Insurance Cost Estimator')),
             h('div', { style: { fontSize: '11px', color: '#a5f3fc' } }, __alloT('stem.roadready.see_how_age_driving_record_and_vehicle', 'See how age, driving record, and vehicle type affect your premium.'))
           ),
           // Inputs
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' } },
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '12px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#06b6d4', marginBottom: '4px' } }, 'AGE'),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-cyan, #22d3ee)', marginBottom: '4px' } }, 'AGE'),
               h('input', { type: 'range', min: 16, max: 75, value: insAge,
                 'aria-label': __alloT('stem.roadready.driver_age_in_years', 'Driver age in years'), 'aria-valuetext': insAge + ' years old',
                 'data-rr-focusable': 'true',
                 onChange: function(e) { upd('insAge', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#06b6d4' } }),
-              h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, insAge + ' years old'),
+              h('div', { style: { fontSize: '14px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center' } }, insAge + ' years old'),
               h('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', textAlign: 'center' } }, insAge < 25 ? 'Under 25 = higher rates' : insAge > 64 ? 'Senior rate applies' : 'Standard adult rate')
             ),
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '12px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#06b6d4', marginBottom: '6px' } }, __alloT('stem.roadready.driving_record', 'DRIVING RECORD')),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-cyan, #22d3ee)', marginBottom: '6px' } }, __alloT('stem.roadready.driving_record', 'DRIVING RECORD')),
               [['clean', '✅ Clean'], ['speeding', '⚠️ Speeding ticket'], ['accident', '💥 At-fault accident'], ['dui', '🚨 DUI/DWI']].map(function(r) {
                 var sel = insRecord === r[0];
                 return h('button', { key: r[0], onClick: function() { upd('insRecord', r[0]); },
-                  style: { display: 'block', width: '100%', padding: '6px', marginBottom: '3px', borderRadius: '6px', border: '1px solid ' + (sel ? '#06b6d4' : '#334155'), background: sel ? '#164e63' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700, textAlign: 'left' } }, r[1]);
+                  style: { display: 'block', width: '100%', padding: '6px', marginBottom: '3px', borderRadius: '6px', border: '1px solid ' + (sel ? '#06b6d4' : '#334155'), background: sel ? '#164e63' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px', fontWeight: 700, textAlign: 'left' } }, r[1]);
               })
             )
           ),
           // Vehicle selector
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '12px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '14px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#06b6d4', marginBottom: '6px' } }, __alloT('stem.roadready.vehicle_type', 'VEHICLE TYPE')),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-cyan, #22d3ee)', marginBottom: '6px' } }, __alloT('stem.roadready.vehicle_type', 'VEHICLE TYPE')),
             h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
               [['sedan','🚗 Sedan'],['suv','🚙 SUV'],['truck','🛻 Truck'],['ev','⚡ EV'],['sports','🏎️ Sports']].map(function(v) {
                 var sel = insVehicle === v[0];
                 return h('button', { key: v[0], onClick: function() { upd('insVehicle', v[0]); },
-                  style: { padding: '6px 12px', borderRadius: '6px', border: '1px solid ' + (sel ? '#06b6d4' : '#334155'), background: sel ? '#164e63' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, v[1]);
+                  style: { padding: '6px 12px', borderRadius: '6px', border: '1px solid ' + (sel ? '#06b6d4' : '#334155'), background: sel ? '#164e63' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, v[1]);
               })
             )
           ),
           // Result
-          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '12px', padding: '20px', border: '2px solid #06b6d4', textAlign: 'center', marginBottom: '14px' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, #0f172a)', borderRadius: '12px', padding: '20px', border: '2px solid #06b6d4', textAlign: 'center', marginBottom: '14px' } },
             h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '4px' } }, __alloT('stem.roadready.estimated_annual_premium', 'ESTIMATED ANNUAL PREMIUM')),
             h('div', { style: { fontSize: '36px', fontWeight: 900, color: annualPremium > 3000 ? '#ef4444' : annualPremium > 2000 ? '#f59e0b' : '#4ade80', fontFamily: 'monospace' } }, '$' + annualPremium.toLocaleString()),
             h('div', { style: { fontSize: '14px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, '$' + monthlyPremium + '/month'),
@@ -37445,7 +37508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Impact comparison
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
-            h('div', { style: { fontWeight: 700, color: '#06b6d4', marginBottom: '4px' } }, __alloT('stem.roadready.how_your_choices_affect_cost', '💡 How your choices affect cost:')),
+            h('div', { style: { fontWeight: 700, color: 'var(--rr-cyan, #22d3ee)', marginBottom: '4px' } }, __alloT('stem.roadready.how_your_choices_affect_cost', '💡 How your choices affect cost:')),
             h('div', null, '• Clean record vs DUI: saves $' + Math.round(baseRate * ageFactor * vehFactor * 1.8) + '/year'),
             h('div', null, '• Turning 25: drops premium by ~$' + Math.round(baseRate * vehFactor * recordFactor * 0.5)),
             h('div', null, __alloT('stem.roadready.one_at_fault_accident_stays_on_your_re', '• One at-fault accident stays on your record for 3-5 years')),
@@ -37473,11 +37536,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { item: 'Tires (Replace)', interval: 50000, cost: '$400-800', icon: '🛞', critical: true, desc: __alloT('stem.roadready.tread_wears_down_below_2_32_unsafe_ill', 'Tread wears down. Below 2/32" = unsafe + illegal in Maine. All-season lasts ~50K, winter tires ~40K.') }
         ];
 
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_63', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #404040, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #a3a3a3', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #404040, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #a3a3a3', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🔧'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.vehicle_maintenance_schedule', 'Vehicle Maintenance Schedule')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.vehicle_maintenance_schedule', 'Vehicle Maintenance Schedule')),
             h('div', { style: { fontSize: '11px', color: '#d4d4d4' } }, __alloT('stem.roadready.what_to_service_and_when_neglect_expen', 'What to service and when. Neglect = expensive breakdowns.'))
           ),
           // Mileage slider
@@ -37487,7 +37550,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'aria-label': __alloT('stem.roadready.vehicle_odometer_mileage', 'Vehicle odometer mileage'), 'aria-valuetext': mileage.toLocaleString() + ' miles',
               'data-rr-focusable': 'true',
               onChange: function(e) { upd('mileage', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#a3a3a3' } }),
-            h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', textAlign: 'center', fontFamily: 'monospace' } }, mileage.toLocaleString() + ' miles')
+            h('div', { style: { fontSize: '16px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center', fontFamily: 'monospace' } }, mileage.toLocaleString() + ' miles')
           ),
           // Items with due/overdue status
           maintenanceItems.map(function(mi) {
@@ -37506,7 +37569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   )
                 ),
                 h('div', { style: { textAlign: 'right' } },
-                  h('div', { style: { fontSize: '11px', fontWeight: 700, color: overdue ? '#ef4444' : soon ? '#f59e0b' : '#4ade80' } }, overdue ? 'OVERDUE' : soon ? 'DUE SOON' : 'OK'),
+                  h('div', { style: { fontSize: '11px', fontWeight: 700, color: overdue ? 'var(--rr-red, #fca5a5)' : soon ? 'var(--rr-amber, #fbbf24)' : 'var(--rr-green, #4ade80)' } }, overdue ? 'OVERDUE' : soon ? 'DUE SOON' : 'OK'),
                   h('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, overdue ? 'Was due at ' + nextDue.toLocaleString() + ' mi' : milesLeft.toLocaleString() + ' mi until next')
                 )
               ),
@@ -37520,11 +37583,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (view === 'aiCoach') {
         var coachResponse = d.coachResponse || null;
         var coachLoading = d.coachLoading || false;
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_64', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #4c1d95, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', border: '1px solid #a78bfa', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #4c1d95, #0f172a)', borderRadius: '14px', padding: '24px', border: '1px solid #a78bfa', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '48px' } }, '🤖'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.ai_driving_coach_3', 'AI Driving Coach')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.ai_driving_coach_3', 'AI Driving Coach')),
             h('div', { style: { fontSize: '12px', color: '#ddd6fe' } }, __alloT('stem.roadready.gemini_ai_analyzes_your_driving_data_a', 'Gemini AI analyzes your driving data and gives personalized advice.'))
           ),
           !drivingStats ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '20px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', textAlign: 'center' } },
@@ -37607,45 +37670,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var stopsNeeded = Math.floor(driveHours / 2); // stop every 2 hours
         var totalTime = driveHours + stopsNeeded * 0.25; // 15 min per stop
 
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_65', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #064e3b, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #34d399', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #064e3b, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #34d399', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🗺️'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.road_trip_planner_3', 'Road Trip Planner')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.road_trip_planner_3', 'Road Trip Planner')),
             h('div', { style: { fontSize: '11px', color: '#a7f3d0' } }, __alloT('stem.roadready.calculate_fuel_cost_driving_time_and_r', 'Calculate fuel cost, driving time, and rest stops.'))
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' } },
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '12px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#34d399', marginBottom: '4px' } }, __alloT('stem.roadready.distance_miles', 'DISTANCE (miles)')),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-green, #4ade80)', marginBottom: '4px' } }, __alloT('stem.roadready.distance_miles', 'DISTANCE (miles)')),
               h('input', { type: 'range', min: 50, max: 3000, step: 50, value: tripDist,
                 'aria-label': __alloT('stem.roadready.trip_distance_in_miles', 'Trip distance in miles'), 'aria-valuetext': tripDist + ' miles',
                 'data-rr-focusable': 'true',
                 onChange: function(e) { upd('tripDist', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
-              h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, tripDist.toLocaleString() + ' mi')
+              h('div', { style: { fontSize: '16px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center' } }, tripDist.toLocaleString() + ' mi')
             ),
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '12px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#34d399', marginBottom: '4px' } }, __alloT('stem.roadready.your_mpg', 'YOUR MPG')),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-green, #4ade80)', marginBottom: '4px' } }, __alloT('stem.roadready.your_mpg', 'YOUR MPG')),
               h('input', { type: 'range', min: 15, max: 55, step: 1, value: tripMPG,
                 'aria-label': __alloT('stem.roadready.vehicle_fuel_efficiency_in_miles_per_g', 'Vehicle fuel efficiency in miles per gallon'), 'aria-valuetext': tripMPG + ' miles per gallon',
                 'data-rr-focusable': 'true',
                 onChange: function(e) { upd('tripMPG', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
-              h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, tripMPG + ' MPG')
+              h('div', { style: { fontSize: '16px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center' } }, tripMPG + ' MPG')
             ),
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '12px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#34d399', marginBottom: '4px' } }, __alloT('stem.roadready.gas_price', 'GAS PRICE')),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-green, #4ade80)', marginBottom: '4px' } }, __alloT('stem.roadready.gas_price', 'GAS PRICE')),
               h('input', { type: 'range', min: 2, max: 6, step: 0.10, value: tripGasPrice,
                 'aria-label': __alloT('stem.roadready.gas_price_per_gallon', 'Gas price per gallon'), 'aria-valuetext': '$' + tripGasPrice.toFixed(2) + ' per gallon',
                 'data-rr-focusable': 'true',
                 onChange: function(e) { upd('tripGasPrice', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
-              h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, '$' + tripGasPrice.toFixed(2) + '/gal')
+              h('div', { style: { fontSize: '16px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center' } }, '$' + tripGasPrice.toFixed(2) + '/gal')
             ),
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '12px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#34d399', marginBottom: '4px' } }, __alloT('stem.roadready.avg_speed', 'AVG SPEED')),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-green, #4ade80)', marginBottom: '4px' } }, __alloT('stem.roadready.avg_speed', 'AVG SPEED')),
               h('input', { type: 'range', min: 45, max: 80, step: 5, value: tripSpeed,
                 'aria-label': __alloT('stem.roadready.cruising_speed_in_miles_per_hour', 'Cruising speed in miles per hour'), 'aria-valuetext': tripSpeed + ' miles per hour',
                 'data-rr-focusable': 'true',
                 onChange: function(e) { upd('tripSpeed', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
-              h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, tripSpeed + ' mph')
+              h('div', { style: { fontSize: '16px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center' } }, tripSpeed + ' mph')
             )
           ),
           // Results
@@ -37657,13 +37720,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ].map(function(r) {
               return h('div', { key: r[2], style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '8px', padding: '12px', textAlign: 'center', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))' } },
                 h('div', { style: { fontSize: '18px' } }, r[0]),
-                h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#34d399', marginTop: '4px' } }, r[1]),
+                h('div', { style: { fontSize: '18px', fontWeight: 900, color: 'var(--rr-green, #4ade80)', marginTop: '4px' } }, r[1]),
                 h('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '2px' } }, r[2])
               );
             })
           ),
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
-            h('div', { style: { fontWeight: 700, color: '#34d399', marginBottom: '4px' } }, __alloT('stem.roadready.trip_tips', '💡 Trip Tips')),
+            h('div', { style: { fontWeight: 700, color: 'var(--rr-green, #4ade80)', marginBottom: '4px' } }, __alloT('stem.roadready.trip_tips', '💡 Trip Tips')),
             h('div', null, '• Total trip time with stops: ~' + Math.floor(totalTime) + 'h ' + Math.round((totalTime % 1) * 60) + 'm'),
             h('div', null, __alloT('stem.roadready.stop_every_2_hours_fatigue_is_as_dange', '• Stop every 2 hours — fatigue impairs reaction, judgment, and lane control')),
             h('div', null, '• At ' + tripSpeed + ' mph, drag uses ' + Math.round(tripSpeed > 55 ? (tripSpeed - 55) / 55 * 100 : 0) + '% more fuel than at 55 mph'),
@@ -37691,37 +37754,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var accel = netF / fdVeh.mass;
         var maxF = Math.max(thrust, Fd + Fr, 1);
 
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_66', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #312e81, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #818cf8', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #312e81, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #818cf8', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '📐'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.live_force_diagram_2', 'Live Force Diagram')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.live_force_diagram_2', 'Live Force Diagram')),
             h('div', { style: { fontSize: '11px', color: '#c7d2fe' } }, __alloT('stem.roadready.see_the_actual_forces_on_your_car_righ', 'See the actual forces on your car RIGHT NOW. Adjust speed and throttle.'))
           ),
           // Controls
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' } },
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
-              h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#818cf8' } }, 'SPEED'),
+              h('div', { style: { fontSize: '9px', fontWeight: 700, color: 'var(--rr-violet, #a78bfa)' } }, 'SPEED'),
               h('input', { type: 'range', min: 0, max: 85, step: 5, value: fdSpeed,
                 'aria-label': __alloT('stem.roadready.vehicle_speed_in_miles_per_hour', 'Vehicle speed in miles per hour'), 'aria-valuetext': fdSpeed + ' miles per hour',
                 'data-rr-focusable': 'true',
                 onChange: function(e) { upd('fdSpeed', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#818cf8' } }),
-              h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, fdSpeed + ' mph')
+              h('div', { style: { fontSize: '14px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center' } }, fdSpeed + ' mph')
             ),
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
-              h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#818cf8' } }, 'THROTTLE'),
+              h('div', { style: { fontSize: '9px', fontWeight: 700, color: 'var(--rr-violet, #a78bfa)' } }, 'THROTTLE'),
               h('input', { type: 'range', min: 0, max: 1, step: 0.05, value: fdThrottle,
                 'aria-label': __alloT('stem.roadready.throttle_position_from_0_to_1', 'Throttle position from 0 to 1'), 'aria-valuetext': Math.round(fdThrottle * 100) + ' percent throttle',
                 'data-rr-focusable': 'true',
                 onChange: function(e) { upd('fdThrottle', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#818cf8' } }),
-              h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, Math.round(fdThrottle * 100) + '%')
+              h('div', { style: { fontSize: '14px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center' } }, Math.round(fdThrottle * 100) + '%')
             ),
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
-              h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#818cf8' } }, 'SURFACE'),
+              h('div', { style: { fontSize: '9px', fontWeight: 700, color: 'var(--rr-violet, #a78bfa)' } }, 'SURFACE'),
               h('div', { style: { display: 'flex', gap: '3px', marginTop: '4px' } },
                 [['dry','☀️'],['rain','🌧'],['snow','❄'],['ice','🧊']].map(function(w) {
                   return h('button', { key: w[0], onClick: function() { upd('fdWeather', w[0]); },
-                    style: { flex: 1, padding: '4px', borderRadius: '4px', border: '1px solid ' + (fdWeather === w[0] ? '#818cf8' : '#334155'), background: fdWeather === w[0] ? '#312e81' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '14px' } }, w[1]);
+                    style: { flex: 1, padding: '4px', borderRadius: '4px', border: '1px solid ' + (fdWeather === w[0] ? '#818cf8' : '#334155'), background: fdWeather === w[0] ? '#312e81' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '14px' } }, w[1]);
                 })
               )
             )
@@ -37794,19 +37857,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { display: 'flex', gap: '4px', marginTop: '8px', justifyContent: 'center' } },
               VEHICLES.map(function(v) {
                 return h('button', { key: v.id, onClick: function() { upd('fdVehicle', v.id); },
-                  style: { padding: '4px 8px', borderRadius: '4px', border: '1px solid ' + (fdVehicle === v.id ? '#818cf8' : '#334155'), background: fdVehicle === v.id ? '#312e81' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px' } }, v.icon);
+                  style: { padding: '4px 8px', borderRadius: '4px', border: '1px solid ' + (fdVehicle === v.id ? '#818cf8' : '#334155'), background: fdVehicle === v.id ? '#312e81' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px' } }, v.icon);
               })
             )
           ),
           // Formulas
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', lineHeight: '1.6' } },
-            h('div', { style: { fontWeight: 700, color: '#818cf8', marginBottom: '4px' } }, __alloT('stem.roadready.the_physics_2', '📏 The Physics')),
+            h('div', { style: { fontWeight: 700, color: 'var(--rr-violet, #a78bfa)', marginBottom: '4px' } }, __alloT('stem.roadready.the_physics_2', '📏 The Physics')),
             h('div', null, 'F_drag = ½ρv²CdA = ½ × 1.225 × ' + v_ms.toFixed(1) + '² × ' + fdVeh.cd + ' × ' + fdVeh.area + ' = ', h('b', null, Math.round(Fd) + ' N')),
             // Show the ACTUAL weather-adjusted Crr (0.012 dry, 0.014 rain, 0.020
             // snow) — a hardcoded "0.012" made the printed arithmetic wrong on
             // rain/snow, in a physics widget a student can check by hand.
             h('div', null, 'F_roll = Crr × m × g = ' + rollingCoef(fwfd, true).toFixed(3) + ' × ' + fdVeh.mass + ' × 9.81 = ', h('b', null, Math.round(Fr) + ' N')),
-            h('div', null, 'Net = Thrust - Drag - Roll = ' + Math.round(thrust) + ' - ' + Math.round(Fd) + ' - ' + Math.round(Fr) + ' = ', h('b', { style: { color: netF > 0 ? '#4ade80' : '#ef4444' } }, Math.round(netF) + ' N')),
+            h('div', null, 'Net = Thrust - Drag - Roll = ' + Math.round(thrust) + ' - ' + Math.round(Fd) + ' - ' + Math.round(Fr) + ' = ', h('b', { style: { color: netF > 0 ? 'var(--rr-green, #4ade80)' : 'var(--rr-red, #fca5a5)' } }, Math.round(netF) + ' N')),
             h('div', null, 'a = F/m = ' + Math.round(netF) + '/' + fdVeh.mass + ' = ', h('b', null, accel.toFixed(2) + ' m/s²'))
           )
         );
@@ -37822,37 +37885,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var sd2 = stoppingDistance(sc2, scFw, 1.5);
         var maxDist = Math.max(sd1.total_ft, sd2.total_ft, 100);
 
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_67', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #831843, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #f472b6', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #831843, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #f472b6', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🏎️'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.speed_comparison_3', 'Speed Comparison')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.speed_comparison_3', 'Speed Comparison')),
             h('div', { style: { fontSize: '11px', color: '#fbcfe8' } }, __alloT('stem.roadready.see_why_just_a_little_faster_is_so_dan', 'See WHY "just a little faster" is so dangerous. Side-by-side stopping distances.'))
           ),
           // Speed sliders
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' } },
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '10px', border: '1px solid #4ade80' } },
-              h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#4ade80' } }, __alloT('stem.roadready.speed_a', 'SPEED A')),
+              h('div', { style: { fontSize: '9px', fontWeight: 700, color: 'var(--rr-green, #4ade80)' } }, __alloT('stem.roadready.speed_a', 'SPEED A')),
               h('input', { type: 'range', min: 15, max: 80, step: 5, value: sc1,
                 'aria-label': __alloT('stem.roadready.first_comparison_speed_in_miles_per_ho', 'First comparison speed in miles per hour'), 'aria-valuetext': sc1 + ' miles per hour',
                 'data-rr-focusable': 'true',
                 onChange: function(e) { upd('scSpeed1', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#4ade80' } }),
-              h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#4ade80', textAlign: 'center' } }, sc1 + ' mph')
+              h('div', { style: { fontSize: '18px', fontWeight: 900, color: 'var(--rr-green, #4ade80)', textAlign: 'center' } }, sc1 + ' mph')
             ),
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '10px', border: '1px solid #ef4444' } },
-              h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#ef4444' } }, __alloT('stem.roadready.speed_b', 'SPEED B')),
+              h('div', { style: { fontSize: '9px', fontWeight: 700, color: 'var(--rr-red, #fca5a5)' } }, __alloT('stem.roadready.speed_b', 'SPEED B')),
               h('input', { type: 'range', min: 15, max: 80, step: 5, value: sc2,
                 'aria-label': __alloT('stem.roadready.second_comparison_speed_in_miles_per_h', 'Second comparison speed in miles per hour'), 'aria-valuetext': sc2 + ' miles per hour',
                 'data-rr-focusable': 'true',
                 onChange: function(e) { upd('scSpeed2', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#ef4444' } }),
-              h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#ef4444', textAlign: 'center' } }, sc2 + ' mph')
+              h('div', { style: { fontSize: '18px', fontWeight: 900, color: 'var(--rr-red, #fca5a5)', textAlign: 'center' } }, sc2 + ' mph')
             ),
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
               h('div', { style: { fontSize: '9px', fontWeight: 700, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, 'SURFACE'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '4px' } },
                 [['dry','☀️ Dry'],['rain','🌧 Rain'],['snow','❄ Snow'],['ice','🧊 Ice']].map(function(w) {
                   return h('button', { key: w[0], onClick: function() { upd('scWeather', w[0]); },
-                    style: { padding: '3px 8px', borderRadius: '4px', border: '1px solid ' + (scWeather === w[0] ? '#60a5fa' : '#334155'), background: scWeather === w[0] ? '#1e3a5f' : 'transparent', color: '#fff', cursor: 'pointer', fontSize: '10px' } }, w[1]);
+                    style: { padding: '3px 8px', borderRadius: '4px', border: '1px solid ' + (scWeather === w[0] ? '#60a5fa' : '#334155'), background: scWeather === w[0] ? '#1e3a5f' : 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px' } }, w[1]);
                 })
               )
             )
@@ -37863,8 +37926,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Speed A bar
             h('div', { style: { marginBottom: '12px' } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' } },
-                h('span', { style: { color: '#4ade80', fontWeight: 700 } }, sc1 + ' mph'),
-                h('span', { style: { color: '#4ade80' } }, Math.round(sd1.total_ft) + ' ft')
+                h('span', { style: { color: 'var(--rr-green, #4ade80)', fontWeight: 700 } }, sc1 + ' mph'),
+                h('span', { style: { color: 'var(--rr-green, #4ade80)' } }, Math.round(sd1.total_ft) + ' ft')
               ),
               h('div', { style: { height: '20px', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '4px', overflow: 'hidden' } },
                 h('div', { style: { display: 'flex', height: '100%' } },
@@ -37876,8 +37939,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Speed B bar
             h('div', { style: { marginBottom: '12px' } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' } },
-                h('span', { style: { color: '#ef4444', fontWeight: 700 } }, sc2 + ' mph'),
-                h('span', { style: { color: '#ef4444' } }, Math.round(sd2.total_ft) + ' ft')
+                h('span', { style: { color: 'var(--rr-red, #fca5a5)', fontWeight: 700 } }, sc2 + ' mph'),
+                h('span', { style: { color: 'var(--rr-red, #fca5a5)' } }, Math.round(sd2.total_ft) + ' ft')
               ),
               h('div', { style: { height: '20px', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '4px', overflow: 'hidden' } },
                 h('div', { style: { display: 'flex', height: '100%' } },
@@ -37892,23 +37955,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Insight
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
-            h('div', { style: { fontWeight: 700, color: '#f472b6', marginBottom: '4px' } }, __alloT('stem.roadready.the_math', '🔬 The Math')),
+            h('div', { style: { fontWeight: 700, color: 'var(--rr-pink, #f9a8d4)', marginBottom: '4px' } }, __alloT('stem.roadready.the_math', '🔬 The Math')),
             h('div', null, __alloT('stem.roadready.speed_b_is', '• Speed B is '), h('b', null, (sc2 / sc1).toFixed(1) + '×'), __alloT('stem.roadready.faster_than_speed_a', ' faster than Speed A')),
-            h('div', null, __alloT('stem.roadready.but_stopping_distance_is', '• But stopping distance is '), h('b', { style: { color: '#ef4444' } }, (sd2.total_ft / sd1.total_ft).toFixed(1) + '×'), __alloT('stem.roadready.longer_because_v', ' longer (because v²)')),
+            h('div', null, __alloT('stem.roadready.but_stopping_distance_is', '• But stopping distance is '), h('b', { style: { color: 'var(--rr-red, #fca5a5)' } }, (sd2.total_ft / sd1.total_ft).toFixed(1) + '×'), __alloT('stem.roadready.longer_because_v', ' longer (because v²)')),
             h('div', null, '• At ' + sc2 + ' mph on ' + scWeather + ': car is STILL GOING ', h('b', null, sc2 + ' mph'), __alloT('stem.roadready.for_the_first', ' for the first '), h('b', null, Math.round(sd2.reaction_ft) + ' ft'), __alloT('stem.roadready.reaction_time_2', ' (reaction time)')),
             h('div', null, __alloT('stem.roadready.that_reaction_distance_alone_is', '• That reaction distance alone is '), h('b', null, Math.round(sd2.reaction_ft / 10) + ' car lengths')),
-            sd2.total_ft > 300 ? h('div', { style: { color: '#ef4444', fontWeight: 700, marginTop: '4px' } }, __alloT('stem.roadready.that_is_longer_than_a_football_field_3', '⚠️ That is longer than a football field (300 ft)!')) : null
+            sd2.total_ft > 300 ? h('div', { style: { color: 'var(--rr-red, #fca5a5)', fontWeight: 700, marginTop: '4px' } }, __alloT('stem.roadready.that_is_longer_than_a_football_field_3', '⚠️ That is longer than a football field (300 ft)!')) : null
           )
         );
       }
 
       // ── BLIND SPOTS & MIRRORS GUIDE ──
       if (view === 'blindSpotGuide') {
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_68', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #fbbf24', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #fbbf24', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '👁️'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.blind_spots_mirror_setup', 'Blind Spots & Mirror Setup')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.blind_spots_mirror_setup', 'Blind Spots & Mirror Setup')),
             h('div', { style: { fontSize: '11px', color: '#fde68a' } }, __alloT('stem.roadready.where_vehicles_hide_and_the_mirror_tec', 'Where vehicles hide — and the mirror technique that eliminates 80% of blind spots.'))
           ),
           // Top-down diagram of blind spots
@@ -37987,7 +38050,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             })
           ),
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', lineHeight: '1.6' } },
-            h('div', { style: { fontWeight: 700, color: '#ef4444', marginBottom: '4px' } }, __alloT('stem.roadready.even_with_perfect_mirrors', '⚠️ Even with perfect mirrors:')),
+            h('div', { style: { fontWeight: 700, color: 'var(--rr-red, #fca5a5)', marginBottom: '4px' } }, __alloT('stem.roadready.even_with_perfect_mirrors', '⚠️ Even with perfect mirrors:')),
             __alloT('stem.roadready.always_do_a_shoulder_check_head_turn_b', '• ALWAYS do a shoulder check (head turn) before changing lanes or merging.'),
             h('br'), __alloT('stem.roadready.the_dutch_reach_when_opening_your_door', '• The "Dutch reach" when opening your door checks for cyclists in your blind spot.'),
             h('br'), __alloT('stem.roadready.motorcycles_and_bicycles_can_hide_in_b', '• Motorcycles and bicycles can hide in blind spots that even cars cannot.'),
@@ -38000,7 +38063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (view === 'weatherCompare') {
         var wcSpeed = d.wcSpeed || 55;
         var weatherTypes = [
-          { id: 'dry', label: __alloT('stem.roadready.dry_2', '☀️ Dry'), mu: 0.72, vis: '500+ ft', following: 3, color: '#4ade80' },
+          { id: 'dry', label: __alloT('stem.roadready.dry_2', '☀️ Dry'), mu: 0.72, vis: '500+ ft', following: 3, color: 'var(--rr-green, #4ade80)' },
           { id: 'rain', label: __alloT('stem.roadready.rain_2', '🌧️ Rain'), mu: 0.42, vis: '300 ft', following: 4, color: 'var(--rr-blue, #60a5fa)' },
           { id: 'snow', label: __alloT('stem.roadready.snow_2', '❄️ Snow'), mu: 0.22, vis: '150 ft', following: 6, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' },
           // Black ice's danger is that it's INVISIBLE — the road looks merely wet.
@@ -38008,15 +38071,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // than snow, muddling the table's message.)
           { id: 'ice', label: __alloT('stem.roadready.ice_2', '🧊 Ice'), mu: 0.10, vis: __alloT('stem.roadready.ice_vis_looks_clear', 'looks clear!'), following: 8, color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' }
         ];
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_69', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #38bdf8', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #38bdf8', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🌦️'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.weather_impact_chart_3', 'Weather Impact Chart')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.weather_impact_chart_3', 'Weather Impact Chart')),
             h('div', { style: { fontSize: '11px', color: '#bae6fd' } }, __alloT('stem.roadready.same_car_same_speed_very_different_out', 'Same car, same speed, VERY different outcomes.'))
           ),
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '12px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px', textAlign: 'center' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#38bdf8', marginBottom: '4px' } }, 'SPEED'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-cyan, #22d3ee)', marginBottom: '4px' } }, 'SPEED'),
             h('input', { type: 'range', min: 25, max: 75, step: 5, value: wcSpeed,
               'aria-label': __alloT('stem.roadready.wind_chill_test_speed_in_miles_per_hou', 'Wind chill test speed in miles per hour'), 'aria-valuetext': wcSpeed + ' miles per hour',
               'data-rr-focusable': 'true',
@@ -38043,7 +38106,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     h('th', { scope: 'row', style: { padding: '8px', fontWeight: 700, color: w.color, textAlign: 'left' } }, w.label),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace' } }, w.mu),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace', fontWeight: 700, color: w.color } }, Math.round(sd.total_ft) + ' ft'),
-                    h('td', { style: { padding: '8px', fontFamily: 'monospace', color: ratio > 2 ? '#ef4444' : ratio > 1.3 ? '#f59e0b' : '#4ade80' } }, ratio.toFixed(1) + '×'),
+                    h('td', { style: { padding: '8px', fontFamily: 'monospace', color: ratio > 2 ? 'var(--rr-red, #fca5a5)' : ratio > 1.3 ? 'var(--rr-amber, #fbbf24)' : 'var(--rr-green, #4ade80)' } }, ratio.toFixed(1) + '×'),
                     h('td', { style: { padding: '8px' } }, w.following + ' sec'),
                     h('td', { style: { padding: '8px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, w.vis)
                   );
@@ -38053,7 +38116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Visual bar comparison
           h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))', marginTop: '10px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#38bdf8', marginBottom: '8px' } }, 'Stopping Distance at ' + wcSpeed + ' mph'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-cyan, #22d3ee)', marginBottom: '8px' } }, 'Stopping Distance at ' + wcSpeed + ' mph'),
             weatherTypes.map(function(w) {
               var fwc = normalizeWeather(w.id);
               var sd = stoppingDistance(wcSpeed, fwc, 1.5);
@@ -38070,8 +38133,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             })
           ),
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginTop: '10px', fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
-            h('div', { style: { fontWeight: 700, color: '#38bdf8', marginBottom: '4px' } }, __alloT('stem.roadready.key_takeaway', '💡 Key Takeaway')),
-            'On ice at ' + wcSpeed + ' mph, your stopping distance is ', h('b', { style: { color: '#ef4444' } }, (stoppingDistance(wcSpeed, 'ice', 1.5).total_ft / stoppingDistance(wcSpeed, 'clear', 1.5).total_ft).toFixed(1) + '× longer'),
+            h('div', { style: { fontWeight: 700, color: 'var(--rr-cyan, #22d3ee)', marginBottom: '4px' } }, __alloT('stem.roadready.key_takeaway', '💡 Key Takeaway')),
+            'On ice at ' + wcSpeed + ' mph, your stopping distance is ', h('b', { style: { color: 'var(--rr-red, #fca5a5)' } }, (stoppingDistance(wcSpeed, 'ice', 1.5).total_ft / stoppingDistance(wcSpeed, 'clear', 1.5).total_ft).toFixed(1) + '× longer'),
             __alloT('stem.roadready.than_on_dry_pavement_that_is_the_diffe', ' than on dry pavement. That is the difference between stopping safely and a collision. '),
             h('b', null, __alloT('stem.roadready.the_physics_is_non_negotiable_the_only', 'The physics is non-negotiable — the only variable you control is speed.'))
           )
@@ -38095,11 +38158,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var currentStage = 0;
         for (var si = 0; si < stages.length; si++) { if (stages[si].check()) currentStage = si + 1; else break; }
 
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_70', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #f59e0b', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #f59e0b', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🎯'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.your_learning_path', 'Your Learning Path')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.your_learning_path', 'Your Learning Path')),
             h('div', { style: { fontSize: '12px', color: '#fde68a' } }, 'Stage ' + currentStage + ' of ' + stages.length + ' complete. Follow the path from classroom to road test.'),
             h('div', { style: { height: '6px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', borderRadius: '3px', marginTop: '10px' } },
               h('div', { style: { height: '100%', background: '#f59e0b', borderRadius: '3px', width: (currentStage / stages.length * 100) + '%', transition: 'width 0.3s' } })
@@ -38111,9 +38174,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var locked = idx > currentStage;
             return h('div', { key: idx, style: { background: done ? '#0f2a1a' : isCurrent ? '#1e293b' : '#0f172a', borderRadius: '10px', padding: '14px', border: '2px solid ' + (done ? '#4ade80' : isCurrent ? '#f59e0b' : '#1e293b'), marginBottom: '6px', opacity: locked ? 0.5 : 1 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
-                h('div', { style: { width: '36px', height: '36px', borderRadius: '50%', background: done ? '#4ade80' : isCurrent ? '#f59e0b' : '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: done ? '16px' : '14px', fontWeight: 900, color: done || isCurrent ? '#000' : '#94a3b8', flexShrink: 0 } }, done ? '✓' : st.icon),
+                h('div', { style: { width: '36px', height: '36px', borderRadius: '50%', background: done ? '#4ade80' : isCurrent ? '#f59e0b' : '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: done ? '16px' : '14px', fontWeight: 900, color: done || isCurrent ? '#000' : 'var(--allo-stem-text-soft, #94a3b8)', flexShrink: 0 } }, done ? '✓' : st.icon),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: '13px', fontWeight: 800, color: done ? '#4ade80' : isCurrent ? '#f59e0b' : '#94a3b8' } }, 'Stage ' + (idx + 1) + ': ' + st.title),
+                  h('div', { style: { fontSize: '13px', fontWeight: 800, color: done ? 'var(--rr-green, #4ade80)' : isCurrent ? 'var(--rr-amber, #fbbf24)' : 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Stage ' + (idx + 1) + ': ' + st.title),
                   h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '2px' } }, st.desc)
                 ),
                 isCurrent && !locked ? h('button', { onClick: function() { upd('view', st.modes[0]); },
@@ -38165,16 +38228,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             { skill: 'Examiner intervention', weight: '❌', note: __alloT('stem.roadready.if_the_examiner_has_to_verbally_correc', 'If the examiner has to verbally correct you to prevent danger = fail.') }
           ]}
         ];
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_71', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #134e4a, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #14b8a6', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #134e4a, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #14b8a6', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '📋'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.maine_road_test_rubric', 'Maine Road Test Rubric')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.maine_road_test_rubric', 'Maine Road Test Rubric')),
             h('div', { style: { fontSize: '11px', color: '#99f6e4' } }, __alloT('stem.roadready.what_the_examiner_actually_grades_chec', 'What the examiner ACTUALLY grades. ⭐ = checked, ⭐⭐ = weighted, ⭐⭐⭐ = critical, ❌ = auto-fail.'))
           ),
           rubricItems.map(function(cat) {
             return h('div', { key: cat.category, style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '8px' } },
-              h('div', { style: { fontSize: '13px', fontWeight: 800, color: '#14b8a6', marginBottom: '8px' } }, cat.category),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, color: 'var(--rr-green, #4ade80)', marginBottom: '8px' } }, cat.category),
               cat.items.map(function(item, ii) {
                 return h('div', { key: ii, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingLeft: '8px', borderLeft: '2px solid ' + (item.weight === '❌' ? '#ef4444' : '#334155'), marginBottom: '6px' } },
                   h('div', { style: { flex: 1 } },
@@ -38192,11 +38255,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ── REACTION TIME TRAINER ──
       if (view === 'reactionTrainer') {
         var rtState = d.rtState || { phase: 'waiting', times: [], bestTime: null };
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); upd('rtState', null); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_72', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', border: '1px solid #fb923c', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, #0f172a)', borderRadius: '14px', padding: '24px', border: '1px solid #fb923c', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '⏱️'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.reaction_time_trainer_2', 'Reaction Time Trainer')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.reaction_time_trainer_2', 'Reaction Time Trainer')),
             h('div', { style: { fontSize: '12px', color: '#fed7aa' } }, __alloT('stem.roadready.simple_reaction_trainer_context', 'This measures only a simple tap response. Real driving adds perception and decision time; never substitute this score for the simulator\'s 1.5-second planning allowance.'))
           ),
           // The test area
@@ -38248,20 +38311,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               rtState.times && rtState.times.length > 0 ? h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '8px' } }, rtState.times.length + ' attempts · Best: ' + rtState.bestTime + ' ms') : null
             ) :
             rtState.phase === 'ready' ? h('div', null,
-              h('div', { style: { fontSize: '48px', fontWeight: 900, color: '#fff' } }, __alloT('stem.roadready.wait', '🔴 WAIT...')),
-              h('div', { style: { fontSize: '13px', color: '#fca5a5', marginTop: '8px' } }, 'Do NOT click yet — wait for GREEN')
+              h('div', { style: { fontSize: '48px', fontWeight: 900, color: 'var(--allo-stem-text, #e2e8f0)' } }, __alloT('stem.roadready.wait', '🔴 WAIT...')),
+              h('div', { style: { fontSize: '13px', color: 'var(--rr-red, #fca5a5)', marginTop: '8px' } }, 'Do NOT click yet — wait for GREEN')
             ) :
             rtState.phase === 'go' ? h('div', null,
-              h('div', { style: { fontSize: '48px', fontWeight: 900, color: '#fff' } }, __alloT('stem.roadready.go_click_now', '🟢 GO! CLICK NOW!')),
-              h('div', { style: { fontSize: '14px', color: '#bbf7d0', marginTop: '4px' } }, __alloT('stem.roadready.click_tap_as_fast_as_you_can', 'Click / tap as FAST as you can!'))
+              h('div', { style: { fontSize: '48px', fontWeight: 900, color: 'var(--allo-stem-text, #e2e8f0)' } }, __alloT('stem.roadready.go_click_now', '🟢 GO! CLICK NOW!')),
+              h('div', { style: { fontSize: '14px', color: 'var(--rr-green, #4ade80)', marginTop: '4px' } }, __alloT('stem.roadready.click_tap_as_fast_as_you_can', 'Click / tap as FAST as you can!'))
             ) :
             rtState.phase === 'early' ? h('div', null,
               h('div', { style: { fontSize: '36px' } }, '⚠️'),
-              h('div', { style: { fontSize: '18px', fontWeight: 800, color: '#f59e0b' } }, __alloT('stem.roadready.too_early', 'TOO EARLY!')),
-              h('div', { style: { fontSize: '12px', color: '#fde68a', marginTop: '4px' } }, __alloT('stem.roadready.you_clicked_before_the_light_turned_gr', 'You clicked before the light turned green. Click to try again.'))
+              h('div', { style: { fontSize: '18px', fontWeight: 800, color: 'var(--rr-amber, #fbbf24)' } }, __alloT('stem.roadready.too_early', 'TOO EARLY!')),
+              h('div', { style: { fontSize: '12px', color: 'var(--rr-amber, #fbbf24)', marginTop: '4px' } }, __alloT('stem.roadready.you_clicked_before_the_light_turned_gr', 'You clicked before the light turned green. Click to try again.'))
             ) :
             rtState.phase === 'result' ? h('div', null,
-              h('div', { style: { fontSize: '48px', fontWeight: 900, color: rtState.lastTime < 250 ? '#4ade80' : rtState.lastTime < 400 ? '#fbbf24' : '#ef4444', fontFamily: 'monospace' } }, rtState.lastTime + ' ms'),
+              h('div', { style: { fontSize: '48px', fontWeight: 900, color: rtState.lastTime < 250 ? 'var(--rr-green, #4ade80)' : rtState.lastTime < 400 ? 'var(--rr-amber, #fbbf24)' : 'var(--rr-red, #fca5a5)', fontFamily: 'monospace' } }, rtState.lastTime + ' ms'),
               h('div', { style: { fontSize: '14px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px' } },
                 rtState.lastTime < 200 ? 'Incredible! Fighter pilot level.' :
                 rtState.lastTime < 250 ? 'Excellent — faster than most people.' :
@@ -38275,10 +38338,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // Stats
           rtState.times && rtState.times.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginTop: '14px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#fb923c', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.your_results', 'Your Results')),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-orange, #fdba74)', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.your_results', 'Your Results')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' } },
               h('div', { style: { textAlign: 'center' } },
-                h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#4ade80' } }, rtState.bestTime + ' ms'),
+                h('div', { style: { fontSize: '18px', fontWeight: 900, color: 'var(--rr-green, #4ade80)' } }, rtState.bestTime + ' ms'),
                 h('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.best', 'Best'))
               ),
               h('div', { style: { textAlign: 'center' } },
@@ -38331,11 +38394,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
         }
 
-        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_73', '← Menu')),
           h('div', { style: { background: 'linear-gradient(135deg, #1e1b4b, #0a0f1e)', borderRadius: '14px', padding: '20px', border: '1px solid #a78bfa', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🔦'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.night_vision_math_3', 'Night Vision Math')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.night_vision_math_3', 'Night Vision Math')),
             h('div', { style: { fontSize: '11px', color: '#ddd6fe' } }, __alloT('stem.roadready.can_you_stop_within_what_your_headligh', 'Can you stop within what your headlights reveal? This is how night crashes happen.'))
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' } },
@@ -38345,21 +38408,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 'aria-label': __alloT('stem.roadready.night_driving_speed_in_miles_per_hour', 'Night driving speed in miles per hour'), 'aria-valuetext': nvSpeed + ' miles per hour',
                 'data-rr-focusable': 'true',
                 onChange: function(e) { upd('nvSpeed', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#a78bfa' } }),
-              h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#fff', textAlign: 'center' } }, nvSpeed + ' mph')
+              h('div', { style: { fontSize: '18px', fontWeight: 900, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center' } }, nvSpeed + ' mph')
             ),
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '12px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-violet, #a78bfa)', marginBottom: '6px' } }, 'HEADLIGHTS'),
               h('div', { style: { display: 'flex', gap: '6px' } },
                 h('button', { onClick: function() { upd('nvBeams', 'low'); },
-                  style: { flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid ' + (nvBeams === 'low' ? '#a78bfa' : '#334155'), background: nvBeams === 'low' ? '#1e1b4b' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, __alloT('stem.roadready.low_350_ft', '💡 Low (350 ft)')),
+                  style: { flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid ' + (nvBeams === 'low' ? '#a78bfa' : '#334155'), background: nvBeams === 'low' ? '#1e1b4b' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, __alloT('stem.roadready.low_350_ft', '💡 Low (350 ft)')),
                 h('button', { onClick: function() { upd('nvBeams', 'high'); },
-                  style: { flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid ' + (nvBeams === 'high' ? '#fbbf24' : '#334155'), background: nvBeams === 'high' ? '#78350f' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, __alloT('stem.roadready.high_500_ft', '🔆 High (500 ft)'))
+                  style: { flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid ' + (nvBeams === 'high' ? '#fbbf24' : '#334155'), background: nvBeams === 'high' ? '#78350f' : '#1e293b', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, __alloT('stem.roadready.high_500_ft', '🔆 High (500 ft)'))
               )
             )
           ),
           // Visual: headlight range vs stopping distance
           h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '12px', padding: '16px', border: '2px solid ' + (overdriving ? '#ef4444' : '#4ade80'), marginBottom: '14px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: overdriving ? '#ef4444' : '#4ade80', marginBottom: '8px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: overdriving ? 'var(--rr-red, #fca5a5)' : 'var(--rr-green, #4ade80)', marginBottom: '8px' } },
               overdriving ? '⚠️ OVERDRIVING YOUR HEADLIGHTS — you CANNOT stop in time!' : '✅ You can stop within your headlight range'),
             // Headlight range bar
             h('div', { style: { marginBottom: '8px' } },
@@ -38370,12 +38433,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ),
             // Stopping distance bar (overlaid on same scale)
             h('div', null,
-              h('div', { style: { fontSize: '10px', color: overdriving ? '#ef4444' : '#4ade80', marginBottom: '2px' } }, '🛑 Stopping distance: ' + Math.round(nvSD.total_ft) + ' ft'),
+              h('div', { style: { fontSize: '10px', color: overdriving ? 'var(--rr-red, #fca5a5)' : 'var(--rr-green, #4ade80)', marginBottom: '2px' } }, '🛑 Stopping distance: ' + Math.round(nvSD.total_ft) + ' ft'),
               h('div', { style: { height: '14px', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '3px' } },
                 h('div', { style: { height: '100%', background: overdriving ? '#ef4444' : '#4ade80', borderRadius: '3px', width: Math.min(100, nvSD.total_ft / headlightRange * 100) + '%', transition: 'width 0.3s' } })
               )
             ),
-            overdriving ? h('div', { style: { fontSize: '11px', color: '#fca5a5', marginTop: '8px', fontWeight: 700 } },
+            overdriving ? h('div', { style: { fontSize: '11px', color: 'var(--rr-red, #fca5a5)', marginTop: '8px', fontWeight: 700 } },
               '🔴 You are ' + Math.round(nvSD.total_ft - headlightRange) + ' ft PAST what you can see. An obstacle at the edge of your headlights = guaranteed crash.'
             ) : null
           ),
@@ -38387,10 +38450,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // beam. Labelling the bare number "max safe speed" in green read
             // as advice to drive that fast; name what it is instead.
             h('div', null, '• Physics ceiling on dry pavement with ' + nvBeams + ' beams: ',
-              h('b', { style: { color: '#fbbf24' } }, maxSafeSpeed + ' mph'),
-              h('span', { style: { color: '#94a3b8' } },
+              h('b', { style: { color: 'var(--rr-amber, #fbbf24)' } }, maxSafeSpeed + ' mph'),
+              h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                 ' — the speed where stopping distance exactly equals what you can see.')),
-            h('div', { style: { color: '#fca5a5' } },
+            h('div', { style: { color: 'var(--rr-red, #fca5a5)' } },
               '• Drive well BELOW that. It assumes dry pavement, good tires, and that you',
               ' recognize the hazard the instant it enters the beam. Wet, worn, or tired',
               ' moves the real number down sharply.'),
@@ -38444,11 +38507,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             'Change ALL fluids (oil, coolant, brake fluid, transmission) — you don\'t know when the previous owner did.'
           ]}
         ];
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_74', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #064e3b, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #10b981', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #064e3b, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #10b981', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '💵'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.first_car_buying_guide', 'First Car Buying Guide')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.first_car_buying_guide', 'First Car Buying Guide')),
             h('div', { style: { fontSize: '11px', color: '#a7f3d0' } }, __alloT('stem.roadready.everything_they_don_t_teach_you_in_dri', 'Everything they don\'t teach you in driver\'s ed — the money, the negotiation, the traps.'))
           ),
           sections.map(function(sec) {
@@ -38510,11 +38573,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             { name: __alloT('stem.roadready.lug_nuts', 'Lug Nuts'), desc: __alloT('stem.roadready.hold_the_wheel_on_torque_spec_matters_', 'Hold the wheel on. Torque spec matters — too loose = wheel falls off. Too tight = warped rotor. Use a torque wrench.') }
           ]}
         ];
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_75', '← Menu')),
-          h('div', { style: { background: 'linear-gradient(135deg, #701a75, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #e879f9', marginBottom: '14px', textAlign: 'center' } },
+          h('div', { style: { background: 'linear-gradient(135deg, #701a75, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #e879f9', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '🔍'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.know_your_car_3', 'Know Your Car')),
+            h('h2', { style: { color: '#f8fafc', fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.know_your_car_3', 'Know Your Car')),
             h('div', { style: { fontSize: '11px', color: '#f0abfc' } }, __alloT('stem.roadready.every_major_system_and_part_what_it_do', 'Every major system and part — what it does, why it matters, and what breaks.'))
           ),
           carParts.map(function(area) {
@@ -38525,7 +38588,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               ),
               area.parts.map(function(part, pi) {
                 return h('div', { key: pi, style: { paddingLeft: '10px', borderLeft: '2px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '6px' } },
-                  h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#e879f9' } }, part.name),
+                  h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--rr-violet, #a78bfa)' } }, part.name),
                   h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', lineHeight: '1.5' } }, part.desc)
                 );
               })
@@ -38538,7 +38601,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       return h('div', { style: { padding: '24px', textAlign: 'center', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.loading_roadready', 'Loading RoadReady...'));
     } catch(renderErr) {
       console.error('[RoadReady] Render error:', renderErr);
-      return ctx.React.createElement('div', { style: { padding: '24px', color: '#ef4444', textAlign: 'center' } },
+      return ctx.React.createElement('div', { style: { padding: '24px', color: 'var(--rr-red, #fca5a5)', textAlign: 'center' } },
         ctx.React.createElement('h3', null, __alloT('stem.roadready.roadready_error', '🚗 RoadReady Error')),
         ctx.React.createElement('p', { style: { fontSize: '12px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '8px' } }, String(renderErr.message || renderErr)),
         ctx.React.createElement('pre', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '8px', textAlign: 'left', maxHeight: '200px', overflow: 'auto', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', padding: '8px', borderRadius: '8px' } }, renderErr.stack || '')
