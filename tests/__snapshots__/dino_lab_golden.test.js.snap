@@ -2632,7 +2632,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the ecosystem tab
 <span style="display:inline-block;font-size:11px;letter-spacing:0.01em;font-weight:700;padding:2px 7px;border-radius:999px;background:#0ea5e922;color:var(--allo-stem-text, #f1f5f9);border:1px solid #0ea5e955;margin-right:6px;margin-bottom:4px;white-space:nowrap">Jurassic · 156–145 mya</span>
 <span style="display:inline-block;font-size:11px;letter-spacing:0.01em;font-weight:700;padding:2px 7px;border-radius:999px;background:#38bdf822;color:var(--allo-stem-text, #f1f5f9);border:1px solid #38bdf855;margin-right:6px;margin-bottom:4px;white-space:nowrap">North America</span>
 </div>
-<div style="font-size:12.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.5;margin-bottom:12px">These animals shared one place and time. Here, 16 plant-eaters and omnivores lived alongside 7 hunters. Biggest are listed first.</div>
+<div style="font-size:12.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.5;margin-bottom:12px">These animals are all found in the same rock formation. Here, 16 plant-eaters and omnivores are listed alongside 7 hunters, biggest first. A formation is a stack of rock, not a single moment: this one spans about 11 million years, so not every animal here met the others.</div>
 <div style="margin-bottom:10px">
 <div style="font-size:12px;font-weight:700;color:var(--allo-stem-text, #f1f5f9);margin-bottom:4px">🥩 Hunters (7)</div>
 <div style="display:flex;flex-wrap:wrap">

@@ -13019,6 +13019,7 @@ var evidenceRoute = [
         var period = topOf(list, 'period'), region = topOf(list, 'region');
         var myaHi = 0, myaLo = 9999;
         list.forEach(function (dn) { if (dn.myaHi > myaHi) myaHi = dn.myaHi; if (dn.myaLo < myaLo) myaLo = dn.myaLo; });
+        var ecoSpan = Math.max(0, Math.round(myaHi - myaLo));
         function bySize(a, b) { return b.lengthM - a.lengthM; }
         var hunters = list.filter(function (dn) { return dn.diet === 'carnivore' || dn.diet === 'piscivore' || dn.diet === 'insectivore'; }).sort(bySize);
         var omnis = list.filter(function (dn) { return dn.diet === 'omnivore'; }).sort(bySize);
@@ -13033,7 +13034,7 @@ var evidenceRoute = [
         var card = panel([
           el('div', { key: 'h', style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } }, el('div', { style: { fontSize: 17, fontWeight: 800 } }, '🏞️ ' + openF + ' Formation'), el('div', { style: { fontSize: 12, color: T.soft } }, list.length + ' species')),
           el('div', { key: 'bd', style: { margin: '4px 0 10px' } }, badge(periodName(period) + ' · ' + myaHi + '–' + myaLo + ' mya', pColor(period)), badge(region, '#38bdf8')),
-          el('div', { key: 'eco', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5, marginBottom: 12 } }, 'These animals shared one place and time. Here, ' + (plants.length + omnis.length) + ' plant-eaters and omnivores lived alongside ' + hunters.length + ' hunters. Biggest are listed first.'),
+          el('div', { key: 'eco', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5, marginBottom: 12 } }, 'These animals are all found in the same rock formation. Here, ' + (plants.length + omnis.length) + ' plant-eaters and omnivores are listed alongside ' + hunters.length + ' hunters, biggest first.' + (ecoSpan > 5 ? ' A formation is a stack of rock, not a single moment: this one spans about ' + ecoSpan + ' million years, so not every animal here met the others.' : ' These layers formed over a short enough span that these animals could have met.')),
           tier('🥩 Hunters', hunters, '#ef4444'),
           tier('🍴 Omnivores', omnis, '#f59e0b'),
           tier('🌿 Plant-eaters', plants, '#22c55e')
