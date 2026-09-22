@@ -9800,6 +9800,7 @@ window.SelHub = window.SelHub || {
   var COMPOUND_EMOTIONS = [
     // ===== PLUTCHIK PRIMARY DYADS (adjacent on the wheel) =====
     {
+      _k: 'sel.emotions.cmp_love',
       id: 'love',
       name: 'Love',
       components: [
@@ -9827,6 +9828,7 @@ window.SelHub = window.SelHub || {
       research: 'Plutchik (1980) places love as the primary dyad of joy + trust. Sternberg\'s triangular theory adds intimacy, passion, and commitment. Bowlby\'s attachment theory frames love as a safety system.'
     },
     {
+      _k: 'sel.emotions.cmp_submission',
       id: 'submission',
       name: 'Submission',
       components: [
@@ -9854,6 +9856,7 @@ window.SelHub = window.SelHub || {
       research: 'Plutchik (1980) lists submission as the trust+fear primary dyad. Polyvagal theory (Porges) describes fawn/appease as a survival branch alongside fight, flight, and freeze.'
     },
     {
+      _k: 'sel.emotions.cmp_awe',
       id: 'awe',
       name: 'Awe',
       components: [
@@ -9881,6 +9884,7 @@ window.SelHub = window.SelHub || {
       research: 'Keltner & Haidt (2003) defined awe as perceived vastness + need for accommodation. Stellar et al. (2015) found awe reduces inflammatory markers. Plutchik places it as fear+surprise.'
     },
     {
+      _k: 'sel.emotions.cmp_disapproval',
       id: 'disapproval',
       name: 'Disapproval',
       components: [
@@ -9908,6 +9912,7 @@ window.SelHub = window.SelHub || {
       research: 'Plutchik (1980) lists disapproval as the surprise+sadness primary dyad. Haidt (2003) treats disapproval as a moral signal preceding anger or contempt.'
     },
     {
+      _k: 'sel.emotions.cmp_remorse',
       id: 'remorse',
       name: 'Remorse',
       components: [
@@ -9935,6 +9940,7 @@ window.SelHub = window.SelHub || {
       research: 'Plutchik (1980) lists remorse as sadness+disgust. Tangney & Dearing (2002) show guilt/remorse predicts repair behavior, while shame predicts withdrawal.'
     },
     {
+      _k: 'sel.emotions.cmp_contempt',
       id: 'contempt',
       name: 'Contempt',
       components: [
@@ -9962,6 +9968,7 @@ window.SelHub = window.SelHub || {
       research: 'Plutchik (1980) places contempt as disgust+anger. Gottman (1999) identifies contempt as the #1 predictor of divorce among the \"Four Horsemen.\" Haidt (1999) treats contempt as a moral other-condemning emotion.'
     },
     {
+      _k: 'sel.emotions.cmp_aggressiveness',
       id: 'aggressiveness',
       name: 'Aggressiveness',
       components: [
@@ -9989,6 +9996,7 @@ window.SelHub = window.SelHub || {
       research: 'Plutchik (1980) lists aggressiveness as anger+anticipation. Bushman & Anderson (2001) distinguish reactive vs. proactive aggression. Assertiveness is the prosocial channel of the same fuel.'
     },
     {
+      _k: 'sel.emotions.cmp_optimism',
       id: 'optimism',
       name: 'Optimism',
       components: [
@@ -18022,6 +18030,29 @@ var EMOTION_JOURNAL_TEMPLATES = [
         if (!b) return '';
         return b._k ? __alloT(b._k + '_desc', b.desc) : (b.desc || '');
       };
+      // COMPOUND_EMOTIONS rows can also come from toolData, so each
+      // helper falls back when _k is absent.
+      var _cmpText = function (em, field) {
+        if (!em) return '';
+        var v = em[field];
+        if (typeof v !== 'string') return '';
+        return em._k ? __alloT(em._k + '_' + field, v) : v;
+      };
+      var _cmpBand = function (em, group, b) {
+        if (!em) return '';
+        var obj = em[group];
+        if (!obj || typeof obj !== 'object') return '';
+        var v = obj[b];
+        if (typeof v !== 'string') return '';
+        return em._k ? __alloT(em._k + '_' + group + '_' + b, v) : v;
+      };
+      var _cmpList = function (em, field) {
+        if (!em || !Array.isArray(em[field])) return [];
+        return em[field].map(function (v, i) {
+          return (em._k && typeof v === 'string')
+            ? __alloT(em._k + '_' + field + '_' + i, v) : v;
+        });
+      };
       var _emoWord = function (id) {
         if (!id) return id;
         var label = String(id).charAt(0).toUpperCase() + String(id).slice(1);
@@ -21379,7 +21410,7 @@ if (activeTab === 'micro') {
 var compoundContent = null;
 if (activeTab === 'compounds') {
   if (typeof COMPOUND_EMOTIONS === 'undefined' || !COMPOUND_EMOTIONS.length) {
-    compoundContent = h('div', { style: { padding: 40, textAlign: 'center', color: P.textMuted } }, 'Compound emotions library loading...');
+    compoundContent = h('div', { style: { padding: 40, textAlign: 'center', color: P.textMuted } }, __alloT('sel.emotions.cmp_loading', 'Compound emotions library loading...'));
   } else {
     var cmpCategory = d.cmpCategory || 'all';
     var cmpSearch = (d.cmpSearch || '').toLowerCase();
@@ -21388,13 +21419,13 @@ if (activeTab === 'compounds') {
     var filtered = COMPOUND_EMOTIONS.filter(function(e) {
       if (cmpCategory !== 'all' && e.category !== cmpCategory) return false;
       if (!cmpSearch) return true;
-      return (e.name || '').toLowerCase().indexOf(cmpSearch) !== -1;
+      return _cmpText(e, 'name').toLowerCase().indexOf(cmpSearch) !== -1;
     });
     compoundContent = h('div', { style: { padding: '0 12px 24px' } },
       h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
         h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: ST('#fbbf24') } }, 'Compound Emotions: '),
-          'Most feelings are blends of two or more primary emotions. Plutchik mapped dyads (joy + trust = love; fear + surprise = awe; disgust + anger = contempt). Self-conscious emotions (shame, pride, guilt) need awareness of self.'
+          h('strong', { style: { color: ST('#fbbf24') } }, __alloT('sel.emotions.cmp_heading', 'Compound Emotions: ')),
+          __alloT('sel.emotions.cmp_intro', 'Most feelings are blends of two or more primary emotions. Plutchik mapped dyads (joy + trust = love; fear + surprise = awe; disgust + anger = contempt). Self-conscious emotions (shame, pride, guilt) need awareness of self.')
         )
       ),
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
@@ -21406,7 +21437,7 @@ if (activeTab === 'compounds') {
           }, c);
         })
       ),
-      h('input', { type: 'search', 'aria-label': 'Search compound emotions', placeholder: '🔎 Search...', value: d.cmpSearch || '',
+      h('input', { type: 'search', 'aria-label': __alloT('sel.emotions.cmp_search_label', 'Search compound emotions'), placeholder: '🔎 ' + __alloT('sel.emotions.cmp_search_ph', 'Search...'), value: d.cmpSearch || '',
         onChange: function(e) { upd({ cmpSearch: e.target.value }); },
         style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: ('1px solid ' + P.border), background: P.bg, color: P.text3, fontSize: 13, marginBottom: 14 }
       }),
@@ -21417,30 +21448,32 @@ if (activeTab === 'compounds') {
             role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd({ cmpOpen: isOpen ? null : em.id }); if (soundEnabled) sfxClick(); }
           },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' } },
-              h('h4', { style: { margin: 0, color: P.text, fontSize: 16, fontWeight: 800 } }, em.name),
-              em.category ? h('span', { style: { fontSize: 10, color: ST('#fbbf24'), textTransform: 'uppercase' } }, em.category) : null
+              h('h4', { style: { margin: 0, color: P.text, fontSize: 16, fontWeight: 800 } }, _cmpText(em, 'name')),
+              em.category ? h('span', { style: { fontSize: 10, color: ST('#fbbf24'), textTransform: 'uppercase' } },
+                __alloT('sel.emotions.cmp_cat_' + em.category, em.category)) : null
             ),
             em.components && em.components.length ? h('div', { style: { color: ST('#a78bfa'), fontSize: 11, marginTop: 4 } }, em.components.map(function(c) { return c.emotion + (c.strength ? ' (' + Math.round(c.strength * 100) + '%)' : ''); }).join(' + ')) : null,
-            h('p', { style: { margin: '6px 0', color: P.text2, fontSize: 12, lineHeight: 1.55 } }, (em.definition || {})[band]),
+            h('p', { style: { margin: '6px 0', color: P.text2, fontSize: 12, lineHeight: 1.55 } }, _cmpBand(em, 'definition', band)),
             isOpen ? h('div', null,
-              em.feelsLike ? h('p', { style: { margin: '8px 0 0', color: ST('#5eead4'), fontSize: 12, fontStyle: 'italic' } }, '"' + em.feelsLike + '"') : null,
-              em.bodyFeels && em.bodyFeels.length ? h('div', { style: { marginTop: 6, color: P.textMuted, fontSize: 11 } }, 'Body: ' + em.bodyFeels.join(', ')) : null,
+              em.feelsLike ? h('p', { style: { margin: '8px 0 0', color: ST('#5eead4'), fontSize: 12, fontStyle: 'italic' } }, '"' + _cmpText(em, 'feelsLike') + '"') : null,
+              em.bodyFeels && em.bodyFeels.length ? h('div', { style: { marginTop: 6, color: P.textMuted, fontSize: 11 } },
+                __alloT('sel.emotions.cmp_body_prefix', 'Body: %s').replace('%s', _cmpList(em, 'bodyFeels').join(', '))) : null,
               em.triggers && em.triggers.length ? h('details', { style: { marginTop: 6 } },
-                h('summary', { style: { cursor: 'pointer', color: ST('#fbbf24'), fontSize: 11, fontWeight: 600 } }, 'Common triggers'),
+                h('summary', { style: { cursor: 'pointer', color: ST('#fbbf24'), fontSize: 11, fontWeight: 600 } }, __alloT('sel.emotions.cmp_sec_triggers', 'Common triggers')),
                 h('ul', { style: { margin: '4px 0 0 18px', color: P.text2, fontSize: 11, lineHeight: 1.5 } },
-                  em.triggers.map(function(t, i) { return h('li', { key: i }, t); })
+                  _cmpList(em, 'triggers').map(function(t, i) { return h('li', { key: i }, t); })
                 )
               ) : null,
               em.helpfulNext && em.helpfulNext.length ? h('details', { open: true, style: { marginTop: 6 } },
-                h('summary', { style: { cursor: 'pointer', color: ST('#5eead4'), fontSize: 11, fontWeight: 600 } }, 'Helpful next'),
+                h('summary', { style: { cursor: 'pointer', color: ST('#5eead4'), fontSize: 11, fontWeight: 600 } }, __alloT('sel.emotions.cmp_sec_helpful', 'Helpful next')),
                 h('ul', { style: { margin: '4px 0 0 18px', color: ST('#a7f3d0'), fontSize: 11, lineHeight: 1.5 } },
-                  em.helpfulNext.map(function(t, i) { return h('li', { key: i }, t); })
+                  _cmpList(em, 'helpfulNext').map(function(t, i) { return h('li', { key: i }, t); })
                 )
               ) : null,
               em.unhelpfulNext && em.unhelpfulNext.length ? h('details', { style: { marginTop: 6 } },
-                h('summary', { style: { cursor: 'pointer', color: ST('#fbbf24'), fontSize: 11, fontWeight: 600 } }, 'What doesn\'t help'),
+                h('summary', { style: { cursor: 'pointer', color: ST('#fbbf24'), fontSize: 11, fontWeight: 600 } }, __alloT('sel.emotions.cmp_sec_unhelpful', 'What doesn\'t help')),
                 h('ul', { style: { margin: '4px 0 0 18px', color: ST('#fde68a'), fontSize: 11, lineHeight: 1.5 } },
-                  em.unhelpfulNext.map(function(t, i) { return h('li', { key: i }, t); })
+                  _cmpList(em, 'unhelpfulNext').map(function(t, i) { return h('li', { key: i }, t); })
                 )
               ) : null
             ) : null
