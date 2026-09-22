@@ -8905,7 +8905,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       var graphicsQuality = /^(low|balanced|high)$/.test(rh.graphicsQuality || '') ? rh.graphicsQuality : 'balanced';
       var huntStats = rh.huntStats || {};
       var visionView = rh.visionView || 'overview';
-      var stoopSimVars = rh.stoopSimVars || { mass: 0.95, cd: 0.18, area: 0.018, altitudeM: 600 };
+      // Frontal area is the TUCKED cross-section, not the wing area. The default
+      // used to be 0.018 m², which opened the calculator at 153 mph while the rest
+      // of the lab states a peregrine stoop reaches ~242 mph in seven places, and
+      // while this page's own "Load presets" button produces 0.0065 m² -> 255 mph.
+      // A student who never pressed that button saw a headline number ~37% below
+      // the figure the surrounding text teaches. 0.0065 matches the preset and sits
+      // inside the published 0.006-0.008 m² range for a stooping peregrine.
+      var stoopSimVars = rh.stoopSimVars || { mass: 0.95, cd: 0.18, area: 0.0065, altitudeM: 600 };
 
       // ── Helpers ──
       function findSpecies(id) {
@@ -20293,7 +20300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 className: 'w-full',
                 'aria-label': __alloT('stem.raptorhunt.frontal_cross_section_area_in_square_m', 'Frontal cross-section area in square meters')
               }),
-              h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.peregrine_tucked_0_018_m_golden_eagle_', 'Peregrine tucked ≈ 0.018 m² · golden eagle tucked ≈ 0.05 m²'))
+              h('div', { className: 'text-[10px] text-slate-500' }, __alloT('stem.raptorhunt.tucked_frontal_area_hint', 'Tucked frontal area, not wing area. Peregrine ≈ 0.007 m² · golden eagle ≈ 0.04 m²'))
             ),
             h('button', {
               onClick: function() {
