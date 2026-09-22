@@ -12908,6 +12908,7 @@ window.SelHub = window.SelHub || {
   // For each emotion, named strategies that help (cross-references the Coping Toolkit)
   var EMOTION_STRATEGIES = [
     {
+      _k: 'sel.emotions.strat_sadness_low',
       id: 'sadness_low',
       emotion: 'sadness',
       intensity: 'low',
@@ -12941,6 +12942,7 @@ window.SelHub = window.SelHub || {
       research: 'Behavioral activation (Jacobson, 1996); affect labeling (Lieberman et al., 2007); polyvagal co-regulation (Porges, 2011).'
     },
     {
+      _k: 'sel.emotions.strat_sadness_medium',
       id: 'sadness_medium',
       emotion: 'sadness',
       intensity: 'medium',
@@ -12978,6 +12980,7 @@ window.SelHub = window.SelHub || {
       research: 'Self-compassion (Neff, 2003); behavioral activation (Dimidjian et al., 2006); oxytocin and touch (Light et al., 2005).'
     },
     {
+      _k: 'sel.emotions.strat_sadness_high',
       id: 'sadness_high',
       emotion: 'sadness',
       intensity: 'high',
@@ -13015,6 +13018,7 @@ window.SelHub = window.SelHub || {
       research: 'DBT TIPP skills (Linehan, 1993); radical acceptance (Linehan); wave metaphor (Hayes, ACT); EMDR bilateral stimulation (Shapiro, 1989).'
     },
     {
+      _k: 'sel.emotions.strat_anger_low',
       id: 'anger_low',
       emotion: 'anger',
       intensity: 'low',
@@ -13048,6 +13052,7 @@ window.SelHub = window.SelHub || {
       research: 'Hostile attribution bias (Dodge, 1980); behavioral discharge (van der Kolk, 2014); naming-and-need from NVC (Rosenberg, 2003).'
     },
     {
+      _k: 'sel.emotions.strat_anger_medium',
       id: 'anger_medium',
       emotion: 'anger',
       intensity: 'medium',
@@ -13085,6 +13090,7 @@ window.SelHub = window.SelHub || {
       research: 'Affect labeling (Lieberman et al., 2007); NVC (Rosenberg, 2003); vagal exhalation (Porges, 2011); catharsis myth (Bushman, 2002).'
     },
     {
+      _k: 'sel.emotions.strat_anger_high',
       id: 'anger_high',
       emotion: 'anger',
       intensity: 'high',
@@ -13120,6 +13126,7 @@ window.SelHub = window.SelHub || {
       research: 'DBT STOP and TIPP (Linehan, 1993); cold water vagal response (Datta & Tipton, 2006); primary vs secondary emotions (Greenberg, 2002).'
     },
     {
+      _k: 'sel.emotions.strat_anger_crisis_rage',
       id: 'anger_crisis_rage',
       emotion: 'anger',
       intensity: 'crisis',
@@ -13151,6 +13158,7 @@ window.SelHub = window.SelHub || {
       research: 'Crisis intervention (Roberts, 2005); 988 Lifeline (SAMHSA); polyvagal crisis states (Porges, 2011).'
     },
     {
+      _k: 'sel.emotions.strat_fear_low',
       id: 'fear_low',
       emotion: 'fear',
       intensity: 'low',
@@ -13181,6 +13189,7 @@ window.SelHub = window.SelHub || {
       research: 'Orienting response (Porges, 2011); affect labeling (Lieberman et al., 2007); cognitive appraisal (Lazarus, 1991).'
     },
     {
+      _k: 'sel.emotions.strat_fear_medium',
       id: 'fear_medium',
       emotion: 'fear',
       intensity: 'medium',
@@ -13215,6 +13224,7 @@ window.SelHub = window.SelHub || {
       research: 'CBT (Beck, 1976); ACT defusion (Hayes); exposure therapy (Foa & Kozak, 1986); cope-ahead (Linehan, 1993).'
     },
     {
+      _k: 'sel.emotions.strat_fear_high',
       id: 'fear_high',
       emotion: 'fear',
       intensity: 'high',
@@ -13250,6 +13260,7 @@ window.SelHub = window.SelHub || {
       research: 'Physiological sigh (Balban et al., 2023); 90-second emotion wave (Bolte Taylor, 2008); polyvagal theory (Porges, 2011).'
     },
     {
+      _k: 'sel.emotions.strat_anxiety_general',
       id: 'anxiety_general',
       emotion: 'anxiety',
       intensity: 'medium',
@@ -13284,6 +13295,7 @@ window.SelHub = window.SelHub || {
       research: 'CBT for GAD (Borkovec, 2002); cardio for anxiety (Blumenthal, 2007); ACT defusion (Hayes); PMR (Jacobson, 1938).'
     },
     {
+      _k: 'sel.emotions.strat_anxiety_performance',
       id: 'anxiety_performance',
       emotion: 'anxiety',
       intensity: 'medium',
@@ -13317,6 +13329,7 @@ window.SelHub = window.SelHub || {
       research: 'Excitement reappraisal (Brooks, 2014); over-rehearsal (Ericsson, 1993); beta blockers and performance (Tindall et al., 2017).'
     },
     {
+      _k: 'sel.emotions.strat_anxiety_social',
       id: 'anxiety_social',
       emotion: 'anxiety',
       intensity: 'medium',
@@ -13350,6 +13363,7 @@ window.SelHub = window.SelHub || {
       research: 'Spotlight effect (Gilovich, 2000); CBT for SAD (Clark & Wells, 1995); post-event processing (Brozovich & Heimberg, 2008).'
     },
     {
+      _k: 'sel.emotions.strat_anxiety_anticipatory',
       id: 'anxiety_anticipatory',
       emotion: 'anxiety',
       intensity: 'medium',
@@ -13380,6 +13394,7 @@ window.SelHub = window.SelHub || {
       research: 'Cope-ahead (Linehan, 1993); affective forecasting errors (Gilbert, 2006); behavioral activation (Jacobson).'
     },
     {
+      _k: 'sel.emotions.strat_anxiety_panic_attack',
       id: 'anxiety_panic_attack',
       emotion: 'anxiety',
       intensity: 'crisis',
@@ -13413,6 +13428,7 @@ window.SelHub = window.SelHub || {
       research: 'Panic Control Treatment (Barlow & Craske); physiological sigh (Balban et al., 2023); dive reflex (Datta & Tipton, 2006); 10-min peak (Clark, 1986).'
     },
     {
+      _k: 'sel.emotions.strat_shame',
       id: 'shame',
       emotion: 'shame',
       intensity: 'high',
@@ -13448,6 +13464,7 @@ window.SelHub = window.SelHub || {
       research: 'Shame research (Brown, 2006); self-compassion (Neff, 2003); IFS (Schwartz, 1995); AEDP (Fosha, 2000).'
     },
     {
+      _k: 'sel.emotions.strat_guilt',
       id: 'guilt',
       emotion: 'guilt',
       intensity: 'medium',
@@ -13479,6 +13496,7 @@ window.SelHub = window.SelHub || {
       research: 'Guilt vs shame (Tangney, 2002); restorative justice frameworks; self-forgiveness (Enright, 2001).'
     },
     {
+      _k: 'sel.emotions.strat_jealousy',
       id: 'jealousy',
       emotion: 'jealousy',
       intensity: 'medium',
@@ -13509,6 +13527,7 @@ window.SelHub = window.SelHub || {
       research: 'Attachment theory (Bowlby, Hazan & Shaver); jealousy and self-esteem (DeSteno, 2010); IFS (Schwartz).'
     },
     {
+      _k: 'sel.emotions.strat_envy',
       id: 'envy',
       emotion: 'envy',
       intensity: 'medium',
@@ -13538,6 +13557,7 @@ window.SelHub = window.SelHub || {
       research: 'Benign vs malicious envy (Van de Ven, 2009); social comparison (Festinger, 1954); mudita (Buddhist tradition).'
     },
     {
+      _k: 'sel.emotions.strat_loneliness_situational',
       id: 'loneliness_situational',
       emotion: 'loneliness',
       intensity: 'medium',
@@ -13569,6 +13589,7 @@ window.SelHub = window.SelHub || {
       research: 'Loneliness and mortality (Holt-Lunstad, 2010); social baseline theory (Coan, 2010); biophilia (Wilson, 1984).'
     },
     {
+      _k: 'sel.emotions.strat_loneliness_chronic',
       id: 'loneliness_chronic',
       emotion: 'loneliness',
       intensity: 'high',
@@ -13600,6 +13621,7 @@ window.SelHub = window.SelHub || {
       research: 'Cacioppo loneliness research; Murthy (2020) Together; social fitness research (Harvard Study of Adult Development).'
     },
     {
+      _k: 'sel.emotions.strat_overwhelm',
       id: 'overwhelm',
       emotion: 'overwhelm',
       intensity: 'high',
@@ -13634,6 +13656,7 @@ window.SelHub = window.SelHub || {
       research: 'Cognitive load theory (Sweller); GTD (Allen, 2001); body doubling (ADHD literature); behavioral activation (Jacobson).'
     },
     {
+      _k: 'sel.emotions.strat_disappointment',
       id: 'disappointment',
       emotion: 'disappointment',
       intensity: 'medium',
@@ -13662,6 +13685,7 @@ window.SelHub = window.SelHub || {
       research: 'Expectation theory (Vroom, 1964); behavioral activation; grief work (Worden, 1991).'
     },
     {
+      _k: 'sel.emotions.strat_heartbreak',
       id: 'heartbreak',
       emotion: 'heartbreak',
       intensity: 'high',
@@ -13695,6 +13719,7 @@ window.SelHub = window.SelHub || {
       research: 'Heartbreak and physical pain share brain circuits (Eisenberger, 2003); attachment-based therapy (Johnson, 2008); movement for depression (Blumenthal, 2007).'
     },
     {
+      _k: 'sel.emotions.strat_grief_fresh',
       id: 'grief_fresh',
       emotion: 'grief',
       intensity: 'high',
@@ -13727,6 +13752,7 @@ window.SelHub = window.SelHub || {
       research: 'Worden\'s tasks of mourning (1991); continuing bonds (Klass, 1996); complicated grief therapy (Shear, 2005).'
     },
     {
+      _k: 'sel.emotions.strat_grief_wave',
       id: 'grief_wave',
       emotion: 'grief',
       intensity: 'high',
@@ -13756,6 +13782,7 @@ window.SelHub = window.SelHub || {
       research: 'Continuing bonds (Klass et al., 1996); resilience in grief (Bonanno, 2009); ritual and grief (Driver, 1998).'
     },
     {
+      _k: 'sel.emotions.strat_grief_anniversary',
       id: 'grief_anniversary',
       emotion: 'grief',
       intensity: 'high',
@@ -13784,6 +13811,7 @@ window.SelHub = window.SelHub || {
       research: 'Anniversary reactions (Pollock, 1970); continuing bonds; ritual and bereavement.'
     },
     {
+      _k: 'sel.emotions.strat_frustration',
       id: 'frustration',
       emotion: 'frustration',
       intensity: 'medium',
@@ -13812,6 +13840,7 @@ window.SelHub = window.SelHub || {
       research: 'Frustration-aggression hypothesis (Dollard, 1939); growth mindset (Dweck, 2006); deliberate practice (Ericsson).'
     },
     {
+      _k: 'sel.emotions.strat_boredom',
       id: 'boredom',
       emotion: 'boredom',
       intensity: 'low',
@@ -13841,6 +13870,7 @@ window.SelHub = window.SelHub || {
       research: 'Boredom and creativity (Mann & Cadman, 2014); phone use and boredom (Common Sense Media); ADHD and boredom intolerance.'
     },
     {
+      _k: 'sel.emotions.strat_rejection_rsd',
       id: 'rejection_rsd',
       emotion: 'rejection',
       intensity: 'high',
@@ -13875,6 +13905,7 @@ window.SelHub = window.SelHub || {
       research: 'RSD (Dodson, ADDitude); ADHD and emotional regulation (Shaw et al., 2014); DBT for emotional intensity (Linehan).'
     },
     {
+      _k: 'sel.emotions.strat_embarrassment',
       id: 'embarrassment',
       emotion: 'embarrassment',
       intensity: 'medium',
@@ -13903,6 +13934,7 @@ window.SelHub = window.SelHub || {
       research: 'Spotlight effect (Gilovich, 2000); embarrassment and social bonding (Keltner & Buswell, 1997).'
     },
     {
+      _k: 'sel.emotions.strat_confusion',
       id: 'confusion',
       emotion: 'confusion',
       intensity: 'medium',
@@ -13932,6 +13964,7 @@ window.SelHub = window.SelHub || {
       research: 'Self-distancing (Kross, 2014); incubation in insight (Wallas, 1926); mind-wandering and creativity (Baird, 2012).'
     },
     {
+      _k: 'sel.emotions.strat_hopelessness',
       id: 'hopelessness',
       emotion: 'hopelessness',
       intensity: 'crisis',
@@ -13965,6 +13998,7 @@ window.SelHub = window.SelHub || {
       research: 'Hopelessness as suicide predictor (Beck, 1985); safety planning (Stanley & Brown, 2012); cognitive therapy for depression (Beck, 1979); 988 Lifeline (SAMHSA).'
     },
     {
+      _k: 'sel.emotions.strat_numbness_dissociation',
       id: 'numbness_dissociation',
       emotion: 'numbness',
       intensity: 'high',
@@ -13996,6 +14030,7 @@ window.SelHub = window.SelHub || {
       research: 'Polyvagal theory dorsal vagal shutdown (Porges); somatic experiencing (Levine); EMDR (Shapiro); IFS (Schwartz).'
     },
     {
+      _k: 'sel.emotions.strat_excitement_too_much',
       id: 'excitement_too_much',
       emotion: 'excitement',
       intensity: 'high',
@@ -14023,6 +14058,7 @@ window.SelHub = window.SelHub || {
       research: 'Hyperarousal regulation (Linehan); bipolar mania recognition (Goodwin & Jamison, 2007); ADHD hyperfocus.'
     },
     {
+      _k: 'sel.emotions.strat_restlessness',
       id: 'restlessness',
       emotion: 'restlessness',
       intensity: 'medium',
@@ -14049,6 +14085,7 @@ window.SelHub = window.SelHub || {
       research: 'Exercise and restlessness (Smith et al., 2010); ADHD hyperactivity (Barkley); akathisia (Bratti et al., 2007).'
     },
     {
+      _k: 'sel.emotions.strat_curiosity_stuck',
       id: 'curiosity_stuck',
       emotion: 'curiosity',
       intensity: 'low',
@@ -14076,6 +14113,7 @@ window.SelHub = window.SelHub || {
       research: 'Curiosity and well-being (Kashdan, 2009); novelty seeking and dopamine (Cloninger, 1987).'
     },
     {
+      _k: 'sel.emotions.strat_pride_managing',
       id: 'pride_managing',
       emotion: 'pride',
       intensity: 'medium',
@@ -14104,6 +14142,7 @@ window.SelHub = window.SelHub || {
       research: 'Authentic vs hubristic pride (Tracy & Robins, 2007); savoring (Bryant & Veroff, 2007).'
     },
     {
+      _k: 'sel.emotions.strat_awe',
       id: 'awe',
       emotion: 'awe',
       intensity: 'medium',
@@ -14132,6 +14171,7 @@ window.SelHub = window.SelHub || {
       research: 'Awe research (Keltner, 2003); awe and inflammation (Stellar et al., 2015); awe and time perception (Rudd et al., 2012).'
     },
     {
+      _k: 'sel.emotions.strat_gratitude',
       id: 'gratitude',
       emotion: 'gratitude',
       intensity: 'medium',
@@ -14159,6 +14199,7 @@ window.SelHub = window.SelHub || {
       research: 'Gratitude interventions (Seligman, 2005; Emmons, 2003); gratitude letter and visit (Seligman et al., 2005); mental subtraction (Koo, 2008).'
     },
     {
+      _k: 'sel.emotions.strat_joy_savoring',
       id: 'joy_savoring',
       emotion: 'joy',
       intensity: 'medium',
@@ -18223,6 +18264,30 @@ var EMOTION_JOURNAL_TEMPLATES = [
             ? __alloT(p._k + '_alt' + i, v) : v;
         });
       };
+      // EMOTION_STRATEGIES rows can also arrive from toolData, so every
+      // helper falls back when _k is absent. `grp` is 'body' | 'thought' |
+      // 'conn' and `i` is the entry's index in its group, because the keys
+      // are built from both -- which is what lets the Strategy Bridge tab and
+      // the Check-In tab translate from one set of keys.
+      var _stratText = function (e, field) {
+        if (!e) return '';
+        var v = e[field];
+        if (typeof v !== 'string') return '';
+        return e._k ? __alloT(e._k + '_' + field, v) : v;
+      };
+      var _stratEntry = function (e, grp, i, s, field) {
+        if (!s) return '';
+        var v = s[field === 'why' ? 'whyForThisEmotion' : (field === 'dur' ? 'duration' : field)];
+        if (typeof v !== 'string') return '';
+        return (e && e._k) ? __alloT(e._k + '_' + grp + i + '_' + field, v) : v;
+      };
+      var _stratSteps = function (e, grp, i, s) {
+        if (!s || !Array.isArray(s.steps)) return [];
+        return s.steps.map(function (v, j) {
+          return (e && e._k && typeof v === 'string')
+            ? __alloT(e._k + '_' + grp + i + '_step' + j, v) : v;
+        });
+      };
       var _emoWord = function (id) {
         if (!id) return id;
         var label = String(id).charAt(0).toUpperCase() + String(id).slice(1);
@@ -19020,14 +19085,20 @@ var EMOTION_JOURNAL_TEMPLATES = [
         var checkinStrategyTier = checkinIntensity <= 3 ? 'low' : (checkinIntensity <= 7 ? 'medium' : 'high');
         var checkinStrategyEntry = checkinStrategyEmotion ? (EMOTION_STRATEGIES.find(function(entry) { return entry.emotion === checkinStrategyEmotion && entry.intensity === checkinStrategyTier; }) || EMOTION_STRATEGIES.find(function(entry) { return entry.emotion === checkinStrategyEmotion; })) : null;
         var checkinChoices = [];
-        function addCheckinChoice(kind, icon, color, item) {
+        function addCheckinChoice(kind, icon, color, item, grp) {
           if (!item) return;
-          checkinChoices.push({ kind: kind, icon: icon, color: color, name: item.name, firstStep: item.steps && item.steps[0] ? item.steps[0] : '', duration: item.duration || '' });
+          // Entry 0 of `grp` -- the same keys the Strategy Bridge uses, so the
+          // two tabs cannot disagree about a strategy's language.
+          var E = checkinStrategyEntry;
+          checkinChoices.push({ kind: kind, icon: icon, color: color,
+            name: _stratEntry(E, grp, 0, item, 'name'),
+            firstStep: (item.steps && item.steps[0]) ? _stratSteps(E, grp, 0, item)[0] : '',
+            duration: item.duration ? _stratEntry(E, grp, 0, item, 'dur') : '' });
         }
         if (checkinStrategyEntry) {
-          addCheckinChoice('Body-first', '\uD83E\uDEC1', '#f59e0b', checkinStrategyEntry.bodyFirstStrategies && checkinStrategyEntry.bodyFirstStrategies[0]);
-          addCheckinChoice('Thought-first', '\uD83E\uDDE0', '#8b5cf6', checkinStrategyEntry.thoughtFirstStrategies && checkinStrategyEntry.thoughtFirstStrategies[0]);
-          addCheckinChoice('Connection', '\uD83E\uDD1D', '#ec4899', checkinStrategyEntry.connectionStrategies && checkinStrategyEntry.connectionStrategies[0]);
+          addCheckinChoice('Body-first', '\uD83E\uDEC1', '#f59e0b', checkinStrategyEntry.bodyFirstStrategies && checkinStrategyEntry.bodyFirstStrategies[0], 'body');
+          addCheckinChoice('Thought-first', '\uD83E\uDDE0', '#8b5cf6', checkinStrategyEntry.thoughtFirstStrategies && checkinStrategyEntry.thoughtFirstStrategies[0], 'thought');
+          addCheckinChoice('Connection', '\uD83E\uDD1D', '#ec4899', checkinStrategyEntry.connectionStrategies && checkinStrategyEntry.connectionStrategies[0], 'conn');
         }
         if (!checkinChoices.length) {
           checkinChoices = [
@@ -21917,7 +21988,7 @@ if (activeTab === 'strategies') {
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
               h('div', null,
                 h('span', { style: { padding: '2px 8px', borderRadius: 4, background: intensityColor + '33', color: intensityColor, fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, e.intensity + ' intensity'),
-                h('p', { style: { margin: '4px 0 0', color: P.text2, fontSize: 13 } }, e.shortDesc)
+                h('p', { style: { margin: '4px 0 0', color: P.text2, fontSize: 13 } }, _stratText(e, 'shortDesc'))
               ),
               h('button', { onClick: function() { upd({ stOpen: isOpen ? null : e.id }); if (soundEnabled) sfxClick(); },
                 style: { padding: '5px 12px', borderRadius: 6, border: 'none', background: '#1d4ed8', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
@@ -21928,11 +21999,13 @@ if (activeTab === 'strategies') {
                 h('div', { style: { color: ST('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '🫁 Body-first'),
                 e.bodyFirstStrategies.map(function(s, i) {
                   return h('div', { key: i, style: { padding: '6px 8px', borderRadius: 6, background: P.bg, marginBottom: 4 } },
-                    h('div', { style: { color: ST('#fde68a'), fontSize: 12, fontWeight: 700 } }, s.name + (s.duration ? ' (' + s.duration + ')' : '')),
+                    h('div', { style: { color: ST('#fde68a'), fontSize: 12, fontWeight: 700 } },
+                      _stratEntry(e, 'body', i, s, 'name')
+                        + (s.duration ? ' (' + _stratEntry(e, 'body', i, s, 'dur') + ')' : '')),
                     s.steps ? h('ol', { style: { margin: '4px 0 0 18px', color: P.text2, fontSize: 11, lineHeight: 1.5 } },
-                      s.steps.map(function(stp, j) { return h('li', { key: j }, stp); })
+                      _stratSteps(e, 'body', i, s).map(function(stp, j) { return h('li', { key: j }, stp); })
                     ) : null,
-                    s.whyForThisEmotion ? h('p', { style: { margin: '4px 0 0', color: P.textMuted, fontSize: 10, fontStyle: 'italic' } }, s.whyForThisEmotion) : null
+                    s.whyForThisEmotion ? h('p', { style: { margin: '4px 0 0', color: P.textMuted, fontSize: 10, fontStyle: 'italic' } }, _stratEntry(e, 'body', i, s, 'why')) : null
                   );
                 })
               ) : null,
@@ -21940,9 +22013,9 @@ if (activeTab === 'strategies') {
                 h('div', { style: { color: ST('#a78bfa'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '🧠 Thought-first'),
                 e.thoughtFirstStrategies.map(function(s, i) {
                   return h('div', { key: i, style: { padding: '6px 8px', borderRadius: 6, background: P.bg, marginBottom: 4 } },
-                    h('div', { style: { color: ST('#c4b5fd'), fontSize: 12, fontWeight: 700 } }, s.name),
+                    h('div', { style: { color: ST('#c4b5fd'), fontSize: 12, fontWeight: 700 } }, _stratEntry(e, 'thought', i, s, 'name')),
                     s.steps ? h('ol', { style: { margin: '4px 0 0 18px', color: P.text2, fontSize: 11, lineHeight: 1.5 } },
-                      s.steps.map(function(stp, j) { return h('li', { key: j }, stp); })
+                      _stratSteps(e, 'thought', i, s).map(function(stp, j) { return h('li', { key: j }, stp); })
                     ) : null
                   );
                 })
@@ -21951,15 +22024,15 @@ if (activeTab === 'strategies') {
                 h('div', { style: { color: ST('#fb7185'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '🤝 Connection'),
                 e.connectionStrategies.map(function(s, i) {
                   return h('div', { key: i, style: { padding: '6px 8px', borderRadius: 6, background: P.bg, marginBottom: 4 } },
-                    h('div', { style: { color: ST('#fda4af'), fontSize: 12, fontWeight: 700 } }, s.name),
+                    h('div', { style: { color: ST('#fda4af'), fontSize: 12, fontWeight: 700 } }, _stratEntry(e, 'conn', i, s, 'name')),
                     s.steps ? h('ol', { style: { margin: '4px 0 0 18px', color: P.text2, fontSize: 11, lineHeight: 1.5 } },
-                      s.steps.map(function(stp, j) { return h('li', { key: j }, stp); })
+                      _stratSteps(e, 'conn', i, s).map(function(stp, j) { return h('li', { key: j }, stp); })
                     ) : null
                   );
                 })
               ) : null,
-              e.crisisEscalation ? h('div', { style: { padding: '6px 10px', borderRadius: 6, background: '#7f1d1d', color: '#fecaca', fontSize: 11, lineHeight: 1.5 } }, '⚠️ ' + e.crisisEscalation) : null,
-              e.whenItPersists ? h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: '#1e1b4b', color: '#c7d2fe', fontSize: 11, lineHeight: 1.5 } }, '⏳ ' + e.whenItPersists) : null
+              e.crisisEscalation ? h('div', { style: { padding: '6px 10px', borderRadius: 6, background: '#7f1d1d', color: '#fecaca', fontSize: 11, lineHeight: 1.5 } }, '⚠️ ' + _stratText(e, 'crisisEscalation')) : null,
+              e.whenItPersists ? h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: '#1e1b4b', color: '#c7d2fe', fontSize: 11, lineHeight: 1.5 } }, '⏳ ' + _stratText(e, 'whenItPersists')) : null
             ) : null
           );
         })
