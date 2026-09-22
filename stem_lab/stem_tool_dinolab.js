@@ -5115,6 +5115,15 @@ window.StemLab = window.StemLab || {
   ];
 
   // ── Helpers ──
+  // A saved file can hold anything. `x || fallback` does not help here: {} and
+  // [] are truthy, so they reach React as a non-scalar <select> value. Only a
+  // string or a finite number is a usable option id; everything else is absent.
+  function asOptionValue(raw) {
+    if (typeof raw === 'string') return raw;
+    if (typeof raw === 'number' && isFinite(raw)) return String(raw);
+    return '';
+  }
+
   function byId(id) { for (var i = 0; i < DINOS.length; i++) { if (DINOS[i].id === id) return DINOS[i]; } return null; }
   function periodOf(id) { for (var i = 0; i < PERIODS.length; i++) { if (PERIODS[i].id === id) return PERIODS[i]; } return null; }
   function periodName(id) { var p = periodOf(id); if (p) return p.name; return id ? id.charAt(0).toUpperCase() + id.slice(1) : id; }
@@ -7609,7 +7618,7 @@ window.StemLab = window.StemLab || {
         function choose(dn) { markSeen(dn.id); focusSoon('dino-specimen-heading'); }
         function selectFilter(id, label, value, items) {
           return el('div', { key: id, style: { display: 'grid', gap: 5, fontSize: 11, fontWeight: 700, color: T.soft, minWidth: 0 } }, el('label', { htmlFor: 'dino-filter-' + id }, label),
-            el('select', { id: 'dino-filter-' + id, value: value || 'all', onChange: function (event) { filter(id, event.target.value); }, style: Object.assign({}, actionStyle, { width: '100%', minWidth: 0, fontWeight: 500 }) },
+            el('select', { id: 'dino-filter-' + id, value: asOptionValue(value) || 'all', onChange: function (event) { filter(id, event.target.value); }, style: Object.assign({}, actionStyle, { width: '100%', minWidth: 0, fontWeight: 500 }) },
               items.map(function (item) { return el('option', { key: item[0], value: item[0] }, item[1]); })));
         }
         var periods = [['all', __alloT('stem.dinolab.all_periods', 'All periods')]];
@@ -12319,7 +12328,7 @@ var evidenceRoute = [
                   pill(d.field3dStage !== 'habitat', __alloT('stem.dinolab.studio_lighting', 'Studio'), function () { upd('field3dStage', 'studio'); }, 'studio'),
                   pill(d.field3dStage === 'habitat', __alloT('stem.dinolab.habitat_lighting', 'Habitat'), function () { upd('field3dStage', 'habitat'); }, 'habitat')),
                 el('label', { htmlFor: 'dino-scene-labels', style: { fontSize: 12, fontWeight: 700, color: T.soft } }, __alloT('stem.dinolab.model_labels', 'Model labels')),
-                el('select', { id: 'dino-scene-labels', value: d.field3dLabelMode || 'key', onChange: function (event) { upd('field3dLabelMode', event.target.value); }, style: actionStyle },
+                el('select', { id: 'dino-scene-labels', value: asOptionValue(d.field3dLabelMode) || 'key', onChange: function (event) { upd('field3dLabelMode', event.target.value); }, style: actionStyle },
                   el('option', { value: 'key' }, __alloT('stem.dinolab.key_labels', 'Key labels')),
                   el('option', { value: 'anatomy' }, __alloT('stem.dinolab.body_part_labels', 'Body-part labels')),
                   el('option', { value: 'all' }, __alloT('stem.dinolab.all_labels', 'All labels')),
@@ -12437,7 +12446,7 @@ var evidenceRoute = [
         var aId = d.compareA || null, bId = d.compareB || null;
         var picks = [aId, bId].filter(Boolean).map(byId).filter(Boolean);
         function picker(slot, current) {
-          return el('select', { key: slot, value: current || '', 'aria-label': 'Choose dinosaur ' + slot, onChange: function (event) { var value = event.target.value || null; upd(slot === 'A' ? 'compareA' : 'compareB', value); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, [el('option', { key: 'none', value: '' }, 'Pick a dinosaur...')].concat(DINOS.slice().sort(function (x, y) { return x.common < y.common ? -1 : 1; }).map(function (dn) { return el('option', { key: dn.id, value: dn.id }, dn.common); })));
+          return el('select', { key: slot, value: asOptionValue(current), 'aria-label': 'Choose dinosaur ' + slot, onChange: function (event) { var value = event.target.value || null; upd(slot === 'A' ? 'compareA' : 'compareB', value); }, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, [el('option', { key: 'none', value: '' }, 'Pick a dinosaur...')].concat(DINOS.slice().sort(function (x, y) { return x.common < y.common ? -1 : 1; }).map(function (dn) { return el('option', { key: dn.id, value: dn.id }, dn.common); })));
         }
         function metricBar(label, value, max, unit, color, scale, displayValue) {
           var safeValue = value != null ? Math.max(0, value) : 0;
