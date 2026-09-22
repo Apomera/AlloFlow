@@ -295,3 +295,9 @@ __pycache__/
 .vacuous-pins-journal.*.json
 # check_stem_behavior.cjs writes and deletes this harness page on every run
 /dev-tools/_stem_harness.html
+# Root-level scratch JSON/TXT that i18n sessions write while slicing packs
+/scratchpad_*.json
+/scratchpad_*.txt
+# vacuous_pin_discovery / find_vacuous_pins_tool tests write these per run
+/tests/discovery_fixture_*/
+/tests/vacuous_fixture_*/
