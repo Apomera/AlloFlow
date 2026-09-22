@@ -29,15 +29,17 @@ const MODULE_CONTRACTS = [
   {
     file: 'doc_pipeline_module.js',
     source: 'doc_pipeline_source.jsx',
-    rebuild: 'node build.js --compile',
+    rebuild: 'node _build_doc_pipeline_module.js',
+    // Render through the same wrapper and footer as the real builder. A private
+    // copy of the wrapper here omitted the remediation_review_helpers.js footer,
+    // so this gate rejected the correct module and demanded the truncated one.
     render(source) {
-      const trailingNewline = source.endsWith('\n') ? '' : '\n';
-      return (
-        '(function(){"use strict";\n'
-        + 'if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}\n'
-        + source + trailingNewline
-        + '})();\n'
-      );
+      const { wrapSimpleIife } = require(path.join(REPO_ROOT, '_build_simple_iife_module.js'));
+      return wrapSimpleIife({
+        source,
+        guardKey: 'DocPipelineModule',
+        footer: fs.readFileSync(path.join(REPO_ROOT, 'remediation_review_helpers.js'), 'utf8'),
+      });
     },
   },
   {
