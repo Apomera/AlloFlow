@@ -11482,6 +11482,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           setWebglError(true);
           return;
         }
+        // A context lost AFTER init used to leave the flight view black with no error
+        // state and no way back. preventDefault is required or the context can never be
+        // restored; then raise the SAME state the creation-failure catch above uses,
+        // which renders the panel with its Retry 3D mode control.
+        //
+        // The teardown below force-loses the context on every restart, so a real loss
+        // has to be told apart from that: _rhTearingDown marks the deliberate one.
+        if (!canvasEl._rhLossBound) {
+          canvasEl._rhLossBound = true;
+          canvasEl.addEventListener('webglcontextlost', function (ev) {
+            if (canvasEl._rhTearingDown) return;   // our own dispose, not a real loss
+            ev.preventDefault();
+            console.warn('[RaptorHunt] WebGL context lost — offering Retry 3D mode');
+            setWebglError(true);
+          });
+        }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, qualityProfile.pixelRatio));
         // Preserve responsive CSS dimensions when the flight panel changes size.
         renderer.setSize(W, H, false);
@@ -19599,6 +19615,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (renderer.renderLists && renderer.renderLists.dispose) renderer.renderLists.dispose();
           if (renderer.dispose) renderer.dispose();
           if (renderer.forceContextLoss) {
+            // Tell the webglcontextlost listener this loss is ours, so a restart does
+            // not raise the "3D failed" panel and block the rebuild.
+            // renderer.domElement IS the canvas; canvasEl is not in scope here.
+            try { if (renderer.domElement) renderer.domElement._rhTearingDown = true; } catch (tearFlagError) {}
             try { renderer.forceContextLoss(); } catch (contextLossError) {}
           }
           [
