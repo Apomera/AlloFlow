@@ -271,6 +271,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     return row;
   }
 
+  // What the launch HUD shows. The ascent loop runs on its own animation counters
+  // (0-20,000 "altitude" units, a velocity that grows every frame) that drive the sky,
+  // pitch and plume; printing those raw said ORBIT ACHIEVED at 20 km and 12,970 m/s
+  // (faster than Earth escape) at 11 g, while the banner said 185 km and the next
+  // phase 7.8 km/s. This maps loop progress onto an Apollo-11-like ascent instead:
+  // S-IC to ~67 km and 2.4 km/s with g climbing to ~3.9 as the tanks empty, the drop
+  // at each staging, S-II to ~176 km and 6.8 km/s, S-IVB to a 185 km orbit at 7.8 km/s,
+  // and 0 g once the engine cuts off, because in orbit you are falling.
+  function mmLaunchDisplay(p) {
+    p = Math.max(0, p);
+    if (p >= 1) return { altKm: 185, velMs: 7800, g: 0, stage: 3, orbit: true };
+    var s;
+    if (p < 0.1) {
+      s = p / 0.1;
+      return { altKm: 67 * Math.pow(s, 1.7), velMs: 2400 * Math.pow(s, 1.4), g: 1.2 + 2.7 * Math.pow(s, 1.6), stage: 1, orbit: false };
+    }
+    if (p < 0.4) {
+      s = (p - 0.1) / 0.3;
+      return { altKm: 67 + 109 * (1 - Math.pow(1 - s, 1.8)), velMs: 2400 + 4400 * Math.pow(s, 1.1), g: 0.9 + 0.9 * s, stage: 2, orbit: false };
+    }
+    s = (p - 0.4) / 0.6;
+    return { altKm: 176 + 9 * (1 - Math.pow(1 - s, 2)), velMs: 6800 + 1000 * s, g: 0.55 + 0.15 * s, stage: 3, orbit: false };
+  }
+  // The trans-Earth coast readouts came from three unrelated formulas: distance fell
+  // in a straight line, "closing speed" was 3,200 + p^2 * 36,700 km/h, and the clock
+  // counted to 3 days. Integrating that speed over that time covers 1.1 million km,
+  // 2.9 times the trip. This falls toward Earth under Earth's gravity instead
+  // (energy: v^2 = v0^2 + 2GM(1/r - 1/r0)), starting 384,400 km out at 1.0 km/s.
+  // That reproduces Apollo 11's own return: about 2.5 days, and about 39,700 km/h at
+  // entry interface, 6,500 km from Earth's centre (Apollo 11: 36,194 ft/s).
+  var MM_GM = 398600, MM_R0 = 384400, MM_R_EI = 6500, MM_V0 = 1.0, MM_R_EARTH = 6378;
+  var _mmReturnTable = (function () {
+    var rows = [{ t: 0, r: MM_R0 }], r = MM_R0, t = 0, dt = 60;
+    while (r > MM_R_EI) {
+      r -= Math.sqrt(MM_V0 * MM_V0 + 2 * MM_GM * (1 / r - 1 / MM_R0)) * dt;
+      t += dt;
+      rows.push({ t: t, r: Math.max(MM_R_EI, r) });
+    }
+    return rows;
+  })();
+  var MM_RETURN_SECONDS = _mmReturnTable[_mmReturnTable.length - 1].t;
+  function mmReturnCoast(p) {
+    p = Math.max(0, Math.min(1, p));
+    var target = p * MM_RETURN_SECONDS, rows = _mmReturnTable;
+    var i = Math.min(rows.length - 1, Math.floor(target / 60));
+    var r = rows[i].r;
+    var v = Math.sqrt(MM_V0 * MM_V0 + 2 * MM_GM * (1 / r - 1 / MM_R0));
+    return { distKm: Math.max(0, r - MM_R_EARTH), speedKmh: v * 3600, days: target / 86400, totalDays: MM_RETURN_SECONDS / 86400 };
+  }
+  // Re-entry peak deceleration for a given flight-path angle. The slope is set so the
+  // Apollo 11 angle (-6.5 deg) gives Apollo 11's roughly 6.5 g; it gave 6.9 before,
+  // right beside a sentence saying 6.5.
+  function mmEntryPeakG(angleDeg) {
+    return Math.round((4 + (Math.abs(angleDeg) - 5.3) * 2.08) * 10) / 10;
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { launchDisplay: mmLaunchDisplay, returnCoast: mmReturnCoast, entryPeakG: mmEntryPeakG }); } catch (e) {}
+
   function _seededRand(seed) {
     var s = (seed * 16807 + 1) % 2147483647;
     return { next: function() { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }, s: s };
@@ -1109,7 +1166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         'The Saturn V rocket stood 110.6 meters tall \u2014 taller than the Statue of Liberty.',
         'The Command Module had about the same interior space as a large car.',
         'Apollo astronauts left retroreflectors on the Moon that scientists still bounce lasers off today.',
-        'The total Apollo program cost $25.4 billion (about $200 billion in today\'s dollars).',
+        'The total Apollo program cost $25.4 billion (roughly $260 billion in today\'s dollars).',
         'Apollo 13\'s famous "Houston, we\'ve had a problem" was actually said by Jack Swigert, not Tom Hanks.',
         'Several Apollo astronauts said Moon dust smelled like spent gunpowder after it was brought into the cabin.',
         'Long exposure to unfiltered sunlight likely faded the Apollo flags; LRO images show several flag poles still casting shadows.',
@@ -1194,7 +1251,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
       var LUNAR_SAMPLES_DATA = [
         { name: t('stem.moonmission.anorthosite', 'Anorthosite'), icon: '\u26AA', type: 'Highland Rock', xp: 15, fact: t('stem.moonmission.this_ancient_rock_from_the_lunar_highl', 'This ancient rock from the lunar highlands is 4.4 billion years old \u2014 nearly as old as the Moon itself. It tells us the Moon once had a global magma ocean.') },
-        { name: t('stem.moonmission.basalt', 'Basalt'), icon: '\u26AB', type: 'Mare Rock', xp: 10, fact: t('stem.moonmission.dark_volcanic_basalt_filled_the_moon_s', 'Dark volcanic basalt filled the Moon\'s giant impact basins to create the dark "seas" (maria) visible from Earth. These lavas erupted 3-3.5 billion years ago.') },
+        { name: t('stem.moonmission.basalt', 'Basalt'), icon: '\u26AB', type: 'Mare Rock', xp: 10, fact: t('stem.moonmission.dark_volcanic_basalt_filled_the_moon_s', 'Dark volcanic basalt filled the Moon\'s giant impact basins to create the dark "seas" (maria) visible from Earth. These lavas erupted between about 3 and 3.9 billion years ago; the basalts Apollo 11 brought back are about 3.6 to 3.9 billion years old.') },
         { name: t('stem.moonmission.breccia', 'Breccia'), icon: '\uD83D\uDFE4', type: 'Impact Rock', xp: 12, fact: t('stem.moonmission.a_jumbled_mix_of_rock_fragments_welded', 'A jumbled mix of rock fragments welded together by meteorite impacts. The Moon\'s surface has been pounded for 4+ billion years.') },
         { name: t('stem.moonmission.regolith_core', 'Regolith Core'), icon: '\uD83E\uDEA8', type: 'Soil Sample', xp: 8, fact: t('stem.moonmission.lunar_soil_is_ground_up_rock_from_bill', 'Lunar soil is ground-up rock from billions of years of micrometeorite bombardment. It contains tiny glass beads and even traces of solar wind particles.') },
         { name: t('stem.moonmission.orange_soil', 'Orange Soil'), icon: '\uD83D\uDFE0', type: 'Volcanic Glass', xp: 20, fact: t('stem.moonmission.apollo_17_found_orange_soil_tiny_glass', 'Apollo 17 found orange soil \u2014 tiny glass beads from an ancient volcanic eruption 3.7 billion years ago. This was one of Apollo\'s most exciting discoveries!') },
@@ -1208,7 +1265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       // specific wrong pick is wrong (null at the correct index). Misconception-targeted
       // feedback beats bare right/wrong (same pattern as the physics tool's predict quiz).
       var QUIZ_BANK = [
-        { q: 'How far is the Moon from Earth?', opts: ['38,440 km', '384,400 km', '3,844,000 km', '38,440,000 km'], a: 1, fact: t('stem.moonmission.the_moon_is_about_384_400_km_away_ligh', 'The Moon is about 384,400 km away \u2014 light takes 1.3 seconds to travel there!'), why: ['That would put the Moon closer than many satellites — about 1/10 of the real distance.', null, 'That is ~10× too far — at that range the Moon would look tiny in our sky.', 'That is ~100× too far — a good fraction of the way to Venus.'] },
+        { q: 'How far is the Moon from Earth?', opts: ['38,440 km', '384,400 km', '3,844,000 km', '38,440,000 km'], a: 1, fact: t('stem.moonmission.the_moon_is_about_384_400_km_away_ligh', 'The Moon is about 384,400 km away \u2014 light takes 1.3 seconds to travel there!'), why: ['That would put the Moon closer than many satellites — about 1/10 of the real distance.', null, 'That is ~10× too far — at that range the Moon would look tiny in our sky.', 'That is ~100× too far — about as far away as Venus at its closest.'] },
         { q: 'How long does it take to reach the Moon?', opts: ['3 hours', '3 days', '3 weeks', '3 months'], a: 1, fact: t('stem.moonmission.apollo_missions_took_about_3_days_each', 'Apollo missions took about 3 days each way, reaching ~39,000 km/h at injection, then coasting slower as it climbed away from Earth.'), why: ['3 hours barely gets you to high Earth orbit — the Moon is ~1,000× farther than the ISS.', null, '3 weeks would mean crawling — even the slowing coast averaged ~5,000 km/h.', '3 months is interplanetary-cruise territory, not a lunar hop.'] },
         { q: 'What is the Moon\'s gravity compared to Earth?', opts: ['1/2', '1/4', '1/6', '1/10'], a: 2, fact: t('stem.moonmission.the_moon_s_gravity_is_1_6_of_earth_s_a', 'The Moon\'s gravity is 1/6 of Earth\'s. A 70 kg person still has 70 kg of mass, but their weight feels like about 12 kg on Earth.'), why: ['1/2 would feel almost Earth-normal — no bunny-hop gait.', '1/4 is closer to Mars (~3/8) — still too strong for the footage you have seen.', null, 'At 1/10 the famous loping gait would look even floatier than it does.'] },
         { q: 'What is the temperature on the Moon\'s sunlit side?', opts: ['50\u00B0C', '127\u00B0C', '200\u00B0C', '327\u00B0C'], a: 1, fact: t('stem.moonmission.the_sunlit_side_reaches_127_c_while_th', 'The sunlit side reaches 127\u00B0C, while the dark side drops to -173\u00B0C!'), why: ['50 Celsius is just a hot day on Earth \u2014 with no atmosphere the Moon swings far wider.', null, 'Hotter than daytime regolith actually gets \u2014 the Moon receives the same sunlight as Earth, just unfiltered.', 'That is Mercury-dayside territory \u2014 the Moon is no closer to the Sun than Earth is.'] },
@@ -1298,16 +1355,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         {
           id: 'toilet_clog', title: t('stem.moonmission.waste_management_malfunction', 'Waste Management Malfunction'), emoji: '\uD83D\uDEBD',
           phases: [3, 8], difficulty: ['pilot', 'commander'], probability: 0.7,
-          historical: 'Illustrative scenario (based on real spacecraft waste-system failures — Apollo 10 famously logged one, and Skylab and ISS crews fought vent-line freezing): frozen liquid blocks a vent line, and the fix is rotating the spacecraft so sunlight thaws the blockage via thermal radiation through the vacuum of space.',
+          historical: 'Illustrative scenario (based on real spacecraft waste-system troubles — Skylab and ISS crews fought vent-line freezing): frozen liquid blocks a vent line, and the fix is rotating the spacecraft so sunlight thaws the blockage via thermal radiation through the vacuum of space.',
           scenario: 'Houston reports a blockage in the waste management vent line. Frozen waste is preventing the toilet from functioning. With days of coast ahead, this needs solving \u2014 crew comfort and hygiene are critical for mission success.',
           stemConcepts: ['thermal radiation', 'phase changes of matter', 'heat transfer in vacuum'],
           options: [
             { label: t('stem.moonmission.rotate_spacecraft_to_expose_vent_to_su', 'Rotate spacecraft to expose vent to sunlight'), icon: '\u2600\uFE0F',
               effects: { morale: 10 }, quality: 'optimal', xp: 20,
-              scienceReward: 'Thermal radiation travels through the vacuum of space \u2014 no air needed! The Sun delivers 1,361 watts per square meter. By rotating Orion, the crew used the Sun as a giant space heater. This is the same principle that makes the sunlit side of the Moon reach 127\u00B0C while the dark side drops to -173\u00B0C.' },
+              scienceReward: 'Thermal radiation travels through the vacuum of space \u2014 no air needed! The Sun delivers 1,361 watts per square meter. By rotating the spacecraft, the crew used the Sun as a giant space heater (Apollo crews kept a slow "barbecue roll" going for exactly this reason). This is the same principle that makes the sunlit side of the Moon reach 127\u00B0C while the dark side drops to -173\u00B0C.' },
             { label: t('stem.moonmission.reroute_cabin_heater_duct_to_warm_the_', 'Reroute cabin heater duct to warm the pipe'), icon: '\uD83D\uDD25',
               effects: { morale: 5 }, quality: 'adequate', xp: 10,
-              scienceReward: 'Conduction transfers heat through direct contact between molecules. It works, but uses electrical power from your limited fuel cell supply \u2014 and fuel cells also generate your oxygen and drinking water!' },
+              scienceReward: 'An electric heater on the line warms it by direct contact (conduction). It works, but it draws power from your fuel cells, which make electricity by combining hydrogen with oxygen from the same tanks you breathe from. Their by-product is your drinking water.' },
             { label: t('stem.moonmission.seal_the_vent_and_use_backup_waste_bag', 'Seal the vent and use backup waste bags'), icon: '\uD83D\uDDC4\uFE0F',
               effects: { morale: -10 }, quality: 'poor', xp: 5,
               scienceReward: 'Apollo astronauts (1969-1972) had NO toilet at all \u2014 they used adhesive collection bags for every bathroom visit. In microgravity, this was extremely difficult and unpleasant. The modern $23 million Universal Waste Management System was designed to fix this, but as every crewed program since has re-learned, space plumbing is hard!' }
@@ -1322,7 +1379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           options: [
             { label: t('stem.moonmission.trust_the_computer_and_continue_go', 'Trust the computer and continue \u2014 "GO!"'), icon: '\u2705',
               effects: { morale: 15 }, quality: 'optimal', xp: 25,
-              scienceReward: 'The Apollo Guidance Computer had just 74 KB of memory and ran at 0.043 MHz \u2014 thousands of times slower than your phone. But its software used a brilliant priority-based scheduling system designed by MIT\'s Margaret Hamilton. Low-priority tasks were shed automatically so critical navigation could continue. This is the same "priority scheduling" concept used in every modern operating system!' },
+              scienceReward: 'The Apollo Guidance Computer had about 74 KB of memory and a 1.024 MHz clock, doing roughly 40,000 additions a second \u2014 thousands of times slower than your phone. But its software used a brilliant priority-based scheduling system designed by MIT\'s Margaret Hamilton. Low-priority tasks were shed automatically so critical navigation could continue. This is the same "priority scheduling" concept used in every modern operating system!' },
             { label: t('stem.moonmission.abort_the_descent_fire_ascent_engine', 'Abort the descent \u2014 fire ascent engine'), icon: '\uD83D\uDD3A',
               effects: { morale: -5 }, quality: 'adequate', xp: 10,
               scienceReward: 'An abort during powered descent was always an option. The abort guidance system (AGS) was a completely separate computer that could return the LM to orbit independently. Redundancy \u2014 having backup systems \u2014 is a core principle of engineering safety.' },
@@ -1354,11 +1411,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           phases: [3, 8], difficulty: ['commander'], probability: 0.6,
           historical: 'Apollo 13 (April 1970): A routine "cryo stir" of the oxygen tanks caused an explosion that crippled the Service Module. The crew survived by using the Lunar Module as a lifeboat \u2014 one of the greatest rescues in history. Commander Lovell, Pilot Haise, and Pilot Swigert improvised solutions for 4 days.',
           scenario: 'During a routine cryogenic tank stir, you hear a loud bang and see the pressure gauge in O\u2082 Tank 2 spiking wildly. Cabin pressure is fluctuating. Houston is analyzing telemetry urgently.',
-          stemConcepts: ['cryogenics', 'gas laws (Boyle\'s Law)', 'electrical systems', 'emergency procedures'],
+          stemConcepts: ['cryogenics', 'gas laws (Gay-Lussac\'s Law)', 'electrical systems', 'emergency procedures'],
           options: [
             { label: t('stem.moonmission.immediately_isolate_tank_2_and_switch_', 'Immediately isolate Tank 2 and switch to Tank 1'), icon: '\uD83D\uDEE1\uFE0F',
               effects: { morale: 5 }, quality: 'optimal', xp: 20,
-              scienceReward: 'Cryogenic oxygen is stored at -183\u00B0C under extreme pressure. When pressure rises uncontrollably, the risk is rupture. Isolating the faulty tank preserves your remaining oxygen supply. Boyle\'s Law (P\u00D7V = constant at fixed temperature) tells us that as the tank heats up, pressure increases proportionally \u2014 that\'s what the gauges showed.' },
+              scienceReward: 'Cryogenic oxygen is stored at -183\u00B0C under extreme pressure. When pressure rises uncontrollably, the risk is rupture. Isolating the faulty tank preserves your remaining oxygen supply. Gay-Lussac\'s Law (at a fixed volume, pressure rises in step with temperature) tells us that as the sealed tank heats up, its pressure climbs \u2014 that\'s what the gauges showed.' },
             { label: t('stem.moonmission.vent_tank_2_to_relieve_pressure', 'Vent Tank 2 to relieve pressure'), icon: '\uD83D\uDCA8',
               effects: { morale: -5 }, quality: 'adequate', xp: 10,
               scienceReward: 'Venting releases the pressure but wastes oxygen into space. On Apollo 13, the crew eventually lost ALL oxygen from the Service Module. They survived because the Lunar Module had its own independent life support \u2014 a lesson in the importance of redundant systems.' },
@@ -2233,9 +2290,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
                     // Flight phase
                     if (launched) {
-                      velocity += 0.15 + (stage === 2 ? 0.1 : 0) + (stage === 3 ? 0.05 : 0);
-                      altitude += velocity * 0.5;
-                      gForce = 1 + velocity * 0.08;
+                      // The loop counters stop at orbit: the S-IVB shuts down there, and
+                      // they used to keep climbing to 49 km/s and 40 g on screen.
+                      var engineOn = altitude <= 20000;
+                      if (engineOn) {
+                        velocity += 0.15 + (stage === 2 ? 0.1 : 0) + (stage === 3 ? 0.05 : 0);
+                        altitude += velocity * 0.5;
+                      }
+                      var launchShown = mmLaunchDisplay(altitude / 20000);
+                      gForce = launchShown.g;
                       if (altitude > 2000 && stage === 1) { stage = 2; shakeIntensity = 6; }
                       if (altitude > 8000 && stage === 2) { stage = 3; shakeIntensity = 4; }
                       maxAlt = Math.max(maxAlt, altitude);
@@ -2349,6 +2412,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.beginPath(); ctx.moveTo(rocketX - 9, rBase); ctx.lineTo(rocketX - 15, rBase + 8); ctx.lineTo(rocketX - 9, rBase - 5); ctx.fill();
                       ctx.beginPath(); ctx.moveTo(rocketX + 9, rBase); ctx.lineTo(rocketX + 15, rBase + 8); ctx.lineTo(rocketX + 9, rBase - 5); ctx.fill();
                       // ── Engine flame (dual envelope + Mach diamonds + particles) ──
+                      if (engineOn) {
                       var flameLen = 25 + Math.random() * 12 + velocity * 1.0;
                       var flameW = 7 + velocity * 0.15;
                       // Outer envelope (orange-red, wider)
@@ -2407,6 +2471,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         }
                         ctx.globalAlpha = 1;
                       }
+                      }   // engineOn
                       ctx.restore(); // ── end vehicle attitude frame (flame + smoke trail
                                      //    stay inside it, so the exhaust follows the nose) ──
 
@@ -2422,13 +2487,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.fillText('ALTITUDE', 14, 22);
                       ctx.fillStyle = '#ffffff';
                       ctx.font = 'bold 16px monospace';
-                      ctx.fillText(altitude > 1000 ? (altitude / 1000).toFixed(1) + ' km' : Math.round(altitude) + ' m', 14, 40);
+                      ctx.fillText(launchShown.altKm >= 1 ? launchShown.altKm.toFixed(1) + ' km' : Math.round(launchShown.altKm * 1000) + ' m', 14, 40);
                       ctx.font = 'bold 10px monospace';
                       ctx.fillStyle = '#38bdf8';
                       ctx.fillText('VELOCITY', 14, 56);
                       ctx.fillStyle = '#ffffff';
                       ctx.font = '13px monospace';
-                      ctx.fillText((velocity * 100).toFixed(0) + ' m/s', 14, 70);
+                      ctx.fillText(Math.round(launchShown.velMs).toLocaleString('en-US') + ' m/s', 14, 70);
                       ctx.font = 'bold 10px monospace';
                       ctx.fillStyle = '#38bdf8';
                       ctx.fillText('STAGE ' + stage + '/3', 14, 88);
@@ -2438,7 +2503,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 10px monospace';
                       ctx.fillText('PITCH', 14, 104);
                       ctx.fillStyle = '#fff'; ctx.font = '12px monospace';
-                      ctx.fillText(Math.round(pitchTurn * 180 / Math.PI) + '° from vertical', 52, 104);
+                      ctx.fillText(Math.round(pitchTurn * 180 / Math.PI) + '° from up', 52, 104);   // '° from vertical' ran past the box edge
 
                       // G-force meter (right side; follows the narrow-screen drop)
                       ctx.save();
@@ -6454,7 +6519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         // Once seated, the rover shares the player's coordinates and would
                         // otherwise permanently mask every useful discovery card at distance 0.
                         if (!roverBoarded) landmarks.push(
-                          { id: 'lrv', x: roverGrp.position.x, z: roverGrp.position.z, name: t('stem.moonmission.lunar_rover_lrv', 'Lunar Rover (LRV)'), fact: t('stem.moonmission.the_lunar_roving_vehicle_cost_38_milli', 'The Lunar Roving Vehicle cost $38 million. Apollo 17\'s rover traveled 35.7 km \u2014 still parked on the Moon with the keys in it!'), icon: '\uD83D\uDE97' }
+                          { id: 'lrv', x: roverGrp.position.x, z: roverGrp.position.z, name: t('stem.moonmission.lunar_rover_lrv', 'Lunar Rover (LRV)'), fact: t('stem.moonmission.the_lunar_roving_vehicle_cost_38_milli', 'The Lunar Roving Vehicle cost $38 million. Apollo 17\'s rover traveled 35.7 km \u2014 and it is still parked on the Moon where the crew left it.'), icon: '\uD83D\uDE97' }
                         );
                         var nearestLM = null;
                         var nearestLMDist = 999;
@@ -7122,7 +7187,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               ),
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
                 h('p', { className: 'text-[0.6875rem] text-slate-300 leading-relaxed' },
-                  t('stem.moonmission.the_lm_s_ascent_engine_a_single_start_', 'The LM\'s ascent engine — a single-start hypergolic motor with no abort option — fires to launch you off the lunar surface. The descent stage serves as the launch pad and stays behind. You rendezvous and dock with Columbia, then jettison "Eagle" (it eventually crashes into the Moon).')),
+                  t('stem.moonmission.the_lm_s_ascent_engine_a_single_start_', 'The LM\'s ascent engine — a deliberately simple hypergolic motor with no backup engine — fires to launch you off the lunar surface. The descent stage serves as the launch pad and stays behind. You rendezvous and dock with Columbia, then jettison "Eagle", which Apollo 11 left in lunar orbit.')),
                 h('div', { className: 'mt-2 bg-amber-500/10 rounded p-2 border border-amber-500/20' },
                   h('p', { className: 'text-[0.6875rem] text-amber-300' }, '\uD83E\uDEA8 Samples collected: ' + (d.lunarSamples || []).length + ' / ' + LUNAR_SAMPLES_DATA.length),
                   (d.lunarSamples || []).map(function(s, i) {
@@ -7138,13 +7203,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           (function() {
             var as = d.ascentStatus || 'prelaunch';
             return phaseStatus(as === 'docked',
-              as === 'prelaunch' ? 'Ascent engine armed. It has a single start and no abort — if it does not light, there is no second try.'
+              as === 'prelaunch' ? 'Ascent engine armed. There is no backup engine; it was built as simply as possible so that it would light.'
                 : as === 'ascent' ? 'Ascent burn — climbing off the descent stage, which stays behind as the launch pad.'
                 : 'Closing on Columbia. Rendezvous is the CMP flying to meet you.',
               'Hard dock confirmed. Eagle is secured to Columbia and the samples are aboard.');
           })(),
           h('button', {
-            'aria-label': t('stem.moonmission.fire_trans_earth_injection_burn_to_beg', 'Fire trans-Earth injection burn to begin 3-day return journey home'),
+            'aria-label': t('stem.moonmission.fire_trans_earth_injection_burn_to_beg', 'Fire trans-Earth injection burn to begin the two-and-a-half-day journey home'),
             disabled: eventPending,
                 onClick: function() {
                   if (!canProceed()) return;
@@ -7175,7 +7240,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('canvas', {
                 'data-teicoast-canvas': 'true',
                 role: 'img',
-                'aria-label': t('stem.moonmission.animated_trans_earth_coast_the_moon_sh', 'Animated trans-Earth coast. The Moon shrinks behind the spacecraft while Earth grows ahead over the 3-day return. The Command Module Pilot takes a sextant star sighting to check the trajectory, and the Service Module is jettisoned before re-entry. Shows distance to Earth, closing speed, and coast time.'),
+                'aria-label': t('stem.moonmission.animated_trans_earth_coast_the_moon_sh', 'Animated trans-Earth coast. The Moon shrinks behind the spacecraft while Earth grows ahead over the two-and-a-half-day return. The Command Module Pilot takes a sextant star sighting to check the trajectory, and the Service Module is jettisoned before re-entry. Shows distance to Earth, closing speed, and coast time.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._teiInit) return;
@@ -7270,12 +7335,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
                     // HUD \u2014 everything in the panel. The distance and the configuration
                     // line used to be centred ON the spacecraft and ran through the hull.
-                    var distToEarth = Math.max(0, Math.round((1 - progress) * 384400));
+                    var _rc = mmReturnCoast(progress);
+                    var distToEarth = Math.round(_rc.distKm);
                     ctx.fillStyle = 'rgba(0,0,0,0.55)';
                     ctx.fillRect(8, 8, 158, 92);
                     ctx.textAlign = 'left'; ctx.font = 'bold 9px monospace';
                     ctx.fillStyle = '#38bdf8'; ctx.fillText('CLOSING SPEED', 14, 22);
-                    var closing = Math.round(3200 + progress * progress * 36700);
+                    var closing = Math.round(_rc.speedKmh / 10) * 10;
                     ctx.fillStyle = '#fff'; ctx.font = 'bold 13px monospace';
                     ctx.fillText(closing.toLocaleString() + ' km/h', 14, 36);
                     ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#38bdf8';
@@ -7285,7 +7351,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#38bdf8';
                     ctx.fillText('COAST ELAPSED', 14, 78);
                     ctx.fillStyle = '#fff'; ctx.font = '11px monospace';
-                    ctx.fillText((progress * 3).toFixed(1) + ' of ~3 days', 14, 92);
+                    ctx.fillText(_rc.days.toFixed(1) + ' of ~' + _rc.totalDays.toFixed(1) + ' days', 14, 92);
                     // Configuration, kept clear of the hull.
                     ctx.textAlign = 'center'; ctx.font = '9px monospace';
                     ctx.fillStyle = jettisoned ? '#fbbf24' : '#94a3b8';
@@ -7318,11 +7384,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'text-center mb-3' },
               h('div', { className: 'text-3xl' }, '\uD83C\uDF0D'),
               h('h4', { className: 'text-base font-bold' }, t('stem.moonmission.trans_earth_coast_2', 'Trans-Earth Coast')),
-              h('p', { className: 'text-[0.6875rem] text-slate-400' }, t('stem.moonmission.returning_home_384_400_km_3_days', 'Returning home \u2022 384,400 km \u2022 ~3 days'))
+              h('p', { className: 'text-[0.6875rem] text-slate-400' }, t('stem.moonmission.returning_home_384_400_km_3_days', 'Returning home \u2022 384,400 km \u2022 ~2.5 days'))
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
               h('p', { className: 'text-[0.6875rem] text-slate-300 leading-relaxed' },
-                t('stem.moonmission.the_service_module_engine_fires_for_th', 'The Service Module engine fires for the Trans-Earth Injection burn. You coast for 3 days back to Earth, jettison the Service Module, and prepare the Command Module for re-entry \u2014 the most dangerous phase of the mission.'))
+                t('stem.moonmission.the_service_module_engine_fires_for_th', 'The Service Module engine fires for the Trans-Earth Injection burn. You coast for about two and a half days back to Earth, jettison the Service Module, and prepare the Command Module for re-entry \u2014 the most dangerous phase of the mission.'))
             ),
             h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20' },
               h('p', { className: 'text-[0.6875rem] text-indigo-300' }, '\uD83D\uDCA1 ' + apolloFact())
@@ -7341,7 +7407,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             var tooShallow = mag < 5.3, tooSteep = mag > 7.4;
             var inCorridor = !tooShallow && !tooSteep;
             var pct = Math.max(0, Math.min(100, ((mag - 4) / 5) * 100));
-            var peakG = Math.round((4 + (mag - 5.3) * 2.38) * 10) / 10;
+            var peakG = mmEntryPeakG(mag);
             return h('div', { className: 'bg-slate-900 rounded-xl p-3 border border-slate-700 mb-2' },
               h('p', { className: 'text-[0.6875rem] font-bold text-sky-300 mb-1' }, t('stem.moonmission.entry_corridor', '\uD83C\uDFAF SET THE ENTRY CORRIDOR')),
               h('p', { className: 'text-[0.6875rem] text-slate-300 mb-2 leading-relaxed' },
@@ -7382,14 +7448,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             );
           })(),
           h('button', {
-            'aria-label': t('stem.moonmission.begin_atmospheric_re_entry_sequence_at', 'Begin atmospheric re-entry sequence at 39,900 kilometers per hour'),
+            'aria-label': t('stem.moonmission.begin_atmospheric_re_entry_sequence_at', 'Begin atmospheric re-entry sequence at about 39,700 kilometers per hour'),
             disabled: eventPending,
                 onClick: function() {
                   if (!canProceed()) return;
               var ang2 = (typeof d.entryAngle === 'number' && isFinite(d.entryAngle)) ? d.entryAngle : -6.5;
               var mag2 = Math.abs(ang2);
               var outcome = mag2 < 5.3 ? 'skip' : mag2 > 7.4 ? 'steep' : 'nominal';
-              upd('entryOutcome', { outcome: outcome, angle: ang2, peakG: Math.round((4 + (mag2 - 5.3) * 2.38) * 10) / 10 });
+              upd('entryOutcome', { outcome: outcome, angle: ang2, peakG: mmEntryPeakG(mag2) });
               advancePhase(9);
               log(outcome === 'nominal'
                 ? '\uD83C\uDF0D Entry interface at ' + ang2.toFixed(1) + '\u00B0 \u2014 inside the corridor.'
@@ -7415,7 +7481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'relative', style: { height: '320px' } },
               h('canvas', { 
                 role: 'img',
-                'aria-label': t('stem.moonmission.animated_re_entry_sequence_command_mod', 'Animated re-entry sequence. Command Module enters atmosphere at 39,900 km/h with plasma heating to 2,760 degrees. Shows radio blackout, drogue chutes, main parachutes, and ocean splashdown.'),
+                'aria-label': t('stem.moonmission.animated_re_entry_sequence_command_mod', 'Animated re-entry sequence. Command Module enters atmosphere at about 39,700 km/h, its heat shield reaching 2,760 degrees. Shows radio blackout, drogue chutes, main parachutes, and ocean splashdown.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._reentryInit) return;
@@ -7529,7 +7595,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         ctx.fillStyle = '#ff4444';
                         ctx.fillText('\u26A0 COMMUNICATIONS BLACKOUT', W * 0.5, 30);
                         ctx.font = '9px system-ui'; ctx.fillStyle = '#f87171';
-                        ctx.fillText('Ionized plasma at 2,760\u00B0C blocking all radio signals...', W * 0.5, 46);
+                        ctx.fillText('Plasma around the capsule is blocking all radio signals...', W * 0.5, 46);
                       }
                     } else {
                       // Lower atmosphere - blue sky appearing
@@ -7659,7 +7725,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               })
             ),
             h('div', { className: 'p-3 border-t border-orange-900/30' },
-              h('p', { className: 'text-[0.6875rem] text-slate-200 mb-2' }, t('stem.moonmission.watch_the_command_module_survive_re_en', 'Watch the Command Module survive re-entry at 39,900 km/h through 2,760\u00B0C plasma, deploy parachutes, and splash down in the Pacific Ocean.')),
+              h('p', { className: 'text-[0.6875rem] text-slate-200 mb-2' }, t('stem.moonmission.watch_the_command_module_survive_re_en', 'Watch the Command Module survive re-entry at about 39,700 km/h with its heat shield at 2,760\u00B0C, deploy parachutes, and splash down in the Pacific Ocean.')),
               h('div', { className: 'bg-indigo-500/10 rounded p-1.5 border border-indigo-500/20' },
                 h('p', { className: 'text-[0.6875rem] text-indigo-300' }, '\uD83D\uDCA1 ' + apolloFact())
               )
@@ -7922,11 +7988,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           function setIQ(patch) { upd('deltaVHunt', Object.assign({}, iq, patch)); }
           var g = 9.81;
           var deltaV = iq.isp * g * Math.log(iq.massRatio);
-          var orbit = deltaV < 7800 ? 'insufficient' : (deltaV < 11200 ? 'leo' : 'escape');
+          // Orbit needs ~7.8 km/s of speed plus ~1.5 km/s lost to gravity and drag on the
+          // way up; the trip to the Moon adds ~3.1 km/s more. The old thresholds ignored
+          // the losses, and their "escape" state was out of reach of every setting (best
+          // case here is ~11.0 km/s). One stage cannot reach the Moon, and saying so is
+          // the lesson: it is why the Saturn V had three.
+          var orbit = deltaV < 9400 ? 'insufficient' : (deltaV < 12500 ? 'leo' : 'escape');
           var orbitMeta = {
             insufficient: { label: t('stem.moonmission.insufficient_suborbital', '🔴 Insufficient — suborbital'), color: '#b91c1c', bg: 'rgba(220,38,38,0.10)', border: '#ef4444' },
             leo:          { label: t('stem.moonmission.leo_earth_orbit', '🟢 LEO / Earth orbit'),          color: '#047857', bg: 'rgba(16,185,129,0.10)', border: '#10b981' },
-            escape:       { label: t('stem.moonmission.escape_velocity_lunar_beyond', '🚀 Escape velocity (lunar/beyond)'), color: '#0369a1', bg: 'rgba(14,165,233,0.10)', border: '#0ea5e9' }
+            escape:       { label: t('stem.moonmission.escape_velocity_lunar_beyond', '🚀 Enough for the Moon (about 12.5 km/s)'), color: '#0369a1', bg: 'rgba(14,165,233,0.10)', border: '#0ea5e9' }
           }[orbit];
           function logObs() {
             setIQ({ log: (iq.log || []).concat([{ mr: iq.massRatio, bd: iq.burnDur, isp: iq.isp, dv: Math.round(deltaV), o: orbit }]).slice(-8) });
@@ -7988,7 +8059,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 h('li', null, t('stem.moonmission.hold_two_sliders_steady_move_one_watch', 'Hold two sliders steady. Move one. Watch.')),
                 h('li', null, t('stem.moonmission.find_two_settings_producing_the_same_o', 'Find two settings producing the same outcome.')),
                 h('li', null, t('stem.moonmission.which_slider_affects_v_the_most_use_th', 'Which slider affects Δv the most? Use the log.')),
-                h('li', null, t('stem.moonmission.real_spacecraft_trade_fuel_mass_agains', 'Real spacecraft trade fuel mass against Isp. Investigate why.')))),
+                h('li', null, t('stem.moonmission.real_spacecraft_trade_fuel_mass_agains', 'Real spacecraft trade fuel mass against Isp. Investigate why.')),
+                h('li', null, t('stem.moonmission.deltav_one_stage_moon', 'Orbit takes about 9.4 km/s (7.8 of speed plus losses to gravity and drag); the Moon about 12.5. Can any single-stage setting get there? What did the Saturn V do instead?')))),
             h('div', { className: 'p-2 rounded bg-emerald-50 border border-emerald-200' },
               h('label', { className: 'flex items-center gap-1 text-[0.625rem] font-bold text-emerald-800 cursor-pointer' },
                 h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
