@@ -91,18 +91,72 @@ if (vehicles.length < 5) {
   errors.push('parsed only ' + vehicles.length + ' vehicles from the table; expected the full line-up');
 }
 
+// Load the tool's own force functions and constants.
+const { loadRoadReady } = require('./roadready_model.cjs');
+let MODEL;
+try {
+  MODEL = loadRoadReady(['dragForce', 'rollingForce', 'rollingCoef', 'frictionCoef']);
+} catch (e) {
+  console.error('\n✗ check_roadready_vehicle_dynamics FAILED\n');
+  console.error('  • ' + e.message + '\n');
+  process.exit(1);
+}
+
+// Cross-checks: the constants this gate reads by regex, and the one value it
+// still mirrors by hand, must agree with the loaded model.
+if (MU_DRY !== null) {
+  const liveMu = MODEL.frictionCoef('clear');
+  if (Math.abs(liveMu - MU_DRY) > 1e-9) {
+    errors.push('dry mu is ' + liveMu + ' from frictionCoef() but ' + MU_DRY +
+      ' by regex -- the regex anchor is stale.');
+  }
+}
+{
+  // Drag at a known point, against the tool's own function. Catches a change
+  // to AIR_DENSITY or to the drag formula's shape, neither of which this gate
+  // could see while it carried `RHO = 1.225` as a literal.
+  const probe = MODEL.dragForce(20, 0.30, 2.2);
+  const expected = 0.5 * 1.225 * 20 * 20 * 0.30 * 2.2;
+  if (Math.abs(probe - expected) > 0.5) {
+    errors.push('dragForce(20, 0.30, 2.2) is ' + probe.toFixed(1) + ' N but 0.5*1.225*v^2*Cd*A ' +
+      'gives ' + expected.toFixed(1) + ' N. Air density or the drag formula changed -- ' +
+      're-derive the 0-60 expectations against it.');
+  }
+  const rollProbe = MODEL.rollingForce(1500, MODEL.rollingCoef('clear', true));
+  const rollExpected = 0.012 * 1500 * 9.81;
+  if (Math.abs(rollProbe - rollExpected) > 0.5) {
+    errors.push('rolling resistance for a 1500 kg car on a dry road is ' + rollProbe.toFixed(1) +
+      ' N but crr 0.012 gives ' + rollExpected.toFixed(1) + ' N -- rollingCoef or ' +
+      'rollingForce changed.');
+  }
+}
+
 if (K !== null && MU_DRY !== null && vehicles.length >= 5) {
-  const RHO = 1.225, G = 9.81, CRR = 0.012, MPH = 2.23694;
-  // Mirrors the tool: maxThrust = P/v (clamped at low v), capped at grip.
+  const G = 9.81, MPH = 2.23694;
+  // Resistances come from the tool's OWN dragForce / rollingForce / rollingCoef
+  // rather than re-deriving 0.5*rho*Cd*A*v^2 and crr*m*g here, and rho and crr
+  // are no longer duplicated as literals in this gate. A gate that recomputes
+  // the value cannot fail: on 2026-09-21, dropping the factor of 2 from
+  // stoppingDistance() left all six RoadReady physics gates green while 14
+  // vitest tests went red, because each gate carried a private copy.
+  //
+  // The THRUST cap is still mirrored below, because the tool computes it inline
+  // in two render-loop sites rather than in a shared helper, and those two
+  // sites genuinely differ (one has the low-speed launch boost and a reverse
+  // cap, the other does not). Extracting a shared helper would change
+  // behaviour at the second site, so that is a refactor, not a gate fix. What
+  // this gate CAN do is assert the mirrored cap still matches the constant the
+  // tool uses -- see the K cross-check after the export block.
   const zeroToSixty = (v) => {
     const dt = 0.01;
     let s = 0.01;
+    const crr = MODEL.rollingCoef('clear', true);
     for (let t = 0; t < 120; t += dt) {
       let maxT = (v.kW * 1000) / Math.max(1, s);
       if (s < 2) maxT = v.kW * 500;
       const thrust = Math.min(maxT, v.mass * MU_DRY * G * K);
-      const drag = 0.5 * RHO * v.cd * v.area * s * s;
-      const roll = CRR * v.mass * G;
+      const drag = MODEL.dragForce(s, v.cd, v.area);
+      const roll = MODEL.rollingForce(v.mass, crr);
       s += ((thrust - drag - roll) / v.mass) * dt;
       if (s * MPH >= 60) return t;
     }
