@@ -71305,7 +71305,16 @@
       "trail_center_tip": "Aim inside the small circle for +2",
       "search_threats_species_mechanisms_or_actions": "Search threats, species, mechanisms, or actions",
       "search_results": "Search results",
-      "activities_found": "activities found"
+      "activities_found": "activities found",
+      "jump_to_letter": "Jump to letter",
+      "a11y_jump_to_letter": "Jump to {value1}",
+      "a11y_no_terms_for_letter": "No terms under {value1}",
+      "a11y_population_trajectory": "{value1} population on a log scale, {value2} to {value3}. Starts at {value4}, lowest {value5} in {value6}, ends at {value7}. Points: {value8}.",
+      "a11y_trajectory_table_caption": "{value1} population by year",
+      "show_trajectory_data": "Show the numbers",
+      "year": "Year",
+      "population": "Population",
+      "milestone": "Milestone"
     },
     "renewables": {
       "transition_studio": "US transition sandbox",
