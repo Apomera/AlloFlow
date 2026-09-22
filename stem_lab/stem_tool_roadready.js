@@ -38241,7 +38241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cat.items.map(function(item, ii) {
                 return h('div', { key: ii, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingLeft: '8px', borderLeft: '2px solid ' + (item.weight === '❌' ? '#ef4444' : '#334155'), marginBottom: '6px' } },
                   h('div', { style: { flex: 1 } },
-                    h('div', { style: { fontSize: '11px', fontWeight: 700, color: item.weight === '❌' ? '#ef4444' : '#fff' } }, item.skill),
+                    h('div', { style: { fontSize: '11px', fontWeight: 700, color: item.weight === '❌' ? 'var(--rr-red, #fca5a5)' : 'var(--allo-stem-text, #e2e8f0)' } }, item.skill),
                     h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', lineHeight: '1.4' } }, item.note)
                   ),
                   h('div', { style: { fontSize: '12px', flexShrink: 0, marginLeft: '8px' } }, item.weight)
