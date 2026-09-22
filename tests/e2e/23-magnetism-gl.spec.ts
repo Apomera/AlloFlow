@@ -533,4 +533,61 @@ test.describe('magnetism — 3D visual pass', () => {
     const stillRunning = await page.evaluate(() => document.querySelectorAll('#wrap canvas').length);
     expect(stillRunning, 'canvases survived unmount').toBe(0);
   });
+
+  test('every 3D scene actually frees its GL context, not just its canvas', async ({ page }) => {
+    // The test above only proves the canvas left the DOM. A tool can drop
+    // canvases while leaking every context behind them, and browsers cap
+    // WebGL contexts near 16 — so a leak here bricks the 3D scenes after a
+    // few tab switches, with no error to point at.
+    //
+    // Count real context *creations* and *losses*: releaseGl calls
+    // forceContextLoss(), which fires a genuine webglcontextlost event. Each
+    // scene is mounted and destroyed in turn, including the three that carry
+    // a PMREM environment and a bloom composer.
+    await page.goto(`${harness.url}/__harness`);
+    await page.waitForFunction(
+      () => !!(window as any).StemLab?._registry?.magnetism, null, { timeout: 30000 });
+    await page.evaluate(() => {
+      const w = window as any;
+      w.__gl = { made: 0, lost: 0 };
+      const orig = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (type: string, ...rest: any[]) {
+        const ctx = orig.call(this, type, ...rest);
+        if (ctx && /webgl/i.test(String(type)) && !(this as any).__glCounted) {
+          (this as any).__glCounted = true;
+          w.__gl.made++;
+          this.addEventListener('webglcontextlost', () => { w.__gl.lost++; });
+        }
+        return ctx;
+      };
+    });
+
+    const scenes: Array<[string, any]> = [
+      ['field', FIELD_3D],
+      ['earth', EARTH_3D],
+      ['electro', ELECTRO_3D],
+      ['motor', { magnetism: { tab: 'motor', motorMode: 'forces', motorView: '3d' } }],
+      ['particle', { magnetism: { tab: 'motor', motorMode: 'particle', chargeView: '3d' } }],
+      ['induction', { magnetism: { tab: 'induce', induceMode: '3d' } }],
+    ];
+    for (const [, state] of scenes) {
+      await page.evaluate((s) => (window as any).__mount(s), state);
+      await page.waitForSelector('#wrap canvas', { timeout: 30000 });
+      await page.waitForTimeout(700);
+      await page.evaluate(() => { (window as any).__destroy(); });
+      await page.waitForTimeout(500);
+    }
+
+    const gl = await page.evaluate(() => (window as any).__gl);
+    // Guard first: if nothing ever built a context the rest proves nothing.
+    expect(gl.made, 'no WebGL context was created by any scene').toBeGreaterThan(0);
+    // Every scene in the loop above is destroyed before the next is mounted,
+    // so nothing is legitimately still holding a context here: the bar is
+    // ZERO. An earlier `<= 1` looked like harmless slack and silently
+    // swallowed exactly one leaked scene — the mutation that drops one
+    // scene's releaseGl call passed against it.
+    const leaked = gl.made - gl.lost;
+    expect(leaked, `${leaked} of ${gl.made} GL contexts were never released`)
+      .toBe(0);
+  });
 });

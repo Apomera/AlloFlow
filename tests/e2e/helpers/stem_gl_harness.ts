@@ -141,6 +141,26 @@ ${pre}
   // three.js is already on the page.
   window.StemLab.loadScriptResilient = function () { return new Promise(function () {}); };
   window.StemLab.ensureThree = function () { return Promise.resolve(window.THREE); };
+  // releaseGl was MISSING, and its absence was invisible: every tool guards the
+  // call with an if (window.StemLab && window.StemLab.releaseGl) guard, so the
+  // release path silently no-opped under test while running for real in the
+  // app. 19 stem_lab tools call it. Without this, a spec cannot tell a tool
+  // that frees its GL context from one that leaks every context it opens —
+  // and Chromium caps live contexts per process, so leaks matter.
+  //
+  // Mirrors the host implementation in stem_lab_module.js: defer a tick, skip
+  // canvases still in the document (a React re-render keeps the canvas), then
+  // force the loss.
+  window.StemLab.releaseGl = function (renderer) {
+    try {
+      var canvas = renderer && renderer.domElement;
+      if (!canvas || typeof renderer.forceContextLoss !== 'function') return;
+      window.setTimeout(function () {
+        if (canvas.isConnected) return;
+        try { renderer.forceContextLoss(); } catch (lossError) {}
+      }, 0);
+    } catch (releaseError) {}
+  };
 </script>
 ${extra}
 <script src="/${o.toolFile}"></script>
