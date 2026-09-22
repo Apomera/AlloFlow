@@ -405,3 +405,57 @@ test.describe('Pets Lab sensory perspective — WebGL', () => {
     expect(await page.evaluate(() => (window as any).__canvasCount())).toBe(1);
   });
 });
+
+/**
+ * WebGL context loss — ordinary in the field (GPU driver reset, a tab restored on a
+ * low-memory device, another page claiming contexts; browsers cap simultaneous
+ * contexts and evict the oldest).
+ *
+ * Creation failure was already handled: setStatus('failed') flows through onStatus to
+ * the panel, which tells the student "This device could not open a WebGL canvas. The
+ * comparison below still carries the lesson." Nothing was bound to `webglcontextlost`,
+ * so a context lost AFTER init left the 3D comparison black with no message at all.
+ *
+ * The recovery here is deliberately NOT a retry: this 3D is supplementary and the 2D
+ * comparison carries the lesson, so the honest move is to say the 3D stopped and point
+ * at the view that still works.
+ */
+test.describe('Pets Lab sensory perspective — WebGL context loss', () => {
+  test.beforeAll(async () => { await harness.start(); });
+  test.afterAll(async () => { await harness.stop(); });
+
+  test('a lost context says so and points at the 2D comparison', async ({ page }) => {
+    test.setTimeout(120000);
+    await harness.mount(page, seed());
+
+    await page.waitForFunction(() => {
+      const c = document.querySelector('#wrap canvas') as HTMLCanvasElement | null;
+      const g: any = c && (c.getContext('webgl2') || c.getContext('webgl'));
+      return !!g && !g.isContextLost();
+    }, null, { timeout: 40000 });
+
+    const killed = await page.evaluate(() => {
+      for (const cv of Array.from(document.querySelectorAll('#wrap canvas')) as HTMLCanvasElement[]) {
+        const g: any = cv.getContext('webgl2') || cv.getContext('webgl');
+        if (g && !g.isContextLost()) {
+          const ext = g.getExtension('WEBGL_lose_context');
+          if (ext) { ext.loseContext(); return true; }
+        }
+      }
+      return false;
+    });
+    expect(killed, 'could not force a context loss').toBe(true);
+
+    // The student must be told, and pointed at the view that still works.
+    await page.waitForFunction(() => /could not open a WebGL canvas/i.test(document.body.textContent || ''),
+      null, { timeout: 15000 });
+
+    const after = await page.evaluate(() => ({
+      told: /could not open a WebGL canvas/i.test(document.body.textContent || ''),
+      pointsAt2D: /comparison below still carries the lesson/i.test(document.body.textContent || '')
+    }));
+    console.log('after context loss:', JSON.stringify(after));
+    expect(after.told, 'the sensory view went black with no explanation').toBe(true);
+    expect(after.pointsAt2D, 'nothing pointed the student at the view that still works').toBe(true);
+  });
+});

@@ -3108,6 +3108,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           setStatus('failed');
           return;                       // no WebGL — the 2D panels carry the lesson
         }
+        // A context lost AFTER init used to leave the 3D comparison black with no
+        // message. preventDefault is required or the context can never be restored;
+        // then reuse the SAME 'failed' status the creation path sets, which already
+        // tells the student the 2D comparison still carries the lesson.
+        if (renderer.domElement && !renderer.domElement._petsLossBound) {
+          renderer.domElement._petsLossBound = true;
+          renderer.domElement.addEventListener('webglcontextlost', function (ev) {
+            ev.preventDefault();
+            // A detached canvas keeps its context until GC and may be evicted
+            // later; that must not report a failure over a newer, working view.
+            if (!S || S.renderer !== renderer) return;
+            console.warn('[Pets] WebGL context lost — falling back to the 2D comparison');
+            setStatus('failed');
+          });
+        }
         var w = node.clientWidth || 480;
         var h = node.clientHeight || 360;
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
